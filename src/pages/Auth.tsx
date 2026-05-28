@@ -203,11 +203,11 @@ export default function Auth() {
           background: #ffffff;
           border-radius: 16px;
           padding: 2.5rem 2.2rem 2rem;
-          width: 100%;
+          width: calc(100% - 2.5rem);
           max-width: 440px;
           box-shadow: 0 8px 40px rgba(0,0,0,0.12);
           animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-          margin-bottom: 3rem;
+          margin: 0 auto 3rem auto;
         }
 
         @keyframes slideUp {
