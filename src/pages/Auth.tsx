@@ -92,6 +92,7 @@ export default function Auth() {
               onChange={handleChange}
               required
               className={form.email ? "filled" : ""}
+              style={form.email ? { backgroundColor: "#fff0f6", borderColor: "#ffb3d9" } : {}}
             />
           </div>
 
@@ -106,6 +107,7 @@ export default function Auth() {
                 onChange={handleChange}
                 required
                 className={form.senha ? "filled" : ""}
+                style={form.senha ? { backgroundColor: "#fff0f6", borderColor: "#ffb3d9" } : {}}
               />
               <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
                 {showPassword ? (
@@ -214,6 +216,13 @@ export default function Auth() {
         .field input::placeholder { color: #9ca3af; }
         .field input.filled {
           background-color: #fff0f6 !important;
+          border-color: #ffb3d9 !important;
+        }
+        .field input:-webkit-autofill,
+        .field input:-webkit-autofill:hover,
+        .field input:-webkit-autofill:focus {
+          -webkit-box-shadow: 0 0 0px 1000px #fff0f6 inset !important;
+          -webkit-text-fill-color: #1f2937 !important;
           border-color: #ffb3d9 !important;
         }
 
