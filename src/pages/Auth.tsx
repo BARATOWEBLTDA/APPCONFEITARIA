@@ -9,6 +9,7 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [keepConnected, setKeepConnected] = useState(false);
   const [form, setForm] = useState({ email: "", senha: "" });
+  const [fading, setFading] = useState(false);
 
   const bgRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
@@ -26,25 +27,18 @@ export default function Auth() {
     const animate = () => {
       timeRef.current += 0.003;
       const t = timeRef.current;
-
-      // Animação suave do degradê
       const angle = 120 + 20 * Math.sin(t);
       if (bgRef.current) {
         bgRef.current.style.background = `linear-gradient(${angle}deg, #f9007a 0%, #ff6eb4 45%, #ffb3d9 100%)`;
       }
-
-      // Glow segue o mouse com lerp suave
       currentRef.current.x += (mouseRef.current.x - currentRef.current.x) * 0.06;
       currentRef.current.y += (mouseRef.current.y - currentRef.current.y) * 0.06;
-
       if (glowRef.current) {
         glowRef.current.style.left = `${currentRef.current.x}px`;
         glowRef.current.style.top = `${currentRef.current.y}px`;
       }
-
       rafRef.current = requestAnimationFrame(animate);
     };
-
     animate();
 
     return () => {
@@ -68,16 +62,20 @@ export default function Auth() {
         password: form.senha,
       });
       if (error) throw error;
-      navigate("/dashboard");
+      // Fade antes de navegar
+      setFading(true);
+      setTimeout(() => navigate("/dashboard"), 700);
     } catch (err: any) {
       setError("E-mail ou senha incorretos. Tente novamente.");
-    } finally {
       setLoading(false);
     }
   };
 
   return (
     <div className="auth-root">
+      {/* Overlay de fade */}
+      <div className={`fade-overlay ${fading ? "fade-in" : ""}`} />
+
       <div ref={bgRef} className="auth-bg" />
       <div ref={glowRef} className="mouse-glow" />
 
@@ -88,14 +86,36 @@ export default function Auth() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="field">
-            <label>Email</label>
-            <input type="email" name="email" placeholder="Digite seu email" value={form.email} onChange={handleChange} required />
+            <label>E-mail</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="Digite seu e-mail"
+              value={form.email}
+              onChange={handleChange}
+              required
+              style={{
+                backgroundColor: form.email ? "#fff0f6" : "white",
+                borderColor: form.email ? "#ffb3d9" : "#e5e7eb",
+              }}
+            />
           </div>
 
           <div className="field">
             <label>Senha</label>
             <div className="password-wrap">
-              <input type={showPassword ? "text" : "password"} name="senha" placeholder="Digite sua senha" value={form.senha} onChange={handleChange} required />
+              <input
+                type={showPassword ? "text" : "password"}
+                name="senha"
+                placeholder="Digite sua senha"
+                value={form.senha}
+                onChange={handleChange}
+                required
+                style={{
+                  backgroundColor: form.senha ? "#fff0f6" : "white",
+                  borderColor: form.senha ? "#ffb3d9" : "#e5e7eb",
+                }}
+              />
               <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
                 {showPassword ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -113,7 +133,7 @@ export default function Auth() {
 
           {error && <p className="auth-error">{error}</p>}
 
-          <button type="submit" className="auth-btn" disabled={loading}>
+          <button type="submit" className="auth-btn" disabled={loading || fading}>
             {loading ? <span className="spinner" /> : "Entrar"}
           </button>
         </form>
@@ -147,6 +167,17 @@ export default function Auth() {
           overflow: hidden;
           font-family: 'DM Sans', sans-serif;
         }
+
+        .fade-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 100;
+          background: white;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.7s ease;
+        }
+        .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
 
         .auth-bg {
           position: fixed;
@@ -198,12 +229,11 @@ export default function Auth() {
           font-family: 'DM Sans', sans-serif;
           font-size: 0.95rem;
           color: #1f2937;
-          background: white;
           outline: none;
-          transition: border-color 0.2s, box-shadow 0.2s;
+          transition: background-color 0.2s, border-color 0.2s;
           width: 100%;
         }
-        .field input:focus { border-color: #f9007a; box-shadow: 0 0 0 3px rgba(249,0,122,0.08); }
+        .field input:focus { outline: none; }
         .field input::placeholder { color: #9ca3af; }
 
         .password-wrap { position: relative; }
