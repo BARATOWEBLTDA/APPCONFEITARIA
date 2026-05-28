@@ -1,0 +1,22 @@
+{
+  "name": "Panda Menu",
+  "short_name": "Panda Menu",
+  "description": "Gestão de cardápio digital para confeitarias",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fff0f6",
+  "theme_color": "#f9007a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://www.pandamenu.com.br/imagemmenu.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://www.pandamenu.com.br/imagemmenu.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
