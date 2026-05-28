@@ -81,20 +81,23 @@ export default function Layout() {
         .sidebar {
           width: 220px;
           min-height: 100vh;
-          background: #ffffff;
-          border-right: 1px solid #fce7f3;
+          background: #111827;
+          border-right: none;
           display: flex;
           flex-direction: column;
           padding: 1.5rem 1rem;
           position: fixed;
           top: 0; left: 0; bottom: 0;
           z-index: 10;
+          box-shadow: 4px 0 20px rgba(0,0,0,0.15);
         }
 
         .sidebar-logo {
           display: flex;
           justify-content: center;
           margin-bottom: 2rem;
+          padding-bottom: 1.5rem;
+          border-bottom: 1px solid rgba(249,0,122,0.2);
         }
 
         .sidebar-logo img {
@@ -114,18 +117,18 @@ export default function Layout() {
           border-radius: 10px;
           font-size: 0.92rem;
           font-weight: 500;
-          color: #6b7280;
+          color: #9ca3af;
           text-decoration: none;
           transition: background 0.15s, color 0.15s;
         }
 
         .nav-item:hover {
-          background: #fff0f6;
-          color: #f9007a;
+          background: rgba(249,0,122,0.12);
+          color: #ff6eb4;
         }
 
         .nav-item.active {
-          background: #fff0f6;
+          background: rgba(249,0,122,0.15);
           color: #f9007a;
           font-weight: 600;
           border-left: 3px solid #f9007a;
@@ -135,8 +138,8 @@ export default function Layout() {
           margin-top: 1rem;
           padding: 0.7rem 1rem;
           border-radius: 10px;
-          border: 1.5px solid #fce7f3;
-          background: white;
+          border: 1px solid rgba(249,0,122,0.3);
+          background: transparent;
           color: #f9007a;
           font-family: 'DM Sans', sans-serif;
           font-size: 0.92rem;
@@ -147,7 +150,7 @@ export default function Layout() {
         }
 
         .logout-btn:hover {
-          background: #fff0f6;
+          background: rgba(249,0,122,0.12);
         }
 
         /* ── MAIN CONTENT ── */
@@ -177,8 +180,8 @@ export default function Layout() {
             position: fixed;
             bottom: 0; left: 0; right: 0;
             z-index: 10;
-            background: #ffffff;
-            border-top: 1px solid #fce7f3;
+            background: #111827;
+            border-top: 1px solid rgba(249,0,122,0.2);
             padding: 0.5rem 0.25rem;
             justify-content: space-around;
             align-items: center;
@@ -194,7 +197,7 @@ export default function Layout() {
             padding: 0.4rem 0.2rem;
             font-size: 0.72rem;
             font-weight: 500;
-            color: #9ca3af;
+            color: #6b7280;
             text-decoration: none;
             border-radius: 8px;
             transition: color 0.15s;
