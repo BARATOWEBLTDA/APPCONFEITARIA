@@ -10,32 +10,74 @@ export default function Auth() {
   const [keepConnected, setKeepConnected] = useState(false);
   const [form, setForm] = useState({ email: "", senha: "" });
 
-  const bgRef = useRef<HTMLDivElement>(null);
-  const mouseRef = useRef({ x: 50, y: 50 });
-  const currentRef = useRef({ x: 50, y: 50 });
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const mouseRef = useRef({ x: -999, y: -999 });
   const rafRef = useRef<number>(0);
+  const timeRef = useRef(0);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseRef.current = {
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100,
-      };
-    };
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseRef.current = { x: e.clientX, y: e.clientY };
+    };
     window.addEventListener("mousemove", handleMouseMove);
 
     const animate = () => {
-      // Lerp suave
-      currentRef.current.x += (mouseRef.current.x - currentRef.current.x) * 0.05;
-      currentRef.current.y += (mouseRef.current.y - currentRef.current.y) * 0.05;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-      const { x, y } = currentRef.current;
+      timeRef.current += 0.008;
+      const t = timeRef.current;
+      const W = canvas.width;
+      const H = canvas.height;
 
-      if (bgRef.current) {
-        bgRef.current.style.background = `
-          radial-gradient(ellipse at ${x}% ${y}, #ff1493 0%, #ff69b4 30%, #ff9fd2 55%, #ffcce8 80%, #fff0f6 100%)
-        `;
+      // --- Fundo degradê animado ---
+      // Os pontos do gradiente oscilam com o tempo
+      const x1 = W * (0.5 + 0.4 * Math.sin(t * 0.7));
+      const y1 = H * (0.3 + 0.3 * Math.cos(t * 0.5));
+      const x2 = W * (0.5 + 0.4 * Math.cos(t * 0.6));
+      const y2 = H * (0.7 + 0.2 * Math.sin(t * 0.8));
+
+      const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+      grad.addColorStop(0, "#ff007a");
+      grad.addColorStop(0.3, "#ff4da6");
+      grad.addColorStop(0.6, "#ff80c0");
+      grad.addColorStop(0.85, "#ffb3d9");
+      grad.addColorStop(1, "#ffe6f2");
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // --- Efeito do mouse: luz suave ---
+      const mx = mouseRef.current.x;
+      const my = mouseRef.current.y;
+
+      if (mx > 0) {
+        // Brilho principal
+        const glow = ctx.createRadialGradient(mx, my, 0, mx, my, 220);
+        glow.addColorStop(0, "rgba(255, 255, 255, 0.22)");
+        glow.addColorStop(0.4, "rgba(255, 220, 240, 0.12)");
+        glow.addColorStop(1, "rgba(255, 255, 255, 0)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(0, 0, W, H);
+
+        // Ondulação ao redor do cursor
+        const rippleR = 60 + 20 * Math.sin(t * 4);
+        const ripple = ctx.createRadialGradient(mx, my, rippleR * 0.6, mx, my, rippleR);
+        ripple.addColorStop(0, "rgba(255,255,255,0)");
+        ripple.addColorStop(0.7, "rgba(255,255,255,0.08)");
+        ripple.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = ripple;
+        ctx.fillRect(0, 0, W, H);
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -44,6 +86,7 @@ export default function Auth() {
     animate();
 
     return () => {
+      window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(rafRef.current);
     };
@@ -74,10 +117,8 @@ export default function Auth() {
 
   return (
     <div className="auth-root">
-      {/* Fundo interativo */}
-      <div ref={bgRef} className="auth-bg" />
+      <canvas ref={canvasRef} className="auth-canvas" />
 
-      {/* Card */}
       <div className="auth-card">
         <div className="auth-logo-wrap">
           <img
@@ -111,12 +152,7 @@ export default function Auth() {
                 onChange={handleChange}
                 required
               />
-              <button
-                type="button"
-                className="eye-btn"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-              >
+              <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
                 {showPassword ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
@@ -134,12 +170,7 @@ export default function Auth() {
           </div>
 
           <div className="keep-connected">
-            <input
-              type="checkbox"
-              id="keep"
-              checked={keepConnected}
-              onChange={(e) => setKeepConnected(e.target.checked)}
-            />
+            <input type="checkbox" id="keep" checked={keepConnected} onChange={(e) => setKeepConnected(e.target.checked)} />
             <label htmlFor="keep">Manter conectado</label>
           </div>
 
@@ -151,14 +182,11 @@ export default function Auth() {
         </form>
       </div>
 
-      {/* Barra inferior */}
       <div className="auth-footer">
         <span className="footer-title">Precisa de Ajuda?</span>
         <div className="footer-links">
           <a href="https://wa.me/5541998843669" target="_blank" rel="noreferrer">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-            </svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
             WhatsApp: 41 9 9884-3669
           </a>
           <a href="mailto:suporte@pandamenu.com">
@@ -187,12 +215,11 @@ export default function Auth() {
           font-family: 'DM Sans', sans-serif;
         }
 
-        .auth-bg {
+        .auth-canvas {
           position: fixed;
           inset: 0;
           z-index: 0;
-          background: radial-gradient(ellipse at 50% 50%, #ff1493 0%, #ff69b4 30%, #ff9fd2 55%, #ffcce8 80%, #fff0f6 100%);
-          transition: background 0.05s;
+          pointer-events: none;
         }
 
         .auth-card {
@@ -230,11 +257,7 @@ export default function Auth() {
           gap: 1rem;
         }
 
-        .field {
-          display: flex;
-          flex-direction: column;
-          gap: 0.35rem;
-        }
+        .field { display: flex; flex-direction: column; gap: 0.35rem; }
 
         .field label {
           font-size: 0.88rem;
@@ -256,8 +279,8 @@ export default function Auth() {
         }
 
         .field input:focus {
-          border-color: #ff1493;
-          box-shadow: 0 0 0 3px rgba(255, 20, 147, 0.1);
+          border-color: #ff007a;
+          box-shadow: 0 0 0 3px rgba(255, 0, 122, 0.1);
         }
 
         .field input::placeholder { color: #9ca3af; }
@@ -278,24 +301,15 @@ export default function Auth() {
           align-items: center;
           padding: 0;
         }
-        .eye-btn:hover { color: #ff1493; }
+        .eye-btn:hover { color: #ff007a; }
 
-        .keep-connected {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
+        .keep-connected { display: flex; align-items: center; gap: 0.5rem; }
         .keep-connected input[type="checkbox"] {
-          accent-color: #ff1493;
-          width: 16px;
-          height: 16px;
+          accent-color: #ff007a;
+          width: 16px; height: 16px;
           cursor: pointer;
         }
-        .keep-connected label {
-          font-size: 0.88rem;
-          color: #374151;
-          cursor: pointer;
-        }
+        .keep-connected label { font-size: 0.88rem; color: #374151; cursor: pointer; }
 
         .auth-error {
           background: #fff1f2;
@@ -308,7 +322,7 @@ export default function Auth() {
 
         .auth-btn {
           padding: 0.85rem;
-          background: linear-gradient(135deg, #ff1493, #e0006e);
+          background: linear-gradient(135deg, #ff007a, #e0006e);
           color: white;
           border: none;
           border-radius: 8px;
@@ -336,11 +350,9 @@ export default function Auth() {
 
         .auth-footer {
           position: fixed;
-          bottom: 0;
-          left: 0;
-          right: 0;
+          bottom: 0; left: 0; right: 0;
           z-index: 2;
-          background: rgba(200, 0, 100, 0.2);
+          background: rgba(180, 0, 90, 0.25);
           backdrop-filter: blur(12px);
           padding: 0.9rem 1rem;
           text-align: center;
