@@ -81,7 +81,7 @@ export default function Layout() {
         .sidebar {
           width: 220px;
           min-height: 100vh;
-          background: #2d2d2d;
+          background: #181419;
           border-right: none;
           display: flex;
           flex-direction: column;
@@ -123,15 +123,15 @@ export default function Layout() {
         }
 
         .nav-item:hover {
-          background: rgba(249,0,122,0.12);
-          color: #ff6eb4;
+          background: #f9007a;
+          color: #ffffff;
         }
 
         .nav-item.active {
-          background: rgba(249,0,122,0.15);
-          color: #f9007a;
+          background: #f9007a;
+          color: #ffffff;
           font-weight: 600;
-          border-left: 3px solid #f9007a;
+          border-left: 3px solid #ff6eb4;
         }
 
         .logout-btn {
@@ -180,7 +180,7 @@ export default function Layout() {
             position: fixed;
             bottom: 0; left: 0; right: 0;
             z-index: 10;
-            background: #2d2d2d;
+            background: #181419;
             border-top: 1px solid rgba(249,0,122,0.2);
             padding: 0.5rem 0.25rem;
             justify-content: space-around;
