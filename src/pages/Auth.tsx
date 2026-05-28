@@ -10,74 +10,36 @@ export default function Auth() {
   const [keepConnected, setKeepConnected] = useState(false);
   const [form, setForm] = useState({ email: "", senha: "" });
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouseRef = useRef({ x: -999, y: -999 });
+  const bgRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
+  const mouseRef = useRef({ x: 50, y: 50 });
+  const currentRef = useRef({ x: 50, y: 50 });
   const rafRef = useRef<number>(0);
   const timeRef = useRef(0);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current = { x: e.clientX, y: e.clientY };
     };
     window.addEventListener("mousemove", handleMouseMove);
 
     const animate = () => {
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-
-      timeRef.current += 0.008;
+      timeRef.current += 0.003;
       const t = timeRef.current;
-      const W = canvas.width;
-      const H = canvas.height;
 
-      // --- Fundo degradê animado ---
-      // Os pontos do gradiente oscilam com o tempo
-      const x1 = W * (0.5 + 0.4 * Math.sin(t * 0.7));
-      const y1 = H * (0.3 + 0.3 * Math.cos(t * 0.5));
-      const x2 = W * (0.5 + 0.4 * Math.cos(t * 0.6));
-      const y2 = H * (0.7 + 0.2 * Math.sin(t * 0.8));
+      // Animação suave do degradê
+      const angle = 120 + 20 * Math.sin(t);
+      if (bgRef.current) {
+        bgRef.current.style.background = `linear-gradient(${angle}deg, #f9007a 0%, #ff6eb4 45%, #ffb3d9 100%)`;
+      }
 
-      const grad = ctx.createLinearGradient(x1, y1, x2, y2);
-      grad.addColorStop(0, "#ff007a");
-      grad.addColorStop(0.3, "#ff4da6");
-      grad.addColorStop(0.6, "#ff80c0");
-      grad.addColorStop(0.85, "#ffb3d9");
-      grad.addColorStop(1, "#ffe6f2");
+      // Glow segue o mouse com lerp suave
+      currentRef.current.x += (mouseRef.current.x - currentRef.current.x) * 0.06;
+      currentRef.current.y += (mouseRef.current.y - currentRef.current.y) * 0.06;
 
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, W, H);
-
-      // --- Efeito do mouse: luz suave ---
-      const mx = mouseRef.current.x;
-      const my = mouseRef.current.y;
-
-      if (mx > 0) {
-        // Brilho principal
-        const glow = ctx.createRadialGradient(mx, my, 0, mx, my, 220);
-        glow.addColorStop(0, "rgba(255, 255, 255, 0.22)");
-        glow.addColorStop(0.4, "rgba(255, 220, 240, 0.12)");
-        glow.addColorStop(1, "rgba(255, 255, 255, 0)");
-        ctx.fillStyle = glow;
-        ctx.fillRect(0, 0, W, H);
-
-        // Ondulação ao redor do cursor
-        const rippleR = 60 + 20 * Math.sin(t * 4);
-        const ripple = ctx.createRadialGradient(mx, my, rippleR * 0.6, mx, my, rippleR);
-        ripple.addColorStop(0, "rgba(255,255,255,0)");
-        ripple.addColorStop(0.7, "rgba(255,255,255,0.08)");
-        ripple.addColorStop(1, "rgba(255,255,255,0)");
-        ctx.fillStyle = ripple;
-        ctx.fillRect(0, 0, W, H);
+      if (glowRef.current) {
+        glowRef.current.style.left = `${currentRef.current.x}px`;
+        glowRef.current.style.top = `${currentRef.current.y}px`;
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -86,7 +48,6 @@ export default function Auth() {
     animate();
 
     return () => {
-      window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", handleMouseMove);
       cancelAnimationFrame(rafRef.current);
     };
@@ -117,53 +78,29 @@ export default function Auth() {
 
   return (
     <div className="auth-root">
-      <canvas ref={canvasRef} className="auth-canvas" />
+      <div ref={bgRef} className="auth-bg" />
+      <div ref={glowRef} className="mouse-glow" />
 
       <div className="auth-card">
         <div className="auth-logo-wrap">
-          <img
-            src="https://www.pandamenu.com.br/imagemmenu.png"
-            alt="Panda Menu"
-            className="auth-logo-img"
-          />
+          <img src="https://www.pandamenu.com.br/imagemmenu.png" alt="Panda Menu" className="auth-logo-img" />
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="field">
             <label>Email</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Digite seu email"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
+            <input type="email" name="email" placeholder="Digite seu email" value={form.email} onChange={handleChange} required />
           </div>
 
           <div className="field">
             <label>Senha</label>
             <div className="password-wrap">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="senha"
-                placeholder="Digite sua senha"
-                value={form.senha}
-                onChange={handleChange}
-                required
-              />
+              <input type={showPassword ? "text" : "password"} name="senha" placeholder="Digite sua senha" value={form.senha} onChange={handleChange} required />
               <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
                 {showPassword ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                    <line x1="1" y1="1" x2="23" y2="23"/>
-                  </svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                 ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 )}
               </button>
             </div>
@@ -190,10 +127,7 @@ export default function Auth() {
             WhatsApp: 41 9 9884-3669
           </a>
           <a href="mailto:suporte@pandamenu.com">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-              <polyline points="22,6 12,13 2,6"/>
-            </svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             suporte@pandamenu.com
           </a>
         </div>
@@ -201,7 +135,6 @@ export default function Auth() {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
-
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         .auth-root {
@@ -215,55 +148,48 @@ export default function Auth() {
           font-family: 'DM Sans', sans-serif;
         }
 
-        .auth-canvas {
+        .auth-bg {
           position: fixed;
           inset: 0;
           z-index: 0;
+          background: linear-gradient(120deg, #f9007a 0%, #ff6eb4 45%, #ffb3d9 100%);
+        }
+
+        .mouse-glow {
+          position: fixed;
+          z-index: 1;
+          width: 350px;
+          height: 350px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+          transform: translate(-50%, -50%);
           pointer-events: none;
         }
 
         .auth-card {
           position: relative;
-          z-index: 1;
+          z-index: 2;
           background: #ffffff;
           border-radius: 16px;
           padding: 2.5rem 2.2rem 2rem;
           width: 100%;
           max-width: 440px;
-          box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+          box-shadow: 0 8px 40px rgba(0,0,0,0.12);
           animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
           margin-bottom: 3rem;
         }
 
         @keyframes slideUp {
-          from { opacity: 0; transform: translateY(30px); }
+          from { opacity: 0; transform: translateY(24px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
-        .auth-logo-wrap {
-          display: flex;
-          justify-content: center;
-          margin-bottom: 1.8rem;
-        }
+        .auth-logo-wrap { display: flex; justify-content: center; margin-bottom: 1.8rem; }
+        .auth-logo-img { height: 80px; object-fit: contain; }
 
-        .auth-logo-img {
-          height: 80px;
-          object-fit: contain;
-        }
-
-        .auth-form {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-
+        .auth-form { display: flex; flex-direction: column; gap: 1rem; }
         .field { display: flex; flex-direction: column; gap: 0.35rem; }
-
-        .field label {
-          font-size: 0.88rem;
-          font-weight: 500;
-          color: #374151;
-        }
+        .field label { font-size: 0.88rem; font-weight: 500; color: #374151; }
 
         .field input {
           padding: 0.72rem 1rem;
@@ -277,64 +203,38 @@ export default function Auth() {
           transition: border-color 0.2s, box-shadow 0.2s;
           width: 100%;
         }
-
-        .field input:focus {
-          border-color: #ff007a;
-          box-shadow: 0 0 0 3px rgba(255, 0, 122, 0.1);
-        }
-
+        .field input:focus { border-color: #f9007a; box-shadow: 0 0 0 3px rgba(249,0,122,0.08); }
         .field input::placeholder { color: #9ca3af; }
 
         .password-wrap { position: relative; }
         .password-wrap input { padding-right: 2.8rem; }
 
         .eye-btn {
-          position: absolute;
-          right: 0.75rem;
-          top: 50%;
+          position: absolute; right: 0.75rem; top: 50%;
           transform: translateY(-50%);
-          background: none;
-          border: none;
-          cursor: pointer;
-          color: #9ca3af;
-          display: flex;
-          align-items: center;
-          padding: 0;
+          background: none; border: none; cursor: pointer;
+          color: #9ca3af; display: flex; align-items: center; padding: 0;
         }
-        .eye-btn:hover { color: #ff007a; }
+        .eye-btn:hover { color: #f9007a; }
 
         .keep-connected { display: flex; align-items: center; gap: 0.5rem; }
-        .keep-connected input[type="checkbox"] {
-          accent-color: #ff007a;
-          width: 16px; height: 16px;
-          cursor: pointer;
-        }
+        .keep-connected input[type="checkbox"] { accent-color: #f9007a; width: 16px; height: 16px; cursor: pointer; }
         .keep-connected label { font-size: 0.88rem; color: #374151; cursor: pointer; }
 
         .auth-error {
-          background: #fff1f2;
-          border: 1px solid #fecdd3;
-          color: #be123c;
-          border-radius: 8px;
-          padding: 0.6rem 0.9rem;
-          font-size: 0.85rem;
+          background: #fff1f2; border: 1px solid #fecdd3;
+          color: #be123c; border-radius: 8px;
+          padding: 0.6rem 0.9rem; font-size: 0.85rem;
         }
 
         .auth-btn {
           padding: 0.85rem;
-          background: linear-gradient(135deg, #ff007a, #e0006e);
-          color: white;
-          border: none;
-          border-radius: 8px;
+          background: linear-gradient(135deg, #f9007a, #d4006a);
+          color: white; border: none; border-radius: 8px;
           font-family: 'DM Sans', sans-serif;
-          font-size: 1rem;
-          font-weight: 600;
-          cursor: pointer;
+          font-size: 1rem; font-weight: 600; cursor: pointer;
           transition: opacity 0.2s, transform 0.15s;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 48px;
+          display: flex; align-items: center; justify-content: center; min-height: 48px;
         }
         .auth-btn:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
         .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; }
@@ -342,47 +242,20 @@ export default function Auth() {
         .spinner {
           width: 20px; height: 20px;
           border: 2px solid rgba(255,255,255,0.4);
-          border-top-color: white;
-          border-radius: 50%;
+          border-top-color: white; border-radius: 50%;
           animation: spin 0.7s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .auth-footer {
-          position: fixed;
-          bottom: 0; left: 0; right: 0;
-          z-index: 2;
-          background: rgba(180, 0, 90, 0.25);
+          position: fixed; bottom: 0; left: 0; right: 0; z-index: 3;
+          background: rgba(180, 0, 90, 0.2);
           backdrop-filter: blur(12px);
-          padding: 0.9rem 1rem;
-          text-align: center;
+          padding: 0.9rem 1rem; text-align: center;
         }
-
-        .footer-title {
-          display: block;
-          font-weight: 600;
-          font-size: 0.9rem;
-          color: #fff;
-          margin-bottom: 0.35rem;
-        }
-
-        .footer-links {
-          display: flex;
-          justify-content: center;
-          gap: 1.5rem;
-          flex-wrap: wrap;
-        }
-
-        .footer-links a {
-          display: flex;
-          align-items: center;
-          gap: 0.35rem;
-          color: #fff;
-          text-decoration: none;
-          font-size: 0.85rem;
-          font-weight: 500;
-          transition: opacity 0.2s;
-        }
+        .footer-title { display: block; font-weight: 600; font-size: 0.9rem; color: #fff; margin-bottom: 0.35rem; }
+        .footer-links { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; }
+        .footer-links a { display: flex; align-items: center; gap: 0.35rem; color: #fff; text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: opacity 0.2s; }
         .footer-links a:hover { opacity: 0.8; }
 
         @media (max-width: 480px) {
