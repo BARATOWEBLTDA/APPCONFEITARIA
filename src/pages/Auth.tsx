@@ -1,21 +1,121 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
-type Mode = "login" | "register";
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  emoji: string;
+  size: number;
+  rotation: number;
+  rotationSpeed: number;
+}
+
+const EMOJIS = ["🍰", "🧁", "🍓", "🍩", "🎂", "🍫", "🌸", "🍬", "🧇", "🍭"];
 
 export default function Auth() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>("login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [keepConnected, setKeepConnected] = useState(false);
+  const [form, setForm] = useState({ email: "", senha: "" });
 
-  const [form, setForm] = useState({
-    nome: "",
-    nome_loja: "",
-    email: "",
-    senha: "",
-  });
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const particlesRef = useRef<Particle[]>([]);
+  const mouseRef = useRef({ x: -1000, y: -1000 });
+  const animFrameRef = useRef<number>(0);
+
+  // Inicializa partículas
+  useEffect(() => {
+    const count = 28;
+    particlesRef.current = Array.from({ length: count }, (_, i) => ({
+      id: i,
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      vx: (Math.random() - 0.5) * 0.6,
+      vy: (Math.random() - 0.5) * 0.6,
+      emoji: EMOJIS[Math.floor(Math.random() * EMOJIS.length)],
+      size: 20 + Math.random() * 28,
+      rotation: Math.random() * 360,
+      rotationSpeed: (Math.random() - 0.5) * 1.2,
+    }));
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const animate = () => {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particlesRef.current.forEach((p) => {
+        const dx = mouseRef.current.x - p.x;
+        const dy = mouseRef.current.y - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const repelRadius = 130;
+
+        if (dist < repelRadius && dist > 0) {
+          const force = (repelRadius - dist) / repelRadius;
+          p.vx -= (dx / dist) * force * 1.8;
+          p.vy -= (dy / dist) * force * 1.8;
+        }
+
+        // Fricção
+        p.vx *= 0.97;
+        p.vy *= 0.97;
+
+        // Velocidade mínima (flutuação suave)
+        if (Math.abs(p.vx) < 0.2) p.vx += (Math.random() - 0.5) * 0.1;
+        if (Math.abs(p.vy) < 0.2) p.vy += (Math.random() - 0.5) * 0.1;
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rotation += p.rotationSpeed;
+
+        // Wrap nas bordas
+        if (p.x < -50) p.x = canvas.width + 50;
+        if (p.x > canvas.width + 50) p.x = -50;
+        if (p.y < -50) p.y = canvas.height + 50;
+        if (p.y > canvas.height + 50) p.y = -50;
+
+        // Desenha emoji
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.font = `${p.size}px serif`;
+        ctx.globalAlpha = 0.75;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(p.emoji, 0, 0);
+        ctx.restore();
+      });
+
+      animFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      window.removeEventListener("resize", resize);
+      cancelAnimationFrame(animFrameRef.current);
+    };
+  }, []);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    mouseRef.current = { x: e.clientX, y: e.clientY };
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -26,112 +126,47 @@ export default function Auth() {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
-      if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: form.email,
-          password: form.senha,
-        });
-        if (error) throw error;
-        navigate("/dashboard");
-      } else {
-        const { data, error } = await supabase.auth.signUp({
-          email: form.email,
-          password: form.senha,
-          options: {
-            data: {
-              nome: form.nome,
-              nome_loja: form.nome_loja,
-            },
-          },
-        });
-        if (error) throw error;
-        if (data.user) navigate("/dashboard");
-      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.senha,
+      });
+      if (error) throw error;
+      navigate("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Ocorreu um erro. Tente novamente.");
+      setError("E-mail ou senha incorretos. Tente novamente.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-root">
-      {/* Fundo decorativo */}
-      <div className="auth-bg">
-        <div className="blob blob-1" />
-        <div className="blob blob-2" />
-        <div className="blob blob-3" />
-        <div className="dots-pattern" />
-      </div>
+    <div className="auth-root" onMouseMove={handleMouseMove}>
+      {/* Fundo gradiente */}
+      <div className="auth-bg-gradient" />
 
-      {/* Card central */}
+      {/* Canvas de partículas */}
+      <canvas ref={canvasRef} className="auth-canvas" />
+
+      {/* Card */}
       <div className="auth-card">
-        {/* Logo / Header */}
-        <div className="auth-header">
-          <div className="auth-logo">🐼</div>
-          <h1 className="auth-title">Panda Menu</h1>
-          <p className="auth-subtitle">
-            {mode === "login"
-              ? "Bem-vinda de volta! 🎂"
-              : "Crie sua conta grátis 🎉"}
-          </p>
-        </div>
-
-        {/* Toggle login / cadastro */}
-        <div className="auth-toggle">
-          <button
-            className={`toggle-btn ${mode === "login" ? "active" : ""}`}
-            onClick={() => { setMode("login"); setError(""); }}
-            type="button"
-          >
-            Entrar
-          </button>
-          <button
-            className={`toggle-btn ${mode === "register" ? "active" : ""}`}
-            onClick={() => { setMode("register"); setError(""); }}
-            type="button"
-          >
-            Cadastrar
-          </button>
+        {/* Logo */}
+        <div className="auth-logo-wrap">
+          <img
+            src="https://www.pandamenu.com.br/imagemmenu.png"
+            alt="Panda Menu"
+            className="auth-logo-img"
+          />
         </div>
 
         {/* Formulário */}
         <form onSubmit={handleSubmit} className="auth-form">
-          {mode === "register" && (
-            <>
-              <div className="field">
-                <label>Seu nome</label>
-                <input
-                  type="text"
-                  name="nome"
-                  placeholder="Ex: Ana Paula"
-                  value={form.nome}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="field">
-                <label>Nome da sua confeitaria</label>
-                <input
-                  type="text"
-                  name="nome_loja"
-                  placeholder="Ex: Doces da Ana"
-                  value={form.nome_loja}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </>
-          )}
-
           <div className="field">
-            <label>E-mail</label>
+            <label>Email</label>
             <input
               type="email"
               name="email"
-              placeholder="seu@email.com"
+              placeholder="Digite seu email"
               value={form.email}
               onChange={handleChange}
               required
@@ -140,232 +175,236 @@ export default function Auth() {
 
           <div className="field">
             <label>Senha</label>
+            <div className="password-wrap">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="senha"
+                placeholder="Digite sua senha"
+                value={form.senha}
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                className="eye-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="keep-connected">
             <input
-              type="password"
-              name="senha"
-              placeholder="••••••••"
-              value={form.senha}
-              onChange={handleChange}
-              required
-              minLength={6}
+              type="checkbox"
+              id="keep"
+              checked={keepConnected}
+              onChange={(e) => setKeepConnected(e.target.checked)}
             />
+            <label htmlFor="keep">Manter conectado</label>
           </div>
 
           {error && <p className="auth-error">{error}</p>}
 
           <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? (
-              <span className="spinner" />
-            ) : mode === "login" ? (
-              "Entrar na minha conta"
-            ) : (
-              "Criar minha conta"
-            )}
+            {loading ? <span className="spinner" /> : "Entrar"}
           </button>
         </form>
+      </div>
 
-        {mode === "login" && (
-          <p className="auth-footer">
-            Ainda não tem conta?{" "}
-            <button onClick={() => setMode("register")} className="link-btn">
-              Cadastre-se grátis
-            </button>
-          </p>
-        )}
+      {/* Barra inferior */}
+      <div className="auth-footer">
+        <span className="footer-title">Precisa de Ajuda?</span>
+        <div className="footer-links">
+          <a href="https://wa.me/5541998843669" target="_blank" rel="noreferrer">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WhatsApp: 41 9 9884-3669
+          </a>
+          <a href="mailto:suporte@pandamenu.com">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            suporte@pandamenu.com
+          </a>
+        </div>
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap');
 
         .auth-root {
           min-height: 100vh;
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
           position: relative;
           overflow: hidden;
-          background: #fff0f5;
           font-family: 'DM Sans', sans-serif;
-          padding: 1rem;
+          cursor: default;
         }
 
-        /* Blobs decorativos */
-        .auth-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
-
-        .blob {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(60px);
-          opacity: 0.35;
-        }
-        .blob-1 {
-          width: 500px; height: 500px;
-          background: radial-gradient(circle, #f9a8d4, #fbcfe8);
-          top: -150px; left: -100px;
-          animation: float1 8s ease-in-out infinite;
-        }
-        .blob-2 {
-          width: 400px; height: 400px;
-          background: radial-gradient(circle, #fda4af, #fecdd3);
-          bottom: -100px; right: -80px;
-          animation: float2 10s ease-in-out infinite;
-        }
-        .blob-3 {
-          width: 300px; height: 300px;
-          background: radial-gradient(circle, #e879a0, #f9a8d4);
-          top: 40%; left: 60%;
-          animation: float1 12s ease-in-out infinite reverse;
-        }
-
-        .dots-pattern {
-          position: absolute;
+        .auth-bg-gradient {
+          position: fixed;
           inset: 0;
-          background-image: radial-gradient(circle, #f9a8d4 1px, transparent 1px);
-          background-size: 28px 28px;
-          opacity: 0.2;
+          background: linear-gradient(135deg, #f9007a 0%, #ff6eb4 40%, #ff9fd2 70%, #ffcce8 100%);
+          z-index: 0;
         }
 
-        @keyframes float1 {
-          0%, 100% { transform: translateY(0) scale(1); }
-          50% { transform: translateY(-30px) scale(1.05); }
-        }
-        @keyframes float2 {
-          0%, 100% { transform: translateY(0) scale(1); }
-          50% { transform: translateY(20px) scale(0.97); }
+        .auth-canvas {
+          position: fixed;
+          inset: 0;
+          z-index: 1;
+          pointer-events: none;
         }
 
-        /* Card */
         .auth-card {
           position: relative;
-          z-index: 1;
-          background: rgba(255, 255, 255, 0.85);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(249, 168, 212, 0.4);
-          border-radius: 28px;
-          padding: 2.5rem 2rem;
+          z-index: 2;
+          background: #ffffff;
+          border-radius: 16px;
+          padding: 2.5rem 2.2rem 2rem;
           width: 100%;
-          max-width: 420px;
-          box-shadow:
-            0 4px 24px rgba(236, 72, 153, 0.1),
-            0 1px 4px rgba(236, 72, 153, 0.08);
+          max-width: 440px;
+          box-shadow: 0 8px 40px rgba(0,0,0,0.15);
           animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
         @keyframes slideUp {
-          from { opacity: 0; transform: translateY(24px); }
+          from { opacity: 0; transform: translateY(30px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Header */
-        .auth-header { text-align: center; margin-bottom: 1.5rem; }
-        .auth-logo { font-size: 2.8rem; margin-bottom: 0.25rem; }
-        .auth-title {
-          font-family: 'Playfair Display', serif;
-          font-size: 2rem;
-          font-weight: 700;
-          color: #be185d;
-          margin: 0;
-          letter-spacing: -0.5px;
-        }
-        .auth-subtitle {
-          color: #9d174d;
-          font-size: 0.95rem;
-          margin: 0.25rem 0 0;
-          font-weight: 300;
-        }
-
-        /* Toggle */
-        .auth-toggle {
+        .auth-logo-wrap {
           display: flex;
-          background: #fce7f3;
-          border-radius: 12px;
-          padding: 4px;
-          margin-bottom: 1.5rem;
-          gap: 4px;
-        }
-        .toggle-btn {
-          flex: 1;
-          padding: 0.5rem;
-          border: none;
-          border-radius: 9px;
-          background: transparent;
-          color: #9d174d;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 0.9rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-        }
-        .toggle-btn.active {
-          background: white;
-          color: #be185d;
-          box-shadow: 0 1px 6px rgba(190, 24, 93, 0.15);
+          justify-content: center;
+          margin-bottom: 1.8rem;
         }
 
-        /* Form */
-        .auth-form { display: flex; flex-direction: column; gap: 1rem; }
+        .auth-logo-img {
+          height: 80px;
+          object-fit: contain;
+        }
 
-        .field { display: flex; flex-direction: column; gap: 0.35rem; }
+        .auth-form {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .field {
+          display: flex;
+          flex-direction: column;
+          gap: 0.35rem;
+        }
+
         .field label {
-          font-size: 0.82rem;
+          font-size: 0.88rem;
           font-weight: 500;
-          color: #9d174d;
-          letter-spacing: 0.3px;
+          color: #374151;
         }
+
         .field input {
-          padding: 0.7rem 1rem;
-          border: 1.5px solid #fbcfe8;
-          border-radius: 12px;
+          padding: 0.72rem 1rem;
+          border: 1.5px solid #e5e7eb;
+          border-radius: 8px;
           font-family: 'DM Sans', sans-serif;
           font-size: 0.95rem;
           color: #1f2937;
           background: white;
-          transition: border-color 0.2s, box-shadow 0.2s;
           outline: none;
+          transition: border-color 0.2s, box-shadow 0.2s;
+          width: 100%;
         }
-        .field input:focus {
-          border-color: #ec4899;
-          box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
-        }
-        .field input::placeholder { color: #d1d5db; }
 
-        /* Error */
+        .field input:focus {
+          border-color: #f9007a;
+          box-shadow: 0 0 0 3px rgba(249, 0, 122, 0.1);
+        }
+
+        .field input::placeholder { color: #9ca3af; }
+
+        .password-wrap {
+          position: relative;
+        }
+
+        .password-wrap input {
+          padding-right: 2.8rem;
+        }
+
+        .eye-btn {
+          position: absolute;
+          right: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #9ca3af;
+          display: flex;
+          align-items: center;
+          padding: 0;
+        }
+
+        .eye-btn:hover { color: #f9007a; }
+
+        .keep-connected {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .keep-connected input[type="checkbox"] {
+          accent-color: #f9007a;
+          width: 16px;
+          height: 16px;
+          cursor: pointer;
+        }
+
+        .keep-connected label {
+          font-size: 0.88rem;
+          color: #374151;
+          cursor: pointer;
+        }
+
         .auth-error {
           background: #fff1f2;
           border: 1px solid #fecdd3;
           color: #be123c;
-          border-radius: 10px;
+          border-radius: 8px;
           padding: 0.6rem 0.9rem;
           font-size: 0.85rem;
           margin: 0;
         }
 
-        /* Botão principal */
         .auth-btn {
-          margin-top: 0.25rem;
           padding: 0.85rem;
-          background: linear-gradient(135deg, #ec4899, #be185d);
+          background: linear-gradient(135deg, #f9007a, #e0006e);
           color: white;
           border: none;
-          border-radius: 14px;
+          border-radius: 8px;
           font-family: 'DM Sans', sans-serif;
           font-size: 1rem;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
           transition: opacity 0.2s, transform 0.15s;
           display: flex;
           align-items: center;
           justify-content: center;
           min-height: 48px;
-          box-shadow: 0 4px 14px rgba(236, 72, 153, 0.35);
+          letter-spacing: 0.3px;
         }
+
         .auth-btn:hover:not(:disabled) {
           opacity: 0.92;
           transform: translateY(-1px);
         }
+
         .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
-        /* Spinner */
         .spinner {
           width: 20px; height: 20px;
           border: 2px solid rgba(255,255,255,0.4);
@@ -373,26 +412,56 @@ export default function Auth() {
           border-radius: 50%;
           animation: spin 0.7s linear infinite;
         }
+
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* Footer */
         .auth-footer {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 3;
+          background: rgba(249, 0, 122, 0.15);
+          backdrop-filter: blur(10px);
+          padding: 0.9rem 1rem;
           text-align: center;
-          margin-top: 1.25rem;
-          font-size: 0.88rem;
-          color: #9ca3af;
         }
-        .link-btn {
-          background: none;
-          border: none;
-          color: #ec4899;
+
+        .footer-title {
+          display: block;
+          font-weight: 600;
+          font-size: 0.9rem;
+          color: #fff;
+          margin-bottom: 0.35rem;
+        }
+
+        .footer-links {
+          display: flex;
+          justify-content: center;
+          gap: 1.5rem;
+          flex-wrap: wrap;
+        }
+
+        .footer-links a {
+          display: flex;
+          align-items: center;
+          gap: 0.35rem;
+          color: #fff;
+          text-decoration: none;
+          font-size: 0.85rem;
           font-weight: 500;
-          cursor: pointer;
-          font-size: inherit;
-          font-family: inherit;
-          padding: 0;
+          transition: opacity 0.2s;
         }
-        .link-btn:hover { text-decoration: underline; }
+
+        .footer-links a:hover { opacity: 0.8; }
+
+        @media (max-width: 480px) {
+          .auth-card {
+            margin: 1rem;
+            padding: 2rem 1.5rem;
+          }
+        }
       `}</style>
     </div>
   );
