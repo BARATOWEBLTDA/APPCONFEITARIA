@@ -288,7 +288,7 @@ export default function Auth() {
         .footer-links a { display: flex; align-items: center; gap: 0.35rem; color: #fff; text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: opacity 0.2s; }
         .footer-links a:hover { opacity: 0.8; }
 
-        @media (max-width: 480px) {
+
           .auth-card { margin: 1rem; padding: 2rem 1.5rem; }
           .footer-links { gap: 1rem; }
         }
