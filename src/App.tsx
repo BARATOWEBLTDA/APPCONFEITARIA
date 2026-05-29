@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Auth from "@/pages/Auth";
+import EsqueciSenha from "@/pages/EsqueciSenha";
 import Layout from "@/components/Layout";
 
 // Páginas temporárias
@@ -38,6 +39,7 @@ export default function App() {
         {/* Pública */}
         <Route path="/login" element={<Auth />} />
         <Route path="/cardapio/:slug" element={<CardapioPublico />} />
+        <Route path="/esqueci-senha" element={<EsqueciSenha />} />
 
         {/* Área privada com layout */}
         <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
