@@ -4,17 +4,19 @@ import { supabase } from "@/lib/supabase";
 import Auth from "@/pages/Auth";
 import EsqueciSenha from "@/pages/EsqueciSenha";
 import Layout from "@/components/Layout";
-
-// Páginas temporárias
-const Dashboard = () => <div style={{padding:"2rem"}}><h1>Dashboard</h1></div>;
-const Produtos = () => <div style={{padding:"2rem"}}><h1>Produtos</h1></div>;
-const Pedidos = () => <div style={{padding:"2rem"}}><h1>Pedidos</h1></div>;
-const Clientes = () => <div style={{padding:"2rem"}}><h1>Clientes</h1></div>;
-const Financeiro = () => <div style={{padding:"2rem"}}><h1>Financeiro</h1></div>;
-const Promocoes = () => <div style={{padding:"2rem"}}><h1>Promoções</h1></div>;
-const CardapioConfig = () => <div style={{padding:"2rem"}}><h1>Cardápio</h1></div>;
-import Configuracoes from "@/pages/Configuracoes";
 import Dashboard from "@/pages/Dashboard";
+import Configuracoes from "@/pages/Configuracoes";
+
+// Páginas rascunho
+const Produtos = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🎂 Produtos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+const Pedidos = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>📋 Pedidos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+const Clientes = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>👥 Clientes</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+const Financeiro = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>💰 Financeiro</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+const Promocoes = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🏷️ Promoções</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+const CardapioConfig = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🛍️ Cardápio / Loja</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+const Estoque = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>📦 Estoque</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+const Receitas = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>📄 Receitas</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+const Arquivos = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🗂️ Arquivos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
 const CardapioPublico = () => <div style={{padding:"2rem"}}><h1>Cardápio Público</h1></div>;
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -37,12 +39,10 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Pública */}
         <Route path="/login" element={<Auth />} />
         <Route path="/cardapio/:slug" element={<CardapioPublico />} />
         <Route path="/esqueci-senha" element={<EsqueciSenha />} />
 
-        {/* Área privada com layout */}
         <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/produtos" element={<Produtos />} />
