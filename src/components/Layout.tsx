@@ -356,47 +356,48 @@ export default function Layout() {
             align-items: center;
             justify-content: center;
             flex: 1;
-            gap: 0.2rem;
+            gap: 0.15rem;
             font-size: 0.68rem;
             font-weight: 500;
             color: #6b7280;
             text-decoration: none;
-            border-radius: 12px;
-            padding: 0.4rem 0.25rem;
-            transition: color 0.2s, background 0.2s;
+            padding: 0.3rem 0.25rem;
+            transition: color 0.25s, transform 0.25s;
             background: none;
             border: none;
             cursor: pointer;
             font-family: 'DM Sans', sans-serif;
+            position: relative;
           }
 
           .bottom-icon {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 42px; height: 42px;
-            border-radius: 14px;
+            width: 46px; height: 46px;
+            border-radius: 50%;
             background: rgba(255,255,255,0.05);
-            transition: background 0.2s;
-            margin-bottom: 0.1rem;
-          }
-
-          .bottom-item.active .bottom-icon {
-            background: linear-gradient(135deg, #f9007a, #d4006a);
-            box-shadow: 0 4px 12px rgba(249,0,122,0.4);
+            transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
           }
 
           .bottom-item.active {
             color: #ffffff;
             font-weight: 600;
+            transform: translateY(-10px);
+          }
+
+          .bottom-item.active .bottom-icon {
+            background: linear-gradient(135deg, #f9007a, #d4006a);
+            box-shadow: 0 6px 20px rgba(249,0,122,0.5);
+            transform: scale(1.1);
           }
 
           .bottom-item.active svg { stroke: #ffffff; }
 
-          .bottom-item:not(.active):hover .bottom-icon {
-            background: rgba(249,0,122,0.15);
-          }
           .bottom-item:not(.active):hover { color: #f9007a; }
+          .bottom-item:not(.active):hover .bottom-icon {
+            background: rgba(249,0,122,0.12);
+          }
 
           /* Gestão Drawer */
           .gestao-overlay {
