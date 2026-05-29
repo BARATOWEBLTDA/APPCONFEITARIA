@@ -382,7 +382,7 @@ export default function Clientes() {
           position: relative;
         }
 
-        .cli-card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+        .cli-card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.12rem; }
 
         .cli-card-row { display: flex; align-items: baseline; gap: 0.35rem; flex-wrap: wrap; }
         .cli-card-label { font-size: 0.78rem; font-weight: 800; color: #374151; white-space: nowrap; letter-spacing: -0.1px; }
