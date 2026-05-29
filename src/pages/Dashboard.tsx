@@ -14,6 +14,25 @@ interface DashboardData {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+      setShowInstallBanner(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === "accepted") setShowInstallBanner(false);
+  };
   const [data, setData] = useState<DashboardData>({
     pedidosConcluidos: 0,
     pedidosPendentes: 0,
@@ -140,6 +159,26 @@ export default function Dashboard() {
           <p className="dash-subtitle">Aqui está o resumo do seu negócio</p>
         </div>
       </div>
+
+      {/* Banner instalar app */}
+      {showInstallBanner && (
+        <div className="install-banner">
+          <div className="install-badge">Recomendado</div>
+          <div className="install-content">
+            <div className="install-icon">
+              <img src="https://www.pandamenu.com.br/imagemmenu.png" alt="Panda Menu" />
+            </div>
+            <div className="install-text">
+              <h3>INSTALE NOSSO APP</h3>
+              <p>Todas as funcionalidades na palma da sua mão agora!</p>
+            </div>
+          </div>
+          <button className="install-btn" onClick={handleInstall}>
+            Instalar
+          </button>
+          <button className="install-close" onClick={() => setShowInstallBanner(false)}>✕</button>
+        </div>
+      )}
 
       {/* Cards principais */}
       <div className="dash-cards">
@@ -364,6 +403,96 @@ export default function Dashboard() {
           animation: spin 0.7s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Install Banner */
+        .install-banner {
+          position: relative;
+          background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+          border-radius: 18px;
+          padding: 1.5rem;
+          overflow: hidden;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .install-badge {
+          position: absolute;
+          top: 0; right: 0;
+          background: linear-gradient(135deg, #f9007a, #ff6eb4);
+          color: white;
+          font-size: 0.72rem;
+          font-weight: 700;
+          padding: 0.4rem 1.2rem;
+          border-radius: 0 18px 0 18px;
+          letter-spacing: 0.5px;
+        }
+
+        .install-content {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          margin-bottom: 1.25rem;
+        }
+
+        .install-icon {
+          width: 64px; height: 64px;
+          background: white;
+          border-radius: 16px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          padding: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .install-icon img {
+          width: 100%; height: 100%;
+          object-fit: contain;
+        }
+
+        .install-text h3 {
+          font-size: 1.2rem;
+          font-weight: 800;
+          color: #ffffff;
+          letter-spacing: 0.5px;
+          margin-bottom: 0.3rem;
+        }
+
+        .install-text p {
+          font-size: 0.85rem;
+          color: rgba(255,255,255,0.7);
+          line-height: 1.4;
+        }
+
+        .install-btn {
+          width: 100%;
+          padding: 0.9rem;
+          background: linear-gradient(135deg, #f9c74f, #f8961e);
+          color: #1a1a2e;
+          border: none;
+          border-radius: 12px;
+          font-family: 'DM Sans', sans-serif;
+          font-size: 1rem;
+          font-weight: 800;
+          cursor: pointer;
+          letter-spacing: 0.5px;
+          transition: opacity 0.2s, transform 0.15s;
+          box-shadow: 0 4px 16px rgba(248,150,30,0.4);
+        }
+
+        .install-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+
+        .install-close {
+          position: absolute;
+          top: 0.6rem; left: 0.75rem;
+          background: rgba(255,255,255,0.1);
+          border: none; color: white;
+          width: 24px; height: 24px;
+          border-radius: 50%;
+          font-size: 0.7rem;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          transition: background 0.2s;
+        }
+        .install-close:hover { background: rgba(255,255,255,0.2); }
 
         @media (max-width: 768px) {
           .dash-cards { grid-template-columns: repeat(2, 1fr); }
