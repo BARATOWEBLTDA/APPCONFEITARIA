@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/lib/supabase";
 
@@ -19,6 +20,15 @@ const menuItems = [
 export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatDate = (d: Date) => d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
+  const formatTime = (d: Date) => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -45,8 +55,9 @@ export default function Layout() {
             </div>
           </div>
           <div className="sidebar-profile-info">
-            <span className="sidebar-name">{profile?.nome || "Minha Conta"}</span>
-            <span className="sidebar-loja">{profile?.nome_loja || "Minha Confeitaria"}</span>
+            <span className="sidebar-ola">Olá, {profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"} 👋</span>
+            <span className="sidebar-datetime">{formatDate(now)}</span>
+            <span className="sidebar-datetime">{formatTime(now)}</span>
           </div>
         </div>
 
@@ -119,7 +130,7 @@ export default function Layout() {
           flex-direction: column;
           align-items: center;
           gap: 0.75rem;
-          margin-top: 1rem;
+          margin-top: 2rem;
           margin-bottom: 1.5rem;
           padding-bottom: 1.25rem;
           border-bottom: 1px solid rgba(249,0,122,0.2);
@@ -177,25 +188,20 @@ export default function Layout() {
           width: 100%;
         }
 
-        .sidebar-name {
-          font-size: 0.9rem;
+        .sidebar-ola {
+          font-size: 0.92rem;
           font-weight: 600;
           color: #ffffff;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          width: 100%;
           text-align: center;
+          width: 100%;
         }
 
-        .sidebar-loja {
+        .sidebar-datetime {
           font-size: 0.75rem;
           color: #9ca3af;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          width: 100%;
           text-align: center;
+          width: 100%;
+          letter-spacing: 0.3px;
         }
 
         .sidebar-nav {
@@ -323,4 +329,3 @@ export default function Layout() {
     </div>
   );
 }
- 
