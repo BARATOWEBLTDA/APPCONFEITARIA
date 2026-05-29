@@ -56,9 +56,8 @@ export default function Layout() {
             </div>
           </div>
           <div className="sidebar-profile-info">
-            <span className="sidebar-ola">Olá, {profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"} 👋</span>
-            <span className="sidebar-datetime">{formatDate(now)}</span>
-            <span className="sidebar-datetime">{formatTime(now)}</span>
+            <span className="sidebar-ola">Olá, {profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"}</span>
+            <span className="sidebar-datetime">{formatDate(now)} · {formatTime(now)}</span>
           </div>
         </div>
 
@@ -244,11 +243,12 @@ export default function Layout() {
         }
 
         .sidebar-datetime {
-          font-size: 0.75rem;
+          font-size: 0.72rem;
           color: #9ca3af;
           text-align: center;
           width: 100%;
           letter-spacing: 0.3px;
+          white-space: nowrap;
         }
 
         .sidebar-nav {
