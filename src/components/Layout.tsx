@@ -344,9 +344,9 @@ export default function Layout() {
             z-index: 20;
             background: #181419;
             border-top: 1px solid rgba(249,0,122,0.15);
-            padding: 0.6rem 0.5rem 0.8rem;
+            padding: 0.4rem 0.5rem 1rem;
             justify-content: space-around;
-            align-items: center;
+            align-items: flex-end;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
           }
 
@@ -356,13 +356,13 @@ export default function Layout() {
             align-items: center;
             justify-content: center;
             flex: 1;
-            gap: 0.15rem;
+            gap: 0.2rem;
             font-size: 0.68rem;
             font-weight: 500;
             color: #6b7280;
             text-decoration: none;
-            padding: 0.3rem 0.25rem;
-            transition: color 0.25s, transform 0.25s;
+            padding: 0.5rem 0.25rem 0.2rem;
+            transition: color 0.3s;
             background: none;
             border: none;
             cursor: pointer;
@@ -374,30 +374,48 @@ export default function Layout() {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 46px; height: 46px;
+            width: 48px; height: 48px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.05);
-            transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
+            background: transparent;
+            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            z-index: 1;
           }
 
+          /* Item ativo: bolha sobe para fora da barra */
           .bottom-item.active {
             color: #ffffff;
             font-weight: 600;
-            transform: translateY(-10px);
           }
 
           .bottom-item.active .bottom-icon {
-            background: linear-gradient(135deg, #f9007a, #d4006a);
-            box-shadow: 0 6px 20px rgba(249,0,122,0.5);
-            transform: scale(1.1);
+            background: #181419;
+            border: 3px solid #181419;
+            box-shadow:
+              0 0 0 3px #f9007a,
+              0 -8px 24px rgba(249,0,122,0.4);
+            transform: translateY(-22px);
           }
 
-          .bottom-item.active svg { stroke: #ffffff; }
+          .bottom-item.active svg { stroke: #f9007a; }
 
+          /* Curva na barra atrás do ícone ativo */
+          .bottom-item.active::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 64px;
+            height: 32px;
+            background: #181419;
+            border-radius: 0 0 40px 40px;
+            z-index: 0;
+          }
+
+          .bottom-item:not(.active) svg { stroke: #6b7280; }
           .bottom-item:not(.active):hover { color: #f9007a; }
-          .bottom-item:not(.active):hover .bottom-icon {
-            background: rgba(249,0,122,0.12);
-          }
+          .bottom-item:not(.active):hover svg { stroke: #f9007a; }
 
           /* Gestão Drawer */
           .gestao-overlay {
