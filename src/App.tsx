@@ -10,7 +10,7 @@ import Configuracoes from "@/pages/Configuracoes";
 // Páginas rascunho
 const Produtos = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🎂 Produtos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
 const Pedidos = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>📋 Pedidos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
-const Clientes = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>👥 Clientes</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+import Clientes from "@/pages/Clientes";
 const Financeiro = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>💰 Financeiro</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
 const Promocoes = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🏷️ Promoções</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
 const CardapioConfig = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🛍️ Cardápio / Loja</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
