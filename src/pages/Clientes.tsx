@@ -130,6 +130,16 @@ export default function Clientes() {
     c.whatsapp?.includes(search)
   );
 
+  const formatPhone = (phone?: string) => {
+    if (!phone) return null;
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length === 13) return `+${digits.slice(0,2)} ${digits.slice(2,4)} ${digits.slice(4,5)} ${digits.slice(5,9)}-${digits.slice(9)}`;
+    if (digits.length === 12) return `+${digits.slice(0,2)} ${digits.slice(2,4)} ${digits.slice(4,8)}-${digits.slice(8)}`;
+    if (digits.length === 11) return `${digits.slice(0,2)} ${digits.slice(2,3)} ${digits.slice(3,7)}-${digits.slice(7)}`;
+    if (digits.length === 10) return `${digits.slice(0,2)} ${digits.slice(2,6)}-${digits.slice(6)}`;
+    return phone;
+  };
+
   const getAniversario = (data?: string) => {
     if (!data) return null;
     const d = new Date(data);
@@ -185,7 +195,7 @@ export default function Clientes() {
               <div className="cli-card-info">
                 <div className="cli-card-row"><span className="cli-card-label">Nome:</span> <span className="cli-card-value">{c.nome}</span></div>
                 {(c.whatsapp || c.telefone) && (
-                  <div className="cli-card-row"><span className="cli-card-label">Contato:</span> <span className="cli-card-value">{c.whatsapp || c.telefone}</span></div>
+                  <div className="cli-card-row"><span className="cli-card-label">Contato:</span> <span className="cli-card-value">{formatPhone(c.whatsapp || c.telefone)}</span></div>
                 )}
                 {c.data_nascimento && (
                   <div className="cli-card-row"><span className="cli-card-label">Aniversário:</span> <span className="cli-card-value">{getAniversario(c.data_nascimento)}</span></div>
