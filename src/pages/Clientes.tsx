@@ -183,13 +183,13 @@ export default function Clientes() {
                 )}
               </div>
               <div className="cli-card-info">
-                <div className="cli-card-nome">{c.nome}
-                  <span className={`cli-status ${c.status}`}>{c.status}</span>
-                </div>
-                {c.whatsapp && <div className="cli-card-detail">📱 {c.whatsapp}</div>}
-                {c.telefone && !c.whatsapp && <div className="cli-card-detail">📞 {c.telefone}</div>}
-                {c.data_nascimento && <div className="cli-card-detail">🎂 {getAniversario(c.data_nascimento)}</div>}
-                {c.como_conheceu && <div className="cli-card-detail">✨ {c.como_conheceu}</div>}
+                <div className="cli-card-row"><span className="cli-card-label">Nome:</span> <span className="cli-card-value">{c.nome}</span></div>
+                {(c.whatsapp || c.telefone) && (
+                  <div className="cli-card-row"><span className="cli-card-label">Contato:</span> <span className="cli-card-value">{c.whatsapp || c.telefone}</span></div>
+                )}
+                {c.como_conheceu && (
+                  <div className="cli-card-row"><span className="cli-card-label">Como nos conheceu:</span> <span className="cli-card-value">{c.como_conheceu}</span></div>
+                )}
               </div>
               <div className="cli-card-actions">
                 <button className="cli-action-btn edit" onClick={() => handleEdit(c)}>✏️</button>
@@ -346,24 +346,20 @@ export default function Clientes() {
         .cli-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
 
         .cli-card-avatar {
-          width: 48px; height: 48px; border-radius: 50%;
+          width: 58px; height: 58px; border-radius: 16px;
           background: linear-gradient(135deg, #f9007a, #d4006a);
           display: flex; align-items: center; justify-content: center;
-          color: white; font-weight: 700; font-size: 1.1rem;
+          color: white; font-weight: 700; font-size: 1.3rem;
           overflow: hidden; flex-shrink: 0;
+          box-shadow: 0 4px 10px rgba(249,0,122,0.25);
         }
         .cli-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-        .cli-card-info { flex: 1; min-width: 0; }
-        .cli-card-nome { font-size: 0.95rem; font-weight: 600; color: #1f2937; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem; }
-        .cli-card-detail { font-size: 0.8rem; color: #6b7280; }
+        .cli-card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
 
-        .cli-status {
-          font-size: 0.68rem; font-weight: 600; padding: 0.15rem 0.5rem;
-          border-radius: 20px; text-transform: uppercase; letter-spacing: 0.3px;
-        }
-        .cli-status.ativo { background: #dcfce7; color: #16a34a; }
-        .cli-status.inativo { background: #f3f4f6; color: #9ca3af; }
+        .cli-card-row { display: flex; align-items: baseline; gap: 0.3rem; flex-wrap: wrap; }
+        .cli-card-label { font-size: 0.78rem; font-weight: 600; color: #9ca3af; white-space: nowrap; }
+        .cli-card-value { font-size: 0.88rem; font-weight: 500; color: #1f2937; }
 
         .cli-card-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
         .cli-action-btn {
