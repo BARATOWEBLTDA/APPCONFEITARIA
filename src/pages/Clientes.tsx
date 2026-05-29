@@ -26,8 +26,6 @@ const emptyForm = {
   data_nascimento: "",
   endereco: "",
   como_conheceu: "",
-  preferencias: "",
-  observacoes: "",
   status: "ativo",
   foto_url: "",
 };
@@ -107,8 +105,6 @@ export default function Clientes() {
       data_nascimento: c.data_nascimento || "",
       endereco: c.endereco || "",
       como_conheceu: c.como_conheceu || "",
-      preferencias: c.preferencias || "",
-      observacoes: c.observacoes || "",
       status: c.status || "ativo",
       foto_url: c.foto_url || "",
     });
@@ -285,14 +281,6 @@ export default function Clientes() {
                     <option value="">Selecione...</option>
                     {COMO_CONHECEU.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
-                </div>
-                <div className="form-field">
-                  <label>Preferências / Alergias</label>
-                  <input type="text" placeholder="Ex: sem glúten, alergia a amendoim..." value={form.preferencias} onChange={e => setForm({...form, preferencias: e.target.value})} />
-                </div>
-                <div className="form-field">
-                  <label>Observações</label>
-                  <textarea placeholder="Anotações sobre o cliente..." value={form.observacoes} onChange={e => setForm({...form, observacoes: e.target.value})} rows={3} />
                 </div>
                 <div className="form-field">
                   <label>Status</label>
