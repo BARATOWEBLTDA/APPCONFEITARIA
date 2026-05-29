@@ -116,47 +116,33 @@ export default function Layout() {
 
       {/* Bottom nav Mobile */}
       <nav className="bottom-nav">
-        <NavLink to="/dashboard" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-          <span className="bottom-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-              <polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-          </span>
-          <span>Início</span>
+        <NavLink to="/dashboard" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`} title="Início">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
         </NavLink>
 
-        <button className={`bottom-item ${gestaoOpen ? "active" : ""}`} onClick={() => setGestaoOpen(!gestaoOpen)}>
-          <span className="bottom-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-            </svg>
-          </span>
-          <span>Gestão</span>
+        <button className={`bottom-item ${gestaoOpen ? "active" : ""}`} onClick={() => setGestaoOpen(!gestaoOpen)} title="Gestão">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
         </button>
 
-        <NavLink to="/cardapio-config" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-          <span className="bottom-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-              <polyline points="10 9 9 9 8 9"/>
-            </svg>
-          </span>
-          <span>Cardápio</span>
+        <NavLink to="/cardapio-config" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`} title="Cardápio">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
         </NavLink>
 
-        <NavLink to="/receitas" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-          <span className="bottom-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-              <path d="M12 6v6l4 2"/>
-            </svg>
-          </span>
-          <span>Receitas</span>
+        <NavLink to="/receitas" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`} title="Receitas">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
         </NavLink>
       </nav>
 
@@ -344,77 +330,30 @@ export default function Layout() {
             z-index: 20;
             background: #181419;
             border-top: 1px solid rgba(249,0,122,0.15);
-            padding: 0.4rem 0.5rem 1rem;
+            padding: 0.25rem 0 0.75rem;
             justify-content: space-around;
-            align-items: flex-end;
+            align-items: center;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
           }
 
           .bottom-item {
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             flex: 1;
-            gap: 0.2rem;
-            font-size: 0.68rem;
-            font-weight: 500;
+            padding: 0.75rem 0.25rem;
             color: #6b7280;
             text-decoration: none;
-            padding: 0.5rem 0.25rem 0.2rem;
-            transition: color 0.3s;
             background: none;
             border: none;
             cursor: pointer;
-            font-family: 'DM Sans', sans-serif;
-            position: relative;
+            transition: color 0.2s;
           }
 
-          .bottom-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 48px; height: 48px;
-            border-radius: 50%;
-            background: transparent;
-            transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            z-index: 1;
-          }
-
-          /* Item ativo: bolha sobe para fora da barra */
-          .bottom-item.active {
-            color: #ffffff;
-            font-weight: 600;
-          }
-
-          .bottom-item.active .bottom-icon {
-            background: #181419;
-            border: 3px solid #181419;
-            box-shadow:
-              0 0 0 3px #f9007a,
-              0 -8px 24px rgba(249,0,122,0.4);
-            transform: translateY(-22px);
-          }
+          .bottom-item svg { stroke: #6b7280; transition: stroke 0.2s; }
 
           .bottom-item.active svg { stroke: #f9007a; }
-
-          /* Curva na barra atrás do ícone ativo */
-          .bottom-item.active::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 64px;
-            height: 32px;
-            background: #181419;
-            border-radius: 0 0 40px 40px;
-            z-index: 0;
-          }
-
-          .bottom-item:not(.active) svg { stroke: #6b7280; }
-          .bottom-item:not(.active):hover { color: #f9007a; }
+          .bottom-item.active { color: #f9007a; }
           .bottom-item:not(.active):hover svg { stroke: #f9007a; }
 
           /* Gestão Drawer */
