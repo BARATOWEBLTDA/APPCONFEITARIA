@@ -30,17 +30,19 @@ export default function Layout() {
       {/* Sidebar Desktop */}
       <aside className="sidebar">
         <div className="sidebar-profile">
-          <div className="sidebar-avatar">
-            {profile?.foto_url ? (
-              <img src={profile.foto_url} alt="Foto de perfil" />
-            ) : (
-              <div className="sidebar-avatar-placeholder">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-              </div>
-            )}
+          <div className="sidebar-avatar-ring">
+            <div className="sidebar-avatar">
+              {profile?.foto_url ? (
+                <img src={profile.foto_url} alt="Foto de perfil" />
+              ) : (
+                <div className="sidebar-avatar-placeholder">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </div>
+              )}
+            </div>
           </div>
           <div className="sidebar-profile-info">
             <span className="sidebar-name">{profile?.nome || "Minha Conta"}</span>
@@ -114,21 +116,41 @@ export default function Layout() {
 
         .sidebar-profile {
           display: flex;
+          flex-direction: column;
           align-items: center;
           gap: 0.75rem;
+          margin-top: 1rem;
           margin-bottom: 1.5rem;
           padding-bottom: 1.25rem;
           border-bottom: 1px solid rgba(249,0,122,0.2);
         }
 
+        /* Anel externo com degradê animado */
+        .sidebar-avatar-ring {
+          width: 88px;
+          height: 88px;
+          border-radius: 50%;
+          padding: 3px;
+          background: linear-gradient(135deg, #f9007a, #ff6eb4, #ffb3d9, #f9007a);
+          background-size: 300% 300%;
+          animation: gradientRing 3s ease infinite;
+          flex-shrink: 0;
+        }
+
+        @keyframes gradientRing {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+
+        /* Borda branca interna */
         .sidebar-avatar {
-          width: 48px;
-          height: 48px;
+          width: 100%;
+          height: 100%;
           border-radius: 50%;
           overflow: hidden;
-          border: 2px solid rgba(249,0,122,0.4);
+          border: 3px solid #ffffff;
           background: rgba(249,0,122,0.1);
-          flex-shrink: 0;
         }
 
         .sidebar-avatar img {
@@ -149,16 +171,21 @@ export default function Layout() {
         .sidebar-profile-info {
           display: flex;
           flex-direction: column;
+          align-items: center;
+          text-align: center;
           overflow: hidden;
+          width: 100%;
         }
 
         .sidebar-name {
-          font-size: 0.88rem;
+          font-size: 0.9rem;
           font-weight: 600;
           color: #ffffff;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          width: 100%;
+          text-align: center;
         }
 
         .sidebar-loja {
@@ -167,6 +194,8 @@ export default function Layout() {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          width: 100%;
+          text-align: center;
         }
 
         .sidebar-nav {
