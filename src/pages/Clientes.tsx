@@ -379,15 +379,16 @@ export default function Clientes() {
 
         /* Modal */
         .modal-overlay {
-          position: fixed; inset: 0; z-index: 50;
+          position: fixed; inset: 0; z-index: 100;
           background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
-          display: flex; align-items: flex-end; justify-content: center;
+          display: flex; align-items: center; justify-content: center;
+          padding: 1rem;
         }
 
         .modal-box {
           background: white; border-radius: 16px;
           padding: 1.5rem; width: 90%; max-width: 360px;
-          margin-bottom: 2rem; text-align: center;
+          text-align: center;
         }
         .modal-box h3 { font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.4rem; }
         .modal-box p { font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.25rem; }
@@ -399,17 +400,20 @@ export default function Clientes() {
         /* Form Drawer */
         .form-drawer {
           background: white;
-          border-radius: 24px 24px 0 0;
-          width: 100%; max-width: 600px;
+          border-radius: 20px;
+          width: 100%; max-width: 560px;
           max-height: 90vh;
           display: flex; flex-direction: column;
-          animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          animation: fadeScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 20px 60px rgba(0,0,0,0.2);
         }
 
-        @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+        @keyframes fadeScale {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
         }
+
+
 
         .form-handle {
           width: 40px; height: 4px; background: #e5e7eb;
