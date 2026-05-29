@@ -3,14 +3,17 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/lib/supabase";
 
 const menuItems = [
-  { label: "Dashboard", path: "/dashboard" },
-  { label: "Pedidos", path: "/pedidos" },
-  { label: "Produtos", path: "/produtos" },
-  { label: "Clientes", path: "/clientes" },
-  { label: "Financeiro", path: "/financeiro" },
-  { label: "Promoções", path: "/promocoes" },
-  { label: "Cardápio", path: "/cardapio-config" },
-  { label: "Configurações", path: "/configuracoes" },
+  { label: "Dashboard", path: "/dashboard", emoji: "📊" },
+  { label: "Cardápio / Loja", path: "/cardapio-config", emoji: "🛍️" },
+  { label: "Pedidos", path: "/pedidos", emoji: "📋" },
+  { label: "Clientes", path: "/clientes", emoji: "👥" },
+  { label: "Produtos", path: "/produtos", emoji: "🎂" },
+  { label: "Estoque", path: "/estoque", emoji: "📦" },
+  { label: "Financeiro", path: "/financeiro", emoji: "💰" },
+  { label: "Receitas", path: "/receitas", emoji: "📄" },
+  { label: "Arquivos", path: "/arquivos", emoji: "🗂️" },
+  { label: "Promoções", path: "/promocoes", emoji: "🏷️" },
+  { label: "Configurações", path: "/configuracoes", emoji: "⚙️" },
 ];
 
 export default function Layout() {
@@ -52,7 +55,7 @@ export default function Layout() {
               to={item.path}
               className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
             >
-              {item.label}
+              <span className="nav-emoji">{item.emoji}</span> {item.label}
             </NavLink>
           ))}
         </nav>
@@ -172,6 +175,8 @@ export default function Layout() {
           gap: 0.25rem;
           flex: 1;
         }
+
+        .nav-emoji { font-size: 0.95rem; margin-right: 0.1rem; }
 
         .nav-item {
           padding: 0.7rem 1rem;
