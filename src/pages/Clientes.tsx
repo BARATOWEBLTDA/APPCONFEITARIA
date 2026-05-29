@@ -133,7 +133,7 @@ export default function Clientes() {
   const getAniversario = (data?: string) => {
     if (!data) return null;
     const d = new Date(data);
-    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
+    return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
   };
 
   return (
@@ -340,7 +340,7 @@ export default function Clientes() {
         .cli-list { display: flex; flex-direction: column; gap: 0.6rem; }
 
         .cli-card {
-          display: flex; align-items: center; gap: 0.9rem;
+          display: flex; align-items: center; gap: 1.25rem;
           background: white; border-radius: 12px;
           padding: 0.9rem 1rem;
           box-shadow: 0 1px 6px rgba(0,0,0,0.06);
@@ -372,7 +372,7 @@ export default function Clientes() {
           position: relative;
         }
 
-        .cli-card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+        .cli-card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.35rem; }
 
         .cli-card-row { display: flex; align-items: baseline; gap: 0.35rem; flex-wrap: wrap; }
         .cli-card-label { font-size: 0.78rem; font-weight: 800; color: #374151; white-space: nowrap; letter-spacing: -0.1px; }
