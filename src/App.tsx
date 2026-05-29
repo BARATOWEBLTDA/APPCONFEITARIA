@@ -17,7 +17,7 @@ const CardapioConfig = () => <div style={{padding:"2rem",fontFamily:"DM Sans,san
 const Estoque = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>📦 Estoque</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
 const Receitas = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>📄 Receitas</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
 const Arquivos = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🗂️ Arquivos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
-const CardapioPublico = () => <div style={{padding:"2rem"}}><h1>Cardápio Público</h1></div>;
+import CardapioPublico from "@/pages/CardapioPublico";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<any>(undefined);
