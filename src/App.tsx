@@ -14,6 +14,7 @@ const Financeiro = () => <div style={{padding:"2rem"}}><h1>Financeiro</h1></div>
 const Promocoes = () => <div style={{padding:"2rem"}}><h1>Promoções</h1></div>;
 const CardapioConfig = () => <div style={{padding:"2rem"}}><h1>Cardápio</h1></div>;
 import Configuracoes from "@/pages/Configuracoes";
+import Dashboard from "@/pages/Dashboard";
 const CardapioPublico = () => <div style={{padding:"2rem"}}><h1>Cardápio Público</h1></div>;
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -50,6 +51,9 @@ export default function App() {
           <Route path="/financeiro" element={<Financeiro />} />
           <Route path="/promocoes" element={<Promocoes />} />
           <Route path="/cardapio-config" element={<CardapioConfig />} />
+          <Route path="/estoque" element={<Estoque />} />
+          <Route path="/receitas" element={<Receitas />} />
+          <Route path="/arquivos" element={<Arquivos />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
         </Route>
 
