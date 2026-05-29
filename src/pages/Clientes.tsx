@@ -353,14 +353,24 @@ export default function Clientes() {
           background: linear-gradient(135deg, #e5e7eb, #d1d5db);
           display: flex; align-items: center; justify-content: center;
           color: #6b7280; font-weight: 700; font-size: 1.4rem;
-          overflow: hidden; flex-shrink: 0;
+          overflow: visible; flex-shrink: 0;
           box-shadow: none;
+          position: relative;
+          z-index: 1;
         }
         .cli-card-avatar img {
-          width: 100%; height: 100%; object-fit: cover;
-          transition: transform 0.3s ease;
+          width: 64px; height: 64px;
+          object-fit: cover;
+          border-radius: 16px;
+          transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+          display: block;
         }
-        .cli-card-avatar:hover img { transform: scale(1.12); }
+        .cli-card-avatar:hover img {
+          transform: scale(1.25);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+          z-index: 10;
+          position: relative;
+        }
 
         .cli-card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
 
