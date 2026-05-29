@@ -276,11 +276,11 @@ export default function Dashboard() {
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
 
         .dash-root {
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Inter', sans-serif;
           max-width: 1000px;
           display: flex;
           flex-direction: column;
@@ -348,7 +348,7 @@ export default function Dashboard() {
         .section-header h2 { font-size: 0.95rem; font-weight: 600; color: #1f2937; }
         .section-header button {
           font-size: 0.8rem; color: #f9007a; background: none;
-          border: none; cursor: pointer; font-family: 'DM Sans', sans-serif;
+          border: none; cursor: pointer; font-family: 'Inter', sans-serif;
           font-weight: 500;
         }
         .section-header button:hover { opacity: 0.75; }
@@ -469,7 +469,7 @@ export default function Dashboard() {
           color: #1a1a2e;
           border: none;
           border-radius: 12px;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Inter', sans-serif;
           font-size: 1rem;
           font-weight: 800;
           cursor: pointer;

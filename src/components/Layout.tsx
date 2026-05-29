@@ -147,13 +147,13 @@ export default function Layout() {
       </nav>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         .layout-root {
           display: flex;
           min-height: 100vh;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Inter', sans-serif;
           background: #fafafa;
         }
 
@@ -289,7 +289,7 @@ export default function Layout() {
           border: 1px solid rgba(249,0,122,0.3);
           background: transparent;
           color: #f9007a;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Inter', sans-serif;
           font-size: 0.92rem;
           font-weight: 500;
           cursor: pointer;
@@ -391,7 +391,7 @@ export default function Layout() {
           .gestao-title {
             font-size: 1rem; font-weight: 600;
             color: #ffffff; margin-bottom: 1rem;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
           }
 
           .gestao-grid {
@@ -423,7 +423,7 @@ export default function Layout() {
           .gestao-label {
             font-size: 0.75rem; font-weight: 500;
             color: #ffffff; text-align: center;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
           }
         }
       `}</style>
