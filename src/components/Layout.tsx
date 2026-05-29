@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/lib/supabase";
 
 const menuItems = [
@@ -14,6 +15,7 @@ const menuItems = [
 
 export default function Layout() {
   const navigate = useNavigate();
+  const { profile } = useProfile();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -24,8 +26,23 @@ export default function Layout() {
     <div className="layout-root">
       {/* Sidebar Desktop */}
       <aside className="sidebar">
-        <div className="sidebar-logo">
-          <img src="https://www.pandamenu.com.br/imagemmenu.png" alt="Panda Menu" />
+        <div className="sidebar-profile">
+          <div className="sidebar-avatar">
+            {profile?.foto_url ? (
+              <img src={profile.foto_url} alt="Foto de perfil" />
+            ) : (
+              <div className="sidebar-avatar-placeholder">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+            )}
+          </div>
+          <div className="sidebar-profile-info">
+            <span className="sidebar-name">{profile?.nome || "Minha Conta"}</span>
+            <span className="sidebar-loja">{profile?.nome_loja || "Minha Confeitaria"}</span>
+          </div>
         </div>
 
         <nav className="sidebar-nav">
@@ -92,17 +109,61 @@ export default function Layout() {
           box-shadow: 4px 0 20px rgba(0,0,0,0.15);
         }
 
-        .sidebar-logo {
+        .sidebar-profile {
           display: flex;
-          justify-content: center;
-          margin-bottom: 2rem;
-          padding-bottom: 1.5rem;
+          align-items: center;
+          gap: 0.75rem;
+          margin-bottom: 1.5rem;
+          padding-bottom: 1.25rem;
           border-bottom: 1px solid rgba(249,0,122,0.2);
         }
 
-        .sidebar-logo img {
-          height: 55px;
-          object-fit: contain;
+        .sidebar-avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          overflow: hidden;
+          border: 2px solid rgba(249,0,122,0.4);
+          background: rgba(249,0,122,0.1);
+          flex-shrink: 0;
+        }
+
+        .sidebar-avatar img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .sidebar-avatar-placeholder {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #f9007a;
+        }
+
+        .sidebar-profile-info {
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        .sidebar-name {
+          font-size: 0.88rem;
+          font-weight: 600;
+          color: #ffffff;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .sidebar-loja {
+          font-size: 0.75rem;
+          color: #9ca3af;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .sidebar-nav {

@@ -12,7 +12,7 @@ const Clientes = () => <div style={{padding:"2rem"}}><h1>Clientes</h1></div>;
 const Financeiro = () => <div style={{padding:"2rem"}}><h1>Financeiro</h1></div>;
 const Promocoes = () => <div style={{padding:"2rem"}}><h1>Promoções</h1></div>;
 const CardapioConfig = () => <div style={{padding:"2rem"}}><h1>Cardápio</h1></div>;
-const Configuracoes = () => <div style={{padding:"2rem"}}><h1>Configurações</h1></div>;
+import Configuracoes from "@/pages/Configuracoes";
 const CardapioPublico = () => <div style={{padding:"2rem"}}><h1>Cardápio Público</h1></div>;
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
