@@ -21,6 +21,7 @@ export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const [now, setNow] = useState(new Date());
+  const [gestaoOpen, setGestaoOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -83,20 +84,80 @@ export default function Layout() {
         <Outlet />
       </main>
 
+      {/* Gestão Drawer */}
+      {gestaoOpen && (
+        <div className="gestao-overlay" onClick={() => setGestaoOpen(false)}>
+          <div className="gestao-drawer" onClick={e => e.stopPropagation()}>
+            <div className="gestao-handle" />
+            <h3 className="gestao-title">Gestão</h3>
+            <div className="gestao-grid">
+              {[
+                { label: "Pedidos", path: "/pedidos", icon: "📋" },
+                { label: "Clientes", path: "/clientes", icon: "👥" },
+                { label: "Estoque", path: "/estoque", icon: "📦" },
+                { label: "Produtos", path: "/produtos", icon: "🎂" },
+                { label: "Financeiro", path: "/financeiro", icon: "💰" },
+                { label: "Promoções", path: "/promocoes", icon: "🏷️" },
+              ].map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className="gestao-item"
+                  onClick={() => setGestaoOpen(false)}
+                >
+                  <span className="gestao-icon">{item.icon}</span>
+                  <span className="gestao-label">{item.label}</span>
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Bottom nav Mobile */}
       <nav className="bottom-nav">
-        {menuItems.slice(0, 5).map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}
-          >
-            {item.label}
-          </NavLink>
-        ))}
-        <button className="bottom-item bottom-more" onClick={() => {}}>
-          ···
+        <NavLink to="/dashboard" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
+          <span className="bottom-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </span>
+          <span>Início</span>
+        </NavLink>
+
+        <button className={`bottom-item ${gestaoOpen ? "active" : ""}`} onClick={() => setGestaoOpen(!gestaoOpen)}>
+          <span className="bottom-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+          </span>
+          <span>Gestão</span>
         </button>
+
+        <NavLink to="/cardapio-config" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
+          <span className="bottom-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+          </span>
+          <span>Cardápio</span>
+        </NavLink>
+
+        <NavLink to="/receitas" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
+          <span className="bottom-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+          </span>
+          <span>Receitas</span>
+        </NavLink>
       </nav>
 
       <style>{`
@@ -280,13 +341,13 @@ export default function Layout() {
             display: flex;
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            z-index: 10;
+            z-index: 20;
             background: #181419;
-            border-top: 1px solid rgba(249,0,122,0.2);
-            padding: 0.5rem 0.25rem;
+            border-top: 1px solid rgba(249,0,122,0.15);
+            padding: 0.6rem 0.5rem 0.8rem;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 -2px 12px rgba(249, 0, 122, 0.08);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
           }
 
           .bottom-item {
@@ -295,34 +356,116 @@ export default function Layout() {
             align-items: center;
             justify-content: center;
             flex: 1;
-            padding: 0.4rem 0.2rem;
-            font-size: 0.72rem;
+            gap: 0.2rem;
+            font-size: 0.68rem;
             font-weight: 500;
             color: #6b7280;
             text-decoration: none;
-            border-radius: 8px;
-            transition: color 0.15s;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            border-radius: 12px;
+            padding: 0.4rem 0.25rem;
+            transition: color 0.2s, background 0.2s;
             background: none;
             border: none;
             cursor: pointer;
             font-family: 'DM Sans', sans-serif;
           }
 
+          .bottom-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px; height: 42px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.05);
+            transition: background 0.2s;
+            margin-bottom: 0.1rem;
+          }
+
+          .bottom-item.active .bottom-icon {
+            background: linear-gradient(135deg, #f9007a, #d4006a);
+            box-shadow: 0 4px 12px rgba(249,0,122,0.4);
+          }
+
           .bottom-item.active {
-            color: #f9007a;
+            color: #ffffff;
             font-weight: 600;
           }
 
-          .bottom-item:hover {
-            color: #f9007a;
+          .bottom-item.active svg { stroke: #ffffff; }
+
+          .bottom-item:not(.active):hover .bottom-icon {
+            background: rgba(249,0,122,0.15);
+          }
+          .bottom-item:not(.active):hover { color: #f9007a; }
+
+          /* Gestão Drawer */
+          .gestao-overlay {
+            position: fixed; inset: 0; z-index: 30;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s ease;
           }
 
-          .bottom-more {
-            letter-spacing: 2px;
-            font-size: 1rem;
+          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+          .gestao-drawer {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: #1e1a1f;
+            border-radius: 24px 24px 0 0;
+            padding: 1rem 1.25rem 2rem;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border-top: 1px solid rgba(249,0,122,0.2);
+          }
+
+          @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+          }
+
+          .gestao-handle {
+            width: 40px; height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            margin: 0 auto 1rem;
+          }
+
+          .gestao-title {
+            font-size: 1rem; font-weight: 600;
+            color: #ffffff; margin-bottom: 1rem;
+            font-family: 'DM Sans', sans-serif;
+          }
+
+          .gestao-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+          }
+
+          .gestao-item {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 0.4rem;
+            background: rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 1rem 0.5rem;
+            text-decoration: none;
+            transition: background 0.15s, transform 0.15s;
+            border: 1px solid rgba(255,255,255,0.06);
+          }
+
+          .gestao-item:hover, .gestao-item:active {
+            background: rgba(249,0,122,0.15);
+            border-color: rgba(249,0,122,0.3);
+            transform: scale(0.97);
+          }
+
+          .gestao-icon { font-size: 1.6rem; }
+
+          .gestao-label {
+            font-size: 0.75rem; font-weight: 500;
+            color: #ffffff; text-align: center;
+            font-family: 'DM Sans', sans-serif;
           }
         }
       `}</style>
