@@ -179,11 +179,11 @@ export default function Configuracoes() {
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
 
-        .cfg-root { font-family: 'DM Sans', sans-serif; max-width: 560px; }
-        .cfg-loading { font-family: 'DM Sans', sans-serif; color: #9ca3af; padding: 2rem; }
+        .cfg-root { font-family: 'Inter', sans-serif; max-width: 560px; }
+        .cfg-loading { font-family: 'Inter', sans-serif; color: #9ca3af; padding: 2rem; }
 
         .cfg-title { font-size: 1.6rem; font-weight: 600; color: #1f2937; margin-bottom: 0.25rem; }
         .cfg-subtitle { font-size: 0.9rem; color: #9ca3af; margin-bottom: 1.5rem; }
@@ -223,7 +223,7 @@ export default function Configuracoes() {
         .cfg-field label { font-size: 0.88rem; font-weight: 500; color: #374151; }
         .cfg-field input {
           padding: 0.72rem 1rem; border: 1.5px solid #e5e7eb;
-          border-radius: 10px; font-family: 'DM Sans', sans-serif;
+          border-radius: 10px; font-family: 'Inter', sans-serif;
           font-size: 0.95rem; color: #1f2937; outline: none;
           transition: border-color 0.2s;
         }
@@ -244,7 +244,7 @@ export default function Configuracoes() {
           width: 100%; padding: 0.85rem;
           background: linear-gradient(135deg, #f9007a, #d4006a);
           color: white; border: none; border-radius: 10px;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Inter', sans-serif;
           font-size: 1rem; font-weight: 600; cursor: pointer;
           transition: opacity 0.2s;
           display: flex; align-items: center; justify-content: center; min-height: 48px;

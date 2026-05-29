@@ -146,7 +146,7 @@ export default function Auth() {
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         html, body, #root {
@@ -162,7 +162,7 @@ export default function Auth() {
           justify-content: center;
           position: relative;
           overflow: hidden;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Inter', sans-serif;
           padding: 1.5rem;
           padding-bottom: 5rem;
         }
@@ -210,7 +210,7 @@ export default function Auth() {
         .field input {
           padding: 0.68rem 1rem;
           border: 1.5px solid #e5e7eb; border-radius: 8px;
-          font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+          font-family: 'Inter', sans-serif; font-size: 0.95rem;
           color: #1f2937; outline: none;
           transition: background-color 0.2s, border-color 0.2s;
           width: 100%;
@@ -267,7 +267,7 @@ export default function Auth() {
           padding: 0.85rem;
           background: linear-gradient(135deg, #f9007a, #d4006a);
           color: white; border: none; border-radius: 8px;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Inter', sans-serif;
           font-size: 1rem; font-weight: 600; cursor: pointer;
           transition: opacity 0.2s, transform 0.15s;
           display: flex; align-items: center; justify-content: center; min-height: 48px;

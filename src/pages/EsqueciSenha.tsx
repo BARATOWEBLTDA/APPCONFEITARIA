@@ -141,7 +141,7 @@ export default function EsqueciSenha() {
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         html, body, #root { height: 100%; overflow: hidden; }
@@ -150,7 +150,7 @@ export default function EsqueciSenha() {
           height: 100vh; display: flex; flex-direction: column;
           align-items: center; justify-content: center;
           position: relative; overflow: hidden;
-          font-family: 'DM Sans', sans-serif;
+          font-family: 'Inter', sans-serif;
           padding: 1.5rem; padding-bottom: 5rem;
         }
 
@@ -187,7 +187,7 @@ export default function EsqueciSenha() {
         .field label { font-size: 0.88rem; font-weight: 500; color: #374151; }
         .field input {
           padding: 0.72rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 8px;
-          font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: #1f2937;
+          font-family: 'Inter', sans-serif; font-size: 0.95rem; color: #1f2937;
           outline: none; transition: background-color 0.2s, border-color 0.2s; width: 100%;
         }
         .field input::placeholder { color: #9ca3af; }
@@ -200,7 +200,7 @@ export default function EsqueciSenha() {
         .auth-btn {
           padding: 0.85rem; background: linear-gradient(135deg, #f9007a, #d4006a);
           color: white; border: none; border-radius: 8px;
-          font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600;
+          font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600;
           cursor: pointer; transition: opacity 0.2s, transform 0.15s;
           display: flex; align-items: center; justify-content: center; min-height: 48px;
         }
@@ -209,7 +209,7 @@ export default function EsqueciSenha() {
 
         .back-btn {
           background: none; border: none; color: #9ca3af;
-          font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+          font-family: 'Inter', sans-serif; font-size: 0.88rem;
           cursor: pointer; text-align: center; padding: 0.25rem;
           transition: color 0.2s;
         }

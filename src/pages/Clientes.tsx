@@ -301,10 +301,10 @@ export default function Clientes() {
       )}
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
 
-        .cli-root { font-family: 'DM Sans', sans-serif; max-width: 800px; }
+        .cli-root { font-family: 'Inter', sans-serif; max-width: 800px; }
 
         .cli-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
         .cli-title { font-size: 1.5rem; font-weight: 600; color: #1f2937; margin-bottom: 0.2rem; }
@@ -314,7 +314,7 @@ export default function Clientes() {
           padding: 0.65rem 1.2rem;
           background: linear-gradient(135deg, #f9007a, #d4006a);
           color: white; border: none; border-radius: 10px;
-          font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600;
+          font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600;
           cursor: pointer; white-space: nowrap;
           transition: opacity 0.2s;
         }
@@ -326,7 +326,7 @@ export default function Clientes() {
           border-radius: 10px; padding: 0.6rem 0.9rem;
           margin-bottom: 1rem;
         }
-        .cli-search { border: none; outline: none; flex: 1; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: #1f2937; }
+        .cli-search { border: none; outline: none; flex: 1; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; }
         .cli-search::placeholder { color: #9ca3af; }
 
         .cli-loading { display: flex; justify-content: center; padding: 3rem; }
@@ -389,7 +389,7 @@ export default function Clientes() {
         .modal-box h3 { font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.4rem; }
         .modal-box p { font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.25rem; }
         .modal-actions { display: flex; gap: 0.75rem; }
-        .modal-btn { flex: 1; padding: 0.7rem; border-radius: 8px; border: none; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+        .modal-btn { flex: 1; padding: 0.7rem; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
         .modal-btn.cancel { background: #f3f4f6; color: #6b7280; }
         .modal-btn.confirm { background: #ef4444; color: white; }
 
@@ -456,7 +456,7 @@ export default function Clientes() {
         .form-field input, .form-field select, .form-field textarea {
           padding: 0.65rem 0.9rem;
           border: 1.5px solid #e5e7eb; border-radius: 8px;
-          font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+          font-family: 'Inter', sans-serif; font-size: 0.9rem;
           color: #1f2937; outline: none;
           transition: border-color 0.2s;
           background: white;
@@ -474,7 +474,7 @@ export default function Clientes() {
 
         .form-btn {
           flex: 1; padding: 0.8rem; border-radius: 10px;
-          border: none; font-family: 'DM Sans', sans-serif;
+          border: none; font-family: 'Inter', sans-serif;
           font-size: 0.95rem; font-weight: 600; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           transition: opacity 0.2s;
