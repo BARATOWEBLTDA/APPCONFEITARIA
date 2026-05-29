@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { refreshProfile } from "@/hooks/useProfile";
 
 export default function Configuracoes() {
   const [loading, setLoading] = useState(true);
@@ -81,6 +82,7 @@ export default function Configuracoes() {
         nome_loja: form.nome_loja,
         foto_url: publicUrl,
       }, { onConflict: "id" });
+      await refreshProfile();
 
     } catch (err: any) {
       setError("Erro ao fazer upload. Tente novamente.");
