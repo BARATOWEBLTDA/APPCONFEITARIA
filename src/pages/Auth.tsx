@@ -119,9 +119,12 @@ export default function Auth() {
             </div>
           </div>
 
-          <div className="keep-connected">
+          <div className="keep-connected-row">
+            <div className="keep-connected">
             <input type="checkbox" id="keep" checked={keepConnected} onChange={(e) => setKeepConnected(e.target.checked)} />
             <label htmlFor="keep">Manter conectado</label>
+            </div>
+            <a href="/esqueci-senha" className="forgot-link">Esqueci minha senha</a>
           </div>
 
           {error && <p className="auth-error">{error}</p>}
@@ -237,7 +240,20 @@ export default function Auth() {
         }
         .eye-btn:hover { color: #f9007a; }
 
+        .keep-connected-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
         .keep-connected { display: flex; align-items: center; gap: 0.5rem; }
+        .forgot-link {
+          font-size: 0.82rem;
+          color: #f9007a;
+          text-decoration: none;
+          font-weight: 500;
+          transition: opacity 0.2s;
+        }
+        .forgot-link:hover { opacity: 0.75; }
         .keep-connected input[type="checkbox"] { accent-color: #f9007a; width: 16px; height: 16px; cursor: pointer; }
         .keep-connected label { font-size: 0.88rem; color: #374151; cursor: pointer; }
 
