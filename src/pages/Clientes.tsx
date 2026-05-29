@@ -187,6 +187,9 @@ export default function Clientes() {
                 {(c.whatsapp || c.telefone) && (
                   <div className="cli-card-row"><span className="cli-card-label">Contato:</span> <span className="cli-card-value">{c.whatsapp || c.telefone}</span></div>
                 )}
+                {c.data_nascimento && (
+                  <div className="cli-card-row"><span className="cli-card-label">Aniversário:</span> <span className="cli-card-value">{getAniversario(c.data_nascimento)}</span></div>
+                )}
                 {c.como_conheceu && (
                   <div className="cli-card-row"><span className="cli-card-label">Como nos conheceu:</span> <span className="cli-card-value">{c.como_conheceu}</span></div>
                 )}
@@ -346,20 +349,24 @@ export default function Clientes() {
         .cli-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
 
         .cli-card-avatar {
-          width: 58px; height: 58px; border-radius: 16px;
-          background: linear-gradient(135deg, #f9007a, #d4006a);
+          width: 64px; height: 64px; border-radius: 16px;
+          background: linear-gradient(135deg, #e5e7eb, #d1d5db);
           display: flex; align-items: center; justify-content: center;
-          color: white; font-weight: 700; font-size: 1.3rem;
+          color: #6b7280; font-weight: 700; font-size: 1.4rem;
           overflow: hidden; flex-shrink: 0;
-          box-shadow: 0 4px 10px rgba(249,0,122,0.25);
+          box-shadow: none;
         }
-        .cli-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .cli-card-avatar img {
+          width: 100%; height: 100%; object-fit: cover;
+          transition: transform 0.3s ease;
+        }
+        .cli-card-avatar:hover img { transform: scale(1.12); }
 
-        .cli-card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+        .cli-card-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
 
-        .cli-card-row { display: flex; align-items: baseline; gap: 0.3rem; flex-wrap: wrap; }
-        .cli-card-label { font-size: 0.78rem; font-weight: 600; color: #9ca3af; white-space: nowrap; }
-        .cli-card-value { font-size: 0.88rem; font-weight: 500; color: #1f2937; }
+        .cli-card-row { display: flex; align-items: baseline; gap: 0.35rem; flex-wrap: wrap; }
+        .cli-card-label { font-size: 0.78rem; font-weight: 800; color: #374151; white-space: nowrap; letter-spacing: -0.1px; }
+        .cli-card-value { font-size: 0.88rem; font-weight: 400; color: #6b7280; }
 
         .cli-card-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
         .cli-action-btn {
