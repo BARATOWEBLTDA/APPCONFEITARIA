@@ -20,7 +20,11 @@ export default function Configuracoes() {
     nome_loja: "",
     foto_url: "",
     telefone: "",
-    endereco: "",
+    rua: "",
+    numero: "",
+    cidade: "",
+    estado: "",
+    cep: "",
   });
 
   const [horario, setHorario] = useState({
@@ -45,12 +49,18 @@ export default function Configuracoes() {
       const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
 
       if (data) {
+        let addr: any = {}
+        try { addr = data.endereco ? JSON.parse(data.endereco) : {} } catch {}
         setForm({
           nome: data.nome || "",
           nome_loja: data.nome_loja || "",
           foto_url: data.foto_url || "",
           telefone: data.telefone || "",
-          endereco: data.endereco || "",
+          rua: addr.rua || "",
+          numero: addr.numero || "",
+          cidade: addr.cidade || "",
+          estado: addr.estado || "",
+          cep: addr.cep || "",
         });
         if (data.foto_url) setPreview(data.foto_url);
 
@@ -79,7 +89,7 @@ export default function Configuracoes() {
       const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
       setForm(f => ({ ...f, foto_url: publicUrl }));
       setPreview(publicUrl);
-      await supabase.from("profiles").upsert({ id: userId, ...form, foto_url: publicUrl }, { onConflict: "id" });
+      await supabase.from("profiles").upsert({ id: userId, nome: form.nome, nome_loja: form.nome_loja, telefone: form.telefone, foto_url: publicUrl }, { onConflict: "id" });
       await refreshProfile();
     }
     setUploading(false);
@@ -92,17 +102,29 @@ export default function Configuracoes() {
     }));
   };
 
+  const formatPhone = (value: string) => {
+    const d = value.replace(/\D/g, '').slice(0, 11)
+    if (d.length <= 2) return `(${d}`
+    if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`
+    if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`
+    return `(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`
+  }
+
   const handleSave = async () => {
     if (!userId) return;
     setSaving(true);
     setError("");
+    const endereco = JSON.stringify({
+      rua: form.rua, numero: form.numero,
+      cidade: form.cidade, estado: form.estado, cep: form.cep
+    })
     const { error: err } = await supabase.from("profiles").upsert({
       id: userId,
       nome: form.nome,
       nome_loja: form.nome_loja,
       foto_url: form.foto_url,
       telefone: form.telefone,
-      endereco: form.endereco,
+      endereco,
       horario: JSON.stringify(horario),
     }, { onConflict: "id" });
     if (err) setError("Erro ao salvar. Tente novamente.");
@@ -160,11 +182,40 @@ export default function Configuracoes() {
             </div>
             <div className="cfg-field">
               <label>WhatsApp</label>
-              <input type="tel" placeholder="Ex: 41 9 9999-9999" value={form.telefone} onChange={e => setForm({ ...form, telefone: e.target.value })} />
+              <input type="tel" placeholder="(41) 9 9999-9999" value={form.telefone}
+                onChange={e => setForm({ ...form, telefone: formatPhone(e.target.value) })} />
             </div>
+
+            <div className="cfg-section-title" style={{marginTop:"1rem",marginBottom:"0.5rem"}}>📍 Endereço</div>
+
             <div className="cfg-field">
-              <label>Localização / Endereço</label>
-              <input type="text" placeholder="Ex: Curitiba - PR" value={form.endereco} onChange={e => setForm({ ...form, endereco: e.target.value })} />
+              <label>Rua / Avenida</label>
+              <input type="text" placeholder="Ex: Rua das Flores" value={form.rua} onChange={e => setForm({ ...form, rua: e.target.value })} />
+            </div>
+            <div className="cfg-row">
+              <div className="cfg-field">
+                <label>Número</label>
+                <input type="text" placeholder="Ex: 123" value={form.numero} onChange={e => setForm({ ...form, numero: e.target.value })} />
+              </div>
+              <div className="cfg-field">
+                <label>CEP (opcional)</label>
+                <input type="text" placeholder="00000-000" value={form.cep}
+                  onChange={e => {
+                    const d = e.target.value.replace(/\D/g,'').slice(0,8)
+                    setForm({ ...form, cep: d.length > 5 ? `${d.slice(0,5)}-${d.slice(5)}` : d })
+                  }} />
+              </div>
+            </div>
+            <div className="cfg-row">
+              <div className="cfg-field">
+                <label>Cidade</label>
+                <input type="text" placeholder="Ex: Curitiba" value={form.cidade} onChange={e => setForm({ ...form, cidade: e.target.value })} />
+              </div>
+              <div className="cfg-field">
+                <label>Estado</label>
+                <input type="text" placeholder="Ex: PR" maxLength={2} value={form.estado}
+                  onChange={e => setForm({ ...form, estado: e.target.value.toUpperCase() })} />
+              </div>
             </div>
           </div>
         </div>
