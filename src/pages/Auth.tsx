@@ -280,7 +280,7 @@ export default function Auth() {
         @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 
         .auth-logo-wrap { display: flex; justify-content: center; margin-bottom: 1.8rem; }
-        .auth-logo-img { height: 80px; object-fit: contain; }
+        .auth-logo-img { height: 110px; object-fit: contain; }
 
         .auth-form { display: flex; flex-direction: column; gap: 1rem; }
         .field { display: flex; flex-direction: column; gap: 0.35rem; }
@@ -347,7 +347,7 @@ export default function Auth() {
         .cadastro-back:hover { background: #e5e7eb; }
 
         .cadastro-logo-wrap { display: flex; justify-content: center; margin-bottom: 1.75rem; margin-top: 0.5rem; }
-        .cadastro-logo { height: 90px; object-fit: contain; }
+        .cadastro-logo { height: 110px; object-fit: contain; }
 
         .cadastro-form { display: flex; flex-direction: column; gap: 0.9rem; }
 
