@@ -78,7 +78,7 @@ export default function Auth() {
 
       <div className="auth-card">
         <div className="auth-logo-wrap">
-          <img src="https://www.pandamenu.com.br/imagemmenu.png" alt="Panda Menu" className="auth-logo-img" />
+          <img src="https://www.donnly.com.br/imagemmenu.png" alt="Donnly" className="auth-logo-img" />
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">

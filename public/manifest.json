@@ -1,7 +1,7 @@
 {
-  "name": "Panda Menu",
-  "short_name": "Panda Menu",
-  "description": "Gestão de cardápio digital para confeitarias",
+  "name": "Donnly",
+  "short_name": "Donnly",
+  "description": "Gestão inteligente para confeitarias",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

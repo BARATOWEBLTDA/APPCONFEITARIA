@@ -21,7 +21,6 @@ export default function Inicio() {
   const [clientes, setClientes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [openGroup, setOpenGroup] = useState<number | null>(0);
-  const [search, setSearch] = useState("");
   const [diasTrial] = useState(14);
 
   useEffect(() => {
@@ -88,21 +87,7 @@ export default function Inicio() {
     <div className="inicio-root">
       {/* Header */}
       <div className="inicio-header">
-        <div className="inicio-header-top">
-          <div className="inicio-search">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input
-              type="text"
-              placeholder="Buscar produtos, receitas..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="inicio-search-input"
-            />
-          </div>
-          <button className="inicio-bell">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          </button>
-        </div>
+
         <div className="inicio-header-info">
           <div className="inicio-loja-row">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -225,26 +210,7 @@ export default function Inicio() {
           margin: -2rem -2rem 0 -2rem;
         }
 
-        .inicio-header-top { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
 
-        .inicio-search {
-          flex: 1; display: flex; align-items: center; gap: 0.5rem;
-          background: rgba(255,255,255,0.2); border-radius: 12px;
-          padding: 0.6rem 0.9rem;
-        }
-
-        .inicio-search-input {
-          background: none; border: none; outline: none;
-          color: white; font-family: 'Inter', sans-serif; font-size: 0.88rem;
-          width: 100%;
-        }
-        .inicio-search-input::placeholder { color: rgba(255,255,255,0.65); }
-
-        .inicio-bell {
-          background: rgba(255,255,255,0.2); border: none; cursor: pointer;
-          width: 40px; height: 40px; border-radius: 10px;
-          display: flex; align-items: center; justify-content: center;
-        }
 
         .inicio-loja-row { display: flex; align-items: center; gap: 0.5rem; }
         .inicio-loja-nome { color: white; font-weight: 600; font-size: 0.95rem; }
