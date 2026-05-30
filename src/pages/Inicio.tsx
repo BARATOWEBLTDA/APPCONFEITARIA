@@ -101,8 +101,8 @@ export default function Inicio() {
                 <img src="/assine.png" alt="Assine" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
               </div>
               <div>
-                <h3 className="trial-card-title">ASSINE O DONNLY</h3>
-                <p className="trial-card-desc">Continue por apenas <strong>R$ 19,90/mês</strong> após o teste.</p>
+                <h3 className="trial-card-title">ASSINE O DONNLY PREMIUM</h3>
+                <p className="trial-card-desc">Desbloqueie todos os recursos da plataforma. <strong>Apenas R$ 19,90/mês após o período de testes.</strong></p>
               </div>
             </div>
             <button className="trial-card-btn" onClick={() => alert("Em breve! Fale conosco pelo WhatsApp.")}>
