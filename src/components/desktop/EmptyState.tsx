@@ -1,5 +1,5 @@
 import { Search } from 'lucide-react'
-export function EmptyState() {
+export function DesktopEmptyState() {
   return (
     <div style={{ textAlign: 'center', padding: '48px 0' }}>
       <div style={{ width: '80px', height: '80px', backgroundColor: '#f3f4f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
