@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
@@ -77,10 +77,14 @@ export default function Inicio() {
       {/* Header rosa */}
       <div className="ini-header">
         <div>
-          <h1 className="ini-greeting">Olá{nome ? `, ${nome}` : ""}!</h1>
-          
+          <h1 className="ini-greeting">
+            {nome ? `Olá, ${nome}!` : "Olá!"} <span className="ini-welcome">Bem-vindo de volta.</span>
+          </h1>
         </div>
-        <span className="ini-trial-badge" style={{display:"inline-flex",alignItems:"center",flexDirection:"row",gap:"0.3rem",whiteSpace:"nowrap",background:"rgba(255,255,255,0.25)",padding:"0.3rem 0.7rem",borderRadius:"6px",color:"white",fontWeight:"600",fontSize:"0.82rem"}}><img src="/diamante.png" style={{width:"20px",height:"20px",objectFit:"contain",verticalAlign:"middle",marginRight:"4px"}} />Premium</span>
+        <span className="ini-trial-badge">
+          <img src="/diamante.png" style={{ width: "16px", height: "16px", objectFit: "contain", flexShrink: 0 }} alt="" />
+          Premium
+        </span>
       </div>
 
       {/* Layout desktop: 2 colunas */}
@@ -89,20 +93,22 @@ export default function Inicio() {
         {/* Coluna esquerda */}
         <div className="ini-col-left">
 
-          {/* Card Trial */}
+          {/* Card Trial — compacto */}
           <div className="trial-card">
             <div className="trial-card-badge">Recomendado</div>
             <div className="trial-card-body">
-              <div className="trial-card-icon"><img src="/assine.png" alt="Donnly" style={{width:"100%",height:"100%",objectFit:"contain"}} /></div>
+              <div className="trial-card-icon">
+                <img src="/assine.png" alt="Assine" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+              </div>
               <div>
                 <h3 className="trial-card-title">ASSINE O DONNLY</h3>
-                <p className="trial-card-desc">Continue com todas as funcionalidades por apenas <strong>R$ 19,90/mês</strong> após o período de teste.</p>
+                <p className="trial-card-desc">Continue por apenas <strong>R$ 19,90/mês</strong> após o teste.</p>
               </div>
             </div>
             <button className="trial-card-btn" onClick={() => alert("Em breve! Fale conosco pelo WhatsApp.")}>
               Assinar agora
             </button>
-            <p className="trial-card-days">⏱️ Você tem <strong>{diasTrial} dias</strong> restantes de avaliação gratuita</p>
+            <p className="trial-card-days">Você tem <strong>{diasTrial} dias</strong> restantes de avaliação gratuita</p>
           </div>
 
           {/* Atalhos */}
@@ -197,90 +203,93 @@ export default function Inicio() {
         /* Header */
         .ini-header {
           background: linear-gradient(135deg, #f9007a 0%, #ff6eb4 100%);
-          padding: 1.5rem 1.75rem;
+          padding: 1rem 1.75rem;
           margin: -2rem -2rem 1.5rem -2rem;
           display: flex; align-items: center; justify-content: space-between;
         }
-        .ini-greeting { font-size: 1.1rem; font-weight: 700; color: white; margin: 0; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
-        .ini-subtitle { display: none; } .ini-welcome { font-size: 1.1rem; font-weight: 400; color: rgba(255,255,255,0.8); }
+        .ini-greeting {
+          font-size: 1rem; font-weight: 700; color: white; margin: 0;
+          display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;
+        }
+        .ini-welcome { font-size: 1rem; font-weight: 400; color: rgba(255,255,255,0.85); }
+
         .ini-trial-badge {
           background: rgba(255,255,255,0.25); color: white;
-          font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.8rem;
-          border-radius: 20px; white-space: nowrap;
+          font-size: 0.78rem; font-weight: 600;
+          padding: 0.3rem 0.7rem;
+          border-radius: 6px;
+          white-space: nowrap;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.3rem;
+          flex-shrink: 0;
         }
 
         /* Grid 2 colunas no desktop */
         .ini-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1.25rem;
-          align-items: start;
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 1.25rem; align-items: start;
         }
         .ini-col-left, .ini-col-right { display: flex; flex-direction: column; gap: 1.25rem; }
-
         .ini-section-title { font-size: 0.95rem; font-weight: 700; color: #1f2937; margin: 0 0 0.75rem; }
 
-        /* Trial card — estilo download app */
+        /* Trial card — compacto */
         .trial-card {
           background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-          border-radius: 18px; padding: 1.5rem;
+          border-radius: 14px; padding: 1rem 1.25rem;
           position: relative; overflow: hidden;
         }
         .trial-card-badge {
           position: absolute; top: 0; right: 0;
           background: linear-gradient(135deg, #f9007a, #ff6eb4);
-          color: white; font-size: 0.7rem; font-weight: 700;
-          padding: 0.35rem 1.1rem; border-radius: 0 18px 0 18px;
+          color: white; font-size: 0.68rem; font-weight: 700;
+          padding: 0.3rem 0.9rem; border-radius: 0 14px 0 14px;
           letter-spacing: 0.5px;
         }
-        .trial-card-body { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; margin-top: 0.25rem; }
+        .trial-card-body {
+          display: flex; align-items: center; gap: 0.75rem;
+          margin-bottom: 0.75rem; margin-top: 0.25rem;
+        }
         .trial-card-icon {
-          background: white; border-radius: 14px;
-          width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;
+          background: white; border-radius: 10px;
+          width: 52px; height: 52px;
+          display: flex; align-items: center; justify-content: center;
           flex-shrink: 0; overflow: hidden; padding: 4px;
         }
-        .trial-card-title { font-size: 1.05rem; font-weight: 800; color: white; margin: 0 0 0.3rem; letter-spacing: 0.3px; }
-        .trial-card-desc { font-size: 0.82rem; color: rgba(255,255,255,0.7); margin: 0; line-height: 1.4; }
+        .trial-card-title { font-size: 0.92rem; font-weight: 800; color: white; margin: 0 0 0.2rem; letter-spacing: 0.3px; }
+        .trial-card-desc { font-size: 0.78rem; color: rgba(255,255,255,0.7); margin: 0; line-height: 1.4; }
         .trial-card-btn {
-          width: 100%; padding: 0.85rem;
+          width: 100%; padding: 0.65rem;
           background: linear-gradient(135deg, #f9c74f, #f8961e);
-          color: #1a1a2e; border: none; border-radius: 12px;
-          font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 800;
-          cursor: pointer; letter-spacing: 0.3px; margin-bottom: 0.75rem;
-          box-shadow: 0 4px 16px rgba(248,150,30,0.3);
-          transition: opacity 0.2s;
+          color: #1a1a2e; border: none; border-radius: 10px;
+          font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 800;
+          cursor: pointer; margin-bottom: 0.5rem;
+          box-shadow: 0 4px 16px rgba(248,150,30,0.3); transition: opacity 0.2s;
         }
         .trial-card-btn:hover { opacity: 0.92; }
-        .trial-card-days { font-size: 0.78rem; color: rgba(255,255,255,0.6); margin: 0; text-align: center; }
+        .trial-card-days { font-size: 0.72rem; color: rgba(255,255,255,0.55); margin: 0; text-align: center; }
 
         /* Atalhos */
-        .atalhos-grid {
-          display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem;
-        }
+        .atalhos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
         .atalho-btn {
           display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
           background: white; border: 1.5px solid #e5e7eb; border-radius: 12px;
           padding: 0.75rem 0.5rem; cursor: pointer;
-          transition: border-color 0.15s, transform 0.15s;
-          font-family: 'Inter', sans-serif;
+          transition: border-color 0.15s, transform 0.15s; font-family: 'Inter', sans-serif;
         }
         .atalho-btn:hover { border-color: #f9007a; transform: translateY(-1px); }
         .atalho-emoji { font-size: 1.4rem; }
         .atalho-label { font-size: 0.72rem; font-weight: 500; color: #374151; }
 
         /* Progresso */
-        .progresso-card {
-          background: white; border-radius: 14px; padding: 1.25rem;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
+        .progresso-card { background: white; border-radius: 14px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .progresso-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
         .progresso-sub { font-size: 0.8rem; color: #9ca3af; margin: 0.2rem 0 0; }
         .progresso-pct-circle {
           width: 52px; height: 52px; border-radius: 50%;
           background: linear-gradient(135deg, #f9007a, #ff6eb4);
           display: flex; align-items: center; justify-content: center;
-          color: white; font-size: 0.82rem; font-weight: 800;
-          flex-shrink: 0;
+          color: white; font-size: 0.82rem; font-weight: 800; flex-shrink: 0;
         }
         .progresso-bar-bg { height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden; margin-bottom: 0.4rem; }
         .progresso-bar-fill { height: 100%; background: linear-gradient(135deg, #f9007a, #ff6eb4); border-radius: 4px; transition: width 0.5s ease; }
@@ -288,38 +297,28 @@ export default function Inicio() {
 
         /* Steps */
         .steps-list { display: flex; flex-direction: column; gap: 0.5rem; }
-        .step-group {
-          background: white; border-radius: 12px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;
-        }
+        .step-group { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
         .step-group-header {
           width: 100%; display: flex; justify-content: space-between; align-items: center;
-          padding: 0.9rem 1.1rem; background: none; border: none; cursor: pointer;
-          font-family: 'Inter', sans-serif;
+          padding: 0.9rem 1.1rem; background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif;
         }
         .step-group-left { display: flex; align-items: center; gap: 0.6rem; }
         .step-group-title { font-size: 0.88rem; font-weight: 600; color: #1f2937; }
         .step-group-right { display: flex; align-items: center; gap: 0.5rem; }
-        .step-badge {
-          font-size: 0.72rem; font-weight: 600; color: #6b7280;
-          background: #f3f4f6; padding: 0.2rem 0.6rem; border-radius: 20px;
-        }
+        .step-badge { font-size: 0.72rem; font-weight: 600; color: #6b7280; background: #f3f4f6; padding: 0.2rem 0.6rem; border-radius: 20px; }
         .step-badge.done { background: #dcfce7; color: #16a34a; }
         .step-items { border-top: 1px solid #f3f4f6; }
         .step-item {
           width: 100%; display: flex; align-items: center; gap: 0.7rem;
           padding: 0.8rem 1.1rem; background: none; border: none;
           border-bottom: 1px solid #f9fafb; cursor: pointer;
-          font-family: 'Inter', sans-serif; text-align: left;
-          transition: background 0.15s;
+          font-family: 'Inter', sans-serif; text-align: left; transition: background 0.15s;
         }
         .step-item:hover { background: #fff0f6; }
         .step-item:last-child { border-bottom: none; }
         .step-check {
           width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
-          border: 2px solid #e5e7eb;
-          display: flex; align-items: center; justify-content: center;
-          transition: all 0.2s;
+          border: 2px solid #e5e7eb; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
         }
         .step-check.checked { background: #16a34a; border-color: #16a34a; }
         .step-item-label { flex: 1; font-size: 0.83rem; color: #374151; font-weight: 500; }
@@ -333,10 +332,9 @@ export default function Inicio() {
           font-size: 0.85rem; font-weight: 600; color: #92400e;
         }
 
-        /* Mobile: 1 coluna */
         @media (max-width: 768px) {
           .ini-grid { grid-template-columns: 1fr; }
-          .ini-header { margin: -1rem -1rem 1.25rem -1rem; padding: 1.25rem; }
+          .ini-header { margin: -1rem -1rem 1.25rem -1rem; padding: 1rem; }
         }
       `}</style>
     </div>
