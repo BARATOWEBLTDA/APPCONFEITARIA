@@ -16,7 +16,7 @@ interface Cliente {
 
 const COMO_CONHECEU = ["Instagram", "Indicação", "Google", "Facebook", "TikTok", "Outro"];
 const STATUS_OPTIONS = ["ativo", "inativo"];
-const emptyForm = { nome: "", telefone: "", whatsapp: "", data_nascimento: "", endereco: "", como_conheceu: "", status: "ativo", foto_url: "" };
+const emptyForm = { nome: "", whatsapp: "", data_nascimento: "", endereco: "", como_conheceu: "", foto_url: "" };
 
 export default function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
@@ -71,7 +71,7 @@ export default function Clientes() {
   const handleSave = async () => {
     if (!form.nome.trim() || !userId) return;
     setSaving(true);
-    const payload = { ...form, user_id: userId };
+    const payload = { ...form, user_id: userId, foto_url: form.foto_url || null };
     if (editando) await supabase.from("clientes").update(payload).eq("id", editando);
     else await supabase.from("clientes").insert(payload);
     await fetchClientes(userId);
@@ -123,7 +123,7 @@ export default function Clientes() {
       {/* Busca */}
       <div className="cli-search-wrap">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" placeholder="Buscar por nome ou telefone..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" />
+        <input type="text" placeholder="Buscar por nome ou telefone..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
       </div>
 
       {/* Lista */}
@@ -208,11 +208,11 @@ export default function Clientes() {
               <div className="form-fields">
                 <div className="form-field">
                   <label>Nome *</label>
-                  <input type="text" placeholder="Nome completo" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} />
+                  <input type="text" placeholder="Nome completo" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} autoComplete="off" name="cli-nome" />
                 </div>
                 <div className="form-field">
                   <label>WhatsApp</label>
-                  <input type="tel" placeholder="(00) 9 0000-0000" value={form.whatsapp} onChange={e => setForm({...form, whatsapp: e.target.value})} />
+                  <input type="tel" placeholder="(00) 9 0000-0000" value={form.whatsapp} onChange={e => setForm({...form, whatsapp: e.target.value})} autoComplete="off" name="cli-whatsapp" />
                 </div>
 
                 <div className="form-field">
@@ -221,7 +221,7 @@ export default function Clientes() {
                 </div>
                 <div className="form-field">
                   <label>Endereço</label>
-                  <input type="text" placeholder="Rua, número, bairro, cidade" value={form.endereco} onChange={e => setForm({...form, endereco: e.target.value})} />
+                  <input type="text" placeholder="Rua, número, bairro, cidade" value={form.endereco} onChange={e => setForm({...form, endereco: e.target.value})} autoComplete="off" name="cli-endereco" />
                 </div>
                 <div className="form-field">
                   <label>Como conheceu</label>
