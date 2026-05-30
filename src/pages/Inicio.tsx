@@ -108,7 +108,6 @@ export default function Inicio() {
             <button className="trial-card-btn" onClick={() => alert("Em breve! Fale conosco pelo WhatsApp.")}>
               Assinar agora
             </button>
-            <p className="trial-card-days">Você tem <strong>{diasTrial} dias</strong> restantes de avaliação gratuita</p>
           </div>
 
           {/* Atalhos */}
@@ -242,9 +241,9 @@ export default function Inicio() {
         .trial-card-badge {
           position: absolute; top: 0; right: 0;
           background: linear-gradient(135deg, #f9007a, #ff6eb4);
-          color: white; font-size: 0.68rem; font-weight: 700;
-          padding: 0.3rem 0.9rem; border-radius: 0 14px 0 14px;
-          letter-spacing: 0.5px;
+          color: white; font-size: 0.62rem; font-weight: 700;
+          padding: 0.25rem 0.7rem; border-radius: 0 14px 0 10px;
+          letter-spacing: 0.3px; max-width: 90px; text-align: center;
         }
         .trial-card-body {
           display: flex; align-items: center; gap: 0.75rem;
