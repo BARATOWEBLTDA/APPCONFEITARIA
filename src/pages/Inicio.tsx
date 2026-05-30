@@ -201,8 +201,8 @@ export default function Inicio() {
           margin: -2rem -2rem 1.5rem -2rem;
           display: flex; align-items: center; justify-content: space-between;
         }
-        .ini-greeting { font-size: 1.5rem; font-weight: 700; color: white; margin: 0 0 0.2rem; }
-        .ini-subtitle { font-size: 0.9rem; color: rgba(255,255,255,0.8); margin: 0; }
+        .ini-greeting { font-size: 1.1rem; font-weight: 700; color: white; margin: 0; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .ini-subtitle { display: none; } .ini-welcome { font-size: 1.1rem; font-weight: 400; color: rgba(255,255,255,0.8); }
         .ini-trial-badge {
           background: rgba(255,255,255,0.25); color: white;
           font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.8rem;
