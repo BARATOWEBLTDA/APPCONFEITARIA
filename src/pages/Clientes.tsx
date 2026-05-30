@@ -91,7 +91,7 @@ export default function Clientes() {
 
   const filtered = clientes.filter(c =>
     c.nome.toLowerCase().includes(search.toLowerCase()) ||
-    c.telefone?.includes(search) || c.whatsapp?.includes(search)
+    c.whatsapp?.includes(search)
   );
 
   const formatPhone = (phone?: string) => {
@@ -149,8 +149,8 @@ export default function Clientes() {
               {/* Info */}
               <div className="cli-info">
                 <p className="cli-nome">{c.nome}</p>
-                {(c.whatsapp || c.telefone) && (
-                  <p className="cli-detalhe">📞 {formatPhone(c.whatsapp || c.telefone)}</p>
+                {c.whatsapp && (
+                  <p className="cli-detalhe">📞 {formatPhone(c.whatsapp)}</p>
                 )}
                 {c.data_nascimento && (
                   <p className="cli-detalhe">🎂 {getAniversario(c.data_nascimento)}</p>
@@ -210,10 +210,7 @@ export default function Clientes() {
                   <label>WhatsApp</label>
                   <input type="tel" placeholder="(00) 9 0000-0000" value={form.whatsapp} onChange={e => setForm({...form, whatsapp: e.target.value})} />
                 </div>
-                <div className="form-field">
-                  <label>Telefone</label>
-                  <input type="tel" placeholder="(00) 0000-0000" value={form.telefone} onChange={e => setForm({...form, telefone: e.target.value})} />
-                </div>
+
                 <div className="form-field">
                   <label>Data de aniversário</label>
                   <input type="date" value={form.data_nascimento} onChange={e => setForm({...form, data_nascimento: e.target.value})} />
