@@ -136,7 +136,7 @@ export default function Auth() {
 
       <div className="auth-card">
         <div className="auth-logo-wrap">
-          <img src="https://www.pandamenu.com.br/imagemmenu.png" alt="Donnly" className="auth-logo-img" />
+          <img src="/logoapp.png" alt="Donnly" className="auth-logo-img" />
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -193,7 +193,7 @@ export default function Auth() {
 
             <div className="cadastro-logo-wrap">
               {/* Substitua pela sua logo */}
-              <img src="https://www.pandamenu.com.br/imagemmenu.png" alt="Donnly" className="cadastro-logo" />
+              <img src="/logoapp.png" alt="Donnly" className="cadastro-logo" />
             </div>
 
             <form onSubmit={handleCadastro} className="cadastro-form">
