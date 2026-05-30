@@ -182,7 +182,6 @@ export default function Auth() {
           </div>
         </form>
       </div>
-      </div>
 
       {/* Modal Cadastro */}
       {showCadastro && (
