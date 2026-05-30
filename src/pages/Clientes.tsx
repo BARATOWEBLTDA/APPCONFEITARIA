@@ -29,6 +29,13 @@ export default function Clientes() {
   const [search, setSearch] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+
+  // Block body scroll when modal is open
+  useEffect(() => {
+    const isOpen = showForm || !!confirmDelete;
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [showForm, confirmDelete]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -156,7 +163,6 @@ export default function Clientes() {
               {/* Ações */}
               <div className="cli-actions">
                 <button className="cli-act edit" onClick={() => handleEdit(c)}>✏️</button>
-                <button className="cli-act delete" onClick={() => setConfirmDelete(c.id)}>🗑️</button>
               </div>
             </div>
           ))}
@@ -223,15 +229,13 @@ export default function Clientes() {
                     {COMO_CONHECEU.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                 </div>
-                <div className="form-field">
-                  <label>Status</label>
-                  <select value={form.status} onChange={e => setForm({...form, status: e.target.value})}>
-                    {STATUS_OPTIONS.map(o => <option key={o} value={o}>{o.charAt(0).toUpperCase() + o.slice(1)}</option>)}
-                  </select>
-                </div>
+
               </div>
             </div>
             <div className="form-footer">
+              {editando && (
+                <button className="form-btn delete-btn" onClick={() => { setShowForm(false); setConfirmDelete(editando); }}>🗑️ Excluir</button>
+              )}
               <button className="form-btn cancel" onClick={() => setShowForm(false)}>Cancelar</button>
               <button className="form-btn save" onClick={handleSave} disabled={saving || !form.nome.trim()}>
                 {saving ? <span className="spinner-sm" /> : editando ? "Salvar" : "Cadastrar"}
@@ -306,7 +310,7 @@ export default function Clientes() {
         .cli-act.delete:hover { background: #fecdd3; }
 
         /* Modal */
-        .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; overflow: hidden; touch-action: none; }
         .modal-box { background: white; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 360px; text-align: center; }
         .modal-box h3 { font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.4rem; }
         .modal-box p { font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.25rem; }
@@ -339,6 +343,7 @@ export default function Clientes() {
         .form-btn.cancel { background: #f3f4f6; color: #6b7280; }
         .form-btn.save { background: linear-gradient(135deg, #f9007a, #d4006a); color: white; }
         .form-btn.save:disabled { opacity: 0.6; cursor: not-allowed; }
+        .form-btn.delete-btn { background: #fff1f2; color: #ef4444; flex: 0 0 auto; padding: 0.8rem 1rem; }
 
         .spinner { width: 24px; height: 24px; border: 2px solid #fce7f3; border-top-color: #f9007a; border-radius: 50%; animation: spin 0.7s linear infinite; }
         .spinner-sm { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
