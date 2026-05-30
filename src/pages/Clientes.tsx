@@ -161,12 +161,7 @@ export default function Clientes() {
                     {formatPhone(c.whatsapp)}
                   </a>
                 )}
-                {c.data_nascimento && (
-                  <p className="cli-detalhe">🎂 {getAniversario(c.data_nascimento)}</p>
-                )}
-                {c.como_conheceu && (
-                  <p className="cli-detalhe">📍 {c.como_conheceu}</p>
-                )}
+
               </div>
 
               {/* Ações */}
@@ -284,7 +279,7 @@ export default function Clientes() {
         .cli-card {
           display: flex; align-items: center; gap: 0.9rem;
           background: white; border-radius: 14px;
-          padding: 0.85rem 1rem;
+          padding: 0.75rem 1rem;
           box-shadow: 0 1px 6px rgba(0,0,0,0.07);
           transition: box-shadow 0.15s;
         }
@@ -299,7 +294,7 @@ export default function Clientes() {
         }
         .cli-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
-        .cli-info { flex: 1; min-width: 0; }
+        .cli-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
         .cli-nome { font-size: 0.95rem; font-weight: 600; color: #1f2937; margin: 0 0 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cli-detalhe { font-size: 0.8rem; color: #6b7280; margin: 0 0 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cli-whatsapp-link {
