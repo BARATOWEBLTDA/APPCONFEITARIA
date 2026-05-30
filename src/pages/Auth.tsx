@@ -257,6 +257,8 @@ export default function Auth() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; }
+        #root { height: 100%; }
 
         .auth-root {
           height: 100vh; display: flex; flex-direction: column;
