@@ -4,7 +4,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/lib/supabase";
 
 const menuItems = [
-  { label: "Dashboard", path: "/dashboard", emoji: "📊" },
+  { label: "Início", path: "/inicio", emoji: "🏠" },
   { label: "Cardápio / Loja", path: "/cardapio-config", emoji: "🛍️" },
   { label: "Pedidos", path: "/pedidos", emoji: "📋" },
   { label: "Clientes", path: "/clientes", emoji: "👥" },
