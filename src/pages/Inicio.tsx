@@ -34,6 +34,7 @@ export default function Inicio() {
         { label: "Adicionar logo/foto da loja", path: "/configuracoes", done: !!profile?.foto_url },
         { label: "Adicionar WhatsApp", path: "/configuracoes", done: !!profile?.telefone },
         { label: "Informar localização", path: "/configuracoes", done: !!profile?.endereco },
+        { label: "Configurar horário de funcionamento", path: "/configuracoes", done: !!profile?.horario },
       ],
     },
     {
