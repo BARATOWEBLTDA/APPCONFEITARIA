@@ -1,3 +1,1 @@
-export function Footer({ textoRodape }: { textoRodape?: string }) {
-  return null
-}
+export function DesktopFooter({ textoRodape }: { textoRodape?: string }) { return null }
