@@ -77,10 +77,10 @@ export default function Inicio() {
       {/* Header rosa */}
       <div className="ini-header">
         <div>
-          <h1 className="ini-greeting">Olá{nome ? `, ${nome}` : ""}! 👋</h1>
-          <p className="ini-subtitle">{profile?.nome_loja || "Minha Confeitaria"}</p>
+          <h1 className="ini-greeting">Olá{nome ? `, ${nome}` : ""}!</h1>
+          
         </div>
-        <span className="ini-trial-badge"><img src="/diamante.png" style={{width:"16px",height:"16px",objectFit:"contain",verticalAlign:"middle",marginRight:"4px"}} /> Premium por {diasTrial} Dias</span>
+        <span className="ini-trial-badge"><img src="/diamante.png" style={{width:"14px",height:"14px",objectFit:"contain",verticalAlign:"middle",marginRight:"4px"}} />Premium</span>
       </div>
 
       {/* Layout desktop: 2 colunas */}
