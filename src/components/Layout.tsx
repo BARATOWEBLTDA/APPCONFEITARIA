@@ -337,26 +337,24 @@ export default function Layout() {
           .layout-main {
             margin-left: 0;
             padding: 1rem;
-            padding-bottom: 7rem;
+            padding-bottom: 5.5rem;
           }
 
           .bottom-nav {
             display: flex;
             position: fixed;
-            bottom: 16px;
-            left: 50%;
-            transform: translateX(-50%);
+            bottom: 0; left: 0; right: 0;
             z-index: 20;
             background: #181419;
-            border-radius: 40px;
-            padding: 0.5rem 0.75rem;
+            border-radius: 0;
+            padding: 0.5rem 0.25rem 0.85rem;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-            gap: 0.25rem;
-            width: calc(100% - 32px);
-            max-width: 420px;
-            border: 1px solid rgba(249,0,122,0.15);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+            gap: 0;
+            width: 100%;
+            max-width: 100%;
+            border-top: 1px solid rgba(249,0,122,0.15);
           }
 
           .bottom-item {
