@@ -80,7 +80,7 @@ export default function Inicio() {
           <h1 className="ini-greeting">Olá{nome ? `, ${nome}` : ""}! 👋</h1>
           <p className="ini-subtitle">{profile?.nome_loja || "Minha Confeitaria"}</p>
         </div>
-        <span className="ini-trial-badge">Trial: {diasTrial} dias</span>
+        <span className="ini-trial-badge"><img src="/diamante.png" style={{width:"16px",height:"16px",objectFit:"contain",verticalAlign:"middle",marginRight:"4px"}} /> Premium por {diasTrial} Dias</span>
       </div>
 
       {/* Layout desktop: 2 colunas */}
