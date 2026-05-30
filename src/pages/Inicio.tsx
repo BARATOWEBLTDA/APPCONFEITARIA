@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
@@ -93,7 +93,7 @@ export default function Inicio() {
           <div className="trial-card">
             <div className="trial-card-badge">Recomendado</div>
             <div className="trial-card-body">
-              <div className="trial-card-icon">🍰</div>
+              <div className="trial-card-icon"><img src="/assine.png" alt="Donnly" style={{width:"100%",height:"100%",objectFit:"contain"}} /></div>
               <div>
                 <h3 className="trial-card-title">ASSINE O DONNLY</h3>
                 <p className="trial-card-desc">Continue com todas as funcionalidades por apenas <strong>R$ 19,90/mês</strong> após o período de teste.</p>
