@@ -1,5 +1,5 @@
 import { Search } from 'lucide-react'
-import { ProductCard } from './ProductCard'
+import { DesktopProductCard } from './ProductCard'
 import { Produto } from '@/types/database'
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
   onSearchChange: (t: string) => void
 }
 
-export function ProductList({ produtos, favorites, onToggleFavorite, backgroundColor, borderColor, selectedCategory, searchTerm, onSearchChange }: Props) {
+export function DesktopProductList({ produtos, favorites, onToggleFavorite, backgroundColor, borderColor, selectedCategory, searchTerm, onSearchChange }: Props) {
   const filtered = produtos.filter(p => {
     const s = p.nome.toLowerCase().includes(searchTerm.toLowerCase()) || p.descricao?.toLowerCase().includes(searchTerm.toLowerCase())
     const c = !selectedCategory || p.categoria === selectedCategory
@@ -23,34 +23,31 @@ export function ProductList({ produtos, favorites, onToggleFavorite, backgroundC
   const regular = filtered.filter(p => !p.promocao)
 
   return (
-    <div style={{ backgroundColor }}>
-      <div className="mb-6 px-4">
-        <div className="relative max-w-md mx-auto">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input type="text" placeholder="Buscar produtos..." value={searchTerm} onChange={e => onSearchChange(e.target.value)} className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-lg focus:border-pink-400 focus:outline-none" style={{ backgroundColor: '#fff' }} />
+    <div style={{ backgroundColor: '#FEF2F2' }}>
+      <div className="mb-8 max-w-2xl mx-auto">
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input type="text" placeholder="Buscar produtos..." value={searchTerm} onChange={e => onSearchChange(e.target.value)} className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-pink-400 focus:outline-none" />
         </div>
       </div>
       {promo.length > 0 && (
-        <div className="mb-6">
-          <h3 className="font-semibold text-lg mb-3 flex items-center gap-2"><span>🔥</span> Promoções</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {promo.map(p => <ProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={onToggleFavorite} backgroundColor={backgroundColor} borderColor={borderColor} />)}
+        <div className="mb-10">
+          <h3 className="text-2xl font-bold mb-6 flex items-center gap-3"><span>🔥</span> Promoções</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {promo.map(p => <DesktopProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={onToggleFavorite} backgroundColor={backgroundColor} borderColor={borderColor} />)}
           </div>
         </div>
       )}
       {regular.length > 0 && (
-        <div className="mb-6">
-          <h3 className="font-semibold text-lg mb-3">{selectedCategory || 'Todos os Produtos'}</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {regular.map(p => <ProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={onToggleFavorite} backgroundColor={backgroundColor} borderColor={borderColor} />)}
+        <div className="mb-10">
+          <h3 className="text-2xl font-bold mb-6">{selectedCategory || 'Todos os Produtos'}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {regular.map(p => <DesktopProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={onToggleFavorite} backgroundColor={backgroundColor} borderColor={borderColor} />)}
           </div>
         </div>
       )}
       {filtered.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          <Search className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-          <p>Nenhum produto encontrado</p>
-        </div>
+        <div className="text-center py-20 text-gray-400"><Search className="w-16 h-16 mx-auto mb-4" /><h3 className="text-2xl font-bold mb-3">Nenhum produto encontrado</h3></div>
       )}
     </div>
   )
