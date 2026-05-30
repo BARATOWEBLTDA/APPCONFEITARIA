@@ -91,12 +91,14 @@ export default function Layout() {
             <h3 className="gestao-title">Gestão</h3>
             <div className="gestao-grid">
               {[
+                { label: "Dashboard", path: "/dashboard", icon: "📊" },
                 { label: "Pedidos", path: "/pedidos", icon: "📋" },
-                { label: "Clientes", path: "/clientes", icon: "👥" },
-                { label: "Estoque", path: "/estoque", icon: "📦" },
                 { label: "Produtos", path: "/produtos", icon: "🎂" },
+                { label: "Estoque", path: "/estoque", icon: "📦" },
                 { label: "Financeiro", path: "/financeiro", icon: "💰" },
                 { label: "Promoções", path: "/promocoes", icon: "🏷️" },
+                { label: "Arquivos", path: "/arquivos", icon: "🗂️" },
+                { label: "Configurações", path: "/configuracoes", icon: "⚙️" },
               ].map((item) => (
                 <NavLink
                   key={item.path}
@@ -115,21 +117,14 @@ export default function Layout() {
 
       {/* Bottom nav Mobile */}
       <nav className="bottom-nav">
-        <NavLink to="/dashboard" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`} title="Início">
+        <NavLink to="/inicio" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`} title="Início">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
             <polyline points="9 22 9 12 15 12 15 22"/>
           </svg>
         </NavLink>
 
-        <button className={`bottom-item ${gestaoOpen ? "active" : ""}`} onClick={() => setGestaoOpen(!gestaoOpen)} title="Gestão">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-          </svg>
-        </button>
-
-        <NavLink to="/cardapio-config" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`} title="Cardápio">
+        <NavLink to="/receitas" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`} title="Receitas">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
@@ -138,11 +133,28 @@ export default function Layout() {
           </svg>
         </NavLink>
 
-        <NavLink to="/receitas" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`} title="Receitas">
+        <NavLink to="/clientes" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`} title="Clientes">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
         </NavLink>
+
+        <NavLink to="/cardapio-config" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`} title="Cardápio">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M3 3h18v4H3z"/><path d="M3 10h18"/><path d="M3 14h18"/><path d="M3 18h18"/>
+          </svg>
+        </NavLink>
+
+        <button className={`bottom-item ${gestaoOpen ? "active" : ""}`} onClick={() => setGestaoOpen(!gestaoOpen)} title="Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
       </nav>
 
       <style>{`
