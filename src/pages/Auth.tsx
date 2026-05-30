@@ -259,7 +259,7 @@ export default function Auth() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         .auth-root {
-          min-height: 100vh; display: flex; flex-direction: column;
+          height: 100vh; display: flex; flex-direction: column;
           align-items: center; justify-content: center;
           position: relative; overflow: hidden; font-family: 'DM Sans', sans-serif;
         }
@@ -273,7 +273,7 @@ export default function Auth() {
           position: relative; z-index: 2; background: #ffffff; border-radius: 16px;
           padding: 2.5rem 2.2rem 2rem; width: calc(100% - 2.5rem); max-width: 440px;
           box-shadow: 0 8px 40px rgba(0,0,0,0.12); animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-          margin: 0 auto 3rem auto;
+          margin: 0 auto;
         }
         @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 
