@@ -247,7 +247,7 @@ export default function Inicio() {
         }
         .trial-card-body {
           display: flex; align-items: center; gap: 0.75rem;
-          margin-bottom: 0.75rem; margin-top: 0.25rem;
+          margin-bottom: 0.75rem; margin-top: 1.5rem;
         }
         .trial-card-icon {
           background: white; border-radius: 10px;
