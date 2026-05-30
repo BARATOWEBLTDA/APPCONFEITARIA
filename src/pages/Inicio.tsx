@@ -233,7 +233,7 @@ export default function Inicio() {
           padding: 0.35rem 1.1rem; border-radius: 0 18px 0 18px;
           letter-spacing: 0.5px;
         }
-        .trial-card-body { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; margin-top: 0.5rem; }
+        .trial-card-body { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; margin-top: 0.25rem; }
         .trial-card-icon {
           background: white; border-radius: 14px;
           width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;
