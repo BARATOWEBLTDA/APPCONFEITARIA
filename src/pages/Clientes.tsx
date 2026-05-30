@@ -109,6 +109,8 @@ export default function Clientes() {
 
   return (
     <div className="cli-root">
+      <div className="cli-layout">
+      <div className="cli-main">
       {/* Header */}
       <div className="cli-header">
         <div>
@@ -172,6 +174,109 @@ export default function Clientes() {
           ))}
         </div>
       )}
+
+      </div>{/* end cli-main */}
+      {/* Painel lateral desktop */}
+      <div className="cli-sidebar">
+
+        {/* Aniversariantes próximos */}
+        <div className="cli-panel">
+          <h3 className="cli-panel-title">🎂 Aniversariantes Próximos</h3>
+          {(() => {
+            const hoje = new Date();
+            const proximos = clientes.filter(c => {
+              if (!c.data_nascimento) return false;
+              const nasc = new Date(c.data_nascimento);
+              const aniv = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
+              if (aniv < hoje) aniv.setFullYear(hoje.getFullYear() + 1);
+              const diff = (aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24);
+              return diff >= 0 && diff <= 30;
+            }).sort((a, b) => {
+              const hoje = new Date();
+              const dateA = new Date(a.data_nascimento!);
+              const dateB = new Date(b.data_nascimento!);
+              const anivA = new Date(hoje.getFullYear(), dateA.getMonth(), dateA.getDate());
+              const anivB = new Date(hoje.getFullYear(), dateB.getMonth(), dateB.getDate());
+              if (anivA < hoje) anivA.setFullYear(hoje.getFullYear() + 1);
+              if (anivB < hoje) anivB.setFullYear(hoje.getFullYear() + 1);
+              return anivA.getTime() - anivB.getTime();
+            });
+            if (proximos.length === 0) return <p className="cli-panel-empty">Nenhum aniversariante nos próximos 30 dias</p>;
+            return proximos.map(c => {
+              const nasc = new Date(c.data_nascimento!);
+              const aniv = new Date(new Date().getFullYear(), nasc.getMonth(), nasc.getDate());
+              if (aniv < new Date()) aniv.setFullYear(new Date().getFullYear() + 1);
+              const diff = Math.ceil((aniv.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+              return (
+                <div key={c.id} className="cli-aniv-item">
+                  <div className="cli-aniv-avatar">
+                    {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
+                  </div>
+                  <div className="cli-aniv-info">
+                    <p className="cli-aniv-nome">{c.nome.split(' ')[0]}</p>
+                    <p className="cli-aniv-data">{nasc.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</p>
+                  </div>
+                  <span className={`cli-aniv-badge ${diff <= 7 ? 'soon' : ''}`}>
+                    {diff === 0 ? '🎉 Hoje!' : diff === 1 ? 'Amanhã' : `${diff} dias`}
+                  </span>
+                </div>
+              );
+            });
+          })()}
+        </div>
+
+        {/* Estatísticas */}
+        <div className="cli-panel">
+          <h3 className="cli-panel-title">📊 Estatísticas</h3>
+          <div className="cli-stats-grid">
+            <div className="cli-stat">
+              <span className="cli-stat-num">{clientes.length}</span>
+              <span className="cli-stat-label">Total</span>
+            </div>
+            <div className="cli-stat">
+              <span className="cli-stat-num">
+                {clientes.filter(c => {
+                  const d = new Date(c.created_at);
+                  const now = new Date();
+                  return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                }).length}
+              </span>
+              <span className="cli-stat-label">Este mês</span>
+            </div>
+            <div className="cli-stat">
+              <span className="cli-stat-num">
+                {clientes.filter(c => c.data_nascimento).length}
+              </span>
+              <span className="cli-stat-label">Com aniversário</span>
+            </div>
+            <div className="cli-stat">
+              <span className="cli-stat-num">
+                {clientes.filter(c => c.foto_url).length}
+              </span>
+              <span className="cli-stat-label">Com foto</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Últimos adicionados */}
+        <div className="cli-panel">
+          <h3 className="cli-panel-title">🆕 Últimos Adicionados</h3>
+          {[...clientes].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 4).map(c => (
+            <div key={c.id} className="cli-recent-item">
+              <div className="cli-aniv-avatar">
+                {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
+              </div>
+              <div className="cli-aniv-info">
+                <p className="cli-aniv-nome">{c.nome.split(' ').slice(0,2).join(' ')}</p>
+                <p className="cli-aniv-data">{new Date(c.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+      </div>
+
+      </div>{/* end cli-layout */}
 
       {/* Confirmar exclusão */}
       {confirmDelete && (
@@ -249,7 +354,53 @@ export default function Clientes() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
-        .cli-root { font-family: 'Inter', sans-serif; max-width: 800px; }
+        .cli-root { font-family: 'Inter', sans-serif; }
+
+        .cli-layout { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+        .cli-main { min-width: 0; }
+        .cli-sidebar { display: none; }
+
+        @media (min-width: 1024px) {
+          .cli-layout { grid-template-columns: 1fr 300px; align-items: start; }
+          .cli-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+        }
+
+        .cli-panel {
+          background: white; border-radius: 14px; padding: 1rem 1.1rem;
+          box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+        }
+        .cli-panel-title { font-size: 0.88rem; font-weight: 700; color: #1f2937; margin: 0 0 0.85rem; }
+        .cli-panel-empty { font-size: 0.82rem; color: #9ca3af; text-align: center; padding: 0.5rem 0; }
+
+        .cli-aniv-item, .cli-recent-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0; border-bottom: 1px solid #f9fafb; }
+        .cli-aniv-item:last-child, .cli-recent-item:last-child { border-bottom: none; }
+
+        .cli-aniv-avatar {
+          width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+          background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 0.9rem; font-weight: 700; color: #f9007a; overflow: hidden;
+        }
+        .cli-aniv-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .cli-aniv-info { flex: 1; min-width: 0; }
+        .cli-aniv-nome { font-size: 0.82rem; font-weight: 600; color: #1f2937; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cli-aniv-data { font-size: 0.75rem; color: #9ca3af; margin: 0; }
+
+        .cli-aniv-badge {
+          font-size: 0.72rem; font-weight: 600; color: #6b7280;
+          background: #f3f4f6; padding: 0.2rem 0.5rem; border-radius: 20px;
+          white-space: nowrap; flex-shrink: 0;
+        }
+        .cli-aniv-badge.soon { background: #fff0f6; color: #f9007a; }
+
+        .cli-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+        .cli-stat {
+          background: #f9fafb; border-radius: 10px; padding: 0.7rem 0.5rem;
+          display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
+        }
+        .cli-stat-num { font-size: 1.4rem; font-weight: 800; color: #f9007a; }
+        .cli-stat-label { font-size: 0.72rem; color: #6b7280; font-weight: 500; text-align: center; }
 
         .cli-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; gap: 0.75rem; }
         .cli-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 0.2rem; }
