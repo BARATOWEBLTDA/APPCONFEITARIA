@@ -235,9 +235,9 @@ export default function Inicio() {
         }
         .trial-card-body { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem; margin-top: 0.5rem; }
         .trial-card-icon {
-          font-size: 2rem; background: white; border-radius: 14px;
-          width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
+          background: white; border-radius: 14px;
+          width: 70px; height: 70px; display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0; overflow: hidden; padding: 4px;
         }
         .trial-card-title { font-size: 1.05rem; font-weight: 800; color: white; margin: 0 0 0.3rem; letter-spacing: 0.3px; }
         .trial-card-desc { font-size: 0.82rem; color: rgba(255,255,255,0.7); margin: 0; line-height: 1.4; }
