@@ -9,7 +9,6 @@ export default function Inicio() {
   const [clientes, setClientes] = useState(0);
   const [categorias, setCategorias] = useState(0);
   const [pedidos, setPedidos] = useState(0);
-  const [faturamento, setFaturamento] = useState(0);
   const [loading, setLoading] = useState(true);
   const [openGroup, setOpenGroup] = useState<number | null>(0);
   const [diasTrial] = useState(14);
@@ -33,8 +32,7 @@ export default function Inicio() {
 
   const steps = [
     {
-      title: "Configure sua loja",
-      emoji: "🏪",
+      title: "Configure sua loja", emoji: "🏪",
       items: [
         { label: "Adicionar logo/foto da loja", path: "/configuracoes", done: !!profile?.foto_url },
         { label: "Adicionar WhatsApp", path: "/configuracoes", done: !!profile?.telefone },
@@ -45,21 +43,9 @@ export default function Inicio() {
         { label: "Criar pelo menos 1 categoria", path: "/configuracoes", done: categorias > 0 },
       ],
     },
-    {
-      title: "Seus produtos",
-      emoji: "🎂",
-      items: [{ label: "Adicionar primeiro produto", path: "/produtos", done: produtos > 0 }],
-    },
-    {
-      title: "Seus clientes",
-      emoji: "👥",
-      items: [{ label: "Cadastrar primeiro cliente", path: "/clientes", done: clientes > 0 }],
-    },
-    {
-      title: "Cardápio público",
-      emoji: "🛍️",
-      items: [{ label: "Configurar seu cardápio público", path: "/cardapio-config", done: !!profile?.foto_url && produtos > 0 }],
-    },
+    { title: "Seus produtos", emoji: "🎂", items: [{ label: "Adicionar primeiro produto", path: "/produtos", done: produtos > 0 }] },
+    { title: "Seus clientes", emoji: "👥", items: [{ label: "Cadastrar primeiro cliente", path: "/clientes", done: clientes > 0 }] },
+    { title: "Cardápio público", emoji: "🛍️", items: [{ label: "Configurar seu cardápio público", path: "/cardapio-config", done: !!profile?.foto_url && produtos > 0 }] },
   ];
 
   const allItems = steps.flatMap(s => s.items);
@@ -67,6 +53,7 @@ export default function Inicio() {
   const totalCount = allItems.length;
   const progress = Math.round((doneCount / totalCount) * 100);
   const remaining = totalCount - doneCount;
+  const nextStep = allItems.find(i => !i.done);
   const nome = profile?.nome?.split(" ")[0] || "";
 
   const atalhos = [
@@ -83,69 +70,145 @@ export default function Inicio() {
   return (
     <div className="ini-root">
 
-      {/* Header rosa */}
-      <div className="ini-header">
-        <div>
-          <h1 className="ini-greeting">
-            {nome ? `Olá, ${nome}!` : "Olá!"} <span className="ini-welcome">Bem-vindo de volta.</span>
-          </h1>
-        </div>
-        <span className="ini-trial-badge">
-          <img src="/diamante.png" style={{ width: "16px", height: "16px", objectFit: "contain", flexShrink: 0 }} alt="" />
-          Premium
-        </span>
-      </div>
+      {/* ===== MOBILE ===== */}
+      <div className="ini-mobile">
 
-      {/* Cards resumo */}
-      <div className="ini-summary">
-        <div className="ini-sum-card">
-          <span className="ini-sum-icon">📦</span>
-          <p className="ini-sum-num">{pedidos}</p>
-          <p className="ini-sum-label">Pedidos do mês</p>
-        </div>
-        <div className="ini-sum-card">
-          <span className="ini-sum-icon">👥</span>
-          <p className="ini-sum-num">{clientes}</p>
-          <p className="ini-sum-label">Clientes</p>
-        </div>
-        <div className="ini-sum-card">
-          <span className="ini-sum-icon">🎂</span>
-          <p className="ini-sum-num">{produtos}</p>
-          <p className="ini-sum-label">Produtos</p>
+        {/* Header rosa mobile */}
+        <div className="mob-header">
+          <div>
+            <h1 className="mob-greeting">Olá{nome ? `, ${nome}` : ""}! <span className="mob-welcome">Bem-vindo de volta.</span></h1>
+          </div>
+          <span className="mob-badge">
+            <img src="/diamante.png" style={{ width: "14px", height: "14px", objectFit: "contain" }} alt="" />
+            Premium
+          </span>
         </div>
 
-      </div>
+        {/* Cards resumo mobile - 3 lado a lado */}
+        <div className="mob-summary">
+          <div className="mob-sum-card" onClick={() => navigate("/pedidos")}>
+            <span className="mob-sum-icon">📦</span>
+            <p className="mob-sum-num">{pedidos}</p>
+            <p className="mob-sum-label">Pedidos</p>
+          </div>
+          <div className="mob-sum-card" onClick={() => navigate("/clientes")}>
+            <span className="mob-sum-icon">👥</span>
+            <p className="mob-sum-num">{clientes}</p>
+            <p className="mob-sum-label">Clientes</p>
+          </div>
+          <div className="mob-sum-card" onClick={() => navigate("/produtos")}>
+            <span className="mob-sum-icon">🎂</span>
+            <p className="mob-sum-num">{produtos}</p>
+            <p className="mob-sum-label">Produtos</p>
+          </div>
+        </div>
 
-      {/* Layout desktop: checklist esquerda, atalhos + premium direita */}
-      <div className="ini-grid">
-
-        {/* Coluna esquerda — Checklist */}
-        <div className="ini-col-left">
-          {/* Progresso */}
-          <div className="progresso-card">
-            <div className="progresso-header">
-              <div>
-                <h2 className="ini-section-title" style={{ margin: 0 }}>Configure seu Doonly</h2>
-                <p className="progresso-sub">
-                  {progress === 100
-                    ? "🎉 Tudo pronto! Sua loja está completa."
-                    : `Falta pouco! Complete mais ${remaining} etapa${remaining !== 1 ? "s" : ""} para liberar todo o potencial da sua loja.`
-                  }
-                </p>
-              </div>
-              <div className="progresso-pct-circle">
-                <span>{progress}%</span>
-              </div>
+        {/* Card trial mobile */}
+        <div className="mob-trial" onClick={() => navigate("/assinar")}>
+          <div className="mob-trial-left">
+            <div className="mob-trial-icon">
+              <img src="/assine.png" alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
             </div>
-            <div className="progresso-bar-bg">
-              <div className="progresso-bar-fill" style={{ width: `${progress}%` }} />
+            <div>
+              <p className="mob-trial-title">ASSINE O DOONLY PREMIUM</p>
+              <p className="mob-trial-sub">Apenas R$ 19,90/mês após o teste</p>
             </div>
           </div>
+          <div className="mob-trial-badge">Recomendado</div>
+        </div>
 
-          {/* Próximo passo */}
-          {progress < 100 && (() => {
-            const nextStep = allItems.find(i => !i.done);
-            return nextStep ? (
+        {/* Atalhos mobile */}
+        <div className="mob-section-title">Acesso rápido</div>
+        <div className="mob-atalhos">
+          {atalhos.map(a => (
+            <button key={a.path} className="mob-atalho" onClick={() => navigate(a.path)}>
+              <span className="mob-atalho-emoji">{a.emoji}</span>
+              <span className="mob-atalho-label">{a.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Progresso mobile */}
+        <div className="mob-progress-card">
+          <div className="mob-progress-header">
+            <div>
+              <p className="mob-progress-title">Configure seu Doonly</p>
+              <p className="mob-progress-sub">
+                {progress === 100 ? "🎉 Tudo pronto!" : `Falta pouco! Mais ${remaining} etapa${remaining !== 1 ? "s" : ""}`}
+              </p>
+            </div>
+            <div className="mob-progress-circle">{progress}%</div>
+          </div>
+          <div className="mob-progress-bar-bg">
+            <div className="mob-progress-bar-fill" style={{ width: `${progress}%` }} />
+          </div>
+          {nextStep && (
+            <div className="mob-next-step">
+              <p className="mob-next-label">Próximo passo</p>
+              <p className="mob-next-text">{nextStep.label}</p>
+              <button className="mob-next-btn" onClick={() => navigate(nextStep.path)}>Configurar →</button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ===== DESKTOP ===== */}
+      <div className="ini-desktop">
+
+        {/* Header desktop */}
+        <div className="ini-header">
+          <div>
+            <h1 className="ini-greeting">
+              {nome ? `Olá, ${nome}!` : "Olá!"} <span className="ini-welcome">Bem-vindo de volta.</span>
+            </h1>
+          </div>
+          <span className="ini-trial-badge">
+            <img src="/diamante.png" style={{ width: "16px", height: "16px", objectFit: "contain", flexShrink: 0 }} alt="" />
+            Premium
+          </span>
+        </div>
+
+        {/* Cards resumo desktop */}
+        <div className="ini-summary">
+          <div className="ini-sum-card">
+            <span className="ini-sum-icon">📦</span>
+            <p className="ini-sum-num">{pedidos}</p>
+            <p className="ini-sum-label">Pedidos do mês</p>
+          </div>
+          <div className="ini-sum-card">
+            <span className="ini-sum-icon">👥</span>
+            <p className="ini-sum-num">{clientes}</p>
+            <p className="ini-sum-label">Clientes</p>
+          </div>
+          <div className="ini-sum-card">
+            <span className="ini-sum-icon">🎂</span>
+            <p className="ini-sum-num">{produtos}</p>
+            <p className="ini-sum-label">Produtos</p>
+          </div>
+        </div>
+
+        {/* Grid 2 colunas */}
+        <div className="ini-grid">
+
+          {/* Coluna esquerda — Checklist */}
+          <div className="ini-col-left">
+            <div className="progresso-card">
+              <div className="progresso-header">
+                <div>
+                  <h2 className="ini-section-title" style={{ margin: 0 }}>Configure seu Doonly</h2>
+                  <p className="progresso-sub">
+                    {progress === 100 ? "🎉 Tudo pronto! Sua loja está completa." : `Falta pouco! Complete mais ${remaining} etapa${remaining !== 1 ? "s" : ""} para liberar todo o potencial da sua loja.`}
+                  </p>
+                </div>
+                <div className="progresso-pct-circle"><span>{progress}%</span></div>
+              </div>
+              <div className="progresso-bar-bg">
+                <div className="progresso-bar-fill" style={{ width: `${progress}%` }} />
+              </div>
+            </div>
+
+            {/* Próximo passo */}
+            {progress < 100 && nextStep && (
               <div className="next-step-card">
                 <div className="next-step-left">
                   <span className="next-step-dot" />
@@ -154,101 +217,81 @@ export default function Inicio() {
                     <p className="next-step-text">{nextStep.label}</p>
                   </div>
                 </div>
-                <button className="next-step-btn" onClick={() => navigate(nextStep.path)}>
-                  Configurar agora →
-                </button>
+                <button className="next-step-btn" onClick={() => navigate(nextStep.path)}>Configurar agora →</button>
               </div>
-            ) : null;
-          })()}
+            )}
 
-          {/* Steps */}
-          <div className="steps-list">
-            {steps.map((group, gi) => {
-              const groupDone = group.items.filter(i => i.done).length;
-              const isOpen = openGroup === gi;
-              const allDone = groupDone === group.items.length;
-              return (
-                <div key={gi} className="step-group">
-                  <button className="step-group-header" onClick={() => setOpenGroup(isOpen ? null : gi)}>
-                    <div className="step-group-left">
-                      <span>{group.emoji}</span>
-                      <span className="step-group-title">{group.title}</span>
-                    </div>
-                    <div className="step-group-right">
-                      <span className={`step-badge ${allDone ? "done" : ""}`}>
-                        {allDone ? "✓ Completo" : `${groupDone}/${group.items.length}`}
-                      </span>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "0.2s" }}>
-                        <polyline points="6 9 12 15 18 9"/>
-                      </svg>
-                    </div>
+            {/* Steps */}
+            <div className="steps-list">
+              {steps.map((group, gi) => {
+                const groupDone = group.items.filter(i => i.done).length;
+                const isOpen = openGroup === gi;
+                const allDone = groupDone === group.items.length;
+                return (
+                  <div key={gi} className="step-group">
+                    <button className="step-group-header" onClick={() => setOpenGroup(isOpen ? null : gi)}>
+                      <div className="step-group-left">
+                        <span>{group.emoji}</span>
+                        <span className="step-group-title">{group.title}</span>
+                      </div>
+                      <div className="step-group-right">
+                        <span className={`step-badge ${allDone ? "done" : ""}`}>{allDone ? "✓ Completo" : `${groupDone}/${group.items.length}`}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "0.2s" }}><polyline points="6 9 12 15 18 9"/></svg>
+                      </div>
+                    </button>
+                    {isOpen && (
+                      <div className="step-items">
+                        {group.items.map((item, ii) => (
+                          <button key={ii} className="step-item" onClick={() => navigate(item.path)}>
+                            <div className={`step-check ${item.done ? "checked" : ""}`}>
+                              {item.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                            </div>
+                            <span className="step-item-label">{item.label}</span>
+                            <span className={`step-status ${item.done ? "done" : "pending"}`}>{item.done ? "Concluído" : "Fazer agora"}</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {progress < 100 && <div className="complete-banner">🎁 Complete 100% e aproveite todos os recursos do Doonly!</div>}
+          </div>
+
+          {/* Coluna direita — Premium + Atalhos */}
+          <div className="ini-col-right">
+            <div className="trial-card">
+              <div className="trial-card-badge">Recomendado</div>
+              <div className="trial-card-body">
+                <div className="trial-card-icon">
+                  <img src="/assine.png" alt="Assine" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                </div>
+                <div>
+                  <h3 className="trial-card-title">ASSINE O DOONLY PREMIUM</h3>
+                  <p className="trial-card-price">Apenas <strong>R$ 19,90/mês</strong> após o teste</p>
+                </div>
+              </div>
+              <div className="trial-benefits">
+                {["Clientes ilimitados","Produtos ilimitados","Relatórios avançados","Recursos exclusivos","Suporte prioritário","Assistente IA Doonly","Cardápio Digital profissional","Acesso a mais de 10.000 receitas"].map(b => (
+                  <div key={b} className="trial-benefit-item"><span className="trial-benefit-dot">🔥</span><span>{b}</span></div>
+                ))}
+              </div>
+              <button className="trial-card-btn" onClick={() => navigate("/assinar")}>Assinar agora</button>
+            </div>
+
+            <div className="ini-section">
+              <h2 className="ini-section-title">Acesso rápido</h2>
+              <div className="atalhos-grid">
+                {atalhos.map(a => (
+                  <button key={a.path} className="atalho-btn" onClick={() => navigate(a.path)}>
+                    <span className="atalho-emoji">{a.emoji}</span>
+                    <span className="atalho-label">{a.label}</span>
                   </button>
-                  {isOpen && (
-                    <div className="step-items">
-                      {group.items.map((item, ii) => (
-                        <button key={ii} className="step-item" onClick={() => navigate(item.path)}>
-                          <div className={`step-check ${item.done ? "checked" : ""}`}>
-                            {item.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
-                          </div>
-                          <span className="step-item-label">{item.label}</span>
-                          <span className={`step-status ${item.done ? "done" : "pending"}`}>
-                            {item.done ? "Concluído" : "Fazer agora"}
-                          </span>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {progress < 100 && (
-            <div className="complete-banner">
-              🎁 Complete 100% e aproveite todos os recursos do Doonly!
-            </div>
-          )}
-        </div>
-
-        {/* Coluna direita — Premium + Atalhos */}
-        <div className="ini-col-right">
-
-          {/* Card Trial — compacto */}
-          <div className="trial-card">
-            <div className="trial-card-badge">Recomendado</div>
-            <div className="trial-card-body">
-              <div className="trial-card-icon">
-                <img src="/assine.png" alt="Assine" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                ))}
               </div>
-              <div>
-                <h3 className="trial-card-title">ASSINE O DOONLY PREMIUM</h3>
-                <p className="trial-card-price">Apenas <strong>R$ 19,90/mês</strong> após o teste</p>
-              </div>
-            </div>
-            <div className="trial-benefits">
-              {["Clientes ilimitados","Produtos ilimitados","Relatórios avançados","Recursos exclusivos","Suporte prioritário","Assistente IA Doonly","Cardápio Digital profissional","Acesso a mais de 10.000 receitas"].map(b => (
-                <div key={b} className="trial-benefit-item">
-                  <span className="trial-benefit-dot">🔥</span>
-                  <span>{b}</span>
-                </div>
-              ))}
-            </div>
-            <button className="trial-card-btn" onClick={() => alert("Em breve! Fale conosco pelo WhatsApp.")}>
-              Assinar agora
-            </button>
-          </div>
-
-          {/* Atalhos */}
-          <div className="ini-section">
-            <h2 className="ini-section-title">Acesso rápido</h2>
-            <div className="atalhos-grid">
-              {atalhos.map(a => (
-                <button key={a.path} className="atalho-btn" onClick={() => navigate(a.path)}>
-                  <span className="atalho-emoji">{a.emoji}</span>
-                  <span className="atalho-label">{a.label}</span>
-                </button>
-              ))}
             </div>
           </div>
         </div>
@@ -258,55 +301,75 @@ export default function Inicio() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         .ini-root { font-family: 'Inter', sans-serif; }
 
-        /* Header */
-        .ini-header {
-          background: white;
-          padding: 1rem 1.75rem;
-          margin: -2rem -2rem 1.25rem -2rem;
-          display: flex; align-items: center; justify-content: space-between;
-          border-bottom: 1px solid #f3f4f6;
-        }
-        .ini-greeting { font-size: 1rem; font-weight: 700; color: #1f2937; margin: 0; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
-        .ini-welcome { font-size: 1rem; font-weight: 400; color: #6b7280; }
-        .ini-trial-badge {
-          background: #fff0f6; color: #f9007a;
-          font-size: 0.78rem; font-weight: 600; padding: 0.3rem 0.7rem;
-          border-radius: 6px; white-space: nowrap;
-          display: inline-flex; align-items: center; gap: 0.3rem; flex-shrink: 0;
-          border: 1px solid #fce7f3;
+        /* Switch */
+        .ini-mobile { display: flex; flex-direction: column; gap: 0.85rem; }
+        .ini-desktop { display: none; }
+        @media (min-width: 768px) {
+          .ini-mobile { display: none; }
+          .ini-desktop { display: block; }
         }
 
-        /* Resumo cards */
-        .ini-summary {
-          display: flex; gap: 0.6rem; flex-wrap: wrap;
-          margin-bottom: 1.25rem; max-width: 70%;
-        }
-        .ini-sum-card {
-          background: white; border-radius: 14px; padding: 1rem 1.2rem;
-          display: flex; flex-direction: column; gap: 0.3rem;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-          min-width: 130px;
-        }
+        /* ===== MOBILE ===== */
+        .mob-header { background: linear-gradient(135deg, #f9007a, #ff6eb4); padding: 1rem 1.25rem; margin: -1rem -1rem 0 -1rem; display: flex; align-items: center; justify-content: space-between; }
+        .mob-greeting { font-size: 0.95rem; font-weight: 700; color: white; margin: 0; }
+        .mob-welcome { font-weight: 400; color: rgba(255,255,255,0.85); }
+        .mob-badge { background: rgba(255,255,255,0.25); color: white; font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; }
+
+        /* Cards 3 lado a lado */
+        .mob-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+        .mob-sum-card { background: white; border-radius: 12px; padding: 0.75rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer; transition: transform 0.15s; }
+        .mob-sum-card:hover { transform: translateY(-1px); }
+        .mob-sum-icon { font-size: 1.3rem; }
+        .mob-sum-num { font-size: 1.2rem; font-weight: 800; color: #1f2937; margin: 0; }
+        .mob-sum-label { font-size: 0.68rem; color: #9ca3af; margin: 0; font-weight: 500; }
+
+        /* Trial mobile */
+        .mob-trial { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 14px; padding: 1rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; position: relative; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+        .mob-trial-left { display: flex; align-items: center; gap: 0.75rem; }
+        .mob-trial-icon { width: 44px; height: 44px; background: white; border-radius: 10px; padding: 4px; flex-shrink: 0; overflow: hidden; }
+        .mob-trial-title { font-size: 0.78rem; font-weight: 800; color: white; margin: 0 0 0.15rem; }
+        .mob-trial-sub { font-size: 0.7rem; color: rgba(255,255,255,0.65); margin: 0; }
+        .mob-trial-badge { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #f9007a, #ff6eb4); color: white; font-size: 0.6rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 0 14px 0 8px; }
+
+        /* Atalhos mobile */
+        .mob-section-title { font-size: 0.88rem; font-weight: 700; color: #1f2937; }
+        .mob-atalhos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+        .mob-atalho { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 0.7rem 0.4rem; cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color 0.15s; }
+        .mob-atalho:hover { border-color: #f9007a; }
+        .mob-atalho-emoji { font-size: 1.3rem; }
+        .mob-atalho-label { font-size: 0.68rem; font-weight: 500; color: #374151; }
+
+        /* Progresso mobile */
+        .mob-progress-card { background: white; border-radius: 14px; padding: 1.1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .mob-progress-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+        .mob-progress-title { font-size: 0.9rem; font-weight: 700; color: #1f2937; margin: 0 0 0.2rem; }
+        .mob-progress-sub { font-size: 0.78rem; color: #6b7280; margin: 0; }
+        .mob-progress-circle { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #f9007a, #ff6eb4); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; }
+        .mob-progress-bar-bg { height: 8px; background: #f3f4f6; border-radius: 999px; overflow: hidden; margin-bottom: 0.75rem; }
+        .mob-progress-bar-fill { height: 100%; background: linear-gradient(135deg, #f9007a, #ff6eb4); border-radius: 999px; transition: width 0.5s; }
+        .mob-next-step { background: #fff0f6; border-radius: 10px; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
+        .mob-next-label { font-size: 0.7rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+        .mob-next-text { font-size: 0.85rem; font-weight: 600; color: #1f2937; margin: 0; }
+        .mob-next-btn { align-self: flex-start; background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 8px; padding: 0.45rem 0.9rem; font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+
+        /* ===== DESKTOP ===== */
+        .ini-header { background: white; padding: 1rem 1.75rem; margin: -2rem -2rem 1.25rem -2rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f3f4f6; }
+        .ini-greeting { font-size: 1rem; font-weight: 700; color: #1f2937; margin: 0; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .ini-welcome { font-size: 1rem; font-weight: 400; color: #6b7280; }
+        .ini-trial-badge { background: #fff0f6; color: #f9007a; font-size: 0.78rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 6px; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.3rem; border: 1px solid #fce7f3; }
+
+        .ini-summary { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.25rem; max-width: 70%; }
+        .ini-sum-card { background: white; border-radius: 14px; padding: 1rem 1.2rem; display: flex; flex-direction: column; gap: 0.3rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); min-width: 130px; }
         .ini-sum-icon { font-size: 1.4rem; }
         .ini-sum-num { font-size: 1.4rem; font-weight: 800; color: #1f2937; margin: 0; }
         .ini-sum-label { font-size: 0.75rem; color: #9ca3af; margin: 0; font-weight: 500; }
 
-        /* Grid 2 colunas */
         .ini-grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; align-items: start; }
         .ini-col-left, .ini-col-right { display: flex; flex-direction: column; gap: 1.25rem; }
         .ini-section-title { font-size: 0.95rem; font-weight: 700; color: #1f2937; margin: 0 0 0.75rem; }
 
-        /* Trial card */
-        .trial-card {
-          background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-          border-radius: 14px; padding: 1rem 1.25rem; position: relative; overflow: hidden;
-        }
-        .trial-card-badge {
-          position: absolute; top: 0; right: 0;
-          background: linear-gradient(135deg, #f9007a, #ff6eb4);
-          color: white; font-size: 0.62rem; font-weight: 700;
-          padding: 0.25rem 0.7rem; border-radius: 0 14px 0 10px; letter-spacing: 0.3px;
-        }
+        .trial-card { background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460); border-radius: 14px; padding: 1rem 1.25rem; position: relative; overflow: hidden; }
+        .trial-card-badge { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #f9007a, #ff6eb4); color: white; font-size: 0.62rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 0 14px 0 10px; }
         .trial-card-body { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; margin-top: 1.5rem; }
         .trial-card-icon { background: white; border-radius: 10px; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; padding: 4px; }
         .trial-card-title { font-size: 0.88rem; font-weight: 800; color: white; margin: 0 0 0.2rem; }
@@ -314,57 +377,29 @@ export default function Inicio() {
         .trial-benefits { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.75rem; }
         .trial-benefit-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: rgba(255,255,255,0.85); }
         .trial-benefit-dot { font-size: 0.7rem; flex-shrink: 0; }
+        .trial-card-btn { width: 100%; padding: 0.65rem; background: linear-gradient(135deg, #f9c74f, #f8961e); color: #1a1a2e; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 16px rgba(248,150,30,0.3); transition: opacity 0.2s; }
+        .trial-card-btn:hover { opacity: 0.92; }
 
-        .next-step-card {
-          background: white; border-radius: 12px; padding: 0.9rem 1.1rem;
-          border-left: 4px solid #f9c74f;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-          display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-          flex-wrap: wrap;
-        }
+        .atalhos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+        .atalho-btn { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 0.75rem 0.5rem; cursor: pointer; transition: border-color 0.15s, transform 0.15s; font-family: 'Inter', sans-serif; }
+        .atalho-btn:hover { border-color: #f9007a; transform: translateY(-1px); }
+        .atalho-emoji { font-size: 1.4rem; }
+        .atalho-label { font-size: 0.72rem; font-weight: 500; color: #374151; }
+
+        .progresso-card { background: white; border-radius: 14px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .progresso-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+        .progresso-sub { font-size: 0.8rem; color: #6b7280; margin: 0.3rem 0 0; max-width: 320px; line-height: 1.4; }
+        .progresso-pct-circle { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #f9007a, #ff6eb4); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.85rem; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 12px rgba(249,0,122,0.3); }
+        .progresso-bar-bg { height: 10px; background: #f3f4f6; border-radius: 999px; overflow: hidden; }
+        .progresso-bar-fill { height: 100%; background: linear-gradient(135deg, #f9007a, #ff6eb4); border-radius: 999px; transition: width 0.5s ease; }
+
+        .next-step-card { background: white; border-radius: 12px; padding: 0.9rem 1.1rem; border-left: 4px solid #f9c74f; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
         .next-step-left { display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0; }
         .next-step-dot { width: 10px; height: 10px; border-radius: 50%; background: #f9c74f; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(249,199,79,0.2); }
         .next-step-label { font-size: 0.72rem; color: #9ca3af; font-weight: 500; margin: 0 0 0.2rem; text-transform: uppercase; letter-spacing: 0.05em; }
         .next-step-text { font-size: 0.88rem; font-weight: 600; color: #1f2937; margin: 0; }
         .next-step-btn { background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 8px; padding: 0.55rem 1rem; font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-        .next-step-btn:hover { opacity: 0.9; }
-        .trial-card-desc { font-size: 0.76rem; color: rgba(255,255,255,0.7); margin: 0; line-height: 1.4; }
-        .trial-card-btn {
-          width: 100%; padding: 0.65rem;
-          background: linear-gradient(135deg, #f9c74f, #f8961e);
-          color: #1a1a2e; border: none; border-radius: 10px;
-          font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 800;
-          cursor: pointer; box-shadow: 0 4px 16px rgba(248,150,30,0.3); transition: opacity 0.2s;
-        }
-        .trial-card-btn:hover { opacity: 0.92; }
 
-        /* Atalhos */
-        .atalhos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
-        .atalho-btn {
-          display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
-          background: white; border: 1.5px solid #e5e7eb; border-radius: 12px;
-          padding: 0.75rem 0.5rem; cursor: pointer;
-          transition: border-color 0.15s, transform 0.15s; font-family: 'Inter', sans-serif;
-        }
-        .atalho-btn:hover { border-color: #f9007a; transform: translateY(-1px); }
-        .atalho-emoji { font-size: 1.4rem; }
-        .atalho-label { font-size: 0.72rem; font-weight: 500; color: #374151; }
-
-        /* Progresso */
-        .progresso-card { background: white; border-radius: 14px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .progresso-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
-        .progresso-sub { font-size: 0.8rem; color: #6b7280; margin: 0.3rem 0 0; max-width: 320px; line-height: 1.4; }
-        .progresso-pct-circle {
-          width: 56px; height: 56px; border-radius: 50%;
-          background: linear-gradient(135deg, #f9007a, #ff6eb4);
-          display: flex; align-items: center; justify-content: center;
-          color: white; font-size: 0.85rem; font-weight: 800; flex-shrink: 0;
-          box-shadow: 0 4px 12px rgba(249,0,122,0.3);
-        }
-        .progresso-bar-bg { height: 10px; background: #f3f4f6; border-radius: 999px; overflow: hidden; }
-        .progresso-bar-fill { height: 100%; background: linear-gradient(135deg, #f9007a, #ff6eb4); border-radius: 999px; transition: width 0.5s ease; }
-
-        /* Steps */
         .steps-list { display: flex; flex-direction: column; gap: 0.5rem; }
         .step-group { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
         .step-group-header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.1rem; background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; }
@@ -383,15 +418,7 @@ export default function Inicio() {
         .step-status { font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
         .step-status.done { color: #16a34a; }
         .step-status.pending { color: #f9007a; }
-
         .complete-banner { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 0.9rem 1.1rem; font-size: 0.85rem; font-weight: 600; color: #92400e; }
-
-        /* Mobile: 1 coluna */
-        @media (max-width: 768px) {
-          .ini-grid { grid-template-columns: 1fr; }
-          .ini-summary { grid-template-columns: repeat(2, 1fr); }
-          .ini-header { margin: -1rem -1rem 1.25rem -1rem; padding: 1rem; }
-        }
       `}</style>
     </div>
   );
