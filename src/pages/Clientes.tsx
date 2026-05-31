@@ -178,7 +178,7 @@ export default function Clientes() {
 
         {/* Banner 1 - Cadastrar */}
         <button className="mob-banner" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
-          <img src="/bannercadastrarclientes.png" alt="Cadastrar Cliente" className="mob-banner-img" />
+          <img src="/bannercadastro.png" alt="Cadastrar Cliente" className="mob-banner-img" />
         </button>
 
         {/* Banner 2 - Ver Cadastrados */}
