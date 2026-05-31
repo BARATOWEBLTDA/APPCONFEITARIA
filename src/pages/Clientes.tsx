@@ -19,6 +19,8 @@ export default function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showLista, setShowLista] = useState(false);
+  const [showNiver, setShowNiver] = useState(false);
   const [editando, setEditando] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [preview, setPreview] = useState<string | null>(null);
@@ -39,10 +41,10 @@ export default function Clientes() {
   }, []);
 
   useEffect(() => {
-    const isOpen = showForm || !!confirmDelete;
+    const isOpen = showForm || !!confirmDelete || showLista || showNiver;
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [showForm, confirmDelete]);
+  }, [showForm, confirmDelete, showLista, showNiver]);
 
   const fetchClientes = async (uid: string) => {
     setLoading(true);
@@ -75,14 +77,7 @@ export default function Clientes() {
   };
 
   const handleEdit = (c: Cliente) => {
-    setForm({
-      nome: c.nome || "",
-      whatsapp: c.whatsapp || "",
-      data_nascimento: c.data_nascimento || "",
-      endereco: c.endereco || "",
-      como_conheceu: c.como_conheceu || "",
-      foto_url: c.foto_url || "",
-    });
+    setForm({ nome: c.nome || "", whatsapp: c.whatsapp || "", data_nascimento: c.data_nascimento || "", endereco: c.endereco || "", como_conheceu: c.como_conheceu || "", foto_url: c.foto_url || "" });
     setPreview(c.foto_url || null);
     setEditando(c.id);
     setShowForm(true);
@@ -108,14 +103,6 @@ export default function Clientes() {
     return phone;
   };
 
-  const getHoursUntil = (data: string) => {
-    const hoje = new Date();
-    const nasc = new Date(data);
-    const aniv = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
-    if (aniv < hoje) aniv.setFullYear(hoje.getFullYear() + 1);
-    return Math.ceil((aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60));
-  };
-
   const getDaysUntil = (data: string) => {
     const hoje = new Date();
     const nasc = new Date(data);
@@ -124,72 +111,260 @@ export default function Clientes() {
     return Math.ceil((aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
   };
 
+  const getHoursUntil = (data: string) => {
+    const hoje = new Date();
+    const nasc = new Date(data);
+    const aniv = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
+    if (aniv < hoje) aniv.setFullYear(hoje.getFullYear() + 1);
+    return Math.ceil((aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60));
+  };
+
   const aniversariantes = clientes.filter(c => {
     if (!c.data_nascimento) return false;
     return getDaysUntil(c.data_nascimento) <= 30;
   }).sort((a, b) => getDaysUntil(a.data_nascimento!) - getDaysUntil(b.data_nascimento!));
 
+  const ultimosAdicionados = [...clientes]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 8);
+
+  const FormModal = () => (
+    <div className="modal-overlay" onClick={() => setShowForm(false)}>
+      <div className="form-drawer" onClick={e => e.stopPropagation()}>
+        <div className="form-handle" />
+        <div className="form-header">
+          <h2>{editando ? "Editar cliente" : "Novo cliente"}</h2>
+          <button className="form-close" onClick={() => setShowForm(false)}>✕</button>
+        </div>
+        <div className="form-scroll">
+          <div className="form-avatar-wrap">
+            <div className="form-avatar" onClick={() => fileRef.current?.click()}>
+              {preview ? <img src={preview} alt="foto" /> : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f9007a" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
+              <div className="form-avatar-overlay">📷</div>
+            </div>
+            <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
+            <span className="form-avatar-hint">Foto opcional</span>
+          </div>
+          <div className="form-fields">
+            <div className="form-field"><label>Nome *</label><input type="text" placeholder="Nome completo" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} autoComplete="off" name="cli-nome" /></div>
+            <div className="form-field"><label>WhatsApp</label><input type="tel" placeholder="(00) 9 0000-0000" value={form.whatsapp} onChange={e => setForm({...form, whatsapp: e.target.value})} autoComplete="off" name="cli-whatsapp" /></div>
+            <div className="form-field"><label>Data de aniversário</label><input type="date" value={form.data_nascimento} onChange={e => setForm({...form, data_nascimento: e.target.value})} /></div>
+            <div className="form-field"><label>Endereço</label><input type="text" placeholder="Rua, número, bairro, cidade" value={form.endereco} onChange={e => setForm({...form, endereco: e.target.value})} autoComplete="off" name="cli-endereco" /></div>
+            <div className="form-field">
+              <label>Como conheceu</label>
+              <select value={form.como_conheceu} onChange={e => setForm({...form, como_conheceu: e.target.value})}>
+                <option value="">Selecione...</option>
+                {COMO_CONHECEU.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="form-footer">
+          {editando && <button className="form-btn delete-btn" onClick={() => { setShowForm(false); setConfirmDelete(editando); }}>🗑️ Excluir</button>}
+          <button className="form-btn cancel" onClick={() => setShowForm(false)}>Cancelar</button>
+          <button className="form-btn save" onClick={handleSave} disabled={saving || !form.nome.trim()}>
+            {saving ? <span className="spinner-sm" /> : editando ? "Salvar" : "Cadastrar"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="cli-root">
-      <div className="cli-layout">
 
-        {/* Coluna principal — clientes */}
-        <div className="cli-main">
-          <div className="cli-header">
+      {/* ===== MOBILE ===== */}
+      <div className="cli-mobile">
 
-
+        {/* Banner Aniversariantes */}
+        <button className="mob-banner" onClick={() => setShowNiver(true)}>
+          <img src="/bannerniver.png" alt="Aniversariantes" className="mob-banner-img" />
+          <div className="mob-banner-overlay">
+            <span className="mob-banner-count">{aniversariantes.length} este mês</span>
           </div>
+        </button>
 
-          <div className="cli-topbar">
-            <button className="cli-btn-new" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
-              + Cadastrar Cliente
-            </button>
-            <div className="cli-search-wrap">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <input type="text" placeholder="Buscar por nome ou telefone..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
+        {/* Banner Cadastrar */}
+        <button className="mob-banner mob-banner-cadastrar" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
+          <div className="mob-banner-content">
+            <div className="mob-banner-icon">➕</div>
+            <div>
+              <p className="mob-banner-title">Cadastrar Cliente</p>
+              <p className="mob-banner-sub">Adicione um novo cliente</p>
             </div>
           </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
 
+        {/* Banner Ver Clientes */}
+        <button className="mob-banner mob-banner-ver" onClick={() => setShowLista(true)}>
+          <div className="mob-banner-content">
+            <div className="mob-banner-icon">👥</div>
+            <div>
+              <p className="mob-banner-title">Ver Clientes</p>
+              <p className="mob-banner-sub">{clientes.length} cliente{clientes.length !== 1 ? "s" : ""} cadastrado{clientes.length !== 1 ? "s" : ""}</p>
+            </div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        {/* Log ultimos adicionados */}
+        <div className="mob-log">
+          <h3 className="mob-log-title">📋 Últimos Cadastros</h3>
           {loading ? (
-            <div className="cli-loading"><span className="spinner" /></div>
-          ) : filtered.length === 0 ? (
-            <div className="cli-empty">
-              <p>Nenhum cliente encontrado</p>
-              <span>Clique em "+ Novo cliente" para cadastrar</span>
-            </div>
+            <div style={{textAlign:"center",padding:"2rem"}}><span className="spinner" /></div>
+          ) : ultimosAdicionados.length === 0 ? (
+            <p style={{color:"#9ca3af",fontSize:"0.85rem",textAlign:"center",padding:"1rem"}}>Nenhum cliente ainda</p>
           ) : (
-            <div className="cli-list">
-              {filtered.map(c => (
-                <div key={c.id} className="cli-card">
-                  <div className="cli-avatar">
-                    {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
-                  </div>
-                  <div className="cli-info">
-                    <p className="cli-nome">{c.nome}</p>
-                    {c.whatsapp && (
-                      <a href={`https://wa.me/55${c.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="cli-whatsapp-link" onClick={e => e.stopPropagation()}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                        {formatPhone(c.whatsapp)}
-                      </a>
-                    )}
-                  </div>
-                  <button className="cli-act" onClick={() => handleEdit(c)}>✏️</button>
+            ultimosAdicionados.map(c => (
+              <div key={c.id} className="mob-log-item" onClick={() => handleEdit(c)}>
+                <div className="mob-log-avatar">
+                  {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
                 </div>
-              ))}
-            </div>
+                <div className="mob-log-info">
+                  <p className="mob-log-nome">{c.nome}</p>
+                  <p className="mob-log-data">
+                    {new Date(c.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "2-digit" })} · {new Date(c.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            ))
           )}
         </div>
 
-        {/* Coluna lateral — aniversariantes */}
-        <div className="cli-sidebar">
-          <div className="cli-panel">
-            <img src="/bannerniver.png" alt="Aniversariantes" style={{width:"100%",borderRadius:"10px",marginBottom:"1rem",display:"block"}} />
-            {aniversariantes.length === 0 ? (
-              <p className="cli-panel-empty">Nenhum nos próximos 30 dias</p>
+        {/* Modal Aniversariantes Mobile */}
+        {showNiver && (
+          <div className="modal-overlay" onClick={() => setShowNiver(false)}>
+            <div className="mob-modal" onClick={e => e.stopPropagation()}>
+              <div className="form-handle" />
+              <div className="form-header">
+                <h2>🎂 Aniversariantes</h2>
+                <button className="form-close" onClick={() => setShowNiver(false)}>✕</button>
+              </div>
+              <div style={{padding:"0 1.25rem 1.5rem",overflowY:"auto",maxHeight:"60vh"}}>
+                {aniversariantes.length === 0 ? (
+                  <p style={{color:"#9ca3af",textAlign:"center",padding:"2rem"}}>Nenhum aniversariante nos próximos 30 dias</p>
+                ) : aniversariantes.map(c => {
+                  const nasc = new Date(c.data_nascimento!);
+                  const diff = getDaysUntil(c.data_nascimento!);
+                  const hours = getHoursUntil(c.data_nascimento!);
+                  return (
+                    <div key={c.id} className="cli-aniv-item" style={{marginBottom:"0.5rem"}}>
+                      <div className="cli-aniv-avatar">
+                        {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
+                      </div>
+                      <div className="cli-aniv-info">
+                        <p className="cli-aniv-nome">{c.nome}</p>
+                        <p className="cli-aniv-data">
+                          <span style={{display:"inline-flex",alignItems:"center",gap:"4px"}}>
+                            <img src="/nivercake.png" style={{width:"16px",height:"16px",objectFit:"contain"}} />
+                            Faz aniversário dia {nasc.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}
+                          </span>
+                        </p>
+                      </div>
+                      <span className={`cli-aniv-badge ${diff <= 7 ? "soon" : ""}`}>
+                        {diff === 0 ? "🎉 Hoje!" : hours <= 24 ? `${hours}h` : `${diff} dias`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Lista Mobile */}
+        {showLista && (
+          <div className="modal-overlay" onClick={() => setShowLista(false)}>
+            <div className="mob-modal" onClick={e => e.stopPropagation()}>
+              <div className="form-handle" />
+              <div className="form-header">
+                <h2>👥 Clientes</h2>
+                <button className="form-close" onClick={() => setShowLista(false)}>✕</button>
+              </div>
+              <div style={{padding:"0 1rem",overflowY:"auto",maxHeight:"65vh"}}>
+                <div className="cli-search-wrap" style={{margin:"0 0 1rem"}}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
+                </div>
+                {filtered.length === 0 ? (
+                  <p style={{color:"#9ca3af",textAlign:"center",padding:"2rem"}}>Nenhum cliente encontrado</p>
+                ) : (
+                  <div className="cli-list" style={{paddingBottom:"1rem"}}>
+                    {filtered.map(c => (
+                      <div key={c.id} className="cli-card">
+                        <div className="cli-avatar">
+                          {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
+                        </div>
+                        <div className="cli-info">
+                          <p className="cli-nome">{c.nome}</p>
+                          {c.whatsapp && (
+                            <a href={`https://wa.me/55${c.whatsapp.replace(/\D/g,"")}`} target="_blank" rel="noreferrer" className="cli-whatsapp-link" onClick={e => e.stopPropagation()}>
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                              {formatPhone(c.whatsapp)}
+                            </a>
+                          )}
+                        </div>
+                        <button className="cli-act" onClick={() => { setShowLista(false); handleEdit(c); }}>✏️</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ===== DESKTOP ===== */}
+      <div className="cli-desktop">
+        <div className="cli-layout">
+          <div className="cli-main">
+            <div className="cli-topbar">
+              <button className="cli-btn-new" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
+                + Cadastrar Cliente
+              </button>
+              <div className="cli-search-wrap">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" placeholder="Buscar por nome ou telefone..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
+              </div>
+            </div>
+            {loading ? (
+              <div className="cli-loading"><span className="spinner" /></div>
+            ) : filtered.length === 0 ? (
+              <div className="cli-empty"><p>Nenhum cliente encontrado</p></div>
             ) : (
-              aniversariantes.map(c => {
+              <div className="cli-list">
+                {filtered.map(c => (
+                  <div key={c.id} className="cli-card">
+                    <div className="cli-avatar">
+                      {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
+                    </div>
+                    <div className="cli-info">
+                      <p className="cli-nome">{c.nome}</p>
+                      {c.whatsapp && (
+                        <a href={`https://wa.me/55${c.whatsapp.replace(/\D/g,"")}`} target="_blank" rel="noreferrer" className="cli-whatsapp-link" onClick={e => e.stopPropagation()}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                          {formatPhone(c.whatsapp)}
+                        </a>
+                      )}
+                    </div>
+                    <button className="cli-act" onClick={() => handleEdit(c)}>✏️</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="cli-sidebar">
+            <div className="cli-panel">
+              <img src="/bannerniver.png" alt="Aniversariantes" style={{width:"100%",borderRadius:"10px",marginBottom:"1rem",display:"block"}} />
+              {aniversariantes.length === 0 ? (
+                <p className="cli-panel-empty">Nenhum nos próximos 30 dias</p>
+              ) : aniversariantes.map(c => {
                 const nasc = new Date(c.data_nascimento!);
                 const diff = getDaysUntil(c.data_nascimento!);
+                const hours = getHoursUntil(c.data_nascimento!);
                 return (
                   <div key={c.id} className="cli-aniv-item">
                     <div className="cli-aniv-avatar">
@@ -198,22 +373,24 @@ export default function Clientes() {
                     <div className="cli-aniv-info">
                       <p className="cli-aniv-nome">{c.nome}</p>
                       <p className="cli-aniv-data">
-                      <span style={{display:"inline-flex",alignItems:"center",gap:"5px",flexWrap:"nowrap"}}><img src="/nivercake.png" style={{width:"24px",height:"24px",objectFit:"contain",flexShrink:0}} />Faz aniversário dia {nasc.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}</span>
-                    </p>
+                        <span style={{display:"inline-flex",alignItems:"center",gap:"4px",flexWrap:"nowrap"}}>
+                          <img src="/nivercake.png" style={{width:"24px",height:"24px",objectFit:"contain",flexShrink:0}} />
+                          Faz aniversário dia {nasc.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}
+                        </span>
+                      </p>
                     </div>
                     <span className={`cli-aniv-badge ${diff <= 7 ? "soon" : ""}`}>
-                      {diff === 0 ? "🎉 Hoje!" : getHoursUntil(c.data_nascimento!) <= 24 ? `${getHoursUntil(c.data_nascimento!)}h` : `${diff} dias`}
+                      {diff === 0 ? "🎉 Hoje!" : hours <= 24 ? `${hours}h` : `${diff} dias`}
                     </span>
                   </div>
                 );
-              })
-            )}
+              })}
+            </div>
           </div>
         </div>
-
       </div>
 
-      {/* Confirmar exclusão */}
+      {/* Modais compartilhados */}
       {confirmDelete && (
         <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
@@ -226,158 +403,133 @@ export default function Clientes() {
           </div>
         </div>
       )}
-
-      {/* Formulário */}
-      {showForm && (
-        <div className="modal-overlay" onClick={() => setShowForm(false)}>
-          <div className="form-drawer" onClick={e => e.stopPropagation()}>
-            <div className="form-handle" />
-            <div className="form-header">
-              <h2>{editando ? "Editar cliente" : "Novo cliente"}</h2>
-              <button className="form-close" onClick={() => setShowForm(false)}>✕</button>
-            </div>
-            <div className="form-scroll">
-              <div className="form-avatar-wrap">
-                <div className="form-avatar" onClick={() => fileRef.current?.click()}>
-                  {preview ? <img src={preview} alt="foto" /> : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f9007a" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
-                  <div className="form-avatar-overlay">📷</div>
-                </div>
-                <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
-                <span className="form-avatar-hint">Foto opcional</span>
-              </div>
-              <div className="form-fields">
-                <div className="form-field">
-                  <label>Nome *</label>
-                  <input type="text" placeholder="Nome completo" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} autoComplete="off" name="cli-nome" />
-                </div>
-                <div className="form-field">
-                  <label>WhatsApp</label>
-                  <input type="tel" placeholder="(00) 9 0000-0000" value={form.whatsapp} onChange={e => setForm({...form, whatsapp: e.target.value})} autoComplete="off" name="cli-whatsapp" />
-                </div>
-                <div className="form-field">
-                  <label>Data de aniversário</label>
-                  <input type="date" value={form.data_nascimento} onChange={e => setForm({...form, data_nascimento: e.target.value})} />
-                </div>
-                <div className="form-field">
-                  <label>Endereço</label>
-                  <input type="text" placeholder="Rua, número, bairro, cidade" value={form.endereco} onChange={e => setForm({...form, endereco: e.target.value})} autoComplete="off" name="cli-endereco" />
-                </div>
-                <div className="form-field">
-                  <label>Como conheceu</label>
-                  <select value={form.como_conheceu} onChange={e => setForm({...form, como_conheceu: e.target.value})}>
-                    <option value="">Selecione...</option>
-                    {COMO_CONHECEU.map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div className="form-footer">
-              {editando && (
-                <button className="form-btn delete-btn" onClick={() => { setShowForm(false); setConfirmDelete(editando); }}>🗑️ Excluir</button>
-              )}
-              <button className="form-btn cancel" onClick={() => setShowForm(false)}>Cancelar</button>
-              <button className="form-btn save" onClick={handleSave} disabled={saving || !form.nome.trim()}>
-                {saving ? <span className="spinner-sm" /> : editando ? "Salvar" : "Cadastrar"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {showForm && <FormModal />}
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
         .cli-root { font-family: 'Inter', sans-serif; }
 
-        .cli-layout { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
-        .cli-main { min-width: 0; }
-        .cli-sidebar { display: none; flex-direction: column; gap: 1rem; }
-
-        @media (min-width: 1024px) {
-          .cli-layout { grid-template-columns: 2fr 1fr; align-items: start; }
-          .cli-sidebar { display: flex; padding-top: 4.5rem; }
+        /* Mobile/Desktop switch */
+        .cli-mobile { display: flex; flex-direction: column; gap: 0.75rem; }
+        .cli-desktop { display: none; }
+        @media (min-width: 768px) {
+          .cli-mobile { display: none; }
+          .cli-desktop { display: block; }
         }
 
-        .cli-header { display: none; }
-        .cli-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 0.2rem; }
-        .cli-subtitle { font-size: 0.85rem; color: #9ca3af; }
+        /* ===== MOBILE STYLES ===== */
+        .mob-banner {
+          width: 100%; border: none; cursor: pointer; border-radius: 16px;
+          overflow: hidden; padding: 0; position: relative;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .mob-banner:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+        .mob-banner-img { width: 100%; height: auto; display: block; }
+        .mob-banner-overlay {
+          position: absolute; bottom: 0; left: 0; right: 0;
+          background: linear-gradient(transparent, rgba(0,0,0,0.5));
+          padding: 0.75rem 1rem;
+          display: flex; justify-content: flex-end;
+        }
+        .mob-banner-count {
+          background: rgba(255,255,255,0.2); backdrop-filter: blur(8px);
+          color: white; font-size: 0.78rem; font-weight: 600;
+          padding: 0.25rem 0.75rem; border-radius: 20px;
+        }
+
+        .mob-banner-cadastrar {
+          background: linear-gradient(135deg, #f9007a, #d4006a);
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 1.1rem 1.25rem;
+        }
+        .mob-banner-ver {
+          background: linear-gradient(135deg, #1a1a2e, #16213e);
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 1.1rem 1.25rem;
+        }
+        .mob-banner-content { display: flex; align-items: center; gap: 0.9rem; }
+        .mob-banner-icon { font-size: 1.8rem; }
+        .mob-banner-title { font-size: 1rem; font-weight: 700; color: white; margin: 0 0 0.2rem; text-align: left; }
+        .mob-banner-sub { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin: 0; text-align: left; }
+
+        /* Log mobile */
+        .mob-log { background: white; border-radius: 16px; padding: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .mob-log-title { font-size: 0.9rem; font-weight: 700; color: #1f2937; margin: 0 0 0.75rem; }
+        .mob-log-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0; border-bottom: 1px solid #f3f4f6; cursor: pointer; }
+        .mob-log-item:last-child { border-bottom: none; }
+        .mob-log-avatar { width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0; background: linear-gradient(135deg, #fce7f3, #fbcfe8); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #f9007a; overflow: hidden; }
+        .mob-log-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .mob-log-info { flex: 1; min-width: 0; }
+        .mob-log-nome { font-size: 0.88rem; font-weight: 600; color: #1f2937; margin: 0 0 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mob-log-data { font-size: 0.75rem; color: #9ca3af; margin: 0; }
+
+        /* Modal mobile */
+        .mob-modal {
+          background: white; border-radius: 24px 24px 0 0;
+          width: 100%; max-height: 85vh;
+          display: flex; flex-direction: column;
+          position: fixed; bottom: 0; left: 0; right: 0;
+          animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        /* ===== DESKTOP STYLES ===== */
+        .cli-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; align-items: start; }
+        .cli-main { min-width: 0; }
+        .cli-sidebar { display: flex; flex-direction: column; gap: 1rem; padding-top: 4.5rem; }
+
+        .cli-topbar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
         .cli-btn-new {
-          padding: 0.65rem 1.4rem;
+          padding: 0.85rem 1.4rem;
           background: linear-gradient(270deg, #f9007a, #ff6eb4, #d4006a, #f9007a);
-          background-size: 300% 300%;
-          animation: gradientShift 3s ease infinite;
+          background-size: 300% 300%; animation: gradientShift 3s ease infinite;
           color: white; border: none; border-radius: 10px;
           font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600;
           cursor: pointer; white-space: nowrap; flex-shrink: 0;
           box-shadow: 0 4px 15px rgba(249,0,122,0.35);
-          transition: box-shadow 0.2s, transform 0.2s;
         }
         .cli-btn-new:hover { box-shadow: 0 6px 20px rgba(249,0,122,0.5); transform: translateY(-1px); }
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        .cli-topbar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
         .cli-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 0.85rem 1rem; flex: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
         .cli-search { border: none; outline: none; flex: 1; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; background: transparent; }
         .cli-search::placeholder { color: #9ca3af; }
 
         .cli-loading { display: flex; justify-content: center; padding: 3rem; }
         .cli-empty { text-align: center; padding: 3rem; color: #9ca3af; }
-        .cli-empty p { font-size: 1rem; font-weight: 500; margin-bottom: 0.3rem; color: #6b7280; }
-
         .cli-list { display: flex; flex-direction: column; gap: 0.6rem; }
 
-        .cli-card {
-          display: flex; align-items: center; gap: 0.9rem;
-          background: white; border-radius: 14px; padding: 0.75rem 1rem;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
-          border: 1px solid rgba(0,0,0,0.04);
-          transition: box-shadow 0.2s, transform 0.2s;
-        }
+        .cli-card { display: flex; align-items: center; gap: 0.9rem; background: white; border-radius: 14px; padding: 0.75rem 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.04); transition: box-shadow 0.2s, transform 0.2s; }
         .cli-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.15); transform: translateY(-1px); }
-
         .cli-avatar { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0; background: linear-gradient(135deg, #fce7f3, #fbcfe8); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; color: #f9007a; overflow: hidden; }
         .cli-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
         .cli-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
         .cli-nome { font-size: 0.95rem; font-weight: 600; color: #1f2937; margin: 0 0 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cli-whatsapp-link { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: #25D366; font-weight: 500; text-decoration: none; }
         .cli-whatsapp-link:hover { text-decoration: underline; }
-
         .cli-act { width: 34px; height: 34px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; background: #fff0f6; flex-shrink: 0; }
-        .cli-act:hover { background: #fce7f3; }
 
-        /* Painel aniversariantes */
+        /* Painel aniversariantes desktop */
         .cli-panel { background: white; border-radius: 14px; padding: 1rem 1.1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-        .cli-panel-title { font-size: 0.88rem; font-weight: 700; color: #1f2937; margin: 0 0 0.85rem; }
         .cli-panel-empty { font-size: 0.82rem; color: #9ca3af; text-align: center; padding: 0.5rem 0; }
 
-        .cli-aniv-item {
-          display: flex; align-items: center; gap: 0.75rem;
-          padding: 0.6rem 0.75rem; margin-bottom: 0.5rem;
-          border-radius: 12px;
-          background: linear-gradient(135deg, #1a1a2e, #16213e);
-          position: relative; overflow: hidden;
-        }
+        .cli-aniv-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; margin-bottom: 0.5rem; border-radius: 12px; background: linear-gradient(135deg, #1a1a2e, #16213e); position: relative; overflow: hidden; }
         .cli-aniv-item:last-child { margin-bottom: 0; }
-        .cli-aniv-item::before {
-          content: ''; position: absolute; inset: 0;
-          background: linear-gradient(90deg, transparent, rgba(255,215,0,0.08), transparent);
-          animation: shimmer 2.5s infinite;
-        }
+        .cli-aniv-item::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,215,0,0.08), transparent); animation: shimmer 2.5s infinite; }
         @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-
         .cli-aniv-avatar { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; color: #ffd700; overflow: hidden; }
         .cli-aniv-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
         .cli-aniv-info { flex: 1; min-width: 0; }
         .cli-aniv-nome { font-size: 0.82rem; font-weight: 600; color: white; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cli-aniv-data { font-size: 0.75rem; color: rgba(255,215,0,0.7); margin: 0; display: flex; align-items: center; }
-
+        .cli-aniv-data { font-size: 0.72rem; color: rgba(255,215,0,0.7); margin: 0; display: flex; align-items: center; }
         .cli-aniv-badge { font-size: 0.72rem; font-weight: 700; color: #1a1a2e; background: linear-gradient(135deg, #ffd700, #ffa500); padding: 0.25rem 0.6rem; border-radius: 20px; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(255,165,0,0.4); }
         .cli-aniv-badge.soon { background: linear-gradient(135deg, #f9007a, #ff6eb4); color: white; box-shadow: 0 2px 8px rgba(249,0,122,0.4); }
 
-        /* Modal */
-        .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; overflow: hidden; touch-action: none; }
+        /* Modais */
+        .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; overflow: hidden; touch-action: none; }
+        @media (min-width: 768px) { .modal-overlay { align-items: center; padding: 1rem; } }
         .modal-box { background: white; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 360px; text-align: center; }
         .modal-box h3 { font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.4rem; }
         .modal-box p { font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.25rem; }
@@ -386,9 +538,10 @@ export default function Clientes() {
         .modal-btn.cancel { background: #f3f4f6; color: #6b7280; }
         .modal-btn.confirm { background: #ef4444; color: white; }
 
-        /* Form */
-        .form-drawer { background: white; border-radius: 20px; width: 100%; max-width: 520px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: fadeScale 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+        .form-drawer { background: white; border-radius: 24px 24px 0 0; width: 100%; max-height: 90vh; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @media (min-width: 768px) { .form-drawer { border-radius: 20px; max-width: 520px; animation: fadeScale 0.25s cubic-bezier(0.16, 1, 0.3, 1); } }
         @keyframes fadeScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
         .form-handle { width: 40px; height: 4px; background: #e5e7eb; border-radius: 2px; margin: 0.75rem auto 0; }
         .form-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem 0.5rem; }
         .form-header h2 { font-size: 1.1rem; font-weight: 600; color: #1f2937; }
@@ -415,11 +568,6 @@ export default function Clientes() {
         .spinner { width: 24px; height: 24px; border: 2px solid #fce7f3; border-top-color: #f9007a; border-radius: 50%; animation: spin 0.7s linear infinite; }
         .spinner-sm { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        @media (max-width: 480px) {
-          .cli-header { flex-direction: column; align-items: stretch; }
-          .cli-btn-new { width: 100%; text-align: center; padding: 0.75rem; }
-        }
       `}</style>
     </div>
   );
