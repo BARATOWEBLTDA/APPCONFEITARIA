@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { QuickSetupModal } from "@/components/QuickSetupModal";
+import { SplashScreen } from "@/components/SplashScreen";
 
 export default function Inicio() {
   const navigate = useNavigate();
@@ -12,11 +13,18 @@ export default function Inicio() {
   const [pedidos, setPedidos] = useState(0);
   const [loading, setLoading] = useState(true);
   const [openGroup, setOpenGroup] = useState<number | null>(0);
+  const [showSplash, setShowSplash] = useState(() => sessionStorage.getItem("splash_shown") !== "true");
   const [quickStep, setQuickStep] = useState<{label: string; path: string} | null>(null);
   const [profileUserId, setProfileUserId] = useState<string>("");
   const [diasTrial] = useState(14);
 
   useEffect(() => {
+    if (showSplash) {
+      setTimeout(() => {
+        setShowSplash(false);
+        sessionStorage.setItem("splash_shown", "true");
+      }, 2500);
+    }
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -80,6 +88,7 @@ export default function Inicio() {
 
   return (
     <div className="ini-root">
+      {showSplash && <SplashScreen />}
 
       {/* ===== MOBILE ===== */}
       <div className="ini-mobile">
