@@ -339,7 +339,7 @@ export default function Clientes() {
 
         @media (min-width: 1024px) {
           .cli-layout { grid-template-columns: 1fr 1fr 1fr; align-items: start; }
-          .cli-sidebar { display: flex; }
+          .cli-sidebar { display: flex; padding-top: 4.5rem; }
         }
 
         .cli-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; gap: 0.75rem; }
