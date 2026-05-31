@@ -84,7 +84,43 @@ export default function Inicio() {
           </span>
         </div>
 
-        {/* Cards resumo mobile - 3 lado a lado */}
+        {/* 1. Configure seu Doonly - destaque escuro */}
+        <div className="mob-config-card">
+          <div className="mob-config-header">
+            <div>
+              <p className="mob-config-title">Configure seu Doonly</p>
+              <p className="mob-config-sub">
+                {progress === 100 ? "🎉 Tudo pronto!" : `Falta pouco! Mais ${remaining} etapa${remaining !== 1 ? "s" : ""}`}
+              </p>
+            </div>
+            <div className="mob-config-circle">{progress}%</div>
+          </div>
+          <div className="mob-config-bar-bg">
+            <div className="mob-config-bar-fill" style={{ width: `${progress}%` }} />
+          </div>
+          {nextStep && (
+            <div className="mob-config-next">
+              <div>
+                <p className="mob-config-next-label">Próximo passo</p>
+                <p className="mob-config-next-text">{nextStep.label}</p>
+              </div>
+              <button className="mob-config-next-btn" onClick={() => navigate(nextStep.path)}>Configurar →</button>
+            </div>
+          )}
+        </div>
+
+        {/* 2. Acesso rápido */}
+        <div className="mob-section-title">Acesso rápido</div>
+        <div className="mob-atalhos">
+          {atalhos.map(a => (
+            <button key={a.path} className="mob-atalho" onClick={() => navigate(a.path)}>
+              <span className="mob-atalho-emoji">{a.emoji}</span>
+              <span className="mob-atalho-label">{a.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* 3. Métricas - 3 lado a lado */}
         <div className="mob-summary">
           <div className="mob-sum-card" onClick={() => navigate("/pedidos")}>
             <span className="mob-sum-icon">📦</span>
@@ -103,7 +139,7 @@ export default function Inicio() {
           </div>
         </div>
 
-        {/* Card trial mobile */}
+        {/* 4. Banner premium por último */}
         <div className="mob-trial" onClick={() => navigate("/assinar")}>
           <div className="mob-trial-left">
             <div className="mob-trial-icon">
@@ -115,40 +151,6 @@ export default function Inicio() {
             </div>
           </div>
           <div className="mob-trial-badge">Recomendado</div>
-        </div>
-
-        {/* Atalhos mobile */}
-        <div className="mob-section-title">Acesso rápido</div>
-        <div className="mob-atalhos">
-          {atalhos.map(a => (
-            <button key={a.path} className="mob-atalho" onClick={() => navigate(a.path)}>
-              <span className="mob-atalho-emoji">{a.emoji}</span>
-              <span className="mob-atalho-label">{a.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Progresso mobile */}
-        <div className="mob-progress-card">
-          <div className="mob-progress-header">
-            <div>
-              <p className="mob-progress-title">Configure seu Doonly</p>
-              <p className="mob-progress-sub">
-                {progress === 100 ? "🎉 Tudo pronto!" : `Falta pouco! Mais ${remaining} etapa${remaining !== 1 ? "s" : ""}`}
-              </p>
-            </div>
-            <div className="mob-progress-circle">{progress}%</div>
-          </div>
-          <div className="mob-progress-bar-bg">
-            <div className="mob-progress-bar-fill" style={{ width: `${progress}%` }} />
-          </div>
-          {nextStep && (
-            <div className="mob-next-step">
-              <p className="mob-next-label">Próximo passo</p>
-              <p className="mob-next-text">{nextStep.label}</p>
-              <button className="mob-next-btn" onClick={() => navigate(nextStep.path)}>Configurar →</button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -351,6 +353,29 @@ export default function Inicio() {
         .mob-next-label { font-size: 0.7rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
         .mob-next-text { font-size: 0.85rem; font-weight: 600; color: #1f2937; margin: 0; }
         .mob-next-btn { align-self: flex-start; background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 8px; padding: 0.45rem 0.9rem; font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+
+        /* Config card dark */
+        .mob-config-card {
+          background: linear-gradient(135deg, #1a1a2e, #16213e);
+          border-radius: 16px; padding: 1.1rem 1.2rem;
+          box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+          position: relative; overflow: hidden;
+        }
+        .mob-config-card::before {
+          content: ''; position: absolute; top: -40px; right: -40px;
+          width: 140px; height: 140px; border-radius: 50%;
+          background: rgba(249,0,122,0.1);
+        }
+        .mob-config-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
+        .mob-config-title { font-size: 1rem; font-weight: 800; color: white; margin: 0 0 0.2rem; }
+        .mob-config-sub { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin: 0; line-height: 1.4; }
+        .mob-config-circle { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #f9007a, #ff6eb4); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 12px rgba(249,0,122,0.4); }
+        .mob-config-bar-bg { height: 8px; background: rgba(255,255,255,0.15); border-radius: 999px; overflow: hidden; margin-bottom: 0.75rem; }
+        .mob-config-bar-fill { height: 100%; background: linear-gradient(135deg, #f9007a, #ff6eb4); border-radius: 999px; transition: width 0.5s; box-shadow: 0 0 8px rgba(249,0,122,0.5); }
+        .mob-config-next { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+        .mob-config-next-label { font-size: 0.68rem; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.2rem; }
+        .mob-config-next-text { font-size: 0.82rem; font-weight: 600; color: white; margin: 0; }
+        .mob-config-next-btn { background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 8px; padding: 0.5rem 0.9rem; font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(249,0,122,0.4); }
 
         /* ===== DESKTOP ===== */
         .ini-header { background: white; padding: 1rem 1.75rem; margin: -2rem -2rem 1.25rem -2rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f3f4f6; }
