@@ -193,14 +193,14 @@ export default function Clientes() {
 
         {/* Log ultimos adicionados */}
         <div className="mob-log">
-          <h3 className="mob-log-title">📋 Últimos Cadastros</h3>
+          <h3 className="mob-log-title">Últimos Cadastros</h3>
           {loading ? (
             <div style={{textAlign:"center",padding:"2rem"}}><span className="spinner" /></div>
           ) : ultimosAdicionados.length === 0 ? (
             <p style={{color:"#9ca3af",fontSize:"0.85rem",textAlign:"center",padding:"1rem"}}>Nenhum cliente ainda</p>
           ) : (
             ultimosAdicionados.map(c => (
-              <div key={c.id} className="mob-log-item" onClick={() => handleEdit(c)}>
+              <div key={c.id} className="mob-log-item">
                 <div className="mob-log-avatar">
                   {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
                 </div>
@@ -210,7 +210,6 @@ export default function Clientes() {
                     {new Date(c.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "2-digit" })} · {new Date(c.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
             ))
           )}
@@ -439,8 +438,8 @@ export default function Clientes() {
 
         /* Log mobile */
         .mob-log { background: white; border-radius: 16px; padding: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-        .mob-log-title { font-size: 0.9rem; font-weight: 700; color: #1f2937; margin: 0 0 0.75rem; }
-        .mob-log-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0; border-bottom: 1px solid #f3f4f6; cursor: pointer; }
+        .mob-log-title { font-size: 1.05rem; font-weight: 700; color: #1f2937; margin: 0 0 0.75rem; text-align: center; letter-spacing: 0.12em; text-transform: uppercase; }
+        .mob-log-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0; border-bottom: 1px solid #f3f4f6; }
         .mob-log-item:last-child { border-bottom: none; }
         .mob-log-avatar { width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0; background: linear-gradient(135deg, #fce7f3, #fbcfe8); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #f9007a; overflow: hidden; }
         .mob-log-avatar img { width: 100%; height: 100%; object-fit: cover; }
