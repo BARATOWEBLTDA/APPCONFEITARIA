@@ -73,24 +73,18 @@ export default function Layout() {
           ))}
         </nav>
 
-
-        {/* Trial card */}
-        <div style={{margin:"0 0.75rem 0.75rem",background:"rgba(249,0,122,0.12)",border:"1px solid rgba(249,0,122,0.2)",borderRadius:"12px",padding:"0.75rem"}}>
-          <div style={{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.6rem"}}>
-            <span>⏱️</span>
-            <div>
-              <p style={{fontSize:"0.72rem",fontWeight:600,color:"#f9007a",margin:0}}>Período de teste</p>
-              <p style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.5)",margin:0}}>14 dias restantes</p>
-            </div>
+        {/* Trial card - full width, pink */}
+        <a href="/assinar" style={{display:"block",margin:"0 0.6rem 0.8rem",background:"linear-gradient(135deg,#F471B6,#f9007a)",borderRadius:"14px",padding:"0.9rem 1rem",textDecoration:"none",boxShadow:"0 4px 16px rgba(249,0,122,0.35)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.35rem"}}>
+            <span style={{fontSize:"0.85rem"}}>⏱️</span>
+            <span style={{fontSize:"0.75rem",fontWeight:700,color:"white",letterSpacing:"0.02em"}}>Período de teste</span>
           </div>
-          <a href="/assinar" style={{display:"block",textAlign:"center",padding:"0.5rem",background:"linear-gradient(135deg,#f9007a,#d4006a)",color:"white",borderRadius:"8px",fontSize:"0.78rem",fontWeight:600,textDecoration:"none"}}>
-            Fazer upgrade
-          </a>
-        </div>
+          <p style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.8)",margin:"0 0 0.6rem"}}>14 dias restantes</p>
+          <div style={{background:"rgba(255,255,255,0.25)",borderRadius:"8px",padding:"0.45rem",textAlign:"center",fontSize:"0.78rem",fontWeight:700,color:"white"}}>
+            Fazer upgrade ✨
+          </div>
+        </a>
 
-        <button className="logout-btn" onClick={handleLogout}>
-          Sair
-        </button>
       </aside>
 
       {/* Conteúdo principal */}
