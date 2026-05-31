@@ -183,7 +183,7 @@ export default function Clientes() {
         {/* Coluna lateral — aniversariantes */}
         <div className="cli-sidebar">
           <div className="cli-panel">
-            <h3 className="cli-panel-title"><img src="/nivercake.png" style={{width:"22px",height:"22px",objectFit:"contain",verticalAlign:"middle",marginRight:"6px"}} />Aniversariantes Próximos</h3>
+            <h3 className="cli-panel-title">Aniversariantes Próximos</h3>
             {aniversariantes.length === 0 ? (
               <p className="cli-panel-empty">Nenhum nos próximos 30 dias</p>
             ) : (
@@ -198,7 +198,7 @@ export default function Clientes() {
                     <div className="cli-aniv-info">
                       <p className="cli-aniv-nome">{c.nome}</p>
                       <p className="cli-aniv-data">
-                      🎂 Faz aniversário dia {nasc.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}
+                      <><img src="/nivercake.png" style={{width:"18px",height:"18px",objectFit:"contain",verticalAlign:"middle",marginRight:"4px"}} />Faz aniversário dia {nasc.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}</>
                     </p>
                     </div>
                     <span className={`cli-aniv-badge ${diff <= 7 ? "soon" : ""}`}>
