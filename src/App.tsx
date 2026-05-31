@@ -7,6 +7,14 @@ import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import Inicio from "@/pages/Inicio";
 import Assinar from "@/pages/Assinar";
+import AdminLayout from "@/pages/admin/AdminLayout";
+import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminUsuarios from "@/pages/admin/AdminUsuarios";
+import AdminReceitas from "@/pages/admin/AdminReceitas";
+import AdminReceitasDoonly from "@/pages/admin/AdminReceitasDoonly";
+import AdminPDFs from "@/pages/admin/AdminPDFs";
+import AdminNotificacoes from "@/pages/admin/AdminNotificacoes";
+import AdminRelatorios from "@/pages/admin/AdminRelatorios";
 import Configuracoes from "@/pages/Configuracoes";
 
 // Páginas rascunho
@@ -49,6 +57,17 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/inicio" element={<Inicio />} />
           <Route path="/assinar" element={<Assinar />} />
+
+        {/* Admin routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="usuarios" element={<AdminUsuarios />} />
+          <Route path="receitas" element={<AdminReceitas />} />
+          <Route path="receitas-doonly" element={<AdminReceitasDoonly />} />
+          <Route path="pdfs" element={<AdminPDFs />} />
+          <Route path="notificacoes" element={<AdminNotificacoes />} />
+          <Route path="relatorios" element={<AdminRelatorios />} />
+        </Route>
           <Route path="/produtos" element={<Produtos />} />
           <Route path="/pedidos" element={<Pedidos />} />
           <Route path="/clientes" element={<Clientes />} />
