@@ -59,19 +59,6 @@ export default function App() {
           <Route path="/inicio" element={<Inicio />} />
           <Route path="/assinar" element={<Assinar />} />
 
-        {/* Admin login - public */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-
-        {/* Admin routes */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="usuarios" element={<AdminUsuarios />} />
-          <Route path="receitas" element={<AdminReceitas />} />
-          <Route path="receitas-doonly" element={<AdminReceitasDoonly />} />
-          <Route path="pdfs" element={<AdminPDFs />} />
-          <Route path="notificacoes" element={<AdminNotificacoes />} />
-          <Route path="relatorios" element={<AdminRelatorios />} />
-        </Route>
           <Route path="/produtos" element={<Produtos />} />
           <Route path="/pedidos" element={<Pedidos />} />
           <Route path="/clientes" element={<Clientes />} />
@@ -82,6 +69,18 @@ export default function App() {
           <Route path="/receitas" element={<Receitas />} />
           <Route path="/arquivos" element={<Arquivos />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
+        </Route>
+
+        {/* Admin - fora do PrivateRoute */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="usuarios" element={<AdminUsuarios />} />
+          <Route path="receitas" element={<AdminReceitas />} />
+          <Route path="receitas-doonly" element={<AdminReceitasDoonly />} />
+          <Route path="pdfs" element={<AdminPDFs />} />
+          <Route path="notificacoes" element={<AdminNotificacoes />} />
+          <Route path="relatorios" element={<AdminRelatorios />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/inicio" replace />} />
