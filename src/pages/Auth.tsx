@@ -12,6 +12,15 @@ export default function Auth() {
   const [form, setForm] = useState({ email: "", senha: "" });
   const [fading, setFading] = useState(false);
   const [showSplash, setShowSplash] = useState(false);
+
+  useEffect(() => {
+    if (showSplash) {
+      const timer = setTimeout(() => {
+        navigate("/inicio");
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [showSplash]);
   const [showCadastro, setShowCadastro] = useState(false);
 
   // Cadastro state
@@ -81,10 +90,9 @@ export default function Auth() {
       });
       if (error) throw error;
       setShowSplash(true);
-      await new Promise(r => setTimeout(r, 2500));
-      navigate("/inicio");
     } catch (err: any) {
       setError("E-mail ou senha incorretos. Tente novamente.");
+      setShowSplash(false);
       setLoading(false);
     }
   };
@@ -124,8 +132,6 @@ export default function Auth() {
       if (loginError) throw loginError;
 
       setShowSplash(true);
-      await new Promise(r => setTimeout(r, 2500));
-      navigate("/inicio");
     } catch (err: any) {
       setCadastroError(err.message || "Erro ao criar conta. Tente novamente.");
       setCadastroLoading(false);
