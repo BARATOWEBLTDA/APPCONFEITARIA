@@ -337,7 +337,7 @@ export default function Layout() {
           .layout-main {
             margin-left: 0;
             padding: 1rem;
-            padding-bottom: 5.5rem;
+            padding-bottom: 6rem;
           }
 
           .bottom-nav {
@@ -347,43 +347,65 @@ export default function Layout() {
             z-index: 20;
             background: #F471B6;
             border-radius: 0;
-            padding: 0.5rem 0.25rem 0.85rem;
+            padding: 0 0 0.75rem;
             justify-content: space-around;
-            align-items: center;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+            align-items: flex-end;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
             gap: 0;
             width: 100%;
             max-width: 100%;
-            border-top: 1px solid rgba(249,0,122,0.15);
+            overflow: visible;
           }
 
           .bottom-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-end;
             flex: 1;
-            padding: 0.5rem 0.25rem;
-            color: rgba(255,255,255,0.7);
+            padding: 0.5rem 0.25rem 0.4rem;
+            color: rgba(255,255,255,0.75);
             text-decoration: none;
             background: none;
             border: none;
             cursor: pointer;
             transition: color 0.2s;
-            border-radius: 28px;
-            gap: 0.2rem;
+            gap: 0.15rem;
             font-family: 'Inter', sans-serif;
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             font-weight: 500;
+            position: relative;
           }
 
-          .bottom-item svg { stroke: rgba(255,255,255,0.7); transition: stroke 0.2s; }
+          .bottom-item svg { stroke: rgba(255,255,255,0.75); transition: stroke 0.2s; }
 
           .bottom-item.active {
-            background: rgba(255,255,255,0.25);
             color: white;
+            font-weight: 700;
           }
           .bottom-item.active svg { stroke: white; }
+
+          .bottom-item.active::before {
+            content: '';
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 52px;
+            height: 52px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            z-index: -1;
+          }
+
+          .bottom-item.active svg {
+            stroke: #F471B6;
+            position: relative;
+            z-index: 1;
+            margin-top: -10px;
+          }
+
           .bottom-item:not(.active):hover svg { stroke: white; }
           .bottom-item:not(.active):hover { color: white; }
 
