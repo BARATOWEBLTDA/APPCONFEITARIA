@@ -257,7 +257,10 @@ export default function Clientes() {
             </div>
           </div>
 
-          {/* Últimos adicionados */}
+        </div>
+
+        {/* Terceira coluna - Log ultimos adicionados */}
+        <div className="cli-sidebar">
           <div className="cli-panel">
             <h3 className="cli-panel-title">🆕 Últimos Adicionados</h3>
             {ultimosAdicionados.map(c => (
@@ -356,7 +359,7 @@ export default function Clientes() {
         .cli-sidebar { display: none; flex-direction: column; gap: 1rem; }
 
         @media (min-width: 1024px) {
-          .cli-layout { grid-template-columns: minmax(0, 680px) 280px; align-items: start; }
+          .cli-layout { grid-template-columns: minmax(0, 1fr) 260px 260px; align-items: start; }
           .cli-sidebar { display: flex; }
         }
 
