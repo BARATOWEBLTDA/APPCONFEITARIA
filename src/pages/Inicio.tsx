@@ -100,31 +100,23 @@ export default function Inicio() {
       <div className="ini-summary">
         <div className="ini-sum-card">
           <span className="ini-sum-icon">📦</span>
-          <div>
-            <p className="ini-sum-num">{pedidos}</p>
-            <p className="ini-sum-label">Pedidos do mês</p>
-          </div>
+          <p className="ini-sum-num">{pedidos}</p>
+          <p className="ini-sum-label">Pedidos do mês</p>
         </div>
         <div className="ini-sum-card">
           <span className="ini-sum-icon">👥</span>
-          <div>
-            <p className="ini-sum-num">{clientes}</p>
-            <p className="ini-sum-label">Clientes</p>
-          </div>
+          <p className="ini-sum-num">{clientes}</p>
+          <p className="ini-sum-label">Clientes</p>
         </div>
         <div className="ini-sum-card">
           <span className="ini-sum-icon">🎂</span>
-          <div>
-            <p className="ini-sum-num">{produtos}</p>
-            <p className="ini-sum-label">Produtos</p>
-          </div>
+          <p className="ini-sum-num">{produtos}</p>
+          <p className="ini-sum-label">Produtos</p>
         </div>
         <div className="ini-sum-card">
           <span className="ini-sum-icon">💰</span>
-          <div>
-            <p className="ini-sum-num">R$ {faturamento.toFixed(2)}</p>
-            <p className="ini-sum-label">Faturamento</p>
-          </div>
+          <p className="ini-sum-num">R$ {faturamento.toFixed(2)}</p>
+          <p className="ini-sum-label">Faturamento</p>
         </div>
       </div>
 
@@ -288,17 +280,18 @@ export default function Inicio() {
 
         /* Resumo cards */
         .ini-summary {
-          display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem;
+          display: flex; gap: 0.6rem; flex-wrap: wrap;
           margin-bottom: 1.25rem;
         }
         .ini-sum-card {
-          background: white; border-radius: 12px; padding: 0.9rem 1rem;
-          display: flex; align-items: center; gap: 0.75rem;
+          background: white; border-radius: 12px; padding: 0.75rem 0.9rem;
+          display: flex; flex-direction: column; gap: 0.2rem;
           box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          min-width: 110px;
         }
-        .ini-sum-icon { font-size: 1.5rem; flex-shrink: 0; }
-        .ini-sum-num { font-size: 1.2rem; font-weight: 800; color: #1f2937; margin: 0; }
-        .ini-sum-label { font-size: 0.72rem; color: #9ca3af; margin: 0; font-weight: 500; }
+        .ini-sum-icon { font-size: 1.1rem; }
+        .ini-sum-num { font-size: 1.1rem; font-weight: 800; color: #1f2937; margin: 0; }
+        .ini-sum-label { font-size: 0.68rem; color: #9ca3af; margin: 0; font-weight: 500; }
 
         /* Grid 2 colunas */
         .ini-grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; align-items: start; }
