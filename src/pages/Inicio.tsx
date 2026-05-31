@@ -56,6 +56,13 @@ export default function Inicio() {
   const nextStep = allItems.find(i => !i.done);
   const nome = profile?.nome?.split(" ")[0] || "";
 
+  const getGreeting = () => {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12) return "Bom dia";
+    if (h >= 12 && h < 18) return "Boa tarde";
+    return "Boa noite";
+  };
+
   const atalhos = [
     { label: "Clientes", emoji: "👥", path: "/clientes" },
     { label: "Produtos", emoji: "🎂", path: "/produtos" },
@@ -76,7 +83,7 @@ export default function Inicio() {
         {/* Header rosa mobile */}
         <div className="mob-header">
           <div>
-            <h1 className="mob-greeting">Olá{nome ? `, ${nome}` : ""}! <span className="mob-welcome">Bem-vindo de volta.</span></h1>
+            <h1 className="mob-greeting">{getGreeting()}{nome ? <>, <strong>{nome}</strong></> : ""}.</h1>
           </div>
           <span className="mob-badge">
             <img src="/diamante.png" style={{ width: "14px", height: "14px", objectFit: "contain" }} alt="" />
@@ -161,7 +168,7 @@ export default function Inicio() {
         <div className="ini-header">
           <div>
             <h1 className="ini-greeting">
-              {nome ? `Olá, ${nome}!` : "Olá!"} <span className="ini-welcome">Bem-vindo de volta.</span>
+              {getGreeting()}{nome ? <>, <strong>{nome}</strong></> : ""}.
             </h1>
           </div>
           <span className="ini-trial-badge">
@@ -314,7 +321,7 @@ export default function Inicio() {
         /* ===== MOBILE ===== */
         .mob-header { background: linear-gradient(135deg, #f9007a, #ff6eb4); padding: 1rem 1.25rem; margin: -1rem -1rem 0 -1rem; display: flex; align-items: center; justify-content: space-between; }
         .mob-greeting { font-size: 0.95rem; font-weight: 700; color: white; margin: 0; }
-        .mob-welcome { font-weight: 400; color: rgba(255,255,255,0.85); }
+
         .mob-badge { background: rgba(255,255,255,0.25); color: white; font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; }
 
         /* Cards 3 lado a lado */
@@ -380,7 +387,7 @@ export default function Inicio() {
         /* ===== DESKTOP ===== */
         .ini-header { background: white; padding: 1rem 1.75rem; margin: -2rem -2rem 1.25rem -2rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f3f4f6; }
         .ini-greeting { font-size: 1rem; font-weight: 700; color: #1f2937; margin: 0; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
-        .ini-welcome { font-size: 1rem; font-weight: 400; color: #6b7280; }
+
         .ini-trial-badge { background: #fff0f6; color: #f9007a; font-size: 0.78rem; font-weight: 600; padding: 0.3rem 0.7rem; border-radius: 6px; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.3rem; border: 1px solid #fce7f3; }
 
         .ini-summary { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.25rem; max-width: 70%; }
