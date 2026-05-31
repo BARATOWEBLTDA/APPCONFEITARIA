@@ -14,22 +14,12 @@ export default function AdminLogin() {
     setLoading(true);
     setError("");
     try {
+      const ADMIN_EMAILS = ["gestao@doonly.com.br"];
+
       const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
       if (error) throw error;
 
-      // Use getSession to ensure token is active then check is_admin
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Sessão inválida");
-
-      const { data: prof, error: profErr } = await supabase
-        .from("profiles")
-        .select("is_admin")
-        .eq("id", session.user.id)
-        .single();
-
-      console.log("profile data:", prof, "error:", profErr);
-
-      if (!prof || prof.is_admin !== true) {
+      if (!ADMIN_EMAILS.includes(data.user.email || "")) {
         await supabase.auth.signOut();
         setError("Acesso negado. Você não tem permissão de administrador.");
         setLoading(false);
