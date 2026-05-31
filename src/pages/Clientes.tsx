@@ -108,6 +108,14 @@ export default function Clientes() {
     return phone;
   };
 
+  const getHoursUntil = (data: string) => {
+    const hoje = new Date();
+    const nasc = new Date(data);
+    const aniv = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
+    if (aniv < hoje) aniv.setFullYear(hoje.getFullYear() + 1);
+    return Math.ceil((aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60));
+  };
+
   const getDaysUntil = (data: string) => {
     const hoje = new Date();
     const nasc = new Date(data);
@@ -188,11 +196,13 @@ export default function Clientes() {
                       {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
                     </div>
                     <div className="cli-aniv-info">
-                      <p className="cli-aniv-nome">{c.nome.split(" ")[0]}</p>
-                      <p className="cli-aniv-data">{nasc.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</p>
+                      <p className="cli-aniv-nome">{c.nome}</p>
+                      <p className="cli-aniv-data">
+                      🎂 Faz aniversário dia {nasc.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}
+                    </p>
                     </div>
                     <span className={`cli-aniv-badge ${diff <= 7 ? "soon" : ""}`}>
-                      {diff === 0 ? "🎉 Hoje!" : diff === 1 ? "Amanhã" : `${diff} dias`}
+                      {diff === 0 ? "🎉 Hoje!" : getHoursUntil(c.data_nascimento!) <= 24 ? `${getHoursUntil(c.data_nascimento!)}h` : `${diff} dias`}
                     </span>
                   </div>
                 );
