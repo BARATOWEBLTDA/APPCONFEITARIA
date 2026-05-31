@@ -260,24 +260,26 @@ export default function Inicio() {
 
         /* Header */
         .ini-header {
-          background: linear-gradient(135deg, #f9007a 0%, #ff6eb4 100%);
+          background: white;
           padding: 1rem 1.75rem;
           margin: -2rem -2rem 1.25rem -2rem;
           display: flex; align-items: center; justify-content: space-between;
+          border-bottom: 1px solid #f3f4f6;
         }
-        .ini-greeting { font-size: 1rem; font-weight: 700; color: white; margin: 0; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
-        .ini-welcome { font-size: 1rem; font-weight: 400; color: rgba(255,255,255,0.85); }
+        .ini-greeting { font-size: 1rem; font-weight: 700; color: #1f2937; margin: 0; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+        .ini-welcome { font-size: 1rem; font-weight: 400; color: #6b7280; }
         .ini-trial-badge {
-          background: rgba(255,255,255,0.25); color: white;
+          background: #fff0f6; color: #f9007a;
           font-size: 0.78rem; font-weight: 600; padding: 0.3rem 0.7rem;
           border-radius: 6px; white-space: nowrap;
           display: inline-flex; align-items: center; gap: 0.3rem; flex-shrink: 0;
+          border: 1px solid #fce7f3;
         }
 
         /* Resumo cards */
         .ini-summary {
           display: flex; gap: 0.6rem; flex-wrap: wrap;
-          margin-bottom: 1.25rem;
+          margin-bottom: 1.25rem; max-width: 70%;
         }
         .ini-sum-card {
           background: white; border-radius: 14px; padding: 1rem 1.2rem;
@@ -353,13 +355,14 @@ export default function Inicio() {
         .progresso-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
         .progresso-sub { font-size: 0.8rem; color: #6b7280; margin: 0.3rem 0 0; max-width: 320px; line-height: 1.4; }
         .progresso-pct-circle {
-          width: 52px; height: 52px; border-radius: 50%;
+          width: 56px; height: 56px; border-radius: 50%;
           background: linear-gradient(135deg, #f9007a, #ff6eb4);
           display: flex; align-items: center; justify-content: center;
-          color: white; font-size: 0.82rem; font-weight: 800; flex-shrink: 0;
+          color: white; font-size: 0.85rem; font-weight: 800; flex-shrink: 0;
+          box-shadow: 0 4px 12px rgba(249,0,122,0.3);
         }
-        .progresso-bar-bg { height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden; }
-        .progresso-bar-fill { height: 100%; background: linear-gradient(135deg, #f9007a, #ff6eb4); border-radius: 4px; transition: width 0.5s ease; }
+        .progresso-bar-bg { height: 10px; background: #f3f4f6; border-radius: 999px; overflow: hidden; }
+        .progresso-bar-fill { height: 100%; background: linear-gradient(135deg, #f9007a, #ff6eb4); border-radius: 999px; transition: width 0.5s ease; }
 
         /* Steps */
         .steps-list { display: flex; flex-direction: column; gap: 0.5rem; }
