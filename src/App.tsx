@@ -6,6 +6,7 @@ import EsqueciSenha from "@/pages/EsqueciSenha";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import Inicio from "@/pages/Inicio";
+import Assinar from "@/pages/Assinar";
 import Configuracoes from "@/pages/Configuracoes";
 
 // Páginas rascunho
@@ -47,6 +48,7 @@ export default function App() {
         <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/inicio" element={<Inicio />} />
+          <Route path="/assinar" element={<Assinar />} />
           <Route path="/produtos" element={<Produtos />} />
           <Route path="/pedidos" element={<Pedidos />} />
           <Route path="/clientes" element={<Clientes />} />
