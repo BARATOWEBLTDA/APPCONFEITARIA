@@ -99,7 +99,10 @@ export default function Inicio() {
         <div className="mob-config-card">
           <div className="mob-config-header">
             <div>
+    <div style={{display:"flex",alignItems:"center",gap:"0.6rem"}}>
+              <img src="/configureapp.png" alt="" style={{width:"36px",height:"36px",objectFit:"contain",flexShrink:0}} />
               <p className="mob-config-title">Configure seu Doonly</p>
+            </div>
               <p className="mob-config-sub">
                 {progress === 100 ? "🎉 Tudo pronto!" : `Falta pouco! Mais ${remaining} etapa${remaining !== 1 ? "s" : ""}`}
               </p>
@@ -207,7 +210,8 @@ export default function Inicio() {
           <div className="ini-col-left">
             <div className="progresso-card">
               <div className="progresso-header">
-                <div>
+                <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
+                  <img src="/configureapp.png" alt="" style={{width:"42px",height:"42px",objectFit:"contain",flexShrink:0}} />
                   <h2 className="ini-section-title" style={{ margin: 0 }}>Configure seu Doonly</h2>
                   <p className="progresso-sub">
                     {progress === 100 ? "🎉 Tudo pronto! Sua loja está completa." : `Falta pouco! Complete mais ${remaining} etapa${remaining !== 1 ? "s" : ""} para liberar todo o potencial da sua loja.`}
