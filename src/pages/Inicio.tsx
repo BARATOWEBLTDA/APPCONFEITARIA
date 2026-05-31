@@ -154,6 +154,25 @@ export default function Inicio() {
             </div>
           </div>
 
+          {/* Próximo passo */}
+          {progress < 100 && (() => {
+            const nextStep = allItems.find(i => !i.done);
+            return nextStep ? (
+              <div className="next-step-card">
+                <div className="next-step-left">
+                  <span className="next-step-dot" />
+                  <div>
+                    <p className="next-step-label">Próximo passo recomendado</p>
+                    <p className="next-step-text">{nextStep.label}</p>
+                  </div>
+                </div>
+                <button className="next-step-btn" onClick={() => navigate(nextStep.path)}>
+                  Configurar agora →
+                </button>
+              </div>
+            ) : null;
+          })()}
+
           {/* Steps */}
           <div className="steps-list">
             {steps.map((group, gi) => {
@@ -216,8 +235,16 @@ export default function Inicio() {
               </div>
               <div>
                 <h3 className="trial-card-title">ASSINE O DOONLY PREMIUM</h3>
-                <p className="trial-card-desc">Desbloqueie todos os recursos da plataforma. <strong>Apenas R$ 19,90/mês após o período de testes.</strong></p>
+                <p className="trial-card-price">Apenas <strong>R$ 19,90/mês</strong> após o teste</p>
               </div>
+            </div>
+            <div className="trial-benefits">
+              {["Clientes ilimitados","Produtos ilimitados","Relatórios avançados","Recursos exclusivos","Suporte prioritário","Assistente IA Doonly","Cardápio Digital profissional","Acesso a mais de 10.000 receitas"].map(b => (
+                <div key={b} className="trial-benefit-item">
+                  <span className="trial-benefit-dot">🔥</span>
+                  <span>{b}</span>
+                </div>
+              ))}
             </div>
             <button className="trial-card-btn" onClick={() => alert("Em breve! Fale conosco pelo WhatsApp.")}>
               Assinar agora
@@ -292,6 +319,24 @@ export default function Inicio() {
         .trial-card-body { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; margin-top: 1.5rem; }
         .trial-card-icon { background: white; border-radius: 10px; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; padding: 4px; }
         .trial-card-title { font-size: 0.88rem; font-weight: 800; color: white; margin: 0 0 0.2rem; }
+        .trial-card-price { font-size: 0.76rem; color: rgba(255,255,255,0.7); margin: 0; }
+        .trial-benefits { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.75rem; }
+        .trial-benefit-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: rgba(255,255,255,0.85); }
+        .trial-benefit-dot { font-size: 0.7rem; flex-shrink: 0; }
+
+        .next-step-card {
+          background: white; border-radius: 12px; padding: 0.9rem 1.1rem;
+          border-left: 4px solid #f9c74f;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+          flex-wrap: wrap;
+        }
+        .next-step-left { display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0; }
+        .next-step-dot { width: 10px; height: 10px; border-radius: 50%; background: #f9c74f; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(249,199,79,0.2); }
+        .next-step-label { font-size: 0.72rem; color: #9ca3af; font-weight: 500; margin: 0 0 0.2rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .next-step-text { font-size: 0.88rem; font-weight: 600; color: #1f2937; margin: 0; }
+        .next-step-btn { background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 8px; padding: 0.55rem 1rem; font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+        .next-step-btn:hover { opacity: 0.9; }
         .trial-card-desc { font-size: 0.76rem; color: rgba(255,255,255,0.7); margin: 0; line-height: 1.4; }
         .trial-card-btn {
           width: 100%; padding: 0.65rem;
