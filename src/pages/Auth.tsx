@@ -72,15 +72,16 @@ export default function Auth() {
     setLoading(true);
     setError("");
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error } = await supabase.auth.signInWithPassword({
         email: form.email,
         password: form.senha,
       });
       if (error) throw error;
-      // Check if admin
-      const { data: prof } = await supabase.from("profiles").select("is_admin").eq("id", (await supabase.auth.getUser()).data.user!.id).single();
+      const userId = signInData.user?.id;
+      const { data: prof } = await supabase.from("profiles").select("is_admin").eq("id", userId).single();
+      const dest = prof?.is_admin === true ? "/admin" : "/inicio";
       setFading(true);
-      setTimeout(() => navigate(prof?.is_admin ? "/admin" : "/inicio"), 700);
+      setTimeout(() => navigate(dest), 700);
     } catch (err: any) {
       setError("E-mail ou senha incorretos. Tente novamente.");
       setLoading(false);
