@@ -364,7 +364,7 @@ export default function Layout() {
             justify-content: center;
             flex: 1;
             padding: 0.5rem 0.25rem;
-            color: #6b7280;
+            color: rgba(255,255,255,0.7);
             text-decoration: none;
             background: none;
             border: none;
@@ -377,15 +377,15 @@ export default function Layout() {
             font-weight: 500;
           }
 
-          .bottom-item svg { stroke: #6b7280; transition: stroke 0.2s; }
+          .bottom-item svg { stroke: rgba(255,255,255,0.7); transition: stroke 0.2s; }
 
           .bottom-item.active {
-            background: rgba(249,0,122,0.15);
-            color: #f9007a;
+            background: rgba(255,255,255,0.25);
+            color: white;
           }
-          .bottom-item.active svg { stroke: #f9007a; }
-          .bottom-item:not(.active):hover svg { stroke: #f9007a; }
-          .bottom-item:not(.active):hover { color: #f9007a; }
+          .bottom-item.active svg { stroke: white; }
+          .bottom-item:not(.active):hover svg { stroke: white; }
+          .bottom-item:not(.active):hover { color: white; }
 
           /* Gestão Drawer */
           .gestao-overlay {
