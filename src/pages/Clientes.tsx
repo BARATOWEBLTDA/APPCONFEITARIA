@@ -38,7 +38,6 @@ export default function Clientes() {
     init();
   }, []);
 
-  // Block body scroll when modal open
   useEffect(() => {
     const isOpen = showForm || !!confirmDelete;
     document.body.style.overflow = isOpen ? "hidden" : "";
@@ -109,31 +108,6 @@ export default function Clientes() {
     return phone;
   };
 
-  const getAniversario = (data?: string) => {
-    if (!data) return null;
-    return new Date(data).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
-  };
-
-  // Aniversariantes próximos (30 dias)
-  const aniversariantes = clientes.filter(c => {
-    if (!c.data_nascimento) return false;
-    const hoje = new Date();
-    const nasc = new Date(c.data_nascimento);
-    const aniv = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
-    if (aniv < hoje) aniv.setFullYear(hoje.getFullYear() + 1);
-    const diff = (aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24);
-    return diff >= 0 && diff <= 30;
-  }).sort((a, b) => {
-    const hoje = new Date();
-    const dA = new Date(a.data_nascimento!);
-    const dB = new Date(b.data_nascimento!);
-    const anivA = new Date(hoje.getFullYear(), dA.getMonth(), dA.getDate());
-    const anivB = new Date(hoje.getFullYear(), dB.getMonth(), dB.getDate());
-    if (anivA < hoje) anivA.setFullYear(hoje.getFullYear() + 1);
-    if (anivB < hoje) anivB.setFullYear(hoje.getFullYear() + 1);
-    return anivA.getTime() - anivB.getTime();
-  });
-
   const getDaysUntil = (data: string) => {
     const hoje = new Date();
     const nasc = new Date(data);
@@ -142,23 +116,17 @@ export default function Clientes() {
     return Math.ceil((aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
   };
 
-  const clientesEsteMes = clientes.filter(c => {
-    const d = new Date(c.created_at);
-    const now = new Date();
-    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  }).length;
-
-  const ultimosAdicionados = [...clientes]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 4);
+  const aniversariantes = clientes.filter(c => {
+    if (!c.data_nascimento) return false;
+    return getDaysUntil(c.data_nascimento) <= 30;
+  }).sort((a, b) => getDaysUntil(a.data_nascimento!) - getDaysUntil(b.data_nascimento!));
 
   return (
     <div className="cli-root">
       <div className="cli-layout">
 
-        {/* Coluna principal */}
+        {/* Coluna principal — clientes */}
         <div className="cli-main">
-          {/* Header */}
           <div className="cli-header">
             <div>
               <h1 className="cli-title">👥 Clientes</h1>
@@ -169,13 +137,11 @@ export default function Clientes() {
             </button>
           </div>
 
-          {/* Busca */}
           <div className="cli-search-wrap">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" placeholder="Buscar por nome ou telefone..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
           </div>
 
-          {/* Lista */}
           {loading ? (
             <div className="cli-loading"><span className="spinner" /></div>
           ) : filtered.length === 0 ? (
@@ -199,44 +165,43 @@ export default function Clientes() {
                       </a>
                     )}
                   </div>
-                  <button className="cli-act edit" onClick={() => handleEdit(c)}>✏️</button>
+                  <button className="cli-act" onClick={() => handleEdit(c)}>✏️</button>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Painel lateral desktop */}
+        {/* Coluna lateral — aniversariantes */}
         <div className="cli-sidebar">
-
-          {/* Aniversariantes */}
           <div className="cli-panel">
             <h3 className="cli-panel-title">🎂 Aniversariantes Próximos</h3>
             {aniversariantes.length === 0 ? (
               <p className="cli-panel-empty">Nenhum nos próximos 30 dias</p>
-            ) : aniversariantes.map(c => {
-              const nasc = new Date(c.data_nascimento!);
-              const diff = getDaysUntil(c.data_nascimento!);
-              return (
-                <div key={c.id} className="cli-aniv-item">
-                  <div className="cli-aniv-avatar">
-                    {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
+            ) : (
+              aniversariantes.map(c => {
+                const nasc = new Date(c.data_nascimento!);
+                const diff = getDaysUntil(c.data_nascimento!);
+                return (
+                  <div key={c.id} className="cli-aniv-item">
+                    <div className="cli-aniv-avatar">
+                      {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
+                    </div>
+                    <div className="cli-aniv-info">
+                      <p className="cli-aniv-nome">{c.nome.split(" ")[0]}</p>
+                      <p className="cli-aniv-data">{nasc.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</p>
+                    </div>
+                    <span className={`cli-aniv-badge ${diff <= 7 ? "soon" : ""}`}>
+                      {diff === 0 ? "🎉 Hoje!" : diff === 1 ? "Amanhã" : `${diff} dias`}
+                    </span>
                   </div>
-                  <div className="cli-aniv-info">
-                    <p className="cli-aniv-nome">{c.nome.split(" ")[0]}</p>
-                    <p className="cli-aniv-data">{nasc.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</p>
-                  </div>
-                  <span className={`cli-aniv-badge ${diff <= 7 ? "soon" : ""}`}>
-                    {diff === 0 ? "🎉 Hoje!" : diff === 1 ? "Amanhã" : `${diff} dias`}
-                  </span>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
-
-
-
         </div>
+
+      </div>
 
       {/* Confirmar exclusão */}
       {confirmDelete && (
@@ -338,57 +303,55 @@ export default function Clientes() {
 
         .cli-list { display: flex; flex-direction: column; gap: 0.6rem; }
 
-        .cli-card { display: flex; align-items: center; gap: 0.9rem; background: white; border-radius: 14px; padding: 0.75rem 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08); transition: box-shadow 0.2s, transform 0.2s; border: 1px solid rgba(249,0,122,0.06); }
-        .cli-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1); transform: translateY(-1px); }
+        .cli-card {
+          display: flex; align-items: center; gap: 0.9rem;
+          background: white; border-radius: 14px; padding: 0.75rem 1rem;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.06);
+          border: 1px solid rgba(0,0,0,0.04);
+          transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .cli-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.15); transform: translateY(-1px); }
 
         .cli-avatar { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0; background: linear-gradient(135deg, #fce7f3, #fbcfe8); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; color: #f9007a; overflow: hidden; }
         .cli-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
         .cli-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
         .cli-nome { font-size: 0.95rem; font-weight: 600; color: #1f2937; margin: 0 0 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
         .cli-whatsapp-link { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: #25D366; font-weight: 500; text-decoration: none; }
         .cli-whatsapp-link:hover { text-decoration: underline; }
 
         .cli-act { width: 34px; height: 34px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; background: #fff0f6; flex-shrink: 0; }
         .cli-act:hover { background: #fce7f3; }
 
-        /* Painel */
-        .cli-panel { background: white; border-radius: 14px; padding: 1rem 1.1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+        /* Painel aniversariantes */
+        .cli-panel { background: white; border-radius: 14px; padding: 1rem 1.1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
         .cli-panel-title { font-size: 0.88rem; font-weight: 700; color: #1f2937; margin: 0 0 0.85rem; }
-        .cli-panel.gold .cli-panel-title { background: linear-gradient(135deg, #ffd700, #ffa500); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .cli-panel-empty { font-size: 0.82rem; color: #9ca3af; text-align: center; padding: 0.5rem 0; }
 
         .cli-aniv-item {
           display: flex; align-items: center; gap: 0.75rem;
           padding: 0.6rem 0.75rem; margin-bottom: 0.5rem;
-          border-radius: 12px; border: none;
+          border-radius: 12px;
           background: linear-gradient(135deg, #1a1a2e, #16213e);
           position: relative; overflow: hidden;
         }
+        .cli-aniv-item:last-child { margin-bottom: 0; }
         .cli-aniv-item::before {
-          content: '';
-          position: absolute; inset: 0;
+          content: ''; position: absolute; inset: 0;
           background: linear-gradient(90deg, transparent, rgba(255,215,0,0.08), transparent);
           animation: shimmer 2.5s infinite;
         }
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
-        .cli-aniv-avatar { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; background: linear-gradient(135deg, #fce7f3, #fbcfe8); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; color: #f9007a; overflow: hidden; }
+        .cli-aniv-avatar { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; color: #ffd700; overflow: hidden; }
         .cli-aniv-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
         .cli-aniv-info { flex: 1; min-width: 0; }
-        .cli-aniv-nome { font-size: 0.82rem; font-weight: 600; color: #fff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cli-aniv-nome { font-size: 0.82rem; font-weight: 600; color: white; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cli-aniv-data { font-size: 0.75rem; color: rgba(255,215,0,0.7); margin: 0; }
+
         .cli-aniv-badge { font-size: 0.72rem; font-weight: 700; color: #1a1a2e; background: linear-gradient(135deg, #ffd700, #ffa500); padding: 0.25rem 0.6rem; border-radius: 20px; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(255,165,0,0.4); }
         .cli-aniv-badge.soon { background: linear-gradient(135deg, #f9007a, #ff6eb4); color: white; box-shadow: 0 2px 8px rgba(249,0,122,0.4); }
-
-        .cli-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-        .cli-stat { background: #f9fafb; border-radius: 10px; padding: 0.7rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
-        .cli-stat-num { font-size: 1.4rem; font-weight: 800; color: #f9007a; }
-        .cli-stat-label { font-size: 0.72rem; color: #6b7280; font-weight: 500; text-align: center; }
 
         /* Modal */
         .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; overflow: hidden; touch-action: none; }
@@ -426,9 +389,6 @@ export default function Clientes() {
         .form-btn.save:disabled { opacity: 0.6; cursor: not-allowed; }
         .form-btn.delete-btn { background: #fff1f2; color: #ef4444; flex: 0 0 auto; padding: 0.8rem 1rem; }
 
-        .cli-recent-info { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-        .cli-recent-nome { font-size: 0.82rem; font-weight: 600; color: #1f2937; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cli-recent-data { font-size: 0.72rem; color: #9ca3af; margin: 0; white-space: nowrap; flex-shrink: 0; }
         .spinner { width: 24px; height: 24px; border: 2px solid #fce7f3; border-top-color: #f9007a; border-radius: 50%; animation: spin 0.7s linear infinite; }
         .spinner-sm { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
