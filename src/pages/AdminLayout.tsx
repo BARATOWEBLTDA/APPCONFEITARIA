@@ -21,27 +21,22 @@ export default function AdminLayout() {
 
   useEffect(() => {
     const check = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { navigate("/login"); return; }
-        const { data } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
-        if (data?.is_admin === true) {
-          setAuthorized(true);
-        } else {
-          navigate("/inicio");
-        }
-      } catch(e) {
-        navigate("/login");
-      } finally {
-        setLoading(false);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { navigate("/admin/login"); setLoading(false); return; }
+      const { data } = await supabase.from("profiles").select("is_admin").eq("id", session.user.id).single();
+      if (data?.is_admin === true) {
+        setAuthorized(true);
+      } else {
+        navigate("/admin/login");
       }
+      setLoading(false);
     };
     check();
   }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate("/login");
+    navigate("/admin/login");
   };
 
   if (loading) return (
