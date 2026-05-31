@@ -136,15 +136,18 @@ export default function Clientes() {
         {/* Coluna principal — clientes */}
         <div className="cli-main">
           <div className="cli-header">
-            <button className="cli-btn-new" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
-              + Cadastrar Cliente
-            </button>
+
 
           </div>
 
-          <div className="cli-search-wrap">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input type="text" placeholder="Buscar por nome ou telefone..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
+          <div className="cli-topbar">
+            <button className="cli-btn-new" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
+              + Cadastrar Cliente
+            </button>
+            <div className="cli-search-wrap">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Buscar por nome ou telefone..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
+            </div>
           </div>
 
           {loading ? (
@@ -295,7 +298,7 @@ export default function Clientes() {
           .cli-sidebar { display: flex; padding-top: 4.5rem; }
         }
 
-        .cli-header { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap; }
+        .cli-header { display: none; }
         .cli-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 0.2rem; }
         .cli-subtitle { font-size: 0.85rem; color: #9ca3af; }
         .cli-btn-new {
@@ -312,7 +315,8 @@ export default function Clientes() {
         .cli-btn-new:hover { box-shadow: 0 6px 20px rgba(249,0,122,0.5); transform: translateY(-1px); }
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        .cli-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 1rem; max-width: 480px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+        .cli-topbar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+        .cli-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 0.85rem 1rem; flex: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
         .cli-search { border: none; outline: none; flex: 1; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; background: transparent; }
         .cli-search::placeholder { color: #9ca3af; }
 
