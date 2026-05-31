@@ -136,13 +136,13 @@ export default function Clientes() {
         {/* Coluna principal — clientes */}
         <div className="cli-main">
           <div className="cli-header">
+            <button className="cli-btn-new" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
+              + Cadastrar Cliente
+            </button>
             <div>
               <h1 className="cli-title">👥 Clientes</h1>
-              <p className="cli-subtitle">{clientes.length} cliente{clientes.length !== 1 ? "s" : ""} cadastrado{clientes.length !== 1 ? "s" : ""}</p>
+              <p className="cli-subtitle">Você tem {clientes.length} cliente{clientes.length !== 1 ? "s" : ""} cadastrado{clientes.length !== 1 ? "s" : ""}</p>
             </div>
-            <button className="cli-btn-new" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
-              + Novo cliente
-            </button>
           </div>
 
           <div className="cli-search-wrap">
@@ -298,10 +298,22 @@ export default function Clientes() {
           .cli-sidebar { display: flex; padding-top: 4.5rem; }
         }
 
-        .cli-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; gap: 0.75rem; }
+        .cli-header { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 1.25rem; gap: 1rem; flex-wrap: wrap; }
         .cli-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 0.2rem; }
         .cli-subtitle { font-size: 0.85rem; color: #9ca3af; }
-        .cli-btn-new { padding: 0.65rem 1.2rem; background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+        .cli-btn-new {
+          padding: 0.65rem 1.4rem;
+          background: linear-gradient(270deg, #f9007a, #ff6eb4, #d4006a, #f9007a);
+          background-size: 300% 300%;
+          animation: gradientShift 3s ease infinite;
+          color: white; border: none; border-radius: 10px;
+          font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600;
+          cursor: pointer; white-space: nowrap; flex-shrink: 0;
+          box-shadow: 0 4px 15px rgba(249,0,122,0.35);
+          transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .cli-btn-new:hover { box-shadow: 0 6px 20px rgba(249,0,122,0.5); transform: translateY(-1px); }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .cli-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 0.65rem 0.9rem; margin-bottom: 1rem; }
         .cli-search { border: none; outline: none; flex: 1; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; }
