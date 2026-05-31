@@ -38,18 +38,18 @@ export default function Inicio() {
     {
       title: "Configure sua loja", emoji: "🏪",
       items: [
-        { label: "Adicionar logo/foto da loja", path: "/configuracoes", done: !!profile?.foto_url },
+        { label: "Adicionar nome da loja", path: "/configuracoes", done: !!profile?.nome_loja },
+        { label: "Adicionar logo da loja", path: "/configuracoes", done: !!profile?.foto_url },
         { label: "Adicionar WhatsApp", path: "/configuracoes", done: !!profile?.telefone },
-        { label: "Informar localização", path: "/configuracoes", done: !!profile?.endereco },
-        { label: "Configurar horário de funcionamento", path: "/configuracoes", done: !!profile?.horario },
+        { label: "Adicionar localização", path: "/configuracoes", done: !!profile?.endereco },
+        { label: "Definir horário de funcionamento", path: "/configuracoes", done: !!profile?.horario },
         { label: "Adicionar descrição da loja", path: "/configuracoes", done: !!profile?.descricao_loja },
         { label: "Configurar entrega", path: "/configuracoes", done: profile?.faz_entrega !== null && profile?.faz_entrega !== undefined },
-        { label: "Criar pelo menos 1 categoria", path: "/configuracoes", done: categorias > 0 },
       ],
     },
-    { title: "Seus produtos", emoji: "🎂", items: [{ label: "Adicionar primeiro produto", path: "/produtos", done: produtos > 0 }] },
-    { title: "Seus clientes", emoji: "👥", items: [{ label: "Cadastrar primeiro cliente", path: "/clientes", done: clientes > 0 }] },
-    { title: "Cardápio público", emoji: "🛍️", items: [{ label: "Configurar seu cardápio público", path: "/cardapio-config", done: !!profile?.foto_url && produtos > 0 }] },
+    { title: "Seus clientes", emoji: "👥", items: [{ label: "Cadastrar 1 cliente", path: "/clientes", done: clientes > 0 }] },
+    { title: "Insumos", emoji: "🧂", items: [{ label: "Cadastrar 1 insumo", path: "/estoque", done: false }] },
+    { title: "Doonly IA", emoji: "🤖", items: [{ label: "Converse com o Doonly IA", path: "/ia", done: false }] },
   ];
 
   const allItems = steps.flatMap(s => s.items);
