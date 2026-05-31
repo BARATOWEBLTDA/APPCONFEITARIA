@@ -146,7 +146,7 @@ export default function Clientes() {
           </div>
 
           <div className="cli-search-wrap">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input type="text" placeholder="Buscar por nome ou telefone..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
           </div>
 
@@ -315,9 +315,9 @@ export default function Clientes() {
         .cli-btn-new:hover { box-shadow: 0 6px 20px rgba(249,0,122,0.5); transform: translateY(-1px); }
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        .cli-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 0.65rem 0.9rem; margin-bottom: 1rem; }
-        .cli-search { border: none; outline: none; flex: 1; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; }
-        .cli-search::placeholder { color: #9ca3af; }
+        .cli-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #f9007a, #d4006a); border: none; border-radius: 10px; padding: 0.65rem 0.9rem; margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .cli-search { border: none; outline: none; flex: 1; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: white; background: transparent; }
+        .cli-search::placeholder { color: rgba(255,255,255,0.7); }
 
         .cli-loading { display: flex; justify-content: center; padding: 3rem; }
         .cli-empty { text-align: center; padding: 3rem; color: #9ca3af; }
