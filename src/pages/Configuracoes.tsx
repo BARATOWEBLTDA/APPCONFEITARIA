@@ -12,7 +12,7 @@ export default function Configuracoes() {
   const [error, setError] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"loja" | "horario">("loja");
+  const [activeTab, setActiveTab] = useState<"loja" | "horario" | "entrega" | "categorias">("loja");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
@@ -26,6 +26,17 @@ export default function Configuracoes() {
     estado: "",
     cep: "",
   });
+
+  const [entrega, setEntrega] = useState({
+    faz_entrega: false,
+    taxa_entrega: "0",
+    tempo_entrega: "",
+    area_entrega: "",
+  });
+
+  const [categorias, setCategorias] = useState<string[]>([]);
+  const [novaCategoria, setNovaCategoria] = useState("");
+  const [savingCat, setSavingCat] = useState(false);
 
   const [horario, setHorario] = useState({
     dias: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta"] as string[],
@@ -67,6 +78,16 @@ export default function Configuracoes() {
         if (data.horario) {
           try { setHorario({ ...horario, ...JSON.parse(data.horario) }); } catch {}
         }
+        setEntrega({
+          faz_entrega: data.faz_entrega || false,
+          taxa_entrega: data.taxa_entrega?.toString() || "0",
+          tempo_entrega: data.tempo_entrega || "",
+          area_entrega: data.area_entrega || "",
+        });
+
+        // Load categorias
+        const { data: cats } = await supabase.from("categorias").select("nome").eq("user_id", user.id).order("nome");
+        if (cats) setCategorias(cats.map(c => c.nome));
       } else {
         await supabase.from("profiles").insert({ id: user.id });
       }
@@ -110,6 +131,23 @@ export default function Configuracoes() {
     return `(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`
   }
 
+  const handleAddCategoria = async () => {
+    if (!novaCategoria.trim() || !userId) return;
+    setSavingCat(true);
+    const { error } = await supabase.from("categorias").insert({ nome: novaCategoria.trim(), user_id: userId });
+    if (!error) {
+      setCategorias(prev => [...prev, novaCategoria.trim()].sort());
+      setNovaCategoria("");
+    }
+    setSavingCat(false);
+  };
+
+  const handleDeleteCategoria = async (nome: string) => {
+    if (!userId) return;
+    await supabase.from("categorias").delete().eq("user_id", userId).eq("nome", nome);
+    setCategorias(prev => prev.filter(c => c !== nome));
+  };
+
   const handleSave = async () => {
     if (!userId) return;
     setSaving(true);
@@ -126,6 +164,10 @@ export default function Configuracoes() {
       telefone: form.telefone,
       endereco,
       horario: JSON.stringify(horario),
+      faz_entrega: entrega.faz_entrega,
+      taxa_entrega: parseFloat(entrega.taxa_entrega) || 0,
+      tempo_entrega: entrega.tempo_entrega,
+      area_entrega: entrega.area_entrega,
     }, { onConflict: "id" });
     if (err) setError("Erro ao salvar. Tente novamente.");
     else {
@@ -146,10 +188,16 @@ export default function Configuracoes() {
       {/* Tabs */}
       <div className="cfg-tabs">
         <button className={`cfg-tab ${activeTab === "loja" ? "active" : ""}`} onClick={() => setActiveTab("loja")}>
-          🏪 Minha Loja
+          🏪 Loja
         </button>
         <button className={`cfg-tab ${activeTab === "horario" ? "active" : ""}`} onClick={() => setActiveTab("horario")}>
           🕐 Horários
+        </button>
+        <button className={`cfg-tab ${activeTab === "entrega" ? "active" : ""}`} onClick={() => setActiveTab("entrega")}>
+          🛵 Entrega
+        </button>
+        <button className={`cfg-tab ${activeTab === "categorias" ? "active" : ""}`} onClick={() => setActiveTab("categorias")}>
+          🏷️ Categorias
         </button>
       </div>
 
@@ -295,12 +343,83 @@ export default function Configuracoes() {
         </div>
       )}
 
+      {activeTab === "entrega" && (
+        <div className="cfg-card">
+          <div className="cfg-toggle-row">
+            <div>
+              <p className="cfg-toggle-label">Faz entrega?</p>
+              <p style={{fontSize:"0.78rem",color:"#9ca3af",margin:"0.2rem 0 0"}}>Ative se você entrega pedidos</p>
+            </div>
+            <label className="toggle">
+              <input type="checkbox" checked={entrega.faz_entrega} onChange={e => setEntrega({...entrega, faz_entrega: e.target.checked})} />
+              <span className="toggle-slider" />
+            </label>
+          </div>
+
+          {entrega.faz_entrega && (
+            <>
+              <div className="cfg-divider" />
+              <div className="cfg-fields">
+                <div className="cfg-field">
+                  <label>Taxa de entrega (R$)</label>
+                  <input type="number" placeholder="Ex: 5.00" min="0" step="0.50" value={entrega.taxa_entrega} onChange={e => setEntrega({...entrega, taxa_entrega: e.target.value})} />
+                </div>
+                <div className="cfg-field">
+                  <label>Tempo estimado</label>
+                  <input type="text" placeholder="Ex: 30 a 60 minutos" value={entrega.tempo_entrega} onChange={e => setEntrega({...entrega, tempo_entrega: e.target.value})} />
+                </div>
+                <div className="cfg-field">
+                  <label>Área de entrega</label>
+                  <input type="text" placeholder="Ex: Bairros Centro, Vila Nova..." value={entrega.area_entrega} onChange={e => setEntrega({...entrega, area_entrega: e.target.value})} />
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {activeTab === "categorias" && (
+        <div className="cfg-card">
+          <h3 className="cfg-section-title">Categorias de Produtos</h3>
+          <p style={{fontSize:"0.82rem",color:"#9ca3af",marginBottom:"1rem"}}>Crie categorias para organizar seus produtos no cardápio.</p>
+
+          <div className="cfg-field" style={{marginBottom:"1rem"}}>
+            <label>Nova categoria</label>
+            <div style={{display:"flex",gap:"0.5rem"}}>
+              <input type="text" placeholder="Ex: Bolos, Cupcakes, Doces..." value={novaCategoria} onChange={e => setNovaCategoria(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleAddCategoria()}
+                style={{flex:1,padding:"0.68rem 1rem",border:"1.5px solid #e5e7eb",borderRadius:"10px",fontFamily:"Inter,sans-serif",fontSize:"0.9rem",outline:"none"}} />
+              <button onClick={handleAddCategoria} disabled={savingCat || !novaCategoria.trim()}
+                style={{padding:"0.68rem 1.1rem",background:"linear-gradient(135deg,#f9007a,#d4006a)",color:"white",border:"none",borderRadius:"10px",fontWeight:600,cursor:"pointer",whiteSpace:"nowrap"}}>
+                {savingCat ? "..." : "+ Adicionar"}
+              </button>
+            </div>
+          </div>
+
+          {categorias.length === 0 ? (
+            <p style={{color:"#9ca3af",fontSize:"0.85rem",textAlign:"center",padding:"1rem"}}>Nenhuma categoria ainda. Adicione a primeira!</p>
+          ) : (
+            <div style={{display:"flex",flexDirection:"column",gap:"0.5rem"}}>
+              {categorias.map(cat => (
+                <div key={cat} style={{display:"flex",justifyContent:"space-between",alignItems:"center",background:"#f9fafb",borderRadius:"10px",padding:"0.7rem 1rem",border:"1px solid #e5e7eb"}}>
+                  <span style={{fontSize:"0.9rem",fontWeight:500,color:"#374151"}}>🏷️ {cat}</span>
+                  <button onClick={() => handleDeleteCategoria(cat)}
+                    style={{background:"#fff1f2",border:"none",color:"#ef4444",borderRadius:"8px",padding:"0.3rem 0.6rem",cursor:"pointer",fontSize:"0.8rem"}}>
+                    Remover
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {error && <p className="cfg-error">{error}</p>}
       {success && <p className="cfg-success">✓ Salvo com sucesso!</p>}
 
-      <button className="cfg-btn" onClick={handleSave} disabled={saving || uploading}>
+      {activeTab !== "categorias" && <button className="cfg-btn" onClick={handleSave} disabled={saving || uploading}>
         {saving ? <span className="spinner" /> : "Salvar alterações"}
-      </button>
+      </button>}
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');

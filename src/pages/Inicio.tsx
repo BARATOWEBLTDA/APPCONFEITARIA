@@ -7,6 +7,7 @@ export default function Inicio() {
   const [profile, setProfile] = useState<any>(null);
   const [produtos, setProdutos] = useState(0);
   const [clientes, setClientes] = useState(0);
+  const [categorias, setCategorias] = useState(0);
   const [loading, setLoading] = useState(true);
   const [openGroup, setOpenGroup] = useState<number | null>(0);
   const [diasTrial] = useState(14);
@@ -19,8 +20,10 @@ export default function Inicio() {
       setProfile(prof);
       const { count: pc } = await supabase.from("produtos").select("*", { count: "exact", head: true }).eq("user_id", user.id);
       const { count: cc } = await supabase.from("clientes").select("*", { count: "exact", head: true }).eq("user_id", user.id);
+      const { count: catc } = await supabase.from("categorias").select("*", { count: "exact", head: true }).eq("user_id", user.id);
       setProdutos(pc || 0);
       setClientes(cc || 0);
+      setCategorias(catc || 0);
       setLoading(false);
     };
     load();
@@ -35,6 +38,9 @@ export default function Inicio() {
         { label: "Adicionar WhatsApp", path: "/configuracoes", done: !!profile?.telefone },
         { label: "Informar localização", path: "/configuracoes", done: !!profile?.endereco },
         { label: "Configurar horário de funcionamento", path: "/configuracoes", done: !!profile?.horario },
+        { label: "Adicionar descrição da loja", path: "/configuracoes", done: !!profile?.descricao_loja },
+        { label: "Configurar entrega", path: "/configuracoes", done: profile?.faz_entrega !== null && profile?.faz_entrega !== undefined },
+        { label: "Criar pelo menos 1 categoria", path: "/configuracoes", done: categorias > 0 },
       ],
     },
     {
