@@ -198,7 +198,7 @@ export default function Clientes() {
                     <div className="cli-aniv-info">
                       <p className="cli-aniv-nome">{c.nome}</p>
                       <p className="cli-aniv-data">
-                      <><img src="/nivercake.png" style={{width:"18px",height:"18px",objectFit:"contain",verticalAlign:"middle",marginRight:"4px"}} />Faz aniversário dia {nasc.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}</>
+                      <span style={{display:"inline-flex",alignItems:"center",gap:"5px",flexWrap:"nowrap"}}><img src="/nivercake.png" style={{width:"24px",height:"24px",objectFit:"contain",flexShrink:0}} />Faz aniversário dia {nasc.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}</span>
                     </p>
                     </div>
                     <span className={`cli-aniv-badge ${diff <= 7 ? "soon" : ""}`}>
@@ -370,7 +370,7 @@ export default function Clientes() {
 
         .cli-aniv-info { flex: 1; min-width: 0; }
         .cli-aniv-nome { font-size: 0.82rem; font-weight: 600; color: white; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cli-aniv-data { font-size: 0.75rem; color: rgba(255,215,0,0.7); margin: 0; }
+        .cli-aniv-data { font-size: 0.75rem; color: rgba(255,215,0,0.7); margin: 0; display: flex; align-items: center; }
 
         .cli-aniv-badge { font-size: 0.72rem; font-weight: 700; color: #1a1a2e; background: linear-gradient(135deg, #ffd700, #ffa500); padding: 0.25rem 0.6rem; border-radius: 20px; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(255,165,0,0.4); }
         .cli-aniv-badge.soon { background: linear-gradient(135deg, #f9007a, #ff6eb4); color: white; box-shadow: 0 2px 8px rgba(249,0,122,0.4); }
