@@ -177,7 +177,7 @@ export default function Layout() {
         .sidebar {
           width: 220px;
           min-height: 100vh;
-          background: #181419;
+          background: #F471B6;
           border-right: none;
           display: flex;
           flex-direction: column;
@@ -345,7 +345,7 @@ export default function Layout() {
             position: fixed;
             bottom: 0; left: 0; right: 0;
             z-index: 20;
-            background: #181419;
+            background: #F471B6;
             border-radius: 0;
             padding: 0.5rem 0.25rem 0.85rem;
             justify-content: space-around;
