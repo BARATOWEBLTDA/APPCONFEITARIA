@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { refreshProfile } from "@/hooks/useProfile";
 
 const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
 export default function Configuracoes() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -146,6 +148,11 @@ export default function Configuracoes() {
     if (!userId) return;
     await supabase.from("categorias").delete().eq("user_id", userId).eq("nome", nome);
     setCategorias(prev => prev.filter(c => c !== nome));
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
   };
 
   const handleSave = async () => {
@@ -420,6 +427,9 @@ export default function Configuracoes() {
       {activeTab !== "categorias" && <button className="cfg-btn" onClick={handleSave} disabled={saving || uploading}>
         {saving ? <span className="spinner" /> : "Salvar alterações"}
       </button>}
+      <button onClick={handleLogout} style={{width:"100%",padding:"0.85rem",background:"none",border:"1.5px solid #e5e7eb",borderRadius:"10px",fontFamily:"Inter,sans-serif",fontSize:"0.95rem",fontWeight:600,color:"#6b7280",cursor:"pointer",marginTop:"0.5rem"}}>
+        Sair da conta
+      </button>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
