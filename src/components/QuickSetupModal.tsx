@@ -25,7 +25,9 @@ export function QuickSetupModal({ step, userId, onClose, onSaved }: Props) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      if (label.includes("WhatsApp")) {
+      if (label.includes("nome da loja") || label.includes("nome")) {
+        await supabase.from("profiles").upsert({ id: userId, nome_loja: value }, { onConflict: "id" });
+      } else if (label.includes("WhatsApp")) {
         await supabase.from("profiles").upsert({ id: userId, telefone: value }, { onConflict: "id" });
       } else if (label.includes("localização")) {
         const endereco = JSON.stringify({ rua: value, cidade: value2, estado: "", numero: "", cep: "" });
@@ -71,7 +73,7 @@ export function QuickSetupModal({ step, userId, onClose, onSaved }: Props) {
   };
 
   const renderContent = () => {
-    if (label.includes("logo") || label.includes("foto")) {
+    if (label.includes("logo") || label.includes("foto") || label.includes("Adicionar logo")) {
       return (
         <div style={{ textAlign: "center" }}>
           <div className="qsm-avatar" onClick={() => fileRef.current?.click()}>
@@ -86,6 +88,13 @@ export function QuickSetupModal({ step, userId, onClose, onSaved }: Props) {
         </div>
       );
     }
+
+    if (label.includes("nome da loja") || label.includes("nome")) return (
+      <div className="qsm-field">
+        <label>Nome da sua confeitaria</label>
+        <input placeholder="Ex: Doce Formiga" value={value} onChange={e => setValue(e.target.value)} />
+      </div>
+    );
 
     if (label.includes("WhatsApp")) return (
       <div className="qsm-field">
