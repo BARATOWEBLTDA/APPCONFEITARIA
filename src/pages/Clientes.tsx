@@ -234,28 +234,7 @@ export default function Clientes() {
             })}
           </div>
 
-          {/* Estatísticas */}
-          <div className="cli-panel">
-            <h3 className="cli-panel-title">📊 Estatísticas</h3>
-            <div className="cli-stats-grid">
-              <div className="cli-stat">
-                <span className="cli-stat-num">{clientes.length}</span>
-                <span className="cli-stat-label">Total</span>
-              </div>
-              <div className="cli-stat">
-                <span className="cli-stat-num">{clientesEsteMes}</span>
-                <span className="cli-stat-label">Este mês</span>
-              </div>
-              <div className="cli-stat">
-                <span className="cli-stat-num">{clientes.filter(c => c.data_nascimento).length}</span>
-                <span className="cli-stat-label">Com aniversário</span>
-              </div>
-              <div className="cli-stat">
-                <span className="cli-stat-num">{clientes.filter(c => c.foto_url).length}</span>
-                <span className="cli-stat-label">Com foto</span>
-              </div>
-            </div>
-          </div>
+
 
         </div>
 
