@@ -113,11 +113,7 @@ export default function Inicio() {
           <p className="ini-sum-num">{produtos}</p>
           <p className="ini-sum-label">Produtos</p>
         </div>
-        <div className="ini-sum-card">
-          <span className="ini-sum-icon">💰</span>
-          <p className="ini-sum-num">R$ {faturamento.toFixed(2)}</p>
-          <p className="ini-sum-label">Faturamento</p>
-        </div>
+
       </div>
 
       {/* Layout desktop: checklist esquerda, atalhos + premium direita */}
@@ -284,14 +280,14 @@ export default function Inicio() {
           margin-bottom: 1.25rem;
         }
         .ini-sum-card {
-          background: white; border-radius: 12px; padding: 0.75rem 0.9rem;
-          display: flex; flex-direction: column; gap: 0.2rem;
+          background: white; border-radius: 14px; padding: 1rem 1.2rem;
+          display: flex; flex-direction: column; gap: 0.3rem;
           box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-          min-width: 110px;
+          min-width: 130px;
         }
-        .ini-sum-icon { font-size: 1.1rem; }
-        .ini-sum-num { font-size: 1.1rem; font-weight: 800; color: #1f2937; margin: 0; }
-        .ini-sum-label { font-size: 0.68rem; color: #9ca3af; margin: 0; font-weight: 500; }
+        .ini-sum-icon { font-size: 1.4rem; }
+        .ini-sum-num { font-size: 1.4rem; font-weight: 800; color: #1f2937; margin: 0; }
+        .ini-sum-label { font-size: 0.75rem; color: #9ca3af; margin: 0; font-weight: 500; }
 
         /* Grid 2 colunas */
         .ini-grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; align-items: start; }
