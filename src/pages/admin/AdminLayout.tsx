@@ -21,10 +21,10 @@ export default function AdminLayout() {
 
   useEffect(() => {
     const check = async () => {
+      const ADMIN_EMAILS = ["gestao@doonly.com.br"];
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { navigate("/admin/login"); setLoading(false); return; }
-      const { data } = await supabase.from("profiles").select("is_admin").eq("id", session.user.id).single();
-      if (data?.is_admin === true) {
+      if (ADMIN_EMAILS.includes(session.user.email || "")) {
         setAuthorized(true);
       } else {
         navigate("/admin/login");
