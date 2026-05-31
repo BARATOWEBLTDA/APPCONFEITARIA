@@ -238,25 +238,6 @@ export default function Clientes() {
 
         </div>
 
-        {/* Terceira coluna - Log ultimos adicionados */}
-        <div className="cli-sidebar cli-log">
-          <div className="cli-panel">
-            <h3 className="cli-panel-title log-title">📋 Log de Cadastros</h3>
-            {ultimosAdicionados.map(c => (
-              <div key={c.id} className="cli-recent-item">
-                <div className="cli-aniv-avatar">
-                  {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
-                </div>
-                <div className="cli-recent-info">
-                  <p className="cli-recent-nome">{c.nome.split(" ")[0]}</p>
-                  <p className="cli-recent-data">{new Date(c.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} {new Date(c.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
       {/* Confirmar exclusão */}
       {confirmDelete && (
         <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
@@ -338,7 +319,7 @@ export default function Clientes() {
         .cli-sidebar { display: none; flex-direction: column; gap: 1rem; }
 
         @media (min-width: 1024px) {
-          .cli-layout { grid-template-columns: 1fr 1fr 1fr; align-items: start; }
+          .cli-layout { grid-template-columns: 2fr 1fr; align-items: start; }
           .cli-sidebar { display: flex; padding-top: 4.5rem; }
         }
 
