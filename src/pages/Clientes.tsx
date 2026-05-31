@@ -182,8 +182,8 @@ export default function Clientes() {
 
         {/* Coluna lateral — aniversariantes */}
         <div className="cli-sidebar">
-          <img src="/bannerniver.png" alt="Aniversariantes" style={{width:"100%",borderRadius:"12px",marginBottom:"0.75rem",boxShadow:"0 4px 16px rgba(0,0,0,0.15)"}} />
           <div className="cli-panel">
+            <img src="/bannerniver.png" alt="Aniversariantes" style={{width:"100%",borderRadius:"10px",marginBottom:"1rem",display:"block"}} />
             <h3 className="cli-panel-title">Aniversariantes Próximos</h3>
             {aniversariantes.length === 0 ? (
               <p className="cli-panel-empty">Nenhum nos próximos 30 dias</p>
