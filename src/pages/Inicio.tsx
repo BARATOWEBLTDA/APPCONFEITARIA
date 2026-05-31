@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { QuickSetupModal } from "@/components/QuickSetupModal";
 
 export default function Inicio() {
   const navigate = useNavigate();
@@ -11,12 +12,15 @@ export default function Inicio() {
   const [pedidos, setPedidos] = useState(0);
   const [loading, setLoading] = useState(true);
   const [openGroup, setOpenGroup] = useState<number | null>(0);
+  const [quickStep, setQuickStep] = useState<{label: string; path: string} | null>(null);
+  const [profileUserId, setProfileUserId] = useState<string>("");
   const [diasTrial] = useState(14);
 
   useEffect(() => {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      setProfileUserId(user.id);
       const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       setProfile(prof);
       const { count: pc } = await supabase.from("produtos").select("*", { count: "exact", head: true }).eq("user_id", user.id);
@@ -111,7 +115,7 @@ export default function Inicio() {
                 <p className="mob-config-next-label">Próximo passo</p>
                 <p className="mob-config-next-text">{nextStep.label}</p>
               </div>
-              <button className="mob-config-next-btn" onClick={() => navigate(nextStep.path)}>Configurar →</button>
+              <button className="mob-config-next-btn" onClick={() => setQuickStep(nextStep)}>Configurar →</button>
             </div>
           )}
         </div>
@@ -226,7 +230,7 @@ export default function Inicio() {
                     <p className="next-step-text">{nextStep.label}</p>
                   </div>
                 </div>
-                <button className="next-step-btn" onClick={() => navigate(nextStep.path)}>Configurar agora →</button>
+                <button className="next-step-btn" onClick={() => setQuickStep(nextStep)}>Configurar agora →</button>
               </div>
             )}
 
@@ -251,7 +255,7 @@ export default function Inicio() {
                     {isOpen && (
                       <div className="step-items">
                         {group.items.map((item, ii) => (
-                          <button key={ii} className="step-item" onClick={() => navigate(item.path)}>
+                          <button key={ii} className="step-item" onClick={() => !item.done && setQuickStep(item)}>
                             <div className={`step-check ${item.done ? "checked" : ""}`}>
                               {item.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
                             </div>
@@ -305,6 +309,20 @@ export default function Inicio() {
           </div>
         </div>
       </div>
+
+      <QuickSetupModal
+        step={quickStep}
+        userId={profileUserId}
+        onClose={() => setQuickStep(null)}
+        onSaved={async () => {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+          const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+          setProfile(prof);
+          const { count: catc } = await supabase.from("categorias").select("*", { count: "exact", head: true }).eq("user_id", user.id);
+          setCategorias(catc || 0);
+        }}
+      />
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
