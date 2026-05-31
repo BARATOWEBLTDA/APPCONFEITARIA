@@ -1,21 +1,18 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 
 interface Cliente {
   id: string;
   nome: string;
-  telefone?: string;
   whatsapp?: string;
   data_nascimento?: string;
   endereco?: string;
   como_conheceu?: string;
-  status: string;
   foto_url?: string;
   created_at: string;
 }
 
 const COMO_CONHECEU = ["Instagram", "Indicação", "Google", "Facebook", "TikTok", "Outro"];
-const STATUS_OPTIONS = ["ativo", "inativo"];
 const emptyForm = { nome: "", whatsapp: "", data_nascimento: "", endereco: "", como_conheceu: "", foto_url: "" };
 
 export default function Clientes() {
@@ -29,13 +26,6 @@ export default function Clientes() {
   const [search, setSearch] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-
-  // Block body scroll when modal is open
-  useEffect(() => {
-    const isOpen = showForm || !!confirmDelete;
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [showForm, confirmDelete]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -47,6 +37,13 @@ export default function Clientes() {
     };
     init();
   }, []);
+
+  // Block body scroll when modal open
+  useEffect(() => {
+    const isOpen = showForm || !!confirmDelete;
+    document.body.style.overflow = isOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [showForm, confirmDelete]);
 
   const fetchClientes = async (uid: string) => {
     setLoading(true);
@@ -79,14 +76,24 @@ export default function Clientes() {
   };
 
   const handleEdit = (c: Cliente) => {
-    setForm({ nome: c.nome || "", whatsapp: c.whatsapp || "", data_nascimento: c.data_nascimento || "", endereco: c.endereco || "", como_conheceu: c.como_conheceu || "", status: c.status || "ativo", foto_url: c.foto_url || "" });
-    setPreview(c.foto_url || null); setEditando(c.id); setShowForm(true);
+    setForm({
+      nome: c.nome || "",
+      whatsapp: c.whatsapp || "",
+      data_nascimento: c.data_nascimento || "",
+      endereco: c.endereco || "",
+      como_conheceu: c.como_conheceu || "",
+      foto_url: c.foto_url || "",
+    });
+    setPreview(c.foto_url || null);
+    setEditando(c.id);
+    setShowForm(true);
   };
 
   const handleDelete = async (id: string) => {
     if (!userId) return;
     await supabase.from("clientes").delete().eq("id", id);
-    await fetchClientes(userId); setConfirmDelete(null);
+    await fetchClientes(userId);
+    setConfirmDelete(null);
   };
 
   const filtered = clientes.filter(c =>
@@ -96,7 +103,7 @@ export default function Clientes() {
 
   const formatPhone = (phone?: string) => {
     if (!phone) return null;
-    const d = phone.replace(/\D/g, '');
+    const d = phone.replace(/\D/g, "");
     if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`;
     if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
     return phone;
@@ -107,176 +114,166 @@ export default function Clientes() {
     return new Date(data).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
   };
 
+  // Aniversariantes próximos (30 dias)
+  const aniversariantes = clientes.filter(c => {
+    if (!c.data_nascimento) return false;
+    const hoje = new Date();
+    const nasc = new Date(c.data_nascimento);
+    const aniv = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
+    if (aniv < hoje) aniv.setFullYear(hoje.getFullYear() + 1);
+    const diff = (aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24);
+    return diff >= 0 && diff <= 30;
+  }).sort((a, b) => {
+    const hoje = new Date();
+    const dA = new Date(a.data_nascimento!);
+    const dB = new Date(b.data_nascimento!);
+    const anivA = new Date(hoje.getFullYear(), dA.getMonth(), dA.getDate());
+    const anivB = new Date(hoje.getFullYear(), dB.getMonth(), dB.getDate());
+    if (anivA < hoje) anivA.setFullYear(hoje.getFullYear() + 1);
+    if (anivB < hoje) anivB.setFullYear(hoje.getFullYear() + 1);
+    return anivA.getTime() - anivB.getTime();
+  });
+
+  const getDaysUntil = (data: string) => {
+    const hoje = new Date();
+    const nasc = new Date(data);
+    const aniv = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
+    if (aniv < hoje) aniv.setFullYear(hoje.getFullYear() + 1);
+    return Math.ceil((aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  const clientesEsteMes = clientes.filter(c => {
+    const d = new Date(c.created_at);
+    const now = new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
+  const ultimosAdicionados = [...clientes]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 4);
+
   return (
     <div className="cli-root">
       <div className="cli-layout">
-      <div className="cli-main">
-      {/* Header */}
-      <div className="cli-header">
-        <div>
-          <h1 className="cli-title">👥 Clientes</h1>
-          <p className="cli-subtitle">{clientes.length} cliente{clientes.length !== 1 ? "s" : ""} cadastrado{clientes.length !== 1 ? "s" : ""}</p>
-        </div>
-        <button className="cli-btn-new" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
-          + Novo cliente
-        </button>
-      </div>
 
-      {/* Busca */}
-      <div className="cli-search-wrap">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" placeholder="Buscar por nome ou telefone..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
-      </div>
-
-      {/* Lista */}
-      {loading ? (
-        <div className="cli-loading"><span className="spinner" /></div>
-      ) : filtered.length === 0 ? (
-        <div className="cli-empty">
-          <p>Nenhum cliente encontrado</p>
-          <span>Clique em "+ Novo cliente" para cadastrar</span>
-        </div>
-      ) : (
-        <div className="cli-list">
-          {filtered.map(c => (
-            <div key={c.id} className="cli-card">
-              {/* Avatar */}
-              <div className="cli-avatar">
-                {c.foto_url
-                  ? <img src={c.foto_url} alt={c.nome} />
-                  : <span>{c.nome.charAt(0).toUpperCase()}</span>
-                }
-              </div>
-
-              {/* Info */}
-              <div className="cli-info">
-                <p className="cli-nome">{c.nome}</p>
-                {c.whatsapp && (
-                  <a
-                    href={`https://wa.me/55${c.whatsapp.replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="cli-whatsapp-link"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                    {formatPhone(c.whatsapp)}
-                  </a>
-                )}
-
-              </div>
-
-              {/* Ações */}
-              <div className="cli-actions">
-                <button className="cli-act edit" onClick={() => handleEdit(c)}>✏️</button>
-              </div>
+        {/* Coluna principal */}
+        <div className="cli-main">
+          {/* Header */}
+          <div className="cli-header">
+            <div>
+              <h1 className="cli-title">👥 Clientes</h1>
+              <p className="cli-subtitle">{clientes.length} cliente{clientes.length !== 1 ? "s" : ""} cadastrado{clientes.length !== 1 ? "s" : ""}</p>
             </div>
-          ))}
+            <button className="cli-btn-new" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
+              + Novo cliente
+            </button>
+          </div>
+
+          {/* Busca */}
+          <div className="cli-search-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Buscar por nome ou telefone..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
+          </div>
+
+          {/* Lista */}
+          {loading ? (
+            <div className="cli-loading"><span className="spinner" /></div>
+          ) : filtered.length === 0 ? (
+            <div className="cli-empty">
+              <p>Nenhum cliente encontrado</p>
+              <span>Clique em "+ Novo cliente" para cadastrar</span>
+            </div>
+          ) : (
+            <div className="cli-list">
+              {filtered.map(c => (
+                <div key={c.id} className="cli-card">
+                  <div className="cli-avatar">
+                    {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
+                  </div>
+                  <div className="cli-info">
+                    <p className="cli-nome">{c.nome}</p>
+                    {c.whatsapp && (
+                      <a href={`https://wa.me/55${c.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" className="cli-whatsapp-link" onClick={e => e.stopPropagation()}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        {formatPhone(c.whatsapp)}
+                      </a>
+                    )}
+                  </div>
+                  <button className="cli-act edit" onClick={() => handleEdit(c)}>✏️</button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
 
-      </div>{/* end cli-main */}
-      {/* Painel lateral desktop */}
-      <div className="cli-sidebar">
+        {/* Painel lateral desktop */}
+        <div className="cli-sidebar">
 
-        {/* Aniversariantes próximos */}
-        <div className="cli-panel">
-          <h3 className="cli-panel-title">🎂 Aniversariantes Próximos</h3>
-          {(() => {
-            const hoje = new Date();
-            const proximos = clientes.filter(c => {
-              if (!c.data_nascimento) return false;
-              const nasc = new Date(c.data_nascimento);
-              const aniv = new Date(hoje.getFullYear(), nasc.getMonth(), nasc.getDate());
-              if (aniv < hoje) aniv.setFullYear(hoje.getFullYear() + 1);
-              const diff = (aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24);
-              return diff >= 0 && diff <= 30;
-            }).sort((a, b) => {
-              const hoje = new Date();
-              const dateA = new Date(a.data_nascimento!);
-              const dateB = new Date(b.data_nascimento!);
-              const anivA = new Date(hoje.getFullYear(), dateA.getMonth(), dateA.getDate());
-              const anivB = new Date(hoje.getFullYear(), dateB.getMonth(), dateB.getDate());
-              if (anivA < hoje) anivA.setFullYear(hoje.getFullYear() + 1);
-              if (anivB < hoje) anivB.setFullYear(hoje.getFullYear() + 1);
-              return anivA.getTime() - anivB.getTime();
-            });
-            if (proximos.length === 0) return <p className="cli-panel-empty">Nenhum aniversariante nos próximos 30 dias</p>;
-            return proximos.map(c => {
+          {/* Aniversariantes */}
+          <div className="cli-panel">
+            <h3 className="cli-panel-title">🎂 Aniversariantes Próximos</h3>
+            {aniversariantes.length === 0 ? (
+              <p className="cli-panel-empty">Nenhum nos próximos 30 dias</p>
+            ) : aniversariantes.map(c => {
               const nasc = new Date(c.data_nascimento!);
-              const aniv = new Date(new Date().getFullYear(), nasc.getMonth(), nasc.getDate());
-              if (aniv < new Date()) aniv.setFullYear(new Date().getFullYear() + 1);
-              const diff = Math.ceil((aniv.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+              const diff = getDaysUntil(c.data_nascimento!);
               return (
                 <div key={c.id} className="cli-aniv-item">
                   <div className="cli-aniv-avatar">
                     {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
                   </div>
                   <div className="cli-aniv-info">
-                    <p className="cli-aniv-nome">{c.nome.split(' ')[0]}</p>
-                    <p className="cli-aniv-data">{nasc.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</p>
+                    <p className="cli-aniv-nome">{c.nome.split(" ")[0]}</p>
+                    <p className="cli-aniv-data">{nasc.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</p>
                   </div>
-                  <span className={`cli-aniv-badge ${diff <= 7 ? 'soon' : ''}`}>
-                    {diff === 0 ? '🎉 Hoje!' : diff === 1 ? 'Amanhã' : `${diff} dias`}
+                  <span className={`cli-aniv-badge ${diff <= 7 ? "soon" : ""}`}>
+                    {diff === 0 ? "🎉 Hoje!" : diff === 1 ? "Amanhã" : `${diff} dias`}
                   </span>
                 </div>
               );
-            });
-          })()}
-        </div>
+            })}
+          </div>
 
-        {/* Estatísticas */}
-        <div className="cli-panel">
-          <h3 className="cli-panel-title">📊 Estatísticas</h3>
-          <div className="cli-stats-grid">
-            <div className="cli-stat">
-              <span className="cli-stat-num">{clientes.length}</span>
-              <span className="cli-stat-label">Total</span>
-            </div>
-            <div className="cli-stat">
-              <span className="cli-stat-num">
-                {clientes.filter(c => {
-                  const d = new Date(c.created_at);
-                  const now = new Date();
-                  return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                }).length}
-              </span>
-              <span className="cli-stat-label">Este mês</span>
-            </div>
-            <div className="cli-stat">
-              <span className="cli-stat-num">
-                {clientes.filter(c => c.data_nascimento).length}
-              </span>
-              <span className="cli-stat-label">Com aniversário</span>
-            </div>
-            <div className="cli-stat">
-              <span className="cli-stat-num">
-                {clientes.filter(c => c.foto_url).length}
-              </span>
-              <span className="cli-stat-label">Com foto</span>
+          {/* Estatísticas */}
+          <div className="cli-panel">
+            <h3 className="cli-panel-title">📊 Estatísticas</h3>
+            <div className="cli-stats-grid">
+              <div className="cli-stat">
+                <span className="cli-stat-num">{clientes.length}</span>
+                <span className="cli-stat-label">Total</span>
+              </div>
+              <div className="cli-stat">
+                <span className="cli-stat-num">{clientesEsteMes}</span>
+                <span className="cli-stat-label">Este mês</span>
+              </div>
+              <div className="cli-stat">
+                <span className="cli-stat-num">{clientes.filter(c => c.data_nascimento).length}</span>
+                <span className="cli-stat-label">Com aniversário</span>
+              </div>
+              <div className="cli-stat">
+                <span className="cli-stat-num">{clientes.filter(c => c.foto_url).length}</span>
+                <span className="cli-stat-label">Com foto</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Últimos adicionados */}
-        <div className="cli-panel">
-          <h3 className="cli-panel-title">🆕 Últimos Adicionados</h3>
-          {[...clientes].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 4).map(c => (
-            <div key={c.id} className="cli-recent-item">
-              <div className="cli-aniv-avatar">
-                {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
+          {/* Últimos adicionados */}
+          <div className="cli-panel">
+            <h3 className="cli-panel-title">🆕 Últimos Adicionados</h3>
+            {ultimosAdicionados.map(c => (
+              <div key={c.id} className="cli-aniv-item">
+                <div className="cli-aniv-avatar">
+                  {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
+                </div>
+                <div className="cli-aniv-info">
+                  <p className="cli-aniv-nome">{c.nome.split(" ").slice(0,2).join(" ")}</p>
+                  <p className="cli-aniv-data">{new Date(c.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</p>
+                </div>
               </div>
-              <div className="cli-aniv-info">
-                <p className="cli-aniv-nome">{c.nome.split(' ').slice(0,2).join(' ')}</p>
-                <p className="cli-aniv-data">{new Date(c.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}</p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-
       </div>
-
-      </div>{/* end cli-layout */}
 
       {/* Confirmar exclusão */}
       {confirmDelete && (
@@ -319,7 +316,6 @@ export default function Clientes() {
                   <label>WhatsApp</label>
                   <input type="tel" placeholder="(00) 9 0000-0000" value={form.whatsapp} onChange={e => setForm({...form, whatsapp: e.target.value})} autoComplete="off" name="cli-whatsapp" />
                 </div>
-
                 <div className="form-field">
                   <label>Data de aniversário</label>
                   <input type="date" value={form.data_nascimento} onChange={e => setForm({...form, data_nascimento: e.target.value})} />
@@ -335,7 +331,6 @@ export default function Clientes() {
                     {COMO_CONHECEU.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                 </div>
-
               </div>
             </div>
             <div className="form-footer">
@@ -358,65 +353,19 @@ export default function Clientes() {
 
         .cli-layout { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
         .cli-main { min-width: 0; }
-        .cli-sidebar { display: none; }
+        .cli-sidebar { display: none; flex-direction: column; gap: 1rem; }
 
         @media (min-width: 1024px) {
-          .cli-layout { grid-template-columns: 1fr 300px; align-items: start; }
-          .cli-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+          .cli-layout { grid-template-columns: 1fr 280px; align-items: start; }
+          .cli-sidebar { display: flex; }
         }
-
-        .cli-panel {
-          background: white; border-radius: 14px; padding: 1rem 1.1rem;
-          box-shadow: 0 1px 6px rgba(0,0,0,0.06);
-        }
-        .cli-panel-title { font-size: 0.88rem; font-weight: 700; color: #1f2937; margin: 0 0 0.85rem; }
-        .cli-panel-empty { font-size: 0.82rem; color: #9ca3af; text-align: center; padding: 0.5rem 0; }
-
-        .cli-aniv-item, .cli-recent-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0; border-bottom: 1px solid #f9fafb; }
-        .cli-aniv-item:last-child, .cli-recent-item:last-child { border-bottom: none; }
-
-        .cli-aniv-avatar {
-          width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
-          background: linear-gradient(135deg, #fce7f3, #fbcfe8);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 0.9rem; font-weight: 700; color: #f9007a; overflow: hidden;
-        }
-        .cli-aniv-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-        .cli-aniv-info { flex: 1; min-width: 0; }
-        .cli-aniv-nome { font-size: 0.82rem; font-weight: 600; color: #1f2937; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cli-aniv-data { font-size: 0.75rem; color: #9ca3af; margin: 0; }
-
-        .cli-aniv-badge {
-          font-size: 0.72rem; font-weight: 600; color: #6b7280;
-          background: #f3f4f6; padding: 0.2rem 0.5rem; border-radius: 20px;
-          white-space: nowrap; flex-shrink: 0;
-        }
-        .cli-aniv-badge.soon { background: #fff0f6; color: #f9007a; }
-
-        .cli-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-        .cli-stat {
-          background: #f9fafb; border-radius: 10px; padding: 0.7rem 0.5rem;
-          display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
-        }
-        .cli-stat-num { font-size: 1.4rem; font-weight: 800; color: #f9007a; }
-        .cli-stat-label { font-size: 0.72rem; color: #6b7280; font-weight: 500; text-align: center; }
 
         .cli-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; gap: 0.75rem; }
         .cli-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin-bottom: 0.2rem; }
         .cli-subtitle { font-size: 0.85rem; color: #9ca3af; }
-        .cli-btn-new {
-          padding: 0.65rem 1.2rem; background: linear-gradient(135deg, #f9007a, #d4006a);
-          color: white; border: none; border-radius: 10px;
-          font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600;
-          cursor: pointer; white-space: nowrap; flex-shrink: 0;
-        }
+        .cli-btn-new { padding: 0.65rem 1.2rem; background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 
-        .cli-search-wrap {
-          display: flex; align-items: center; gap: 0.5rem;
-          background: white; border: 1.5px solid #e5e7eb;
-          border-radius: 10px; padding: 0.65rem 0.9rem; margin-bottom: 1rem;
-        }
+        .cli-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 0.65rem 0.9rem; margin-bottom: 1rem; }
         .cli-search { border: none; outline: none; flex: 1; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; }
         .cli-search::placeholder { color: #9ca3af; }
 
@@ -426,46 +375,40 @@ export default function Clientes() {
 
         .cli-list { display: flex; flex-direction: column; gap: 0.6rem; }
 
-        /* Card redesenhado - limpo e organizado */
-        .cli-card {
-          display: flex; align-items: center; gap: 0.9rem;
-          background: white; border-radius: 14px;
-          padding: 0.75rem 1rem;
-          box-shadow: 0 1px 6px rgba(0,0,0,0.07);
-          transition: box-shadow 0.15s;
-        }
+        .cli-card { display: flex; align-items: center; gap: 0.9rem; background: white; border-radius: 14px; padding: 0.75rem 1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.07); transition: box-shadow 0.15s; }
         .cli-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
 
-        .cli-avatar {
-          width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0;
-          background: linear-gradient(135deg, #fce7f3, #fbcfe8);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 1.2rem; font-weight: 700; color: #f9007a;
-          overflow: hidden;
-        }
+        .cli-avatar { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0; background: linear-gradient(135deg, #fce7f3, #fbcfe8); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; color: #f9007a; overflow: hidden; }
         .cli-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
         .cli-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
         .cli-nome { font-size: 0.95rem; font-weight: 600; color: #1f2937; margin: 0 0 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cli-detalhe { font-size: 0.8rem; color: #6b7280; margin: 0 0 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cli-whatsapp-link {
-          display: inline-flex; align-items: center; gap: 0.3rem;
-          font-size: 0.8rem; color: #25D366; font-weight: 500;
-          text-decoration: none; margin: 0 0 0.1rem;
-        }
+
+        .cli-whatsapp-link { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: #25D366; font-weight: 500; text-decoration: none; }
         .cli-whatsapp-link:hover { text-decoration: underline; }
 
-        .cli-actions { display: flex; gap: 0.35rem; flex-shrink: 0; }
-        .cli-act {
-          width: 34px; height: 34px; border-radius: 8px;
-          border: none; cursor: pointer; font-size: 0.85rem;
-          display: flex; align-items: center; justify-content: center;
-          transition: background 0.15s;
-        }
-        .cli-act.edit { background: #fff0f6; }
-        .cli-act.edit:hover { background: #fce7f3; }
-        .cli-act.delete { background: #fff1f2; }
-        .cli-act.delete:hover { background: #fecdd3; }
+        .cli-act { width: 34px; height: 34px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; background: #fff0f6; flex-shrink: 0; }
+        .cli-act:hover { background: #fce7f3; }
+
+        /* Painel */
+        .cli-panel { background: white; border-radius: 14px; padding: 1rem 1.1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
+        .cli-panel-title { font-size: 0.88rem; font-weight: 700; color: #1f2937; margin: 0 0 0.85rem; }
+        .cli-panel-empty { font-size: 0.82rem; color: #9ca3af; text-align: center; padding: 0.5rem 0; }
+
+        .cli-aniv-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0; border-bottom: 1px solid #f9fafb; }
+        .cli-aniv-item:last-child { border-bottom: none; }
+        .cli-aniv-avatar { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; background: linear-gradient(135deg, #fce7f3, #fbcfe8); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; color: #f9007a; overflow: hidden; }
+        .cli-aniv-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .cli-aniv-info { flex: 1; min-width: 0; }
+        .cli-aniv-nome { font-size: 0.82rem; font-weight: 600; color: #1f2937; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cli-aniv-data { font-size: 0.75rem; color: #9ca3af; margin: 0; }
+        .cli-aniv-badge { font-size: 0.72rem; font-weight: 600; color: #6b7280; background: #f3f4f6; padding: 0.2rem 0.5rem; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+        .cli-aniv-badge.soon { background: #fff0f6; color: #f9007a; }
+
+        .cli-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+        .cli-stat { background: #f9fafb; border-radius: 10px; padding: 0.7rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
+        .cli-stat-num { font-size: 1.4rem; font-weight: 800; color: #f9007a; }
+        .cli-stat-label { font-size: 0.72rem; color: #6b7280; font-weight: 500; text-align: center; }
 
         /* Modal */
         .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; overflow: hidden; touch-action: none; }
