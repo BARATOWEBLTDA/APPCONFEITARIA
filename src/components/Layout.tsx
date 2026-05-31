@@ -337,7 +337,7 @@ export default function Layout() {
           .layout-main {
             margin-left: 0;
             padding: 1rem;
-            padding-bottom: 6rem;
+            padding-bottom: 7rem;
           }
 
           .bottom-nav {
@@ -347,7 +347,7 @@ export default function Layout() {
             z-index: 20;
             background: #F471B6;
             border-radius: 0;
-            padding: 0 0 0.75rem;
+            padding: 0.5rem 0 1.25rem;
             justify-content: space-around;
             align-items: flex-end;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
@@ -363,7 +363,7 @@ export default function Layout() {
             align-items: center;
             justify-content: flex-end;
             flex: 1;
-            padding: 0.5rem 0.25rem 0.4rem;
+            padding: 0.9rem 0.25rem 0.5rem;
             color: rgba(255,255,255,0.75);
             text-decoration: none;
             background: none;
