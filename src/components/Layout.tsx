@@ -346,7 +346,7 @@ export default function Layout() {
             bottom: 0; left: 0; right: 0;
             z-index: 20;
             background: #F471B6;
-            border-radius: 0;
+            border-radius: 20px 20px 0 0;
             padding: 0.5rem 0 1.25rem;
             justify-content: space-around;
             align-items: flex-end;
