@@ -247,11 +247,9 @@ export default function Clientes() {
                 <div className="cli-aniv-avatar">
                   {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
                 </div>
-                <div className="cli-aniv-info">
-                  <p className="cli-recent-nome">{c.nome.split(" ").slice(0,2).join(" ")}</p>
-                  <p className="cli-recent-data">
-                    {new Date(c.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} · {new Date(c.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                  </p>
+                <div className="cli-recent-info">
+                  <p className="cli-recent-nome">{c.nome.split(" ")[0]}</p>
+                  <p className="cli-recent-data">{new Date(c.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} {new Date(c.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>
                 </div>
               </div>
             ))}
@@ -359,8 +357,8 @@ export default function Clientes() {
 
         .cli-list { display: flex; flex-direction: column; gap: 0.6rem; }
 
-        .cli-card { display: flex; align-items: center; gap: 0.9rem; background: white; border-radius: 14px; padding: 0.75rem 1rem; box-shadow: 0 2px 12px rgba(249,0,122,0.08), 0 1px 4px rgba(0,0,0,0.06); transition: box-shadow 0.2s, transform 0.2s; border: 1px solid rgba(249,0,122,0.06); }
-        .cli-card:hover { box-shadow: 0 8px 24px rgba(249,0,122,0.15), 0 2px 8px rgba(0,0,0,0.08); transform: translateY(-1px); }
+        .cli-card { display: flex; align-items: center; gap: 0.9rem; background: white; border-radius: 14px; padding: 0.75rem 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08); transition: box-shadow 0.2s, transform 0.2s; border: 1px solid rgba(249,0,122,0.06); }
+        .cli-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1); transform: translateY(-1px); }
 
         .cli-avatar { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0; background: linear-gradient(135deg, #fce7f3, #fbcfe8); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; color: #f9007a; overflow: hidden; }
         .cli-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -447,8 +445,9 @@ export default function Clientes() {
         .form-btn.save:disabled { opacity: 0.6; cursor: not-allowed; }
         .form-btn.delete-btn { background: #fff1f2; color: #ef4444; flex: 0 0 auto; padding: 0.8rem 1rem; }
 
+        .cli-recent-info { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
         .cli-recent-nome { font-size: 0.82rem; font-weight: 600; color: #1f2937; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cli-recent-data { font-size: 0.72rem; color: #9ca3af; margin: 0; }
+        .cli-recent-data { font-size: 0.72rem; color: #9ca3af; margin: 0; white-space: nowrap; flex-shrink: 0; }
         .spinner { width: 24px; height: 24px; border: 2px solid #fce7f3; border-top-color: #f9007a; border-radius: 50%; animation: spin 0.7s linear infinite; }
         .spinner-sm { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
