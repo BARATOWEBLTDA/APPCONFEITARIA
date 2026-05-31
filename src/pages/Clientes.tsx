@@ -176,36 +176,19 @@ export default function Clientes() {
       {/* ===== MOBILE ===== */}
       <div className="cli-mobile">
 
-        {/* Banner Aniversariantes */}
+        {/* Banner 1 - Cadastrar */}
+        <button className="mob-banner" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
+          <img src="/bannercadastrarclientes.png" alt="Cadastrar Cliente" className="mob-banner-img" />
+        </button>
+
+        {/* Banner 2 - Ver Cadastrados */}
+        <button className="mob-banner" onClick={() => setShowLista(true)}>
+          <img src="/bannercadastrados.png" alt="Ver Clientes" className="mob-banner-img" />
+        </button>
+
+        {/* Banner 3 - Aniversariantes */}
         <button className="mob-banner" onClick={() => setShowNiver(true)}>
           <img src="/bannerniver.png" alt="Aniversariantes" className="mob-banner-img" />
-          <div className="mob-banner-overlay">
-            <span className="mob-banner-count">{aniversariantes.length} este mês</span>
-          </div>
-        </button>
-
-        {/* Banner Cadastrar */}
-        <button className="mob-banner mob-banner-cadastrar" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
-          <div className="mob-banner-content">
-            <div className="mob-banner-icon">➕</div>
-            <div>
-              <p className="mob-banner-title">Cadastrar Cliente</p>
-              <p className="mob-banner-sub">Adicione um novo cliente</p>
-            </div>
-          </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-
-        {/* Banner Ver Clientes */}
-        <button className="mob-banner mob-banner-ver" onClick={() => setShowLista(true)}>
-          <div className="mob-banner-content">
-            <div className="mob-banner-icon">👥</div>
-            <div>
-              <p className="mob-banner-title">Ver Clientes</p>
-              <p className="mob-banner-sub">{clientes.length} cliente{clientes.length !== 1 ? "s" : ""} cadastrado{clientes.length !== 1 ? "s" : ""}</p>
-            </div>
-          </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
 
         {/* Log ultimos adicionados */}
