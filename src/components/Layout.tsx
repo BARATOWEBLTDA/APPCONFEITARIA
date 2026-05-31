@@ -177,7 +177,7 @@ export default function Layout() {
         .sidebar {
           width: 220px;
           min-height: 100vh;
-          background: #F471B6;
+          background: #181419;
           border-right: none;
           display: flex;
           flex-direction: column;
