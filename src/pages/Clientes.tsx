@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 
 interface Cliente {
@@ -79,7 +79,7 @@ export default function Clientes() {
   };
 
   const handleEdit = (c: Cliente) => {
-    setForm({ nome: c.nome || "", telefone: c.telefone || "", whatsapp: c.whatsapp || "", data_nascimento: c.data_nascimento || "", endereco: c.endereco || "", como_conheceu: c.como_conheceu || "", status: c.status || "ativo", foto_url: c.foto_url || "" });
+    setForm({ nome: c.nome || "", whatsapp: c.whatsapp || "", data_nascimento: c.data_nascimento || "", endereco: c.endereco || "", como_conheceu: c.como_conheceu || "", status: c.status || "ativo", foto_url: c.foto_url || "" });
     setPreview(c.foto_url || null); setEditando(c.id); setShowForm(true);
   };
 
