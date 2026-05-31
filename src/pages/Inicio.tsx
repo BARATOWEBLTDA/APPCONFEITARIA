@@ -102,7 +102,7 @@ export default function Inicio() {
               <img src="/configureapp.png" alt="" style={{width:"46px",height:"46px",objectFit:"contain",flexShrink:0}} />
               <div>
                 <p className="mob-config-title">Configure seu Doonly</p>
-                <p className="mob-config-sub">{progress === 100 ? "🎉 Tudo pronto!" : `${remaining} etapa${remaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}</p>
+                <p className="mob-config-sub">{progress === 100 ? "🎉 Tudo pronto!" : `${remaining === 1 ? "Resta apenas" : "Faltam apenas"} ${remaining} etapa${remaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}</p>
               </div>
             </div>
             <div className="mob-config-circle">{progress}%</div>
@@ -213,7 +213,7 @@ export default function Inicio() {
                   <div>
                     <h2 className="ini-section-title" style={{ margin: 0 }}>Configure seu Doonly</h2>
                     <p className="progresso-sub">
-                      {progress === 100 ? "🎉 Tudo pronto! Sua loja está completa." : `${remaining} etapa${remaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}
+                      {progress === 100 ? "🎉 Tudo pronto! Sua loja está completa." : `${remaining === 1 ? "Resta apenas" : "Faltam apenas"} ${remaining} etapa${remaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}
                     </p>
                   </div>
                 </div>
