@@ -354,7 +354,7 @@ export default function Layout() {
             gap: 0;
             width: 100%;
             max-width: 100%;
-            overflow: visible;
+            overflow: hidden;
           }
 
           .bottom-item {
@@ -387,22 +387,20 @@ export default function Layout() {
           .bottom-item.active::before {
             content: '';
             position: absolute;
-            top: -22px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
-            width: 52px;
-            height: 52px;
-            background: white;
-            border-radius: 50%;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            transform: translate(-50%, -50%);
+            width: 48px;
+            height: 48px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 14px;
             z-index: -1;
           }
 
           .bottom-item.active svg {
-            stroke: #F471B6;
+            stroke: white;
             position: relative;
             z-index: 1;
-            margin-top: -10px;
           }
 
           .bottom-item:not(.active):hover svg { stroke: white; }
