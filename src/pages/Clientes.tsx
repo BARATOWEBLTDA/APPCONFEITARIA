@@ -239,17 +239,19 @@ export default function Clientes() {
         </div>
 
         {/* Terceira coluna - Log ultimos adicionados */}
-        <div className="cli-sidebar">
+        <div className="cli-sidebar cli-log">
           <div className="cli-panel">
-            <h3 className="cli-panel-title">🆕 Últimos Adicionados</h3>
+            <h3 className="cli-panel-title log-title">📋 Log de Cadastros</h3>
             {ultimosAdicionados.map(c => (
-              <div key={c.id} className="cli-aniv-item">
+              <div key={c.id} className="cli-recent-item">
                 <div className="cli-aniv-avatar">
                   {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
                 </div>
                 <div className="cli-aniv-info">
-                  <p className="cli-aniv-nome">{c.nome.split(" ").slice(0,2).join(" ")}</p>
-                  <p className="cli-aniv-data">{new Date(c.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</p>
+                  <p className="cli-recent-nome">{c.nome.split(" ").slice(0,2).join(" ")}</p>
+                  <p className="cli-recent-data">
+                    {new Date(c.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} · {new Date(c.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                  </p>
                 </div>
               </div>
             ))}
@@ -357,8 +359,8 @@ export default function Clientes() {
 
         .cli-list { display: flex; flex-direction: column; gap: 0.6rem; }
 
-        .cli-card { display: flex; align-items: center; gap: 0.9rem; background: white; border-radius: 14px; padding: 0.75rem 1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.07); transition: box-shadow 0.15s; }
-        .cli-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+        .cli-card { display: flex; align-items: center; gap: 0.9rem; background: white; border-radius: 14px; padding: 0.75rem 1rem; box-shadow: 0 2px 12px rgba(249,0,122,0.08), 0 1px 4px rgba(0,0,0,0.06); transition: box-shadow 0.2s, transform 0.2s; border: 1px solid rgba(249,0,122,0.06); }
+        .cli-card:hover { box-shadow: 0 8px 24px rgba(249,0,122,0.15), 0 2px 8px rgba(0,0,0,0.08); transform: translateY(-1px); }
 
         .cli-avatar { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0; background: linear-gradient(135deg, #fce7f3, #fbcfe8); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; color: #f9007a; overflow: hidden; }
         .cli-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -375,17 +377,34 @@ export default function Clientes() {
         /* Painel */
         .cli-panel { background: white; border-radius: 14px; padding: 1rem 1.1rem; box-shadow: 0 1px 6px rgba(0,0,0,0.06); }
         .cli-panel-title { font-size: 0.88rem; font-weight: 700; color: #1f2937; margin: 0 0 0.85rem; }
+        .cli-panel.gold .cli-panel-title { background: linear-gradient(135deg, #ffd700, #ffa500); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .cli-panel-empty { font-size: 0.82rem; color: #9ca3af; text-align: center; padding: 0.5rem 0; }
 
-        .cli-aniv-item { display: flex; align-items: center; gap: 0.6rem; padding: 0.45rem 0; border-bottom: 1px solid #f9fafb; }
-        .cli-aniv-item:last-child { border-bottom: none; }
+        .cli-aniv-item {
+          display: flex; align-items: center; gap: 0.75rem;
+          padding: 0.6rem 0.75rem; margin-bottom: 0.5rem;
+          border-radius: 12px; border: none;
+          background: linear-gradient(135deg, #1a1a2e, #16213e);
+          position: relative; overflow: hidden;
+        }
+        .cli-aniv-item::before {
+          content: '';
+          position: absolute; inset: 0;
+          background: linear-gradient(90deg, transparent, rgba(255,215,0,0.08), transparent);
+          animation: shimmer 2.5s infinite;
+        }
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+
         .cli-aniv-avatar { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; background: linear-gradient(135deg, #fce7f3, #fbcfe8); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; color: #f9007a; overflow: hidden; }
         .cli-aniv-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .cli-aniv-info { flex: 1; min-width: 0; }
-        .cli-aniv-nome { font-size: 0.82rem; font-weight: 600; color: #1f2937; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cli-aniv-data { font-size: 0.75rem; color: #9ca3af; margin: 0; }
-        .cli-aniv-badge { font-size: 0.72rem; font-weight: 600; color: #6b7280; background: #f3f4f6; padding: 0.2rem 0.5rem; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
-        .cli-aniv-badge.soon { background: #fff0f6; color: #f9007a; }
+        .cli-aniv-nome { font-size: 0.82rem; font-weight: 600; color: #fff; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cli-aniv-data { font-size: 0.75rem; color: rgba(255,215,0,0.7); margin: 0; }
+        .cli-aniv-badge { font-size: 0.72rem; font-weight: 700; color: #1a1a2e; background: linear-gradient(135deg, #ffd700, #ffa500); padding: 0.25rem 0.6rem; border-radius: 20px; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(255,165,0,0.4); }
+        .cli-aniv-badge.soon { background: linear-gradient(135deg, #f9007a, #ff6eb4); color: white; box-shadow: 0 2px 8px rgba(249,0,122,0.4); }
 
         .cli-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
         .cli-stat { background: #f9fafb; border-radius: 10px; padding: 0.7rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
@@ -428,6 +447,8 @@ export default function Clientes() {
         .form-btn.save:disabled { opacity: 0.6; cursor: not-allowed; }
         .form-btn.delete-btn { background: #fff1f2; color: #ef4444; flex: 0 0 auto; padding: 0.8rem 1rem; }
 
+        .cli-recent-nome { font-size: 0.82rem; font-weight: 600; color: #1f2937; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cli-recent-data { font-size: 0.72rem; color: #9ca3af; margin: 0; }
         .spinner { width: 24px; height: 24px; border: 2px solid #fce7f3; border-top-color: #f9007a; border-radius: 50%; animation: spin 0.7s linear infinite; }
         .spinner-sm { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
