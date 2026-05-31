@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { SplashScreen } from "@/components/SplashScreen";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
@@ -10,6 +11,7 @@ export default function Auth() {
   const [keepConnected, setKeepConnected] = useState(false);
   const [form, setForm] = useState({ email: "", senha: "" });
   const [fading, setFading] = useState(false);
+  const [showSplash, setShowSplash] = useState(false);
   const [showCadastro, setShowCadastro] = useState(false);
 
   // Cadastro state
@@ -78,8 +80,8 @@ export default function Auth() {
         password: form.senha,
       });
       if (error) throw error;
-      setFading(true);
-      setTimeout(() => navigate("/inicio"), 700);
+      setShowSplash(true);
+      setTimeout(() => navigate("/inicio"), 2500);
     } catch (err: any) {
       setError("E-mail ou senha incorretos. Tente novamente.");
       setLoading(false);
@@ -120,8 +122,8 @@ export default function Auth() {
       });
       if (loginError) throw loginError;
 
-      setFading(true);
-      setTimeout(() => navigate("/inicio"), 700);
+      setShowSplash(true);
+      setTimeout(() => navigate("/inicio"), 2500);
     } catch (err: any) {
       setCadastroError(err.message || "Erro ao criar conta. Tente novamente.");
       setCadastroLoading(false);
@@ -130,6 +132,7 @@ export default function Auth() {
 
   return (
     <div className="auth-root">
+      {showSplash && <SplashScreen />}
       <div className={`fade-overlay ${fading ? "fade-in" : ""}`} />
       <div ref={bgRef} className="auth-bg" />
       <div ref={glowRef} className="mouse-glow" />
