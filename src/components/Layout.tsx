@@ -23,12 +23,28 @@ export default function Layout() {
   const { profile } = useProfile();
   const [now, setNow] = useState(new Date());
   const [gestaoOpen, setGestaoOpen] = useState(false);
+  const [notifCount, setNotifCount] = useState(0);
   const location = useLocation();
   const isReceitas = location.pathname === "/receitas";
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const loadNotifCount = async () => {
+      const { data } = await supabase.from("notificacoes").select("created_at").order("created_at", { ascending: false });
+      if (!data || data.length === 0) return;
+      const lastSeen = localStorage.getItem("notif_last_seen");
+      if (!lastSeen) {
+        setNotifCount(data.length);
+      } else {
+        const unseen = data.filter(n => new Date(n.created_at) > new Date(lastSeen));
+        setNotifCount(unseen.length);
+      }
+    };
+    loadNotifCount();
   }, []);
 
   const formatDate = (d: Date) => d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
@@ -122,8 +138,22 @@ export default function Layout() {
           <button className="mob-top-icon" onClick={() => navigate("/configuracoes")}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </button>
-          <button className="mob-top-icon" onClick={() => navigate("/notificacoes")}>
+          <button className="mob-top-icon" onClick={() => {
+              localStorage.setItem("notif_last_seen", new Date().toISOString());
+              setNotifCount(0);
+              navigate("/notificacoes");
+            }} style={{position:"relative"}}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            {notifCount > 0 && (
+              <span style={{
+                position:"absolute", top:"-4px", right:"-4px",
+                background:"#ef4444", color:"white",
+                fontSize:"0.6rem", fontWeight:700,
+                width:"16px", height:"16px", borderRadius:"50%",
+                display:"flex", alignItems:"center", justifyContent:"center",
+                border:"2px solid #f9007a", lineHeight:1
+              }}>{notifCount > 9 ? "9+" : notifCount}</span>
+            )}
           </button>
           <button className="mob-top-icon" onClick={() => navigate("/configuracoes")}>
             {profile?.foto_url
@@ -208,7 +238,7 @@ export default function Layout() {
             transform: translateZ(0);
             -webkit-transform: translateZ(0);
           }
-          .mob-top-logo { height: 24px; object-fit: contain; }
+          .mob-top-logo { height: 36px; object-fit: contain; }
           .mob-top-icons { display: flex; align-items: center; gap: 0.6rem; }
           .mob-top-icon { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0.2rem; }
 
