@@ -234,7 +234,7 @@ export default function Receitas() {
           {activeModule === "minhas" && !r.salva_da_comunidade && (
             <div className="rec-detail-actions">
               <button className="rec-act-btn editar" onClick={() => {
-                setForm({ nome: r.nome, categoria: r.categoria, ingredientes: r.ingredientes, modo_preparo: r.modo_preparo, foto_url: r.foto_url || "", compartilhar_comunidade: false });
+                setForm({ nome: r.nome, categoria: r.categoria, ingredientes: r.ingredientes, modo_preparo: r.modo_preparo, foto_url: r.foto_url || "", compartilhar_comunidade: false, anotacoes: r.anotacoes || "" });
                 setPreview(r.foto_url || null);
                 setEditId(r.id);
                 setSelected(null);
