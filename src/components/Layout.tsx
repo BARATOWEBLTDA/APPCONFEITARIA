@@ -230,7 +230,7 @@ export default function Layout() {
             position: fixed;
             top: 0; left: 0; right: 0;
             z-index: 9999;
-            background: #F99999;
+            background: #582520;
             padding: 0.65rem 1.25rem;
             align-items: center;
             justify-content: space-between;
