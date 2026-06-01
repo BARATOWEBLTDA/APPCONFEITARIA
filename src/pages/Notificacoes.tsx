@@ -40,16 +40,7 @@ export default function Notificacoes() {
 
   return (
     <div className="ntf-root">
-      {/* Título da página */}
-      <div className="ntf-page-header">
-        <button className="ntf-back" onClick={() => navigate(-1)}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-        </button>
-        <h1 className="ntf-title">Notificações</h1>
-        <div style={{width: "32px"}} />
-      </div>
+
 
       {/* Lista */}
       <div className="ntf-list">
@@ -71,7 +62,10 @@ export default function Notificacoes() {
               {n.mensagem && <p className="ntf-item-msg">{n.mensagem}</p>}
               <div className="ntf-item-footer">
                 {n.tag && <span className="ntf-tag">{n.tag}</span>}
-                <span className="ntf-time">{formatData(n.created_at)}</span>
+                <span className="ntf-time">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  {formatData(n.created_at)}
+                </span>
               </div>
             </div>
           </div>
@@ -82,19 +76,7 @@ export default function Notificacoes() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         .ntf-root { font-family: 'Inter', sans-serif; min-height: 100vh; background: #f9fafb; }
 
-        .ntf-page-header {
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 0.75rem 1rem;
-          background: white;
-          border-bottom: 1px solid #f3f4f6;
-          margin-bottom: 0.5rem;
-        }
-        .ntf-back {
-          background: none; border: none; cursor: pointer;
-          display: flex; align-items: center; color: #1f2937;
-          padding: 0.25rem;
-        }
-        .ntf-title { font-size: 1rem; font-weight: 700; color: #1f2937; margin: 0; }
+
 
         .ntf-list { display: flex; flex-direction: column; }
 
@@ -119,7 +101,7 @@ export default function Notificacoes() {
         .ntf-item-msg { font-size: 0.8rem; color: #6b7280; margin: 0 0 0.3rem; line-height: 1.4; }
         .ntf-item-footer { display: flex; align-items: center; gap: 0.5rem; }
         .ntf-tag { font-size: 0.75rem; font-weight: 600; color: #f9007a; }
-        .ntf-time { font-size: 0.72rem; color: #9ca3af; }
+        .ntf-time { font-size: 0.72rem; color: #9ca3af; display: flex; align-items: center; gap: 0.2rem; }
 
         .ntf-loading { display: flex; justify-content: center; padding: 4rem; }
         .ntf-spinner { width: 28px; height: 28px; border: 3px solid #fce7f3; border-top-color: #f9007a; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
