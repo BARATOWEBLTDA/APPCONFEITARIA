@@ -252,34 +252,56 @@ export default function Receitas() {
 
       {/* ===== MOBILE ===== */}
       <div className="rec-mobile">
+        {activeModule === "home" && (
+          <>
+            <div className="rec-mob-header">
+              <h1>Receitas</h1>
+              <p>Explore, crie e compartilhe</p>
+            </div>
+            <div className="rec-mob-modules">
+              {modules.map(m => (
+                <button key={m.id} className="rec-mob-module" style={{ borderLeft: `4px solid ${m.color}` }}
+                  onClick={() => setActiveModule(m.id as any)}>
+                  <span className="rec-mob-module-emoji">{m.emoji}</span>
+                  <div>
+                    <p className="rec-mob-module-title">{m.title}</p>
+                    <p className="rec-mob-module-desc">{m.desc}</p>
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+              ))}
+            </div>
+          </>
+        )}
 
-        {/* Conteúdo da aba ativa */}
-        <div className="rec-mob-content">
+        {activeModule !== "home" && (
+          <div className="rec-mob-content">
+            <button className="rec-mob-back" onClick={() => setActiveModule("home")}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+              {modules.find(m => m.id === activeModule)?.title}
+            </button>
 
-          {/* Minhas Receitas (home do módulo) */}
-          {activeModule === "minhas" && (
-            <>
-              <div className="rec-mob-header">
-                <h1>Minhas Receitas</h1>
-              </div>
-              <button className="rec-btn-new" onClick={() => { setForm(emptyForm); setPreview(null); setEditId(null); setShowForm(true); }}>
-                + Nova Receita
-              </button>
-              {loading ? <div className="rec-loading"><span className="rec-spinner" /></div> : (
-                <div className="rec-grid">
-                  {minhas.length === 0 ? <p className="rec-empty">Nenhuma receita criada ainda</p> : minhas.map(r => (
-                    <ReceitaCard key={r.id} r={r} onSelect={() => setSelected(r)} />
+            {/* Comunidade */}
+            {activeModule === "comunidade" && (
+              <>
+                <div className="rec-filtros">
+                  {([["recentes","🆕","Recentes"],["curtidas","⭐","Mais curtidas"]] as any[]).map(([v,ic,lb]) => (
+                    <button key={v} className={`rec-filtro ${filtroComun === v ? "active" : ""}`} onClick={() => setFiltroComun(v)}>{ic} {lb}</button>
                   ))}
                 </div>
-              )}
-            </>
-          )}
+                {loading ? <div className="rec-loading"><span className="rec-spinner" /></div> : (
+                  <div className="rec-grid">
+                    {comunidade.length === 0 ? <p className="rec-empty">Nenhuma receita ainda</p> : comunidade.map(r => (
+                      <ReceitaCard key={r.id} r={r} onSelect={() => setSelected(r)} showActions />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
 
-          {/* PDFs */}
-          {activeModule === "pdf" && (
-            <>
-              <div className="rec-mob-header"><h1>Receitas em PDF</h1></div>
-              {loading ? <div className="rec-loading"><span className="rec-spinner" /></div> : (
+            {/* PDF */}
+            {activeModule === "pdf" && (
+              loading ? <div className="rec-loading"><span className="rec-spinner" /></div> : (
                 <div className="rec-pdf-list">
                   {pdfs.length === 0 ? <p className="rec-empty">Nenhum material disponível ainda</p> : pdfs.map(p => (
                     <a key={p.id} href={p.pdf_url} target="_blank" rel="noreferrer" className="rec-pdf-item">
@@ -295,81 +317,37 @@ export default function Receitas() {
                     </a>
                   ))}
                 </div>
-              )}
-            </>
-          )}
+              )
+            )}
 
-          {/* Salvas/Favoritos */}
-          {activeModule === "salvas" && (
-            <>
-              <div className="rec-mob-header"><h1>Receitas Favoritas</h1></div>
-              {loading ? <div className="rec-loading"><span className="rec-spinner" /></div> : (
+            {/* Salvas */}
+            {activeModule === "salvas" && (
+              loading ? <div className="rec-loading"><span className="rec-spinner" /></div> : (
                 <div className="rec-grid">
                   {salvas.length === 0 ? <p className="rec-empty">Nenhuma receita salva ainda</p> : salvas.map(r => (
                     <ReceitaCard key={r.id} r={r} onSelect={() => setSelected(r)} />
                   ))}
                 </div>
-              )}
-            </>
-          )}
+              )
+            )}
 
-          {/* Comunidade */}
-          {activeModule === "comunidade" && (
-            <>
-              <div className="rec-mob-header"><h1>Comunidade</h1></div>
-              <div className="rec-filtros">
-                {([["recentes","🆕","Recentes"],["curtidas","❤️","Mais curtidas"]] as any[]).map(([v,ic,lb]) => (
-                  <button key={v} className={`rec-filtro ${filtroComun === v ? "active" : ""}`} onClick={() => setFiltroComun(v)}>{ic} {lb}</button>
-                ))}
-              </div>
-              {loading ? <div className="rec-loading"><span className="rec-spinner" /></div> : (
-                <div className="rec-grid">
-                  {comunidade.length === 0 ? <p className="rec-empty">Nenhuma receita ainda</p> : comunidade.map(r => (
-                    <ReceitaCard key={r.id} r={r} onSelect={() => setSelected(r)} showActions />
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Home - módulo padrão */}
-          {activeModule === "home" && (
-            <>
-              <div className="rec-mob-header"><h1>Receitas</h1></div>
-              <div className="rec-grid">
-                {minhas.length === 0 ? <p className="rec-empty">Nenhuma receita criada ainda</p> : minhas.map(r => (
-                  <ReceitaCard key={r.id} r={r} onSelect={() => setSelected(r)} />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Bottom nav específico de receitas */}
-        <div className="rec-bottom-nav">
-          <button className="rec-nav-item" onClick={() => navigate("/inicio")}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            <span>Início</span>
-          </button>
-          <button className={`rec-nav-item ${activeModule === "pdf" ? "active" : ""}`} onClick={() => setActiveModule("pdf")}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <span>PDFs</span>
-          </button>
-          <button className={`rec-nav-item rec-nav-center ${activeModule === "minhas" ? "active" : ""}`} onClick={() => setActiveModule("minhas")}>
-            <div className="rec-nav-center-btn">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-            <span>Receitas</span>
-          </button>
-          <button className={`rec-nav-item ${activeModule === "salvas" ? "active" : ""}`} onClick={() => setActiveModule("salvas")}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            <span>Favoritos</span>
-          </button>
-          <button className={`rec-nav-item ${activeModule === "comunidade" ? "active" : ""}`} onClick={() => setActiveModule("comunidade")}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <span>Comunidade</span>
-          </button>
-        </div>
+            {/* Minhas */}
+            {activeModule === "minhas" && (
+              <>
+                <button className="rec-btn-new" onClick={() => { setForm(emptyForm); setPreview(null); setEditId(null); setShowForm(true); }}>
+                  + Nova Receita
+                </button>
+                {loading ? <div className="rec-loading"><span className="rec-spinner" /></div> : (
+                  <div className="rec-grid">
+                    {minhas.length === 0 ? <p className="rec-empty">Nenhuma receita criada ainda</p> : minhas.map(r => (
+                      <ReceitaCard key={r.id} r={r} onSelect={() => setSelected(r)} />
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ===== DESKTOP ===== */}
@@ -654,45 +632,6 @@ export default function Receitas() {
         .rec-act-btn.salvar { background: #f0fdf4; color: #16a34a; }
         .rec-act-btn.editar { background: #eff6ff; color: #3b82f6; }
         .rec-act-btn.deletar { background: #fff1f2; color: #ef4444; }
-
-        /* Bottom nav receitas */
-        .rec-bottom-nav {
-          position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-          background: #F471B6;
-          border-radius: 20px 20px 0 0;
-          display: flex; align-items: flex-end; justify-content: space-around;
-          padding: 0.5rem 0 1.25rem;
-          box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
-        }
-        .rec-mob-content { padding-bottom: 6rem; }
-        .rec-nav-item {
-          display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
-          background: none; border: none; cursor: pointer;
-          font-family: 'Inter', sans-serif; font-size: 0.6rem; font-weight: 500;
-          color: rgba(255,255,255,0.7); padding: 0.4rem 0.5rem;
-          transition: color 0.15s; flex: 1;
-        }
-        .rec-nav-item svg { stroke: rgba(255,255,255,0.7); transition: stroke 0.15s; }
-        .rec-nav-item.active { color: white; font-weight: 700; }
-        .rec-nav-item.active svg { stroke: white; }
-        .rec-nav-item.active::before {
-          content: '';
-          position: absolute;
-          width: 44px; height: 44px; border-radius: 14px;
-          background: rgba(255,255,255,0.2);
-          z-index: -1;
-        }
-        .rec-nav-center { position: relative; margin-top: -1.5rem; }
-        .rec-nav-center-btn {
-          width: 54px; height: 54px; border-radius: 50%;
-          background: white;
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-        }
-        .rec-nav-center-btn svg { stroke: #F471B6; }
-        .rec-nav-center.active .rec-nav-center-btn { background: #fff; box-shadow: 0 4px 20px rgba(249,0,122,0.4); }
-        .rec-mob-header { padding: 0.5rem 0 1rem; }
-        .rec-mob-header h1 { font-size: 1.4rem; font-weight: 800; color: #1f2937; margin: 0; }
 
         .rec-spinner { width: 22px; height: 22px; border: 2px solid rgba(249,0,122,0.2); border-top-color: #f9007a; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         @keyframes spin { to { transform: rotate(360deg); } }
