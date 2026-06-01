@@ -26,15 +26,20 @@ export default function AdminUsuarios() {
 
   const callEdge = async (body: object) => {
     const { data: { session } } = await supabase.auth.getSession();
+    console.log("Session token:", session?.access_token ? "exists" : "MISSING");
+    console.log("User email:", session?.user?.email);
     const res = await fetch(EDGE_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${session?.access_token}`,
+        "apikey": import.meta.env.VITE_SUPABASE_ANON_KEY,
       },
       body: JSON.stringify(body),
     });
+    console.log("Response status:", res.status);
     const json = await res.json();
+    console.log("Response body:", json);
     if (!res.ok) throw new Error(json.error || "Erro na operação");
     return json;
   };
