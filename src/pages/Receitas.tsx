@@ -142,8 +142,8 @@ export default function Receitas() {
   const handleSaveReceita = async () => {
     if (!form.nome.trim() || !userId) return;
     setSaving(true);
-    const payload = { ...form, user_id: userId };
-    console.log("Payload:", payload);
+    const { compartilhar_comunidade, ...formData } = form;
+    const payload = { ...formData, user_id: userId };
     if (editId) {
       await supabase.from("receitas_minhas").update(payload).eq("id", editId);
     } else {
