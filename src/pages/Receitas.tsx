@@ -22,7 +22,7 @@ interface Receita {
 
 const emptyForm = {
   nome: "", categoria: "", ingredientes: "", modo_preparo: "",
-  foto_url: "", compartilhar_comunidade: false, anotacoes: "",
+  foto_url: "", compartilhar_comunidade: false as boolean, anotacoes: "",
 };
 
 const CATEGORIAS = ["Bolos", "Doces", "Massas", "Recheios", "Coberturas", "Bases"];
