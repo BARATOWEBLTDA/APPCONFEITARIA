@@ -198,7 +198,7 @@ export default function Layout() {
             flex: 1;
             gap: 0.25rem;
             padding: 0.4rem 0.25rem;
-            color: rgba(255,255,255,0.75);
+            color: #6b7280;
             text-decoration: none;
             background: none;
             border: none;
@@ -215,7 +215,7 @@ export default function Layout() {
             white-space: nowrap;
           }
 
-          .bottom-item svg { color: rgba(255,255,255,0.75); transition: color 0.2s; }
+          .bottom-item svg { color: #6b7280; transition: color 0.2s; }
 
           .bottom-item.active .nav-label { color: white; }
           .bottom-item.active svg { color: white; }
