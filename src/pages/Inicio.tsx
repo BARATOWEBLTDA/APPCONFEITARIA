@@ -357,7 +357,7 @@ const load = async () => {
           padding: 0.75rem 1.25rem;
           margin: -1rem -1rem 0.75rem -1rem;
           display: flex; align-items: center; justify-content: space-between;
-          box-shadow: 0 8px 0px rgba(0,0,0,0.15), 0 10px 20px rgba(0,0,0,0.2);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
         .mob-header-logo { height: 38px; object-fit: contain; }
         .mob-header-icons { display: flex; align-items: center; gap: 0.5rem; }
