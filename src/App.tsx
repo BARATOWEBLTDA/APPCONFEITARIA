@@ -8,6 +8,7 @@ import Dashboard from "@/pages/Dashboard";
 import Inicio from "@/pages/Inicio";
 import Assinar from "@/pages/Assinar";
 import Receitas from "@/pages/Receitas";
+import Notificacoes from "@/pages/Notificacoes";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import AdminLayout from "@/pages/admin/AdminLayout";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -60,6 +61,7 @@ export default function App() {
           <Route path="/inicio" element={<Inicio />} />
           <Route path="/assinar" element={<Assinar />} />
           <Route path="/receitas" element={<Receitas />} />
+          <Route path="/notificacoes" element={<Notificacoes />} />
 
           <Route path="/produtos" element={<Produtos />} />
           <Route path="/pedidos" element={<Pedidos />} />
@@ -69,6 +71,7 @@ export default function App() {
           <Route path="/cardapio-config" element={<CardapioConfig />} />
           <Route path="/estoque" element={<Estoque />} />
           <Route path="/receitas" element={<Receitas />} />
+          <Route path="/notificacoes" element={<Notificacoes />} />
           <Route path="/arquivos" element={<Arquivos />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
         </Route>
