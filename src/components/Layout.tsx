@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Home, BookOpen, Users, UtensilsCrossed, Menu } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/lib/supabase";
 
