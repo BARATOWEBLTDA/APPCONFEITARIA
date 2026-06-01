@@ -7,6 +7,7 @@ import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import Inicio from "@/pages/Inicio";
 import Assinar from "@/pages/Assinar";
+import Receitas from "@/pages/Receitas";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import AdminLayout from "@/pages/admin/AdminLayout";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/inicio" element={<Inicio />} />
           <Route path="/assinar" element={<Assinar />} />
+          <Route path="/receitas" element={<Receitas />} />
 
           <Route path="/produtos" element={<Produtos />} />
           <Route path="/pedidos" element={<Pedidos />} />
