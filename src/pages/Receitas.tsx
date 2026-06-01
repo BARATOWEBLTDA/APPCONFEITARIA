@@ -17,14 +17,15 @@ interface Receita {
   is_doonly?: boolean;
   compartilhar_comunidade?: boolean;
   salva_da_comunidade?: boolean;
+  anotacoes?: string;
 }
 
 const emptyForm = {
   nome: "", categoria: "", ingredientes: "", modo_preparo: "",
-  foto_url: "", compartilhar_comunidade: false,
+  foto_url: "", compartilhar_comunidade: false, anotacoes: "",
 };
 
-const CATEGORIAS = ["Bolos", "Cupcakes", "Brigadeiros", "Doces Finos", "Tortas", "Recheios", "Coberturas", "Outros"];
+const CATEGORIAS = ["Bolos", "Doces", "Massas", "Recheios", "Coberturas", "Bases"];
 
 export default function Receitas() {
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ export default function Receitas() {
   const [editId, setEditId] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [novaCategoria, setNovaCategoria] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Detalhe
@@ -181,20 +183,18 @@ export default function Receitas() {
     { id: "minhas", emoji: "📝", title: "Minhas Receitas", desc: "Crie e organize suas próprias receitas.", color: "#10b981" },
   ];
 
-  const ReceitaCard = ({ r, onSelect, showActions }: { r: Receita; onSelect: () => void; showActions?: boolean }) => (
+  const ReceitaCard = ({ r, onSelect }: { r: Receita; onSelect: () => void; showActions?: boolean }) => (
     <div className="rec-card" onClick={onSelect}>
       <div className="rec-card-img">
         {r.foto_url ? <img src={r.foto_url} alt={r.nome} /> : <span>🍰</span>}
         {r.curtidas !== undefined && r.curtidas > 0 && (
           <span className="rec-curtidas">❤️ {r.curtidas}</span>
         )}
+        {r.is_doonly && <span className="rec-doonly-badge">🏅</span>}
       </div>
       <div className="rec-card-body">
-        <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.3rem" }}>
-          <span className="rec-cat">{r.categoria || "Geral"}</span>
-          {r.is_doonly && <span className="rec-verified">🏅 Verificada</span>}
-        </div>
         <p className="rec-nome">{r.nome}</p>
+        <span className="rec-cat">Categoria: {r.categoria || "Geral"}</span>
         {r.profiles && <p className="rec-autor">por {r.profiles.nome || "Anônimo"}</p>}
       </div>
     </div>
@@ -493,16 +493,29 @@ export default function Receitas() {
               </div>
               <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
               <div className="rec-fields">
-                <div className="rec-field"><label>Nome da receita *</label><input placeholder="Ex: Brigadeiro Gourmet" value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })} /></div>
+                <div className="rec-field"><label>Nome da receita *</label><input placeholder="Ex: Bolo de Chocolate" value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })} /></div>
+
                 <div className="rec-field">
                   <label>Categoria</label>
-                  <select value={form.categoria} onChange={e => setForm({ ...form, categoria: e.target.value })}>
-                    <option value="">Selecione...</option>
-                    {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
+                  {novaCategoria ? (
+                    <div style={{display:"flex",gap:"0.5rem"}}>
+                      <input placeholder="Digite a categoria..." value={form.categoria} onChange={e => setForm({ ...form, categoria: e.target.value })} style={{flex:1}} />
+                      <button type="button" onClick={() => setNovaCategoria(false)} style={{padding:"0 0.75rem",background:"#f3f4f6",border:"none",borderRadius:"8px",cursor:"pointer",fontSize:"0.8rem",color:"#6b7280"}}>Voltar</button>
+                    </div>
+                  ) : (
+                    <select value={form.categoria} onChange={e => { if (e.target.value === "__nova__") { setNovaCategoria(true); setForm({...form, categoria: ""}); } else setForm({ ...form, categoria: e.target.value }); }}>
+                      <option value="">Selecione...</option>
+                      {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+                      <option value="__nova__">+ Criar outra personalizada</option>
+                    </select>
+                  )}
                 </div>
-                <div className="rec-field"><label>Ingredientes</label><textarea rows={4} placeholder="Liste os ingredientes..." value={form.ingredientes} onChange={e => setForm({ ...form, ingredientes: e.target.value })} /></div>
+
+                <div className="rec-field"><label>Ingredientes</label><textarea rows={4} placeholder="Liste os ingredientes (um por linha ou separados por vírgula)..." value={form.ingredientes} onChange={e => setForm({ ...form, ingredientes: e.target.value })} /></div>
+
                 <div className="rec-field"><label>Modo de preparo</label><textarea rows={5} placeholder="Descreva o passo a passo..." value={form.modo_preparo} onChange={e => setForm({ ...form, modo_preparo: e.target.value })} /></div>
+
+                <div className="rec-field"><label>Anotações <span style={{fontWeight:400,color:"#9ca3af"}}>(opcional)</span></label><textarea rows={2} placeholder="Dicas, variações, observações..." value={form.anotacoes || ""} onChange={e => setForm({ ...form, anotacoes: e.target.value })} /></div>
                 {!editId && (
                   <label className="rec-share-toggle">
                     <input type="checkbox" checked={form.compartilhar_comunidade} onChange={e => setForm({ ...form, compartilhar_comunidade: e.target.checked })} />
@@ -574,19 +587,19 @@ export default function Receitas() {
         .rec-filtro.active { background: #f9007a; color: white; border-color: #f9007a; }
 
         /* Cards grid */
-        .rec-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-        .rec-grid-desktop { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+        .rec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+        .rec-grid-desktop { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.85rem; }
 
-        .rec-card { background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
-        .rec-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
-        .rec-card-img { height: 110px; background: #f9fafb; display: flex; align-items: center; justify-content: center; font-size: 2rem; overflow: hidden; position: relative; }
+        .rec-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+        .rec-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+        .rec-card-img { aspect-ratio: 1/1; background: #f9fafb; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; overflow: hidden; position: relative; width: 100%; }
         .rec-card-img img { width: 100%; height: 100%; object-fit: cover; }
-        .rec-curtidas { position: absolute; bottom: 0.4rem; right: 0.4rem; background: rgba(0,0,0,0.5); color: white; font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 20px; }
-        .rec-card-body { padding: 0.6rem; }
-        .rec-cat { font-size: 0.65rem; font-weight: 600; color: #f9007a; background: #fff0f6; padding: 0.15rem 0.5rem; border-radius: 20px; }
-        .rec-verified { font-size: 0.65rem; font-weight: 600; color: #f59e0b; background: #fff7ed; padding: 0.15rem 0.5rem; border-radius: 20px; }
-        .rec-nome { font-size: 0.82rem; font-weight: 600; color: #1f2937; margin: 0.3rem 0 0.15rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .rec-autor { font-size: 0.72rem; color: #9ca3af; margin: 0; }
+        .rec-curtidas { position: absolute; bottom: 0.4rem; right: 0.4rem; background: rgba(0,0,0,0.55); color: white; font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; }
+        .rec-doonly-badge { position: absolute; top: 0.4rem; left: 0.4rem; font-size: 0.9rem; }
+        .rec-card-body { padding: 0.55rem 0.65rem 0.65rem; }
+        .rec-nome { font-size: 0.82rem; font-weight: 700; color: #1f2937; margin: 0 0 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rec-cat { font-size: 0.68rem; font-weight: 500; color: #9ca3af; display: block; }
+        .rec-autor { font-size: 0.68rem; color: #c4b5c0; margin: 0.15rem 0 0; }
 
         /* PDF */
         .rec-pdf-list { display: flex; flex-direction: column; gap: 0.6rem; }
