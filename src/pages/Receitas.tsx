@@ -143,6 +143,7 @@ export default function Receitas() {
     if (!form.nome.trim() || !userId) return;
     setSaving(true);
     const payload = { ...form, user_id: userId };
+    console.log("Payload:", payload);
     if (editId) {
       await supabase.from("receitas_minhas").update(payload).eq("id", editId);
     } else {
