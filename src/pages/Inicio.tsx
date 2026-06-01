@@ -354,7 +354,7 @@ const load = async () => {
 
         /* ===== MOBILE ===== */
         .mob-header {
-          background: linear-gradient(135deg, #f9007a, #ff6eb4);
+          background: #F471B6;
           padding: 0.75rem 1.25rem;
           position: fixed;
           top: 0; left: 0; right: 0;
@@ -383,7 +383,7 @@ const load = async () => {
         .mob-trial-icon { width: 44px; height: 44px; background: white; border-radius: 10px; padding: 4px; flex-shrink: 0; overflow: hidden; }
         .mob-trial-title { font-size: 0.78rem; font-weight: 800; color: white; margin: 0 0 0.15rem; }
         .mob-trial-sub { font-size: 0.7rem; color: rgba(255,255,255,0.65); margin: 0; }
-        .mob-trial-badge { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #f9007a, #ff6eb4); color: white; font-size: 0.6rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 0 14px 0 8px; }
+        .mob-trial-badge { position: absolute; top: 0; right: 0; background: #F471B6; color: white; font-size: 0.6rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 0 14px 0 8px; }
 
         /* Atalhos mobile */
         .mob-section-title { font-size: 0.88rem; font-weight: 700; color: #1f2937; }
@@ -398,9 +398,9 @@ const load = async () => {
         .mob-progress-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
         .mob-progress-title { font-size: 0.9rem; font-weight: 700; color: #1f2937; margin: 0 0 0.2rem; }
         .mob-progress-sub { font-size: 0.78rem; color: #6b7280; margin: 0; }
-        .mob-progress-circle { width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #f9007a, #ff6eb4); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; }
+        .mob-progress-circle { width: 46px; height: 46px; border-radius: 50%; background: #F471B6; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; }
         .mob-progress-bar-bg { height: 8px; background: #f3f4f6; border-radius: 999px; overflow: hidden; margin-bottom: 0.75rem; }
-        .mob-progress-bar-fill { height: 100%; background: linear-gradient(135deg, #f9007a, #ff6eb4); border-radius: 999px; transition: width 0.5s; }
+        .mob-progress-bar-fill { height: 100%; background: #F471B6; border-radius: 999px; transition: width 0.5s; }
         .mob-next-step { background: #fff0f6; border-radius: 10px; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
         .mob-next-label { font-size: 0.7rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
         .mob-next-text { font-size: 0.85rem; font-weight: 600; color: #1f2937; margin: 0; }
@@ -421,9 +421,9 @@ const load = async () => {
         .mob-config-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
         .mob-config-title { font-size: 1rem; font-weight: 800; color: white; margin: 0 0 0.2rem; }
         .mob-config-sub { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin: 0; line-height: 1.4; }
-        .mob-config-circle { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #f9007a, #ff6eb4); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 12px rgba(249,0,122,0.4); }
+        .mob-config-circle { width: 50px; height: 50px; border-radius: 50%; background: #F471B6; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 12px rgba(249,0,122,0.4); }
         .mob-config-bar-bg { height: 8px; background: rgba(255,255,255,0.15); border-radius: 999px; overflow: hidden; margin-bottom: 0.75rem; }
-        .mob-config-bar-fill { height: 100%; background: linear-gradient(135deg, #f9007a, #ff6eb4); border-radius: 999px; transition: width 0.5s; box-shadow: 0 0 8px rgba(249,0,122,0.5); }
+        .mob-config-bar-fill { height: 100%; background: #F471B6; border-radius: 999px; transition: width 0.5s; box-shadow: 0 0 8px rgba(249,0,122,0.5); }
         .mob-config-next { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
         .mob-config-next-label { font-size: 0.68rem; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.2rem; }
         .mob-config-next-text { font-size: 0.82rem; font-weight: 600; color: white; margin: 0; }
@@ -446,7 +446,7 @@ const load = async () => {
         .ini-section-title { font-size: 0.95rem; font-weight: 700; color: #1f2937; margin: 0 0 0.75rem; }
 
         .trial-card { background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460); border-radius: 14px; padding: 1rem 1.25rem; position: relative; overflow: hidden; }
-        .trial-card-badge { position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #f9007a, #ff6eb4); color: white; font-size: 0.62rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 0 14px 0 10px; }
+        .trial-card-badge { position: absolute; top: 0; right: 0; background: #F471B6; color: white; font-size: 0.62rem; font-weight: 700; padding: 0.25rem 0.7rem; border-radius: 0 14px 0 10px; }
         .trial-card-body { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; margin-top: 1.5rem; }
         .trial-card-icon { background: white; border-radius: 10px; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; padding: 4px; }
         .trial-card-title { font-size: 0.88rem; font-weight: 800; color: white; margin: 0 0 0.2rem; }
@@ -466,9 +466,9 @@ const load = async () => {
         .progresso-card { background: white; border-radius: 14px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .progresso-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
         .progresso-sub { font-size: 0.8rem; color: #6b7280; margin: 0.3rem 0 0; max-width: 320px; line-height: 1.4; }
-        .progresso-pct-circle { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #f9007a, #ff6eb4); display: flex; align-items: center; justify-content: center; color: white; font-size: 0.85rem; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 12px rgba(249,0,122,0.3); }
+        .progresso-pct-circle { width: 56px; height: 56px; border-radius: 50%; background: #F471B6; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.85rem; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 12px rgba(249,0,122,0.3); }
         .progresso-bar-bg { height: 10px; background: #f3f4f6; border-radius: 999px; overflow: hidden; }
-        .progresso-bar-fill { height: 100%; background: linear-gradient(135deg, #f9007a, #ff6eb4); border-radius: 999px; transition: width 0.5s ease; }
+        .progresso-bar-fill { height: 100%; background: #F471B6; border-radius: 999px; transition: width 0.5s ease; }
 
         .next-step-card { background: white; border-radius: 12px; padding: 0.9rem 1.1rem; border-left: 4px solid #f9c74f; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
         .next-step-left { display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0; }
