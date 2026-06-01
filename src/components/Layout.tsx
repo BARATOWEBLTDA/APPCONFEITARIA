@@ -23,6 +23,8 @@ export default function Layout() {
   const { profile } = useProfile();
   const [now, setNow] = useState(new Date());
   const [gestaoOpen, setGestaoOpen] = useState(false);
+  const location = useLocation();
+  const isReceitas = location.pathname === "/receitas";
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -31,9 +33,6 @@ export default function Layout() {
 
   const formatDate = (d: Date) => d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
   const formatTime = (d: Date) => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-
-  const location = useLocation();
-  const isReceitas = location.pathname === "/receitas";
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -67,17 +66,12 @@ export default function Layout() {
 
         <nav className="sidebar-nav">
           {menuItems.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
-            >
+            <NavLink key={item.path} to={item.path} className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
               <span className="nav-emoji">{item.emoji}</span> {item.label}
             </NavLink>
           ))}
         </nav>
 
-        {/* Trial card - full width, pink */}
         <a href="/assinar" style={{display:"block",margin:"0 0.6rem 0.8rem",background:"linear-gradient(135deg,#F471B6,#f9007a)",borderRadius:"14px",padding:"0.9rem 1rem",textDecoration:"none",boxShadow:"0 4px 16px rgba(249,0,122,0.35)"}}>
           <div style={{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.35rem"}}>
             <span style={{fontSize:"0.85rem"}}>⏱️</span>
@@ -88,10 +82,8 @@ export default function Layout() {
             Fazer upgrade ✨
           </div>
         </a>
-
       </aside>
 
-      {/* Conteúdo principal */}
       <main className="layout-main">
         <Outlet />
       </main>
@@ -113,12 +105,7 @@ export default function Layout() {
                 { label: "Arquivos", path: "/arquivos", icon: "🗂️" },
                 { label: "Configurações", path: "/configuracoes", icon: "⚙️" },
               ].map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className="gestao-item"
-                  onClick={() => setGestaoOpen(false)}
-                >
+                <NavLink key={item.path} to={item.path} className="gestao-item" onClick={() => setGestaoOpen(false)}>
                   <span className="gestao-icon">{item.icon}</span>
                   <span className="gestao-label">{item.label}</span>
                 </NavLink>
@@ -129,206 +116,65 @@ export default function Layout() {
       )}
 
       {/* Bottom nav Mobile */}
-      {!isReceitas && <nav className="bottom-nav">
-        <NavLink to="/inicio" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-          <Home size={22} />
-          <span className="nav-label">Início</span>
-        </NavLink>
-        <NavLink to="/receitas" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-          <BookOpen size={22} />
-          <span className="nav-label">Receitas</span>
-        </NavLink>
-        <NavLink to="/clientes" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-          <Users size={22} />
-          <span className="nav-label">Clientes</span>
-        </NavLink>
-        <NavLink to="/cardapio-config" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-          <UtensilsCrossed size={22} />
-          <span className="nav-label">Cardápio</span>
-        </NavLink>
-        <button className={`bottom-item ${gestaoOpen ? "active" : ""}`} onClick={() => setGestaoOpen(!gestaoOpen)}>
-          <Menu size={22} />
-          <span className="nav-label">Outros</span>
-        </button>
-      </nav>}
+      {!isReceitas && (
+        <nav className="bottom-nav">
+          <NavLink to="/inicio" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
+            <Home size={22} />
+            <span className="nav-label">Início</span>
+          </NavLink>
+          <NavLink to="/receitas" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
+            <BookOpen size={22} />
+            <span className="nav-label">Receitas</span>
+          </NavLink>
+          <NavLink to="/clientes" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
+            <Users size={22} />
+            <span className="nav-label">Clientes</span>
+          </NavLink>
+          <NavLink to="/cardapio-config" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
+            <UtensilsCrossed size={22} />
+            <span className="nav-label">Cardápio</span>
+          </NavLink>
+          <button className={`bottom-item ${gestaoOpen ? "active" : ""}`} onClick={() => setGestaoOpen(!gestaoOpen)}>
+            <Menu size={22} />
+            <span className="nav-label">Outros</span>
+          </button>
+        </nav>
+      )}
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .layout-root {
-          display: flex;
-          min-height: 100vh;
-          font-family: 'Inter', sans-serif;
-          background: #fafafa;
-        }
+        .layout-root { display: flex; min-height: 100vh; font-family: 'Inter', sans-serif; background: #fafafa; }
 
-        /* ── SIDEBAR DESKTOP ── */
-        .sidebar {
-          width: 220px;
-          min-height: 100vh;
-          background: #181419;
-          border-right: none;
-          display: flex;
-          flex-direction: column;
-          padding: 1.5rem 1rem;
-          position: fixed;
-          top: 0; left: 0; bottom: 0;
-          z-index: 10;
-          box-shadow: 4px 0 20px rgba(0,0,0,0.15);
-        }
+        .sidebar { width: 220px; min-height: 100vh; background: #181419; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
 
-        .sidebar-profile {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0.75rem;
-          margin-top: 2rem;
-          margin-bottom: 1.5rem;
-          padding-bottom: 1.25rem;
-          border-bottom: 1px solid rgba(249,0,122,0.2);
-        }
+        .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(249,0,122,0.2); }
 
-        /* Anel externo com degradê animado */
-        .sidebar-avatar-ring {
-          width: 88px;
-          height: 88px;
-          border-radius: 50%;
-          padding: 3px;
-          background: linear-gradient(135deg, #f9007a, #ff6eb4, #ffb3d9, #f9007a);
-          background-size: 300% 300%;
-          animation: gradientRing 3s ease infinite;
-          flex-shrink: 0;
-        }
+        .sidebar-avatar-ring { width: 88px; height: 88px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, #f9007a, #ff6eb4, #ffb3d9, #f9007a); background-size: 300% 300%; animation: gradientRing 3s ease infinite; flex-shrink: 0; }
+        @keyframes gradientRing { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        @keyframes gradientRing {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
+        .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid #ffffff; background: rgba(249,0,122,0.1); }
+        .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #f9007a; }
 
-        /* Borda branca interna */
-        .sidebar-avatar {
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          overflow: hidden;
-          border: 3px solid #ffffff;
-          background: rgba(249,0,122,0.1);
-        }
+        .sidebar-profile-info { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; }
+        .sidebar-ola { font-size: 0.92rem; font-weight: 600; color: #ffffff; }
+        .sidebar-datetime { font-size: 0.72rem; color: #9ca3af; white-space: nowrap; }
 
-        .sidebar-avatar img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .sidebar-avatar-placeholder {
-          width: 100%;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #f9007a;
-        }
-
-        .sidebar-profile-info {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-align: center;
-          overflow: hidden;
-          width: 100%;
-        }
-
-        .sidebar-ola {
-          font-size: 0.92rem;
-          font-weight: 600;
-          color: #ffffff;
-          text-align: center;
-          width: 100%;
-        }
-
-        .sidebar-datetime {
-          font-size: 0.72rem;
-          color: #9ca3af;
-          text-align: center;
-          width: 100%;
-          letter-spacing: 0.3px;
-          white-space: nowrap;
-        }
-
-        .sidebar-nav {
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-          flex: 1;
-        }
-
+        .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
         .nav-emoji { font-size: 0.95rem; margin-right: 0.1rem; }
+        .nav-item { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.92rem; font-weight: 500; color: #9ca3af; text-decoration: none; transition: background 0.15s, color 0.15s; }
+        .nav-item:hover { background: rgba(249,0,122,0.15); color: #f9007a; }
+        .nav-item.active { background: rgba(249,0,122,0.15); color: #f9007a; font-weight: 600; border-left: 3px solid #f9007a; padding-left: calc(1rem - 3px); }
 
-        .nav-item {
-          padding: 0.7rem 1rem;
-          border-radius: 10px;
-          font-size: 0.92rem;
-          font-weight: 500;
-          color: #9ca3af;
-          text-decoration: none;
-          transition: background 0.15s, color 0.15s;
-        }
+        .layout-main { margin-left: 220px; flex: 1; padding: 2rem; min-height: 100vh; }
 
-        .nav-item:hover {
-          background: #f9007a;
-          color: #ffffff;
-        }
-
-        .nav-item.active {
-          background: #f9007a;
-          color: #ffffff;
-          font-weight: 600;
-          border-left: 3px solid #ff6eb4;
-        }
-
-        .logout-btn {
-          margin-top: 1rem;
-          padding: 0.7rem 1rem;
-          border-radius: 10px;
-          border: 1px solid rgba(249,0,122,0.3);
-          background: transparent;
-          color: #f9007a;
-          font-family: 'Inter', sans-serif;
-          font-size: 0.92rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background 0.15s;
-          text-align: left;
-        }
-
-        .logout-btn:hover {
-          background: rgba(249,0,122,0.12);
-        }
-
-        /* ── MAIN CONTENT ── */
-        .layout-main {
-          margin-left: 220px;
-          flex: 1;
-          padding: 2rem;
-          min-height: 100vh;
-        }
-
-        /* ── BOTTOM NAV MOBILE ── */
-        .bottom-nav {
-          display: none;
-        }
+        .bottom-nav { display: none; }
 
         @media (max-width: 768px) {
           .sidebar { display: none; }
-
-          .layout-main {
-            margin-left: 0;
-            padding: 1rem;
-            padding-bottom: 7rem;
-          }
+          .layout-main { margin-left: 0; padding: 1rem; padding-bottom: 7rem; }
 
           .bottom-nav {
             display: flex;
@@ -337,13 +183,10 @@ export default function Layout() {
             z-index: 20;
             background: #F471B6;
             border-radius: 20px 20px 0 0;
-            padding: 0.5rem 0 1.25rem;
+            padding: 0.6rem 0 1.2rem;
             justify-content: space-around;
-            align-items: flex-end;
+            align-items: center;
             box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
-            gap: 0;
-            width: 100%;
-            max-width: 100%;
             overflow: hidden;
           }
 
@@ -351,120 +194,54 @@ export default function Layout() {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-end;
+            justify-content: center;
             flex: 1;
-            padding: 0.9rem 0.25rem 0.5rem;
+            gap: 0.25rem;
+            padding: 0.4rem 0.25rem;
             color: rgba(255,255,255,0.75);
             text-decoration: none;
             background: none;
             border: none;
             cursor: pointer;
-            transition: color 0.2s;
-            gap: 0.15rem;
             font-family: 'Inter', sans-serif;
-            font-size: 0;
             position: relative;
+            transition: color 0.2s;
+          }
+
+          .nav-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.75);
+            white-space: nowrap;
           }
 
           .bottom-item svg { color: rgba(255,255,255,0.75); transition: color 0.2s; }
 
-          .bottom-item.active {
-            color: white;
-            font-weight: 700;
-          }
+          .bottom-item.active .nav-label { color: white; }
           .bottom-item.active svg { color: white; }
-
           .bottom-item.active::before {
             content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 48px;
-            height: 48px;
-            background: rgba(255,255,255,0.25);
+            width: 48px; height: 48px;
+            background: rgba(255,255,255,0.2);
             border-radius: 14px;
             z-index: -1;
           }
-
-          .bottom-item.active svg {
-            stroke: white;
-            position: relative;
-            z-index: 1;
-          }
-
+          .bottom-item:not(.active):hover .nav-label { color: white; }
           .bottom-item:not(.active):hover svg { color: white; }
-          .bottom-item:not(.active):hover { color: white; }
 
-          /* Gestão Drawer */
-          .gestao-overlay {
-            position: fixed; inset: 0; z-index: 30;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            animation: fadeIn 0.2s ease;
-          }
-
-          @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-          .gestao-drawer {
-            position: absolute;
-            bottom: 0; left: 0; right: 0;
-            background: #1e1a1f;
-            border-radius: 24px 24px 0 0;
-            padding: 1rem 1.25rem 2rem;
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            border-top: 1px solid rgba(249,0,122,0.2);
-          }
-
-          @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-          }
-
-          .gestao-handle {
-            width: 40px; height: 4px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 2px;
-            margin: 0 auto 1rem;
-          }
-
-          .gestao-title {
-            font-size: 1rem; font-weight: 600;
-            color: #ffffff; margin-bottom: 1rem;
-            font-family: 'Inter', sans-serif;
-          }
-
-          .gestao-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.75rem;
-          }
-
-          .gestao-item {
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            gap: 0.4rem;
-            background: rgba(255,255,255,0.06);
-            border-radius: 16px;
-            padding: 1rem 0.5rem;
-            text-decoration: none;
-            transition: background 0.15s, transform 0.15s;
-            border: 1px solid rgba(255,255,255,0.06);
-          }
-
-          .gestao-item:hover, .gestao-item:active {
-            background: rgba(249,0,122,0.15);
-            border-color: rgba(249,0,122,0.3);
-            transform: scale(0.97);
-          }
-
+          .gestao-overlay { position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
+          .gestao-drawer { position: absolute; bottom: 0; left: 0; right: 0; background: #1e1a1f; border-radius: 24px 24px 0 0; padding: 1rem 1.25rem 2rem; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); border-top: 1px solid rgba(249,0,122,0.2); }
+          @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+          .gestao-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 0 auto 1rem; }
+          .gestao-title { font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 1rem; font-family: 'Inter', sans-serif; }
+          .gestao-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+          .gestao-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; background: rgba(255,255,255,0.06); border-radius: 16px; padding: 1rem 0.5rem; text-decoration: none; transition: background 0.15s; border: 1px solid rgba(255,255,255,0.06); }
+          .gestao-item:hover { background: rgba(249,0,122,0.15); }
           .gestao-icon { font-size: 1.6rem; }
-
-          .gestao-label {
-            font-size: 0.75rem; font-weight: 500;
-            color: #ffffff; text-align: center;
-            font-family: 'Inter', sans-serif;
-          }
+          .gestao-label { font-size: 0.75rem; font-weight: 500; color: #ffffff; text-align: center; font-family: 'Inter', sans-serif; }
         }
       `}</style>
     </div>
