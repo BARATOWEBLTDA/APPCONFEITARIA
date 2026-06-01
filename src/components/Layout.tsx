@@ -208,7 +208,7 @@ export default function Layout() {
             transform: translateZ(0);
             -webkit-transform: translateZ(0);
           }
-          .mob-top-logo { height: 36px; object-fit: contain; }
+          .mob-top-logo { height: 24px; object-fit: contain; }
           .mob-top-icons { display: flex; align-items: center; gap: 0.6rem; }
           .mob-top-icon { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0.2rem; }
 
