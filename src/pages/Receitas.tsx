@@ -280,8 +280,8 @@ export default function Receitas() {
 
               {/* Busca */}
               <div className="rec-search-wrap">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input placeholder="Buscar receita..." value={searchMinhas} onChange={e => setSearchMinhas(e.target.value)} className="rec-search-input" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" placeholder="Buscar receitas..." value={searchMinhas} onChange={e => setSearchMinhas(e.target.value)} className="rec-search-input" />
               </div>
 
               {/* Filtro categorias */}
@@ -625,16 +625,16 @@ export default function Receitas() {
         .rec-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
         .rec-grid-desktop { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
 
-        .rec-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
-        .rec-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-        .rec-card-img { aspect-ratio: 4/3; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; overflow: hidden; position: relative; width: 100%; }
-        .rec-card-img img { width: 100%; height: 100%; object-fit: cover; }
-        .rec-curtidas { position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.45); color: white; font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 20px; backdrop-filter: blur(4px); }
-        .rec-doonly-badge { position: absolute; top: 0.5rem; left: 0.5rem; font-size: 0.9rem; }
-        .rec-card-body { padding: 0.75rem 0.85rem 0.85rem; }
-        .rec-nome { font-size: 0.88rem; font-weight: 700; color: #1f2937; margin: 0 0 0.3rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-        .rec-cat { font-size: 0.72rem; font-weight: 500; color: #9ca3af; display: block; }
-        .rec-autor { font-size: 0.72rem; color: #c4b5c0; margin: 0.15rem 0 0; }
+        .rec-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); cursor: pointer; border: 1px solid #f3f4f6; transition: transform 0.15s, box-shadow 0.15s; display: flex; flex-direction: column; }
+        .rec-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+        .rec-card-img { aspect-ratio: 1/1; background: #f9fafb; display: flex; align-items: center; justify-content: center; font-size: 2rem; overflow: hidden; position: relative; width: 100%; border-radius: 8px 8px 0 0; }
+        .rec-card-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px 8px 0 0; }
+        .rec-curtidas { position: absolute; top: 0.4rem; right: 0.4rem; background: rgba(0,0,0,0.45); color: white; font-size: 0.62rem; padding: 0.15rem 0.45rem; border-radius: 20px; }
+        .rec-doonly-badge { position: absolute; top: 0.4rem; left: 0.4rem; font-size: 0.85rem; }
+        .rec-card-body { padding: 0.6rem 0.7rem 0.7rem; flex: 1; display: flex; flex-direction: column; }
+        .rec-nome { font-size: 0.78rem; font-weight: 600; color: #111827; margin: 0 0 0.2rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .rec-cat { font-size: 0.68rem; color: #9ca3af; display: block; }
+        .rec-autor { font-size: 0.68rem; color: #c4b5c0; margin: 0.1rem 0 0; }
 
         /* PDF */
         .rec-pdf-list { display: flex; flex-direction: column; gap: 0.6rem; }
@@ -702,19 +702,21 @@ export default function Receitas() {
         .rec-act-btn.editar { background: #eff6ff; color: #3b82f6; }
         .rec-act-btn.deletar { background: #fff1f2; color: #ef4444; }
 
-        /* Search */
-        .rec-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 0.7rem 0.9rem; margin-bottom: 0.85rem; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
-        .rec-search-input { border: none; outline: none; flex: 1; font-family: 'Inter', sans-serif; font-size: 0.88rem; color: #1f2937; background: transparent; }
+        /* Search - match ProductList style */
+        .rec-search-wrap { position: relative; max-width: 100%; margin-bottom: 1rem; }
+        .rec-search-wrap svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+        .rec-search-input { width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid #e5e7eb; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.88rem; color: #1f2937; background: white; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .rec-search-input:focus { border-color: #f9007a; box-shadow: 0 0 0 3px rgba(249,0,122,0.1); }
         .rec-search-input::placeholder { color: #9ca3af; }
 
-        /* Category filter circles */
-        .rec-cat-filtros { display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1rem; justify-content: flex-start; scrollbar-width: none; }
+        /* Category filter - match CategoryFilter.tsx style */
+        .rec-cat-filtros { display: flex; gap: 0.5rem; overflow-x: auto; padding: 0.25rem 0 0.75rem; margin-bottom: 0.75rem; scrollbar-width: none; }
         .rec-cat-filtros::-webkit-scrollbar { display: none; }
-        .rec-cat-btn { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; background: none; border: none; cursor: pointer; flex-shrink: 0; }
-        .rec-cat-emoji { width: 52px; height: 52px; border-radius: 50%; background: white; border: 2px solid #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; transition: border-color 0.2s, transform 0.15s; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-        .rec-cat-btn.active .rec-cat-emoji { border-color: #f9007a; background: #fff0f6; transform: scale(1.1); box-shadow: 0 4px 12px rgba(249,0,122,0.2); }
-        .rec-cat-btn-label { font-size: 0.62rem; font-weight: 600; color: #6b7280; font-family: 'Inter', sans-serif; }
-        .rec-cat-btn.active .rec-cat-btn-label { color: #f9007a; }
+        .rec-cat-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; background: #fe62a6; border: 3px solid #DBDFE4; outline: 3px solid white; cursor: pointer; transition: all 0.2s; padding: 8px; flex-shrink: 0; min-width: 64px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .rec-cat-btn:hover { background: #2E2E2E; transform: scale(1.05); }
+        .rec-cat-btn.active { background: #2E2E2E; }
+        .rec-cat-emoji { font-size: 1.6rem; display: flex; align-items: center; justify-content: center; }
+        .rec-cat-btn-label { display: none; }
 
         /* Bottom nav receitas */
         .rec-bottom-nav {
