@@ -16,3 +16,9 @@ body {
   color: #1f2937;
   -webkit-font-smoothing: antialiased;
 }
+
+html, body, #root {
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+}
