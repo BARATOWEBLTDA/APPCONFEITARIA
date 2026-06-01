@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Users, Package, ClipboardList, DollarSign, UtensilsCrossed, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { QuickSetupModal } from "@/components/QuickSetupModal";
@@ -68,12 +69,12 @@ const load = async () => {
   };
 
   const atalhos = [
-    { label: "Clientes", emoji: "👥", path: "/clientes" },
-    { label: "Produtos", emoji: "🎂", path: "/produtos" },
-    { label: "Pedidos", emoji: "📋", path: "/pedidos" },
-    { label: "Financeiro", emoji: "💰", path: "/financeiro" },
-    { label: "Cardápio", emoji: "🛍️", path: "/cardapio-config" },
-    { label: "Receitas", emoji: "📄", path: "/receitas" },
+    { label: "Clientes", icon: <Users size={28} color="#f9007a" />, path: "/clientes" },
+    { label: "Produtos", icon: <Package size={28} color="#f9007a" />, path: "/produtos" },
+    { label: "Pedidos", icon: <ClipboardList size={28} color="#f9007a" />, path: "/pedidos" },
+    { label: "Financeiro", icon: <DollarSign size={28} color="#f9007a" />, path: "/financeiro" },
+    { label: "Cardápio", icon: <UtensilsCrossed size={28} color="#f9007a" />, path: "/cardapio-config" },
+    { label: "Receitas", icon: <BookOpen size={28} color="#f9007a" />, path: "/receitas" },
   ];
 
   if (loading) return <div style={{ padding: "2rem", fontFamily: "Inter, sans-serif", color: "#9ca3af" }}>Carregando...</div>;
@@ -126,7 +127,7 @@ const load = async () => {
         <div className="mob-atalhos">
           {atalhos.map(a => (
             <button key={a.path} className="mob-atalho" onClick={() => navigate(a.path)}>
-              <span className="mob-atalho-emoji">{a.emoji}</span>
+              <div className="mob-atalho-icon">{a.icon}</div>
               <span className="mob-atalho-label">{a.label}</span>
             </button>
           ))}
@@ -304,7 +305,7 @@ const load = async () => {
               <div className="atalhos-grid">
                 {atalhos.map(a => (
                   <button key={a.path} className="atalho-btn" onClick={() => navigate(a.path)}>
-                    <span className="atalho-emoji">{a.emoji}</span>
+                    <div className="atalho-icon">{a.icon}</div>
                     <span className="atalho-label">{a.label}</span>
                   </button>
                 ))}
@@ -367,7 +368,7 @@ const load = async () => {
         .mob-atalhos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
         .mob-atalho { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 0.7rem 0.4rem; cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color 0.15s; }
         .mob-atalho:hover { border-color: #f9007a; }
-        .mob-atalho-emoji { font-size: 1.3rem; }
+        .mob-atalho-icon { display: flex; align-items: center; justify-content: center; }
         .mob-atalho-label { font-size: 0.68rem; font-weight: 500; color: #374151; }
 
         /* Progresso mobile */
@@ -437,7 +438,7 @@ const load = async () => {
         .atalhos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
         .atalho-btn { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 0.75rem 0.5rem; cursor: pointer; transition: border-color 0.15s, transform 0.15s; font-family: 'Inter', sans-serif; }
         .atalho-btn:hover { border-color: #f9007a; transform: translateY(-1px); }
-        .atalho-emoji { font-size: 1.4rem; }
+        .atalho-icon { display: flex; align-items: center; justify-content: center; }
         .atalho-label { font-size: 0.72rem; font-weight: 500; color: #374151; }
 
         .progresso-card { background: white; border-radius: 14px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
