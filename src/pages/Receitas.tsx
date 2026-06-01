@@ -596,9 +596,9 @@ export default function Receitas() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
-        .rec-root { font-family: 'Inter', sans-serif; }
+        .rec-root { font-family: 'Inter', sans-serif; overflow-x: hidden; max-width: 100%; }
 
-        .rec-mobile { display: flex; flex-direction: column; }
+        .rec-mobile { display: flex; flex-direction: column; overflow-x: hidden; width: 100%; max-width: 100%; }
         .rec-desktop { display: none; }
         @media (min-width: 768px) {
           .rec-mobile { display: none; }
@@ -644,7 +644,7 @@ export default function Receitas() {
         .rec-filtro.active { background: #f9007a; color: white; border-color: #f9007a; }
 
         /* Cards grid */
-        .rec-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+        .rec-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.65rem; width: 100%; }
         .rec-grid-desktop { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
 
         .rec-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); cursor: pointer; border: 1px solid #f3f4f6; transition: transform 0.15s, box-shadow 0.15s; display: flex; flex-direction: column; }
@@ -732,9 +732,9 @@ export default function Receitas() {
         .rec-search-input::placeholder { color: #9ca3af; }
 
         /* Category filter - match CategoryFilter.tsx style */
-        .rec-cat-filtros { display: flex; gap: 0.5rem; overflow-x: auto; padding: 0.25rem 0 0.75rem; margin-bottom: 0.75rem; scrollbar-width: none; max-width: 100%; }
+        .rec-cat-filtros { display: flex; gap: 0.5rem; overflow-x: auto; padding: 0.25rem 0.5rem 0.75rem; margin-bottom: 0.75rem; scrollbar-width: none; -ms-overflow-style: none; }
         .rec-cat-filtros::-webkit-scrollbar { display: none; }
-        .rec-cat-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; background: #fe62a6; border: 3px solid #DBDFE4; outline: 3px solid white; cursor: pointer; transition: all 0.2s; padding: 8px; flex-shrink: 0; min-width: 64px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .rec-cat-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: #fe62a6; border: 3px solid #DBDFE4; outline: 2px solid white; cursor: pointer; transition: all 0.2s; padding: 6px; flex-shrink: 0; min-width: 56px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .rec-cat-btn:hover { background: #2E2E2E; transform: scale(1.05); }
         .rec-cat-btn.active { background: #2E2E2E; }
         .rec-cat-emoji { font-size: 1.6rem; display: flex; align-items: center; justify-content: center; }
@@ -749,7 +749,7 @@ export default function Receitas() {
           padding: 0.5rem 0 1.25rem;
           box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
         }
-        .rec-mob-content { padding-bottom: 6rem; }
+        .rec-mob-content { padding-bottom: 6rem; overflow-x: hidden; width: 100%; }
         .rec-nav-item {
           display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
           background: none; border: none; cursor: pointer;
