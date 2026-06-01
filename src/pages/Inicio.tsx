@@ -85,28 +85,8 @@ const load = async () => {
       {/* ===== MOBILE ===== */}
       <div className="ini-mobile">
 
-        {/* Header rosa mobile - novo estilo */}
-        <div className="mob-header">
-          <img src="/logoheader.png" alt="Doonly" className="mob-header-logo" />
-          <div className="mob-header-icons">
-            <button className="mob-header-icon-btn" onClick={() => navigate("/configuracoes")}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </button>
-            <button className="mob-header-icon-btn" onClick={() => navigate("/notificacoes")}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            </button>
-            <button className="mob-header-icon-btn" onClick={() => navigate("/configuracoes")}>
-              {profile?.foto_url
-                ? <img src={profile.foto_url} alt="perfil" style={{width:"30px",height:"30px",borderRadius:"50%",objectFit:"cover",border:"2px solid white"}} />
-                : <div style={{width:"30px",height:"30px",borderRadius:"50%",background:"rgba(255,255,255,0.3)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  </div>
-              }
-            </button>
-          </div>
-        </div>
 
-        <div style={{height: "64px"}} />
+
         {/* 1. Configure seu Doonly - destaque escuro */}
         <div className="mob-config-card">
           <div className="mob-config-header">
@@ -353,18 +333,7 @@ const load = async () => {
         }
 
         /* ===== MOBILE ===== */
-        .mob-header {
-          background: #f9007a;
-          padding: 0.75rem 1.25rem;
-          position: fixed;
-          top: 0; left: 0; right: 0;
-          z-index: 9999;
-          display: flex; align-items: center; justify-content: space-between;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-        }
-        .mob-header-logo { height: 38px; object-fit: contain; }
-        .mob-header-icons { display: flex; align-items: center; gap: 0.5rem; }
-        .mob-header-icon-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.2rem; }
+
         .mob-greeting { display: none; }
 
 
