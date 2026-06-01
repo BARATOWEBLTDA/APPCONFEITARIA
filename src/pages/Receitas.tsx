@@ -622,19 +622,19 @@ export default function Receitas() {
         .rec-filtro.active { background: #f9007a; color: white; border-color: #f9007a; }
 
         /* Cards grid */
-        .rec-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
-        .rec-grid-desktop { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.85rem; }
+        .rec-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+        .rec-grid-desktop { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
 
-        .rec-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
-        .rec-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
-        .rec-card-img { aspect-ratio: 1/1; background: #f9fafb; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; overflow: hidden; position: relative; width: 100%; }
+        .rec-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+        .rec-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+        .rec-card-img { aspect-ratio: 4/3; background: #f3f4f6; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; overflow: hidden; position: relative; width: 100%; }
         .rec-card-img img { width: 100%; height: 100%; object-fit: cover; }
-        .rec-curtidas { position: absolute; bottom: 0.4rem; right: 0.4rem; background: rgba(0,0,0,0.55); color: white; font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 4px; }
-        .rec-doonly-badge { position: absolute; top: 0.4rem; left: 0.4rem; font-size: 0.9rem; }
-        .rec-card-body { padding: 0.55rem 0.65rem 0.65rem; }
-        .rec-nome { font-size: 0.82rem; font-weight: 700; color: #1f2937; margin: 0 0 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .rec-cat { font-size: 0.68rem; font-weight: 500; color: #9ca3af; display: block; }
-        .rec-autor { font-size: 0.68rem; color: #c4b5c0; margin: 0.15rem 0 0; }
+        .rec-curtidas { position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.45); color: white; font-size: 0.65rem; padding: 0.2rem 0.5rem; border-radius: 20px; backdrop-filter: blur(4px); }
+        .rec-doonly-badge { position: absolute; top: 0.5rem; left: 0.5rem; font-size: 0.9rem; }
+        .rec-card-body { padding: 0.75rem 0.85rem 0.85rem; }
+        .rec-nome { font-size: 0.88rem; font-weight: 700; color: #1f2937; margin: 0 0 0.3rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .rec-cat { font-size: 0.72rem; font-weight: 500; color: #9ca3af; display: block; }
+        .rec-autor { font-size: 0.72rem; color: #c4b5c0; margin: 0.15rem 0 0; }
 
         /* PDF */
         .rec-pdf-list { display: flex; flex-direction: column; gap: 0.6rem; }
