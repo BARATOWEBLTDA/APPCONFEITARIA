@@ -85,15 +85,25 @@ const load = async () => {
       {/* ===== MOBILE ===== */}
       <div className="ini-mobile">
 
-        {/* Header rosa mobile */}
+        {/* Header rosa mobile - novo estilo */}
         <div className="mob-header">
-          <div>
-            <h1 className="mob-greeting">{getGreeting()}{nome ? <>, <strong>{nome}</strong></> : ""}.</h1>
+          <img src="/logoapp.png" alt="Doonly" className="mob-header-logo" />
+          <div className="mob-header-icons">
+            <button className="mob-header-icon-btn" onClick={() => navigate("/configuracoes")}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+            <button className="mob-header-icon-btn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            </button>
+            <button className="mob-header-icon-btn" onClick={() => navigate("/configuracoes")}>
+              {profile?.foto_url
+                ? <img src={profile.foto_url} alt="perfil" style={{width:"30px",height:"30px",borderRadius:"50%",objectFit:"cover",border:"2px solid white"}} />
+                : <div style={{width:"30px",height:"30px",borderRadius:"50%",background:"rgba(255,255,255,0.3)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+              }
+            </button>
           </div>
-          <span className="mob-badge">
-            <img src="/diamante.png" style={{ width: "14px", height: "14px", objectFit: "contain" }} alt="" />
-            Premium
-          </span>
         </div>
 
         {/* 1. Configure seu Doonly - destaque escuro */}
@@ -342,10 +352,19 @@ const load = async () => {
         }
 
         /* ===== MOBILE ===== */
-        .mob-header { background: linear-gradient(135deg, #f9007a, #ff6eb4); padding: 1rem 1.25rem; margin: -1rem -1rem 0 -1rem; display: flex; align-items: center; justify-content: space-between; }
-        .mob-greeting { font-size: 0.95rem; font-weight: 700; color: white; margin: 0; }
+        .mob-header {
+          background: linear-gradient(135deg, #f9007a, #ff6eb4);
+          padding: 0.75rem 1.25rem;
+          margin: -1rem -1rem 0.75rem -1rem;
+          display: flex; align-items: center; justify-content: space-between;
+          box-shadow: 0 2px 12px rgba(249,0,122,0.3);
+        }
+        .mob-header-logo { height: 38px; object-fit: contain; }
+        .mob-header-icons { display: flex; align-items: center; gap: 0.5rem; }
+        .mob-header-icon-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0.2rem; }
+        .mob-greeting { display: none; }
 
-        .mob-badge { background: rgba(255,255,255,0.25); color: white; font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; }
+
 
         /* Cards 3 lado a lado */
         .mob-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }

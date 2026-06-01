@@ -64,6 +64,7 @@ export default function Receitas() {
   const [novaCategoria, setNovaCategoria] = useState(false);
   const [searchMinhas, setSearchMinhas] = useState("");
   const [filtroMinhas, setFiltroMinhas] = useState("");
+  const [categoriasUsuario, setCategoriasUsuario] = useState<string[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Detalhe
@@ -120,6 +121,9 @@ export default function Receitas() {
       .select("*").eq("user_id", userId)
       .order("created_at", { ascending: false });
     setMinhas(data || []);
+    // Extract unique categories from user's recipes
+    const cats = [...new Set((data || []).map(r => r.categoria).filter(Boolean))];
+    setCategoriasUsuario(cats);
     setLoading(false);
   };
 
@@ -284,16 +288,22 @@ export default function Receitas() {
                 <input type="text" placeholder="Buscar receitas..." value={searchMinhas} onChange={e => setSearchMinhas(e.target.value)} className="rec-search-input" />
               </div>
 
-              {/* Filtro categorias */}
-              <div className="rec-cat-filtros">
-                {CAT_FILTROS.map(c => (
-                  <button key={c.label} className={`rec-cat-btn ${filtroMinhas === (c.label === "Todas" ? "" : c.label) ? "active" : ""}`}
-                    onClick={() => setFiltroMinhas(c.label === "Todas" ? "" : c.label)}>
-                    <span className="rec-cat-emoji">{c.emoji}</span>
-                    <span className="rec-cat-btn-label">{c.label}</span>
+              {/* Filtro categorias - apenas as que o usuário tem receitas */}
+              {categoriasUsuario.length > 0 && (
+                <div className="rec-cat-filtros">
+                  <button className={`rec-cat-btn ${filtroMinhas === "" ? "active" : ""}`} onClick={() => setFiltroMinhas("")}>
+                    <span className="rec-cat-emoji">🍽️</span>
                   </button>
-                ))}
-              </div>
+                  {categoriasUsuario.map(cat => {
+                    const emojiMap: {[k:string]:string} = { "Bolos":"🎂","Doces":"🍬","Massas":"🍝","Recheios":"🍮","Coberturas":"🍫","Bases":"🧁" };
+                    return (
+                      <button key={cat} className={`rec-cat-btn ${filtroMinhas === cat ? "active" : ""}`} onClick={() => setFiltroMinhas(cat)}>
+                        <span className="rec-cat-emoji">{emojiMap[cat] || "🍴"}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
 
               {loading ? <div className="rec-loading"><span className="rec-spinner" /></div> : (() => {
                 const filtered = minhas.filter(r =>
@@ -509,15 +519,22 @@ export default function Receitas() {
                 <input type="text" placeholder="Buscar receitas..." value={searchMinhas} onChange={e => setSearchMinhas(e.target.value)} className="rec-search-input" />
               </div>
 
-              {/* Filtro categorias desktop */}
-              <div className="rec-cat-filtros">
-                {CAT_FILTROS.map(c => (
-                  <button key={c.label} className={`rec-cat-btn ${filtroMinhas === (c.label === "Todas" ? "" : c.label) ? "active" : ""}`}
-                    onClick={() => setFiltroMinhas(c.label === "Todas" ? "" : c.label)}>
-                    <span className="rec-cat-emoji">{c.emoji}</span>
+              {/* Filtro categorias desktop - apenas as que o usuário tem receitas */}
+              {categoriasUsuario.length > 0 && (
+                <div className="rec-cat-filtros">
+                  <button className={`rec-cat-btn ${filtroMinhas === "" ? "active" : ""}`} onClick={() => setFiltroMinhas("")}>
+                    <span className="rec-cat-emoji">🍽️</span>
                   </button>
-                ))}
-              </div>
+                  {categoriasUsuario.map(cat => {
+                    const emojiMap: {[k:string]:string} = { "Bolos":"🎂","Doces":"🍬","Massas":"🍝","Recheios":"🍮","Coberturas":"🍫","Bases":"🧁" };
+                    return (
+                      <button key={cat} className={`rec-cat-btn ${filtroMinhas === cat ? "active" : ""}`} onClick={() => setFiltroMinhas(cat)}>
+                        <span className="rec-cat-emoji">{emojiMap[cat] || "🍴"}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               {loading ? <div className="rec-loading"><span className="rec-spinner" /></div> : (() => {
                 const filteredDesk = minhas.filter(r =>
                   r.nome.toLowerCase().includes(searchMinhas.toLowerCase()) &&
