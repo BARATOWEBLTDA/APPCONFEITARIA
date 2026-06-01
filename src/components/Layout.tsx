@@ -165,6 +165,8 @@ export default function Layout() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         .layout-root { display: flex; min-height: 100vh; font-family: 'Inter', sans-serif; background: #fafafa; }
+        .mob-top-header { display: none; }
+        .bottom-nav { display: none; }
 
         .sidebar { width: 220px; min-height: 100vh; background: #181419; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
 
@@ -189,14 +191,12 @@ export default function Layout() {
 
         .layout-main { margin-left: 220px; flex: 1; padding: 2rem; min-height: 100vh; }
 
-        .bottom-nav { display: none; }
-
         @media (max-width: 768px) {
           .sidebar { display: none; }
           .layout-main { margin-left: 0; padding: 1rem; padding-bottom: 5.5rem; overflow-x: hidden; max-width: 100vw; }
 
           .mob-top-header {
-            display: flex;
+            display: flex !important;
             position: fixed;
             top: 0; left: 0; right: 0;
             z-index: 9999;
@@ -215,7 +215,7 @@ export default function Layout() {
           .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 5.5rem; overflow-x: hidden; max-width: 100vw; }
 
           .bottom-nav {
-            display: flex;
+            display: flex !important;
             position: fixed;
             bottom: 0; left: 0; right: 0;
             z-index: 50;
