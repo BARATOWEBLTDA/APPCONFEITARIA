@@ -16,6 +16,7 @@ interface Receita {
   profiles?: { nome: string; foto_url?: string };
   is_doonly?: boolean;
   compartilhar_comunidade?: boolean;
+  salva_da_comunidade?: boolean;
 }
 
 const emptyForm = {
