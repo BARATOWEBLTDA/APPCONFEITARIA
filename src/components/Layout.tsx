@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Home, BookOpen, Users, UtensilsCrossed, Menu } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
@@ -31,6 +31,9 @@ export default function Layout() {
 
   const formatDate = (d: Date) => d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
   const formatTime = (d: Date) => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+  const location = useLocation();
+  const isReceitas = location.pathname === "/receitas";
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
