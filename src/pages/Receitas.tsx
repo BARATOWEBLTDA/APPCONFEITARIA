@@ -27,6 +27,17 @@ const emptyForm = {
 
 const CATEGORIAS = ["Bolos", "Doces", "Massas", "Recheios", "Coberturas", "Bases"];
 
+  const CAT_FILTROS = [
+    { label: "Todas", emoji: "🍽️" },
+    { label: "Bolos", emoji: "🎂" },
+    { label: "Doces", emoji: "🍬" },
+    { label: "Massas", emoji: "🍝" },
+    { label: "Recheios", emoji: "🍮" },
+    { label: "Coberturas", emoji: "🍫" },
+    { label: "Bases", emoji: "🧁" },
+  ];
+
+
 export default function Receitas() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
@@ -51,6 +62,8 @@ export default function Receitas() {
   const [preview, setPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [novaCategoria, setNovaCategoria] = useState(false);
+  const [searchMinhas, setSearchMinhas] = useState("");
+  const [filtroMinhas, setFiltroMinhas] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Detalhe
@@ -260,19 +273,41 @@ export default function Receitas() {
           {/* Minhas Receitas (home do módulo) */}
           {activeModule === "minhas" && (
             <>
-              <div className="rec-mob-header">
-                <h1>Minhas Receitas</h1>
-              </div>
+              <div className="rec-mob-header"><h1>Minhas Receitas</h1></div>
               <button className="rec-btn-new" onClick={() => { setForm(emptyForm); setPreview(null); setEditId(null); setShowForm(true); }}>
                 + Nova Receita
               </button>
-              {loading ? <div className="rec-loading"><span className="rec-spinner" /></div> : (
-                <div className="rec-grid">
-                  {minhas.length === 0 ? <p className="rec-empty">Nenhuma receita criada ainda</p> : minhas.map(r => (
-                    <ReceitaCard key={r.id} r={r} onSelect={() => setSelected(r)} />
-                  ))}
-                </div>
-              )}
+
+              {/* Busca */}
+              <div className="rec-search-wrap">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input placeholder="Buscar receita..." value={searchMinhas} onChange={e => setSearchMinhas(e.target.value)} className="rec-search-input" />
+              </div>
+
+              {/* Filtro categorias */}
+              <div className="rec-cat-filtros">
+                {CAT_FILTROS.map(c => (
+                  <button key={c.label} className={`rec-cat-btn ${filtroMinhas === (c.label === "Todas" ? "" : c.label) ? "active" : ""}`}
+                    onClick={() => setFiltroMinhas(c.label === "Todas" ? "" : c.label)}>
+                    <span className="rec-cat-emoji">{c.emoji}</span>
+                    <span className="rec-cat-btn-label">{c.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {loading ? <div className="rec-loading"><span className="rec-spinner" /></div> : (() => {
+                const filtered = minhas.filter(r =>
+                  r.nome.toLowerCase().includes(searchMinhas.toLowerCase()) &&
+                  (filtroMinhas === "" || r.categoria === filtroMinhas)
+                );
+                return (
+                  <div className="rec-grid">
+                    {filtered.length === 0 ? <p className="rec-empty">Nenhuma receita encontrada</p> : filtered.map(r => (
+                      <ReceitaCard key={r.id} r={r} onSelect={() => setSelected(r)} />
+                    ))}
+                  </div>
+                );
+              })()}
             </>
           )}
 
@@ -666,6 +701,20 @@ export default function Receitas() {
         .rec-act-btn.salvar { background: #f0fdf4; color: #16a34a; }
         .rec-act-btn.editar { background: #eff6ff; color: #3b82f6; }
         .rec-act-btn.deletar { background: #fff1f2; color: #ef4444; }
+
+        /* Search */
+        .rec-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 0.7rem 0.9rem; margin-bottom: 0.85rem; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        .rec-search-input { border: none; outline: none; flex: 1; font-family: 'Inter', sans-serif; font-size: 0.88rem; color: #1f2937; background: transparent; }
+        .rec-search-input::placeholder { color: #9ca3af; }
+
+        /* Category filter circles */
+        .rec-cat-filtros { display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1rem; justify-content: flex-start; scrollbar-width: none; }
+        .rec-cat-filtros::-webkit-scrollbar { display: none; }
+        .rec-cat-btn { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; background: none; border: none; cursor: pointer; flex-shrink: 0; }
+        .rec-cat-emoji { width: 52px; height: 52px; border-radius: 50%; background: white; border: 2px solid #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; transition: border-color 0.2s, transform 0.15s; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+        .rec-cat-btn.active .rec-cat-emoji { border-color: #f9007a; background: #fff0f6; transform: scale(1.1); box-shadow: 0 4px 12px rgba(249,0,122,0.2); }
+        .rec-cat-btn-label { font-size: 0.62rem; font-weight: 600; color: #6b7280; font-family: 'Inter', sans-serif; }
+        .rec-cat-btn.active .rec-cat-btn-label { color: #f9007a; }
 
         /* Bottom nav receitas */
         .rec-bottom-nav {
