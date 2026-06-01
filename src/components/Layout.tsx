@@ -115,6 +115,25 @@ export default function Layout() {
         </div>
       )}
 
+      {/* Mobile top header */}
+      <div className="mob-top-header">
+        <img src="/logoheader.png" alt="Doonly" className="mob-top-logo" />
+        <div className="mob-top-icons">
+          <button className="mob-top-icon" onClick={() => navigate("/configuracoes")}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+          <button className="mob-top-icon" onClick={() => navigate("/notificacoes")}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </button>
+          <button className="mob-top-icon" onClick={() => navigate("/configuracoes")}>
+            {profile?.foto_url
+              ? <img src={profile.foto_url} alt="perfil" style={{width:"28px",height:"28px",borderRadius:"50%",objectFit:"cover",border:"2px solid white"}} />
+              : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            }
+          </button>
+        </div>
+      </div>
+
       {/* Bottom nav Mobile */}
       {!isReceitas && (
         <nav className="bottom-nav">
@@ -175,6 +194,25 @@ export default function Layout() {
         @media (max-width: 768px) {
           .sidebar { display: none; }
           .layout-main { margin-left: 0; padding: 1rem; padding-bottom: 5.5rem; overflow-x: hidden; max-width: 100vw; }
+
+          .mob-top-header {
+            display: flex;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 9999;
+            background: #f9007a;
+            padding: 0.65rem 1.25rem;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+          }
+          .mob-top-logo { height: 36px; object-fit: contain; }
+          .mob-top-icons { display: flex; align-items: center; gap: 0.6rem; }
+          .mob-top-icon { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0.2rem; }
+
+          .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 5.5rem; overflow-x: hidden; max-width: 100vw; }
 
           .bottom-nav {
             display: flex;
