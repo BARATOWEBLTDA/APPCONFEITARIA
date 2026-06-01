@@ -164,7 +164,7 @@ export default function Layout() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .layout-root { display: flex; min-height: 100vh; font-family: 'Inter', sans-serif; background: #fafafa; }
+        .layout-root { display: flex; min-height: 100vh; font-family: 'Inter', sans-serif; background: #fafafa; position: relative; }
         .mob-top-header { display: none; }
         .bottom-nav { display: none; }
 
@@ -193,7 +193,7 @@ export default function Layout() {
 
         @media (max-width: 768px) {
           .sidebar { display: none; }
-          .layout-main { margin-left: 0; padding: 1rem; padding-bottom: 5.5rem; overflow-x: hidden; max-width: 100vw; }
+          .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 7rem; }
 
           .mob-top-header {
             display: flex !important;
@@ -212,7 +212,7 @@ export default function Layout() {
           .mob-top-icons { display: flex; align-items: center; gap: 0.6rem; }
           .mob-top-icon { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0.2rem; }
 
-          .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 5.5rem; overflow-x: hidden; max-width: 100vw; }
+          .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 5.5rem;  }
 
           .bottom-nav {
             display: flex !important;
