@@ -106,6 +106,7 @@ const load = async () => {
           </div>
         </div>
 
+        <div style={{height: "64px"}} />
         {/* 1. Configure seu Doonly - destaque escuro */}
         <div className="mob-config-card">
           <div className="mob-config-header">
@@ -355,7 +356,9 @@ const load = async () => {
         .mob-header {
           background: linear-gradient(135deg, #f9007a, #ff6eb4);
           padding: 0.75rem 1.25rem;
-          margin: -1rem -1rem 0.75rem -1rem;
+          position: fixed;
+          top: 0; left: 0; right: 0;
+          z-index: 40;
           display: flex; align-items: center; justify-content: space-between;
           box-shadow: 0 6px 12px rgba(0,0,0,0.3);
         }
