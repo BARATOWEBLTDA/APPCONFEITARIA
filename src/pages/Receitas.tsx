@@ -760,35 +760,26 @@ export default function Receitas() {
         /* Bottom nav receitas */
         .rec-bottom-nav {
           position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-          background: #F471B6;
-          border-radius: 20px 20px 0 0;
-          display: flex; align-items: flex-end; justify-content: space-around;
-          padding: 0.5rem 0 1.25rem;
-          box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+          background: #ffffff;
+          display: flex; align-items: center; justify-content: space-around;
+          padding: 0.5rem 0 1rem;
+          box-shadow: 0 -2px 12px rgba(0,0,0,0.12);
         }
-        .rec-mob-content { padding-bottom: 6rem; overflow-x: hidden; width: 100%; }
+        .rec-mob-content { padding-bottom: 5.5rem; overflow-x: hidden; width: 100%; }
         .rec-nav-item {
           display: flex; flex-direction: column; align-items: center; gap: 0.2rem;
           background: none; border: none; cursor: pointer;
-          font-family: 'Inter', sans-serif; font-size: 0.6rem; font-weight: 500;
-          color: rgba(255,255,255,0.7); padding: 0.4rem 0.5rem;
+          font-family: 'Inter', sans-serif; font-size: 0.6rem; font-weight: 600;
+          color: #9ca3af; padding: 0.35rem 0.5rem;
           transition: color 0.15s; flex: 1;
         }
-        .rec-nav-item svg { stroke: rgba(255,255,255,0.7); transition: stroke 0.15s; }
-        .rec-nav-item.active { color: white; font-weight: 700; }
-        .rec-nav-item.active svg { stroke: white; }
-        .rec-nav-item.active::before {
-          content: '';
-          position: absolute;
-          width: 44px; height: 44px; border-radius: 14px;
-          background: rgba(255,255,255,0.2);
-          z-index: -1;
-        }
-
+        .rec-nav-item svg { color: inherit; }
+        .rec-nav-item.active { color: #f9007a; }
+        .rec-nav-item:hover { color: #f9007a; }
         .rec-mob-header { padding: 0.5rem 0 1rem; }
         .rec-mob-header h1 { font-size: 1.4rem; font-weight: 800; color: #1f2937; margin: 0; }
 
-        .rec-spinner { width: 22px; height: 22px; border: 2px solid rgba(249,0,122,0.2); border-top-color: #f9007a; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+                .rec-spinner { width: 22px; height: 22px; border: 2px solid rgba(249,0,122,0.2); border-top-color: #f9007a; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>

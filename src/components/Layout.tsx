@@ -174,20 +174,18 @@ export default function Layout() {
 
         @media (max-width: 768px) {
           .sidebar { display: none; }
-          .layout-main { margin-left: 0; padding: 1rem; padding-bottom: 7rem; }
+          .layout-main { margin-left: 0; padding: 1rem; padding-bottom: 5.5rem; overflow-x: hidden; max-width: 100vw; }
 
           .bottom-nav {
             display: flex;
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            z-index: 20;
-            background: white;
-            border-radius: 0;
-            padding: 0.5rem 0 1.1rem;
+            z-index: 50;
+            background: #ffffff;
+            padding: 0.5rem 0 1rem;
             justify-content: space-around;
             align-items: center;
-            box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
-            overflow: hidden;
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.12);
           }
 
           .bottom-item {
@@ -196,41 +194,27 @@ export default function Layout() {
             align-items: center;
             justify-content: center;
             flex: 1;
-            gap: 0.25rem;
-            padding: 0.4rem 0.25rem;
-            color: #6b7280;
+            gap: 0.2rem;
+            padding: 0.35rem 0.1rem;
+            color: #9ca3af;
             text-decoration: none;
             background: none;
             border: none;
             cursor: pointer;
             font-family: 'Inter', sans-serif;
-            position: relative;
-            transition: color 0.2s;
+            transition: color 0.15s;
           }
 
           .nav-label {
-            font-size: 0.62rem;
-            font-weight: 700;
-            color: rgba(255,255,255,0.75);
+            font-size: 0.6rem;
+            font-weight: 600;
+            color: inherit;
             white-space: nowrap;
           }
 
-          .bottom-item svg { color: #6b7280; transition: color 0.2s; }
-
-          .bottom-item.active .nav-label { color: white; }
-          .bottom-item.active svg { color: white; }
-          .bottom-item.active::before {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 48px; height: 48px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 14px;
-            z-index: -1;
-          }
-          .bottom-item:not(.active):hover .nav-label { color: white; }
-          .bottom-item:not(.active):hover svg { color: white; }
+          .bottom-item svg { color: inherit; }
+          .bottom-item.active { color: #f9007a; }
+          .bottom-item:hover { color: #f9007a; }
 
           .gestao-overlay { position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
           .gestao-drawer { position: absolute; bottom: 0; left: 0; right: 0; background: #1e1a1f; border-radius: 24px 24px 0 0; padding: 1rem 1.25rem 2rem; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); border-top: 1px solid rgba(249,0,122,0.2); }
@@ -243,7 +227,7 @@ export default function Layout() {
           .gestao-icon { font-size: 1.6rem; }
           .gestao-label { font-size: 0.75rem; font-weight: 500; color: #ffffff; text-align: center; font-family: 'Inter', sans-serif; }
         }
-      `}</style>
+            `}</style>
     </div>
   );
 }
