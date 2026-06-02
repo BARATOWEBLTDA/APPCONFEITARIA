@@ -155,13 +155,15 @@ const load = async () => {
         {/* Card PRO teste — dias restantes */}
         {!loading && isTeste && (
           <div className="mob-pro-mini-card">
-            <img src="/assine.png" alt="" style={{width:"38px",height:"38px",objectFit:"contain",flexShrink:0,borderRadius:"10px"}} />
-            <div style={{flex:1,minWidth:0,margin:"0 0.65rem"}}>
-              <p className="mob-pro-mini-title">Seu acesso PRO expira em {diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}.</p>
-              <p className="mob-pro-mini-sub">Continue com todas as funcionalidades sem interrupção por apenas <strong style={{color:"white"}}>R$ 7,90/mês</strong>.</p>
+            <div style={{display:"flex",alignItems:"center",gap:"0.65rem",width:"100%"}}>
+              <img src="/assine.png" alt="" style={{width:"38px",height:"38px",objectFit:"contain",flexShrink:0,borderRadius:"10px"}} />
+              <div style={{flex:1,minWidth:0}}>
+                <p className="mob-pro-mini-title">Seu acesso PRO expira em {diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}.</p>
+                <p className="mob-pro-mini-sub">Continue com todas as funcionalidades sem interrupção por apenas <strong style={{color:"white"}}>R$ 7,90/mês</strong>.</p>
+              </div>
             </div>
-            <button className="mob-assinar-btn-sm" onClick={() => navigate("/assinar")}>
-              Assinar →
+            <button className="mob-assinar-btn-sm" style={{marginTop:"0.65rem",width:"100%"}} onClick={() => navigate("/assinar")}>
+              Assinar agora →
             </button>
           </div>
         )}
@@ -511,8 +513,7 @@ const load = async () => {
           border-radius: 16px;
           padding: 0.85rem 1rem;
           display: flex;
-          align-items: center;
-          gap: 0;
+          flex-direction: column;
         }
         .mob-pro-mini-title { font-size: 0.82rem; font-weight: 700; color: white; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .mob-pro-mini-sub { font-size: 0.72rem; color: rgba(255,255,255,0.65); margin: 0.2rem 0 0; line-height: 1.4; }
