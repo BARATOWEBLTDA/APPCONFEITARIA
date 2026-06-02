@@ -223,7 +223,7 @@ export default function Layout() {
 
         @media (max-width: 768px) {
           .sidebar { display: none; }
-          .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 7rem; }
+          .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 7rem; overflow-x: clip; }
 
           .mob-top-header {
             display: flex !important;
