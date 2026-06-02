@@ -5,6 +5,14 @@ import { refreshProfile } from "@/hooks/useProfile";
 
 const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
+
+const Field = ({ icon, placeholder, value, onChange, type = "text", maxLength }: any) => (
+  <div className="cfg-field-pill">
+    <span className="cfg-field-icon">{icon}</span>
+    <input className="cfg-field-input" type={type} placeholder={placeholder} value={value} onChange={onChange} maxLength={maxLength} />
+  </div>
+);
+
 export default function Configuracoes() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -102,14 +110,6 @@ export default function Configuracoes() {
   };
 
   if (loading) return <div style={{padding:"2rem",fontFamily:"Inter,sans-serif",color:"#9ca3af"}}>Carregando...</div>;
-
-  // ===== FIELD COMPONENT =====
-  const Field = ({ icon, placeholder, value, onChange, type = "text", maxLength }: any) => (
-    <div className="cfg-field-pill">
-      <span className="cfg-field-icon">{icon}</span>
-      <input className="cfg-field-input" type={type} placeholder={placeholder} value={value} onChange={onChange} maxLength={maxLength} />
-    </div>
-  );
 
   return (
     <div className="cfg-root">
@@ -400,7 +400,7 @@ export default function Configuracoes() {
 
         /* Avatar */
         .cfg-avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; margin: 0.25rem 0 0.5rem; }
-        .cfg-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px dashed #fbcfe8; background: #fff0f6; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; }
+        .cfg-avatar { width: 100px; height: 100px; border-radius: 50%; border: 2px dashed #fbcfe8; background: #fff0f6; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; }
         .cfg-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .cfg-avatar-overlay { position: absolute; inset: 0; background: rgba(249,0,122,0.4); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; opacity: 0; transition: opacity 0.2s; }
         .cfg-avatar:hover .cfg-avatar-overlay { opacity: 1; }
