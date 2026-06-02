@@ -107,9 +107,10 @@ export default function Configuracoes() {
 
       const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
 
-      // Verifica se tem PRO ativo via pro_expira_em
+      // Verifica se tem PRO ativo via plano + pro_expira_em
       const proExpira = data?.pro_expira_em ? new Date(data.pro_expira_em) : null;
-      if (proExpira && proExpira > hoje) {
+      const isPROAtivo = data?.plano === "pro" && (!proExpira || proExpira > hoje);
+      if (isPROAtivo) {
         setPlano("pro");
       } else {
         setPlano(restantes > 0 ? "trial" : "expirado");
