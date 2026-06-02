@@ -157,20 +157,20 @@ const load = async () => {
           <div className="mob-config-card mob-pro-teste-card">
             <div className="mob-config-header">
               <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
-                <img src="/assine.png" alt="" style={{width:"46px",height:"46px",objectFit:"contain",flexShrink:0}} />
+                <img src="/assine.png" alt="" style={{width:"46px",height:"46px",objectFit:"contain",flexShrink:0,borderRadius:"12px"}} />
                 <div>
-                  <p className="mob-config-title">Você tem {diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""} restante{diasProRestantes !== 1 ? "s" : ""} de acesso PRO.</p>
-                  <p className="mob-config-sub">Não perca as melhores funcionalidades, assine agora mesmo por apenas R$ 7,90 mês.</p>
+                  <p className="mob-config-title">Seu acesso PRO expira em <strong>{diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}</strong>.</p>
+                  <p className="mob-config-sub">Continue com <strong>todas as funcionalidades</strong> sem interrupção por apenas <strong>R$ 7,90/mês</strong>.</p>
                 </div>
               </div>
-              <div className="mob-config-circle" style={{background:"linear-gradient(135deg,#F583BF,#e060a8)"}}>
+              <div className="mob-config-circle" style={{background:"linear-gradient(135deg,#F583BF,#e060a8)",flexShrink:0}}>
                 {diasProRestantes}d
               </div>
             </div>
             <div className="mob-config-bar-bg">
               <div className="mob-config-bar-fill" style={{ width: `${(diasProRestantes / diasProTotal) * 100}%` }} />
             </div>
-            <div style={{display:"flex",justifyContent:"flex-end",marginTop:"0.5rem"}}>
+            <div style={{display:"flex",justifyContent:"center",marginTop:"0.75rem"}}>
               <button className="mob-assinar-btn-sm" onClick={() => navigate("/assinar")}>
                 Assinar agora →
               </button>
@@ -293,11 +293,11 @@ const load = async () => {
               <div className="progresso-card" style={{background:"linear-gradient(135deg,#1a0a12,#2d0f1e)",marginTop:"1rem"}}>
                 <div className="progresso-header">
                   <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
-                    <img src="/assine.png" alt="" style={{width:"52px",height:"52px",objectFit:"contain",flexShrink:0}} />
+                  <img src="/assine.png" alt="" style={{width:"52px",height:"52px",objectFit:"contain",flexShrink:0,borderRadius:"14px"}} />
                     <div>
-                      <h2 className="ini-section-title" style={{margin:0,color:"white"}}>Você tem {diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""} restante{diasProRestantes !== 1 ? "s" : ""} de acesso PRO.</h2>
+                      <h2 className="ini-section-title" style={{margin:0,color:"white"}}>Seu acesso PRO expira em <strong>{diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}</strong>.</h2>
                       <p className="progresso-sub" style={{color:"rgba(255,255,255,0.7)"}}>
-                        Não perca as melhores funcionalidades, assine agora mesmo por apenas R$ 7,90 mês.
+                        Continue com <strong style={{color:"white"}}>todas as funcionalidades</strong> sem interrupção por apenas <strong style={{color:"white"}}>R$ 7,90/mês</strong>.
                       </p>
                     </div>
                   </div>
@@ -308,7 +308,7 @@ const load = async () => {
                 <div className="progresso-bar-bg" style={{background:"rgba(255,255,255,0.15)"}}>
                   <div className="progresso-bar-fill" style={{width:`${(diasProRestantes / diasProTotal) * 100}%`}} />
                 </div>
-                <div style={{display:"flex",justifyContent:"flex-end",marginTop:"0.75rem"}}>
+                <div style={{display:"flex",justifyContent:"center",marginTop:"0.75rem"}}>
                   <button className="mob-assinar-btn-sm" onClick={() => navigate("/assinar")}>
                     Assinar agora →
                   </button>
