@@ -245,6 +245,11 @@ const load = async () => {
               <div className="progresso-bar-bg">
                 <div className="progresso-bar-fill" style={{ width: `${progress}%` }} />
               </div>
+              {progress === 100 && !proResgatado && (
+                <button className="mob-resgatar-btn" style={{marginTop:"1rem"}} onClick={handleResgatarPro} disabled={resgatando}>
+                  {resgatando ? "Resgatando..." : "✨ Resgatar 3 dias PRO grátis"}
+                </button>
+              )}
             </div>
 
             {/* Próximo passo */}
