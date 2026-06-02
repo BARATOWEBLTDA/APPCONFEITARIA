@@ -48,7 +48,7 @@ export default function Configuracoes() {
 
   const [form, setForm] = useState({
     nome: "", nome_loja: "", foto_url: "", telefone: "",
-    rua: "", numero: "", cidade: "", estado: "", cep: ""
+    rua: "", numero: "", bairro: "", cidade: "", estado: "", cep: ""
   });
   const [entrega, setEntrega] = useState({
     faz_entrega: false, taxa_entrega: "0", tempo_entrega: "", area_entrega: ""
@@ -56,6 +56,27 @@ export default function Configuracoes() {
   const [categorias, setCategorias] = useState<string[]>([]);
   const [novaCategoria, setNovaCategoria] = useState("");
   const [savingCat, setSavingCat] = useState(false);
+  const [buscandoCep, setBuscandoCep] = useState(false);
+
+  const buscarCep = async (cep: string) => {
+    const limpo = cep.replace(/\D/g, "");
+    if (limpo.length !== 8) return;
+    setBuscandoCep(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${limpo}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        setForm(f => ({
+          ...f,
+          rua: data.logradouro || f.rua,
+          cidade: data.localidade || f.cidade,
+          estado: data.uf || f.estado,
+          bairro: data.bairro || (f as any).bairro || ""
+        }));
+      }
+    } catch {}
+    setBuscandoCep(false);
+  };
   const [horario, setHorario] = useState({
     dias: ["Segunda","Terça","Quarta","Quinta","Sexta"] as string[],
     abertura: "08:00", fechamento: "18:00",
@@ -86,7 +107,7 @@ export default function Configuracoes() {
         setForm({
           nome: data.nome || "", nome_loja: data.nome_loja || "",
           foto_url: data.foto_url || "", telefone: data.telefone || "",
-          rua: addr.rua || "", numero: addr.numero || "",
+          rua: addr.rua || "", numero: addr.numero || "", bairro: addr.bairro || "",
           cidade: addr.cidade || "", estado: addr.estado || "", cep: addr.cep || ""
         });
         setNomeSalvo(data.nome || "");
@@ -163,7 +184,7 @@ export default function Configuracoes() {
     if (!userId) return;
     setSaving(true);
     setError("");
-    const endereco = JSON.stringify({ rua: form.rua, numero: form.numero, cidade: form.cidade, estado: form.estado, cep: form.cep });
+    const endereco = JSON.stringify({ rua: form.rua, numero: form.numero, bairro: form.bairro, cidade: form.cidade, estado: form.estado, cep: form.cep });
     const { error: err } = await supabase.from("profiles").upsert(
       { id: userId, nome: form.nome, nome_loja: form.nome_loja, foto_url: form.foto_url, telefone: form.telefone, endereco, horario: JSON.stringify(horario), faz_entrega: entrega.faz_entrega, taxa_entrega: parseFloat(entrega.taxa_entrega) || 0, tempo_entrega: entrega.tempo_entrega, area_entrega: entrega.area_entrega },
       { onConflict: "id" }
@@ -316,15 +337,26 @@ export default function Configuracoes() {
         {/* Card — Endereço */}
         <div className="cfg-card">
           <SectionLabel>Endereço</SectionLabel>
+          <div className="cfg-cep-row">
+            <Field
+              icon={buscandoCep ? <span className="cfg-spinner-xs" /> : "📮"}
+              placeholder="CEP (opcional)"
+              value={form.cep}
+              onChange={(e: any) => {
+                const d = e.target.value.replace(/\D/g,'').slice(0,8);
+                const fmt = d.length > 5 ? `${d.slice(0,5)}-${d.slice(5)}` : d;
+                setForm({...form, cep: fmt});
+                if (d.length === 8) buscarCep(d);
+              }}
+            />
+          </div>
           <Field icon="📍" placeholder="Rua / Avenida" value={form.rua} onChange={(e: any) => setForm({...form, rua: e.target.value})} />
+          <Field icon="🏘️" placeholder="Bairro" value={form.bairro} onChange={(e: any) => setForm({...form, bairro: e.target.value})} />
           <div className="cfg-row-2">
             <Field icon="🔢" placeholder="Número" value={form.numero} onChange={(e: any) => setForm({...form, numero: e.target.value})} />
-            <Field icon="📮" placeholder="CEP" value={form.cep} onChange={(e: any) => { const d = e.target.value.replace(/\D/g,'').slice(0,8); setForm({...form, cep: d.length>5?`${d.slice(0,5)}-${d.slice(5)}`:d}); }} />
-          </div>
-          <div className="cfg-row-2">
             <Field icon="🏙️" placeholder="Cidade" value={form.cidade} onChange={(e: any) => setForm({...form, cidade: e.target.value})} />
-            <Field icon="🗺️" placeholder="UF" value={form.estado} onChange={(e: any) => setForm({...form, estado: e.target.value.toUpperCase()})} maxLength={2} />
           </div>
+          <Field icon="🗺️" placeholder="Estado (UF)" value={form.estado} onChange={(e: any) => setForm({...form, estado: e.target.value.toUpperCase()})} maxLength={2} />
         </div>
 
         {/* Card — Entrega */}
@@ -786,6 +818,14 @@ export default function Configuracoes() {
           width: 14px; height: 14px;
           border: 2px solid rgba(255,255,255,0.35);
           border-top-color: white;
+          border-radius: 50%;
+          animation: spin 0.7s linear infinite;
+          display: inline-block;
+        }
+        .cfg-spinner-xs {
+          width: 12px; height: 12px;
+          border: 2px solid #e5e7eb;
+          border-top-color: #F583BF;
           border-radius: 50%;
           animation: spin 0.7s linear infinite;
           display: inline-block;
