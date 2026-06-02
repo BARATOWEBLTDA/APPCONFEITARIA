@@ -16,6 +16,24 @@ export default function Inicio() {
   const [quickStep, setQuickStep] = useState<{label: string; path: string} | null>(null);
   const [profileUserId, setProfileUserId] = useState<string>("");
   const [diasTrial] = useState(14);
+  const [proResgatado, setProResgatado] = useState(false);
+  const [resgatando, setResgatando] = useState(false);
+
+  const handleResgatarPro = async () => {
+    if (!profileUserId || proResgatado) return;
+    setResgatando(true);
+    const expira = new Date();
+    expira.setDate(expira.getDate() + 3);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ pro_expira_em: expira.toISOString() })
+      .eq("id", profileUserId);
+    if (!error) {
+      setProResgatado(true);
+      setProfile((p: any) => ({ ...p, pro_expira_em: expira.toISOString() }));
+    }
+    setResgatando(false);
+  };
 
   useEffect(() => {
 const load = async () => {
@@ -24,6 +42,7 @@ const load = async () => {
       setProfileUserId(user.id);
       const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       setProfile(prof);
+      if (prof?.pro_expira_em) setProResgatado(true);
       const { count: pc } = await supabase.from("produtos").select("*", { count: "exact", head: true }).eq("user_id", user.id);
       const { count: cc } = await supabase.from("clientes").select("*", { count: "exact", head: true }).eq("user_id", user.id);
       const { count: catc } = await supabase.from("categorias").select("*", { count: "exact", head: true }).eq("user_id", user.id);
@@ -83,6 +102,7 @@ const load = async () => {
 
 
         {/* 1. Configure seu Doonly - destaque escuro */}
+        {progress < 100 ? (
         <div className="mob-config-card">
           <div className="mob-config-header">
             <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
@@ -107,6 +127,22 @@ const load = async () => {
             </div>
           )}
         </div>
+        ) : !proResgatado ? (
+          <div className="mob-config-card mob-config-card--done">
+            <div className="mob-config-header">
+              <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
+                <span style={{fontSize:"2rem"}}>🎉</span>
+                <div>
+                  <p className="mob-config-title">Configuração completa!</p>
+                  <p className="mob-config-sub">Resgate 3 dias de PRO grátis como recompensa</p>
+                </div>
+              </div>
+            </div>
+            <button className="mob-resgatar-btn" onClick={handleResgatarPro} disabled={resgatando}>
+              {resgatando ? "Resgatando..." : "✨ Resgatar 3 dias PRO"}
+            </button>
+          </div>
+        ) : null}
 
         {/* 2. Acesso rápido */}
         <div className="mob-section-title">Acesso rápido</div>
@@ -386,7 +422,19 @@ const load = async () => {
         .mob-config-title { font-size: 1rem; font-weight: 800; color: white; margin: 0 0 0.2rem; }
         .mob-config-sub { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin: 0; line-height: 1.4; }
         .mob-config-circle { width: 50px; height: 50px; border-radius: 50%; background: #f9007a; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 12px rgba(249,0,122,0.4); }
-        .mob-config-bar-bg { height: 8px; background: rgba(255,255,255,0.15); border-radius: 999px; overflow: hidden; margin-bottom: 0.75rem; }
+        .mob-config-card--done { background: linear-gradient(135deg, #1a0a12, #2d0f1e); }
+        .mob-resgatar-btn {
+          width: 100%; padding: 0.85rem;
+          background: linear-gradient(135deg, #F583BF, #e060a8);
+          border: none; border-radius: 50px; color: white;
+          font-family: inherit; font-size: 0.95rem; font-weight: 700;
+          cursor: pointer; margin-top: 0.25rem;
+          transition: opacity 0.2s, transform 0.1s;
+          letter-spacing: 0.3px;
+        }
+        .mob-resgatar-btn:hover { opacity: 0.9; }
+        .mob-resgatar-btn:active { transform: scale(0.98); }
+        .mob-resgatar-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .mob-config-bar-fill { height: 100%; background: linear-gradient(90deg, #F583BF, #f9007a); border-radius: 999px; transition: width 1s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 0 10px rgba(245,131,191,0.6); position: relative; overflow: hidden; }
         .mob-config-bar-fill::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: shimmer 2s infinite; }
         @keyframes shimmer { 0% { left: -60%; } 100% { left: 120%; } }
