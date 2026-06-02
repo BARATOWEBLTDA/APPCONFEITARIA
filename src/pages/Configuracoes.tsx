@@ -485,38 +485,6 @@ export default function Configuracoes() {
         {/* Card — Horários */}
         <HorarioSection />
 
-        {/* Card — Categorias */}
-        <div className="cfg-card">
-          <SectionLabel>Categorias de produtos</SectionLabel>
-          <p className="cfg-hint">Organize seu cardápio por categorias</p>
-          <div className="cfg-cat-add">
-            <div className="cfg-field" style={{flex:1}}>
-              <span className="cfg-field-icon">🏷️</span>
-              <input
-                className="cfg-field-input"
-                placeholder="Nova categoria..."
-                value={novaCategoria}
-                onChange={e => setNovaCategoria(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleAddCategoria()}
-              />
-            </div>
-            <button className="cfg-cat-btn" onClick={handleAddCategoria} disabled={savingCat || !novaCategoria.trim()}>
-              {savingCat ? "…" : "+"}
-            </button>
-          </div>
-          {categorias.length === 0
-            ? <p className="cfg-empty">Nenhuma categoria ainda</p>
-            : <div className="cfg-cat-list">
-                {categorias.map(cat => (
-                  <div key={cat} className="cfg-cat-item">
-                    <span>🏷️ {cat}</span>
-                    <button className="cfg-cat-remove" onClick={() => handleDeleteCategoria(cat)}>✕</button>
-                  </div>
-                ))}
-              </div>
-          }
-        </div>
-
         {/* Feedback */}
         {error && <div className="cfg-toast cfg-toast-error">{error}</div>}
         {success && <div className="cfg-toast cfg-toast-success">✓ Salvo com sucesso!</div>}
