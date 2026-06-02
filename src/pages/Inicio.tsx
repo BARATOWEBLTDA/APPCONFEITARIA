@@ -44,13 +44,8 @@ const load = async () => {
         { label: "Adicionar WhatsApp", path: "/configuracoes", done: !!profile?.telefone },
         { label: "Adicionar localização", path: "/configuracoes", done: !!profile?.endereco },
         { label: "Definir horário de funcionamento", path: "/configuracoes", done: !!profile?.horario },
-        { label: "Adicionar descrição da loja", path: "/configuracoes", done: !!profile?.descricao_loja },
-        { label: "Configurar entrega", path: "/configuracoes", done: profile?.faz_entrega !== null && profile?.faz_entrega !== undefined },
       ],
     },
-    { title: "Seus clientes", emoji: "👥", items: [{ label: "Cadastrar 1 cliente", path: "/clientes", done: clientes > 0 }] },
-    { title: "Insumos", emoji: "🧂", items: [{ label: "Cadastrar 1 insumo", path: "/estoque", done: false }] },
-    { title: "Doonly IA", emoji: "🤖", items: [{ label: "Converse com o Doonly IA", path: "/ia", done: false }] },
   ];
 
   const allItems = steps.flatMap(s => s.items);
@@ -392,7 +387,9 @@ const load = async () => {
         .mob-config-sub { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin: 0; line-height: 1.4; }
         .mob-config-circle { width: 50px; height: 50px; border-radius: 50%; background: #f9007a; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.8rem; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 12px rgba(249,0,122,0.4); }
         .mob-config-bar-bg { height: 8px; background: rgba(255,255,255,0.15); border-radius: 999px; overflow: hidden; margin-bottom: 0.75rem; }
-        .mob-config-bar-fill { height: 100%; background: #f9007a; border-radius: 999px; transition: width 0.5s; box-shadow: 0 0 8px rgba(249,0,122,0.5); }
+        .mob-config-bar-fill { height: 100%; background: linear-gradient(90deg, #F583BF, #f9007a); border-radius: 999px; transition: width 1s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 0 10px rgba(245,131,191,0.6); position: relative; overflow: hidden; }
+        .mob-config-bar-fill::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: shimmer 2s infinite; }
+        @keyframes shimmer { 0% { left: -60%; } 100% { left: 120%; } }
         .mob-config-next { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
         .mob-config-next-label { font-size: 0.68rem; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.2rem; }
         .mob-config-next-text { font-size: 0.82rem; font-weight: 600; color: white; margin: 0; }
@@ -437,7 +434,8 @@ const load = async () => {
         .progresso-sub { font-size: 0.8rem; color: #6b7280; margin: 0.3rem 0 0; max-width: 320px; line-height: 1.4; }
         .progresso-pct-circle { width: 56px; height: 56px; border-radius: 50%; background: #f9007a; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.85rem; font-weight: 800; flex-shrink: 0; box-shadow: 0 4px 12px rgba(249,0,122,0.3); }
         .progresso-bar-bg { height: 10px; background: #f3f4f6; border-radius: 999px; overflow: hidden; }
-        .progresso-bar-fill { height: 100%; background: #f9007a; border-radius: 999px; transition: width 0.5s ease; }
+        .progresso-bar-fill { height: 100%; background: linear-gradient(90deg, #F583BF, #f9007a); border-radius: 999px; transition: width 1s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; }
+        .progresso-bar-fill::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: shimmer 2s infinite; }
 
         .next-step-card { background: white; border-radius: 12px; padding: 0.9rem 1.1rem; border-left: 4px solid #f9c74f; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
         .next-step-left { display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0; }
