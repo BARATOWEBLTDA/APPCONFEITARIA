@@ -2,6 +2,7 @@ import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Home, BookOpen, Users, UtensilsCrossed, Menu } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
+import { usePlano } from "@/hooks/usePlano";
 import { supabase } from "@/lib/supabase";
 
 const menuItems = [
@@ -21,6 +22,7 @@ const menuItems = [
 export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
+  const { isPro } = usePlano();
   const [now, setNow] = useState(new Date());
   const [gestaoOpen, setGestaoOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
@@ -135,9 +137,11 @@ export default function Layout() {
       <div className="mob-top-header">
         <img src="/logoheader.png" alt="Doonly" className="mob-top-logo" />
         <div className="mob-top-icons">
+          {!isPro && (
           <button className="mob-top-icon" onClick={() => navigate("/assinar")}>
             <img src="/diamante.png" alt="Assinar" style={{width:"24px",height:"24px",objectFit:"contain"}} />
           </button>
+          )}
           <button className="mob-top-icon" onClick={() => {
               localStorage.setItem("notif_last_seen", new Date().toISOString());
               setNotifCount(0);
