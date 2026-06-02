@@ -60,6 +60,8 @@ export default function Configuracoes() {
   const [savingCat, setSavingCat] = useState(false);
   const [buscandoCep, setBuscandoCep] = useState(false);
   const [cepPreenchido, setCepPreenchido] = useState(false);
+  const [modalHorario, setModalHorario] = useState(false);
+  const [horarioEntregaTemp, setHorarioEntregaTemp] = useState({ inicio: "08:00", fim: "18:00" });
 
   const buscarCep = async (cep: string) => {
     const limpo = cep.replace(/\D/g, "");
@@ -446,24 +448,39 @@ export default function Configuracoes() {
                 onChange={(e: any) => setEntrega({...entrega, entrega_gratis_acima: e.target.value})}
                 type="number"
               />
-              <Field
-                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
-                placeholder="Horário de entregas"
-                value={entrega.horario_entrega}
-                onChange={(e: any) => setEntrega({...entrega, horario_entrega: e.target.value})}
-              />
-              <Field
-                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>}
-                placeholder="Observações"
-                value={entrega.observacoes_entrega}
-                onChange={(e: any) => setEntrega({...entrega, observacoes_entrega: e.target.value})}
-              />
+              <button
+                className="cfg-horario-btn"
+                onClick={() => {
+                  if (entrega.horario_entrega) {
+                    const [ini, fim] = entrega.horario_entrega.split(" às ");
+                    setHorarioEntregaTemp({ inicio: ini || "08:00", fim: fim || "18:00" });
+                  }
+                  setModalHorario(true);
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>{entrega.horario_entrega || "Horário de entregas"}</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginLeft:"auto",opacity:0.4}}><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
               <Field
                 icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
                 placeholder="Área de entrega (bairros, cidades...)"
                 value={entrega.area_entrega}
                 onChange={(e: any) => setEntrega({...entrega, area_entrega: e.target.value})}
               />
+              <div className="cfg-field cfg-field-textarea">
+                <span className="cfg-field-icon" style={{alignSelf:"flex-start",marginTop:"0.1rem"}}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </span>
+                <textarea
+                  className="cfg-field-input"
+                  placeholder="Observações"
+                  value={entrega.observacoes_entrega}
+                  onChange={(e: any) => setEntrega({...entrega, observacoes_entrega: e.target.value})}
+                  rows={3}
+                  style={{resize:"none", paddingTop:"0.1rem"}}
+                />
+              </div>
             </>
           )}
         </div>
@@ -650,6 +667,45 @@ export default function Configuracoes() {
         </div>
       </div>
 
+      {/* ─── Modal Horário de Entrega ─── */}
+      {modalHorario && (
+        <div className="cfg-modal-overlay" onClick={() => setModalHorario(false)}>
+          <div className="cfg-modal" onClick={e => e.stopPropagation()}>
+            <div className="cfg-modal-header">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>Horário de entregas</span>
+            </div>
+            <p className="cfg-modal-sub">Defina o período em que você realiza entregas</p>
+            <div className="cfg-modal-times">
+              <div className="cfg-modal-time-field">
+                <label>Início</label>
+                <input
+                  type="time"
+                  value={horarioEntregaTemp.inicio}
+                  onChange={e => setHorarioEntregaTemp({...horarioEntregaTemp, inicio: e.target.value})}
+                />
+              </div>
+              <div className="cfg-modal-divider-line">→</div>
+              <div className="cfg-modal-time-field">
+                <label>Fim</label>
+                <input
+                  type="time"
+                  value={horarioEntregaTemp.fim}
+                  onChange={e => setHorarioEntregaTemp({...horarioEntregaTemp, fim: e.target.value})}
+                />
+              </div>
+            </div>
+            <div className="cfg-modal-actions">
+              <button className="cfg-modal-cancel" onClick={() => setModalHorario(false)}>Cancelar</button>
+              <button className="cfg-modal-confirm" onClick={() => {
+                setEntrega({...entrega, horario_entrega: `${horarioEntregaTemp.inicio} às ${horarioEntregaTemp.fim}`});
+                setModalHorario(false);
+              }}>Confirmar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ─────────────── STYLES ─────────────── */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -760,7 +816,70 @@ export default function Configuracoes() {
           color: #1f2937; background: transparent;
           min-width: 0;
         }
-        .cfg-field-disabled { background: #f9fafb; border-color: #f3f4f6; }
+        .cfg-horario-btn {
+          display: flex; align-items: center; gap: 0.7rem;
+          border: 1.5px solid #e5e7eb; border-radius: 50px;
+          padding: 0.65rem 1.1rem; background: white;
+          font-family: 'Inter', sans-serif; font-size: 0.9rem;
+          color: #9ca3af; cursor: pointer; width: 100%;
+          transition: border-color 0.2s;
+          text-align: left;
+        }
+        .cfg-horario-btn:hover { border-color: #F583BF; }
+        .cfg-horario-btn span { flex: 1; }
+
+        .cfg-field-textarea { border-radius: 16px; align-items: flex-start; padding: 0.75rem 1.1rem; }
+
+        /* Modal */
+        .cfg-modal-overlay {
+          position: fixed; inset: 0; z-index: 999;
+          background: rgba(0,0,0,0.45);
+          display: flex; align-items: flex-end; justify-content: center;
+          padding-bottom: env(safe-area-inset-bottom);
+        }
+        .cfg-modal {
+          background: white; border-radius: 24px 24px 0 0;
+          padding: 1.5rem 1.5rem 2rem;
+          width: 100%; max-width: 480px;
+          animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .cfg-modal-header {
+          display: flex; align-items: center; gap: 0.5rem;
+          font-size: 1rem; font-weight: 700; color: #1f2937;
+          margin-bottom: 0.3rem;
+        }
+        .cfg-modal-sub { font-size: 0.78rem; color: #9ca3af; margin: 0 0 1.25rem; }
+        .cfg-modal-times {
+          display: flex; align-items: center; gap: 0.75rem;
+          margin-bottom: 1.5rem;
+        }
+        .cfg-modal-time-field { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
+        .cfg-modal-time-field label { font-size: 0.75rem; font-weight: 600; color: #6b7280; }
+        .cfg-modal-time-field input {
+          padding: 0.75rem; border: 2px solid #fce7f3;
+          border-radius: 14px; font-family: 'Inter', sans-serif;
+          font-size: 1.1rem; font-weight: 600; color: #1f2937;
+          outline: none; text-align: center;
+          transition: border-color 0.2s;
+          background: #fdf2f8;
+        }
+        .cfg-modal-time-field input:focus { border-color: #F583BF; background: white; }
+        .cfg-modal-divider-line { color: #d1d5db; font-size: 1.2rem; padding-top: 1.2rem; }
+        .cfg-modal-actions { display: flex; gap: 0.75rem; }
+        .cfg-modal-cancel {
+          flex: 1; padding: 0.85rem; border: 1.5px solid #e5e7eb;
+          border-radius: 50px; background: white;
+          font-family: 'Inter', sans-serif; font-size: 0.9rem;
+          font-weight: 600; color: #6b7280; cursor: pointer;
+        }
+        .cfg-modal-confirm {
+          flex: 1; padding: 0.85rem;
+          background: linear-gradient(135deg, #F583BF, #e060a8);
+          border: none; border-radius: 50px; color: white;
+          font-family: 'Inter', sans-serif; font-size: 0.9rem;
+          font-weight: 700; cursor: pointer;
+        }
         .cfg-field-disabled .cfg-field-input { color: #9ca3af; cursor: not-allowed; }
         .cfg-field-disabled .cfg-field-icon { opacity: 0.4; }
         .cfg-cep-hint { font-size: 0.72rem; color: #9ca3af; margin: -0.2rem 0 0; }
