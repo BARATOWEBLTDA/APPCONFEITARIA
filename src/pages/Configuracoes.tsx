@@ -35,6 +35,8 @@ export default function Configuracoes() {
   const [userEmail, setUserEmail] = useState("");
   const [nomeSalvo, setNomeSalvo] = useState("");
   const [nomeLojaSalvo, setNomeLojaSalvo] = useState("");
+  const [plano, setPlano] = useState<"pro" | "trial" | "expirado">("trial");
+  const [diasRestantes, setDiasRestantes] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const getSaudacao = () => {
@@ -68,6 +70,15 @@ export default function Configuracoes() {
       if (!user) return;
       setUserId(user.id);
       setUserEmail(user.email || "");
+
+      // Calcula dias restantes do trial (14 dias a partir do cadastro)
+      const criado = new Date(user.created_at);
+      const hoje = new Date();
+      const diffDias = Math.floor((hoje.getTime() - criado.getTime()) / (1000 * 60 * 60 * 24));
+      const restantes = Math.max(0, 14 - diffDias);
+      setDiasRestantes(restantes);
+      // Quando tiver tag de pagante, troca "trial" por "pro" aqui
+      setPlano(restantes > 0 ? "trial" : "expirado");
       const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       if (data) {
         let addr: any = {};
@@ -253,6 +264,15 @@ export default function Configuracoes() {
             <p className="cfg-hero-saudacao">{getSaudacao()}, {nomeSalvo ? nomeSalvo.split(" ")[0] : "bem-vinda"}!</p>
             <p className="cfg-hero-loja">{nomeLojaSalvo || ""}</p>
             <p className="cfg-hero-email">{userEmail}</p>
+            {plano === "pro" && (
+              <span className="cfg-badge cfg-badge-pro">✨ Acesso PRO ativo</span>
+            )}
+            {plano === "trial" && (
+              <span className="cfg-badge cfg-badge-trial">🔓 Teste grátis · {diasRestantes} dia{diasRestantes !== 1 ? "s" : ""} restante{diasRestantes !== 1 ? "s" : ""}</span>
+            )}
+            {plano === "expirado" && (
+              <span className="cfg-badge cfg-badge-expirado">⚠️ Período expirado · <u style={{cursor:"pointer"}} onClick={() => navigate("/assinar")}>Assinar agora</u></span>
+            )}
           </div>
           <div className="cfg-hero-avatar" onClick={() => !uploading && fileRef.current?.click()}>
             {preview
@@ -553,6 +573,15 @@ export default function Configuracoes() {
         .cfg-hero-saudacao { font-size: 1rem; color: white; margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cfg-hero-loja { font-size: 0.78rem; color: rgba(255,255,255,0.85); margin: 0.2rem 0 0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cfg-hero-email { font-size: 0.68rem; color: rgba(255,255,255,0.6); margin: 0.15rem 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cfg-badge {
+          display: inline-block; margin-top: 0.4rem;
+          padding: 0.2rem 0.6rem; border-radius: 20px;
+          font-size: 0.68rem; font-weight: 600;
+          white-space: nowrap;
+        }
+        .cfg-badge-pro      { background: rgba(255,255,255,0.25); color: white; }
+        .cfg-badge-trial    { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+        .cfg-badge-expirado { background: rgba(239,68,68,0.3); color: white; }
         .cfg-hero-avatar {
           width: 72px; height: 72px;
           border-radius: 50%;
