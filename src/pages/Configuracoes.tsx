@@ -525,7 +525,6 @@ export default function Configuracoes() {
         <button className="cfg-btn-save" onClick={handleSave} disabled={saving || uploading}>
           {saving ? <span className="cfg-spinner" /> : "Salvar alterações"}
         </button>
-        <button className="cfg-btn-logout" onClick={handleLogout}>Sair da conta</button>
 
       </div>
 
@@ -994,7 +993,7 @@ export default function Configuracoes() {
         /* ── Buttons ── */
         .cfg-btn-save {
           width: 100%; padding: 0.9rem;
-          background: linear-gradient(135deg,#7c3aed,#6d28d9);
+          background: linear-gradient(135deg, #F583BF, #e060a8);
           color: white; border: none; border-radius: 50px;
           font-family: 'Inter', sans-serif;
           font-size: 0.95rem; font-weight: 700;
