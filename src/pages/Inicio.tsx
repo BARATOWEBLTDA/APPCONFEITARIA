@@ -134,12 +134,12 @@ const load = async () => {
                 <span style={{fontSize:"2rem"}}>🎉</span>
                 <div>
                   <p className="mob-config-title">Configuração completa!</p>
-                  <p className="mob-config-sub">Resgate 3 dias de PRO grátis como recompensa</p>
+                  <p className="mob-config-sub">Resgate 3 dias de acesso completo sem limitações em nosso App como recompensa.</p>
                 </div>
               </div>
             </div>
             <button className="mob-resgatar-btn" onClick={handleResgatarPro} disabled={resgatando}>
-              {resgatando ? "Resgatando..." : "✨ Resgatar 3 dias PRO"}
+              {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
             </button>
           </div>
         ) : null)}
@@ -247,7 +247,7 @@ const load = async () => {
               </div>
               {!loading && progress === 100 && !proResgatado && (
                 <button className="mob-resgatar-btn" style={{marginTop:"1rem"}} onClick={handleResgatarPro} disabled={resgatando}>
-                  {resgatando ? "Resgatando..." : "✨ Resgatar 3 dias PRO grátis"}
+                  {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
                 </button>
               )}
             </div>
@@ -430,7 +430,9 @@ const load = async () => {
         .mob-config-card--done { background: linear-gradient(135deg, #1a0a12, #2d0f1e); }
         .mob-resgatar-btn {
           width: 100%; padding: 0.85rem;
-          background: linear-gradient(135deg, #F583BF, #e060a8);
+          background: linear-gradient(135deg, #F583BF, #c94d91, #F583BF);
+          background-size: 200% 200%;
+          animation: gradientShift 3s ease infinite;
           border: none; border-radius: 50px; color: white;
           font-family: inherit; font-size: 0.95rem; font-weight: 700;
           cursor: pointer; margin-top: 0.25rem;
@@ -439,7 +441,12 @@ const load = async () => {
         }
         .mob-resgatar-btn:hover { opacity: 0.9; }
         .mob-resgatar-btn:active { transform: scale(0.98); }
-        .mob-resgatar-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .mob-resgatar-btn:disabled { opacity: 0.6; cursor: not-allowed; animation: none; }
+        @keyframes gradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
         .mob-config-bar-fill { height: 100%; background: linear-gradient(90deg, #F583BF, #f9007a); border-radius: 999px; transition: width 1s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 0 10px rgba(245,131,191,0.6); position: relative; overflow: hidden; }
         .mob-config-bar-fill::after { content: ""; position: absolute; top: 0; left: -60%; width: 40%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: shimmer 2s infinite; }
         @keyframes shimmer { 0% { left: -60%; } 100% { left: 120%; } }
