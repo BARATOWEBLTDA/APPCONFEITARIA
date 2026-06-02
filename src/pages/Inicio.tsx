@@ -154,25 +154,15 @@ const load = async () => {
 
         {/* Card PRO teste — dias restantes */}
         {!loading && isTeste && (
-          <div className="mob-config-card mob-pro-teste-card">
-            <div className="mob-config-header">
-              <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
-                <img src="/assine.png" alt="" style={{width:"46px",height:"46px",objectFit:"contain",flexShrink:0,borderRadius:"12px"}} />
-                <div>
-                  <p className="mob-config-title">Seu acesso PRO expira em <strong>{diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}</strong>.</p>
-                  <p className="mob-config-sub">Continue com <strong>todas as funcionalidades</strong> sem interrupção por apenas <strong>R$ 7,90/mês</strong>.</p>
-                </div>
+          <div className="mob-pro-mini-card">
+            <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
+              <img src="/assine.png" alt="" style={{width:"36px",height:"36px",objectFit:"contain",flexShrink:0,borderRadius:"10px"}} />
+              <div style={{flex:1,minWidth:0}}>
+                <p className="mob-pro-mini-title">Seu acesso PRO expira em <strong>{diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}</strong>.</p>
+                <p className="mob-pro-mini-sub">Continue por apenas <strong>R$ 7,90/mês</strong>.</p>
               </div>
-              <div className="mob-config-circle" style={{background:"linear-gradient(135deg,#F583BF,#e060a8)",flexShrink:0}}>
-                {diasProRestantes}d
-              </div>
-            </div>
-            <div className="mob-config-bar-bg">
-              <div className="mob-config-bar-fill" style={{ width: `${(diasProRestantes / diasProTotal) * 100}%` }} />
-            </div>
-            <div style={{display:"flex",justifyContent:"center",marginTop:"0.75rem"}}>
               <button className="mob-assinar-btn-sm" onClick={() => navigate("/assinar")}>
-                Assinar agora →
+                Assinar →
               </button>
             </div>
           </div>
@@ -518,6 +508,15 @@ const load = async () => {
         }
         .mob-assinar-btn-sm:hover { opacity: 0.9; }
         .mob-assinar-btn-sm:active { transform: scale(0.97); }
+        .mob-pro-mini-card {
+          background: linear-gradient(135deg, #1a0a12, #2d0f1e);
+          border-radius: 16px;
+          padding: 0.85rem 1rem;
+          display: flex;
+          align-items: center;
+        }
+        .mob-pro-mini-title { font-size: 0.82rem; font-weight: 600; color: white; margin: 0; line-height: 1.3; }
+        .mob-pro-mini-sub { font-size: 0.72rem; color: rgba(255,255,255,0.65); margin: 0.15rem 0 0; }
         @keyframes gradientShift {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
