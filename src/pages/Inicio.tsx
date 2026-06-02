@@ -157,7 +157,7 @@ const load = async () => {
           <div className="mob-config-card mob-pro-teste-card">
             <div className="mob-config-header">
               <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
-                <span style={{fontSize:"2rem"}}>✨</span>
+                <img src="/assine.png" alt="" style={{width:"46px",height:"46px",objectFit:"contain",flexShrink:0}} />
                 <div>
                   <p className="mob-config-title">Seu PRO está ativo!</p>
                   <p className="mob-config-sub">
@@ -174,9 +174,11 @@ const load = async () => {
             <div className="mob-config-bar-bg">
               <div className="mob-config-bar-fill" style={{ width: `${(diasProRestantes / diasProTotal) * 100}%` }} />
             </div>
-            <button className="mob-resgatar-btn" style={{marginTop:"0.5rem"}} onClick={() => navigate("/assinar")}>
-              Assinar para continuar com o PRO
-            </button>
+            <div style={{display:"flex",justifyContent:"flex-end",marginTop:"0.5rem"}}>
+              <button className="mob-assinar-btn-sm" onClick={() => navigate("/assinar")}>
+                Assinar agora →
+              </button>
+            </div>
           </div>
         )}
 
@@ -295,7 +297,7 @@ const load = async () => {
               <div className="progresso-card" style={{background:"linear-gradient(135deg,#1a0a12,#2d0f1e)",marginTop:"1rem"}}>
                 <div className="progresso-header">
                   <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
-                    <span style={{fontSize:"2.2rem"}}>✨</span>
+                    <img src="/assine.png" alt="" style={{width:"52px",height:"52px",objectFit:"contain",flexShrink:0}} />
                     <div>
                       <h2 className="ini-section-title" style={{margin:0,color:"white"}}>Seu PRO está ativo!</h2>
                       <p className="progresso-sub" style={{color:"rgba(255,255,255,0.7)"}}>
@@ -312,9 +314,11 @@ const load = async () => {
                 <div className="progresso-bar-bg" style={{background:"rgba(255,255,255,0.15)"}}>
                   <div className="progresso-bar-fill" style={{width:`${(diasProRestantes / diasProTotal) * 100}%`}} />
                 </div>
-                <button className="mob-resgatar-btn" style={{marginTop:"1rem"}} onClick={() => navigate("/assinar")}>
-                  Assinar para continuar com o PRO
-                </button>
+                <div style={{display:"flex",justifyContent:"flex-end",marginTop:"0.75rem"}}>
+                  <button className="mob-assinar-btn-sm" onClick={() => navigate("/assinar")}>
+                    Assinar agora →
+                  </button>
+                </div>
               </div>
             )}
 
@@ -510,6 +514,16 @@ const load = async () => {
         .mob-resgatar-btn:hover { opacity: 0.9; }
         .mob-resgatar-btn:active { transform: scale(0.98); }
         .mob-resgatar-btn:disabled { opacity: 0.6; cursor: not-allowed; animation: none; }
+        .mob-assinar-btn-sm {
+          padding: 0.5rem 1.1rem;
+          background: linear-gradient(135deg, #F583BF, #e060a8);
+          border: none; border-radius: 50px; color: white;
+          font-family: inherit; font-size: 0.8rem; font-weight: 700;
+          cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+          white-space: nowrap;
+        }
+        .mob-assinar-btn-sm:hover { opacity: 0.9; }
+        .mob-assinar-btn-sm:active { transform: scale(0.97); }
         @keyframes gradientShift {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
