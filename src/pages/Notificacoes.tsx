@@ -78,15 +78,17 @@ export default function Notificacoes() {
 
 
 
-        .ntf-list { display: flex; flex-direction: column; }
+        .ntf-list { display: flex; flex-direction: column; gap: 0.75rem; padding: 0.75rem; }
 
         .ntf-item {
           display: flex; gap: 0.9rem; align-items: flex-start;
-          padding: 1rem 1.25rem;
+          padding: 1rem;
           background: white;
-          border-bottom: 1px solid #f3f4f6;
+          border-radius: 14px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+          transition: transform 0.15s, box-shadow 0.15s;
         }
-        .ntf-item:hover { background: #fff0f6; }
+        .ntf-item:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
 
         .ntf-img {
           width: 68px; height: 68px; border-radius: 10px;
