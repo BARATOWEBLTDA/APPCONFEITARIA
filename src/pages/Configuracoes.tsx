@@ -706,6 +706,14 @@ export default function Configuracoes() {
           min-width: 0;
         }
         .cfg-field-input::placeholder { color: #9ca3af; }
+        .cfg-field-input:-webkit-autofill,
+        .cfg-field-input:-webkit-autofill:hover,
+        .cfg-field-input:-webkit-autofill:focus {
+          -webkit-box-shadow: 0 0 0px 1000px white inset;
+          box-shadow: 0 0 0px 1000px white inset;
+          -webkit-text-fill-color: #1f2937;
+          transition: background-color 5000s ease-in-out 0s;
+        }
 
         .cfg-row-2 {
           display: grid;
