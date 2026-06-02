@@ -105,6 +105,8 @@ export default function Configuracoes() {
       const restantes = Math.max(0, 14 - diffDias);
       setDiasRestantes(restantes);
 
+      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+
       // Verifica se tem PRO ativo via pro_expira_em
       const proExpira = data?.pro_expira_em ? new Date(data.pro_expira_em) : null;
       if (proExpira && proExpira > hoje) {
@@ -112,7 +114,6 @@ export default function Configuracoes() {
       } else {
         setPlano(restantes > 0 ? "trial" : "expirado");
       }
-      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       if (data) {
         let addr: any = {};
         try { addr = data.endereco ? JSON.parse(data.endereco) : {}; } catch {}
