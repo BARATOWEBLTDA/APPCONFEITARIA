@@ -136,14 +136,14 @@ export default function Layout() {
         <img src="/logoheader.png" alt="Doonly" className="mob-top-logo" />
         <div className="mob-top-icons">
           <button className="mob-top-icon" onClick={() => navigate("/assinar")}>
-            <img src="/diamante.png" alt="Assinar" style={{width:"28px",height:"28px",objectFit:"contain"}} />
+            <img src="/diamante.png" alt="Assinar" style={{width:"24px",height:"24px",objectFit:"contain"}} />
           </button>
           <button className="mob-top-icon" onClick={() => {
               localStorage.setItem("notif_last_seen", new Date().toISOString());
               setNotifCount(0);
               navigate("/notificacoes");
             }} style={{position:"relative"}}>
-            <img src="/notifica.png" alt="Notificações" style={{width:"28px",height:"28px",objectFit:"contain"}} />
+            <img src="/notifica.png" alt="Notificações" style={{width:"24px",height:"24px",objectFit:"contain"}} />
             {notifCount > 0 && (
               <span style={{
                 position:"absolute", top:"-4px", right:"-4px",
@@ -157,7 +157,7 @@ export default function Layout() {
           </button>
           <button className="mob-top-icon" onClick={() => navigate("/configuracoes")}>
             {profile?.foto_url
-              ? <img src={profile.foto_url} alt="perfil" style={{width:"28px",height:"28px",borderRadius:"50%",objectFit:"cover",border:"2px solid white"}} />
+              ? <img src={profile.foto_url} alt="perfil" style={{width:"24px",height:"24px",borderRadius:"50%",objectFit:"cover",border:"2px solid white"}} />
               : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             }
           </button>
