@@ -32,7 +32,15 @@ export default function Configuracoes() {
   const [error, setError] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const getSaudacao = () => {
+    const h = new Date().getHours();
+    if (h >= 5 && h < 12) return "Bom dia";
+    if (h >= 12 && h < 18) return "Boa tarde";
+    return "Boa noite";
+  };
 
   const [form, setForm] = useState({
     nome: "", nome_loja: "", foto_url: "", telefone: "",
@@ -57,6 +65,7 @@ export default function Configuracoes() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
+      setUserEmail(user.email || "");
       const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       if (data) {
         let addr: any = {};
@@ -236,20 +245,21 @@ export default function Configuracoes() {
 
         {/* Header roxo com avatar */}
         <div className="cfg-hero">
+          <div className="cfg-hero-left">
+            <p className="cfg-hero-saudacao">{getSaudacao()},</p>
+            <p className="cfg-hero-name">{form.nome ? form.nome.split(" ")[0] : "bem-vinda"}</p>
+            <p className="cfg-hero-email">{userEmail}</p>
+          </div>
           <div className="cfg-hero-avatar" onClick={() => !uploading && fileRef.current?.click()}>
             {preview
               ? <img src={preview} alt="foto" className="cfg-hero-img" />
-              : <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             }
             <div className="cfg-hero-cam">
               {uploading ? <span className="cfg-spinner-sm" /> : (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               )}
             </div>
-          </div>
-          <div>
-            <p className="cfg-hero-name">{form.nome || "Meu perfil"}</p>
-            <p className="cfg-hero-loja">{form.nome_loja || "Nome da loja"}</p>
           </div>
         </div>
 
@@ -532,13 +542,18 @@ export default function Configuracoes() {
           padding: 1.25rem 1.5rem;
           display: flex;
           align-items: center;
+          justify-content: space-between;
           gap: 1rem;
         }
+        .cfg-hero-left { display: flex; flex-direction: column; gap: 0.1rem; flex: 1; min-width: 0; }
+        .cfg-hero-saudacao { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin: 0; font-weight: 400; }
+        .cfg-hero-name  { font-size: 1.25rem; font-weight: 700; color: white; margin: 0; }
+        .cfg-hero-email { font-size: 0.72rem; color: rgba(255,255,255,0.6); margin: 0.3rem 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cfg-hero-avatar {
           width: 72px; height: 72px;
-          border-radius: 50%;
+          border-radius: 12px;
           background: rgba(255,255,255,0.2);
-          border: 2.5px solid rgba(255,255,255,0.5);
+          border: 2px solid rgba(255,255,255,0.4);
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
           position: relative;
@@ -556,8 +571,7 @@ export default function Configuracoes() {
           display: flex; align-items: center; justify-content: center;
           border-radius: 50% 0 0 0;
         }
-        .cfg-hero-name  { font-size: 1rem; font-weight: 700; color: white; margin: 0; }
-        .cfg-hero-loja  { font-size: 0.8rem; color: rgba(255,255,255,0.75); margin: 0.15rem 0 0; }
+
 
         /* ── Cards ── */
         .cfg-card {
