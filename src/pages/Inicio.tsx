@@ -26,7 +26,7 @@ export default function Inicio() {
     expira.setDate(expira.getDate() + 3);
     const { error } = await supabase
       .from("profiles")
-      .update({ pro_expira_em: expira.toISOString() })
+      .update({ pro_expira_em: expira.toISOString(), plano: "pro" })
       .eq("id", profileUserId);
     if (!error) {
       setProResgatado(true);
