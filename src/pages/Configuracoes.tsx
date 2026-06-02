@@ -420,9 +420,19 @@ export default function Configuracoes() {
           {entrega.faz_entrega && (
             <>
               <div className="cfg-divider" />
-              <Field icon="💰" placeholder="Taxa de entrega (R$)" value={entrega.taxa_entrega} onChange={(e: any) => setEntrega({...entrega, taxa_entrega: e.target.value})} type="number" />
-              <Field icon="⏱️" placeholder="Tempo estimado (ex: 30–60 min)" value={entrega.tempo_entrega} onChange={(e: any) => setEntrega({...entrega, tempo_entrega: e.target.value})} />
-              <Field icon="📌" placeholder="Área de entrega (bairros, cidades...)" value={entrega.area_entrega} onChange={(e: any) => setEntrega({...entrega, area_entrega: e.target.value})} />
+              <Field
+                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
+                placeholder="Qual a taxa de entrega?"
+                value={entrega.taxa_entrega}
+                onChange={(e: any) => setEntrega({...entrega, taxa_entrega: e.target.value})}
+                type="number"
+              />
+              <Field
+                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
+                placeholder="Área de entrega (bairros, cidades...)"
+                value={entrega.area_entrega}
+                onChange={(e: any) => setEntrega({...entrega, area_entrega: e.target.value})}
+              />
             </>
           )}
         </div>
@@ -775,7 +785,7 @@ export default function Configuracoes() {
           background: white; border-radius: 50%; transition: 0.3s;
           box-shadow: 0 1px 4px rgba(0,0,0,0.15);
         }
-        .toggle input:checked + .toggle-slider { background: #7c3aed; }
+        .toggle input:checked + .toggle-slider { background: #F583BF; }
         .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
 
         /* ── Dias ── */
