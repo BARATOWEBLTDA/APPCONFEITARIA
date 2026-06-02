@@ -7,7 +7,13 @@ import { QuickSetupModal } from "@/components/QuickSetupModal";
 
 export default function Inicio() {
   const navigate = useNavigate();
-  const { isPro } = usePlano();
+  const { isPro, proExpiraEm } = usePlano();
+
+  const diasProRestantes = proExpiraEm
+    ? Math.max(0, Math.ceil((proExpiraEm.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+    : 0;
+  const isTeste = isPro && !!proExpiraEm; // PRO via resgate (tem data de expiração)
+  const diasProTotal = 3;
   const [profile, setProfile] = useState<any>(null);
   const [produtos, setProdutos] = useState(0);
   const [clientes, setClientes] = useState(0);
@@ -146,6 +152,34 @@ const load = async () => {
           </div>
         ) : null)}
 
+        {/* Card PRO teste — dias restantes */}
+        {!loading && isTeste && (
+          <div className="mob-config-card mob-pro-teste-card">
+            <div className="mob-config-header">
+              <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
+                <span style={{fontSize:"2rem"}}>✨</span>
+                <div>
+                  <p className="mob-config-title">Seu PRO está ativo!</p>
+                  <p className="mob-config-sub">
+                    {diasProRestantes === 0
+                      ? "Seu período PRO expirou hoje."
+                      : `${diasProRestantes} dia${diasProRestantes !== 1 ? "s" : ""} restante${diasProRestantes !== 1 ? "s" : ""} no seu teste`}
+                  </p>
+                </div>
+              </div>
+              <div className="mob-config-circle" style={{background:"linear-gradient(135deg,#F583BF,#e060a8)"}}>
+                {diasProRestantes}d
+              </div>
+            </div>
+            <div className="mob-config-bar-bg">
+              <div className="mob-config-bar-fill" style={{ width: `${(diasProRestantes / diasProTotal) * 100}%` }} />
+            </div>
+            <button className="mob-resgatar-btn" style={{marginTop:"0.5rem"}} onClick={() => navigate("/assinar")}>
+              Assinar para continuar com o PRO
+            </button>
+          </div>
+        )}
+
         {/* 2. Acesso rápido */}
         <div className="mob-section-title">Acesso rápido</div>
         <div className="mob-atalhos">
@@ -255,6 +289,34 @@ const load = async () => {
                 </button>
               )}
             </div>
+
+            {/* Card PRO teste desktop */}
+            {!loading && isTeste && (
+              <div className="progresso-card" style={{background:"linear-gradient(135deg,#1a0a12,#2d0f1e)",marginTop:"1rem"}}>
+                <div className="progresso-header">
+                  <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
+                    <span style={{fontSize:"2.2rem"}}>✨</span>
+                    <div>
+                      <h2 className="ini-section-title" style={{margin:0,color:"white"}}>Seu PRO está ativo!</h2>
+                      <p className="progresso-sub" style={{color:"rgba(255,255,255,0.7)"}}>
+                        {diasProRestantes === 0
+                          ? "Seu período PRO expirou hoje."
+                          : `${diasProRestantes} dia${diasProRestantes !== 1 ? "s" : ""} restante${diasProRestantes !== 1 ? "s" : ""} no seu teste`}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="progresso-pct-circle" style={{background:"linear-gradient(135deg,#F583BF,#e060a8)"}}>
+                    <span>{diasProRestantes}d</span>
+                  </div>
+                </div>
+                <div className="progresso-bar-bg" style={{background:"rgba(255,255,255,0.15)"}}>
+                  <div className="progresso-bar-fill" style={{width:`${(diasProRestantes / diasProTotal) * 100}%`}} />
+                </div>
+                <button className="mob-resgatar-btn" style={{marginTop:"1rem"}} onClick={() => navigate("/assinar")}>
+                  Assinar para continuar com o PRO
+                </button>
+              </div>
+            )}
 
             {/* Próximo passo */}
             {progress < 100 && nextStep && (
