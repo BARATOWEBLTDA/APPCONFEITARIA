@@ -52,7 +52,8 @@ export default function Configuracoes() {
     rua: "", numero: "", bairro: "", cidade: "", estado: "", cep: ""
   });
   const [entrega, setEntrega] = useState({
-    faz_entrega: false, taxa_entrega: "0", tempo_entrega: "", area_entrega: ""
+    faz_entrega: false, taxa_entrega: "", tempo_entrega: "", area_entrega: "",
+    pedido_minimo: "", entrega_gratis_acima: "", horario_entrega: "", observacoes_entrega: ""
   });
   const [categorias, setCategorias] = useState<string[]>([]);
   const [novaCategoria, setNovaCategoria] = useState("");
@@ -119,9 +120,13 @@ export default function Configuracoes() {
         if (data.horario) { try { setHorario(h => ({ ...h, ...JSON.parse(data.horario) })); } catch {} }
         setEntrega({
           faz_entrega: data.faz_entrega || false,
-          taxa_entrega: data.taxa_entrega?.toString() || "0",
+          taxa_entrega: data.taxa_entrega?.toString() || "",
           tempo_entrega: data.tempo_entrega || "",
-          area_entrega: data.area_entrega || ""
+          area_entrega: data.area_entrega || "",
+          pedido_minimo: data.pedido_minimo?.toString() || "",
+          entrega_gratis_acima: data.entrega_gratis_acima?.toString() || "",
+          horario_entrega: data.horario_entrega || "",
+          observacoes_entrega: data.observacoes_entrega || ""
         });
         const { data: cats } = await supabase.from("categorias").select("nome").eq("user_id", user.id).order("nome");
         if (cats) setCategorias(cats.map((c: any) => c.nome));
@@ -189,7 +194,7 @@ export default function Configuracoes() {
     setError("");
     const endereco = JSON.stringify({ rua: form.rua, numero: form.numero, bairro: form.bairro, cidade: form.cidade, estado: form.estado, cep: form.cep });
     const { error: err } = await supabase.from("profiles").upsert(
-      { id: userId, nome: form.nome, nome_loja: form.nome_loja, foto_url: form.foto_url, telefone: form.telefone, endereco, horario: JSON.stringify(horario), faz_entrega: entrega.faz_entrega, taxa_entrega: parseFloat(entrega.taxa_entrega) || 0, tempo_entrega: entrega.tempo_entrega, area_entrega: entrega.area_entrega },
+      { id: userId, nome: form.nome, nome_loja: form.nome_loja, foto_url: form.foto_url, telefone: form.telefone, endereco, horario: JSON.stringify(horario), faz_entrega: entrega.faz_entrega, taxa_entrega: parseFloat(entrega.taxa_entrega) || 0, tempo_entrega: entrega.tempo_entrega, area_entrega: entrega.area_entrega, pedido_minimo: parseFloat(entrega.pedido_minimo) || 0, entrega_gratis_acima: parseFloat(entrega.entrega_gratis_acima) || 0, horario_entrega: entrega.horario_entrega, observacoes_entrega: entrega.observacoes_entrega },
       { onConflict: "id" }
     );
     if (err) setError("Erro ao salvar. Tente novamente.");
@@ -426,6 +431,32 @@ export default function Configuracoes() {
                 value={entrega.taxa_entrega}
                 onChange={(e: any) => setEntrega({...entrega, taxa_entrega: e.target.value})}
                 type="number"
+              />
+              <Field
+                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>}
+                placeholder="Pedido mínimo para entrega"
+                value={entrega.pedido_minimo}
+                onChange={(e: any) => setEntrega({...entrega, pedido_minimo: e.target.value})}
+                type="number"
+              />
+              <Field
+                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>}
+                placeholder="Entrega grátis acima de"
+                value={entrega.entrega_gratis_acima}
+                onChange={(e: any) => setEntrega({...entrega, entrega_gratis_acima: e.target.value})}
+                type="number"
+              />
+              <Field
+                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
+                placeholder="Horário de entregas"
+                value={entrega.horario_entrega}
+                onChange={(e: any) => setEntrega({...entrega, horario_entrega: e.target.value})}
+              />
+              <Field
+                icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>}
+                placeholder="Observações"
+                value={entrega.observacoes_entrega}
+                onChange={(e: any) => setEntrega({...entrega, observacoes_entrega: e.target.value})}
               />
               <Field
                 icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
