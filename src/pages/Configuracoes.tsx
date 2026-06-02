@@ -268,7 +268,7 @@ export default function Configuracoes() {
               <span className="cfg-badge cfg-badge-pro">✨ Acesso PRO ativo</span>
             )}
             {plano === "trial" && (
-              <span className="cfg-badge cfg-badge-trial">Teste grátis · {diasRestantes} dia{diasRestantes !== 1 ? "s" : ""} restante{diasRestantes !== 1 ? "s" : ""}</span>
+              <span className="cfg-badge cfg-badge-trial">Plano Free · Acesse o PRO para mais recursos</span>
             )}
             {plano === "expirado" && (
               <span className="cfg-badge cfg-badge-expirado">⚠️ Período expirado · <u style={{cursor:"pointer"}} onClick={() => navigate("/assinar")}>Assinar agora</u></span>
