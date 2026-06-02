@@ -388,13 +388,15 @@ export default function Configuracoes() {
           border: 1.5px solid #e5e7eb; border-radius: 50px;
           padding: 0.7rem 1.1rem; background: white;
           transition: border-color 0.2s;
+          min-width: 0; width: 100%;
         }
         .cfg-field-pill:focus-within { border-color: #f9007a; }
         .cfg-field-icon { display: flex; align-items: center; flex-shrink: 0; color: #9ca3af; }
-        .cfg-field-input { flex: 1; border: none; outline: none; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; background: transparent; min-width: 0; }
+        .cfg-field-input { flex: 1; border: none; outline: none; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; background: transparent; min-width: 0; width: 100%; }
         .cfg-field-input::placeholder { color: #9ca3af; }
 
-        .cfg-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        .cfg-row-2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 0.5rem; }
+        .cfg-row-2 > * { min-width: 0; }
 
         /* Avatar */
         .cfg-avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; margin: 0.25rem 0 0.5rem; }
