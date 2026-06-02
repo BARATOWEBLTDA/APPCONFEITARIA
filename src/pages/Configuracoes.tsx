@@ -5,8 +5,8 @@ import { refreshProfile } from "@/hooks/useProfile";
 
 const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
-const Field = ({ icon, placeholder, value, onChange, type = "text", maxLength }: any) => (
-  <div className="cfg-field">
+const Field = ({ icon, placeholder, value, onChange, type = "text", maxLength, disabled }: any) => (
+  <div className={`cfg-field${disabled ? " cfg-field-disabled" : ""}`}>
     <span className="cfg-field-icon">{icon}</span>
     <input
       className="cfg-field-input"
@@ -15,6 +15,7 @@ const Field = ({ icon, placeholder, value, onChange, type = "text", maxLength }:
       value={value}
       onChange={onChange}
       maxLength={maxLength}
+      disabled={disabled}
     />
   </div>
 );
@@ -57,6 +58,7 @@ export default function Configuracoes() {
   const [novaCategoria, setNovaCategoria] = useState("");
   const [savingCat, setSavingCat] = useState(false);
   const [buscandoCep, setBuscandoCep] = useState(false);
+  const [cepPreenchido, setCepPreenchido] = useState(false);
 
   const buscarCep = async (cep: string) => {
     const limpo = cep.replace(/\D/g, "");
@@ -73,6 +75,7 @@ export default function Configuracoes() {
           estado: data.uf || f.estado,
           bairro: data.bairro || (f as any).bairro || ""
         }));
+        setCepPreenchido(true);
       }
     } catch {}
     setBuscandoCep(false);
@@ -349,15 +352,23 @@ export default function Configuracoes() {
                 const d = e.target.value.replace(/\D/g,'').slice(0,8);
                 const fmt = d.length > 5 ? `${d.slice(0,5)}-${d.slice(5)}` : d;
                 setForm({...form, cep: fmt});
+                if (d.length < 8) setCepPreenchido(false);
                 if (d.length === 8) buscarCep(d);
               }}
             />
           </div>
+          {cepPreenchido && (
+            <p className="cfg-cep-hint">
+              Campos preenchidos automaticamente.{" "}
+              <span className="cfg-cep-editar" onClick={() => setCepPreenchido(false)}>Editar manualmente</span>
+            </p>
+          )}
           <Field
             icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
             placeholder="Rua / Avenida"
             value={form.rua}
             onChange={(e: any) => setForm({...form, rua: e.target.value})}
+            disabled={cepPreenchido}
           />
           <div className="cfg-row-2">
             <Field
@@ -365,6 +376,7 @@ export default function Configuracoes() {
               placeholder="Bairro"
               value={form.bairro}
               onChange={(e: any) => setForm({...form, bairro: e.target.value})}
+              disabled={cepPreenchido}
             />
             <Field
               icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>}
@@ -379,6 +391,7 @@ export default function Configuracoes() {
               placeholder="Cidade"
               value={form.cidade}
               onChange={(e: any) => setForm({...form, cidade: e.target.value})}
+              disabled={cepPreenchido}
             />
             <Field
               icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18M3 15h18"/></svg>}
@@ -386,6 +399,7 @@ export default function Configuracoes() {
               value={form.estado}
               onChange={(e: any) => setForm({...form, estado: e.target.value.toUpperCase()})}
               maxLength={2}
+              disabled={cepPreenchido}
             />
           </div>
         </div>
@@ -705,7 +719,11 @@ export default function Configuracoes() {
           color: #1f2937; background: transparent;
           min-width: 0;
         }
-        .cfg-field-input::placeholder { color: #9ca3af; }
+        .cfg-field-disabled { background: #f9fafb; border-color: #f3f4f6; }
+        .cfg-field-disabled .cfg-field-input { color: #9ca3af; cursor: not-allowed; }
+        .cfg-field-disabled .cfg-field-icon { opacity: 0.4; }
+        .cfg-cep-hint { font-size: 0.72rem; color: #9ca3af; margin: -0.2rem 0 0; }
+        .cfg-cep-editar { color: #F583BF; font-weight: 600; cursor: pointer; text-decoration: underline; }
         .cfg-field-input:-webkit-autofill,
         .cfg-field-input:-webkit-autofill:hover,
         .cfg-field-input:-webkit-autofill:focus {
