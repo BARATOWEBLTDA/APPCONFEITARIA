@@ -617,7 +617,7 @@ export default function Configuracoes() {
         }
         .cfg-section-label {
           font-size: 0.7rem; font-weight: 700;
-          color: #7c3aed;
+          color: #F583BF;
           text-transform: uppercase;
           letter-spacing: 0.07em;
           margin: 0;
