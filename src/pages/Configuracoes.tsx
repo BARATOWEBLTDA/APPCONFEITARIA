@@ -359,12 +359,6 @@ export default function Configuracoes() {
             value={form.rua}
             onChange={(e: any) => setForm({...form, rua: e.target.value})}
           />
-          <Field
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
-            placeholder="Bairro"
-            value={form.bairro}
-            onChange={(e: any) => setForm({...form, bairro: e.target.value})}
-          />
           <div className="cfg-row-2">
             <Field
               icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
@@ -379,25 +373,19 @@ export default function Configuracoes() {
               onChange={(e: any) => setForm({...form, numero: e.target.value})}
             />
           </div>
-          <div className="cfg-field">
-            <span className="cfg-field-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            </span>
-            <input
-              className="cfg-field-input"
+          <div className="cfg-row-2">
+            <Field
+              icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>}
               placeholder="Cidade"
               value={form.cidade}
               onChange={(e: any) => setForm({...form, cidade: e.target.value})}
-              style={{flex:1, minWidth:0}}
             />
-            <span style={{color:"#d1d5db",padding:"0 0.25rem"}}>·</span>
-            <input
-              className="cfg-field-input"
-              placeholder="UF"
+            <Field
+              icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18M3 15h18"/></svg>}
+              placeholder="Estado"
               value={form.estado}
               onChange={(e: any) => setForm({...form, estado: e.target.value.toUpperCase()})}
               maxLength={2}
-              style={{width:"36px",flexShrink:0}}
             />
           </div>
         </div>
