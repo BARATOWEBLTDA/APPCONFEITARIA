@@ -134,7 +134,7 @@ const load = async () => {
                 <span style={{fontSize:"2rem"}}>🎉</span>
                 <div>
                   <p className="mob-config-title">Configuração completa!</p>
-                  <p className="mob-config-sub">Resgate 3 dias de acesso completo sem limitações em nosso App como recompensa.</p>
+                  <p className="mob-config-sub">Resgate agora mesmo 3 dias de acesso completo sem limitações em nosso App como recompensa.</p>
                 </div>
               </div>
             </div>
