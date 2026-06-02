@@ -221,7 +221,7 @@ export default function Layout() {
 
         .layout-main { margin-left: 220px; flex: 1; padding: 2rem; min-height: 100vh; }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
           .sidebar { display: none; }
           .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 7rem; overflow-x: clip; }
 

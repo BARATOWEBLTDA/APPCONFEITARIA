@@ -368,7 +368,7 @@ export default function Configuracoes() {
 
         .cfg-mobile { display: flex; flex-direction: column; gap: 1rem; }
         .cfg-desktop { display: none; }
-        @media (min-width: 768px) { .cfg-mobile { display: none; } .cfg-desktop { display: block; } }
+        @media (min-width: 900px) { .cfg-mobile { display: none; } .cfg-desktop { display: block; } }
 
         /* ===== MOBILE ===== */
         .cfg-section-card {
@@ -377,6 +377,7 @@ export default function Configuracoes() {
           padding: 1.25rem;
           box-shadow: 0 2px 12px rgba(0,0,0,0.07);
           display: flex; flex-direction: column; gap: 0.65rem;
+          width: 100%; overflow: hidden;
         }
         .cfg-section-label { font-size: 0.72rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.06em; margin: 0; }
         .cfg-section-sub { font-size: 0.78rem; color: #9ca3af; margin: -0.35rem 0 0; }
