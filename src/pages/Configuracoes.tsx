@@ -289,7 +289,7 @@ export default function Configuracoes() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         * { box-sizing: border-box; }
 
-        .cfg-mobile { display: flex; flex-direction: column; }
+        .cfg-mobile { display: flex; flex-direction: column; width: 100%; max-width: 100%; overflow: hidden; }
         .cfg-desktop { display: none; }
 
         @media (min-width: 768px) {
@@ -327,7 +327,7 @@ export default function Configuracoes() {
         .cfg-desktop-content { flex: 1; min-width: 0; }
 
         /* Card */
-        .cfg-card { background: white; border-radius: 14px; padding: 1.25rem; box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 1rem; width: 100%; }
+        .cfg-card { background: white; border-radius: 14px; padding: 1.25rem; box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 1rem; width: 100%; max-width: 100%; overflow: hidden; }
 
         /* Avatar */
         .cfg-avatar-section { display: flex; flex-direction: column; align-items: center; margin-bottom: 1.5rem; gap: 0.4rem; }
@@ -341,7 +341,7 @@ export default function Configuracoes() {
         .cfg-fields { display: flex; flex-direction: column; gap: 0.85rem; }
         .cfg-field { display: flex; flex-direction: column; gap: 0.3rem; }
         .cfg-field label { font-size: 0.8rem; font-weight: 600; color: #374151; }
-        .cfg-field input { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; outline: none; transition: border-color 0.2s; width: 100%; }
+        .cfg-field input { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; outline: none; transition: border-color 0.2s; width: 100%; max-width: 100%; }
         .cfg-field input:focus { border-color: #f9007a; }
         .cfg-section-title { font-size: 0.88rem; font-weight: 700; color: #1f2937; margin: 0 0 0.75rem; }
         .cfg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem; }
