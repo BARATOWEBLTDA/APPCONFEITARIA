@@ -398,8 +398,8 @@ export default function Configuracoes() {
           </div>
           {cepPreenchido && (
             <p className="cfg-cep-hint">
-              Campos preenchidos automaticamente.{" "}
-              <span className="cfg-cep-editar" onClick={() => setCepPreenchido(false)}>Editar manualmente</span>
+              Preenchido automaticamente.{" "}
+              <span className="cfg-cep-editar" onClick={() => setCepPreenchido(false)}>Editar manual</span>
             </p>
           )}
         </div>
