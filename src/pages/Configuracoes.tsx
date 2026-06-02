@@ -854,12 +854,12 @@ export default function Configuracoes() {
         .cfg-modal-time-field { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
         .cfg-modal-time-field label { font-size: 0.75rem; font-weight: 600; color: #6b7280; }
         .cfg-modal-time-field input {
-          padding: 0.75rem; border: 2px solid #fce7f3;
-          border-radius: 14px; font-family: 'Inter', sans-serif;
-          font-size: 1.1rem; font-weight: 600; color: #1f2937;
+          padding: 0.55rem; border: 2px solid #fce7f3;
+          border-radius: 12px; font-family: 'Inter', sans-serif;
+          font-size: 0.95rem; font-weight: 600; color: #1f2937;
           outline: none; text-align: center;
           transition: border-color 0.2s;
-          background: #fdf2f8;
+          background: #fdf2f8; width: 100%;
         }
         .cfg-modal-time-field input:focus { border-color: #F583BF; background: white; }
         .cfg-modal-divider-line { color: #d1d5db; font-size: 1.2rem; padding-top: 1.2rem; }
