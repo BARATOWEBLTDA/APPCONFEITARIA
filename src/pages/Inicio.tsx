@@ -102,7 +102,7 @@ const load = async () => {
 
 
         {/* 1. Configure seu Doonly - destaque escuro */}
-        {progress < 100 ? (
+        {!loading && (progress < 100 ? (
         <div className="mob-config-card">
           <div className="mob-config-header">
             <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
@@ -142,7 +142,7 @@ const load = async () => {
               {resgatando ? "Resgatando..." : "✨ Resgatar 3 dias PRO"}
             </button>
           </div>
-        ) : null}
+        ) : null)}
 
         {/* 2. Acesso rápido */}
         <div className="mob-section-title">Acesso rápido</div>
@@ -245,7 +245,7 @@ const load = async () => {
               <div className="progresso-bar-bg">
                 <div className="progresso-bar-fill" style={{ width: `${progress}%` }} />
               </div>
-              {progress === 100 && !proResgatado && (
+              {!loading && progress === 100 && !proResgatado && (
                 <button className="mob-resgatar-btn" style={{marginTop:"1rem"}} onClick={handleResgatarPro} disabled={resgatando}>
                   {resgatando ? "Resgatando..." : "✨ Resgatar 3 dias PRO grátis"}
                 </button>
