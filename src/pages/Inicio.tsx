@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { Users, Package, ClipboardList, DollarSign, UtensilsCrossed, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { usePlano } from "@/hooks/usePlano";
 import { QuickSetupModal } from "@/components/QuickSetupModal";
 
 export default function Inicio() {
   const navigate = useNavigate();
+  const { isPro } = usePlano();
   const [profile, setProfile] = useState<any>(null);
   const [produtos, setProdutos] = useState(0);
   const [clientes, setClientes] = useState(0);
@@ -175,6 +177,7 @@ const load = async () => {
         </div>
 
         {/* 4. Banner premium por último */}
+        {!isPro && (
         <div className="mob-trial" onClick={() => navigate("/assinar")}>
           <div className="mob-trial-left">
             <div className="mob-trial-icon">
@@ -187,6 +190,7 @@ const load = async () => {
           </div>
           <div className="mob-trial-badge">Recomendado</div>
         </div>
+        )}
       </div>
 
       {/* ===== DESKTOP ===== */}
@@ -308,6 +312,7 @@ const load = async () => {
 
           {/* Coluna direita — Premium + Atalhos */}
           <div className="ini-col-right">
+            {!isPro && (
             <div className="trial-card">
               <div className="trial-card-badge">Recomendado</div>
               <div className="trial-card-body">
@@ -326,6 +331,7 @@ const load = async () => {
               </div>
               <button className="trial-card-btn" onClick={() => navigate("/assinar")}>Assinar agora</button>
             </div>
+            )}
 
             <div className="ini-section">
               <h2 className="ini-section-title">Acesso rápido</h2>
