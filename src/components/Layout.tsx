@@ -136,7 +136,7 @@ export default function Layout() {
         <img src="/logoheader.png" alt="Doonly" className="mob-top-logo" />
         <div className="mob-top-icons">
           <button className="mob-top-icon" onClick={() => navigate("/assinar")}>
-            <img src="/diamante.gif" alt="Assinar" style={{width:"24px",height:"24px",objectFit:"contain"}} />
+            <img src="/diamante.gif" alt="Assinar" style={{width:"28px",height:"28px",objectFit:"contain"}} />
           </button>
           <button className="mob-top-icon" onClick={() => {
               localStorage.setItem("notif_last_seen", new Date().toISOString());
