@@ -246,8 +246,7 @@ export default function Configuracoes() {
         {/* Header roxo com avatar */}
         <div className="cfg-hero">
           <div className="cfg-hero-left">
-            <p className="cfg-hero-saudacao">{getSaudacao()},</p>
-            <p className="cfg-hero-name">{form.nome ? form.nome.split(" ")[0] : "bem-vinda"}</p>
+            <p className="cfg-hero-saudacao">{getSaudacao()}, {form.nome ? form.nome.split(" ")[0] : "bem-vinda"}!</p>
             <p className="cfg-hero-email">{userEmail}</p>
           </div>
           <div className="cfg-hero-avatar" onClick={() => !uploading && fileRef.current?.click()}>
@@ -546,12 +545,11 @@ export default function Configuracoes() {
           gap: 1rem;
         }
         .cfg-hero-left { display: flex; flex-direction: column; gap: 0.1rem; flex: 1; min-width: 0; }
-        .cfg-hero-saudacao { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin: 0; font-weight: 400; }
-        .cfg-hero-name  { font-size: 1.25rem; font-weight: 700; color: white; margin: 0; }
+        .cfg-hero-saudacao { font-size: 1rem; color: white; margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cfg-hero-email { font-size: 0.72rem; color: rgba(255,255,255,0.6); margin: 0.3rem 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cfg-hero-avatar {
           width: 72px; height: 72px;
-          border-radius: 12px;
+          border-radius: 50%;
           background: rgba(255,255,255,0.2);
           border: 2px solid rgba(255,255,255,0.4);
           display: flex; align-items: center; justify-content: center;
