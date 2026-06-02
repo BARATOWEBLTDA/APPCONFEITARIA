@@ -159,12 +159,8 @@ const load = async () => {
               <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
                 <img src="/assine.png" alt="" style={{width:"46px",height:"46px",objectFit:"contain",flexShrink:0}} />
                 <div>
-                  <p className="mob-config-title">Seu PRO está ativo!</p>
-                  <p className="mob-config-sub">
-                    {diasProRestantes === 0
-                      ? "Seu período PRO expirou hoje."
-                      : `${diasProRestantes} dia${diasProRestantes !== 1 ? "s" : ""} restante${diasProRestantes !== 1 ? "s" : ""} no seu teste`}
-                  </p>
+                  <p className="mob-config-title">Você tem {diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""} restante{diasProRestantes !== 1 ? "s" : ""} de acesso PRO.</p>
+                  <p className="mob-config-sub">Não perca as melhores funcionalidades, assine agora mesmo por apenas R$ 7,90 mês.</p>
                 </div>
               </div>
               <div className="mob-config-circle" style={{background:"linear-gradient(135deg,#F583BF,#e060a8)"}}>
@@ -299,11 +295,9 @@ const load = async () => {
                   <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
                     <img src="/assine.png" alt="" style={{width:"52px",height:"52px",objectFit:"contain",flexShrink:0}} />
                     <div>
-                      <h2 className="ini-section-title" style={{margin:0,color:"white"}}>Seu PRO está ativo!</h2>
+                      <h2 className="ini-section-title" style={{margin:0,color:"white"}}>Você tem {diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""} restante{diasProRestantes !== 1 ? "s" : ""} de acesso PRO.</h2>
                       <p className="progresso-sub" style={{color:"rgba(255,255,255,0.7)"}}>
-                        {diasProRestantes === 0
-                          ? "Seu período PRO expirou hoje."
-                          : `${diasProRestantes} dia${diasProRestantes !== 1 ? "s" : ""} restante${diasProRestantes !== 1 ? "s" : ""} no seu teste`}
+                        Não perca as melhores funcionalidades, assine agora mesmo por apenas R$ 7,90 mês.
                       </p>
                     </div>
                   </div>
@@ -515,10 +509,10 @@ const load = async () => {
         .mob-resgatar-btn:active { transform: scale(0.98); }
         .mob-resgatar-btn:disabled { opacity: 0.6; cursor: not-allowed; animation: none; }
         .mob-assinar-btn-sm {
-          padding: 0.5rem 1.1rem;
+          padding: 0.55rem 1.75rem;
           background: linear-gradient(135deg, #F583BF, #e060a8);
           border: none; border-radius: 50px; color: white;
-          font-family: inherit; font-size: 0.8rem; font-weight: 700;
+          font-family: inherit; font-size: 0.85rem; font-weight: 700;
           cursor: pointer; transition: opacity 0.2s, transform 0.1s;
           white-space: nowrap;
         }
