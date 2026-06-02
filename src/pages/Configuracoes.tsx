@@ -104,8 +104,14 @@ export default function Configuracoes() {
       const diffDias = Math.floor((hoje.getTime() - criado.getTime()) / (1000 * 60 * 60 * 24));
       const restantes = Math.max(0, 14 - diffDias);
       setDiasRestantes(restantes);
-      // Quando tiver tag de pagante, troca "trial" por "pro" aqui
-      setPlano(restantes > 0 ? "trial" : "expirado");
+
+      // Verifica se tem PRO ativo via pro_expira_em
+      const proExpira = data?.pro_expira_em ? new Date(data.pro_expira_em) : null;
+      if (proExpira && proExpira > hoje) {
+        setPlano("pro");
+      } else {
+        setPlano(restantes > 0 ? "trial" : "expirado");
+      }
       const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       if (data) {
         let addr: any = {};
