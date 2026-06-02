@@ -1,0 +1,61 @@
+/* ── Tema Claro (padrão) ── */
+:root {
+  --bg-body:        #fff0f6;
+  --bg-card:        #ffffff;
+  --bg-input:       #ffffff;
+  --bg-sidebar:     #181419;
+  --bg-header:      #120706;
+  --bg-subtle:      #f9fafb;
+
+  --text-primary:   #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted:     #9ca3af;
+  --text-inverse:   #ffffff;
+
+  --border:         #e5e7eb;
+  --border-focus:   #F583BF;
+
+  --primary:        #F583BF;
+  --primary-dark:   #e060a8;
+  --primary-gradient: linear-gradient(135deg, #F583BF, #e060a8);
+
+  --shadow-card:    0 2px 12px rgba(0,0,0,0.06);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.1);
+
+  --radius-card:    18px;
+  --radius-btn:     50px;
+  --radius-input:   50px;
+
+  --font-base: 'Inter', sans-serif;
+}
+
+/* ── Tema Escuro ── */
+:root.dark {
+  --bg-body:        #0d0d0d;
+  --bg-card:        #1a1a1a;
+  --bg-input:       #242424;
+  --bg-sidebar:     #111111;
+  --bg-header:      #0a0a0a;
+  --bg-subtle:      #1f1f1f;
+
+  --text-primary:   #f1f1f1;
+  --text-secondary: #a0a0a0;
+  --text-muted:     #666666;
+  --text-inverse:   #0d0d0d;
+
+  --border:         #2a2a2a;
+  --border-focus:   #F583BF;
+
+  --primary:        #F583BF;
+  --primary-dark:   #e060a8;
+  --primary-gradient: linear-gradient(135deg, #F583BF, #e060a8);
+
+  --shadow-card:    0 2px 12px rgba(0,0,0,0.4);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.5);
+
+  --radius-card:    18px;
+  --radius-btn:     50px;
+  --radius-input:   50px;
+
+  --font-base: 'Inter', sans-serif;
+}
