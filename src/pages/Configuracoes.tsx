@@ -268,7 +268,7 @@ export default function Configuracoes() {
               <span className="cfg-badge cfg-badge-pro">✨ Acesso PRO ativo</span>
             )}
             {plano === "trial" && (
-              <span className="cfg-badge cfg-badge-trial">🔓 Teste grátis · {diasRestantes} dia{diasRestantes !== 1 ? "s" : ""} restante{diasRestantes !== 1 ? "s" : ""}</span>
+              <span className="cfg-badge cfg-badge-trial">Teste grátis · {diasRestantes} dia{diasRestantes !== 1 ? "s" : ""} restante{diasRestantes !== 1 ? "s" : ""}</span>
             )}
             {plano === "expirado" && (
               <span className="cfg-badge cfg-badge-expirado">⚠️ Período expirado · <u style={{cursor:"pointer"}} onClick={() => navigate("/assinar")}>Assinar agora</u></span>
@@ -569,14 +569,14 @@ export default function Configuracoes() {
           justify-content: space-between;
           gap: 1rem;
         }
-        .cfg-hero-left { display: flex; flex-direction: column; gap: 0.1rem; flex: 1; min-width: 0; }
+        .cfg-hero-left { display: flex; flex-direction: column; gap: 0; flex: 1; min-width: 0; }
         .cfg-hero-saudacao { font-size: 1rem; color: white; margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cfg-hero-loja { font-size: 0.78rem; color: rgba(255,255,255,0.85); margin: 0.2rem 0 0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cfg-hero-email { font-size: 0.68rem; color: rgba(255,255,255,0.6); margin: 0.15rem 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cfg-hero-loja { font-size: 0.78rem; color: rgba(255,255,255,0.85); margin: 0.1rem 0 0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cfg-hero-email { font-size: 0.68rem; color: rgba(255,255,255,0.6); margin: 0.1rem 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cfg-badge {
-          display: inline-block; margin-top: 0.4rem;
-          padding: 0.2rem 0.6rem; border-radius: 20px;
-          font-size: 0.68rem; font-weight: 600;
+          display: inline-block; margin-top: 0.25rem;
+          padding: 0.15rem 0.5rem; border-radius: 20px;
+          font-size: 0.65rem; font-weight: 600;
           white-space: nowrap;
         }
         .cfg-badge-pro      { background: rgba(255,255,255,0.25); color: white; }
