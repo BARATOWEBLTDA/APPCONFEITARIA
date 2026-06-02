@@ -230,7 +230,7 @@ export default function Layout() {
             position: fixed;
             top: 0; left: 0; right: 0;
             z-index: 9999;
-            background: #582520;
+            background: #331512;
             padding: 0.65rem 1.25rem;
             align-items: center;
             justify-content: space-between;
@@ -238,7 +238,7 @@ export default function Layout() {
             transform: translateZ(0);
             -webkit-transform: translateZ(0);
           }
-          .mob-top-logo { height: 36px; object-fit: contain; }
+          .mob-top-logo { height: 42px; object-fit: contain; }
           .mob-top-icons { display: flex; align-items: center; gap: 0.6rem; }
           .mob-top-icon { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0.2rem; }
 
