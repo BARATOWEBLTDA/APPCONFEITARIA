@@ -33,6 +33,8 @@ export default function Configuracoes() {
   const [userId, setUserId] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState("");
+  const [nomeSalvo, setNomeSalvo] = useState("");
+  const [nomeLojaSalvo, setNomeLojaSalvo] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const getSaudacao = () => {
@@ -76,6 +78,8 @@ export default function Configuracoes() {
           rua: addr.rua || "", numero: addr.numero || "",
           cidade: addr.cidade || "", estado: addr.estado || "", cep: addr.cep || ""
         });
+        setNomeSalvo(data.nome || "");
+        setNomeLojaSalvo(data.nome_loja || "");
         if (data.foto_url) setPreview(data.foto_url);
         if (data.horario) { try { setHorario(h => ({ ...h, ...JSON.parse(data.horario) })); } catch {} }
         setEntrega({
@@ -154,7 +158,7 @@ export default function Configuracoes() {
       { onConflict: "id" }
     );
     if (err) setError("Erro ao salvar. Tente novamente.");
-    else { setSuccess(true); await refreshProfile(); setTimeout(() => setSuccess(false), 3000); }
+    else { setSuccess(true); setNomeSalvo(form.nome); setNomeLojaSalvo(form.nome_loja); await refreshProfile(); setTimeout(() => setSuccess(false), 3000); }
     setSaving(false);
   };
 
@@ -246,8 +250,8 @@ export default function Configuracoes() {
         {/* Header roxo com avatar */}
         <div className="cfg-hero">
           <div className="cfg-hero-left">
-            <p className="cfg-hero-saudacao">{getSaudacao()}, {form.nome ? form.nome.split(" ")[0] : "bem-vinda"}!</p>
-            <p className="cfg-hero-loja">{form.nome_loja || ""}</p>
+            <p className="cfg-hero-saudacao">{getSaudacao()}, {nomeSalvo ? nomeSalvo.split(" ")[0] : "bem-vinda"}!</p>
+            <p className="cfg-hero-loja">{nomeLojaSalvo || ""}</p>
             <p className="cfg-hero-email">{userEmail}</p>
           </div>
           <div className="cfg-hero-avatar" onClick={() => !uploading && fileRef.current?.click()}>
