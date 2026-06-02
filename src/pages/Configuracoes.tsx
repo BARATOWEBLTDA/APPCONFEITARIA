@@ -948,9 +948,9 @@ export default function Configuracoes() {
           transition: all 0.15s;
         }
         .dia-btn.active {
-          background: #ede9fe;
-          border-color: #7c3aed;
-          color: #7c3aed; font-weight: 700;
+          background: #fce7f3;
+          border-color: #F583BF;
+          color: #F583BF; font-weight: 700;
         }
 
         /* ── Categorias ── */
