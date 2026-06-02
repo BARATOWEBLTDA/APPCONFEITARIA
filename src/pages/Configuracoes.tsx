@@ -122,11 +122,11 @@ export default function Configuracoes() {
         if (data.horario) { try { setHorario(h => ({ ...h, ...JSON.parse(data.horario) })); } catch {} }
         setEntrega({
           faz_entrega: data.faz_entrega || false,
-          taxa_entrega: data.taxa_entrega?.toString() || "",
+          taxa_entrega: data.taxa_entrega ? data.taxa_entrega.toString() : "",
           tempo_entrega: data.tempo_entrega || "",
           area_entrega: data.area_entrega || "",
-          pedido_minimo: data.pedido_minimo?.toString() || "",
-          entrega_gratis_acima: data.entrega_gratis_acima?.toString() || "",
+          pedido_minimo: data.pedido_minimo ? data.pedido_minimo.toString() : "",
+          entrega_gratis_acima: data.entrega_gratis_acima ? data.entrega_gratis_acima.toString() : "",
           horario_entrega: data.horario_entrega || "",
           observacoes_entrega: data.observacoes_entrega || ""
         });
@@ -431,22 +431,19 @@ export default function Configuracoes() {
                 icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
                 placeholder="Qual a taxa de entrega?"
                 value={entrega.taxa_entrega}
-                onChange={(e: any) => setEntrega({...entrega, taxa_entrega: e.target.value})}
-                type="number"
+                onChange={(e: any) => setEntrega({...entrega, taxa_entrega: e.target.value.replace(/[^0-9.,]/g,"")})}
               />
               <Field
                 icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>}
                 placeholder="Pedido mínimo para entrega"
                 value={entrega.pedido_minimo}
-                onChange={(e: any) => setEntrega({...entrega, pedido_minimo: e.target.value})}
-                type="number"
+                onChange={(e: any) => setEntrega({...entrega, pedido_minimo: e.target.value.replace(/[^0-9.,]/g,"")})}
               />
               <Field
                 icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>}
                 placeholder="Entrega grátis acima de"
                 value={entrega.entrega_gratis_acima}
-                onChange={(e: any) => setEntrega({...entrega, entrega_gratis_acima: e.target.value})}
-                type="number"
+                onChange={(e: any) => setEntrega({...entrega, entrega_gratis_acima: e.target.value.replace(/[^0-9.,]/g,"")})}
               />
               <button
                 className="cfg-horario-btn"
