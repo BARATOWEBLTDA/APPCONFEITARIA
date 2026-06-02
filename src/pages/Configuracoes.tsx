@@ -575,9 +575,9 @@ export default function Configuracoes() {
         .cfg-hero-email { font-size: 0.68rem; color: rgba(255,255,255,0.6); margin: 0.1rem 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cfg-badge {
           display: inline-block; margin-top: 0.25rem;
-          padding: 0.15rem 0.5rem; border-radius: 20px;
+          padding: 0.15rem 0.4rem; border-radius: 6px;
           font-size: 0.65rem; font-weight: 600;
-          white-space: nowrap;
+          white-space: nowrap; align-self: flex-start;
         }
         .cfg-badge-pro      { background: rgba(255,255,255,0.25); color: white; }
         .cfg-badge-trial    { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
