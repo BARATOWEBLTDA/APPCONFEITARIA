@@ -2,8 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { refreshProfile } from "@/hooks/useProfile";
-import { useTheme } from "@/context/ThemeContext";
-import { usePlano } from "@/hooks/usePlano";
 
 const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
@@ -28,8 +26,6 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
 
 export default function Configuracoes() {
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
-  const { isPro } = usePlano();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -433,44 +429,6 @@ export default function Configuracoes() {
           )}
         </div>
 
-        {/* Card — Aparência */}
-        <div className="cfg-card">
-          <SectionLabel>Aparência</SectionLabel>
-          {!isPro ? (
-            <div className="cfg-tema-locked">
-              <span>🔒</span>
-              <div>
-                <p className="cfg-toggle-label" style={{color:"#9ca3af"}}>Temas personalizados</p>
-                <p className="cfg-toggle-sub">Disponível no plano PRO</p>
-              </div>
-            </div>
-          ) : (
-            <>
-            <p className="cfg-hint">Aplicado automaticamente ao selecionar.</p>
-            <div className="cfg-tema-grid">
-              <button
-                className={`cfg-tema-btn${theme === "light" ? " active" : ""}`}
-                onClick={() => setTheme("light")}
-              >
-                <div className="cfg-tema-preview cfg-tema-preview--light">
-                  <div /><div /><div />
-                </div>
-                <span>Claro</span>
-              </button>
-              <button
-                className={`cfg-tema-btn${theme === "dark" ? " active" : ""}`}
-                onClick={() => setTheme("dark")}
-              >
-                <div className="cfg-tema-preview cfg-tema-preview--dark">
-                  <div /><div /><div />
-                </div>
-                <span>Escuro</span>
-              </button>
-            </div>
-            </>
-          )}
-        </div>
-
         {/* Feedback */}
         {error && <div className="cfg-toast cfg-toast-error">{error}</div>}
         {success && <div className="cfg-toast cfg-toast-success">✓ Salvo com sucesso!</div>}
@@ -680,13 +638,8 @@ export default function Configuracoes() {
         .cfg-accordion-chevron.open { transform: rotate(180deg); }
         .cfg-accordion-body { padding: 0 1.15rem 1.15rem; display: flex; flex-direction: column; gap: 0.7rem; border-top: 1px solid #f3f4f6; padding-top: 1rem; }
 
-        /* Dark mode — accordion transparente */
-        :root.dark .cfg-accordion {
-          background: transparent;
-          border-radius: 0;
-          box-shadow: none;
-          border-bottom: 1px solid var(--border, #2a2a2a);
-        }
+        /* Dark mode */
+        :root.dark .cfg-accordion { background: transparent; border-radius: 0; box-shadow: none; border-bottom: 1px solid var(--border, #2a2a2a); }
         :root.dark .cfg-accordion:first-of-type { border-top: 1px solid var(--border, #2a2a2a); }
         :root.dark .cfg-accordion-header { padding: 1rem 0; }
         :root.dark .cfg-accordion-body { padding: 0 0 1rem; border-top: 1px solid var(--border, #2a2a2a); }
