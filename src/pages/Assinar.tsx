@@ -140,7 +140,7 @@ export default function Assinar() {
         .ass-hero { padding:0; }
         .ass-hero-icon { width:80px; height:80px; background:var(--bg-card,white); border-radius:24px; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; box-shadow:var(--shadow-card,0 2px 12px rgba(0,0,0,0.08)); }
         .ass-hero-logo { max-height:160px; width:100%; object-fit:contain; display:block; margin:0 auto 0.75rem; }
-        .ass-hero-sub { font-size:0.88rem; color:var(--text-muted,#9ca3af); margin:0 0 0.75rem; text-align:center; line-height:1.6; }
+        .ass-hero-sub { font-size:0.88rem; color:#6b7280; margin:0 0 0.75rem; text-align:center; line-height:1.6; padding:0 1.5rem; }
         .ass-trial-badge { display:flex; align-items:center; justify-content:center; gap:0.4rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; font-size:0.78rem; font-weight:700; padding:0.45rem 1rem; border-radius:20px; margin:0 auto; width:fit-content; }
         .ass-planos { display:flex; flex-direction:column; gap:0.65rem; }
         .ass-plano-btn { display:flex; align-items:center; gap:1rem; padding:1rem 1.15rem; background:var(--bg-card,white); border:2px solid var(--border,#e5e7eb); border-radius:16px; cursor:pointer; font-family:'Inter',sans-serif; text-align:left; transition:border-color 0.2s; box-shadow:var(--shadow-card,0 2px 8px rgba(0,0,0,0.05)); }
