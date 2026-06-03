@@ -668,7 +668,7 @@ export default function Configuracoes() {
         :root.dark .cfg-accordion { background: transparent; border-radius: 0; box-shadow: none; border-bottom: 1px solid var(--border, #2a2a2a); }
         :root.dark .cfg-accordion:first-of-type { border-top: 1px solid var(--border, #2a2a2a); }
         :root.dark .cfg-accordion-header { padding: 1rem 0; }
-        :root.dark .cfg-accordion-body { padding: 0 0 1rem; border-top: 1px solid var(--border, #2a2a2a); }
+        :root.dark .cfg-accordion-body { padding: 0 0 1.25rem; border-top: 1px solid var(--border, #2a2a2a); padding-top: 1rem; margin-top: 0; }
         .cfg-mobile  { display: flex; flex-direction: column; gap: 0.85rem; }
         .cfg-desktop { display: none; }
         @media (min-width: 900px) {

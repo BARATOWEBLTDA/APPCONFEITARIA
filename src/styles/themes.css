@@ -31,7 +31,7 @@
 
 /* ── Tema Escuro ── */
 :root.dark {
-  --bg-body:        #0d0d0d;
+  --bg-body:        #111111;
   --bg-card:        #1a1a1a;
   --bg-input:       #242424;
   --bg-sidebar:     #111111;
