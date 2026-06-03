@@ -71,8 +71,9 @@ function getStatusLoja(horarioJson: string | null) {
 
 export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNome, avaliacaoMedia = 4.9, hideStars = false, configuracoes }: LogoProps) {
   const [modalEndereco, setModalEndereco] = useState(false)
-
   const status = getStatusLoja(configuracoes?.horario || null)
+
+  const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star key={i} size={14} fill={i < Math.floor(rating) ? '#fbbf24' : 'none'} color={i < Math.ceil(rating) ? '#fbbf24' : '#d1d5db'} />
     ))
