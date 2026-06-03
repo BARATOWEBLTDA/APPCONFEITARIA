@@ -29,6 +29,7 @@ import Clientes from "@/pages/Clientes";
 const Financeiro = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>💰 Financeiro</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
 const Promocoes = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🏷️ Promoções</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
 import CardapioConfigPage from "@/pages/CardapioConfigPage";
+import CardapioDesign from "@/pages/CardapioDesign";
 const Estoque = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>📦 Estoque</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
 
 const Arquivos = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🗂️ Arquivos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
@@ -72,7 +73,7 @@ export default function App() {
           <Route path="/promocoes" element={<Promocoes />} />
           <Route path="/cardapio-config" element={<CardapioConfigPage />} />
           <Route path="/cardapio-preview" element={<CardapioPrevia />} />
-          <Route path="/cardapio-design" element={<CardapioConfigPage />} />
+          <Route path="/cardapio-design" element={<CardapioDesign />} />
           <Route path="/estoque" element={<Estoque />} />
           <Route path="/receitas" element={<Receitas />} />
           <Route path="/notificacoes" element={<Notificacoes />} />
