@@ -111,18 +111,21 @@ export default function Layout() {
         <div className="gestao-overlay" onClick={() => setGestaoOpen(false)}>
           <div className="gestao-drawer" onClick={e => e.stopPropagation()}>
             <div className="gestao-handle" />
-            <h3 className="gestao-title">Gestão</h3>
+            <div className="gestao-header">
+              <h3 className="gestao-title">Outros</h3>
+              <button className="gestao-close" onClick={() => setGestaoOpen(false)}>✕</button>
+            </div>
             <div className="gestao-grid">
               {[
-                { label: "Dashboard", path: "/dashboard", icon: "📊" },
-                { label: "Pedidos", path: "/pedidos", icon: "📋" },
-                { label: "Produtos", path: "/produtos", icon: "🎂" },
-                { label: "Estoque", path: "/estoque", icon: "📦" },
-                { label: "Financeiro", path: "/financeiro", icon: "💰" },
-                { label: "Promoções", path: "/promocoes", icon: "🏷️" },
-                { label: "Arquivos", path: "/arquivos", icon: "🗂️" },
-                { label: "Configurações", path: "/configuracoes", icon: "⚙️" },
-                { label: "Personalização", path: "/personalizacao", icon: "🎨" },
+                { label: "Dashboard", path: "/dashboard", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
+                { label: "Pedidos", path: "/pedidos", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> },
+                { label: "Produtos", path: "/produtos", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> },
+                { label: "Estoque", path: "/estoque", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> },
+                { label: "Financeiro", path: "/financeiro", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
+                { label: "Promoções", path: "/promocoes", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> },
+                { label: "Arquivos", path: "/arquivos", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> },
+                { label: "Configurações", path: "/configuracoes", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
+                { label: "Personalização", path: "/personalizacao", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M2 12h20"/></svg> },
               ].map((item) => (
                 <NavLink key={item.path} to={item.path} className="gestao-item" onClick={() => setGestaoOpen(false)}>
                   <span className="gestao-icon">{item.icon}</span>
@@ -289,16 +292,35 @@ export default function Layout() {
           .bottom-item.active { color: #f9007a; }
           .bottom-item:hover { color: #f9007a; }
 
-          .gestao-overlay { position: fixed; inset: 0; z-index: 30; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); }
-          .gestao-drawer { position: absolute; bottom: 0; left: 0; right: 0; background: #1e1a1f; border-radius: 24px 24px 0 0; padding: 1rem 1.25rem 2rem; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); border-top: 1px solid rgba(249,0,122,0.2); }
+          .gestao-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); }
+          .gestao-drawer {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #120706;
+            border-radius: 24px 24px 0 0;
+            padding: 0.75rem 1.25rem 2rem;
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border-top: 1px solid rgba(245,131,191,0.2);
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 101;
+          }
           @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-          .gestao-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 0 auto 1rem; }
-          .gestao-title { font-size: 1rem; font-weight: 600; color: #ffffff; margin-bottom: 1rem; font-family: 'Inter', sans-serif; }
-          .gestao-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
-          .gestao-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; background: rgba(255,255,255,0.06); border-radius: 16px; padding: 1rem 0.5rem; text-decoration: none; transition: background 0.15s; border: 1px solid rgba(255,255,255,0.06); }
-          .gestao-item:hover { background: rgba(249,0,122,0.15); }
-          .gestao-icon { font-size: 1.6rem; }
-          .gestao-label { font-size: 0.75rem; font-weight: 500; color: #ffffff; text-align: center; font-family: 'Inter', sans-serif; }
+          .gestao-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 0 auto 1rem; }
+          .gestao-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+          .gestao-title { font-size: 1rem; font-weight: 700; color: #ffffff; margin: 0; font-family: 'Inter', sans-serif; }
+          .gestao-close { background: rgba(255,255,255,0.08); border: none; color: rgba(255,255,255,0.6); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; }
+          .gestao-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem; }
+          .gestao-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 0.45rem; background: rgba(255,255,255,0.05);
+            border-radius: 16px; padding: 0.9rem 0.5rem;
+            text-decoration: none; transition: background 0.15s;
+            border: 1px solid rgba(255,255,255,0.07);
+          }
+          .gestao-item:hover { background: rgba(245,131,191,0.15); border-color: rgba(245,131,191,0.3); }
+          .gestao-item.active { background: rgba(245,131,191,0.2); border-color: rgba(245,131,191,0.4); }
+          .gestao-icon { color: #F583BF; display: flex; align-items: center; }
+          .gestao-label { font-size: 0.72rem; font-weight: 600; color: #ffffff; text-align: center; font-family: 'Inter', sans-serif; line-height: 1.2; }
         }
             `}</style>
     </div>
