@@ -246,14 +246,14 @@ export default function Layout() {
           .mob-top-icons { display: flex; align-items: center; gap: 0.6rem; }
           .mob-top-icon { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0.2rem; }
 
-          .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 5.5rem;  }
+          .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 5.5rem; background: var(--bg-body, #fff0f6); min-height: 100vh; }
 
           .bottom-nav {
             display: flex !important;
             position: fixed;
             bottom: 0; left: 0; right: 0;
             z-index: 50;
-            background: #ffffff;
+            background: var(--bg-card, #ffffff);
             padding: 0.5rem 0 1rem;
             justify-content: space-around;
             align-items: center;
@@ -268,7 +268,7 @@ export default function Layout() {
             flex: 1;
             gap: 0.2rem;
             padding: 0.35rem 0.1rem;
-            color: #9ca3af;
+            color: var(--text-muted, #9ca3af);
             text-decoration: none;
             background: none;
             border: none;
