@@ -62,7 +62,7 @@ export default function Configuracoes() {
   const [cepPreenchido, setCepPreenchido] = useState(false);
   const [modalHorario, setModalHorario] = useState(false);
   const [horarioEntregaTemp, setHorarioEntregaTemp] = useState({ inicio: "08:00", fim: "18:00" });
-  const [openSection, setOpenSection] = useState<string | null>("dados");
+  const [openSection, setOpenSection] = useState<string | null>(null);
   const toggleSection = (s: string) => setOpenSection(prev => prev === s ? null : s);
 
   const buscarCep = async (cep: string) => {
