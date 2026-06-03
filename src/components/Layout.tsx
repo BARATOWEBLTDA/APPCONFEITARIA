@@ -180,23 +180,23 @@ export default function Layout() {
         <nav className="bottom-nav">
           <NavLink to="/inicio" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
             <Home size={22} />
-            <span className="nav-label">Início</span>
+            <span className={`nav-label${location.pathname === "/inicio" ? " nav-label-active" : ""}`}>Início</span>
           </NavLink>
           <NavLink to="/receitas" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
             <BookOpen size={22} />
-            <span className="nav-label">Receitas</span>
+            <span className={`nav-label${location.pathname === "/receitas" ? " nav-label-active" : ""}`}>Receitas</span>
           </NavLink>
           <NavLink to="/clientes" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
             <Users size={22} />
-            <span className="nav-label">Clientes</span>
+            <span className={`nav-label${location.pathname === "/clientes" ? " nav-label-active" : ""}`}>Clientes</span>
           </NavLink>
           <NavLink to="/cardapio-config" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
             <UtensilsCrossed size={22} />
-            <span className="nav-label">Cardápio</span>
+            <span className={`nav-label${location.pathname === "/cardapio-config" ? " nav-label-active" : ""}`}>Cardápio</span>
           </NavLink>
           <button className={`bottom-item ${gestaoOpen ? "active" : ""}`} onClick={() => setGestaoOpen(!gestaoOpen)}>
             <Menu size={22} />
-            <span className="nav-label">Outros</span>
+            <span className={`nav-label${gestaoOpen ? " nav-label-active" : ""}`}>Outros</span>
           </button>
         </nav>
       )}
@@ -290,6 +290,7 @@ export default function Layout() {
             color: inherit;
             white-space: nowrap;
           }
+          .nav-label-active { font-size: 0.6rem; font-weight: 800; color: #F583BF; }
 
           .bottom-item svg { color: inherit; }
           .bottom-item.active { color: #F583BF; font-weight: 700; }
