@@ -136,8 +136,8 @@ export default function Assinar() {
 
       <style>{`
         .ass-root { font-family:'Inter',sans-serif; max-width:480px; margin:0 auto; display:flex; flex-direction:column; gap:1rem; padding:0 0 2rem; }
-        .ass-back { display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:10px; background:var(--bg-card,white); border:1.5px solid var(--border,#e5e7eb); cursor:pointer; color:var(--text-primary,#374151); margin-bottom:0.75rem; }
-        .ass-hero { padding:0 0 0.25rem; }
+        .ass-back { display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:10px; background:var(--bg-card,white); border:1.5px solid var(--border,#e5e7eb); cursor:pointer; color:var(--text-primary,#374151); margin-bottom:0.25rem; }
+        .ass-hero { padding:0; }
         .ass-hero-icon { width:80px; height:80px; background:var(--bg-card,white); border-radius:24px; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; box-shadow:var(--shadow-card,0 2px 12px rgba(0,0,0,0.08)); }
         .ass-hero-logo { max-height:160px; width:100%; object-fit:contain; display:block; margin:0 auto 0.75rem; }
         .ass-hero-sub { font-size:0.88rem; color:var(--text-muted,#9ca3af); margin:0 0 0.75rem; text-align:center; line-height:1.6; }
