@@ -17,11 +17,21 @@ export default function CardapioConfigPage() {
   const [success, setSuccess] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [buscandoCep, setBuscandoCep] = useState(false);
+  const [cepPreenchido, setCepPreenchido] = useState(false);
   const [form, setForm] = useState({
     nome_loja: "",
     telefone: "",
     foto_url: "",
     hide_stars: false,
+    cep: "",
+    rua: "",
+    numero: "",
+    bairro: "",
+    cidade: "",
+    estado: "",
+    mostrar_localizacao: false,
+    mostrar_apenas_cidade: false,
   });
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -30,15 +40,26 @@ export default function CardapioConfigPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("nome_loja, telefone, foto_url, hide_stars").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("nome_loja, telefone, foto_url, hide_stars, endereco, mostrar_localizacao, mostrar_apenas_cidade").eq("id", user.id).single();
       if (data) {
+        let addr: any = {};
+        try { addr = data.endereco ? JSON.parse(data.endereco) : {}; } catch {}
         setForm({
           nome_loja: data.nome_loja || "",
           telefone: data.telefone || "",
           foto_url: data.foto_url || "",
           hide_stars: data.hide_stars || false,
+          cep: addr.cep || "",
+          rua: addr.rua || "",
+          numero: addr.numero || "",
+          bairro: addr.bairro || "",
+          cidade: addr.cidade || "",
+          estado: addr.estado || "",
+          mostrar_localizacao: data.mostrar_localizacao || false,
+          mostrar_apenas_cidade: data.mostrar_apenas_cidade || false,
         });
         if (data.foto_url) setPreview(data.foto_url);
+        if (addr.cep) setCepPreenchido(true);
       }
       setLoading(false);
     };
@@ -70,14 +91,33 @@ export default function CardapioConfigPage() {
     setUploading(false);
   };
 
+  const buscarCep = async (cep: string) => {
+    const limpo = cep.replace(/\D/g, "");
+    if (limpo.length !== 8) return;
+    setBuscandoCep(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${limpo}/json/`);
+      const data = await res.json();
+      if (!data.erro) {
+        setForm(f => ({ ...f, rua: data.logradouro || f.rua, bairro: data.bairro || f.bairro, cidade: data.localidade || f.cidade, estado: data.uf || f.estado }));
+        setCepPreenchido(true);
+      }
+    } catch {}
+    setBuscandoCep(false);
+  };
+
   const handleSave = async () => {
     if (!userId) return;
     setSaving(true);
+    const endereco = JSON.stringify({ cep: form.cep, rua: form.rua, numero: form.numero, bairro: form.bairro, cidade: form.cidade, estado: form.estado });
     await supabase.from("profiles").update({
       nome_loja: form.nome_loja,
       telefone: form.telefone,
       foto_url: form.foto_url,
       hide_stars: form.hide_stars,
+      endereco,
+      mostrar_localizacao: form.mostrar_localizacao,
+      mostrar_apenas_cidade: form.mostrar_apenas_cidade,
     }).eq("id", userId);
     setSaving(false);
     setSuccess(true);
@@ -143,7 +183,104 @@ export default function CardapioConfigPage() {
         </div>
       </div>
 
-      {/* Card 2 — Avaliações */}
+      {/* Card 2 — Localização */}
+      <div className="ccc-card">
+        <SectionLabel>Localização da loja</SectionLabel>
+
+        {/* CEP */}
+        <div className="ccc-field">
+          <span className="ccc-field-icon">
+            {buscandoCep
+              ? <span className="ccc-spinner-xs" />
+              : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            }
+          </span>
+          <input
+            className="ccc-field-input"
+            placeholder="CEP (opcional)"
+            value={form.cep}
+            onChange={e => {
+              const d = e.target.value.replace(/\D/g, "").slice(0, 8);
+              const fmt = d.length > 5 ? `${d.slice(0,5)}-${d.slice(5)}` : d;
+              setForm({...form, cep: fmt});
+              if (d.length < 8) setCepPreenchido(false);
+              if (d.length === 8) buscarCep(d);
+            }}
+          />
+        </div>
+
+        {/* Rua */}
+        <Field
+          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>}
+          placeholder="Rua / Avenida"
+          value={form.rua}
+          onChange={(e: any) => setForm({...form, rua: e.target.value})}
+        />
+
+        {/* Bairro e Número */}
+        <div className="ccc-row-2">
+          <Field
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>}
+            placeholder="Bairro"
+            value={form.bairro}
+            onChange={(e: any) => setForm({...form, bairro: e.target.value})}
+          />
+          <Field
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>}
+            placeholder="Número"
+            value={form.numero}
+            onChange={(e: any) => setForm({...form, numero: e.target.value})}
+          />
+        </div>
+
+        {/* Cidade e Estado */}
+        <div className="ccc-row-2">
+          <Field
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg>}
+            placeholder="Cidade"
+            value={form.cidade}
+            onChange={(e: any) => setForm({...form, cidade: e.target.value})}
+          />
+          <Field
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18M3 15h18"/></svg>}
+            placeholder="Estado"
+            value={form.estado}
+            onChange={(e: any) => setForm({...form, estado: e.target.value.toUpperCase()})}
+          />
+        </div>
+
+        {cepPreenchido && (
+          <p className="ccc-cep-hint">Preenchido automaticamente. <span onClick={() => setCepPreenchido(false)} style={{color:"#F583BF",cursor:"pointer",fontWeight:600}}>Editar manual</span></p>
+        )}
+
+        <div className="ccc-divider" />
+
+        {/* Toggle Mostrar localização completa */}
+        <div className="ccc-toggle-row">
+          <div>
+            <p className="ccc-toggle-label">Mostrar localização completa</p>
+            <p className="ccc-toggle-sub">Exibe rua, bairro e cidade no cardápio</p>
+          </div>
+          <label className="ccc-toggle">
+            <input type="checkbox" checked={form.mostrar_localizacao} onChange={e => setForm({...form, mostrar_localizacao: e.target.checked, mostrar_apenas_cidade: e.target.checked ? false : form.mostrar_apenas_cidade})} />
+            <span className="ccc-toggle-slider" />
+          </label>
+        </div>
+
+        {/* Toggle Mostrar apenas cidade */}
+        <div className="ccc-toggle-row">
+          <div>
+            <p className="ccc-toggle-label">Mostrar apenas cidade</p>
+            <p className="ccc-toggle-sub">Exibe somente a cidade no cardápio</p>
+          </div>
+          <label className="ccc-toggle">
+            <input type="checkbox" checked={form.mostrar_apenas_cidade} onChange={e => setForm({...form, mostrar_apenas_cidade: e.target.checked, mostrar_localizacao: e.target.checked ? false : form.mostrar_localizacao})} />
+            <span className="ccc-toggle-slider" />
+          </label>
+        </div>
+      </div>
+
+      {/* Card 3 — Avaliações */}
       <div className="ccc-card">
         <SectionLabel>Avaliações</SectionLabel>
         <div className="ccc-toggle-row">
@@ -186,6 +323,9 @@ export default function CardapioConfigPage() {
         .ccc-field-input { flex:1; border:none; outline:none; font-family:'Inter',sans-serif; font-size:0.9rem; color:var(--text-primary,#1f2937); background:transparent; }
         .ccc-field-input::placeholder { color:#9ca3af; }
 
+        .ccc-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
+        .ccc-divider { border:none; border-top:1px solid var(--border,#f3f4f6); margin:0; }
+        .ccc-cep-hint { font-size:0.72rem; color:var(--text-muted,#9ca3af); margin:0; }
         .ccc-obs { display:flex; align-items:flex-start; gap:0.5rem; background:#fdf2f8; border-radius:10px; padding:0.65rem 0.85rem; }
         .ccc-obs p { font-size:0.75rem; color:var(--text-secondary,#6b7280); margin:0; line-height:1.5; }
 
