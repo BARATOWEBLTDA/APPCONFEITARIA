@@ -103,7 +103,7 @@ export default function Layout() {
         </a>
       </aside>
 
-      <main className="layout-main">
+      <main className={`layout-main${isAssinar ? " layout-main--no-header" : ""}`}>
         <Outlet />
       </main>
 
@@ -254,6 +254,7 @@ export default function Layout() {
           .mob-top-icon { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0.2rem; }
 
           .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 5.5rem; background: var(--bg-body, #fff0f6); min-height: 100vh; }
+          .layout-main--no-header { padding-top: 1rem; }
 
           .bottom-nav {
             display: flex !important;
