@@ -209,44 +209,38 @@ export default function CardapioConfigPage() {
           />
         </div>
 
-        {/* Rua */}
-        <Field
-          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>}
-          placeholder="Rua / Avenida"
-          value={form.rua}
-          onChange={(e: any) => setForm({...form, rua: e.target.value})}
-        />
-
-        {/* Bairro e Número */}
-        <div className="ccc-row-2">
+        {/* Rua + Número na mesma linha */}
+        <div style={{display:"grid", gridTemplateColumns:"minmax(0,1fr) 80px", gap:"0.5rem"}}>
           <Field
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>}
-            placeholder="Bairro"
-            value={form.bairro}
-            onChange={(e: any) => setForm({...form, bairro: e.target.value})}
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>}
+            placeholder="Rua / Avenida"
+            value={form.rua}
+            onChange={(e: any) => setForm({...form, rua: e.target.value})}
           />
-          <Field
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>}
-            placeholder="Número"
-            value={form.numero}
-            onChange={(e: any) => setForm({...form, numero: e.target.value})}
-          />
+          <div className="ccc-field">
+            <input className="ccc-field-input" placeholder="Nº" value={form.numero} onChange={(e: any) => setForm({...form, numero: e.target.value})} />
+          </div>
         </div>
 
-        {/* Cidade e Estado */}
-        <div className="ccc-row-2">
+        {/* Bairro */}
+        <Field
+          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>}
+          placeholder="Bairro"
+          value={form.bairro}
+          onChange={(e: any) => setForm({...form, bairro: e.target.value})}
+        />
+
+        {/* Cidade + Estado na mesma linha */}
+        <div style={{display:"grid", gridTemplateColumns:"minmax(0,1fr) 80px", gap:"0.5rem"}}>
           <Field
             icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg>}
             placeholder="Cidade"
             value={form.cidade}
             onChange={(e: any) => setForm({...form, cidade: e.target.value})}
           />
-          <Field
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18M3 15h18"/></svg>}
-            placeholder="Estado"
-            value={form.estado}
-            onChange={(e: any) => setForm({...form, estado: e.target.value.toUpperCase()})}
-          />
+          <div className="ccc-field">
+            <input className="ccc-field-input" placeholder="Estado" value={form.estado} onChange={(e: any) => setForm({...form, estado: e.target.value.toUpperCase()})} maxLength={2} />
+          </div>
         </div>
 
         {cepPreenchido && (
