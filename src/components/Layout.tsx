@@ -282,7 +282,7 @@ export default function Layout() {
           .mob-top-icons { display: flex; align-items: center; gap: 0.6rem; }
           .mob-top-icon { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0.2rem; }
 
-          .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 5.5rem; background: var(--bg-body, #fff0f6); min-height: 100vh; }
+          .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 5.5rem; background: var(--bg-body, #f5f5f5); min-height: 100vh; }
           .layout-main--no-header { padding-top: 1rem; background: #f8f8f8; }
 
           .bottom-nav {
