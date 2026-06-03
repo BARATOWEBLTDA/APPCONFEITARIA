@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { refreshProfile } from "@/hooks/useProfile";
+import { useTheme } from "@/context/ThemeContext";
+import { usePlano } from "@/hooks/usePlano";
 
 const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 
@@ -26,6 +28,8 @@ const SectionLabel = ({ children }: { children: React.ReactNode }) => (
 
 export default function Configuracoes() {
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
+  const { isPro } = usePlano();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -493,6 +497,41 @@ export default function Configuracoes() {
         {/* Card — Horários */}
         <HorarioSection />
 
+        {/* Card — Aparência */}
+        <div className="cfg-card">
+          <SectionLabel>Aparência</SectionLabel>
+          {!isPro ? (
+            <div className="cfg-tema-locked">
+              <span>🔒</span>
+              <div>
+                <p className="cfg-toggle-label" style={{color:"#9ca3af"}}>Temas personalizados</p>
+                <p className="cfg-toggle-sub">Disponível no plano PRO</p>
+              </div>
+            </div>
+          ) : (
+            <div className="cfg-tema-grid">
+              <button
+                className={`cfg-tema-btn${theme === "light" ? " active" : ""}`}
+                onClick={() => setTheme("light")}
+              >
+                <div className="cfg-tema-preview cfg-tema-preview--light">
+                  <div /><div /><div />
+                </div>
+                <span>Claro</span>
+              </button>
+              <button
+                className={`cfg-tema-btn${theme === "dark" ? " active" : ""}`}
+                onClick={() => setTheme("dark")}
+              >
+                <div className="cfg-tema-preview cfg-tema-preview--dark">
+                  <div /><div /><div />
+                </div>
+                <span>Escuro</span>
+              </button>
+            </div>
+          )}
+        </div>
+
         {/* Feedback */}
         {error && <div className="cfg-toast cfg-toast-error">{error}</div>}
         {success && <div className="cfg-toast cfg-toast-success">✓ Salvo com sucesso!</div>}
@@ -788,7 +827,27 @@ export default function Configuracoes() {
           color: #1f2937; background: transparent;
           min-width: 0;
         }
-        .cfg-horario-btn {
+        .cfg-tema-locked { display: flex; align-items: center; gap: 0.75rem; opacity: 0.6; }
+        .cfg-tema-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .cfg-tema-btn {
+          display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+          padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 14px;
+          background: white; cursor: pointer; transition: all 0.2s;
+          font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600; color: #6b7280;
+        }
+        .cfg-tema-btn.active { border-color: #F583BF; color: #F583BF; background: #fdf2f8; }
+        .cfg-tema-preview {
+          width: 100%; height: 48px; border-radius: 8px; overflow: hidden;
+          display: flex; flex-direction: column; gap: 3px; padding: 6px;
+        }
+        .cfg-tema-preview--light { background: #f9fafb; }
+        .cfg-tema-preview--light div:nth-child(1) { height: 8px; background: #e5e7eb; border-radius: 4px; width: 60%; }
+        .cfg-tema-preview--light div:nth-child(2) { height: 8px; background: #e5e7eb; border-radius: 4px; width: 90%; }
+        .cfg-tema-preview--light div:nth-child(3) { height: 8px; background: #F583BF; border-radius: 4px; width: 40%; }
+        .cfg-tema-preview--dark { background: #1a1a1a; }
+        .cfg-tema-preview--dark div:nth-child(1) { height: 8px; background: #333; border-radius: 4px; width: 60%; }
+        .cfg-tema-preview--dark div:nth-child(2) { height: 8px; background: #333; border-radius: 4px; width: 90%; }
+        .cfg-tema-preview--dark div:nth-child(3) { height: 8px; background: #F583BF; border-radius: 4px; width: 40%; }
           display: flex; align-items: center; gap: 0.7rem;
           border: 1.5px solid #e5e7eb; border-radius: 50px;
           padding: 0.65rem 1.1rem; background: white;
