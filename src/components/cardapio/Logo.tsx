@@ -117,25 +117,25 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
       </div>
 
       <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '6px', paddingTop: '100px', margin: '0 16px', marginTop: '-100px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 20, position: 'relative' }}>
-        <div style={{ textAlign: 'center', marginTop: '32px', marginBottom: '16px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 700, color: corNome || '#1f2937', marginBottom: '8px' }}>{storeName}</h1>
+        <div style={{ textAlign: 'center', marginTop: '28px', marginBottom: '12px' }}>
+          <h1 style={{ fontSize: '22px', fontWeight: 700, color: corNome || '#1f2937', marginBottom: '4px' }}>{storeName}</h1>
 
           {!hideStars && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
               <div style={{ display: 'flex', gap: '2px' }}>{renderStars(avaliacaoMedia)}</div>
-              <span style={{ fontSize: '14px', fontWeight: 600, color: '#374151' }}>{avaliacaoMedia}/5.0</span>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#374151' }}>{avaliacaoMedia}/5.0</span>
             </div>
           )}
 
           {storeDescription && (
-            <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px', lineHeight: '1.5' }}>{storeDescription}</p>
+            <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px', lineHeight: '1.4' }}>{storeDescription}</p>
           )}
 
           {/* Status aberto/fechado */}
           {status && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '50px', background: status.aberto ? '#dcfce7' : '#fef2f2', marginBottom: '8px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: status.aberto ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
-              <span style={{ fontSize: '13px', fontWeight: 700, color: status.aberto ? '#15803d' : '#dc2626' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '5px 12px', borderRadius: '50px', background: status.aberto ? '#dcfce7' : '#fef2f2', marginBottom: '6px' }}>
+              <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: status.aberto ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
+              <span style={{ fontSize: '12px', fontWeight: 700, color: status.aberto ? '#15803d' : '#dc2626' }}>
                 {status.aberto ? 'Aberto Agora' : `Fechado · ${status.msg}`}
               </span>
             </div>

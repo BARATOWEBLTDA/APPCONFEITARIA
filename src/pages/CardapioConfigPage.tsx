@@ -23,6 +23,7 @@ export default function CardapioConfigPage() {
     nome_loja: "",
     telefone: "",
     foto_url: "",
+    descricao_loja: "",
     hide_stars: false,
     avaliacao_media: 5.0,
     cep: "",
@@ -56,13 +57,14 @@ export default function CardapioConfigPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("nome_loja, telefone, foto_url, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega, horario").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("nome_loja, telefone, foto_url, descricao_loja, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega, horario").eq("id", user.id).single();
       if (data) {
         let addr: any = {};
         try { addr = data.endereco ? JSON.parse(data.endereco) : {}; } catch {}
         setForm({
           nome_loja: data.nome_loja || "",
           telefone: data.telefone || "",
+          descricao_loja: data.descricao_loja || "",
           foto_url: data.foto_url || "",
           hide_stars: data.hide_stars || false,
           avaliacao_media: data.avaliacao_media || 5.0,
@@ -138,6 +140,7 @@ export default function CardapioConfigPage() {
     await supabase.from("profiles").update({
       nome_loja: form.nome_loja,
       telefone: form.telefone,
+      descricao_loja: form.descricao_loja,
       foto_url: form.foto_url,
       hide_stars: form.hide_stars,
       avaliacao_media: form.avaliacao_media,
@@ -215,6 +218,13 @@ export default function CardapioConfigPage() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <p>O WhatsApp informado será usado para receber pedidos dos seus clientes diretamente no app.</p>
         </div>
+        <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1.1rem"}}>
+          <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </span>
+          <textarea className="ccc-field-input" placeholder="Descrição da loja (aparece no cardápio)" value={form.descricao_loja} onChange={e => setForm({...form, descricao_loja: e.target.value})} rows={3} maxLength={200} style={{resize:"none"}} />
+        </div>
+        <p className="ccc-char-count">{(form.descricao_loja || "").length}/200</p>
       </div>
 
       {/* Card 2 — Localização */}
