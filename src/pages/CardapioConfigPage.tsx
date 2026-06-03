@@ -118,7 +118,32 @@ export default function CardapioConfigPage() {
     setUploading(false);
   };
 
-  const buscarCep = async (cep: string) => {
+  const [gerandoDescricao, setGerandoDescricao] = useState(false);
+
+  const gerarDescricaoLoja = async () => {
+    if (!form.nome_loja.trim()) return alert("Digite o nome da loja primeiro.");
+    setGerandoDescricao(true);
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          messages: [{
+            role: "user",
+            content: `Crie uma descrição curta e atraente para uma confeitaria chamada "${form.nome_loja}". A descrição deve ter no máximo 150 caracteres, ser em português brasileiro, transmitir carinho e qualidade, e despertar vontade de comprar. Retorne APENAS a descrição, sem aspas, sem explicações.`
+          }]
+        })
+      });
+      const data = await response.json();
+      const descricao = data.content?.[0]?.text?.trim();
+      if (descricao) setForm(f => ({ ...f, descricao_loja: descricao }));
+    } catch {
+      alert("Erro ao gerar descrição. Tente novamente.");
+    }
+    setGerandoDescricao(false);
+  };
     const limpo = cep.replace(/\D/g, "");
     if (limpo.length !== 8) return;
     setBuscandoCep(true);
@@ -222,7 +247,20 @@ export default function CardapioConfigPage() {
           <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           </span>
-          <textarea className="ccc-field-input" placeholder="Descrição da loja (aparece no cardápio)" value={form.descricao_loja} onChange={e => setForm({...form, descricao_loja: e.target.value})} rows={3} maxLength={200} style={{resize:"none"}} />
+          <div style={{flex:1,display:"flex",flexDirection:"column",gap:"0.4rem"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span style={{fontSize:"0.75rem",color:"#9ca3af"}}>Descrição</span>
+              <button
+                type="button"
+                className="ccc-btn-ia"
+                onClick={gerarDescricaoLoja}
+                disabled={gerandoDescricao || !form.nome_loja.trim()}
+              >
+                {gerandoDescricao ? <><span className="ccc-spinner-ia" /> Gerando...</> : <>✨ Gerar com IA</>}
+              </button>
+            </div>
+            <textarea className="ccc-field-input" placeholder="Descrição da loja (aparece no cardápio)" value={form.descricao_loja} onChange={e => setForm({...form, descricao_loja: e.target.value})} rows={3} maxLength={200} style={{resize:"none"}} />
+          </div>
         </div>
         <p className="ccc-char-count">{(form.descricao_loja || "").length}/200</p>
       </div>
@@ -535,7 +573,10 @@ export default function CardapioConfigPage() {
         .ccc-modal-actions { display:flex; gap:0.75rem; }
         .ccc-modal-cancel { flex:1; padding:0.85rem; border:1.5px solid #e5e7eb; border-radius:50px; background:white; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:600; color:#6b7280; cursor:pointer; }
         .ccc-modal-confirm { flex:1; padding:0.85rem; background:linear-gradient(135deg,#F583BF,#e060a8); border:none; border-radius:50px; color:white; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; } border:1px solid #bbf7d0; color:#15803d; border-radius:12px; padding:0.7rem 1rem; font-size:0.85rem; font-weight:500; }
-        .ccc-btn-save { width:100%; padding:0.9rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; min-height:50px; transition:opacity 0.2s; }
+        .ccc-btn-ia { display:inline-flex; align-items:center; gap:0.3rem; padding:0.2rem 0.6rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:20px; font-family:'Inter',sans-serif; font-size:0.7rem; font-weight:700; cursor:pointer; transition:opacity 0.2s; white-space:nowrap; }
+        .ccc-btn-ia:disabled { opacity:0.5; cursor:not-allowed; }
+        .ccc-btn-ia:hover:not(:disabled) { opacity:0.9; }
+        .ccc-spinner-ia { width:10px; height:10px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; } width:100%; padding:0.9rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; min-height:50px; transition:opacity 0.2s; }
         .ccc-btn-save:hover { opacity:0.9; }
         .ccc-btn-save:disabled { opacity:0.65; cursor:not-allowed; }
         .ccc-spinner-sm { width:20px; height:20px; border:2px solid rgba(255,255,255,0.35); border-top-color:white; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }

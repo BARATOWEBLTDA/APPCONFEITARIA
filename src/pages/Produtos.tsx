@@ -414,7 +414,10 @@ export default function Produtos() {
         .prod-toggle-item.active-green .prod-toggle-slider { background:#22c55e; }
         .prod-toggle-thumb { width:18px; height:18px; border-radius:50%; background:white; position:absolute; top:2px; left:2px; transition:transform 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
 
-        .prod-btn-cancelar { flex:1; padding:0.85rem; background:var(--bg-subtle,#f3f4f6); border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
+        .prod-btn-ia { display:inline-flex; align-items:center; gap:0.3rem; padding:0.25rem 0.65rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:20px; font-family:'Inter',sans-serif; font-size:0.72rem; font-weight:700; cursor:pointer; transition:opacity 0.2s; white-space:nowrap; }
+        .prod-btn-ia:disabled { opacity:0.5; cursor:not-allowed; }
+        .prod-btn-ia:hover:not(:disabled) { opacity:0.9; }
+        .prod-spinner-xs { width:10px; height:10px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; flex-shrink:0; } flex:1; padding:0.85rem; background:var(--bg-subtle,#f3f4f6); border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
         .prod-btn-salvar { flex:2; padding:0.85rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
         .prod-btn-salvar:disabled { opacity:0.65; cursor:not-allowed; }
 
