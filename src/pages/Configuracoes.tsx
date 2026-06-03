@@ -663,17 +663,14 @@ export default function Configuracoes() {
 
         /* ── Accordion ── */
         .cfg-accordion {
-          background: transparent;
-          border-radius: 0;
-          border-bottom: 1px solid var(--border, #e5e7eb);
+          background: white;
+          border-radius: 18px;
+          box-shadow: 0 2px 12px rgba(0,0,0,0.06);
           overflow: hidden;
-        }
-        .cfg-accordion:first-of-type {
-          border-top: 1px solid var(--border, #e5e7eb);
         }
         .cfg-accordion-header {
           display: flex; align-items: center; gap: 0.75rem;
-          width: 100%; padding: 1rem 0;
+          width: 100%; padding: 1rem 1.15rem;
           background: none; border: none; cursor: pointer;
           font-family: 'Inter', sans-serif; text-align: left;
         }
@@ -681,7 +678,18 @@ export default function Configuracoes() {
         .cfg-accordion-title { flex: 1; font-size: 0.88rem; font-weight: 700; color: #F583BF; text-transform: uppercase; letter-spacing: 0.07em; }
         .cfg-accordion-chevron { color: #9ca3af; transition: transform 0.2s; flex-shrink: 0; }
         .cfg-accordion-chevron.open { transform: rotate(180deg); }
-        .cfg-accordion-body { padding: 0 0 1rem; display: flex; flex-direction: column; gap: 0.7rem; }
+        .cfg-accordion-body { padding: 0 1.15rem 1.15rem; display: flex; flex-direction: column; gap: 0.7rem; border-top: 1px solid #f3f4f6; padding-top: 1rem; }
+
+        /* Dark mode — accordion transparente */
+        :root.dark .cfg-accordion {
+          background: transparent;
+          border-radius: 0;
+          box-shadow: none;
+          border-bottom: 1px solid var(--border, #2a2a2a);
+        }
+        :root.dark .cfg-accordion:first-of-type { border-top: 1px solid var(--border, #2a2a2a); }
+        :root.dark .cfg-accordion-header { padding: 1rem 0; }
+        :root.dark .cfg-accordion-body { padding: 0 0 1rem; border-top: 1px solid var(--border, #2a2a2a); }
         .cfg-mobile  { display: flex; flex-direction: column; gap: 0.85rem; }
         .cfg-desktop { display: none; }
         @media (min-width: 900px) {
