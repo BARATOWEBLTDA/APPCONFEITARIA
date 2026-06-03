@@ -32,7 +32,16 @@ export default function CardapioConfigPage() {
     estado: "",
     mostrar_localizacao: false,
     mostrar_apenas_cidade: false,
+    faz_entrega: false,
+    taxa_entrega: "",
+    pedido_minimo: "",
+    entrega_gratis_acima: "",
+    horario_entrega: "",
+    area_entrega: "",
+    observacoes_entrega: "",
   });
+  const [modalHorario, setModalHorario] = useState(false);
+  const [horarioTemp, setHorarioTemp] = useState({ inicio: "08:00", fim: "18:00" });
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -40,7 +49,7 @@ export default function CardapioConfigPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("nome_loja, telefone, foto_url, hide_stars, endereco, mostrar_localizacao, mostrar_apenas_cidade").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("nome_loja, telefone, foto_url, hide_stars, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega").eq("id", user.id).single();
       if (data) {
         let addr: any = {};
         try { addr = data.endereco ? JSON.parse(data.endereco) : {}; } catch {}
@@ -57,6 +66,13 @@ export default function CardapioConfigPage() {
           estado: addr.estado || "",
           mostrar_localizacao: data.mostrar_localizacao || false,
           mostrar_apenas_cidade: data.mostrar_apenas_cidade || false,
+          faz_entrega: data.faz_entrega || false,
+          taxa_entrega: data.taxa_entrega ? data.taxa_entrega.toString() : "",
+          pedido_minimo: data.pedido_minimo ? data.pedido_minimo.toString() : "",
+          entrega_gratis_acima: data.entrega_gratis_acima ? data.entrega_gratis_acima.toString() : "",
+          horario_entrega: data.horario_entrega || "",
+          area_entrega: data.area_entrega || "",
+          observacoes_entrega: data.observacoes_entrega || "",
         });
         if (data.foto_url) setPreview(data.foto_url);
         if (addr.cep) setCepPreenchido(true);
@@ -118,6 +134,13 @@ export default function CardapioConfigPage() {
       endereco,
       mostrar_localizacao: form.mostrar_localizacao,
       mostrar_apenas_cidade: form.mostrar_apenas_cidade,
+      faz_entrega: form.faz_entrega,
+      taxa_entrega: form.taxa_entrega ? parseFloat(form.taxa_entrega) : null,
+      pedido_minimo: form.pedido_minimo ? parseFloat(form.pedido_minimo) : null,
+      entrega_gratis_acima: form.entrega_gratis_acima ? parseFloat(form.entrega_gratis_acima) : null,
+      horario_entrega: form.horario_entrega,
+      area_entrega: form.area_entrega,
+      observacoes_entrega: form.observacoes_entrega,
     }).eq("id", userId);
     setSaving(false);
     setSuccess(true);
@@ -274,7 +297,40 @@ export default function CardapioConfigPage() {
         </div>
       </div>
 
-      {/* Card 3 — Avaliações */}
+      {/* Card 3 — Entrega */}
+      <div className="ccc-card">
+        <SectionLabel>Entrega</SectionLabel>
+        <div className="ccc-toggle-row">
+          <div>
+            <p className="ccc-toggle-label">Faz entrega?</p>
+            <p className="ccc-toggle-sub">Ative para exibir opção de entrega no cardápio</p>
+          </div>
+          <label className="ccc-toggle">
+            <input type="checkbox" checked={form.faz_entrega} onChange={e => setForm({...form, faz_entrega: e.target.checked})} />
+            <span className="ccc-toggle-slider" />
+          </label>
+        </div>
+        {form.faz_entrega && (
+          <>
+            <div className="ccc-divider" />
+            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>} placeholder="Taxa de entrega" value={form.taxa_entrega} onChange={(e: any) => setForm({...form, taxa_entrega: e.target.value.replace(/[^0-9.,]/g,"")})} />
+            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>} placeholder="Pedido mínimo" value={form.pedido_minimo} onChange={(e: any) => setForm({...form, pedido_minimo: e.target.value.replace(/[^0-9.,]/g,"")})} />
+            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>} placeholder="Entrega grátis acima de" value={form.entrega_gratis_acima} onChange={(e: any) => setForm({...form, entrega_gratis_acima: e.target.value.replace(/[^0-9.,]/g,"")})} />
+            <button className="ccc-horario-btn" onClick={() => { if (form.horario_entrega) { const [ini, fim] = form.horario_entrega.split(" às "); setHorarioTemp({ inicio: ini || "08:00", fim: fim || "18:00" }); } setModalHorario(true); }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>{form.horario_entrega || "Horário de entregas"}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginLeft:"auto",opacity:0.4}}><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} placeholder="Área de entrega" value={form.area_entrega} onChange={(e: any) => setForm({...form, area_entrega: e.target.value})} />
+            <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1.1rem"}}>
+              <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+              <textarea className="ccc-field-input" placeholder="Observações" value={form.observacoes_entrega} onChange={e => setForm({...form, observacoes_entrega: e.target.value})} rows={3} style={{resize:"none"}} />
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Card 4 — Avaliações */}
       <div className="ccc-card">
         <SectionLabel>Avaliações</SectionLabel>
         <div className="ccc-toggle-row">
@@ -290,6 +346,27 @@ export default function CardapioConfigPage() {
       </div>
 
       {success && <div className="ccc-toast">✓ Salvo com sucesso!</div>}
+
+      {/* Modal Horário */}
+      {modalHorario && (
+        <div className="ccc-modal-overlay" onClick={() => setModalHorario(false)}>
+          <div className="ccc-modal" onClick={e => e.stopPropagation()}>
+            <div className="ccc-modal-header">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>Horário de entregas</span>
+            </div>
+            <div className="ccc-modal-times">
+              <div className="ccc-modal-time-field"><label>Início</label><input type="time" value={horarioTemp.inicio} onChange={e => setHorarioTemp({...horarioTemp, inicio: e.target.value})} /></div>
+              <div style={{color:"#d1d5db",fontSize:"1.2rem",paddingTop:"1.2rem"}}>→</div>
+              <div className="ccc-modal-time-field"><label>Fim</label><input type="time" value={horarioTemp.fim} onChange={e => setHorarioTemp({...horarioTemp, fim: e.target.value})} /></div>
+            </div>
+            <div className="ccc-modal-actions">
+              <button className="ccc-modal-cancel" onClick={() => setModalHorario(false)}>Cancelar</button>
+              <button className="ccc-modal-confirm" onClick={() => { setForm(f => ({...f, horario_entrega: `${horarioTemp.inicio} às ${horarioTemp.fim}`})); setModalHorario(false); }}>Confirmar</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <button className="ccc-btn-save" onClick={handleSave} disabled={saving || uploading}>
         {saving ? <span className="ccc-spinner-sm" /> : "Salvar alterações"}
@@ -337,7 +414,21 @@ export default function CardapioConfigPage() {
         .ccc-toggle input:checked + .ccc-toggle-slider { background:#F583BF; }
         .ccc-toggle input:checked + .ccc-toggle-slider:before { transform:translateX(20px); }
 
-        .ccc-toast { background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; border-radius:12px; padding:0.7rem 1rem; font-size:0.85rem; font-weight:500; }
+        .ccc-horario-btn { display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); font-family:'Inter',sans-serif; font-size:0.9rem; color:#9ca3af; cursor:pointer; width:100%; transition:border-color 0.2s; text-align:left; }
+        .ccc-horario-btn:hover { border-color:#F583BF; }
+        .ccc-horario-btn span { flex:1; }
+        .ccc-modal-overlay { position:fixed; inset:0; z-index:999; background:rgba(0,0,0,0.45); display:flex; align-items:flex-end; justify-content:center; }
+        .ccc-modal { background:white; border-radius:24px 24px 0 0; padding:1.5rem 1.5rem 2rem; width:100%; max-width:480px; animation:slideUp 0.25s ease; }
+        @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+        .ccc-modal-header { display:flex; align-items:center; gap:0.5rem; font-size:1rem; font-weight:700; color:#1f2937; margin-bottom:1.25rem; }
+        .ccc-modal-times { display:flex; align-items:center; gap:0.75rem; margin-bottom:1.5rem; }
+        .ccc-modal-time-field { display:flex; flex-direction:column; gap:0.3rem; flex:1; }
+        .ccc-modal-time-field label { font-size:0.75rem; font-weight:600; color:#6b7280; }
+        .ccc-modal-time-field input { padding:0.55rem; border:2px solid #fce7f3; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.95rem; font-weight:600; color:#1f2937; outline:none; text-align:center; background:#fdf2f8; width:100%; }
+        .ccc-modal-time-field input:focus { border-color:#F583BF; background:white; }
+        .ccc-modal-actions { display:flex; gap:0.75rem; }
+        .ccc-modal-cancel { flex:1; padding:0.85rem; border:1.5px solid #e5e7eb; border-radius:50px; background:white; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:600; color:#6b7280; cursor:pointer; }
+        .ccc-modal-confirm { flex:1; padding:0.85rem; background:linear-gradient(135deg,#F583BF,#e060a8); border:none; border-radius:50px; color:white; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; } border:1px solid #bbf7d0; color:#15803d; border-radius:12px; padding:0.7rem 1rem; font-size:0.85rem; font-weight:500; }
         .ccc-btn-save { width:100%; padding:0.9rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; min-height:50px; transition:opacity 0.2s; }
         .ccc-btn-save:hover { opacity:0.9; }
         .ccc-btn-save:disabled { opacity:0.65; cursor:not-allowed; }

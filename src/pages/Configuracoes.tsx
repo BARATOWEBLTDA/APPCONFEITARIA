@@ -400,47 +400,6 @@ export default function Configuracoes() {
           )}
         </div>
 
-        {/* Card — Entrega */}
-        <div className="cfg-accordion">
-          <button className="cfg-accordion-header" onClick={() => toggleSection("entrega")}>
-            <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
-            <span className="cfg-accordion-title">Entrega</span>
-            <svg className={`cfg-accordion-chevron${openSection === "entrega" ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          {openSection === "entrega" && (
-            <div className="cfg-accordion-body">
-              <div className="cfg-toggle-row">
-                <div>
-                  <p className="cfg-toggle-label">Faz entrega?</p>
-                  <p className="cfg-toggle-sub">Ative para exibir opção de entrega</p>
-                </div>
-                <label className="toggle">
-                  <input type="checkbox" checked={entrega.faz_entrega} onChange={e => setEntrega({...entrega, faz_entrega: e.target.checked})} />
-                  <span className="toggle-slider" />
-                </label>
-              </div>
-              {entrega.faz_entrega && (
-                <>
-                  <div className="cfg-divider" />
-                  <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>} placeholder="Qual a taxa de entrega?" value={entrega.taxa_entrega} onChange={(e: any) => setEntrega({...entrega, taxa_entrega: e.target.value.replace(/[^0-9.,]/g,"")})} />
-                  <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>} placeholder="Pedido mínimo para entrega" value={entrega.pedido_minimo} onChange={(e: any) => setEntrega({...entrega, pedido_minimo: e.target.value.replace(/[^0-9.,]/g,"")})} />
-                  <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>} placeholder="Entrega grátis acima de" value={entrega.entrega_gratis_acima} onChange={(e: any) => setEntrega({...entrega, entrega_gratis_acima: e.target.value.replace(/[^0-9.,]/g,"")})} />
-                  <button className="cfg-horario-btn" onClick={() => { if (entrega.horario_entrega) { const [ini, fim] = entrega.horario_entrega.split(" às "); setHorarioEntregaTemp({ inicio: ini || "08:00", fim: fim || "18:00" }); } setModalHorario(true); }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    <span>{entrega.horario_entrega || "Horário de entregas"}</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginLeft:"auto",opacity:0.4}}><polyline points="9 18 15 12 9 6"/></svg>
-                  </button>
-                  <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} placeholder="Área de entrega (bairros, cidades...)" value={entrega.area_entrega} onChange={(e: any) => setEntrega({...entrega, area_entrega: e.target.value})} />
-                  <div className="cfg-field cfg-field-textarea">
-                    <span className="cfg-field-icon" style={{alignSelf:"flex-start",marginTop:"0.1rem"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                    <textarea className="cfg-field-input" placeholder="Observações" value={entrega.observacoes_entrega} onChange={(e: any) => setEntrega({...entrega, observacoes_entrega: e.target.value})} rows={3} style={{resize:"none", paddingTop:"0.1rem"}} />
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-
         {/* Card — Horários */}
         <div className="cfg-accordion">
           <button className="cfg-accordion-header" onClick={() => toggleSection("horarios")}>
