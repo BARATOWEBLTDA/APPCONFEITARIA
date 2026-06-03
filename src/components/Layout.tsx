@@ -292,8 +292,8 @@ export default function Layout() {
           }
 
           .bottom-item svg { color: inherit; }
-          .bottom-item.active { color: #f9007a; }
-          .bottom-item:hover { color: #f9007a; }
+          .bottom-item.active { color: #F583BF; }
+          .bottom-item:hover { color: #F583BF; }
 
           :root.dark .mob-top-header { background: #000000; }
           .gestao-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); }
