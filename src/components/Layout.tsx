@@ -182,9 +182,12 @@ export default function Layout() {
         <nav className="bottom-nav">
           {(cardapioNav || isCardapioMode) ? (
             <>
-              <button className={`bottom-item${["/cardapio-preview","/cardapio-config"].includes(location.pathname) ? " active" : ""}`} onClick={() => navigate("/cardapio-config")}>
+              <button className="bottom-item" onClick={async () => {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) navigate(`/cardapio/${user.id}`);
+              }}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                <span className={`nav-label${["/cardapio-preview","/cardapio-config"].includes(location.pathname) ? " nav-label-active" : ""}`}>Prévia</span>
+                <span className="nav-label">Prévia</span>
               </button>
               <button className={`bottom-item${location.pathname === "/produtos" ? " active" : ""}`} onClick={() => navigate("/produtos")}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
