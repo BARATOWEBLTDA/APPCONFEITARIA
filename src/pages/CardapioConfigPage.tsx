@@ -487,7 +487,8 @@ export default function CardapioConfigPage() {
         .ccc-time-field { display:flex; flex-direction:column; gap:0.25rem; }
         .ccc-time-field label { font-size:0.74rem; font-weight:600; color:var(--text-secondary,#6b7280); }
         .ccc-time-field input { padding:0.6rem 0.85rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; font-family:'Inter',sans-serif; font-size:0.88rem; color:var(--text-primary,#1f2937); outline:none; transition:border-color 0.2s; width:100%; background:var(--bg-input,white); }
-        .ccc-time-field input:focus { border-color:#F583BF; } display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem; }
+        .ccc-time-field input:focus { border-color:#F583BF; }
+        .ccc-notas-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem; }
         .ccc-nota-btn {
           padding:0.75rem 0.5rem;
           border:1.5px solid var(--border,#e5e7eb);
