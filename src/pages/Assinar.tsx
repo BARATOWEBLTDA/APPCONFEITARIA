@@ -135,6 +135,7 @@ export default function Assinar() {
       </div>
 
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:ital@1&display=swap');
         .ass-root { font-family:'Inter',sans-serif; max-width:480px; margin:0 auto; display:flex; flex-direction:column; gap:1rem; padding:0 0 2rem; }
         .ass-back { display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:10px; background:var(--bg-card,white); border:1.5px solid var(--border,#e5e7eb); cursor:pointer; color:var(--text-primary,#374151); margin-bottom:0.25rem; }
         .ass-hero { padding:0; }
@@ -164,7 +165,7 @@ export default function Assinar() {
         .ass-btn-assinar { width:100%; padding:0.95rem; background:linear-gradient(135deg,#F583BF,#e060a8); border:none; border-radius:50px; color:white; font-family:'Inter',sans-serif; font-size:1rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.5rem; transition:opacity 0.2s,transform 0.1s; margin-top:0.5rem; }
         .ass-btn-assinar:hover { opacity:0.9; }
         .ass-btn-assinar:active { transform:scale(0.98); }
-        .ass-btn-voltar { background:none; border:none; color:var(--text-muted,#9ca3af); font-family:'Inter',sans-serif; font-size:0.85rem; cursor:pointer; text-decoration:underline; padding:0.25rem; text-align:center; }
+        .ass-btn-voltar { background:none; border:none; color:var(--text-muted,#9ca3af); font-family:'Nunito',sans-serif; font-style:italic; font-size:0.88rem; cursor:pointer; text-decoration:underline; padding:0.25rem; text-align:center; }
         .ass-info-title { font-size:0.88rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0; }
         .ass-info-text { font-size:0.8rem; color:var(--text-secondary,#6b7280); margin:0.25rem 0 0; line-height:1.5; }
         .ass-politicas { display:flex; flex-direction:column; gap:0.6rem; }
