@@ -159,7 +159,7 @@ const load = async () => {
               <img src="/assine.png" alt="" style={{width:"38px",height:"38px",objectFit:"contain",flexShrink:0,borderRadius:"10px"}} />
               <div style={{flex:1,minWidth:0}}>
                 <p className="mob-pro-mini-title">Seu acesso PRO expira em {diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}.</p>
-                <p className="mob-pro-mini-sub">Continue com todas as funcionalidades sem interrupção por apenas <strong style={{color:"white"}}>R$ 7,90/mês</strong>.</p>
+                <p className="mob-pro-mini-sub">Continue com todas as funcionalidades sem interrupção por apenas <strong style={{color:"white"}}>R$ 19,90/mês</strong>.</p>
               </div>
             </div>
             <button className="mob-assinar-btn-sm" style={{marginTop:"0.65rem",width:"100%"}} onClick={() => navigate("/assinar")}>
