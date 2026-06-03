@@ -293,6 +293,7 @@ export default function Layout() {
 
           .bottom-item svg { color: inherit; }
           .bottom-item.active { color: #F583BF; font-weight: 700; }
+          .bottom-item.active .nav-label { font-weight: 800 !important; }
           .bottom-item:hover { color: #F583BF; }
 
           :root.dark .mob-top-header { background: #000000; }
