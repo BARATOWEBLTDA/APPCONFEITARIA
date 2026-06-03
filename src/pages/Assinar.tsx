@@ -40,12 +40,12 @@ export default function Assinar() {
         <div className="ass-hero-icon">
           <img src="/assine.png" alt="PRO" style={{width:"56px",height:"56px",objectFit:"contain"}} />
         </div>
-        <h1 className="ass-hero-title">Doonly PRO</h1>
-        <p className="ass-hero-sub">Desbloqueie todo o potencial da sua confeitaria</p>
+        <img src="/doonytexto.png" alt="Doonly PRO" className="ass-hero-logo" />
+        <p className="ass-hero-sub">Recursos premium pensados para aumentar suas encomendas e vendas. Leve sua confeitaria ao próximo nível.</p>
         {isPro && proExpiraEm && (
           <div className="ass-trial-badge">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Teste PRO — {diasRestantes} dia{diasRestantes !== 1 ? "s" : ""} restante{diasRestantes !== 1 ? "s" : ""}
+            Seu PRO acaba em {diasRestantes} dia{diasRestantes !== 1 ? "s" : ""}
           </div>
         )}
       </div>
@@ -57,10 +57,10 @@ export default function Assinar() {
           <div className="ass-plano-info">
             <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
               <span className="ass-plano-label">Anual</span>
-              <span className="ass-economia-badge">Economize 34%</span>
+              <span className="ass-economia-badge">Economize 17%</span>
             </div>
-            <span className="ass-plano-price">R$ 7,90<span className="ass-plano-period">/mês</span></span>
-            <span className="ass-plano-equiv">Equivale a R$ 94,80/ano</span>
+            <span className="ass-plano-price">R$ 197,00<span className="ass-plano-period">/ano</span></span>
+            <span className="ass-plano-equiv">Equivale a R$ 16,42/mês</span>
           </div>
         </button>
 
@@ -68,7 +68,7 @@ export default function Assinar() {
           <div className="ass-plano-radio">{planoSel === "mensal" && <div className="ass-plano-radio-inner" />}</div>
           <div className="ass-plano-info">
             <span className="ass-plano-label">Mensal</span>
-            <span className="ass-plano-price">R$ 11,90<span className="ass-plano-period">/mês</span></span>
+            <span className="ass-plano-price">R$ 19,90<span className="ass-plano-period">/mês</span></span>
           </div>
         </button>
       </div>
@@ -142,9 +142,10 @@ export default function Assinar() {
         .ass-back { display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:10px; background:var(--bg-card,white); border:1.5px solid var(--border,#e5e7eb); cursor:pointer; color:var(--text-primary,#374151); margin-bottom:0.75rem; }
         .ass-hero { padding:0 0 0.25rem; }
         .ass-hero-icon { width:80px; height:80px; background:var(--bg-card,white); border-radius:24px; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; box-shadow:var(--shadow-card,0 2px 12px rgba(0,0,0,0.08)); }
+        .ass-hero-logo { max-height:36px; object-fit:contain; display:block; margin:0 auto 0.5rem; }
         .ass-hero-title { font-size:1.6rem; font-weight:800; color:var(--text-primary,#1f2937); margin:0 0 0.3rem; text-align:center; }
-        .ass-hero-sub { font-size:0.88rem; color:var(--text-muted,#9ca3af); margin:0 0 0.75rem; text-align:center; }
-        .ass-trial-badge { display:inline-flex; align-items:center; gap:0.4rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; font-size:0.78rem; font-weight:700; padding:0.35rem 0.9rem; border-radius:20px; margin:0 auto; width:fit-content; }
+        .ass-hero-sub { font-size:0.88rem; color:var(--text-muted,#9ca3af); margin:0 0 0.75rem; text-align:center; line-height:1.6; }
+        .ass-trial-badge { display:flex; align-items:center; justify-content:center; gap:0.4rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; font-size:0.78rem; font-weight:700; padding:0.45rem 1rem; border-radius:20px; margin:0 auto; width:fit-content; }
         .ass-planos { display:flex; flex-direction:column; gap:0.65rem; }
         .ass-plano-btn { display:flex; align-items:center; gap:1rem; padding:1rem 1.15rem; background:var(--bg-card,white); border:2px solid var(--border,#e5e7eb); border-radius:16px; cursor:pointer; font-family:'Inter',sans-serif; text-align:left; transition:border-color 0.2s; box-shadow:var(--shadow-card,0 2px 8px rgba(0,0,0,0.05)); }
         .ass-plano-btn.selected { border-color:#F583BF; }
