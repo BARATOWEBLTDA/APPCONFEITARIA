@@ -60,7 +60,7 @@ export default function EsqueciSenha() {
 
       // Tenta enviar o reset independente — Supabase não expõe se email existe por segurança
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/login`,
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (resetError) throw resetError;

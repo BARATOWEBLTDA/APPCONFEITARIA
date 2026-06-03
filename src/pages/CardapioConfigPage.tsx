@@ -231,7 +231,7 @@ export default function CardapioConfigPage() {
         />
 
         {/* Cidade + Estado na mesma linha */}
-        <div style={{display:"grid", gridTemplateColumns:"minmax(0,1fr) 80px", gap:"0.5rem"}}>
+        <div style={{display:"grid", gridTemplateColumns:"minmax(0,1fr) 90px", gap:"0.5rem"}}>
           <Field
             icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg>}
             placeholder="Cidade"
@@ -239,7 +239,7 @@ export default function CardapioConfigPage() {
             onChange={(e: any) => setForm({...form, cidade: e.target.value})}
           />
           <div className="ccc-field">
-            <input className="ccc-field-input" placeholder="Estado" value={form.estado} onChange={(e: any) => setForm({...form, estado: e.target.value.toUpperCase()})} maxLength={2} />
+            <input className="ccc-field-input" placeholder="UF" value={form.estado} onChange={(e: any) => setForm({...form, estado: e.target.value.toUpperCase()})} maxLength={2} />
           </div>
         </div>
 
@@ -311,11 +311,14 @@ export default function CardapioConfigPage() {
         .ccc-logo-label { font-size:0.88rem; font-weight:600; color:var(--text-primary,#1f2937); margin:0; }
         .ccc-logo-sub { font-size:0.75rem; color:var(--text-muted,#9ca3af); margin:0.2rem 0 0; }
 
-        .ccc-field { display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:50px; padding:0.65rem 1.1rem; background:var(--bg-input,white); transition:border-color 0.2s; }
+        .ccc-field { display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); transition:border-color 0.2s; }
         .ccc-field:focus-within { border-color:#F583BF; }
         .ccc-field-icon { display:flex; align-items:center; flex-shrink:0; color:var(--text-muted,#9ca3af); }
-        .ccc-field-input { flex:1; border:none; outline:none; font-family:'Inter',sans-serif; font-size:0.9rem; color:var(--text-primary,#1f2937); background:transparent; }
+        .ccc-field-input { flex:1; border:none; outline:none; font-family:'Inter',sans-serif; font-size:0.9rem; color:var(--text-primary,#1f2937); background:transparent; min-width:0; }
         .ccc-field-input::placeholder { color:#9ca3af; }
+        .ccc-field-input:-webkit-autofill,
+        .ccc-field-input:-webkit-autofill:hover,
+        .ccc-field-input:-webkit-autofill:focus { -webkit-box-shadow:0 0 0px 1000px white inset; box-shadow:0 0 0px 1000px white inset; -webkit-text-fill-color:#1f2937; transition:background-color 5000s ease-in-out 0s; }
 
         .ccc-row-2 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0.5rem; }
         .ccc-row-2 .ccc-field-input { font-size:0.85rem; min-width:0; }

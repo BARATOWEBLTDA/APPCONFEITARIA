@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import Auth from "@/pages/Auth";
 import EsqueciSenha from "@/pages/EsqueciSenha";
+import ResetPassword from "@/pages/ResetPassword";
 import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import Inicio from "@/pages/Inicio";
@@ -58,6 +59,7 @@ export default function App() {
         <Route path="/login" element={<Auth />} />
         <Route path="/cardapio/:slug" element={<CardapioPublico />} />
         <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
           <Route path="/dashboard" element={<Dashboard />} />
