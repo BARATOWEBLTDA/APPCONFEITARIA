@@ -663,14 +663,17 @@ export default function Configuracoes() {
 
         /* ── Accordion ── */
         .cfg-accordion {
-          background: white;
-          border-radius: 18px;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+          background: transparent;
+          border-radius: 0;
+          border-bottom: 1px solid var(--border, #e5e7eb);
           overflow: hidden;
+        }
+        .cfg-accordion:first-of-type {
+          border-top: 1px solid var(--border, #e5e7eb);
         }
         .cfg-accordion-header {
           display: flex; align-items: center; gap: 0.75rem;
-          width: 100%; padding: 1rem 1.15rem;
+          width: 100%; padding: 1rem 0;
           background: none; border: none; cursor: pointer;
           font-family: 'Inter', sans-serif; text-align: left;
         }
@@ -678,7 +681,7 @@ export default function Configuracoes() {
         .cfg-accordion-title { flex: 1; font-size: 0.88rem; font-weight: 700; color: #F583BF; text-transform: uppercase; letter-spacing: 0.07em; }
         .cfg-accordion-chevron { color: #9ca3af; transition: transform 0.2s; flex-shrink: 0; }
         .cfg-accordion-chevron.open { transform: rotate(180deg); }
-        .cfg-accordion-body { padding: 0 1.15rem 1.15rem; display: flex; flex-direction: column; gap: 0.7rem; border-top: 1px solid #f3f4f6; padding-top: 1rem; }
+        .cfg-accordion-body { padding: 0 0 1rem; display: flex; flex-direction: column; gap: 0.7rem; }
         .cfg-mobile  { display: flex; flex-direction: column; gap: 0.85rem; }
         .cfg-desktop { display: none; }
         @media (min-width: 900px) {
@@ -768,28 +771,28 @@ export default function Configuracoes() {
         /* ── Fields (pill style) ── */
         .cfg-field {
           display: flex; align-items: center; gap: 0.7rem;
-          border: 1.5px solid #e5e7eb;
+          border: 1.5px solid var(--border, #e5e7eb);
           border-radius: 50px;
           padding: 0.65rem 1.1rem;
-          background: white;
+          background: var(--bg-input, white);
           transition: border-color 0.2s;
           min-width: 0;
         }
-        .cfg-field:focus-within { border-color: #7c3aed; }
-        .cfg-field-icon { display: flex; align-items: center; flex-shrink: 0; color: #9ca3af; }
+        .cfg-field:focus-within { border-color: #F583BF; }
+        .cfg-field-icon { display: flex; align-items: center; flex-shrink: 0; color: var(--text-muted, #9ca3af); }
         .cfg-field-input {
           flex: 1; border: none; outline: none;
           font-family: 'Inter', sans-serif; font-size: 0.9rem;
-          color: #1f2937; background: transparent;
+          color: var(--text-primary, #1f2937); background: transparent;
           min-width: 0;
         }
         .cfg-tema-locked { display: flex; align-items: center; gap: 0.75rem; opacity: 0.6; }
         .cfg-tema-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
         .cfg-tema-btn {
           display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
-          padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 14px;
-          background: white; cursor: pointer; transition: all 0.2s;
-          font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600; color: #6b7280;
+          padding: 0.75rem; border: 2px solid var(--border, #e5e7eb); border-radius: 14px;
+          background: var(--bg-subtle, white); cursor: pointer; transition: all 0.2s;
+          font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary, #6b7280);
         }
         .cfg-tema-btn.active { border-color: #F583BF; color: #F583BF; background: #fdf2f8; }
         .cfg-tema-preview {
