@@ -323,8 +323,7 @@ export default function CardapioConfigPage() {
         .ccc-field-input { flex:1; border:none; outline:none; font-family:'Inter',sans-serif; font-size:0.9rem; color:var(--text-primary,#1f2937); background:transparent; }
         .ccc-field-input::placeholder { color:#9ca3af; }
 
-        .ccc-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
-        .ccc-row-2 .ccc-field { padding:0.65rem 0.75rem; }
+        .ccc-row-2 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0.5rem; }
         .ccc-row-2 .ccc-field-input { font-size:0.85rem; min-width:0; }
         .ccc-divider { border:none; border-top:1px solid var(--border,#f3f4f6); margin:0; }
         .ccc-cep-hint { font-size:0.72rem; color:var(--text-muted,#9ca3af); margin:0; }
