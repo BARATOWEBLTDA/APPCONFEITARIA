@@ -53,4 +53,5 @@ export interface Configuracoes {
   endereco?: string | null
   mostrar_localizacao?: boolean
   mostrar_apenas_cidade?: boolean
+  horario?: string | null
 }
