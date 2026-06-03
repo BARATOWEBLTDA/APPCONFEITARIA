@@ -20,6 +20,7 @@ import AdminNotificacoes from "@/pages/admin/AdminNotificacoes";
 import AdminRelatorios from "@/pages/admin/AdminRelatorios";
 import Configuracoes from "@/pages/Configuracoes";
 import Personalizacao from "@/pages/Personalizacao";
+import CardapioPrevia from "@/pages/CardapioPrevia";
 
 // Páginas rascunho
 const Produtos = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🎂 Produtos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
@@ -70,7 +71,7 @@ export default function App() {
           <Route path="/financeiro" element={<Financeiro />} />
           <Route path="/promocoes" element={<Promocoes />} />
           <Route path="/cardapio-config" element={<CardapioConfig />} />
-          <Route path="/cardapio-preview" element={<CardapioConfig />} />
+          <Route path="/cardapio-preview" element={<CardapioPrevia />} />
           <Route path="/cardapio-design" element={<CardapioConfig />} />
           <Route path="/estoque" element={<Estoque />} />
           <Route path="/receitas" element={<Receitas />} />
