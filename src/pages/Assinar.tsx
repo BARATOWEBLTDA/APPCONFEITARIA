@@ -1,204 +1,230 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { usePlano } from "@/hooks/usePlano";
 
-const beneficiosFree = [
-  "Até 10 clientes",
-  "Até 5 produtos",
-  "Cardápio básico",
-  "Suporte por e-mail",
-  "1 categoria de produto",
-  "Sem relatórios",
+const beneficios = [
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, label: "Clientes ilimitados" },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>, label: "Produtos ilimitados" },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, label: "Relatórios avançados" },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>, label: "Cardápio digital profissional" },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, label: "Suporte prioritário" },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>, label: "Temas personalizados" },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>, label: "Acesso a mais de 10.000 receitas" },
+  { icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>, label: "Recursos exclusivos PRO" },
 ];
 
-const beneficiosPremium = [
-  "Clientes ilimitados",
-  "Produtos ilimitados",
-  "Cardápio digital profissional",
-  "Relatórios avançados",
-  "Backup automático",
-  "Suporte prioritário",
-  "Assistente IA Doonly",
-  "Acesso a mais de 10.000 receitas",
-  "Recursos exclusivos",
+const politicas = [
+  "Cancele quando quiser",
+  "Sem taxas de cancelamento",
+  "Renovação automática até ser cancelada",
+  "Acesso imediato após assinatura",
 ];
 
 export default function Assinar() {
   const navigate = useNavigate();
+  const { isPro, proExpiraEm } = usePlano();
+  const [planoSel, setPlanoSel] = useState<"mensal" | "anual">("mensal");
+
+  const diasRestantes = proExpiraEm
+    ? Math.max(0, Math.ceil((proExpiraEm.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
+    : 0;
 
   return (
     <div className="ass-root">
-      {/* Header */}
-      <div className="ass-header">
-        <button className="ass-back" onClick={() => navigate(-1)}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+
+      {/* Hero */}
+      <div className="ass-hero">
+        <div className="ass-hero-icon">
+          <img src="/assine.png" alt="PRO" style={{width:"56px",height:"56px",objectFit:"contain"}} />
+        </div>
+        <h1 className="ass-hero-title">Doonly PRO</h1>
+        <p className="ass-hero-sub">Desbloqueie todo o potencial da sua confeitaria</p>
+
+        {isPro && proExpiraEm && (
+          <div className="ass-trial-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Teste PRO — {diasRestantes} dia{diasRestantes !== 1 ? "s" : ""} restante{diasRestantes !== 1 ? "s" : ""}
+          </div>
+        )}
+      </div>
+
+      {/* Seletor de plano */}
+      <div className="ass-planos">
+        <button
+          className={`ass-plano-btn${planoSel === "anual" ? " selected" : ""}`}
+          onClick={() => setPlanoSel("anual")}
+        >
+          <div className="ass-plano-radio">
+            {planoSel === "anual" && <div className="ass-plano-radio-inner" />}
+          </div>
+          <div className="ass-plano-info">
+            <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
+              <span className="ass-plano-label">Anual</span>
+              <span className="ass-economia-badge">Economize 34%</span>
+            </div>
+            <span className="ass-plano-price">R$ 7,90<span className="ass-plano-period">/mês</span></span>
+            <span className="ass-plano-equiv">Equivale a R$ 94,80/ano</span>
+          </div>
         </button>
-        <div>
-          <h1 className="ass-title">⏱️ Seu período de teste expira em <span>14 dias!</span></h1>
-          <p className="ass-subtitle">Escolha seu plano e continue usando o Doonly sem interrupções.</p>
+
+        <button
+          className={`ass-plano-btn${planoSel === "mensal" ? " selected" : ""}`}
+          onClick={() => setPlanoSel("mensal")}
+        >
+          <div className="ass-plano-radio">
+            {planoSel === "mensal" && <div className="ass-plano-radio-inner" />}
+          </div>
+          <div className="ass-plano-info">
+            <span className="ass-plano-label">Mensal</span>
+            <span className="ass-plano-price">R$ 11,90<span className="ass-plano-period">/mês</span></span>
+          </div>
+        </button>
+      </div>
+
+      {/* O que está incluso */}
+      <div className="ass-card">
+        <p className="ass-card-title">O que está incluso:</p>
+        <div className="ass-beneficios">
+          {beneficios.map((b, i) => (
+            <div key={i} className="ass-beneficio-item">
+              <div className="ass-beneficio-icon">{b.icon}</div>
+              <span>{b.label}</span>
+            </div>
+          ))}
+        </div>
+
+        <button className="ass-btn-assinar" onClick={() => alert("Em breve! Entre em contato: 41 9 9884-3669")}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Assinar Agora
+        </button>
+
+        <button className="ass-btn-voltar" onClick={() => navigate(-1)}>
+          Continuar no plano grátis
+        </button>
+      </div>
+
+      {/* Pagamento seguro */}
+      <div className="ass-card ass-card-info">
+        <div style={{display:"flex",alignItems:"flex-start",gap:"0.75rem"}}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="2" style={{flexShrink:0,marginTop:"2px"}}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div>
+            <p className="ass-info-title">Pagamento Seguro</p>
+            <p className="ass-info-text">Os pagamentos são processados de forma segura. Seus dados financeiros nunca são armazenados em nossos servidores.</p>
+          </div>
         </div>
       </div>
 
-      {/* Cards comparação */}
-      <div className="ass-plans">
-
-        {/* Plano Grátis */}
-        <div className="ass-plan-card ass-free">
-          <div className="ass-plan-top">
-            <span className="ass-plan-badge free">Plano Grátis</span>
-            <h2 className="ass-plan-name">Free</h2>
-            <div className="ass-plan-price">
-              <span className="ass-price-value">R$ 0</span>
-              <span className="ass-price-period">/ sempre</span>
+      {/* Política */}
+      <div className="ass-card">
+        <p className="ass-card-title">Política de Assinatura</p>
+        <div className="ass-politicas">
+          {politicas.map((p, i) => (
+            <div key={i} className="ass-politica-item">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>{p}</span>
             </div>
-            <p className="ass-plan-desc">Ideal para começar a explorar a plataforma.</p>
-          </div>
-
-          <div className="ass-divider" />
-
-          <div className="ass-benefits">
-            {beneficiosFree.map(b => (
-              <div key={b} className="ass-benefit-item">
-                <div className="ass-check free-check">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                </div>
-                <span>{b}</span>
-              </div>
-            ))}
-          </div>
-
-          <button className="ass-btn-free" onClick={() => navigate(-1)}>
-            Continuar no Free
-          </button>
+          ))}
         </div>
-
-        {/* Plano Premium */}
-        <div className="ass-plan-card ass-premium">
-          <div className="ass-plan-top">
-            <span className="ass-plan-badge premium">⭐ Mais popular</span>
-            <h2 className="ass-plan-name">Premium</h2>
-            <div className="ass-plan-price">
-              <span className="ass-price-value">R$ 19,90</span>
-              <span className="ass-price-period">/ mês</span>
-            </div>
-            <p className="ass-plan-desc">Tudo que precisa para crescer sua confeitaria.</p>
-          </div>
-
-          <div className="ass-divider" />
-
-          <div className="ass-benefits">
-            {beneficiosPremium.map(b => (
-              <div key={b} className="ass-benefit-item">
-                <div className="ass-check premium-check">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                </div>
-                <span>{b}</span>
-              </div>
-            ))}
-          </div>
-
-          <button className="ass-btn-premium" onClick={() => alert("Em breve! Entre em contato: 41 9 9884-3669")}>
-            Assinar agora ✨
-          </button>
-        </div>
-
       </div>
 
-      {/* Info */}
-      <div className="ass-info">
-        <h3 className="ass-info-title">ℹ️ Informações importantes</h3>
-        <ul className="ass-info-list">
-          <li>Você pode cancelar a qualquer momento sem multa.</li>
-          <li>O cancelamento entra em vigor no final do período pago.</li>
-          <li>Seus dados ficam salvos mesmo após o cancelamento.</li>
-          <li>Pagamentos processados de forma segura.</li>
-        </ul>
+      {/* Plano atual */}
+      <div className="ass-card ass-card-plano-atual">
+        <div style={{display:"flex",alignItems:"center",gap:"0.6rem",marginBottom:"0.5rem"}}>
+          <span style={{fontSize:"1.2rem"}}>🎁</span>
+          <p className="ass-plano-atual-label">Seu plano atual</p>
+        </div>
+        {isPro && proExpiraEm ? (
+          <p className="ass-plano-atual-valor">Período de Avaliação ({diasRestantes} dias)</p>
+        ) : isPro ? (
+          <p className="ass-plano-atual-valor" style={{color:"#22c55e"}}>PRO Ativo ✓</p>
+        ) : (
+          <p className="ass-plano-atual-valor">Plano Grátis</p>
+        )}
+        <p className="ass-plano-atual-desc">
+          {isPro && proExpiraEm
+            ? "Aproveite para testar todos os recursos. Assine para continuar usando após o período de avaliação."
+            : "Assine para desbloquear todos os recursos PRO."}
+        </p>
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        .ass-root { font-family: 'Inter', sans-serif; max-width: 860px; }
+        .ass-root { font-family: 'Inter', sans-serif; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; padding-bottom: 2rem; }
 
-        .ass-header { margin-bottom: 1.5rem; }
-        .ass-back { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: white; border: 1.5px solid #e5e7eb; cursor: pointer; color: #374151; margin-bottom: 1rem; transition: background 0.15s; }
-        .ass-back:hover { background: #f9fafb; }
-        .ass-title { font-size: 1.25rem; font-weight: 700; color: #1f2937; margin: 0 0 0.4rem; line-height: 1.3; }
-        .ass-title span { color: #f9007a; }
-        .ass-subtitle { font-size: 0.88rem; color: #6b7280; margin: 0; }
+        /* Hero */
+        .ass-hero { text-align: center; padding: 1rem 0 0.5rem; }
+        .ass-hero-icon { width: 80px; height: 80px; background: var(--bg-card, white); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.08)); }
+        .ass-hero-title { font-size: 1.6rem; font-weight: 800; color: var(--text-primary, #1f2937); margin: 0 0 0.3rem; }
+        .ass-hero-sub { font-size: 0.88rem; color: var(--text-muted, #9ca3af); margin: 0 0 0.75rem; }
+        .ass-trial-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: linear-gradient(135deg,#F583BF,#e060a8); color: white; font-size: 0.78rem; font-weight: 700; padding: 0.35rem 0.9rem; border-radius: 20px; }
 
-        /* Plans grid */
-        .ass-plans {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 1.25rem;
-          margin-bottom: 1.25rem;
-          align-items: start;
+        /* Seletor plano */
+        .ass-planos { display: flex; flex-direction: column; gap: 0.65rem; }
+        .ass-plano-btn {
+          display: flex; align-items: center; gap: 1rem;
+          padding: 1rem 1.15rem;
+          background: var(--bg-card, white);
+          border: 2px solid var(--border, #e5e7eb);
+          border-radius: 16px; cursor: pointer;
+          font-family: 'Inter', sans-serif; text-align: left;
+          transition: border-color 0.2s;
+          box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.05));
         }
+        .ass-plano-btn.selected { border-color: #F583BF; background: var(--bg-card, white); }
+        .ass-plano-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border, #d1d5db); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: border-color 0.2s; }
+        .ass-plano-btn.selected .ass-plano-radio { border-color: #F583BF; }
+        .ass-plano-radio-inner { width: 10px; height: 10px; border-radius: 50%; background: #F583BF; }
+        .ass-plano-info { display: flex; flex-direction: column; gap: 0.1rem; flex: 1; }
+        .ass-plano-label { font-size: 0.88rem; font-weight: 600; color: var(--text-primary, #1f2937); }
+        .ass-plano-price { font-size: 1.3rem; font-weight: 800; color: var(--text-primary, #1f2937); }
+        .ass-plano-period { font-size: 0.82rem; font-weight: 500; color: var(--text-muted, #9ca3af); }
+        .ass-plano-equiv { font-size: 0.72rem; color: var(--text-muted, #9ca3af); }
+        .ass-economia-badge { background: #dcfce7; color: #16a34a; font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 20px; }
 
-        .ass-plan-card {
-          border-radius: 20px; padding: 1.5rem;
-          display: flex; flex-direction: column;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        /* Cards */
+        .ass-card { background: var(--bg-card, white); border-radius: 18px; padding: 1.25rem; box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); display: flex; flex-direction: column; gap: 0.75rem; }
+        .ass-card-title { font-size: 0.88rem; font-weight: 700; color: var(--text-primary, #1f2937); margin: 0; }
+        .ass-card-info { background: var(--bg-subtle, #fdf2f8); border: 1px solid rgba(245,131,191,0.2); }
+
+        /* Benefícios */
+        .ass-beneficios { display: flex; flex-direction: column; gap: 0.7rem; }
+        .ass-beneficio-item { display: flex; align-items: center; gap: 0.85rem; }
+        .ass-beneficio-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--bg-subtle, #fdf2f8); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #F583BF; }
+
+        .ass-beneficio-item span { font-size: 0.88rem; color: var(--text-primary, #1f2937); font-weight: 500; }
+
+        /* Botões */
+        .ass-btn-assinar {
+          width: 100%; padding: 0.95rem;
+          background: linear-gradient(135deg, #F583BF, #e060a8);
+          border: none; border-radius: 50px; color: white;
+          font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 700;
+          cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+          transition: opacity 0.2s, transform 0.1s;
+          margin-top: 0.5rem;
         }
+        .ass-btn-assinar:hover { opacity: 0.9; }
+        .ass-btn-assinar:active { transform: scale(0.98); }
+        .ass-btn-voltar { background: none; border: none; color: var(--text-muted, #9ca3af); font-family: 'Inter', sans-serif; font-size: 0.85rem; cursor: pointer; text-decoration: underline; padding: 0.25rem; }
 
-        /* Free card */
-        .ass-free {
-          background: white;
-          border: 2px solid #e5e7eb;
-        }
-        .ass-free .ass-plan-name { color: #374151; }
-        .ass-free .ass-price-value { color: #374151; }
-        .ass-free .ass-price-period { color: #9ca3af; }
-        .ass-free .ass-plan-desc { color: #9ca3af; }
-        .ass-free .ass-benefit-item { color: #6b7280; }
-        .ass-free .ass-divider { border-color: #f3f4f6; }
+        /* Info */
+        .ass-info-title { font-size: 0.88rem; font-weight: 700; color: var(--text-primary, #1f2937); margin: 0; }
+        .ass-info-text { font-size: 0.8rem; color: var(--text-secondary, #6b7280); margin: 0.25rem 0 0; line-height: 1.5; }
 
-        /* Premium card */
-        .ass-premium {
-          background: linear-gradient(135deg, #1a1a2e, #16213e);
-          border: 2px solid rgba(249,0,122,0.3);
-          position: relative; overflow: hidden;
-          box-shadow: 0 8px 32px rgba(249,0,122,0.15);
-        }
-        .ass-premium::before { content: ''; position: absolute; top: -60px; right: -60px; width: 200px; height: 200px; border-radius: 50%; background: rgba(249,0,122,0.08); }
-        .ass-premium .ass-plan-name { color: white; }
-        .ass-premium .ass-price-value { color: white; }
-        .ass-premium .ass-price-period { color: rgba(255,255,255,0.6); }
-        .ass-premium .ass-plan-desc { color: rgba(255,255,255,0.6); }
-        .ass-premium .ass-benefit-item { color: rgba(255,255,255,0.85); }
-        .ass-premium .ass-divider { border-color: rgba(255,255,255,0.1); }
+        /* Políticas */
+        .ass-politicas { display: flex; flex-direction: column; gap: 0.6rem; }
+        .ass-politica-item { display: flex; align-items: center; gap: 0.65rem; font-size: 0.85rem; color: var(--text-primary, #1f2937); font-weight: 500; }
 
-        .ass-plan-top { margin-bottom: 0.5rem; }
-        .ass-plan-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; padding: 0.3rem 0.9rem; border-radius: 20px; margin-bottom: 0.75rem; letter-spacing: 0.3px; }
-        .ass-plan-badge.free { background: #f3f4f6; color: #6b7280; }
-        .ass-plan-badge.premium { background: linear-gradient(135deg, #f9007a, #ff6eb4); color: white; }
+        /* Plano atual */
+        .ass-card-plano-atual { background: var(--bg-subtle, #fdf9f0); border: 1px solid rgba(245,131,191,0.15); }
+        .ass-plano-atual-label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary, #6b7280); margin: 0; }
+        .ass-plano-atual-valor { font-size: 1.1rem; font-weight: 800; color: #F583BF; margin: 0; }
+        .ass-plano-atual-desc { font-size: 0.78rem; color: var(--text-muted, #9ca3af); margin: 0; line-height: 1.5; }
 
-        .ass-plan-name { font-size: 1.5rem; font-weight: 800; margin: 0 0 0.5rem; }
-        .ass-plan-price { display: flex; align-items: baseline; gap: 0.3rem; margin-bottom: 0.4rem; }
-        .ass-price-value { font-size: 2rem; font-weight: 800; line-height: 1; }
-        .ass-price-period { font-size: 0.9rem; font-weight: 500; }
-        .ass-plan-desc { font-size: 0.82rem; margin: 0; line-height: 1.5; }
-
-        .ass-divider { border: none; border-top: 1px solid; margin: 1.1rem 0; }
-
-        .ass-benefits { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; margin-bottom: 1.25rem; }
-        .ass-benefit-item { display: flex; align-items: center; gap: 0.65rem; font-size: 0.85rem; }
-        .ass-check { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-        .free-check { background: #9ca3af; }
-        .premium-check { background: linear-gradient(135deg, #f9007a, #d4006a); box-shadow: 0 2px 6px rgba(249,0,122,0.3); }
-
-        .ass-btn-free { width: 100%; padding: 0.85rem; background: #f3f4f6; color: #6b7280; border: 2px solid #e5e7eb; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-        .ass-btn-free:hover { background: #e5e7eb; }
-
-        .ass-btn-premium { width: 100%; padding: 0.9rem; background: linear-gradient(135deg, #f9c74f, #f8961e); color: #1a1a2e; border: none; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 20px rgba(248,150,30,0.4); transition: opacity 0.2s, transform 0.15s; }
-        .ass-btn-premium:hover { opacity: 0.92; transform: translateY(-1px); }
-
-        .ass-info { background: white; border-radius: 14px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .ass-info-title { font-size: 0.9rem; font-weight: 700; color: #1f2937; margin: 0 0 0.75rem; }
-        .ass-info-list { margin: 0; padding-left: 1rem; display: flex; flex-direction: column; gap: 0.4rem; }
-        .ass-info-list li { font-size: 0.83rem; color: #6b7280; line-height: 1.5; }
-
-        @media (max-width: 640px) {
-          .ass-plans { grid-template-columns: 1fr; }
-        }
+        /* Dark mode */
+        :root.dark .ass-economia-badge { background: rgba(34,197,94,0.15); color: #4ade80; }
+        :root.dark .ass-card-plano-atual { background: rgba(245,131,191,0.05); border-color: rgba(245,131,191,0.15); }
+        :root.dark .ass-card-info { background: rgba(245,131,191,0.05); }
+        :root.dark .ass-beneficio-icon { background: rgba(245,131,191,0.1); }
       `}</style>
     </div>
   );
