@@ -122,6 +122,7 @@ export default function Layout() {
                 { label: "Promoções", path: "/promocoes", icon: "🏷️" },
                 { label: "Arquivos", path: "/arquivos", icon: "🗂️" },
                 { label: "Configurações", path: "/configuracoes", icon: "⚙️" },
+                { label: "Personalização", path: "/personalizacao", icon: "🎨" },
               ].map((item) => (
                 <NavLink key={item.path} to={item.path} className="gestao-item" onClick={() => setGestaoOpen(false)}>
                   <span className="gestao-icon">{item.icon}</span>
