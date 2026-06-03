@@ -208,7 +208,7 @@ export default function Configuracoes() {
     setError("");
     const endereco = JSON.stringify({ rua: form.rua, numero: form.numero, bairro: form.bairro, cidade: form.cidade, estado: form.estado, cep: form.cep });
     const { error: err } = await supabase.from("profiles").upsert(
-      { id: userId, nome: form.nome, nome_loja: form.nome_loja, foto_url: form.foto_url, telefone: form.telefone, endereco, horario: JSON.stringify(horario), faz_entrega: entrega.faz_entrega, taxa_entrega: parseFloat(entrega.taxa_entrega) || 0, tempo_entrega: entrega.tempo_entrega, area_entrega: entrega.area_entrega, pedido_minimo: parseFloat(entrega.pedido_minimo) || 0, entrega_gratis_acima: parseFloat(entrega.entrega_gratis_acima) || 0, horario_entrega: entrega.horario_entrega, observacoes_entrega: entrega.observacoes_entrega },
+      { id: userId, nome: form.nome, nome_loja: form.nome_loja, foto_url: form.foto_url, telefone: form.telefone, endereco, horario: JSON.stringify(horario), faz_entrega: entrega.faz_entrega, taxa_entrega: entrega.taxa_entrega ? parseFloat(entrega.taxa_entrega) : null, tempo_entrega: entrega.tempo_entrega, area_entrega: entrega.area_entrega, pedido_minimo: entrega.pedido_minimo ? parseFloat(entrega.pedido_minimo) : null, entrega_gratis_acima: entrega.entrega_gratis_acima ? parseFloat(entrega.entrega_gratis_acima) : null, horario_entrega: entrega.horario_entrega, observacoes_entrega: entrega.observacoes_entrega },
       { onConflict: "id" }
     );
     if (err) setError("Erro ao salvar. Tente novamente.");
@@ -509,6 +509,8 @@ export default function Configuracoes() {
               </div>
             </div>
           ) : (
+            <>
+            <p className="cfg-hint">Aplicado automaticamente ao selecionar.</p>
             <div className="cfg-tema-grid">
               <button
                 className={`cfg-tema-btn${theme === "light" ? " active" : ""}`}
@@ -529,6 +531,7 @@ export default function Configuracoes() {
                 <span>Escuro</span>
               </button>
             </div>
+            </>
           )}
         </div>
 
