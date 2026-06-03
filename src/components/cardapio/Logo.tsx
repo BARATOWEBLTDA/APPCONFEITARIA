@@ -12,10 +12,67 @@ interface LogoProps {
   hideStars?: boolean
 }
 
+const DIAS_MAP: Record<string, number> = {
+  "Segunda": 1, "Terça": 2, "Quarta": 3, "Quinta": 4,
+  "Sexta": 5, "Sábado": 6, "Domingo": 0
+}
+const DIAS_LABEL = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"]
+
+function getStatusLoja(horarioJson: string | null) {
+  if (!horarioJson) return null
+  try {
+    const h = typeof horarioJson === 'string' ? JSON.parse(horarioJson) : horarioJson
+    const now = new Date()
+    const diaSemana = now.getDay() // 0=dom, 1=seg...
+    const horaAtual = now.getHours() * 60 + now.getMinutes()
+
+    const toMin = (t: string) => {
+      const [hh, mm] = t.split(':').map(Number)
+      return hh * 60 + mm
+    }
+
+    const isDiaAtivo = (dia: number) => {
+      if (dia === 6 && h.abre_sabado) return true
+      if (dia === 0 && h.abre_domingo) return true
+      return (h.dias || []).some((d: string) => DIAS_MAP[d] === dia)
+    }
+
+    const getHorarioDia = (dia: number) => {
+      if (dia === 6 && h.abre_sabado) return { ab: toMin(h.sabado_abertura || '09:00'), fe: toMin(h.sabado_fechamento || '14:00') }
+      if (dia === 0 && h.abre_domingo) return { ab: toMin(h.domingo_abertura || '09:00'), fe: toMin(h.domingo_fechamento || '14:00') }
+      return { ab: toMin(h.abertura || '08:00'), fe: toMin(h.fechamento || '18:00') }
+    }
+
+    if (isDiaAtivo(diaSemana)) {
+      const { ab, fe } = getHorarioDia(diaSemana)
+      if (horaAtual >= ab && horaAtual < fe) return { aberto: true }
+      // Ainda hoje mas depois do fechamento — verifica próximo dia
+      if (horaAtual < ab) {
+        const abre = h.abertura || '08:00'
+        return { aberto: false, msg: `Abre hoje às ${abre}` }
+      }
+    }
+
+    // Procura próximo dia com funcionamento
+    for (let i = 1; i <= 7; i++) {
+      const proximo = (diaSemana + i) % 7
+      if (isDiaAtivo(proximo)) {
+        const { ab } = getHorarioDia(proximo)
+        const hh = Math.floor(ab / 60).toString().padStart(2, '0')
+        const mm = (ab % 60).toString().padStart(2, '0')
+        const label = i === 1 ? 'amanhã' : DIAS_LABEL[proximo]
+        return { aberto: false, msg: `Abre ${label} às ${hh}:${mm}` }
+      }
+    }
+
+    return { aberto: false, msg: 'Fechado' }
+  } catch { return null }
+}
+
 export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNome, avaliacaoMedia = 4.9, hideStars = false, configuracoes }: LogoProps) {
   const [modalEndereco, setModalEndereco] = useState(false)
 
-  const renderStars = (rating: number) => {
+  const status = getStatusLoja(configuracoes?.horario || null)
     return Array.from({ length: 5 }, (_, i) => (
       <Star key={i} size={14} fill={i < Math.floor(rating) ? '#fbbf24' : 'none'} color={i < Math.ceil(rating) ? '#fbbf24' : '#d1d5db'} />
     ))
@@ -71,6 +128,16 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
 
           {storeDescription && (
             <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '8px', lineHeight: '1.5' }}>{storeDescription}</p>
+          )}
+
+          {/* Status aberto/fechado */}
+          {status && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '50px', background: status.aberto ? '#dcfce7' : '#fef2f2', marginBottom: '8px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: status.aberto ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
+              <span style={{ fontSize: '13px', fontWeight: 700, color: status.aberto ? '#15803d' : '#dc2626' }}>
+                {status.aberto ? 'Aberto Agora' : `Fechado · ${status.msg}`}
+              </span>
+            </div>
           )}
 
           {/* Cidade */}
