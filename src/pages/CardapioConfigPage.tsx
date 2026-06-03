@@ -324,6 +324,8 @@ export default function CardapioConfigPage() {
         .ccc-field-input::placeholder { color:#9ca3af; }
 
         .ccc-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; }
+        .ccc-row-2 .ccc-field { padding:0.65rem 0.75rem; }
+        .ccc-row-2 .ccc-field-input { font-size:0.85rem; min-width:0; }
         .ccc-divider { border:none; border-top:1px solid var(--border,#f3f4f6); margin:0; }
         .ccc-cep-hint { font-size:0.72rem; color:var(--text-muted,#9ca3af); margin:0; }
         .ccc-obs { display:flex; align-items:flex-start; gap:0.5rem; background:#fdf2f8; border-radius:10px; padding:0.65rem 0.85rem; }
