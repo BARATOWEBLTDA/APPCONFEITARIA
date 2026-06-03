@@ -320,9 +320,9 @@ export default function CardapioConfigPage() {
             <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>} placeholder="Pedido mínimo" value={form.pedido_minimo} onChange={(e: any) => setForm({...form, pedido_minimo: e.target.value.replace(/[^0-9.,]/g,"")})} />
             <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>} placeholder="Entrega grátis acima de" value={form.entrega_gratis_acima} onChange={(e: any) => setForm({...form, entrega_gratis_acima: e.target.value.replace(/[^0-9.,]/g,"")})} />
             <button className="ccc-horario-btn" onClick={() => { if (form.horario_entrega) { const [ini, fim] = form.horario_entrega.split(" às "); setHorarioTemp({ inicio: ini || "08:00", fim: fim || "18:00" }); } setModalHorario(true); }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span>{form.horario_entrega || "Horário de entregas"}</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{marginLeft:"auto",opacity:0.4}}><polyline points="9 18 15 12 9 6"/></svg>
+              <span className="ccc-field-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+              <span style={{flex:1, textAlign:"left", color: form.horario_entrega ? "var(--text-primary,#1f2937)" : "#9ca3af", fontSize:"0.9rem"}}>{form.horario_entrega || "Horário de entregas"}</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
             <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} placeholder="Área de entrega" value={form.area_entrega} onChange={(e: any) => setForm({...form, area_entrega: e.target.value})} />
             <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1.1rem"}}>
@@ -457,9 +457,9 @@ export default function CardapioConfigPage() {
           color:#e060a8;
           box-shadow:0 4px 14px rgba(245,131,191,0.35);
           transform:translateY(-1px);
-        } display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); font-family:'Inter',sans-serif; font-size:0.9rem; color:#9ca3af; cursor:pointer; width:100%; transition:border-color 0.2s; text-align:left; }
+        }
+        .ccc-horario-btn { display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); font-family:'Inter',sans-serif; cursor:pointer; width:100%; transition:border-color 0.2s; text-align:left; }
         .ccc-horario-btn:hover { border-color:#F583BF; }
-        .ccc-horario-btn span { flex:1; }
         .ccc-modal-overlay { position:fixed; inset:0; z-index:999; background:rgba(0,0,0,0.45); display:flex; align-items:flex-end; justify-content:center; }
         .ccc-modal { background:white; border-radius:24px 24px 0 0; padding:1.5rem 1.5rem 2rem; width:100%; max-width:480px; animation:slideUp 0.25s ease; }
         @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
