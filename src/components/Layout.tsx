@@ -234,7 +234,6 @@ export default function Layout() {
 
         @media (max-width: 900px) {
           .sidebar { display: none; }
-          .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 7rem; overflow-x: clip; }
 
           .mob-top-header {
             display: flex !important;
@@ -254,7 +253,7 @@ export default function Layout() {
           .mob-top-icon { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0.2rem; }
 
           .layout-main { margin-left: 0; padding: 1rem; padding-top: 5rem; padding-bottom: 5.5rem; background: var(--bg-body, #fff0f6); min-height: 100vh; }
-          .layout-main--no-header { padding-top: 1rem; }
+          .layout-main--no-header { padding-top: 1rem; background: #f8f8f8; }
 
           .bottom-nav {
             display: flex !important;
