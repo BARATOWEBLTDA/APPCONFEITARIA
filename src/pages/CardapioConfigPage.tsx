@@ -43,6 +43,12 @@ export default function CardapioConfigPage() {
   });
   const [modalHorario, setModalHorario] = useState(false);
   const [horarioTemp, setHorarioTemp] = useState({ inicio: "08:00", fim: "18:00" });
+  const [horario, setHorario] = useState({
+    dias: ["Segunda","Terça","Quarta","Quinta","Sexta"] as string[],
+    abertura: "08:00", fechamento: "18:00",
+    abre_sabado: false, sabado_abertura: "09:00", sabado_fechamento: "14:00",
+    abre_domingo: false, domingo_abertura: "09:00", domingo_fechamento: "14:00"
+  });
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -50,7 +56,7 @@ export default function CardapioConfigPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("nome_loja, telefone, foto_url, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("nome_loja, telefone, foto_url, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega, horario").eq("id", user.id).single();
       if (data) {
         let addr: any = {};
         try { addr = data.endereco ? JSON.parse(data.endereco) : {}; } catch {}
@@ -78,6 +84,7 @@ export default function CardapioConfigPage() {
         });
         if (data.foto_url) setPreview(data.foto_url);
         if (addr.cep) setCepPreenchido(true);
+        if (data.horario) { try { setHorario(h => ({ ...h, ...JSON.parse(data.horario) })); } catch {} }
       }
       setLoading(false);
     };
@@ -144,6 +151,7 @@ export default function CardapioConfigPage() {
       horario_entrega: form.horario_entrega,
       area_entrega: form.area_entrega,
       observacoes_entrega: form.observacoes_entrega,
+      horario: JSON.stringify(horario),
     }).eq("id", userId);
     setSaving(false);
     setSuccess(true);
@@ -333,6 +341,44 @@ export default function CardapioConfigPage() {
         )}
       </div>
 
+      {/* Card — Horários de funcionamento */}
+      <div className="ccc-card">
+        <SectionLabel>Horários de funcionamento</SectionLabel>
+        <p className="ccc-hint">Dias que sua loja funciona (seg–sex)</p>
+        <div className="ccc-dias-grid">
+          {["Segunda","Terça","Quarta","Quinta","Sexta"].map(dia => (
+            <button key={dia} className={`ccc-dia-btn${horario.dias.includes(dia) ? " active" : ""}`} onClick={() => setHorario(h => ({ ...h, dias: h.dias.includes(dia) ? h.dias.filter(d => d !== dia) : [...h.dias, dia] }))}>
+              {dia.slice(0,3)}
+            </button>
+          ))}
+        </div>
+        <div className="ccc-row-2">
+          <div className="ccc-time-field"><label>Abertura</label><input type="time" value={horario.abertura} onChange={e => setHorario({...horario, abertura: e.target.value})} /></div>
+          <div className="ccc-time-field"><label>Fechamento</label><input type="time" value={horario.fechamento} onChange={e => setHorario({...horario, fechamento: e.target.value})} /></div>
+        </div>
+        <div className="ccc-divider" />
+        <div className="ccc-toggle-row">
+          <p className="ccc-toggle-label">Abre Sábado?</p>
+          <label className="ccc-toggle"><input type="checkbox" checked={horario.abre_sabado} onChange={e => setHorario({...horario, abre_sabado: e.target.checked})} /><span className="ccc-toggle-slider" /></label>
+        </div>
+        {horario.abre_sabado && (
+          <div className="ccc-row-2">
+            <div className="ccc-time-field"><label>Abertura (sáb)</label><input type="time" value={horario.sabado_abertura} onChange={e => setHorario({...horario, sabado_abertura: e.target.value})} /></div>
+            <div className="ccc-time-field"><label>Fechamento (sáb)</label><input type="time" value={horario.sabado_fechamento} onChange={e => setHorario({...horario, sabado_fechamento: e.target.value})} /></div>
+          </div>
+        )}
+        <div className="ccc-toggle-row">
+          <p className="ccc-toggle-label">Abre Domingo?</p>
+          <label className="ccc-toggle"><input type="checkbox" checked={horario.abre_domingo} onChange={e => setHorario({...horario, abre_domingo: e.target.checked})} /><span className="ccc-toggle-slider" /></label>
+        </div>
+        {horario.abre_domingo && (
+          <div className="ccc-row-2">
+            <div className="ccc-time-field"><label>Abertura (dom)</label><input type="time" value={horario.domingo_abertura} onChange={e => setHorario({...horario, domingo_abertura: e.target.value})} /></div>
+            <div className="ccc-time-field"><label>Fechamento (dom)</label><input type="time" value={horario.domingo_fechamento} onChange={e => setHorario({...horario, domingo_fechamento: e.target.value})} /></div>
+          </div>
+        )}
+      </div>
+
       {/* Card 4 — Avaliações */}
       <div className="ccc-card">
         <SectionLabel>Avaliações</SectionLabel>
@@ -435,7 +481,13 @@ export default function CardapioConfigPage() {
         .ccc-toggle input:checked + .ccc-toggle-slider { background:#F583BF; }
         .ccc-toggle input:checked + .ccc-toggle-slider:before { transform:translateX(20px); }
 
-        .ccc-notas-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem; }
+        .ccc-dias-grid { display:flex; flex-wrap:wrap; gap:0.4rem; }
+        .ccc-dia-btn { padding:0.35rem 0.7rem; border-radius:20px; border:1.5px solid var(--border,#e5e7eb); background:var(--bg-card,white); font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:500; color:var(--text-secondary,#6b7280); cursor:pointer; transition:all 0.15s; }
+        .ccc-dia-btn.active { background:#fce7f3; border-color:#F583BF; color:#F583BF; font-weight:700; }
+        .ccc-time-field { display:flex; flex-direction:column; gap:0.25rem; }
+        .ccc-time-field label { font-size:0.74rem; font-weight:600; color:var(--text-secondary,#6b7280); }
+        .ccc-time-field input { padding:0.6rem 0.85rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; font-family:'Inter',sans-serif; font-size:0.88rem; color:var(--text-primary,#1f2937); outline:none; transition:border-color 0.2s; width:100%; background:var(--bg-input,white); }
+        .ccc-time-field input:focus { border-color:#F583BF; } display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem; }
         .ccc-nota-btn {
           padding:0.75rem 0.5rem;
           border:1.5px solid var(--border,#e5e7eb);
