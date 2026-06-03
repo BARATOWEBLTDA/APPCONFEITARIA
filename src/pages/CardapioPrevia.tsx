@@ -16,20 +16,21 @@ export default function CardapioPrevia() {
     <div style={{
       position: "fixed",
       top: 0, left: 0, right: 0, bottom: 0,
+      zIndex: 9999,
       display: "flex",
       flexDirection: "column",
-      zIndex: 9999,
     }}>
-
-      {/* Barra superior */}
+      {/* Barra topo — fora do iframe */}
       <div style={{
         background: "#120706",
-        padding: "0.7rem 1rem",
+        height: "48px",
+        minHeight: "48px",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
+        padding: "0 1rem",
         flexShrink: 0,
-        height: "48px",
+        zIndex: 10000,
       }}>
         <button
           onClick={() => navigate(-1)}
@@ -53,7 +54,6 @@ export default function CardapioPrevia() {
           </svg>
           Voltar
         </button>
-
         <span style={{
           color: "white",
           fontFamily: "Inter, sans-serif",
@@ -62,11 +62,10 @@ export default function CardapioPrevia() {
         }}>
           Prévia
         </span>
-
         <div style={{width: "70px"}} />
       </div>
 
-      {/* Cardápio */}
+      {/* Iframe começa ABAIXO da barra */}
       {url && (
         <iframe
           src={url}
@@ -74,6 +73,7 @@ export default function CardapioPrevia() {
             flex: 1,
             border: "none",
             width: "100%",
+            height: "calc(100% - 48px)",
             display: "block",
           }}
           title="Prévia do cardápio"
