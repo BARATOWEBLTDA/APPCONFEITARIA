@@ -28,6 +28,7 @@ export default function Layout() {
   const [notifCount, setNotifCount] = useState(0);
   const location = useLocation();
   const isReceitas = location.pathname === "/receitas";
+  const isAssinar = location.pathname === "/assinar";
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -138,6 +139,7 @@ export default function Layout() {
       )}
 
       {/* Mobile top header */}
+      {!isAssinar && (
       <div className="mob-top-header">
         <img src="/logoheader.png" alt="Doonly" className="mob-top-logo" />
         <div className="mob-top-icons">
@@ -171,6 +173,7 @@ export default function Layout() {
           </button>
         </div>
       </div>
+      )}
 
       {/* Bottom nav Mobile */}
       {!isReceitas && (
@@ -292,6 +295,7 @@ export default function Layout() {
           .bottom-item.active { color: #f9007a; }
           .bottom-item:hover { color: #f9007a; }
 
+          :root.dark .mob-top-header { background: #000000; }
           .gestao-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); }
           .gestao-drawer {
             position: fixed; bottom: 0; left: 0; right: 0;
