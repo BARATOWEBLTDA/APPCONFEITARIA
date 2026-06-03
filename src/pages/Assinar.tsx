@@ -37,9 +37,6 @@ export default function Assinar() {
         <button className="ass-back" onClick={() => navigate(-1)}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <div className="ass-hero-icon">
-          <img src="/assine.png" alt="PRO" style={{width:"56px",height:"56px",objectFit:"contain"}} />
-        </div>
         <img src="/doonytexto.png" alt="Doonly PRO" className="ass-hero-logo" />
         <p className="ass-hero-sub">Recursos premium pensados para aumentar suas encomendas e vendas. Leve sua confeitaria ao próximo nível.</p>
         {isPro && proExpiraEm && (
@@ -142,8 +139,7 @@ export default function Assinar() {
         .ass-back { display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:10px; background:var(--bg-card,white); border:1.5px solid var(--border,#e5e7eb); cursor:pointer; color:var(--text-primary,#374151); margin-bottom:0.75rem; }
         .ass-hero { padding:0 0 0.25rem; }
         .ass-hero-icon { width:80px; height:80px; background:var(--bg-card,white); border-radius:24px; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; box-shadow:var(--shadow-card,0 2px 12px rgba(0,0,0,0.08)); }
-        .ass-hero-logo { max-height:36px; object-fit:contain; display:block; margin:0 auto 0.5rem; }
-        .ass-hero-title { font-size:1.6rem; font-weight:800; color:var(--text-primary,#1f2937); margin:0 0 0.3rem; text-align:center; }
+        .ass-hero-logo { max-height:80px; width:100%; object-fit:contain; display:block; margin:0 auto 0.75rem; }
         .ass-hero-sub { font-size:0.88rem; color:var(--text-muted,#9ca3af); margin:0 0 0.75rem; text-align:center; line-height:1.6; }
         .ass-trial-badge { display:flex; align-items:center; justify-content:center; gap:0.4rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; font-size:0.78rem; font-weight:700; padding:0.45rem 1rem; border-radius:20px; margin:0 auto; width:fit-content; }
         .ass-planos { display:flex; flex-direction:column; gap:0.65rem; }
