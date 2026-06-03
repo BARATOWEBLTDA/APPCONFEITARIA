@@ -50,4 +50,7 @@ export interface Configuracoes {
   horario_sabado_fecha?: string
   horario_domingo_abre?: string
   horario_domingo_fecha?: string
+  endereco?: string | null
+  mostrar_localizacao?: boolean
+  mostrar_apenas_cidade?: boolean
 }
