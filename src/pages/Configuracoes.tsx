@@ -205,12 +205,38 @@ export default function Configuracoes() {
     setSaving(true);
     setError("");
     const endereco = JSON.stringify({ rua: form.rua, numero: form.numero, bairro: form.bairro, cidade: form.cidade, estado: form.estado, cep: form.cep });
-    const { error: err } = await supabase.from("profiles").upsert(
-      { id: userId, nome: form.nome, nome_loja: form.nome_loja, foto_url: form.foto_url, telefone: form.telefone, endereco, horario: JSON.stringify(horario), faz_entrega: entrega.faz_entrega, taxa_entrega: entrega.taxa_entrega ? parseFloat(entrega.taxa_entrega) : null, tempo_entrega: entrega.tempo_entrega, area_entrega: entrega.area_entrega, pedido_minimo: entrega.pedido_minimo ? parseFloat(entrega.pedido_minimo) : null, entrega_gratis_acima: entrega.entrega_gratis_acima ? parseFloat(entrega.entrega_gratis_acima) : null, horario_entrega: entrega.horario_entrega, observacoes_entrega: entrega.observacoes_entrega },
-      { onConflict: "id" }
-    );
-    if (err) setError("Erro ao salvar. Tente novamente.");
-    else { setSuccess(true); setNomeSalvo(form.nome); setNomeLojaSalvo(form.nome_loja); await refreshProfile(); setTimeout(() => setSuccess(false), 3000); }
+    
+    const payload: any = {
+      id: userId,
+      nome: form.nome,
+      nome_loja: form.nome_loja,
+      foto_url: form.foto_url,
+      telefone: form.telefone,
+      endereco,
+      horario: JSON.stringify(horario),
+      faz_entrega: entrega.faz_entrega,
+      taxa_entrega: entrega.taxa_entrega ? parseFloat(entrega.taxa_entrega) : null,
+      tempo_entrega: entrega.tempo_entrega,
+      area_entrega: entrega.area_entrega,
+    };
+
+    // Campos novos — adiciona apenas se não der NaN
+    if (entrega.pedido_minimo) payload.pedido_minimo = parseFloat(entrega.pedido_minimo) || null;
+    if (entrega.entrega_gratis_acima) payload.entrega_gratis_acima = parseFloat(entrega.entrega_gratis_acima) || null;
+    if (entrega.horario_entrega !== undefined) payload.horario_entrega = entrega.horario_entrega;
+    if (entrega.observacoes_entrega !== undefined) payload.observacoes_entrega = entrega.observacoes_entrega;
+
+    const { error: err } = await supabase.from("profiles").upsert(payload, { onConflict: "id" });
+    if (err) {
+      console.error("Erro ao salvar:", err);
+      setError("Erro ao salvar. Tente novamente.");
+    } else {
+      setSuccess(true);
+      setNomeSalvo(form.nome);
+      setNomeLojaSalvo(form.nome_loja);
+      await refreshProfile();
+      setTimeout(() => setSuccess(false), 3000);
+    }
     setSaving(false);
   };
 
