@@ -30,7 +30,7 @@ export default function Layout() {
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
   const isCardapioMode = ["/cardapio-config", "/produtos", "/cardapio-design", "/cardapio-preview"].includes(location.pathname);
-  const [cardapioNav, setCardapioNav] = useState(isCardapioMode);
+  const [cardapioNav, setCardapioNav] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -180,7 +180,7 @@ export default function Layout() {
       {/* Bottom nav Mobile */}
       {!isReceitas && (
         <nav className="bottom-nav">
-          {cardapioNav ? (
+          {(cardapioNav || isCardapioMode) ? (
             <>
               <button className={`bottom-item${location.pathname === "/cardapio-preview" ? " active" : ""}`} onClick={() => navigate("/cardapio-preview")}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
