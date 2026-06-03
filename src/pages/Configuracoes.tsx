@@ -768,6 +768,7 @@ export default function Configuracoes() {
         .cfg-tema-preview--dark div:nth-child(1) { height: 8px; background: #333; border-radius: 4px; width: 60%; }
         .cfg-tema-preview--dark div:nth-child(2) { height: 8px; background: #333; border-radius: 4px; width: 90%; }
         .cfg-tema-preview--dark div:nth-child(3) { height: 8px; background: #F583BF; border-radius: 4px; width: 40%; }
+        .cfg-horario-btn {
           display: flex; align-items: center; gap: 0.7rem;
           border: 1.5px solid #e5e7eb; border-radius: 50px;
           padding: 0.65rem 1.1rem; background: white;
