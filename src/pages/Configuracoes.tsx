@@ -213,7 +213,6 @@ export default function Configuracoes() {
       foto_url: form.foto_url,
       telefone: form.telefone,
       endereco,
-      horario: JSON.stringify(horario),
       faz_entrega: entrega.faz_entrega,
       taxa_entrega: entrega.taxa_entrega ? parseFloat(entrega.taxa_entrega) : null,
       tempo_entrega: entrega.tempo_entrega,
@@ -396,20 +395,6 @@ export default function Configuracoes() {
               {cepPreenchido && (
                 <p className="cfg-cep-hint">Preenchido automaticamente.{" "}<span className="cfg-cep-editar" onClick={() => setCepPreenchido(false)}>Editar manual</span></p>
               )}
-            </div>
-          )}
-        </div>
-
-        {/* Card — Horários */}
-        <div className="cfg-accordion">
-          <button className="cfg-accordion-header" onClick={() => toggleSection("horarios")}>
-            <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-            <span className="cfg-accordion-title">Horários de funcionamento</span>
-            <svg className={`cfg-accordion-chevron${openSection === "horarios" ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          {openSection === "horarios" && (
-            <div className="cfg-accordion-body">
-              <HorarioSection />
             </div>
           )}
         </div>
