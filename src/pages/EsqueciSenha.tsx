@@ -60,7 +60,7 @@ export default function EsqueciSenha() {
 
       // Tenta enviar o reset independente — Supabase não expõe se email existe por segurança
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/redefinir-senha`,
+        redirectTo: `${window.location.origin}/login`,
       });
 
       if (resetError) throw resetError;
@@ -80,7 +80,7 @@ export default function EsqueciSenha() {
 
       <div className="auth-card">
         <div className="auth-logo-wrap">
-          <img src="https://www.pandamenu.com.br/imagemmenu.png" alt="Panda Menu" className="auth-logo-img" />
+          <img src="/assine.png" alt="Panda Menu" className="auth-logo-img" />
         </div>
 
         {!sent ? (
@@ -176,7 +176,7 @@ export default function EsqueciSenha() {
         }
 
         .auth-logo-wrap { display: flex; justify-content: center; margin-bottom: 1.5rem; }
-        .auth-logo-img { height: 70px; object-fit: contain; }
+        .auth-logo-img { height: 90px; object-fit: contain; }
 
         .auth-text { text-align: center; margin-bottom: 1.5rem; }
         .auth-text h2 { font-size: 1.2rem; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem; }
