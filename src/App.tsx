@@ -23,7 +23,7 @@ import Personalizacao from "@/pages/Personalizacao";
 import CardapioPrevia from "@/pages/CardapioPrevia";
 
 // Páginas rascunho
-const Produtos = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🎂 Produtos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+import Produtos from "@/pages/Produtos";
 const Pedidos = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>📋 Pedidos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
 import Clientes from "@/pages/Clientes";
 const Financeiro = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>💰 Financeiro</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
