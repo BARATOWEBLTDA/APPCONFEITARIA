@@ -53,6 +53,9 @@ async function fetchByUserId(userId: string, profile: any) {
     user_id: userId,
     telefone: profile.telefone || '',
     avaliacao_media: profile.avaliacao_media || 4.9,
+    endereco: profile.endereco || null,
+    mostrar_localizacao: profile.mostrar_localizacao || false,
+    mostrar_apenas_cidade: profile.mostrar_apenas_cidade || false,
   }
 
   return { design, config, produtos: produtos || [] }
