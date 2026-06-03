@@ -357,7 +357,8 @@ export default function CardapioConfigPage() {
                   className={`ccc-nota-btn${form.avaliacao_media === nota ? " active" : ""}`}
                   onClick={() => setForm({...form, avaliacao_media: nota})}
                 >
-                  ⭐ {nota.toFixed(1)}
+                  <span style={{fontSize:"1.1rem"}}>⭐</span>
+                  <span>{nota.toFixed(1)}</span>
                 </button>
               ))}
             </div>
@@ -434,10 +435,29 @@ export default function CardapioConfigPage() {
         .ccc-toggle input:checked + .ccc-toggle-slider { background:#F583BF; }
         .ccc-toggle input:checked + .ccc-toggle-slider:before { transform:translateX(20px); }
 
-        .ccc-notas-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem; }
-        .ccc-nota-btn { padding:0.6rem 0.5rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; background:var(--bg-subtle,#f9fafb); font-family:'Inter',sans-serif; font-size:0.85rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; transition:all 0.15s; }
-        .ccc-nota-btn.active { border-color:#F583BF; background:#fdf2f8; color:#F583BF; }
-        .ccc-nota-btn:hover { border-color:#F583BF; } display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); font-family:'Inter',sans-serif; font-size:0.9rem; color:#9ca3af; cursor:pointer; width:100%; transition:border-color 0.2s; text-align:left; }
+        .ccc-notas-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem; }
+        .ccc-nota-btn {
+          padding:0.75rem 0.5rem;
+          border:1.5px solid var(--border,#e5e7eb);
+          border-radius:12px;
+          background:var(--bg-card,white);
+          font-family:'Inter',sans-serif;
+          font-size:0.88rem;
+          font-weight:700;
+          color:var(--text-secondary,#374151);
+          cursor:pointer;
+          transition:all 0.2s;
+          box-shadow:0 2px 6px rgba(0,0,0,0.06);
+          display:flex; flex-direction:column; align-items:center; gap:0.25rem;
+        }
+        .ccc-nota-btn:hover { border-color:#F583BF; box-shadow:0 4px 12px rgba(245,131,191,0.2); transform:translateY(-1px); }
+        .ccc-nota-btn.active {
+          border-color:#F583BF;
+          background:linear-gradient(135deg,#fdf2f8,#fce7f3);
+          color:#e060a8;
+          box-shadow:0 4px 14px rgba(245,131,191,0.35);
+          transform:translateY(-1px);
+        } display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); font-family:'Inter',sans-serif; font-size:0.9rem; color:#9ca3af; cursor:pointer; width:100%; transition:border-color 0.2s; text-align:left; }
         .ccc-horario-btn:hover { border-color:#F583BF; }
         .ccc-horario-btn span { flex:1; }
         .ccc-modal-overlay { position:fixed; inset:0; z-index:999; background:rgba(0,0,0,0.45); display:flex; align-items:flex-end; justify-content:center; }
