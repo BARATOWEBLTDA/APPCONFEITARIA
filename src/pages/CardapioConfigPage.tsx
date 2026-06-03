@@ -24,6 +24,7 @@ export default function CardapioConfigPage() {
     telefone: "",
     foto_url: "",
     hide_stars: false,
+    avaliacao_media: 5.0,
     cep: "",
     rua: "",
     numero: "",
@@ -49,7 +50,7 @@ export default function CardapioConfigPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("nome_loja, telefone, foto_url, hide_stars, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("nome_loja, telefone, foto_url, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega").eq("id", user.id).single();
       if (data) {
         let addr: any = {};
         try { addr = data.endereco ? JSON.parse(data.endereco) : {}; } catch {}
@@ -58,6 +59,7 @@ export default function CardapioConfigPage() {
           telefone: data.telefone || "",
           foto_url: data.foto_url || "",
           hide_stars: data.hide_stars || false,
+          avaliacao_media: data.avaliacao_media || 5.0,
           cep: addr.cep || "",
           rua: addr.rua || "",
           numero: addr.numero || "",
@@ -131,6 +133,7 @@ export default function CardapioConfigPage() {
       telefone: form.telefone,
       foto_url: form.foto_url,
       hide_stars: form.hide_stars,
+      avaliacao_media: form.avaliacao_media,
       endereco,
       mostrar_localizacao: form.mostrar_localizacao,
       mostrar_apenas_cidade: form.mostrar_apenas_cidade,
@@ -336,13 +339,30 @@ export default function CardapioConfigPage() {
         <div className="ccc-toggle-row">
           <div>
             <p className="ccc-toggle-label">Exibir estrelas de avaliação</p>
-            <p className="ccc-toggle-sub">Mostra a avaliação média da sua loja no cardápio</p>
+            <p className="ccc-toggle-sub">Mostra a avaliação média no cardápio</p>
           </div>
           <label className="ccc-toggle">
             <input type="checkbox" checked={!form.hide_stars} onChange={e => setForm({...form, hide_stars: !e.target.checked})} />
             <span className="ccc-toggle-slider" />
           </label>
         </div>
+        {!form.hide_stars && (
+          <>
+            <div className="ccc-divider" />
+            <p className="ccc-hint">Selecione a nota que aparecerá no cardápio</p>
+            <div className="ccc-notas-grid">
+              {[5.0, 4.9, 4.8, 4.7, 4.6, 4.5].map(nota => (
+                <button
+                  key={nota}
+                  className={`ccc-nota-btn${form.avaliacao_media === nota ? " active" : ""}`}
+                  onClick={() => setForm({...form, avaliacao_media: nota})}
+                >
+                  ⭐ {nota.toFixed(1)}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {success && <div className="ccc-toast">✓ Salvo com sucesso!</div>}
@@ -414,7 +434,10 @@ export default function CardapioConfigPage() {
         .ccc-toggle input:checked + .ccc-toggle-slider { background:#F583BF; }
         .ccc-toggle input:checked + .ccc-toggle-slider:before { transform:translateX(20px); }
 
-        .ccc-horario-btn { display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); font-family:'Inter',sans-serif; font-size:0.9rem; color:#9ca3af; cursor:pointer; width:100%; transition:border-color 0.2s; text-align:left; }
+        .ccc-notas-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.5rem; }
+        .ccc-nota-btn { padding:0.6rem 0.5rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; background:var(--bg-subtle,#f9fafb); font-family:'Inter',sans-serif; font-size:0.85rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; transition:all 0.15s; }
+        .ccc-nota-btn.active { border-color:#F583BF; background:#fdf2f8; color:#F583BF; }
+        .ccc-nota-btn:hover { border-color:#F583BF; } display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); font-family:'Inter',sans-serif; font-size:0.9rem; color:#9ca3af; cursor:pointer; width:100%; transition:border-color 0.2s; text-align:left; }
         .ccc-horario-btn:hover { border-color:#F583BF; }
         .ccc-horario-btn span { flex:1; }
         .ccc-modal-overlay { position:fixed; inset:0; z-index:999; background:rgba(0,0,0,0.45); display:flex; align-items:flex-end; justify-content:center; }
