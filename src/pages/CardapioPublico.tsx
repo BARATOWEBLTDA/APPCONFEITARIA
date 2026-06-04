@@ -91,7 +91,7 @@ function CardapioContent() {
       <NavC />
 
       {/* Área de cor sólida no topo — necessária para a logo flutuar */}
-      <div style={{ height: '120px', backgroundColor: design.cor_borda || '#ec4899' }} />
+      <div style={{ height: '160px', backgroundColor: design.cor_borda || '#ec4899' }} />
 
       {/* Card de informações com logo flutuando */}
       <LogoC
