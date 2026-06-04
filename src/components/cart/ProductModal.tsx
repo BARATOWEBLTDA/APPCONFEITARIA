@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Plus, Minus, Check } from 'lucide-react'
+import { X, Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
 import { Produto } from '@/types/database'
 import { formatCurrency } from '@/utils/helpers'
@@ -17,98 +17,199 @@ export function ProductModal({ isOpen, onClose, product }: Props) {
   const [selectedMassa, setSelectedMassa] = useState('')
   const [selectedRecheio, setSelectedRecheio] = useState('')
   const [selectedCobertura, setSelectedCobertura] = useState('')
+  const [showObs, setShowObs] = useState(false)
 
   useEffect(() => {
-    if (product) { setQuantity(1); setObservations(''); setSelectedMassa(''); setSelectedRecheio(''); setSelectedCobertura('') }
+    if (product) {
+      setQuantity(1)
+      setObservations('')
+      setSelectedMassa('')
+      setSelectedRecheio('')
+      setSelectedCobertura('')
+      setShowObs(false)
+    }
   }, [product])
 
   if (!isOpen || !product) return null
 
-  const inc = () => setQuantity(q => Math.min(q + (product.forma_venda === 'kg' ? 0.5 : 1), 50))
-  const dec = () => setQuantity(q => Math.max(q - (product.forma_venda === 'kg' ? 0.5 : 1), product.forma_venda === 'kg' ? 0.5 : 1))
+  const isKg = product.forma_venda === 'kg'
+  const step = isKg ? 0.5 : 1
+  const min = isKg ? 0.5 : 1
+  const inc = () => setQuantity(q => Math.min(q + step, 50))
+  const dec = () => setQuantity(q => Math.max(q - step, min))
+
+  const price = product.promocao && product.preco_promocional ? product.preco_promocional : product.preco_normal
+  const total = price * quantity
 
   const handleAdd = () => {
-    addItem({ id: product.id, name: product.nome, description: product.descricao || '', price: product.preco_normal, imageUrl: product.imagem_url, saleType: product.forma_venda, quantity, observations, selectedMassa, selectedRecheio, selectedCobertura })
+    addItem({
+      id: product.id,
+      name: product.nome,
+      description: product.descricao || '',
+      price,
+      imageUrl: product.imagem_url,
+      saleType: product.forma_venda,
+      quantity,
+      observations,
+      selectedMassa,
+      selectedRecheio,
+      selectedCobertura,
+    })
     onClose()
   }
 
-  const firstImage = product.imagem_url?.split(',')[0]?.trim()
+  const images = product.imagem_url?.split(',').map(s => s.trim()).filter(Boolean) || []
+  const firstImage = images[0]
+
+  const SelectGroup = ({ label, options, value, onChange }: { label: string, options: string[], value: string, onChange: (v: string) => void }) => (
+    <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+        <span style={{ fontSize: '14px', fontWeight: 700, color: '#1f2937' }}>{label}</span>
+        <span style={{ fontSize: '11px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 8px', borderRadius: '50px' }}>Opcional</span>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {options.map(opt => (
+          <button key={opt} onClick={() => onChange(value === opt ? '' : opt)}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 14px', borderRadius: '12px', border: `2px solid ${value === opt ? '#ec4899' : '#f3f4f6'}`,
+              background: value === opt ? '#fdf2f8' : 'white', cursor: 'pointer', transition: 'all 0.15s',
+            }}>
+            <span style={{ fontSize: '14px', color: '#374151', fontWeight: 500 }}>{opt}</span>
+            <div style={{
+              width: '20px', height: '20px', borderRadius: '50%',
+              border: `2px solid ${value === opt ? '#ec4899' : '#d1d5db'}`,
+              background: value === opt ? '#ec4899' : 'white',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              {value === opt && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 cursor-pointer" onClick={onClose} />
-      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 max-w-sm w-[90vw] max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl">
-        <div className="sticky top-0 bg-white/90 backdrop-blur p-4 flex items-center justify-between border-b z-10">
-          <h2 className="text-base font-bold text-pink-600">Personalize seu Pedido</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><X className="w-4 h-4" /></button>
-        </div>
-        <div className="p-5 space-y-5">
-          <div className="w-full aspect-square rounded-2xl overflow-hidden bg-gray-50">
-            {firstImage ? <img src={firstImage} alt={product.nome} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-5xl bg-pink-50">🧁</div>}
-          </div>
-          <div>
-            <h3 className="text-xl font-black text-gray-900">{product.nome}</h3>
-            {product.descricao && <p className="text-gray-500 text-sm mt-1">{product.descricao}</p>}
-            <span className="text-2xl font-black text-pink-600 mt-2 block">{formatCurrency(product.preco_normal)}</span>
-          </div>
+      {/* Overlay */}
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 50 }} />
 
-          {/* Quantidade */}
-          <div>
-            <label className="text-xs font-black uppercase tracking-widest text-gray-400 block mb-2">Quantidade</label>
-            <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-100">
-              <button onClick={dec} className="h-10 w-10 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center"><Minus className="w-4 h-4" /></button>
-              <span className="flex-1 text-center font-black text-xl">{product.forma_venda === 'kg' ? `${quantity}kg` : `${quantity} un`}</span>
-              <button onClick={inc} className="h-10 w-10 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center"><Plus className="w-4 h-4" /></button>
-            </div>
-          </div>
+      {/* Modal — sobe de baixo */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 51,
+        background: 'white', borderRadius: '20px 20px 0 0',
+        maxHeight: '92vh', display: 'flex', flexDirection: 'column',
+        boxShadow: '0 -8px 32px rgba(0,0,0,0.15)',
+        animation: 'slideUp 0.3s ease',
+      }}>
 
-          {/* Massa */}
-          {product.permite_personalizacao && product.massas_disponiveis && product.massas_disponiveis.length > 0 && (
-            <div>
-              <label className="text-xs font-black uppercase tracking-widest text-pink-600 block mb-2">Escolha a Massa</label>
-              <div className="grid grid-cols-1 gap-2">
-                {product.massas_disponiveis.map(m => (
-                  <button key={m} onClick={() => setSelectedMassa(m)} className={`flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-bold border-2 transition-all ${selectedMassa === m ? 'bg-pink-500 border-pink-500 text-white' : 'bg-white border-gray-100 text-gray-600'}`}>
-                    <span>{m}</span>
-                    {selectedMassa === m && <Check className="w-4 h-4" />}
-                  </button>
-                ))}
-              </div>
+        {/* Imagem */}
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <div style={{ width: '100%', height: '220px', background: '#fdf2f8', overflow: 'hidden' }}>
+            {firstImage
+              ? <img src={firstImage} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '72px' }}>🧁</div>
+            }
+          </div>
+          {/* Botão fechar */}
+          <button onClick={onClose} style={{
+            position: 'absolute', top: '12px', right: '12px',
+            width: '32px', height: '32px', borderRadius: '50%',
+            background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <X size={16} color="white" />
+          </button>
+          {/* Tag promoção */}
+          {product.promocao && (
+            <div style={{ position: 'absolute', top: '12px', left: '12px', background: '#ef4444', color: 'white', fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '50px' }}>
+              PROMOÇÃO
             </div>
           )}
+        </div>
 
-          {/* Recheio */}
-          {product.permite_personalizacao && product.recheios_disponiveis && product.recheios_disponiveis.length > 0 && (
-            <div>
-              <label className="text-xs font-black uppercase tracking-widest text-pink-600 block mb-2">Escolha o Recheio</label>
-              <div className="grid grid-cols-1 gap-2">
-                {product.recheios_disponiveis.map(r => (
-                  <button key={r} onClick={() => setSelectedRecheio(r)} className={`flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-bold border-2 transition-all ${selectedRecheio === r ? 'bg-pink-500 border-pink-500 text-white' : 'bg-white border-gray-100 text-gray-600'}`}>
-                    <span>{r}</span>
-                    {selectedRecheio === r && <Check className="w-4 h-4" />}
-                  </button>
-                ))}
-              </div>
+        {/* Conteúdo scrollável */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+          {/* Nome e preço */}
+          <div>
+            <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#111827', margin: '0 0 6px' }}>{product.nome}</h3>
+            {product.descricao && <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.5', margin: '0 0 10px' }}>{product.descricao}</p>}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {product.promocao && product.preco_promocional ? (
+                <>
+                  <span style={{ fontSize: '13px', color: '#9ca3af', textDecoration: 'line-through' }}>{formatCurrency(product.preco_normal)}</span>
+                  <span style={{ fontSize: '22px', fontWeight: 800, color: '#ec4899' }}>{formatCurrency(product.preco_promocional)}</span>
+                </>
+              ) : (
+                <span style={{ fontSize: '22px', fontWeight: 800, color: '#ec4899' }}>{formatCurrency(product.preco_normal)}</span>
+              )}
             </div>
+          </div>
+
+          {/* Personalizações */}
+          {product.permite_personalizacao && product.massas_disponiveis?.length > 0 && (
+            <SelectGroup label="Massa" options={product.massas_disponiveis} value={selectedMassa} onChange={setSelectedMassa} />
+          )}
+          {product.permite_personalizacao && product.recheios_disponiveis?.length > 0 && (
+            <SelectGroup label="Recheio" options={product.recheios_disponiveis} value={selectedRecheio} onChange={setSelectedRecheio} />
+          )}
+          {product.permite_personalizacao && product.coberturas_disponiveis?.length > 0 && (
+            <SelectGroup label="Cobertura" options={product.coberturas_disponiveis} value={selectedCobertura} onChange={setSelectedCobertura} />
           )}
 
           {/* Observações */}
-          <div>
-            <label className="text-xs font-black uppercase tracking-widest text-gray-400 block mb-2">Observações</label>
-            <textarea value={observations} onChange={e => setObservations(e.target.value)} placeholder="Ex: Sem cereja, embalagem para presente..." className="w-full rounded-2xl border border-gray-100 bg-gray-50 p-3 text-sm min-h-[80px] focus:outline-none focus:border-pink-400" />
+          <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '16px' }}>
+            <button onClick={() => setShowObs(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: '#1f2937' }}>Alguma observação?</span>
+              {showObs ? <ChevronUp size={18} color="#9ca3af" /> : <ChevronDown size={18} color="#9ca3af" />}
+            </button>
+            {showObs && (
+              <textarea
+                value={observations}
+                onChange={e => setObservations(e.target.value)}
+                placeholder="Ex: sem cereja, embalagem para presente..."
+                style={{ width: '100%', marginTop: '10px', padding: '12px', border: '1.5px solid #e5e7eb', borderRadius: '12px', fontSize: '14px', color: '#374151', resize: 'none', minHeight: '80px', boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none' }}
+              />
+            )}
           </div>
 
-          <div className="bg-gray-900 rounded-2xl p-4 flex flex-col">
-            <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">Total</span>
-            <span className="text-2xl font-black text-white">{formatCurrency(product.preco_normal * quantity)}</span>
-          </div>
+          <div style={{ height: '8px' }} />
+        </div>
 
-          <div className="flex flex-col gap-3 pb-4">
-            <button onClick={handleAdd} className="w-full bg-pink-600 hover:bg-pink-700 text-white font-black py-4 rounded-2xl text-base shadow-lg">Adicionar ao Carrinho</button>
-            <button onClick={onClose} className="w-full text-gray-600 font-bold py-2">Cancelar</button>
+        {/* Rodapé fixo — quantidade + adicionar */}
+        <div style={{ padding: '12px 16px 24px', borderTop: '1px solid #f3f4f6', background: 'white', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {/* Quantidade */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0', border: '1.5px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden' }}>
+              <button onClick={dec} style={{ width: '40px', height: '44px', background: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Minus size={16} color="#374151" />
+              </button>
+              <span style={{ minWidth: '40px', textAlign: 'center', fontSize: '15px', fontWeight: 700, color: '#111827' }}>
+                {isKg ? `${quantity}kg` : quantity}
+              </span>
+              <button onClick={inc} style={{ width: '40px', height: '44px', background: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Plus size={16} color="#374151" />
+              </button>
+            </div>
+
+            {/* Botão adicionar */}
+            <button onClick={handleAdd} style={{
+              flex: 1, height: '44px', background: '#ec4899', color: 'white',
+              border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '15px',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '0 16px', fontFamily: 'inherit',
+            }}>
+              <span>Adicionar</span>
+              <span>{formatCurrency(total)}</span>
+            </button>
           </div>
         </div>
       </div>
+
+      <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
     </>
   )
 }
