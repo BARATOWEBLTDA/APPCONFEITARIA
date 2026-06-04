@@ -50,11 +50,11 @@ export function NavigationMenu() {
               onClick={() => setIsOpen(true)}
               style={{
                 position: 'fixed',
-                bottom: '72px',
+                bottom: '62px',
                 left: '0',
                 right: '0',
                 zIndex: 40,
-                background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)',
+                background: '#2d2d2d',
                 borderRadius: '0',
                 padding: '14px 20px',
                 display: 'flex',
