@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { getCardapioBySlug } from '@/services/cardapio'
 import { useDeviceDetection } from '@/hooks/useDeviceDetection'
-import { Banner } from '@/components/cardapio/Banner'
 import { BannerAd } from '@/components/cardapio/BannerAd'
-import { DesktopBanner } from '@/components/desktop/Banner'
 import { Logo } from '@/components/cardapio/Logo'
 import { DesktopLogo } from '@/components/desktop/Logo'
 import { CategoryFilter } from '@/components/cardapio/CategoryFilter'
@@ -81,7 +79,6 @@ function CardapioContent() {
   )
 
   const isDesktop = device === 'desktop'
-  const BannerC = isDesktop ? DesktopBanner : Banner
   const LogoC = isDesktop ? DesktopLogo : Logo
   const CategoryC = isDesktop ? DesktopCategoryFilter : CategoryFilter
   const ProductC = isDesktop ? DesktopProductList : ProductList
@@ -93,7 +90,6 @@ function CardapioContent() {
     <div className="min-h-screen relative" style={{ backgroundColor: design.cor_background || '#fef2f2' }}>
       <NavC />
 
-      <BannerC borderColor={design.cor_borda || '#ec4899'} bannerGradient={design.banner_gradient} />
       <BannerAd bannerUrl={design.banner_url} />
 
       <LogoC
