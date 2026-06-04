@@ -143,7 +143,7 @@ export default function CardapioDesign() {
             <div key={i} className="cd-banner-slot">
               <span className="cd-banner-slot-label">{bannerLabels[i]}</span>
               {bannerValues[i] ? (
-                <div className="cd-banner-thumb">
+                <div className="cd-banner-thumb" style={{ position: 'relative', overflow: 'hidden' }}>
                   {i > 0 && <div className="cd-pro-ribbon">PRO</div>}
                   <img src={bannerValues[i]} alt={bannerLabels[i]} />
                   <button className="cd-remove-btn" onClick={() => handleRemoveBanner(i)}>✕</button>
@@ -207,7 +207,7 @@ export default function CardapioDesign() {
         .cd-change-btn-sm { font-size:0.7rem; font-weight:700; color:#F583BF; background:none; border:none; cursor:pointer; padding:0; text-align:center; }
         .cd-change-btn-sm:hover { text-decoration:underline; }
         .cd-pro-badge { background:linear-gradient(135deg,#ec4899,#a855f7); color:white; font-size:0.68rem; font-weight:800; padding:2px 10px; border-radius:50px; letter-spacing:0.1em; }
-        .cd-pro-ribbon { position:absolute; top:14px; right:-18px; background:linear-gradient(135deg,#ec4899,#f472b6); color:white; font-size:0.6rem; font-weight:900; letter-spacing:0.1em; padding:3px 22px; transform:rotate(45deg); z-index:10; box-shadow:0 2px 6px rgba(236,72,153,0.4); }
+        .cd-pro-ribbon { position:absolute; top:12px; right:-16px; background:linear-gradient(135deg,#ec4899,#f472b6); color:white; font-size:0.58rem; font-weight:900; letter-spacing:0.1em; padding:3px 24px; transform:rotate(45deg); z-index:10; box-shadow:0 2px 6px rgba(236,72,153,0.4); width:80px; text-align:center; }
         .cd-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
         .cd-spinner-sm { width:16px; height:16px; border:2px solid rgba(245,131,191,0.3); border-top-color:#F583BF; border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
       `}</style>
