@@ -1,18 +1,9 @@
 interface BannerProps {
   borderColor: string
   bannerGradient?: string
-  bannerUrl?: string
 }
 
-export function Banner({ bannerGradient, bannerUrl }: BannerProps) {
-  if (bannerUrl) {
-    return (
-      <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-        <img src={bannerUrl} alt="Banner" style={{ width: '100%', height: 'auto', display: 'block' }} />
-      </div>
-    )
-  }
-
+export function Banner({ bannerGradient }: BannerProps) {
   return (
     <div style={{
       position: 'relative',
