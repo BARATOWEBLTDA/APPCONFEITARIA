@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 
+type Tamanho = { label: string; preco: number };
+
 type Produto = {
   id?: string;
   user_id?: string;
@@ -13,6 +15,12 @@ type Produto = {
   forma_venda: string;
   disponivel: boolean;
   promocao: boolean;
+  permite_personalizacao?: boolean;
+  massas_disponiveis?: string[];
+  recheios_disponiveis?: string[];
+  coberturas_disponiveis?: string[];
+  tamanhos_disponiveis?: Tamanho[];
+  pronta_entrega?: boolean;
 };
 
 const FORMAS_VENDA = [
@@ -20,10 +28,7 @@ const FORMAS_VENDA = [
   { value: "fatia", label: "Por Fatia" },
   { value: "kg", label: "Por Quilo (kg)" },
   { value: "cento", label: "Por Cento" },
-  { value: "tamanho-p", label: "Tamanho P" },
-  { value: "tamanho-m", label: "Tamanho M" },
-  { value: "tamanho-g", label: "Tamanho G" },
-  { value: "tamanho-xg", label: "Tamanho XG" },
+  { value: "tamanho", label: "Por Tamanho (P/M/G)" },
   { value: "kit-caixa", label: "Kit / Caixa" },
   { value: "sob-encomenda", label: "Sob Encomenda" },
   { value: "outros", label: "Outros" },
@@ -33,6 +38,9 @@ const EMPTY: Produto = {
   nome: "", descricao: "", preco_normal: 0,
   imagem_url: "", categoria: "", forma_venda: "unidade",
   disponivel: true, promocao: false,
+  permite_personalizacao: false,
+  massas_disponiveis: [], recheios_disponiveis: [], coberturas_disponiveis: [],
+  tamanhos_disponiveis: [], pronta_entrega: true,
 };
 
 export default function Produtos() {
@@ -48,7 +56,8 @@ export default function Produtos() {
   const [novaCategoria, setNovaCategoria] = useState("");
   const [showCatInput, setShowCatInput] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [novaOpcao, setNovaOpcao] = useState<{ massa: string; recheio: string; cobertura: string }>({ massa: "", recheio: "", cobertura: "" });
+  const [novoTamanho, setNovoTamanho] = useState({ label: "", preco: "" });
   const imgRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -74,7 +83,7 @@ export default function Produtos() {
   };
 
   const openNovo = () => { setForm(EMPTY); setModal(true); };
-  const openEditar = (p: Produto) => { setForm(p); setModal(true); };
+  const openEditar = (p: Produto) => { setForm({ ...EMPTY, ...p }); setModal(true); };
   const fecharModal = () => { setModal(false); setForm(EMPTY); };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,10 +105,11 @@ export default function Produtos() {
     if (!form.categoria.trim()) return alert("Categoria é obrigatória");
     if (!form.preco_normal || form.preco_normal <= 0) return alert("Preço deve ser maior que zero");
     setSaving(true);
+    const payload = { ...form, updated_at: new Date().toISOString() };
     if (form.id) {
-      await supabase.from("produtos").update({ ...form, updated_at: new Date().toISOString() }).eq("id", form.id);
+      await supabase.from("produtos").update(payload).eq("id", form.id);
     } else {
-      await supabase.from("produtos").insert({ ...form, user_id: userId });
+      await supabase.from("produtos").insert({ ...payload, user_id: userId });
     }
     await loadProdutos(userId);
     setSaving(false);
@@ -117,29 +127,62 @@ export default function Produtos() {
     await supabase.from("categorias").insert({ nome: novaCategoria.trim(), user_id: userId });
     setCategorias(prev => [...prev, novaCategoria.trim()].sort());
     setForm(f => ({ ...f, categoria: novaCategoria.trim() }));
-    setNovaCategoria("");
-    setShowCatInput(false);
+    setNovaCategoria(""); setShowCatInput(false);
+  };
+
+  const addOpcao = (campo: "massas_disponiveis" | "recheios_disponiveis" | "coberturas_disponiveis", key: "massa" | "recheio" | "cobertura") => {
+    const val = novaOpcao[key].trim();
+    if (!val) return;
+    setForm(f => ({ ...f, [campo]: [...(f[campo] || []), val] }));
+    setNovaOpcao(o => ({ ...o, [key]: "" }));
+  };
+
+  const removeOpcao = (campo: "massas_disponiveis" | "recheios_disponiveis" | "coberturas_disponiveis", idx: number) => {
+    setForm(f => ({ ...f, [campo]: (f[campo] || []).filter((_: string, i: number) => i !== idx) }));
+  };
+
+  const addTamanho = () => {
+    if (!novoTamanho.label.trim() || !novoTamanho.preco) return;
+    const preco = parseFloat(novoTamanho.preco.replace(",", "."));
+    if (isNaN(preco)) return;
+    setForm(f => ({ ...f, tamanhos_disponiveis: [...(f.tamanhos_disponiveis || []), { label: novoTamanho.label.trim(), preco }] }));
+    setNovoTamanho({ label: "", preco: "" });
+  };
+
+  const removeTamanho = (idx: number) => {
+    setForm(f => ({ ...f, tamanhos_disponiveis: (f.tamanhos_disponiveis || []).filter((_, i) => i !== idx) }));
   };
 
   const formatPreco = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const parsePreco = (s: string) => (parseInt(s.replace(/\D/g, "")) || 0) / 100;
 
-  const produtosFiltrados = filtroCategoria === "todas"
-    ? produtos
-    : produtos.filter(p => p.categoria === filtroCategoria);
-
+  const produtosFiltrados = filtroCategoria === "todas" ? produtos : produtos.filter(p => p.categoria === filtroCategoria);
   const todasCategorias = Array.from(new Set([...categorias, ...produtos.map(p => p.categoria).filter(Boolean)])).sort();
 
-  if (loading) return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "40vh" }}>
-      <span className="prod-spinner" />
+  const Toggle = ({ label, value, onChange, colorClass }: any) => (
+    <div className={`prod-toggle-item${value ? ` ${colorClass}` : ""}`} onClick={() => onChange(!value)}>
+      <div className={`prod-toggle-slider${value ? " active" : ""}`} style={{ background: value ? (colorClass === "active-green" ? "#22c55e" : "#F583BF") : "#e5e7eb" }}>
+        <div className="prod-toggle-thumb" style={{ transform: value ? "translateX(20px)" : "translateX(0)" }} />
+      </div>
+      <span>{label}</span>
     </div>
   );
 
+  const TagList = ({ items, onRemove }: { items: string[], onRemove: (i: number) => void }) => (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "6px" }}>
+      {items.map((item, i) => (
+        <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: "#fce7f3", color: "#be185d", borderRadius: "50px", fontSize: "0.8rem", fontWeight: 600 }}>
+          {item}
+          <button onClick={() => onRemove(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#be185d", padding: 0, lineHeight: 1, fontSize: "0.85rem" }}>×</button>
+        </span>
+      ))}
+    </div>
+  );
+
+  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "40vh" }}><span className="prod-spinner" /></div>;
+
   return (
     <div className="prod-root">
-
-      {/* Header */}
       <div className="prod-header">
         <div>
           <h1 className="prod-title">Produtos</h1>
@@ -151,12 +194,9 @@ export default function Produtos() {
         </button>
       </div>
 
-      {/* Filtros categoria */}
       {todasCategorias.length > 0 && (
         <div className="prod-filtros">
-          <button className={`prod-filtro-btn${filtroCategoria === "todas" ? " active" : ""}`} onClick={() => setFiltroCategoria("todas")}>
-            Todos ({produtos.length})
-          </button>
+          <button className={`prod-filtro-btn${filtroCategoria === "todas" ? " active" : ""}`} onClick={() => setFiltroCategoria("todas")}>Todos ({produtos.length})</button>
           {todasCategorias.map(cat => (
             <button key={cat} className={`prod-filtro-btn${filtroCategoria === cat ? " active" : ""}`} onClick={() => setFiltroCategoria(cat)}>
               {cat} ({produtos.filter(p => p.categoria === cat).length})
@@ -165,7 +205,6 @@ export default function Produtos() {
         </div>
       )}
 
-      {/* Lista de produtos */}
       {produtosFiltrados.length === 0 ? (
         <div className="prod-empty">
           <span style={{ fontSize: "3rem" }}>🎂</span>
@@ -178,18 +217,15 @@ export default function Produtos() {
           {produtosFiltrados.map(p => (
             <div key={p.id} className="prod-card">
               <div className="prod-card-img" onClick={() => openEditar(p)}>
-                {p.imagem_url
-                  ? <img src={p.imagem_url} alt={p.nome} />
-                  : <span style={{ fontSize: "2rem" }}>🎂</span>
-                }
+                {p.imagem_url ? <img src={p.imagem_url.split(",")[0]} alt={p.nome} /> : <span style={{ fontSize: "2rem" }}>🎂</span>}
                 {!p.disponivel && <div className="prod-card-indisponivel">Indisponível</div>}
                 {p.promocao && <div className="prod-card-promo">Promoção</div>}
+                {p.pronta_entrega === false && <div className="prod-card-encomenda">Encomenda</div>}
               </div>
               <div className="prod-card-info">
                 <p className="prod-card-cat">{p.categoria}</p>
                 <p className="prod-card-nome">{p.nome}</p>
                 <p className="prod-card-preco">R$ {formatPreco(p.preco_normal)}</p>
-                <p className="prod-card-forma">{FORMAS_VENDA.find(f => f.value === p.forma_venda)?.label || p.forma_venda}</p>
               </div>
               <div className="prod-card-actions">
                 <button className="prod-card-btn-edit" onClick={() => openEditar(p)}>Editar</button>
@@ -202,7 +238,6 @@ export default function Produtos() {
         </div>
       )}
 
-      {/* Modal novo/editar */}
       {modal && (
         <div className="prod-modal-overlay" onClick={fecharModal}>
           <div className="prod-modal" onClick={e => e.stopPropagation()}>
@@ -212,26 +247,24 @@ export default function Produtos() {
             </div>
 
             <div className="prod-modal-body">
+
               {/* Foto */}
               <div className="prod-section">
                 <p className="prod-section-label">📸 Foto do Produto</p>
                 <div className="prod-img-upload" onClick={() => !uploading && imgRef.current?.click()}>
                   {form.imagem_url ? (
-                    <img src={form.imagem_url} alt="produto" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img src={form.imagem_url.split(",")[0]} alt="produto" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   ) : (
                     <div className="prod-img-placeholder">
                       {uploading ? <span className="prod-spinner" /> : (
                         <>
                           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                          <p>Toque para enviar foto</p>
-                          <span>JPG, PNG ou WEBP</span>
+                          <p>Toque para enviar foto</p><span>JPG, PNG ou WEBP</span>
                         </>
                       )}
                     </div>
                   )}
-                  {form.imagem_url && (
-                    <button className="prod-img-remove" onClick={e => { e.stopPropagation(); setForm(f => ({ ...f, imagem_url: "" })); }}>✕</button>
-                  )}
+                  {form.imagem_url && <button className="prod-img-remove" onClick={e => { e.stopPropagation(); setForm(f => ({ ...f, imagem_url: "" })); }}>✕</button>}
                 </div>
                 <input ref={imgRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageUpload} />
               </div>
@@ -260,7 +293,7 @@ export default function Produtos() {
                 </div>
                 <div className="prod-field">
                   <label>Descrição</label>
-                  <textarea placeholder="Descreva os ingredientes, sabor, tamanho..." value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={4} />
+                  <textarea placeholder="Descreva os ingredientes, sabor, tamanho..." value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={3} />
                 </div>
               </div>
 
@@ -269,7 +302,7 @@ export default function Produtos() {
                 <p className="prod-section-label">💰 Preço e Venda</p>
                 <div className="prod-row-2">
                   <div className="prod-field">
-                    <label>Preço *</label>
+                    <label>Preço base *</label>
                     <div className="prod-preco-input">
                       <span>R$</span>
                       <input type="text" placeholder="0,00" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => setForm(f => ({ ...f, preco_normal: parsePreco(e.target.value) }))} />
@@ -283,20 +316,33 @@ export default function Produtos() {
                   </div>
                 </div>
 
-                {/* Toggles */}
+                {/* Tamanhos personalizados */}
+                <div className="prod-field">
+                  <label>Tamanhos / Pesos disponíveis <span style={{ color: "#9ca3af", fontWeight: 400 }}>(opcional)</span></label>
+                  <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: "0 0 6px" }}>Ex: 500g, 1kg, 2kg, Pequeno, Grande...</p>
+                  {(form.tamanhos_disponiveis || []).map((t, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "#fdf2f8", borderRadius: "8px", marginBottom: "4px" }}>
+                      <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#374151" }}>{t.label}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ fontSize: "0.82rem", color: "#22c55e", fontWeight: 700 }}>R$ {t.preco.toFixed(2).replace(".", ",")}</span>
+                        <button onClick={() => removeTamanho(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1rem", padding: 0 }}>×</button>
+                      </div>
+                    </div>
+                  ))}
+                  <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+                    <input type="text" placeholder="Ex: 1kg" value={novoTamanho.label} onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))} style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                    <input type="text" placeholder="Preço" value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                    <button onClick={addTamanho} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
+                  </div>
+                </div>
+
                 <div className="prod-toggles">
-                  <div className={`prod-toggle-item${form.disponivel ? " active-green" : ""}`} onClick={() => setForm(f => ({ ...f, disponivel: !f.disponivel }))}>
-                    <div className="prod-toggle-slider">
-                      <div className="prod-toggle-thumb" style={{ transform: form.disponivel ? "translateX(20px)" : "translateX(0)" }} />
-                    </div>
-                    <span>Disponível</span>
-                  </div>
-                  <div className={`prod-toggle-item${form.promocao ? " active-pink" : ""}`} onClick={() => setForm(f => ({ ...f, promocao: !f.promocao }))}>
-                    <div className="prod-toggle-slider" style={{ background: form.promocao ? "#F583BF" : "#e5e7eb" }}>
-                      <div className="prod-toggle-thumb" style={{ transform: form.promocao ? "translateX(20px)" : "translateX(0)" }} />
-                    </div>
-                    <span>Promoção</span>
-                  </div>
+                  <Toggle label="Disponível" value={form.disponivel} onChange={(v: boolean) => setForm(f => ({ ...f, disponivel: v }))} colorClass="active-green" />
+                  <Toggle label="Promoção" value={form.promocao} onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v }))} colorClass="active-pink" />
+                </div>
+
+                <div className="prod-toggles">
+                  <Toggle label="Pronta entrega" value={form.pronta_entrega !== false} onChange={(v: boolean) => setForm(f => ({ ...f, pronta_entrega: v }))} colorClass="active-green" />
                 </div>
 
                 {form.promocao && (
@@ -309,9 +355,49 @@ export default function Produtos() {
                   </div>
                 )}
               </div>
+
+              {/* Personalização */}
+              <div className="prod-section">
+                <p className="prod-section-label">🎨 Personalização</p>
+                <Toggle label="Permitir personalização" value={form.permite_personalizacao || false} onChange={(v: boolean) => setForm(f => ({ ...f, permite_personalizacao: v }))} colorClass="active-pink" />
+
+                {form.permite_personalizacao && (
+                  <>
+                    {/* Massas */}
+                    <div className="prod-field">
+                      <label>Tipos de Massa</label>
+                      <TagList items={form.massas_disponiveis || []} onRemove={i => removeOpcao("massas_disponiveis", i)} />
+                      <div style={{ display: "flex", gap: "6px", marginTop: "6px" }}>
+                        <input type="text" placeholder="Ex: Chocolate, Baunilha..." value={novaOpcao.massa} onChange={e => setNovaOpcao(o => ({ ...o, massa: e.target.value }))} onKeyDown={e => e.key === "Enter" && addOpcao("massas_disponiveis", "massa")} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                        <button onClick={() => addOpcao("massas_disponiveis", "massa")} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
+                      </div>
+                    </div>
+
+                    {/* Recheios */}
+                    <div className="prod-field">
+                      <label>Sabores / Recheios</label>
+                      <TagList items={form.recheios_disponiveis || []} onRemove={i => removeOpcao("recheios_disponiveis", i)} />
+                      <div style={{ display: "flex", gap: "6px", marginTop: "6px" }}>
+                        <input type="text" placeholder="Ex: Morango, Brigadeiro..." value={novaOpcao.recheio} onChange={e => setNovaOpcao(o => ({ ...o, recheio: e.target.value }))} onKeyDown={e => e.key === "Enter" && addOpcao("recheios_disponiveis", "recheio")} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                        <button onClick={() => addOpcao("recheios_disponiveis", "recheio")} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
+                      </div>
+                    </div>
+
+                    {/* Coberturas */}
+                    <div className="prod-field">
+                      <label>Coberturas</label>
+                      <TagList items={form.coberturas_disponiveis || []} onRemove={i => removeOpcao("coberturas_disponiveis", i)} />
+                      <div style={{ display: "flex", gap: "6px", marginTop: "6px" }}>
+                        <input type="text" placeholder="Ex: Ganache, Chantilly..." value={novaOpcao.cobertura} onChange={e => setNovaOpcao(o => ({ ...o, cobertura: e.target.value }))} onKeyDown={e => e.key === "Enter" && addOpcao("coberturas_disponiveis", "cobertura")} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                        <button onClick={() => addOpcao("coberturas_disponiveis", "cobertura")} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
             </div>
 
-            {/* Footer */}
             <div className="prod-modal-footer">
               <button className="prod-btn-cancelar" onClick={fecharModal}>Cancelar</button>
               <button className="prod-btn-salvar" onClick={handleSalvar} disabled={saving}>
@@ -322,7 +408,6 @@ export default function Produtos() {
         </div>
       )}
 
-      {/* Confirm delete */}
       {deleteConfirm && (
         <div className="prod-modal-overlay" onClick={() => setDeleteConfirm(null)}>
           <div className="prod-confirm" onClick={e => e.stopPropagation()}>
@@ -341,37 +426,30 @@ export default function Produtos() {
         .prod-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
         .prod-spinner-sm { width:18px; height:18px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
         @keyframes pspin { to { transform:rotate(360deg); } }
-
         .prod-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
         .prod-title { font-size:1.3rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.15rem; }
         .prod-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0; }
-
         .prod-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.7rem 1.2rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; }
-
         .prod-filtros { display:flex; gap:0.5rem; flex-wrap:wrap; }
         .prod-filtro-btn { padding:0.35rem 0.85rem; border:1.5px solid var(--border,#e5e7eb); border-radius:20px; background:var(--bg-card,white); font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:500; color:var(--text-secondary,#6b7280); cursor:pointer; }
         .prod-filtro-btn.active { border-color:#F583BF; color:#F583BF; background:#fdf2f8; font-weight:700; }
-
         .prod-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; padding:3rem 1rem; text-align:center; }
         .prod-empty-title { font-size:1rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0; }
         .prod-empty-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0; }
-
         .prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.75rem; }
         .prod-card { background:var(--bg-card,white); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-card,0 2px 8px rgba(0,0,0,0.06)); display:flex; flex-direction:column; }
         .prod-card-img { aspect-ratio:1; background:var(--bg-subtle,#f9fafb); display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; overflow:hidden; }
         .prod-card-img img { width:100%; height:100%; object-fit:cover; }
         .prod-card-indisponivel { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; color:white; font-size:0.72rem; font-weight:700; }
         .prod-card-promo { position:absolute; top:0.4rem; left:0.4rem; background:#F583BF; color:white; font-size:0.65rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:20px; }
+        .prod-card-encomenda { position:absolute; top:0.4rem; right:0.4rem; background:#f59e0b; color:white; font-size:0.65rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:20px; }
         .prod-card-info { padding:0.65rem 0.75rem; flex:1; }
         .prod-card-cat { font-size:0.68rem; color:#F583BF; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 0.15rem; }
         .prod-card-nome { font-size:0.85rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.25rem; line-height:1.3; }
-        .prod-card-preco { font-size:0.88rem; font-weight:800; color:#22c55e; margin:0 0 0.1rem; }
-        .prod-card-forma { font-size:0.7rem; color:var(--text-muted,#9ca3af); margin:0; }
+        .prod-card-preco { font-size:0.88rem; font-weight:800; color:#22c55e; margin:0; }
         .prod-card-actions { display:flex; gap:0.4rem; padding:0.5rem 0.75rem; border-top:1px solid var(--border,#f3f4f6); }
         .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle,#f9fafb); border:none; border-radius:8px; font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
         .prod-card-btn-del { padding:0.4rem 0.6rem; background:#fff1f2; border:none; border-radius:8px; color:#ef4444; cursor:pointer; display:flex; align-items:center; }
-
-        /* Modal */
         .prod-modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.5); display:flex; align-items:flex-end; justify-content:center; }
         .prod-modal { background:var(--bg-card,white); border-radius:24px 24px 0 0; width:100%; max-width:520px; max-height:92vh; display:flex; flex-direction:column; animation:slideUp 0.25s ease; }
         @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
@@ -380,56 +458,40 @@ export default function Produtos() {
         .prod-modal-close { background:var(--bg-subtle,#f3f4f6); border:none; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-muted,#6b7280); font-size:0.75rem; }
         .prod-modal-body { flex:1; overflow-y:auto; padding:1rem 1.25rem; display:flex; flex-direction:column; gap:1.25rem; }
         .prod-modal-footer { padding:1rem 1.25rem; border-top:1px solid var(--border,#f3f4f6); display:flex; gap:0.75rem; flex-shrink:0; }
-
         .prod-section { display:flex; flex-direction:column; gap:0.75rem; }
         .prod-section-label { font-size:0.78rem; font-weight:700; color:#F583BF; text-transform:uppercase; letter-spacing:0.06em; margin:0; }
-
         .prod-img-upload { width:120px; height:120px; border-radius:16px; border:2px dashed #fce7f3; background:#fdf2f8; cursor:pointer; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
         .prod-img-placeholder { display:flex; flex-direction:column; align-items:center; gap:0.35rem; padding:0.75rem; text-align:center; }
         .prod-img-placeholder p { font-size:0.78rem; font-weight:600; color:#374151; margin:0; }
         .prod-img-placeholder span { font-size:0.68rem; color:#9ca3af; }
         .prod-img-remove { position:absolute; top:0.35rem; right:0.35rem; background:rgba(0,0,0,0.5); border:none; border-radius:50%; width:22px; height:22px; color:white; font-size:0.65rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-
         .prod-field { display:flex; flex-direction:column; gap:0.3rem; }
         .prod-field label { font-size:0.78rem; font-weight:600; color:var(--text-secondary,#374151); }
         .prod-field input, .prod-field select, .prod-field textarea { padding:0.65rem 0.9rem; border:1.5px solid var(--border,#e5e7eb); border-radius:12px; font-family:'Inter',sans-serif; font-size:0.88rem; color:var(--text-primary,#1f2937); background:var(--bg-input,white); outline:none; transition:border-color 0.2s; width:100%; box-sizing:border-box; }
         .prod-field input:focus, .prod-field select:focus, .prod-field textarea:focus { border-color:#F583BF; }
         .prod-field textarea { resize:none; }
-
         .prod-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
         .prod-preco-input { display:flex; align-items:center; border:1.5px solid var(--border,#e5e7eb); border-radius:12px; overflow:hidden; background:var(--bg-input,white); }
         .prod-preco-input span { padding:0 0.75rem; font-weight:700; color:#22c55e; font-size:0.88rem; flex-shrink:0; }
         .prod-preco-input input { border:none !important; border-radius:0 !important; flex:1; padding:0.65rem 0.5rem 0.65rem 0 !important; }
         .prod-preco-input:focus-within { border-color:#F583BF; }
-
         .prod-nova-cat { display:flex; gap:0.4rem; margin-top:0.4rem; }
         .prod-nova-cat input { flex:1; padding:0.55rem 0.8rem; border:1.5px solid #F583BF; border-radius:10px; font-family:'Inter',sans-serif; font-size:0.85rem; outline:none; }
         .prod-nova-cat button { padding:0.55rem 0.9rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:10px; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; }
-
         .prod-toggles { display:flex; gap:0.75rem; flex-wrap:wrap; }
         .prod-toggle-item { display:flex; align-items:center; gap:0.6rem; padding:0.65rem 1rem; border-radius:12px; background:var(--bg-subtle,#f3f4f6); cursor:pointer; font-size:0.85rem; font-weight:600; color:var(--text-secondary,#374151); transition:all 0.2s; flex:1; min-width:120px; }
         .prod-toggle-item.active-green { background:#dcfce7; color:#15803d; }
         .prod-toggle-item.active-pink { background:#fce7f3; color:#be185d; }
         .prod-toggle-slider { width:40px; height:22px; border-radius:11px; background:#e5e7eb; position:relative; flex-shrink:0; transition:background 0.2s; }
-        .prod-toggle-item.active-green .prod-toggle-slider { background:#22c55e; }
         .prod-toggle-thumb { width:18px; height:18px; border-radius:50%; background:white; position:absolute; top:2px; left:2px; transition:transform 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
-
-        .prod-btn-ia { display:inline-flex; align-items:center; gap:0.3rem; padding:0.25rem 0.65rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:20px; font-family:'Inter',sans-serif; font-size:0.72rem; font-weight:700; cursor:pointer; transition:opacity 0.2s; white-space:nowrap; }
-        .prod-btn-ia:disabled { opacity:0.5; cursor:not-allowed; }
-        .prod-btn-ia:hover:not(:disabled) { opacity:0.9; }
-        .prod-spinner-xs { width:10px; height:10px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; flex-shrink:0; } flex:1; padding:0.85rem; background:var(--bg-subtle,#f3f4f6); border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
+        .prod-btn-cancelar { flex:1; padding:0.85rem; background:var(--bg-subtle,#f3f4f6); border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
         .prod-btn-salvar { flex:2; padding:0.85rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
         .prod-btn-salvar:disabled { opacity:0.65; cursor:not-allowed; }
-
         .prod-confirm { background:var(--bg-card,white); border-radius:18px; padding:1.5rem; width:90%; max-width:320px; margin:auto; }
         .prod-confirm-title { font-size:1rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.4rem; }
         .prod-confirm-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0 0 1.25rem; }
         .prod-confirm-btns { display:flex; gap:0.75rem; }
         .prod-confirm-btns button { flex:1; padding:0.75rem; border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; background:var(--bg-subtle,#f3f4f6); color:var(--text-secondary,#374151); }
-
-        :root.dark .prod-toggle-item { background:rgba(255,255,255,0.05); }
-        :root.dark .prod-toggle-item.active-green { background:rgba(34,197,94,0.15); color:#4ade80; }
-        :root.dark .prod-toggle-item.active-pink { background:rgba(245,131,191,0.15); color:#F583BF; }
       `}</style>
     </div>
   );
