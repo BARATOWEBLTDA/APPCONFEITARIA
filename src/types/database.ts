@@ -32,6 +32,8 @@ export interface DesignSettings {
   cor_nome?: string
   banner_gradient?: string
   banner1_url?: string
+  banner2_url?: string
+  banner3_url?: string
   texto_rodape?: string
   hide_stars?: boolean
   category_icons?: { [key: string]: string }

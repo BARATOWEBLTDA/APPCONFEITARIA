@@ -1,19 +1,77 @@
+import { useState, useEffect, useRef } from 'react'
+
 interface BannerAdProps {
   bannerUrl?: string
+  banner1Url?: string
+  banner2Url?: string
+  banner3Url?: string
+  isPro?: boolean
 }
 
-export function BannerAd({ bannerUrl }: BannerAdProps) {
-  if (!bannerUrl || bannerUrl.trim() === '') return null
+export function BannerAd({ bannerUrl, banner1Url, banner2Url, banner3Url, isPro }: BannerAdProps) {
+  const banners = isPro
+    ? [bannerUrl, banner1Url, banner2Url, banner3Url].filter(Boolean) as string[]
+    : [bannerUrl].filter(Boolean) as string[]
 
-  return (
-    <div style={{ margin: '0 1rem 1rem' }}>
-      <div style={{ width: '100%', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+  const [current, setCurrent] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    if (banners.length <= 1) return
+    timerRef.current = setInterval(() => {
+      setCurrent(prev => (prev + 1) % banners.length)
+    }, 4000)
+    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+  }, [banners.length])
+
+  if (banners.length === 0) return null
+
+  if (banners.length === 1) {
+    return (
+      <div style={{ width: '100%', marginBottom: '8px' }}>
         <img
-          src={bannerUrl}
+          src={banners[0]}
           alt="Banner"
           style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
-          onError={(e) => { e.currentTarget.style.display = 'none' }}
+          onError={e => { e.currentTarget.style.display = 'none' }}
         />
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ width: '100%', marginBottom: '8px', position: 'relative', overflow: 'hidden' }}>
+      {/* Slides */}
+      <div style={{ display: 'flex', transition: 'transform 0.5s ease', transform: `translateX(-${current * 100}%)` }}>
+        {banners.map((url, i) => (
+          <img
+            key={i}
+            src={url}
+            alt={`Banner ${i + 1}`}
+            style={{ width: '100%', flexShrink: 0, height: 'auto', objectFit: 'contain', display: 'block' }}
+            onError={e => { e.currentTarget.style.display = 'none' }}
+          />
+        ))}
+      </div>
+
+      {/* Pontos indicadores */}
+      <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px' }}>
+        {banners.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrent(i)}
+            style={{
+              width: i === current ? '20px' : '8px',
+              height: '8px',
+              borderRadius: '4px',
+              background: i === current ? '#ec4899' : 'rgba(255,255,255,0.7)',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              transition: 'all 0.3s ease',
+            }}
+          />
+        ))}
       </div>
     </div>
   )

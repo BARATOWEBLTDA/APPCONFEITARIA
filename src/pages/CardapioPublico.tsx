@@ -24,6 +24,7 @@ function CardapioContent() {
   const [design, setDesign] = useState<DesignSettings | null>(null)
   const [config, setConfig] = useState<Configuracoes | null>(null)
   const [produtos, setProdutos] = useState<Produto[]>([])
+  const [isPro, setIsPro] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
@@ -34,11 +35,12 @@ function CardapioContent() {
   useEffect(() => {
     if (!slug) return
     setLoading(true)
-    getCardapioBySlug(slug.toLowerCase()).then(({ design, config, produtos }) => {
+    getCardapioBySlug(slug.toLowerCase()).then(({ design, config, produtos, isPro }) => {
       if (!design) { setError('Cardápio não encontrado'); setLoading(false); return }
       setDesign(design)
       setConfig(config)
       setProdutos(produtos)
+      setIsPro(isPro || false)
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
       setLoading(false)
@@ -90,10 +92,8 @@ function CardapioContent() {
     <div className="min-h-screen relative" style={{ backgroundColor: design.cor_background || '#fef2f2' }}>
       <NavC />
 
-      {/* Área de cor sólida no topo — necessária para a logo flutuar */}
       <div style={{ height: '160px', backgroundColor: design.cor_borda || '#ec4899' }} />
 
-      {/* Card de informações com logo flutuando */}
       <LogoC
         logoUrl={design.logo_url}
         borderColor={design.cor_borda}
@@ -105,9 +105,14 @@ function CardapioContent() {
         hideStars={design.hide_stars}
       />
 
-      {/* Banner abaixo do card, acima das categorias */}
       <div style={{ marginTop: '16px' }}>
-        <BannerAd bannerUrl={design.banner_url} />
+        <BannerAd
+          bannerUrl={design.banner_url}
+          banner1Url={design.banner1_url}
+          banner2Url={design.banner2_url}
+          banner3Url={design.banner3_url}
+          isPro={isPro}
+        />
       </div>
 
       <div className={`container mx-auto px-4 py-4 pb-24 ${isDesktop ? 'max-w-6xl' : ''}`}>
