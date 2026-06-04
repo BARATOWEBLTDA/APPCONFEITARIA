@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ShoppingCart, X, MessageCircle, Trash2, Home, Tag, User } from 'lucide-react'
+import { ShoppingBag, X, MessageCircle, Trash2, Home, Tag, ClipboardList, User } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
 import { CartItemComponent } from '@/components/cart/CartItemComponent'
 import { formatCurrency } from '@/utils/helpers'
@@ -33,59 +33,85 @@ export function NavigationMenu() {
     clearCart(); setShowForm(false); setIsOpen(false)
   }
 
+  const tabs = [
+    { id: 'inicio',    label: 'Início',     Icon: Home },
+    { id: 'promocoes', label: 'Promoções',  Icon: Tag },
+    { id: 'pedidos',   label: 'Pedidos',    Icon: ClipboardList },
+    { id: 'perfil',    label: 'Perfil',     Icon: User },
+  ]
+
   return (
     <>
-      {/* Menu inferior mobile */}
-      {isMobile && (
-        <div className="fixed bottom-0 left-0 right-0 z-30 shadow-lg border-t"
-          style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 50%, #f9a8d4 100%)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '8px 0 12px' }}>
-
-            {/* Início */}
-            <button onClick={() => setActiveTab('inicio')}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px' }}>
-              <Home size={22} color={activeTab === 'inicio' ? 'white' : 'rgba(255,255,255,0.6)'} />
-              <span style={{ fontSize: '11px', fontWeight: activeTab === 'inicio' ? 700 : 400, color: activeTab === 'inicio' ? 'white' : 'rgba(255,255,255,0.6)' }}>Início</span>
-            </button>
-
-            {/* Carrinho (centro) */}
-            <button onClick={() => setIsOpen(true)}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px', position: 'relative' }}>
-              <div style={{ background: 'white', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '-16px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-                <ShoppingCart size={20} color="#ec4899" />
-                {count > 0 && (
-                  <span style={{ position: 'absolute', top: '-4px', right: '8px', background: '#ef4444', color: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700 }}>{count}</span>
-                )}
-              </div>
-              <span style={{ fontSize: '11px', fontWeight: 400, color: 'rgba(255,255,255,0.6)' }}>Carrinho</span>
-            </button>
-
-            {/* Promoções */}
-            <button onClick={() => setActiveTab('promocoes')}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px' }}>
-              <Tag size={22} color={activeTab === 'promocoes' ? 'white' : 'rgba(255,255,255,0.6)'} />
-              <span style={{ fontSize: '11px', fontWeight: activeTab === 'promocoes' ? 700 : 400, color: activeTab === 'promocoes' ? 'white' : 'rgba(255,255,255,0.6)' }}>Promoções</span>
-            </button>
-
-            {/* Perfil */}
-            <button onClick={() => setActiveTab('perfil')}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px' }}>
-              <User size={22} color={activeTab === 'perfil' ? 'white' : 'rgba(255,255,255,0.6)'} />
-              <span style={{ fontSize: '11px', fontWeight: activeTab === 'perfil' ? 700 : 400, color: activeTab === 'perfil' ? 'white' : 'rgba(255,255,255,0.6)' }}>Perfil</span>
-            </button>
-
-          </div>
-        </div>
-      )}
-
-      {/* Menu lateral desktop */}
-      {!isMobile && (
+      {isMobile ? (
         <>
-          <div className="fixed left-0 top-0 bottom-0 z-30 shadow-lg border-r w-20 flex flex-col justify-center"
-            style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 50%, #f9a8d4 100%)' }}>
+          {/* Barra "Ver sacola" — aparece só quando tem itens */}
+          {count > 0 && (
+            <div
+              onClick={() => setIsOpen(true)}
+              style={{
+                position: 'fixed',
+                bottom: '72px',
+                left: '16px',
+                right: '16px',
+                zIndex: 40,
+                background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)',
+                borderRadius: '16px',
+                padding: '14px 20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                boxShadow: '0 8px 24px rgba(236,72,153,0.45)',
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.25)', borderRadius: '10px', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ShoppingBag size={18} color="white" />
+                </div>
+                <span style={{ color: 'white', fontWeight: 700, fontSize: '15px' }}>
+                  Ver sacola · {count} {count === 1 ? 'item' : 'itens'}
+                </span>
+              </div>
+              <span style={{ color: 'white', fontWeight: 800, fontSize: '15px' }}>
+                {formatCurrency(totalPrice)}
+              </span>
+            </div>
+          )}
+
+          {/* Menu inferior */}
+          <div
+            className="fixed bottom-0 left-0 right-0 z-30 border-t"
+            style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 50%, #f9a8d4 100%)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '8px 0 10px' }}>
+              {tabs.map(({ id, label, Icon }) => {
+                const active = activeTab === id
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setActiveTab(id)}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 16px' }}
+                  >
+                    <Icon size={22} color={active ? 'white' : 'rgba(255,255,255,0.55)'} />
+                    <span style={{ fontSize: '11px', fontWeight: active ? 700 : 400, color: active ? 'white' : 'rgba(255,255,255,0.55)' }}>
+                      {label}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Desktop — menu lateral com sacola */}
+          <div
+            className="fixed left-0 top-0 bottom-0 z-30 shadow-lg border-r w-20 flex flex-col justify-center"
+            style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 50%, #f9a8d4 100%)' }}
+          >
             <div className="px-4 py-3 flex justify-center">
               <button onClick={() => setIsOpen(true)} className="bg-white text-pink-600 relative px-6 rounded-full py-2 flex items-center gap-2 font-semibold">
-                <ShoppingCart className="w-5 h-5" />
+                <ShoppingBag className="w-5 h-5" />
                 {count > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{count}</span>}
               </button>
             </div>
@@ -99,12 +125,12 @@ export function NavigationMenu() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto">
             <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
-              <h3 className="font-bold text-pink-600 flex items-center gap-2"><ShoppingCart className="w-5 h-5" /> Meu Carrinho</h3>
+              <h3 className="font-bold text-pink-600 flex items-center gap-2"><ShoppingBag className="w-5 h-5" /> Minha Sacola</h3>
               <button onClick={() => setIsOpen(false)} className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center"><X className="w-4 h-4 text-pink-600" /></button>
             </div>
             <div className="p-4">
               {items.length === 0 ? (
-                <div className="text-center py-8 text-gray-400"><ShoppingCart className="w-12 h-12 mx-auto mb-3" /><p>Carrinho vazio</p></div>
+                <div className="text-center py-8 text-gray-400"><ShoppingBag className="w-12 h-12 mx-auto mb-3" /><p>Sacola vazia</p></div>
               ) : (
                 <div className="space-y-3">
                   {items.map(item => <CartItemComponent key={item.id} item={item} onUpdateQuantity={updateQuantity} onUpdateObservations={updateObservations} onRemove={removeItem} />)}
@@ -123,7 +149,7 @@ export function NavigationMenu() {
         </div>
       )}
 
-      {/* Modal dados para pedido */}
+      {/* Modal dados pedido */}
       {showForm && (
         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
