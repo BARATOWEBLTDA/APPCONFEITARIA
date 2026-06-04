@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { getCardapioBySlug } from '@/services/cardapio'
 import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 import { Banner } from '@/components/cardapio/Banner'
+import { BannerAd } from '@/components/cardapio/BannerAd'
 import { DesktopBanner } from '@/components/desktop/Banner'
 import { Logo } from '@/components/cardapio/Logo'
 import { DesktopLogo } from '@/components/desktop/Logo'
@@ -92,7 +93,8 @@ function CardapioContent() {
     <div className="min-h-screen relative" style={{ backgroundColor: design.cor_background || '#fef2f2' }}>
       <NavC />
 
-      <BannerC borderColor={design.cor_borda || '#ec4899'} bannerGradient={design.banner_gradient} bannerUrl={design.banner_url} />
+      <BannerC borderColor={design.cor_borda || '#ec4899'} bannerGradient={design.banner_gradient} />
+      <BannerAd bannerUrl={design.banner_url} />
 
       <LogoC
         logoUrl={design.logo_url}
