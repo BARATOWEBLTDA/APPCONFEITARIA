@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import { usePlano } from "@/hooks/usePlano";
 
 type Tamanho = { label: string; preco: number };
 
@@ -59,6 +60,9 @@ export default function Produtos() {
   const [novaOpcao, setNovaOpcao] = useState<{ massa: string; recheio: string; cobertura: string }>({ massa: "", recheio: "", cobertura: "" });
   const [novoTamanho, setNovoTamanho] = useState({ label: "", preco: "" });
   const imgRef = useRef<HTMLInputElement>(null);
+  const img2Ref = useRef<HTMLInputElement>(null);
+  const img3Ref = useRef<HTMLInputElement>(null);
+  const { isPro } = usePlano();
 
   useEffect(() => {
     const load = async () => {
@@ -86,18 +90,31 @@ export default function Produtos() {
   const openEditar = (p: Produto) => { setForm({ ...EMPTY, ...p }); setModal(true); };
   const fecharModal = () => { setModal(false); setForm(EMPTY); };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, slot: number = 0) => {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
     setUploading(true);
     const ext = file.name.split(".").pop();
-    const path = `produtos/${userId}-${Date.now()}.${ext}`;
+    const path = `produtos/${userId}-${Date.now()}-${slot}.${ext}`;
     const { error } = await supabase.storage.from("products").upload(path, file, { upsert: true });
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
-      setForm(f => ({ ...f, imagem_url: data.publicUrl }));
+      const url = data.publicUrl;
+      setForm(f => {
+        const imgs = (f.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
+        imgs[slot] = url;
+        return { ...f, imagem_url: imgs.join(",") };
+      });
     }
     setUploading(false);
+  };
+
+  const removeImage = (slot: number) => {
+    setForm(f => {
+      const imgs = (f.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
+      imgs[slot] = "";
+      return { ...f, imagem_url: imgs.filter(Boolean).join(",") };
+    });
   };
 
   const handleSalvar = async () => {
@@ -250,23 +267,50 @@ export default function Produtos() {
 
               {/* Foto */}
               <div className="prod-section">
-                <p className="prod-section-label">📸 Foto do Produto</p>
-                <div className="prod-img-upload" onClick={() => !uploading && imgRef.current?.click()}>
-                  {form.imagem_url ? (
-                    <img src={form.imagem_url.split(",")[0]} alt="produto" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  ) : (
-                    <div className="prod-img-placeholder">
-                      {uploading ? <span className="prod-spinner" /> : (
-                        <>
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                          <p>Toque para enviar foto</p><span>JPG, PNG ou WEBP</span>
-                        </>
-                      )}
-                    </div>
-                  )}
-                  {form.imagem_url && <button className="prod-img-remove" onClick={e => { e.stopPropagation(); setForm(f => ({ ...f, imagem_url: "" })); }}>✕</button>}
+                <p className="prod-section-label">📸 Fotos do Produto</p>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+                  {[0, 1, 2].map(slot => {
+                    const imgs = (form.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
+                    const imgUrl = imgs[slot];
+                    const isLocked = slot > 0 && !isPro;
+                    const ref = slot === 0 ? imgRef : slot === 1 ? img2Ref : img3Ref;
+                    return (
+                      <div key={slot} style={{ position: "relative" }}>
+                        {slot > 0 && <span style={{ fontSize: "0.65rem", color: "#9ca3af", display: "block", marginBottom: "3px", textAlign: "center" }}>Foto {slot + 1}</span>}
+                        {slot === 0 && <span style={{ fontSize: "0.65rem", color: "#9ca3af", display: "block", marginBottom: "3px", textAlign: "center" }}>Principal</span>}
+                        <div
+                          className="prod-img-upload"
+                          style={{ width: "100%", height: "90px", borderRadius: "12px", cursor: isLocked ? "default" : "pointer", position: "relative", overflow: "hidden" }}
+                          onClick={() => !isLocked && !uploading && ref.current?.click()}
+                        >
+                          {imgUrl ? (
+                            <>
+                              <img src={imgUrl} alt={`foto ${slot + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              {!isLocked && <button className="prod-img-remove" onClick={e => { e.stopPropagation(); removeImage(slot); }}>✕</button>}
+                            </>
+                          ) : isLocked ? (
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: "4px" }}>
+                              <img src="/diamante.png" alt="PRO" style={{ width: "20px", height: "20px" }} />
+                              <span style={{ fontSize: "0.6rem", color: "#9ca3af", textAlign: "center" }}>PRO</span>
+                            </div>
+                          ) : (
+                            <div className="prod-img-placeholder">
+                              {uploading ? <span className="prod-spinner" /> : (
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                              )}
+                            </div>
+                          )}
+                          {/* Faixa PRO diagonal */}
+                          {isLocked && (
+                            <div style={{ position: "absolute", top: "10px", right: "-16px", background: "linear-gradient(135deg,#ec4899,#f472b6)", color: "white", fontSize: "0.55rem", fontWeight: 900, padding: "2px 20px", transform: "rotate(45deg)", zIndex: 10, width: "70px", textAlign: "center" }}>PRO</div>
+                          )}
+                        </div>
+                        <input ref={ref} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleImageUpload(e, slot)} />
+                      </div>
+                    );
+                  })}
                 </div>
-                <input ref={imgRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageUpload} />
+                {!isPro && <p style={{ fontSize: "0.72rem", color: "#9ca3af", margin: "4px 0 0", textAlign: "center" }}>Fotos 2 e 3 disponíveis no plano PRO</p>}
               </div>
 
               {/* Informações */}
