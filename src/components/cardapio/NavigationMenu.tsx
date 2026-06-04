@@ -81,7 +81,7 @@ export function NavigationMenu() {
           {/* Menu inferior */}
           <div
             className="fixed bottom-0 left-0 right-0 z-30 border-t"
-            style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 50%, #f9a8d4 100%)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+            style={{ background: '#ec4899', paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '8px 0 10px' }}>
               {tabs.map(({ id, label, Icon }) => {
