@@ -72,6 +72,8 @@ export default function CardapioConfigPage() {
     }, 2000);
     return () => { if (autoSaveRef.current) clearTimeout(autoSaveRef.current); };
   }, [form, horario]);
+
+  const formatPhone = (v: string) => {
     const d = v.replace(/\D/g, "").slice(0, 11);
     if (d.length <= 2) return `(${d}`;
     if (d.length <= 3) return `(${d.slice(0,2)}) ${d.slice(2)}`;
