@@ -140,16 +140,17 @@ export default function CardapioDesign() {
 
         <div className="cd-banners-grid">
           {(isPro ? [0, 1, 2, 3] : [0]).map(i => (
-            <div key={i} className="cd-banner-slot" style={{ position: 'relative', overflow: 'hidden' }}>
-              {i > 0 && <div className="cd-pro-ribbon">PRO</div>}
+            <div key={i} className="cd-banner-slot">
               <span className="cd-banner-slot-label">{bannerLabels[i]}</span>
               {bannerValues[i] ? (
                 <div className="cd-banner-thumb">
+                  {i > 0 && <div className="cd-pro-ribbon">PRO</div>}
                   <img src={bannerValues[i]} alt={bannerLabels[i]} />
                   <button className="cd-remove-btn" onClick={() => handleRemoveBanner(i)}>✕</button>
                 </div>
               ) : (
-                <div className="cd-upload-box cd-upload-slot" onClick={() => !uploading && bannerRefs[i].current?.click()}>
+                <div className="cd-upload-box cd-upload-slot" style={{ position: 'relative', overflow: 'hidden' }} onClick={() => !uploading && bannerRefs[i].current?.click()}>
+                  {i > 0 && <div className="cd-pro-ribbon">PRO</div>}
                   {uploading === `banner${i}` ? <span className="cd-spinner-sm" /> : (
                     <>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
