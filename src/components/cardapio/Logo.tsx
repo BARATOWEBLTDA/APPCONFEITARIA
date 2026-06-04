@@ -185,7 +185,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
                   rel="noopener noreferrer"
                   style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#00c0f3', color: 'white', borderRadius: '12px', fontFamily: 'Nunito,sans-serif', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+                  <img src="/waze.png" alt="Waze" width="20" height="20" style={{objectFit:'contain'}} />
                   Waze
                 </a>
                 <a
@@ -194,7 +194,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
                   rel="noopener noreferrer"
                   style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#4285f4', color: 'white', borderRadius: '12px', fontFamily: 'Nunito,sans-serif', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                  <img src="/google-maps.png" alt="Google Maps" width="20" height="20" style={{objectFit:'contain'}} />
                   Google Maps
                 </a>
               </div>
