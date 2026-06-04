@@ -269,7 +269,7 @@ export default function CardapioConfigPage() {
       <div className="ccc-card">
         <SectionLabel>Entrega</SectionLabel>
         <div className="ccc-toggle-row">
-          <div><p className="ccc-toggle-label">Faz entrega?</p><p className="ccc-toggle-sub">Ative para exibir opção de entrega no cardápio</p></div>
+          <div><p className="ccc-toggle-label">Faz entrega?</p><p className="ccc-toggle-sub">Ative para configurar opções e taxas de entrega no seu cardápio.</p></div>
           <label className="ccc-toggle"><input type="checkbox" checked={form.faz_entrega} onChange={e => setForm({...form, faz_entrega: e.target.checked})} /><span className="ccc-toggle-slider" /></label>
         </div>
         {form.faz_entrega && (
