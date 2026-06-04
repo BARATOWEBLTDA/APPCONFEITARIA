@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
+import { HexColorPicker } from "react-colorful";
 
 const SectionLabel = ({ children }: any) => <p className="cd-section-label">{children}</p>;
 
@@ -20,6 +21,7 @@ export default function CardapioDesign() {
   const [corBorda, setCorBorda] = useState("#ec4899");
   const [corBackground, setCorBackground] = useState("#fef2f2");
   const [corNome, setCorNome] = useState("#1f2937");
+  const [activePicker, setActivePicker] = useState<string | null>(null);
 
   const logoRef = useRef<HTMLInputElement>(null);
   const bannerRefs = [
@@ -92,11 +94,15 @@ export default function CardapioDesign() {
     await supabase.from("profiles").update({ [keys[index]]: null }).eq("id", userId);
   };
 
-  const handleColorChange = async (field: string, value: string, setter: (v: string) => void) => {
+  const colorSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleColorChange = (field: string, value: string, setter: (v: string) => void) => {
     setter(value);
-    if (!userId) return;
-    await supabase.from("profiles").update({ [field]: value }).eq("id", userId);
-    showSuccess();
+    if (colorSaveTimer.current) clearTimeout(colorSaveTimer.current);
+    colorSaveTimer.current = setTimeout(async () => {
+      if (!userId) return;
+      await supabase.from("profiles").update({ [field]: value }).eq("id", userId);
+      showSuccess();
+    }, 600);
   };
 
   const bannerValues = [bannerUrl, banner1Url, banner2Url, banner3Url];
@@ -193,35 +199,45 @@ export default function CardapioDesign() {
       {/* Cores */}
       <div className="cd-card">
         <SectionLabel>Cores</SectionLabel>
-        <p className="cd-hint">Personalize as cores do seu cardápio público</p>
+        <p className="cd-hint">Toque no quadradinho para escolher a cor</p>
         <div className="cd-colors-list">
-          <div className="cd-color-row">
-            <div className="cd-color-info">
-              <span className="cd-color-label">Barra do topo e borda da logo</span>
-              <span className="cd-color-value">{corBorda}</span>
+
+          {[
+            { label: "Barra do topo e borda da logo", field: "cor_borda", value: corBorda, setter: setCorBorda },
+            { label: "Fundo da página", field: "cor_background", value: corBackground, setter: setCorBackground },
+            { label: "Nome da loja", field: "cor_nome", value: corNome, setter: setCorNome },
+          ].map(({ label, field, value, setter }) => (
+            <div key={field}>
+              <div className="cd-color-row" onClick={() => setActivePicker(activePicker === field ? null : field)}>
+                <div className="cd-color-info">
+                  <span className="cd-color-label">{label}</span>
+                  <span className="cd-color-value">{value}</span>
+                </div>
+                <div className="cd-color-swatch" style={{ background: value }} />
+              </div>
+
+              {activePicker === field && (
+                <div className="cd-picker-wrap">
+                  <HexColorPicker
+                    color={value}
+                    onChange={v => handleColorChange(field, v, setter)}
+                    style={{ width: '100%', height: '180px' }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: value, border: '2px solid #e5e7eb', flexShrink: 0 }} />
+                    <input
+                      type="text"
+                      value={value}
+                      onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange(field, e.target.value, setter) }}
+                      className="cd-hex-input"
+                    />
+                    <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
+                  </div>
+                </div>
+              )}
             </div>
-            <label className="cd-color-swatch" style={{ background: corBorda }}>
-              <input type="color" value={corBorda} onChange={e => handleColorChange("cor_borda", e.target.value, setCorBorda)} style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} />
-            </label>
-          </div>
-          <div className="cd-color-row">
-            <div className="cd-color-info">
-              <span className="cd-color-label">Fundo da página</span>
-              <span className="cd-color-value">{corBackground}</span>
-            </div>
-            <label className="cd-color-swatch" style={{ background: corBackground }}>
-              <input type="color" value={corBackground} onChange={e => handleColorChange("cor_background", e.target.value, setCorBackground)} style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} />
-            </label>
-          </div>
-          <div className="cd-color-row">
-            <div className="cd-color-info">
-              <span className="cd-color-label">Nome da loja</span>
-              <span className="cd-color-value">{corNome}</span>
-            </div>
-            <label className="cd-color-swatch" style={{ background: corNome }}>
-              <input type="color" value={corNome} onChange={e => handleColorChange("cor_nome", e.target.value, setCorNome)} style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} />
-            </label>
-          </div>
+          ))}
+
         </div>
       </div>
 
@@ -258,12 +274,17 @@ export default function CardapioDesign() {
         .cd-change-btn-sm:hover { text-decoration:underline; }
         .cd-pro-badge { background:linear-gradient(135deg,#ec4899,#a855f7); color:white; font-size:0.68rem; font-weight:800; padding:2px 10px; border-radius:50px; letter-spacing:0.1em; }
         .cd-pro-ribbon { position:absolute; top:12px; right:-16px; background:linear-gradient(135deg,#ec4899,#f472b6); color:white; font-size:0.58rem; font-weight:900; letter-spacing:0.1em; padding:3px 24px; transform:rotate(45deg); z-index:10; box-shadow:0 2px 6px rgba(236,72,153,0.4); width:80px; text-align:center; }
-        .cd-colors-list { display:flex; flex-direction:column; gap:0.6rem; }
-        .cd-color-row { display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0.75rem; background:#fafafa; border-radius:12px; border:1px solid #f3f4f6; }
+        .cd-colors-list { display:flex; flex-direction:column; gap:0.5rem; }
+        .cd-color-row { display:flex; align-items:center; justify-content:space-between; padding:0.65rem 0.75rem; background:#fafafa; border-radius:12px; border:1px solid #f3f4f6; cursor:pointer; transition:border-color 0.2s; }
+        .cd-color-row:hover { border-color:#F583BF; }
         .cd-color-info { display:flex; flex-direction:column; gap:2px; }
         .cd-color-label { font-size:0.82rem; font-weight:600; color:#374151; }
         .cd-color-value { font-size:0.7rem; color:#9ca3af; font-family:monospace; }
-        .cd-color-swatch { width:40px; height:40px; border-radius:10px; cursor:pointer; display:block; position:relative; border:2px solid rgba(0,0,0,0.08); flex-shrink:0; box-shadow:0 2px 6px rgba(0,0,0,0.12); }
+        .cd-color-swatch { width:38px; height:38px; border-radius:10px; border:2px solid rgba(0,0,0,0.08); flex-shrink:0; box-shadow:0 2px 6px rgba(0,0,0,0.12); }
+        .cd-picker-wrap { padding:0.75rem; background:#f9fafb; border-radius:12px; border:1px solid #f3f4f6; margin-top:4px; }
+        .cd-hex-input { flex:1; padding:6px 10px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:0.82rem; font-family:monospace; color:#374151; outline:none; }
+        .cd-hex-input:focus { border-color:#F583BF; }
+        .cd-picker-close { padding:6px 14px; background:#ec4899; color:white; border:none; border-radius:8px; font-size:0.78rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Nunito',sans-serif; }
         .cd-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
         .cd-spinner-sm { width:16px; height:16px; border:2px solid rgba(245,131,191,0.3); border-top-color:#F583BF; border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
       `}</style>
