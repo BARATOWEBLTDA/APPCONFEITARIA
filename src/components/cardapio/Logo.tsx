@@ -120,6 +120,19 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
         <div style={{ textAlign: 'center', marginTop: '28px', marginBottom: '12px' }}>
           <h1 style={{ fontSize: '22px', fontWeight: 700, color: corNome || '#1f2937', marginBottom: '4px' }}>{storeName}</h1>
 
+          {/* Cidade */}
+          {(mostrarCidade || mostrarCompleto) && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 500 }}>{cidade}</span>
+              {mostrarCompleto && (
+                <button onClick={() => setModalEndereco(true)} style={{ fontSize: '12px', color: borderColor || '#ec4899', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
+                  Ver endereço completo
+                </button>
+              )}
+            </div>
+          )}
+
           {!hideStars && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
               <div style={{ display: 'flex', gap: '2px' }}>{renderStars(avaliacaoMedia)}</div>
@@ -128,7 +141,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
           )}
 
           {storeDescription && (
-            <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px', lineHeight: '1.4' }}>{storeDescription}</p>
+            <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px', lineHeight: '1.4', padding: '0 1.25rem' }}>{storeDescription}</p>
           )}
 
           {/* Status aberto/fechado */}
@@ -138,22 +151,6 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
               <span style={{ fontSize: '12px', fontWeight: 700, color: status.aberto ? '#15803d' : '#dc2626' }}>
                 {status.aberto ? 'Aberto Agora' : `Fechado · ${status.msg}`}
               </span>
-            </div>
-          )}
-
-          {/* Cidade */}
-          {(mostrarCidade || mostrarCompleto) && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '6px' }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: 500 }}>{cidade}</span>
-              {mostrarCompleto && (
-                <button
-                  onClick={() => setModalEndereco(true)}
-                  style={{ fontSize: '12px', color: borderColor || '#ec4899', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-                >
-                  Ver endereço completo
-                </button>
-              )}
             </div>
           )}
         </div>
