@@ -92,7 +92,7 @@ function CardapioContent() {
     <div className="min-h-screen relative" style={{ backgroundColor: design.cor_background || '#fef2f2' }}>
       <NavC />
 
-      <BannerC borderColor={design.cor_borda || '#ec4899'} bannerGradient={design.banner_gradient} />
+      <BannerC borderColor={design.cor_borda || '#ec4899'} bannerGradient={design.banner_gradient} bannerUrl={design.banner_url} />
 
       <LogoC
         logoUrl={design.logo_url}
