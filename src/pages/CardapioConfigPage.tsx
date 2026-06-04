@@ -220,7 +220,7 @@ export default function CardapioConfigPage() {
                 {gerandoDescricao ? <><span className="ccc-spinner-ia" /> Gerando...</> : <>✨ Gerar com IA</>}
               </button>
             </div>
-            <textarea className="ccc-field-input" placeholder="Descrição da loja (aparece no cardápio)" value={form.descricao_loja} onChange={e => setForm({...form, descricao_loja: e.target.value})} rows={3} maxLength={200} style={{resize:"none"}} />
+            <textarea className="ccc-field-input" placeholder="Descrição da loja (aparece no cardápio)" value={form.descricao_loja} onChange={e => setForm({...form, descricao_loja: e.target.value})} rows={5} maxLength={200} style={{resize:"none"}} />
           </div>
         </div>
         <p className="ccc-char-count">{(form.descricao_loja || "").length}/200</p>
