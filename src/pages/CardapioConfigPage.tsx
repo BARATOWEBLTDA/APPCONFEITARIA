@@ -43,6 +43,14 @@ export default function CardapioConfigPage() {
 
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const formatPhone = (v: string) => {
+    const d = v.replace(/\D/g, "").slice(0, 11);
+    if (d.length <= 2) return `(${d}`;
+    if (d.length <= 3) return `(${d.slice(0,2)}) ${d.slice(2)}`;
+    if (d.length <= 7) return `(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3)}`;
+    return `(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`;
+  };
+
   useEffect(() => {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -55,7 +63,7 @@ export default function CardapioConfigPage() {
         let addr: any = {};
         try { addr = data.endereco ? JSON.parse(data.endereco) : {}; } catch {}
         setForm({
-          nome_loja: data.nome_loja || "", telefone: data.telefone || "",
+          nome_loja: data.nome_loja || "", telefone: formatPhone(data.telefone || ""),
           foto_url: data.foto_url || "", descricao_loja: data.descricao_loja || "",
           hide_stars: data.hide_stars || false, avaliacao_media: data.avaliacao_media || 5.0,
           cep: addr.cep || "", rua: addr.rua || "", numero: addr.numero || "",
@@ -78,14 +86,6 @@ export default function CardapioConfigPage() {
     };
     load();
   }, []);
-
-  const formatPhone = (v: string) => {
-    const d = v.replace(/\D/g, "").slice(0, 11);
-    if (d.length <= 2) return d;
-    if (d.length <= 3) return `${d.slice(0,2)} ${d.slice(2)}`;
-    if (d.length <= 7) return `${d.slice(0,2)} ${d.slice(2,3)} ${d.slice(3)}`;
-    return `${d.slice(0,2)} ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`;
-  };
 
   const buscarCep = async (cep: string) => {
     const limpo = cep.replace(/\D/g, "");
