@@ -199,44 +199,88 @@ export default function CardapioDesign() {
       {/* Cores */}
       <div className="cd-card">
         <SectionLabel>Cores</SectionLabel>
-        <p className="cd-hint">Toque no quadradinho para escolher a cor</p>
+        <p className="cd-hint">Toque para personalizar e veja em tempo real</p>
         <div className="cd-colors-list">
 
-          {[
-            { label: "Barra do topo e borda da logo", field: "cor_borda", value: corBorda, setter: setCorBorda },
-            { label: "Fundo da página", field: "cor_background", value: corBackground, setter: setCorBackground },
-            { label: "Nome da loja", field: "cor_nome", value: corNome, setter: setCorNome },
-          ].map(({ label, field, value, setter }) => (
-            <div key={field}>
-              <div className="cd-color-row" onClick={() => setActivePicker(activePicker === field ? null : field)}>
-                <div className="cd-color-info">
-                  <span className="cd-color-label">{label}</span>
-                  <span className="cd-color-value">{value}</span>
-                </div>
-                <div className="cd-color-swatch" style={{ background: value }} />
+          {/* Cor da borda/topo */}
+          <div>
+            <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_borda' ? null : 'cor_borda')}>
+              <div className="cd-color-info">
+                <span className="cd-color-label">Barra do topo e borda da logo</span>
+                <span className="cd-color-value">{corBorda}</span>
               </div>
-
-              {activePicker === field && (
-                <div className="cd-picker-wrap">
-                  <HexColorPicker
-                    color={value}
-                    onChange={v => handleColorChange(field, v, setter)}
-                    style={{ width: '100%', height: '180px' }}
-                  />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: value, border: '2px solid #e5e7eb', flexShrink: 0 }} />
-                    <input
-                      type="text"
-                      value={value}
-                      onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange(field, e.target.value, setter) }}
-                      className="cd-hex-input"
-                    />
-                    <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
-                  </div>
-                </div>
-              )}
+              <div className="cd-color-swatch" style={{ background: corBorda }} />
             </div>
-          ))}
+            {activePicker === 'cor_borda' && (
+              <div className="cd-picker-wrap">
+                {/* Preview logo com borda */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', padding: '10px', background: corBackground, borderRadius: '10px' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', border: `4px solid ${corBorda}`, overflow: 'hidden', flexShrink: 0, background: 'white' }}>
+                    {logoUrl ? <img src={logoUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: corBorda, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🧁</div>}
+                  </div>
+                  <div style={{ height: '20px', width: '80px', borderRadius: '4px', background: corBorda, opacity: 0.8 }} />
+                </div>
+                <HexColorPicker color={corBorda} onChange={v => handleColorChange('cor_borda', v, setCorBorda)} style={{ width: '100%', height: '160px' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: corBorda, border: '2px solid #e5e7eb', flexShrink: 0 }} />
+                  <input type="text" value={corBorda} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_borda', e.target.value, setCorBorda) }} className="cd-hex-input" />
+                  <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Cor do fundo */}
+          <div>
+            <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_background' ? null : 'cor_background')}>
+              <div className="cd-color-info">
+                <span className="cd-color-label">Fundo da página</span>
+                <span className="cd-color-value">{corBackground}</span>
+              </div>
+              <div className="cd-color-swatch" style={{ background: corBackground }} />
+            </div>
+            {activePicker === 'cor_background' && (
+              <div className="cd-picker-wrap">
+                {/* Preview fundo */}
+                <div style={{ height: '56px', borderRadius: '10px', background: corBackground, marginBottom: '12px', border: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '0.75rem', color: corNome, fontWeight: 600 }}>Fundo do cardápio</span>
+                </div>
+                <HexColorPicker color={corBackground} onChange={v => handleColorChange('cor_background', v, setCorBackground)} style={{ width: '100%', height: '160px' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: corBackground, border: '2px solid #e5e7eb', flexShrink: 0 }} />
+                  <input type="text" value={corBackground} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_background', e.target.value, setCorBackground) }} className="cd-hex-input" />
+                  <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Cor do nome */}
+          <div>
+            <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_nome' ? null : 'cor_nome')}>
+              <div className="cd-color-info">
+                <span className="cd-color-label">Nome da loja</span>
+                <span className="cd-color-value">{corNome}</span>
+              </div>
+              <div className="cd-color-swatch" style={{ background: corNome }} />
+            </div>
+            {activePicker === 'cor_nome' && (
+              <div className="cd-picker-wrap">
+                {/* Preview nome */}
+                <div style={{ padding: '12px', borderRadius: '10px', background: corBackground, marginBottom: '12px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 800, color: corNome, fontFamily: 'Nunito, sans-serif' }}>
+                    Nome da sua loja
+                  </span>
+                </div>
+                <HexColorPicker color={corNome} onChange={v => handleColorChange('cor_nome', v, setCorNome)} style={{ width: '100%', height: '160px' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: corNome, border: '2px solid #e5e7eb', flexShrink: 0 }} />
+                  <input type="text" value={corNome} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_nome', e.target.value, setCorNome) }} className="cd-hex-input" />
+                  <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
+                </div>
+              </div>
+            )}
+          </div>
 
         </div>
       </div>
