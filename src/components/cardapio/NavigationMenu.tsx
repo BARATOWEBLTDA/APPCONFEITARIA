@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ShoppingCart, X, MessageCircle, Trash2 } from 'lucide-react'
+import { ShoppingCart, X, MessageCircle, Trash2, Home, Tag, User } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
 import { CartItemComponent } from '@/components/cart/CartItemComponent'
 import { formatCurrency } from '@/utils/helpers'
@@ -11,6 +11,7 @@ export function NavigationMenu() {
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
+  const [activeTab, setActiveTab] = useState('inicio')
   const isMobile = useIsMobile()
 
   const count = items.reduce((acc, i) => acc + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
@@ -34,17 +35,66 @@ export function NavigationMenu() {
 
   return (
     <>
-      <div className={isMobile ? 'fixed bottom-0 left-0 right-0 z-30 shadow-lg border-t' : 'fixed left-0 top-0 bottom-0 z-30 shadow-lg border-r w-20 flex flex-col justify-center'}
-        style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 50%, #f9a8d4 100%)' }}>
-        <div className="px-4 py-3 flex justify-center">
-          <button onClick={() => setIsOpen(true)} className="bg-white text-pink-600 relative px-6 rounded-full py-2 flex items-center gap-2 font-semibold">
-            <ShoppingCart className="w-5 h-5" />
-            {count > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{count}</span>}
-          </button>
-        </div>
-      </div>
-      {!isMobile && <div className="w-20" />}
+      {/* Menu inferior mobile */}
+      {isMobile && (
+        <div className="fixed bottom-0 left-0 right-0 z-30 shadow-lg border-t"
+          style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 50%, #f9a8d4 100%)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '8px 0 12px' }}>
 
+            {/* Início */}
+            <button onClick={() => setActiveTab('inicio')}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px' }}>
+              <Home size={22} color={activeTab === 'inicio' ? 'white' : 'rgba(255,255,255,0.6)'} />
+              <span style={{ fontSize: '11px', fontWeight: activeTab === 'inicio' ? 700 : 400, color: activeTab === 'inicio' ? 'white' : 'rgba(255,255,255,0.6)' }}>Início</span>
+            </button>
+
+            {/* Carrinho (centro) */}
+            <button onClick={() => setIsOpen(true)}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px', position: 'relative' }}>
+              <div style={{ background: 'white', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '-16px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+                <ShoppingCart size={20} color="#ec4899" />
+                {count > 0 && (
+                  <span style={{ position: 'absolute', top: '-4px', right: '8px', background: '#ef4444', color: 'white', borderRadius: '50%', width: '18px', height: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700 }}>{count}</span>
+                )}
+              </div>
+              <span style={{ fontSize: '11px', fontWeight: 400, color: 'rgba(255,255,255,0.6)' }}>Carrinho</span>
+            </button>
+
+            {/* Promoções */}
+            <button onClick={() => setActiveTab('promocoes')}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px' }}>
+              <Tag size={22} color={activeTab === 'promocoes' ? 'white' : 'rgba(255,255,255,0.6)'} />
+              <span style={{ fontSize: '11px', fontWeight: activeTab === 'promocoes' ? 700 : 400, color: activeTab === 'promocoes' ? 'white' : 'rgba(255,255,255,0.6)' }}>Promoções</span>
+            </button>
+
+            {/* Perfil */}
+            <button onClick={() => setActiveTab('perfil')}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 12px' }}>
+              <User size={22} color={activeTab === 'perfil' ? 'white' : 'rgba(255,255,255,0.6)'} />
+              <span style={{ fontSize: '11px', fontWeight: activeTab === 'perfil' ? 700 : 400, color: activeTab === 'perfil' ? 'white' : 'rgba(255,255,255,0.6)' }}>Perfil</span>
+            </button>
+
+          </div>
+        </div>
+      )}
+
+      {/* Menu lateral desktop */}
+      {!isMobile && (
+        <>
+          <div className="fixed left-0 top-0 bottom-0 z-30 shadow-lg border-r w-20 flex flex-col justify-center"
+            style={{ background: 'linear-gradient(135deg, #ec4899 0%, #f472b6 50%, #f9a8d4 100%)' }}>
+            <div className="px-4 py-3 flex justify-center">
+              <button onClick={() => setIsOpen(true)} className="bg-white text-pink-600 relative px-6 rounded-full py-2 flex items-center gap-2 font-semibold">
+                <ShoppingCart className="w-5 h-5" />
+                {count > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{count}</span>}
+              </button>
+            </div>
+          </div>
+          <div className="w-20" />
+        </>
+      )}
+
+      {/* Modal carrinho */}
       {isOpen && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md max-h-[85vh] overflow-y-auto">
@@ -73,6 +123,7 @@ export function NavigationMenu() {
         </div>
       )}
 
+      {/* Modal dados para pedido */}
       {showForm && (
         <div className="fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
