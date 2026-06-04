@@ -16,6 +16,11 @@ export default function CardapioDesign() {
   const [success, setSuccess] = useState(false);
   const { isPro } = usePlano();
 
+  // Cores
+  const [corBorda, setCorBorda] = useState("#ec4899");
+  const [corBackground, setCorBackground] = useState("#fef2f2");
+  const [corNome, setCorNome] = useState("#1f2937");
+
   const logoRef = useRef<HTMLInputElement>(null);
   const bannerRefs = [
     useRef<HTMLInputElement>(null),
@@ -29,13 +34,16 @@ export default function CardapioDesign() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, banner_url, banner1_url, banner2_url, banner3_url").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || "");
         setBannerUrl(data.banner_url || "");
         setBanner1Url(data.banner1_url || "");
         setBanner2Url(data.banner2_url || "");
         setBanner3Url(data.banner3_url || "");
+        setCorBorda(data.cor_borda || "#ec4899");
+        setCorBackground(data.cor_background || "#fef2f2");
+        setCorNome(data.cor_nome || "#1f2937");
       }
       setLoading(false);
     };
@@ -82,6 +90,13 @@ export default function CardapioDesign() {
     const keys = ["banner_url", "banner1_url", "banner2_url", "banner3_url"];
     fields[index]("");
     await supabase.from("profiles").update({ [keys[index]]: null }).eq("id", userId);
+  };
+
+  const handleColorChange = async (field: string, value: string, setter: (v: string) => void) => {
+    setter(value);
+    if (!userId) return;
+    await supabase.from("profiles").update({ [field]: value }).eq("id", userId);
+    showSuccess();
   };
 
   const bannerValues = [bannerUrl, banner1Url, banner2Url, banner3Url];
@@ -175,6 +190,41 @@ export default function CardapioDesign() {
         </div>
       </div>
 
+      {/* Cores */}
+      <div className="cd-card">
+        <SectionLabel>Cores</SectionLabel>
+        <p className="cd-hint">Personalize as cores do seu cardápio público</p>
+        <div className="cd-colors-list">
+          <div className="cd-color-row">
+            <div className="cd-color-info">
+              <span className="cd-color-label">Barra do topo e borda da logo</span>
+              <span className="cd-color-value">{corBorda}</span>
+            </div>
+            <label className="cd-color-swatch" style={{ background: corBorda }}>
+              <input type="color" value={corBorda} onChange={e => handleColorChange("cor_borda", e.target.value, setCorBorda)} style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} />
+            </label>
+          </div>
+          <div className="cd-color-row">
+            <div className="cd-color-info">
+              <span className="cd-color-label">Fundo da página</span>
+              <span className="cd-color-value">{corBackground}</span>
+            </div>
+            <label className="cd-color-swatch" style={{ background: corBackground }}>
+              <input type="color" value={corBackground} onChange={e => handleColorChange("cor_background", e.target.value, setCorBackground)} style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} />
+            </label>
+          </div>
+          <div className="cd-color-row">
+            <div className="cd-color-info">
+              <span className="cd-color-label">Nome da loja</span>
+              <span className="cd-color-value">{corNome}</span>
+            </div>
+            <label className="cd-color-swatch" style={{ background: corNome }}>
+              <input type="color" value={corNome} onChange={e => handleColorChange("cor_nome", e.target.value, setCorNome)} style={{ opacity: 0, position: 'absolute', width: 0, height: 0 }} />
+            </label>
+          </div>
+        </div>
+      </div>
+
       <style>{`
         @keyframes cdspin { to { transform:rotate(360deg); } }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
@@ -208,6 +258,12 @@ export default function CardapioDesign() {
         .cd-change-btn-sm:hover { text-decoration:underline; }
         .cd-pro-badge { background:linear-gradient(135deg,#ec4899,#a855f7); color:white; font-size:0.68rem; font-weight:800; padding:2px 10px; border-radius:50px; letter-spacing:0.1em; }
         .cd-pro-ribbon { position:absolute; top:12px; right:-16px; background:linear-gradient(135deg,#ec4899,#f472b6); color:white; font-size:0.58rem; font-weight:900; letter-spacing:0.1em; padding:3px 24px; transform:rotate(45deg); z-index:10; box-shadow:0 2px 6px rgba(236,72,153,0.4); width:80px; text-align:center; }
+        .cd-colors-list { display:flex; flex-direction:column; gap:0.6rem; }
+        .cd-color-row { display:flex; align-items:center; justify-content:space-between; padding:0.6rem 0.75rem; background:#fafafa; border-radius:12px; border:1px solid #f3f4f6; }
+        .cd-color-info { display:flex; flex-direction:column; gap:2px; }
+        .cd-color-label { font-size:0.82rem; font-weight:600; color:#374151; }
+        .cd-color-value { font-size:0.7rem; color:#9ca3af; font-family:monospace; }
+        .cd-color-swatch { width:40px; height:40px; border-radius:10px; cursor:pointer; display:block; position:relative; border:2px solid rgba(0,0,0,0.08); flex-shrink:0; box-shadow:0 2px 6px rgba(0,0,0,0.12); }
         .cd-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
         .cd-spinner-sm { width:16px; height:16px; border:2px solid rgba(245,131,191,0.3); border-top-color:#F583BF; border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
       `}</style>
