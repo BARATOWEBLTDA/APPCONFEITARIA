@@ -159,18 +159,53 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
       {/* Modal endereço completo */}
       {modalEndereco && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => setModalEndereco(false)}>
-          <div style={{ background: 'white', borderRadius: '24px 24px 0 0', padding: '1.5rem', width: '100%', maxWidth: '480px' }} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={borderColor || '#ec4899'} strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span style={{ fontFamily: 'Inter,sans-serif', fontSize: '1rem', fontWeight: 700, color: '#1f2937' }}>Endereço</span>
+          <div style={{ background: 'white', borderRadius: '24px 24px 0 0', width: '100%', maxWidth: '480px', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+            
+            {/* Mini mapa */}
+            <iframe
+              width="100%"
+              height="200"
+              style={{ border: 'none', display: 'block' }}
+              src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_KEY}&q=${encodeURIComponent(enderecoCompleto)}`}
+              allowFullScreen
+            />
+
+            <div style={{ padding: '1.25rem' }}>
+              {/* Endereço */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '1rem' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={borderColor || '#ec4899'} strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <p style={{ fontFamily: 'Nunito,sans-serif', fontSize: '0.9rem', color: '#374151', lineHeight: '1.5', margin: 0 }}>{enderecoCompleto}</p>
+              </div>
+
+              {/* Botões */}
+              <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
+                <a
+                  href={`https://waze.com/ul?q=${encodeURIComponent(enderecoCompleto)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#00c0f3', color: 'white', borderRadius: '12px', fontFamily: 'Nunito,sans-serif', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+                  Waze
+                </a>
+                <a
+                  href={`https://maps.google.com/?q=${encodeURIComponent(enderecoCompleto)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#4285f4', color: 'white', borderRadius: '12px', fontFamily: 'Nunito,sans-serif', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                  Google Maps
+                </a>
+              </div>
+
+              <button
+                onClick={() => setModalEndereco(false)}
+                style={{ width: '100%', padding: '0.85rem', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '50px', fontFamily: 'Nunito,sans-serif', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Fechar
+              </button>
             </div>
-            <p style={{ fontFamily: 'Inter,sans-serif', fontSize: '0.9rem', color: '#374151', lineHeight: '1.6', marginBottom: '1.25rem' }}>{enderecoCompleto}</p>
-            <button
-              onClick={() => setModalEndereco(false)}
-              style={{ width: '100%', padding: '0.85rem', background: borderColor || '#ec4899', color: 'white', border: 'none', borderRadius: '50px', fontFamily: 'Inter,sans-serif', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}
-            >
-              Fechar
-            </button>
           </div>
         </div>
       )}
