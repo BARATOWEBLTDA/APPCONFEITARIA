@@ -120,6 +120,13 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
         <div style={{ textAlign: 'center', marginTop: '28px', marginBottom: '12px' }}>
           <h1 style={{ fontSize: '22px', fontWeight: 700, color: corNome || '#1f2937', marginBottom: '4px' }}>{storeName}</h1>
 
+          {!hideStars && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', gap: '2px' }}>{renderStars(avaliacaoMedia)}</div>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#374151' }}>{avaliacaoMedia}/5.0</span>
+            </div>
+          )}
+
           {/* Cidade */}
           {(mostrarCidade || mostrarCompleto) && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
@@ -130,13 +137,6 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
                   Ver endereço completo
                 </button>
               )}
-            </div>
-          )}
-
-          {!hideStars && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
-              <div style={{ display: 'flex', gap: '2px' }}>{renderStars(avaliacaoMedia)}</div>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: '#374151' }}>{avaliacaoMedia}/5.0</span>
             </div>
           )}
 
