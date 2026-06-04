@@ -90,8 +90,7 @@ function CardapioContent() {
     <div className="min-h-screen relative" style={{ backgroundColor: design.cor_background || '#fef2f2' }}>
       <NavC />
 
-      <BannerAd bannerUrl={design.banner_url} />
-
+      {/* Card de informações da loja (logo, nome, estrelas, descrição) */}
       <LogoC
         logoUrl={design.logo_url}
         borderColor={design.cor_borda}
@@ -102,6 +101,9 @@ function CardapioContent() {
         configuracoes={config}
         hideStars={design.hide_stars}
       />
+
+      {/* Banner abaixo do card de info, acima das categorias */}
+      <BannerAd bannerUrl={design.banner_url} />
 
       <div className={`container mx-auto px-4 py-4 pb-24 ${isDesktop ? 'max-w-6xl' : ''}`}>
         <CategoryC
