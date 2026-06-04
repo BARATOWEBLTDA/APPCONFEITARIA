@@ -43,7 +43,35 @@ export default function CardapioConfigPage() {
 
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const formatPhone = (v: string) => {
+  const [autoSaved, setAutoSaved] = useState(false);
+  const autoSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Auto-save com debounce de 2 segundos
+  useEffect(() => {
+    if (loading) return;
+    if (autoSaveRef.current) clearTimeout(autoSaveRef.current);
+    autoSaveRef.current = setTimeout(async () => {
+      if (!userId) return;
+      const endereco = JSON.stringify({ cep: form.cep, rua: form.rua, numero: form.numero, bairro: form.bairro, cidade: form.cidade, estado: form.estado });
+      await supabase.from("profiles").update({
+        nome_loja: form.nome_loja, telefone: form.telefone,
+        foto_url: form.foto_url, descricao_loja: form.descricao_loja,
+        hide_stars: form.hide_stars, avaliacao_media: form.avaliacao_media,
+        endereco, mostrar_localizacao: form.mostrar_localizacao,
+        mostrar_apenas_cidade: form.mostrar_apenas_cidade,
+        faz_entrega: form.faz_entrega,
+        taxa_entrega: form.taxa_entrega ? parseFloat(form.taxa_entrega) : null,
+        pedido_minimo: form.pedido_minimo ? parseFloat(form.pedido_minimo) : null,
+        entrega_gratis_acima: form.entrega_gratis_acima ? parseFloat(form.entrega_gratis_acima) : null,
+        horario_entrega: form.horario_entrega, area_entrega: form.area_entrega,
+        observacoes_entrega: form.observacoes_entrega,
+        horario: JSON.stringify(horario),
+      }).eq("id", userId);
+      setAutoSaved(true);
+      setTimeout(() => setAutoSaved(false), 2000);
+    }, 2000);
+    return () => { if (autoSaveRef.current) clearTimeout(autoSaveRef.current); };
+  }, [form, horario]);
     const d = v.replace(/\D/g, "").slice(0, 11);
     if (d.length <= 2) return `(${d}`;
     if (d.length <= 3) return `(${d.slice(0,2)}) ${d.slice(2)}`;
@@ -169,15 +197,23 @@ export default function CardapioConfigPage() {
   return (
     <div className="ccc-root">
 
-      <div className="ccc-page-header">
+      <div className="ccc-page-header" style={{paddingTop:"1.5rem"}}>
         <h1 className="ccc-page-title">Configuração do Cardápio</h1>
         <p className="ccc-page-sub">Personalize as informações do seu cardápio público</p>
+        {autoSaved && <span className="ccc-autosave">✓ Salvo automaticamente</span>}
       </div>
 
       {/* Card 1 — Identidade */}
       <div className="ccc-card">
         <SectionLabel>Identidade da loja</SectionLabel>
         <div className="ccc-logo-row">
+          <div style={{flex:1,display:"flex",flexDirection:"column",gap:"0.7rem"}}>
+            <Field
+              icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
+              placeholder="Nome da loja" value={form.nome_loja}
+              onChange={(e: any) => setForm({...form, nome_loja: e.target.value})}
+            />
+          </div>
           <div className="ccc-logo-preview" onClick={() => !uploading && fileRef.current?.click()}>
             {preview
               ? <img src={preview} alt="logo" style={{width:"100%",height:"100%",objectFit:"cover"}} />
@@ -187,17 +223,8 @@ export default function CardapioConfigPage() {
               {uploading ? <span className="ccc-spinner-xs" /> : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>}
             </div>
           </div>
-          <div>
-            <p className="ccc-logo-label">Logo da loja</p>
-            <p className="ccc-logo-sub">Toque para alterar</p>
-          </div>
         </div>
         <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleFileChange} />
-        <Field
-          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
-          placeholder="Nome da loja" value={form.nome_loja}
-          onChange={(e: any) => setForm({...form, nome_loja: e.target.value})}
-        />
         <Field
           icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>}
           placeholder="WhatsApp" value={form.telefone} type="tel"
@@ -342,7 +369,7 @@ export default function CardapioConfigPage() {
             <div className="ccc-divider" />
             <p className="ccc-hint">Selecione a nota que aparecerá no cardápio</p>
             <div className="ccc-notas-grid">
-              {[5.0, 4.9, 4.8, 4.7, 4.6, 4.5].map(nota => (
+              {[5.0, 4.9, 4.8].map(nota => (
                 <button key={nota} className={`ccc-nota-btn${form.avaliacao_media === nota ? " active" : ""}`} onClick={() => setForm({...form, avaliacao_media: nota})}>
                   <span style={{fontSize:"1.1rem"}}>⭐</span>
                   <span>{nota.toFixed(1)}</span>
@@ -381,18 +408,21 @@ export default function CardapioConfigPage() {
       </button>
 
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:ital@1&display=swap');
         @keyframes ccspin { to { transform:rotate(360deg); } }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         .ccc-root { font-family:'Inter',sans-serif; max-width:520px; display:flex; flex-direction:column; gap:0.85rem; }
-        .ccc-page-title { font-size:1.2rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.2rem; }
-        .ccc-page-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0; }
+        .ccc-page-title { font-size:1.25rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.3rem; text-align:center; }
+        .ccc-page-sub { font-size:0.84rem; color:#4b5563; margin:0; font-family:'Nunito',sans-serif; font-style:italic; text-align:center; }
         .ccc-card { background:var(--bg-card,white); border-radius:18px; padding:1.15rem; box-shadow:var(--shadow-card,0 2px 12px rgba(0,0,0,0.06)); display:flex; flex-direction:column; gap:0.7rem; }
         .ccc-section-label { font-size:0.75rem; font-weight:800; color:#F583BF; text-transform:uppercase; letter-spacing:0.12em; margin:0; }
         .ccc-hint { font-size:0.75rem; color:var(--text-muted,#9ca3af); margin:0; }
         .ccc-logo-row { display:flex; align-items:center; gap:0.85rem; }
-        .ccc-logo-preview { width:64px; height:64px; border-radius:50%; background:#fdf2f8; border:2px solid #fce7f3; display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; overflow:hidden; flex-shrink:0; }
+        .ccc-logo-preview { width:72px; height:72px; border-radius:50%; background:#fdf2f8; border:2px solid #fce7f3; display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; overflow:hidden; flex-shrink:0; }
         .ccc-logo-cam { position:absolute; bottom:0; right:0; background:rgba(0,0,0,0.45); width:22px; height:22px; display:flex; align-items:center; justify-content:center; border-radius:50% 0 0 0; }
         .ccc-logo-label { font-size:0.88rem; font-weight:600; color:var(--text-primary,#1f2937); margin:0; }
         .ccc-logo-sub { font-size:0.75rem; color:var(--text-muted,#9ca3af); margin:0.2rem 0 0; }
+        .ccc-autosave { font-size:0.75rem; font-weight:600; color:#22c55e; display:flex; align-items:center; gap:0.25rem; animation:fadeIn 0.3s ease; justify-content:center; margin-top:0.25rem; }
         .ccc-field { display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); transition:border-color 0.2s; }
         .ccc-field:focus-within { border-color:#F583BF; }
         .ccc-field-icon { display:flex; align-items:center; flex-shrink:0; color:var(--text-muted,#9ca3af); }
