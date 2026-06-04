@@ -280,7 +280,7 @@ export default function Produtos() {
                         {slot === 0 && <span style={{ fontSize: "0.65rem", color: "#9ca3af", display: "block", marginBottom: "3px", textAlign: "center" }}>Principal</span>}
                         <div
                           className="prod-img-upload"
-                          style={{ width: "100%", height: "90px", borderRadius: "12px", cursor: isLocked ? "default" : "pointer", position: "relative", overflow: "hidden" }}
+                          style={{ width: "100%", height: "90px", borderRadius: "12px", cursor: isLocked ? "default" : "pointer", position: "relative", overflow: "hidden", background: slot > 0 ? "#f0f4ff" : undefined, border: slot > 0 ? "2px dashed #c7d2fe" : undefined }}
                           onClick={() => !isLocked && !uploading && ref.current?.click()}
                         >
                           {imgUrl ? (
@@ -296,12 +296,12 @@ export default function Produtos() {
                           ) : (
                             <div className="prod-img-placeholder">
                               {uploading ? <span className="prod-spinner" /> : (
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                               )}
                             </div>
                           )}
-                          {/* Faixa PRO diagonal */}
-                          {isLocked && (
+                          {/* Faixa PRO diagonal — sempre nos slots extras */}
+                          {slot > 0 && (
                             <div style={{ position: "absolute", top: "10px", right: "-16px", background: "linear-gradient(135deg,#ec4899,#f472b6)", color: "white", fontSize: "0.55rem", fontWeight: 900, padding: "2px 20px", transform: "rotate(45deg)", zIndex: 10, width: "70px", textAlign: "center" }}>PRO</div>
                           )}
                         </div>
