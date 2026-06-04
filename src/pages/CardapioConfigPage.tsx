@@ -438,7 +438,7 @@ export default function CardapioConfigPage() {
         .ccc-horario-btn { display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); font-family:'Inter',sans-serif; cursor:pointer; width:100%; transition:border-color 0.2s; text-align:left; }
         .ccc-horario-btn:hover { border-color:#F583BF; }
         .ccc-dias-grid { display:flex; flex-wrap:wrap; gap:0.4rem; }
-        .ccc-dia-btn { padding:0.35rem 0.7rem; border-radius:20px; border:1.5px solid var(--border,#e5e7eb); background:var(--bg-card,white); font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:500; color:var(--text-secondary,#6b7280); cursor:pointer; transition:all 0.15s; }
+        .ccc-dia-btn { padding:0.35rem 0.7rem; border-radius:8px; border:1.5px solid var(--border,#e5e7eb); background:var(--bg-card,white); font-family:'Nunito',sans-serif; font-size:0.78rem; font-weight:500; color:var(--text-secondary,#6b7280); cursor:pointer; transition:all 0.15s; }
         .ccc-dia-btn.active { background:#fce7f3; border-color:#F583BF; color:#F583BF; font-weight:700; }
         .ccc-time-field { display:flex; flex-direction:column; gap:0.25rem; }
         .ccc-time-field label { font-size:0.74rem; font-weight:600; color:var(--text-secondary,#6b7280); }
