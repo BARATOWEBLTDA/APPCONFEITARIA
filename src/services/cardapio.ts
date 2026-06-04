@@ -6,25 +6,14 @@ export async function getCardapioBySlug(slug: string): Promise<{
   config: Configuracoes | null
   produtos: Produto[]
 }> {
-  // Busca o perfil pelo slug (nome_loja normalizado ou id)
+  // Busca por id direto (o slug da URL é o userId)
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
-    .ilike('slug', slug)
+    .eq('id', slug)
     .single()
 
-  if (!profile) {
-    // Tenta buscar por id direto
-    const { data: profileById } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', slug)
-      .single()
-
-    if (!profileById) return { design: null, config: null, produtos: [] }
-
-    return fetchByUserId(profileById.id, profileById)
-  }
+  if (!profile) return { design: null, config: null, produtos: [] }
 
   return fetchByUserId(profile.id, profile)
 }
@@ -46,7 +35,7 @@ async function fetchByUserId(userId: string, profile: any) {
     cor_borda: profile.cor_borda || '#ec4899',
     cor_background: profile.cor_background || '#fef2f2',
     cor_nome: profile.cor_nome || '#1f2937',
-    banner_gradient: profile.banner_gradient || 'linear-gradient(135deg, #d11b70 0%, #ff6fae 50%, #ff9acb 100%)',
+    banner_gradient: profile.banner_gradient || '',
     hide_stars: profile.hide_stars || false,
   }
 
