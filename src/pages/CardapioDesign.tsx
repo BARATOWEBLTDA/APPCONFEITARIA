@@ -132,7 +132,7 @@ export default function CardapioDesign() {
       <div className="cd-card">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <SectionLabel>Banners</SectionLabel>
-          {isPro && <span className="cd-pro-badge">✦ PRO</span>}
+
         </div>
         <p className="cd-hint">
           {isPro ? "Até 4 banners — aparecem em carrossel no cardápio" : "1 banner disponível. Assine o PRO para até 4 banners em carrossel"}
@@ -207,7 +207,7 @@ export default function CardapioDesign() {
         .cd-change-btn-sm { font-size:0.7rem; font-weight:700; color:#F583BF; background:none; border:none; cursor:pointer; padding:0; text-align:center; }
         .cd-change-btn-sm:hover { text-decoration:underline; }
         .cd-pro-badge { background:linear-gradient(135deg,#ec4899,#a855f7); color:white; font-size:0.68rem; font-weight:800; padding:2px 10px; border-radius:50px; letter-spacing:0.1em; }
-        .cd-pro-ribbon { position:absolute; top:14px; right:-18px; background:linear-gradient(135deg,#ec4899,#a855f7); color:white; font-size:0.6rem; font-weight:900; letter-spacing:0.1em; padding:3px 22px; transform:rotate(45deg); z-index:10; box-shadow:0 2px 6px rgba(168,85,247,0.4); }
+        .cd-pro-ribbon { position:absolute; top:14px; right:-18px; background:linear-gradient(135deg,#ec4899,#f472b6); color:white; font-size:0.6rem; font-weight:900; letter-spacing:0.1em; padding:3px 22px; transform:rotate(45deg); z-index:10; box-shadow:0 2px 6px rgba(236,72,153,0.4); }
         .cd-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
         .cd-spinner-sm { width:16px; height:16px; border:2px solid rgba(245,131,191,0.3); border-top-color:#F583BF; border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
       `}</style>
