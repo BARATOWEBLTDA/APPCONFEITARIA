@@ -90,7 +90,10 @@ function CardapioContent() {
     <div className="min-h-screen relative" style={{ backgroundColor: design.cor_background || '#fef2f2' }}>
       <NavC />
 
-      {/* Card de informações da loja (logo, nome, estrelas, descrição) */}
+      {/* Área de cor sólida no topo — necessária para a logo flutuar */}
+      <div style={{ height: '80px', backgroundColor: design.cor_borda || '#ec4899' }} />
+
+      {/* Card de informações com logo flutuando */}
       <LogoC
         logoUrl={design.logo_url}
         borderColor={design.cor_borda}
@@ -102,8 +105,10 @@ function CardapioContent() {
         hideStars={design.hide_stars}
       />
 
-      {/* Banner abaixo do card de info, acima das categorias */}
-      <BannerAd bannerUrl={design.banner_url} />
+      {/* Banner abaixo do card, acima das categorias */}
+      <div style={{ marginTop: '16px' }}>
+        <BannerAd bannerUrl={design.banner_url} />
+      </div>
 
       <div className={`container mx-auto px-4 py-4 pb-24 ${isDesktop ? 'max-w-6xl' : ''}`}>
         <CategoryC
