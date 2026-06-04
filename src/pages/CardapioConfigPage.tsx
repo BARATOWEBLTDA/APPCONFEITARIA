@@ -413,19 +413,19 @@ export default function CardapioConfigPage() {
         @import url('https://fonts.googleapis.com/css2?family=Nunito:ital@1&display=swap');
         @keyframes ccspin { to { transform:rotate(360deg); } }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-        .ccc-root { font-family:'Inter',sans-serif; max-width:520px; display:flex; flex-direction:column; gap:0.85rem; }
+        .ccc-root { font-family:'Inter',sans-serif; max-width:520px; width:100%; display:flex; flex-direction:column; gap:0.85rem; overflow:hidden; box-sizing:border-box; }
         .ccc-page-title { font-size:1.25rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.3rem; text-align:center; }
         .ccc-page-sub { font-size:0.84rem; color:#4b5563; margin:0; font-family:'Nunito',sans-serif; font-style:italic; text-align:center; }
-        .ccc-card { background:var(--bg-card,white); border-radius:18px; padding:1.15rem; box-shadow:var(--shadow-card,0 2px 12px rgba(0,0,0,0.06)); display:flex; flex-direction:column; gap:0.7rem; }
+        .ccc-card { background:var(--bg-card,white); border-radius:18px; padding:1.15rem; box-shadow:var(--shadow-card,0 2px 12px rgba(0,0,0,0.06)); display:flex; flex-direction:column; gap:0.7rem; width:100%; box-sizing:border-box; overflow:hidden; }
         .ccc-section-label { font-size:0.75rem; font-weight:800; color:#F583BF; text-transform:uppercase; letter-spacing:0.12em; margin:0; }
         .ccc-hint { font-size:0.75rem; color:var(--text-muted,#9ca3af); margin:0; }
-        .ccc-logo-row { display:flex; align-items:center; gap:0.85rem; }
-        .ccc-logo-preview { width:72px; height:72px; border-radius:50%; background:#fdf2f8; border:2px solid #fce7f3; display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; overflow:hidden; flex-shrink:0; }
+        .ccc-logo-row { display:flex; align-items:center; gap:0.85rem; width:100%; overflow:hidden; }
+        .ccc-logo-preview { width:72px; height:72px; min-width:72px; border-radius:50%; background:#fdf2f8; border:2px solid #fce7f3; display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; overflow:hidden; flex-shrink:0; }
         .ccc-logo-cam { position:absolute; bottom:0; right:0; background:rgba(0,0,0,0.45); width:22px; height:22px; display:flex; align-items:center; justify-content:center; border-radius:50% 0 0 0; }
         .ccc-logo-label { font-size:0.88rem; font-weight:600; color:var(--text-primary,#1f2937); margin:0; }
         .ccc-logo-sub { font-size:0.75rem; color:var(--text-muted,#9ca3af); margin:0.2rem 0 0; }
         .ccc-autosave { font-size:0.75rem; font-weight:600; color:#22c55e; display:flex; align-items:center; gap:0.25rem; animation:fadeIn 0.3s ease; justify-content:center; margin-top:0.25rem; }
-        .ccc-field { display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); transition:border-color 0.2s; }
+        .ccc-field { display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); transition:border-color 0.2s; width:100%; box-sizing:border-box; overflow:hidden; }
         .ccc-field:focus-within { border-color:#F583BF; }
         .ccc-field-icon { display:flex; align-items:center; flex-shrink:0; color:var(--text-muted,#9ca3af); }
         .ccc-field-input { flex:1; border:none; outline:none; font-family:'Inter',sans-serif; font-size:0.9rem; color:var(--text-primary,#1f2937); background:transparent; min-width:0; }
