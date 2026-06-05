@@ -103,19 +103,10 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
         </div>
 
         {/* Slider */}
-        <div style={{ padding: '12px 20px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input
-              type="range"
-              min={1} max={3} step={0.05}
-              value={zoom}
-              onChange={e => setZoom(Number(e.target.value))}
-              style={{ flex: 1, accentColor: '#ec4899', height: '4px' }}
-            />
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-          </div>
-          <p style={{ fontSize: '0.68rem', color: '#9ca3af', textAlign: 'center', margin: '6px 0 0', fontFamily: 'Inter, sans-serif' }}>Arraste para reposicionar · Slider para zoom</p>
+        <div style={{ padding: '10px 20px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="range" min={1} max={3} step={0.05} value={zoom} onChange={e => setZoom(Number(e.target.value))} style={{ flex: 1, accentColor: '#ec4899', height: '3px', cursor: 'pointer' }} />
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
         </div>
       </div>
     </div>
