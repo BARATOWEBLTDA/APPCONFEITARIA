@@ -32,19 +32,27 @@ export function ProductModal({ isOpen, onClose, product }: Props) {
   }, [product])
 
   // Scroll automático entre imagens
+  const [imgCount, setImgCount] = useState(0)
   useEffect(() => {
-    if (images.length <= 1) return
-    const timer = setInterval(() => {
-      setImgIndex(i => (i + 1) % images.length)
-    }, 3000)
-    return () => clearInterval(timer)
-  }, [images.length, isOpen])
+    if (!product) return
+    const imgs = product.imagem_url?.split(',').map((s: string) => s.trim()).filter(Boolean) || []
+    setImgCount(imgs.length)
+  }, [product])
 
+  useEffect(() => {
+    if (imgCount <= 1 || !isOpen) return
+    const timer = setInterval(() => setImgIndex(i => (i + 1) % imgCount), 3000)
+    return () => clearInterval(timer)
+  }, [imgCount, isOpen])
+
+  // Scroll automático entre imagens
   // Bloquear scroll do body quando modal aberto
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
+
+  if (!isOpen || !product) return null
 
   const isKg = product.forma_venda === 'kg'
   const step = isKg ? 0.5 : 1
