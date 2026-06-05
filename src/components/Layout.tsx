@@ -30,7 +30,7 @@ export default function Layout() {
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
   const isPrevia = location.pathname === "/cardapio-preview";
-  const isCardapioMode = ["/cardapio-config", "/produtos", "/cardapio-design"].includes(location.pathname);
+  const isCardapioMode = ["/cardapio-config", "/produtos", "/categorias", "/cardapio-design"].includes(location.pathname);
   const [cardapioNav, setCardapioNav] = useState(false);
 
   useEffect(() => {
@@ -190,6 +190,10 @@ export default function Layout() {
               <button className={`bottom-item${location.pathname === "/produtos" ? " active" : ""}`} onClick={() => navigate("/produtos")}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                 <span className={`nav-label${location.pathname === "/produtos" ? " nav-label-active" : ""}`}>Produtos</span>
+              </button>
+              <button className={`bottom-item${location.pathname === "/categorias" ? " active" : ""}`} onClick={() => navigate("/categorias")}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <span className={`nav-label${location.pathname === "/categorias" ? " nav-label-active" : ""}`}>Categorias</span>
               </button>
               <button className={`bottom-item${location.pathname === "/cardapio-design" ? " active" : ""}`} onClick={() => navigate("/cardapio-design")}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M2 12h20"/></svg>
