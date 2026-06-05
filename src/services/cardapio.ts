@@ -44,6 +44,7 @@ async function fetchByUserId(userId: string, profile: any) {
     cor_nome: profile.cor_nome || '#1f2937',
     banner_gradient: profile.banner_gradient || '',
     hide_stars: profile.hide_stars || false,
+    cor_botao: profile.cor_botao || '#ec4899',
   }
 
   const config: Configuracoes = {

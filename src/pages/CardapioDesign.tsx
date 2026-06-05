@@ -21,6 +21,7 @@ export default function CardapioDesign() {
   const [corBorda, setCorBorda] = useState("#ec4899");
   const [corBackground, setCorBackground] = useState("#fef2f2");
   const [corNome, setCorNome] = useState("#1f2937");
+  const [corBotao, setCorBotao] = useState("#ec4899");
   const [activePicker, setActivePicker] = useState<string | null>(null);
 
   const logoRef = useRef<HTMLInputElement>(null);
@@ -36,7 +37,7 @@ export default function CardapioDesign() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome, cor_botao").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || "");
         setBannerUrl(data.banner_url || "");
@@ -46,6 +47,7 @@ export default function CardapioDesign() {
         setCorBorda(data.cor_borda || "#ec4899");
         setCorBackground(data.cor_background || "#fef2f2");
         setCorNome(data.cor_nome || "#1f2937");
+        setCorBotao(data.cor_botao || "#ec4899");
       }
       setLoading(false);
     };
@@ -224,6 +226,7 @@ export default function CardapioDesign() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                   <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: corBorda, border: '2px solid #e5e7eb', flexShrink: 0 }} />
                   <input type="text" value={corBorda} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_borda', e.target.value, setCorBorda) }} className="cd-hex-input" />
+                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_borda', '#ec4899', setCorBorda)}>↺</button>
                   <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
                 </div>
               </div>
@@ -249,6 +252,7 @@ export default function CardapioDesign() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                   <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: corBackground, border: '2px solid #e5e7eb', flexShrink: 0 }} />
                   <input type="text" value={corBackground} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_background', e.target.value, setCorBackground) }} className="cd-hex-input" />
+                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_background', '#fef2f2', setCorBackground)}>↺</button>
                   <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
                 </div>
               </div>
@@ -276,11 +280,52 @@ export default function CardapioDesign() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                   <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: corNome, border: '2px solid #e5e7eb', flexShrink: 0 }} />
                   <input type="text" value={corNome} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_nome', e.target.value, setCorNome) }} className="cd-hex-input" />
+                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_nome', '#1f2937', setCorNome)}>↺</button>
                   <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
                 </div>
               </div>
             )}
           </div>
+
+          {/* Cor do botão — PRO */}
+          {isPro ? (
+            <div>
+              <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_botao' ? null : 'cor_botao')}>
+                <div className="cd-color-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span className="cd-color-label">Botão "Adicionar ao carrinho"</span>
+                    <span className="cd-pro-badge">✦ PRO</span>
+                  </div>
+                  <span className="cd-color-value">{corBotao}</span>
+                </div>
+                <div className="cd-color-swatch" style={{ background: corBotao }} />
+              </div>
+              {activePicker === 'cor_botao' && (
+                <div className="cd-picker-wrap">
+                  <div style={{ padding: '12px', borderRadius: '10px', background: '#f9fafb', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+                    <button style={{ padding: '10px 24px', background: corBotao, color: 'white', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '14px', fontFamily: 'inherit' }}>
+                      Adicionar · R$ 50,00
+                    </button>
+                  </div>
+                  <HexColorPicker color={corBotao} onChange={v => handleColorChange('cor_botao', v, setCorBotao)} style={{ width: '100%', height: '160px' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: corBotao, border: '2px solid #e5e7eb', flexShrink: 0 }} />
+                    <input type="text" value={corBotao} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_botao', e.target.value, setCorBotao) }} className="cd-hex-input" />
+                    <button className="cd-restore-btn" onClick={() => handleColorChange('cor_botao', '#ec4899', setCorBotao)}>↺</button>
+                    <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="cd-upgrade-box" style={{ marginTop: '4px' }}>
+              <img src="/diamante.png" alt="PRO" style={{ width: '24px', height: '24px' }} />
+              <div>
+                <p className="cd-upgrade-title">Cor do botão de compra</p>
+                <p className="cd-upgrade-sub">Personalize a cor do botão "Adicionar ao carrinho" com o plano PRO</p>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
@@ -329,6 +374,11 @@ export default function CardapioDesign() {
         .cd-hex-input { flex:1; padding:6px 10px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:0.82rem; font-family:monospace; color:#374151; outline:none; }
         .cd-hex-input:focus { border-color:#F583BF; }
         .cd-picker-close { padding:6px 14px; background:#ec4899; color:white; border:none; border-radius:8px; font-size:0.78rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Nunito',sans-serif; }
+        .cd-restore-btn { padding:6px 10px; background:#f3f4f6; color:#6b7280; border:1.5px solid #e5e7eb; border-radius:8px; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Nunito',sans-serif; }
+        .cd-restore-btn:hover { border-color:#F583BF; color:#F583BF; }
+        .cd-upgrade-box { background:#fdf2f8; border:1.5px dashed #f9a8d4; border-radius:16px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; }
+        .cd-upgrade-title { font-size:0.88rem; font-weight:700; color:#374151; margin:0 0 2px; }
+        .cd-upgrade-sub { font-size:0.76rem; color:#9ca3af; margin:0; }
         .cd-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
         .cd-spinner-sm { width:16px; height:16px; border:2px solid rgba(245,131,191,0.3); border-top-color:#F583BF; border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
       `}</style>
