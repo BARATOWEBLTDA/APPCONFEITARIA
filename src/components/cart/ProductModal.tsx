@@ -26,11 +26,20 @@ export function ProductModal({ isOpen, onClose, product }: Props) {
       setQuantity(1); setObservations(''); setSelectedMassa('')
       setSelectedRecheio(''); setSelectedCobertura(''); setShowObs(false)
       setImgIndex(0)
-      // Se tem tamanhos, pré-seleciona o primeiro
       const tamanhos = (product as any).tamanhos_disponiveis
       setSelectedTamanho(tamanhos?.length > 0 ? tamanhos[0] : null)
     }
   }, [product])
+
+  // Bloquear scroll do body quando modal aberto
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [isOpen])
 
   if (!isOpen || !product) return null
 
@@ -133,9 +142,15 @@ export function ProductModal({ isOpen, onClose, product }: Props) {
           )}
 
           {/* Badge pronta entrega / encomenda */}
-          <div style={{ position: 'absolute', bottom: images.length > 1 ? '28px' : '10px', left: '10px', background: prontaEntrega ? '#dcfce7' : '#fef3c7', color: prontaEntrega ? '#15803d' : '#92400e', fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '50px' }}>
-            {prontaEntrega ? '✓ Pronta entrega' : '⏱ Sob encomenda'}
-          </div>
+          {prontaEntrega ? (
+            <div style={{ position: 'absolute', bottom: images.length > 1 ? '28px' : '10px', left: '10px', background: 'linear-gradient(135deg, #f97316, #ef4444)', color: 'white', fontSize: '11px', fontWeight: 800, padding: '4px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 8px rgba(249,115,22,0.5)', animation: 'pulse 1.5s ease-in-out infinite' }}>
+              🔥 Pronta entrega
+            </div>
+          ) : (
+            <div style={{ position: 'absolute', bottom: images.length > 1 ? '28px' : '10px', left: '10px', background: 'rgba(0,0,0,0.55)', color: 'white', fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px', backdropFilter: 'blur(4px)' }}>
+              ⏱ Sob encomenda
+            </div>
+          )}
         </div>
 
         {/* Conteúdo */}
@@ -232,7 +247,10 @@ export function ProductModal({ isOpen, onClose, product }: Props) {
         </div>
       </div>
 
-      <style>{`@keyframes popIn { from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }`}</style>
+      <style>{`
+        @keyframes popIn { from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 2px 8px rgba(249,115,22,0.5); } 50% { box-shadow: 0 2px 16px rgba(249,115,22,0.9); } }
+      `}</style>
     </>
   )
 }
