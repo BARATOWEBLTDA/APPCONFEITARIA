@@ -30,6 +30,7 @@ export interface DesignSettings {
   cor_borda?: string
   cor_background?: string
   cor_nome?: string
+  cor_botao?: string
   banner_gradient?: string
   banner1_url?: string
   banner2_url?: string

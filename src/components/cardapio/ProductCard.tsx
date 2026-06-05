@@ -9,11 +9,12 @@ interface Props {
   onToggleFavorite: (id: string) => void
   backgroundColor: string
   borderColor?: string
+  corBotao?: string
 }
 
 const catIcons: { [k: string]: string } = { 'Bolos': '🎂', 'Cupcakes': '🧁', 'Doces': '🍮', 'Salgados': '🥐' }
 
-export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundColor, borderColor = '#ec4899' }: Props) {
+export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundColor, borderColor = '#ec4899', corBotao = '#ec4899' }: Props) {
   const [showModal, setShowModal] = useState(false)
   const firstImage = product.imagem_url?.split(',')[0]?.trim() || null
 
@@ -59,14 +60,14 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
                   <span className="text-xs px-1 py-0 rounded-sm" style={{ backgroundColor: '#6A0122', color: 'white' }}>{formatSale(product.forma_venda)}</span>
                 </div>
               )}
-              <button onClick={() => setShowModal(true)} className="w-full py-2 px-3 rounded-lg text-white text-xs font-medium text-center" style={{ backgroundColor: '#FF4F97' }}>
+              <button onClick={() => setShowModal(true)} className="w-full py-2 px-3 rounded-lg text-white text-xs font-medium text-center" style={{ backgroundColor: corBotao }}>
                 Adicionar ao carrinho
               </button>
             </div>
           </div>
         </div>
       </div>
-      <ProductModal isOpen={showModal} onClose={() => setShowModal(false)} product={product} />
+      <ProductModal isOpen={showModal} onClose={() => setShowModal(false)} product={product} corBotao={corBotao} />
     </>
   )
 }

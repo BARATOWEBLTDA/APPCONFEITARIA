@@ -130,6 +130,7 @@ function CardapioContent() {
             onToggleFavorite={toggleFavorite}
             backgroundColor={design.cor_background || '#ffffff'}
             borderColor={design.cor_borda || '#ec4899'}
+            corBotao={design.cor_botao || '#ec4899'}
             selectedCategory={selectedCategory}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}

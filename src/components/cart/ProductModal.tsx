@@ -8,9 +8,10 @@ interface Props {
   isOpen: boolean
   onClose: () => void
   product: Produto | null
+  corBotao?: string
 }
 
-export function ProductModal({ isOpen, onClose, product }: Props) {
+export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }: Props) {
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [observations, setObservations] = useState('')
@@ -262,7 +263,7 @@ export function ProductModal({ isOpen, onClose, product }: Props) {
                 <Plus size={16} color="#374151" />
               </button>
             </div>
-            <button onClick={handleAdd} style={{ flex: 1, height: '44px', background: '#ec4899', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', fontFamily: 'inherit' }}>
+            <button onClick={handleAdd} style={{ flex: 1, height: '44px', background: corBotao, color: 'white', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', fontFamily: 'inherit' }}>
               <span>Adicionar</span>
               <span>{formatCurrency(total)}</span>
             </button>
