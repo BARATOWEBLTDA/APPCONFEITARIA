@@ -34,7 +34,7 @@ export default function CardapioConfigPage() {
 
   const [form, setForm] = useState({
     nome_loja: "", telefone: "", foto_url: "", descricao_loja: "",
-    hide_stars: false, avaliacao_media: 5.0,
+    hide_stars: false, avaliacao_media: 5.0, ocultar_categorias: false,
     cep: "", rua: "", numero: "", bairro: "", cidade: "", estado: "",
     mostrar_localizacao: false, mostrar_apenas_cidade: false,
     faz_entrega: false, taxa_entrega: "", pedido_minimo: "",
@@ -66,6 +66,7 @@ export default function CardapioConfigPage() {
         horario_entrega: form.horario_entrega, area_entrega: form.area_entrega,
         observacoes_entrega: form.observacoes_entrega,
         horario: JSON.stringify(horario),
+        ocultar_categorias: form.ocultar_categorias,
       }).eq("id", userId);
       setAutoSaved(true);
       setTimeout(() => setAutoSaved(false), 2000);
@@ -95,7 +96,7 @@ export default function CardapioConfigPage() {
         setForm({
           nome_loja: data.nome_loja || "", telefone: formatPhone(data.telefone || ""),
           foto_url: data.foto_url || "", descricao_loja: data.descricao_loja || "",
-          hide_stars: data.hide_stars || false, avaliacao_media: data.avaliacao_media || 5.0,
+          hide_stars: data.hide_stars || false, avaliacao_media: data.avaliacao_media || 5.0, ocultar_categorias: data.ocultar_categorias || false,
           cep: addr.cep || "", rua: addr.rua || "", numero: addr.numero || "",
           bairro: addr.bairro || "", cidade: addr.cidade || "", estado: addr.estado || "",
           mostrar_localizacao: data.mostrar_localizacao || false,
@@ -184,6 +185,7 @@ export default function CardapioConfigPage() {
       horario_entrega: form.horario_entrega, area_entrega: form.area_entrega,
       observacoes_entrega: form.observacoes_entrega,
       horario: JSON.stringify(horario),
+        ocultar_categorias: form.ocultar_categorias,
     }).eq("id", userId);
     setSaving(false);
     setSuccess(true);
@@ -346,7 +348,22 @@ export default function CardapioConfigPage() {
         )}
       </div>
 
-      {/* Card 5 — Avaliações */}
+      {/* Card 5 — Ocultar Categorias */}
+      <div className="ccc-card">
+        <SectionLabel>Categorias no cardápio</SectionLabel>
+        <div className="ccc-toggle-row">
+          <div>
+            <p className="ccc-toggle-label">Ocultar categorias</p>
+            <p className="ccc-toggle-sub">Esconde as bolinhas de categoria no cardápio público</p>
+          </div>
+          <label className="ccc-toggle">
+            <input type="checkbox" checked={form.ocultar_categorias} onChange={e => setForm({...form, ocultar_categorias: e.target.checked})} />
+            <span className="ccc-toggle-slider" />
+          </label>
+        </div>
+      </div>
+
+      {/* Card 6 — Avaliações */}
       <div className="ccc-card">
         <SectionLabel>Avaliações</SectionLabel>
         <div className="ccc-toggle-row">
