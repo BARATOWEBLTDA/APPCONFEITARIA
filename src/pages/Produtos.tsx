@@ -4,6 +4,8 @@ import { usePlano } from "@/hooks/usePlano";
 
 type Tamanho = { label: string; preco: number };
 
+type KitItem = { nome: string; quantidade: string };
+
 type Produto = {
   id?: string;
   user_id?: string;
@@ -22,6 +24,9 @@ type Produto = {
   coberturas_disponiveis?: string[];
   tamanhos_disponiveis?: Tamanho[];
   pronta_entrega?: boolean;
+  kit_itens?: KitItem[];
+  kit_serve_pessoas?: string;
+  kit_prazo_encomenda?: string;
 };
 
 const FORMAS_VENDA = [
@@ -42,6 +47,7 @@ const EMPTY: Produto = {
   permite_personalizacao: false,
   massas_disponiveis: [], recheios_disponiveis: [], coberturas_disponiveis: [],
   tamanhos_disponiveis: [], pronta_entrega: true,
+  kit_itens: [], kit_serve_pessoas: "", kit_prazo_encomenda: "",
 };
 
 export default function Produtos() {
@@ -59,6 +65,7 @@ export default function Produtos() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [novaOpcao, setNovaOpcao] = useState<{ massa: string; recheio: string; cobertura: string }>({ massa: "", recheio: "", cobertura: "" });
   const [novoTamanho, setNovoTamanho] = useState({ label: "", preco: "" });
+  const [novoKitItem, setNovoKitItem] = useState({ nome: "", quantidade: "" });
   const imgRef = useRef<HTMLInputElement>(null);
   const img2Ref = useRef<HTMLInputElement>(null);
   const img3Ref = useRef<HTMLInputElement>(null);
@@ -422,6 +429,45 @@ export default function Produtos() {
                   </div>
                 )}
               </div>
+
+              {/* Kit Festa */}
+              {form.forma_venda === "kit-caixa" && (
+                <div className="prod-section">
+                  <p className="prod-section-label">🎉 Itens do Kit</p>
+                  <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: "0" }}>Liste o que está incluso no kit</p>
+
+                  {(form.kit_itens || []).map((item, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", background: "#fdf2f8", borderRadius: "10px", marginBottom: "4px" }}>
+                      <div>
+                        <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#374151" }}>{item.nome}</span>
+                        <span style={{ fontSize: "0.78rem", color: "#9ca3af", marginLeft: "8px" }}>× {item.quantidade}</span>
+                      </div>
+                      <button onClick={() => setForm(f => ({ ...f, kit_itens: (f.kit_itens || []).filter((_, idx) => idx !== i) }))} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1rem", padding: 0 }}>×</button>
+                    </div>
+                  ))}
+
+                  <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+                    <input type="text" placeholder="Ex: Bolo, Brigadeiros..." value={novoKitItem.nome} onChange={e => setNovoKitItem(k => ({ ...k, nome: e.target.value }))} style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                    <input type="text" placeholder="Qtd" value={novoKitItem.quantidade} onChange={e => setNovoKitItem(k => ({ ...k, quantidade: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                    <button onClick={() => {
+                      if (!novoKitItem.nome.trim()) return;
+                      setForm(f => ({ ...f, kit_itens: [...(f.kit_itens || []), { nome: novoKitItem.nome.trim(), quantidade: novoKitItem.quantidade || "1" }] }));
+                      setNovoKitItem({ nome: "", quantidade: "" });
+                    }} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
+                  </div>
+
+                  <div className="prod-row-2" style={{ marginTop: "8px" }}>
+                    <div className="prod-field">
+                      <label>Serve quantas pessoas</label>
+                      <input type="text" placeholder="Ex: 20 a 30 pessoas" value={form.kit_serve_pessoas || ""} onChange={e => setForm(f => ({ ...f, kit_serve_pessoas: e.target.value }))} />
+                    </div>
+                    <div className="prod-field">
+                      <label>Prazo de encomenda</label>
+                      <input type="text" placeholder="Ex: 5 dias antes" value={form.kit_prazo_encomenda || ""} onChange={e => setForm(f => ({ ...f, kit_prazo_encomenda: e.target.value }))} />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Personalização */}
               <div className="prod-section">

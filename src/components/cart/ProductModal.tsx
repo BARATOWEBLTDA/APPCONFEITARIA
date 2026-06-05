@@ -199,6 +199,35 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             </div>
           </div>
 
+          {/* Kit Festa */}
+          {product.forma_venda === 'kit-caixa' && (product as any).kit_itens?.length > 0 && (
+            <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: '#1f2937' }}>🎉 O que está incluso</span>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {(product as any).kit_serve_pessoas && (
+                    <span style={{ fontSize: '11px', background: '#fdf2f8', color: '#ec4899', fontWeight: 700, padding: '3px 8px', borderRadius: '50px' }}>
+                      👥 {(product as any).kit_serve_pessoas}
+                    </span>
+                  )}
+                  {(product as any).kit_prazo_encomenda && (
+                    <span style={{ fontSize: '11px', background: '#fef3c7', color: '#92400e', fontWeight: 700, padding: '3px 8px', borderRadius: '50px' }}>
+                      ⏱ {(product as any).kit_prazo_encomenda}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {(product as any).kit_itens.map((item: any, i: number) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#fafafa', borderRadius: '10px', border: '1px solid #f3f4f6' }}>
+                    <span style={{ fontSize: '13px', color: '#374151', fontWeight: 500 }}>✓ {item.nome}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#ec4899' }}>× {item.quantidade}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Tamanhos */}
           {tamanhos.length > 0 && (
             <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '14px' }}>
