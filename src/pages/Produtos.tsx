@@ -34,6 +34,9 @@ type Produto = {
   valor_topo?: number;
   tem_papel_arroz?: boolean;
   valor_papel_arroz?: number;
+  tem_outro?: boolean;
+  titulo_outro?: string;
+  valor_outro?: number;
 };
 
 const FORMAS_VENDA = [
@@ -60,6 +63,7 @@ const EMPTY: Produto = {
   tem_vela: false, valor_vela: 0,
   tem_topo: false, valor_topo: 0,
   tem_papel_arroz: false, valor_papel_arroz: 0,
+  tem_outro: false, titulo_outro: "", valor_outro: 0,
 };
 
 export default function Produtos() {
@@ -399,25 +403,27 @@ export default function Produtos() {
                   </div>
                 </div>
 
-                {/* Tamanhos personalizados */}
-                <div className="prod-field">
-                  <label>Tamanhos / Pesos disponíveis <span style={{ color: "#9ca3af", fontWeight: 400 }}>(opcional)</span></label>
-                  <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: "0 0 6px" }}>Ex: 500g, 1kg, 2kg, Pequeno, Grande...</p>
-                  {(form.tamanhos_disponiveis || []).map((t, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "#fdf2f8", borderRadius: "8px", marginBottom: "4px" }}>
-                      <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#374151" }}>{t.label}</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span style={{ fontSize: "0.82rem", color: "#22c55e", fontWeight: 700 }}>R$ {t.preco.toFixed(2).replace(".", ",")}</span>
-                        <button onClick={() => removeTamanho(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1rem", padding: 0 }}>×</button>
+                {/* Tamanhos personalizados — ocultar no Kit Festa */}
+                {form.forma_venda !== "kit-festa" && (
+                  <div className="prod-field">
+                    <label>Tamanhos / Pesos disponíveis <span style={{ color: "#9ca3af", fontWeight: 400 }}>(opcional)</span></label>
+                    <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: "0 0 6px" }}>Ex: 500g, 1kg, 2kg, Pequeno, Grande...</p>
+                    {(form.tamanhos_disponiveis || []).map((t, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "#fdf2f8", borderRadius: "8px", marginBottom: "4px" }}>
+                        <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#374151" }}>{t.label}</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontSize: "0.82rem", color: "#22c55e", fontWeight: 700 }}>R$ {t.preco.toFixed(2).replace(".", ",")}</span>
+                          <button onClick={() => removeTamanho(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1rem", padding: 0 }}>×</button>
+                        </div>
                       </div>
+                    ))}
+                    <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+                      <input type="text" placeholder="Ex: 1kg" value={novoTamanho.label} onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))} style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                      <input type="text" placeholder="Preço" value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                      <button onClick={addTamanho} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
                     </div>
-                  ))}
-                  <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
-                    <input type="text" placeholder="Ex: 1kg" value={novoTamanho.label} onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))} style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
-                    <input type="text" placeholder="Preço" value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
-                    <button onClick={addTamanho} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
                   </div>
-                </div>
+                )}
 
                 <div className="prod-toggles">
                   <Toggle label="Disponível" value={form.disponivel} onChange={(v: boolean) => setForm(f => ({ ...f, disponivel: v }))} colorClass="active-green" />
@@ -512,15 +518,15 @@ export default function Produtos() {
                 )}
               </div>
 
-              {/* Adicionais — Vela, Topo, Papel de Arroz */}
+              {/* Adicionais — Vela, Topo, Papel de Arroz, Outro */}
               <div className="prod-section">
                 <p className="prod-section-label">✨ Adicionais</p>
                 <p style={{ fontSize: "0.78rem", color: "#9ca3af", margin: "0" }}>Itens extras que o cliente pode solicitar</p>
 
                 {[
-                  { label: "🕯️ Velas", sub: "Cliente escolhe se quer velas", campo: "tem_vela" as const, valor: "valor_vela" as const },
-                  { label: "🎂 Topo de Bolo", sub: "Cliente escolhe o topo personalizado", campo: "tem_topo" as const, valor: "valor_topo" as const },
-                  { label: "🖼️ Papel de Arroz", sub: "Impressão comestível personalizada", campo: "tem_papel_arroz" as const, valor: "valor_papel_arroz" as const },
+                  { label: "Velas", sub: "Cliente escolhe se quer velas", campo: "tem_vela" as const, valor: "valor_vela" as const },
+                  { label: "Topo de Bolo", sub: "Cliente escolhe o topo personalizado", campo: "tem_topo" as const, valor: "valor_topo" as const },
+                  { label: "Papel de Arroz", sub: "Impressão comestível personalizada", campo: "tem_papel_arroz" as const, valor: "valor_papel_arroz" as const },
                 ].map(({ label, sub, campo, valor }) => (
                   <div key={campo} style={{ background: "#fafafa", borderRadius: "12px", border: "1px solid #f3f4f6", overflow: "hidden" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px" }}>
@@ -544,6 +550,35 @@ export default function Produtos() {
                     )}
                   </div>
                 ))}
+
+                {/* Outro — título personalizado */}
+                <div style={{ background: "#fafafa", borderRadius: "12px", border: "1px solid #f3f4f6", overflow: "hidden" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px" }}>
+                    <div>
+                      <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "#374151", margin: "0 0 2px" }}>Outro</p>
+                      <p style={{ fontSize: "0.72rem", color: "#9ca3af", margin: 0 }}>Adicional personalizado</p>
+                    </div>
+                    <button onClick={() => setForm(f => ({ ...f, tem_outro: !f.tem_outro }))}
+                      style={{ width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer", background: form.tem_outro ? "#ec4899" : "#e5e7eb", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                      <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: form.tem_outro ? "23px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+                    </button>
+                  </div>
+                  {form.tem_outro && (
+                    <div style={{ padding: "0 12px 12px", borderTop: "1px solid #f3f4f6", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div>
+                        <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#6b7280", display: "block", margin: "8px 0 4px" }}>Nome do adicional</label>
+                        <input type="text" placeholder="Ex: Embalagem especial, Laço..." value={form.titulo_outro || ""} onChange={e => setForm(f => ({ ...f, titulo_outro: e.target.value }))} style={{ width: "100%", padding: "0.55rem 0.85rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.85rem", fontFamily: "Inter, sans-serif", outline: "none", boxSizing: "border-box", background: "white" }} />
+                      </div>
+                      <div>
+                        <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#6b7280", display: "block", margin: "0 0 4px" }}>Valor adicional</label>
+                        <div className="prod-preco-input" style={{ background: "white" }}>
+                          <span>R$</span>
+                          <input type="text" placeholder="0,00" value={form.valor_outro ? formatPreco(form.valor_outro) : ""} onChange={e => setForm(f => ({ ...f, valor_outro: parsePreco(e.target.value) }))} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Promoção */}
