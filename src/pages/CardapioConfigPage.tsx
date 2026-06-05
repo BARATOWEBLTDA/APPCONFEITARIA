@@ -10,6 +10,33 @@ const Field = ({ icon, placeholder, value, onChange, type = "text" }: any) => (
   </div>
 );
 
+const MoneyField = ({ icon, placeholder, value, onChange }: any) => {
+  const formatMoney = (raw: string) => {
+    const digits = raw.replace(/\D/g, "");
+    if (!digits) return "";
+    const num = parseInt(digits) / 100;
+    return num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+  const parseMoney = (formatted: string) => {
+    const digits = formatted.replace(/\D/g, "");
+    if (!digits) return "";
+    return (parseInt(digits) / 100).toString();
+  };
+  return (
+    <div className="ccc-field">
+      <span className="ccc-field-icon">{icon}</span>
+      <span style={{ fontSize: "0.9rem", color: "#9ca3af", flexShrink: 0 }}>R$</span>
+      <input
+        className="ccc-field-input"
+        placeholder={placeholder}
+        value={value ? formatMoney((parseFloat(value) * 100).toFixed(0)) : ""}
+        onChange={e => onChange(parseMoney(e.target.value))}
+        inputMode="numeric"
+      />
+    </div>
+  );
+};
+
 const DIAS = ["Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"];
 
 export default function CardapioConfigPage() {
@@ -293,9 +320,9 @@ export default function CardapioConfigPage() {
         {form.faz_entrega && (
           <>
             <div className="ccc-divider" />
-            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>} placeholder="Taxa de entrega" value={form.taxa_entrega} onChange={(e: any) => setForm({...form, taxa_entrega: e.target.value.replace(/[^0-9.,]/g,"")})} />
-            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>} placeholder="Pedido mínimo" value={form.pedido_minimo} onChange={(e: any) => setForm({...form, pedido_minimo: e.target.value.replace(/[^0-9.,]/g,"")})} />
-            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/></svg>} placeholder="Entrega grátis acima de" value={form.entrega_gratis_acima} onChange={(e: any) => setForm({...form, entrega_gratis_acima: e.target.value.replace(/[^0-9.,]/g,"")})} />
+            <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>} placeholder="0,00" value={form.taxa_entrega} onChange={(v: string) => setForm({...form, taxa_entrega: v})} />
+            <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>} placeholder="0,00" value={form.pedido_minimo} onChange={(v: string) => setForm({...form, pedido_minimo: v})} />
+            <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/></svg>} placeholder="0,00" value={form.entrega_gratis_acima} onChange={(v: string) => setForm({...form, entrega_gratis_acima: v})} />
             <button className="ccc-horario-btn" onClick={() => { if (form.horario_entrega) { const [ini,fim] = form.horario_entrega.split(" às "); setHorarioTemp({inicio:ini||"08:00",fim:fim||"18:00"}); } setModalHorario(true); }}>
               <span className="ccc-field-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
               <span style={{flex:1,textAlign:"left",color:form.horario_entrega?"var(--text-primary,#1f2937)":"#9ca3af",fontSize:"0.9rem"}}>{form.horario_entrega || "Horário de entregas"}</span>
