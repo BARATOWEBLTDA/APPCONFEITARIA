@@ -50,25 +50,38 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
   }
 
   return (
-    <>
-      {/* Overlay */}
-      <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column' }}>
-
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: 'rgba(0,0,0,0.7)',
+      backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '16px',
+    }}>
+      <div style={{
+        background: 'white',
+        borderRadius: '20px',
+        width: '100%',
+        maxWidth: '380px',
+        overflow: 'hidden',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
         {/* Header */}
-        <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-          <button onClick={onCancel} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '8px', padding: '8px 14px', color: 'white', fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+        <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6' }}>
+          <button onClick={onCancel} style={{ background: '#f3f4f6', border: 'none', borderRadius: '8px', padding: '7px 14px', color: '#374151', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
             Cancelar
           </button>
-          <span style={{ color: 'white', fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700 }}>
+          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: '#111827' }}>
             {cropShape === 'round' ? 'Ajustar logo' : 'Ajustar foto'}
           </span>
-          <button onClick={handleDone} disabled={loading} style={{ background: '#ec4899', border: 'none', borderRadius: '8px', padding: '8px 14px', color: 'white', fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
+          <button onClick={handleDone} disabled={loading} style={{ background: '#ec4899', border: 'none', borderRadius: '8px', padding: '7px 14px', color: 'white', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
             {loading ? '...' : 'Confirmar'}
           </button>
         </div>
 
-        {/* Cropper */}
-        <div style={{ flex: 1, position: 'relative' }}>
+        {/* Área do crop */}
+        <div style={{ position: 'relative', width: '100%', height: '300px', background: '#1a1a1a' }}>
           <Cropper
             image={imageSrc}
             crop={crop}
@@ -80,26 +93,31 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
             onCropComplete={onCropComplete}
             onZoomChange={setZoom}
             style={{
-              containerStyle: { background: 'transparent' },
-              cropAreaStyle: { border: '3px solid #ec4899', boxShadow: '0 0 0 9999px rgba(0,0,0,0.6)' }
+              containerStyle: { background: '#1a1a1a' },
+              cropAreaStyle: {
+                border: `2px solid #ec4899`,
+                boxShadow: '0 0 0 9999px rgba(0,0,0,0.55)',
+              },
             }}
           />
         </div>
 
-        {/* Zoom slider */}
-        <div style={{ padding: '16px 32px 32px', flexShrink: 0 }}>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', textAlign: 'center', margin: '0 0 8px', fontFamily: 'Inter, sans-serif' }}>Pinça ou use o slider para zoom</p>
-          <input
-            type="range"
-            min={1}
-            max={3}
-            step={0.05}
-            value={zoom}
-            onChange={e => setZoom(Number(e.target.value))}
-            style={{ width: '100%', accentColor: '#ec4899' }}
-          />
+        {/* Slider */}
+        <div style={{ padding: '12px 20px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+              type="range"
+              min={1} max={3} step={0.05}
+              value={zoom}
+              onChange={e => setZoom(Number(e.target.value))}
+              style={{ flex: 1, accentColor: '#ec4899', height: '4px' }}
+            />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          </div>
+          <p style={{ fontSize: '0.68rem', color: '#9ca3af', textAlign: 'center', margin: '6px 0 0', fontFamily: 'Inter, sans-serif' }}>Arraste para reposicionar · Slider para zoom</p>
         </div>
       </div>
-    </>
+    </div>
   )
 }
