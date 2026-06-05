@@ -46,7 +46,7 @@ const FORMAS_VENDA = [
   { value: "cento", label: "Por Cento" },
   { value: "tamanho", label: "Por Tamanho (P/M/G)" },
   { value: "caixa", label: "Por Caixa" },
-  { value: "kit-festa", label: "Kit Festa 🎉" },
+  { value: "kit-festa", label: "Kit Festa" },
   { value: "sob-encomenda", label: "Sob Encomenda" },
   { value: "outros", label: "Outros" },
 ];
@@ -424,11 +424,6 @@ export default function Produtos() {
                     </div>
                   </div>
                 )}
-
-                <div className="prod-toggles">
-                  <Toggle label="Disponível" value={form.disponivel} onChange={(v: boolean) => setForm(f => ({ ...f, disponivel: v }))} colorClass="active-green" />
-                  <Toggle label="Pronta entrega" value={form.pronta_entrega !== false} onChange={(v: boolean) => setForm(f => ({ ...f, pronta_entrega: v }))} colorClass="active-green" />
-                </div>
               </div>
 
               {/* Kit Festa */}
@@ -682,7 +677,7 @@ export default function Produtos() {
         .prod-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
         .prod-preco-input { display:flex; align-items:center; border:1.5px solid var(--border,#e5e7eb); border-radius:12px; overflow:hidden; background:var(--bg-input,white); }
         .prod-preco-input span { padding:0 0.75rem; font-weight:700; color:#22c55e; font-size:0.88rem; flex-shrink:0; }
-        .prod-preco-input input { border:none !important; border-radius:0 !important; flex:1; padding:0.65rem 0.5rem 0.65rem 0 !important; }
+        .prod-preco-input input { border:none !important; border-radius:0 !important; flex:1; padding:0.65rem 0.5rem 0.65rem 0 !important; outline:none !important; box-shadow:none !important; }
         .prod-preco-input:focus-within { border-color:#F583BF; }
         .prod-nova-cat { display:flex; gap:0.4rem; margin-top:0.4rem; }
         .prod-nova-cat input { flex:1; padding:0.55rem 0.8rem; border:1.5px solid #F583BF; border-radius:10px; font-family:'Inter',sans-serif; font-size:0.85rem; outline:none; }
