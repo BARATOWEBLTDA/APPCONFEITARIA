@@ -8,9 +8,11 @@ import { supabase } from "@/lib/supabase";
 const menuItems = [
   { label: "Início", path: "/inicio", emoji: "🏠" },
   { label: "Cardápio / Loja", path: "/cardapio-config", emoji: "🛍️" },
+  { label: "Produtos", path: "/produtos", emoji: "🎂" },
+  { label: "Categorias", path: "/categorias", emoji: "🏷️" },
+  { label: "Design", path: "/cardapio-design", emoji: "🎨" },
   { label: "Pedidos", path: "/pedidos", emoji: "📋" },
   { label: "Clientes", path: "/clientes", emoji: "👥" },
-  { label: "Produtos", path: "/produtos", emoji: "🎂" },
   { label: "Estoque", path: "/estoque", emoji: "📦" },
   { label: "Financeiro", path: "/financeiro", emoji: "💰" },
   { label: "Receitas", path: "/receitas", emoji: "📄" },
