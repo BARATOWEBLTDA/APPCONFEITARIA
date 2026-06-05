@@ -362,13 +362,10 @@ export default function Produtos() {
                     <option value="">Selecione...</option>
                     {todasCategorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                   </select>
-                  {todasCategorias.length === 0 && (
-                    <p style={{ fontSize: "0.75rem", color: "#f59e0b", margin: "4px 0 0" }}>⚠️ Nenhuma categoria cadastrada. Acesse a aba <strong>Categorias</strong> para criar.</p>
-                  )}
                 </div>
                 <div className="prod-field">
                   <label>Descrição</label>
-                  <textarea placeholder="Descreva os ingredientes, sabor, tamanho..." value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={3} />
+                  <textarea placeholder="Feito com ingredientes frescos e selecionados. Conte o que torna esse produto especial..." value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={3} />
                 </div>
               </div>
 
@@ -467,35 +464,36 @@ export default function Produtos() {
 
                 {form.permite_personalizacao && (
                   <>
-                    {/* Massas */}
-                    <div className="prod-field">
-                      <label>Tipos de Massa</label>
-                      <TagList items={form.massas_disponiveis || []} onRemove={i => removeOpcao("massas_disponiveis", i)} />
-                      <div style={{ display: "flex", gap: "6px", marginTop: "6px" }}>
-                        <input type="text" placeholder="Ex: Chocolate, Baunilha..." value={novaOpcao.massa} onChange={e => setNovaOpcao(o => ({ ...o, massa: e.target.value }))} onKeyDown={e => e.key === "Enter" && addOpcao("massas_disponiveis", "massa")} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
-                        <button onClick={() => addOpcao("massas_disponiveis", "massa")} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
+                    {[
+                      { label: "Tipos de Massa", campo: "massas_disponiveis" as const, key: "massa" as const, placeholder: "Ex: Chocolate, Baunilha, Red Velvet..." },
+                      { label: "Sabores / Recheios", campo: "recheios_disponiveis" as const, key: "recheio" as const, placeholder: "Ex: Morango, Brigadeiro, Limão..." },
+                      { label: "Coberturas", campo: "coberturas_disponiveis" as const, key: "cobertura" as const, placeholder: "Ex: Ganache, Chantilly, Pasta Americana..." },
+                    ].map(({ label, campo, key, placeholder }) => (
+                      <div key={campo} style={{ background: "#fafafa", borderRadius: "12px", padding: "10px 12px", border: "1px solid #f3f4f6" }}>
+                        <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "#374151", margin: "0 0 8px" }}>{label}</p>
+                        {(form[campo] || []).length > 0 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginBottom: "8px" }}>
+                            {(form[campo] || []).map((item: string, i: number) => (
+                              <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: "white", border: "1.5px solid #F583BF", color: "#be185d", borderRadius: "50px", fontSize: "0.8rem", fontWeight: 600 }}>
+                                {item}
+                                <button onClick={() => removeOpcao(campo, i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#be185d", padding: 0, lineHeight: 1, fontSize: "0.9rem", display: "flex" }}>×</button>
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <input
+                            type="text"
+                            placeholder={placeholder}
+                            value={novaOpcao[key]}
+                            onChange={e => setNovaOpcao(o => ({ ...o, [key]: e.target.value }))}
+                            onKeyDown={e => e.key === "Enter" && addOpcao(campo, key)}
+                            style={{ flex: 1, padding: "0.45rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "8px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none", background: "white" }}
+                          />
+                          <button onClick={() => addOpcao(campo, key)} style={{ padding: "0.45rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Recheios */}
-                    <div className="prod-field">
-                      <label>Sabores / Recheios</label>
-                      <TagList items={form.recheios_disponiveis || []} onRemove={i => removeOpcao("recheios_disponiveis", i)} />
-                      <div style={{ display: "flex", gap: "6px", marginTop: "6px" }}>
-                        <input type="text" placeholder="Ex: Morango, Brigadeiro..." value={novaOpcao.recheio} onChange={e => setNovaOpcao(o => ({ ...o, recheio: e.target.value }))} onKeyDown={e => e.key === "Enter" && addOpcao("recheios_disponiveis", "recheio")} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
-                        <button onClick={() => addOpcao("recheios_disponiveis", "recheio")} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
-                      </div>
-                    </div>
-
-                    {/* Coberturas */}
-                    <div className="prod-field">
-                      <label>Coberturas</label>
-                      <TagList items={form.coberturas_disponiveis || []} onRemove={i => removeOpcao("coberturas_disponiveis", i)} />
-                      <div style={{ display: "flex", gap: "6px", marginTop: "6px" }}>
-                        <input type="text" placeholder="Ex: Ganache, Chantilly..." value={novaOpcao.cobertura} onChange={e => setNovaOpcao(o => ({ ...o, cobertura: e.target.value }))} onKeyDown={e => e.key === "Enter" && addOpcao("coberturas_disponiveis", "cobertura")} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
-                        <button onClick={() => addOpcao("coberturas_disponiveis", "cobertura")} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
-                      </div>
-                    </div>
+                    ))}
                   </>
                 )}
               </div>
@@ -598,7 +596,7 @@ export default function Produtos() {
         .prod-nova-cat input { flex:1; padding:0.55rem 0.8rem; border:1.5px solid #F583BF; border-radius:10px; font-family:'Inter',sans-serif; font-size:0.85rem; outline:none; }
         .prod-nova-cat button { padding:0.55rem 0.9rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:10px; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; }
         .prod-toggles { display:flex; gap:0.75rem; flex-wrap:wrap; }
-        .prod-toggle-item { display:flex; align-items:center; gap:0.6rem; padding:0.65rem 1rem; border-radius:12px; background:var(--bg-subtle,#f3f4f6); cursor:pointer; font-size:0.85rem; font-weight:600; color:var(--text-secondary,#374151); transition:all 0.2s; flex:1; min-width:120px; }
+        .prod-toggle-item { display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0.75rem; border-radius:10px; background:var(--bg-subtle,#f3f4f6); cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary,#374151); transition:all 0.2s; flex:1; min-width:100px; }
         .prod-toggle-item.active-green { background:#dcfce7; color:#15803d; }
         .prod-toggle-item.active-pink { background:#fce7f3; color:#be185d; }
         .prod-toggle-slider { width:40px; height:22px; border-radius:11px; background:#e5e7eb; position:relative; flex-shrink:0; transition:background 0.2s; }
