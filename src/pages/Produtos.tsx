@@ -249,7 +249,6 @@ export default function Produtos() {
           <span style={{ fontSize: "3rem" }}>🎂</span>
           <p className="prod-empty-title">Nenhum produto ainda</p>
           <p className="prod-empty-sub">Cadastre seu primeiro produto para aparecer no cardápio</p>
-          <button className="prod-btn-novo" onClick={openNovo}>+ Cadastrar produto</button>
         </div>
       ) : (
         <div className="prod-grid">
