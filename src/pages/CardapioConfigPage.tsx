@@ -88,7 +88,7 @@ export default function CardapioConfigPage() {
       if (!user) return;
       setUserId(user.id);
       const { data } = await supabase.from("profiles")
-        .select("nome_loja, telefone, foto_url, descricao_loja, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega, horario")
+        .select("nome_loja, telefone, foto_url, descricao_loja, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega, horario, ocultar_categorias")
         .eq("id", user.id).single();
       if (data) {
         let addr: any = {};
