@@ -224,7 +224,7 @@ export default function CardapioDesign() {
                 </div>
                 <HexColorPicker color={corBorda} onChange={v => handleColorChange('cor_borda', v, setCorBorda)} style={{ width: '100%', height: '160px' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: corBorda, border: '2px solid #e5e7eb', flexShrink: 0 }} />
+                  
                   <input type="text" value={corBorda} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_borda', e.target.value, setCorBorda) }} className="cd-hex-input" />
                   <button className="cd-restore-btn" onClick={() => handleColorChange('cor_borda', '#ec4899', setCorBorda)}>↺</button>
                   <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
@@ -250,7 +250,7 @@ export default function CardapioDesign() {
                 </div>
                 <HexColorPicker color={corBackground} onChange={v => handleColorChange('cor_background', v, setCorBackground)} style={{ width: '100%', height: '160px' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: corBackground, border: '2px solid #e5e7eb', flexShrink: 0 }} />
+                  
                   <input type="text" value={corBackground} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_background', e.target.value, setCorBackground) }} className="cd-hex-input" />
                   <button className="cd-restore-btn" onClick={() => handleColorChange('cor_background', '#fef2f2', setCorBackground)}>↺</button>
                   <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
@@ -278,7 +278,7 @@ export default function CardapioDesign() {
                 </div>
                 <HexColorPicker color={corNome} onChange={v => handleColorChange('cor_nome', v, setCorNome)} style={{ width: '100%', height: '160px' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: corNome, border: '2px solid #e5e7eb', flexShrink: 0 }} />
+                  
                   <input type="text" value={corNome} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_nome', e.target.value, setCorNome) }} className="cd-hex-input" />
                   <button className="cd-restore-btn" onClick={() => handleColorChange('cor_nome', '#1f2937', setCorNome)}>↺</button>
                   <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
@@ -309,7 +309,7 @@ export default function CardapioDesign() {
                   </div>
                   <HexColorPicker color={corBotao} onChange={v => handleColorChange('cor_botao', v, setCorBotao)} style={{ width: '100%', height: '160px' }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: corBotao, border: '2px solid #e5e7eb', flexShrink: 0 }} />
+                    
                     <input type="text" value={corBotao} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_botao', e.target.value, setCorBotao) }} className="cd-hex-input" />
                     <button className="cd-restore-btn" onClick={() => handleColorChange('cor_botao', '#ec4899', setCorBotao)}>↺</button>
                     <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
@@ -371,10 +371,10 @@ export default function CardapioDesign() {
         .cd-color-value { font-size:0.7rem; color:#9ca3af; font-family:monospace; }
         .cd-color-swatch { width:38px; height:38px; border-radius:10px; border:2px solid rgba(0,0,0,0.08); flex-shrink:0; box-shadow:0 2px 6px rgba(0,0,0,0.12); }
         .cd-picker-wrap { padding:0.75rem; background:#f9fafb; border-radius:12px; border:1px solid #f3f4f6; margin-top:4px; }
-        .cd-hex-input { flex:1; padding:6px 10px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:0.82rem; font-family:monospace; color:#374151; outline:none; }
+        .cd-hex-input { flex:1; min-width:0; padding:6px 8px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:0.78rem; font-family:monospace; color:#374151; outline:none; }
         .cd-hex-input:focus { border-color:#F583BF; }
-        .cd-picker-close { padding:6px 14px; background:#ec4899; color:white; border:none; border-radius:8px; font-size:0.78rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Nunito',sans-serif; }
-        .cd-restore-btn { padding:6px 10px; background:#f3f4f6; color:#6b7280; border:1.5px solid #e5e7eb; border-radius:8px; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Nunito',sans-serif; }
+        .cd-picker-close { padding:6px 10px; background:#ec4899; color:white; border:none; border-radius:8px; font-size:0.75rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Nunito',sans-serif; flex-shrink:0; }
+        .cd-restore-btn { padding:6px 8px; background:#f3f4f6; color:#6b7280; border:1.5px solid #e5e7eb; border-radius:8px; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Nunito',sans-serif; flex-shrink:0; }
         .cd-restore-btn:hover { border-color:#F583BF; color:#F583BF; }
         .cd-upgrade-box { background:#fdf2f8; border:1.5px dashed #f9a8d4; border-radius:16px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; }
         .cd-upgrade-title { font-size:0.88rem; font-weight:700; color:#374151; margin:0 0 2px; }
