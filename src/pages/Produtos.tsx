@@ -413,59 +413,49 @@ export default function Produtos() {
 
                 <div className="prod-toggles">
                   <Toggle label="Disponível" value={form.disponivel} onChange={(v: boolean) => setForm(f => ({ ...f, disponivel: v }))} colorClass="active-green" />
-                  <Toggle label="Promoção" value={form.promocao} onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v }))} colorClass="active-pink" />
-                </div>
-
-                <div className="prod-toggles">
                   <Toggle label="Pronta entrega" value={form.pronta_entrega !== false} onChange={(v: boolean) => setForm(f => ({ ...f, pronta_entrega: v }))} colorClass="active-green" />
                 </div>
-
-                {form.promocao && (
-                  <div className="prod-field">
-                    <label>Preço Promocional</label>
-                    <div className="prod-preco-input">
-                      <span>R$</span>
-                      <input type="text" placeholder="0,00" value={form.preco_promocional ? formatPreco(form.preco_promocional) : ""} onChange={e => setForm(f => ({ ...f, preco_promocional: parsePreco(e.target.value) }))} />
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Kit Festa */}
               {form.forma_venda === "kit-festa" && (
                 <div className="prod-section">
                   <p className="prod-section-label">🎉 Itens do Kit</p>
-                  <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: "0" }}>Liste o que está incluso no kit</p>
+                  <p style={{ fontSize: "0.82rem", color: "#6b7280", margin: "0" }}>Adicione cada item que estará incluso no kit festa</p>
 
                   {(form.kit_itens || []).map((item, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", background: "#fdf2f8", borderRadius: "10px", marginBottom: "4px" }}>
+                    <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "#fdf2f8", borderRadius: "10px", marginBottom: "6px", border: "1px solid #fce7f3" }}>
                       <div>
-                        <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#374151" }}>{item.nome}</span>
-                        <span style={{ fontSize: "0.78rem", color: "#9ca3af", marginLeft: "8px" }}>× {item.quantidade}</span>
+                        <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "#374151" }}>{item.nome}</span>
+                        <span style={{ fontSize: "0.8rem", color: "#ec4899", marginLeft: "8px", fontWeight: 600 }}>× {item.quantidade}</span>
                       </div>
-                      <button onClick={() => setForm(f => ({ ...f, kit_itens: (f.kit_itens || []).filter((_, idx) => idx !== i) }))} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1rem", padding: 0 }}>×</button>
+                      <button onClick={() => setForm(f => ({ ...f, kit_itens: (f.kit_itens || []).filter((_, idx) => idx !== i) }))} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1.1rem", padding: 0 }}>×</button>
                     </div>
                   ))}
 
-                  <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
-                    <input type="text" placeholder="Ex: Bolo, Brigadeiros..." value={novoKitItem.nome} onChange={e => setNovoKitItem(k => ({ ...k, nome: e.target.value }))} style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
-                    <input type="text" placeholder="Qtd" value={novoKitItem.quantidade} onChange={e => setNovoKitItem(k => ({ ...k, quantidade: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                  <div className="prod-field" style={{ marginTop: "4px" }}>
+                    <label>Nome do item</label>
+                    <input type="text" placeholder="Ex: Bolo, Brigadeiros, Cupcakes..." value={novoKitItem.nome} onChange={e => setNovoKitItem(k => ({ ...k, nome: e.target.value }))} onKeyDown={e => e.key === "Enter" && (() => { if (!novoKitItem.nome.trim()) return; setForm(f => ({ ...f, kit_itens: [...(f.kit_itens || []), { nome: novoKitItem.nome.trim(), quantidade: novoKitItem.quantidade || "1" }] })); setNovoKitItem({ nome: "", quantidade: "" }); })()} />
+                  </div>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "flex-end" }}>
+                    <div className="prod-field" style={{ flex: 1 }}>
+                      <label>Quantidade</label>
+                      <input type="text" placeholder="Ex: 1 unidade, 30 pçs..." value={novoKitItem.quantidade} onChange={e => setNovoKitItem(k => ({ ...k, quantidade: e.target.value }))} />
+                    </div>
                     <button onClick={() => {
                       if (!novoKitItem.nome.trim()) return;
                       setForm(f => ({ ...f, kit_itens: [...(f.kit_itens || []), { nome: novoKitItem.nome.trim(), quantidade: novoKitItem.quantidade || "1" }] }));
                       setNovoKitItem({ nome: "", quantidade: "" });
-                    }} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
+                    }} style={{ padding: "0.65rem 1rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", marginBottom: "1px" }}>+ Adicionar</button>
                   </div>
 
-                  <div className="prod-row-2" style={{ marginTop: "8px" }}>
-                    <div className="prod-field">
-                      <label>Serve quantas pessoas</label>
-                      <input type="text" placeholder="Ex: 20 a 30 pessoas" value={form.kit_serve_pessoas || ""} onChange={e => setForm(f => ({ ...f, kit_serve_pessoas: e.target.value }))} />
-                    </div>
-                    <div className="prod-field">
-                      <label>Prazo de encomenda</label>
-                      <input type="text" placeholder="Ex: 5 dias antes" value={form.kit_prazo_encomenda || ""} onChange={e => setForm(f => ({ ...f, kit_prazo_encomenda: e.target.value }))} />
-                    </div>
+                  <div className="prod-field">
+                    <label>Serve quantas pessoas</label>
+                    <input type="text" placeholder="Ex: 20 a 30 pessoas" value={form.kit_serve_pessoas || ""} onChange={e => setForm(f => ({ ...f, kit_serve_pessoas: e.target.value }))} />
+                  </div>
+                  <div className="prod-field">
+                    <label>Prazo mínimo de encomenda</label>
+                    <input type="text" placeholder="Ex: 5 dias de antecedência" value={form.kit_prazo_encomenda || ""} onChange={e => setForm(f => ({ ...f, kit_prazo_encomenda: e.target.value }))} />
                   </div>
                 </div>
               )}
@@ -507,6 +497,21 @@ export default function Produtos() {
                       </div>
                     </div>
                   </>
+                )}
+              </div>
+
+              {/* Promoção — sempre por último */}
+              <div className="prod-section">
+                <p className="prod-section-label">🏷️ Promoção</p>
+                <Toggle label="Produto em promoção" value={form.promocao} onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v }))} colorClass="active-pink" />
+                {form.promocao && (
+                  <div className="prod-field">
+                    <label>Preço Promocional</label>
+                    <div className="prod-preco-input">
+                      <span>R$</span>
+                      <input type="text" placeholder="0,00" value={form.preco_promocional ? formatPreco(form.preco_promocional) : ""} onChange={e => setForm(f => ({ ...f, preco_promocional: parsePreco(e.target.value) }))} />
+                    </div>
+                  </div>
                 )}
               </div>
 
