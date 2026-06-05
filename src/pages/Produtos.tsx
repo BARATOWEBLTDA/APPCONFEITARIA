@@ -211,6 +211,28 @@ export default function Produtos() {
         </button>
       </div>
 
+      {/* Aviso de produtos sem categoria válida */}
+      {(() => {
+        const orfaos = produtos.filter(p => p.categoria && !categorias.includes(p.categoria));
+        if (orfaos.length === 0) return null;
+        return (
+          <div style={{ background: "#fffbeb", border: "1.5px solid #fcd34d", borderRadius: "14px", padding: "0.85rem 1rem", display: "flex", alignItems: "center", gap: "10px" }}>
+            <span style={{ fontSize: "1.2rem", flexShrink: 0 }}>⚠️</span>
+            <div style={{ flex: 1 }}>
+              <p style={{ fontSize: "0.85rem", fontWeight: 700, color: "#92400e", margin: "0 0 2px" }}>
+                {orfaos.length} produto{orfaos.length !== 1 ? "s" : ""} com categoria inexistente
+              </p>
+              <p style={{ fontSize: "0.75rem", color: "#b45309", margin: 0 }}>
+                Esses produtos aparecem apenas em "Todos" no cardápio. Edite-os e selecione uma categoria válida.
+              </p>
+            </div>
+            <button onClick={() => setFiltroCategoria("__orfaos__")} style={{ padding: "5px 12px", background: "#f59e0b", color: "white", border: "none", borderRadius: "8px", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+              Ver {orfaos.length}
+            </button>
+          </div>
+        );
+      })()}
+
       {todasCategorias.length > 0 && (
         <div className="prod-filtros">
           <button className={`prod-filtro-btn${filtroCategoria === "todas" ? " active" : ""}`} onClick={() => setFiltroCategoria("todas")}>Todos ({produtos.length})</button>
@@ -231,16 +253,22 @@ export default function Produtos() {
         </div>
       ) : (
         <div className="prod-grid">
-          {produtosFiltrados.map(p => (
-            <div key={p.id} className="prod-card">
+          {(filtroCategoria === "__orfaos__"
+            ? produtos.filter(p => p.categoria && !categorias.includes(p.categoria))
+            : produtosFiltrados
+          ).map(p => {
+            const catInvalida = p.categoria && !categorias.includes(p.categoria);
+            return (
+            <div key={p.id} className="prod-card" style={{ outline: catInvalida ? "2px solid #fcd34d" : "none" }}>
               <div className="prod-card-img" onClick={() => openEditar(p)}>
                 {p.imagem_url ? <img src={p.imagem_url.split(",")[0]} alt={p.nome} /> : <span style={{ fontSize: "2rem" }}>🎂</span>}
                 {!p.disponivel && <div className="prod-card-indisponivel">Indisponível</div>}
                 {p.promocao && <div className="prod-card-promo">Promoção</div>}
                 {p.pronta_entrega === false && <div className="prod-card-encomenda">Encomenda</div>}
+                {catInvalida && <div style={{ position: "absolute", top: "0.4rem", left: "0.4rem", background: "#f59e0b", color: "white", fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "6px" }}>⚠️ Sem categoria</div>}
               </div>
               <div className="prod-card-info">
-                <p className="prod-card-cat">{p.categoria}</p>
+                <p className="prod-card-cat" style={{ color: catInvalida ? "#f59e0b" : undefined }}>{catInvalida ? `⚠️ ${p.categoria}` : p.categoria}</p>
                 <p className="prod-card-nome">{p.nome}</p>
                 <p className="prod-card-preco">R$ {formatPreco(p.preco_normal)}</p>
               </div>
@@ -251,7 +279,8 @@ export default function Produtos() {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

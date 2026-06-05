@@ -7,6 +7,7 @@ export async function getCardapioBySlug(slug: string): Promise<{
   produtos: Produto[]
   isPro: boolean
   categoryImages: { [key: string]: string }
+  categoriasList: string[]
 }> {
   const { data: profile } = await supabase
     .from('profiles')
@@ -14,7 +15,7 @@ export async function getCardapioBySlug(slug: string): Promise<{
     .eq('id', slug)
     .single()
 
-  if (!profile) return { design: null, config: null, produtos: [], isPro: false, categoryImages: {} }
+  if (!profile) return { design: null, config: null, produtos: [], isPro: false, categoryImages: {}, categoriasList: [] }
 
   return fetchByUserId(profile.id, profile)
 }
@@ -22,12 +23,14 @@ export async function getCardapioBySlug(slug: string): Promise<{
 async function fetchByUserId(userId: string, profile: any) {
   const [{ data: produtos }, { data: categorias }] = await Promise.all([
     supabase.from('produtos').select('*').eq('user_id', userId).eq('disponivel', true).order('created_at', { ascending: false }),
-    supabase.from('categorias').select('nome, imagem_url').eq('user_id', userId)
+    supabase.from('categorias').select('nome, imagem_url').eq('user_id', userId).order('ordem').order('nome')
   ])
 
   const categoryImages: { [key: string]: string } = {}
+  const categoriasList: string[] = []
   if (categorias) {
     categorias.forEach((c: any) => {
+      categoriasList.push(c.nome)
       if (c.imagem_url) categoryImages[c.nome] = c.imagem_url
     })
   }
@@ -62,5 +65,5 @@ async function fetchByUserId(userId: string, profile: any) {
     horario: profile.horario || null,
   }
 
-  return { design, config, produtos: produtos || [], isPro, categoryImages }
+  return { design, config, produtos: produtos || [], isPro, categoryImages, categoriasList }
 }
