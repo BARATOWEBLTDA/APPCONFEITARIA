@@ -8,12 +8,13 @@ interface Props {
   onToggleFavorite: (id: string) => void
   backgroundColor: string
   borderColor: string
+  corBotao?: string
   selectedCategory: string | null
   searchTerm: string
   onSearchChange: (t: string) => void
 }
 
-export function DesktopProductList({ produtos, favorites, onToggleFavorite, backgroundColor, borderColor, selectedCategory, searchTerm, onSearchChange }: Props) {
+export function DesktopProductList({ produtos, favorites, onToggleFavorite, backgroundColor, borderColor, corBotao = '#ec4899', selectedCategory, searchTerm, onSearchChange }: Props) {
   const filtered = produtos.filter(p => {
     const s = p.nome.toLowerCase().includes(searchTerm.toLowerCase()) || p.descricao?.toLowerCase().includes(searchTerm.toLowerCase())
     const c = !selectedCategory || p.categoria === selectedCategory
@@ -34,7 +35,7 @@ export function DesktopProductList({ produtos, favorites, onToggleFavorite, back
         <div className="mb-10">
           <h3 className="text-2xl font-bold mb-6 flex items-center gap-3"><span>🔥</span> Promoções</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {promo.map(p => <DesktopProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={onToggleFavorite} backgroundColor={backgroundColor} borderColor={borderColor} />)}
+            {promo.map(p => <DesktopProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={onToggleFavorite} backgroundColor={backgroundColor} borderColor={borderColor} corBotao={corBotao} />)}
           </div>
         </div>
       )}
@@ -42,7 +43,7 @@ export function DesktopProductList({ produtos, favorites, onToggleFavorite, back
         <div className="mb-10">
           <h3 className="text-2xl font-bold mb-6">{selectedCategory || 'Todos os Produtos'}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {regular.map(p => <DesktopProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={onToggleFavorite} backgroundColor={backgroundColor} borderColor={borderColor} />)}
+            {regular.map(p => <DesktopProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={onToggleFavorite} backgroundColor={backgroundColor} borderColor={borderColor} corBotao={corBotao} />)}
           </div>
         </div>
       )}
