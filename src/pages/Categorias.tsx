@@ -229,7 +229,7 @@ export default function Categorias() {
               {/* Nome */}
               <div className="cat-section">
                 <p className="cat-section-label">✏️ Nome <span style={{ color: "#ef4444" }}>*</span></p>
-                <input type="text" placeholder="Ex: Bolos, Doces, Salgados..." value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} className="cat-input" autoFocus />
+                <input type="text" placeholder="Ex: Bolos, Doces, Salgados..." value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} className="cat-input" />
               </div>
 
             </div>
