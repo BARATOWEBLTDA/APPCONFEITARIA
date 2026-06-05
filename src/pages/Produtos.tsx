@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
+import { ImageCropper } from "@/components/ui/ImageCropper";
 
 type Tamanho = { label: string; preco: number };
 
@@ -82,6 +83,8 @@ export default function Produtos() {
   const [novaOpcao, setNovaOpcao] = useState<{ massa: string; recheio: string; cobertura: string }>({ massa: "", recheio: "", cobertura: "" });
   const [novoTamanho, setNovoTamanho] = useState({ label: "", preco: "" });
   const [novoKitItem, setNovoKitItem] = useState({ nome: "", quantidade: "" });
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [cropSlot, setCropSlot] = useState(0);
   const imgRef = useRef<HTMLInputElement>(null);
   const img2Ref = useRef<HTMLInputElement>(null);
   const img3Ref = useRef<HTMLInputElement>(null);
@@ -113,19 +116,27 @@ export default function Produtos() {
   const openEditar = (p: Produto) => { setForm({ ...EMPTY, ...p }); setModal(true); };
   const fecharModal = () => { setModal(false); setForm(EMPTY); };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, slot: number = 0) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: number = 0) => {
     const file = e.target.files?.[0];
-    if (!file || !userId) return;
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { setCropSrc(reader.result as string); setCropSlot(slot); };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleProductCropDone = async (blob: Blob) => {
+    if (!userId) return;
+    setCropSrc(null);
     setUploading(true);
-    const ext = file.name.split(".").pop();
-    const path = `produtos/${userId}-${Date.now()}-${slot}.${ext}`;
-    const { error } = await supabase.storage.from("products").upload(path, file, { upsert: true });
+    const path = `produtos/${userId}-${Date.now()}-${cropSlot}.jpg`;
+    const { error } = await supabase.storage.from("products").upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
-      const url = data.publicUrl;
+      const url = `${data.publicUrl}?t=${Date.now()}`;
       setForm(f => {
         const imgs = (f.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
-        imgs[slot] = url;
+        imgs[cropSlot] = url;
         return { ...f, imagem_url: imgs.join(",") };
       });
     }
@@ -222,6 +233,16 @@ export default function Produtos() {
   if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "40vh" }}><span className="prod-spinner" /></div>;
 
   return (
+    <>
+    {cropSrc && (
+      <ImageCropper
+        imageSrc={cropSrc}
+        cropShape="rect"
+        aspect={1}
+        onCancel={() => setCropSrc(null)}
+        onCropDone={handleProductCropDone}
+      />
+    )}
     <div className="prod-root">
       <div className="prod-header">
         <div>
@@ -750,5 +771,6 @@ export default function Produtos() {
         .prod-confirm-btns button { flex:1; padding:0.75rem; border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; background:var(--bg-subtle,#f3f4f6); color:var(--text-secondary,#374151); }
       `}</style>
     </div>
+    </>
   );
 }
