@@ -6,6 +6,7 @@ export async function getCardapioBySlug(slug: string): Promise<{
   config: Configuracoes | null
   produtos: Produto[]
   isPro: boolean
+  categoryImages: { [key: string]: string }
 }> {
   const { data: profile } = await supabase
     .from('profiles')
@@ -13,20 +14,24 @@ export async function getCardapioBySlug(slug: string): Promise<{
     .eq('id', slug)
     .single()
 
-  if (!profile) return { design: null, config: null, produtos: [], isPro: false }
+  if (!profile) return { design: null, config: null, produtos: [], isPro: false, categoryImages: {} }
 
   return fetchByUserId(profile.id, profile)
 }
 
 async function fetchByUserId(userId: string, profile: any) {
-  const { data: produtos } = await supabase
-    .from('produtos')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('disponivel', true)
-    .order('created_at', { ascending: false })
+  const [{ data: produtos }, { data: categorias }] = await Promise.all([
+    supabase.from('produtos').select('*').eq('user_id', userId).eq('disponivel', true).order('created_at', { ascending: false }),
+    supabase.from('categorias').select('nome, imagem_url').eq('user_id', userId)
+  ])
 
-  // Verifica se PRO está ativo (plano = 'pro' e não expirado)
+  const categoryImages: { [key: string]: string } = {}
+  if (categorias) {
+    categorias.forEach((c: any) => {
+      if (c.imagem_url) categoryImages[c.nome] = c.imagem_url
+    })
+  }
+
   const expira = profile.pro_expira_em ? new Date(profile.pro_expira_em) : null
   const isPro = profile.plano === 'pro' && (!expira || expira > new Date())
 
@@ -57,5 +62,5 @@ async function fetchByUserId(userId: string, profile: any) {
     horario: profile.horario || null,
   }
 
-  return { design, config, produtos: produtos || [], isPro }
+  return { design, config, produtos: produtos || [], isPro, categoryImages }
 }
