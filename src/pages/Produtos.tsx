@@ -322,17 +322,12 @@ export default function Produtos() {
                 </div>
                 <div className="prod-field">
                   <label>Categoria *</label>
-                  <select value={form.categoria} onChange={e => { if (e.target.value === "__nova__") setShowCatInput(true); else setForm(f => ({ ...f, categoria: e.target.value })); }}>
+                  <select value={form.categoria} onChange={e => setForm(f => ({ ...f, categoria: e.target.value }))}>
                     <option value="">Selecione...</option>
                     {todasCategorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                    <option value="__nova__">+ Criar nova categoria</option>
                   </select>
-                  {showCatInput && (
-                    <div className="prod-nova-cat">
-                      <input type="text" placeholder="Nome da categoria" value={novaCategoria} onChange={e => setNovaCategoria(e.target.value)} onKeyDown={e => e.key === "Enter" && handleAdicionarCategoria()} autoFocus />
-                      <button onClick={handleAdicionarCategoria}>Criar</button>
-                      <button onClick={() => setShowCatInput(false)} style={{ background: "#f3f4f6", color: "#6b7280" }}>✕</button>
-                    </div>
+                  {todasCategorias.length === 0 && (
+                    <p style={{ fontSize: "0.75rem", color: "#f59e0b", margin: "4px 0 0" }}>⚠️ Nenhuma categoria cadastrada. Acesse a aba <strong>Categorias</strong> para criar.</p>
                   )}
                 </div>
                 <div className="prod-field">

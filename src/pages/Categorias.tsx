@@ -147,26 +147,6 @@ export default function Categorias() {
         </div>
       )}
 
-      {/* Preview de como ficará no cardápio */}
-      {categorias.length > 0 && (
-        <div className="cat-preview-card">
-          <p className="cat-preview-title">👀 Preview no cardápio</p>
-          <div style={{ display: "flex", gap: "12px", overflowX: "auto", padding: "8px 0", scrollbarWidth: "none" }}>
-            {[{ nome: "Todos", imagem_url: "" }, ...categorias].map((cat, i) => (
-              <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px", flexShrink: 0 }}>
-                <div style={{ width: "56px", height: "56px", borderRadius: "50%", backgroundColor: i === 0 ? "#2E2E2E" : "#fe62a6", border: "3px solid #DBDFE4", outline: "3px solid white", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                  {cat.imagem_url
-                    ? <img src={cat.imagem_url} alt={cat.nome} style={{ width: "70%", height: "70%", objectFit: "contain" }} />
-                    : <span style={{ fontSize: "1.2rem" }}>🏷️</span>
-                  }
-                </div>
-                <span style={{ fontSize: "0.65rem", fontWeight: 600, color: "#374151", textAlign: "center", maxWidth: "60px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cat.nome}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Modal */}
       {modal && (
         <div className="cat-modal-overlay" onClick={fecharModal}>
