@@ -25,6 +25,7 @@ function CardapioContent() {
   const [config, setConfig] = useState<Configuracoes | null>(null)
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [isPro, setIsPro] = useState(false)
+  const [categoryImages, setCategoryImages] = useState<{[key:string]:string}>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
@@ -35,12 +36,13 @@ function CardapioContent() {
   useEffect(() => {
     if (!slug) return
     setLoading(true)
-    getCardapioBySlug(slug.toLowerCase()).then(({ design, config, produtos, isPro }) => {
+    getCardapioBySlug(slug.toLowerCase()).then(({ design, config, produtos, isPro, categoryImages }) => {
       if (!design) { setError('Cardápio não encontrado'); setLoading(false); return }
       setDesign(design)
       setConfig(config)
       setProdutos(produtos)
       setIsPro(isPro || false)
+      setCategoryImages(categoryImages || {})
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
       setLoading(false)
@@ -121,6 +123,7 @@ function CardapioContent() {
           selectedCategory={selectedCategory}
           onCategorySelect={setSelectedCategory}
           categoryIcons={design.category_icons || {}}
+          categoryImages={categoryImages}
         />
 
         {filteredProdutos.length > 0 ? (
