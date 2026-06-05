@@ -465,33 +465,32 @@ export default function Produtos() {
                 {form.permite_personalizacao && (
                   <>
                     {[
-                      { label: "Tipos de Massa", campo: "massas_disponiveis" as const, key: "massa" as const, placeholder: "Ex: Chocolate, Baunilha, Red Velvet..." },
-                      { label: "Sabores / Recheios", campo: "recheios_disponiveis" as const, key: "recheio" as const, placeholder: "Ex: Morango, Brigadeiro, Limão..." },
-                      { label: "Coberturas", campo: "coberturas_disponiveis" as const, key: "cobertura" as const, placeholder: "Ex: Ganache, Chantilly, Pasta Americana..." },
+                      { label: "Tipos de Massa", campo: "massas_disponiveis" as const, key: "massa" as const, placeholder: "Ex: Chocolate, Baunilha..." },
+                      { label: "Sabores / Recheios", campo: "recheios_disponiveis" as const, key: "recheio" as const, placeholder: "Ex: Morango, Brigadeiro..." },
+                      { label: "Coberturas", campo: "coberturas_disponiveis" as const, key: "cobertura" as const, placeholder: "Ex: Ganache, Chantilly..." },
                     ].map(({ label, campo, key, placeholder }) => (
                       <div key={campo} style={{ background: "#fafafa", borderRadius: "12px", padding: "10px 12px", border: "1px solid #f3f4f6" }}>
                         <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "#374151", margin: "0 0 8px" }}>{label}</p>
-                        {(form[campo] || []).length > 0 && (
-                          <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginBottom: "8px" }}>
-                            {(form[campo] || []).map((item: string, i: number) => (
-                              <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: "white", border: "1.5px solid #F583BF", color: "#be185d", borderRadius: "50px", fontSize: "0.8rem", fontWeight: 600 }}>
-                                {item}
-                                <button onClick={() => removeOpcao(campo, i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#be185d", padding: 0, lineHeight: 1, fontSize: "0.9rem", display: "flex" }}>×</button>
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        <div style={{ display: "flex", gap: "6px" }}>
+                        {/* Campo tipo tag — chips + input juntos */}
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", padding: "8px 10px", border: "1.5px solid #e5e7eb", borderRadius: "10px", background: "white", cursor: "text" }}
+                          onClick={() => (document.getElementById(`input-${key}`) as HTMLInputElement)?.focus()}>
+                          {(form[campo] || []).map((item: string, i: number) => (
+                            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "3px", padding: "2px 8px 2px 10px", background: "#fce7f3", border: "1px solid #f9a8d4", color: "#be185d", borderRadius: "50px", fontSize: "0.78rem", fontWeight: 600, whiteSpace: "nowrap" }}>
+                              {item}
+                              <button onClick={e => { e.stopPropagation(); removeOpcao(campo, i); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#be185d", padding: "0 2px", lineHeight: 1, fontSize: "0.85rem" }}>×</button>
+                            </span>
+                          ))}
                           <input
+                            id={`input-${key}`}
                             type="text"
-                            placeholder={placeholder}
+                            placeholder={(form[campo] || []).length === 0 ? placeholder : "Adicionar..."}
                             value={novaOpcao[key]}
                             onChange={e => setNovaOpcao(o => ({ ...o, [key]: e.target.value }))}
-                            onKeyDown={e => e.key === "Enter" && addOpcao(campo, key)}
-                            style={{ flex: 1, padding: "0.45rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "8px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none", background: "white" }}
+                            onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addOpcao(campo, key); } }}
+                            style={{ border: "none", outline: "none", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", flex: 1, minWidth: "100px", background: "transparent", padding: "2px 0" }}
                           />
-                          <button onClick={() => addOpcao(campo, key)} style={{ padding: "0.45rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
                         </div>
+                        <p style={{ fontSize: "0.68rem", color: "#9ca3af", margin: "4px 0 0" }}>Pressione Enter ou vírgula para adicionar</p>
                       </div>
                     ))}
                   </>
