@@ -9,9 +9,10 @@ interface Props {
   onToggleFavorite: (id: string) => void
   backgroundColor: string
   borderColor?: string
+  corBotao?: string
 }
 
-export function DesktopProductCard({ product, isFavorite, onToggleFavorite, backgroundColor, borderColor = '#ec4899' }: Props) {
+export function DesktopProductCard({ product, isFavorite, onToggleFavorite, backgroundColor, borderColor = '#ec4899', corBotao = '#ec4899' }: Props) {
   const [showModal, setShowModal] = useState(false)
   const firstImage = product.imagem_url?.split(',')[0]?.trim() || null
   const formatSale = (s: string) => {
@@ -41,12 +42,12 @@ export function DesktopProductCard({ product, isFavorite, onToggleFavorite, back
               ) : (
                 <div className="flex items-center gap-2 mb-4"><span className="text-2xl font-bold text-green-600">R$ {product.preco_normal.toFixed(2)}</span><span className="text-sm px-3 py-1 rounded-md" style={{ backgroundColor: '#6A0122', color: 'white' }}>{formatSale(product.forma_venda)}</span></div>
               )}
-              <button onClick={() => setShowModal(true)} className="w-full py-3 px-4 rounded-xl text-white text-base font-semibold hover:scale-105 shadow-lg transition-all" style={{ backgroundColor: '#FF4F97' }}>Adicionar ao carrinho</button>
+              <button onClick={() => setShowModal(true)} className="w-full py-3 px-4 rounded-xl text-white text-base font-semibold hover:scale-105 shadow-lg transition-all" style={{ backgroundColor: corBotao }}>Adicionar ao carrinho</button>
             </div>
           </div>
         </div>
       </div>
-      <ProductModal isOpen={showModal} onClose={() => setShowModal(false)} product={product} />
+      <ProductModal isOpen={showModal} onClose={() => setShowModal(false)} product={product} corBotao={corBotao} />
     </>
   )
 }
