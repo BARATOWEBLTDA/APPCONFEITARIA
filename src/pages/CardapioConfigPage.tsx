@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { ImageCropper } from "@/components/ui/ImageCropper";
 import { supabase } from "@/lib/supabase";
 
 const SectionLabel = ({ children }: any) => <p className="ccc-section-label">{children}</p>;
@@ -10,34 +11,6 @@ const Field = ({ icon, placeholder, value, onChange, type = "text" }: any) => (
   </div>
 );
 
-const MoneyField = ({ icon, placeholder, value, onChange }: any) => {
-  const formatMoney = (raw: string) => {
-    const digits = raw.replace(/\D/g, "");
-    if (!digits) return "";
-    const num = parseInt(digits) / 100;
-    return num.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  };
-  const parseMoney = (formatted: string) => {
-    const digits = formatted.replace(/\D/g, "");
-    if (!digits) return "";
-    return (parseInt(digits) / 100).toString();
-  };
-  const displayValue = value ? formatMoney((parseFloat(value) * 100).toFixed(0)) : "";
-  return (
-    <div className="ccc-field">
-      <span className="ccc-field-icon">{icon}</span>
-      {displayValue && <span style={{ fontSize: "0.9rem", color: "#6b7280", flexShrink: 0, marginRight: "2px" }}>R$</span>}
-      <input
-        className="ccc-field-input"
-        placeholder={placeholder}
-        value={displayValue}
-        onChange={e => onChange(parseMoney(e.target.value))}
-        inputMode="numeric"
-      />
-    </div>
-  );
-};
-
 const DIAS = ["Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"];
 
 export default function CardapioConfigPage() {
@@ -47,6 +20,7 @@ export default function CardapioConfigPage() {
   const [success, setSuccess] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [buscandoCep, setBuscandoCep] = useState(false);
   const [cepPreenchido, setCepPreenchido] = useState(false);
   const [modalHorario, setModalHorario] = useState(false);
@@ -62,7 +36,7 @@ export default function CardapioConfigPage() {
 
   const [form, setForm] = useState({
     nome_loja: "", telefone: "", foto_url: "", descricao_loja: "",
-    hide_stars: false, avaliacao_media: 5.0, ocultar_categorias: false,
+    hide_stars: false, avaliacao_media: 5.0,
     cep: "", rua: "", numero: "", bairro: "", cidade: "", estado: "",
     mostrar_localizacao: false, mostrar_apenas_cidade: false,
     faz_entrega: false, taxa_entrega: "", pedido_minimo: "",
@@ -94,7 +68,6 @@ export default function CardapioConfigPage() {
         horario_entrega: form.horario_entrega, area_entrega: form.area_entrega,
         observacoes_entrega: form.observacoes_entrega,
         horario: JSON.stringify(horario),
-        ocultar_categorias: form.ocultar_categorias,
       }).eq("id", userId);
       setAutoSaved(true);
       setTimeout(() => setAutoSaved(false), 2000);
@@ -116,7 +89,7 @@ export default function CardapioConfigPage() {
       if (!user) return;
       setUserId(user.id);
       const { data } = await supabase.from("profiles")
-        .select("nome_loja, telefone, foto_url, descricao_loja, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega, horario, ocultar_categorias")
+        .select("nome_loja, telefone, foto_url, descricao_loja, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega, horario")
         .eq("id", user.id).single();
       if (data) {
         let addr: any = {};
@@ -124,7 +97,7 @@ export default function CardapioConfigPage() {
         setForm({
           nome_loja: data.nome_loja || "", telefone: formatPhone(data.telefone || ""),
           foto_url: data.foto_url || "", descricao_loja: data.descricao_loja || "",
-          hide_stars: data.hide_stars || false, avaliacao_media: data.avaliacao_media || 5.0, ocultar_categorias: data.ocultar_categorias || false,
+          hide_stars: data.hide_stars || false, avaliacao_media: data.avaliacao_media || 5.0,
           cep: addr.cep || "", rua: addr.rua || "", numero: addr.numero || "",
           bairro: addr.bairro || "", cidade: addr.cidade || "", estado: addr.estado || "",
           mostrar_localizacao: data.mostrar_localizacao || false,
@@ -161,14 +134,21 @@ export default function CardapioConfigPage() {
     setBuscandoCep(false);
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !userId) return;
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleCropDone = async (blob: Blob) => {
+    if (!userId) return;
+    setCropSrc(null);
     setUploading(true);
-    setPreview(URL.createObjectURL(file));
-    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-    const path = `avatars/${userId}.${ext}`;
-    const { error } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
+    const path = `avatars/${userId}-${Date.now()}.jpg`;
+    const { error } = await supabase.storage.from("profiles").upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
     if (!error) {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
@@ -213,7 +193,6 @@ export default function CardapioConfigPage() {
       horario_entrega: form.horario_entrega, area_entrega: form.area_entrega,
       observacoes_entrega: form.observacoes_entrega,
       horario: JSON.stringify(horario),
-        ocultar_categorias: form.ocultar_categorias,
     }).eq("id", userId);
     setSaving(false);
     setSuccess(true);
@@ -227,6 +206,16 @@ export default function CardapioConfigPage() {
   );
 
   return (
+    <>
+    {cropSrc && (
+      <ImageCropper
+        imageSrc={cropSrc}
+        cropShape="round"
+        aspect={1}
+        onCancel={() => setCropSrc(null)}
+        onCropDone={handleCropDone}
+      />
+    )}
     <div className="ccc-root">
 
       <div className="ccc-page-header" style={{paddingTop:"1.5rem"}}>
@@ -321,9 +310,9 @@ export default function CardapioConfigPage() {
         {form.faz_entrega && (
           <>
             <div className="ccc-divider" />
-            <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>} placeholder="Taxa de entrega" value={form.taxa_entrega} onChange={(v: string) => setForm({...form, taxa_entrega: v})} />
-            <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>} placeholder="Pedido mínimo" value={form.pedido_minimo} onChange={(v: string) => setForm({...form, pedido_minimo: v})} />
-            <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/></svg>} placeholder="Entrega grátis acima de" value={form.entrega_gratis_acima} onChange={(v: string) => setForm({...form, entrega_gratis_acima: v})} />
+            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>} placeholder="Taxa de entrega" value={form.taxa_entrega} onChange={(e: any) => setForm({...form, taxa_entrega: e.target.value.replace(/[^0-9.,]/g,"")})} />
+            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>} placeholder="Pedido mínimo" value={form.pedido_minimo} onChange={(e: any) => setForm({...form, pedido_minimo: e.target.value.replace(/[^0-9.,]/g,"")})} />
+            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/></svg>} placeholder="Entrega grátis acima de" value={form.entrega_gratis_acima} onChange={(e: any) => setForm({...form, entrega_gratis_acima: e.target.value.replace(/[^0-9.,]/g,"")})} />
             <button className="ccc-horario-btn" onClick={() => { if (form.horario_entrega) { const [ini,fim] = form.horario_entrega.split(" às "); setHorarioTemp({inicio:ini||"08:00",fim:fim||"18:00"}); } setModalHorario(true); }}>
               <span className="ccc-field-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
               <span style={{flex:1,textAlign:"left",color:form.horario_entrega?"var(--text-primary,#1f2937)":"#9ca3af",fontSize:"0.9rem"}}>{form.horario_entrega || "Horário de entregas"}</span>
@@ -376,22 +365,7 @@ export default function CardapioConfigPage() {
         )}
       </div>
 
-      {/* Card 5 — Ocultar Categorias */}
-      <div className="ccc-card">
-        <SectionLabel>Categorias no cardápio</SectionLabel>
-        <div className="ccc-toggle-row">
-          <div>
-            <p className="ccc-toggle-label">Ocultar categorias</p>
-            <p className="ccc-toggle-sub">Esconde as bolinhas de categoria no cardápio público</p>
-          </div>
-          <label className="ccc-toggle">
-            <input type="checkbox" checked={form.ocultar_categorias} onChange={e => setForm({...form, ocultar_categorias: e.target.checked})} />
-            <span className="ccc-toggle-slider" />
-          </label>
-        </div>
-      </div>
-
-      {/* Card 6 — Avaliações */}
+      {/* Card 5 — Avaliações */}
       <div className="ccc-card">
         <SectionLabel>Avaliações</SectionLabel>
         <div className="ccc-toggle-row">
@@ -518,5 +492,6 @@ export default function CardapioConfigPage() {
         .ccc-spinner-xs { width:14px; height:14px; border:2px solid rgba(255,255,255,0.35); border-top-color:white; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
       `}</style>
     </div>
+    </>
   );
 }
