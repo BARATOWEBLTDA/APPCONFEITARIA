@@ -67,7 +67,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   const dec = () => setQuantity(q => Math.max(q - step, min))
 
   const basePrice = product.promocao && product.preco_promocional ? product.preco_promocional : product.preco_normal
-  const unitPrice = selectedTamanho ? selectedTamanho.preco : basePrice
+  const descPct = (product as any).tipo_promocao === 'percentual' && product.promocao ? ((product as any).desconto_percentual || 0) / 100 : 0
+  const applyDiscount = (price: number) => descPct > 0 ? parseFloat((price * (1 - descPct)).toFixed(2)) : price
+  const unitPrice = selectedTamanho ? applyDiscount(selectedTamanho.preco) : basePrice
   const adicionais = ((product as any).tem_vela && selectedVela ? ((product as any).valor_vela || 0) : 0)
     + ((product as any).tem_topo && selectedTopo ? ((product as any).valor_topo || 0) : 0)
     + ((product as any).tem_papel_arroz && selectedPapelArroz ? ((product as any).valor_papel_arroz || 0) : 0)
@@ -251,7 +253,10 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                   }}>
                     <span style={{ fontSize: '14px', fontWeight: 600, color: '#374151' }}>{t.label}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#22c55e' }}>{formatCurrency(t.preco)}</span>
+                      <div style={{ textAlign: 'right' }}>
+                        {descPct > 0 && <span style={{ fontSize: '12px', color: '#9ca3af', textDecoration: 'line-through', display: 'block' }}>{formatCurrency(t.preco)}</span>}
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#22c55e' }}>{formatCurrency(applyDiscount(t.preco))}</span>
+                      </div>
                       <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: `2px solid ${selectedTamanho?.label === t.label ? '#ec4899' : '#d1d5db'}`, background: selectedTamanho?.label === t.label ? '#ec4899' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {selectedTamanho?.label === t.label && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'white' }} />}
                       </div>

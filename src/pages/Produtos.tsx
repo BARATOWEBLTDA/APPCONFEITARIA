@@ -38,6 +38,8 @@ type Produto = {
   tem_outro?: boolean;
   titulo_outro?: string;
   valor_outro?: number;
+  tipo_promocao?: 'fixo' | 'percentual';
+  desconto_percentual?: number;
 };
 
 const FORMAS_VENDA = [
@@ -65,6 +67,7 @@ const EMPTY: Produto = {
   tem_topo: false, valor_topo: 0,
   tem_papel_arroz: false, valor_papel_arroz: 0,
   tem_outro: false, titulo_outro: "", valor_outro: 0,
+  tipo_promocao: 'fixo' as const, desconto_percentual: 0,
 };
 
 export default function Produtos() {
@@ -653,14 +656,73 @@ export default function Produtos() {
               <div className="prod-section">
                 <p className="prod-section-label">🏷️ Promoção</p>
                 <Toggle label="Produto em promoção" value={form.promocao} onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v }))} colorClass="active-pink" />
+
                 {form.promocao && (
-                  <div className="prod-field">
-                    <label>Preço Promocional</label>
-                    <div className="prod-preco-input">
-                      <span>R$</span>
-                      <input type="text" placeholder="0,00" value={form.preco_promocional ? formatPreco(form.preco_promocional) : ""} onChange={e => setForm(f => ({ ...f, preco_promocional: parsePreco(e.target.value) }))} />
+                  <>
+                    {/* Tipo de promoção */}
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button
+                        onClick={() => setForm(f => ({ ...f, tipo_promocao: 'fixo' }))}
+                        style={{ flex: 1, padding: "8px", borderRadius: "10px", border: `2px solid ${form.tipo_promocao !== 'percentual' ? '#ec4899' : '#e5e7eb'}`, background: form.tipo_promocao !== 'percentual' ? '#fdf2f8' : 'white', fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 700, color: form.tipo_promocao !== 'percentual' ? '#ec4899' : '#6b7280', cursor: "pointer" }}
+                      >
+                        💰 Preço fixo
+                      </button>
+                      <button
+                        onClick={() => setForm(f => ({ ...f, tipo_promocao: 'percentual' }))}
+                        style={{ flex: 1, padding: "8px", borderRadius: "10px", border: `2px solid ${form.tipo_promocao === 'percentual' ? '#ec4899' : '#e5e7eb'}`, background: form.tipo_promocao === 'percentual' ? '#fdf2f8' : 'white', fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 700, color: form.tipo_promocao === 'percentual' ? '#ec4899' : '#6b7280', cursor: "pointer" }}
+                      >
+                        % Desconto
+                      </button>
                     </div>
-                  </div>
+
+                    {form.tipo_promocao === 'percentual' ? (
+                      <div className="prod-field">
+                        <label>Percentual de desconto</label>
+                        <div className="prod-preco-input">
+                          <span style={{ color: "#ec4899" }}>%</span>
+                          <input
+                            type="text"
+                            placeholder="Ex: 10, 20, 50..."
+                            value={form.desconto_percentual || ""}
+                            onChange={e => {
+                              const v = e.target.value.replace(/[^0-9]/g, "");
+                              const num = Math.min(100, parseInt(v) || 0);
+                              setForm(f => ({ ...f, desconto_percentual: num, preco_promocional: num > 0 ? parseFloat((f.preco_normal * (1 - num / 100)).toFixed(2)) : 0 }));
+                            }}
+                          />
+                        </div>
+                        {form.desconto_percentual > 0 && form.preco_normal > 0 && (
+                          <div style={{ marginTop: "6px", padding: "8px 12px", background: "#dcfce7", borderRadius: "8px" }}>
+                            <p style={{ fontSize: "0.78rem", color: "#15803d", fontWeight: 600, margin: 0 }}>
+                              Preço base: R$ {formatPreco(form.preco_normal)} → R$ {formatPreco(form.preco_normal * (1 - (form.desconto_percentual || 0) / 100))}
+                            </p>
+                            {(form.tamanhos_disponiveis || []).length > 0 && (
+                              <div style={{ marginTop: "4px", display: "flex", flexDirection: "column", gap: "2px" }}>
+                                {(form.tamanhos_disponiveis || []).map((t, i) => (
+                                  <p key={i} style={{ fontSize: "0.72rem", color: "#15803d", margin: 0 }}>
+                                    {t.label}: R$ {formatPreco(t.preco)} → R$ {formatPreco(t.preco * (1 - (form.desconto_percentual || 0) / 100))}
+                                  </p>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="prod-field">
+                        <label>Preço promocional</label>
+                        <div className="prod-preco-input">
+                          <span>R$</span>
+                          <input type="text" placeholder="0,00" value={form.preco_promocional ? formatPreco(form.preco_promocional) : ""} onChange={e => setForm(f => ({ ...f, preco_promocional: parsePreco(e.target.value) }))} />
+                        </div>
+                        {form.preco_normal > 0 && form.preco_promocional > 0 && (
+                          <p style={{ fontSize: "0.75rem", color: "#ec4899", fontWeight: 600, margin: "4px 0 0" }}>
+                            Desconto de {Math.round((1 - form.preco_promocional / form.preco_normal) * 100)}%
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
