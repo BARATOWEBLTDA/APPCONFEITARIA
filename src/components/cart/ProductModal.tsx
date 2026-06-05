@@ -200,7 +200,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           </div>
 
           {/* Kit Festa */}
-          {product.forma_venda === 'kit-caixa' && (product as any).kit_itens?.length > 0 && (
+          {product.forma_venda === 'kit-festa' && (product as any).kit_itens?.length > 0 && (
             <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                 <span style={{ fontSize: '14px', fontWeight: 700, color: '#1f2937' }}>🎉 O que está incluso</span>
