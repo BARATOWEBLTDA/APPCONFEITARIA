@@ -26,6 +26,7 @@ function CardapioContent() {
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [isPro, setIsPro] = useState(false)
   const [categoryImages, setCategoryImages] = useState<{[key:string]:string}>({})
+  const [categoriasList, setCategoriasList] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
@@ -36,13 +37,14 @@ function CardapioContent() {
   useEffect(() => {
     if (!slug) return
     setLoading(true)
-    getCardapioBySlug(slug.toLowerCase()).then(({ design, config, produtos, isPro, categoryImages }) => {
+    getCardapioBySlug(slug.toLowerCase()).then(({ design, config, produtos, isPro, categoryImages, categoriasList }) => {
       if (!design) { setError('Cardápio não encontrado'); setLoading(false); return }
       setDesign(design)
       setConfig(config)
       setProdutos(produtos)
       setIsPro(isPro || false)
       setCategoryImages(categoryImages || {})
+      setCategoriasList(categoriasList || [])
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
       setLoading(false)
@@ -53,8 +55,7 @@ function CardapioContent() {
 
   const getCategories = () => {
     const cats = [{ name: 'Todos', icon: '/icons/TODOS.png' }]
-    const unique = Array.from(new Set(produtos.map(p => p.categoria).filter(Boolean))).sort()
-    unique.forEach(c => cats.push({ name: c, icon: '/icons/1.png' }))
+    categoriasList.forEach(c => cats.push({ name: c, icon: '/icons/1.png' }))
     return cats
   }
 
