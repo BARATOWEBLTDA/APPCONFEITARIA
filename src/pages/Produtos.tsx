@@ -406,22 +406,69 @@ export default function Produtos() {
                 {/* Tamanhos personalizados — ocultar no Kit Festa */}
                 {form.forma_venda !== "kit-festa" && (
                   <div className="prod-field">
-                    <label>Tamanhos / Pesos disponíveis <span style={{ color: "#9ca3af", fontWeight: 400 }}>(opcional)</span></label>
-                    <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: "0 0 6px" }}>Ex: 500g, 1kg, 2kg, Pequeno, Grande...</p>
-                    {(form.tamanhos_disponiveis || []).map((t, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "#fdf2f8", borderRadius: "8px", marginBottom: "4px" }}>
-                        <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#374151" }}>{t.label}</span>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <span style={{ fontSize: "0.82rem", color: "#22c55e", fontWeight: 700 }}>R$ {t.preco.toFixed(2).replace(".", ",")}</span>
-                          <button onClick={() => removeTamanho(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1rem", padding: 0 }}>×</button>
+                    {form.forma_venda === "kg" ? (
+                      <>
+                        <label>Opções de peso disponíveis <span style={{ color: "#9ca3af", fontWeight: 400 }}>(opcional)</span></label>
+                        <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: "0 0 6px" }}>Digite o peso em kg. Ex: 0.5 → 500g, 1 → 1kg, 1.5 → 1,5kg</p>
+                        {(form.tamanhos_disponiveis || []).map((t, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "#fdf2f8", borderRadius: "8px", marginBottom: "4px" }}>
+                            <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "#ec4899" }}>{t.label}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <span style={{ fontSize: "0.82rem", color: "#22c55e", fontWeight: 700 }}>R$ {t.preco.toFixed(2).replace(".", ",")}</span>
+                              <button onClick={() => removeTamanho(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1rem", padding: 0 }}>×</button>
+                            </div>
+                          </div>
+                        ))}
+                        <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+                          <input
+                            type="text"
+                            placeholder="Ex: 0.5, 1, 1.5, 2"
+                            value={novoTamanho.label}
+                            onChange={e => {
+                              const v = e.target.value.replace(/[^0-9.]/g, "");
+                              setNovoTamanho(t => ({ ...t, label: v }));
+                            }}
+                            onBlur={e => {
+                              const num = parseFloat(e.target.value);
+                              if (!isNaN(num)) {
+                                const fmt = num < 1 ? `${Math.round(num * 1000)}g` : num === Math.floor(num) ? `${num}kg` : `${num.toString().replace(".", ",")}kg`;
+                                setNovoTamanho(t => ({ ...t, label: fmt }));
+                              }
+                            }}
+                            style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }}
+                          />
+                          <input type="text" placeholder="Preço" value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                          <button onClick={() => {
+                            const num = parseFloat(novoTamanho.label.replace(",", "."));
+                            if (isNaN(num)) return addTamanho();
+                            const fmt = num < 1 ? `${Math.round(num * 1000)}g` : num === Math.floor(num) ? `${num}kg` : `${num.toString().replace(".", ",")}kg`;
+                            const preco = parseFloat(novoTamanho.preco.replace(",", "."));
+                            if (isNaN(preco)) return;
+                            setForm(f => ({ ...f, tamanhos_disponiveis: [...(f.tamanhos_disponiveis || []), { label: fmt, preco }] }));
+                            setNovoTamanho({ label: "", preco: "" });
+                          }} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
                         </div>
-                      </div>
-                    ))}
-                    <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
-                      <input type="text" placeholder="Ex: 1kg" value={novoTamanho.label} onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))} style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
-                      <input type="text" placeholder="Preço" value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
-                      <button onClick={addTamanho} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
-                    </div>
+                      </>
+                    ) : (
+                      <>
+                        <label>Tamanhos / Pesos disponíveis <span style={{ color: "#9ca3af", fontWeight: 400 }}>(opcional)</span></label>
+                        <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: "0 0 6px" }}>Ex: Pequeno, Médio, Grande, P, M, G...</p>
+                        {(form.tamanhos_disponiveis || []).map((t, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "#fdf2f8", borderRadius: "8px", marginBottom: "4px" }}>
+                            <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#374151" }}>{t.label}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <span style={{ fontSize: "0.82rem", color: "#22c55e", fontWeight: 700 }}>R$ {t.preco.toFixed(2).replace(".", ",")}</span>
+                              <button onClick={() => removeTamanho(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1rem", padding: 0 }}>×</button>
+                            </div>
+                          </div>
+                        ))}
+                        <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+                          <input type="text" placeholder="Ex: Pequeno, P, 500g..." value={novoTamanho.label} onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))} style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                          <input type="text" placeholder="Preço" value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                          <button onClick={addTamanho} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
