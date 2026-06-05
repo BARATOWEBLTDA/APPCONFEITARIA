@@ -122,7 +122,6 @@ export default function Categorias() {
           <span style={{ fontSize: "3rem" }}>🏷️</span>
           <p className="cat-empty-title">Nenhuma categoria ainda</p>
           <p className="cat-empty-sub">Crie categorias para organizar seus produtos no cardápio</p>
-          <button className="cat-btn-novo" onClick={openNova}>+ Criar categoria</button>
         </div>
       ) : (
         <div className="cat-list">
