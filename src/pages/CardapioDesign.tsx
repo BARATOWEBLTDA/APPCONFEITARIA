@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { HexColorPicker } from "react-colorful";
+import { ImageCropper } from "@/components/ui/ImageCropper";
 
 const SectionLabel = ({ children }: any) => <p className="cd-section-label">{children}</p>;
 
@@ -15,6 +16,7 @@ export default function CardapioDesign() {
   const [banner3Url, setBanner3Url] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
   const { isPro } = usePlano();
 
   // Cores
@@ -65,11 +67,27 @@ export default function CardapioDesign() {
 
   const showSuccess = () => { setSuccess(true); setTimeout(() => setSuccess(false), 2000); };
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file || !userId) return;
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleLogoCropDone = async (blob: Blob) => {
+    if (!userId) return;
+    setCropSrc(null);
     setUploading("logo");
-    const url = await uploadImage(file, `logos/${userId}`);
-    if (url) { setLogoUrl(url); await supabase.from("profiles").update({ logo_url: url }).eq("id", userId); showSuccess(); }
+    const path = `logos/${userId}-${Date.now()}.jpg`;
+    const { error } = await supabase.storage.from("products").upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
+    if (!error) {
+      const { data } = supabase.storage.from("products").getPublicUrl(path);
+      const url = `${data.publicUrl}?t=${Date.now()}`;
+      setLogoUrl(url);
+      await supabase.from("profiles").update({ logo_url: url }).eq("id", userId);
+      showSuccess();
+    }
     setUploading(null);
   };
 
@@ -118,6 +136,16 @@ export default function CardapioDesign() {
   );
 
   return (
+    <>
+    {cropSrc && (
+      <ImageCropper
+        imageSrc={cropSrc}
+        cropShape="round"
+        aspect={1}
+        onCancel={() => setCropSrc(null)}
+        onCropDone={handleLogoCropDone}
+      />
+    )}
     <div className="cd-root">
       <div className="cd-page-header">
         <h1 className="cd-page-title">Design do Cardápio</h1>
@@ -383,5 +411,6 @@ export default function CardapioDesign() {
         .cd-spinner-sm { width:16px; height:16px; border:2px solid rgba(245,131,191,0.3); border-top-color:#F583BF; border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
       `}</style>
     </div>
+    </>
   );
 }
