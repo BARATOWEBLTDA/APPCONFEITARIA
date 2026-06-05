@@ -31,17 +31,20 @@ export function ProductModal({ isOpen, onClose, product }: Props) {
     }
   }, [product])
 
+  // Scroll automático entre imagens
+  useEffect(() => {
+    if (images.length <= 1) return
+    const timer = setInterval(() => {
+      setImgIndex(i => (i + 1) % images.length)
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [images.length, isOpen])
+
   // Bloquear scroll do body quando modal aberto
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
+    document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
-
-  if (!isOpen || !product) return null
 
   const isKg = product.forma_venda === 'kg'
   const step = isKg ? 0.5 : 1
@@ -111,24 +114,36 @@ export function ProductModal({ isOpen, onClose, product }: Props) {
         animation: 'popIn 0.25s ease',
       }}>
 
-        {/* Imagem */}
+        {/* Imagem com carrossel */}
         <div style={{ position: 'relative', flexShrink: 0 }}>
-          <div style={{ width: '100%', height: '140px', background: '#fdf2f8', overflow: 'hidden', borderRadius: '24px 24px 0 0' }}>
-            {firstImage
-              ? <img src={firstImage} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '64px' }}>🧁</div>
-            }
+          <div style={{ width: '100%', height: '260px', background: '#fdf2f8', overflow: 'hidden', borderRadius: '24px 24px 0 0', position: 'relative' }}>
+            {/* Slides */}
+            <div style={{ display: 'flex', height: '100%', transition: 'transform 0.4s ease', transform: `translateX(-${imgIndex * 100}%)` }}>
+              {images.length > 0 ? images.map((img, i) => (
+                <img key={i} src={img} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover', flexShrink: 0 }} />
+              )) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '64px', flexShrink: 0 }}>🧁</div>
+              )}
+            </div>
+
+            {/* Setas de navegação se tiver mais de 1 foto */}
+            {images.length > 1 && imgIndex > 0 && (
+              <button onClick={() => setImgIndex(i => i - 1)} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+            )}
+            {images.length > 1 && imgIndex < images.length - 1 && (
+              <button onClick={() => setImgIndex(i => i + 1)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            )}
           </div>
 
-          {/* Miniaturas se tiver mais de 1 foto */}
+          {/* Pontos indicadores */}
           {images.length > 1 && (
-            <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px' }}>
+            <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px' }}>
               {images.map((_, i) => (
-                <button key={i} onClick={() => setImgIndex(i)} style={{
-                  width: i === imgIndex ? '20px' : '8px', height: '8px', borderRadius: '4px',
-                  background: i === imgIndex ? 'white' : 'rgba(255,255,255,0.5)',
-                  border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.3s',
-                }} />
+                <button key={i} onClick={() => setImgIndex(i)} style={{ width: i === imgIndex ? '20px' : '8px', height: '8px', borderRadius: '4px', background: i === imgIndex ? 'white' : 'rgba(255,255,255,0.5)', border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.3s' }} />
               ))}
             </div>
           )}
@@ -158,7 +173,7 @@ export function ProductModal({ isOpen, onClose, product }: Props) {
 
           {/* Nome, forma de venda e preço */}
           <div>
-            <h3 style={{ fontSize: '19px', fontWeight: 800, color: '#111827', margin: '0 0 4px' }}>{product.nome}</h3>
+            <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#111827', margin: '0 0 4px' }}>{product.nome}</h3>
             <span style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>
               Vendido por {FORMA_LABEL[product.forma_venda] || product.forma_venda}
             </span>
