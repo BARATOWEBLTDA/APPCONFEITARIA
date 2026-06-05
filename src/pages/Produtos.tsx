@@ -403,74 +403,79 @@ export default function Produtos() {
                   </div>
                 </div>
 
-                {/* Tamanhos personalizados — ocultar no Kit Festa */}
-                {form.forma_venda !== "kit-festa" && (
-                  <div className="prod-field">
-                    {form.forma_venda === "kg" ? (
-                      <>
-                        <label>Opções de peso disponíveis <span style={{ color: "#9ca3af", fontWeight: 400 }}>(opcional)</span></label>
-                        <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: "0 0 6px" }}>Digite o peso em kg. Ex: 0.5 → 500g, 1 → 1kg, 1.5 → 1,5kg</p>
-                        {(form.tamanhos_disponiveis || []).map((t, i) => (
-                          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "#fdf2f8", borderRadius: "8px", marginBottom: "4px" }}>
-                            <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "#ec4899" }}>{t.label}</span>
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                              <span style={{ fontSize: "0.82rem", color: "#22c55e", fontWeight: 700 }}>R$ {t.preco.toFixed(2).replace(".", ",")}</span>
-                              <button onClick={() => removeTamanho(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1rem", padding: 0 }}>×</button>
-                            </div>
+                {/* Tamanhos/Quantidades — contextual por forma de venda */}
+                {!["kit-festa", "sob-encomenda"].includes(form.forma_venda) && (() => {
+                  const config: Record<string, { label: string; sub: string; placeholder: string; placeholderPreco: string; suffix?: string }> = {
+                    unidade:  { label: "Opções de quantidade", sub: "Ex: 6 unidades, 12 unidades, 24 unidades", placeholder: "Ex: 6, 12, 24...", placeholderPreco: "Preço", suffix: "un" },
+                    fatia:    { label: "Opções de fatias", sub: "Ex: 1 fatia, 2 fatias, 4 fatias", placeholder: "Ex: 1, 2, 4...", placeholderPreco: "Preço", suffix: "fatia(s)" },
+                    kg:       { label: "Opções de peso", sub: "Digite em kg: 0.5 → 500g · 1 → 1kg · 1.5 → 1,5kg", placeholder: "Ex: 0.5, 1, 1.5...", placeholderPreco: "Preço por opção" },
+                    cento:    { label: "Opções de cento", sub: "Ex: meio cento (50 un), 1 cento (100 un)", placeholder: "Ex: 0.5, 1, 2...", placeholderPreco: "Preço", suffix: "cento(s)" },
+                    tamanho:  { label: "Tamanhos disponíveis", sub: "Ex: P, M, G, XG", placeholder: "Ex: P, M, G, XG...", placeholderPreco: "Preço" },
+                    caixa:    { label: "Opções de caixa", sub: "Ex: Caixa 6 un, Caixa 12 un", placeholder: "Ex: Caixa 6, Caixa 12...", placeholderPreco: "Preço" },
+                    outros:   { label: "Opções disponíveis", sub: "Defina as opções e preços", placeholder: "Ex: Mini, Normal, Grande...", placeholderPreco: "Preço" },
+                  };
+                  const cfg = config[form.forma_venda];
+                  if (!cfg) return null;
+
+                  const formatLabel = (raw: string) => {
+                    if (form.forma_venda === "kg") {
+                      const num = parseFloat(raw.replace(",", "."));
+                      if (isNaN(num)) return raw;
+                      return num < 1 ? `${Math.round(num * 1000)}g` : num === Math.floor(num) ? `${num}kg` : `${num.toString().replace(".", ",")}kg`;
+                    }
+                    if (form.forma_venda === "unidade" || form.forma_venda === "fatia") {
+                      const num = parseInt(raw);
+                      if (!isNaN(num)) return `${num} ${cfg.suffix}`;
+                      return raw;
+                    }
+                    if (form.forma_venda === "cento") {
+                      const num = parseFloat(raw.replace(",", "."));
+                      if (!isNaN(num)) return num === 0.5 ? "Meio cento (50 un)" : `${num} ${cfg.suffix}`;
+                      return raw;
+                    }
+                    return raw;
+                  };
+
+                  return (
+                    <div className="prod-field">
+                      <label>{cfg.label} <span style={{ color: "#9ca3af", fontWeight: 400 }}>(opcional)</span></label>
+                      <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: "0 0 6px" }}>{cfg.sub}</p>
+                      {(form.tamanhos_disponiveis || []).map((t, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "#fdf2f8", borderRadius: "8px", marginBottom: "4px" }}>
+                          <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "#ec4899" }}>{t.label}</span>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span style={{ fontSize: "0.82rem", color: "#22c55e", fontWeight: 700 }}>R$ {t.preco.toFixed(2).replace(".", ",")}</span>
+                            <button onClick={() => removeTamanho(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1rem", padding: 0 }}>×</button>
                           </div>
-                        ))}
-                        <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
-                          <input
-                            type="text"
-                            placeholder="Ex: 0.5, 1, 1.5, 2"
-                            value={novoTamanho.label}
-                            onChange={e => {
-                              const v = e.target.value.replace(/[^0-9.]/g, "");
-                              setNovoTamanho(t => ({ ...t, label: v }));
-                            }}
-                            onBlur={e => {
-                              const num = parseFloat(e.target.value);
-                              if (!isNaN(num)) {
-                                const fmt = num < 1 ? `${Math.round(num * 1000)}g` : num === Math.floor(num) ? `${num}kg` : `${num.toString().replace(".", ",")}kg`;
-                                setNovoTamanho(t => ({ ...t, label: fmt }));
-                              }
-                            }}
-                            style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }}
-                          />
-                          <input type="text" placeholder="Preço" value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
-                          <button onClick={() => {
-                            const num = parseFloat(novoTamanho.label.replace(",", "."));
-                            if (isNaN(num)) return addTamanho();
-                            const fmt = num < 1 ? `${Math.round(num * 1000)}g` : num === Math.floor(num) ? `${num}kg` : `${num.toString().replace(".", ",")}kg`;
-                            const preco = parseFloat(novoTamanho.preco.replace(",", "."));
-                            if (isNaN(preco)) return;
-                            setForm(f => ({ ...f, tamanhos_disponiveis: [...(f.tamanhos_disponiveis || []), { label: fmt, preco }] }));
-                            setNovoTamanho({ label: "", preco: "" });
-                          }} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
                         </div>
-                      </>
-                    ) : (
-                      <>
-                        <label>Tamanhos / Pesos disponíveis <span style={{ color: "#9ca3af", fontWeight: 400 }}>(opcional)</span></label>
-                        <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: "0 0 6px" }}>Ex: Pequeno, Médio, Grande, P, M, G...</p>
-                        {(form.tamanhos_disponiveis || []).map((t, i) => (
-                          <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "#fdf2f8", borderRadius: "8px", marginBottom: "4px" }}>
-                            <span style={{ fontSize: "0.82rem", fontWeight: 600, color: "#374151" }}>{t.label}</span>
-                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                              <span style={{ fontSize: "0.82rem", color: "#22c55e", fontWeight: 700 }}>R$ {t.preco.toFixed(2).replace(".", ",")}</span>
-                              <button onClick={() => removeTamanho(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1rem", padding: 0 }}>×</button>
-                            </div>
-                          </div>
-                        ))}
-                        <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
-                          <input type="text" placeholder="Ex: Pequeno, P, 500g..." value={novoTamanho.label} onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))} style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
-                          <input type="text" placeholder="Preço" value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
-                          <button onClick={addTamanho} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                )}
+                      ))}
+                      <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
+                        <input
+                          type="text"
+                          placeholder={cfg.placeholder}
+                          value={novoTamanho.label}
+                          onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))}
+                          style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }}
+                        />
+                        <input
+                          type="text"
+                          placeholder={cfg.placeholderPreco}
+                          value={novoTamanho.preco}
+                          onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))}
+                          style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }}
+                        />
+                        <button onClick={() => {
+                          if (!novoTamanho.label.trim()) return;
+                          const preco = parseFloat(novoTamanho.preco.replace(",", "."));
+                          if (isNaN(preco)) return;
+                          const label = formatLabel(novoTamanho.label.trim());
+                          setForm(f => ({ ...f, tamanhos_disponiveis: [...(f.tamanhos_disponiveis || []), { label, preco }] }));
+                          setNovoTamanho({ label: "", preco: "" });
+                        }} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Kit Festa */}
