@@ -9,7 +9,7 @@ export interface Produto {
   categoria: string
   disponivel: boolean
   promocao: boolean
-  forma_venda: 'unidade' | 'fatia' | 'kg' | 'cento' | 'tamanho-p' | 'tamanho-m' | 'tamanho-g' | 'tamanho-xg' | 'kit-caixa' | 'sob-encomenda' | 'outros'
+  forma_venda: 'unidade' | 'fatia' | 'kg' | 'cento' | 'tamanho-p' | 'tamanho-m' | 'tamanho-g' | 'tamanho-xg' | 'tamanho' | 'caixa' | 'kit-festa' | 'kit-caixa' | 'sob-encomenda' | 'outros' | string
   permite_personalizacao?: boolean
   massas_disponiveis?: string[]
   recheios_disponiveis?: string[]
