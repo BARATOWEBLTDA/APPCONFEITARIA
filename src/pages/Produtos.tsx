@@ -35,7 +35,8 @@ const FORMAS_VENDA = [
   { value: "kg", label: "Por Quilo (kg)" },
   { value: "cento", label: "Por Cento" },
   { value: "tamanho", label: "Por Tamanho (P/M/G)" },
-  { value: "kit-caixa", label: "Kit / Caixa" },
+  { value: "caixa", label: "Por Caixa" },
+  { value: "kit-festa", label: "Kit Festa 🎉" },
   { value: "sob-encomenda", label: "Sob Encomenda" },
   { value: "outros", label: "Outros" },
 ];
@@ -431,7 +432,7 @@ export default function Produtos() {
               </div>
 
               {/* Kit Festa */}
-              {form.forma_venda === "kit-caixa" && (
+              {form.forma_venda === "kit-festa" && (
                 <div className="prod-section">
                   <p className="prod-section-label">🎉 Itens do Kit</p>
                   <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: "0" }}>Liste o que está incluso no kit</p>
