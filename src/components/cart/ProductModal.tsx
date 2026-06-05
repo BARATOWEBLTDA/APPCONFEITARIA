@@ -124,8 +124,8 @@ export function ProductModal({ isOpen, onClose, product }: Props) {
             </div>
           )}
 
-          <button onClick={onClose} style={{ position: 'absolute', top: '10px', right: '10px', width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <X size={15} color="white" />
+          <button onClick={onClose} style={{ position: 'absolute', top: '10px', right: '10px', width: '32px', height: '32px', borderRadius: '50%', background: '#ec4899', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(236,72,153,0.4)' }}>
+            <X size={16} color="white" strokeWidth={2.5} />
           </button>
 
           {product.promocao && (
