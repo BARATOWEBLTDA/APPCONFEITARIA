@@ -67,7 +67,11 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   const dec = () => setQuantity(q => Math.max(q - step, min))
 
   const basePrice = product.promocao && product.preco_promocional ? product.preco_promocional : product.preco_normal
-  const descPct = (product as any).tipo_promocao === 'percentual' && product.promocao ? ((product as any).desconto_percentual || 0) / 100 : 0
+  const descPct = (product as any).tipo_promocao === 'percentual' && product.promocao
+    ? ((product as any).desconto_percentual || 0) / 100
+    : product.promocao && product.preco_promocional && product.preco_normal > 0
+      ? 1 - (product.preco_promocional / product.preco_normal)
+      : 0
   const applyDiscount = (price: number) => descPct > 0 ? parseFloat((price * (1 - descPct)).toFixed(2)) : price
   const unitPrice = selectedTamanho ? applyDiscount(selectedTamanho.preco) : basePrice
   const adicionais = ((product as any).tem_vela && selectedVela ? ((product as any).valor_vela || 0) : 0)
