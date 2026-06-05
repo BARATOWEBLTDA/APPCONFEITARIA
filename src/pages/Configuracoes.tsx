@@ -63,6 +63,7 @@ export default function Configuracoes() {
   const [modalHorario, setModalHorario] = useState(false);
   const [horarioEntregaTemp, setHorarioEntregaTemp] = useState({ inicio: "08:00", fim: "18:00" });
   const [openSection, setOpenSection] = useState<string | null>(null);
+  const [ocultarCategorias, setOcultarCategorias] = useState(false);
   const toggleSection = (s: string) => setOpenSection(prev => prev === s ? null : s);
 
   const buscarCep = async (cep: string) => {
@@ -142,6 +143,7 @@ export default function Configuracoes() {
         });
         const { data: cats } = await supabase.from("categorias").select("nome").eq("user_id", user.id).order("nome");
         if (cats) setCategorias(cats.map((c: any) => c.nome));
+        setOcultarCategorias(data?.ocultar_categorias || false);
       }
       setLoading(false);
     };
@@ -224,6 +226,7 @@ export default function Configuracoes() {
     if (entrega.entrega_gratis_acima) payload.entrega_gratis_acima = parseFloat(entrega.entrega_gratis_acima) || null;
     if (entrega.horario_entrega !== undefined) payload.horario_entrega = entrega.horario_entrega;
     if (entrega.observacoes_entrega !== undefined) payload.observacoes_entrega = entrega.observacoes_entrega;
+    payload.ocultar_categorias = ocultarCategorias;
 
     const { error: err } = await supabase.from("profiles").upsert(payload, { onConflict: "id" });
     if (err) {
@@ -514,6 +517,32 @@ export default function Configuracoes() {
 
             {/* Horários */}
             <HorarioSection desk />
+
+            {/* Ocultar Categorias */}
+            <div className="cfg-desk-card">
+              <div className="cfg-card-header"><span className="cfg-card-icon">🏷️</span><span>Categorias no cardápio</span></div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0" }}>
+                <div>
+                  <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text-primary,#1f2937)", margin: "0 0 2px" }}>Ocultar categorias</p>
+                  <p style={{ fontSize: "0.75rem", color: "var(--text-muted,#9ca3af)", margin: 0 }}>Esconde as bolinhas de categoria no cardápio público</p>
+                </div>
+                <button
+                  onClick={() => { setOcultarCategorias(v => !v); }}
+                  style={{
+                    width: "48px", height: "26px", borderRadius: "13px", border: "none", cursor: "pointer",
+                    background: ocultarCategorias ? "#ec4899" : "#e5e7eb",
+                    position: "relative", transition: "background 0.2s", flexShrink: 0,
+                  }}
+                >
+                  <div style={{
+                    width: "20px", height: "20px", borderRadius: "50%", background: "white",
+                    position: "absolute", top: "3px", transition: "left 0.2s",
+                    left: ocultarCategorias ? "25px" : "3px",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                  }} />
+                </button>
+              </div>
+            </div>
 
             {/* Entrega */}
             <div className="cfg-desk-card">

@@ -119,13 +119,15 @@ function CardapioContent() {
       </div>
 
       <div className={`container mx-auto px-4 py-4 pb-24 ${isDesktop ? 'max-w-6xl' : ''}`}>
-        <CategoryC
-          categories={getCategories()}
-          selectedCategory={selectedCategory}
-          onCategorySelect={setSelectedCategory}
-          categoryIcons={design.category_icons || {}}
-          categoryImages={categoryImages}
-        />
+        {!design.ocultar_categorias && (
+          <CategoryC
+            categories={getCategories()}
+            selectedCategory={selectedCategory}
+            onCategorySelect={setSelectedCategory}
+            categoryIcons={design.category_icons || {}}
+            categoryImages={categoryImages}
+          />
+        )}
 
         {filteredProdutos.length > 0 ? (
           <ProductC
