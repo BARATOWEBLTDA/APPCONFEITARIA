@@ -624,8 +624,8 @@ export default function Produtos() {
         .prod-card-actions { display:flex; gap:0.4rem; padding:0.5rem 0.75rem; border-top:1px solid var(--border,#f3f4f6); }
         .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle,#f9fafb); border:none; border-radius:8px; font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
         .prod-card-btn-del { padding:0.4rem 0.6rem; background:#fff1f2; border:none; border-radius:8px; color:#ef4444; cursor:pointer; display:flex; align-items:center; }
-        .prod-modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.5); display:flex; align-items:flex-end; justify-content:center; }
-        .prod-modal { background:var(--bg-card,white); border-radius:24px 24px 0 0; width:100%; max-width:520px; max-height:92vh; display:flex; flex-direction:column; animation:slideUp 0.25s ease; }
+        .prod-modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.5); display:flex; align-items:flex-end; justify-content:center; padding:0 12px; }
+        .prod-modal { background:var(--bg-card,white); border-radius:24px 24px 16px 16px; width:100%; max-width:520px; max-height:88vh; display:flex; flex-direction:column; animation:slideUp 0.25s ease; margin-bottom:12px; }
         @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
         .prod-modal-header { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1.25rem 0.75rem; border-bottom:1px solid var(--border,#f3f4f6); flex-shrink:0; }
         .prod-modal-title { font-size:1rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0; }
