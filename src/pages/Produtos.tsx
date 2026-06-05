@@ -486,11 +486,12 @@ export default function Produtos() {
                             placeholder={(form[campo] || []).length === 0 ? placeholder : "Adicionar..."}
                             value={novaOpcao[key]}
                             onChange={e => setNovaOpcao(o => ({ ...o, [key]: e.target.value }))}
-                            onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addOpcao(campo, key); } }}
+                            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addOpcao(campo, key); } }}
                             style={{ border: "none", outline: "none", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", flex: 1, minWidth: "100px", background: "transparent", padding: "2px 0" }}
                           />
                         </div>
-                        <p style={{ fontSize: "0.68rem", color: "#9ca3af", margin: "4px 0 0" }}>Pressione Enter ou vírgula para adicionar</p>
+                        <p style={{ fontSize: "0.68rem", color: "#9ca3af", margin: "4px 0 0" }}>Pressione Enter ou clique em + Add</p>
+                        <button onClick={() => addOpcao(campo, key)} style={{ marginTop: "6px", padding: "0.4rem 1rem", background: "#F583BF", color: "white", border: "none", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
                       </div>
                     ))}
                   </>
