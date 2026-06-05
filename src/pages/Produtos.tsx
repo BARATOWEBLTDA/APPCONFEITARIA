@@ -27,6 +27,13 @@ type Produto = {
   kit_itens?: KitItem[];
   kit_serve_pessoas?: string;
   kit_prazo_encomenda?: string;
+  zero_acucar?: boolean;
+  tem_vela?: boolean;
+  valor_vela?: number;
+  tem_topo?: boolean;
+  valor_topo?: number;
+  tem_papel_arroz?: boolean;
+  valor_papel_arroz?: number;
 };
 
 const FORMAS_VENDA = [
@@ -49,6 +56,10 @@ const EMPTY: Produto = {
   massas_disponiveis: [], recheios_disponiveis: [], coberturas_disponiveis: [],
   tamanhos_disponiveis: [], pronta_entrega: true,
   kit_itens: [], kit_serve_pessoas: "", kit_prazo_encomenda: "",
+  zero_acucar: false,
+  tem_vela: false, valor_vela: 0,
+  tem_topo: false, valor_topo: 0,
+  tem_papel_arroz: false, valor_papel_arroz: 0,
 };
 
 export default function Produtos() {
@@ -464,6 +475,18 @@ export default function Produtos() {
 
                 {form.permite_personalizacao && (
                   <>
+                    {/* Zero Açúcar */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: "#fafafa", borderRadius: "12px", border: "1px solid #f3f4f6" }}>
+                      <div>
+                        <p style={{ fontSize: "0.85rem", fontWeight: 700, color: "#374151", margin: "0 0 2px" }}>🚫 Zero Açúcar</p>
+                        <p style={{ fontSize: "0.72rem", color: "#9ca3af", margin: 0 }}>Disponível versão sem açúcar</p>
+                      </div>
+                      <button onClick={() => setForm(f => ({ ...f, zero_acucar: !f.zero_acucar }))}
+                        style={{ width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer", background: form.zero_acucar ? "#ec4899" : "#e5e7eb", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                        <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: form.zero_acucar ? "23px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+                      </button>
+                    </div>
+
                     {[
                       { label: "Tipos de Massa", campo: "massas_disponiveis" as const, key: "massa" as const, placeholder: "Ex: Chocolate, Baunilha..." },
                       { label: "Sabores / Recheios", campo: "recheios_disponiveis" as const, key: "recheio" as const, placeholder: "Ex: Morango, Brigadeiro..." },
@@ -471,7 +494,6 @@ export default function Produtos() {
                     ].map(({ label, campo, key, placeholder }) => (
                       <div key={campo} style={{ background: "#fafafa", borderRadius: "12px", padding: "10px 12px", border: "1px solid #f3f4f6" }}>
                         <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "#374151", margin: "0 0 8px" }}>{label}</p>
-                        {/* Campo tipo tag — chips + input juntos */}
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", padding: "8px 10px", border: "1.5px solid #e5e7eb", borderRadius: "10px", background: "white", cursor: "text" }}
                           onClick={() => (document.getElementById(`input-${key}`) as HTMLInputElement)?.focus()}>
                           {(form[campo] || []).map((item: string, i: number) => (
@@ -480,15 +502,7 @@ export default function Produtos() {
                               <button onClick={e => { e.stopPropagation(); removeOpcao(campo, i); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#be185d", padding: "0 2px", lineHeight: 1, fontSize: "0.85rem" }}>×</button>
                             </span>
                           ))}
-                          <input
-                            id={`input-${key}`}
-                            type="text"
-                            placeholder={(form[campo] || []).length === 0 ? placeholder : "Adicionar..."}
-                            value={novaOpcao[key]}
-                            onChange={e => setNovaOpcao(o => ({ ...o, [key]: e.target.value }))}
-                            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addOpcao(campo, key); } }}
-                            style={{ border: "none", outline: "none", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", flex: 1, minWidth: "100px", background: "transparent", padding: "2px 0" }}
-                          />
+                          <input id={`input-${key}`} type="text" placeholder={(form[campo] || []).length === 0 ? placeholder : "Adicionar..."} value={novaOpcao[key]} onChange={e => setNovaOpcao(o => ({ ...o, [key]: e.target.value }))} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addOpcao(campo, key); } }} style={{ border: "none", outline: "none", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", flex: 1, minWidth: "100px", background: "transparent", padding: "2px 0" }} />
                         </div>
                         <p style={{ fontSize: "0.68rem", color: "#9ca3af", margin: "4px 0 0" }}>Pressione Enter ou clique em + Add</p>
                         <button onClick={() => addOpcao(campo, key)} style={{ marginTop: "6px", padding: "0.4rem 1rem", background: "#F583BF", color: "white", border: "none", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
@@ -498,7 +512,41 @@ export default function Produtos() {
                 )}
               </div>
 
-              {/* Promoção — sempre por último */}
+              {/* Adicionais — Vela, Topo, Papel de Arroz */}
+              <div className="prod-section">
+                <p className="prod-section-label">✨ Adicionais</p>
+                <p style={{ fontSize: "0.78rem", color: "#9ca3af", margin: "0" }}>Itens extras que o cliente pode solicitar</p>
+
+                {[
+                  { label: "🕯️ Velas", sub: "Cliente escolhe se quer velas", campo: "tem_vela" as const, valor: "valor_vela" as const },
+                  { label: "🎂 Topo de Bolo", sub: "Cliente escolhe o topo personalizado", campo: "tem_topo" as const, valor: "valor_topo" as const },
+                  { label: "🖼️ Papel de Arroz", sub: "Impressão comestível personalizada", campo: "tem_papel_arroz" as const, valor: "valor_papel_arroz" as const },
+                ].map(({ label, sub, campo, valor }) => (
+                  <div key={campo} style={{ background: "#fafafa", borderRadius: "12px", border: "1px solid #f3f4f6", overflow: "hidden" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px" }}>
+                      <div>
+                        <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "#374151", margin: "0 0 2px" }}>{label}</p>
+                        <p style={{ fontSize: "0.72rem", color: "#9ca3af", margin: 0 }}>{sub}</p>
+                      </div>
+                      <button onClick={() => setForm(f => ({ ...f, [campo]: !f[campo] }))}
+                        style={{ width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer", background: form[campo] ? "#ec4899" : "#e5e7eb", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                        <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: form[campo] ? "23px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+                      </button>
+                    </div>
+                    {form[campo] && (
+                      <div style={{ padding: "0 12px 12px", borderTop: "1px solid #f3f4f6" }}>
+                        <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#6b7280", display: "block", margin: "8px 0 4px" }}>Valor adicional</label>
+                        <div className="prod-preco-input" style={{ background: "white" }}>
+                          <span>R$</span>
+                          <input type="text" placeholder="0,00" value={form[valor] ? formatPreco(form[valor] as number) : ""} onChange={e => setForm(f => ({ ...f, [valor]: parsePreco(e.target.value) }))} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Promoção */}
               <div className="prod-section">
                 <p className="prod-section-label">🏷️ Promoção</p>
                 <Toggle label="Produto em promoção" value={form.promocao} onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v }))} colorClass="active-pink" />
@@ -511,6 +559,15 @@ export default function Produtos() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Disponível e Pronta entrega — por último */}
+              <div className="prod-section">
+                <p className="prod-section-label">📋 Status</p>
+                <div className="prod-toggles" style={{ gap: "0.5rem" }}>
+                  <Toggle label="Disponível" value={form.disponivel} onChange={(v: boolean) => setForm(f => ({ ...f, disponivel: v }))} colorClass="active-green" />
+                  <Toggle label="Pronta entrega" value={form.pronta_entrega !== false} onChange={(v: boolean) => setForm(f => ({ ...f, pronta_entrega: v }))} colorClass="active-green" />
+                </div>
               </div>
 
             </div>
