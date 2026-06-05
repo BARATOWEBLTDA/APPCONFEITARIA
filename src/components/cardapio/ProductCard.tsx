@@ -27,11 +27,16 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
   const p = product as any
   const isPromo = product.promocao
   const isPct = p.tipo_promocao === 'percentual' && p.desconto_percentual > 0
-  const precoPromocional = isPromo
+  const descRatio = isPromo
     ? isPct
-      ? parseFloat((product.preco_normal * (1 - p.desconto_percentual / 100)).toFixed(2))
-      : (product.preco_promocional || 0)
+      ? p.desconto_percentual / 100
+      : product.preco_promocional && product.preco_normal > 0
+        ? 1 - (product.preco_promocional / product.preco_normal)
+        : 0
     : 0
+  const precoPromocional = isPromo && descRatio > 0
+    ? parseFloat((product.preco_normal * (1 - descRatio)).toFixed(2))
+    : (product.preco_promocional || 0)
 
   return (
     <>
