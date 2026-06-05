@@ -103,7 +103,7 @@ export function ProductModal({ isOpen, onClose, product }: Props) {
 
         {/* Imagem */}
         <div style={{ position: 'relative', flexShrink: 0 }}>
-          <div style={{ width: '100%', height: '180px', background: '#fdf2f8', overflow: 'hidden' }}>
+          <div style={{ width: '100%', height: '140px', background: '#fdf2f8', overflow: 'hidden' }}>
             {firstImage
               ? <img src={firstImage} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '64px' }}>🧁</div>
