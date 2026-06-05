@@ -23,6 +23,16 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
     return m[s] || 'Unidade'
   }
 
+  // Calcula preço promocional considerando % ou fixo
+  const p = product as any
+  const isPromo = product.promocao
+  const isPct = p.tipo_promocao === 'percentual' && p.desconto_percentual > 0
+  const precoPromocional = isPromo
+    ? isPct
+      ? parseFloat((product.preco_normal * (1 - p.desconto_percentual / 100)).toFixed(2))
+      : (product.preco_promocional || 0)
+    : 0
+
   return (
     <>
       <div className={`bg-white rounded-lg overflow-hidden shadow-sm h-full flex flex-col ${product.promocao ? 'border-2 border-dashed border-pink-500' : 'border border-gray-100'}`}>
@@ -46,11 +56,11 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
             </div>
             <p className="text-gray-500 text-xs mb-2 line-clamp-4 leading-tight flex-1">{product.descricao}</p>
             <div className="mt-auto">
-              {product.promocao && product.preco_promocional ? (
+              {isPromo && precoPromocional > 0 ? (
                 <div className="mb-2">
                   <span className="text-sm text-red-500 line-through block">R$ {product.preco_normal.toFixed(2)}</span>
                   <div className="flex items-center gap-1">
-                    <span className="text-lg font-bold text-green-600">R$ {product.preco_promocional.toFixed(2)}</span>
+                    <span className="text-lg font-bold text-green-600">R$ {precoPromocional.toFixed(2)}</span>
                     <span className="text-xs px-1 py-0 rounded-sm" style={{ backgroundColor: '#6A0122', color: 'white' }}>{formatSale(product.forma_venda)}</span>
                   </div>
                 </div>
