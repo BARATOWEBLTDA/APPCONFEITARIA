@@ -9,16 +9,19 @@ type Categoria = {
   ordem?: number;
 };
 
+const SYSTEM_ICONS = Array.from({ length: 42 }, (_, i) => `/categoriaicones/icone (${i + 1}).png`);
+
 export default function Categorias() {
   const [userId, setUserId] = useState("");
   const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [produtos, setProdutos] = useState<{ categoria: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState<string | null>(null);
   const [modal, setModal] = useState(false);
   const [form, setForm] = useState<Categoria>({ nome: "", imagem_url: "", ordem: 0 });
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [showGaleria, setShowGaleria] = useState(false);
   const imgRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -26,7 +29,7 @@ export default function Categorias() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      await loadCategorias(user.id);
+      await Promise.all([loadCategorias(user.id), loadProdutos(user.id)]);
       setLoading(false);
     };
     load();
@@ -37,9 +40,16 @@ export default function Categorias() {
     if (data) setCategorias(data);
   };
 
-  const openNova = () => { setForm({ nome: "", imagem_url: "", ordem: categorias.length }); setModal(true); };
-  const openEditar = (c: Categoria) => { setForm({ ...c }); setModal(true); };
-  const fecharModal = () => { setModal(false); setForm({ nome: "", imagem_url: "", ordem: 0 }); };
+  const loadProdutos = async (uid: string) => {
+    const { data } = await supabase.from("produtos").select("categoria").eq("user_id", uid);
+    if (data) setProdutos(data);
+  };
+
+  const contarProdutos = (nome: string) => produtos.filter(p => p.categoria === nome).length;
+
+  const openNova = () => { setForm({ nome: "", imagem_url: "", ordem: categorias.length }); setShowGaleria(false); setModal(true); };
+  const openEditar = (c: Categoria) => { setForm({ ...c }); setShowGaleria(false); setModal(true); };
+  const fecharModal = () => { setModal(false); setShowGaleria(false); setForm({ nome: "", imagem_url: "", ordem: 0 }); };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -57,6 +67,7 @@ export default function Categorias() {
 
   const handleSalvar = async () => {
     if (!form.nome.trim()) return alert("Nome é obrigatório");
+    if (!form.imagem_url) return alert("Selecione um ícone para a categoria");
     setSaving(true);
     if (form.id) {
       await supabase.from("categorias").update({ nome: form.nome, imagem_url: form.imagem_url, ordem: form.ordem }).eq("id", form.id);
@@ -65,8 +76,6 @@ export default function Categorias() {
     }
     await loadCategorias(userId);
     setSaving(false);
-    setSuccess(true);
-    setTimeout(() => setSuccess(false), 2000);
     fecharModal();
   };
 
@@ -117,33 +126,31 @@ export default function Categorias() {
         </div>
       ) : (
         <div className="cat-list">
-          {categorias.map((cat, idx) => (
-            <div key={cat.id} className="cat-item">
-              {/* Ícone */}
-              <div className="cat-item-icon">
-                {cat.imagem_url
-                  ? <img src={cat.imagem_url} alt={cat.nome} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-                  : <span style={{ fontSize: "1.5rem" }}>🏷️</span>
-                }
+          {categorias.map((cat, idx) => {
+            const count = contarProdutos(cat.nome);
+            return (
+              <div key={cat.id} className="cat-item">
+                <div className="cat-item-icon">
+                  {cat.imagem_url
+                    ? <img src={cat.imagem_url} alt={cat.nome} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                    : <span style={{ fontSize: "1.5rem" }}>🏷️</span>
+                  }
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p className="cat-item-nome">{cat.nome}</p>
+                  <p className="cat-item-sub">{count} produto{count !== 1 ? "s" : ""} nessa categoria</p>
+                </div>
+                <div className="cat-item-actions">
+                  <button className="cat-order-btn" onClick={() => moverOrdem(cat.id!, -1)} disabled={idx === 0}>↑</button>
+                  <button className="cat-order-btn" onClick={() => moverOrdem(cat.id!, 1)} disabled={idx === categorias.length - 1}>↓</button>
+                  <button className="cat-edit-btn" onClick={() => openEditar(cat)}>Editar</button>
+                  <button className="cat-del-btn" onClick={() => setDeleteConfirm(cat.id!)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                  </button>
+                </div>
               </div>
-
-              {/* Info */}
-              <div style={{ flex: 1 }}>
-                <p className="cat-item-nome">{cat.nome}</p>
-                <p className="cat-item-sub">{cat.imagem_url ? "Com ícone personalizado" : "Sem ícone"}</p>
-              </div>
-
-              {/* Ações */}
-              <div className="cat-item-actions">
-                <button className="cat-order-btn" onClick={() => moverOrdem(cat.id!, -1)} disabled={idx === 0}>↑</button>
-                <button className="cat-order-btn" onClick={() => moverOrdem(cat.id!, 1)} disabled={idx === categorias.length - 1}>↓</button>
-                <button className="cat-edit-btn" onClick={() => openEditar(cat)}>Editar</button>
-                <button className="cat-del-btn" onClick={() => setDeleteConfirm(cat.id!)}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -157,49 +164,73 @@ export default function Categorias() {
             </div>
             <div className="cat-modal-body">
 
-              {/* Ícone */}
+              {/* Ícone selecionado + preview */}
               <div className="cat-section">
-                <p className="cat-section-label">🖼️ Ícone da Categoria</p>
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <div className="cat-icon-upload" onClick={() => !uploading && imgRef.current?.click()}>
-                    {form.imagem_url ? (
-                      <img src={form.imagem_url} alt="ícone" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-                    ) : (
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
-                        {uploading ? <span className="cat-spinner-sm" /> : (
-                          <>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                            <span style={{ fontSize: "0.65rem", color: "#9ca3af" }}>Upload</span>
-                          </>
-                        )}
-                      </div>
-                    )}
+                <p className="cat-section-label">🖼️ Ícone da Categoria <span style={{ color: "#ef4444" }}>*</span></p>
+
+                {/* Preview do ícone selecionado */}
+                <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
+                  <div className="cat-icon-preview">
+                    {form.imagem_url
+                      ? <img src={form.imagem_url} alt="ícone" style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: "50%" }} />
+                      : <span style={{ fontSize: "2rem" }}>?</span>
+                    }
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: "0.82rem", color: "#374151", fontWeight: 600, margin: "0 0 4px" }}>Imagem do ícone</p>
-                    <p style={{ fontSize: "0.72rem", color: "#9ca3af", margin: "0 0 8px" }}>PNG transparente recomendado</p>
+                  <div>
+                    <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#374151", margin: "0 0 4px" }}>
+                      {form.imagem_url ? "Ícone selecionado" : "Nenhum ícone selecionado"}
+                    </p>
                     {form.imagem_url && (
-                      <button onClick={() => setForm(f => ({ ...f, imagem_url: "" }))} style={{ fontSize: "0.72rem", color: "#ef4444", background: "none", border: "none", cursor: "pointer", padding: 0 }}>Remover imagem</button>
-                    )}
-                    {!form.imagem_url && (
-                      <button onClick={() => imgRef.current?.click()} style={{ fontSize: "0.75rem", color: "#F583BF", background: "none", border: "1px solid #F583BF", borderRadius: "8px", padding: "4px 12px", cursor: "pointer", fontFamily: "Inter, sans-serif" }}>Escolher arquivo</button>
+                      <button onClick={() => setForm(f => ({ ...f, imagem_url: "" }))} style={{ fontSize: "0.72rem", color: "#ef4444", background: "none", border: "none", cursor: "pointer", padding: 0 }}>Remover</button>
                     )}
                   </div>
                 </div>
+
+                {/* Abas: Galeria do sistema / Upload */}
+                <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
+                  <button onClick={() => setShowGaleria(false)} style={{ flex: 1, padding: "8px", borderRadius: "10px", border: "2px solid", borderColor: !showGaleria ? "#ec4899" : "#e5e7eb", background: !showGaleria ? "#fdf2f8" : "white", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", fontWeight: 600, color: !showGaleria ? "#ec4899" : "#6b7280", cursor: "pointer" }}>
+                    📁 Fazer upload
+                  </button>
+                  <button onClick={() => setShowGaleria(true)} style={{ flex: 1, padding: "8px", borderRadius: "10px", border: "2px solid", borderColor: showGaleria ? "#ec4899" : "#e5e7eb", background: showGaleria ? "#fdf2f8" : "white", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", fontWeight: 600, color: showGaleria ? "#ec4899" : "#6b7280", cursor: "pointer" }}>
+                    🎨 Ícones do sistema
+                  </button>
+                </div>
+
+                {/* Upload */}
+                {!showGaleria && (
+                  <div className="cat-upload-area" onClick={() => !uploading && imgRef.current?.click()}>
+                    {uploading ? (
+                      <span className="cat-spinner-sm" />
+                    ) : (
+                      <>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <p style={{ fontSize: "0.82rem", fontWeight: 600, color: "#374151", margin: 0 }}>Toque para enviar imagem</p>
+                        <span style={{ fontSize: "0.7rem", color: "#9ca3af" }}>PNG transparente recomendado</span>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* Galeria do sistema */}
+                {showGaleria && (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "8px", maxHeight: "240px", overflowY: "auto", padding: "4px" }}>
+                    {SYSTEM_ICONS.map((src, i) => (
+                      <button key={i} onClick={() => setForm(f => ({ ...f, imagem_url: src }))}
+                        style={{ aspectRatio: "1", borderRadius: "10px", border: `2px solid ${form.imagem_url === src ? "#ec4899" : "#f3f4f6"}`, background: form.imagem_url === src ? "#fdf2f8" : "white", padding: "4px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <img src={src} alt={`ícone ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                          onError={e => { e.currentTarget.parentElement!.style.display = "none" }} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+
                 <input ref={imgRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageUpload} />
               </div>
 
               {/* Nome */}
               <div className="cat-section">
-                <p className="cat-section-label">✏️ Nome</p>
-                <input
-                  type="text"
-                  placeholder="Ex: Bolos, Doces, Salgados..."
-                  value={form.nome}
-                  onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-                  className="cat-input"
-                  autoFocus
-                />
+                <p className="cat-section-label">✏️ Nome <span style={{ color: "#ef4444" }}>*</span></p>
+                <input type="text" placeholder="Ex: Bolos, Doces, Salgados..." value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} className="cat-input" autoFocus />
               </div>
 
             </div>
@@ -231,7 +262,7 @@ export default function Categorias() {
         @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
         .cat-root { font-family:'Inter',sans-serif; max-width:600px; display:flex; flex-direction:column; gap:1rem; }
         .cat-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:catspin 0.7s linear infinite; display:inline-block; }
-        .cat-spinner-sm { width:18px; height:18px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:catspin 0.7s linear infinite; display:inline-block; }
+        .cat-spinner-sm { width:18px; height:18px; border:2px solid rgba(245,131,191,0.3); border-top-color:#F583BF; border-radius:50%; animation:catspin 0.7s linear infinite; display:inline-block; }
         .cat-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; padding-top:1.5rem; }
         .cat-title { font-size:1.3rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.15rem; }
         .cat-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0; }
@@ -249,8 +280,6 @@ export default function Categorias() {
         .cat-order-btn:disabled { opacity:0.3; cursor:not-allowed; }
         .cat-edit-btn { padding:0.35rem 0.75rem; background:var(--bg-subtle,#f3f4f6); border:none; border-radius:8px; font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
         .cat-del-btn { width:30px; height:30px; background:#fff1f2; border:none; border-radius:8px; color:#ef4444; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-        .cat-preview-card { background:var(--bg-card,white); border-radius:16px; padding:1rem; box-shadow:var(--shadow-card,0 2px 8px rgba(0,0,0,0.06)); }
-        .cat-preview-title { font-size:0.78rem; font-weight:700; color:#F583BF; text-transform:uppercase; letter-spacing:0.06em; margin:0 0 0.5rem; }
         .cat-modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.5); display:flex; align-items:flex-end; justify-content:center; }
         .cat-modal { background:var(--bg-card,white); border-radius:24px 24px 0 0; width:100%; max-width:520px; max-height:92vh; display:flex; flex-direction:column; animation:slideUp 0.25s ease; }
         .cat-modal-header { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1.25rem 0.75rem; border-bottom:1px solid var(--border,#f3f4f6); flex-shrink:0; }
@@ -260,7 +289,9 @@ export default function Categorias() {
         .cat-modal-footer { padding:1rem 1.25rem; border-top:1px solid var(--border,#f3f4f6); display:flex; gap:0.75rem; flex-shrink:0; }
         .cat-section { display:flex; flex-direction:column; gap:0.75rem; }
         .cat-section-label { font-size:0.78rem; font-weight:700; color:#F583BF; text-transform:uppercase; letter-spacing:0.06em; margin:0; }
-        .cat-icon-upload { width:80px; height:80px; border-radius:50%; border:2px dashed #fce7f3; background:#fdf2f8; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
+        .cat-icon-preview { width:72px; height:72px; border-radius:50%; border:3px solid #fce7f3; background:#fdf2f8; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
+        .cat-upload-area { border:2px dashed #fce7f3; border-radius:12px; background:#fdf2f8; padding:20px; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; }
+        .cat-upload-area:hover { border-color:#F583BF; }
         .cat-input { padding:0.75rem 1rem; border:1.5px solid var(--border,#e5e7eb); border-radius:12px; font-family:'Inter',sans-serif; font-size:0.9rem; color:var(--text-primary,#1f2937); outline:none; width:100%; box-sizing:border-box; background:var(--bg-input,white); }
         .cat-input:focus { border-color:#F583BF; }
         .cat-btn-cancelar { flex:1; padding:0.85rem; background:var(--bg-subtle,#f3f4f6); border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
