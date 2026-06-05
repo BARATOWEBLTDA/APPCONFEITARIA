@@ -94,16 +94,17 @@ export function ProductModal({ isOpen, onClose, product }: Props) {
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 50 }} />
 
       <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 51,
-        background: 'white', borderRadius: '20px 20px 0 0',
-        maxHeight: '92vh', display: 'flex', flexDirection: 'column',
-        boxShadow: '0 -8px 32px rgba(0,0,0,0.15)',
-        animation: 'slideUp 0.3s ease',
+        position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 51,
+        background: 'white', borderRadius: '24px',
+        width: '92vw', maxWidth: '400px',
+        maxHeight: '88vh', display: 'flex', flexDirection: 'column',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+        animation: 'popIn 0.25s ease',
       }}>
 
         {/* Imagem */}
         <div style={{ position: 'relative', flexShrink: 0 }}>
-          <div style={{ width: '100%', height: '140px', background: '#fdf2f8', overflow: 'hidden' }}>
+          <div style={{ width: '100%', height: '140px', background: '#fdf2f8', overflow: 'hidden', borderRadius: '24px 24px 0 0' }}>
             {firstImage
               ? <img src={firstImage} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '64px' }}>🧁</div>
@@ -231,7 +232,7 @@ export function ProductModal({ isOpen, onClose, product }: Props) {
         </div>
       </div>
 
-      <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+      <style>{`@keyframes popIn { from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }`}</style>
     </>
   )
 }
