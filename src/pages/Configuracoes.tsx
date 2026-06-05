@@ -402,6 +402,34 @@ export default function Configuracoes() {
           )}
         </div>
 
+        {/* Card — Ocultar Categorias */}
+        <div className="cfg-accordion">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.85rem 1rem", background: "var(--bg-card,white)", borderRadius: "14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span style={{ fontSize: "1rem" }}>🏷️</span>
+              <div>
+                <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text-primary,#1f2937)", margin: "0 0 2px" }}>Ocultar categorias</p>
+                <p style={{ fontSize: "0.72rem", color: "var(--text-muted,#9ca3af)", margin: 0 }}>Esconde as bolinhas no cardápio público</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setOcultarCategorias(v => !v)}
+              style={{
+                width: "48px", height: "26px", borderRadius: "13px", border: "none", cursor: "pointer",
+                background: ocultarCategorias ? "#ec4899" : "#e5e7eb",
+                position: "relative", transition: "background 0.2s", flexShrink: 0,
+              }}
+            >
+              <div style={{
+                width: "20px", height: "20px", borderRadius: "50%", background: "white",
+                position: "absolute", top: "3px", transition: "left 0.2s",
+                left: ocultarCategorias ? "25px" : "3px",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+              }} />
+            </button>
+          </div>
+        </div>
+
         {/* Feedback */}
         {error && <div className="cfg-toast cfg-toast-error">{error}</div>}
         {success && <div className="cfg-toast cfg-toast-success">✓ Salvo com sucesso!</div>}
