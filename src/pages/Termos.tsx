@@ -2,7 +2,7 @@ export default function Termos() {
   return (
     <div style={{ fontFamily: 'Inter, sans-serif', maxWidth: '720px', margin: '0 auto', padding: '2rem 1.5rem', color: '#374151', lineHeight: '1.7' }}>
       <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#111827', marginBottom: '0.25rem' }}>Termos de Uso</h1>
-      <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '2rem' }}>Última atualização: junho de 2025</p>
+      <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '2rem' }}>Última atualização: junho de 2026</p>
 
       <p>Bem-vindo ao <strong>Doonly</strong>. Ao criar uma conta e utilizar nosso serviço, você concorda com os seguintes Termos de Uso. Leia atentamente antes de usar a plataforma.</p>
 

@@ -270,7 +270,7 @@ export default function Auth() {
         .cadastro-link { background: none; border: none; color: #f9007a; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; text-decoration: underline; }
         .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .cadastro-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .cadastro-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .cadastro-modal { background: white; border-radius: 20px; width: 100%; max-width: 420px; max-height: 95vh; overflow-y: auto; padding: 2rem 2rem 2.5rem; position: relative; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
         .cadastro-back { position: absolute; top: 1.25rem; left: 1.25rem; width: 36px; height: 36px; border-radius: 50%; background: #f3f4f6; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #374151; transition: background 0.15s; }
         .cadastro-back:hover { background: #e5e7eb; }
