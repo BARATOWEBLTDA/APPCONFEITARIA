@@ -2,7 +2,7 @@ export default function Privacidade() {
   return (
     <div style={{ fontFamily: 'Inter, sans-serif', maxWidth: '720px', margin: '0 auto', padding: '2rem 1.5rem', color: '#374151', lineHeight: '1.7' }}>
       <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#111827', marginBottom: '0.25rem' }}>Política de Privacidade</h1>
-      <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '2rem' }}>Última atualização: junho de 2025</p>
+      <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '2rem' }}>Última atualização: junho de 2026</p>
 
       <p>A <strong>Doonly Tecnologia Ltda</strong> leva sua privacidade a sério. Esta política explica como coletamos, usamos e protegemos suas informações ao usar o Doonly.</p>
 
