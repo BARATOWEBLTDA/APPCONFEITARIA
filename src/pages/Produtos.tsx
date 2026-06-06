@@ -407,9 +407,9 @@ export default function Produtos() {
                     <label style={{ margin: 0 }}>Descrição</label>
                     <button
                       type="button"
-                      disabled={!form.nome.trim()}
+                      disabled={!form.nome.trim() || !isPro}
                       onClick={async () => {
-                        if (!form.nome.trim()) return;
+                        if (!form.nome.trim() || !isPro) return;
                         setForm(f => ({ ...f, descricao: "Gerando..." }));
                         try {
                           const res = await fetch("/api/gerar-descricao", {
@@ -424,9 +424,10 @@ export default function Produtos() {
                           setForm(f => ({ ...f, descricao: "" }));
                         }
                       }}
-                      style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: form.nome.trim() ? "linear-gradient(135deg,#F583BF,#e060a8)" : "#e5e7eb", color: "white", border: "none", borderRadius: "20px", fontFamily: "Inter, sans-serif", fontSize: "0.7rem", fontWeight: 700, cursor: form.nome.trim() ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}
+                      style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: (form.nome.trim() && isPro) ? "linear-gradient(135deg,#F583BF,#e060a8)" : "#e5e7eb", color: (form.nome.trim() && isPro) ? "white" : "#9ca3af", border: "none", borderRadius: "20px", fontFamily: "Inter, sans-serif", fontSize: "0.7rem", fontWeight: 700, cursor: (form.nome.trim() && isPro) ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}
+                      title={!isPro ? "Disponível apenas no plano PRO" : ""}
                     >
-                      ✨ Gerar com IA
+                      ✨ {isPro ? "Gerar com IA" : "IA — PRO"}
                     </button>
                   </div>
                   <textarea placeholder="Feito com ingredientes frescos e selecionados. Conte o que torna esse produto especial..." value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={3} />
