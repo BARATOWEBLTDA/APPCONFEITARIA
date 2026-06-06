@@ -321,7 +321,7 @@ export default function Produtos() {
                 <div className="prod-list-img" onClick={() => openEditar(p)}>
                   {p.imagem_url ? <img src={p.imagem_url.split(",")[0]} alt={p.nome} /> : <span style={{ fontSize: "1.5rem" }}>🎂</span>}
                   {!p.disponivel && <div className="prod-card-indisponivel">Indisponível</div>}
-                  {p.promocao && <div className="prod-card-promo">Promoção</div>}
+                  {p.promocao && <div style={{ position: "absolute", top: "3px", left: "3px", background: "#F583BF", color: "white", fontSize: "0.55rem", fontWeight: 700, padding: "2px 5px", borderRadius: "6px" }}>Promo</div>}
                 </div>
                 <div className="prod-list-info">
                   <p className="prod-card-cat" style={{ color: catInvalida ? "#f59e0b" : undefined }}>{catInvalida ? `⚠️ ${p.categoria}` : p.categoria}</p>
@@ -330,7 +330,7 @@ export default function Produtos() {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexShrink: 0 }}>
                   <button className="prod-card-btn-edit" onClick={() => openEditar(p)}>Editar</button>
-                  <button className="prod-card-btn-del" onClick={() => setDeleteConfirm(p.id!)}>
+                  <button onClick={() => setDeleteConfirm(p.id!)} style={{ width: "30px", height: "30px", background: "#fff1f2", border: "none", borderRadius: "8px", color: "#ef4444", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                   </button>
                 </div>
