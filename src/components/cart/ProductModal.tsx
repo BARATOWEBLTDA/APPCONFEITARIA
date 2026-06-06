@@ -174,8 +174,24 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                   <img src={images[(imgIndex + 1) % images.length]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'all 0.5s ease' }} />
                 </div>
               </div>
+            ) : images.length === 2 ? (
+              /* 2 imagens — 50/50 com destaque na selecionada */
+              <div style={{ display: 'flex', width: '100%', height: '100%', gap: '3px' }}
+                onTouchStart={e => { setTouchStart(e.touches[0].clientX); setTouchDelta(0); setDragging(true); }}
+                onTouchMove={e => { if (touchStart === null) return; setTouchDelta(e.touches[0].clientX - touchStart); }}
+                onTouchEnd={() => {
+                  if (Math.abs(touchDelta) > 40) setImgIndex(i => i === 0 ? 1 : 0);
+                  setTouchStart(null); setTouchDelta(0); setDragging(false);
+                }}
+              >
+                {images.map((img, i) => (
+                  <div key={i} onClick={() => setImgIndex(i)} style={{ width: '50%', height: '100%', overflow: 'hidden', flexShrink: 0, cursor: i !== imgIndex ? 'pointer' : 'default', opacity: i !== imgIndex ? 0.55 : 1, transition: 'opacity 0.5s ease' }}>
+                    <img src={img} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'all 0.5s ease' }} />
+                  </div>
+                ))}
+              </div>
             ) : images.length === 1 ? (
-              <img src={images[0]} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fdf2f8' }} />
+              <img src={images[0]} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             ) : (
               <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '64px' }}>🧁</div>
             )}
