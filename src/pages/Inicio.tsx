@@ -403,7 +403,6 @@ const load = async () => {
         step={quickStep}
         userId={profileUserId}
         profile={profile}
-        slug={profile?.slug}
         onClose={() => setQuickStep(null)}
         onSaved={async () => {
           const { data: { user } } = await supabase.auth.getUser();
