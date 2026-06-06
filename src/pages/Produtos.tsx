@@ -88,7 +88,8 @@ export default function Produtos() {
   const [novoKitItem, setNovoKitItem] = useState({ nome: "", quantidade: "" });
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [cropSlot, setCropSlot] = useState(0);
-  const [viewMode, setViewMode] = useState<"grid" | "lista">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "lista">(() => (localStorage.getItem("prod_viewMode") as "grid" | "lista") || "grid");
+  const [buscaTexto, setBuscaTexto] = useState("");
   const imgRef = useRef<HTMLInputElement>(null);
   const img2Ref = useRef<HTMLInputElement>(null);
   const img3Ref = useRef<HTMLInputElement>(null);
@@ -212,12 +213,14 @@ export default function Produtos() {
   const parsePreco = (s: string) => (parseInt(s.replace(/\D/g, "")) || 0) / 100;
 
   const produtosFiltrados = (() => {
-    if (filtroCategoria.startsWith("__busca__:")) {
-      const termo = filtroCategoria.replace("__busca__:", "");
-      return produtos.filter(p => p.nome.toLowerCase().includes(termo) || p.descricao?.toLowerCase().includes(termo));
+    let lista = produtos;
+    if (buscaTexto.trim()) {
+      const t = buscaTexto.toLowerCase();
+      lista = lista.filter(p => p.nome.toLowerCase().includes(t) || p.descricao?.toLowerCase().includes(t));
+    } else if (filtroCategoria !== "todas" && filtroCategoria !== "__orfaos__") {
+      lista = lista.filter(p => p.categoria === filtroCategoria);
     }
-    if (filtroCategoria === "todas" || filtroCategoria === "__orfaos__") return produtos;
-    return produtos.filter(p => p.categoria === filtroCategoria);
+    return lista;
   })();
   const todasCategorias = Array.from(new Set([...categorias, ...produtos.map(p => p.categoria).filter(Boolean)])).sort();
 
@@ -266,10 +269,10 @@ export default function Produtos() {
           <p className="prod-sub">{produtos.length} cadastrado{produtos.length !== 1 ? "s" : ""}</p>
         </div>
         <div style={{ display: "flex", background: "var(--bg-subtle,#f3f4f6)", borderRadius: "10px", padding: "3px", gap: "2px" }}>
-          <button onClick={() => setViewMode("grid")} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "grid" ? "white" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "grid" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
+          <button onClick={() => { setViewMode("grid"); localStorage.setItem("prod_viewMode", "grid"); }} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "grid" ? "white" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "grid" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "grid" ? "#ec4899" : "#9ca3af"} strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
           </button>
-          <button onClick={() => setViewMode("lista")} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "lista" ? "white" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "lista" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
+          <button onClick={() => { setViewMode("lista"); localStorage.setItem("prod_viewMode", "lista"); }} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "lista" ? "white" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "lista" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "lista" ? "#ec4899" : "#9ca3af"} strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
         </div>
@@ -281,11 +284,10 @@ export default function Produtos() {
         <input
           type="text"
           placeholder="Buscar produto..."
-          value={filtroCategoria === "__orfaos__" ? "" : ""}
+          value={buscaTexto}
           onChange={e => {
-            const v = e.target.value.toLowerCase();
-            if (!v) { setFiltroCategoria("todas"); return; }
-            setFiltroCategoria("__busca__:" + v);
+            setBuscaTexto(e.target.value);
+            setFiltroCategoria("todas");
           }}
           style={{ width: "100%", padding: "0.65rem 1rem 0.65rem 2.5rem", border: "1.5px solid var(--border,#e5e7eb)", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", outline: "none", boxSizing: "border-box", background: "var(--bg-card,white)" }}
         />
