@@ -146,58 +146,31 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
         {/* Imagem com carrossel coverflow */}
         <div style={{ position: 'relative', flexShrink: 0, overflow: 'hidden', borderRadius: '24px 24px 0 0' }}>
-          <div
-            style={{ width: '100%', height: '200px', background: 'white', position: 'relative', cursor: images.length > 1 ? 'grab' : 'default' }}
-            onTouchStart={e => { setTouchStart(e.touches[0].clientX); setTouchDelta(0); setDragging(true); }}
-            onTouchMove={e => { if (touchStart === null) return; setTouchDelta(e.touches[0].clientX - touchStart); }}
-            onTouchEnd={() => {
-              if (Math.abs(touchDelta) > 40) {
-                if (touchDelta < 0 && imgIndex < images.length - 1) setImgIndex(i => i + 1);
-                if (touchDelta > 0 && imgIndex > 0) setImgIndex(i => i - 1);
-              }
-              setTouchStart(null); setTouchDelta(0); setDragging(false);
-            }}
-            onMouseDown={e => { setTouchStart(e.clientX); setDragging(true); }}
-            onMouseMove={e => { if (!dragging || touchStart === null) return; setTouchDelta(e.clientX - touchStart); }}
-            onMouseUp={() => {
-              if (Math.abs(touchDelta) > 40) {
-                if (touchDelta < 0 && imgIndex < images.length - 1) setImgIndex(i => i + 1);
-                if (touchDelta > 0 && imgIndex > 0) setImgIndex(i => i - 1);
-              }
-              setTouchStart(null); setTouchDelta(0); setDragging(false);
-            }}
-            onMouseLeave={() => { setTouchStart(null); setTouchDelta(0); setDragging(false); }}
-          >
+          <div style={{ width: '100%', height: '200px', background: 'white', position: 'relative', cursor: images.length > 1 ? 'grab' : 'default' }}>
             {images.length > 1 ? (
-              /* Coverflow — imagens lado a lado com scale */
-              <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {images.map((img, i) => {
-                  const offset = i - imgIndex + (dragging ? touchDelta / 200 : 0)
-                  const isCenter = Math.abs(offset) < 0.5
-                  const scale = isCenter ? 1 : 0.75
-                  const translateX = offset * 75
-                  const opacity = Math.abs(offset) > 1.5 ? 0 : Math.abs(offset) > 1 ? 0.4 : 1
-                  const zIndex = isCenter ? 2 : 1
-                  return (
-                    <div key={i} onClick={() => !dragging && setImgIndex(i)} style={{
-                      position: 'absolute',
-                      width: '80%',
-                      height: '90%',
-                      transform: `translateX(${translateX}%) scale(${scale})`,
-                      transition: dragging ? 'none' : 'all 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                      opacity,
-                      zIndex,
-                      overflow: 'hidden',
-                      boxShadow: isCenter ? '0 8px 24px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.08)',
-                      cursor: isCenter ? 'default' : 'pointer',
-                    }}>
-                      {/* Fundo desfocado para eliminar faixas brancas */}
-                      <img src={img} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(12px)', transform: 'scale(1.1)', userSelect: 'none', pointerEvents: 'none' }} />
-                      {/* Imagem principal contain por cima */}
-                      <img src={img} alt={product.nome} style={{ position: 'relative', width: '100%', height: '100%', objectFit: 'contain', display: 'block', userSelect: 'none', pointerEvents: 'none', zIndex: 1 }} />
-                    </div>
-                  )
-                })}
+              <div style={{ display: 'flex', width: '100%', height: '100%' }}
+                onTouchStart={e => { setTouchStart(e.touches[0].clientX); setTouchDelta(0); setDragging(true); }}
+                onTouchMove={e => { if (touchStart === null) return; setTouchDelta(e.touches[0].clientX - touchStart); }}
+                onTouchEnd={() => {
+                  if (Math.abs(touchDelta) > 40) {
+                    if (touchDelta < 0 && imgIndex < images.length - 1) setImgIndex(i => i + 1);
+                    if (touchDelta > 0 && imgIndex > 0) setImgIndex(i => i - 1);
+                  }
+                  setTouchStart(null); setTouchDelta(0); setDragging(false);
+                }}
+              >
+                {/* Lateral esquerda — 25% */}
+                <div onClick={() => imgIndex > 0 && setImgIndex(i => i - 1)} style={{ width: '25%', height: '100%', overflow: 'hidden', cursor: imgIndex > 0 ? 'pointer' : 'default', opacity: imgIndex > 0 ? 0.6 : 0, transition: 'opacity 0.3s', flexShrink: 0 }}>
+                  {images[imgIndex - 1] && <img src={images[imgIndex - 1]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                </div>
+                {/* Central — 50% */}
+                <div style={{ width: '50%', height: '100%', overflow: 'hidden', flexShrink: 0, transition: 'all 0.55s cubic-bezier(0.25,0.46,0.45,0.94)' }}>
+                  <img src={images[imgIndex]} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', userSelect: 'none', pointerEvents: 'none' }} />
+                </div>
+                {/* Lateral direita — 25% */}
+                <div onClick={() => imgIndex < images.length - 1 && setImgIndex(i => i + 1)} style={{ width: '25%', height: '100%', overflow: 'hidden', cursor: imgIndex < images.length - 1 ? 'pointer' : 'default', opacity: imgIndex < images.length - 1 ? 0.6 : 0, transition: 'opacity 0.3s', flexShrink: 0 }}>
+                  {images[imgIndex + 1] && <img src={images[imgIndex + 1]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                </div>
               </div>
             ) : images.length === 1 ? (
               <img src={images[0]} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fdf2f8' }} />
