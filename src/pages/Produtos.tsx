@@ -321,12 +321,14 @@ export default function Produtos() {
                 <div className="prod-list-img" onClick={() => openEditar(p)}>
                   {p.imagem_url ? <img src={p.imagem_url.split(",")[0]} alt={p.nome} /> : <span style={{ fontSize: "1.5rem" }}>🎂</span>}
                   {!p.disponivel && <div className="prod-card-indisponivel">Indisponível</div>}
-                  {p.promocao && <div style={{ position: "absolute", top: "3px", left: "3px", background: "#F583BF", color: "white", fontSize: "0.55rem", fontWeight: 700, padding: "2px 5px", borderRadius: "6px" }}>Promo</div>}
                 </div>
-                <div className="prod-list-info">
-                  <p className="prod-card-cat" style={{ color: catInvalida ? "#f59e0b" : undefined }}>{catInvalida ? `⚠️ ${p.categoria}` : p.categoria}</p>
-                  <p className="prod-card-nome">{p.nome}</p>
-                  <p className="prod-card-preco">R$ {formatPreco(p.preco_normal)}</p>
+                <div className="prod-list-info" style={{ textAlign: "center" }}>
+                  <p className="prod-card-cat" style={{ color: catInvalida ? "#f59e0b" : undefined, textAlign: "center" }}>{catInvalida ? `⚠️ ${p.categoria}` : p.categoria}</p>
+                  <p className="prod-card-nome" style={{ textAlign: "center" }}>{p.nome}</p>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}>
+                    <p className="prod-card-preco" style={{ margin: 0 }}>R$ {formatPreco(p.preco_normal)}</p>
+                    {p.promocao && <span style={{ background: "#F583BF", color: "white", fontSize: "0.55rem", fontWeight: 700, padding: "2px 5px", borderRadius: "6px" }}>Promoção</span>}
+                  </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexShrink: 0 }}>
                   <button className="prod-card-btn-edit" onClick={() => openEditar(p)}>Editar</button>
