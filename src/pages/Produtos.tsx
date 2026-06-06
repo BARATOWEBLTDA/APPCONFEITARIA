@@ -403,7 +403,32 @@ export default function Produtos() {
                   </select>
                 </div>
                 <div className="prod-field">
-                  <label>Descrição</label>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+                    <label style={{ margin: 0 }}>Descrição</label>
+                    <button
+                      type="button"
+                      disabled={!form.nome.trim()}
+                      onClick={async () => {
+                        if (!form.nome.trim()) return;
+                        setForm(f => ({ ...f, descricao: "Gerando..." }));
+                        try {
+                          const res = await fetch("/api/gerar-descricao", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ prompt: `Crie uma descrição curta e atraente para um produto de confeitaria chamado "${form.nome}". Máximo 120 caracteres, português brasileiro, transmita qualidade e sabor. Retorne APENAS a descrição, sem aspas.` })
+                          });
+                          const data = await res.json();
+                          const desc = data.content?.[0]?.text?.trim() || "";
+                          setForm(f => ({ ...f, descricao: desc }));
+                        } catch {
+                          setForm(f => ({ ...f, descricao: "" }));
+                        }
+                      }}
+                      style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: form.nome.trim() ? "linear-gradient(135deg,#F583BF,#e060a8)" : "#e5e7eb", color: "white", border: "none", borderRadius: "20px", fontFamily: "Inter, sans-serif", fontSize: "0.7rem", fontWeight: 700, cursor: form.nome.trim() ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}
+                    >
+                      ✨ Gerar com IA
+                    </button>
+                  </div>
                   <textarea placeholder="Feito com ingredientes frescos e selecionados. Conte o que torna esse produto especial..." value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={3} />
                 </div>
               </div>
