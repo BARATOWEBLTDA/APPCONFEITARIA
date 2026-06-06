@@ -187,9 +187,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                       transition: dragging ? 'none' : 'all 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                       opacity,
                       zIndex,
-                      borderRadius: '14px',
                       overflow: 'hidden',
-                      boxShadow: isCenter ? '0 8px 24px rgba(0,0,0,0.18)' : '0 4px 12px rgba(0,0,0,0.1)',
+                      boxShadow: isCenter ? '0 8px 24px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.08)',
                       cursor: isCenter ? 'default' : 'pointer',
                       background: 'white',
                     }}>
