@@ -109,7 +109,7 @@ export default function EsqueciSenha() {
               {error && <p className="auth-error">{error}</p>}
 
               <button type="submit" className="auth-btn" disabled={loading}>
-                {loading ? <span className="spinner" /> : "Enviar link de recuperação"}
+                {loading ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><span className="spinner" /> Enviando...</span> : "Enviar link de recuperação"}
               </button>
 
               <button type="button" className="back-btn" onClick={() => navigate("/login")}>
