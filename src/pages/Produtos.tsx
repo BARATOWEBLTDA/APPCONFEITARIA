@@ -211,7 +211,14 @@ export default function Produtos() {
   const formatPreco = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const parsePreco = (s: string) => (parseInt(s.replace(/\D/g, "")) || 0) / 100;
 
-  const produtosFiltrados = filtroCategoria === "todas" ? produtos : produtos.filter(p => p.categoria === filtroCategoria);
+  const produtosFiltrados = (() => {
+    if (filtroCategoria.startsWith("__busca__:")) {
+      const termo = filtroCategoria.replace("__busca__:", "");
+      return produtos.filter(p => p.nome.toLowerCase().includes(termo) || p.descricao?.toLowerCase().includes(termo));
+    }
+    if (filtroCategoria === "todas" || filtroCategoria === "__orfaos__") return produtos;
+    return produtos.filter(p => p.categoria === filtroCategoria);
+  })();
   const todasCategorias = Array.from(new Set([...categorias, ...produtos.map(p => p.categoria).filter(Boolean)])).sort();
 
   const Toggle = ({ label, value, onChange, colorClass }: any) => (
@@ -248,26 +255,40 @@ export default function Produtos() {
       />
     )}
     <div className="prod-root">
-      <div className="prod-header">
-        <div>
+      {/* Header: Novo produto | título | toggle */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "1.5rem" }}>
+        <button className="prod-btn-novo" onClick={openNovo}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Novo
+        </button>
+        <div style={{ textAlign: "center" }}>
           <h1 className="prod-title">Produtos</h1>
-          <p className="prod-sub">{produtos.length} produto{produtos.length !== 1 ? "s" : ""} cadastrado{produtos.length !== 1 ? "s" : ""}</p>
+          <p className="prod-sub">{produtos.length} cadastrado{produtos.length !== 1 ? "s" : ""}</p>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          {/* Toggle grid/lista */}
-          <div style={{ display: "flex", background: "var(--bg-subtle,#f3f4f6)", borderRadius: "10px", padding: "3px", gap: "2px" }}>
-            <button onClick={() => setViewMode("grid")} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "grid" ? "white" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "grid" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "grid" ? "#ec4899" : "#9ca3af"} strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-            </button>
-            <button onClick={() => setViewMode("lista")} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "lista" ? "white" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "lista" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "lista" ? "#ec4899" : "#9ca3af"} strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </button>
-          </div>
-          <button className="prod-btn-novo" onClick={openNovo}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Novo produto
+        <div style={{ display: "flex", background: "var(--bg-subtle,#f3f4f6)", borderRadius: "10px", padding: "3px", gap: "2px" }}>
+          <button onClick={() => setViewMode("grid")} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "grid" ? "white" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "grid" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "grid" ? "#ec4899" : "#9ca3af"} strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button onClick={() => setViewMode("lista")} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "lista" ? "white" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "lista" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "lista" ? "#ec4899" : "#9ca3af"} strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
         </div>
+      </div>
+
+      {/* Barra de pesquisa */}
+      <div style={{ position: "relative" }}>
+        <svg style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          type="text"
+          placeholder="Buscar produto..."
+          value={filtroCategoria === "__orfaos__" ? "" : ""}
+          onChange={e => {
+            const v = e.target.value.toLowerCase();
+            if (!v) { setFiltroCategoria("todas"); return; }
+            setFiltroCategoria("__busca__:" + v);
+          }}
+          style={{ width: "100%", padding: "0.65rem 1rem 0.65rem 2.5rem", border: "1.5px solid var(--border,#e5e7eb)", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", outline: "none", boxSizing: "border-box", background: "var(--bg-card,white)" }}
+        />
       </div>
 
       {/* Aviso de produtos sem categoria válida */}
@@ -828,8 +849,8 @@ export default function Produtos() {
         .prod-title { font-size:1.3rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.15rem; }
         .prod-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0; }
         .prod-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.7rem 1.2rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; }
-        .prod-filtros { display:flex; gap:0.5rem; flex-wrap:wrap; }
-        .prod-filtro-btn { padding:0.35rem 0.85rem; border:1.5px solid var(--border,#e5e7eb); border-radius:20px; background:var(--bg-card,white); font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:500; color:var(--text-secondary,#6b7280); cursor:pointer; }
+        .prod-filtros { display:flex; gap:0.4rem; flex-wrap:wrap; }
+        .prod-filtro-btn { padding:0.35rem 0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:8px; background:var(--bg-card,white); font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:500; color:var(--text-secondary,#6b7280); cursor:pointer; }
         .prod-filtro-btn.active { border-color:#F583BF; color:#F583BF; background:#fdf2f8; font-weight:700; }
         .prod-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; padding:3rem 1rem; text-align:center; }
         .prod-empty-title { font-size:1rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0; }
