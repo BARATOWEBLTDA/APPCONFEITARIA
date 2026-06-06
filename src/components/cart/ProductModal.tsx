@@ -21,6 +21,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   const [selectedTamanho, setSelectedTamanho] = useState<any>(null)
   const [showObs, setShowObs] = useState(false)
   const [imgIndex, setImgIndex] = useState(0)
+  const [touchStart, setTouchStart] = useState<number | null>(null)
+  const [touchDelta, setTouchDelta] = useState(0)
+  const [dragging, setDragging] = useState(false)
 
   const [selectedVela, setSelectedVela] = useState(false)
   const [selectedTopo, setSelectedTopo] = useState(false)
@@ -139,25 +142,44 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       }}>
 
         {/* Imagem com carrossel */}
-        <div style={{ position: 'relative', flexShrink: 0 }}>
-          <div style={{ width: '100%', height: '200px', background: '#fdf2f8', overflow: 'hidden', borderRadius: '24px 24px 0 0', position: 'relative' }}>
-            {/* Slides */}
-            <div style={{ display: 'flex', height: '100%', transition: 'transform 0.4s ease', transform: `translateX(-${imgIndex * 100}%)` }}>
+        <div style={{ position: 'relative', flexShrink: 0, overflow: 'hidden', borderRadius: '24px 24px 0 0' }}>
+          <div
+            style={{ width: '100%', height: '200px', background: '#fdf2f8', overflow: 'hidden', position: 'relative', cursor: images.length > 1 ? 'grab' : 'default' }}
+            onTouchStart={e => { setTouchStart(e.touches[0].clientX); setTouchDelta(0); setDragging(true); }}
+            onTouchMove={e => { if (touchStart === null) return; setTouchDelta(e.touches[0].clientX - touchStart); }}
+            onTouchEnd={() => {
+              if (Math.abs(touchDelta) > 50) {
+                if (touchDelta < 0 && imgIndex < images.length - 1) setImgIndex(i => i + 1);
+                if (touchDelta > 0 && imgIndex > 0) setImgIndex(i => i - 1);
+              }
+              setTouchStart(null); setTouchDelta(0); setDragging(false);
+            }}
+            onMouseDown={e => { setTouchStart(e.clientX); setDragging(true); }}
+            onMouseMove={e => { if (!dragging || touchStart === null) return; setTouchDelta(e.clientX - touchStart); }}
+            onMouseUp={() => {
+              if (Math.abs(touchDelta) > 50) {
+                if (touchDelta < 0 && imgIndex < images.length - 1) setImgIndex(i => i + 1);
+                if (touchDelta > 0 && imgIndex > 0) setImgIndex(i => i - 1);
+              }
+              setTouchStart(null); setTouchDelta(0); setDragging(false);
+            }}
+            onMouseLeave={() => { setTouchStart(null); setTouchDelta(0); setDragging(false); }}
+          >
+            <div style={{ display: 'flex', height: '100%', transition: dragging ? 'none' : 'transform 0.4s ease', transform: `translateX(calc(-${imgIndex * 100}% + ${dragging ? touchDelta : 0}px))` }}>
               {images.length > 0 ? images.map((img, i) => (
-                <img key={i} src={img} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'contain', flexShrink: 0, background: '#fdf2f8' }} />
+                <img key={i} src={img} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'contain', flexShrink: 0, background: '#fdf2f8', userSelect: 'none', pointerEvents: 'none' }} />
               )) : (
                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '64px', flexShrink: 0 }}>🧁</div>
               )}
             </div>
 
-            {/* Setas de navegação se tiver mais de 1 foto */}
             {images.length > 1 && imgIndex > 0 && (
-              <button onClick={() => setImgIndex(i => i - 1)} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+              <button onClick={() => setImgIndex(i => i - 1)} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', zIndex: 3 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
               </button>
             )}
             {images.length > 1 && imgIndex < images.length - 1 && (
-              <button onClick={() => setImgIndex(i => i + 1)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' }}>
+              <button onClick={() => setImgIndex(i => i + 1)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', zIndex: 3 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
             )}
@@ -165,28 +187,29 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
           {/* Pontos indicadores */}
           {images.length > 1 && (
-            <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px' }}>
+            <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px', zIndex: 3 }}>
               {images.map((_, i) => (
                 <button key={i} onClick={() => setImgIndex(i)} style={{ width: i === imgIndex ? '20px' : '8px', height: '8px', borderRadius: '4px', background: i === imgIndex ? '#ec4899' : 'rgba(236,72,153,0.35)', border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.3s' }} />
               ))}
             </div>
           )}
 
-          <button onClick={onClose} style={{ position: 'absolute', top: '10px', right: '10px', width: '32px', height: '32px', borderRadius: '50%', background: '#ec4899', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(236,72,153,0.4)' }}>
+          <button onClick={onClose} style={{ position: 'absolute', top: '10px', right: '10px', width: '32px', height: '32px', borderRadius: '50%', background: '#ec4899', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(236,72,153,0.4)', zIndex: 3 }}>
             <X size={16} color="white" strokeWidth={2.5} />
           </button>
 
+          {/* Faixa diagonal promoção */}
           {product.promocao && (
-            <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'linear-gradient(135deg, #ec4899, #f472b6)', color: 'white', fontSize: '11px', fontWeight: 800, padding: '4px 10px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(236,72,153,0.4)' }}>PROMOÇÃO</div>
+            <div style={{ position: 'absolute', top: '22px', left: '-32px', background: 'linear-gradient(135deg, #ec4899, #f472b6)', color: 'white', fontSize: '10px', fontWeight: 800, padding: '5px 40px', transform: 'rotate(-45deg)', zIndex: 3, letterSpacing: '0.05em', boxShadow: '0 2px 8px rgba(236,72,153,0.4)' }}>PROMOÇÃO</div>
           )}
 
           {/* Badge pronta entrega / encomenda */}
           {prontaEntrega ? (
-            <div style={{ position: 'absolute', bottom: images.length > 1 ? '28px' : '10px', left: '10px', background: 'linear-gradient(135deg, #ec4899, #f472b6)', color: 'white', fontSize: '11px', fontWeight: 800, padding: '4px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 8px rgba(236,72,153,0.35)' }}>
-              🔥 Pronta entrega
+            <div style={{ position: 'absolute', bottom: images.length > 1 ? '28px' : '10px', left: '10px', background: 'linear-gradient(135deg, #ec4899, #f472b6)', color: 'white', fontSize: '11px', fontWeight: 800, padding: '4px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 8px rgba(236,72,153,0.35)', zIndex: 3 }}>
+              ✓ Pronta entrega
             </div>
           ) : (
-            <div style={{ position: 'absolute', bottom: images.length > 1 ? '28px' : '10px', left: '10px', background: 'rgba(0,0,0,0.55)', color: 'white', fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px', backdropFilter: 'blur(4px)' }}>
+            <div style={{ position: 'absolute', bottom: images.length > 1 ? '28px' : '10px', left: '10px', background: 'rgba(0,0,0,0.55)', color: 'white', fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '8px', backdropFilter: 'blur(4px)', zIndex: 3 }}>
               ⏱ Sob encomenda
             </div>
           )}
