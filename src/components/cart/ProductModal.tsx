@@ -373,7 +373,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
         </div>
 
         {/* Rodapé */}
-        <div style={{ padding: '12px 16px 24px', borderTop: '1px solid #f3f4f6', background: 'white', flexShrink: 0 }}>
+        <div style={{ padding: '12px 16px 24px', borderTop: '1px solid #f3f4f6', background: 'white', flexShrink: 0, borderRadius: '0 0 24px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden' }}>
               <button onClick={dec} style={{ width: '40px', height: '44px', background: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
