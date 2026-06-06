@@ -190,9 +190,11 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                       overflow: 'hidden',
                       boxShadow: isCenter ? '0 8px 24px rgba(0,0,0,0.15)' : '0 2px 8px rgba(0,0,0,0.08)',
                       cursor: isCenter ? 'default' : 'pointer',
-                      background: 'white',
                     }}>
-                      <img src={img} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', userSelect: 'none', pointerEvents: 'none' }} />
+                      {/* Fundo desfocado para eliminar faixas brancas */}
+                      <img src={img} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(12px)', transform: 'scale(1.1)', userSelect: 'none', pointerEvents: 'none' }} />
+                      {/* Imagem principal contain por cima */}
+                      <img src={img} alt={product.nome} style={{ position: 'relative', width: '100%', height: '100%', objectFit: 'contain', display: 'block', userSelect: 'none', pointerEvents: 'none', zIndex: 1 }} />
                     </div>
                   )
                 })}
