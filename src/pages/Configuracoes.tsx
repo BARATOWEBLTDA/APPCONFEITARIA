@@ -264,6 +264,7 @@ export default function Configuracoes() {
             {plano === "pro" && <span className="cfg-badge cfg-badge-pro">✨ Acesso PRO ativo</span>}
             {plano === "trial" && <span className="cfg-badge cfg-badge-trial">Plano Grátis</span>}
             {plano === "expirado" && <span className="cfg-badge cfg-badge-expirado">⚠️ Período expirado · <u style={{cursor:"pointer"}} onClick={() => navigate("/assinar")}>Assinar agora</u></span>}
+            <span style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.5)", marginTop: "2px" }}>Doonly v1.0.0</span>
           </div>
           <div className="cfg-hero-avatar" onClick={() => !uploading && fileRef.current?.click()}>
             {preview ? <img src={preview} alt="foto" className="cfg-hero-img" /> : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
@@ -354,6 +355,9 @@ export default function Configuracoes() {
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>} placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={(e: any) => setExcluirConfirm(e.target.value)} />
               <button onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"} style={{ padding: "0.75rem", background: excluirConfirm === "EXCLUIR" ? "#ef4444" : "#f3f4f6", color: excluirConfirm === "EXCLUIR" ? "white" : "#9ca3af", border: "none", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", fontWeight: 700, cursor: excluirConfirm === "EXCLUIR" ? "pointer" : "not-allowed" }}>
                 Excluir minha conta
+              </button>
+              <button onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }} style={{ padding: "0.75rem", background: "none", border: "1.5px solid #e5e7eb", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", fontWeight: 600, color: "#6b7280", cursor: "pointer" }}>
+                Cancelar
               </button>
             </div>
           )}
