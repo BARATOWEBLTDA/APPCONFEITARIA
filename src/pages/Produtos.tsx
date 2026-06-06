@@ -415,7 +415,7 @@ export default function Produtos() {
                           const res = await fetch("/api/gerar-descricao", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ prompt: `Crie uma descrição curta e atraente para um produto de confeitaria chamado "${form.nome}". Máximo 120 caracteres, português brasileiro, transmita qualidade e sabor. Retorne APENAS a descrição, sem aspas.` })
+                            body: JSON.stringify({ prompt: `Crie uma descrição MUITO curta e atraente para um produto de confeitaria chamado "${form.nome}". MÁXIMO 2 frases curtas (até 100 caracteres no total). Português brasileiro, transmita qualidade e sabor. Retorne APENAS a descrição, sem aspas, sem emojis.` })
                           });
                           const data = await res.json();
                           const desc = data.content?.[0]?.text?.trim() || "";
