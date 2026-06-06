@@ -140,11 +140,11 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
         {/* Imagem com carrossel */}
         <div style={{ position: 'relative', flexShrink: 0 }}>
-          <div style={{ width: '100%', height: '260px', background: '#fdf2f8', overflow: 'hidden', borderRadius: '24px 24px 0 0', position: 'relative' }}>
+          <div style={{ width: '100%', height: '200px', background: '#fdf2f8', overflow: 'hidden', borderRadius: '24px 24px 0 0', position: 'relative' }}>
             {/* Slides */}
             <div style={{ display: 'flex', height: '100%', transition: 'transform 0.4s ease', transform: `translateX(-${imgIndex * 100}%)` }}>
               {images.length > 0 ? images.map((img, i) => (
-                <img key={i} src={img} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover', flexShrink: 0 }} />
+                <img key={i} src={img} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'contain', flexShrink: 0, background: '#fdf2f8' }} />
               )) : (
                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '64px', flexShrink: 0 }}>🧁</div>
               )}
@@ -167,7 +167,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           {images.length > 1 && (
             <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px' }}>
               {images.map((_, i) => (
-                <button key={i} onClick={() => setImgIndex(i)} style={{ width: i === imgIndex ? '20px' : '8px', height: '8px', borderRadius: '4px', background: i === imgIndex ? 'white' : 'rgba(255,255,255,0.5)', border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.3s' }} />
+                <button key={i} onClick={() => setImgIndex(i)} style={{ width: i === imgIndex ? '20px' : '8px', height: '8px', borderRadius: '4px', background: i === imgIndex ? '#ec4899' : 'rgba(236,72,153,0.35)', border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.3s' }} />
               ))}
             </div>
           )}
@@ -177,12 +177,12 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           </button>
 
           {product.promocao && (
-            <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#ef4444', color: 'white', fontSize: '11px', fontWeight: 800, padding: '3px 10px', borderRadius: '50px' }}>PROMOÇÃO</div>
+            <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'linear-gradient(135deg, #ec4899, #f472b6)', color: 'white', fontSize: '11px', fontWeight: 800, padding: '4px 10px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(236,72,153,0.4)' }}>PROMOÇÃO</div>
           )}
 
           {/* Badge pronta entrega / encomenda */}
           {prontaEntrega ? (
-            <div style={{ position: 'absolute', bottom: images.length > 1 ? '28px' : '10px', left: '10px', background: 'linear-gradient(135deg, #f97316, #ef4444)', color: 'white', fontSize: '11px', fontWeight: 800, padding: '4px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 8px rgba(249,115,22,0.5)', animation: 'pulse 1.5s ease-in-out infinite' }}>
+            <div style={{ position: 'absolute', bottom: images.length > 1 ? '28px' : '10px', left: '10px', background: 'linear-gradient(135deg, #ec4899, #f472b6)', color: 'white', fontSize: '11px', fontWeight: 800, padding: '4px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 8px rgba(236,72,153,0.35)' }}>
               🔥 Pronta entrega
             </div>
           ) : (
@@ -197,20 +197,18 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
           {/* Nome, forma de venda e preço */}
           <div>
-            <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#111827', margin: '0 0 4px' }}>{product.nome}</h3>
-            <span style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>
-              Vendido por {FORMA_LABEL[product.forma_venda] || product.forma_venda}
-            </span>
-            {product.descricao && <p style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.5', margin: '6px 0 0' }}>{product.descricao}</p>}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '8px' }}>
-              {product.promocao && product.preco_promocional ? (
+            <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#111827', margin: '0 0 6px' }}>{product.nome}</h3>
+            {product.descricao && <p style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.5', margin: '0 0 8px' }}>{product.descricao}</p>}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+              {product.promocao && unitPrice < product.preco_normal ? (
                 <>
                   <span style={{ fontSize: '13px', color: '#9ca3af', textDecoration: 'line-through' }}>{formatCurrency(product.preco_normal)}</span>
-                  <span style={{ fontSize: '20px', fontWeight: 800, color: '#ec4899' }}>{formatCurrency(product.preco_promocional)}</span>
+                  <span style={{ fontSize: '20px', fontWeight: 800, color: '#ec4899' }}>{formatCurrency(unitPrice)}</span>
                 </>
               ) : (
                 <span style={{ fontSize: '20px', fontWeight: 800, color: '#ec4899' }}>{formatCurrency(basePrice)}</span>
               )}
+              <span style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>/ {FORMA_LABEL[product.forma_venda] || product.forma_venda}</span>
             </div>
           </div>
 
@@ -335,15 +333,10 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             </div>
           )}
 
-          {/* Observações */}
+          {/* Observações — sempre abertas */}
           <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '14px' }}>
-            <button onClick={() => setShowObs(v => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#1f2937' }}>Alguma observação?</span>
-              {showObs ? <ChevronUp size={18} color="#9ca3af" /> : <ChevronDown size={18} color="#9ca3af" />}
-            </button>
-            {showObs && (
-              <textarea value={observations} onChange={e => setObservations(e.target.value)} placeholder="Ex: sem cereja, embalagem para presente..." style={{ width: '100%', marginTop: '10px', padding: '12px', border: '1.5px solid #e5e7eb', borderRadius: '12px', fontSize: '14px', color: '#374151', resize: 'none', minHeight: '70px', boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none' }} />
-            )}
+            <span style={{ fontSize: '13px', fontWeight: 700, color: '#1f2937', display: 'block', marginBottom: '8px' }}>Alguma observação?</span>
+            <textarea value={observations} onChange={e => setObservations(e.target.value)} placeholder="Ex: sem cereja, embalagem para presente..." style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: '12px', fontSize: '13px', color: '#374151', resize: 'none', minHeight: '64px', boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none' }} />
           </div>
 
           <div style={{ height: '4px' }} />
