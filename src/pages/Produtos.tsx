@@ -88,6 +88,7 @@ export default function Produtos() {
   const [novoKitItem, setNovoKitItem] = useState({ nome: "", quantidade: "" });
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [cropSlot, setCropSlot] = useState(0);
+  const [viewMode, setViewMode] = useState<"grid" | "lista">("grid");
   const imgRef = useRef<HTMLInputElement>(null);
   const img2Ref = useRef<HTMLInputElement>(null);
   const img3Ref = useRef<HTMLInputElement>(null);
@@ -252,10 +253,21 @@ export default function Produtos() {
           <h1 className="prod-title">Produtos</h1>
           <p className="prod-sub">{produtos.length} produto{produtos.length !== 1 ? "s" : ""} cadastrado{produtos.length !== 1 ? "s" : ""}</p>
         </div>
-        <button className="prod-btn-novo" onClick={openNovo}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Novo produto
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {/* Toggle grid/lista */}
+          <div style={{ display: "flex", background: "var(--bg-subtle,#f3f4f6)", borderRadius: "10px", padding: "3px", gap: "2px" }}>
+            <button onClick={() => setViewMode("grid")} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "grid" ? "white" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "grid" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "grid" ? "#ec4899" : "#9ca3af"} strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            </button>
+            <button onClick={() => setViewMode("lista")} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "lista" ? "white" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "lista" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "lista" ? "#ec4899" : "#9ca3af"} strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+          </div>
+          <button className="prod-btn-novo" onClick={openNovo}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Novo produto
+          </button>
+        </div>
       </div>
 
       {/* Aviso de produtos sem categoria válida */}
@@ -298,12 +310,32 @@ export default function Produtos() {
           <p className="prod-empty-sub">Cadastre seu primeiro produto para aparecer no cardápio</p>
         </div>
       ) : (
-        <div className="prod-grid">
+        <div className={viewMode === "grid" ? "prod-grid" : "prod-list"}>
           {(filtroCategoria === "__orfaos__"
             ? produtos.filter(p => p.categoria && !categorias.includes(p.categoria))
             : produtosFiltrados
           ).map(p => {
             const catInvalida = p.categoria && !categorias.includes(p.categoria);
+            if (viewMode === "lista") return (
+              <div key={p.id} className="prod-list-item" style={{ outline: catInvalida ? "2px solid #fcd34d" : "none" }}>
+                <div className="prod-list-img" onClick={() => openEditar(p)}>
+                  {p.imagem_url ? <img src={p.imagem_url.split(",")[0]} alt={p.nome} /> : <span style={{ fontSize: "1.5rem" }}>🎂</span>}
+                  {!p.disponivel && <div className="prod-card-indisponivel">Indisponível</div>}
+                  {p.promocao && <div className="prod-card-promo">Promoção</div>}
+                </div>
+                <div className="prod-list-info">
+                  <p className="prod-card-cat" style={{ color: catInvalida ? "#f59e0b" : undefined }}>{catInvalida ? `⚠️ ${p.categoria}` : p.categoria}</p>
+                  <p className="prod-card-nome">{p.nome}</p>
+                  <p className="prod-card-preco">R$ {formatPreco(p.preco_normal)}</p>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexShrink: 0 }}>
+                  <button className="prod-card-btn-edit" onClick={() => openEditar(p)}>Editar</button>
+                  <button className="prod-card-btn-del" onClick={() => setDeleteConfirm(p.id!)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                  </button>
+                </div>
+              </div>
+            );
             return (
             <div key={p.id} className="prod-card" style={{ outline: catInvalida ? "2px solid #fcd34d" : "none" }}>
               <div className="prod-card-img" onClick={() => openEditar(p)}>
@@ -802,6 +834,11 @@ export default function Produtos() {
         .prod-empty-title { font-size:1rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0; }
         .prod-empty-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0; }
         .prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.75rem; }
+        .prod-list { display:flex; flex-direction:column; gap:0.5rem; }
+        .prod-list-item { background:var(--bg-card,white); border-radius:14px; padding:0.65rem; display:flex; align-items:center; gap:0.85rem; box-shadow:var(--shadow-card,0 2px 8px rgba(0,0,0,0.06)); }
+        .prod-list-img { width:64px; height:64px; border-radius:10px; overflow:hidden; background:#fdf2f8; display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative; cursor:pointer; }
+        .prod-list-img img { width:100%; height:100%; object-fit:cover; }
+        .prod-list-info { flex:1; min-width:0; }
         .prod-card { background:var(--bg-card,white); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-card,0 2px 8px rgba(0,0,0,0.06)); display:flex; flex-direction:column; }
         .prod-card-img { aspect-ratio:1; background:var(--bg-subtle,#f9fafb); display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; overflow:hidden; }
         .prod-card-img img { width:100%; height:100%; object-fit:cover; }
