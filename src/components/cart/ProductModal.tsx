@@ -34,7 +34,10 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     if (product) {
       setQuantity(1); setObservations(''); setSelectedMassa('')
       setSelectedRecheio(''); setSelectedCobertura(''); setShowObs(false)
-      setImgIndex(0); setSelectedVela(false); setSelectedTopo(false); setSelectedPapelArroz(false); setSelectedOutro(false)
+      setSelectedVela(false); setSelectedTopo(false); setSelectedPapelArroz(false); setSelectedOutro(false)
+      const imgs = product.imagem_url?.split(',').map((s: string) => s.trim()).filter(Boolean) || []
+      const middleIndex = Math.floor(imgs.length / 2)
+      setImgIndex(middleIndex)
       const tamanhos = (product as any).tamanhos_disponiveis
       setSelectedTamanho(tamanhos?.length > 0 ? tamanhos[0] : null)
     }
@@ -181,15 +184,16 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                       width: '65%',
                       height: '85%',
                       transform: `translateX(${translateX}%) scale(${scale})`,
-                      transition: dragging ? 'none' : 'all 0.35s ease',
+                      transition: dragging ? 'none' : 'all 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                       opacity,
                       zIndex,
                       borderRadius: '14px',
                       overflow: 'hidden',
                       boxShadow: isCenter ? '0 8px 24px rgba(0,0,0,0.18)' : '0 4px 12px rgba(0,0,0,0.1)',
                       cursor: isCenter ? 'default' : 'pointer',
+                      background: '#fdf2f8',
                     }}>
-                      <img src={img} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fdf2f8', userSelect: 'none', pointerEvents: 'none' }} />
+                      <img src={img} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', userSelect: 'none', pointerEvents: 'none' }} />
                     </div>
                   )
                 })}
@@ -218,17 +222,6 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           {product.promocao && (
             <div style={{ position: 'absolute', top: '22px', left: '-32px', background: 'linear-gradient(135deg, #ec4899, #f472b6)', color: 'white', fontSize: '10px', fontWeight: 800, padding: '5px 40px', transform: 'rotate(-45deg)', zIndex: 4, letterSpacing: '0.05em', boxShadow: '0 2px 8px rgba(236,72,153,0.4)' }}>PROMOÇÃO</div>
           )}
-
-          {/* Badge pronta entrega / encomenda */}
-          {prontaEntrega ? (
-            <div style={{ position: 'absolute', bottom: images.length > 1 ? '28px' : '10px', left: '10px', background: 'linear-gradient(135deg, #ec4899, #f472b6)', color: 'white', fontSize: '11px', fontWeight: 800, padding: '4px 10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px', boxShadow: '0 2px 8px rgba(236,72,153,0.35)', zIndex: 3 }}>
-              ✓ Pronta entrega
-            </div>
-          ) : (
-            <div style={{ position: 'absolute', bottom: images.length > 1 ? '28px' : '10px', left: '10px', background: 'rgba(0,0,0,0.55)', color: 'white', fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '8px', backdropFilter: 'blur(4px)', zIndex: 3 }}>
-              ⏱ Sob encomenda
-            </div>
-          )}
         </div>
 
         {/* Conteúdo */}
@@ -237,6 +230,12 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           {/* Nome, forma de venda e preço */}
           <div>
             <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#111827', margin: '0 0 6px' }}>{product.nome}</h3>
+            {/* Badge pronta entrega abaixo do título */}
+            {prontaEntrega ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#fdf2f8', color: '#ec4899', fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', border: '1px solid #fce7f3', marginBottom: '6px' }}>✓ Pronta entrega</span>
+            ) : (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#f3f4f6', color: '#6b7280', fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', marginBottom: '6px' }}>⏱ Sob encomenda</span>
+            )}
             {product.descricao && <p style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.5', margin: '0 0 8px' }}>{product.descricao}</p>}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
               {product.promocao && unitPrice < product.preco_normal ? (
