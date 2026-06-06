@@ -162,7 +162,7 @@ export default function Auth() {
           </div>
           {error && <p className="auth-error">{error}</p>}
           <button type="submit" className="auth-btn" disabled={loading || fading}>
-            {loading ? <span className="spinner" /> : "Entrar"}
+            {loading ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><span className="spinner" /> Entrando...</span> : "Entrar"}
           </button>
           <div className="cadastro-link-wrap">
             <span>Não tem conta? </span>
