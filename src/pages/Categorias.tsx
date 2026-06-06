@@ -135,9 +135,9 @@ export default function Categorias() {
                     : <span style={{ fontSize: "1.5rem" }}>🏷️</span>
                   }
                 </div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <p className="cat-item-nome">{cat.nome}</p>
-                  <p className="cat-item-sub">{count} produto{count !== 1 ? "s" : ""} nessa categoria</p>
+                  <p className="cat-item-sub">{count} produto{count !== 1 ? "s" : ""}</p>
                 </div>
                 <div className="cat-item-actions">
                   <button className="cat-order-btn" onClick={() => moverOrdem(cat.id!, -1)} disabled={idx === 0}>↑</button>
@@ -272,9 +272,9 @@ export default function Categorias() {
         .cat-list { display:flex; flex-direction:column; gap:0.5rem; }
         .cat-item { background:var(--bg-card,white); border-radius:16px; padding:0.85rem 1rem; display:flex; align-items:center; gap:1rem; box-shadow:var(--shadow-card,0 2px 8px rgba(0,0,0,0.06)); }
         .cat-item-icon { width:52px; height:52px; border-radius:50%; background:#fdf2f8; border:3px solid #fce7f3; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
-        .cat-item-nome { font-size:0.92rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 2px; }
-        .cat-item-sub { font-size:0.72rem; color:var(--text-muted,#9ca3af); margin:0; }
-        .cat-item-actions { display:flex; align-items:center; gap:0.3rem; }
+        .cat-item-nome { font-size:0.88rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .cat-item-sub { font-size:0.7rem; color:var(--text-muted,#9ca3af); margin:0; white-space:nowrap; }
+        .cat-item-actions { display:flex; align-items:center; gap:0.25rem; flex-shrink:0; }
         .cat-order-btn { width:28px; height:28px; background:var(--bg-subtle,#f3f4f6); border:none; border-radius:8px; cursor:pointer; font-size:0.75rem; display:flex; align-items:center; justify-content:center; color:#6b7280; }
         .cat-order-btn:disabled { opacity:0.3; cursor:not-allowed; }
         .cat-edit-btn { padding:0.35rem 0.75rem; background:var(--bg-subtle,#f3f4f6); border:none; border-radius:8px; font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
