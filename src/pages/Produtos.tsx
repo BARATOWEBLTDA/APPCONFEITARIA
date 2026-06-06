@@ -322,10 +322,9 @@ export default function Produtos() {
                   {p.imagem_url ? <img src={p.imagem_url.split(",")[0]} alt={p.nome} /> : <span style={{ fontSize: "1.5rem" }}>🎂</span>}
                   {!p.disponivel && <div className="prod-card-indisponivel">Indisponível</div>}
                 </div>
-                <div className="prod-list-info" style={{ textAlign: "center" }}>
-                  <p className="prod-card-cat" style={{ color: catInvalida ? "#f59e0b" : undefined, textAlign: "center" }}>{catInvalida ? `⚠️ ${p.categoria}` : p.categoria}</p>
-                  <p className="prod-card-nome" style={{ textAlign: "center" }}>{p.nome}</p>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}>
+                <div className="prod-list-info">
+                  <p className="prod-card-nome">{p.nome}</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <p className="prod-card-preco" style={{ margin: 0 }}>R$ {formatPreco(p.preco_normal)}</p>
                     {p.promocao && <span style={{ background: "#F583BF", color: "white", fontSize: "0.55rem", fontWeight: 700, padding: "2px 5px", borderRadius: "6px" }}>Promoção</span>}
                   </div>
