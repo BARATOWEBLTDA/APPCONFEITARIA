@@ -37,7 +37,7 @@ export default function Auth() {
       const t = timeRef.current;
       const angle = 120 + 20 * Math.sin(t);
       if (bgRef.current) {
-        bgRef.current.style.background = `linear-gradient(${angle}deg, #f9007a 0%, #ff6eb4 45%, #ffb3d9 100%)`;
+        bgRef.current.style.background = `linear-gradient(${angle}deg, #f9007a 0%, #ec4899 50%, #f472b6 100%)`;
       }
       currentRef.current.x += (mouseRef.current.x - currentRef.current.x) * 0.06;
       currentRef.current.y += (mouseRef.current.y - currentRef.current.y) * 0.06;
@@ -240,7 +240,7 @@ export default function Auth() {
         .auth-root { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; font-family: 'DM Sans', sans-serif; }
         .fade-overlay { position: fixed; inset: 0; z-index: 100; background: white; opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
-        .auth-bg { position: fixed; inset: 0; z-index: 0; background: linear-gradient(120deg, #f9007a 0%, #ff6eb4 45%, #ffb3d9 100%); }
+        .auth-bg { position: fixed; inset: 0; z-index: 0; background: linear-gradient(120deg, #f9007a 0%, #ec4899 50%, #f472b6 100%); }
         .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; }
         .auth-card { position: relative; z-index: 2; background: #ffffff; border-radius: 16px; padding: 2.5rem 2.2rem 2rem; width: calc(100% - 2.5rem); max-width: 440px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 0 auto; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
