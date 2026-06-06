@@ -147,7 +147,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
         {/* Imagem com carrossel coverflow */}
         <div style={{ position: 'relative', flexShrink: 0, overflow: 'hidden', borderRadius: '24px 24px 0 0' }}>
           <div
-            style={{ width: '100%', height: '200px', background: '#fdf2f8', position: 'relative', cursor: images.length > 1 ? 'grab' : 'default' }}
+            style={{ width: '100%', height: '200px', background: 'white', position: 'relative', cursor: images.length > 1 ? 'grab' : 'default' }}
             onTouchStart={e => { setTouchStart(e.touches[0].clientX); setTouchDelta(0); setDragging(true); }}
             onTouchMove={e => { if (touchStart === null) return; setTouchDelta(e.touches[0].clientX - touchStart); }}
             onTouchEnd={() => {
@@ -181,8 +181,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                   return (
                     <div key={i} onClick={() => !dragging && setImgIndex(i)} style={{
                       position: 'absolute',
-                      width: '65%',
-                      height: '85%',
+                      width: '80%',
+                      height: '90%',
                       transform: `translateX(${translateX}%) scale(${scale})`,
                       transition: dragging ? 'none' : 'all 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
                       opacity,
@@ -191,7 +191,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                       overflow: 'hidden',
                       boxShadow: isCenter ? '0 8px 24px rgba(0,0,0,0.18)' : '0 4px 12px rgba(0,0,0,0.1)',
                       cursor: isCenter ? 'default' : 'pointer',
-                      background: '#fdf2f8',
+                      background: 'white',
                     }}>
                       <img src={img} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', userSelect: 'none', pointerEvents: 'none' }} />
                     </div>
