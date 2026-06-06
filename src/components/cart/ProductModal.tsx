@@ -161,17 +161,17 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               >
                 {/* Lateral esquerda — 25% — sempre a imagem anterior (circular) */}
                 <div onClick={() => setImgIndex(i => (i - 1 + images.length) % images.length)}
-                  style={{ width: '25%', height: '100%', overflow: 'hidden', cursor: 'pointer', opacity: 0.55, flexShrink: 0 }}>
-                  <img src={images[(imgIndex - 1 + images.length) % images.length]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  style={{ width: '25%', height: '100%', overflow: 'hidden', cursor: 'pointer', opacity: 0.55, flexShrink: 0, transition: 'opacity 0.5s ease' }}>
+                  <img src={images[(imgIndex - 1 + images.length) % images.length]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'all 0.5s ease' }} />
                 </div>
                 {/* Central — 50% */}
-                <div style={{ flex: 1, height: '100%', overflow: 'hidden', flexShrink: 0 }}>
-                  <img src={images[imgIndex]} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', userSelect: 'none', pointerEvents: 'none' }} />
+                <div style={{ flex: 1, height: '100%', overflow: 'hidden', flexShrink: 0, transition: 'all 0.5s ease' }}>
+                  <img src={images[imgIndex]} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', userSelect: 'none', pointerEvents: 'none', transition: 'all 0.5s ease' }} />
                 </div>
                 {/* Lateral direita — 25% — sempre a próxima (circular) */}
                 <div onClick={() => setImgIndex(i => (i + 1) % images.length)}
-                  style={{ width: '25%', height: '100%', overflow: 'hidden', cursor: 'pointer', opacity: 0.55, flexShrink: 0 }}>
-                  <img src={images[(imgIndex + 1) % images.length]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  style={{ width: '25%', height: '100%', overflow: 'hidden', cursor: 'pointer', opacity: 0.55, flexShrink: 0, transition: 'opacity 0.5s ease' }}>
+                  <img src={images[(imgIndex + 1) % images.length]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'all 0.5s ease' }} />
                 </div>
               </div>
             ) : images.length === 1 ? (
