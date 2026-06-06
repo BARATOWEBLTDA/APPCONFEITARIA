@@ -870,7 +870,7 @@ export default function Produtos() {
         .prod-card-info { padding:0.65rem 0.75rem; flex:1; }
         .prod-card-cat { font-size:0.68rem; color:#F583BF; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 0.15rem; }
         .prod-card-nome { font-size:0.85rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.25rem; line-height:1.3; }
-        .prod-card-preco { font-size:0.88rem; font-weight:800; color:#22c55e; margin:0; }
+        .prod-card-preco { font-size:0.88rem; font-weight:600; color:#22c55e; margin:0; }
         .prod-card-actions { display:flex; gap:0.4rem; padding:0.5rem 0.75rem; border-top:1px solid var(--border,#f3f4f6); }
         .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle,#f9fafb); border:none; border-radius:8px; font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
         .prod-card-btn-del { padding:0.4rem 0.6rem; background:#fff1f2; border:none; border-radius:8px; color:#ef4444; cursor:pointer; display:flex; align-items:center; }
