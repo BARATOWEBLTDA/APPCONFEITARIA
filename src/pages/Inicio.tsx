@@ -67,9 +67,11 @@ const load = async () => {
       title: "Configure sua loja", emoji: "🏪",
       items: [
         { label: "Qual é o seu nome?", path: "/configuracoes", done: !!profile?.nome },
-        { label: "Nome da sua confeitaria", path: "/configuracoes", done: !!profile?.nome_loja },
-        { label: "Adicionar foto ou logo", path: "/configuracoes", done: !!profile?.foto_url },
-        { label: "Compartilhe seu cardápio", path: "/cardapio-config", done: !!profile?.slug },
+        { label: "Você já trabalha com confeitaria?", path: "/configuracoes", done: !!profile?.onboarding_trabalha_confeitaria },
+        { label: "Qual é o WhatsApp da sua loja?", path: "/configuracoes", done: !!profile?.telefone },
+        { label: "Cadastre 1 insumo", path: "/receitas", done: (profile?.onboarding_insumo || false) },
+        { label: "Cadastre 1 cliente", path: "/clientes", done: clientes > 0 },
+        { label: "Cadastre 1 receita", path: "/receitas", done: (profile?.onboarding_receita || false) },
       ],
     },
   ];
@@ -400,6 +402,7 @@ const load = async () => {
       <QuickSetupModal
         step={quickStep}
         userId={profileUserId}
+        profile={profile}
         slug={profile?.slug}
         onClose={() => setQuickStep(null)}
         onSaved={async () => {
