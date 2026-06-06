@@ -141,14 +141,14 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
         animation: 'popIn 0.25s ease',
       }}>
 
-        {/* Imagem com carrossel */}
+        {/* Imagem com carrossel coverflow */}
         <div style={{ position: 'relative', flexShrink: 0, overflow: 'hidden', borderRadius: '24px 24px 0 0' }}>
           <div
-            style={{ width: '100%', height: '200px', background: '#fdf2f8', overflow: 'hidden', position: 'relative', cursor: images.length > 1 ? 'grab' : 'default' }}
+            style={{ width: '100%', height: '200px', background: '#fdf2f8', position: 'relative', cursor: images.length > 1 ? 'grab' : 'default' }}
             onTouchStart={e => { setTouchStart(e.touches[0].clientX); setTouchDelta(0); setDragging(true); }}
             onTouchMove={e => { if (touchStart === null) return; setTouchDelta(e.touches[0].clientX - touchStart); }}
             onTouchEnd={() => {
-              if (Math.abs(touchDelta) > 50) {
+              if (Math.abs(touchDelta) > 40) {
                 if (touchDelta < 0 && imgIndex < images.length - 1) setImgIndex(i => i + 1);
                 if (touchDelta > 0 && imgIndex > 0) setImgIndex(i => i - 1);
               }
@@ -157,7 +157,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             onMouseDown={e => { setTouchStart(e.clientX); setDragging(true); }}
             onMouseMove={e => { if (!dragging || touchStart === null) return; setTouchDelta(e.clientX - touchStart); }}
             onMouseUp={() => {
-              if (Math.abs(touchDelta) > 50) {
+              if (Math.abs(touchDelta) > 40) {
                 if (touchDelta < 0 && imgIndex < images.length - 1) setImgIndex(i => i + 1);
                 if (touchDelta > 0 && imgIndex > 0) setImgIndex(i => i - 1);
               }
@@ -165,29 +165,45 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             }}
             onMouseLeave={() => { setTouchStart(null); setTouchDelta(0); setDragging(false); }}
           >
-            <div style={{ display: 'flex', height: '100%', transition: dragging ? 'none' : 'transform 0.4s ease', transform: `translateX(calc(-${imgIndex * 100}% + ${dragging ? touchDelta : 0}px))` }}>
-              {images.length > 0 ? images.map((img, i) => (
-                <img key={i} src={img} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'contain', flexShrink: 0, background: '#fdf2f8', userSelect: 'none', pointerEvents: 'none' }} />
-              )) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '64px', flexShrink: 0 }}>🧁</div>
-              )}
-            </div>
-
-            {images.length > 1 && imgIndex > 0 && (
-              <button onClick={() => setImgIndex(i => i - 1)} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', zIndex: 3 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-              </button>
-            )}
-            {images.length > 1 && imgIndex < images.length - 1 && (
-              <button onClick={() => setImgIndex(i => i + 1)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', zIndex: 3 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-              </button>
+            {images.length > 1 ? (
+              /* Coverflow — imagens lado a lado com scale */
+              <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {images.map((img, i) => {
+                  const offset = i - imgIndex + (dragging ? touchDelta / 200 : 0)
+                  const isCenter = Math.abs(offset) < 0.5
+                  const scale = isCenter ? 1 : 0.75
+                  const translateX = offset * 75
+                  const opacity = Math.abs(offset) > 1.5 ? 0 : Math.abs(offset) > 1 ? 0.4 : 1
+                  const zIndex = isCenter ? 2 : 1
+                  return (
+                    <div key={i} onClick={() => !dragging && setImgIndex(i)} style={{
+                      position: 'absolute',
+                      width: '65%',
+                      height: '85%',
+                      transform: `translateX(${translateX}%) scale(${scale})`,
+                      transition: dragging ? 'none' : 'all 0.35s ease',
+                      opacity,
+                      zIndex,
+                      borderRadius: '14px',
+                      overflow: 'hidden',
+                      boxShadow: isCenter ? '0 8px 24px rgba(0,0,0,0.18)' : '0 4px 12px rgba(0,0,0,0.1)',
+                      cursor: isCenter ? 'default' : 'pointer',
+                    }}>
+                      <img src={img} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fdf2f8', userSelect: 'none', pointerEvents: 'none' }} />
+                    </div>
+                  )
+                })}
+              </div>
+            ) : images.length === 1 ? (
+              <img src={images[0]} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'contain', background: '#fdf2f8' }} />
+            ) : (
+              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '64px' }}>🧁</div>
             )}
           </div>
 
           {/* Pontos indicadores */}
           {images.length > 1 && (
-            <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px', zIndex: 3 }}>
+            <div style={{ position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px', zIndex: 3 }}>
               {images.map((_, i) => (
                 <button key={i} onClick={() => setImgIndex(i)} style={{ width: i === imgIndex ? '20px' : '8px', height: '8px', borderRadius: '4px', background: i === imgIndex ? '#ec4899' : 'rgba(236,72,153,0.35)', border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.3s' }} />
               ))}
@@ -200,7 +216,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
           {/* Faixa diagonal promoção */}
           {product.promocao && (
-            <div style={{ position: 'absolute', top: '22px', left: '-32px', background: 'linear-gradient(135deg, #ec4899, #f472b6)', color: 'white', fontSize: '10px', fontWeight: 800, padding: '5px 40px', transform: 'rotate(-45deg)', zIndex: 3, letterSpacing: '0.05em', boxShadow: '0 2px 8px rgba(236,72,153,0.4)' }}>PROMOÇÃO</div>
+            <div style={{ position: 'absolute', top: '22px', left: '-32px', background: 'linear-gradient(135deg, #ec4899, #f472b6)', color: 'white', fontSize: '10px', fontWeight: 800, padding: '5px 40px', transform: 'rotate(-45deg)', zIndex: 4, letterSpacing: '0.05em', boxShadow: '0 2px 8px rgba(236,72,153,0.4)' }}>PROMOÇÃO</div>
           )}
 
           {/* Badge pronta entrega / encomenda */}
