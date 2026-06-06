@@ -217,6 +217,12 @@ export default function Auth() {
               <button type="submit" className="cad-btn" disabled={cadastroLoading}>
                 {cadastroLoading ? <span className="spinner" /> : "Cadastrar"}
               </button>
+              <p style={{ fontSize: '0.75rem', color: '#9ca3af', textAlign: 'center', lineHeight: '1.5', margin: '0' }}>
+                Ao criar sua conta, você concorda com nossos{' '}
+                <a href="/termos" target="_blank" style={{ color: '#ec4899', fontWeight: 600 }}>Termos de Uso</a>
+                {' '}e{' '}
+                <a href="/privacidade" target="_blank" style={{ color: '#ec4899', fontWeight: 600 }}>Política de Privacidade</a>
+              </p>
               <div className="cadastro-link-wrap">
                 <span>Já tem conta? </span>
                 <button type="button" className="cadastro-link" onClick={() => setShowCadastro(false)}>Fazer login</button>
