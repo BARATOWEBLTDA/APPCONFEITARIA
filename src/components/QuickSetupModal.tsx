@@ -115,7 +115,7 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
           </div>
           <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
             onChange={e => { const f = e.target.files?.[0]; if (f) setCropSrc(URL.createObjectURL(f)); }} />
-          {cropSrc && <ImageCropper src={cropSrc} onCrop={handleCropDone} onCancel={() => setCropSrc(null)} circular />}
+          {cropSrc && <ImageCropper imageSrc={cropSrc} onCropDone={handleCropDone} onCancel={() => setCropSrc(null)} cropShape="round" />}
         </div>
       );
 
