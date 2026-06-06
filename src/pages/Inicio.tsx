@@ -66,11 +66,10 @@ const load = async () => {
     {
       title: "Configure sua loja", emoji: "🏪",
       items: [
-        { label: "Adicionar nome da loja", path: "/configuracoes", done: !!profile?.nome_loja },
-        { label: "Adicionar logo da loja", path: "/configuracoes", done: !!profile?.foto_url },
-        { label: "Adicionar WhatsApp", path: "/configuracoes", done: !!profile?.telefone },
-        { label: "Adicionar localização", path: "/configuracoes", done: !!profile?.endereco },
-        { label: "Definir horário de funcionamento", path: "/configuracoes", done: !!profile?.horario },
+        { label: "Qual é o seu nome?", path: "/configuracoes", done: !!profile?.nome },
+        { label: "Nome da sua confeitaria", path: "/configuracoes", done: !!profile?.nome_loja },
+        { label: "Adicionar foto ou logo", path: "/configuracoes", done: !!profile?.foto_url },
+        { label: "Compartilhe seu cardápio", path: "/cardapio-config", done: !!profile?.slug },
       ],
     },
   ];
@@ -401,6 +400,7 @@ const load = async () => {
       <QuickSetupModal
         step={quickStep}
         userId={profileUserId}
+        slug={profile?.slug}
         onClose={() => setQuickStep(null)}
         onSaved={async () => {
           const { data: { user } } = await supabase.auth.getUser();
