@@ -374,62 +374,6 @@ export default function Configuracoes() {
           )}
         </div>
 
-        {/* Card — Endereço */}
-        <div className="cfg-accordion">
-          <button className="cfg-accordion-header" onClick={() => toggleSection("endereco")}>
-            <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
-            <span className="cfg-accordion-title">Endereço</span>
-            <svg className={`cfg-accordion-chevron${openSection === "endereco" ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          {openSection === "endereco" && (
-            <div className="cfg-accordion-body">
-              <div className="cfg-cep-row">
-                <Field icon={buscandoCep ? <span className="cfg-spinner-xs" /> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16v16H4z"/><path d="M9 9h6M9 13h4"/></svg>} placeholder="CEP (opcional)" value={form.cep} onChange={(e: any) => { const d = e.target.value.replace(/\D/g,'').slice(0,8); const fmt = d.length > 5 ? `${d.slice(0,5)}-${d.slice(5)}` : d; setForm({...form, cep: fmt}); if (d.length < 8) setCepPreenchido(false); if (d.length === 8) buscarCep(d); }} />
-              </div>
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} placeholder="Rua / Avenida" value={form.rua} onChange={(e: any) => setForm({...form, rua: e.target.value})} disabled={cepPreenchido} />
-              <div className="cfg-row-2">
-                <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>} placeholder="Bairro" value={form.bairro} onChange={(e: any) => setForm({...form, bairro: e.target.value})} disabled={cepPreenchido} />
-                <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>} placeholder="Número" value={form.numero} onChange={(e: any) => setForm({...form, numero: e.target.value})} />
-              </div>
-              <div className="cfg-row-2">
-                <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>} placeholder="Cidade" value={form.cidade} onChange={(e: any) => setForm({...form, cidade: e.target.value})} disabled={cepPreenchido} />
-                <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18M3 15h18"/></svg>} placeholder="Estado" value={form.estado} onChange={(e: any) => setForm({...form, estado: e.target.value.toUpperCase()})} maxLength={2} disabled={cepPreenchido} />
-              </div>
-              {cepPreenchido && (
-                <p className="cfg-cep-hint">Preenchido automaticamente.{" "}<span className="cfg-cep-editar" onClick={() => setCepPreenchido(false)}>Editar manual</span></p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Card — Ocultar Categorias */}
-        <div className="cfg-accordion">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.85rem 1rem", background: "var(--bg-card,white)", borderRadius: "14px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontSize: "1rem" }}>🏷️</span>
-              <div>
-                <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text-primary,#1f2937)", margin: "0 0 2px" }}>Ocultar categorias</p>
-                <p style={{ fontSize: "0.72rem", color: "var(--text-muted,#9ca3af)", margin: 0 }}>Esconde as bolinhas no cardápio público</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setOcultarCategorias(v => !v)}
-              style={{
-                width: "48px", height: "26px", borderRadius: "13px", border: "none", cursor: "pointer",
-                background: ocultarCategorias ? "#ec4899" : "#e5e7eb",
-                position: "relative", transition: "background 0.2s", flexShrink: 0,
-              }}
-            >
-              <div style={{
-                width: "20px", height: "20px", borderRadius: "50%", background: "white",
-                position: "absolute", top: "3px", transition: "left 0.2s",
-                left: ocultarCategorias ? "25px" : "3px",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-              }} />
-            </button>
-          </div>
-        </div>
-
         {/* Feedback */}
         {error && <div className="cfg-toast cfg-toast-error">{error}</div>}
         {success && <div className="cfg-toast cfg-toast-success">✓ Salvo com sucesso!</div>}
@@ -545,32 +489,6 @@ export default function Configuracoes() {
 
             {/* Horários */}
             <HorarioSection desk />
-
-            {/* Ocultar Categorias */}
-            <div className="cfg-desk-card">
-              <div className="cfg-card-header"><span className="cfg-card-icon">🏷️</span><span>Categorias no cardápio</span></div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0" }}>
-                <div>
-                  <p style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--text-primary,#1f2937)", margin: "0 0 2px" }}>Ocultar categorias</p>
-                  <p style={{ fontSize: "0.75rem", color: "var(--text-muted,#9ca3af)", margin: 0 }}>Esconde as bolinhas de categoria no cardápio público</p>
-                </div>
-                <button
-                  onClick={() => { setOcultarCategorias(v => !v); }}
-                  style={{
-                    width: "48px", height: "26px", borderRadius: "13px", border: "none", cursor: "pointer",
-                    background: ocultarCategorias ? "#ec4899" : "#e5e7eb",
-                    position: "relative", transition: "background 0.2s", flexShrink: 0,
-                  }}
-                >
-                  <div style={{
-                    width: "20px", height: "20px", borderRadius: "50%", background: "white",
-                    position: "absolute", top: "3px", transition: "left 0.2s",
-                    left: ocultarCategorias ? "25px" : "3px",
-                    boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-                  }} />
-                </button>
-              </div>
-            </div>
 
             {/* Entrega */}
             <div className="cfg-desk-card">
