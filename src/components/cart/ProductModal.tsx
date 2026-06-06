@@ -148,28 +148,30 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
         <div style={{ position: 'relative', flexShrink: 0, overflow: 'hidden', borderRadius: '24px 24px 0 0' }}>
           <div style={{ width: '100%', height: '200px', background: 'white', position: 'relative', cursor: images.length > 1 ? 'grab' : 'default' }}>
             {images.length > 1 ? (
-              <div style={{ display: 'flex', width: '100%', height: '100%' }}
+              <div style={{ display: 'flex', width: '100%', height: '100%', gap: '3px' }}
                 onTouchStart={e => { setTouchStart(e.touches[0].clientX); setTouchDelta(0); setDragging(true); }}
                 onTouchMove={e => { if (touchStart === null) return; setTouchDelta(e.touches[0].clientX - touchStart); }}
                 onTouchEnd={() => {
                   if (Math.abs(touchDelta) > 40) {
-                    if (touchDelta < 0 && imgIndex < images.length - 1) setImgIndex(i => i + 1);
-                    if (touchDelta > 0 && imgIndex > 0) setImgIndex(i => i - 1);
+                    if (touchDelta < 0) setImgIndex(i => (i + 1) % images.length);
+                    if (touchDelta > 0) setImgIndex(i => (i - 1 + images.length) % images.length);
                   }
                   setTouchStart(null); setTouchDelta(0); setDragging(false);
                 }}
               >
-                {/* Lateral esquerda — 25% */}
-                <div onClick={() => imgIndex > 0 && setImgIndex(i => i - 1)} style={{ width: '25%', height: '100%', overflow: 'hidden', cursor: imgIndex > 0 ? 'pointer' : 'default', opacity: imgIndex > 0 ? 0.6 : 0, transition: 'opacity 0.3s', flexShrink: 0 }}>
-                  {images[imgIndex - 1] && <img src={images[imgIndex - 1]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                {/* Lateral esquerda — 25% — sempre a imagem anterior (circular) */}
+                <div onClick={() => setImgIndex(i => (i - 1 + images.length) % images.length)}
+                  style={{ width: '25%', height: '100%', overflow: 'hidden', cursor: 'pointer', opacity: 0.55, flexShrink: 0 }}>
+                  <img src={images[(imgIndex - 1 + images.length) % images.length]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 </div>
                 {/* Central — 50% */}
-                <div style={{ width: '50%', height: '100%', overflow: 'hidden', flexShrink: 0, transition: 'all 0.55s cubic-bezier(0.25,0.46,0.45,0.94)' }}>
+                <div style={{ flex: 1, height: '100%', overflow: 'hidden', flexShrink: 0 }}>
                   <img src={images[imgIndex]} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', userSelect: 'none', pointerEvents: 'none' }} />
                 </div>
-                {/* Lateral direita — 25% */}
-                <div onClick={() => imgIndex < images.length - 1 && setImgIndex(i => i + 1)} style={{ width: '25%', height: '100%', overflow: 'hidden', cursor: imgIndex < images.length - 1 ? 'pointer' : 'default', opacity: imgIndex < images.length - 1 ? 0.6 : 0, transition: 'opacity 0.3s', flexShrink: 0 }}>
-                  {images[imgIndex + 1] && <img src={images[imgIndex + 1]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />}
+                {/* Lateral direita — 25% — sempre a próxima (circular) */}
+                <div onClick={() => setImgIndex(i => (i + 1) % images.length)}
+                  style={{ width: '25%', height: '100%', overflow: 'hidden', cursor: 'pointer', opacity: 0.55, flexShrink: 0 }}>
+                  <img src={images[(imgIndex + 1) % images.length]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 </div>
               </div>
             ) : images.length === 1 ? (
