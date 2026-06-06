@@ -259,8 +259,6 @@ export default function Configuracoes() {
         <div className="cfg-hero">
           <div className="cfg-hero-left">
             <p className="cfg-hero-saudacao">{getSaudacao()}, {nomeSalvo ? nomeSalvo.split(" ")[0] : "bem-vinda"}!</p>
-            <p className="cfg-hero-loja">{nomeLojaSalvo || ""}</p>
-            <p className="cfg-hero-email">{userEmail}</p>
             {plano === "pro" && <span className="cfg-badge cfg-badge-pro">✨ Acesso PRO ativo</span>}
             {plano === "trial" && <span className="cfg-badge cfg-badge-trial">Plano Grátis</span>}
             {plano === "expirado" && <span className="cfg-badge cfg-badge-expirado">⚠️ Período expirado · <u style={{cursor:"pointer"}} onClick={() => navigate("/assinar")}>Assinar agora</u></span>}
