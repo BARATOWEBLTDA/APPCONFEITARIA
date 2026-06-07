@@ -56,6 +56,7 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
       const url = `${data.publicUrl}?t=${Date.now()}`;
       await supabase.from("profiles").upsert({ id: userId, foto_url: url }, { onConflict: "id" });
       onSaved();
+      onClose();
     } else {
       console.error("Erro upload logo:", error);
     }
