@@ -28,8 +28,26 @@ export default function Inicio() {
   const [proResgatado, setProResgatado] = useState(false);
   const [resgatando, setResgatando] = useState(false);
   const [ultimosClientes, setUltimosClientes] = useState<any[]>([]);
+  const [calMes, setCalMes] = useState(new Date());
+  const [calDiaSelecionado, setCalDiaSelecionado] = useState<string | null>(null);
+  const [pedidosDia, setPedidosDia] = useState<any[]>([]);
+  const [pedidosFiltro, setPedidosFiltro] = useState<string>("todos");
+  const [loadingPedidos, setLoadingPedidos] = useState(false);
+  const [pedidosMes, setPedidosMes] = useState<Record<string,number>>({});
 
-  const handleResgatarPro = async () => {
+  const buscarPedidosDia = async (dia: string) => {
+    if (!profileUserId) return;
+    setLoadingPedidos(true);
+    const { data } = await supabase.from("pedidos").select("*").eq("user_id", profileUserId).eq("data_entrega", dia).order("created_at", { ascending: false });
+    setPedidosDia(data || []);
+    setLoadingPedidos(false);
+  };
+
+  const handleDiaClick = (dia: string) => {
+    setCalDiaSelecionado(dia);
+    setPedidosFiltro("todos");
+    buscarPedidosDia(dia);
+  };
     if (!profileUserId || proResgatado) return;
     setResgatando(true);
     const expira = new Date();
@@ -63,6 +81,17 @@ const load = async () => {
       setCategorias(catc || 0);
       const { data: uc } = await supabase.from("clientes").select("id,nome,foto_url,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5);
       if (uc) setUltimosClientes(uc);
+
+      // Pedidos do mês atual para o calendário
+      const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
+      const fimMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString();
+      const { data: pedMes } = await supabase.from("pedidos").select("data_entrega,status").eq("user_id", user.id).gte("data_entrega", inicioMes).lte("data_entrega", fimMes);
+      if (pedMes) {
+        const map: Record<string,number> = {};
+        pedMes.forEach((p: any) => { if (p.data_entrega) map[p.data_entrega] = (map[p.data_entrega] || 0) + 1; });
+        setPedidosMes(map);
+      }
+
       setLoading(false);
     };
     load();
@@ -392,22 +421,109 @@ const load = async () => {
             )}
           </div>
 
-          {/* Coluna direita — Últimas vendas */}
+          {/* Coluna direita — Calendário */}
           <div className="dash-col-right">
-            <div className="dash-card" style={{height:"100%"}}>
-              <div className="dash-card-header">
-                <h3 className="dash-card-title">Últimas vendas</h3>
-              </div>
-              <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2.5rem 1rem",gap:"0.75rem",textAlign:"center"}}>
-                <div style={{width:"56px",height:"56px",background:"#fdf2f8",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF4FA3" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <div className="dash-card" style={{padding:"1rem"}}>
+              {/* Header calendário */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.75rem"}}>
+                <h3 className="dash-card-title">Agenda</h3>
+                <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
+                  <button onClick={() => setCalMes(new Date(calMes.getFullYear(), calMes.getMonth()-1,1))} className="cal-nav-btn">‹</button>
+                  <span style={{fontSize:"0.82rem",fontWeight:600,color:"#374151",minWidth:"90px",textAlign:"center"}}>
+                    {calMes.toLocaleDateString("pt-BR",{month:"long",year:"numeric"})}
+                  </span>
+                  <button onClick={() => setCalMes(new Date(calMes.getFullYear(), calMes.getMonth()+1,1))} className="cal-nav-btn">›</button>
                 </div>
-                <p style={{fontWeight:700,color:"#1f2937",margin:0,fontSize:"0.9rem"}}>Nenhum pedido ainda</p>
-                <p style={{fontSize:"0.8rem",color:"#9ca3af",margin:0,lineHeight:1.5}}>Quando você registrar vendas, elas aparecerão aqui.</p>
-                <button onClick={() => navigate("/pedidos")} style={{background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)",color:"white",border:"none",borderRadius:"10px",padding:"0.6rem 1.25rem",fontFamily:"Inter,sans-serif",fontSize:"0.85rem",fontWeight:600,cursor:"pointer",marginTop:"0.5rem"}}>
-                  Registrar pedido
-                </button>
               </div>
+
+              {/* Dias da semana */}
+              <div className="cal-grid-header">
+                {["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(d => (
+                  <div key={d} className="cal-dow">{d}</div>
+                ))}
+              </div>
+
+              {/* Dias do mês */}
+              <div className="cal-grid">
+                {(() => {
+                  const ano = calMes.getFullYear();
+                  const mes = calMes.getMonth();
+                  const primeiroDia = new Date(ano, mes, 1).getDay();
+                  const totalDias = new Date(ano, mes+1, 0).getDate();
+                  const hoje = new Date().toISOString().split("T")[0];
+                  const cells = [];
+                  for (let i = 0; i < primeiroDia; i++) cells.push(<div key={`e${i}`} />);
+                  for (let d = 1; d <= totalDias; d++) {
+                    const iso = `${ano}-${String(mes+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+                    const temPedido = pedidosMes[iso] || 0;
+                    const isHoje = iso === hoje;
+                    const isSelecionado = iso === calDiaSelecionado;
+                    cells.push(
+                      <button key={d} onClick={() => handleDiaClick(iso)}
+                        className={`cal-day ${isHoje ? "hoje" : ""} ${isSelecionado ? "selecionado" : ""} ${temPedido ? "tem-pedido" : ""}`}>
+                        {d}
+                        {temPedido > 0 && <span className="cal-dot">{temPedido}</span>}
+                      </button>
+                    );
+                  }
+                  return cells;
+                })()}
+              </div>
+
+              {/* Pedidos do dia selecionado */}
+              {calDiaSelecionado && (
+                <div style={{marginTop:"0.75rem",borderTop:"1px solid #f3f4f6",paddingTop:"0.75rem"}}>
+                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.5rem"}}>
+                    <span style={{fontSize:"0.82rem",fontWeight:700,color:"#374151"}}>
+                      {new Date(calDiaSelecionado+"T12:00:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"short"})}
+                    </span>
+                    <div style={{display:"flex",gap:"0.25rem"}}>
+                      {["todos","pendente","em_producao","finalizado","cancelado"].map(f => (
+                        <button key={f} onClick={() => setPedidosFiltro(f)}
+                          style={{padding:"2px 8px",borderRadius:"20px",border:"1.5px solid",fontSize:"0.65rem",fontWeight:600,cursor:"pointer",fontFamily:"Inter,sans-serif",
+                            borderColor: pedidosFiltro===f ? "#FF4FA3" : "#e5e7eb",
+                            background: pedidosFiltro===f ? "#fdf2f8" : "white",
+                            color: pedidosFiltro===f ? "#FF4FA3" : "#9ca3af"
+                          }}>
+                          {f==="todos"?"Todos":f==="pendente"?"Pendente":f==="em_producao"?"Produção":f==="finalizado"?"Feito":"Cancelado"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {loadingPedidos ? (
+                    <p style={{fontSize:"0.8rem",color:"#9ca3af",textAlign:"center",padding:"0.5rem"}}>Carregando...</p>
+                  ) : (() => {
+                    const filtrados = pedidosDia.filter(p => pedidosFiltro==="todos" || p.status===pedidosFiltro);
+                    if (filtrados.length === 0) return (
+                      <p style={{fontSize:"0.78rem",color:"#9ca3af",textAlign:"center",padding:"0.75rem 0"}}>
+                        Nenhum pedido {pedidosFiltro!=="todos" ? `"${pedidosFiltro}"` : ""} neste dia
+                      </p>
+                    );
+                    return (
+                      <div style={{display:"flex",flexDirection:"column",gap:"0.4rem",maxHeight:"180px",overflowY:"auto"}}>
+                        {filtrados.map(p => (
+                          <div key={p.id} style={{background:"#f9fafb",borderRadius:"10px",padding:"0.6rem 0.75rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                            <div>
+                              <p style={{fontSize:"0.82rem",fontWeight:600,color:"#1f2937",margin:0}}>{p.cliente_nome || "Cliente"}</p>
+                              <p style={{fontSize:"0.72rem",color:"#9ca3af",margin:0}}>{p.descricao || "Pedido"}</p>
+                            </div>
+                            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"3px"}}>
+                              <span style={{fontSize:"0.78rem",fontWeight:700,color:"#16a34a"}}>R$ {(p.valor||0).toFixed(2)}</span>
+                              <span style={{fontSize:"0.62rem",fontWeight:700,padding:"2px 6px",borderRadius:"6px",
+                                background: p.status==="finalizado"?"#dcfce7":p.status==="em_producao"?"#fef9c3":p.status==="cancelado"?"#fee2e2":"#fdf2f8",
+                                color: p.status==="finalizado"?"#16a34a":p.status==="em_producao"?"#ca8a04":p.status==="cancelado"?"#ef4444":"#FF4FA3"
+                              }}>
+                                {p.status==="finalizado"?"✓ Feito":p.status==="em_producao"?"⚙ Prod.":p.status==="cancelado"?"✕ Cancel.":"● Pend."}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
             </div>
           </div>
 
@@ -586,6 +702,20 @@ const load = async () => {
         .dash-atalho-btn:hover { border-color: #FF4FA3; transform: translateY(-1px); }
         .dash-atalho-icon { display: flex; align-items: center; justify-content: center; }
         .dash-atalho-label { font-size: 0.72rem; font-weight: 500; color: #374151; }
+
+        /* Calendário */
+        .cal-nav-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid #e5e7eb; background: white; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; color: #6b7280; transition: background 0.15s; line-height: 1; padding: 0; }
+        .cal-nav-btn:hover { background: #fdf2f8; color: #FF4FA3; border-color: #FF4FA3; }
+        .cal-grid-header { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 0.25rem; }
+        .cal-dow { text-align: center; font-size: 0.65rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; padding: 0.25rem 0; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+        .cal-day { position: relative; aspect-ratio: 1; border-radius: 8px; border: none; background: transparent; cursor: pointer; font-size: 0.78rem; font-weight: 500; color: #374151; font-family: 'Inter',sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background 0.15s; gap: 1px; }
+        .cal-day:hover { background: #fdf2f8; color: #FF4FA3; }
+        .cal-day.hoje { background: #fdf2f8; color: #FF4FA3; font-weight: 800; }
+        .cal-day.selecionado { background: linear-gradient(135deg,#FF4FA3,#FF6BB5) !important; color: white !important; font-weight: 800; }
+        .cal-day.tem-pedido { font-weight: 700; }
+        .cal-dot { font-size: 0.55rem; background: #FF4FA3; color: white; border-radius: 10px; padding: 0 4px; line-height: 1.4; }
+        .cal-day.selecionado .cal-dot { background: rgba(255,255,255,0.4); color: white; }
 
         .ini-grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; align-items: start; }
         .ini-col-left, .ini-col-right { display: flex; flex-direction: column; gap: 1.25rem; }
