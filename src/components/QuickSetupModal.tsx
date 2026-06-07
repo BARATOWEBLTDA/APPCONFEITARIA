@@ -59,7 +59,7 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
       setPreview(url);
       await supabase.from("profiles").upsert({ id: userId, foto_url: url }, { onConflict: "id" });
       onSaved();
-      onClose();
+      // não fecha — usuário ainda precisa salvar o nome da loja
     }
     setCropSrc(null);
     setSaving(false);
@@ -98,7 +98,7 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
         <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
           <div className="qsm-field">
             <label>Qual é o nome da sua confeitaria?</label>
-            <input placeholder="Ex: Doce Formiga" value={nomeLoja} onChange={e => setNomeLoja(e.target.value)} autoFocus />
+            <input placeholder="Ex: Doce Formiga" value={nomeLoja} onChange={e => setNomeLoja(e.target.value)} />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
             <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "2px dashed #fbcfe8", background: "#fff0f6", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", flexShrink: 0 }}
