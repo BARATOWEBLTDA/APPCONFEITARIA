@@ -252,11 +252,7 @@ const load = async () => {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
             {/* Toggle dark mode */}
-            <button onClick={() => {
-              const html = document.documentElement;
-              if (html.classList.contains("dark")) { html.classList.remove("dark"); setDarkMode(false); localStorage.setItem("theme", "light"); }
-              else { html.classList.add("dark"); setDarkMode(true); localStorage.setItem("theme", "dark"); }
-            }} style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b7280", transition: "background 0.2s" }}>
+            <button onClick={() => { toggleTheme(); setDarkMode(d => !d); }} style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b7280", transition: "background 0.2s" }}>
               {darkMode
                 ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
                 : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
