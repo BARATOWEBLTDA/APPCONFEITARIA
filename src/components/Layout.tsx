@@ -102,10 +102,10 @@ export default function Layout() {
             {/* Tag Premium/Free na base do avatar */}
             <div style={{
               position: "absolute", bottom: "-8px", left: "50%", transform: "translateX(-50%)",
-              background: isPro ? "linear-gradient(90deg, #FF4FA3, #FF6BB5)" : "rgba(255,255,255,0.1)",
-              border: isPro ? "none" : "1px solid rgba(255,255,255,0.15)",
-              color: "white", fontSize: "0.6rem", fontWeight: 700,
-              padding: "2px 8px", borderRadius: "20px", whiteSpace: "nowrap",
+              background: isPro ? "linear-gradient(90deg, #F5A623, #F8C844)" : "#111111",
+              border: isPro ? "none" : "1px solid rgba(255,255,255,0.2)",
+              color: "white", fontSize: "0.65rem", fontWeight: 700,
+              padding: "3px 10px", borderRadius: isPro ? "20px" : "6px", whiteSpace: "nowrap",
               letterSpacing: "0.05em"
             }}>
               {isPro ? "✨ Premium" : "Free"}
