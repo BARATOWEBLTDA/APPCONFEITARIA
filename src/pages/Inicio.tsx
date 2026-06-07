@@ -218,7 +218,7 @@ const load = async () => {
       {/* ===== DESKTOP ===== */}
       <div className="ini-desktop">
 
-        {/* Cards resumo desktop */}
+        {/* Cards resumo */}
         <div className="ini-summary">
           <div className="ini-sum-card">
             <span className="ini-sum-icon">📦</span>
@@ -240,43 +240,100 @@ const load = async () => {
         {/* Grid 2 colunas */}
         <div className="ini-grid">
 
-          {/* Coluna esquerda — Checklist */}
-          {progress < 100 && (
+          {/* Coluna esquerda — replica lógica do mobile */}
           <div className="ini-col-left">
-            <div className="progresso-card">
-              <div className="progresso-header">
-                <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
-                  <img src="/configureapp.png" alt="" style={{width:"52px",height:"52px",objectFit:"contain",flexShrink:0}} />
-                  <div>
-                    <h2 className="ini-section-title" style={{ margin: 0 }}>Configure seu Doonly</h2>
-                    <p className="progresso-sub">
-                      {progress === 100 ? "🎉 Tudo pronto! Sua loja está completa." : `${remaining === 1 ? "Resta apenas" : "Faltam apenas"} ${remaining} etapa${remaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}
-                    </p>
+
+            {/* Configure seu Doonly — idêntico ao mobile */}
+            {!loading && (progress < 100 ? (
+              <div className="progresso-card">
+                <div className="progresso-header">
+                  <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
+                    <img src="/configureapp.png" alt="" style={{width:"52px",height:"52px",objectFit:"contain",flexShrink:0}} />
+                    <div>
+                      <h2 className="ini-section-title" style={{margin:0}}>Configure seu Doonly</h2>
+                      <p className="progresso-sub">{`${remaining === 1 ? "Resta apenas" : "Faltam apenas"} ${remaining} etapa${remaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}</p>
+                    </div>
+                  </div>
+                  <div className="progresso-pct-circle"><span>{progress}%</span></div>
+                </div>
+                <div className="progresso-bar-bg">
+                  <div className="progresso-bar-fill" style={{width:`${progress}%`}} />
+                </div>
+                {nextStep && (
+                  <div className="next-step-card" style={{marginTop:"0.75rem"}}>
+                    <div className="next-step-left">
+                      <span className="next-step-dot" />
+                      <div>
+                        <p className="next-step-label">Próximo passo recomendado</p>
+                        <p className="next-step-text">{nextStep.label}</p>
+                      </div>
+                    </div>
+                    <button className="next-step-btn" onClick={() => setQuickStep(nextStep)}>Configurar agora →</button>
+                  </div>
+                )}
+                <div className="steps-list" style={{marginTop:"0.75rem"}}>
+                  {steps.map((group, gi) => {
+                    const groupDone = group.items.filter(i => i.done).length;
+                    const isOpen = openGroup === gi;
+                    const allDone = groupDone === group.items.length;
+                    return (
+                      <div key={gi} className="step-group">
+                        <button className="step-group-header" onClick={() => setOpenGroup(isOpen ? null : gi)}>
+                          <div className="step-group-left">
+                            <span>{group.emoji}</span>
+                            <span className="step-group-title">{group.title}</span>
+                          </div>
+                          <div className="step-group-right">
+                            <span className={`step-badge ${allDone ? "done" : ""}`}>{allDone ? "✓ Completo" : `${groupDone}/${group.items.length}`}</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" style={{transform: isOpen ? "rotate(180deg)" : "none", transition:"0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+                          </div>
+                        </button>
+                        {isOpen && (
+                          <div className="step-items">
+                            {group.items.map((item, ii) => (
+                              <button key={ii} className="step-item" onClick={() => !item.done && setQuickStep(item)}>
+                                <div className={`step-check ${item.done ? "checked" : ""}`}>
+                                  {item.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                                </div>
+                                <span className="step-item-label">{item.label}</span>
+                                <span className={`step-status ${item.done ? "done" : "pending"}`}>{item.done ? "Concluído" : "Fazer agora"}</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                {progress < 100 && <div className="complete-banner" style={{marginTop:"0.75rem"}}>🎁 Complete 100% e aproveite todos os recursos do Doonly!</div>}
+              </div>
+            ) : !proResgatado ? (
+              <div className="progresso-card" style={{background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",border:"1px solid #bbf7d0"}}>
+                <div className="progresso-header">
+                  <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
+                    <span style={{fontSize:"2.5rem"}}>🎉</span>
+                    <div>
+                      <h2 className="ini-section-title" style={{margin:0,color:"#15803d"}}>Configuração completa!</h2>
+                      <p className="progresso-sub" style={{color:"#16a34a"}}>Resgate agora mesmo 3 dias de acesso completo sem limitações como recompensa.</p>
+                    </div>
                   </div>
                 </div>
-                <div className="progresso-pct-circle"><span>{progress}%</span></div>
-              </div>
-              <div className="progresso-bar-bg">
-                <div className="progresso-bar-fill" style={{ width: `${progress}%` }} />
-              </div>
-              {!loading && progress === 100 && !proResgatado && (
-                <button className="mob-resgatar-btn" style={{marginTop:"1rem"}} onClick={handleResgatarPro} disabled={resgatando}>
+                <button className="mob-resgatar-btn" style={{marginTop:"1rem",width:"100%"}} onClick={handleResgatarPro} disabled={resgatando}>
                   {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
                 </button>
-              )}
-            </div>
+              </div>
+            ) : null)}
 
-            {/* Card PRO teste desktop */}
+            {/* Card PRO expirando */}
             {!loading && isTeste && (
               <div className="progresso-card" style={{background:"linear-gradient(135deg,#1a0a12,#2d0f1e)",marginTop:"1rem"}}>
                 <div className="progresso-header">
                   <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
-                  <img src="/assine.png" alt="" style={{width:"52px",height:"52px",objectFit:"contain",flexShrink:0,borderRadius:"14px"}} />
+                    <img src="/assine.png" alt="" style={{width:"52px",height:"52px",objectFit:"contain",flexShrink:0,borderRadius:"14px"}} />
                     <div>
-                      <h2 className="ini-section-title" style={{margin:0,color:"white"}}>Seu acesso PRO expira em <strong>{diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}</strong>.</h2>
-                      <p className="progresso-sub" style={{color:"rgba(255,255,255,0.7)"}}>
-                        Continue com <strong style={{color:"white"}}>todas as funcionalidades</strong> sem interrupção por apenas <strong style={{color:"white"}}>R$ 7,90/mês</strong>.
-                      </p>
+                      <h2 className="ini-section-title" style={{margin:0,color:"white"}}>PRO expira em <strong>{diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}</strong>.</h2>
+                      <p className="progresso-sub" style={{color:"rgba(255,255,255,0.7)"}}>Continue sem interrupção por apenas <strong style={{color:"white"}}>R$ 19,90/mês</strong>.</p>
                     </div>
                   </div>
                   <div className="progresso-pct-circle" style={{background:"linear-gradient(135deg,#F583BF,#e060a8)"}}>
@@ -284,70 +341,15 @@ const load = async () => {
                   </div>
                 </div>
                 <div className="progresso-bar-bg" style={{background:"rgba(255,255,255,0.15)"}}>
-                  <div className="progresso-bar-fill" style={{width:`${(diasProRestantes / diasProTotal) * 100}%`}} />
+                  <div className="progresso-bar-fill" style={{width:`${(diasProRestantes/diasProTotal)*100}%`}} />
                 </div>
                 <div style={{display:"flex",justifyContent:"center",marginTop:"0.75rem"}}>
-                  <button className="mob-assinar-btn-sm" onClick={() => navigate("/assinar")}>
-                    Assinar agora →
-                  </button>
+                  <button className="mob-assinar-btn-sm" onClick={() => navigate("/assinar")}>Assinar agora →</button>
                 </div>
               </div>
             )}
 
-            {/* Próximo passo */}
-            {progress < 100 && nextStep && (
-              <div className="next-step-card">
-                <div className="next-step-left">
-                  <span className="next-step-dot" />
-                  <div>
-                    <p className="next-step-label">Próximo passo recomendado</p>
-                    <p className="next-step-text">{nextStep.label}</p>
-                  </div>
-                </div>
-                <button className="next-step-btn" onClick={() => setQuickStep(nextStep)}>Configurar agora →</button>
-              </div>
-            )}
-
-            {/* Steps */}
-            <div className="steps-list">
-              {steps.map((group, gi) => {
-                const groupDone = group.items.filter(i => i.done).length;
-                const isOpen = openGroup === gi;
-                const allDone = groupDone === group.items.length;
-                return (
-                  <div key={gi} className="step-group">
-                    <button className="step-group-header" onClick={() => setOpenGroup(isOpen ? null : gi)}>
-                      <div className="step-group-left">
-                        <span>{group.emoji}</span>
-                        <span className="step-group-title">{group.title}</span>
-                      </div>
-                      <div className="step-group-right">
-                        <span className={`step-badge ${allDone ? "done" : ""}`}>{allDone ? "✓ Completo" : `${groupDone}/${group.items.length}`}</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "0.2s" }}><polyline points="6 9 12 15 18 9"/></svg>
-                      </div>
-                    </button>
-                    {isOpen && (
-                      <div className="step-items">
-                        {group.items.map((item, ii) => (
-                          <button key={ii} className="step-item" onClick={() => !item.done && setQuickStep(item)}>
-                            <div className={`step-check ${item.done ? "checked" : ""}`}>
-                              {item.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
-                            </div>
-                            <span className="step-item-label">{item.label}</span>
-                            <span className={`step-status ${item.done ? "done" : "pending"}`}>{item.done ? "Concluído" : "Fazer agora"}</span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {progress < 100 && <div className="complete-banner">🎁 Complete 100% e aproveite todos os recursos do Doonly!</div>}
           </div>
-          )}
 
           {/* Coluna direita — Atalhos */}
           <div className="ini-col-right">
@@ -363,10 +365,8 @@ const load = async () => {
               </div>
             </div>
           </div>
+
         </div>
-      </div>
-      </div>
-      </div>
       </div>
 
       <QuickSetupModal
