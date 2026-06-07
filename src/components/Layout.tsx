@@ -15,6 +15,7 @@ const menuItems = [
   { label: "Clientes", path: "/clientes", emoji: "👥" },
   { label: "Estoque", path: "/estoque", emoji: "📦" },
   { label: "Financeiro", path: "/financeiro", emoji: "💰" },
+  { label: "Insumos", path: "/insumos", emoji: "🧂" },
   { label: "Receitas", path: "/receitas", emoji: "📄" },
   { label: "Arquivos", path: "/arquivos", emoji: "🗂️" },
   { label: "Promoções", path: "/promocoes", emoji: "🏷️" },
