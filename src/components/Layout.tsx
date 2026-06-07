@@ -21,6 +21,21 @@ const menuItems = [
   { label: "Configurações", path: "/configuracoes", emoji: "⚙️" },
 ];
 
+function SidebarGroup({ label, emoji, paths, location, children }: { label: string; emoji: string; paths: string[]; location: any; children: React.ReactNode }) {
+  const isAnyActive = paths.some(p => location.pathname.startsWith(p));
+  const [open, setOpen] = useState(isAnyActive);
+  return (
+    <div className="nav-group">
+      <button className={`nav-item nav-group-btn ${isAnyActive ? "active" : ""}`} onClick={() => setOpen(o => !o)}>
+        <span className="nav-emoji">{emoji}</span>
+        <span style={{ flex: 1 }}>{label}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.5 }}><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      {open && <div className="nav-subitems">{children}</div>}
+    </div>
+  );
+}
+
 export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
@@ -89,11 +104,56 @@ export default function Layout() {
         </div>
 
         <nav className="sidebar-nav">
-          {menuItems.map((item) => (
-            <NavLink key={item.path} to={item.path} className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-              <span className="nav-emoji">{item.emoji}</span> {item.label}
-            </NavLink>
-          ))}
+          {/* Início */}
+          <NavLink to="/inicio" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-emoji">🏠</span> Início
+          </NavLink>
+
+          {/* Cardápio com submenus */}
+          <SidebarGroup label="Cardápio" emoji="🛍️" paths={["/cardapio-config","/cardapio-design","/cardapio-preview","/categorias","/produtos"]} location={location}>
+            <NavLink to="/cardapio-config" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>⚙️ Configuração</NavLink>
+            <NavLink to="/cardapio-design" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>🎨 Design</NavLink>
+            <NavLink to="/cardapio-preview" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>👁️ Prévia</NavLink>
+            <NavLink to="/categorias" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>🏷️ Categorias</NavLink>
+            <NavLink to="/produtos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>🎂 Produtos</NavLink>
+          </SidebarGroup>
+
+          {/* Pedidos */}
+          <NavLink to="/pedidos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-emoji">📋</span> Pedidos
+          </NavLink>
+
+          {/* Clientes */}
+          <NavLink to="/clientes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-emoji">👥</span> Clientes
+          </NavLink>
+
+          {/* Receitas com submenus */}
+          <SidebarGroup label="Receitas" emoji="📖" paths={["/receitas","/comunidade"]} location={location}>
+            <NavLink to="/receitas" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>👩‍🍳 Minhas receitas</NavLink>
+            <NavLink to="/receitas?tipo=app" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>📱 Receitas do app</NavLink>
+            <NavLink to="/comunidade" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>🌎 Comunidade</NavLink>
+          </SidebarGroup>
+
+          {/* Insumos */}
+          <NavLink to="/insumos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-emoji">🧂</span> Insumos
+          </NavLink>
+
+          {/* Estoque */}
+          <NavLink to="/estoque" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-emoji">📦</span> Estoque
+          </NavLink>
+
+          {/* Financeiro */}
+          <NavLink to="/financeiro" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-emoji">💰</span> Financeiro
+          </NavLink>
+
+          {/* Configurações */}
+          <NavLink to="/configuracoes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-emoji">⚙️</span> Configurações
+          </NavLink>
         </nav>
 
         <a href="/assinar" style={{display:"block",margin:"0 0.6rem 0.8rem",background:"linear-gradient(135deg,#F471B6,#f9007a)",borderRadius:"14px",padding:"0.9rem 1rem",textDecoration:"none",boxShadow:"0 4px 16px rgba(249,0,122,0.35)"}}>
@@ -129,7 +189,6 @@ export default function Layout() {
                 { label: "Estoque", path: "/estoque", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> },
                 { label: "Financeiro", path: "/financeiro", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
                 { label: "Promoções", path: "/promocoes", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> },
-                { label: "Insumos", path: "/insumos", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 6h18M3 12h18M3 18h18"/><circle cx="7" cy="6" r="2" fill="currentColor"/><circle cx="7" cy="12" r="2" fill="currentColor"/><circle cx="7" cy="18" r="2" fill="currentColor"/></svg> },
                 { label: "Arquivos", path: "/arquivos", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> },
                 { label: "Configurações", path: "/configuracoes", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
                 { label: "Personalização", path: "/personalizacao", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M2 12h20"/></svg> },
@@ -246,7 +305,12 @@ export default function Layout() {
         .mob-top-header { display: none; }
         .bottom-nav { display: none; }
 
-        .sidebar { width: 220px; min-height: 100vh; background: #181419; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
+        .nav-group { display: flex; flex-direction: column; }
+        .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; display: flex; align-items: center; }
+        .nav-subitems { display: flex; flex-direction: column; padding-left: 0.5rem; margin-bottom: 0.25rem; }
+        .nav-subitem { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.8rem; color: rgba(255,255,255,0.55); text-decoration: none; transition: all 0.15s; }
+        .nav-subitem:hover { color: white; background: rgba(255,255,255,0.06); }
+        .nav-subitem.active { color: #f9007a; background: rgba(249,0,122,0.1); font-weight: 600; } min-height: 100vh; background: #181419; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
 
         .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(249,0,122,0.2); }
 
