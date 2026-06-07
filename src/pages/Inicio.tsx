@@ -397,8 +397,8 @@ const load = async () => {
             ) : !proResgatado ? (
               <div className="dash-card" style={{background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",border:"1px solid #bbf7d0"}}>
                 <div style={{textAlign:"center",padding:"0.5rem 0"}}>
-                  <span style={{fontSize:"2.5rem"}}>🎉</span>
-                  <h3 style={{fontWeight:800,color:"#15803d",margin:"0.5rem 0 0.25rem"}}>Configuração completa!</h3>
+                  <img src="/assine.png" alt="" style={{width:"64px",height:"64px",objectFit:"contain",marginBottom:"0.5rem"}} />
+                  <h3 style={{fontWeight:800,color:"#15803d",margin:"0 0 0.25rem"}}>Configuração completa!</h3>
                   <p style={{fontSize:"0.85rem",color:"#16a34a",margin:"0 0 1rem"}}>Resgate agora 3 dias de acesso PRO como recompensa.</p>
                   <button className="mob-resgatar-btn" style={{width:"100%"}} onClick={handleResgatarPro} disabled={resgatando}>
                     {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
