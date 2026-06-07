@@ -107,63 +107,51 @@ export default function Layout() {
         <nav className="sidebar-nav">
           {/* Início */}
           <NavLink to="/inicio" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-emoji">🏠</span> Início
+            Início
           </NavLink>
 
           {/* Cardápio com submenus */}
-          <SidebarGroup label="Cardápio" emoji="🛍️" paths={["/cardapio-config","/cardapio-design","/cardapio-preview","/categorias","/produtos"]} location={location}>
-            <NavLink to="/cardapio-config" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>⚙️ Configuração</NavLink>
-            <NavLink to="/cardapio-design" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>🎨 Design</NavLink>
-            <NavLink to="/cardapio-preview" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>👁️ Prévia</NavLink>
-            <NavLink to="/categorias" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>🏷️ Categorias</NavLink>
-            <NavLink to="/produtos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>🎂 Produtos</NavLink>
+          <SidebarGroup label="Cardápio" emoji="" paths={["/cardapio-config","/cardapio-design","/cardapio-preview","/categorias","/produtos"]} location={location}>
+            <NavLink to="/cardapio-config" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Configuração</NavLink>
+            <NavLink to="/cardapio-design" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Design</NavLink>
+            <NavLink to="/cardapio-preview" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Prévia</NavLink>
+            <NavLink to="/categorias" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Categorias</NavLink>
+            <NavLink to="/produtos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Produtos</NavLink>
           </SidebarGroup>
 
           {/* Pedidos */}
-          <NavLink to="/pedidos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-emoji">📋</span> Pedidos
-          </NavLink>
+          <NavLink to="/pedidos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Pedidos</NavLink>
 
           {/* Clientes */}
-          <NavLink to="/clientes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-emoji">👥</span> Clientes
-          </NavLink>
+          <NavLink to="/clientes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Clientes</NavLink>
 
           {/* Receitas com submenus */}
-          <SidebarGroup label="Receitas" emoji="📖" paths={["/receitas","/comunidade"]} location={location}>
-            <NavLink to="/receitas" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>👩‍🍳 Minhas receitas</NavLink>
-            <NavLink to="/receitas?tipo=app" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>📱 Receitas do app</NavLink>
-            <NavLink to="/comunidade" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>🌎 Comunidade</NavLink>
+          <SidebarGroup label="Receitas" emoji="" paths={["/receitas","/comunidade"]} location={location}>
+            <NavLink to="/receitas" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Minhas receitas</NavLink>
+            <NavLink to="/receitas?tipo=app" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Receitas do app</NavLink>
+            <NavLink to="/comunidade" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Comunidade</NavLink>
           </SidebarGroup>
 
           {/* Insumos */}
-          <NavLink to="/insumos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-emoji">🧂</span> Insumos
-          </NavLink>
+          <NavLink to="/insumos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Insumos</NavLink>
 
           {/* Estoque */}
-          <NavLink to="/estoque" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-emoji">📦</span> Estoque
-          </NavLink>
+          <NavLink to="/estoque" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Estoque</NavLink>
 
           {/* Financeiro */}
-          <NavLink to="/financeiro" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-emoji">💰</span> Financeiro
-          </NavLink>
+          <NavLink to="/financeiro" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Financeiro</NavLink>
 
           {/* Configurações */}
-          <NavLink to="/configuracoes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-emoji">⚙️</span> Configurações
-          </NavLink>
+          <NavLink to="/configuracoes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Configurações</NavLink>
         </nav>
 
-        <a href="/assinar" style={{display:"block",margin:"0 0.6rem 0.8rem",background:"linear-gradient(135deg,#F471B6,#f9007a)",borderRadius:"14px",padding:"0.9rem 1rem",textDecoration:"none",boxShadow:"0 4px 16px rgba(249,0,122,0.35)"}}>
+        <a href="/assinar" style={{display:"block",margin:"0 0.25rem 0.8rem",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"14px",padding:"0.9rem 1rem",textDecoration:"none"}}>
           <div style={{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.35rem"}}>
             <span style={{fontSize:"0.85rem"}}>⏱️</span>
-            <span style={{fontSize:"0.75rem",fontWeight:700,color:"white",letterSpacing:"0.02em"}}>Período de teste</span>
+            <span style={{fontSize:"0.75rem",fontWeight:700,color:"#B8C1E0",letterSpacing:"0.02em"}}>Período de teste</span>
           </div>
-          <p style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.8)",margin:"0 0 0.6rem"}}>14 dias restantes</p>
-          <div style={{background:"rgba(255,255,255,0.25)",borderRadius:"8px",padding:"0.45rem",textAlign:"center",fontSize:"0.78rem",fontWeight:700,color:"white"}}>
+          <p style={{fontSize:"0.7rem",color:"#8E99C2",margin:"0 0 0.6rem"}}>14 dias restantes</p>
+          <div style={{background:"linear-gradient(90deg,#FF4FA3,#FF6BB5)",borderRadius:"8px",padding:"0.45rem",textAlign:"center",fontSize:"0.78rem",fontWeight:700,color:"white"}}>
             Fazer upgrade ✨
           </div>
         </a>
@@ -308,13 +296,13 @@ export default function Layout() {
 
         .nav-group { display: flex; flex-direction: column; }
         .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; display: flex; align-items: center; }
-        .nav-subitems { display: flex; flex-direction: column; padding-left: 0.5rem; margin-bottom: 0.25rem; }
-        .nav-subitem { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.8rem; color: rgba(255,255,255,0.55); text-decoration: none; transition: all 0.15s; }
-        .nav-subitem:hover { color: white; background: rgba(255,255,255,0.06); }
-        .nav-subitem.active { color: #f9007a; background: rgba(249,0,122,0.1); font-weight: 600; }
-        .sidebar { width: 220px; min-height: 100vh; background: #181419; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
+        .nav-subitems { display: flex; flex-direction: column; padding-left: 1rem; margin-bottom: 0.25rem; }
+        .nav-subitem { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.8rem; color: #8E99C2; text-decoration: none; transition: all 0.15s; }
+        .nav-subitem:hover { color: #FFFFFF; background: #1D2550; }
+        .nav-subitem.active { color: #FFFFFF; background: linear-gradient(90deg, #FF4FA3, #FF6BB5); font-weight: 600; }
+        .sidebar { width: 220px; min-height: 100vh; background: #131A36; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.25); }
 
-        .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(249,0,122,0.2); }
+        .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
 
         .sidebar-avatar-ring { width: 88px; height: 88px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, #f9007a, #ff6eb4, #ffb3d9, #f9007a); background-size: 300% 300%; animation: gradientRing 3s ease infinite; flex-shrink: 0; }
         @keyframes gradientRing { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
@@ -325,13 +313,15 @@ export default function Layout() {
 
         .sidebar-profile-info { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; }
         .sidebar-ola { font-size: 0.92rem; font-weight: 600; color: #ffffff; }
-        .sidebar-datetime { font-size: 0.72rem; color: #9ca3af; white-space: nowrap; }
+        .sidebar-datetime { font-size: 0.72rem; color: #8E99C2; white-space: nowrap; }
 
         .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
         .nav-emoji { font-size: 0.95rem; margin-right: 0.1rem; }
-        .nav-item { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.92rem; font-weight: 500; color: #9ca3af; text-decoration: none; transition: background 0.15s, color 0.15s; }
-        .nav-item:hover { background: rgba(249,0,122,0.15); color: #f9007a; }
-        .nav-item.active { background: rgba(249,0,122,0.15); color: #f9007a; font-weight: 600; border-left: 3px solid #f9007a; padding-left: calc(1rem - 3px); }
+        .nav-item { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #B8C1E0; text-decoration: none; transition: background 0.15s, color 0.15s; outline: none; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-item:hover { background: #1D2550; color: #FFFFFF; }
+        .nav-item:active { background: #1D2550; color: #FFFFFF; }
+        .nav-item:focus { background: #1D2550; color: #FFFFFF; outline: none; }
+        .nav-item.active { background: linear-gradient(90deg, #FF4FA3, #FF6BB5); color: #FFFFFF; font-weight: 600; }
 
         .layout-main { margin-left: 220px; flex: 1; padding: 2rem; min-height: 100vh; }
 
