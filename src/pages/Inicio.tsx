@@ -1,28 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Users, Package, ClipboardList, DollarSign, UtensilsCrossed, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { QuickSetupModal } from "@/components/QuickSetupModal";
-import { useTheme } from "@/context/ThemeContext";
 
 export default function Inicio() {
   const navigate = useNavigate();
   const { isPro, proExpiraEm } = usePlano();
-  const { theme, toggleTheme } = useTheme();
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [notificacoes, setNotificacoes] = useState<any[]>([]);
-  const notifRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
-        setNotifOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
   const diasProRestantes = proExpiraEm
     ? Math.max(0, Math.ceil((proExpiraEm.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
@@ -35,7 +20,6 @@ export default function Inicio() {
   const [categorias, setCategorias] = useState(0);
   const [pedidos, setPedidos] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [notifCount, setNotifCount] = useState(0);
   const [openGroup, setOpenGroup] = useState<number | null>(0);
   const [quickStep, setQuickStep] = useState<{label: string; path: string} | null>(null);
   const [profileUserId, setProfileUserId] = useState<string>("");
@@ -74,14 +58,6 @@ const load = async () => {
       setClientes(cc || 0);
       setCategorias(catc || 0);
       setLoading(false);
-      // Carregar notificações
-      const { data: notifs } = await supabase.from("notificacoes").select("*").order("created_at", { ascending: false }).limit(10);
-      if (notifs) {
-        setNotificacoes(notifs);
-        const lastSeen = localStorage.getItem("notif_last_seen");
-        if (!lastSeen) setNotifCount(notifs.length);
-        else setNotifCount(notifs.filter((n: any) => new Date(n.created_at) > new Date(lastSeen)).length);
-      }
     };
     load();
   }, []);
@@ -241,61 +217,6 @@ const load = async () => {
 
       {/* ===== DESKTOP ===== */}
       <div className="ini-desktop">
-
-        {/* Header desktop */}
-        <div className="ini-header">
-          <div>
-            <h1 className="ini-greeting">
-              {getGreeting()}{nome ? <>, <strong>{nome}</strong></> : ""}.
-            </h1>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            {/* Toggle dark mode */}
-            <button onClick={toggleTheme} style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b7280", transition: "background 0.2s" }}>
-              {theme === "dark"
-                ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-                : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-              }
-            </button>
-            {/* Notificações com dropdown */}
-            <div style={{ position: "relative" }} ref={notifRef}>
-              <button onClick={() => { setNotifOpen(o => !o); localStorage.setItem("notif_last_seen", new Date().toISOString()); setNotifCount(0); }} style={{ position: "relative", width: "36px", height: "36px", borderRadius: "50%", background: "rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b7280" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                {notifCount > 0 && <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#FF4FA3", color: "white", fontSize: "0.6rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{notifCount > 9 ? "9+" : notifCount}</span>}
-              </button>
-              {notifOpen && (
-                <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", width: "320px", background: theme === "dark" ? "#13131f" : "white", borderRadius: "16px", boxShadow: "0 8px 32px rgba(0,0,0,0.2)", border: `1px solid ${theme === "dark" ? "rgba(255,255,255,0.06)" : "#f3f4f6"}`, zIndex: 100, overflow: "hidden" }}>
-                  <div style={{ padding: "0.85rem 1rem", borderBottom: `1px solid ${theme === "dark" ? "rgba(255,255,255,0.06)" : "#f3f4f6"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontWeight: 700, fontSize: "0.9rem", color: theme === "dark" ? "#f1f5f9" : "#1f2937" }}>Notificações</span>
-                    <button onClick={() => setNotifOpen(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", fontSize: "1rem" }}>✕</button>
-                  </div>
-                  <div style={{ maxHeight: "360px", overflowY: "auto" }}>
-                    {notificacoes.length === 0
-                      ? <p style={{ padding: "1.5rem", textAlign: "center", color: "#9ca3af", fontSize: "0.85rem", margin: 0 }}>Nenhuma notificação</p>
-                      : notificacoes.map((n: any) => (
-                        <div key={n.id} style={{ padding: "0.85rem 1rem", borderBottom: `1px solid ${theme === "dark" ? "rgba(255,255,255,0.04)" : "#f9fafb"}`, display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
-                          <span style={{ fontSize: "1.2rem", flexShrink: 0 }}>{n.emoji || "🔔"}</span>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ fontSize: "0.85rem", fontWeight: 600, color: theme === "dark" ? "#f1f5f9" : "#1f2937", margin: "0 0 2px" }}>{n.titulo || n.title}</p>
-                            <p style={{ fontSize: "0.78rem", color: "#6b7280", margin: 0 }}>{n.mensagem || n.body}</p>
-                            <p style={{ fontSize: "0.7rem", color: "#9ca3af", margin: "4px 0 0" }}>{new Date(n.created_at).toLocaleDateString("pt-BR")}</p>
-                          </div>
-                        </div>
-                      ))
-                    }
-                  </div>
-                </div>
-              )}
-            </div>
-            {/* Tag plano */}
-            <a href="/assinar" style={{ textDecoration: "none" }}>
-              <span className="ini-trial-badge" style={{ background: isPro ? "linear-gradient(90deg,#F5A623,#F8C844)" : "linear-gradient(90deg,#FF4FA3,#FF6BB5)", border: "none", cursor: "pointer", color: "white" }}>
-                <img src="/diamante.png" style={{ width: "16px", height: "16px", objectFit: "contain", flexShrink: 0 }} alt="" />
-                {isPro ? "Premium" : "Plano Gratuito"}
-              </span>
-            </a>
-          </div>
-        </div>
 
         {/* Cards resumo desktop */}
         <div className="ini-summary">
@@ -664,32 +585,6 @@ const load = async () => {
         .step-status.done { color: #16a34a; }
         .step-status.pending { color: #f9007a; }
         .complete-banner { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 0.9rem 1.1rem; font-size: 0.85rem; font-weight: 600; color: #92400e; }
-
-        /* ── DARK MODE ── */
-        :root.dark .ini-header { background: #0d0d1a; border-bottom-color: rgba(255,255,255,0.06); }
-        :root.dark .ini-greeting { color: #f1f5f9; }
-        :root.dark .ini-sum-card { background: #13131f; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-        :root.dark .ini-sum-num { color: #f1f5f9; }
-        :root.dark .ini-sum-label { color: #64748b; }
-        :root.dark .ini-section-title { color: #f1f5f9; }
-        :root.dark .atalho-btn { background: #13131f; border-color: rgba(255,255,255,0.08); }
-        :root.dark .atalho-btn:hover { border-color: #FF4FA3; }
-        :root.dark .atalho-label { color: #94a3b8; }
-        :root.dark .progresso-card { background: #13131f; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-        :root.dark .progresso-sub { color: #64748b; }
-        :root.dark .progresso-bar-bg { background: #1e1e2e; }
-        :root.dark .next-step-card { background: #13131f; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-        :root.dark .next-step-label { color: #64748b; }
-        :root.dark .next-step-text { color: #f1f5f9; }
-        :root.dark .step-group { background: #13131f; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-        :root.dark .step-group-title { color: #f1f5f9; }
-        :root.dark .step-badge { background: #1e1e2e; color: #64748b; }
-        :root.dark .step-items { border-top-color: rgba(255,255,255,0.06); }
-        :root.dark .step-item { border-bottom-color: rgba(255,255,255,0.04); }
-        :root.dark .step-item:hover { background: rgba(255,79,163,0.08); }
-        :root.dark .step-check { border-color: rgba(255,255,255,0.15); }
-        :root.dark .step-item-label { color: #94a3b8; }
-        :root.dark .complete-banner { background: #1a1200; border-color: rgba(251,191,36,0.2); color: #fbbf24; }
       `}</style>
     </div>
   );

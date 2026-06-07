@@ -343,10 +343,11 @@ export default function Layout() {
         .nav-subitem.active { color: #FFFFFF; background: linear-gradient(90deg, #FF4FA3, #FF6BB5); font-weight: 600; }
         .desk-topbar { display: none; }
         @media (min-width: 900px) {
-          .desk-topbar { display: flex; align-items: center; padding: 0.75rem 2rem; border-bottom: 1px solid var(--border, #f3f4f6); margin: -2rem -2rem 1.5rem -2rem; background: var(--bg-card, white); }
+          .desk-topbar { display: flex; align-items: center; padding: 0.65rem 2rem; border-bottom: 1px solid var(--border, #f3f4f6); background: var(--bg-card, white); position: sticky; top: 0; z-index: 9; }
         }
         .topbar-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6b7280; transition: background 0.2s; position: relative; }
-        .topbar-btn:hover { background: rgba(0,0,0,0.08); } min-height: 100vh; background: #05040d; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.25); }
+        .topbar-btn:hover { background: rgba(0,0,0,0.08); }
+        .sidebar { width: 220px; min-height: 100vh; background: #05040d; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.25); }
 
         .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
 
