@@ -18,6 +18,7 @@ export default function Inicio() {
   const [produtos, setProdutos] = useState(0);
   const [clientes, setClientes] = useState(0);
   const [insumos, setInsumos] = useState(0);
+  const [receitas, setReceitas] = useState(0);
   const [categorias, setCategorias] = useState(0);
   const [pedidos, setPedidos] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -98,10 +99,12 @@ const load = async () => {
       const { count: pc } = await supabase.from("produtos").select("*", { count: "exact", head: true }).eq("user_id", user.id);
       const { count: cc } = await supabase.from("clientes").select("*", { count: "exact", head: true }).eq("user_id", user.id);
       const { count: ic } = await supabase.from("insumos").select("*", { count: "exact", head: true }).eq("user_id", user.id);
+      const { count: rc } = await supabase.from("receitas_minhas").select("*", { count: "exact", head: true }).eq("user_id", user.id);
       const { count: catc } = await supabase.from("categorias").select("*", { count: "exact", head: true }).eq("user_id", user.id);
       setProdutos(pc || 0);
       setClientes(cc || 0);
       setInsumos(ic || 0);
+      setReceitas(rc || 0);
       setCategorias(catc || 0);
       const { data: uc } = await supabase.from("clientes").select("id,nome,foto_url,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5);
       if (uc) setUltimosClientes(uc);
@@ -130,7 +133,7 @@ const load = async () => {
         { label: "Qual é o WhatsApp da sua loja?", path: "/configuracoes", done: !!profile?.telefone },
         { label: "Cadastre 1 ingrediente", path: "/insumos", done: insumos > 0 },
         { label: "Cadastre 1 cliente", path: "/clientes", done: clientes > 0 },
-        { label: "Cadastre 1 receita", path: "/receitas", done: !!(profile?.onboarding_receita) },
+        { label: "Cadastre 1 receita", path: "/receitas", done: receitas > 0 },
       ],
     },
   ];
