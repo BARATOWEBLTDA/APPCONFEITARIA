@@ -682,7 +682,7 @@ const load = async () => {
         .dash-metric-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .dash-metric-num { font-size: 1.8rem; font-weight: 800; color: #1f2937; margin: 0; line-height: 1; }
         .dash-metric-label { font-size: 0.75rem; color: #9ca3af; margin: 0.25rem 0 0; font-weight: 500; }
-        .dash-grid { display: grid; grid-template-columns: 1fr 300px; gap: 1.25rem; align-items: start; }
+        .dash-grid { display: grid; grid-template-columns: 1fr 380px; gap: 1.25rem; align-items: start; }
         .dash-col-left, .dash-col-right { display: flex; flex-direction: column; gap: 1rem; }
         .dash-card { background: white; border-radius: 16px; padding: 1.25rem; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
         .dash-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; }
@@ -702,12 +702,12 @@ const load = async () => {
         .dash-atalho-label { font-size: 0.72rem; font-weight: 500; color: #374151; }
 
         /* Calendário */
-        .cal-nav-btn { width: 26px; height: 26px; border-radius: 50%; border: 1px solid #e5e7eb; background: white; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; color: #6b7280; transition: background 0.15s; line-height: 1; padding: 0; }
+        .cal-nav-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #e5e7eb; background: white; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; color: #6b7280; transition: background 0.15s; line-height: 1; padding: 0; }
         .cal-nav-btn:hover { background: #fdf2f8; color: #FF4FA3; border-color: #FF4FA3; }
-        .cal-grid-header { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 0.25rem; }
-        .cal-dow { text-align: center; font-size: 0.65rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; padding: 0.25rem 0; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
-        .cal-day { position: relative; aspect-ratio: 1; border-radius: 8px; border: none; background: transparent; cursor: pointer; font-size: 0.78rem; font-weight: 500; color: #374151; font-family: 'Inter',sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background 0.15s; gap: 1px; }
+        .cal-grid-header { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 0.35rem; }
+        .cal-dow { text-align: center; font-size: 0.72rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; padding: 0.3rem 0; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+        .cal-day { position: relative; aspect-ratio: 1; border-radius: 10px; border: none; background: transparent; cursor: pointer; font-size: 0.88rem; font-weight: 500; color: #374151; font-family: 'Inter',sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background 0.15s; gap: 2px; }
         .cal-day:hover { background: #fdf2f8; color: #FF4FA3; }
         .cal-day.hoje { background: #fdf2f8; color: #FF4FA3; font-weight: 800; }
         .cal-day.selecionado { background: linear-gradient(135deg,#FF4FA3,#FF6BB5) !important; color: white !important; font-weight: 800; }
