@@ -218,19 +218,6 @@ const load = async () => {
       {/* ===== DESKTOP ===== */}
       <div className="ini-desktop">
 
-        {/* Header desktop */}
-        <div className="ini-header">
-          <div>
-            <h1 className="ini-greeting">
-              {getGreeting()}{nome ? <>, <strong>{nome}</strong></> : ""}.
-            </h1>
-          </div>
-          <span className="ini-trial-badge">
-            <img src="/diamante.png" style={{ width: "16px", height: "16px", objectFit: "contain", flexShrink: 0 }} alt="" />
-            Premium
-          </span>
-        </div>
-
         {/* Cards resumo desktop */}
         <div className="ini-summary">
           <div className="ini-sum-card">
@@ -263,7 +250,7 @@ const load = async () => {
                   <div>
                     <h2 className="ini-section-title" style={{ margin: 0 }}>Configure seu Doonly</h2>
                     <p className="progresso-sub">
-                      {progress === 100 ? "🎉 Tudo pronto! Sua loja está completa." : `${remaining === 1 ? "Resta apenas" : "Faltam apenas"} ${remaining} etapa${remaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}
+                      {`${remaining === 1 ? "Resta apenas" : "Faltam apenas"} ${remaining} etapa${remaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}
                     </p>
                   </div>
                 </div>
@@ -278,8 +265,7 @@ const load = async () => {
                 </button>
               )}
             </div>
-
-            {/* Card PRO teste desktop */}
+            )}
             {!loading && isTeste && (
               <div className="progresso-card" style={{background:"linear-gradient(135deg,#1a0a12,#2d0f1e)",marginTop:"1rem"}}>
                 <div className="progresso-header">
@@ -359,11 +345,9 @@ const load = async () => {
             </div>
 
             {progress < 100 && <div className="complete-banner">🎁 Complete 100% e aproveite todos os recursos do Doonly!</div>}
-            </div>
-          )}
           </div>
 
-          {/* Coluna direita — Premium + Atalhos */}
+          {/* Coluna direita */}
           <div className="ini-col-right">
             <div className="ini-section">
               <h2 className="ini-section-title">Acesso rápido</h2>
@@ -378,6 +362,9 @@ const load = async () => {
             </div>
           </div>
         </div>
+      </div>
+      </div>
+      </div>
       </div>
 
       <QuickSetupModal
