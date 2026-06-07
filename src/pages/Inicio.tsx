@@ -227,14 +227,21 @@ const load = async () => {
 
         {/* Saudação */}
         <div className="dash-greeting">
-          <div>
-            <h1 className="dash-title">{getGreeting()}, <strong>{nome || "bem-vinda"}</strong>!</h1>
-            <p className="dash-subtitle">Aqui está um resumo da sua confeitaria hoje.</p>
-          </div>
+          <h1 className="dash-title">{getGreeting()}, <strong>{nome || "bem-vinda"}</strong>!</h1>
+          <p className="dash-subtitle">Aqui está um resumo da sua confeitaria hoje.</p>
         </div>
 
         {/* 4 Cards métricas */}
         <div className="dash-metrics">
+          <div className="dash-metric-card" onClick={() => navigate("/produtos")}>
+            <div className="dash-metric-icon" style={{background:"linear-gradient(135deg,#f59e0b,#f97316)"}}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <div>
+              <p className="dash-metric-num">{produtos}</p>
+              <p className="dash-metric-label">Produtos</p>
+            </div>
+          </div>
           <div className="dash-metric-card" onClick={() => navigate("/pedidos")}>
             <div className="dash-metric-icon" style={{background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)"}}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -253,22 +260,13 @@ const load = async () => {
               <p className="dash-metric-label">Clientes</p>
             </div>
           </div>
-          <div className="dash-metric-card" onClick={() => navigate("/produtos")}>
-            <div className="dash-metric-icon" style={{background:"linear-gradient(135deg,#f59e0b,#f97316)"}}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-            </div>
-            <div>
-              <p className="dash-metric-num">{produtos}</p>
-              <p className="dash-metric-label">Produtos ativos</p>
-            </div>
-          </div>
-          <div className="dash-metric-card" onClick={() => navigate("/insumos")}>
+          <div className="dash-metric-card" onClick={() => navigate("/receitas")}>
             <div className="dash-metric-icon" style={{background:"linear-gradient(135deg,#10b981,#059669)"}}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
             </div>
             <div>
-              <p className="dash-metric-num">{insumos}</p>
-              <p className="dash-metric-label">Ingredientes</p>
+              <p className="dash-metric-num" style={{fontSize:"1rem"}}>R$ 0,00</p>
+              <p className="dash-metric-label">Valor em vendas</p>
             </div>
           </div>
         </div>
@@ -276,18 +274,16 @@ const load = async () => {
         {/* Grid principal */}
         <div className="dash-grid">
 
-          {/* Coluna esquerda — Checklist ou dashboard */}
+          {/* Coluna esquerda — Checklist */}
           <div className="dash-col-left">
-
-            {/* Checklist configuração */}
             {!loading && (progress < 100 ? (
               <div className="dash-card">
                 <div className="dash-card-header">
-                  <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
-                    <img src="/configureapp.png" alt="" style={{width:"40px",height:"40px",objectFit:"contain"}} />
+                  <div style={{display:"flex",alignItems:"center",gap:"0.65rem"}}>
+                    <img src="/configureapp.png" alt="" style={{width:"34px",height:"34px",objectFit:"contain"}} />
                     <div>
                       <h3 className="dash-card-title">Configure seu Doonly</h3>
-                      <p className="dash-card-sub">{`${remaining === 1 ? "Resta" : "Faltam"} ${remaining} etapa${remaining !== 1 ? "s" : ""}`}</p>
+                      <p className="dash-card-sub">{`${remaining} etapa${remaining !== 1 ? "s" : ""} restante${remaining !== 1 ? "s" : ""}`}</p>
                     </div>
                   </div>
                   <span className="dash-progress-pct">{progress}%</span>
@@ -298,8 +294,8 @@ const load = async () => {
                 {nextStep && (
                   <div className="dash-next-step">
                     <div>
-                      <p style={{fontSize:"0.72rem",color:"#9ca3af",margin:0}}>Próximo passo</p>
-                      <p style={{fontSize:"0.88rem",fontWeight:600,color:"#1f2937",margin:0}}>{nextStep.label}</p>
+                      <p style={{fontSize:"0.7rem",color:"#9ca3af",margin:0}}>Próximo passo</p>
+                      <p style={{fontSize:"0.85rem",fontWeight:600,color:"#1f2937",margin:0}}>{nextStep.label}</p>
                     </div>
                     <button className="dash-btn-config" onClick={() => setQuickStep(nextStep)}>Configurar →</button>
                   </div>
@@ -340,8 +336,8 @@ const load = async () => {
               </div>
             ) : !proResgatado ? (
               <div className="dash-card" style={{background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",border:"1px solid #bbf7d0"}}>
-                <div style={{textAlign:"center",padding:"1rem 0"}}>
-                  <span style={{fontSize:"3rem"}}>🎉</span>
+                <div style={{textAlign:"center",padding:"0.5rem 0"}}>
+                  <span style={{fontSize:"2.5rem"}}>🎉</span>
                   <h3 style={{fontWeight:800,color:"#15803d",margin:"0.5rem 0 0.25rem"}}>Configuração completa!</h3>
                   <p style={{fontSize:"0.85rem",color:"#16a34a",margin:"0 0 1rem"}}>Resgate agora 3 dias de acesso PRO como recompensa.</p>
                   <button className="mob-resgatar-btn" style={{width:"100%"}} onClick={handleResgatarPro} disabled={resgatando}>
@@ -353,13 +349,13 @@ const load = async () => {
 
             {/* Card PRO expirando */}
             {!loading && isTeste && (
-              <div className="dash-card" style={{background:"linear-gradient(135deg,#1a0a12,#2d0f1e)",marginTop:"1rem"}}>
+              <div className="dash-card" style={{background:"linear-gradient(135deg,#1a0a12,#2d0f1e)"}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.75rem"}}>
                   <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
-                    <img src="/assine.png" alt="" style={{width:"40px",height:"40px",objectFit:"contain",borderRadius:"10px"}} />
+                    <img src="/assine.png" alt="" style={{width:"36px",height:"36px",objectFit:"contain",borderRadius:"8px"}} />
                     <div>
-                      <h3 style={{fontWeight:700,color:"white",margin:0,fontSize:"0.9rem"}}>PRO expira em {diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}</h3>
-                      <p style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.6)",margin:0}}>Apenas R$ 19,90/mês</p>
+                      <h3 style={{fontWeight:700,color:"white",margin:0,fontSize:"0.88rem"}}>PRO expira em {diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}</h3>
+                      <p style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.6)",margin:0}}>Apenas R$ 19,90/mês</p>
                     </div>
                   </div>
                   <button className="mob-assinar-btn-sm" onClick={() => navigate("/assinar")}>Assinar →</button>
@@ -372,19 +368,19 @@ const load = async () => {
 
             {/* Últimos clientes */}
             {ultimosClientes.length > 0 && (
-              <div className="dash-card" style={{marginTop:"1rem"}}>
+              <div className="dash-card">
                 <div className="dash-card-header">
                   <h3 className="dash-card-title">Últimos clientes</h3>
                   <button className="dash-ver-todos" onClick={() => navigate("/clientes")}>Ver todos →</button>
                 </div>
-                <div style={{display:"flex",flexDirection:"column",gap:"0.5rem",marginTop:"0.75rem"}}>
+                <div style={{display:"flex",flexDirection:"column",gap:"0.25rem",marginTop:"0.75rem"}}>
                   {ultimosClientes.map(c => (
                     <div key={c.id} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.5rem 0",borderBottom:"1px solid #f3f4f6"}}>
-                      <div style={{width:"36px",height:"36px",borderRadius:"50%",background:"#fdf2f8",overflow:"hidden",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                        {c.foto_url ? <img src={c.foto_url} alt={c.nome} style={{width:"100%",height:"100%",objectFit:"cover"}} /> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
+                      <div style={{width:"34px",height:"34px",borderRadius:"50%",background:"#fdf2f8",overflow:"hidden",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        {c.foto_url ? <img src={c.foto_url} alt={c.nome} style={{width:"100%",height:"100%",objectFit:"cover"}} /> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
                       </div>
-                      <span style={{fontSize:"0.88rem",fontWeight:500,color:"#374151"}}>{c.nome}</span>
-                      <span style={{fontSize:"0.75rem",color:"#9ca3af",marginLeft:"auto"}}>{new Date(c.created_at).toLocaleDateString("pt-BR")}</span>
+                      <span style={{fontSize:"0.85rem",fontWeight:500,color:"#374151",flex:1}}>{c.nome}</span>
+                      <span style={{fontSize:"0.72rem",color:"#9ca3af"}}>{new Date(c.created_at).toLocaleDateString("pt-BR")}</span>
                     </div>
                   ))}
                 </div>
@@ -392,37 +388,23 @@ const load = async () => {
             )}
           </div>
 
-          {/* Coluna direita — Acesso rápido + Cardápio */}
+          {/* Coluna direita — Últimas vendas */}
           <div className="dash-col-right">
-            <div className="dash-card">
-              <h3 className="dash-card-title" style={{marginBottom:"1rem"}}>Acesso rápido</h3>
-              <div className="dash-atalhos">
-                {atalhos.map(a => (
-                  <button key={a.path} className="dash-atalho-btn" onClick={() => navigate(a.path)}>
-                    <div className="dash-atalho-icon">{a.icon}</div>
-                    <span className="dash-atalho-label">{a.label}</span>
-                  </button>
-                ))}
+            <div className="dash-card" style={{height:"100%"}}>
+              <div className="dash-card-header">
+                <h3 className="dash-card-title">Últimas vendas</h3>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"2.5rem 1rem",gap:"0.75rem",textAlign:"center"}}>
+                <div style={{width:"56px",height:"56px",background:"#fdf2f8",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FF4FA3" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                </div>
+                <p style={{fontWeight:700,color:"#1f2937",margin:0,fontSize:"0.9rem"}}>Nenhum pedido ainda</p>
+                <p style={{fontSize:"0.8rem",color:"#9ca3af",margin:0,lineHeight:1.5}}>Quando você registrar vendas, elas aparecerão aqui.</p>
+                <button onClick={() => navigate("/pedidos")} style={{background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)",color:"white",border:"none",borderRadius:"10px",padding:"0.6rem 1.25rem",fontFamily:"Inter,sans-serif",fontSize:"0.85rem",fontWeight:600,cursor:"pointer",marginTop:"0.5rem"}}>
+                  Registrar pedido
+                </button>
               </div>
             </div>
-
-            {/* Link cardápio público */}
-            {profile?.slug && (
-              <div className="dash-card" style={{marginTop:"1rem",background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)"}}>
-                <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
-                  <div style={{width:"40px",height:"40px",background:"rgba(255,255,255,0.2)",borderRadius:"10px",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                  </div>
-                  <div style={{flex:1}}>
-                    <p style={{fontWeight:700,color:"white",margin:0,fontSize:"0.9rem"}}>Seu cardápio está no ar!</p>
-                    <p style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.8)",margin:0}}>doonly.com.br/cardapio/{profile.slug}</p>
-                  </div>
-                  <button onClick={() => navigator.clipboard.writeText(`https://doonly.com.br/cardapio/${profile.slug}`)} style={{background:"rgba(255,255,255,0.2)",border:"none",borderRadius:"8px",padding:"0.4rem 0.75rem",color:"white",fontSize:"0.78rem",fontWeight:600,cursor:"pointer"}}>
-                    Copiar
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
         </div>
