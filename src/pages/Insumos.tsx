@@ -144,12 +144,13 @@ export default function Insumos() {
     setBuscandoImagem(true);
     setImagensBusca([]);
     try {
-      const key = import.meta.env.VITE_GOOGLE_SEARCH_KEY;
-      const cx = import.meta.env.VITE_GOOGLE_SEARCH_CX;
-      const url = `https://www.googleapis.com/customsearch/v1?key=${key}&cx=${cx}&q=${encodeURIComponent(termoBuscaImg)}&searchType=image&num=6&imgSize=medium`;
+      const key = import.meta.env.VITE_SERP_API_KEY;
+      const url = `https://serpapi.com/search.json?engine=google_images&q=${encodeURIComponent(termoBuscaImg)}&api_key=${key}&num=6&hl=pt&gl=br`;
       const res = await fetch(url);
       const data = await res.json();
-      if (data.items) setImagensBusca(data.items.map((item: any) => item.link));
+      if (data.images_results) {
+        setImagensBusca(data.images_results.slice(0, 6).map((img: any) => img.original));
+      }
     } catch (e) { console.error(e); }
     setBuscandoImagem(false);
   };
