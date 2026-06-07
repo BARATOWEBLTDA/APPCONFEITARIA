@@ -493,35 +493,31 @@ const load = async () => {
 
                   {loadingPedidos ? (
                     <p style={{fontSize:"0.8rem",color:"#9ca3af",textAlign:"center",padding:"0.5rem"}}>Carregando...</p>
-                  ) : (() => {
-                    const filtrados = pedidosDia.filter(p => pedidosFiltro==="todos" || p.status===pedidosFiltro);
-                    if (filtrados.length === 0) return (
-                      <p style={{fontSize:"0.78rem",color:"#9ca3af",textAlign:"center",padding:"0.75rem 0"}}>
-                        Nenhum pedido {pedidosFiltro!=="todos" ? "("+pedidosFiltro+")" : ""} neste dia
-                      </p>
-                    );
-                    return (
-                      <div style={{display:"flex",flexDirection:"column",gap:"0.4rem",maxHeight:"180px",overflowY:"auto"}}>
-                        {filtrados.map(p => (
-                          <div key={p.id} style={{background:"#f9fafb",borderRadius:"10px",padding:"0.6rem 0.75rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                            <div>
-                              <p style={{fontSize:"0.82rem",fontWeight:600,color:"#1f2937",margin:0}}>{p.cliente_nome || "Cliente"}</p>
-                              <p style={{fontSize:"0.72rem",color:"#9ca3af",margin:0}}>{p.descricao || "Pedido"}</p>
-                            </div>
-                            <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"3px"}}>
-                              <span style={{fontSize:"0.78rem",fontWeight:700,color:"#16a34a"}}>R$ {(p.valor||0).toFixed(2)}</span>
-                              <span style={{fontSize:"0.62rem",fontWeight:700,padding:"2px 6px",borderRadius:"6px",
-                                background: p.status==="finalizado"?"#dcfce7":p.status==="em_producao"?"#fef9c3":p.status==="cancelado"?"#fee2e2":"#fdf2f8",
-                                color: p.status==="finalizado"?"#16a34a":p.status==="em_producao"?"#ca8a04":p.status==="cancelado"?"#ef4444":"#FF4FA3"
-                              }}>
-                                {p.status==="finalizado"?"✓ Feito":p.status==="em_producao"?"⚙ Prod.":p.status==="cancelado"?"✕ Cancel.":"● Pend."}
-                              </span>
-                            </div>
+                  ) : pedidosDia.filter(p => pedidosFiltro==="todos" || p.status===pedidosFiltro).length === 0 ? (
+                    <p style={{fontSize:"0.78rem",color:"#9ca3af",textAlign:"center",padding:"0.75rem 0"}}>
+                      Nenhum pedido neste dia
+                    </p>
+                  ) : (
+                    <div style={{display:"flex",flexDirection:"column",gap:"0.4rem",maxHeight:"180px",overflowY:"auto"}}>
+                      {pedidosDia.filter(p => pedidosFiltro==="todos" || p.status===pedidosFiltro).map(p => (
+                        <div key={p.id} style={{background:"#f9fafb",borderRadius:"10px",padding:"0.6rem 0.75rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                          <div>
+                            <p style={{fontSize:"0.82rem",fontWeight:600,color:"#1f2937",margin:0}}>{p.cliente_nome || "Cliente"}</p>
+                            <p style={{fontSize:"0.72rem",color:"#9ca3af",margin:0}}>{p.descricao || "Pedido"}</p>
                           </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
+                          <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"3px"}}>
+                            <span style={{fontSize:"0.78rem",fontWeight:700,color:"#16a34a"}}>R$ {(p.valor||0).toFixed(2)}</span>
+                            <span style={{fontSize:"0.62rem",fontWeight:700,padding:"2px 6px",borderRadius:"6px",
+                              background: p.status==="finalizado"?"#dcfce7":p.status==="em_producao"?"#fef9c3":p.status==="cancelado"?"#fee2e2":"#fdf2f8",
+                              color: p.status==="finalizado"?"#16a34a":p.status==="em_producao"?"#ca8a04":p.status==="cancelado"?"#ef4444":"#FF4FA3"
+                            }}>
+                              {p.status==="finalizado"?"✓ Feito":p.status==="em_producao"?"⚙ Prod.":p.status==="cancelado"?"✕ Cancel.":"● Pend."}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
