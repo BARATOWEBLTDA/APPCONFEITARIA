@@ -233,40 +233,44 @@ const load = async () => {
 
         {/* 4 Cards métricas */}
         <div className="dash-metrics">
-          <div className="dash-metric-card" onClick={() => navigate("/produtos")}>
-            <div className="dash-metric-icon" style={{background:"linear-gradient(135deg,#f59e0b,#f97316)"}}>
+          <div className="dash-metric-card" onClick={() => navigate("/produtos")} style={{background:"linear-gradient(135deg,#f59e0b,#f97316)",overflow:"hidden",position:"relative"}}>
+            <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
+            <div className="dash-metric-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
             </div>
-            <div>
-              <p className="dash-metric-num">{produtos}</p>
-              <p className="dash-metric-label">Produtos</p>
+            <div style={{zIndex:1}}>
+              <p className="dash-metric-num" style={{color:"white"}}>{produtos}</p>
+              <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Produtos</p>
             </div>
           </div>
-          <div className="dash-metric-card" onClick={() => navigate("/pedidos")}>
-            <div className="dash-metric-icon" style={{background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)"}}>
+          <div className="dash-metric-card" onClick={() => navigate("/pedidos")} style={{background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)",overflow:"hidden",position:"relative"}}>
+            <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
+            <div className="dash-metric-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             </div>
-            <div>
-              <p className="dash-metric-num">{pedidos}</p>
-              <p className="dash-metric-label">Pedidos do mês</p>
+            <div style={{zIndex:1}}>
+              <p className="dash-metric-num" style={{color:"white"}}>{pedidos}</p>
+              <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Pedidos do mês</p>
             </div>
           </div>
-          <div className="dash-metric-card" onClick={() => navigate("/clientes")}>
-            <div className="dash-metric-icon" style={{background:"linear-gradient(135deg,#6366f1,#8b5cf6)"}}>
+          <div className="dash-metric-card" onClick={() => navigate("/clientes")} style={{background:"linear-gradient(135deg,#6366f1,#8b5cf6)",overflow:"hidden",position:"relative"}}>
+            <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
+            <div className="dash-metric-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
-            <div>
-              <p className="dash-metric-num">{clientes}</p>
-              <p className="dash-metric-label">Clientes</p>
+            <div style={{zIndex:1}}>
+              <p className="dash-metric-num" style={{color:"white"}}>{clientes}</p>
+              <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Clientes</p>
             </div>
           </div>
-          <div className="dash-metric-card" onClick={() => navigate("/receitas")}>
-            <div className="dash-metric-icon" style={{background:"linear-gradient(135deg,#10b981,#059669)"}}>
+          <div className="dash-metric-card" onClick={() => navigate("/receitas")} style={{background:"linear-gradient(135deg,#10b981,#059669)",overflow:"hidden",position:"relative"}}>
+            <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
+            <div className="dash-metric-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
             </div>
-            <div>
-              <p className="dash-metric-num" style={{fontSize:"1rem"}}>R$ 0,00</p>
-              <p className="dash-metric-label">Valor em vendas</p>
+            <div style={{zIndex:1}}>
+              <p className="dash-metric-num" style={{color:"white",fontSize:"1rem"}}>R$ 0,00</p>
+              <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Valor em vendas</p>
             </div>
           </div>
         </div>
@@ -559,11 +563,11 @@ const load = async () => {
         .dash-title { font-size: 1.5rem; font-weight: 800; color: #1f2937; margin: 0 0 0.25rem; }
         .dash-subtitle { font-size: 0.85rem; color: #9ca3af; margin: 0; }
         .dash-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
-        .dash-metric-card { background: white; border-radius: 14px; padding: 1.1rem 1.25rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; }
-        .dash-metric-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.1); transform: translateY(-2px); }
+        .dash-metric-card { background: white; border-radius: 16px; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 4px 16px rgba(0,0,0,0.1); cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; }
+        .dash-metric-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.15); transform: translateY(-3px); }
         .dash-metric-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .dash-metric-num { font-size: 1.6rem; font-weight: 800; color: #1f2937; margin: 0; line-height: 1; }
-        .dash-metric-label { font-size: 0.75rem; color: #9ca3af; margin: 0.2rem 0 0; font-weight: 500; }
+        .dash-metric-num { font-size: 1.8rem; font-weight: 800; color: #1f2937; margin: 0; line-height: 1; }
+        .dash-metric-label { font-size: 0.75rem; color: #9ca3af; margin: 0.25rem 0 0; font-weight: 500; }
         .dash-grid { display: grid; grid-template-columns: 1fr 300px; gap: 1.25rem; align-items: start; }
         .dash-col-left, .dash-col-right { display: flex; flex-direction: column; gap: 1rem; }
         .dash-card { background: white; border-radius: 16px; padding: 1.25rem; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
