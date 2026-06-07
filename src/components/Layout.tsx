@@ -84,21 +84,34 @@ export default function Layout() {
       {/* Sidebar Desktop */}
       <aside className="sidebar">
         <div className="sidebar-profile">
-          <div className="sidebar-avatar-ring">
-            <div className="sidebar-avatar">
-              {profile?.foto_url ? (
-                <img src={profile.foto_url} alt="Foto de perfil" />
-              ) : (
-                <div className="sidebar-avatar-placeholder">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                  </svg>
-                </div>
-              )}
+          <div style={{ position: "relative", display: "inline-block" }}>
+            <div className="sidebar-avatar-ring">
+              <div className="sidebar-avatar">
+                {profile?.foto_url ? (
+                  <img src={profile.foto_url} alt="Foto de perfil" />
+                ) : (
+                  <div className="sidebar-avatar-placeholder">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </div>
+                )}
+              </div>
+            </div>
+            {/* Tag Premium/Free na base do avatar */}
+            <div style={{
+              position: "absolute", bottom: "-8px", left: "50%", transform: "translateX(-50%)",
+              background: isPro ? "linear-gradient(90deg, #FF4FA3, #FF6BB5)" : "rgba(255,255,255,0.1)",
+              border: isPro ? "none" : "1px solid rgba(255,255,255,0.15)",
+              color: "white", fontSize: "0.6rem", fontWeight: 700,
+              padding: "2px 8px", borderRadius: "20px", whiteSpace: "nowrap",
+              letterSpacing: "0.05em"
+            }}>
+              {isPro ? "✨ Premium" : "Free"}
             </div>
           </div>
-          <div className="sidebar-profile-info">
+          <div className="sidebar-profile-info" style={{ marginTop: "0.5rem" }}>
             <span className="sidebar-ola">Olá, {profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"}</span>
             <span className="sidebar-datetime">{formatDate(now)} · {formatTime(now)}</span>
           </div>
@@ -304,7 +317,7 @@ export default function Layout() {
 
         .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
 
-        .sidebar-avatar-ring { width: 88px; height: 88px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, #f9007a, #ff6eb4, #ffb3d9, #f9007a); background-size: 300% 300%; animation: gradientRing 3s ease infinite; flex-shrink: 0; }
+        .sidebar-avatar-ring { width: 100px; height: 100px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, #FF4FA3, #FF6BB5, #FF4FA3); background-size: 300% 300%; animation: gradientRing 3s ease infinite; flex-shrink: 0; }
         @keyframes gradientRing { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid #ffffff; background: rgba(249,0,122,0.1); }
