@@ -66,12 +66,11 @@ const load = async () => {
     {
       title: "Configure sua loja", emoji: "🏪",
       items: [
-        { label: "Qual é o seu nome?", path: "/configuracoes", done: !!profile?.nome },
-        { label: "Você já trabalha com confeitaria?", path: "/configuracoes", done: !!profile?.onboarding_trabalha_confeitaria },
-        { label: "Qual é o WhatsApp da sua loja?", path: "/configuracoes", done: !!profile?.telefone },
-        { label: "Cadastre 1 insumo", path: "/receitas", done: (profile?.onboarding_insumo || false) },
-        { label: "Cadastre 1 cliente", path: "/clientes", done: clientes > 0 },
-        { label: "Cadastre 1 receita", path: "/receitas", done: (profile?.onboarding_receita || false) },
+        { label: "Adicionar nome da loja", path: "/configuracoes", done: !!profile?.nome_loja },
+        { label: "Adicionar logo da loja", path: "/configuracoes", done: !!profile?.foto_url },
+        { label: "Adicionar WhatsApp", path: "/configuracoes", done: !!profile?.telefone },
+        { label: "Adicionar localização", path: "/configuracoes", done: !!profile?.endereco },
+        { label: "Definir horário de funcionamento", path: "/configuracoes", done: !!profile?.horario },
       ],
     },
   ];
@@ -226,9 +225,9 @@ const load = async () => {
               {getGreeting()}{nome ? <>, <strong>{nome}</strong></> : ""}.
             </h1>
           </div>
-          <span className="ini-trial-badge">
-            <img src="/diamante.png" style={{ width: "16px", height: "16px", objectFit: "contain", flexShrink: 0 }} alt="" />
-            Premium
+          <span className="ini-trial-badge" style={{ background: isPro ? "linear-gradient(90deg,#F5A623,#F8C844)" : "#111111", border: isPro ? "none" : "1px solid rgba(255,255,255,0.15)" }}>
+            {isPro && <img src="/diamante.png" style={{ width: "16px", height: "16px", objectFit: "contain", flexShrink: 0 }} alt="" />}
+            {isPro ? "Premium" : "Free"}
           </span>
         </div>
 
@@ -402,7 +401,6 @@ const load = async () => {
       <QuickSetupModal
         step={quickStep}
         userId={profileUserId}
-        profile={profile}
         onClose={() => setQuickStep(null)}
         onSaved={async () => {
           const { data: { user } } = await supabase.auth.getUser();
