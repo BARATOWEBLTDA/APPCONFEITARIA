@@ -225,10 +225,12 @@ const load = async () => {
               {getGreeting()}{nome ? <>, <strong>{nome}</strong></> : ""}.
             </h1>
           </div>
-          <span className="ini-trial-badge" style={{ background: isPro ? "linear-gradient(90deg,#F5A623,#F8C844)" : "#111111", border: isPro ? "none" : "1px solid rgba(255,255,255,0.15)" }}>
-            {isPro && <img src="/diamante.png" style={{ width: "16px", height: "16px", objectFit: "contain", flexShrink: 0 }} alt="" />}
-            {isPro ? "Premium" : "Free"}
-          </span>
+          <a href="/assinar" style={{ textDecoration: "none" }}>
+            <span className="ini-trial-badge" style={{ background: isPro ? "linear-gradient(90deg,#F5A623,#F8C844)" : "linear-gradient(90deg,#FF4FA3,#FF6BB5)", border: "none", cursor: "pointer" }}>
+              <img src="/diamante.png" style={{ width: "16px", height: "16px", objectFit: "contain", flexShrink: 0 }} alt="" />
+              {isPro ? "Premium" : "Plano Gratuito"}
+            </span>
+          </a>
         </div>
 
         {/* Cards resumo desktop */}
