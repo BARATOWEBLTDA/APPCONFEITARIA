@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
+import type { ReactNode } from "react";
 import { Home, BookOpen, Users, UtensilsCrossed, Menu } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
@@ -21,7 +22,7 @@ const menuItems = [
   { label: "Configurações", path: "/configuracoes", emoji: "⚙️" },
 ];
 
-function SidebarGroup({ label, emoji, paths, location, children }: { label: string; emoji: string; paths: string[]; location: any; children: React.ReactNode }) {
+function SidebarGroup({ label, emoji, paths, location, children }: { label: string; emoji: string; paths: string[]; location: any; children: ReactNode }) {
   const isAnyActive = paths.some(p => location.pathname.startsWith(p));
   const [open, setOpen] = useState(isAnyActive);
   return (
@@ -310,7 +311,8 @@ export default function Layout() {
         .nav-subitems { display: flex; flex-direction: column; padding-left: 0.5rem; margin-bottom: 0.25rem; }
         .nav-subitem { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.8rem; color: rgba(255,255,255,0.55); text-decoration: none; transition: all 0.15s; }
         .nav-subitem:hover { color: white; background: rgba(255,255,255,0.06); }
-        .nav-subitem.active { color: #f9007a; background: rgba(249,0,122,0.1); font-weight: 600; } min-height: 100vh; background: #181419; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
+        .nav-subitem.active { color: #f9007a; background: rgba(249,0,122,0.1); font-weight: 600; }
+        .sidebar { width: 220px; min-height: 100vh; background: #181419; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
 
         .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(249,0,122,0.2); }
 
