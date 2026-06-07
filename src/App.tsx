@@ -12,6 +12,7 @@ import Dashboard from "@/pages/Dashboard";
 import Inicio from "@/pages/Inicio";
 import Assinar from "@/pages/Assinar";
 import Receitas from "@/pages/Receitas";
+import Insumos from "@/pages/Insumos";
 import Notificacoes from "@/pages/Notificacoes";
 import AdminLogin from "@/pages/admin/AdminLogin";
 import AdminLayout from "@/pages/admin/AdminLayout";
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/inicio" element={<Inicio />} />
           <Route path="/assinar" element={<Assinar />} />
           <Route path="/receitas" element={<Receitas />} />
+          <Route path="/insumos" element={<Insumos />} />
           <Route path="/notificacoes" element={<Notificacoes />} />
           <Route path="/produtos" element={<Produtos />} />
           <Route path="/categorias" element={<Categorias />} />
