@@ -91,7 +91,12 @@ export default function Insumos() {
     load();
   }, []);
 
-  // Custo unitário calculado
+  // Busca automática ao entrar na tela de buscar
+  useEffect(() => {
+    if (step === "buscar" && termoBuscaImg.trim() && imagensBusca.length === 0) {
+      buscarImagens();
+    }
+  }, [step]);
   const calcCustoUnitario = (valorCompra: string, qtdEmbalagem: string) => {
     const v = parseFloat(valorCompra) || 0;
     const q = parseFloat(qtdEmbalagem) || 1;
