@@ -145,11 +145,10 @@ export default function Layout() {
             <NavLink to="/comunidade" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Comunidade</NavLink>
           </SidebarGroup>
 
-          {/* Insumos */}
-          <NavLink to="/insumos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Insumos</NavLink>
-
-          {/* Estoque */}
-          <NavLink to="/estoque" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Estoque</NavLink>
+          {/* Estoque com submenu */}
+          <SidebarGroup label="Estoque" emoji="" paths={["/insumos","/estoque"]} location={location}>
+            <NavLink to="/insumos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Ingredientes</NavLink>
+          </SidebarGroup>
 
           {/* Financeiro */}
           <NavLink to="/financeiro" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Financeiro</NavLink>
