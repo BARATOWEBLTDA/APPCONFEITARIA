@@ -69,6 +69,7 @@ export default function Layout() {
     if (html.classList.contains("dark")) { html.classList.remove("dark"); setDarkMode(false); localStorage.setItem("tema", "light"); }
     else { html.classList.add("dark"); setDarkMode(true); localStorage.setItem("tema", "dark"); }
   };
+  const formatDate = (d: Date) => d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
   const formatTime = (d: Date) => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
   const handleLogout = async () => {
