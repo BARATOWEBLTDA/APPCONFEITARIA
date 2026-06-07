@@ -27,6 +27,7 @@ export default function Inicio() {
   const [diasTrial] = useState(14);
   const [proResgatado, setProResgatado] = useState(false);
   const [resgatando, setResgatando] = useState(false);
+  const [ultimosClientes, setUltimosClientes] = useState<any[]>([]);
 
   const handleResgatarPro = async () => {
     if (!profileUserId || proResgatado) return;
@@ -60,6 +61,8 @@ const load = async () => {
       setClientes(cc || 0);
       setInsumos(ic || 0);
       setCategorias(catc || 0);
+      const { data: uc } = await supabase.from("clientes").select("id,nome,foto_url,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5);
+      if (uc) setUltimosClientes(uc);
       setLoading(false);
     };
     load();
@@ -222,60 +225,86 @@ const load = async () => {
       {/* ===== DESKTOP ===== */}
       <div className="ini-desktop">
 
-        {/* Cards resumo */}
-        <div className="ini-summary">
-          <div className="ini-sum-card">
-            <span className="ini-sum-icon">📦</span>
-            <p className="ini-sum-num">{pedidos}</p>
-            <p className="ini-sum-label">Pedidos do mês</p>
-          </div>
-          <div className="ini-sum-card">
-            <span className="ini-sum-icon">👥</span>
-            <p className="ini-sum-num">{clientes}</p>
-            <p className="ini-sum-label">Clientes</p>
-          </div>
-          <div className="ini-sum-card">
-            <span className="ini-sum-icon">🎂</span>
-            <p className="ini-sum-num">{produtos}</p>
-            <p className="ini-sum-label">Produtos</p>
+        {/* Saudação */}
+        <div className="dash-greeting">
+          <div>
+            <h1 className="dash-title">{getGreeting()}, <strong>{nome || "bem-vinda"}</strong>!</h1>
+            <p className="dash-subtitle">Aqui está um resumo da sua confeitaria hoje.</p>
           </div>
         </div>
 
-        {/* Grid 2 colunas */}
-        <div className="ini-grid">
+        {/* 4 Cards métricas */}
+        <div className="dash-metrics">
+          <div className="dash-metric-card" onClick={() => navigate("/pedidos")}>
+            <div className="dash-metric-icon" style={{background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)"}}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div>
+              <p className="dash-metric-num">{pedidos}</p>
+              <p className="dash-metric-label">Pedidos do mês</p>
+            </div>
+          </div>
+          <div className="dash-metric-card" onClick={() => navigate("/clientes")}>
+            <div className="dash-metric-icon" style={{background:"linear-gradient(135deg,#6366f1,#8b5cf6)"}}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+              <p className="dash-metric-num">{clientes}</p>
+              <p className="dash-metric-label">Clientes</p>
+            </div>
+          </div>
+          <div className="dash-metric-card" onClick={() => navigate("/produtos")}>
+            <div className="dash-metric-icon" style={{background:"linear-gradient(135deg,#f59e0b,#f97316)"}}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            </div>
+            <div>
+              <p className="dash-metric-num">{produtos}</p>
+              <p className="dash-metric-label">Produtos ativos</p>
+            </div>
+          </div>
+          <div className="dash-metric-card" onClick={() => navigate("/insumos")}>
+            <div className="dash-metric-icon" style={{background:"linear-gradient(135deg,#10b981,#059669)"}}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+            </div>
+            <div>
+              <p className="dash-metric-num">{insumos}</p>
+              <p className="dash-metric-label">Ingredientes</p>
+            </div>
+          </div>
+        </div>
 
-          {/* Coluna esquerda — replica lógica do mobile */}
-          <div className="ini-col-left">
+        {/* Grid principal */}
+        <div className="dash-grid">
 
-            {/* Configure seu Doonly — idêntico ao mobile */}
+          {/* Coluna esquerda — Checklist ou dashboard */}
+          <div className="dash-col-left">
+
+            {/* Checklist configuração */}
             {!loading && (progress < 100 ? (
-              <div className="progresso-card">
-                <div className="progresso-header">
+              <div className="dash-card">
+                <div className="dash-card-header">
                   <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
-                    <img src="/configureapp.png" alt="" style={{width:"52px",height:"52px",objectFit:"contain",flexShrink:0}} />
+                    <img src="/configureapp.png" alt="" style={{width:"40px",height:"40px",objectFit:"contain"}} />
                     <div>
-                      <h2 className="ini-section-title" style={{margin:0}}>Configure seu Doonly</h2>
-                      <p className="progresso-sub">{`${remaining === 1 ? "Resta apenas" : "Faltam apenas"} ${remaining} etapa${remaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}</p>
+                      <h3 className="dash-card-title">Configure seu Doonly</h3>
+                      <p className="dash-card-sub">{`${remaining === 1 ? "Resta" : "Faltam"} ${remaining} etapa${remaining !== 1 ? "s" : ""}`}</p>
                     </div>
                   </div>
-                  <div className="progresso-pct-circle"><span>{progress}%</span></div>
+                  <span className="dash-progress-pct">{progress}%</span>
                 </div>
-                <div className="progresso-bar-bg">
-                  <div className="progresso-bar-fill" style={{width:`${progress}%`}} />
+                <div className="dash-progress-bar">
+                  <div className="dash-progress-fill" style={{width:`${progress}%`}} />
                 </div>
                 {nextStep && (
-                  <div className="next-step-card" style={{marginTop:"0.75rem"}}>
-                    <div className="next-step-left">
-                      <span className="next-step-dot" />
-                      <div>
-                        <p className="next-step-label">Próximo passo recomendado</p>
-                        <p className="next-step-text">{nextStep.label}</p>
-                      </div>
+                  <div className="dash-next-step">
+                    <div>
+                      <p style={{fontSize:"0.72rem",color:"#9ca3af",margin:0}}>Próximo passo</p>
+                      <p style={{fontSize:"0.88rem",fontWeight:600,color:"#1f2937",margin:0}}>{nextStep.label}</p>
                     </div>
-                    <button className="next-step-btn" onClick={() => setQuickStep(nextStep)}>Configurar agora →</button>
+                    <button className="dash-btn-config" onClick={() => setQuickStep(nextStep)}>Configurar →</button>
                   </div>
                 )}
-                <div className="steps-list" style={{marginTop:"0.75rem"}}>
+                <div className="dash-steps">
                   {steps.map((group, gi) => {
                     const groupDone = group.items.filter(i => i.done).length;
                     const isOpen = openGroup === gi;
@@ -283,13 +312,10 @@ const load = async () => {
                     return (
                       <div key={gi} className="step-group">
                         <button className="step-group-header" onClick={() => setOpenGroup(isOpen ? null : gi)}>
-                          <div className="step-group-left">
-                            <span>{group.emoji}</span>
-                            <span className="step-group-title">{group.title}</span>
-                          </div>
+                          <div className="step-group-left"><span>{group.emoji}</span><span className="step-group-title">{group.title}</span></div>
                           <div className="step-group-right">
                             <span className={`step-badge ${allDone ? "done" : ""}`}>{allDone ? "✓ Completo" : `${groupDone}/${group.items.length}`}</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" style={{transform: isOpen ? "rotate(180deg)" : "none", transition:"0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" style={{transform:isOpen?"rotate(180deg)":"none",transition:"0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
                           </div>
                         </button>
                         {isOpen && (
@@ -310,64 +336,93 @@ const load = async () => {
                     );
                   })}
                 </div>
-                {progress < 100 && <div className="complete-banner" style={{marginTop:"0.75rem"}}>🎁 Complete 100% e aproveite todos os recursos do Doonly!</div>}
+                <div className="complete-banner" style={{marginTop:"0.75rem"}}>🎁 Complete 100% e aproveite todos os recursos do Doonly!</div>
               </div>
             ) : !proResgatado ? (
-              <div className="progresso-card" style={{background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",border:"1px solid #bbf7d0"}}>
-                <div className="progresso-header">
-                  <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
-                    <span style={{fontSize:"2.5rem"}}>🎉</span>
-                    <div>
-                      <h2 className="ini-section-title" style={{margin:0,color:"#15803d"}}>Configuração completa!</h2>
-                      <p className="progresso-sub" style={{color:"#16a34a"}}>Resgate agora mesmo 3 dias de acesso completo sem limitações como recompensa.</p>
-                    </div>
-                  </div>
+              <div className="dash-card" style={{background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",border:"1px solid #bbf7d0"}}>
+                <div style={{textAlign:"center",padding:"1rem 0"}}>
+                  <span style={{fontSize:"3rem"}}>🎉</span>
+                  <h3 style={{fontWeight:800,color:"#15803d",margin:"0.5rem 0 0.25rem"}}>Configuração completa!</h3>
+                  <p style={{fontSize:"0.85rem",color:"#16a34a",margin:"0 0 1rem"}}>Resgate agora 3 dias de acesso PRO como recompensa.</p>
+                  <button className="mob-resgatar-btn" style={{width:"100%"}} onClick={handleResgatarPro} disabled={resgatando}>
+                    {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
+                  </button>
                 </div>
-                <button className="mob-resgatar-btn" style={{marginTop:"1rem",width:"100%"}} onClick={handleResgatarPro} disabled={resgatando}>
-                  {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
-                </button>
               </div>
             ) : null)}
 
             {/* Card PRO expirando */}
             {!loading && isTeste && (
-              <div className="progresso-card" style={{background:"linear-gradient(135deg,#1a0a12,#2d0f1e)",marginTop:"1rem"}}>
-                <div className="progresso-header">
+              <div className="dash-card" style={{background:"linear-gradient(135deg,#1a0a12,#2d0f1e)",marginTop:"1rem"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.75rem"}}>
                   <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
-                    <img src="/assine.png" alt="" style={{width:"52px",height:"52px",objectFit:"contain",flexShrink:0,borderRadius:"14px"}} />
+                    <img src="/assine.png" alt="" style={{width:"40px",height:"40px",objectFit:"contain",borderRadius:"10px"}} />
                     <div>
-                      <h2 className="ini-section-title" style={{margin:0,color:"white"}}>PRO expira em <strong>{diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}</strong>.</h2>
-                      <p className="progresso-sub" style={{color:"rgba(255,255,255,0.7)"}}>Continue sem interrupção por apenas <strong style={{color:"white"}}>R$ 19,90/mês</strong>.</p>
+                      <h3 style={{fontWeight:700,color:"white",margin:0,fontSize:"0.9rem"}}>PRO expira em {diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}</h3>
+                      <p style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.6)",margin:0}}>Apenas R$ 19,90/mês</p>
                     </div>
                   </div>
-                  <div className="progresso-pct-circle" style={{background:"linear-gradient(135deg,#F583BF,#e060a8)"}}>
-                    <span>{diasProRestantes}d</span>
-                  </div>
+                  <button className="mob-assinar-btn-sm" onClick={() => navigate("/assinar")}>Assinar →</button>
                 </div>
-                <div className="progresso-bar-bg" style={{background:"rgba(255,255,255,0.15)"}}>
-                  <div className="progresso-bar-fill" style={{width:`${(diasProRestantes/diasProTotal)*100}%`}} />
-                </div>
-                <div style={{display:"flex",justifyContent:"center",marginTop:"0.75rem"}}>
-                  <button className="mob-assinar-btn-sm" onClick={() => navigate("/assinar")}>Assinar agora →</button>
+                <div className="dash-progress-bar" style={{background:"rgba(255,255,255,0.15)"}}>
+                  <div className="dash-progress-fill" style={{width:`${(diasProRestantes/diasProTotal)*100}%`}} />
                 </div>
               </div>
             )}
 
+            {/* Últimos clientes */}
+            {ultimosClientes.length > 0 && (
+              <div className="dash-card" style={{marginTop:"1rem"}}>
+                <div className="dash-card-header">
+                  <h3 className="dash-card-title">Últimos clientes</h3>
+                  <button className="dash-ver-todos" onClick={() => navigate("/clientes")}>Ver todos →</button>
+                </div>
+                <div style={{display:"flex",flexDirection:"column",gap:"0.5rem",marginTop:"0.75rem"}}>
+                  {ultimosClientes.map(c => (
+                    <div key={c.id} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.5rem 0",borderBottom:"1px solid #f3f4f6"}}>
+                      <div style={{width:"36px",height:"36px",borderRadius:"50%",background:"#fdf2f8",overflow:"hidden",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        {c.foto_url ? <img src={c.foto_url} alt={c.nome} style={{width:"100%",height:"100%",objectFit:"cover"}} /> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
+                      </div>
+                      <span style={{fontSize:"0.88rem",fontWeight:500,color:"#374151"}}>{c.nome}</span>
+                      <span style={{fontSize:"0.75rem",color:"#9ca3af",marginLeft:"auto"}}>{new Date(c.created_at).toLocaleDateString("pt-BR")}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Coluna direita — Atalhos */}
-          <div className="ini-col-right">
-            <div className="ini-section">
-              <h2 className="ini-section-title">Acesso rápido</h2>
-              <div className="atalhos-grid">
+          {/* Coluna direita — Acesso rápido + Cardápio */}
+          <div className="dash-col-right">
+            <div className="dash-card">
+              <h3 className="dash-card-title" style={{marginBottom:"1rem"}}>Acesso rápido</h3>
+              <div className="dash-atalhos">
                 {atalhos.map(a => (
-                  <button key={a.path} className="atalho-btn" onClick={() => navigate(a.path)}>
-                    <div className="atalho-icon">{a.icon}</div>
-                    <span className="atalho-label">{a.label}</span>
+                  <button key={a.path} className="dash-atalho-btn" onClick={() => navigate(a.path)}>
+                    <div className="dash-atalho-icon">{a.icon}</div>
+                    <span className="dash-atalho-label">{a.label}</span>
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* Link cardápio público */}
+            {profile?.slug && (
+              <div className="dash-card" style={{marginTop:"1rem",background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
+                  <div style={{width:"40px",height:"40px",background:"rgba(255,255,255,0.2)",borderRadius:"10px",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                  </div>
+                  <div style={{flex:1}}>
+                    <p style={{fontWeight:700,color:"white",margin:0,fontSize:"0.9rem"}}>Seu cardápio está no ar!</p>
+                    <p style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.8)",margin:0}}>doonly.com.br/cardapio/{profile.slug}</p>
+                  </div>
+                  <button onClick={() => navigator.clipboard.writeText(`https://doonly.com.br/cardapio/${profile.slug}`)} style={{background:"rgba(255,255,255,0.2)",border:"none",borderRadius:"8px",padding:"0.4rem 0.75rem",color:"white",fontSize:"0.78rem",fontWeight:600,cursor:"pointer"}}>
+                    Copiar
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
@@ -516,6 +571,35 @@ const load = async () => {
         .ini-sum-icon { font-size: 1.4rem; }
         .ini-sum-num { font-size: 1.4rem; font-weight: 800; color: #1f2937; margin: 0; }
         .ini-sum-label { font-size: 0.75rem; color: #9ca3af; margin: 0; font-weight: 500; }
+
+        /* ── DASHBOARD ── */
+        .dash-greeting { margin-bottom: 1.5rem; }
+        .dash-title { font-size: 1.5rem; font-weight: 800; color: #1f2937; margin: 0 0 0.25rem; }
+        .dash-subtitle { font-size: 0.85rem; color: #9ca3af; margin: 0; }
+        .dash-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .dash-metric-card { background: white; border-radius: 14px; padding: 1.1rem 1.25rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; }
+        .dash-metric-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.1); transform: translateY(-2px); }
+        .dash-metric-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .dash-metric-num { font-size: 1.6rem; font-weight: 800; color: #1f2937; margin: 0; line-height: 1; }
+        .dash-metric-label { font-size: 0.75rem; color: #9ca3af; margin: 0.2rem 0 0; font-weight: 500; }
+        .dash-grid { display: grid; grid-template-columns: 1fr 300px; gap: 1.25rem; align-items: start; }
+        .dash-col-left, .dash-col-right { display: flex; flex-direction: column; gap: 1rem; }
+        .dash-card { background: white; border-radius: 16px; padding: 1.25rem; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+        .dash-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; }
+        .dash-card-title { font-size: 0.95rem; font-weight: 700; color: #1f2937; margin: 0; }
+        .dash-card-sub { font-size: 0.78rem; color: #9ca3af; margin: 0.15rem 0 0; }
+        .dash-ver-todos { background: none; border: none; color: #FF4FA3; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: 'Inter',sans-serif; }
+        .dash-progress-pct { font-size: 1rem; font-weight: 800; color: #FF4FA3; flex-shrink: 0; }
+        .dash-progress-bar { height: 8px; background: #f3f4f6; border-radius: 999px; overflow: hidden; margin: 0.75rem 0; }
+        .dash-progress-fill { height: 100%; background: linear-gradient(90deg,#FF4FA3,#FF6BB5); border-radius: 999px; transition: width 0.5s; }
+        .dash-next-step { background: #fdf2f8; border-radius: 10px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
+        .dash-btn-config { background: linear-gradient(135deg,#FF4FA3,#FF6BB5); color: white; border: none; border-radius: 8px; padding: 0.45rem 0.9rem; font-family: 'Inter',sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .dash-steps { display: flex; flex-direction: column; gap: 0.25rem; }
+        .dash-atalhos { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.6rem; }
+        .dash-atalho-btn { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; background: #fafafa; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 0.75rem 0.5rem; cursor: pointer; transition: border-color 0.15s, transform 0.15s; font-family: 'Inter',sans-serif; }
+        .dash-atalho-btn:hover { border-color: #FF4FA3; transform: translateY(-1px); }
+        .dash-atalho-icon { display: flex; align-items: center; justify-content: center; }
+        .dash-atalho-label { font-size: 0.72rem; font-weight: 500; color: #374151; }
 
         .ini-grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.25rem; align-items: start; }
         .ini-col-left, .ini-col-right { display: flex; flex-direction: column; gap: 1.25rem; }
