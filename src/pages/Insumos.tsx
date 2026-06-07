@@ -89,22 +89,13 @@ export default function Insumos() {
     setBuscandoImagem(true);
     setImagensBusca([]);
     try {
-      const res = await fetch(`https://api.anthropic.com/v1/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 500,
-          tools: [{ type: "web_search_20250305", name: "web_search" }],
-          messages: [{ role: "user", content: `Busque imagens do produto "${termoBuscaImg}" e retorne apenas uma lista JSON com até 6 URLs diretas de imagens (.jpg, .png ou .webp) do produto. Retorne APENAS o JSON array, sem texto adicional. Exemplo: ["url1","url2"]` }]
-        })
-      });
+      const key = import.meta.env.VITE_GOOGLE_SEARCH_KEY;
+      const cx = import.meta.env.VITE_GOOGLE_SEARCH_CX;
+      const url = `https://www.googleapis.com/customsearch/v1?key=${key}&cx=${cx}&q=${encodeURIComponent(termoBuscaImg)}&searchType=image&num=6&imgSize=medium`;
+      const res = await fetch(url);
       const data = await res.json();
-      const text = data.content?.filter((c: any) => c.type === "text").map((c: any) => c.text).join("");
-      const match = text.match(/\[[\s\S]*?\]/);
-      if (match) {
-        const urls = JSON.parse(match[0]).filter((u: string) => u.startsWith("http"));
-        setImagensBusca(urls.slice(0, 6));
+      if (data.items) {
+        setImagensBusca(data.items.map((item: any) => item.link));
       }
     } catch (e) { console.error(e); }
     setBuscandoImagem(false);
