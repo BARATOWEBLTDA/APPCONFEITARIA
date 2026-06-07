@@ -287,48 +287,142 @@ const load = async () => {
           <p className="dash-subtitle">Aqui está um resumo da sua confeitaria hoje.</p>
         </div>
 
-        {/* 4 Cards métricas */}
-        <div className="dash-metrics">
-          <div className="dash-metric-card" onClick={() => navigate("/produtos")} style={{background:"linear-gradient(135deg,#f59e0b,#f97316)",overflow:"hidden",position:"relative"}}>
-            <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
-            <div className="dash-metric-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-            </div>
-            <div style={{zIndex:1}}>
-              <p className="dash-metric-num" style={{color:"white"}}>{produtos}</p>
-              <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Produtos</p>
-            </div>
-          </div>
+        {/* 3 Cards métricas */}
+        <div className="dash-metrics" style={{gridTemplateColumns:"repeat(3,1fr)"}}>
+          {/* Pedidos */}
           <div className="dash-metric-card" onClick={() => navigate("/pedidos")} style={{background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)",overflow:"hidden",position:"relative"}}>
             <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
             <div className="dash-metric-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             </div>
             <div style={{zIndex:1}}>
-              <p className="dash-metric-num" style={{color:"white"}}>{pedidos}</p>
+              {pedidos === 0
+                ? <p className="dash-metric-empty" style={{color:"rgba(255,255,255,0.9)"}}>Sem pedidos ainda</p>
+                : <p className="dash-metric-num" style={{color:"white"}}>{pedidos}</p>
+              }
               <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Pedidos do mês</p>
             </div>
           </div>
+
+          {/* Faturamento */}
+          <div className="dash-metric-card" style={{background:"linear-gradient(135deg,#10b981,#059669)",overflow:"hidden",position:"relative"}}>
+            <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
+            <div className="dash-metric-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div style={{zIndex:1}}>
+              <p className="dash-metric-num" style={{color:"white",fontSize:"1.1rem"}}>R$ 0,00</p>
+              <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Faturamento do mês</p>
+            </div>
+          </div>
+
+          {/* Clientes */}
           <div className="dash-metric-card" onClick={() => navigate("/clientes")} style={{background:"linear-gradient(135deg,#6366f1,#8b5cf6)",overflow:"hidden",position:"relative"}}>
             <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
             <div className="dash-metric-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
             <div style={{zIndex:1}}>
-              <p className="dash-metric-num" style={{color:"white"}}>{clientes}</p>
+              {clientes === 0
+                ? <p className="dash-metric-empty" style={{color:"rgba(255,255,255,0.9)"}}>Nenhum cliente ainda</p>
+                : <p className="dash-metric-num" style={{color:"white"}}>{clientes}</p>
+              }
               <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Clientes</p>
             </div>
           </div>
-          <div className="dash-metric-card" onClick={() => navigate("/receitas")} style={{background:"linear-gradient(135deg,#10b981,#059669)",overflow:"hidden",position:"relative"}}>
-            <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
-            <div className="dash-metric-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+
+        {/* Seções abaixo dos cards — mesma largura, 3 colunas */}
+        <div className="dash-sections">
+
+          {/* Últimos pedidos */}
+          <div className="dash-card">
+            <div className="dash-card-header">
+              <h3 className="dash-card-title">Últimos pedidos</h3>
+              <button className="dash-ver-todos" onClick={() => navigate("/pedidos")}>Ver todos →</button>
             </div>
-            <div style={{zIndex:1}}>
-              <p className="dash-metric-num" style={{color:"white",fontSize:"1rem"}}>R$ 0,00</p>
-              <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Valor em vendas</p>
+            <div style={{marginTop:"0.75rem"}}>
+              {pedidos === 0 ? (
+                <div style={{textAlign:"center",padding:"1.5rem 0",display:"flex",flexDirection:"column",alignItems:"center",gap:"0.5rem"}}>
+                  <div style={{width:"44px",height:"44px",background:"#fdf2f8",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF4FA3" strokeWidth="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  </div>
+                  <p style={{fontSize:"0.85rem",fontWeight:600,color:"#374151",margin:0}}>Nenhum pedido ainda</p>
+                  <p style={{fontSize:"0.75rem",color:"#9ca3af",margin:0}}>Registre sua primeira venda</p>
+                  <button onClick={() => navigate("/pedidos")} style={{marginTop:"0.25rem",background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)",color:"white",border:"none",borderRadius:"8px",padding:"0.45rem 1rem",fontFamily:"Inter,sans-serif",fontSize:"0.8rem",fontWeight:600,cursor:"pointer"}}>
+                    Novo pedido
+                  </button>
+                </div>
+              ) : (
+                <p style={{fontSize:"0.82rem",color:"#9ca3af",textAlign:"center",padding:"1rem 0"}}>Em breve seus pedidos aparecerão aqui</p>
+              )}
             </div>
           </div>
+
+          {/* Entradas vs Saídas */}
+          <div className="dash-card">
+            <div className="dash-card-header">
+              <h3 className="dash-card-title">Entradas vs Saídas</h3>
+            </div>
+            <div style={{marginTop:"0.75rem",display:"flex",flexDirection:"column",gap:"0.75rem"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
+                  <div style={{width:"10px",height:"10px",borderRadius:"50%",background:"#10b981",flexShrink:0}} />
+                  <span style={{fontSize:"0.85rem",color:"#374151",fontWeight:500}}>Entradas</span>
+                </div>
+                <span style={{fontSize:"0.88rem",fontWeight:700,color:"#10b981"}}>R$ 0,00</span>
+              </div>
+              <div style={{height:"6px",background:"#f3f4f6",borderRadius:"99px",overflow:"hidden"}}>
+                <div style={{height:"100%",width:"0%",background:"#10b981",borderRadius:"99px"}} />
+              </div>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
+                  <div style={{width:"10px",height:"10px",borderRadius:"50%",background:"#ef4444",flexShrink:0}} />
+                  <span style={{fontSize:"0.85rem",color:"#374151",fontWeight:500}}>Saídas</span>
+                </div>
+                <span style={{fontSize:"0.88rem",fontWeight:700,color:"#ef4444"}}>R$ 0,00</span>
+              </div>
+              <div style={{height:"6px",background:"#f3f4f6",borderRadius:"99px",overflow:"hidden"}}>
+                <div style={{height:"100%",width:"0%",background:"#ef4444",borderRadius:"99px"}} />
+              </div>
+              <p style={{fontSize:"0.72rem",color:"#9ca3af",margin:0,textAlign:"center"}}>Os dados aparecerão conforme você registrar movimentações</p>
+            </div>
+          </div>
+
+          {/* Últimos clientes */}
+          <div className="dash-card">
+            <div className="dash-card-header">
+              <h3 className="dash-card-title">Últimos clientes</h3>
+              <button className="dash-ver-todos" onClick={() => navigate("/clientes")}>Ver todos →</button>
+            </div>
+            <div style={{marginTop:"0.75rem"}}>
+              {ultimosClientes.length === 0 ? (
+                <div style={{textAlign:"center",padding:"1.5rem 0",display:"flex",flexDirection:"column",alignItems:"center",gap:"0.5rem"}}>
+                  <div style={{width:"44px",height:"44px",background:"#f5f3ff",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                  </div>
+                  <p style={{fontSize:"0.85rem",fontWeight:600,color:"#374151",margin:0}}>Nenhum cliente ainda</p>
+                  <p style={{fontSize:"0.75rem",color:"#9ca3af",margin:0}}>Cadastre seu primeiro cliente</p>
+                  <button onClick={() => navigate("/clientes")} style={{marginTop:"0.25rem",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",color:"white",border:"none",borderRadius:"8px",padding:"0.45rem 1rem",fontFamily:"Inter,sans-serif",fontSize:"0.8rem",fontWeight:600,cursor:"pointer"}}>
+                    Cadastrar cliente
+                  </button>
+                </div>
+              ) : (
+                <div style={{display:"flex",flexDirection:"column",gap:"0.25rem"}}>
+                  {ultimosClientes.map(c => (
+                    <div key={c.id} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.5rem 0",borderBottom:"1px solid #f3f4f6"}}>
+                      <div style={{width:"34px",height:"34px",borderRadius:"50%",background:"#f5f3ff",overflow:"hidden",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
+                        {c.foto_url ? <img src={c.foto_url} alt={c.nome} style={{width:"100%",height:"100%",objectFit:"cover"}} /> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
+                      </div>
+                      <span style={{fontSize:"0.85rem",fontWeight:500,color:"#374151",flex:1}}>{c.nome}</span>
+                      <span style={{fontSize:"0.72rem",color:"#9ca3af"}}>{new Date(c.created_at).toLocaleDateString("pt-BR")}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
         </div>
 
         {/* Grid principal */}
@@ -426,26 +520,6 @@ const load = async () => {
               </div>
             )}
 
-            {/* Últimos clientes */}
-            {ultimosClientes.length > 0 && (
-              <div className="dash-card">
-                <div className="dash-card-header">
-                  <h3 className="dash-card-title">Últimos clientes</h3>
-                  <button className="dash-ver-todos" onClick={() => navigate("/clientes")}>Ver todos →</button>
-                </div>
-                <div style={{display:"flex",flexDirection:"column",gap:"0.25rem",marginTop:"0.75rem"}}>
-                  {ultimosClientes.map(c => (
-                    <div key={c.id} style={{display:"flex",alignItems:"center",gap:"0.75rem",padding:"0.5rem 0",borderBottom:"1px solid #f3f4f6"}}>
-                      <div style={{width:"34px",height:"34px",borderRadius:"50%",background:"#fdf2f8",overflow:"hidden",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                        {c.foto_url ? <img src={c.foto_url} alt={c.nome} style={{width:"100%",height:"100%",objectFit:"cover"}} /> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
-                      </div>
-                      <span style={{fontSize:"0.85rem",fontWeight:500,color:"#374151",flex:1}}>{c.nome}</span>
-                      <span style={{fontSize:"0.72rem",color:"#9ca3af"}}>{new Date(c.created_at).toLocaleDateString("pt-BR")}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Coluna direita — Calendário */}
@@ -674,7 +748,9 @@ const load = async () => {
         .dash-greeting { margin-bottom: 1.5rem; }
         .dash-title { font-size: 1.5rem; font-weight: 800; color: #1f2937; margin: 0 0 0.25rem; }
         .dash-subtitle { font-size: 0.85rem; color: #9ca3af; margin: 0; }
-        .dash-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .dash-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
+        .dash-sections { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+        .dash-metric-empty { font-size: 0.82rem; font-weight: 600; margin: 0; line-height: 1.3; }
         .dash-metric-card { background: white; border-radius: 16px; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 4px 16px rgba(0,0,0,0.1); cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; }
         .dash-metric-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.15); transform: translateY(-3px); }
         .dash-metric-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
