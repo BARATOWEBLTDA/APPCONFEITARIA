@@ -27,7 +27,7 @@ function SidebarGroup({ label, emoji, paths, location, children }: { label: stri
   const [open, setOpen] = useState(isAnyActive);
   return (
     <div className="nav-group">
-      <button className={`nav-item nav-group-btn ${isAnyActive ? "active" : ""}`} onClick={() => setOpen(o => !o)}>
+      <button className={`nav-group-btn ${isAnyActive ? "active" : ""}`} onClick={() => setOpen(o => !o)}>
         <span className="nav-emoji">{emoji}</span>
         <span style={{ flex: 1 }}>{label}</span>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.5 }}><polyline points="6 9 12 15 18 9"/></svg>
@@ -306,8 +306,8 @@ export default function Layout() {
         .mob-top-header { display: none; }
         .bottom-nav { display: none; }
 
-        .nav-group { display: flex; flex-direction: column; }
-        .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; font-family: 'Inter', sans-serif; padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #B8C1E0; transition: background 0.15s, color 0.15s; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-group { display: flex; flex-direction: column; width: 100%; }
+        .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; font-family: 'Inter', sans-serif; padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #B8C1E0; transition: background 0.15s, color 0.15s; display: flex; align-items: center; gap: 0.5rem; box-sizing: border-box; margin: 0; }
         .nav-group-btn:hover { background: #1D2550; color: #FFFFFF; }
         .nav-group-btn.active { background: transparent !important; color: #FF4FA3 !important; border-left: 2px solid #FF4FA3; border-radius: 0 10px 10px 0; padding-left: calc(1rem - 2px); }
         .nav-group-btn.active:hover { background: #1D2550 !important; }
