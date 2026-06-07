@@ -58,6 +58,8 @@ export default function Inicio() {
     }
     return cells;
   };
+
+  const buscarPedidosDia = async (dia: string) => {
     if (!profileUserId) return;
     setLoadingPedidos(true);
     const { data } = await supabase.from("pedidos").select("*").eq("user_id", profileUserId).eq("data_entrega", dia).order("created_at", { ascending: false });
@@ -70,8 +72,8 @@ export default function Inicio() {
     setPedidosFiltro("todos");
     buscarPedidosDia(dia);
   };
-    if (!profileUserId || proResgatado) return;
-    setResgatando(true);
+
+  const handleResgatarPro = async () => {
     const expira = new Date();
     expira.setDate(expira.getDate() + 3);
     const { error } = await supabase
