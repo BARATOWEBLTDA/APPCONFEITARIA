@@ -457,7 +457,8 @@ export default function Insumos() {
       </div>
 
       <div className="ins-section-label">📋 Dados do insumo</div>
-      <div className="ins-form">
+      <div className="ins-card">
+        <div className="ins-form">
         <div className="ins-field">
           <label>Nome do insumo *</label>
           <input placeholder="Ex: Leite Condensado Moça 395g" value={form.nome} onChange={e => setForm((f: any) => ({ ...f, nome: e.target.value }))} />
@@ -543,9 +544,10 @@ export default function Insumos() {
         </div>
       </div>
 
-      <div className="ins-footer">
-        <button className="ins-btn-cancel" onClick={() => setStep("lista")}>Cancelar</button>
-        <button className="ins-btn-primary" onClick={() => { setTermoBuscaImg(form.nome); setStep("imagem"); }} disabled={!form.nome.trim()}>Continuar →</button>
+        <div className="ins-footer">
+          <button className="ins-btn-cancel" onClick={() => setStep("lista")}>Cancelar</button>
+          <button className="ins-btn-primary" onClick={() => { setTermoBuscaImg(form.nome); setStep("imagem"); }} disabled={!form.nome.trim()}>Continuar →</button>
+        </div>
       </div>
       <Styles />
     </div>
@@ -755,6 +757,7 @@ function Styles() {
       .ins-form-title { font-size:1.1rem; font-weight:800; color:#1f2937; margin:0; flex:1; }
       .ins-optional-badge { font-size:0.7rem; background:#f3f4f6; color:#9ca3af; padding:3px 8px; border-radius:20px; }
       .ins-section-label { font-size:0.72rem; font-weight:700; color:#ec4899; text-transform:uppercase; letter-spacing:0.07em; }
+      .ins-card { background:white; border-radius:16px; padding:1.25rem; box-shadow:0 2px 10px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:0.85rem; }
       .ins-form { display:flex; flex-direction:column; gap:0.85rem; }
       .ins-field { display:flex; flex-direction:column; gap:0.3rem; }
       .ins-field label { font-size:0.78rem; font-weight:600; color:#374151; }
