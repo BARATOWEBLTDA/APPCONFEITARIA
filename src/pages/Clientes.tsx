@@ -128,7 +128,7 @@ export default function Clientes() {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 8);
 
-  const FormModal = () => (
+  const formModalJSX = showForm ? (
     <div className="modal-overlay" onClick={() => setShowForm(false)}>
       <div className="form-drawer" onClick={e => e.stopPropagation()}>
         <div className="form-handle" />
@@ -168,7 +168,7 @@ export default function Clientes() {
         </div>
       </div>
     </div>
-  );
+  ) : null;
 
   return (
     <div className="cli-root">
@@ -385,7 +385,7 @@ export default function Clientes() {
           </div>
         </div>
       )}
-      {showForm && <FormModal />}
+      {formModalJSX}
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
