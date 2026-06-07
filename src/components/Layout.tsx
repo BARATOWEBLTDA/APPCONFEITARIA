@@ -300,7 +300,7 @@ export default function Layout() {
         .nav-subitem { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.8rem; color: #8E99C2; text-decoration: none; transition: all 0.15s; }
         .nav-subitem:hover { color: #FFFFFF; background: #1D2550; }
         .nav-subitem.active { color: #FFFFFF; background: linear-gradient(90deg, #FF4FA3, #FF6BB5); font-weight: 600; }
-        .sidebar { width: 220px; min-height: 100vh; background: #131A36; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.25); }
+        .sidebar { width: 220px; min-height: 100vh; background: #05040d; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.25); }
 
         .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
 
