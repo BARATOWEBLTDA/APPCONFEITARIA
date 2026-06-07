@@ -1,6 +1,5 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect } from "react";
-import type { ReactNode } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Home, BookOpen, Users, UtensilsCrossed, Menu } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
@@ -22,20 +21,6 @@ const menuItems = [
   { label: "Configurações", path: "/configuracoes", emoji: "⚙️" },
 ];
 
-function SidebarGroup({ label, emoji, paths, location, children }: { label: string; emoji: string; paths: string[]; location: any; children: ReactNode }) {
-  const isAnyActive = paths.some(p => location.pathname.startsWith(p));
-  const [open, setOpen] = useState(isAnyActive);
-  return (
-    <div className="nav-group">
-      <button className={`nav-group-btn ${isAnyActive ? "active" : ""}`} onClick={() => setOpen(o => !o)}>
-        <span style={{ flex: 1 }}>{label}</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.5 }}><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      {open && <div className="nav-subitems">{children}</div>}
-    </div>
-  );
-}
-
 export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
@@ -43,6 +28,10 @@ export default function Layout() {
   const [now, setNow] = useState(new Date());
   const [gestaoOpen, setGestaoOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notificacoes, setNotificacoes] = useState<any[]>([]);
+  const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains("dark"));
+  const notifRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
@@ -57,20 +46,29 @@ export default function Layout() {
 
   useEffect(() => {
     const loadNotifCount = async () => {
-      const { data } = await supabase.from("notificacoes").select("created_at").order("created_at", { ascending: false });
+      const { data } = await supabase.from("notificacoes").select("*").order("created_at", { ascending: false }).limit(10);
       if (!data || data.length === 0) return;
+      setNotificacoes(data);
       const lastSeen = localStorage.getItem("notif_last_seen");
-      if (!lastSeen) {
-        setNotifCount(data.length);
-      } else {
-        const unseen = data.filter(n => new Date(n.created_at) > new Date(lastSeen));
-        setNotifCount(unseen.length);
-      }
+      if (!lastSeen) { setNotifCount(data.length); }
+      else { const unseen = data.filter((n: any) => new Date(n.created_at) > new Date(lastSeen)); setNotifCount(unseen.length); }
     };
     loadNotifCount();
   }, []);
 
-  const formatDate = (d: Date) => d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setNotifOpen(false);
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const toggleDark = () => {
+    const html = document.documentElement;
+    if (html.classList.contains("dark")) { html.classList.remove("dark"); setDarkMode(false); localStorage.setItem("tema", "light"); }
+    else { html.classList.add("dark"); setDarkMode(true); localStorage.setItem("tema", "dark"); }
+  };
   const formatTime = (d: Date) => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
   const handleLogout = async () => {
@@ -83,118 +81,94 @@ export default function Layout() {
       {/* Sidebar Desktop */}
       <aside className="sidebar">
         <div className="sidebar-profile">
-          <div style={{ position: "relative", display: "inline-block" }}>
-            <div className="sidebar-avatar-ring">
-              <div className="sidebar-avatar">
-                {profile?.foto_url ? (
-                  <img src={profile.foto_url} alt="Foto de perfil" />
-                ) : (
-                  <div className="sidebar-avatar-placeholder">
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                      <circle cx="12" cy="7" r="4"/>
-                    </svg>
-                  </div>
-                )}
-              </div>
-            </div>
-            {/* Tag Premium/Free na base do avatar */}
-            <div style={{
-              position: "absolute", bottom: "-8px", left: "50%", transform: "translateX(-50%)",
-              background: isPro ? "linear-gradient(90deg, #F5A623, #F8C844)" : "#111111",
-              border: isPro ? "none" : "1px solid rgba(255,255,255,0.2)",
-              color: "white", fontSize: "0.65rem", fontWeight: 700,
-              padding: "3px 10px", borderRadius: isPro ? "20px" : "6px", whiteSpace: "nowrap",
-              letterSpacing: "0.05em"
-            }}>
-              {isPro ? "✨ Premium" : "Free"}
+          <div className="sidebar-avatar-ring">
+            <div className="sidebar-avatar">
+              {profile?.foto_url ? (
+                <img src={profile.foto_url} alt="Foto de perfil" />
+              ) : (
+                <div className="sidebar-avatar-placeholder">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </div>
+              )}
             </div>
           </div>
-          <div className="sidebar-profile-info" style={{ marginTop: "0.5rem" }}>
+          <div className="sidebar-profile-info">
             <span className="sidebar-ola">Olá, {profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"}</span>
             <span className="sidebar-datetime">{formatDate(now)} · {formatTime(now)}</span>
           </div>
         </div>
 
         <nav className="sidebar-nav">
-          {/* Início */}
-          <NavLink to="/inicio" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            Início
-          </NavLink>
-
-          {/* Cardápio com submenus */}
-          <SidebarGroup label="Cardápio" emoji="" paths={["/cardapio-config","/cardapio-design","/cardapio-preview","/categorias","/produtos"]} location={location}>
-            <NavLink to="/cardapio-config" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Configuração</NavLink>
-            <NavLink to="/cardapio-design" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Design</NavLink>
-            <NavLink to="/cardapio-preview" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Prévia</NavLink>
-            <NavLink to="/categorias" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Categorias</NavLink>
-            <NavLink to="/produtos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Produtos</NavLink>
-          </SidebarGroup>
-
-          {/* Pedidos */}
-          <NavLink to="/pedidos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Pedidos</NavLink>
-
-          {/* Clientes */}
-          <NavLink to="/clientes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Clientes</NavLink>
-
-          {/* Receitas com submenus */}
-          <SidebarGroup label="Receitas" emoji="" paths={["/receitas","/comunidade"]} location={location}>
-            <NavLink to="/receitas" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Minhas receitas</NavLink>
-            <NavLink to="/receitas?tipo=app" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Receitas do app</NavLink>
-            <NavLink to="/comunidade" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Comunidade</NavLink>
-          </SidebarGroup>
-
-          {/* Estoque com submenu */}
-          <SidebarGroup label="Estoque" emoji="" paths={["/insumos","/estoque"]} location={location}>
-            <NavLink to="/insumos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Ingredientes</NavLink>
-          </SidebarGroup>
-
-          {/* Financeiro */}
-          <NavLink to="/financeiro" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Financeiro</NavLink>
-
-          {/* Configurações */}
-          <NavLink to="/configuracoes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Configurações</NavLink>
+          {menuItems.map((item) => (
+            <NavLink key={item.path} to={item.path} className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+              <span className="nav-emoji">{item.emoji}</span> {item.label}
+            </NavLink>
+          ))}
         </nav>
 
-        <a href="/assinar" style={{display:"block",margin:"0 0.25rem 0.8rem",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"14px",padding:"0.9rem 1rem",textDecoration:"none"}}>
+        <a href="/assinar" style={{display:"block",margin:"0 0.6rem 0.8rem",background:"linear-gradient(135deg,#F471B6,#f9007a)",borderRadius:"14px",padding:"0.9rem 1rem",textDecoration:"none",boxShadow:"0 4px 16px rgba(249,0,122,0.35)"}}>
           <div style={{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.35rem"}}>
             <span style={{fontSize:"0.85rem"}}>⏱️</span>
-            <span style={{fontSize:"0.75rem",fontWeight:700,color:"#B8C1E0",letterSpacing:"0.02em"}}>Período de teste</span>
+            <span style={{fontSize:"0.75rem",fontWeight:700,color:"white",letterSpacing:"0.02em"}}>Período de teste</span>
           </div>
-          <p style={{fontSize:"0.7rem",color:"#8E99C2",margin:"0 0 0.6rem"}}>14 dias restantes</p>
-          <div style={{background:"linear-gradient(90deg,#FF4FA3,#FF6BB5)",borderRadius:"8px",padding:"0.45rem",textAlign:"center",fontSize:"0.78rem",fontWeight:700,color:"white"}}>
+          <p style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.8)",margin:"0 0 0.6rem"}}>14 dias restantes</p>
+          <div style={{background:"rgba(255,255,255,0.25)",borderRadius:"8px",padding:"0.45rem",textAlign:"center",fontSize:"0.78rem",fontWeight:700,color:"white"}}>
             Fazer upgrade ✨
           </div>
         </a>
       </aside>
 
       <main className={`layout-main${isAssinar ? " layout-main--no-header" : ""}`}>
-        {/* Topbar desktop fixa */}
+        {/* Topbar desktop */}
         <div className="desk-topbar">
           <div style={{ flex: 1 }} />
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            {/* Toggle dark mode */}
-            <button onClick={() => {
-              const html = document.documentElement;
-              const isDark = html.classList.contains("dark");
-              if (isDark) { html.classList.remove("dark"); localStorage.setItem("tema", "light"); }
-              else { html.classList.add("dark"); localStorage.setItem("tema", "dark"); }
-            }} className="topbar-btn" title="Alternar tema">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-            </button>
-            {/* Notificações */}
-            <button className="topbar-btn" style={{ position: "relative" }} onClick={() => { localStorage.setItem("notif_last_seen", new Date().toISOString()); setNotifCount(0); navigate("/notificacoes"); }}>
+          {/* Dark mode */}
+          <button onClick={toggleDark} className="topbar-btn" title="Alternar tema">
+            {darkMode
+              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            }
+          </button>
+          {/* Notificações com dropdown */}
+          <div style={{ position: "relative" }} ref={notifRef}>
+            <button className="topbar-btn" onClick={() => { setNotifOpen(o => !o); if (!notifOpen) { localStorage.setItem("notif_last_seen", new Date().toISOString()); setNotifCount(0); } }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
               {notifCount > 0 && <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#FF4FA3", color: "white", fontSize: "0.6rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{notifCount > 9 ? "9+" : notifCount}</span>}
             </button>
-            {/* Tag plano */}
-            <a href="/assinar" style={{ textDecoration: "none" }}>
-              <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", background: isPro ? "linear-gradient(90deg,#F5A623,#F8C844)" : "linear-gradient(90deg,#FF4FA3,#FF6BB5)", color: "white", fontSize: "0.78rem", fontWeight: 600, padding: "0.3rem 0.7rem", borderRadius: "6px", whiteSpace: "nowrap" }}>
-                <img src="/diamante.png" style={{ width: "14px", height: "14px", objectFit: "contain" }} alt="" />
-                {isPro ? "Premium" : "Plano Gratuito"}
-              </span>
-            </a>
+            {notifOpen && (
+              <div className="notif-dropdown">
+                <div className="notif-header">
+                  <span>Notificações</span>
+                  <button onClick={() => setNotifOpen(false)}>✕</button>
+                </div>
+                <div className="notif-body">
+                  {notificacoes.length === 0
+                    ? <p className="notif-empty">Nenhuma notificação</p>
+                    : notificacoes.map((n: any) => (
+                      <div key={n.id} className="notif-item">
+                        {n.imagem_url && <img src={n.imagem_url} alt="" style={{ width: "40px", height: "40px", borderRadius: "8px", objectFit: "cover", flexShrink: 0 }} />}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p className="notif-title">{n.titulo || n.title}</p>
+                          <p className="notif-msg">{n.mensagem || n.body}</p>
+                          <p className="notif-time">{new Date(n.created_at).toLocaleDateString("pt-BR")}</p>
+                        </div>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            )}
           </div>
+          {/* Tag plano */}
+          <a href="/assinar" style={{ textDecoration: "none" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", background: isPro ? "linear-gradient(90deg,#F5A623,#F8C844)" : "linear-gradient(90deg,#FF4FA3,#FF6BB5)", color: "white", fontSize: "0.78rem", fontWeight: 600, padding: "0.3rem 0.75rem", borderRadius: "6px", whiteSpace: "nowrap" }}>
+              <img src="/diamante.png" style={{ width: "14px", height: "14px", objectFit: "contain" }} alt="" />
+              {isPro ? "Premium" : "Plano Gratuito"}
+            </span>
+          </a>
         </div>
         <Outlet />
       </main>
@@ -332,26 +306,11 @@ export default function Layout() {
         .mob-top-header { display: none; }
         .bottom-nav { display: none; }
 
-        .nav-group { display: flex; flex-direction: column; width: 100%; }
-        .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; font-family: 'Inter', sans-serif; padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #B8C1E0; transition: background 0.15s, color 0.15s; display: flex; align-items: center; box-sizing: border-box; margin: 0; }
-        .nav-group-btn:hover { background: #1D2550; color: #FFFFFF; }
-        .nav-group-btn.active { background: transparent !important; color: #FF4FA3 !important; border-left: 2px solid #FF4FA3; border-radius: 0 10px 10px 0; padding-left: calc(1rem - 2px); }
-        .nav-group-btn.active:hover { background: #1D2550 !important; }
-        .nav-subitems { display: flex; flex-direction: column; padding: 0 0 0.25rem 0; }
-        .nav-subitem { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.85rem 0.5rem 1.75rem; border-radius: 8px; font-size: 0.85rem; color: #8E99C2; text-decoration: none; transition: all 0.15s; }
-        .nav-subitem:hover { color: #FFFFFF; background: #1D2550; }
-        .nav-subitem.active { color: #FFFFFF; background: linear-gradient(90deg, #FF4FA3, #FF6BB5); font-weight: 600; }
-        .desk-topbar { display: none; }
-        @media (min-width: 900px) {
-          .desk-topbar { display: flex; align-items: center; padding: 0.65rem 2rem; border-bottom: 1px solid var(--border, #f3f4f6); background: var(--bg-card, white); position: sticky; top: 0; z-index: 9; }
-        }
-        .topbar-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6b7280; transition: background 0.2s; position: relative; }
-        .topbar-btn:hover { background: rgba(0,0,0,0.08); }
-        .sidebar { width: 220px; min-height: 100vh; background: #05040d; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.25); }
+        .sidebar { width: 220px; min-height: 100vh; background: #181419; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
 
-        .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(249,0,122,0.2); }
 
-        .sidebar-avatar-ring { width: 100px; height: 100px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, #FF4FA3, #FF6BB5, #FF4FA3); background-size: 300% 300%; animation: gradientRing 3s ease infinite; flex-shrink: 0; }
+        .sidebar-avatar-ring { width: 88px; height: 88px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, #f9007a, #ff6eb4, #ffb3d9, #f9007a); background-size: 300% 300%; animation: gradientRing 3s ease infinite; flex-shrink: 0; }
         @keyframes gradientRing { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid #ffffff; background: rgba(249,0,122,0.1); }
@@ -360,19 +319,31 @@ export default function Layout() {
 
         .sidebar-profile-info { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; }
         .sidebar-ola { font-size: 0.92rem; font-weight: 600; color: #ffffff; }
-        .sidebar-datetime { font-size: 0.72rem; color: #8E99C2; white-space: nowrap; }
+        .sidebar-datetime { font-size: 0.72rem; color: #9ca3af; white-space: nowrap; }
 
         .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
         .nav-emoji { font-size: 0.95rem; margin-right: 0.1rem; }
-        .nav-item { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #B8C1E0; text-decoration: none; transition: background 0.15s, color 0.15s; outline: none; display: flex; align-items: center; gap: 0.5rem; }
-        .nav-item:hover { background: #1D2550; color: #FFFFFF; }
-        .nav-item:active { background: #1D2550; color: #FFFFFF; }
-        .nav-item:focus { background: #1D2550; color: #FFFFFF; outline: none; }
-        .nav-item.active { background: linear-gradient(90deg, #FF4FA3, #FF6BB5); color: #FFFFFF; font-weight: 600; }
-        .nav-group-btn.active { background: transparent !important; color: #FF4FA3 !important; border-left: 2px solid #FF4FA3; border-radius: 0 10px 10px 0; padding-left: calc(1rem - 2px); }
-        .nav-group-btn.active:hover { background: #1D2550 !important; }
+        .nav-item { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.92rem; font-weight: 500; color: #9ca3af; text-decoration: none; transition: background 0.15s, color 0.15s; }
+        .nav-item:hover { background: rgba(249,0,122,0.15); color: #f9007a; }
+        .nav-item.active { background: rgba(249,0,122,0.15); color: #f9007a; font-weight: 600; border-left: 3px solid #f9007a; padding-left: calc(1rem - 3px); }
 
         .layout-main { margin-left: 220px; flex: 1; padding: 2rem; min-height: 100vh; }
+        .desk-topbar { display: none; }
+        @media (min-width: 900px) {
+          .desk-topbar { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 2rem; border-bottom: 1px solid var(--border,#f3f4f6); background: var(--bg-card,white); margin: -2rem -2rem 1.5rem -2rem; position: sticky; top: 0; z-index: 9; }
+        }
+        .topbar-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6b7280; transition: background 0.2s; position: relative; flex-shrink: 0; }
+        .topbar-btn:hover { background: rgba(0,0,0,0.08); }
+        .notif-dropdown { position: absolute; right: 0; top: calc(100% + 8px); width: 320px; background: white; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); border: 1px solid #f3f4f6; z-index: 100; overflow: hidden; }
+        .notif-header { padding: 0.85rem 1rem; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem; color: #1f2937; }
+        .notif-header button { background: none; border: none; cursor: pointer; color: #9ca3af; font-size: 1rem; }
+        .notif-body { max-height: 360px; overflow-y: auto; }
+        .notif-empty { padding: 1.5rem; text-align: center; color: #9ca3af; font-size: 0.85rem; margin: 0; }
+        .notif-item { padding: 0.85rem 1rem; border-bottom: 1px solid #f9fafb; display: flex; gap: 0.75rem; align-items: flex-start; }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-title { font-size: 0.85rem; font-weight: 600; color: #1f2937; margin: 0 0 2px; }
+        .notif-msg { font-size: 0.78rem; color: #6b7280; margin: 0; }
+        .notif-time { font-size: 0.7rem; color: #9ca3af; margin: 4px 0 0; }
 
         @media (max-width: 900px) {
           .sidebar { display: none; }
