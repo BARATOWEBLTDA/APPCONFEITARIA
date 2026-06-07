@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
-import { ImageCropper } from "@/components/ui/ImageCropper";
+import { refreshProfile } from "@/hooks/useProfile";
 
 interface Props {
   step: { label: string; path: string } | null;
@@ -10,10 +10,10 @@ interface Props {
   profile?: any;
 }
 
-export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Props) {
+export function QuickSetupModal({ step, userId, onClose, onSaved }: Props) {
   const [value, setValue] = useState("");
   const [saving, setSaving] = useState(false);
-  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [trabalhaConfeitaria, setTrabalhaConfeitaria] = useState<boolean | null>(null);
   const [nomeLoja, setNomeLoja] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -40,25 +40,28 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
       } else if (isWhatsAppStep && value.trim()) {
         await supabase.from("profiles").upsert({ id: userId, telefone: value.trim() }, { onConflict: "id" });
       }
+      await refreshProfile();
       onSaved();
       onClose();
     } catch (e) { console.error(e); }
     setSaving(false);
   };
 
-  const handleCropDone = async (blob: Blob) => {
+  // Upload direto sem crop — igual ao Configuracoes que funciona
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
     setSaving(true);
-    setCropSrc(null);
-    const path = `avatars/${userId}.jpg`;
-    const { error } = await supabase.storage.from("profiles").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
+    setPreview(URL.createObjectURL(file));
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const path = `avatars/${userId}.${ext}`;
+    const { error } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
     if (!error) {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       const url = `${data.publicUrl}?t=${Date.now()}`;
       await supabase.from("profiles").upsert({ id: userId, foto_url: url }, { onConflict: "id" });
+      await refreshProfile();
       onSaved();
-      onClose();
-    } else {
-      console.error("Erro upload logo:", error);
     }
     setSaving(false);
   };
@@ -89,6 +92,7 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
           <button onClick={async () => {
             setSaving(true);
             await supabase.from("profiles").upsert({ id: userId, onboarding_trabalha_confeitaria: true }, { onConflict: "id" });
+            await refreshProfile();
             onSaved(); onClose(); setSaving(false);
           }} style={{ padding: "0.9rem", background: "#f9fafb", border: "2px solid #e5e7eb", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 600, color: "#6b7280", cursor: "pointer" }}>
             🌱 Não, estou começando agora
@@ -103,17 +107,20 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
             <input placeholder="Ex: Doce Formiga" value={nomeLoja} onChange={e => setNomeLoja(e.target.value)} />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "2px dashed #fbcfe8", background: "#fff0f6", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", flexShrink: 0 }}
-              onClick={() => fileRef.current?.click()}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f9007a" strokeWidth="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <div className="qsm-avatar" onClick={() => fileRef.current?.click()} style={{ width: "72px", height: "72px", flexShrink: 0 }}>
+              {preview
+                ? <img src={preview} alt="logo" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                : <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f9007a" strokeWidth="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              }
             </div>
             <div>
               <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "#374151", margin: "0 0 2px" }}>Logo da confeitaria</p>
-              <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: 0, cursor: "pointer" }} onClick={() => fileRef.current?.click()}>Clique para adicionar</p>
+              <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: 0, cursor: "pointer" }} onClick={() => fileRef.current?.click()}>
+                {saving ? "Enviando..." : "Clique para adicionar"}
+              </p>
             </div>
           </div>
-          <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
-            onChange={e => { const f = e.target.files?.[0]; if (f) setCropSrc(URL.createObjectURL(f)); }} />
+          <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFileChange} />
         </div>
       );
     }
@@ -157,20 +164,11 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
   const showNavigateFooter = isInsumoStep || isClienteStep || isReceitaStep;
   const canSave = isNomeStep ? value.trim().length > 0 : isWhatsAppStep ? value.length >= 10 : true;
 
-  const getTitle = () => {
-    if (isTrabalhaStep && trabalhaConfeitaria === true) return "Nome da sua confeitaria";
-    return label;
-  };
-
   return (
-    <>
-      {cropSrc && (
-        <ImageCropper imageSrc={cropSrc} onCropDone={handleCropDone} onCancel={() => setCropSrc(null)} cropShape="round" />
-      )}
-      <div className="qsm-overlay" onClick={onClose}>
+    <div className="qsm-overlay" onClick={onClose}>
       <div className="qsm-modal" onClick={e => e.stopPropagation()}>
         <div className="qsm-header">
-          <h3 className="qsm-title">{getTitle()}</h3>
+          <h3 className="qsm-title">{isTrabalhaStep && trabalhaConfeitaria === true ? "Nome da sua confeitaria" : label}</h3>
           <button className="qsm-close" onClick={onClose}>✕</button>
         </div>
         <div className="qsm-body">{renderContent()}</div>
@@ -202,6 +200,8 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
         .qsm-title { font-size: 1rem; font-weight: 700; color: #1f2937; margin: 0; font-family: 'Inter', sans-serif; }
         .qsm-close { background: #f3f4f6; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; color: #6b7280; }
         .qsm-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.85rem; }
+        .qsm-avatar { border-radius: 50%; border: 2px dashed #fbcfe8; background: #fff0f6; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; transition: border-color 0.2s; }
+        .qsm-avatar:hover { border-color: #f9007a; }
         .qsm-field { display: flex; flex-direction: column; gap: 0.3rem; }
         .qsm-field label { font-size: 0.82rem; font-weight: 600; color: #374151; font-family: 'Inter', sans-serif; }
         .qsm-field input { padding: 0.7rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; outline: none; transition: border-color 0.2s; }
@@ -215,6 +215,5 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
-    </>
   );
 }
