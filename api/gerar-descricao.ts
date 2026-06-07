@@ -7,11 +7,13 @@ export default async function handler(req: Request) {
 
   const { prompt } = await req.json();
 
+  const apiKey = (globalThis as any).process?.env?.VITE_ANTHROPIC_KEY ?? "";
+
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": process.env.VITE_ANTHROPIC_KEY || "",
+      "x-api-key": apiKey,
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
