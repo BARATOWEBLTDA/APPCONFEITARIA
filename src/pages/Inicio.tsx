@@ -475,22 +475,17 @@ const load = async () => {
               {/* Pedidos do dia selecionado */}
               {calDiaSelecionado && (
                 <div style={{marginTop:"0.75rem",borderTop:"1px solid #f3f4f6",paddingTop:"0.75rem"}}>
-                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.5rem"}}>
-                    <span style={{fontSize:"0.82rem",fontWeight:700,color:"#374151"}}>
-                      {new Date(calDiaSelecionado+"T12:00:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"short"})}
-                    </span>
-                    <div style={{display:"flex",gap:"0.25rem"}}>
-                      {["todos","pendente","em_producao","finalizado","cancelado"].map(f => (
-                        <button key={f} onClick={() => setPedidosFiltro(f)}
-                          style={{padding:"2px 8px",borderRadius:"20px",border:"1.5px solid",fontSize:"0.65rem",fontWeight:600,cursor:"pointer",fontFamily:"Inter,sans-serif",
-                            borderColor: pedidosFiltro===f ? "#FF4FA3" : "#e5e7eb",
-                            background: pedidosFiltro===f ? "#fdf2f8" : "white",
-                            color: pedidosFiltro===f ? "#FF4FA3" : "#9ca3af"
-                          }}>
-                          {f==="todos"?"Todos":f==="pendente"?"Pendente":f==="em_producao"?"Produção":f==="finalizado"?"Feito":"Cancelado"}
-                        </button>
-                      ))}
-                    </div>
+                  <div style={{display:"flex",gap:"0.25rem",flexWrap:"wrap",marginBottom:"0.5rem"}}>
+                    {["todos","pendente","em_producao","finalizado","cancelado"].map(f => (
+                      <button key={f} onClick={() => setPedidosFiltro(f)}
+                        style={{padding:"3px 10px",borderRadius:"6px",border:"1.5px solid",fontSize:"0.68rem",fontWeight:600,cursor:"pointer",fontFamily:"Inter,sans-serif",
+                          borderColor: pedidosFiltro===f ? "#FF4FA3" : "#e5e7eb",
+                          background: pedidosFiltro===f ? "#FF4FA3" : "white",
+                          color: pedidosFiltro===f ? "white" : "#9ca3af"
+                        }}>
+                        {f==="todos"?"Todos":f==="pendente"?"Pendente":f==="em_producao"?"Produção":f==="finalizado"?"Feito":"Cancelado"}
+                      </button>
+                    ))}
                   </div>
 
                   {loadingPedidos ? (
