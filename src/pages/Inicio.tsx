@@ -17,6 +17,7 @@ export default function Inicio() {
   const [profile, setProfile] = useState<any>(null);
   const [produtos, setProdutos] = useState(0);
   const [clientes, setClientes] = useState(0);
+  const [insumos, setInsumos] = useState(0);
   const [categorias, setCategorias] = useState(0);
   const [pedidos, setPedidos] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -53,9 +54,11 @@ const load = async () => {
       if (prof?.pro_expira_em) setProResgatado(true);
       const { count: pc } = await supabase.from("produtos").select("*", { count: "exact", head: true }).eq("user_id", user.id);
       const { count: cc } = await supabase.from("clientes").select("*", { count: "exact", head: true }).eq("user_id", user.id);
+      const { count: ic } = await supabase.from("insumos").select("*", { count: "exact", head: true }).eq("user_id", user.id);
       const { count: catc } = await supabase.from("categorias").select("*", { count: "exact", head: true }).eq("user_id", user.id);
       setProdutos(pc || 0);
       setClientes(cc || 0);
+      setInsumos(ic || 0);
       setCategorias(catc || 0);
       setLoading(false);
     };
@@ -69,7 +72,7 @@ const load = async () => {
         { label: "Qual é o seu nome?", path: "/configuracoes", done: !!profile?.nome },
         { label: "Você já trabalha com confeitaria?", path: "/configuracoes", done: !!profile?.onboarding_trabalha_confeitaria },
         { label: "Qual é o WhatsApp da sua loja?", path: "/configuracoes", done: !!profile?.telefone },
-        { label: "Cadastre 1 insumo", path: "/insumos", done: !!(profile?.onboarding_insumo) },
+        { label: "Cadastre 1 ingrediente", path: "/insumos", done: insumos > 0 },
         { label: "Cadastre 1 cliente", path: "/clientes", done: clientes > 0 },
         { label: "Cadastre 1 receita", path: "/receitas", done: !!(profile?.onboarding_receita) },
       ],
