@@ -20,6 +20,7 @@ export default function Inicio() {
   const [categorias, setCategorias] = useState(0);
   const [pedidos, setPedidos] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [notifCount, setNotifCount] = useState(0);
   const [openGroup, setOpenGroup] = useState<number | null>(0);
   const [quickStep, setQuickStep] = useState<{label: string; path: string} | null>(null);
   const [profileUserId, setProfileUserId] = useState<string>("");
@@ -58,6 +59,13 @@ const load = async () => {
       setClientes(cc || 0);
       setCategorias(catc || 0);
       setLoading(false);
+      // Carregar notificações
+      const { data: notifs } = await supabase.from("notificacoes").select("created_at").order("created_at", { ascending: false });
+      if (notifs && notifs.length > 0) {
+        const lastSeen = localStorage.getItem("notif_last_seen");
+        if (!lastSeen) setNotifCount(notifs.length);
+        else setNotifCount(notifs.filter((n: any) => new Date(n.created_at) > new Date(lastSeen)).length);
+      }
     };
     load();
   }, []);
@@ -225,12 +233,28 @@ const load = async () => {
               {getGreeting()}{nome ? <>, <strong>{nome}</strong></> : ""}.
             </h1>
           </div>
-          <a href="/assinar" style={{ textDecoration: "none" }}>
-            <span className="ini-trial-badge" style={{ background: isPro ? "linear-gradient(90deg,#F5A623,#F8C844)" : "linear-gradient(90deg,#FF4FA3,#FF6BB5)", border: "none", cursor: "pointer" }}>
-              <img src="/diamante.png" style={{ width: "16px", height: "16px", objectFit: "contain", flexShrink: 0 }} alt="" />
-              {isPro ? "Premium" : "Plano Gratuito"}
-            </span>
-          </a>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            {/* Toggle dark mode */}
+            <button onClick={() => {
+              const html = document.documentElement;
+              if (html.classList.contains("dark")) { html.classList.remove("dark"); localStorage.setItem("theme","light"); }
+              else { html.classList.add("dark"); localStorage.setItem("theme","dark"); }
+            }} style={{ width: "36px", height: "36px", borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#B8C1E0", transition: "background 0.2s" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+            {/* Notificações */}
+            <button onClick={() => { localStorage.setItem("notif_last_seen", new Date().toISOString()); navigate("/notificacoes"); }} style={{ position: "relative", width: "36px", height: "36px", borderRadius: "50%", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#B8C1E0" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              {notifCount > 0 && <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#FF4FA3", color: "white", fontSize: "0.6rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{notifCount > 9 ? "9+" : notifCount}</span>}
+            </button>
+            {/* Tag plano */}
+            <a href="/assinar" style={{ textDecoration: "none" }}>
+              <span className="ini-trial-badge" style={{ background: isPro ? "linear-gradient(90deg,#F5A623,#F8C844)" : "linear-gradient(90deg,#FF4FA3,#FF6BB5)", border: "none", cursor: "pointer", color: "white" }}>
+                <img src="/diamante.png" style={{ width: "16px", height: "16px", objectFit: "contain", flexShrink: 0 }} alt="" />
+                {isPro ? "Premium" : "Plano Gratuito"}
+              </span>
+            </a>
+          </div>
         </div>
 
         {/* Cards resumo desktop */}
