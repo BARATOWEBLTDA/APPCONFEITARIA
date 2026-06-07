@@ -241,8 +241,8 @@ const load = async () => {
         <div className="ini-grid">
 
           {/* Coluna esquerda — Checklist */}
+          {progress < 100 && (
           <div className="ini-col-left">
-            {progress < 100 && (
             <div className="progresso-card">
               <div className="progresso-header">
                 <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
@@ -250,7 +250,7 @@ const load = async () => {
                   <div>
                     <h2 className="ini-section-title" style={{ margin: 0 }}>Configure seu Doonly</h2>
                     <p className="progresso-sub">
-                      {`${remaining === 1 ? "Resta apenas" : "Faltam apenas"} ${remaining} etapa${remaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}
+                      {progress === 100 ? "🎉 Tudo pronto! Sua loja está completa." : `${remaining === 1 ? "Resta apenas" : "Faltam apenas"} ${remaining} etapa${remaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}
                     </p>
                   </div>
                 </div>
@@ -265,7 +265,8 @@ const load = async () => {
                 </button>
               )}
             </div>
-            )}
+
+            {/* Card PRO teste desktop */}
             {!loading && isTeste && (
               <div className="progresso-card" style={{background:"linear-gradient(135deg,#1a0a12,#2d0f1e)",marginTop:"1rem"}}>
                 <div className="progresso-header">
@@ -346,8 +347,9 @@ const load = async () => {
 
             {progress < 100 && <div className="complete-banner">🎁 Complete 100% e aproveite todos os recursos do Doonly!</div>}
           </div>
+          )}
 
-          {/* Coluna direita */}
+          {/* Coluna direita — Atalhos */}
           <div className="ini-col-right">
             <div className="ini-section">
               <h2 className="ini-section-title">Acesso rápido</h2>
