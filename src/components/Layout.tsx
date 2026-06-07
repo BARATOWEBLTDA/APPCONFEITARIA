@@ -1,25 +1,23 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import { Home, BookOpen, Users, UtensilsCrossed, Menu } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { supabase } from "@/lib/supabase";
 
-const menuItems = [
-  { label: "Início", path: "/inicio", emoji: "🏠" },
-  { label: "Cardápio / Loja", path: "/cardapio-config", emoji: "🛍️" },
-  { label: "Produtos", path: "/produtos", emoji: "🎂" },
-  { label: "Categorias", path: "/categorias", emoji: "🏷️" },
-  { label: "Design", path: "/cardapio-design", emoji: "🎨" },
-  { label: "Pedidos", path: "/pedidos", emoji: "📋" },
-  { label: "Clientes", path: "/clientes", emoji: "👥" },
-  { label: "Estoque", path: "/estoque", emoji: "📦" },
-  { label: "Financeiro", path: "/financeiro", emoji: "💰" },
-  { label: "Receitas", path: "/receitas", emoji: "📄" },
-  { label: "Arquivos", path: "/arquivos", emoji: "🗂️" },
-  { label: "Promoções", path: "/promocoes", emoji: "🏷️" },
-  { label: "Configurações", path: "/configuracoes", emoji: "⚙️" },
-];
+function SidebarGroup({ label, paths, location, children }: { label: string; paths: string[]; location: any; children: ReactNode }) {
+  const isAnyActive = paths.some(p => location.pathname.startsWith(p));
+  const [open, setOpen] = useState(isAnyActive);
+  return (
+    <div className="nav-group">
+      <button className={`nav-group-btn ${isAnyActive ? "active" : ""}`} onClick={() => setOpen(o => !o)}>
+        <span style={{ flex: 1 }}>{label}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.5 }}><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      {open && <div className="nav-subitems">{children}</div>}
+    </div>
+  );
+}
 
 export default function Layout() {
   const navigate = useNavigate();
@@ -82,41 +80,60 @@ export default function Layout() {
       {/* Sidebar Desktop */}
       <aside className="sidebar">
         <div className="sidebar-profile">
-          <div className="sidebar-avatar-ring">
-            <div className="sidebar-avatar">
-              {profile?.foto_url ? (
-                <img src={profile.foto_url} alt="Foto de perfil" />
-              ) : (
-                <div className="sidebar-avatar-placeholder">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                  </svg>
-                </div>
-              )}
+          <div style={{ position: "relative", display: "inline-block" }}>
+            <div className="sidebar-avatar-ring">
+              <div className="sidebar-avatar">
+                {profile?.foto_url
+                  ? <img src={profile.foto_url} alt="Foto de perfil" />
+                  : <div className="sidebar-avatar-placeholder"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                }
+              </div>
+            </div>
+            <div style={{ position: "absolute", bottom: "-8px", left: "50%", transform: "translateX(-50%)", background: isPro ? "linear-gradient(90deg,#F5A623,#F8C844)" : "#111111", border: isPro ? "none" : "1px solid rgba(255,255,255,0.2)", color: "white", fontSize: "0.65rem", fontWeight: 700, padding: "3px 10px", borderRadius: isPro ? "20px" : "6px", whiteSpace: "nowrap", letterSpacing: "0.05em" }}>
+              {isPro ? "✨ Premium" : "Free"}
             </div>
           </div>
-          <div className="sidebar-profile-info">
+          <div className="sidebar-profile-info" style={{ marginTop: "0.5rem" }}>
             <span className="sidebar-ola">Olá, {profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"}</span>
             <span className="sidebar-datetime">{formatDate(now)} · {formatTime(now)}</span>
           </div>
         </div>
 
         <nav className="sidebar-nav">
-          {menuItems.map((item) => (
-            <NavLink key={item.path} to={item.path} className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-              <span className="nav-emoji">{item.emoji}</span> {item.label}
-            </NavLink>
-          ))}
+          <NavLink to="/inicio" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Início</NavLink>
+
+          <SidebarGroup label="Cardápio" paths={["/cardapio-config","/cardapio-design","/cardapio-preview","/categorias","/produtos"]} location={location}>
+            <NavLink to="/cardapio-config" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Configuração</NavLink>
+            <NavLink to="/cardapio-design" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Design</NavLink>
+            <NavLink to="/cardapio-preview" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Prévia</NavLink>
+            <NavLink to="/categorias" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Categorias</NavLink>
+            <NavLink to="/produtos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Produtos</NavLink>
+          </SidebarGroup>
+
+          <NavLink to="/pedidos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Pedidos</NavLink>
+          <NavLink to="/clientes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Clientes</NavLink>
+
+          <SidebarGroup label="Receitas" paths={["/receitas","/comunidade"]} location={location}>
+            <NavLink to="/receitas" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Minhas receitas</NavLink>
+            <NavLink to="/receitas?tipo=app" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Receitas do app</NavLink>
+            <NavLink to="/comunidade" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Comunidade</NavLink>
+          </SidebarGroup>
+
+          <SidebarGroup label="Estoque" paths={["/insumos","/estoque"]} location={location}>
+            <NavLink to="/insumos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Ingredientes</NavLink>
+          </SidebarGroup>
+
+          <NavLink to="/financeiro" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Financeiro</NavLink>
+          <NavLink to="/configuracoes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Configurações</NavLink>
         </nav>
 
-        <a href="/assinar" style={{display:"block",margin:"0 0.6rem 0.8rem",background:"linear-gradient(135deg,#F471B6,#f9007a)",borderRadius:"14px",padding:"0.9rem 1rem",textDecoration:"none",boxShadow:"0 4px 16px rgba(249,0,122,0.35)"}}>
+        <a href="/assinar" style={{display:"block",margin:"0 0.25rem 0.8rem",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"14px",padding:"0.9rem 1rem",textDecoration:"none"}}>
           <div style={{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.35rem"}}>
             <span style={{fontSize:"0.85rem"}}>⏱️</span>
-            <span style={{fontSize:"0.75rem",fontWeight:700,color:"white",letterSpacing:"0.02em"}}>Período de teste</span>
+            <span style={{fontSize:"0.75rem",fontWeight:700,color:"#B8C1E0",letterSpacing:"0.02em"}}>Período de teste</span>
           </div>
-          <p style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.8)",margin:"0 0 0.6rem"}}>14 dias restantes</p>
-          <div style={{background:"rgba(255,255,255,0.25)",borderRadius:"8px",padding:"0.45rem",textAlign:"center",fontSize:"0.78rem",fontWeight:700,color:"white"}}>
+          <p style={{fontSize:"0.7rem",color:"#8E99C2",margin:"0 0 0.6rem"}}>14 dias restantes</p>
+          <div style={{background:"linear-gradient(90deg,#FF4FA3,#FF6BB5)",borderRadius:"8px",padding:"0.45rem",textAlign:"center",fontSize:"0.78rem",fontWeight:700,color:"white"}}>
             Fazer upgrade ✨
           </div>
         </a>
@@ -307,26 +324,34 @@ export default function Layout() {
         .mob-top-header { display: none; }
         .bottom-nav { display: none; }
 
-        .sidebar { width: 220px; min-height: 100vh; background: #181419; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.15); }
+        .sidebar { width: 220px; min-height: 100vh; background: #05040d; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.25); }
 
-        .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(249,0,122,0.2); }
+        .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
 
-        .sidebar-avatar-ring { width: 88px; height: 88px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg, #f9007a, #ff6eb4, #ffb3d9, #f9007a); background-size: 300% 300%; animation: gradientRing 3s ease infinite; flex-shrink: 0; }
+        .sidebar-avatar-ring { width: 100px; height: 100px; border-radius: 50%; padding: 3px; background: linear-gradient(135deg,#FF4FA3,#FF6BB5,#FF4FA3); background-size: 300% 300%; animation: gradientRing 3s ease infinite; flex-shrink: 0; }
         @keyframes gradientRing { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid #ffffff; background: rgba(249,0,122,0.1); }
+        .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid #ffffff; background: rgba(255,79,163,0.1); }
         .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #f9007a; }
+        .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #FF4FA3; }
 
         .sidebar-profile-info { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; }
         .sidebar-ola { font-size: 0.92rem; font-weight: 600; color: #ffffff; }
-        .sidebar-datetime { font-size: 0.72rem; color: #9ca3af; white-space: nowrap; }
+        .sidebar-datetime { font-size: 0.72rem; color: #8E99C2; white-space: nowrap; }
 
-        .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; }
-        .nav-emoji { font-size: 0.95rem; margin-right: 0.1rem; }
-        .nav-item { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.92rem; font-weight: 500; color: #9ca3af; text-decoration: none; transition: background 0.15s, color 0.15s; }
-        .nav-item:hover { background: rgba(249,0,122,0.15); color: #f9007a; }
-        .nav-item.active { background: rgba(249,0,122,0.15); color: #f9007a; font-weight: 600; border-left: 3px solid #f9007a; padding-left: calc(1rem - 3px); }
+        .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; overflow-y: auto; }
+        .nav-item { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #B8C1E0; text-decoration: none; transition: background 0.15s, color 0.15s; outline: none; display: flex; align-items: center; }
+        .nav-item:hover { background: #1D2550; color: #FFFFFF; }
+        .nav-item:focus { background: #1D2550; color: #FFFFFF; outline: none; }
+        .nav-item.active { background: linear-gradient(90deg,#FF4FA3,#FF6BB5); color: #FFFFFF; font-weight: 600; }
+        .nav-group { display: flex; flex-direction: column; width: 100%; }
+        .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; font-family: 'Inter',sans-serif; padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #B8C1E0; transition: background 0.15s, color 0.15s; display: flex; align-items: center; box-sizing: border-box; margin: 0; }
+        .nav-group-btn:hover { background: #1D2550; color: #FFFFFF; }
+        .nav-group-btn.active { color: #FF4FA3; border-left: 2px solid #FF4FA3; border-radius: 0 10px 10px 0; padding-left: calc(1rem - 2px); }
+        .nav-subitems { display: flex; flex-direction: column; padding: 0 0 0.25rem 0; }
+        .nav-subitem { display: flex; align-items: center; padding: 0.5rem 0.85rem 0.5rem 1.75rem; border-radius: 8px; font-size: 0.85rem; color: #8E99C2; text-decoration: none; transition: all 0.15s; }
+        .nav-subitem:hover { color: #FFFFFF; background: #1D2550; }
+        .nav-subitem.active { color: #FFFFFF; background: linear-gradient(90deg,#FF4FA3,#FF6BB5); font-weight: 600; }
 
         .layout-main { margin-left: 220px; flex: 1; padding: 2rem; min-height: 100vh; }
         .desk-topbar { display: none; }
