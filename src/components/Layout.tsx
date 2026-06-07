@@ -169,6 +169,33 @@ export default function Layout() {
       </aside>
 
       <main className={`layout-main${isAssinar ? " layout-main--no-header" : ""}`}>
+        {/* Topbar desktop fixa */}
+        <div className="desk-topbar">
+          <div style={{ flex: 1 }} />
+          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+            {/* Toggle dark mode */}
+            <button onClick={() => {
+              const html = document.documentElement;
+              const isDark = html.classList.contains("dark");
+              if (isDark) { html.classList.remove("dark"); localStorage.setItem("tema", "light"); }
+              else { html.classList.add("dark"); localStorage.setItem("tema", "dark"); }
+            }} className="topbar-btn" title="Alternar tema">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+            {/* Notificações */}
+            <button className="topbar-btn" style={{ position: "relative" }} onClick={() => { localStorage.setItem("notif_last_seen", new Date().toISOString()); setNotifCount(0); navigate("/notificacoes"); }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              {notifCount > 0 && <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#FF4FA3", color: "white", fontSize: "0.6rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{notifCount > 9 ? "9+" : notifCount}</span>}
+            </button>
+            {/* Tag plano */}
+            <a href="/assinar" style={{ textDecoration: "none" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", background: isPro ? "linear-gradient(90deg,#F5A623,#F8C844)" : "linear-gradient(90deg,#FF4FA3,#FF6BB5)", color: "white", fontSize: "0.78rem", fontWeight: 600, padding: "0.3rem 0.7rem", borderRadius: "6px", whiteSpace: "nowrap" }}>
+                <img src="/diamante.png" style={{ width: "14px", height: "14px", objectFit: "contain" }} alt="" />
+                {isPro ? "Premium" : "Plano Gratuito"}
+              </span>
+            </a>
+          </div>
+        </div>
         <Outlet />
       </main>
 
@@ -314,7 +341,12 @@ export default function Layout() {
         .nav-subitem { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.85rem 0.5rem 1.75rem; border-radius: 8px; font-size: 0.85rem; color: #8E99C2; text-decoration: none; transition: all 0.15s; }
         .nav-subitem:hover { color: #FFFFFF; background: #1D2550; }
         .nav-subitem.active { color: #FFFFFF; background: linear-gradient(90deg, #FF4FA3, #FF6BB5); font-weight: 600; }
-        .sidebar { width: 220px; min-height: 100vh; background: #05040d; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.25); }
+        .desk-topbar { display: none; }
+        @media (min-width: 900px) {
+          .desk-topbar { display: flex; align-items: center; padding: 0.75rem 2rem; border-bottom: 1px solid var(--border, #f3f4f6); margin: -2rem -2rem 1.5rem -2rem; background: var(--bg-card, white); }
+        }
+        .topbar-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6b7280; transition: background 0.2s; position: relative; }
+        .topbar-btn:hover { background: rgba(0,0,0,0.08); } min-height: 100vh; background: #05040d; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.25); }
 
         .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); }
 
