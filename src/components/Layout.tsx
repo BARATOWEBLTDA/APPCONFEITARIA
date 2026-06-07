@@ -309,8 +309,8 @@ export default function Layout() {
 
         .nav-group { display: flex; flex-direction: column; }
         .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; display: flex; align-items: center; }
-        .nav-subitems { display: flex; flex-direction: column; padding-left: 1rem; margin-bottom: 0.25rem; }
-        .nav-subitem { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; border-radius: 8px; font-size: 0.8rem; color: #8E99C2; text-decoration: none; transition: all 0.15s; }
+        .nav-subitems { display: flex; flex-direction: column; padding-left: 0.75rem; margin-bottom: 0.25rem; }
+        .nav-subitem { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.85rem; border-radius: 8px; font-size: 0.85rem; color: #8E99C2; text-decoration: none; transition: all 0.15s; }
         .nav-subitem:hover { color: #FFFFFF; background: #1D2550; }
         .nav-subitem.active { color: #FFFFFF; background: linear-gradient(90deg, #FF4FA3, #FF6BB5); font-weight: 600; }
         .sidebar { width: 220px; min-height: 100vh; background: #05040d; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.25); }
@@ -335,6 +335,8 @@ export default function Layout() {
         .nav-item:active { background: #1D2550; color: #FFFFFF; }
         .nav-item:focus { background: #1D2550; color: #FFFFFF; outline: none; }
         .nav-item.active { background: linear-gradient(90deg, #FF4FA3, #FF6BB5); color: #FFFFFF; font-weight: 600; }
+        .nav-group-btn.active { background: transparent !important; color: #FF4FA3 !important; border-left: 2px solid #FF4FA3; border-radius: 0 10px 10px 0; padding-left: calc(1rem - 2px); }
+        .nav-group-btn.active:hover { background: #1D2550 !important; }
 
         .layout-main { margin-left: 220px; flex: 1; padding: 2rem; min-height: 100vh; }
 
