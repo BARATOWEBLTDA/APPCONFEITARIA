@@ -497,7 +497,7 @@ const load = async () => {
                     const filtrados = pedidosDia.filter(p => pedidosFiltro==="todos" || p.status===pedidosFiltro);
                     if (filtrados.length === 0) return (
                       <p style={{fontSize:"0.78rem",color:"#9ca3af",textAlign:"center",padding:"0.75rem 0"}}>
-                        Nenhum pedido {pedidosFiltro!=="todos" ? `"${pedidosFiltro}"` : ""} neste dia
+                        Nenhum pedido {pedidosFiltro!=="todos" ? "("+pedidosFiltro+")" : ""} neste dia
                       </p>
                     );
                     return (
