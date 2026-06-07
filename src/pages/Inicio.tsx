@@ -218,6 +218,19 @@ const load = async () => {
       {/* ===== DESKTOP ===== */}
       <div className="ini-desktop">
 
+        {/* Header desktop */}
+        <div className="ini-header">
+          <div>
+            <h1 className="ini-greeting">
+              {getGreeting()}{nome ? <>, <strong>{nome}</strong></> : ""}.
+            </h1>
+          </div>
+          <span className="ini-trial-badge">
+            <img src="/diamante.png" style={{ width: "16px", height: "16px", objectFit: "contain", flexShrink: 0 }} alt="" />
+            Premium
+          </span>
+        </div>
+
         {/* Cards resumo desktop */}
         <div className="ini-summary">
           <div className="ini-sum-card">
@@ -242,6 +255,7 @@ const load = async () => {
 
           {/* Coluna esquerda — Checklist */}
           <div className="ini-col-left">
+            {progress < 100 && (
             <div className="progresso-card">
               <div className="progresso-header">
                 <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
@@ -345,31 +359,12 @@ const load = async () => {
             </div>
 
             {progress < 100 && <div className="complete-banner">🎁 Complete 100% e aproveite todos os recursos do Doonly!</div>}
+            </div>
+          )}
           </div>
 
           {/* Coluna direita — Premium + Atalhos */}
           <div className="ini-col-right">
-            {!isPro && (
-            <div className="trial-card">
-              <div className="trial-card-badge">Recomendado</div>
-              <div className="trial-card-body">
-                <div className="trial-card-icon">
-                  <img src="/assine.png" alt="Assine" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                </div>
-                <div>
-                  <h3 className="trial-card-title">ASSINE O DOONLY PREMIUM</h3>
-                  <p className="trial-card-price">Apenas <strong>R$ 19,90/mês</strong> após o teste</p>
-                </div>
-              </div>
-              <div className="trial-benefits">
-                {["Clientes ilimitados","Produtos ilimitados","Relatórios avançados","Recursos exclusivos","Suporte prioritário","Assistente IA Doonly","Cardápio Digital profissional","Acesso a mais de 10.000 receitas"].map(b => (
-                  <div key={b} className="trial-benefit-item"><span className="trial-benefit-dot">🔥</span><span>{b}</span></div>
-                ))}
-              </div>
-              <button className="trial-card-btn" onClick={() => navigate("/assinar")}>Assinar agora</button>
-            </div>
-            )}
-
             <div className="ini-section">
               <h2 className="ini-section-title">Acesso rápido</h2>
               <div className="atalhos-grid">
