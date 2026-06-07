@@ -13,7 +13,6 @@ interface Props {
 export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Props) {
   const [value, setValue] = useState("");
   const [saving, setSaving] = useState(false);
-  const [preview, setPreview] = useState<string | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [trabalhaConfeitaria, setTrabalhaConfeitaria] = useState<boolean | null>(null);
   const [nomeLoja, setNomeLoja] = useState("");
@@ -22,7 +21,6 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
   if (!step) return null;
   const label = step.label;
 
-  // Reset value ao mudar de step
   const isNomeStep = label.includes("seu nome");
   const isTrabalhaStep = label.includes("trabalha com confeitaria");
   const isWhatsAppStep = label.includes("WhatsApp");
@@ -50,16 +48,13 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
 
   const handleCropDone = async (blob: Blob) => {
     setSaving(true);
-    const ext = "jpg";
-    const path = `avatars/${userId}.${ext}`;
+    const path = `avatars/${userId}.jpg`;
     const { error } = await supabase.storage.from("profiles").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
     if (!error) {
       const { data } = supabase.storage.from("profiles").getPublicUrl(path);
       const url = `${data.publicUrl}?t=${Date.now()}`;
-      setPreview(url);
       await supabase.from("profiles").upsert({ id: userId, foto_url: url }, { onConflict: "id" });
       onSaved();
-      // não fecha — usuário ainda precisa salvar o nome da loja
     }
     setCropSrc(null);
     setSaving(false);
@@ -88,13 +83,17 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
           <button onClick={() => setTrabalhaConfeitaria(true)} style={{ padding: "0.9rem", background: "#fdf2f8", border: "2px solid #fce7f3", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 600, color: "#ec4899", cursor: "pointer" }}>
             ✅ Sim, já tenho uma confeitaria
           </button>
-          <button onClick={() => setTrabalhaConfeitaria(false)} style={{ padding: "0.9rem", background: "#f9fafb", border: "2px solid #e5e7eb", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 600, color: "#6b7280", cursor: "pointer" }}>
+          <button onClick={async () => {
+            setSaving(true);
+            await supabase.from("profiles").upsert({ id: userId, onboarding_trabalha_confeitaria: true }, { onConflict: "id" });
+            onSaved(); onClose(); setSaving(false);
+          }} style={{ padding: "0.9rem", background: "#f9fafb", border: "2px solid #e5e7eb", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 600, color: "#6b7280", cursor: "pointer" }}>
             🌱 Não, estou começando agora
           </button>
         </div>
       );
 
-      if (trabalhaConfeitaria) return (
+      return (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
           <div className="qsm-field">
             <label>Qual é o nome da sua confeitaria?</label>
@@ -103,10 +102,7 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
             <div style={{ width: "72px", height: "72px", borderRadius: "50%", border: "2px dashed #fbcfe8", background: "#fff0f6", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden", flexShrink: 0 }}
               onClick={() => fileRef.current?.click()}>
-              {preview
-                ? <img src={preview} alt="logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                : <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f9007a" strokeWidth="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              }
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f9007a" strokeWidth="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
             </div>
             <div>
               <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "#374151", margin: "0 0 2px" }}>Logo da confeitaria</p>
@@ -116,14 +112,6 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
           <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
             onChange={e => { const f = e.target.files?.[0]; if (f) setCropSrc(URL.createObjectURL(f)); }} />
           {cropSrc && <ImageCropper imageSrc={cropSrc} onCropDone={handleCropDone} onCancel={() => setCropSrc(null)} cropShape="round" />}
-        </div>
-      );
-
-      // Não trabalha — salva direto e fecha
-      return (
-        <div style={{ textAlign: "center", padding: "1rem 0" }}>
-          <p style={{ fontSize: "0.95rem", color: "#374151", fontWeight: 600 }}>Tudo bem! 🌱</p>
-          <p style={{ fontSize: "0.85rem", color: "#9ca3af" }}>Vamos te ajudar a construir sua confeitaria do zero.</p>
         </div>
       );
     }
@@ -163,39 +151,25 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
     return null;
   };
 
-  const showFooter = isNomeStep || isWhatsAppStep || (isTrabalhaStep && trabalhaConfeitaria !== null);
-  const canSave = isNomeStep ? value.trim().length > 0
-    : isWhatsAppStep ? value.length >= 10
-    : isTrabalhaStep && trabalhaConfeitaria === false ? true
-    : isTrabalhaStep && trabalhaConfeitaria === true ? true
-    : false;
-
-  const getFooterLabel = () => {
-    if (isInsumoStep) return "Ir para Insumos";
-    if (isClienteStep) return "Ir para Clientes";
-    if (isReceitaStep) return "Ir para Receitas";
-    return "Salvar";
-  };
-
+  const showSaveFooter = isNomeStep || isWhatsAppStep || (isTrabalhaStep && trabalhaConfeitaria === true);
   const showNavigateFooter = isInsumoStep || isClienteStep || isReceitaStep;
+  const canSave = isNomeStep ? value.trim().length > 0 : isWhatsAppStep ? value.length >= 10 : true;
+
+  const getTitle = () => {
+    if (isTrabalhaStep && trabalhaConfeitaria === true) return "Nome da sua confeitaria";
+    return label;
+  };
 
   return (
     <div className="qsm-overlay" onClick={onClose}>
       <div className="qsm-modal" onClick={e => e.stopPropagation()}>
         <div className="qsm-header">
-          <h3 className="qsm-title">{
-            isTrabalhaStep && trabalhaConfeitaria === true ? "Nome da sua confeitaria" :
-            isTrabalhaStep && trabalhaConfeitaria === false ? "Bem-vinda ao Doonly! 🎉" :
-            label
-          }</h3>
+          <h3 className="qsm-title">{getTitle()}</h3>
           <button className="qsm-close" onClick={onClose}>✕</button>
         </div>
+        <div className="qsm-body">{renderContent()}</div>
 
-        <div className="qsm-body">
-          {renderContent()}
-        </div>
-
-        {showFooter && (
+        {showSaveFooter && (
           <div className="qsm-footer">
             <button className="qsm-btn-cancel" onClick={onClose}>Agora não</button>
             <button className="qsm-btn-save" onClick={handleSave} disabled={saving || !canSave}>
@@ -208,7 +182,7 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
           <div className="qsm-footer">
             <button className="qsm-btn-cancel" onClick={onClose}>Depois</button>
             <button className="qsm-btn-save" onClick={() => { window.location.href = step.path; onClose(); }}>
-              {getFooterLabel()} →
+              {isInsumoStep ? "Ir para Insumos →" : isClienteStep ? "Ir para Clientes →" : "Ir para Receitas →"}
             </button>
           </div>
         )}

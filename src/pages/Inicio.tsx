@@ -66,11 +66,12 @@ const load = async () => {
     {
       title: "Configure sua loja", emoji: "🏪",
       items: [
-        { label: "Adicionar nome da loja", path: "/configuracoes", done: !!profile?.nome_loja },
-        { label: "Adicionar logo da loja", path: "/configuracoes", done: !!profile?.foto_url },
-        { label: "Adicionar WhatsApp", path: "/configuracoes", done: !!profile?.telefone },
-        { label: "Adicionar localização", path: "/configuracoes", done: !!profile?.endereco },
-        { label: "Definir horário de funcionamento", path: "/configuracoes", done: !!profile?.horario },
+        { label: "Qual é o seu nome?", path: "/configuracoes", done: !!profile?.nome },
+        { label: "Você já trabalha com confeitaria?", path: "/configuracoes", done: !!profile?.onboarding_trabalha_confeitaria },
+        { label: "Qual é o WhatsApp da sua loja?", path: "/configuracoes", done: !!profile?.telefone },
+        { label: "Cadastre 1 insumo", path: "/insumos", done: !!(profile?.onboarding_insumo) },
+        { label: "Cadastre 1 cliente", path: "/clientes", done: clientes > 0 },
+        { label: "Cadastre 1 receita", path: "/receitas", done: !!(profile?.onboarding_receita) },
       ],
     },
   ];
