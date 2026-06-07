@@ -35,7 +35,29 @@ export default function Inicio() {
   const [loadingPedidos, setLoadingPedidos] = useState(false);
   const [pedidosMes, setPedidosMes] = useState<Record<string,number>>({});
 
-  const buscarPedidosDia = async (dia: string) => {
+  const calCells = () => {
+    const ano = calMes.getFullYear();
+    const mes = calMes.getMonth();
+    const primeiroDia = new Date(ano, mes, 1).getDay();
+    const totalDias = new Date(ano, mes+1, 0).getDate();
+    const hoje = new Date().toISOString().split("T")[0];
+    const cells = [];
+    for (let i = 0; i < primeiroDia; i++) cells.push(<div key={`e${i}`} />);
+    for (let d = 1; d <= totalDias; d++) {
+      const iso = `${ano}-${String(mes+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      const temPedido = pedidosMes[iso] || 0;
+      const isHoje = iso === hoje;
+      const isSelecionado = iso === calDiaSelecionado;
+      cells.push(
+        <button key={d} onClick={() => handleDiaClick(iso)}
+          className={"cal-day" + (isHoje ? " hoje" : "") + (isSelecionado ? " selecionado" : "") + (temPedido ? " tem-pedido" : "")}>
+          {d}
+          {temPedido > 0 && <span className="cal-dot">{temPedido}</span>}
+        </button>
+      );
+    }
+    return cells;
+  };
     if (!profileUserId) return;
     setLoadingPedidos(true);
     const { data } = await supabase.from("pedidos").select("*").eq("user_id", profileUserId).eq("data_entrega", dia).order("created_at", { ascending: false });
@@ -445,29 +467,7 @@ const load = async () => {
 
               {/* Dias do mês */}
               <div className="cal-grid">
-                {(() => {
-                  const ano = calMes.getFullYear();
-                  const mes = calMes.getMonth();
-                  const primeiroDia = new Date(ano, mes, 1).getDay();
-                  const totalDias = new Date(ano, mes+1, 0).getDate();
-                  const hoje = new Date().toISOString().split("T")[0];
-                  const cells = [];
-                  for (let i = 0; i < primeiroDia; i++) cells.push(<div key={`e${i}`} />);
-                  for (let d = 1; d <= totalDias; d++) {
-                    const iso = `${ano}-${String(mes+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-                    const temPedido = pedidosMes[iso] || 0;
-                    const isHoje = iso === hoje;
-                    const isSelecionado = iso === calDiaSelecionado;
-                    cells.push(
-                      <button key={d} onClick={() => handleDiaClick(iso)}
-                        className={`cal-day ${isHoje ? "hoje" : ""} ${isSelecionado ? "selecionado" : ""} ${temPedido ? "tem-pedido" : ""}`}>
-                        {d}
-                        {temPedido > 0 && <span className="cal-dot">{temPedido}</span>}
-                      </button>
-                    );
-                  }
-                  return cells;
-                })()}
+                {calCells()}
               </div>
 
               {/* Pedidos do dia selecionado */}
