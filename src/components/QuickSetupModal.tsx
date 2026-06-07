@@ -48,6 +48,7 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
 
   const handleCropDone = async (blob: Blob) => {
     setSaving(true);
+    setCropSrc(null);
     const path = `avatars/${userId}.jpg`;
     const { error } = await supabase.storage.from("profiles").upload(path, blob, { upsert: true, contentType: "image/jpeg" });
     if (!error) {
@@ -55,8 +56,9 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
       const url = `${data.publicUrl}?t=${Date.now()}`;
       await supabase.from("profiles").upsert({ id: userId, foto_url: url }, { onConflict: "id" });
       onSaved();
+    } else {
+      console.error("Erro upload logo:", error);
     }
-    setCropSrc(null);
     setSaving(false);
   };
 
@@ -111,7 +113,6 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
           </div>
           <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
             onChange={e => { const f = e.target.files?.[0]; if (f) setCropSrc(URL.createObjectURL(f)); }} />
-          {cropSrc && <ImageCropper imageSrc={cropSrc} onCropDone={handleCropDone} onCancel={() => setCropSrc(null)} cropShape="round" />}
         </div>
       );
     }
@@ -161,7 +162,11 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
   };
 
   return (
-    <div className="qsm-overlay" onClick={onClose}>
+    <>
+      {cropSrc && (
+        <ImageCropper imageSrc={cropSrc} onCropDone={handleCropDone} onCancel={() => setCropSrc(null)} cropShape="round" />
+      )}
+      <div className="qsm-overlay" onClick={onClose}>
       <div className="qsm-modal" onClick={e => e.stopPropagation()}>
         <div className="qsm-header">
           <h3 className="qsm-title">{getTitle()}</h3>
@@ -209,5 +214,6 @@ export function QuickSetupModal({ step, userId, onClose, onSaved, profile }: Pro
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
+    </>
   );
 }
