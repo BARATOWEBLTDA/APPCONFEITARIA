@@ -501,25 +501,6 @@ const load = async () => {
               </div>
             ) : null)}
 
-            {/* Card PRO expirando */}
-            {!loading && isTeste && (
-              <div className="dash-card" style={{background:"linear-gradient(135deg,#1a0a12,#2d0f1e)"}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.75rem"}}>
-                  <div style={{display:"flex",alignItems:"center",gap:"0.75rem"}}>
-                    <img src="/assine.png" alt="" style={{width:"36px",height:"36px",objectFit:"contain",borderRadius:"8px"}} />
-                    <div>
-                      <h3 style={{fontWeight:700,color:"white",margin:0,fontSize:"0.88rem"}}>PRO expira em {diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}</h3>
-                      <p style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.6)",margin:0}}>Apenas R$ 19,90/mês</p>
-                    </div>
-                  </div>
-                  <button className="mob-assinar-btn-sm" onClick={() => navigate("/assinar")}>Assinar →</button>
-                </div>
-                <div className="dash-progress-bar" style={{background:"rgba(255,255,255,0.15)"}}>
-                  <div className="dash-progress-fill" style={{width:`${(diasProRestantes/diasProTotal)*100}%`}} />
-                </div>
-              </div>
-            )}
-
           </div>
 
           {/* Coluna direita — Calendário */}
