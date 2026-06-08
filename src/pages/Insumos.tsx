@@ -75,6 +75,10 @@ export default function Insumos() {
   const [movMotivo, setMovMotivo] = useState("");
   const [savingMov, setSavingMov] = useState(false);
   const [paginaAtual, setPaginaAtual] = useState(1);
+  const [marcas, setMarcas] = useState<string[]>([]);
+  const [showNovaMarca, setShowNovaMarca] = useState(false);
+  const [novaMarca, setNovaMarca] = useState("");
+  const [showBuscarModal, setShowBuscarModal] = useState(false);
 
   const loadInsumos = async (uid: string) => {
     const { data } = await supabase.from("insumos").select("*").eq("user_id", uid).order("nome");
@@ -560,7 +564,16 @@ export default function Insumos() {
               </div>
               <div style={{padding:"0.85rem",display:"flex",flexDirection:"column",gap:"0.5rem",borderRight:"1px solid #f3f4f6"}}>
                 {isPro ? (
-                  <button className="ins-btn-buscar" style={{justifyContent:"center"}} onClick={() => { setTermoBuscaImg(form.nome); buscarImagens(); setStep("buscar"); }}>
+                  <button className="ins-btn-buscar" style={{justifyContent:"center"}}
+                    onClick={() => {
+                      if (!form.nome.trim() || !form.marca?.trim()) {
+                        alert("Preencha o Nome e a Marca antes de buscar!");
+                        return;
+                      }
+                      setTermoBuscaImg(`${form.nome} ${form.marca}`);
+                      setShowBuscarModal(true);
+                      buscarImagens();
+                    }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     Buscar imagem do produto
                   </button>
@@ -596,10 +609,37 @@ export default function Insumos() {
             {/* Campos — direita */}
             <div className="ins-form" style={{padding:"1.25rem"}}>
               <p className="ins-section-label" style={{marginTop:0}}>1. Informações básicas</p>
-              <div className="ins-field">
-                <label>Nome do ingrediente *</label>
-                <input placeholder="Ex: Leite Condensado Moça 395g" value={form.nome} onChange={e => setForm((f: any) => ({ ...f, nome: e.target.value }))} />
+
+              {/* Nome + Marca na mesma linha */}
+              <div className="ins-row-2">
+                <div className="ins-field">
+                  <label>Nome do ingrediente *</label>
+                  <input placeholder="Ex: Leite Condensado" value={form.nome} onChange={e => setForm((f: any) => ({ ...f, nome: e.target.value }))} />
+                </div>
+                <div className="ins-field">
+                  <label>Marca</label>
+                  {marcas.length === 0 && !showNovaMarca ? (
+                    <button onClick={() => setShowNovaMarca(true)}
+                      style={{padding:"0.65rem 0.9rem",border:"1.5px dashed #e5e7eb",borderRadius:"10px",background:"white",fontFamily:"Inter,sans-serif",fontSize:"0.85rem",color:"#9ca3af",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:"6px"}}>
+                      <span style={{fontSize:"1rem",lineHeight:1}}>+</span> Cadastrar marca
+                    </button>
+                  ) : showNovaMarca ? (
+                    <div className="ins-nova-row">
+                      <input placeholder="Ex: Nestlé, Moça..." value={novaMarca} onChange={e => setNovaMarca(e.target.value)} autoFocus
+                        onKeyDown={e => { if (e.key === "Enter" && novaMarca.trim()) { setMarcas(prev => [...prev, novaMarca.trim()]); setForm((f: any) => ({...f, marca: novaMarca.trim()})); setNovaMarca(""); setShowNovaMarca(false); }}} />
+                      <button onClick={() => { if (!novaMarca.trim()) return; setMarcas(prev => [...prev, novaMarca.trim()]); setForm((f: any) => ({...f, marca: novaMarca.trim()})); setNovaMarca(""); setShowNovaMarca(false); }}>✓</button>
+                      <button onClick={() => setShowNovaMarca(false)} style={{background:"#f3f4f6",color:"#6b7280"}}>✕</button>
+                    </div>
+                  ) : (
+                    <select value={form.marca || ""} onChange={e => { if (e.target.value === "__nova__") setShowNovaMarca(true); else setForm((f: any) => ({...f, marca: e.target.value})); }}>
+                      <option value="">Selecione a marca</option>
+                      {marcas.map(m => <option key={m} value={m}>{m}</option>)}
+                      <option value="__nova__">+ Nova marca</option>
+                    </select>
+                  )}
+                </div>
               </div>
+
               <div className="ins-row-2">
                 <div className="ins-field">
                   <label>Categoria *</label>
@@ -620,9 +660,11 @@ export default function Insumos() {
                   <input placeholder="Ex: Laticínios, Farinhas..." value={form.subcategoria || ""} onChange={e => setForm((f: any) => ({...f, subcategoria: e.target.value}))} />
                 </div>
               </div>
+
               <div className="ins-field">
                 <label>Unidade de medida *</label>
                 <select value={form.unidade} onChange={e => { if (e.target.value === "__nova__") setShowNovaUnidade(true); else setForm((f: any) => ({ ...f, unidade: e.target.value })); }}>
+                  <option value="">Selecione</option>
                   {["peso","volume","unidade","embalagem"].map(tipo => (
                     <optgroup key={tipo} label={tipo.charAt(0).toUpperCase()+tipo.slice(1)}>
                       {unidades.filter(u => u.tipo === tipo).map(u => <option key={u.sigla} value={u.sigla}>{u.sigla} — {u.nome}</option>)}
@@ -708,6 +750,39 @@ export default function Insumos() {
           {saving ? <span className="ins-spinner" /> : editId ? "Salvar alterações" : "Cadastrar ingrediente"}
         </button>
       </div>
+      {/* Modal busca de imagem */}
+      {showBuscarModal && (
+        <div className="ins-overlay" onClick={() => setShowBuscarModal(false)}>
+          <div className="ins-busca-modal" onClick={e => e.stopPropagation()}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1rem"}}>
+              <div>
+                <h3 style={{margin:0,fontSize:"1rem",fontWeight:700,color:"#1f2937"}}>Buscar imagem do produto</h3>
+                <p style={{margin:"2px 0 0",fontSize:"0.75rem",color:"#9ca3af"}}>Selecione a imagem que melhor representa o ingrediente</p>
+              </div>
+              <button onClick={() => setShowBuscarModal(false)} style={{background:"#f3f4f6",border:"none",width:"32px",height:"32px",borderRadius:"50%",cursor:"pointer",fontSize:"0.9rem",color:"#6b7280"}}>✕</button>
+            </div>
+            <div style={{display:"flex",gap:"8px",marginBottom:"1rem"}}>
+              <input className="ins-busca-input" value={termoBuscaImg} onChange={e => setTermoBuscaImg(e.target.value)}
+                onKeyDown={e => e.key==="Enter" && buscarImagens()} placeholder="Nome + marca do produto..." style={{flex:1}} />
+              <button className="ins-btn-buscar-go" onClick={buscarImagens} disabled={buscandoImagem}>
+                {buscandoImagem ? <span className="ins-spinner" /> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>}
+              </button>
+            </div>
+            {buscandoImagem && <p style={{textAlign:"center",color:"#9ca3af",fontSize:"0.85rem",padding:"1rem 0"}}>Buscando imagens...</p>}
+            {imagensBusca.length > 0 && (
+              <div className="ins-grid-imagens" style={{gridTemplateColumns:"repeat(4,1fr)",gap:"8px",maxHeight:"320px",overflowY:"auto"}}>
+                {imagensBusca.map((url, i) => (
+                  <div key={i} className={"ins-img-thumb"+(imagemSelecionada===url?" selected":"")}
+                    onClick={() => { setImagemSelecionada(url); setShowBuscarModal(false); }}
+                    style={{aspectRatio:"1",cursor:"pointer"}}>
+                    <img src={url} alt="" onError={e => {(e.target as HTMLImageElement).style.display="none";}} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       <Styles />
     </div>
   );
@@ -953,7 +1028,8 @@ function Styles() {
         .ins-basicas-grid { grid-template-columns:1fr; }
         .ins-imagem-inline { display:none; }
       }
-      .ins-img-thumb.selected { border-color:#FF4FA3; border-width:3px; }
+      .ins-busca-modal { background:white; border-radius:20px; padding:1.5rem; width:100%; max-width:560px; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:qsmIn 0.25s cubic-bezier(0.16,1,0.3,1); }
+      @keyframes qsmIn { from { opacity:0; transform:scale(0.95) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
       .ins-section-label { font-size:1rem; font-weight:800; color:#1f2937; letter-spacing:0.04em; margin:0 0 0.75rem; }
       .ins-back { width:36px; height:36px; background:#f3f4f6; border:none; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
       .ins-form-title { font-size:1.1rem; font-weight:800; color:#1f2937; margin:0; flex:1; }
