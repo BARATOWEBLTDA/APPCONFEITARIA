@@ -11,6 +11,7 @@ import Layout from "@/components/Layout";
 import Dashboard from "@/pages/Dashboard";
 import Inicio from "@/pages/Inicio";
 import Agenda from "@/pages/Agenda";
+import Insumos from "@/pages/Insumos";
 import Assinar from "@/pages/Assinar";
 import Receitas from "@/pages/Receitas";
 import Notificacoes from "@/pages/Notificacoes";
@@ -72,6 +73,7 @@ export default function App() {
           <Route path="/categorias" element={<Categorias />} />
           <Route path="/pedidos" element={<Pedidos />} />
           <Route path="/agenda" element={<Agenda />} />
+          <Route path="/insumos" element={<Insumos />} />
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/financeiro" element={<Financeiro />} />
           <Route path="/promocoes" element={<Promocoes />} />
