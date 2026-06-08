@@ -93,10 +93,6 @@ export default function Layout() {
               {isPro ? "✨ Premium" : "Free"}
             </div>
           </div>
-          <div className="sidebar-profile-info" style={{ marginTop: "0.5rem" }}>
-            <span className="sidebar-ola">Olá, {profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"}</span>
-            <span className="sidebar-datetime">{formatDate(now)} · {formatTime(now)}</span>
-          </div>
         </div>
 
         <nav className="sidebar-nav">
