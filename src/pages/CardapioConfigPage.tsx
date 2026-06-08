@@ -244,6 +244,7 @@ export default function CardapioConfigPage() {
         onCropDone={handleCropDone}
       />
     )}
+    <div className="ccc-outer">
     <div className="ccc-root">
 
       <div className="ccc-page-header" style={{paddingTop:"1.5rem"}}>
@@ -447,7 +448,7 @@ export default function CardapioConfigPage() {
         @import url('https://fonts.googleapis.com/css2?family=Nunito:ital@1&display=swap');
         @keyframes ccspin { to { transform:rotate(360deg); } }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-        .ccc-root { font-family:'Inter',sans-serif; max-width:520px; width:100%; display:flex; flex-direction:column; gap:0.85rem; overflow:hidden; box-sizing:border-box; }
+        /* ccc-root defined in ccc-outer block below */
         .ccc-page-title { font-size:1.25rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.3rem; text-align:center; }
         .ccc-page-sub { font-size:0.84rem; color:#4b5563; margin:0; font-family:'Nunito',sans-serif; font-style:italic; text-align:center; }
         .ccc-card { background:var(--bg-card,white); border-radius:18px; padding:1.15rem; box-shadow:var(--shadow-card,0 2px 12px rgba(0,0,0,0.06)); display:flex; flex-direction:column; gap:0.7rem; width:100%; box-sizing:border-box; overflow:hidden; }
@@ -518,7 +519,10 @@ export default function CardapioConfigPage() {
         .ccc-spinner-lg { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
         .ccc-spinner-sm { width:20px; height:20px; border:2px solid rgba(255,255,255,0.35); border-top-color:white; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
         .ccc-spinner-xs { width:14px; height:14px; border:2px solid rgba(255,255,255,0.35); border-top-color:white; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
+        .ccc-outer { width:100%; display:flex; justify-content:center; padding-bottom:2rem; }
+        .ccc-root { font-family:'Inter',sans-serif; max-width:600px; width:100%; display:flex; flex-direction:column; gap:0.85rem; box-sizing:border-box; }
       `}</style>
+    </div>
     </div>
     </>
   );
