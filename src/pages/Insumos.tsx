@@ -970,11 +970,10 @@ function Styles() {
         .ins-imagem-col { display:none; }
       }
       .ins-img-thumb.selected { border-color:#FF4FA3; border-width:3px; }
-      .ins-section-label { font-size:0.78rem; font-weight:700; color:#FF4FA3; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 0.75rem; }
+      .ins-section-label { font-size:1rem; font-weight:800; color:#1f2937; letter-spacing:0.04em; margin:0 0 0.75rem; }
       .ins-back { width:36px; height:36px; background:#f3f4f6; border:none; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
       .ins-form-title { font-size:1.1rem; font-weight:800; color:#1f2937; margin:0; flex:1; }
       .ins-optional-badge { font-size:0.7rem; background:#f3f4f6; color:#9ca3af; padding:3px 8px; border-radius:20px; }
-      .ins-section-label { font-size:0.72rem; font-weight:700; color:#ec4899; text-transform:uppercase; letter-spacing:0.07em; }
       .ins-card { background:white; border-radius:16px; padding:1.25rem; box-shadow:0 2px 10px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:0.85rem; }
       .ins-form { display:flex; flex-direction:column; gap:0.85rem; }
       .ins-field { display:flex; flex-direction:column; gap:0.3rem; }
