@@ -260,44 +260,55 @@ export default function Insumos() {
 
       {/* 4 Cards stats */}
       <div className="ins-stats">
-        <div className="ins-stat-card">
-          <div className="ins-stat-icon" style={{background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)"}}>
+        {/* Total em estoque */}
+        <div className="ins-stat-card" style={{background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)",overflow:"hidden",position:"relative",alignItems:"center"}}>
+          <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
+          <div className="ins-stat-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
           </div>
-          <div>
-            <p className="ins-stat-label">Total em estoque</p>
-            <p className="ins-stat-val" style={{color:"#FF4FA3"}}>{formatCurrency(totalEstoque)}</p>
-            <p className="ins-stat-sub">Valor total</p>
+          <div style={{zIndex:1}}>
+            <p className="ins-stat-label" style={{color:"rgba(255,255,255,0.8)"}}>Total em estoque</p>
+            <p className="ins-stat-val" style={{color:"white"}}>{formatCurrency(totalEstoque)}</p>
+            <p className="ins-stat-sub" style={{color:"rgba(255,255,255,0.7)"}}>Valor total</p>
           </div>
         </div>
-        <div className="ins-stat-card">
-          <div className="ins-stat-icon" style={{background:"linear-gradient(135deg,#10b981,#059669)"}}>
+
+        {/* Itens cadastrados */}
+        <div className="ins-stat-card" style={{background:"linear-gradient(135deg,#10b981,#059669)",overflow:"hidden",position:"relative",alignItems:"center"}}>
+          <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
+          <div className="ins-stat-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
           </div>
-          <div>
-            <p className="ins-stat-label">Itens cadastrados</p>
-            <p className="ins-stat-val">{insumos.length}</p>
-            <p className="ins-stat-sub">Ingredientes no total</p>
+          <div style={{zIndex:1}}>
+            <p className="ins-stat-label" style={{color:"rgba(255,255,255,0.8)"}}>Itens cadastrados</p>
+            <p className="ins-stat-val" style={{color:"white"}}>{insumos.length}</p>
+            <p className="ins-stat-sub" style={{color:"rgba(255,255,255,0.7)"}}>Ingredientes no total</p>
           </div>
         </div>
-        <div className="ins-stat-card">
-          <div className="ins-stat-icon" style={{background:"linear-gradient(135deg,#f59e0b,#d97706)"}}>
+
+        {/* Estoque baixo */}
+        <div className="ins-stat-card" style={{background:"linear-gradient(135deg,#f59e0b,#d97706)",overflow:"hidden",position:"relative",alignItems:"center"}}>
+          <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
+          <div className="ins-stat-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           </div>
-          <div>
-            <p className="ins-stat-label">Estoque baixo</p>
-            <p className="ins-stat-val">{alertas.length}</p>
-            <p className="ins-stat-sub">Itens abaixo do mínimo</p>
+          <div style={{zIndex:1}}>
+            <p className="ins-stat-label" style={{color:"rgba(255,255,255,0.8)"}}>Estoque baixo</p>
+            <p className="ins-stat-val" style={{color:"white"}}>{alertas.length}</p>
+            <p className="ins-stat-sub" style={{color:"rgba(255,255,255,0.7)"}}>Itens abaixo do mínimo</p>
           </div>
         </div>
-        <div className="ins-stat-card">
-          <div className="ins-stat-icon" style={{background:"linear-gradient(135deg,#ef4444,#dc2626)"}}>
+
+        {/* Sem estoque */}
+        <div className="ins-stat-card" style={{background:"linear-gradient(135deg,#ef4444,#dc2626)",overflow:"hidden",position:"relative",alignItems:"center"}}>
+          <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
+          <div className="ins-stat-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
           </div>
-          <div>
-            <p className="ins-stat-label">Sem estoque</p>
-            <p className="ins-stat-val">{semEstoque.length}</p>
-            <p className="ins-stat-sub">Itens para repor</p>
+          <div style={{zIndex:1}}>
+            <p className="ins-stat-label" style={{color:"rgba(255,255,255,0.8)"}}>Sem estoque</p>
+            <p className="ins-stat-val" style={{color:"white"}}>{semEstoque.length}</p>
+            <p className="ins-stat-sub" style={{color:"rgba(255,255,255,0.7)"}}>Itens para repor</p>
           </div>
         </div>
       </div>
