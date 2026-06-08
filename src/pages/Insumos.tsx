@@ -533,101 +533,196 @@ export default function Insumos() {
         <button className="ins-back" onClick={() => setStep("lista")}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <h2 className="ins-form-title">{editId ? "Editar Insumo" : "Novo Insumo"}</h2>
-      </div>
-
-      <div className="ins-section-label">📋 Dados do insumo</div>
-      <div className="ins-card">
-        <div className="ins-form">
-        <div className="ins-field">
-          <label>Nome do insumo *</label>
-          <input placeholder="Ex: Leite Condensado Moça 395g" value={form.nome} onChange={e => setForm((f: any) => ({ ...f, nome: e.target.value }))} />
-        </div>
-
-        <div className="ins-field">
-          <label>Categoria *</label>
-          <select value={form.categoria} onChange={e => { if (e.target.value === "__nova__") setShowNovaCategoria(true); else setForm((f: any) => ({ ...f, categoria: e.target.value })); }}>
-            {categorias.map(c => <option key={c} value={c}>{c}</option>)}
-            <option value="__nova__">+ Nova categoria</option>
-          </select>
-          {showNovaCategoria && (
-            <div className="ins-nova-row">
-              <input placeholder="Nome da categoria" value={novaCategoria} onChange={e => setNovaCategoria(e.target.value)} autoFocus />
-              <button onClick={adicionarCategoria}>Adicionar</button>
-              <button onClick={() => setShowNovaCategoria(false)} style={{ background: "#f3f4f6", color: "#6b7280" }}>✕</button>
-            </div>
-          )}
-        </div>
-
-        <div className="ins-field">
-          <label>Unidade de medida *</label>
-          <select value={form.unidade} onChange={e => { if (e.target.value === "__nova__") setShowNovaUnidade(true); else setForm((f: any) => ({ ...f, unidade: e.target.value })); }}>
-            {["peso","volume","unidade","embalagem"].map(tipo => (
-              <optgroup key={tipo} label={tipo.charAt(0).toUpperCase() + tipo.slice(1)}>
-                {unidades.filter(u => u.tipo === tipo).map(u => <option key={u.sigla} value={u.sigla}>{u.sigla} — {u.nome}</option>)}
-              </optgroup>
-            ))}
-            <option value="__nova__">+ Nova unidade</option>
-          </select>
-          {showNovaUnidade && (
-            <div className="ins-nova-row">
-              <input placeholder="Ex: dz (dúzia)" value={novaUnidade} onChange={e => setNovaUnidade(e.target.value)} autoFocus />
-              <button onClick={() => { if (!novaUnidade.trim()) return; setUnidades(prev => [...prev, { sigla: novaUnidade.trim(), nome: novaUnidade.trim(), tipo: "unidade" }]); setForm((f: any) => ({ ...f, unidade: novaUnidade.trim() })); setNovaUnidade(""); setShowNovaUnidade(false); }}>Adicionar</button>
-              <button onClick={() => setShowNovaUnidade(false)} style={{ background: "#f3f4f6", color: "#6b7280" }}>✕</button>
-            </div>
-          )}
-        </div>
-
-        <div className="ins-row-2">
-          <div className="ins-field">
-            <label>Qtd. em estoque *</label>
-            <div className="ins-input-unit">
-              <input type="number" placeholder="0" min="0" value={form.quantidade_estoque} onChange={e => setForm((f: any) => ({ ...f, quantidade_estoque: e.target.value }))} />
-              <span>{form.unidade}</span>
-            </div>
-          </div>
-          <div className="ins-field">
-            <label>Estoque mínimo</label>
-            <div className="ins-input-unit">
-              <input type="number" placeholder="0" min="0" value={form.estoque_minimo} onChange={e => setForm((f: any) => ({ ...f, estoque_minimo: e.target.value }))} />
-              <span>{form.unidade}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Valor + Qtd embalagem */}
-        <div className="ins-row-2">
-          <div className="ins-field">
-            <label>Valor de compra (R$) *</label>
-            <input type="number" placeholder="0,00" min="0" step="0.01" value={form.valor_compra} onChange={e => setForm((f: any) => ({ ...f, valor_compra: e.target.value }))} />
-          </div>
-          <div className="ins-field">
-            <label>Qtd por embalagem</label>
-            <div className="ins-input-unit">
-              <input type="number" placeholder="1" min="1" value={form.qtd_embalagem} onChange={e => setForm((f: any) => ({ ...f, qtd_embalagem: e.target.value }))} />
-              <span>{form.unidade}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Custo calculado */}
-        {parseFloat(form.valor_compra) > 0 && parseFloat(form.qtd_embalagem) > 0 && (
-          <div className="ins-custo-calc">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ec4899" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            <span>Custo por {form.unidade}: <strong>{formatCurrency(parseFloat(calcCustoUnitario(form.valor_compra, form.qtd_embalagem)))}</strong></span>
-          </div>
-        )}
-
-        <div className="ins-field">
-          <label>Fornecedor</label>
-          <input placeholder="Ex: Nestlé, Arosa..." value={form.fornecedor} onChange={e => setForm((f: any) => ({ ...f, fornecedor: e.target.value }))} />
+        <div>
+          <h2 className="ins-form-title">{editId ? "Editar Ingrediente" : "Novo Ingrediente"}</h2>
+          <p style={{margin:0,fontSize:"0.78rem",color:"#9ca3af"}}>Preencha os dados do ingrediente que deseja adicionar ao seu estoque.</p>
         </div>
       </div>
 
-        <div className="ins-footer">
-          <button className="ins-btn-cancel" onClick={() => setStep("lista")}>Cancelar</button>
-          <button className="ins-btn-primary" onClick={() => { setTermoBuscaImg(form.nome); setStep("imagem"); }} disabled={!form.nome.trim()}>Continuar →</button>
+      {/* ── DESKTOP: grid 2 colunas ── */}
+      <div className="ins-dados-grid">
+
+        {/* Coluna esquerda — formulário */}
+        <div style={{display:"flex",flexDirection:"column",gap:"1rem"}}>
+
+          {/* 1. Informações básicas */}
+          <div className="ins-card">
+            <p className="ins-section-label">1. Informações básicas</p>
+            <div className="ins-form">
+              <div className="ins-row-2">
+                <div className="ins-field">
+                  <label>Nome do ingrediente *</label>
+                  <input placeholder="Ex: Leite Condensado Moça 395g" value={form.nome} onChange={e => setForm((f: any) => ({ ...f, nome: e.target.value }))} />
+                </div>
+                <div className="ins-field">
+                  <label>Categoria *</label>
+                  <select value={form.categoria} onChange={e => { if (e.target.value === "__nova__") setShowNovaCategoria(true); else setForm((f: any) => ({ ...f, categoria: e.target.value })); }}>
+                    {categorias.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="__nova__">+ Nova categoria</option>
+                  </select>
+                  {showNovaCategoria && (
+                    <div className="ins-nova-row">
+                      <input placeholder="Nome da categoria" value={novaCategoria} onChange={e => setNovaCategoria(e.target.value)} autoFocus />
+                      <button onClick={adicionarCategoria}>Adicionar</button>
+                      <button onClick={() => setShowNovaCategoria(false)} style={{background:"#f3f4f6",color:"#6b7280"}}>✕</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="ins-field">
+                <label>Unidade de medida *</label>
+                <select value={form.unidade} onChange={e => { if (e.target.value === "__nova__") setShowNovaUnidade(true); else setForm((f: any) => ({ ...f, unidade: e.target.value })); }}>
+                  {["peso","volume","unidade","embalagem"].map(tipo => (
+                    <optgroup key={tipo} label={tipo.charAt(0).toUpperCase()+tipo.slice(1)}>
+                      {unidades.filter(u => u.tipo === tipo).map(u => <option key={u.sigla} value={u.sigla}>{u.sigla} — {u.nome}</option>)}
+                    </optgroup>
+                  ))}
+                  <option value="__nova__">+ Nova unidade</option>
+                </select>
+                {showNovaUnidade && (
+                  <div className="ins-nova-row">
+                    <input placeholder="Ex: dz (dúzia)" value={novaUnidade} onChange={e => setNovaUnidade(e.target.value)} autoFocus />
+                    <button onClick={() => { if (!novaUnidade.trim()) return; setUnidades(prev => [...prev, {sigla:novaUnidade.trim(),nome:novaUnidade.trim(),tipo:"unidade"}]); setForm((f: any) => ({...f,unidade:novaUnidade.trim()})); setNovaUnidade(""); setShowNovaUnidade(false); }}>Adicionar</button>
+                    <button onClick={() => setShowNovaUnidade(false)} style={{background:"#f3f4f6",color:"#6b7280"}}>✕</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Estoque */}
+          <div className="ins-card">
+            <p className="ins-section-label">2. Estoque</p>
+            <div className="ins-form">
+              <div className="ins-row-2">
+                <div className="ins-field">
+                  <label>Qtd. em estoque</label>
+                  <div className="ins-input-unit">
+                    <input type="number" placeholder="0" min="0" value={form.quantidade_estoque} onChange={e => setForm((f: any) => ({...f,quantidade_estoque:e.target.value}))} />
+                    <span>{form.unidade}</span>
+                  </div>
+                </div>
+                <div className="ins-field">
+                  <label>Estoque mínimo</label>
+                  <div className="ins-input-unit">
+                    <input type="number" placeholder="0" min="0" value={form.estoque_minimo} onChange={e => setForm((f: any) => ({...f,estoque_minimo:e.target.value}))} />
+                    <span>{form.unidade}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Valores */}
+          <div className="ins-card">
+            <p className="ins-section-label">3. Valores</p>
+            <div className="ins-form">
+              <div className="ins-row-2">
+                <div className="ins-field">
+                  <label>Valor de compra (R$) *</label>
+                  <input type="number" placeholder="0,00" min="0" step="0.01" value={form.valor_compra} onChange={e => setForm((f: any) => ({...f,valor_compra:e.target.value}))} />
+                </div>
+                <div className="ins-field">
+                  <label>Qtd por embalagem</label>
+                  <div className="ins-input-unit">
+                    <input type="number" placeholder="1" min="1" value={form.qtd_embalagem} onChange={e => setForm((f: any) => ({...f,qtd_embalagem:e.target.value}))} />
+                    <span>{form.unidade}</span>
+                  </div>
+                </div>
+              </div>
+              {parseFloat(form.valor_compra) > 0 && parseFloat(form.qtd_embalagem) > 0 && (
+                <div className="ins-custo-calc">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF4FA3" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <span>Custo por {form.unidade}: <strong style={{color:"#FF4FA3"}}>{formatCurrency(parseFloat(calcCustoUnitario(form.valor_compra, form.qtd_embalagem)))}</strong></span>
+                </div>
+              )}
+              <div className="ins-field">
+                <label>Fornecedor</label>
+                <input placeholder="Ex: Nestlé, Arosa..." value={form.fornecedor} onChange={e => setForm((f: any) => ({...f,fornecedor:e.target.value}))} />
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Coluna direita — Imagem (só desktop) */}
+        <div className="ins-imagem-col">
+          <div className="ins-card" style={{height:"100%"}}>
+            <p className="ins-section-label">4. Imagem</p>
+
+            {/* Preview */}
+            <div className="ins-imagem-preview" style={{marginBottom:"1rem"}}>
+              {imagemSelecionada
+                ? <img src={imagemSelecionada} alt="imagem" />
+                : <div className="ins-imagem-empty">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                    <p>Sem imagem</p>
+                    <span>Busque ou faça upload</span>
+                  </div>
+              }
+            </div>
+
+            {/* Busca por IA */}
+            <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
+              <div style={{display:"flex",gap:"8px"}}>
+                <input
+                  className="ins-busca-input"
+                  placeholder={form.nome || "Nome do ingrediente..."}
+                  value={termoBuscaImg}
+                  onChange={e => setTermoBuscaImg(e.target.value)}
+                  onKeyDown={e => e.key==="Enter" && buscarImagens()}
+                />
+                <button className="ins-btn-buscar-go" onClick={() => { setTermoBuscaImg(termoBuscaImg || form.nome); buscarImagens(); }} disabled={buscandoImagem} title="Buscar imagem">
+                  {buscandoImagem
+                    ? <span className="ins-spinner" />
+                    : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  }
+                </button>
+              </div>
+
+              {/* Grid de imagens */}
+              {imagensBusca.length > 0 && (
+                <div className="ins-grid-imagens" style={{gridTemplateColumns:"repeat(3,1fr)",maxHeight:"220px",overflowY:"auto"}}>
+                  {imagensBusca.map((url, i) => (
+                    <div key={i} className={"ins-img-thumb"+(imagemSelecionada===url?" selected":"")} onClick={() => setImagemSelecionada(url)}>
+                      <img src={url} alt={`resultado ${i+1}`} onError={e => {(e.target as HTMLImageElement).style.display="none";}} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Upload manual */}
+              <button className="ins-btn-upload" onClick={() => document.getElementById("ins-file-input-desk")?.click()}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload manual
+              </button>
+              <input id="ins-file-input-desk" type="file" accept="image/*" style={{display:"none"}} onChange={async e => {
+                const file = e.target.files?.[0];
+                if (!file || !userId) return;
+                const ext = file.name.split(".").pop() || "jpg";
+                const path = `insumos/${userId}/${Date.now()}.${ext}`;
+                const { error } = await supabase.storage.from("profiles").upload(path, file, {upsert:true});
+                if (!error) {
+                  const { data } = supabase.storage.from("profiles").getPublicUrl(path);
+                  setImagemSelecionada(`${data.publicUrl}?t=${Date.now()}`);
+                }
+              }} />
+
+              {imagemSelecionada && (
+                <button onClick={() => setImagemSelecionada(null)} style={{background:"none",border:"none",color:"#ef4444",fontSize:"0.78rem",cursor:"pointer",fontFamily:"Inter,sans-serif"}}>
+                  Remover imagem
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="ins-footer">
+        <button className="ins-btn-cancel" onClick={() => setStep("lista")}>Cancelar</button>
+        <button className="ins-btn-primary" onClick={handleSalvar} disabled={saving || !form.nome.trim()}>
+          {saving ? <span className="ins-spinner" /> : editId ? "Salvar alterações" : "Cadastrar ingrediente"}
+        </button>
       </div>
       <Styles />
     </div>
@@ -867,7 +962,15 @@ function Styles() {
 
       /* Empty */
       .ins-empty { display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:3rem 1rem; text-align:center; background:white; border-radius:16px; box-shadow:0 2px 10px rgba(0,0,0,0.06); }
-      .ins-form-header { display:flex; align-items:center; gap:0.75rem; padding-top:1.25rem; }
+      /* Grid desktop dados */
+      .ins-dados-grid { display:grid; grid-template-columns:1fr 340px; gap:1.25rem; align-items:start; }
+      .ins-imagem-col { display:block; }
+      @media (max-width:768px) {
+        .ins-dados-grid { grid-template-columns:1fr; }
+        .ins-imagem-col { display:none; }
+      }
+      .ins-img-thumb.selected { border-color:#FF4FA3; border-width:3px; }
+      .ins-section-label { font-size:0.78rem; font-weight:700; color:#FF4FA3; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 0.75rem; }
       .ins-back { width:36px; height:36px; background:#f3f4f6; border:none; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
       .ins-form-title { font-size:1.1rem; font-weight:800; color:#1f2937; margin:0; flex:1; }
       .ins-optional-badge { font-size:0.7rem; background:#f3f4f6; color:#9ca3af; padding:3px 8px; border-radius:20px; }
