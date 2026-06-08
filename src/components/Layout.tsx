@@ -401,15 +401,14 @@ export default function Layout() {
         .notif-time { font-size: 0.7rem; color: #9ca3af; margin: 4px 0 0; }
 
         @media (max-width: 900px) {
-          .
-bar { display: none; }
+          .sidebar { display: none; }
 
           .mob-top-header {
             display: flex !important;
             position: fixed;
             top: 0; left: 0; right: 0;
             z-index: 9999;
-            background: #120706;
+            background: #10111A;
             padding: 0.65rem 1.25rem;
             align-items: center;
             justify-content: space-between;
