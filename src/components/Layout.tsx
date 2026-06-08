@@ -224,7 +224,7 @@ export default function Layout() {
           <div className="gestao-drawer" onClick={e => e.stopPropagation()}>
             <div className="gestao-handle" />
             <div className="gestao-header">
-              <h3 className="gestao-title">Outros</h3>
+              <h3 className="gestao-title">Gestão</h3>
               <button className="gestao-close" onClick={() => setGestaoOpen(false)}>✕</button>
             </div>
             <div className="gestao-grid">
@@ -322,21 +322,21 @@ export default function Layout() {
                 <Home size={22} />
                 <span className={`nav-label${location.pathname === "/inicio" ? " nav-label-active" : ""}`}>Início</span>
               </NavLink>
-              <NavLink to="/receitas" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-                <BookOpen size={22} />
-                <span className={`nav-label${location.pathname === "/receitas" ? " nav-label-active" : ""}`}>Receitas</span>
-              </NavLink>
-              <NavLink to="/clientes" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-                <Users size={22} />
-                <span className={`nav-label${location.pathname === "/clientes" ? " nav-label-active" : ""}`}>Clientes</span>
-              </NavLink>
               <button className={`bottom-item${cardapioNav ? " active" : ""}`} onClick={() => { setCardapioNav(true); navigate("/cardapio-config"); }}>
                 <UtensilsCrossed size={22} />
                 <span className="nav-label">Cardápio</span>
               </button>
+              <NavLink to="/clientes" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
+                <Users size={22} />
+                <span className={`nav-label${location.pathname === "/clientes" ? " nav-label-active" : ""}`}>Clientes</span>
+              </NavLink>
+              <NavLink to="/receitas" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
+                <BookOpen size={22} />
+                <span className={`nav-label${location.pathname === "/receitas" ? " nav-label-active" : ""}`}>Receitas</span>
+              </NavLink>
               <button className={`bottom-item ${gestaoOpen ? "active" : ""}`} onClick={() => setGestaoOpen(!gestaoOpen)}>
                 <Menu size={22} />
-                <span className={`nav-label${gestaoOpen ? " nav-label-active" : ""}`}>Outros</span>
+                <span className={`nav-label${gestaoOpen ? " nav-label-active" : ""}`}>Gestão</span>
               </button>
             </>
           )}
