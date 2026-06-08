@@ -387,11 +387,6 @@ export default function CardapioConfigPage() {
           )}
         </div>
 
-      </div>{/* fim linha 1 */}
-
-      {/* LINHA 2: 2 cards iguais */}
-      <div className="ccc-row-bottom">
-
         {/* Card 4 — Avaliações */}
         <div className="ccc-card">
           <SectionLabel>Avaliações</SectionLabel>
@@ -415,7 +410,12 @@ export default function CardapioConfigPage() {
           )}
         </div>
 
-        {/* Card 5 — Entrega */}
+      </div>{/* fim linha 1 */}
+
+      {/* LINHA 2: Entrega full width */}
+      <div className="ccc-row-bottom">
+
+        {/* Card Entrega */}
         <div className="ccc-card">
           <SectionLabel>Entrega</SectionLabel>
           <div className="ccc-toggle-row">
@@ -479,7 +479,7 @@ export default function CardapioConfigPage() {
         /* ccc-root defined in ccc-outer block below */
         /* ccc-page-title defined in layout block above */
         /* ccc-page-sub defined in layout block above */
-        .ccc-card { background:var(--bg-card,white); border-radius:18px; padding:1.15rem; box-shadow:var(--shadow-card,0 2px 12px rgba(0,0,0,0.06)); display:flex; flex-direction:column; gap:0.7rem; width:100%; box-sizing:border-box; overflow:hidden; }
+        .ccc-card { background:var(--bg-card,white); border-radius:18px; padding:1.15rem; box-shadow:var(--shadow-card,0 2px 12px rgba(0,0,0,0.06)); display:flex; flex-direction:column; gap:0.7rem; width:100%; box-sizing:border-box; }
         .ccc-section-label { font-size:0.75rem; font-weight:800; color:#F583BF; text-transform:uppercase; letter-spacing:0.12em; margin:0; }
         .ccc-hint { font-size:0.75rem; color:var(--text-muted,#9ca3af); margin:0; }
         .ccc-logo-row { display:flex; align-items:center; gap:0.85rem; width:100%; overflow:hidden; padding-right:0.25rem; }
@@ -552,11 +552,11 @@ export default function CardapioConfigPage() {
         .ccc-page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; padding-top:1.5rem; }
         .ccc-page-title { font-size:1.4rem; font-weight:800; color:var(--text-primary,#1f2937); margin:0 0 0.25rem; text-align:left; }
         .ccc-page-sub { font-size:0.84rem; color:#4b5563; margin:0; font-family:'Nunito',sans-serif; font-style:italic; text-align:left; }
-        .ccc-row-top { display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem; align-items:start; }
-        .ccc-row-bottom { display:grid; grid-template-columns:repeat(2,1fr); gap:1.25rem; align-items:start; }
-        @media (max-width: 1024px) {
+        .ccc-row-top { display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; align-items:stretch; }
+        .ccc-row-bottom { display:grid; grid-template-columns:repeat(1,1fr); gap:1.25rem; align-items:start; }
+        .ccc-card { height:100%; }
+        @media (max-width: 1200px) {
           .ccc-row-top { grid-template-columns:repeat(2,1fr); }
-          .ccc-row-bottom { grid-template-columns:repeat(2,1fr); }
         }
         @media (max-width: 640px) {
           .ccc-row-top { grid-template-columns:1fr; }
