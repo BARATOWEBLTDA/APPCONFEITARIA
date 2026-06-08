@@ -90,7 +90,7 @@ export default function Layout() {
                 }
               </div>
             </div>
-            <div style={{ position: "absolute", bottom: "-8px", left: "50%", transform: "translateX(-50%)", background: isPro ? "linear-gradient(90deg,#F5A623,#F8C844)" : "#111111", border: isPro ? "none" : "1px solid rgba(255,255,255,0.2)", color: "white", fontSize: "0.65rem", fontWeight: 700, padding: "3px 10px", borderRadius: isPro ? "20px" : "6px", whiteSpace: "nowrap", letterSpacing: "0.05em" }}>
+            <div style={{ position: "absolute", bottom: "-8px", left: "50%", transform: "translateX(-50%)", background: isPro ? "linear-gradient(90deg,#0A0A0F,#000000)" : "#111111", border: isPro ? "none" : "1px solid rgba(255,255,255,0.2)", color: "white", fontSize: "0.65rem", fontWeight: 700, padding: "3px 10px", borderRadius: isPro ? "20px" : "6px", whiteSpace: "nowrap", letterSpacing: "0.05em" }}>
               {isPro ? "✨ Premium" : "Free"}
             </div>
           </div>
