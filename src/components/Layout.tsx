@@ -143,7 +143,30 @@ export default function Layout() {
             <span style={{fontSize:"1rem", fontWeight:800, color:"#1f2937", lineHeight:1.2}}>
               {(() => { const h = now.getHours(); return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"; })()}, <span style={{color:"#FF4FA3"}}>{profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"}</span>!
             </span>
-            <span style={{fontSize:"0.72rem", color:"#9ca3af", marginTop:"1px"}}>{formatDate(now)}</span>
+            <span style={{fontSize:"0.78rem", color:"#6b7280", marginTop:"2px"}}>
+              {(() => {
+                const feriados: Record<string, string> = {
+                  "01-01": "Ano Novo 🎆",
+                  "21-04": "Tiradentes ⚖️",
+                  "01-05": "Dia do Trabalho 👷",
+                  "07-09": "Independência do Brasil 🇧🇷",
+                  "12-10": "Nossa Senhora Aparecida 🙏",
+                  "02-11": "Finados 🕯️",
+                  "15-11": "Proclamação da República 🏛️",
+                  "25-12": "Natal 🎄",
+                };
+                const dias = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
+                const d = now;
+                const dd = String(d.getDate()).padStart(2,"0");
+                const mm = String(d.getMonth()+1).padStart(2,"0");
+                const chave = `${dd}-${mm}`;
+                const feriado = feriados[chave];
+                const diaSemana = dias[d.getDay()];
+                const dataStr = `${dd}/${mm}/${d.getFullYear()}`;
+                if (feriado) return `Hoje é feriado — ${feriado}`;
+                return `Hoje é ${diaSemana}, ${dataStr}`;
+              })()}
+            </span>
           </div>
           {/* Notificações com dropdown */}
           <div style={{ position: "relative" }} ref={notifRef}>
@@ -344,7 +367,7 @@ export default function Layout() {
         .layout-main { margin-left: 220px; flex: 1; padding: 2rem; min-height: 100vh; }
         .desk-topbar { display: none; }
         @media (min-width: 900px) {
-          .desk-topbar { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 2rem; border-bottom: 1px solid var(--border,#f3f4f6); background: var(--bg-card,white); margin: -2rem -2rem 1.5rem -2rem; position: sticky; top: 0; z-index: 9; }
+          .desk-topbar { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 2rem; border-bottom: 1px solid #f3f4f6; background: white; margin: -2rem -2rem 1.5rem -2rem; position: sticky; top: 0; z-index: 9; }
         }
         .topbar-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6b7280; transition: background 0.2s; position: relative; flex-shrink: 0; }
         .topbar-btn:hover { background: rgba(0,0,0,0.08); }
