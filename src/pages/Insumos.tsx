@@ -72,6 +72,7 @@ export default function Insumos() {
   const [movQtd, setMovQtd] = useState("");
   const [movMotivo, setMovMotivo] = useState("");
   const [savingMov, setSavingMov] = useState(false);
+  const [paginaAtual, setPaginaAtual] = useState(1);
 
   const loadInsumos = async (uid: string) => {
     const { data } = await supabase.from("insumos").select("*").eq("user_id", uid).order("nome");
@@ -225,7 +226,6 @@ export default function Insumos() {
   if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh", fontFamily: "Inter, sans-serif", color: "#9ca3af" }}>Carregando...</div>;
 
   // ─── LISTA ───
-  const [paginaAtual, setPaginaAtual] = useState(1);
   const itensPorPagina = 8;
   const totalPaginas = Math.ceil(insumosFiltrados.length / itensPorPagina);
   const insumosPagina = insumosFiltrados.slice((paginaAtual - 1) * itensPorPagina, paginaAtual * itensPorPagina);
