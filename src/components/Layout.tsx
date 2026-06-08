@@ -101,6 +101,7 @@ export default function Layout() {
 
         <nav className="sidebar-nav">
           <NavLink to="/inicio" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Início</NavLink>
+          <NavLink to="/agenda" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Agenda</NavLink>
 
           <SidebarGroup label="Cardápio" paths={["/cardapio-config","/cardapio-design","/cardapio-preview","/categorias","/produtos"]} location={location}>
             <NavLink to="/cardapio-config" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Configuração</NavLink>
