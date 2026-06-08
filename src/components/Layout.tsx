@@ -351,7 +351,7 @@ export default function Layout() {
         .mob-top-header { display: none; }
         .bottom-nav { display: none; }
 
-        .sidebar { width: 220px; min-height: 100vh; background: #05040d; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.25); }
+        .sidebar { width: 220px; min-height: 100vh; background: #10111A; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.25); }
 
         .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; }
 
@@ -401,7 +401,8 @@ export default function Layout() {
         .notif-time { font-size: 0.7rem; color: #9ca3af; margin: 4px 0 0; }
 
         @media (max-width: 900px) {
-          .sidebar { display: none; }
+          .
+bar { display: none; }
 
           .mob-top-header {
             display: flex !important;
