@@ -281,12 +281,6 @@ const load = async () => {
       {/* ===== DESKTOP ===== */}
       <div className="ini-desktop">
 
-        {/* Saudação */}
-        <div className="dash-greeting">
-          <h1 className="dash-title">{getGreeting()}, <strong>{nome || "bem-vinda"}</strong>!</h1>
-          <p className="dash-subtitle">Aqui está um resumo da sua confeitaria hoje.</p>
-        </div>
-
         {/* 3 Cards métricas */}
         <div className="dash-metrics">
           {/* Pedidos */}

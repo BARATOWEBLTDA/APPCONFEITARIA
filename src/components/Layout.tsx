@@ -143,7 +143,12 @@ export default function Layout() {
       <main className={`layout-main${isAssinar ? " layout-main--no-header" : ""}`}>
         {/* Topbar desktop */}
         <div className="desk-topbar">
-          <div style={{ flex: 1 }} />
+          <div style={{flex:1, display:"flex", flexDirection:"column", justifyContent:"center"}}>
+            <span style={{fontSize:"1rem", fontWeight:800, color:"#1f2937", lineHeight:1.2}}>
+              {(() => { const h = now.getHours(); return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"; })()}, <span style={{color:"#FF4FA3"}}>{profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"}</span>!
+            </span>
+            <span style={{fontSize:"0.72rem", color:"#9ca3af", marginTop:"1px"}}>{formatDate(now)}</span>
+          </div>
           {/* Dark mode */}
           <button onClick={toggleDark} className="topbar-btn" title="Alternar tema">
             {darkMode
