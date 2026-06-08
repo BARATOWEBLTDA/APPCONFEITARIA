@@ -613,7 +613,7 @@ export default function Insumos() {
               {/* Nome + Marca na mesma linha */}
               <div className="ins-row-2">
                 <div className="ins-field">
-                  <label>Nome do ingrediente *</label>
+                  <label>Nome do ingrediente <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
                   <input placeholder="Ex: Leite Condensado" value={form.nome} onChange={e => setForm((f: any) => ({ ...f, nome: e.target.value }))} />
                 </div>
                 <div className="ins-field">
@@ -642,7 +642,7 @@ export default function Insumos() {
 
               <div className="ins-row-2">
                 <div className="ins-field">
-                  <label>Categoria *</label>
+                  <label>Categoria <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
                   <select value={form.categoria} onChange={e => { if (e.target.value === "__nova__") setShowNovaCategoria(true); else setForm((f: any) => ({ ...f, categoria: e.target.value })); }}>
                     {categorias.map(c => <option key={c} value={c}>{c}</option>)}
                     <option value="__nova__">+ Nova categoria</option>
@@ -674,25 +674,6 @@ export default function Insumos() {
               </div>
 
               <div className="ins-field">
-                <label>Unidade de medida *</label>
-                <select value={form.unidade} onChange={e => { if (e.target.value === "__nova__") setShowNovaUnidade(true); else setForm((f: any) => ({ ...f, unidade: e.target.value })); }}>
-                  <option value="">Selecione</option>
-                  {["peso","volume","unidade","embalagem"].map(tipo => (
-                    <optgroup key={tipo} label={tipo.charAt(0).toUpperCase()+tipo.slice(1)}>
-                      {unidades.filter(u => u.tipo === tipo).map(u => <option key={u.sigla} value={u.sigla}>{u.sigla} — {u.nome}</option>)}
-                    </optgroup>
-                  ))}
-                  <option value="__nova__">+ Nova unidade</option>
-                </select>
-                {showNovaUnidade && (
-                  <div className="ins-nova-row">
-                    <input placeholder="Ex: dz (dúzia)" value={novaUnidade} onChange={e => setNovaUnidade(e.target.value)} autoFocus />
-                    <button onClick={() => { if (!novaUnidade.trim()) return; setUnidades(prev => [...prev, {sigla:novaUnidade.trim(),nome:novaUnidade.trim(),tipo:"unidade"}]); setForm((f: any) => ({...f,unidade:novaUnidade.trim()})); setNovaUnidade(""); setShowNovaUnidade(false); }}>Adicionar</button>
-                    <button onClick={() => setShowNovaUnidade(false)} style={{background:"#f3f4f6",color:"#6b7280"}}>✕</button>
-                  </div>
-                )}
-              </div>
-              <div className="ins-field">
                 <label>Descrição <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
                 <textarea placeholder="Ex: Leite condensado tradicional, ideal para recheios e coberturas." value={form.descricao || ""} onChange={e => setForm((f: any) => ({...f, descricao: e.target.value}))} rows={3} style={{padding:"0.65rem 0.9rem",border:"1.5px solid #e5e7eb",borderRadius:"10px",fontFamily:"Inter,sans-serif",fontSize:"0.88rem",color:"#1f2937",outline:"none",resize:"vertical",width:"100%",boxSizing:"border-box"}} onFocus={e => e.target.style.borderColor="#FF4FA3"} onBlur={e => e.target.style.borderColor="#e5e7eb"} />
               </div>
@@ -707,9 +688,9 @@ export default function Insumos() {
           <div className="ins-row-2" style={{gap:"1.5rem"}}>
             <div style={{display:"flex",flexDirection:"column",gap:"1rem"}}>
               <div className="ins-field">
-                <label>Unidade de medida *</label>
+                <label>Unidade de medida <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
                 <select value={form.unidade} onChange={e => { if (e.target.value === "__nova__") setShowNovaUnidade(true); else setForm((f: any) => ({ ...f, unidade: e.target.value })); }}>
-                  <option value="">Selecione</option>
+                  <option value="">Selecione a unidade de medida</option>
                   {["peso","volume","unidade","embalagem"].map(tipo => (
                     <optgroup key={tipo} label={tipo.charAt(0).toUpperCase()+tipo.slice(1)}>
                       {unidades.filter(u => u.tipo === tipo).map(u => <option key={u.sigla} value={u.sigla}>{u.sigla} — {u.nome}</option>)}
@@ -727,14 +708,14 @@ export default function Insumos() {
                 )}
               </div>
               <div className="ins-field">
-                <label>Estoque mínimo *</label>
+                <label>Estoque mínimo <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
                 <input type="number" placeholder="Ex: 2" min="0" value={form.estoque_minimo} onChange={e => setForm((f: any) => ({...f,estoque_minimo:e.target.value}))} />
                 <span className="ins-field-hint">Quantidade mínima para alerta de estoque</span>
               </div>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:"1rem"}}>
               <div className="ins-field">
-                <label>Quantidade por embalagem *</label>
+                <label>Quantidade por embalagem <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
                 <input type="number" placeholder="Ex: 395" min="1" value={form.qtd_embalagem} onChange={e => setForm((f: any) => ({...f,qtd_embalagem:e.target.value}))} />
                 <span className="ins-field-hint">Informe a quantidade que vem na embalagem</span>
               </div>
@@ -753,7 +734,7 @@ export default function Insumos() {
           <div className="ins-form">
             <div className="ins-row-2">
               <div className="ins-field">
-                <label>Valor de compra (R$) *</label>
+                <label>Valor de compra (R$) <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
                 <input type="number" placeholder="0,00" min="0" step="0.01" value={form.valor_compra} onChange={e => setForm((f: any) => ({...f,valor_compra:e.target.value}))} />
               </div>
               <div className="ins-field">
