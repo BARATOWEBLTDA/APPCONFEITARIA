@@ -75,6 +75,8 @@ export default function Insumos() {
   const [showNovaMarca, setShowNovaMarca] = useState(false);
   const [novaMarca, setNovaMarca] = useState("");
   const [showBuscarModal, setShowBuscarModal] = useState(false);
+  const [temValidade, setTemValidade] = useState(true);
+  const [validadeMedia, setValidadeMedia] = useState("");
 
   const loadInsumos = async (uid: string) => {
     const { data } = await supabase.from("insumos").select("*").eq("user_id", uid).order("nome");
@@ -750,6 +752,76 @@ export default function Insumos() {
           </div>
         </div>
       </div>
+
+      {/* 4. Validade */}
+        <div className="ins-card">
+          <p className="ins-section-label">4. Validade</p>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"1.5rem",alignItems:"start"}}>
+
+            {/* Esquerda: opções Com/Sem validade */}
+            <div>
+              <p style={{fontSize:"0.82rem",fontWeight:600,color:"#374151",margin:"0 0 0.75rem"}}>Validade do insumo</p>
+              <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
+                <label style={{display:"flex",alignItems:"flex-start",gap:"0.75rem",padding:"0.85rem 1rem",border:"2px solid",borderColor:temValidade?"#FF4FA3":"#e5e7eb",borderRadius:"12px",cursor:"pointer",background:temValidade?"#fdf2f8":"white",transition:"all 0.15s"}}>
+                  <div style={{width:"18px",height:"18px",borderRadius:"50%",border:"2px solid",borderColor:temValidade?"#FF4FA3":"#d1d5db",background:temValidade?"#FF4FA3":"white",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"1px"}}>
+                    {temValidade && <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"white"}} />}
+                  </div>
+                  <div>
+                    <input type="radio" name="validade" value="sim" checked={temValidade} onChange={() => setTemValidade(true)} style={{display:"none"}} />
+                    <p style={{margin:0,fontSize:"0.88rem",fontWeight:700,color:temValidade?"#FF4FA3":"#1f2937"}}>Com validade</p>
+                    <p style={{margin:0,fontSize:"0.75rem",color:"#9ca3af"}}>Este insumo possui data de validade</p>
+                  </div>
+                </label>
+
+                <label style={{display:"flex",alignItems:"flex-start",gap:"0.75rem",padding:"0.85rem 1rem",border:"2px solid",borderColor:!temValidade?"#FF4FA3":"#e5e7eb",borderRadius:"12px",cursor:"pointer",background:!temValidade?"#fdf2f8":"white",transition:"all 0.15s"}}>
+                  <div style={{width:"18px",height:"18px",borderRadius:"50%",border:"2px solid",borderColor:!temValidade?"#FF4FA3":"#d1d5db",background:!temValidade?"#FF4FA3":"white",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"1px"}}>
+                    {!temValidade && <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"white"}} />}
+                  </div>
+                  <div>
+                    <input type="radio" name="validade" value="nao" checked={!temValidade} onChange={() => setTemValidade(false)} style={{display:"none"}} />
+                    <p style={{margin:0,fontSize:"0.88rem",fontWeight:700,color:!temValidade?"#FF4FA3":"#1f2937"}}>Sem validade</p>
+                    <p style={{margin:0,fontSize:"0.75rem",color:"#9ca3af"}}>Este insumo não possui data de validade</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Direita: validade média + aviso */}
+            <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
+              {temValidade && (
+                <div className="ins-field">
+                  <label>Validade média (dias) <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
+                  <input
+                    type="number"
+                    placeholder="Ex: 180"
+                    min="1"
+                    value={validadeMedia}
+                    onChange={e => setValidadeMedia(e.target.value)}
+                  />
+                  <span className="ins-field-hint">Tempo médio de validade após a compra</span>
+                </div>
+              )}
+
+              {temValidade && (
+                <div style={{background:"#fdf2f8",border:"1px solid #fce7f3",borderRadius:"12px",padding:"0.85rem 1rem",display:"flex",gap:"0.75rem",alignItems:"flex-start"}}>
+                  <div style={{width:"20px",height:"20px",borderRadius:"50%",background:"#FF4FA3",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"1px"}}>
+                    <span style={{color:"white",fontSize:"0.7rem",fontWeight:800}}>i</span>
+                  </div>
+                  <div>
+                    <p style={{margin:"0 0 2px",fontSize:"0.82rem",fontWeight:700,color:"#FF4FA3"}}>Será usado para alertas</p>
+                    <p style={{margin:0,fontSize:"0.75rem",color:"#9ca3af"}}>Enviaremos um alerta quando o insumo estiver próximo do vencimento.</p>
+                  </div>
+                </div>
+              )}
+
+              {!temValidade && (
+                <div style={{background:"#f9fafb",border:"1px solid #f3f4f6",borderRadius:"12px",padding:"0.85rem 1rem"}}>
+                  <p style={{margin:0,fontSize:"0.82rem",color:"#9ca3af"}}>Sem alertas de vencimento para este insumo.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
       {/* Footer */}
       <div className="ins-footer">
