@@ -607,7 +607,7 @@ export default function Insumos() {
             </div>
 
             {/* Campos — direita */}
-            <div className="ins-form" style={{padding:"1.25rem"}}>
+            <div className="ins-form" style={{padding:"1.25rem",display:"flex",flexDirection:"column",flex:1}}>
               <p className="ins-section-label" style={{marginTop:0}}>1. Informações básicas</p>
 
               {/* Nome + Marca na mesma linha */}
@@ -673,9 +673,9 @@ export default function Insumos() {
                 </div>
               </div>
 
-              <div className="ins-field">
+              <div className="ins-field" style={{flex:1,display:"flex",flexDirection:"column"}}>
                 <label>Descrição <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
-                <textarea placeholder="Ex: Leite condensado tradicional, ideal para recheios e coberturas." value={form.descricao || ""} onChange={e => setForm((f: any) => ({...f, descricao: e.target.value}))} rows={3} style={{padding:"0.65rem 0.9rem",border:"1.5px solid #e5e7eb",borderRadius:"10px",fontFamily:"Inter,sans-serif",fontSize:"0.88rem",color:"#1f2937",outline:"none",resize:"vertical",width:"100%",boxSizing:"border-box"}} onFocus={e => e.target.style.borderColor="#FF4FA3"} onBlur={e => e.target.style.borderColor="#e5e7eb"} />
+                <textarea placeholder="Ex: Leite condensado tradicional, ideal para recheios e coberturas." value={form.descricao || ""} onChange={e => setForm((f: any) => ({...f, descricao: e.target.value}))} style={{flex:1,minHeight:"120px",padding:"0.65rem 0.9rem",border:"1.5px solid #e5e7eb",borderRadius:"10px",fontFamily:"Inter,sans-serif",fontSize:"0.88rem",color:"#1f2937",outline:"none",resize:"none",width:"100%",boxSizing:"border-box"}} onFocus={e => e.target.style.borderColor="#FF4FA3"} onBlur={e => e.target.style.borderColor="#e5e7eb"} />
               </div>
             </div>
 
