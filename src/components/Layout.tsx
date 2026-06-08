@@ -145,17 +145,10 @@ export default function Layout() {
             </span>
             <span style={{fontSize:"0.72rem", color:"#9ca3af", marginTop:"1px"}}>{formatDate(now)}</span>
           </div>
-          {/* Dark mode */}
-          <button onClick={toggleDark} className="topbar-btn" title="Alternar tema">
-            {darkMode
-              ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-              : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-            }
-          </button>
           {/* Notificações com dropdown */}
           <div style={{ position: "relative" }} ref={notifRef}>
             <button className="topbar-btn" onClick={() => { setNotifOpen(o => !o); if (!notifOpen) { localStorage.setItem("notif_last_seen", new Date().toISOString()); setNotifCount(0); } }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <img src="/notifica.png" alt="Notificações" style={{width:"20px",height:"20px",objectFit:"contain"}} />
               {notifCount > 0 && <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: "#FF4FA3", color: "white", fontSize: "0.6rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{notifCount > 9 ? "9+" : notifCount}</span>}
             </button>
             {notifOpen && (
@@ -182,13 +175,6 @@ export default function Layout() {
               </div>
             )}
           </div>
-          {/* Tag plano */}
-          <a href="/assinar" style={{ textDecoration: "none" }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem", background: isPro ? "linear-gradient(90deg,#F5A623,#F8C844)" : "linear-gradient(90deg,#FF4FA3,#FF6BB5)", color: "white", fontSize: "0.78rem", fontWeight: 600, padding: "0.3rem 0.75rem", borderRadius: "6px", whiteSpace: "nowrap" }}>
-              <img src="/diamante.png" style={{ width: "14px", height: "14px", objectFit: "contain" }} alt="" />
-              {isPro ? "Premium" : "Plano Gratuito"}
-            </span>
-          </a>
         </div>
         <Outlet />
       </main>
