@@ -430,7 +430,7 @@ export default function Insumos() {
           <span style={{fontSize:"1.2rem"}}>💡</span>
           <div>
             <p style={{fontWeight:700,color:"#92400e",margin:0,fontSize:"0.82rem"}}>Dica:</p>
-            <p style={{color:"#92400e",margin:0,fontSize:"0.78rem"}}>Mantenha seus ingredientes sempre atualizados para evitar perdas e garantir a qualidade dos seus produtos.</p>
+            <p style={{color:"#92400e",margin:0,fontSize:"0.78rem"}}>Cadastre o máximo de ingredientes que você usa — quanto mais completo o seu estoque, mais precisa será sua precificação e menores as chances de perda.</p>
           </div>
         </div>
       </div>
