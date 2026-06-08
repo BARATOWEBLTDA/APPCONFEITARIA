@@ -225,120 +225,198 @@ export default function Insumos() {
   if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh", fontFamily: "Inter, sans-serif", color: "#9ca3af" }}>Carregando...</div>;
 
   // ─── LISTA ───
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const itensPorPagina = 8;
+  const totalPaginas = Math.ceil(insumosFiltrados.length / itensPorPagina);
+  const insumosPagina = insumosFiltrados.slice((paginaAtual - 1) * itensPorPagina, paginaAtual * itensPorPagina);
+
   if (step === "lista") return (
-    <div className="ins-root">
+    <div className="ins-root ins-desktop">
+
+      {/* Header */}
       <div className="ins-header">
         <div>
-          <h1 className="ins-title">Insumos</h1>
-          <p className="ins-sub">{insumos.length} insumo{insumos.length !== 1 ? "s" : ""}</p>
+          <h1 className="ins-title">Ingredientes</h1>
+          <p className="ins-sub">Gerencie seus ingredientes, estoques e validade.</p>
         </div>
         <button className="ins-btn-novo" onClick={openNovo}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Novo
+          Novo ingrediente
         </button>
       </div>
 
-      {/* Total em valor */}
-      {insumos.length > 0 && (
-        <div className="ins-total-card">
+      {/* 4 Cards stats */}
+      <div className="ins-stats">
+        <div className="ins-stat-card">
+          <div className="ins-stat-icon" style={{background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)"}}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          </div>
           <div>
-            <p className="ins-total-label">Total em estoque</p>
-            <p className="ins-total-valor">{formatCurrency(totalEstoque)}</p>
-          </div>
-          <div style={{ textAlign: "right" }}>
-            <p className="ins-total-label">Alertas</p>
-            <p style={{ margin: 0, fontSize: "0.88rem", fontWeight: 700, color: alertas.length + semEstoque.length > 0 ? "#ef4444" : "#22c55e" }}>
-              {alertas.length + semEstoque.length > 0 ? `⚠️ ${alertas.length + semEstoque.length} insumo${alertas.length + semEstoque.length !== 1 ? "s" : ""}` : "✓ Tudo ok"}
-            </p>
+            <p className="ins-stat-label">Total em estoque</p>
+            <p className="ins-stat-val" style={{color:"#FF4FA3"}}>{formatCurrency(totalEstoque)}</p>
+            <p className="ins-stat-sub">Valor total</p>
           </div>
         </div>
-      )}
-
-      {/* Alertas */}
-      {(alertas.length > 0 || semEstoque.length > 0) && (
-        <div className="ins-alerta-card">
-          {semEstoque.map(i => (
-            <div key={i.id} className="ins-alerta-item" onClick={() => openDetalhe(i)}>
-              <span>❌</span>
-              <span><strong>{i.nome}</strong> — sem estoque</span>
-            </div>
-          ))}
-          {alertas.map(i => (
-            <div key={i.id} className="ins-alerta-item" onClick={() => openDetalhe(i)}>
-              <span>⚠️</span>
-              <span><strong>{i.nome}</strong> — apenas {i.quantidade_estoque} {i.unidade} restando</span>
-            </div>
-          ))}
+        <div className="ins-stat-card">
+          <div className="ins-stat-icon" style={{background:"linear-gradient(135deg,#10b981,#059669)"}}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div>
+            <p className="ins-stat-label">Itens cadastrados</p>
+            <p className="ins-stat-val">{insumos.length}</p>
+            <p className="ins-stat-sub">Ingredientes no total</p>
+          </div>
         </div>
-      )}
-
-      {/* Busca */}
-      <div className="ins-search-wrap">
-        <svg className="ins-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input className="ins-search" placeholder="Buscar insumos..." value={busca} onChange={e => setBusca(e.target.value)} />
+        <div className="ins-stat-card">
+          <div className="ins-stat-icon" style={{background:"linear-gradient(135deg,#f59e0b,#d97706)"}}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div>
+            <p className="ins-stat-label">Estoque baixo</p>
+            <p className="ins-stat-val">{alertas.length}</p>
+            <p className="ins-stat-sub">Itens abaixo do mínimo</p>
+          </div>
+        </div>
+        <div className="ins-stat-card">
+          <div className="ins-stat-icon" style={{background:"linear-gradient(135deg,#ef4444,#dc2626)"}}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div>
+            <p className="ins-stat-label">Sem estoque</p>
+            <p className="ins-stat-val">{semEstoque.length}</p>
+            <p className="ins-stat-sub">Itens para repor</p>
+          </div>
+        </div>
       </div>
 
-      {/* Filtros categoria */}
+      {/* Busca + filtros */}
+      <div className="ins-toolbar">
+        <div className="ins-search-wrap" style={{flex:1}}>
+          <svg className="ins-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input className="ins-search" placeholder="Buscar ingrediente..." value={busca} onChange={e => { setBusca(e.target.value); setPaginaAtual(1); }} />
+        </div>
+        <select className="ins-select" value={filtroCategoria} onChange={e => { setFiltroCategoria(e.target.value); setPaginaAtual(1); }}>
+          {["Todas", ...categorias].map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select className="ins-select" value={ordenacao} onChange={e => setOrdenacao(e.target.value as Ordenacao)}>
+          <option value="nome">Nome</option>
+          <option value="estoque">Estoque</option>
+          <option value="valor">Valor</option>
+        </select>
+      </div>
+
+      {/* Filtros categoria chips */}
       <div className="ins-filtros">
         {["Todas", ...categorias].map(cat => (
-          <button key={cat} className={`ins-filtro-btn${filtroCategoria === cat ? " active" : ""}`} onClick={() => setFiltroCategoria(cat)}>{cat}</button>
+          <button key={cat} className={"ins-filtro-btn" + (filtroCategoria === cat ? " active" : "")} onClick={() => { setFiltroCategoria(cat); setPaginaAtual(1); }}>{cat}</button>
         ))}
       </div>
 
-      {/* Ordenação */}
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ fontSize: "0.75rem", color: "#9ca3af" }}>Ordenar:</span>
-        {(["nome","estoque","valor"] as Ordenacao[]).map(o => (
-          <button key={o} onClick={() => setOrdenacao(o)} style={{ padding: "3px 10px", borderRadius: "20px", border: "1.5px solid", fontSize: "0.75rem", fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif", borderColor: ordenacao === o ? "#ec4899" : "#e5e7eb", background: ordenacao === o ? "#fdf2f8" : "white", color: ordenacao === o ? "#ec4899" : "#6b7280" }}>
-            {o === "nome" ? "Nome" : o === "estoque" ? "Estoque" : "Valor"}
-          </button>
-        ))}
-      </div>
-
+      {/* Tabela */}
       {insumosFiltrados.length === 0 ? (
         <div className="ins-empty">
-          <span style={{ fontSize: "3rem" }}>🧂</span>
-          <p style={{ fontWeight: 700, color: "#1f2937", margin: 0 }}>Nenhum insumo ainda</p>
-          <p style={{ color: "#9ca3af", fontSize: "0.85rem", margin: 0 }}>Cadastre seus ingredientes e embalagens</p>
-          <button className="ins-btn-novo" onClick={openNovo}>+ Novo Insumo</button>
+          <span style={{fontSize:"3rem"}}>🧂</span>
+          <p style={{fontWeight:700,color:"#1f2937",margin:0}}>Nenhum ingrediente ainda</p>
+          <p style={{color:"#9ca3af",fontSize:"0.85rem",margin:0}}>Cadastre seus ingredientes e embalagens</p>
+          <button className="ins-btn-novo" onClick={openNovo}>+ Novo Ingrediente</button>
         </div>
       ) : (
-        <div className="ins-list">
-          {insumosFiltrados.map(insumo => {
-            const status = estoqueStatus(insumo);
-            return (
-              <div key={insumo.id} className="ins-item" onClick={() => openDetalhe(insumo)}>
-                <div className="ins-item-img">
-                  {insumo.imagem_url ? <img src={insumo.imagem_url} alt={insumo.nome} /> : <span style={{ fontSize: "1.4rem" }}>🧂</span>}
-                </div>
-                <div className="ins-item-info">
-                  <p className="ins-item-nome">{insumo.nome}</p>
-                  <p className="ins-item-cat">{insumo.categoria}</p>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
-                    <span className="ins-item-estoque">{insumo.quantidade_estoque} {insumo.unidade}</span>
-                    {status === "baixo" && <span className="ins-badge-baixo">⚠️ Baixo</span>}
-                    {status === "vazio" && <span className="ins-badge-vazio">❌ Vazio</span>}
-                  </div>
-                </div>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px", flexShrink: 0 }}>
-                  <span className="ins-item-valor">{formatCurrency(insumo.valor_compra)}</span>
-                  {insumo.custo_unitario > 0 && <span style={{ fontSize: "0.7rem", color: "#9ca3af" }}>{formatCurrency(insumo.custo_unitario)}/{insumo.unidade}</span>}
-                  <button className="ins-btn-del" onClick={e => { e.stopPropagation(); setDeleteId(insumo.id); }}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+        <div className="ins-table-wrap">
+          <table className="ins-table">
+            <thead>
+              <tr>
+                <th>Ingrediente</th>
+                <th>Categoria</th>
+                <th>Estoque</th>
+                <th>Unidade</th>
+                <th>Valor Unit.</th>
+                <th>Valor Total</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {insumosPagina.map(insumo => {
+                const status = estoqueStatus(insumo);
+                const valorTotal = insumo.quantidade_estoque * insumo.valor_compra;
+                return (
+                  <tr key={insumo.id} onClick={() => openDetalhe(insumo)} className="ins-table-row">
+                    <td>
+                      <div className="ins-table-nome">
+                        <div className="ins-table-img">
+                          {insumo.imagem_url ? <img src={insumo.imagem_url} alt={insumo.nome} /> : <span>🧂</span>}
+                        </div>
+                        <div>
+                          <p className="ins-item-nome">{insumo.nome}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="ins-cat-badge">{insumo.categoria}</span>
+                    </td>
+                    <td>
+                      <span style={{fontWeight:700, color: status==="vazio"?"#ef4444":status==="baixo"?"#f59e0b":"#10b981"}}>
+                        {insumo.quantidade_estoque}
+                      </span>
+                    </td>
+                    <td style={{color:"#6b7280",fontSize:"0.82rem"}}>{insumo.unidade}</td>
+                    <td style={{fontWeight:600,color:"#374151"}}>{formatCurrency(insumo.valor_compra)}</td>
+                    <td style={{fontWeight:600,color:"#374151"}}>{formatCurrency(valorTotal)}</td>
+                    <td>
+                      <span className={"ins-status-badge ins-status-" + status}>
+                        {status==="ok"?"Em estoque":status==="baixo"?"Estoque baixo":"Sem estoque"}
+                      </span>
+                    </td>
+                    <td onClick={e => e.stopPropagation()}>
+                      <div style={{display:"flex",gap:"6px",alignItems:"center"}}>
+                        <button className="ins-act-btn ins-act-edit" onClick={() => openEditar(insumo)}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        </button>
+                        <button className="ins-act-btn ins-act-del" onClick={() => setDeleteId(insumo.id)}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          {/* Paginação */}
+          <div className="ins-pagination">
+            <span className="ins-pag-info">Mostrando {(paginaAtual-1)*itensPorPagina+1} a {Math.min(paginaAtual*itensPorPagina, insumosFiltrados.length)} de {insumosFiltrados.length} ingredientes</span>
+            <div className="ins-pag-btns">
+              <button className="ins-pag-btn" onClick={() => setPaginaAtual(p => Math.max(1,p-1))} disabled={paginaAtual===1}>‹</button>
+              {Array.from({length:totalPaginas},(_,i)=>i+1).filter(p => p===1||p===totalPaginas||Math.abs(p-paginaAtual)<=1).map((p,i,arr)=>(
+                <>
+                  {i>0 && arr[i-1]!==p-1 && <span key={"d"+p} style={{padding:"0 4px",color:"#9ca3af"}}>…</span>}
+                  <button key={p} className={"ins-pag-btn"+(paginaAtual===p?" active":"")} onClick={() => setPaginaAtual(p)}>{p}</button>
+                </>
+              ))}
+              <button className="ins-pag-btn" onClick={() => setPaginaAtual(p => Math.min(totalPaginas,p+1))} disabled={paginaAtual===totalPaginas}>›</button>
+            </div>
+          </div>
         </div>
       )}
+
+      {/* Rodapé dica */}
+      <div className="ins-footer-dica">
+        <div style={{display:"flex",alignItems:"center",gap:"0.75rem",flex:1}}>
+          <span style={{fontSize:"1.2rem"}}>💡</span>
+          <div>
+            <p style={{fontWeight:700,color:"#92400e",margin:0,fontSize:"0.82rem"}}>Dica:</p>
+            <p style={{color:"#92400e",margin:0,fontSize:"0.78rem"}}>Mantenha seus ingredientes sempre atualizados para evitar perdas e garantir a qualidade dos seus produtos.</p>
+          </div>
+        </div>
+      </div>
 
       {deleteId && (
         <div className="ins-overlay" onClick={() => setDeleteId(null)}>
           <div className="ins-modal" onClick={e => e.stopPropagation()}>
-            <p style={{ fontWeight: 700, fontSize: "1rem", color: "#1f2937", margin: "0 0 8px" }}>Excluir insumo?</p>
-            <p style={{ fontSize: "0.85rem", color: "#6b7280", margin: "0 0 1.5rem" }}>Esta ação não pode ser desfeita.</p>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <p style={{fontWeight:700,fontSize:"1rem",color:"#1f2937",margin:"0 0 8px"}}>Excluir ingrediente?</p>
+            <p style={{fontSize:"0.85rem",color:"#6b7280",margin:"0 0 1.5rem"}}>Esta ação não pode ser desfeita.</p>
+            <div style={{display:"flex",gap:"8px"}}>
               <button className="ins-btn-cancel" onClick={() => setDeleteId(null)}>Cancelar</button>
               <button className="ins-btn-del-confirm" onClick={() => handleDelete(deleteId)}>Excluir</button>
             </div>
@@ -722,38 +800,73 @@ function Styles() {
   return (
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-      .ins-root { font-family:'Inter',sans-serif; max-width:600px; display:flex; flex-direction:column; gap:1rem; padding-bottom:2rem; }
-      .ins-header { display:flex; align-items:center; justify-content:space-between; padding-top:1.5rem; }
-      .ins-title { font-size:1.4rem; font-weight:800; color:#1f2937; margin:0; }
-      .ins-sub { font-size:0.82rem; color:#9ca3af; margin:0; }
-      .ins-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.65rem 1.1rem; background:linear-gradient(135deg,#ec4899,#f9007a); color:white; border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; }
-      .ins-total-card { background:linear-gradient(135deg,#fdf2f8,#fff0f6); border-radius:14px; padding:1rem 1.25rem; display:flex; justify-content:space-between; align-items:center; border:1px solid #fce7f3; }
-      .ins-total-label { font-size:0.72rem; color:#9ca3af; margin:0 0 2px; text-transform:uppercase; letter-spacing:0.05em; }
-      .ins-total-valor { font-size:1.3rem; font-weight:800; color:#ec4899; margin:0; }
-      .ins-alerta-card { background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; padding:0.75rem 1rem; display:flex; flex-direction:column; gap:0.4rem; }
-      .ins-alerta-item { display:flex; align-items:center; gap:8px; font-size:0.82rem; color:#374151; cursor:pointer; }
-      .ins-alerta-item:hover { text-decoration:underline; }
+      .ins-root { font-family:'Inter',sans-serif; display:flex; flex-direction:column; gap:1rem; padding-bottom:2rem; }
+      .ins-desktop { max-width:100%; }
+      .ins-header { display:flex; align-items:center; justify-content:space-between; }
+      .ins-title { font-size:1.6rem; font-weight:800; color:#1f2937; margin:0; }
+      .ins-sub { font-size:0.82rem; color:#9ca3af; margin:0.15rem 0 0; }
+      .ins-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.65rem 1.25rem; background:linear-gradient(135deg,#FF4FA3,#FF6BB5); color:white; border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(255,79,163,0.35); }
+
+      /* Stats */
+      .ins-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
+      .ins-stat-card { background:white; border-radius:16px; padding:1.1rem 1.25rem; display:flex; align-items:center; gap:1rem; box-shadow:0 2px 10px rgba(0,0,0,0.06); }
+      .ins-stat-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+      .ins-stat-label { font-size:0.68rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 2px; }
+      .ins-stat-val { font-size:1.5rem; font-weight:800; color:#1f2937; margin:0; line-height:1; }
+      .ins-stat-sub { font-size:0.7rem; color:#9ca3af; margin:2px 0 0; }
+
+      /* Toolbar */
+      .ins-toolbar { display:flex; gap:0.75rem; align-items:center; }
       .ins-search-wrap { position:relative; }
       .ins-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); pointer-events:none; }
-      .ins-search { width:100%; padding:0.65rem 1rem 0.65rem 2.4rem; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.88rem; outline:none; box-sizing:border-box; }
-      .ins-search:focus { border-color:#ec4899; }
+      .ins-search { width:100%; padding:0.65rem 1rem 0.65rem 2.4rem; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.88rem; outline:none; box-sizing:border-box; background:white; }
+      .ins-search:focus { border-color:#FF4FA3; }
+      .ins-select { padding:0.62rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.85rem; color:#374151; outline:none; background:white; cursor:pointer; }
+      .ins-select:focus { border-color:#FF4FA3; }
+
+      /* Filtros */
       .ins-filtros { display:flex; gap:0.4rem; flex-wrap:wrap; }
-      .ins-filtro-btn { padding:0.3rem 0.75rem; border:1.5px solid #e5e7eb; border-radius:8px; background:white; font-family:'Inter',sans-serif; font-size:0.75rem; font-weight:500; color:#6b7280; cursor:pointer; white-space:nowrap; }
-      .ins-filtro-btn.active { border-color:#ec4899; color:#ec4899; background:#fdf2f8; font-weight:700; }
-      .ins-empty { display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:3rem 1rem; text-align:center; }
-      .ins-list { display:flex; flex-direction:column; gap:0.5rem; }
-      .ins-item { background:white; border-radius:14px; padding:0.75rem 1rem; display:flex; align-items:center; gap:0.85rem; box-shadow:0 2px 8px rgba(0,0,0,0.06); cursor:pointer; transition:box-shadow 0.2s; }
-      .ins-item:hover { box-shadow:0 4px 16px rgba(0,0,0,0.1); }
-      .ins-item-img { width:56px; height:56px; border-radius:10px; overflow:hidden; background:#fdf2f8; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-      .ins-item-img img { width:100%; height:100%; object-fit:cover; }
-      .ins-item-info { flex:1; min-width:0; }
-      .ins-item-nome { font-size:0.9rem; font-weight:700; color:#1f2937; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-      .ins-item-cat { font-size:0.72rem; color:#9ca3af; margin:0; }
-      .ins-item-estoque { font-size:0.78rem; color:#6b7280; font-weight:500; }
-      .ins-item-valor { font-size:0.85rem; font-weight:700; color:#22c55e; }
-      .ins-badge-baixo { background:#fef9c3; color:#ca8a04; font-size:0.65rem; font-weight:700; padding:2px 6px; border-radius:6px; }
-      .ins-badge-vazio { background:#fee2e2; color:#ef4444; font-size:0.65rem; font-weight:700; padding:2px 6px; border-radius:6px; }
-      .ins-btn-del { width:30px; height:30px; background:#fff1f2; border:none; border-radius:8px; color:#ef4444; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+      .ins-filtro-btn { padding:0.35rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:8px; background:white; font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:500; color:#6b7280; cursor:pointer; white-space:nowrap; transition:all 0.15s; }
+      .ins-filtro-btn.active { border-color:#FF4FA3; color:#FF4FA3; background:#fdf2f8; font-weight:700; }
+
+      /* Tabela */
+      .ins-table-wrap { background:white; border-radius:16px; box-shadow:0 2px 10px rgba(0,0,0,0.06); overflow:hidden; }
+      .ins-table { width:100%; border-collapse:collapse; }
+      .ins-table thead tr { background:#f9fafb; border-bottom:1px solid #f3f4f6; }
+      .ins-table th { padding:0.75rem 1rem; text-align:left; font-size:0.72rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap; }
+      .ins-table-row { border-bottom:1px solid #f9fafb; cursor:pointer; transition:background 0.15s; }
+      .ins-table-row:hover { background:#fdf2f8; }
+      .ins-table-row:last-child { border-bottom:none; }
+      .ins-table td { padding:0.85rem 1rem; vertical-align:middle; }
+      .ins-table-nome { display:flex; align-items:center; gap:0.75rem; }
+      .ins-table-img { width:44px; height:44px; border-radius:10px; overflow:hidden; background:#f9fafb; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.3rem; }
+      .ins-table-img img { width:100%; height:100%; object-fit:cover; }
+      .ins-item-nome { font-size:0.88rem; font-weight:700; color:#1f2937; margin:0; }
+      .ins-cat-badge { padding:3px 10px; border-radius:6px; font-size:0.72rem; font-weight:600; background:#f3f4f6; color:#374151; }
+      .ins-status-badge { padding:4px 10px; border-radius:8px; font-size:0.72rem; font-weight:700; white-space:nowrap; }
+      .ins-status-ok { background:#dcfce7; color:#16a34a; }
+      .ins-status-baixo { background:#fef9c3; color:#ca8a04; }
+      .ins-status-vazio { background:#fee2e2; color:#ef4444; }
+      .ins-act-btn { width:30px; height:30px; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+      .ins-act-edit { background:#fdf2f8; color:#FF4FA3; }
+      .ins-act-edit:hover { background:#FF4FA3; color:white; }
+      .ins-act-del { background:#fff1f2; color:#ef4444; }
+      .ins-act-del:hover { background:#ef4444; color:white; }
+
+      /* Paginação */
+      .ins-pagination { display:flex; align-items:center; justify-content:space-between; padding:0.85rem 1.25rem; border-top:1px solid #f3f4f6; }
+      .ins-pag-info { font-size:0.78rem; color:#9ca3af; }
+      .ins-pag-btns { display:flex; align-items:center; gap:4px; }
+      .ins-pag-btn { width:32px; height:32px; border-radius:8px; border:1.5px solid #e5e7eb; background:white; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:600; color:#374151; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+      .ins-pag-btn:hover:not(:disabled) { border-color:#FF4FA3; color:#FF4FA3; }
+      .ins-pag-btn.active { background:#FF4FA3; border-color:#FF4FA3; color:white; }
+      .ins-pag-btn:disabled { opacity:0.4; cursor:not-allowed; }
+
+      /* Rodapé dica */
+      .ins-footer-dica { background:#fffbeb; border:1px solid #fde68a; border-radius:14px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; }
+
+      /* Empty */
+      .ins-empty { display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:3rem 1rem; text-align:center; background:white; border-radius:16px; box-shadow:0 2px 10px rgba(0,0,0,0.06); }
       .ins-form-header { display:flex; align-items:center; gap:0.75rem; padding-top:1.25rem; }
       .ins-back { width:36px; height:36px; background:#f3f4f6; border:none; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
       .ins-form-title { font-size:1.1rem; font-weight:800; color:#1f2937; margin:0; flex:1; }
