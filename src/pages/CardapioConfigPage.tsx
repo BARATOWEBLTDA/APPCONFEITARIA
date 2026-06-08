@@ -256,198 +256,193 @@ export default function CardapioConfigPage() {
         {autoSaved && <span className="ccc-autosave">✓ Salvo automaticamente</span>}
       </div>
 
-      {/* Grid 2 colunas no desktop */}
-      <div className="ccc-grid">
+      {/* LINHA 1: 3 cards iguais */}
+      <div className="ccc-row-top">
 
-        {/* COLUNA ESQUERDA */}
-        <div className="ccc-col">
+        {/* Card 1 — Identidade */}
+        <div className="ccc-card">
+          <SectionLabel>Identidade da loja</SectionLabel>
+          <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleFileChange} />
 
-          {/* Card 1 — Identidade */}
-          <div className="ccc-card">
-            <SectionLabel>Identidade da loja</SectionLabel>
-            <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleFileChange} />
+          <div className="ccc-logo-row">
+            <div className="ccc-logo-preview" onClick={() => fileRef.current?.click()}>
+              {preview || form.foto_url
+                ? <img src={preview || form.foto_url} alt="logo" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              }
+              <div className="ccc-logo-cam"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+            </div>
+            <div>
+              <p className="ccc-logo-label">Logo da loja</p>
+              <p style={{fontSize:"0.78rem",color:"#9ca3af",margin:"2px 0 8px"}}>Aparece no topo do cardápio</p>
+              <button type="button" onClick={() => fileRef.current?.click()} style={{fontSize:"0.78rem",color:"#F583BF",fontWeight:600,background:"none",border:"1px solid #fce7f3",borderRadius:"8px",padding:"4px 12px",cursor:"pointer",fontFamily:"Inter,sans-serif"}}>
+                {uploading ? "Enviando..." : "Trocar foto"}
+              </button>
+            </div>
+          </div>
 
-            {/* Logo */}
-            <div className="ccc-logo-row">
-              <div className="ccc-logo-preview" onClick={() => fileRef.current?.click()}>
-                {preview || form.foto_url
-                  ? <img src={preview || form.foto_url} alt="logo" style={{width:"100%",height:"100%",objectFit:"cover"}} />
-                  : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                }
-                <div className="ccc-logo-cam"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
-              </div>
-              <div>
-                <p className="ccc-logo-label">Logo da loja</p>
-                <p style={{fontSize:"0.78rem",color:"#9ca3af",margin:"2px 0 8px"}}>Aparece no topo do cardápio</p>
-                <button type="button" onClick={() => fileRef.current?.click()} style={{fontSize:"0.78rem",color:"#F583BF",fontWeight:600,background:"none",border:"1px solid #fce7f3",borderRadius:"8px",padding:"4px 12px",cursor:"pointer",fontFamily:"Inter,sans-serif"}}>
-                  {uploading ? "Enviando..." : "Trocar foto"}
+          <Field
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
+            placeholder="Nome da loja" value={form.nome_loja}
+            onChange={(e: any) => setForm({...form, nome_loja: e.target.value})}
+          />
+          <Field
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>}
+            placeholder="WhatsApp" value={form.telefone} type="tel"
+            onChange={(e: any) => setForm({...form, telefone: formatPhone(e.target.value)})}
+          />
+          <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1.1rem"}}>
+            <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </span>
+            <div style={{flex:1,display:"flex",flexDirection:"column",gap:"0.4rem"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span style={{fontSize:"0.75rem",color:"#9ca3af"}}>Descrição</span>
+                <button type="button" className="ccc-btn-ia" onClick={gerarDescricaoLoja} disabled={gerandoDescricao || !form.nome_loja.trim()}>
+                  {gerandoDescricao ? <><span className="ccc-spinner-ia" /> Gerando...</> : <>✨ Gerar com IA</>}
                 </button>
               </div>
+              <textarea className="ccc-field-input" placeholder="Descrição da loja (aparece no cardápio)" value={form.descricao_loja} onChange={e => setForm({...form, descricao_loja: e.target.value})} rows={4} maxLength={200} style={{resize:"none"}} />
             </div>
+          </div>
+          <p className="ccc-char-count">{(form.descricao_loja || "").length}/200</p>
+        </div>
 
-            <Field
-              icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
-              placeholder="Nome da loja" value={form.nome_loja}
-              onChange={(e: any) => setForm({...form, nome_loja: e.target.value})}
+        {/* Card 2 — Localização */}
+        <div className="ccc-card">
+          <SectionLabel>Localização da loja</SectionLabel>
+          <div className="ccc-field">
+            <span className="ccc-field-icon">
+              {buscandoCep ? <span className="ccc-spinner-xs" /> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
+            </span>
+            <input className="ccc-field-input" placeholder="CEP (opcional)" value={form.cep}
+              onChange={e => {
+                const d = e.target.value.replace(/\D/g,"").slice(0,8);
+                const fmt = d.length > 5 ? `${d.slice(0,5)}-${d.slice(5)}` : d;
+                setForm({...form, cep: fmt});
+                if (d.length < 8) setCepPreenchido(false);
+                if (d.length === 8) buscarCep(d);
+              }}
             />
-            <Field
-              icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>}
-              placeholder="WhatsApp" value={form.telefone} type="tel"
-              onChange={(e: any) => setForm({...form, telefone: formatPhone(e.target.value)})}
-            />
-            <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1.1rem"}}>
-              <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              </span>
-              <div style={{flex:1,display:"flex",flexDirection:"column",gap:"0.4rem"}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                  <span style={{fontSize:"0.75rem",color:"#9ca3af"}}>Descrição</span>
-                  <button type="button" className="ccc-btn-ia" onClick={gerarDescricaoLoja} disabled={gerandoDescricao || !form.nome_loja.trim()}>
-                    {gerandoDescricao ? <><span className="ccc-spinner-ia" /> Gerando...</> : <>✨ Gerar com IA</>}
-                  </button>
-                </div>
-                <textarea className="ccc-field-input" placeholder="Descrição da loja (aparece no cardápio)" value={form.descricao_loja} onChange={e => setForm({...form, descricao_loja: e.target.value})} rows={4} maxLength={200} style={{resize:"none"}} />
-              </div>
-            </div>
-            <p className="ccc-char-count">{(form.descricao_loja || "").length}/200</p>
           </div>
-
-          {/* Card Avaliações */}
-          <div className="ccc-card">
-            <SectionLabel>Avaliações</SectionLabel>
-            <div className="ccc-toggle-row">
-              <div><p className="ccc-toggle-label">Exibir estrelas de avaliação</p><p className="ccc-toggle-sub">Mostra a avaliação média no cardápio</p></div>
-              <label className="ccc-toggle"><input type="checkbox" checked={!form.hide_stars} onChange={e => setForm({...form, hide_stars: !e.target.checked})} /><span className="ccc-toggle-slider" /></label>
-            </div>
-            {!form.hide_stars && (
-              <>
-                <div className="ccc-divider" />
-                <p className="ccc-hint">Selecione a nota que aparecerá no cardápio</p>
-                <div className="ccc-notas-grid">
-                  {[5.0, 4.9, 4.8].map(nota => (
-                    <button key={nota} className={`ccc-nota-btn${form.avaliacao_media === nota ? " active" : ""}`} onClick={() => setForm({...form, avaliacao_media: nota})}>
-                      <span style={{fontSize:"1.1rem"}}>⭐</span>
-                      <span>{nota.toFixed(1)}</span>
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+          <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 80px",gap:"0.5rem"}}>
+            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>}
+              placeholder="Rua / Avenida" value={form.rua} onChange={(e: any) => setForm({...form, rua: e.target.value})} />
+            <div className="ccc-field"><input className="ccc-field-input" placeholder="Nº" value={form.numero} onChange={(e: any) => setForm({...form, numero: e.target.value})} /></div>
           </div>
-
-        </div>{/* fim col esquerda */}
-
-        {/* COLUNA DIREITA */}
-        <div className="ccc-col">
-
-          {/* Card 2 — Localização */}
-          <div className="ccc-card">
-            <SectionLabel>Localização da loja</SectionLabel>
-            <div className="ccc-field">
-              <span className="ccc-field-icon">
-                {buscandoCep ? <span className="ccc-spinner-xs" /> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
-              </span>
-              <input className="ccc-field-input" placeholder="CEP (opcional)" value={form.cep}
-                onChange={e => {
-                  const d = e.target.value.replace(/\D/g,"").slice(0,8);
-                  const fmt = d.length > 5 ? `${d.slice(0,5)}-${d.slice(5)}` : d;
-                  setForm({...form, cep: fmt});
-                  if (d.length < 8) setCepPreenchido(false);
-                  if (d.length === 8) buscarCep(d);
-                }}
-              />
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 80px",gap:"0.5rem"}}>
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>}
-                placeholder="Rua / Avenida" value={form.rua} onChange={(e: any) => setForm({...form, rua: e.target.value})} />
-              <div className="ccc-field"><input className="ccc-field-input" placeholder="Nº" value={form.numero} onChange={(e: any) => setForm({...form, numero: e.target.value})} /></div>
-            </div>
-            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>}
-              placeholder="Bairro" value={form.bairro} onChange={(e: any) => setForm({...form, bairro: e.target.value})} />
-            <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 90px",gap:"0.5rem"}}>
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg>}
-                placeholder="Cidade" value={form.cidade} onChange={(e: any) => setForm({...form, cidade: e.target.value})} />
-              <div className="ccc-field"><input className="ccc-field-input" placeholder="UF" value={form.estado} onChange={(e: any) => setForm({...form, estado: e.target.value.toUpperCase()})} maxLength={2} /></div>
-            </div>
-            {cepPreenchido && <p className="ccc-cep-hint">Preenchido automaticamente. <span onClick={() => setCepPreenchido(false)} style={{color:"#F583BF",cursor:"pointer",fontWeight:600}}>Editar manual</span></p>}
-            <div className="ccc-divider" />
-            <div className="ccc-toggle-row">
-              <div><p className="ccc-toggle-label">Mostrar localização completa</p><p className="ccc-toggle-sub">Exibe rua, bairro e cidade no cardápio</p></div>
-              <label className="ccc-toggle"><input type="checkbox" checked={form.mostrar_localizacao} onChange={e => setForm({...form, mostrar_localizacao: e.target.checked, mostrar_apenas_cidade: e.target.checked ? false : form.mostrar_apenas_cidade})} /><span className="ccc-toggle-slider" /></label>
-            </div>
-            <div className="ccc-toggle-row">
-              <div><p className="ccc-toggle-label">Mostrar apenas cidade</p><p className="ccc-toggle-sub">Exibe somente a cidade no cardápio</p></div>
-              <label className="ccc-toggle"><input type="checkbox" checked={form.mostrar_apenas_cidade} onChange={e => setForm({...form, mostrar_apenas_cidade: e.target.checked, mostrar_localizacao: e.target.checked ? false : form.mostrar_localizacao})} /><span className="ccc-toggle-slider" /></label>
-            </div>
+          <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>}
+            placeholder="Bairro" value={form.bairro} onChange={(e: any) => setForm({...form, bairro: e.target.value})} />
+          <div style={{display:"grid",gridTemplateColumns:"minmax(0,1fr) 90px",gap:"0.5rem"}}>
+            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg>}
+              placeholder="Cidade" value={form.cidade} onChange={(e: any) => setForm({...form, cidade: e.target.value})} />
+            <div className="ccc-field"><input className="ccc-field-input" placeholder="UF" value={form.estado} onChange={(e: any) => setForm({...form, estado: e.target.value.toUpperCase()})} maxLength={2} /></div>
           </div>
+          {cepPreenchido && <p className="ccc-cep-hint">Preenchido automaticamente. <span onClick={() => setCepPreenchido(false)} style={{color:"#F583BF",cursor:"pointer",fontWeight:600}}>Editar manual</span></p>}
+          <div className="ccc-divider" />
+          <div className="ccc-toggle-row">
+            <div><p className="ccc-toggle-label">Mostrar localização completa</p><p className="ccc-toggle-sub">Exibe rua, bairro e cidade no cardápio</p></div>
+            <label className="ccc-toggle"><input type="checkbox" checked={form.mostrar_localizacao} onChange={e => setForm({...form, mostrar_localizacao: e.target.checked, mostrar_apenas_cidade: e.target.checked ? false : form.mostrar_apenas_cidade})} /><span className="ccc-toggle-slider" /></label>
+          </div>
+          <div className="ccc-toggle-row">
+            <div><p className="ccc-toggle-label">Mostrar apenas cidade</p><p className="ccc-toggle-sub">Exibe somente a cidade no cardápio</p></div>
+            <label className="ccc-toggle"><input type="checkbox" checked={form.mostrar_apenas_cidade} onChange={e => setForm({...form, mostrar_apenas_cidade: e.target.checked, mostrar_localizacao: e.target.checked ? false : form.mostrar_localizacao})} /><span className="ccc-toggle-slider" /></label>
+          </div>
+        </div>
 
-          {/* Card 3 — Entrega */}
-          <div className="ccc-card">
-            <SectionLabel>Entrega</SectionLabel>
-            <div className="ccc-toggle-row">
-              <div><p className="ccc-toggle-label">Faz entrega?</p><p className="ccc-toggle-sub">Ative para configurar opções e taxas de entrega no seu cardápio.</p></div>
-              <label className="ccc-toggle"><input type="checkbox" checked={form.faz_entrega} onChange={e => setForm({...form, faz_entrega: e.target.checked})} /><span className="ccc-toggle-slider" /></label>
-            </div>
-        {form.faz_entrega && (
-          <>
-            <div className="ccc-divider" />
-            <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>} placeholder="Taxa de entrega" value={form.taxa_entrega} onChange={(v: string) => setForm({...form, taxa_entrega: v})} />
-            <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>} placeholder="Pedido mínimo" value={form.pedido_minimo} onChange={(v: string) => setForm({...form, pedido_minimo: v})} />
-            <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/></svg>} placeholder="Entrega grátis acima de" value={form.entrega_gratis_acima} onChange={(v: string) => setForm({...form, entrega_gratis_acima: v})} />
-            <button className="ccc-horario-btn" onClick={() => { if (form.horario_entrega) { const [ini,fim] = form.horario_entrega.split(" às "); setHorarioTemp({inicio:ini||"08:00",fim:fim||"18:00"}); } setModalHorario(true); }}>
-              <span className="ccc-field-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-              <span style={{flex:1,textAlign:"left",color:form.horario_entrega?"var(--text-primary,#1f2937)":"#9ca3af",fontSize:"0.9rem"}}>{form.horario_entrega || "Horário de entregas"}</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} placeholder="Área de entrega" value={form.area_entrega} onChange={(e: any) => setForm({...form, area_entrega: e.target.value})} />
-            <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1.1rem"}}>
-              <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-              <textarea className="ccc-field-input" placeholder="Observações" value={form.observacoes_entrega} onChange={e => setForm({...form, observacoes_entrega: e.target.value})} rows={3} style={{resize:"none"}} />
-            </div>
-          </>
-        )}
-          </div>{/* fim card entrega */}
-
-          {/* Card Horários */}
-          <div className="ccc-card">
-            <SectionLabel>Horários de funcionamento</SectionLabel>
-            <p className="ccc-hint">Dias que sua loja funciona</p>
-            <div className="ccc-dias-grid">
-              {["Segunda","Terça","Quarta","Quinta","Sexta"].map(dia => (
-                <button key={dia} className={`ccc-dia-btn${horario.dias.includes(dia) ? " active" : ""}`} onClick={() => setHorario(h => ({...h, dias: h.dias.includes(dia) ? h.dias.filter(d => d !== dia) : [...h.dias, dia]}))}>
-                  {dia.slice(0,3)}
-                </button>
-              ))}
-            </div>
+        {/* Card 3 — Horários */}
+        <div className="ccc-card">
+          <SectionLabel>Horários de funcionamento</SectionLabel>
+          <p className="ccc-hint">Dias que sua loja funciona</p>
+          <div className="ccc-dias-grid">
+            {["Segunda","Terça","Quarta","Quinta","Sexta"].map(dia => (
+              <button key={dia} className={`ccc-dia-btn${horario.dias.includes(dia) ? " active" : ""}`} onClick={() => setHorario(h => ({...h, dias: h.dias.includes(dia) ? h.dias.filter(d => d !== dia) : [...h.dias, dia]}))}>
+                {dia.slice(0,3)}
+              </button>
+            ))}
+          </div>
+          <div className="ccc-row-2">
+            <div className="ccc-time-field"><label>Abertura</label><input type="time" value={horario.abertura} onChange={e => setHorario({...horario, abertura: e.target.value})} /></div>
+            <div className="ccc-time-field"><label>Fechamento</label><input type="time" value={horario.fechamento} onChange={e => setHorario({...horario, fechamento: e.target.value})} /></div>
+          </div>
+          <div className="ccc-divider" />
+          <div className="ccc-toggle-row">
+            <p className="ccc-toggle-label">Abre Sábado?</p>
+            <label className="ccc-toggle"><input type="checkbox" checked={horario.abre_sabado} onChange={e => setHorario({...horario, abre_sabado: e.target.checked})} /><span className="ccc-toggle-slider" /></label>
+          </div>
+          {horario.abre_sabado && (
             <div className="ccc-row-2">
-              <div className="ccc-time-field"><label>Abertura</label><input type="time" value={horario.abertura} onChange={e => setHorario({...horario, abertura: e.target.value})} /></div>
-              <div className="ccc-time-field"><label>Fechamento</label><input type="time" value={horario.fechamento} onChange={e => setHorario({...horario, fechamento: e.target.value})} /></div>
+              <div className="ccc-time-field"><label>Abertura (sáb)</label><input type="time" value={horario.sabado_abertura} onChange={e => setHorario({...horario, sabado_abertura: e.target.value})} /></div>
+              <div className="ccc-time-field"><label>Fechamento (sáb)</label><input type="time" value={horario.sabado_fechamento} onChange={e => setHorario({...horario, sabado_fechamento: e.target.value})} /></div>
             </div>
-            <div className="ccc-divider" />
-            <div className="ccc-toggle-row">
-              <p className="ccc-toggle-label">Abre Sábado?</p>
-              <label className="ccc-toggle"><input type="checkbox" checked={horario.abre_sabado} onChange={e => setHorario({...horario, abre_sabado: e.target.checked})} /><span className="ccc-toggle-slider" /></label>
-            </div>
-            {horario.abre_sabado && (
-              <div className="ccc-row-2">
-                <div className="ccc-time-field"><label>Abertura (sáb)</label><input type="time" value={horario.sabado_abertura} onChange={e => setHorario({...horario, sabado_abertura: e.target.value})} /></div>
-                <div className="ccc-time-field"><label>Fechamento (sáb)</label><input type="time" value={horario.sabado_fechamento} onChange={e => setHorario({...horario, sabado_fechamento: e.target.value})} /></div>
-              </div>
-            )}
-            <div className="ccc-toggle-row">
-              <p className="ccc-toggle-label">Abre Domingo?</p>
-              <label className="ccc-toggle"><input type="checkbox" checked={horario.abre_domingo} onChange={e => setHorario({...horario, abre_domingo: e.target.checked})} /><span className="ccc-toggle-slider" /></label>
-            </div>
-            {horario.abre_domingo && (
-              <div className="ccc-row-2">
-                <div className="ccc-time-field"><label>Abertura (dom)</label><input type="time" value={horario.domingo_abertura} onChange={e => setHorario({...horario, domingo_abertura: e.target.value})} /></div>
-                <div className="ccc-time-field"><label>Fechamento (dom)</label><input type="time" value={horario.domingo_fechamento} onChange={e => setHorario({...horario, domingo_fechamento: e.target.value})} /></div>
-              </div>
-            )}
+          )}
+          <div className="ccc-toggle-row">
+            <p className="ccc-toggle-label">Abre Domingo?</p>
+            <label className="ccc-toggle"><input type="checkbox" checked={horario.abre_domingo} onChange={e => setHorario({...horario, abre_domingo: e.target.checked})} /><span className="ccc-toggle-slider" /></label>
           </div>
+          {horario.abre_domingo && (
+            <div className="ccc-row-2">
+              <div className="ccc-time-field"><label>Abertura (dom)</label><input type="time" value={horario.domingo_abertura} onChange={e => setHorario({...horario, domingo_abertura: e.target.value})} /></div>
+              <div className="ccc-time-field"><label>Fechamento (dom)</label><input type="time" value={horario.domingo_fechamento} onChange={e => setHorario({...horario, domingo_fechamento: e.target.value})} /></div>
+            </div>
+          )}
+        </div>
 
-        </div>{/* fim col direita */}
-      </div>{/* fim grid */}
+      </div>{/* fim linha 1 */}
+
+      {/* LINHA 2: 2 cards iguais */}
+      <div className="ccc-row-bottom">
+
+        {/* Card 4 — Avaliações */}
+        <div className="ccc-card">
+          <SectionLabel>Avaliações</SectionLabel>
+          <div className="ccc-toggle-row">
+            <div><p className="ccc-toggle-label">Exibir estrelas de avaliação</p><p className="ccc-toggle-sub">Mostra a avaliação média no cardápio</p></div>
+            <label className="ccc-toggle"><input type="checkbox" checked={!form.hide_stars} onChange={e => setForm({...form, hide_stars: !e.target.checked})} /><span className="ccc-toggle-slider" /></label>
+          </div>
+          {!form.hide_stars && (
+            <>
+              <div className="ccc-divider" />
+              <p className="ccc-hint">Selecione a nota que aparecerá no cardápio</p>
+              <div className="ccc-notas-grid">
+                {[5.0, 4.9, 4.8].map(nota => (
+                  <button key={nota} className={`ccc-nota-btn${form.avaliacao_media === nota ? " active" : ""}`} onClick={() => setForm({...form, avaliacao_media: nota})}>
+                    <span style={{fontSize:"1.1rem"}}>⭐</span>
+                    <span>{nota.toFixed(1)}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Card 5 — Entrega */}
+        <div className="ccc-card">
+          <SectionLabel>Entrega</SectionLabel>
+          <div className="ccc-toggle-row">
+            <div><p className="ccc-toggle-label">Faz entrega?</p><p className="ccc-toggle-sub">Ative para configurar opções e taxas de entrega no seu cardápio.</p></div>
+            <label className="ccc-toggle"><input type="checkbox" checked={form.faz_entrega} onChange={e => setForm({...form, faz_entrega: e.target.checked})} /><span className="ccc-toggle-slider" /></label>
+          </div>
+          {form.faz_entrega && (
+            <>
+              <div className="ccc-divider" />
+              <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>} placeholder="Taxa de entrega" value={form.taxa_entrega} onChange={(v: string) => setForm({...form, taxa_entrega: v})} />
+              <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>} placeholder="Pedido mínimo" value={form.pedido_minimo} onChange={(v: string) => setForm({...form, pedido_minimo: v})} />
+              <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/></svg>} placeholder="Entrega grátis acima de" value={form.entrega_gratis_acima} onChange={(v: string) => setForm({...form, entrega_gratis_acima: v})} />
+              <button className="ccc-horario-btn" onClick={() => { if (form.horario_entrega) { const [ini,fim] = form.horario_entrega.split(" às "); setHorarioTemp({inicio:ini||"08:00",fim:fim||"18:00"}); } setModalHorario(true); }}>
+                <span className="ccc-field-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+                <span style={{flex:1,textAlign:"left",color:form.horario_entrega?"var(--text-primary,#1f2937)":"#9ca3af",fontSize:"0.9rem"}}>{form.horario_entrega || "Horário de entregas"}</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} placeholder="Área de entrega" value={form.area_entrega} onChange={(e: any) => setForm({...form, area_entrega: e.target.value})} />
+              <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1.1rem"}}>
+                <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <textarea className="ccc-field-input" placeholder="Observações" value={form.observacoes_entrega} onChange={e => setForm({...form, observacoes_entrega: e.target.value})} rows={3} style={{resize:"none"}} />
+              </div>
+            </>
+          )}
+        </div>
+
+      </div>{/* fim linha 2 */}
 
       {/* Botão salvar full width */}
       <button className="ccc-btn-save" onClick={handleSave} disabled={saving || uploading}>
@@ -557,10 +552,15 @@ export default function CardapioConfigPage() {
         .ccc-page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; padding-top:1.5rem; }
         .ccc-page-title { font-size:1.4rem; font-weight:800; color:var(--text-primary,#1f2937); margin:0 0 0.25rem; text-align:left; }
         .ccc-page-sub { font-size:0.84rem; color:#4b5563; margin:0; font-family:'Nunito',sans-serif; font-style:italic; text-align:left; }
-        .ccc-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; align-items:start; }
-        .ccc-col { display:flex; flex-direction:column; gap:1.25rem; }
-        @media (max-width: 768px) {
-          .ccc-grid { grid-template-columns:1fr; }
+        .ccc-row-top { display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem; align-items:start; }
+        .ccc-row-bottom { display:grid; grid-template-columns:repeat(2,1fr); gap:1.25rem; align-items:start; }
+        @media (max-width: 1024px) {
+          .ccc-row-top { grid-template-columns:repeat(2,1fr); }
+          .ccc-row-bottom { grid-template-columns:repeat(2,1fr); }
+        }
+        @media (max-width: 640px) {
+          .ccc-row-top { grid-template-columns:1fr; }
+          .ccc-row-bottom { grid-template-columns:1fr; }
           .ccc-page-title { font-size:1.2rem; }
         }
       `}</style>
