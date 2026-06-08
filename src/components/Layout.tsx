@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef, type ReactNode } from "react";
-import { Home, Calendar, ShoppingBag, ClipboardList, Users, BookOpen, Package, DollarSign, Settings, LogOut, ChevronDown } from "lucide-react";
+import { Home, Calendar, ShoppingBag, ClipboardList, Users, BookOpen, Package, DollarSign, Settings, LogOut, ChevronDown, UtensilsCrossed, Menu } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { supabase } from "@/lib/supabase";
