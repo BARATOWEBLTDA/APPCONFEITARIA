@@ -124,16 +124,17 @@ export default function Layout() {
           <NavLink to="/configuracoes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Configurações</NavLink>
         </nav>
 
-        <a href="/assinar" style={{display:"block",margin:"0 0.25rem 0.8rem",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:"14px",padding:"0.9rem 1rem",textDecoration:"none"}}>
-          <div style={{display:"flex",alignItems:"center",gap:"0.5rem",marginBottom:"0.35rem"}}>
-            <span style={{fontSize:"0.85rem"}}>⏱️</span>
-            <span style={{fontSize:"0.75rem",fontWeight:700,color:"#B8C1E0",letterSpacing:"0.02em"}}>Período de teste</span>
-          </div>
-          <p style={{fontSize:"0.7rem",color:"#8E99C2",margin:"0 0 0.6rem"}}>14 dias restantes</p>
-          <div style={{background:"linear-gradient(90deg,#FF4FA3,#FF6BB5)",borderRadius:"8px",padding:"0.45rem",textAlign:"center",fontSize:"0.78rem",fontWeight:700,color:"white"}}>
-            Fazer upgrade ✨
-          </div>
-        </a>
+        {!isPro && (
+          <a href="/assinar" style={{display:"block",margin:"0 0.25rem 0.5rem",background:"rgba(255,79,163,0.12)",border:"1px solid rgba(255,79,163,0.2)",borderRadius:"14px",padding:"0.75rem 1rem",textDecoration:"none",textAlign:"center"}}>
+            <span style={{fontSize:"0.78rem",fontWeight:700,color:"#FF4FA3"}}>✨ Fazer upgrade</span>
+          </a>
+        )}
+
+        <button onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}
+          style={{display:"flex",alignItems:"center",gap:"0.5rem",width:"calc(100% - 0.5rem)",margin:"0 0.25rem 1rem",background:"none",border:"none",cursor:"pointer",padding:"0.6rem 1rem",borderRadius:"10px",color:"rgba(255,255,255,0.35)",fontSize:"0.8rem",fontWeight:500,fontFamily:"Inter,sans-serif",transition:"background 0.15s"}}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sair
+        </button>
       </aside>
 
       <main className={`layout-main${isAssinar ? " layout-main--no-header" : ""}`}>
