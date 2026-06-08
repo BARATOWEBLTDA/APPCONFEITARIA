@@ -624,7 +624,7 @@ export default function Insumos() {
                   <input placeholder="Ex: Leite Condensado" value={form.nome} onChange={e => setForm((f: any) => ({ ...f, nome: e.target.value }))} />
                 </div>
                 <div className="ins-field">
-                  <label>Marca</label>
+                  <label>Marca <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
                   {marcas.length === 0 && !showNovaMarca ? (
                     <button onClick={() => setShowNovaMarca(true)}
                       style={{padding:"0.65rem 0.9rem",border:"1.5px dashed #e5e7eb",borderRadius:"10px",background:"white",fontFamily:"Inter,sans-serif",fontSize:"0.85rem",color:"#9ca3af",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:"6px"}}>
@@ -663,7 +663,7 @@ export default function Insumos() {
                   )}
                 </div>
                 <div className="ins-field">
-                  <label>Subcategoria</label>
+                  <label>Subcategoria <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
                   <select value={form.subcategoria || ""} onChange={e => { if (e.target.value === "__nova_sub__") setForm((f: any) => ({...f, _showNovaSubcat: true})); else setForm((f: any) => ({...f, subcategoria: e.target.value, _showNovaSubcat: false})); }}>
                     <option value="">Selecione a subcategoria</option>
                     {(form._subcats || []).map((s: string) => <option key={s} value={s}>{s}</option>)}
@@ -710,12 +710,28 @@ export default function Insumos() {
                   </div>
                 )}
               </div>
-              <div className="ins-field">
-                <label>Estoque mínimo <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
-                <input type="number" placeholder="Ex: 2" min="0" value={form.estoque_minimo} onChange={e => setForm((f: any) => ({...f,estoque_minimo:e.target.value}))} />
-                <span className="ins-field-hint">Quantidade mínima para alerta de estoque</span>
+
+              {/* Toggle aviso de estoque mínimo */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.75rem 1rem",background:"#f9fafb",borderRadius:"12px",border:"1px solid #f3f4f6"}}>
+                <div>
+                  <p style={{margin:0,fontSize:"0.88rem",fontWeight:600,color:"#1f2937"}}>Aviso de estoque mínimo</p>
+                  <p style={{margin:0,fontSize:"0.72rem",color:"#9ca3af"}}>Alerta quando o estoque estiver baixo</p>
+                </div>
+                <button onClick={() => setForm((f: any) => ({...f, _avisoEstoque: !f._avisoEstoque}))}
+                  style={{width:"44px",height:"24px",borderRadius:"99px",border:"none",cursor:"pointer",background:form._avisoEstoque?"#FF4FA3":"#d1d5db",position:"relative",transition:"background 0.2s",flexShrink:0}}>
+                  <div style={{width:"18px",height:"18px",borderRadius:"50%",background:"white",position:"absolute",top:"3px",transition:"left 0.2s",left:form._avisoEstoque?"23px":"3px",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}} />
+                </button>
               </div>
+
+              {form._avisoEstoque && (
+                <div className="ins-field">
+                  <label>Estoque mínimo para avisos <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
+                  <input type="number" placeholder="Ex: 2" min="0" value={form.estoque_minimo} onChange={e => setForm((f: any) => ({...f,estoque_minimo:e.target.value}))} />
+                  <span className="ins-field-hint">Quantidade mínima para alerta de estoque</span>
+                </div>
+              )}
             </div>
+
             <div style={{display:"flex",flexDirection:"column",gap:"1rem"}}>
               <div className="ins-field">
                 <label>Quantidade por embalagem <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
@@ -741,23 +757,16 @@ export default function Insumos() {
                 <input type="number" placeholder="0,00" min="0" step="0.01" value={form.valor_compra} onChange={e => setForm((f: any) => ({...f,valor_compra:e.target.value}))} />
               </div>
               <div className="ins-field">
-                <label>Qtd por embalagem</label>
-                <div className="ins-input-unit">
-                  <input type="number" placeholder="1" min="1" value={form.qtd_embalagem} onChange={e => setForm((f: any) => ({...f,qtd_embalagem:e.target.value}))} />
-                  <span>{form.unidade}</span>
-                </div>
+                <label>Fornecedor <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
+                <input placeholder="Ex: Nestlé, Arosa..." style={{maxWidth:"320px"}} value={form.fornecedor} onChange={e => setForm((f: any) => ({...f,fornecedor:e.target.value}))} />
               </div>
             </div>
             {parseFloat(form.valor_compra) > 0 && parseFloat(form.qtd_embalagem) > 0 && (
               <div className="ins-custo-calc">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF4FA3" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span>Custo por {form.unidade}: <strong style={{color:"#FF4FA3"}}>{formatCurrency(parseFloat(calcCustoUnitario(form.valor_compra, form.qtd_embalagem)))}</strong></span>
+                <span>Custo por {form.unidade || "unidade"}: <strong style={{color:"#FF4FA3"}}>{formatCurrency(parseFloat(calcCustoUnitario(form.valor_compra, form.qtd_embalagem)))}</strong></span>
               </div>
             )}
-            <div className="ins-field">
-              <label>Fornecedor</label>
-              <input placeholder="Ex: Nestlé, Arosa..." value={form.fornecedor} onChange={e => setForm((f: any) => ({...f,fornecedor:e.target.value}))} />
-            </div>
           </div>
         </div>
       </div>
@@ -765,81 +774,70 @@ export default function Insumos() {
       {/* 4. Validade */}
         <div className="ins-card">
           <p className="ins-section-label">4. Validade</p>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"1.5rem",alignItems:"start"}}>
 
-            {/* Esquerda: Com/Sem validade + validade exata */}
-            <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
-              <p style={{fontSize:"0.82rem",fontWeight:600,color:"#374151",margin:0}}>Validade do insumo</p>
-              <div style={{display:"flex",flexDirection:"column",gap:"0.6rem"}}>
-                <label style={{display:"flex",alignItems:"flex-start",gap:"0.75rem",padding:"0.85rem 1rem",border:"2px solid",borderColor:temValidade?"#FF4FA3":"#e5e7eb",borderRadius:"12px",cursor:"pointer",background:temValidade?"#fdf2f8":"white",transition:"all 0.15s"}}>
-                  <div style={{width:"18px",height:"18px",borderRadius:"50%",border:"2px solid",borderColor:temValidade?"#FF4FA3":"#d1d5db",background:temValidade?"#FF4FA3":"white",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"1px"}}>
-                    {temValidade && <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"white"}} />}
-                  </div>
-                  <div>
-                    <input type="radio" name="validade" checked={temValidade} onChange={() => setTemValidade(true)} style={{display:"none"}} />
-                    <p style={{margin:0,fontSize:"0.88rem",fontWeight:700,color:temValidade?"#FF4FA3":"#1f2937"}}>Com validade</p>
-                    <p style={{margin:0,fontSize:"0.75rem",color:"#9ca3af"}}>Este insumo possui data de validade</p>
-                  </div>
-                </label>
-                <label style={{display:"flex",alignItems:"flex-start",gap:"0.75rem",padding:"0.85rem 1rem",border:"2px solid",borderColor:!temValidade?"#FF4FA3":"#e5e7eb",borderRadius:"12px",cursor:"pointer",background:!temValidade?"#fdf2f8":"white",transition:"all 0.15s"}}>
-                  <div style={{width:"18px",height:"18px",borderRadius:"50%",border:"2px solid",borderColor:!temValidade?"#FF4FA3":"#d1d5db",background:!temValidade?"#FF4FA3":"white",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"1px"}}>
-                    {!temValidade && <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"white"}} />}
-                  </div>
-                  <div>
-                    <input type="radio" name="validade" checked={!temValidade} onChange={() => setTemValidade(false)} style={{display:"none"}} />
-                    <p style={{margin:0,fontSize:"0.88rem",fontWeight:700,color:!temValidade?"#FF4FA3":"#1f2937"}}>Sem validade</p>
-                    <p style={{margin:0,fontSize:"0.75rem",color:"#9ca3af"}}>Este insumo não possui data de validade</p>
-                  </div>
-                </label>
+          {/* Grid 2x2: Com/Sem validade | Validade exata / Validade média | aviso */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.85rem",marginBottom:"0.85rem"}}>
+
+            {/* Com validade */}
+            <label style={{display:"flex",alignItems:"flex-start",gap:"0.75rem",padding:"0.85rem 1rem",border:"2px solid",borderColor:temValidade?"#FF4FA3":"#e5e7eb",borderRadius:"12px",cursor:"pointer",background:temValidade?"#fdf2f8":"white",transition:"all 0.15s"}}>
+              <div style={{width:"18px",height:"18px",borderRadius:"50%",border:"2px solid",borderColor:temValidade?"#FF4FA3":"#d1d5db",background:temValidade?"#FF4FA3":"white",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"2px"}}>
+                {temValidade && <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"white"}} />}
               </div>
+              <div>
+                <input type="radio" checked={temValidade} onChange={() => setTemValidade(true)} style={{display:"none"}} />
+                <p style={{margin:0,fontSize:"0.88rem",fontWeight:700,color:temValidade?"#FF4FA3":"#1f2937"}}>Com validade</p>
+                <p style={{margin:0,fontSize:"0.75rem",color:"#9ca3af"}}>Este insumo possui data de validade</p>
+              </div>
+            </label>
 
-              {/* Validade exata — aparece quando tem validade */}
-              {temValidade && (
-                <div className="ins-field" style={{marginTop:"0.25rem"}}>
-                  <label>Validade exata <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
-                  <input
-                    type="date"
-                    value={form.validade_exata || ""}
-                    onChange={e => setForm((f: any) => ({...f, validade_exata: e.target.value}))}
-                    style={{colorScheme:"light"}}
-                  />
-                  <span className="ins-field-hint">Data de validade impressa na embalagem</span>
-                </div>
-              )}
-            </div>
+            {/* Sem validade */}
+            <label style={{display:"flex",alignItems:"flex-start",gap:"0.75rem",padding:"0.85rem 1rem",border:"2px solid",borderColor:!temValidade?"#FF4FA3":"#e5e7eb",borderRadius:"12px",cursor:"pointer",background:!temValidade?"#fdf2f8":"white",transition:"all 0.15s"}}>
+              <div style={{width:"18px",height:"18px",borderRadius:"50%",border:"2px solid",borderColor:!temValidade?"#FF4FA3":"#d1d5db",background:!temValidade?"#FF4FA3":"white",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"2px"}}>
+                {!temValidade && <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"white"}} />}
+              </div>
+              <div>
+                <input type="radio" checked={!temValidade} onChange={() => setTemValidade(false)} style={{display:"none"}} />
+                <p style={{margin:0,fontSize:"0.88rem",fontWeight:700,color:!temValidade?"#FF4FA3":"#1f2937"}}>Sem validade</p>
+                <p style={{margin:0,fontSize:"0.75rem",color:"#9ca3af"}}>Este insumo não possui data de validade</p>
+              </div>
+            </label>
 
-            {/* Direita: validade média + aviso */}
-            <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
-              {temValidade ? (
-                <>
-                  <div className="ins-field">
-                    <label>Validade média (dias) <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
-                    <input
-                      type="number"
-                      placeholder="Ex: 180"
-                      min="1"
-                      value={validadeMedia}
-                      onChange={e => setValidadeMedia(e.target.value)}
-                    />
-                    <span className="ins-field-hint">Tempo médio de validade após a compra</span>
-                  </div>
-                  <div style={{background:"#fdf2f8",border:"1px solid #fce7f3",borderRadius:"12px",padding:"0.85rem 1rem",display:"flex",gap:"0.75rem",alignItems:"flex-start"}}>
-                    <div style={{width:"20px",height:"20px",borderRadius:"50%",background:"#FF4FA3",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"1px"}}>
-                      <span style={{color:"white",fontSize:"0.7rem",fontWeight:800}}>i</span>
-                    </div>
-                    <div>
-                      <p style={{margin:"0 0 2px",fontSize:"0.82rem",fontWeight:700,color:"#FF4FA3"}}>Será usado para alertas</p>
-                      <p style={{margin:0,fontSize:"0.75rem",color:"#9ca3af"}}>Enviaremos um alerta quando o insumo estiver próximo do vencimento.</p>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div style={{background:"#f9fafb",border:"1px solid #f3f4f6",borderRadius:"12px",padding:"0.85rem 1rem",marginTop:"2.25rem"}}>
-                  <p style={{margin:0,fontSize:"0.82rem",color:"#9ca3af"}}>Sem alertas de vencimento para este insumo.</p>
-                </div>
-              )}
-            </div>
+            {/* Validade exata */}
+            {temValidade && (
+              <div className="ins-field" style={{margin:0}}>
+                <label>Validade exata <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
+                <input type="date" value={form.validade_exata || ""} onChange={e => setForm((f: any) => ({...f, validade_exata: e.target.value}))} style={{colorScheme:"light"}} />
+                <span className="ins-field-hint">Data de validade impressa na embalagem</span>
+              </div>
+            )}
+
+            {/* Validade média */}
+            {temValidade && (
+              <div className="ins-field" style={{margin:0}}>
+                <label>Validade média (dias) <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
+                <input type="number" placeholder="Ex: 180" min="1" value={validadeMedia} onChange={e => setValidadeMedia(e.target.value)} />
+                <span className="ins-field-hint">Tempo médio de validade após a compra</span>
+              </div>
+            )}
           </div>
+
+          {/* Aviso rosa abaixo dos campos */}
+          {temValidade && (
+            <div style={{background:"#fdf2f8",border:"1px solid #fce7f3",borderRadius:"12px",padding:"0.85rem 1rem",display:"flex",gap:"0.75rem",alignItems:"flex-start"}}>
+              <div style={{width:"20px",height:"20px",borderRadius:"50%",background:"#FF4FA3",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"1px"}}>
+                <span style={{color:"white",fontSize:"0.7rem",fontWeight:800}}>i</span>
+              </div>
+              <div>
+                <p style={{margin:"0 0 2px",fontSize:"0.82rem",fontWeight:700,color:"#FF4FA3"}}>Será usado para alertas</p>
+                <p style={{margin:0,fontSize:"0.75rem",color:"#9ca3af"}}>Enviaremos um alerta quando o insumo estiver próximo do vencimento.</p>
+              </div>
+            </div>
+          )}
+          {!temValidade && (
+            <div style={{background:"#f9fafb",border:"1px solid #f3f4f6",borderRadius:"12px",padding:"0.85rem 1rem"}}>
+              <p style={{margin:0,fontSize:"0.82rem",color:"#9ca3af"}}>Sem alertas de vencimento para este insumo.</p>
+            </div>
+          )}
         </div>
 
       {/* Footer */}
