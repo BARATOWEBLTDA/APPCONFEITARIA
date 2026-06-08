@@ -63,6 +63,7 @@ export default function Insumos() {
   const [showNovaUnidade, setShowNovaUnidade] = useState(false);
   const [ultimoCadastrado, setUltimoCadastrado] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [previewInsumo, setPreviewInsumo] = useState<Insumo | null>(null);
   const [insumoDetalhe, setInsumoDetalhe] = useState<Insumo | null>(null);
   const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([]);
   const [showMovModal, setShowMovModal] = useState(false);
@@ -396,6 +397,9 @@ export default function Insumos() {
                         <button className="ins-act-btn ins-act-edit" onClick={() => openEditar(insumo)}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
+                        <button className="ins-act-btn ins-act-view" onClick={() => setPreviewInsumo(insumo)}>
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
                         <button className="ins-act-btn ins-act-del" onClick={() => setDeleteId(insumo.id)}>
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                         </button>
@@ -447,6 +451,110 @@ export default function Insumos() {
           </div>
         </div>
       )}
+
+      {previewInsumo && (() => {
+        const st = estoqueStatus(previewInsumo);
+        const statusLabel = st === "ok" ? "Em estoque" : st === "baixo" ? "Estoque baixo" : "Sem estoque";
+        const statusIcon = st === "ok" ? "✅" : st === "baixo" ? "⚠️" : "❌";
+        const statusColor = st === "ok" ? "#16a34a" : st === "baixo" ? "#ca8a04" : "#ef4444";
+        const statusBg = st === "ok" ? "#f0fdf4" : st === "baixo" ? "#fefce8" : "#fff1f2";
+        const statusBorder = st === "ok" ? "#bbf7d0" : st === "baixo" ? "#fde68a" : "#fecdd3";
+        const p = previewInsumo as any;
+        return (
+          <div className="ins-overlay" onClick={() => setPreviewInsumo(null)}>
+            <div className="ins-peek-modal" onClick={e => e.stopPropagation()}>
+
+              {/* Topo: label + fechar */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1.25rem"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
+                  <div style={{width:"24px",height:"24px",borderRadius:"6px",background:"#fdf2f8",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FF4FA3" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </div>
+                  <span style={{fontSize:"0.72rem",fontWeight:800,color:"#FF4FA3",textTransform:"uppercase",letterSpacing:"0.08em"}}>Ficha do ingrediente</span>
+                </div>
+                <button
+                  onClick={() => setPreviewInsumo(null)}
+                  style={{width:"28px",height:"28px",border:"none",background:"#f3f4f6",borderRadius:"50%",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#9ca3af",fontSize:"0.75rem",fontWeight:700,transition:"background 0.15s"}}
+                  onMouseOver={e => (e.currentTarget.style.background="#e5e7eb")}
+                  onMouseOut={e => (e.currentTarget.style.background="#f3f4f6")}
+                >✕</button>
+              </div>
+
+              {/* Foto + identidade */}
+              <div style={{display:"flex",alignItems:"center",gap:"1rem",marginBottom:"1.25rem"}}>
+                <div style={{width:"72px",height:"72px",borderRadius:"14px",overflow:"hidden",background:"#f9fafb",border:"1.5px solid #f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
+                  {previewInsumo.imagem_url
+                    ? <img src={previewInsumo.imagem_url} alt={previewInsumo.nome} style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                    : <span style={{fontSize:"1.8rem"}}>🧂</span>
+                  }
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <p style={{margin:"0 0 2px",fontSize:"1rem",fontWeight:800,color:"#111827",lineHeight:1.2,wordBreak:"break-word"}}>{previewInsumo.nome}</p>
+                  {p.marca && <p style={{margin:"0 0 6px",fontSize:"0.75rem",color:"#9ca3af",fontWeight:500}}>{p.marca}</p>}
+                  <span style={{display:"inline-flex",alignItems:"center",gap:"4px",padding:"3px 10px",borderRadius:"20px",fontSize:"0.7rem",fontWeight:700,background:statusBg,color:statusColor,border:`1px solid ${statusBorder}`}}>
+                    {statusIcon} {statusLabel}
+                  </span>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div style={{height:"1px",background:"#f3f4f6",margin:"0 0 1rem"}} />
+
+              {/* Grupo: Estoque */}
+              <div style={{background:"#f9fafb",borderRadius:"12px",padding:"0.75rem 1rem",marginBottom:"0.85rem",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem"}}>
+                <div>
+                  <p style={{margin:"0 0 2px",fontSize:"0.68rem",color:"#9ca3af",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>Estoque atual</p>
+                  <p style={{margin:0,fontSize:"1.1rem",fontWeight:800,color:statusColor}}>{previewInsumo.quantidade_estoque} <span style={{fontSize:"0.75rem",fontWeight:500,color:"#6b7280"}}>{previewInsumo.unidade}</span></p>
+                </div>
+                {previewInsumo.estoque_minimo > 0 && (
+                  <div>
+                    <p style={{margin:"0 0 2px",fontSize:"0.68rem",color:"#9ca3af",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>Mínimo</p>
+                    <p style={{margin:0,fontSize:"1.1rem",fontWeight:800,color:"#374151"}}>{previewInsumo.estoque_minimo} <span style={{fontSize:"0.75rem",fontWeight:500,color:"#6b7280"}}>{previewInsumo.unidade}</span></p>
+                  </div>
+                )}
+              </div>
+
+              {/* Campos em linha */}
+              <div style={{display:"flex",flexDirection:"column",gap:0}}>
+                {[
+                  { label: "Categoria", value: previewInsumo.categoria, icon: "🏷️" },
+                  { label: "Unidade de medida", value: previewInsumo.unidade, icon: "📐" },
+                  { label: "Valor de compra", value: formatCurrency(previewInsumo.valor_compra), icon: "💰" },
+                  previewInsumo.qtd_embalagem > 1 ? { label: "Qtd por embalagem", value: `${previewInsumo.qtd_embalagem} ${previewInsumo.unidade}`, icon: "📦" } : null,
+                  previewInsumo.custo_unitario > 0 ? { label: `Custo por ${previewInsumo.unidade}`, value: formatCurrency(previewInsumo.custo_unitario), icon: "🧮", highlight: true } : null,
+                  p.fornecedor ? { label: "Fornecedor", value: p.fornecedor, icon: "🏪" } : null,
+                  p.subcategoria ? { label: "Subcategoria", value: p.subcategoria, icon: "📂" } : null,
+                ].filter(Boolean).map((item: any, i: number, arr: any[]) => (
+                  <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.5rem 0",borderBottom: i < arr.length - 1 ? "1px solid #f3f4f6" : "none"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
+                      <span style={{fontSize:"0.85rem",lineHeight:1}}>{item.icon}</span>
+                      <span style={{fontSize:"0.78rem",color:"#6b7280",fontWeight:500}}>{item.label}</span>
+                    </div>
+                    <span style={{fontSize:"0.82rem",fontWeight:700,color:item.highlight?"#FF4FA3":"#1f2937",textAlign:"right",maxWidth:"55%"}}>{item.value}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Descrição se existir */}
+              {p.descricao && (
+                <div style={{marginTop:"0.85rem",background:"#f9fafb",borderRadius:"10px",padding:"0.7rem 0.9rem"}}>
+                  <p style={{margin:"0 0 4px",fontSize:"0.68rem",color:"#9ca3af",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em"}}>Descrição</p>
+                  <p style={{margin:0,fontSize:"0.82rem",color:"#374151",lineHeight:1.5}}>{p.descricao}</p>
+                </div>
+              )}
+
+              {/* Botão fechar */}
+              <button
+                onClick={() => setPreviewInsumo(null)}
+                style={{marginTop:"1.25rem",width:"100%",padding:"0.75rem",background:"#f3f4f6",color:"#374151",border:"none",borderRadius:"12px",fontFamily:"Inter,sans-serif",fontSize:"0.88rem",fontWeight:700,cursor:"pointer",transition:"background 0.15s"}}
+                onMouseOver={e => (e.currentTarget.style.background="#e5e7eb")}
+                onMouseOut={e => (e.currentTarget.style.background="#f3f4f6")}
+              >Fechar</button>
+
+            </div>
+          </div>
+        );
+      })()}
       <Styles />
     </div>
   );
@@ -1112,8 +1220,11 @@ function Styles() {
       .ins-act-btn { width:30px; height:30px; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
       .ins-act-edit { background:#fdf2f8; color:#FF4FA3; }
       .ins-act-edit:hover { background:#FF4FA3; color:white; }
+      .ins-act-view { background:#f0fdf4; color:#16a34a; }
+      .ins-act-view:hover { background:#16a34a; color:white; }
       .ins-act-del { background:#fff1f2; color:#ef4444; }
       .ins-act-del:hover { background:#ef4444; color:white; }
+      .ins-peek-modal { background:white; border-radius:20px; padding:1.5rem; width:100%; max-width:380px; box-shadow:0 24px 64px rgba(0,0,0,0.18); animation:peekIn 0.22s cubic-bezier(0.16,1,0.3,1); max-height:90vh; overflow-y:auto; } @keyframes peekIn { from { opacity:0; transform:scale(0.94) translateY(12px); } to { opacity:1; transform:scale(1) translateY(0); } }
 
       /* Paginação */
       .ins-pagination { display:flex; align-items:center; justify-content:space-between; padding:0.85rem 1.25rem; border-top:1px solid #f3f4f6; }
