@@ -288,7 +288,7 @@ const load = async () => {
         </div>
 
         {/* 3 Cards métricas */}
-        <div className="dash-metrics" style={{gridTemplateColumns:"repeat(3,1fr)"}}>
+        <div className="dash-metrics">
           {/* Pedidos */}
           <div className="dash-metric-card" onClick={() => navigate("/pedidos")} style={{background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)",overflow:"hidden",position:"relative"}}>
             <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
@@ -330,68 +330,6 @@ const load = async () => {
               <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Clientes</p>
             </div>
           </div>
-
-          {/* Calendário — 4ª coluna do dash-metrics */}
-          <div className="dash-card" style={{padding:"1rem",gridRow:"1 / 3"}}>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.75rem"}}>
-              <h3 className="dash-card-title">Agenda</h3>
-              <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
-                <button onClick={() => setCalMes(new Date(calMes.getFullYear(), calMes.getMonth()-1,1))} className="cal-nav-btn">‹</button>
-                <span style={{fontSize:"0.82rem",fontWeight:600,color:"#374151",minWidth:"90px",textAlign:"center"}}>
-                  {calMes.toLocaleDateString("pt-BR",{month:"long",year:"numeric"})}
-                </span>
-                <button onClick={() => setCalMes(new Date(calMes.getFullYear(), calMes.getMonth()+1,1))} className="cal-nav-btn">›</button>
-              </div>
-            </div>
-            <div className="cal-grid-header">
-              {["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(d => (
-                <div key={d} className="cal-dow">{d}</div>
-              ))}
-            </div>
-            <div className="cal-grid">{calCells()}</div>
-            {calDiaSelecionado && (
-              <div style={{marginTop:"0.75rem",borderTop:"1px solid #f3f4f6",paddingTop:"0.75rem"}}>
-                <div style={{display:"flex",gap:"0.25rem",flexWrap:"wrap",marginBottom:"0.5rem"}}>
-                  {["todos","pendente","em_producao","finalizado","cancelado"].map(f => (
-                    <button key={f} onClick={() => setPedidosFiltro(f)}
-                      style={{padding:"3px 10px",borderRadius:"6px",border:"1.5px solid",fontSize:"0.68rem",fontWeight:600,cursor:"pointer",fontFamily:"Inter,sans-serif",
-                        borderColor: pedidosFiltro===f ? "#FF4FA3" : "#e5e7eb",
-                        background: pedidosFiltro===f ? "#FF4FA3" : "white",
-                        color: pedidosFiltro===f ? "white" : "#9ca3af"
-                      }}>
-                      {f==="todos"?"Todos":f==="pendente"?"Pendente":f==="em_producao"?"Produção":f==="finalizado"?"Feito":"Cancelado"}
-                    </button>
-                  ))}
-                </div>
-                {loadingPedidos ? (
-                  <p style={{fontSize:"0.8rem",color:"#9ca3af",textAlign:"center",padding:"0.5rem"}}>Carregando...</p>
-                ) : pedidosDia.filter(p => pedidosFiltro==="todos" || p.status===pedidosFiltro).length === 0 ? (
-                  <p style={{fontSize:"0.78rem",color:"#9ca3af",textAlign:"center",padding:"0.75rem 0"}}>Nenhum pedido neste dia</p>
-                ) : (
-                  <div style={{display:"flex",flexDirection:"column",gap:"0.4rem",maxHeight:"180px",overflowY:"auto"}}>
-                    {pedidosDia.filter(p => pedidosFiltro==="todos" || p.status===pedidosFiltro).map(p => (
-                      <div key={p.id} style={{background:"#f9fafb",borderRadius:"10px",padding:"0.6rem 0.75rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                        <div>
-                          <p style={{fontSize:"0.82rem",fontWeight:600,color:"#1f2937",margin:0}}>{p.cliente_nome || "Cliente"}</p>
-                          <p style={{fontSize:"0.72rem",color:"#9ca3af",margin:0}}>{p.descricao || "Pedido"}</p>
-                        </div>
-                        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"3px"}}>
-                          <span style={{fontSize:"0.78rem",fontWeight:700,color:"#16a34a"}}>R$ {(p.valor||0).toFixed(2)}</span>
-                          <span style={{fontSize:"0.62rem",fontWeight:700,padding:"2px 6px",borderRadius:"6px",
-                            background: p.status==="finalizado"?"#dcfce7":p.status==="em_producao"?"#fef9c3":p.status==="cancelado"?"#fee2e2":"#fdf2f8",
-                            color: p.status==="finalizado"?"#16a34a":p.status==="em_producao"?"#ca8a04":p.status==="cancelado"?"#ef4444":"#FF4FA3"
-                          }}>
-                            {p.status==="finalizado"?"✓ Feito":p.status==="em_producao"?"⚙ Prod.":p.status==="cancelado"?"✕ Cancel.":"● Pend."}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
         </div>
 
         {/* Seções abaixo dos cards — 3 colunas */}
@@ -709,7 +647,7 @@ const load = async () => {
         .dash-greeting { margin-bottom: 1.5rem; }
         .dash-title { font-size: 1.5rem; font-weight: 800; color: #1f2937; margin: 0 0 0.25rem; }
         .dash-subtitle { font-size: 0.85rem; color: #9ca3af; margin: 0; }
-        .dash-metrics { display: grid; grid-template-columns: repeat(3, 1fr) 380px; gap: 1rem; margin-bottom: 1rem; align-items: stretch; }
+        .dash-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
         .dash-sections { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
         .dash-metric-empty { font-size: 0.82rem; font-weight: 600; margin: 0; line-height: 1.3; }
         .dash-metric-card { background: white; border-radius: 16px; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 4px 16px rgba(0,0,0,0.1); cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; }
