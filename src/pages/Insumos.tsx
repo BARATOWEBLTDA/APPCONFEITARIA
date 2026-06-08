@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { usePlano } from "@/hooks/usePlano";
 
 interface Insumo {
   id: string;
@@ -43,6 +44,7 @@ type Step = "lista" | "dados" | "imagem" | "buscar" | "selecionar" | "revisar" |
 type Ordenacao = "nome" | "estoque" | "valor";
 
 export default function Insumos() {
+  const { isPro } = usePlano();
   const [userId, setUserId] = useState<string | null>(null);
   const [insumos, setInsumos] = useState<Insumo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -541,30 +543,82 @@ export default function Insumos() {
 
       <div style={{display:"flex",flexDirection:"column",gap:"1rem"}}>
 
-        {/* 1. Informações básicas + Imagem lado a lado */}
-        <div className="ins-card">
-          <p className="ins-section-label">1. Informações básicas</p>
+        {/* 1. Informações básicas + Imagem */}
+        <div className="ins-card" style={{padding:0,overflow:"hidden"}}>
           <div className="ins-basicas-grid">
 
-            {/* Campos esquerda */}
-            <div className="ins-form">
+            {/* Imagem — esquerda, altura total */}
+            <div className="ins-imagem-inline">
+              <div className="ins-imagem-preview" style={{flex:1,borderRadius:0,border:"none",borderRight:"1px solid #f3f4f6",minHeight:"320px"}}>
+                {imagemSelecionada
+                  ? <img src={imagemSelecionada} alt="imagem" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                  : <div className="ins-imagem-empty">
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      <p style={{fontSize:"0.85rem",fontWeight:600,color:"#9ca3af",margin:0}}>Sem imagem</p>
+                    </div>
+                }
+              </div>
+              <div style={{padding:"0.85rem",display:"flex",flexDirection:"column",gap:"0.5rem",borderRight:"1px solid #f3f4f6"}}>
+                {isPro ? (
+                  <button className="ins-btn-buscar" style={{justifyContent:"center"}} onClick={() => { setTermoBuscaImg(form.nome); buscarImagens(); setStep("buscar"); }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Buscar imagem do produto
+                  </button>
+                ) : (
+                  <div style={{background:"#fdf2f8",border:"1px solid #fce7f3",borderRadius:"10px",padding:"0.6rem 0.75rem",textAlign:"center"}}>
+                    <p style={{fontSize:"0.72rem",color:"#FF4FA3",fontWeight:600,margin:0}}>✨ Recurso PRO</p>
+                    <p style={{fontSize:"0.68rem",color:"#9ca3af",margin:"2px 0 0"}}>Busca automática de imagens</p>
+                  </div>
+                )}
+                <button className="ins-btn-upload" onClick={() => document.getElementById("ins-file-input-desk")?.click()}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Upload manual
+                </button>
+                {imagemSelecionada && (
+                  <button onClick={() => setImagemSelecionada(null)} style={{background:"none",border:"none",color:"#ef4444",fontSize:"0.72rem",cursor:"pointer",fontFamily:"Inter,sans-serif",textAlign:"center"}}>
+                    Remover imagem
+                  </button>
+                )}
+                <input id="ins-file-input-desk" type="file" accept="image/*" style={{display:"none"}} onChange={async e => {
+                  const file = e.target.files?.[0];
+                  if (!file || !userId) return;
+                  const ext = file.name.split(".").pop() || "jpg";
+                  const path = `insumos/${userId}/${Date.now()}.${ext}`;
+                  const { error } = await supabase.storage.from("profiles").upload(path, file, {upsert:true});
+                  if (!error) {
+                    const { data } = supabase.storage.from("profiles").getPublicUrl(path);
+                    setImagemSelecionada(`${data.publicUrl}?t=${Date.now()}`);
+                  }
+                }} />
+              </div>
+            </div>
+
+            {/* Campos — direita */}
+            <div className="ins-form" style={{padding:"1.25rem"}}>
+              <p className="ins-section-label" style={{marginTop:0}}>1. Informações básicas</p>
               <div className="ins-field">
                 <label>Nome do ingrediente *</label>
                 <input placeholder="Ex: Leite Condensado Moça 395g" value={form.nome} onChange={e => setForm((f: any) => ({ ...f, nome: e.target.value }))} />
               </div>
-              <div className="ins-field">
-                <label>Categoria *</label>
-                <select value={form.categoria} onChange={e => { if (e.target.value === "__nova__") setShowNovaCategoria(true); else setForm((f: any) => ({ ...f, categoria: e.target.value })); }}>
-                  {categorias.map(c => <option key={c} value={c}>{c}</option>)}
-                  <option value="__nova__">+ Nova categoria</option>
-                </select>
-                {showNovaCategoria && (
-                  <div className="ins-nova-row">
-                    <input placeholder="Nome da categoria" value={novaCategoria} onChange={e => setNovaCategoria(e.target.value)} autoFocus />
-                    <button onClick={adicionarCategoria}>Adicionar</button>
-                    <button onClick={() => setShowNovaCategoria(false)} style={{background:"#f3f4f6",color:"#6b7280"}}>✕</button>
-                  </div>
-                )}
+              <div className="ins-row-2">
+                <div className="ins-field">
+                  <label>Categoria *</label>
+                  <select value={form.categoria} onChange={e => { if (e.target.value === "__nova__") setShowNovaCategoria(true); else setForm((f: any) => ({ ...f, categoria: e.target.value })); }}>
+                    {categorias.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="__nova__">+ Nova categoria</option>
+                  </select>
+                  {showNovaCategoria && (
+                    <div className="ins-nova-row">
+                      <input placeholder="Nome da categoria" value={novaCategoria} onChange={e => setNovaCategoria(e.target.value)} autoFocus />
+                      <button onClick={adicionarCategoria}>Adicionar</button>
+                      <button onClick={() => setShowNovaCategoria(false)} style={{background:"#f3f4f6",color:"#6b7280"}}>✕</button>
+                    </div>
+                  )}
+                </div>
+                <div className="ins-field">
+                  <label>Subcategoria</label>
+                  <input placeholder="Ex: Laticínios, Farinhas..." value={form.subcategoria || ""} onChange={e => setForm((f: any) => ({...f, subcategoria: e.target.value}))} />
+                </div>
               </div>
               <div className="ins-field">
                 <label>Unidade de medida *</label>
@@ -584,62 +638,12 @@ export default function Insumos() {
                   </div>
                 )}
               </div>
+              <div className="ins-field">
+                <label>Descrição <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
+                <textarea placeholder="Ex: Leite condensado tradicional, ideal para recheios e coberturas." value={form.descricao || ""} onChange={e => setForm((f: any) => ({...f, descricao: e.target.value}))} rows={3} style={{padding:"0.65rem 0.9rem",border:"1.5px solid #e5e7eb",borderRadius:"10px",fontFamily:"Inter,sans-serif",fontSize:"0.88rem",color:"#1f2937",outline:"none",resize:"vertical",width:"100%",boxSizing:"border-box"}} onFocus={e => e.target.style.borderColor="#FF4FA3"} onBlur={e => e.target.style.borderColor="#e5e7eb"} />
+              </div>
             </div>
 
-            {/* Imagem direita */}
-            <div className="ins-imagem-inline">
-              <div className="ins-imagem-preview" style={{marginBottom:"0.75rem",height:"160px"}}>
-                {imagemSelecionada
-                  ? <img src={imagemSelecionada} alt="imagem" />
-                  : <div className="ins-imagem-empty">
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                      <p style={{fontSize:"0.82rem"}}>Sem imagem</p>
-                    </div>
-                }
-              </div>
-              <div style={{display:"flex",gap:"6px",marginBottom:"0.5rem"}}>
-                <input className="ins-busca-input" style={{fontSize:"0.78rem",padding:"0.5rem 0.75rem"}}
-                  placeholder={form.nome || "Buscar imagem..."}
-                  value={termoBuscaImg}
-                  onChange={e => setTermoBuscaImg(e.target.value)}
-                  onKeyDown={e => e.key==="Enter" && buscarImagens()}
-                />
-                <button className="ins-btn-buscar-go" style={{width:"36px",height:"36px",borderRadius:"8px",flexShrink:0}}
-                  onClick={() => { setTermoBuscaImg(termoBuscaImg || form.nome); buscarImagens(); }}
-                  disabled={buscandoImagem} title="Buscar por IA">
-                  {buscandoImagem ? <span className="ins-spinner" style={{width:"14px",height:"14px"}} /> : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>}
-                </button>
-              </div>
-              {imagensBusca.length > 0 && (
-                <div className="ins-grid-imagens" style={{gridTemplateColumns:"repeat(4,1fr)",gap:"4px",marginBottom:"0.5rem"}}>
-                  {imagensBusca.slice(0,8).map((url, i) => (
-                    <div key={i} className={"ins-img-thumb"+(imagemSelecionada===url?" selected":"")} onClick={() => setImagemSelecionada(url)} style={{aspectRatio:"1"}}>
-                      <img src={url} alt="" onError={e => {(e.target as HTMLImageElement).style.display="none";}} />
-                    </div>
-                  ))}
-                </div>
-              )}
-              <button className="ins-btn-upload" style={{fontSize:"0.78rem",padding:"0.45rem 0.75rem"}} onClick={() => document.getElementById("ins-file-input-desk")?.click()}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Upload manual
-              </button>
-              <input id="ins-file-input-desk" type="file" accept="image/*" style={{display:"none"}} onChange={async e => {
-                const file = e.target.files?.[0];
-                if (!file || !userId) return;
-                const ext = file.name.split(".").pop() || "jpg";
-                const path = `insumos/${userId}/${Date.now()}.${ext}`;
-                const { error } = await supabase.storage.from("profiles").upload(path, file, {upsert:true});
-                if (!error) {
-                  const { data } = supabase.storage.from("profiles").getPublicUrl(path);
-                  setImagemSelecionada(`${data.publicUrl}?t=${Date.now()}`);
-                }
-              }} />
-              {imagemSelecionada && (
-                <button onClick={() => setImagemSelecionada(null)} style={{background:"none",border:"none",color:"#ef4444",fontSize:"0.72rem",cursor:"pointer",fontFamily:"Inter,sans-serif",marginTop:"4px"}}>
-                  Remover imagem
-                </button>
-              )}
-            </div>
           </div>
         </div>
 
@@ -943,7 +947,7 @@ function Styles() {
       /* Empty */
       .ins-empty { display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:3rem 1rem; text-align:center; background:white; border-radius:16px; box-shadow:0 2px 10px rgba(0,0,0,0.06); }
       /* Grid informações básicas + imagem */
-      .ins-basicas-grid { display:grid; grid-template-columns:1fr 260px; gap:1.25rem; align-items:start; }
+      .ins-basicas-grid { display:grid; grid-template-columns:220px 1fr; align-items:stretch; }
       .ins-imagem-inline { display:flex; flex-direction:column; }
       @media (max-width:768px) {
         .ins-basicas-grid { grid-template-columns:1fr; }
