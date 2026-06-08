@@ -657,7 +657,19 @@ export default function Insumos() {
                 </div>
                 <div className="ins-field">
                   <label>Subcategoria</label>
-                  <input placeholder="Ex: Laticínios, Farinhas..." value={form.subcategoria || ""} onChange={e => setForm((f: any) => ({...f, subcategoria: e.target.value}))} />
+                  <select value={form.subcategoria || ""} onChange={e => { if (e.target.value === "__nova_sub__") setForm((f: any) => ({...f, _showNovaSubcat: true})); else setForm((f: any) => ({...f, subcategoria: e.target.value, _showNovaSubcat: false})); }}>
+                    <option value="">Selecione a subcategoria</option>
+                    {(form._subcats || []).map((s: string) => <option key={s} value={s}>{s}</option>)}
+                    <option value="__nova_sub__">+ Cadastrar subcategoria</option>
+                  </select>
+                  {form._showNovaSubcat && (
+                    <div className="ins-nova-row" style={{marginTop:"6px"}}>
+                      <input placeholder="Ex: Laticínios, Farinhas..." autoFocus
+                        onKeyDown={e => { if (e.key==="Enter") { const v = (e.target as HTMLInputElement).value.trim(); if(v) setForm((f: any) => ({...f, subcategoria:v, _subcats:[...(f._subcats||[]),v], _showNovaSubcat:false})); }}}
+                        onBlur={e => { const v = e.target.value.trim(); if(v) setForm((f: any) => ({...f, subcategoria:v, _subcats:[...(f._subcats||[]),v], _showNovaSubcat:false})); else setForm((f: any) => ({...f, _showNovaSubcat:false})); }} />
+                      <button onClick={() => setForm((f: any) => ({...f, _showNovaSubcat:false}))}>✕</button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -689,24 +701,47 @@ export default function Insumos() {
           </div>
         </div>
 
-        {/* 2. Estoque */}
+        {/* 2. Unidade e quantidade */}
         <div className="ins-card">
-          <p className="ins-section-label">2. Estoque</p>
-          <div className="ins-form">
-            <div className="ins-row-2">
+          <p className="ins-section-label">2. Unidade e quantidade</p>
+          <div className="ins-row-2" style={{gap:"1.5rem"}}>
+            <div style={{display:"flex",flexDirection:"column",gap:"1rem"}}>
               <div className="ins-field">
-                <label>Qtd. em estoque</label>
-                <div className="ins-input-unit">
-                  <input type="number" placeholder="0" min="0" value={form.quantidade_estoque} onChange={e => setForm((f: any) => ({...f,quantidade_estoque:e.target.value}))} />
-                  <span>{form.unidade}</span>
-                </div>
+                <label>Unidade de medida *</label>
+                <select value={form.unidade} onChange={e => { if (e.target.value === "__nova__") setShowNovaUnidade(true); else setForm((f: any) => ({ ...f, unidade: e.target.value })); }}>
+                  <option value="">Selecione</option>
+                  {["peso","volume","unidade","embalagem"].map(tipo => (
+                    <optgroup key={tipo} label={tipo.charAt(0).toUpperCase()+tipo.slice(1)}>
+                      {unidades.filter(u => u.tipo === tipo).map(u => <option key={u.sigla} value={u.sigla}>{u.sigla} — {u.nome}</option>)}
+                    </optgroup>
+                  ))}
+                  <option value="__nova__">+ Nova unidade</option>
+                </select>
+                <span className="ins-field-hint">Ex: kg, g, ml, L, un, pacote</span>
+                {showNovaUnidade && (
+                  <div className="ins-nova-row">
+                    <input placeholder="Ex: dz (dúzia)" value={novaUnidade} onChange={e => setNovaUnidade(e.target.value)} autoFocus />
+                    <button onClick={() => { if (!novaUnidade.trim()) return; setUnidades(prev => [...prev, {sigla:novaUnidade.trim(),nome:novaUnidade.trim(),tipo:"unidade"}]); setForm((f: any) => ({...f,unidade:novaUnidade.trim()})); setNovaUnidade(""); setShowNovaUnidade(false); }}>Adicionar</button>
+                    <button onClick={() => setShowNovaUnidade(false)} style={{background:"#f3f4f6",color:"#6b7280"}}>✕</button>
+                  </div>
+                )}
               </div>
               <div className="ins-field">
-                <label>Estoque mínimo</label>
-                <div className="ins-input-unit">
-                  <input type="number" placeholder="0" min="0" value={form.estoque_minimo} onChange={e => setForm((f: any) => ({...f,estoque_minimo:e.target.value}))} />
-                  <span>{form.unidade}</span>
-                </div>
+                <label>Estoque mínimo *</label>
+                <input type="number" placeholder="Ex: 2" min="0" value={form.estoque_minimo} onChange={e => setForm((f: any) => ({...f,estoque_minimo:e.target.value}))} />
+                <span className="ins-field-hint">Quantidade mínima para alerta de estoque</span>
+              </div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:"1rem"}}>
+              <div className="ins-field">
+                <label>Quantidade por embalagem *</label>
+                <input type="number" placeholder="Ex: 395" min="1" value={form.qtd_embalagem} onChange={e => setForm((f: any) => ({...f,qtd_embalagem:e.target.value}))} />
+                <span className="ins-field-hint">Informe a quantidade que vem na embalagem</span>
+              </div>
+              <div className="ins-field">
+                <label>Estoque atual <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
+                <input type="number" placeholder="Ex: 0" min="0" value={form.quantidade_estoque} onChange={e => setForm((f: any) => ({...f,quantidade_estoque:e.target.value}))} />
+                <span className="ins-field-hint">Quantidade disponível no momento</span>
               </div>
             </div>
           </div>
@@ -1028,6 +1063,7 @@ function Styles() {
         .ins-basicas-grid { grid-template-columns:1fr; }
         .ins-imagem-inline { display:none; }
       }
+      .ins-field-hint { font-size:0.72rem; color:#9ca3af; margin:3px 0 0; }
       .ins-busca-modal { background:white; border-radius:20px; padding:1.5rem; width:100%; max-width:560px; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:qsmIn 0.25s cubic-bezier(0.16,1,0.3,1); }
       @keyframes qsmIn { from { opacity:0; transform:scale(0.95) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
       .ins-section-label { font-size:1rem; font-weight:800; color:#1f2937; letter-spacing:0.04em; margin:0 0 0.75rem; }
