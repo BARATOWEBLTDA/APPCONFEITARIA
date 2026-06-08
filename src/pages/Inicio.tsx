@@ -421,7 +421,7 @@ const load = async () => {
 
         {/* Checklist — abaixo das sections, largura completa */}
         {!loading && (progress < 100 ? (
-          <div className="dash-card" style={{marginBottom:"1rem"}}>
+          <div className="dash-card" style={{marginBottom:"1rem", maxWidth:"760px"}}>
             <div className="dash-card-header">
               <div style={{display:"flex",alignItems:"center",gap:"0.65rem"}}>
                 <img src="/configureapp.png" alt="" style={{width:"34px",height:"34px",objectFit:"contain"}} />
@@ -476,7 +476,7 @@ const load = async () => {
                 );
               })}
             </div>
-            <div className="complete-banner" style={{marginTop:"0.75rem"}}>🎁 Complete 100% e aproveite todos os recursos do Doonly!</div>
+            <div className="complete-banner" style={{marginTop:"0.75rem"}}>🎁 Complete 100% e ganhe 3 dias de PRO grátis!</div>
           </div>
         ) : !proResgatado ? (
           <div className="dash-card" style={{background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",border:"1px solid #bbf7d0",marginBottom:"1rem"}}>
@@ -737,7 +737,7 @@ const load = async () => {
         .step-status { font-size: 0.75rem; font-weight: 600; white-space: nowrap; }
         .step-status.done { color: #16a34a; }
         .step-status.pending { color: #f9007a; }
-        .complete-banner { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 0.9rem 1.1rem; font-size: 0.85rem; font-weight: 600; color: #92400e; }
+        .complete-banner { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 0.75rem 1rem; font-size: 0.83rem; font-weight: 600; color: #92400e; display: inline-block; }
       `}</style>
     </div>
   );
