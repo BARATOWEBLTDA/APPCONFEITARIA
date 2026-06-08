@@ -330,9 +330,71 @@ const load = async () => {
               <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Clientes</p>
             </div>
           </div>
+
+          {/* Calendário — 4ª coluna do dash-metrics */}
+          <div className="dash-card" style={{padding:"1rem",gridRow:"1 / 3"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.75rem"}}>
+              <h3 className="dash-card-title">Agenda</h3>
+              <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
+                <button onClick={() => setCalMes(new Date(calMes.getFullYear(), calMes.getMonth()-1,1))} className="cal-nav-btn">‹</button>
+                <span style={{fontSize:"0.82rem",fontWeight:600,color:"#374151",minWidth:"90px",textAlign:"center"}}>
+                  {calMes.toLocaleDateString("pt-BR",{month:"long",year:"numeric"})}
+                </span>
+                <button onClick={() => setCalMes(new Date(calMes.getFullYear(), calMes.getMonth()+1,1))} className="cal-nav-btn">›</button>
+              </div>
+            </div>
+            <div className="cal-grid-header">
+              {["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(d => (
+                <div key={d} className="cal-dow">{d}</div>
+              ))}
+            </div>
+            <div className="cal-grid">{calCells()}</div>
+            {calDiaSelecionado && (
+              <div style={{marginTop:"0.75rem",borderTop:"1px solid #f3f4f6",paddingTop:"0.75rem"}}>
+                <div style={{display:"flex",gap:"0.25rem",flexWrap:"wrap",marginBottom:"0.5rem"}}>
+                  {["todos","pendente","em_producao","finalizado","cancelado"].map(f => (
+                    <button key={f} onClick={() => setPedidosFiltro(f)}
+                      style={{padding:"3px 10px",borderRadius:"6px",border:"1.5px solid",fontSize:"0.68rem",fontWeight:600,cursor:"pointer",fontFamily:"Inter,sans-serif",
+                        borderColor: pedidosFiltro===f ? "#FF4FA3" : "#e5e7eb",
+                        background: pedidosFiltro===f ? "#FF4FA3" : "white",
+                        color: pedidosFiltro===f ? "white" : "#9ca3af"
+                      }}>
+                      {f==="todos"?"Todos":f==="pendente"?"Pendente":f==="em_producao"?"Produção":f==="finalizado"?"Feito":"Cancelado"}
+                    </button>
+                  ))}
+                </div>
+                {loadingPedidos ? (
+                  <p style={{fontSize:"0.8rem",color:"#9ca3af",textAlign:"center",padding:"0.5rem"}}>Carregando...</p>
+                ) : pedidosDia.filter(p => pedidosFiltro==="todos" || p.status===pedidosFiltro).length === 0 ? (
+                  <p style={{fontSize:"0.78rem",color:"#9ca3af",textAlign:"center",padding:"0.75rem 0"}}>Nenhum pedido neste dia</p>
+                ) : (
+                  <div style={{display:"flex",flexDirection:"column",gap:"0.4rem",maxHeight:"180px",overflowY:"auto"}}>
+                    {pedidosDia.filter(p => pedidosFiltro==="todos" || p.status===pedidosFiltro).map(p => (
+                      <div key={p.id} style={{background:"#f9fafb",borderRadius:"10px",padding:"0.6rem 0.75rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                        <div>
+                          <p style={{fontSize:"0.82rem",fontWeight:600,color:"#1f2937",margin:0}}>{p.cliente_nome || "Cliente"}</p>
+                          <p style={{fontSize:"0.72rem",color:"#9ca3af",margin:0}}>{p.descricao || "Pedido"}</p>
+                        </div>
+                        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"3px"}}>
+                          <span style={{fontSize:"0.78rem",fontWeight:700,color:"#16a34a"}}>R$ {(p.valor||0).toFixed(2)}</span>
+                          <span style={{fontSize:"0.62rem",fontWeight:700,padding:"2px 6px",borderRadius:"6px",
+                            background: p.status==="finalizado"?"#dcfce7":p.status==="em_producao"?"#fef9c3":p.status==="cancelado"?"#fee2e2":"#fdf2f8",
+                            color: p.status==="finalizado"?"#16a34a":p.status==="em_producao"?"#ca8a04":p.status==="cancelado"?"#ef4444":"#FF4FA3"
+                          }}>
+                            {p.status==="finalizado"?"✓ Feito":p.status==="em_producao"?"⚙ Prod.":p.status==="cancelado"?"✕ Cancel.":"● Pend."}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
         </div>
 
-        {/* Seções abaixo dos cards — mesma largura, 3 colunas */}
+        {/* Seções abaixo dos cards — 3 colunas */}
         <div className="dash-sections">
 
           {/* Últimos pedidos */}
@@ -425,160 +487,78 @@ const load = async () => {
 
         </div>
 
-        {/* Grid principal */}
-        <div className="dash-grid">
-
-          {/* Coluna esquerda — Checklist */}
-          <div className="dash-col-left">
-            {!loading && (progress < 100 ? (
-              <div className="dash-card">
-                <div className="dash-card-header">
-                  <div style={{display:"flex",alignItems:"center",gap:"0.65rem"}}>
-                    <img src="/configureapp.png" alt="" style={{width:"34px",height:"34px",objectFit:"contain"}} />
-                    <div>
-                      <h3 className="dash-card-title">Configure seu Doonly</h3>
-                      <p className="dash-card-sub">{`${remaining} etapa${remaining !== 1 ? "s" : ""} restante${remaining !== 1 ? "s" : ""}`}</p>
-                    </div>
-                  </div>
-                  <span className="dash-progress-pct">{progress}%</span>
+        {/* Checklist — abaixo das sections, largura completa */}
+        {!loading && (progress < 100 ? (
+          <div className="dash-card" style={{marginBottom:"1rem"}}>
+            <div className="dash-card-header">
+              <div style={{display:"flex",alignItems:"center",gap:"0.65rem"}}>
+                <img src="/configureapp.png" alt="" style={{width:"34px",height:"34px",objectFit:"contain"}} />
+                <div>
+                  <h3 className="dash-card-title">Configure seu Doonly</h3>
+                  <p className="dash-card-sub">{`${remaining} etapa${remaining !== 1 ? "s" : ""} restante${remaining !== 1 ? "s" : ""}`}</p>
                 </div>
-                <div className="dash-progress-bar">
-                  <div className="dash-progress-fill" style={{width:`${progress}%`}} />
+              </div>
+              <span className="dash-progress-pct">{progress}%</span>
+            </div>
+            <div className="dash-progress-bar">
+              <div className="dash-progress-fill" style={{width:`${progress}%`}} />
+            </div>
+            {nextStep && (
+              <div className="dash-next-step">
+                <div>
+                  <p style={{fontSize:"0.7rem",color:"#9ca3af",margin:0}}>Próximo passo</p>
+                  <p style={{fontSize:"0.85rem",fontWeight:600,color:"#1f2937",margin:0}}>{nextStep.label}</p>
                 </div>
-                {nextStep && (
-                  <div className="dash-next-step">
-                    <div>
-                      <p style={{fontSize:"0.7rem",color:"#9ca3af",margin:0}}>Próximo passo</p>
-                      <p style={{fontSize:"0.85rem",fontWeight:600,color:"#1f2937",margin:0}}>{nextStep.label}</p>
-                    </div>
-                    <button className="dash-btn-config" onClick={() => setQuickStep(nextStep)}>Configurar →</button>
-                  </div>
-                )}
-                <div className="dash-steps">
-                  {steps.map((group, gi) => {
-                    const groupDone = group.items.filter(i => i.done).length;
-                    const isOpen = openGroup === gi;
-                    const allDone = groupDone === group.items.length;
-                    return (
-                      <div key={gi} className="step-group">
-                        <button className="step-group-header" onClick={() => setOpenGroup(isOpen ? null : gi)}>
-                          <div className="step-group-left"><span>{group.emoji}</span><span className="step-group-title">{group.title}</span></div>
-                          <div className="step-group-right">
-                            <span className={`step-badge ${allDone ? "done" : ""}`}>{allDone ? "✓ Completo" : `${groupDone}/${group.items.length}`}</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" style={{transform:isOpen?"rotate(180deg)":"none",transition:"0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
-                          </div>
-                        </button>
-                        {isOpen && (
-                          <div className="step-items">
-                            {group.items.map((item, ii) => (
-                              <button key={ii} className="step-item" onClick={() => !item.done && setQuickStep(item)}>
-                                <div className={`step-check ${item.done ? "checked" : ""}`}>
-                                  {item.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
-                                </div>
-                                <span className="step-item-label">{item.label}</span>
-                                <span className={`step-status ${item.done ? "done" : "pending"}`}>{item.done ? "Concluído" : "Fazer agora"}</span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                <button className="dash-btn-config" onClick={() => setQuickStep(nextStep)}>Configurar →</button>
+              </div>
+            )}
+            <div className="dash-steps">
+              {steps.map((group, gi) => {
+                const groupDone = group.items.filter(i => i.done).length;
+                const isOpen = openGroup === gi;
+                const allDone = groupDone === group.items.length;
+                return (
+                  <div key={gi} className="step-group">
+                    <button className="step-group-header" onClick={() => setOpenGroup(isOpen ? null : gi)}>
+                      <div className="step-group-left"><span>{group.emoji}</span><span className="step-group-title">{group.title}</span></div>
+                      <div className="step-group-right">
+                        <span className={"step-badge" + (allDone ? " done" : "")}>{allDone ? "✓ Completo" : `${groupDone}/${group.items.length}`}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" style={{transform:isOpen?"rotate(180deg)":"none",transition:"0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
                       </div>
-                    );
-                  })}
-                </div>
-                <div className="complete-banner" style={{marginTop:"0.75rem"}}>🎁 Complete 100% e aproveite todos os recursos do Doonly!</div>
-              </div>
-            ) : !proResgatado ? (
-              <div className="dash-card" style={{background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",border:"1px solid #bbf7d0"}}>
-                <div style={{textAlign:"center",padding:"0.5rem 0"}}>
-                  <img src="/assine.png" alt="" style={{width:"64px",height:"64px",objectFit:"contain",marginBottom:"0.5rem"}} />
-                  <h3 style={{fontWeight:800,color:"#15803d",margin:"0 0 0.25rem"}}>Configuração completa!</h3>
-                  <p style={{fontSize:"0.85rem",color:"#16a34a",margin:"0 0 1rem"}}>Resgate agora 3 dias de acesso PRO como recompensa.</p>
-                  <button className="mob-resgatar-btn" style={{width:"100%"}} onClick={handleResgatarPro} disabled={resgatando}>
-                    {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
-                  </button>
-                </div>
-              </div>
-            ) : null)}
-
-          </div>
-
-          {/* Coluna direita — Calendário */}
-          <div className="dash-col-right">
-            <div className="dash-card" style={{padding:"1rem"}}>
-              {/* Header calendário */}
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.75rem"}}>
-                <h3 className="dash-card-title">Agenda</h3>
-                <div style={{display:"flex",alignItems:"center",gap:"0.5rem"}}>
-                  <button onClick={() => setCalMes(new Date(calMes.getFullYear(), calMes.getMonth()-1,1))} className="cal-nav-btn">‹</button>
-                  <span style={{fontSize:"0.82rem",fontWeight:600,color:"#374151",minWidth:"90px",textAlign:"center"}}>
-                    {calMes.toLocaleDateString("pt-BR",{month:"long",year:"numeric"})}
-                  </span>
-                  <button onClick={() => setCalMes(new Date(calMes.getFullYear(), calMes.getMonth()+1,1))} className="cal-nav-btn">›</button>
-                </div>
-              </div>
-
-              {/* Dias da semana */}
-              <div className="cal-grid-header">
-                {["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(d => (
-                  <div key={d} className="cal-dow">{d}</div>
-                ))}
-              </div>
-
-              {/* Dias do mês */}
-              <div className="cal-grid">
-                {calCells()}
-              </div>
-
-              {/* Pedidos do dia selecionado */}
-              {calDiaSelecionado && (
-                <div style={{marginTop:"0.75rem",borderTop:"1px solid #f3f4f6",paddingTop:"0.75rem"}}>
-                  <div style={{display:"flex",gap:"0.25rem",flexWrap:"wrap",marginBottom:"0.5rem"}}>
-                    {["todos","pendente","em_producao","finalizado","cancelado"].map(f => (
-                      <button key={f} onClick={() => setPedidosFiltro(f)}
-                        style={{padding:"3px 10px",borderRadius:"6px",border:"1.5px solid",fontSize:"0.68rem",fontWeight:600,cursor:"pointer",fontFamily:"Inter,sans-serif",
-                          borderColor: pedidosFiltro===f ? "#FF4FA3" : "#e5e7eb",
-                          background: pedidosFiltro===f ? "#FF4FA3" : "white",
-                          color: pedidosFiltro===f ? "white" : "#9ca3af"
-                        }}>
-                        {f==="todos"?"Todos":f==="pendente"?"Pendente":f==="em_producao"?"Produção":f==="finalizado"?"Feito":"Cancelado"}
-                      </button>
-                    ))}
+                    </button>
+                    {isOpen && (
+                      <div className="step-items">
+                        {group.items.map((item, ii) => (
+                          <button key={ii} className="step-item" onClick={() => !item.done && setQuickStep(item)}>
+                            <div className={"step-check" + (item.done ? " checked" : "")}>
+                              {item.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                            </div>
+                            <span className="step-item-label">{item.label}</span>
+                            <span className={"step-status" + (item.done ? " done" : " pending")}>{item.done ? "Concluído" : "Fazer agora"}</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-
-                  {loadingPedidos ? (
-                    <p style={{fontSize:"0.8rem",color:"#9ca3af",textAlign:"center",padding:"0.5rem"}}>Carregando...</p>
-                  ) : pedidosDia.filter(p => pedidosFiltro==="todos" || p.status===pedidosFiltro).length === 0 ? (
-                    <p style={{fontSize:"0.78rem",color:"#9ca3af",textAlign:"center",padding:"0.75rem 0"}}>
-                      Nenhum pedido neste dia
-                    </p>
-                  ) : (
-                    <div style={{display:"flex",flexDirection:"column",gap:"0.4rem",maxHeight:"180px",overflowY:"auto"}}>
-                      {pedidosDia.filter(p => pedidosFiltro==="todos" || p.status===pedidosFiltro).map(p => (
-                        <div key={p.id} style={{background:"#f9fafb",borderRadius:"10px",padding:"0.6rem 0.75rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                          <div>
-                            <p style={{fontSize:"0.82rem",fontWeight:600,color:"#1f2937",margin:0}}>{p.cliente_nome || "Cliente"}</p>
-                            <p style={{fontSize:"0.72rem",color:"#9ca3af",margin:0}}>{p.descricao || "Pedido"}</p>
-                          </div>
-                          <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:"3px"}}>
-                            <span style={{fontSize:"0.78rem",fontWeight:700,color:"#16a34a"}}>R$ {(p.valor||0).toFixed(2)}</span>
-                            <span style={{fontSize:"0.62rem",fontWeight:700,padding:"2px 6px",borderRadius:"6px",
-                              background: p.status==="finalizado"?"#dcfce7":p.status==="em_producao"?"#fef9c3":p.status==="cancelado"?"#fee2e2":"#fdf2f8",
-                              color: p.status==="finalizado"?"#16a34a":p.status==="em_producao"?"#ca8a04":p.status==="cancelado"?"#ef4444":"#FF4FA3"
-                            }}>
-                              {p.status==="finalizado"?"✓ Feito":p.status==="em_producao"?"⚙ Prod.":p.status==="cancelado"?"✕ Cancel.":"● Pend."}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                );
+              })}
+            </div>
+            <div className="complete-banner" style={{marginTop:"0.75rem"}}>🎁 Complete 100% e aproveite todos os recursos do Doonly!</div>
+          </div>
+        ) : !proResgatado ? (
+          <div className="dash-card" style={{background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",border:"1px solid #bbf7d0",marginBottom:"1rem"}}>
+            <div style={{textAlign:"center",padding:"0.5rem 0"}}>
+              <img src="/assine.png" alt="" style={{width:"64px",height:"64px",objectFit:"contain",marginBottom:"0.5rem"}} />
+              <h3 style={{fontWeight:800,color:"#15803d",margin:"0 0 0.25rem"}}>Configuração completa!</h3>
+              <p style={{fontSize:"0.85rem",color:"#16a34a",margin:"0 0 1rem"}}>Resgate agora 3 dias de acesso PRO como recompensa.</p>
+              <button className="mob-resgatar-btn" style={{width:"100%"}} onClick={handleResgatarPro} disabled={resgatando}>
+                {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
+              </button>
             </div>
           </div>
+        ) : null)}
 
-        </div>
       </div>
 
       <QuickSetupModal
@@ -729,7 +709,7 @@ const load = async () => {
         .dash-greeting { margin-bottom: 1.5rem; }
         .dash-title { font-size: 1.5rem; font-weight: 800; color: #1f2937; margin: 0 0 0.25rem; }
         .dash-subtitle { font-size: 0.85rem; color: #9ca3af; margin: 0; }
-        .dash-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
+        .dash-metrics { display: grid; grid-template-columns: repeat(3, 1fr) 380px; gap: 1rem; margin-bottom: 1rem; align-items: stretch; }
         .dash-sections { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
         .dash-metric-empty { font-size: 0.82rem; font-weight: 600; margin: 0; line-height: 1.3; }
         .dash-metric-card { background: white; border-radius: 16px; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 4px 16px rgba(0,0,0,0.1); cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; }
