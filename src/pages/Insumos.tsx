@@ -549,11 +549,11 @@ export default function Insumos() {
 
             {/* Imagem — esquerda, altura total */}
             <div className="ins-imagem-inline">
-              <div className="ins-imagem-preview" style={{flex:1,borderRadius:0,border:"none",borderRight:"1px solid #f3f4f6",minHeight:"320px"}}>
+              <div className="ins-imagem-preview" style={{flex:1,borderRadius:0,border:"none",borderRight:"1px solid #f3f4f6",minHeight:"320px",aspectRatio:"1"}}>
                 {imagemSelecionada
                   ? <img src={imagemSelecionada} alt="imagem" style={{width:"100%",height:"100%",objectFit:"cover"}} />
                   : <div className="ins-imagem-empty">
-                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                       <p style={{fontSize:"0.85rem",fontWeight:600,color:"#9ca3af",margin:0}}>Sem imagem</p>
                     </div>
                 }
@@ -947,7 +947,7 @@ function Styles() {
       /* Empty */
       .ins-empty { display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:3rem 1rem; text-align:center; background:white; border-radius:16px; box-shadow:0 2px 10px rgba(0,0,0,0.06); }
       /* Grid informações básicas + imagem */
-      .ins-basicas-grid { display:grid; grid-template-columns:220px 1fr; align-items:stretch; }
+      .ins-basicas-grid { display:grid; grid-template-columns:320px 1fr; align-items:stretch; }
       .ins-imagem-inline { display:flex; flex-direction:column; }
       @media (max-width:768px) {
         .ins-basicas-grid { grid-template-columns:1fr; }
