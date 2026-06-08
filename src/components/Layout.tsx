@@ -332,7 +332,7 @@ export default function Layout() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .layout-root { display: flex; min-height: 100vh; font-family: 'Inter', sans-serif; background: #fafafa; position: relative; }
+        .layout-root { display: flex; min-height: 100vh; font-family: 'Inter', sans-serif; background: #F8F9FA; position: relative; }
         .mob-top-header { display: none; }
         .bottom-nav { display: none; }
 
