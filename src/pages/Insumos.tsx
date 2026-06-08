@@ -26,19 +26,15 @@ interface Movimentacao {
 
 const CATEGORIAS_DEFAULT = ["Ingredientes","Embalagens","Decorações","Bebidas","Limpeza","Descartáveis","Outros"];
 const UNIDADES_DEFAULT = [
-  { sigla: "kg", nome: "Quilograma", tipo: "peso" },
   { sigla: "g", nome: "Grama", tipo: "peso" },
-  { sigla: "L", nome: "Litro", tipo: "volume" },
+  { sigla: "kg", nome: "Quilograma", tipo: "peso" },
   { sigla: "ml", nome: "Mililitro", tipo: "volume" },
+  { sigla: "L", nome: "Litro", tipo: "volume" },
   { sigla: "un", nome: "Unidade", tipo: "unidade" },
-  { sigla: "cx", nome: "Caixa", tipo: "embalagem" },
-  { sigla: "pct", nome: "Pacote", tipo: "embalagem" },
-  { sigla: "fd", nome: "Fardo", tipo: "embalagem" },
-  { sigla: "bdj", nome: "Bandeja", tipo: "embalagem" },
-  { sigla: "pt", nome: "Pote", tipo: "embalagem" },
+  { sigla: "dz", nome: "Dúzia", tipo: "unidade" },
 ];
 
-const emptyForm = { nome: "", categoria: "Ingredientes", unidade: "kg", quantidade_estoque: "", estoque_minimo: "", valor_compra: "", fornecedor: "", imagem_url: "", qtd_embalagem: "1" };
+const emptyForm = { nome: "", categoria: "Ingredientes", unidade: "", quantidade_estoque: "", estoque_minimo: "", valor_compra: "", fornecedor: "", imagem_url: "", qtd_embalagem: "1" };
 
 type Step = "lista" | "dados" | "imagem" | "buscar" | "selecionar" | "revisar" | "sucesso" | "detalhe";
 type Ordenacao = "nome" | "estoque" | "valor";
@@ -690,12 +686,8 @@ export default function Insumos() {
               <div className="ins-field">
                 <label>Unidade de medida <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
                 <select value={form.unidade} onChange={e => { if (e.target.value === "__nova__") setShowNovaUnidade(true); else setForm((f: any) => ({ ...f, unidade: e.target.value })); }}>
-                  <option value="">Selecione a unidade de medida</option>
-                  {["peso","volume","unidade","embalagem"].map(tipo => (
-                    <optgroup key={tipo} label={tipo.charAt(0).toUpperCase()+tipo.slice(1)}>
-                      {unidades.filter(u => u.tipo === tipo).map(u => <option key={u.sigla} value={u.sigla}>{u.sigla} — {u.nome}</option>)}
-                    </optgroup>
-                  ))}
+                  <option value="">Selecione uma unidade</option>
+                  {unidades.map(u => <option key={u.sigla} value={u.sigla}>{u.sigla} — {u.nome}</option>)}
                   <option value="__nova__">+ Nova unidade</option>
                 </select>
                 <span className="ins-field-hint">Ex: kg, g, ml, L, un, pacote</span>
