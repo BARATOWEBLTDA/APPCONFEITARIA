@@ -34,7 +34,7 @@ const UNIDADES_DEFAULT = [
   { sigla: "dz", nome: "Dúzia", tipo: "unidade" },
 ];
 
-const emptyForm = { nome: "", categoria: "Ingredientes", unidade: "", quantidade_estoque: "", estoque_minimo: "", valor_compra: "", fornecedor: "", imagem_url: "", qtd_embalagem: "1" };
+const emptyForm = { nome: "", marca: "", categoria: "Ingredientes", subcategoria: "", descricao: "", unidade: "", quantidade_estoque: "", estoque_minimo: "", valor_compra: "", fornecedor: "", imagem_url: "", qtd_embalagem: "1", validade_exata: "" };
 
 type Step = "lista" | "dados" | "imagem" | "buscar" | "selecionar" | "revisar" | "sucesso" | "detalhe";
 type Ordenacao = "nome" | "estoque" | "valor";
@@ -161,7 +161,13 @@ export default function Insumos() {
     setSaving(true);
     const custoUnit = parseFloat(calcCustoUnitario(form.valor_compra, form.qtd_embalagem));
     const payload = {
-      user_id: userId, nome: form.nome.trim(), categoria: form.categoria, unidade: form.unidade,
+      user_id: userId,
+      nome: form.nome.trim(),
+      marca: form.marca?.trim() || "",
+      categoria: form.categoria,
+      subcategoria: form.subcategoria?.trim() || "",
+      descricao: form.descricao?.trim() || "",
+      unidade: form.unidade,
       quantidade_estoque: parseFloat(form.quantidade_estoque) || 0,
       estoque_minimo: parseFloat(form.estoque_minimo) || 0,
       valor_compra: parseFloat(form.valor_compra) || 0,
@@ -169,6 +175,9 @@ export default function Insumos() {
       imagem_url: imagemSelecionada || "",
       qtd_embalagem: parseFloat(form.qtd_embalagem) || 1,
       custo_unitario: custoUnit,
+      tem_validade: temValidade,
+      validade_exata: temValidade && form.validade_exata ? form.validade_exata : null,
+      validade_media_dias: temValidade && validadeMedia ? parseInt(validadeMedia) : null,
       updated_at: new Date().toISOString(),
     };
     if (editId) {
