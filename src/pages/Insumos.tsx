@@ -1070,7 +1070,7 @@ function Styles() {
       .ins-back { width:36px; height:36px; background:#f3f4f6; border:none; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
       .ins-form-title { font-size:1.1rem; font-weight:800; color:#1f2937; margin:0; flex:1; }
       .ins-optional-badge { font-size:0.7rem; background:#f3f4f6; color:#9ca3af; padding:3px 8px; border-radius:20px; }
-      .ins-card { background:white; border-radius:16px; padding:1.25rem; box-shadow:0 2px 10px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:0.85rem; }
+      .ins-card { background:white; border-radius:16px; padding:1.25rem; box-shadow:none; border:1px solid #f3f4f6; display:flex; flex-direction:column; gap:0.85rem; }
       .ins-form { display:flex; flex-direction:column; gap:0.85rem; }
       .ins-field { display:flex; flex-direction:column; gap:0.3rem; }
       .ins-field label { font-size:0.78rem; font-weight:600; color:#374151; }
