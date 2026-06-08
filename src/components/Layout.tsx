@@ -1,18 +1,19 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef, type ReactNode } from "react";
-import { Home, BookOpen, Users, UtensilsCrossed, Menu } from "lucide-react";
+import { Home, Calendar, ShoppingBag, ClipboardList, Users, BookOpen, Package, DollarSign, Settings, LogOut, ChevronDown } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { supabase } from "@/lib/supabase";
 
-function SidebarGroup({ label, paths, location, children }: { label: string; paths: string[]; location: any; children: ReactNode }) {
+function SidebarGroup({ label, icon, paths, location, children }: { label: string; icon?: ReactNode; paths: string[]; location: any; children: ReactNode }) {
   const isAnyActive = paths.some(p => location.pathname.startsWith(p));
   const [open, setOpen] = useState(isAnyActive);
   return (
     <div className="nav-group">
       <button className={`nav-group-btn ${isAnyActive ? "active" : ""}`} onClick={() => setOpen(o => !o)}>
+        {icon && <span className="nav-icon">{icon}</span>}
         <span style={{ flex: 1 }}>{label}</span>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.5 }}><polyline points="6 9 12 15 18 9"/></svg>
+        <ChevronDown size={13} style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.5 }} />
       </button>
       {open && <div className="nav-subitems">{children}</div>}
     </div>
@@ -96,10 +97,14 @@ export default function Layout() {
         </div>
 
         <nav className="sidebar-nav">
-          <NavLink to="/inicio" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Início</NavLink>
-          <NavLink to="/agenda" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Agenda</NavLink>
+          <NavLink to="/inicio" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-icon"><Home size={16} /></span>Início
+          </NavLink>
+          <NavLink to="/agenda" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-icon"><Calendar size={16} /></span>Agenda
+          </NavLink>
 
-          <SidebarGroup label="Cardápio" paths={["/cardapio-config","/cardapio-design","/cardapio-preview","/categorias","/produtos"]} location={location}>
+          <SidebarGroup label="Cardápio" icon={<ShoppingBag size={16} />} paths={["/cardapio-config","/cardapio-design","/cardapio-preview","/categorias","/produtos"]} location={location}>
             <NavLink to="/cardapio-config" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Configuração</NavLink>
             <NavLink to="/cardapio-design" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Design</NavLink>
             <NavLink to="/cardapio-preview" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Prévia</NavLink>
@@ -107,21 +112,29 @@ export default function Layout() {
             <NavLink to="/produtos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Produtos</NavLink>
           </SidebarGroup>
 
-          <NavLink to="/pedidos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Pedidos</NavLink>
-          <NavLink to="/clientes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Clientes</NavLink>
+          <NavLink to="/pedidos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-icon"><ClipboardList size={16} /></span>Pedidos
+          </NavLink>
+          <NavLink to="/clientes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-icon"><Users size={16} /></span>Clientes
+          </NavLink>
 
-          <SidebarGroup label="Receitas" paths={["/receitas","/comunidade"]} location={location}>
+          <SidebarGroup label="Receitas" icon={<BookOpen size={16} />} paths={["/receitas","/comunidade"]} location={location}>
             <NavLink to="/receitas" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Minhas receitas</NavLink>
             <NavLink to="/receitas?tipo=app" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Receitas do app</NavLink>
             <NavLink to="/comunidade" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Comunidade</NavLink>
           </SidebarGroup>
 
-          <SidebarGroup label="Estoque" paths={["/insumos","/estoque"]} location={location}>
+          <SidebarGroup label="Estoque" icon={<Package size={16} />} paths={["/insumos","/estoque"]} location={location}>
             <NavLink to="/insumos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Ingredientes</NavLink>
           </SidebarGroup>
 
-          <NavLink to="/financeiro" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Financeiro</NavLink>
-          <NavLink to="/configuracoes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>Configurações</NavLink>
+          <NavLink to="/financeiro" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-icon"><DollarSign size={16} /></span>Financeiro
+          </NavLink>
+          <NavLink to="/configuracoes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-icon"><Settings size={16} /></span>Configurações
+          </NavLink>
         </nav>
 
         {!isPro && (
@@ -131,8 +144,10 @@ export default function Layout() {
         )}
 
         <button onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}
-          style={{display:"flex",alignItems:"center",gap:"0.5rem",width:"calc(100% - 0.5rem)",margin:"0 0.25rem 1rem",background:"none",border:"none",cursor:"pointer",padding:"0.6rem 1rem",borderRadius:"10px",color:"rgba(255,255,255,0.35)",fontSize:"0.8rem",fontWeight:500,fontFamily:"Inter,sans-serif",transition:"background 0.15s"}}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          style={{display:"flex",alignItems:"center",gap:"0.6rem",width:"calc(100% - 0.5rem)",margin:"0 0.25rem 1rem",background:"none",border:"none",cursor:"pointer",padding:"0.6rem 1rem",borderRadius:"10px",color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",fontWeight:500,fontFamily:"Inter,sans-serif",transition:"all 0.15s"}}
+          onMouseEnter={e => (e.currentTarget.style.color="rgba(255,255,255,0.7)")}
+          onMouseLeave={e => (e.currentTarget.style.color="rgba(255,255,255,0.4)")}>
+          <LogOut size={15} />
           Sair
         </button>
       </aside>
@@ -352,14 +367,16 @@ export default function Layout() {
         .sidebar-datetime { font-size: 0.72rem; color: #8E99C2; white-space: nowrap; }
 
         .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; overflow-y: auto; }
-        .nav-item { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #B8C1E0; text-decoration: none; transition: background 0.15s, color 0.15s; outline: none; display: flex; align-items: center; }
+        .nav-icon { display:flex; align-items:center; flex-shrink:0; opacity:0.7; }
+        .nav-item { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #D0D8F0; text-decoration: none; transition: background 0.15s, color 0.15s; outline: none; display: flex; align-items: center; gap: 0.6rem; }
         .nav-item:hover { background: #1D2550; color: #FFFFFF; }
+        .nav-item:hover .nav-icon { opacity:1; }
         .nav-item:focus { background: #1D2550; color: #FFFFFF; outline: none; }
         .nav-item.active { background: linear-gradient(90deg,#FF4FA3,#FF6BB5); color: #FFFFFF; font-weight: 600; }
-        .nav-group { display: flex; flex-direction: column; width: 100%; }
-        .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; font-family: 'Inter',sans-serif; padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #B8C1E0; transition: background 0.15s, color 0.15s; display: flex; align-items: center; box-sizing: border-box; margin: 0; }
+        .nav-item.active .nav-icon { opacity:1; }
+        .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; font-family: 'Inter',sans-serif; padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #D0D8F0; transition: background 0.15s, color 0.15s; display: flex; align-items: center; gap: 0.6rem; box-sizing: border-box; margin: 0; }
         .nav-group-btn:hover { background: #1D2550; color: #FFFFFF; }
-        .nav-group-btn.active { color: #FF4FA3; border-left: 2px solid #FF4FA3; border-radius: 0 10px 10px 0; padding-left: calc(1rem - 2px); }
+        .nav-group-btn.active { color: #FF4FA3; }
         .nav-subitems { display: flex; flex-direction: column; padding: 0 0 0.25rem 0; }
         .nav-subitem { display: flex; align-items: center; padding: 0.5rem 0.85rem 0.5rem 1.75rem; border-radius: 8px; font-size: 0.85rem; color: #8E99C2; text-decoration: none; transition: all 0.15s; }
         .nav-subitem:hover { color: #FFFFFF; background: #1D2550; }
