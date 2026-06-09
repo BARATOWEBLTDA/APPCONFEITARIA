@@ -10,7 +10,6 @@ import { DesktopCategoryFilter } from '@/components/desktop/CategoryFilter'
 import { ProductList } from '@/components/cardapio/ProductList'
 import { DesktopProductList } from '@/components/desktop/ProductList'
 import { NavigationMenu } from '@/components/cardapio/NavigationMenu'
-import { DesktopNavigationMenu } from '@/components/desktop/NavigationMenu'
 import { EmptyState } from '@/components/cardapio/EmptyState'
 import { DesktopEmptyState } from '@/components/desktop/EmptyState'
 import { Footer } from '@/components/cardapio/Footer'
@@ -47,6 +46,21 @@ function CardapioContent() {
       setCategoriasList(categoriasList || [])
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
+      // Salva config de checkout para o modal do carrinho
+      if (config) {
+        localStorage.setItem('cardapio_checkout_config', JSON.stringify({
+          formas_pagamento: config.formas_pagamento || ['pix'],
+          formas_entrega: config.formas_entrega || ['retirada'],
+          valor_entrega_propria: config.valor_entrega_propria || 0,
+          entrega_por_bairro: config.entrega_por_bairro || [],
+          endereco_retirada: config.endereco_retirada || '',
+          horario_retirada: config.horario_retirada || '',
+          exibir_campo_troco: config.exibir_campo_troco !== false,
+          cupons_desconto: config.cupons_desconto || [],
+          aceita_agendamento: config.aceita_agendamento !== false,
+          prazo_minimo_horas: config.prazo_minimo_horas || 24,
+        }))
+      }
       setLoading(false)
     }).catch(e => { setError(e.message); setLoading(false) })
   }, [slug])
@@ -87,7 +101,7 @@ function CardapioContent() {
   const LogoC = isDesktop ? DesktopLogo : Logo
   const CategoryC = isDesktop ? DesktopCategoryFilter : CategoryFilter
   const ProductC = isDesktop ? DesktopProductList : ProductList
-  const NavC = isDesktop ? DesktopNavigationMenu : NavigationMenu
+  const NavC = NavigationMenu // Checkout compartilhado mobile/desktop
   const EmptyC = isDesktop ? DesktopEmptyState : EmptyState
   const FooterC = isDesktop ? DesktopFooter : Footer
 

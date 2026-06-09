@@ -64,6 +64,17 @@ async function fetchByUserId(userId: string, profile: any) {
     mostrar_localizacao: profile.mostrar_localizacao || false,
     mostrar_apenas_cidade: profile.mostrar_apenas_cidade || false,
     horario: profile.horario || null,
+    // Novos campos de checkout
+    formas_pagamento: profile.formas_pagamento || ['pix'],
+    formas_entrega: profile.formas_entrega || ['retirada'],
+    valor_entrega_propria: profile.valor_entrega_propria || 0,
+    entrega_por_bairro: profile.entrega_por_bairro || [],
+    endereco_retirada: profile.endereco_retirada || '',
+    horario_retirada: profile.horario_retirada || '',
+    exibir_campo_troco: profile.exibir_campo_troco !== false,
+    cupons_desconto: profile.cupons_desconto || [],
+    aceita_agendamento: profile.aceita_agendamento !== false,
+    prazo_minimo_horas: profile.prazo_minimo_horas || 24,
   }
 
   return { design, config, produtos: produtos || [], isPro, categoryImages, categoriasList }

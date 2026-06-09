@@ -32,6 +32,7 @@ import Categorias from "@/pages/Categorias";
 import Clientes from "@/pages/Clientes";
 import CardapioConfigPage from "@/pages/CardapioConfigPage";
 import CardapioDesign from "@/pages/CardapioDesign";
+import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 import CardapioPublico from "@/pages/CardapioPublico";
 
 const Pedidos = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>📋 Pedidos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
@@ -80,6 +81,7 @@ export default function App() {
           <Route path="/cardapio-config" element={<CardapioConfigPage />} />
           <Route path="/cardapio-preview" element={<CardapioPrevia />} />
           <Route path="/cardapio-design" element={<CardapioDesign />} />
+          <Route path="/checkout-config" element={<CheckoutConfigPage />} />
           <Route path="/estoque" element={<Estoque />} />
           <Route path="/arquivos" element={<Arquivos />} />
           <Route path="/configuracoes" element={<Configuracoes />} />

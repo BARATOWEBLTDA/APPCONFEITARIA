@@ -59,4 +59,15 @@ export interface Configuracoes {
   mostrar_localizacao?: boolean
   mostrar_apenas_cidade?: boolean
   horario?: string | null
+  // Checkout
+  formas_pagamento?: string[]
+  formas_entrega?: string[]
+  valor_entrega_propria?: number
+  entrega_por_bairro?: { bairro: string; valor: number }[]
+  endereco_retirada?: string
+  horario_retirada?: string
+  exibir_campo_troco?: boolean
+  cupons_desconto?: { codigo: string; tipo: string; valor: number; ativo: boolean }[]
+  aceita_agendamento?: boolean
+  prazo_minimo_horas?: number
 }
