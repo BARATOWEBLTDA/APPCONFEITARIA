@@ -19,92 +19,108 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
 
   return (
     <div style={{
-      display:'flex', alignItems:'center', gap:'12px',
-      padding:'12px', borderRadius:'16px',
-      background:'#fff',
-      border:'1.5px solid #f3f4f6',
-      boxShadow:'0 1px 4px rgba(0,0,0,0.05)',
+      display:'flex', gap:'12px', padding:'14px',
+      background:'#fff', borderRadius:'14px',
+      border:'1px solid #f0f0f0',
+      transition:'box-shadow 0.15s',
     }}>
       {/* Imagem */}
       <div style={{
-        width:'58px', height:'58px', borderRadius:'12px',
+        width:'64px', height:'64px', borderRadius:'12px',
         overflow:'hidden', flexShrink:0,
-        background:'linear-gradient(135deg,#fdf2f8,#fce7f3)',
-        display:'flex', alignItems:'center', justifyContent:'center',
+        background:'#f5f5f5',
       }}>
         {item.imageUrl
           ? <img src={item.imageUrl.split(',')[0]} alt={item.name} style={{width:'100%',height:'100%',objectFit:'cover'}} />
-          : <span style={{fontSize:'24px'}}>🧁</span>
+          : <div style={{width:'100%',height:'100%',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'28px'}}>🧁</div>
         }
       </div>
 
-      {/* Info */}
-      <div style={{flex:1, minWidth:0, display:'flex', flexDirection:'column', gap:'4px'}}>
-        <h4 style={{margin:0, fontWeight:700, fontSize:'14px', color:'#111827', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>
-          {item.name}
-        </h4>
-        {item.selectedMassa && (
-          <span style={{fontSize:'11px', color:'#ec4899', fontWeight:500}}>🎂 {item.selectedMassa}</span>
-        )}
-        {item.selectedRecheio && (
-          <span style={{fontSize:'11px', color:'#8b5cf6', fontWeight:500}}>🥄 {item.selectedRecheio}</span>
-        )}
-        <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:'2px'}}>
-          {/* Preço */}
-          <span style={{fontWeight:800, fontSize:'15px', color:'#16a34a'}}>
+      {/* Conteúdo */}
+      <div style={{flex:1, minWidth:0, display:'flex', flexDirection:'column', justifyContent:'space-between'}}>
+        {/* Nome + lixeira */}
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'8px'}}>
+          <div style={{flex:1,minWidth:0}}>
+            <h4 style={{
+              margin:0, fontWeight:700, fontSize:'14px', color:'#3e3e3e',
+              whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
+            }}>
+              {item.name}
+            </h4>
+            {/* Opcionais */}
+            <div style={{display:'flex',flexDirection:'column',gap:'1px',marginTop:'2px'}}>
+              {item.selectedMassa && (
+                <span style={{fontSize:'11px', color:'#a0a0a0'}}>Massa: {item.selectedMassa}</span>
+              )}
+              {item.selectedRecheio && (
+                <span style={{fontSize:'11px', color:'#a0a0a0'}}>Recheio: {item.selectedRecheio}</span>
+              )}
+              {item.selectedCobertura && (
+                <span style={{fontSize:'11px', color:'#a0a0a0'}}>Cobertura: {item.selectedCobertura}</span>
+              )}
+            </div>
+          </div>
+          <button
+            onClick={() => onRemove(item.id)}
+            style={{
+              background:'none', border:'none', cursor:'pointer',
+              padding:'4px', flexShrink:0, opacity:0.4,
+              transition:'opacity 0.15s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+            onMouseLeave={e => (e.currentTarget.style.opacity = '0.4')}
+          >
+            <Trash2 size={15} color="#ef4444" />
+          </button>
+        </div>
+
+        {/* Preço + controle quantidade */}
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'8px'}}>
+          <span style={{fontWeight:800, fontSize:'15px', color:'#3e3e3e'}}>
             {formatCurrency(item.price * item.quantity)}
           </span>
 
-          {/* Quantidade */}
+          {/* Stepper iFood-style */}
           <div style={{
-            display:'flex', alignItems:'center', gap:'6px',
-            background:'#fdf2f8', borderRadius:'50px',
-            padding:'3px 6px', border:'1px solid #fce7f3',
+            display:'flex', alignItems:'center',
+            border:'1.5px solid #ea1d2c', borderRadius:'8px',
+            overflow:'hidden',
           }}>
             <button
               onClick={dec}
               style={{
-                width:'24px', height:'24px', borderRadius:'50%',
-                background:'#fff', border:'1.5px solid #fce7f3',
+                width:'30px', height:'30px',
+                background:'transparent', border:'none',
                 display:'flex', alignItems:'center', justifyContent:'center',
-                cursor:'pointer', flexShrink:0,
+                cursor:'pointer',
               }}
             >
-              <Minus size={11} color="#ec4899" />
+              <Minus size={14} color="#ea1d2c" />
             </button>
             <span style={{
-              fontSize:'13px', fontWeight:700, color:'#ec4899',
-              minWidth:'32px', textAlign:'center',
+              minWidth:'36px', textAlign:'center',
+              fontSize:'13px', fontWeight:800, color:'#ea1d2c',
+              borderLeft:'1.5px solid #fecaca',
+              borderRight:'1.5px solid #fecaca',
+              padding:'5px 0',
+              background:'#fff5f5',
             }}>
-              {item.saleType === 'kg' ? `${item.quantity}kg` : `${item.quantity}un`}
+              {item.saleType === 'kg' ? `${item.quantity}kg` : item.quantity}
             </span>
             <button
               onClick={inc}
               style={{
-                width:'24px', height:'24px', borderRadius:'50%',
-                background:'#ec4899', border:'none',
+                width:'30px', height:'30px',
+                background:'transparent', border:'none',
                 display:'flex', alignItems:'center', justifyContent:'center',
-                cursor:'pointer', flexShrink:0,
+                cursor:'pointer',
               }}
             >
-              <Plus size={11} color="#fff" />
+              <Plus size={14} color="#ea1d2c" />
             </button>
           </div>
         </div>
       </div>
-
-      {/* Lixeira */}
-      <button
-        onClick={() => onRemove(item.id)}
-        style={{
-          width:'32px', height:'32px', borderRadius:'10px',
-          background:'#fff5f5', border:'1.5px solid #fee2e2',
-          display:'flex', alignItems:'center', justifyContent:'center',
-          cursor:'pointer', flexShrink:0,
-        }}
-      >
-        <Trash2 size={14} color="#ef4444" />
-      </button>
     </div>
   )
 }
