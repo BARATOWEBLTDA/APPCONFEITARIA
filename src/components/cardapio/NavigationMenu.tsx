@@ -263,10 +263,10 @@ export function NavigationMenu() {
             <div
               onClick={() => setIsOpen(true)}
               style={{
-                position:'fixed', bottom:'62px', left:'12px', right:'12px', zIndex:40,
-                background:'#ea1d2c', borderRadius:'12px', padding:'14px 18px',
+                position:'fixed', bottom:'62px', left:0, right:0, zIndex:40,
+                background:'#3d3d3d', borderRadius:0, padding:'10px 18px',
                 display:'flex', alignItems:'center', justifyContent:'space-between',
-                boxShadow:'0 6px 24px rgba(234,29,44,0.4)', cursor:'pointer',
+                boxShadow:'0 -2px 12px rgba(0,0,0,0.15)', cursor:'pointer',
               }}
             >
               <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
