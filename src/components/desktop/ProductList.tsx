@@ -25,25 +25,7 @@ export function DesktopProductList({ produtos, favorites, onToggleFavorite, back
 
   return (
     <div>
-      {/* Search compacto */}
-      <div style={{ maxWidth: '420px', margin: '0 auto 28px', position: 'relative' }}>
-        <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
-        <input
-          type="text"
-          placeholder="Buscar produtos..."
-          value={searchTerm}
-          onChange={e => onSearchChange(e.target.value)}
-          style={{
-            width: '100%', padding: '10px 14px 10px 40px',
-            border: '1.5px solid #e8e8e8', borderRadius: '10px',
-            fontSize: '14px', color: '#3e3e3e', outline: 'none',
-            fontFamily: 'inherit', boxSizing: 'border-box',
-            transition: 'border-color 0.2s',
-          }}
-          onFocus={e => (e.target.style.borderColor = corBotao)}
-          onBlur={e => (e.target.style.borderColor = '#e8e8e8')}
-        />
-      </div>
+      {/* Search removido - está no top bar */}
 
       {/* Promoções */}
       {promo.length > 0 && (
