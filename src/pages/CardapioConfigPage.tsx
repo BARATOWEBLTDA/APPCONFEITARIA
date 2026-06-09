@@ -230,6 +230,7 @@ export default function CardapioConfigPage() {
   if (loading) return (
     <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"40vh"}}>
       <span className="ccc-spinner-lg" />
+      <style>{`@keyframes ccspin{to{transform:rotate(360deg)}} .ccc-spinner-lg{width:32px;height:32px;border:3px solid #fce7f3;border-top-color:#F583BF;border-radius:50%;animation:ccspin 0.7s linear infinite;display:inline-block;}`}</style>
     </div>
   );
 
@@ -256,7 +257,7 @@ export default function CardapioConfigPage() {
         {autoSaved && <span className="ccc-autosave">✓ Salvo automaticamente</span>}
       </div>
 
-      {/* LINHA 1: 3 cards iguais */}
+      {/* LINHA 1: 4 cards */}
       <div className="ccc-row-top">
 
         {/* Card 1 — Identidade */}
@@ -267,16 +268,22 @@ export default function CardapioConfigPage() {
           <div className="ccc-logo-row">
             <div className="ccc-logo-preview" onClick={() => fileRef.current?.click()}>
               {preview || form.foto_url
-                ? <img src={preview || form.foto_url} alt="logo" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                ? <img src={preview || form.foto_url} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}} />
                 : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               }
-              <div className="ccc-logo-cam"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+              <div className="ccc-logo-cam">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
             </div>
-            <div>
+            <div style={{flex:1,minWidth:0}}>
               <p className="ccc-logo-label">Logo da loja</p>
-              <p style={{fontSize:"0.78rem",color:"#9ca3af",margin:"2px 0 8px"}}>Aparece no topo do cardápio</p>
-              <button type="button" onClick={() => fileRef.current?.click()} style={{fontSize:"0.78rem",color:"#F583BF",fontWeight:600,background:"none",border:"1px solid #fce7f3",borderRadius:"8px",padding:"4px 12px",cursor:"pointer",fontFamily:"Inter,sans-serif"}}>
-                {uploading ? "Enviando..." : "Trocar foto"}
+              <p className="ccc-logo-sub">Aparece no topo do cardápio</p>
+              <button
+                style={{marginTop:"0.5rem",padding:"0.3rem 0.85rem",background:"#fdf2f8",border:"1.5px solid #fce7f3",borderRadius:"50px",fontFamily:"Inter,sans-serif",fontSize:"0.75rem",fontWeight:700,color:"#e060a8",cursor:"pointer"}}
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? <span className="ccc-spinner-xs" /> : "Trocar foto"}
               </button>
             </div>
           </div>
@@ -291,7 +298,7 @@ export default function CardapioConfigPage() {
             placeholder="WhatsApp" value={form.telefone} type="tel"
             onChange={(e: any) => setForm({...form, telefone: formatPhone(e.target.value)})}
           />
-          <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1.1rem"}}>
+          <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1rem"}}>
             <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </span>
@@ -299,21 +306,34 @@ export default function CardapioConfigPage() {
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
                 <span style={{fontSize:"0.75rem",color:"#9ca3af"}}>Descrição</span>
                 <button type="button" className="ccc-btn-ia" onClick={gerarDescricaoLoja} disabled={gerandoDescricao || !form.nome_loja.trim()}>
-                  {gerandoDescricao ? <><span className="ccc-spinner-ia" /> Gerando...</> : <>✨ Gerar com IA</>}
+                  {gerandoDescricao
+                    ? <><span className="ccc-spinner-ia" /> Gerando...</>
+                    : <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Gerar com IA</>
+                  }
                 </button>
               </div>
-              <textarea className="ccc-field-input" placeholder="Descrição da loja (aparece no cardápio)" value={form.descricao_loja} onChange={e => setForm({...form, descricao_loja: e.target.value})} rows={4} maxLength={200} style={{resize:"none"}} />
+              <textarea
+                className="ccc-field-input"
+                placeholder="Descreva sua confeitaria..."
+                value={form.descricao_loja}
+                onChange={e => setForm({...form, descricao_loja: e.target.value.slice(0,200)})}
+                rows={3}
+                style={{resize:"none"}}
+              />
+              <p className="ccc-char-count">{form.descricao_loja.length}/200</p>
             </div>
           </div>
-          <p className="ccc-char-count">{(form.descricao_loja || "").length}/200</p>
         </div>
 
         {/* Card 2 — Localização */}
         <div className="ccc-card">
           <SectionLabel>Localização da loja</SectionLabel>
+
           <div className="ccc-field">
             <span className="ccc-field-icon">
-              {buscandoCep ? <span className="ccc-spinner-xs" /> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
+              {buscandoCep
+                ? <span className="ccc-spinner-xs" style={{borderColor:"#fce7f3",borderTopColor:"#F583BF"}} />
+                : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
             </span>
             <input className="ccc-field-input" placeholder="CEP (opcional)" value={form.cep}
               onChange={e => {
@@ -430,11 +450,11 @@ export default function CardapioConfigPage() {
               <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/></svg>} placeholder="Entrega grátis acima de" value={form.entrega_gratis_acima} onChange={(v: string) => setForm({...form, entrega_gratis_acima: v})} />
               <button className="ccc-horario-btn" onClick={() => { if (form.horario_entrega) { const [ini,fim] = form.horario_entrega.split(" às "); setHorarioTemp({inicio:ini||"08:00",fim:fim||"18:00"}); } setModalHorario(true); }}>
                 <span className="ccc-field-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-                <span style={{flex:1,textAlign:"left",color:form.horario_entrega?"var(--text-primary,#1f2937)":"#9ca3af",fontSize:"0.9rem"}}>{form.horario_entrega || "Horário de entregas"}</span>
+                <span style={{flex:1,textAlign:"left",color:form.horario_entrega?"#111827":"#9ca3af",fontSize:"0.9rem"}}>{form.horario_entrega || "Horário de entregas"}</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} placeholder="Área de entrega" value={form.area_entrega} onChange={(e: any) => setForm({...form, area_entrega: e.target.value})} />
-              <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1.1rem"}}>
+              <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1rem"}}>
                 <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                 <textarea className="ccc-field-input" placeholder="Observações" value={form.observacoes_entrega} onChange={e => setForm({...form, observacoes_entrega: e.target.value})} rows={3} style={{resize:"none"}} />
               </div>
@@ -444,7 +464,7 @@ export default function CardapioConfigPage() {
 
       </div>{/* fim linha 2 */}
 
-      {/* Botão salvar full width */}
+      {/* Botão salvar */}
       <button className="ccc-btn-save" onClick={handleSave} disabled={saving || uploading}>
         {saving ? <span className="ccc-spinner-sm" /> : "Salvar alterações"}
       </button>
@@ -473,95 +493,252 @@ export default function CardapioConfigPage() {
       )}
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:ital@1&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         @keyframes ccspin { to { transform:rotate(360deg); } }
-        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-        /* ccc-root defined in ccc-outer block below */
-        /* ccc-page-title defined in layout block above */
-        /* ccc-page-sub defined in layout block above */
-        .ccc-card { background:var(--bg-card,white); border-radius:18px; padding:1.15rem; box-shadow:var(--shadow-card,0 2px 12px rgba(0,0,0,0.06)); display:flex; flex-direction:column; gap:0.7rem; width:100%; box-sizing:border-box; }
-        .ccc-section-label { font-size:0.75rem; font-weight:800; color:#F583BF; text-transform:uppercase; letter-spacing:0.12em; margin:0; }
-        .ccc-hint { font-size:0.75rem; color:var(--text-muted,#9ca3af); margin:0; }
-        .ccc-logo-row { display:flex; align-items:center; gap:0.85rem; width:100%; overflow:hidden; padding-right:0.25rem; }
-        .ccc-logo-preview { width:72px; height:72px; min-width:72px; border-radius:50%; background:#fdf2f8; border:2px solid #fce7f3; display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; overflow:hidden; flex-shrink:0; }
-        .ccc-logo-cam { position:absolute; bottom:0; right:0; background:rgba(0,0,0,0.45); width:22px; height:22px; display:flex; align-items:center; justify-content:center; border-radius:50% 0 0 0; }
-        .ccc-logo-label { font-size:0.88rem; font-weight:600; color:var(--text-primary,#1f2937); margin:0; }
-        .ccc-logo-sub { font-size:0.75rem; color:var(--text-muted,#9ca3af); margin:0.2rem 0 0; }
-        .ccc-autosave { font-size:0.75rem; font-weight:600; color:#22c55e; display:flex; align-items:center; gap:0.25rem; animation:fadeIn 0.3s ease; justify-content:center; margin-top:0.25rem; }
-        .ccc-field { display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); transition:border-color 0.2s; width:100%; box-sizing:border-box; overflow:hidden; }
-        .ccc-field:focus-within { border-color:#F583BF; }
-        .ccc-field-icon { display:flex; align-items:center; flex-shrink:0; color:var(--text-muted,#9ca3af); }
-        .ccc-field-input { flex:1; border:none; outline:none; font-family:'Inter',sans-serif; font-size:0.9rem; color:var(--text-primary,#1f2937); background:transparent; min-width:0; max-width:100%; }
-        .ccc-field-input::placeholder { color:#9ca3af; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ── ISOLAMENTO DE TEMA: força light mode nesta página ── */
+        .ccc-outer, .ccc-outer * { color-scheme: light; }
+
+        /* ── Layout geral ── */
+        .ccc-outer {
+          width:100%; display:flex; justify-content:center;
+          padding-bottom:3rem; background:#f8f9fb;
+        }
+        .ccc-root {
+          font-family:'Inter', sans-serif; width:100%; max-width:1160px;
+          display:flex; flex-direction:column; gap:1.5rem;
+          box-sizing:border-box; padding:0 1.5rem;
+        }
+
+        /* ── Header da página ── */
+        .ccc-page-header {
+          display:flex; align-items:center; justify-content:space-between;
+          flex-wrap:wrap; gap:0.5rem; padding-top:2rem; padding-bottom:0.75rem;
+          border-bottom:1px solid #f0f0f0;
+        }
+        .ccc-page-title { font-size:1.45rem; font-weight:800; color:#111827; margin:0 0 0.2rem; }
+        .ccc-page-sub { font-size:0.84rem; color:#6b7280; margin:0; font-style:italic; }
+        .ccc-autosave {
+          font-size:0.77rem; font-weight:600; color:#16a34a;
+          display:flex; align-items:center; gap:0.3rem;
+          background:#f0fdf4; padding:0.3rem 0.75rem;
+          border-radius:50px; border:1px solid #bbf7d0;
+          animation:fadeIn 0.3s ease;
+        }
+
+        /* ── Grid de cards ── */
+        .ccc-row-top {
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:1.25rem; align-items:stretch;
+        }
+        .ccc-row-bottom { display:grid; grid-template-columns:1fr; gap:1.25rem; align-items:start; }
+
+        /* ── Card base ── */
+        .ccc-card {
+          background:#ffffff; border-radius:16px; padding:1.25rem;
+          box-shadow:0 1px 3px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
+          border:1px solid #efefef;
+          display:flex; flex-direction:column; gap:0.75rem;
+          width:100%; box-sizing:border-box; height:100%;
+        }
+
+        /* ── Section label ── */
+        .ccc-section-label {
+          font-size:0.68rem; font-weight:800; color:#F583BF;
+          text-transform:uppercase; letter-spacing:0.15em; margin:0;
+          padding-bottom:0.6rem; border-bottom:1px solid #fce7f3;
+        }
+        .ccc-hint { font-size:0.75rem; color:#9ca3af; margin:0; }
+
+        /* ── Logo ── */
+        .ccc-logo-row { display:flex; align-items:center; gap:0.85rem; width:100%; }
+        .ccc-logo-preview {
+          width:68px; height:68px; min-width:68px; border-radius:50%;
+          background:#fdf2f8; border:2px solid #fce7f3;
+          display:flex; align-items:center; justify-content:center;
+          cursor:pointer; position:relative; overflow:hidden; flex-shrink:0;
+          transition:border-color 0.2s;
+        }
+        .ccc-logo-preview:hover { border-color:#F583BF; }
+        .ccc-logo-cam {
+          position:absolute; bottom:0; right:0;
+          background:rgba(0,0,0,0.42); width:20px; height:20px;
+          display:flex; align-items:center; justify-content:center;
+          border-radius:50% 0 0 0;
+        }
+        .ccc-logo-label { font-size:0.88rem; font-weight:700; color:#111827; margin:0; }
+        .ccc-logo-sub { font-size:0.73rem; color:#9ca3af; margin:0.15rem 0 0; }
+
+        /* ── Campos de input ── */
+        .ccc-field {
+          display:flex; align-items:center; gap:0.65rem;
+          border:1.5px solid #e8e8e8; border-radius:10px;
+          padding:0.6rem 1rem; background:#ffffff;
+          transition:border-color 0.2s, box-shadow 0.2s;
+          width:100%; box-sizing:border-box;
+        }
+        .ccc-field:focus-within {
+          border-color:#F583BF;
+          box-shadow:0 0 0 3px rgba(245,131,191,0.1);
+        }
+        .ccc-field-icon { display:flex; align-items:center; flex-shrink:0; color:#c4c8ce; }
+        .ccc-field-input {
+          flex:1; border:none; outline:none;
+          font-family:'Inter', sans-serif; font-size:0.88rem;
+          color:#111827; background:transparent; min-width:0;
+        }
+        .ccc-field-input::placeholder { color:#c4c8ce; }
         .ccc-field-input:-webkit-autofill,
         .ccc-field-input:-webkit-autofill:hover,
-        .ccc-field-input:-webkit-autofill:focus { -webkit-box-shadow:0 0 0px 1000px white inset; -webkit-text-fill-color:#1f2937; transition:background-color 5000s; }
-        .ccc-obs { display:flex; align-items:flex-start; gap:0.5rem; background:#fdf2f8; border-radius:10px; padding:0.65rem 0.85rem; }
-        .ccc-obs p { font-size:0.75rem; color:var(--text-secondary,#6b7280); margin:0; line-height:1.5; }
-        .ccc-char-count { font-size:0.72rem; color:var(--text-muted,#9ca3af); text-align:right; margin:0; }
-        .ccc-cep-hint { font-size:0.72rem; color:var(--text-muted,#9ca3af); margin:0; }
+        .ccc-field-input:-webkit-autofill:focus {
+          -webkit-box-shadow:0 0 0px 1000px #ffffff inset;
+          -webkit-text-fill-color:#111827;
+          transition:background-color 5000s;
+        }
+
+        /* ── Textarea / extras ── */
+        .ccc-char-count { font-size:0.72rem; color:#c4c8ce; text-align:right; margin:0; }
+        .ccc-cep-hint { font-size:0.72rem; color:#9ca3af; margin:0; }
         .ccc-row-2 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0.5rem; }
-        .ccc-divider { border:none; border-top:1px solid var(--border,#f3f4f6); margin:0; }
+        .ccc-divider { border:none; border-top:1px solid #f3f4f6; margin:0.15rem 0; }
+
+        /* ── Toggle ── */
         .ccc-toggle-row { display:flex; justify-content:space-between; align-items:center; gap:1rem; }
-        .ccc-toggle-label { font-size:0.88rem; font-weight:600; color:var(--text-primary,#374151); margin:0; }
-        .ccc-toggle-sub { font-size:0.74rem; color:var(--text-muted,#9ca3af); margin:0.1rem 0 0; }
-        .ccc-toggle { position:relative; display:inline-block; width:46px; height:26px; flex-shrink:0; }
+        .ccc-toggle-label { font-size:0.85rem; font-weight:600; color:#374151; margin:0; }
+        .ccc-toggle-sub { font-size:0.72rem; color:#9ca3af; margin:0.1rem 0 0; }
+        .ccc-toggle { position:relative; display:inline-block; width:44px; height:24px; flex-shrink:0; }
         .ccc-toggle input { opacity:0; width:0; height:0; }
-        .ccc-toggle-slider { position:absolute; cursor:pointer; inset:0; background:#e5e7eb; border-radius:26px; transition:0.3s; }
-        .ccc-toggle-slider:before { content:""; position:absolute; height:20px; width:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:0.3s; box-shadow:0 1px 4px rgba(0,0,0,0.15); }
+        .ccc-toggle-slider {
+          position:absolute; cursor:pointer; inset:0;
+          background:#e5e7eb; border-radius:24px; transition:0.3s;
+        }
+        .ccc-toggle-slider:before {
+          content:""; position:absolute; height:18px; width:18px;
+          left:3px; bottom:3px; background:white; border-radius:50%;
+          transition:0.3s; box-shadow:0 1px 4px rgba(0,0,0,0.18);
+        }
         .ccc-toggle input:checked + .ccc-toggle-slider { background:#F583BF; }
         .ccc-toggle input:checked + .ccc-toggle-slider:before { transform:translateX(20px); }
-        .ccc-horario-btn { display:flex; align-items:center; gap:0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; padding:0.65rem 1.1rem; background:var(--bg-input,white); font-family:'Inter',sans-serif; cursor:pointer; width:100%; transition:border-color 0.2s; text-align:left; }
-        .ccc-horario-btn:hover { border-color:#F583BF; }
+
+        /* ── Dias da semana ── */
         .ccc-dias-grid { display:flex; flex-wrap:wrap; gap:0.4rem; }
-        .ccc-dia-btn { padding:0.35rem 0.7rem; border-radius:8px; border:1.5px solid var(--border,#e5e7eb); background:var(--bg-card,white); font-family:'Nunito',sans-serif; font-size:0.78rem; font-weight:500; color:var(--text-secondary,#6b7280); cursor:pointer; transition:all 0.15s; }
-        .ccc-dia-btn.active { background:#fce7f3; border-color:#F583BF; color:#F583BF; font-weight:700; }
-        .ccc-time-field { display:flex; flex-direction:column; gap:0.25rem; }
-        .ccc-time-field label { font-size:0.74rem; font-weight:600; color:var(--text-secondary,#6b7280); }
-        .ccc-time-field input { padding:0.6rem 0.85rem; border:1.5px solid var(--border,#e5e7eb); border-radius:10px; font-family:'Inter',sans-serif; font-size:0.88rem; color:var(--text-primary,#1f2937); outline:none; transition:border-color 0.2s; width:100%; background:var(--bg-input,white); }
+        .ccc-dia-btn {
+          padding:0.3rem 0.6rem; border-radius:8px;
+          border:1.5px solid #e8e8e8; background:#ffffff;
+          font-family:'Inter', sans-serif; font-size:0.76rem;
+          font-weight:600; color:#6b7280; cursor:pointer; transition:all 0.15s;
+        }
+        .ccc-dia-btn:hover { border-color:#F583BF; color:#e060a8; }
+        .ccc-dia-btn.active { background:#fce7f3; border-color:#F583BF; color:#e060a8; font-weight:700; }
+
+        /* ── Time fields ── */
+        .ccc-time-field { display:flex; flex-direction:column; gap:0.3rem; }
+        .ccc-time-field label { font-size:0.72rem; font-weight:600; color:#6b7280; }
+        .ccc-time-field input {
+          padding:0.55rem 0.8rem; border:1.5px solid #e8e8e8;
+          border-radius:10px; font-family:'Inter', sans-serif;
+          font-size:0.86rem; color:#111827; outline:none;
+          transition:border-color 0.2s; width:100%; background:#ffffff;
+        }
         .ccc-time-field input:focus { border-color:#F583BF; }
-        .ccc-notas-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem; }
-        .ccc-nota-btn { padding:0.75rem 0.5rem; border:1.5px solid var(--border,#e5e7eb); border-radius:12px; background:var(--bg-card,white); font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:700; color:var(--text-secondary,#374151); cursor:pointer; transition:all 0.2s; box-shadow:0 2px 6px rgba(0,0,0,0.06); display:flex; flex-direction:column; align-items:center; gap:0.25rem; }
-        .ccc-nota-btn:hover { border-color:#F583BF; box-shadow:0 4px 12px rgba(245,131,191,0.2); transform:translateY(-1px); }
-        .ccc-nota-btn.active { border-color:#F583BF; background:linear-gradient(135deg,#fdf2f8,#fce7f3); color:#e060a8; box-shadow:0 4px 14px rgba(245,131,191,0.35); transform:translateY(-1px); }
-        .ccc-toast { background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; border-radius:12px; padding:0.7rem 1rem; font-size:0.85rem; font-weight:500; }
-        .ccc-btn-ia { display:inline-flex; align-items:center; gap:0.3rem; padding:0.2rem 0.6rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:20px; font-family:'Inter',sans-serif; font-size:0.7rem; font-weight:700; cursor:pointer; transition:opacity 0.2s; white-space:nowrap; }
+
+        /* ── Notas de avaliação ── */
+        .ccc-notas-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.55rem; }
+        .ccc-nota-btn {
+          padding:0.7rem 0.4rem; border:1.5px solid #e8e8e8;
+          border-radius:12px; background:#ffffff;
+          font-family:'Inter', sans-serif; font-size:0.86rem;
+          font-weight:700; color:#374151; cursor:pointer;
+          transition:all 0.2s; display:flex; flex-direction:column;
+          align-items:center; gap:0.2rem;
+        }
+        .ccc-nota-btn:hover { border-color:#F583BF; transform:translateY(-1px); }
+        .ccc-nota-btn.active {
+          border-color:#F583BF;
+          background:linear-gradient(135deg,#fdf2f8,#fce7f3);
+          color:#e060a8; box-shadow:0 3px 10px rgba(245,131,191,0.2);
+        }
+
+        /* ── Horário entrega btn ── */
+        .ccc-horario-btn {
+          display:flex; align-items:center; gap:0.65rem;
+          border:1.5px solid #e8e8e8; border-radius:10px;
+          padding:0.6rem 1rem; background:#ffffff;
+          font-family:'Inter', sans-serif; cursor:pointer;
+          width:100%; transition:border-color 0.2s; text-align:left;
+        }
+        .ccc-horario-btn:hover { border-color:#F583BF; }
+
+        /* ── Botão IA ── */
+        .ccc-btn-ia {
+          display:inline-flex; align-items:center; gap:0.3rem;
+          padding:0.22rem 0.65rem;
+          background:linear-gradient(135deg,#F583BF,#e060a8);
+          color:white; border:none; border-radius:20px;
+          font-family:'Inter', sans-serif; font-size:0.7rem;
+          font-weight:700; cursor:pointer; transition:opacity 0.2s;
+          white-space:nowrap; flex-shrink:0;
+        }
         .ccc-btn-ia:disabled { opacity:0.5; cursor:not-allowed; }
-        .ccc-btn-ia:hover:not(:disabled) { opacity:0.9; }
-        .ccc-spinner-ia { width:10px; height:10px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
-        .ccc-btn-save { width:100%; padding:0.9rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.95rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; min-height:50px; transition:opacity 0.2s; }
-        .ccc-btn-save:hover { opacity:0.9; }
-        .ccc-btn-save:disabled { opacity:0.65; cursor:not-allowed; }
+        .ccc-btn-ia:hover:not(:disabled) { opacity:0.88; }
+        .ccc-spinner-ia {
+          width:10px; height:10px;
+          border:2px solid rgba(255,255,255,0.4); border-top-color:white;
+          border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block;
+        }
+
+        /* ── Botão salvar ── */
+        .ccc-btn-save {
+          width:100%; max-width:100%; align-self:stretch;
+          padding:0.9rem;
+          background:linear-gradient(135deg,#F583BF,#e060a8);
+          color:white; border:none; border-radius:50px;
+          font-family:'Inter', sans-serif; font-size:0.95rem;
+          font-weight:700; cursor:pointer; letter-spacing:0.01em;
+          display:flex; align-items:center; justify-content:center;
+          min-height:50px; transition:opacity 0.2s, transform 0.15s;
+          box-shadow:0 4px 18px rgba(245,131,191,0.38);
+        }
+        .ccc-btn-save:hover { opacity:0.92; transform:translateY(-1px); }
+        .ccc-btn-save:disabled { opacity:0.65; cursor:not-allowed; transform:none; }
+
+        /* ── Toast ── */
+        .ccc-toast {
+          background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d;
+          border-radius:12px; padding:0.7rem 1.25rem; font-size:0.85rem;
+          font-weight:500; text-align:center; max-width:420px; align-self:center;
+        }
+
+        /* ── Spinners ── */
+        .ccc-spinner-lg { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
+        .ccc-spinner-sm { width:18px; height:18px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
+        .ccc-spinner-xs { width:13px; height:13px; border:2px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
+
+        /* ── Modal ── */
         .ccc-modal-overlay { position:fixed; inset:0; z-index:999; background:rgba(0,0,0,0.45); display:flex; align-items:flex-end; justify-content:center; }
-        .ccc-modal { background:white; border-radius:24px 24px 0 0; padding:1.5rem 1.5rem 2rem; width:100%; max-width:480px; animation:slideUp 0.25s ease; }
+        .ccc-modal { background:#ffffff; border-radius:24px 24px 0 0; padding:1.5rem 1.5rem 2rem; width:100%; max-width:480px; animation:slideUp 0.25s ease; }
         @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
-        .ccc-modal-header { display:flex; align-items:center; gap:0.5rem; font-size:1rem; font-weight:700; color:#1f2937; margin-bottom:1.25rem; }
+        .ccc-modal-header { display:flex; align-items:center; gap:0.5rem; font-size:1rem; font-weight:700; color:#111827; margin-bottom:1.25rem; }
         .ccc-modal-times { display:flex; align-items:center; gap:0.75rem; margin-bottom:1.5rem; }
         .ccc-modal-time-field { display:flex; flex-direction:column; gap:0.3rem; flex:1; }
         .ccc-modal-time-field label { font-size:0.75rem; font-weight:600; color:#6b7280; }
-        .ccc-modal-time-field input { padding:0.55rem; border:2px solid #fce7f3; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.95rem; font-weight:600; color:#1f2937; outline:none; text-align:center; background:#fdf2f8; width:100%; }
+        .ccc-modal-time-field input { padding:0.55rem; border:2px solid #fce7f3; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.95rem; font-weight:600; color:#111827; outline:none; text-align:center; background:#fdf2f8; width:100%; }
         .ccc-modal-time-field input:focus { border-color:#F583BF; background:white; }
         .ccc-modal-actions { display:flex; gap:0.75rem; }
         .ccc-modal-cancel { flex:1; padding:0.85rem; border:1.5px solid #e5e7eb; border-radius:50px; background:white; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:600; color:#6b7280; cursor:pointer; }
         .ccc-modal-confirm { flex:1; padding:0.85rem; background:linear-gradient(135deg,#F583BF,#e060a8); border:none; border-radius:50px; color:white; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
-        .ccc-spinner-lg { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
-        .ccc-spinner-sm { width:20px; height:20px; border:2px solid rgba(255,255,255,0.35); border-top-color:white; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
-        .ccc-spinner-xs { width:14px; height:14px; border:2px solid rgba(255,255,255,0.35); border-top-color:white; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
-        .ccc-outer { width:100%; display:flex; justify-content:center; padding-bottom:2rem; }
-        .ccc-root { font-family:'Inter',sans-serif; width:100%; max-width:1100px; display:flex; flex-direction:column; gap:1.25rem; box-sizing:border-box; padding:0 1rem; }
-        .ccc-page-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; padding-top:1.5rem; }
-        .ccc-page-title { font-size:1.4rem; font-weight:800; color:var(--text-primary,#1f2937); margin:0 0 0.25rem; text-align:left; }
-        .ccc-page-sub { font-size:0.84rem; color:#4b5563; margin:0; font-family:'Nunito',sans-serif; font-style:italic; text-align:left; }
-        .ccc-row-top { display:grid; grid-template-columns:repeat(4,1fr); gap:1.25rem; align-items:stretch; }
-        .ccc-row-bottom { display:grid; grid-template-columns:repeat(1,1fr); gap:1.25rem; align-items:start; }
-        .ccc-card { height:100%; }
-        @media (max-width: 1200px) {
-          .ccc-row-top { grid-template-columns:repeat(2,1fr); }
-        }
-        @media (max-width: 640px) {
+
+        /* ── Responsivo ── */
+
+        @media (max-width:640px) {
+          .ccc-outer { background:#ffffff; }
+          .ccc-root { padding:0 0.75rem; gap:1rem; }
           .ccc-row-top { grid-template-columns:1fr; }
           .ccc-row-bottom { grid-template-columns:1fr; }
           .ccc-page-title { font-size:1.2rem; }
+          .ccc-btn-save { max-width:100%; }
         }
       `}</style>
     </div>
