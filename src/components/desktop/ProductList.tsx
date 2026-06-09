@@ -24,31 +24,65 @@ export function DesktopProductList({ produtos, favorites, onToggleFavorite, back
   const regular = filtered.filter(p => !p.promocao)
 
   return (
-    <div style={{ backgroundColor: '#FEF2F2' }}>
-      <div className="mb-8 max-w-2xl mx-auto">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input type="text" placeholder="Buscar produtos..." value={searchTerm} onChange={e => onSearchChange(e.target.value)} className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-pink-400 focus:outline-none" />
-        </div>
+    <div>
+      {/* Search compacto */}
+      <div style={{ maxWidth: '420px', margin: '0 auto 28px', position: 'relative' }}>
+        <Search size={16} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
+        <input
+          type="text"
+          placeholder="Buscar produtos..."
+          value={searchTerm}
+          onChange={e => onSearchChange(e.target.value)}
+          style={{
+            width: '100%', padding: '10px 14px 10px 40px',
+            border: '1.5px solid #e8e8e8', borderRadius: '10px',
+            fontSize: '14px', color: '#3e3e3e', outline: 'none',
+            fontFamily: 'inherit', boxSizing: 'border-box',
+            transition: 'border-color 0.2s',
+          }}
+          onFocus={e => (e.target.style.borderColor = corBotao)}
+          onBlur={e => (e.target.style.borderColor = '#e8e8e8')}
+        />
       </div>
+
+      {/* Promoções */}
       {promo.length > 0 && (
-        <div className="mb-10">
-          <h3 className="text-2xl font-bold mb-6 flex items-center gap-3"><span>🔥</span> Promoções</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div style={{ marginBottom: '32px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#1f2937', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>🔥</span> Promoções
+          </h3>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+            gap: '16px',
+          }}>
             {promo.map(p => <DesktopProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={onToggleFavorite} backgroundColor={backgroundColor} borderColor={borderColor} corBotao={corBotao} />)}
           </div>
         </div>
       )}
+
+      {/* Produtos */}
       {regular.length > 0 && (
-        <div className="mb-10">
-          <h3 className="text-2xl font-bold mb-6">{selectedCategory || 'Todos os Produtos'}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div style={{ marginBottom: '32px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#1f2937', marginBottom: '16px' }}>
+            {selectedCategory || 'Todos os Produtos'}
+          </h3>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+            gap: '16px',
+          }}>
             {regular.map(p => <DesktopProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={onToggleFavorite} backgroundColor={backgroundColor} borderColor={borderColor} corBotao={corBotao} />)}
           </div>
         </div>
       )}
+
       {filtered.length === 0 && (
-        <div className="text-center py-20 text-gray-400"><Search className="w-16 h-16 mx-auto mb-4" /><h3 className="text-2xl font-bold mb-3">Nenhum produto encontrado</h3></div>
+        <div style={{ textAlign: 'center', padding: '48px 0', color: '#9ca3af' }}>
+          <Search size={40} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.3 }} />
+          <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#6b7280', margin: '0 0 4px' }}>Nenhum produto encontrado</h3>
+          <p style={{ fontSize: '13px', margin: 0 }}>Tente buscar por outro termo</p>
+        </div>
       )}
     </div>
   )
