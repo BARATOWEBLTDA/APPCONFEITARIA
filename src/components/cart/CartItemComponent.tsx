@@ -18,24 +18,93 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
   const inc = () => onUpdateQuantity(item.id, item.quantity + (item.saleType === 'kg' ? 0.5 : 1))
 
   return (
-    <div className="flex gap-3 p-3 bg-white border-2 border-pink-100 rounded-xl shadow-sm">
-      <div className="w-14 h-14 rounded-lg overflow-hidden bg-pink-50 flex-shrink-0">
-        {item.imageUrl ? <img src={item.imageUrl.split(',')[0]} alt={item.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xl">🧁</div>}
+    <div style={{
+      display:'flex', alignItems:'center', gap:'12px',
+      padding:'12px', borderRadius:'16px',
+      background:'#fff',
+      border:'1.5px solid #f3f4f6',
+      boxShadow:'0 1px 4px rgba(0,0,0,0.05)',
+    }}>
+      {/* Imagem */}
+      <div style={{
+        width:'58px', height:'58px', borderRadius:'12px',
+        overflow:'hidden', flexShrink:0,
+        background:'linear-gradient(135deg,#fdf2f8,#fce7f3)',
+        display:'flex', alignItems:'center', justifyContent:'center',
+      }}>
+        {item.imageUrl
+          ? <img src={item.imageUrl.split(',')[0]} alt={item.name} style={{width:'100%',height:'100%',objectFit:'cover'}} />
+          : <span style={{fontSize:'24px'}}>🧁</span>
+        }
       </div>
-      <div className="flex-1 min-w-0 flex flex-col justify-between">
-        <h4 className="font-bold text-gray-900 truncate text-sm">{item.name}</h4>
-        {item.selectedMassa && <span className="text-xs text-pink-600">🎂 {item.selectedMassa}</span>}
-        {item.selectedRecheio && <span className="text-xs text-purple-600">🥄 {item.selectedRecheio}</span>}
-        <div className="flex items-center justify-between mt-1">
-          <span className="font-bold text-green-600 text-sm">{formatCurrency(item.price * item.quantity)}</span>
-          <div className="flex items-center gap-1 bg-pink-50 rounded-full px-1 py-0.5">
-            <button onClick={dec} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-pink-200"><Minus className="w-3 h-3 text-pink-600" /></button>
-            <span className="text-xs font-bold text-pink-800 w-8 text-center">{item.saleType === 'kg' ? `${item.quantity}kg` : `${item.quantity}un`}</span>
-            <button onClick={inc} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-pink-200"><Plus className="w-3 h-3 text-pink-600" /></button>
+
+      {/* Info */}
+      <div style={{flex:1, minWidth:0, display:'flex', flexDirection:'column', gap:'4px'}}>
+        <h4 style={{margin:0, fontWeight:700, fontSize:'14px', color:'#111827', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis'}}>
+          {item.name}
+        </h4>
+        {item.selectedMassa && (
+          <span style={{fontSize:'11px', color:'#ec4899', fontWeight:500}}>🎂 {item.selectedMassa}</span>
+        )}
+        {item.selectedRecheio && (
+          <span style={{fontSize:'11px', color:'#8b5cf6', fontWeight:500}}>🥄 {item.selectedRecheio}</span>
+        )}
+        <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:'2px'}}>
+          {/* Preço */}
+          <span style={{fontWeight:800, fontSize:'15px', color:'#16a34a'}}>
+            {formatCurrency(item.price * item.quantity)}
+          </span>
+
+          {/* Quantidade */}
+          <div style={{
+            display:'flex', alignItems:'center', gap:'6px',
+            background:'#fdf2f8', borderRadius:'50px',
+            padding:'3px 6px', border:'1px solid #fce7f3',
+          }}>
+            <button
+              onClick={dec}
+              style={{
+                width:'24px', height:'24px', borderRadius:'50%',
+                background:'#fff', border:'1.5px solid #fce7f3',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                cursor:'pointer', flexShrink:0,
+              }}
+            >
+              <Minus size={11} color="#ec4899" />
+            </button>
+            <span style={{
+              fontSize:'13px', fontWeight:700, color:'#ec4899',
+              minWidth:'32px', textAlign:'center',
+            }}>
+              {item.saleType === 'kg' ? `${item.quantity}kg` : `${item.quantity}un`}
+            </span>
+            <button
+              onClick={inc}
+              style={{
+                width:'24px', height:'24px', borderRadius:'50%',
+                background:'#ec4899', border:'none',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                cursor:'pointer', flexShrink:0,
+              }}
+            >
+              <Plus size={11} color="#fff" />
+            </button>
           </div>
         </div>
       </div>
-      <button onClick={() => onRemove(item.id)} className="text-gray-300 hover:text-red-500 flex-shrink-0"><Trash2 className="w-4 h-4" /></button>
+
+      {/* Lixeira */}
+      <button
+        onClick={() => onRemove(item.id)}
+        style={{
+          width:'32px', height:'32px', borderRadius:'10px',
+          background:'#fff5f5', border:'1.5px solid #fee2e2',
+          display:'flex', alignItems:'center', justifyContent:'center',
+          cursor:'pointer', flexShrink:0,
+        }}
+      >
+        <Trash2 size={14} color="#ef4444" />
+      </button>
     </div>
   )
 }
