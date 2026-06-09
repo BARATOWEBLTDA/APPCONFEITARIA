@@ -14,36 +14,144 @@ interface Props {
 
 export function DesktopProductCard({ product, isFavorite, onToggleFavorite, backgroundColor, borderColor = '#ec4899', corBotao = '#ec4899' }: Props) {
   const [showModal, setShowModal] = useState(false)
+  const [hover, setHover] = useState(false)
   const firstImage = product.imagem_url?.split(',')[0]?.trim() || null
+
   const formatSale = (s: string) => {
-    const m: { [k: string]: string } = { 'tamanho-p': 'P', 'tamanho-m': 'M', 'tamanho-g': 'G', 'tamanho-xg': 'XG', 'kg': 'KG', 'cento': '100', 'sob-encomenda': 'Encomenda', 'outros': 'OUT' }
+    const m: Record<string, string> = { 'tamanho-p':'P','tamanho-m':'M','tamanho-g':'G','tamanho-xg':'XG','kg':'KG','cento':'100','sob-encomenda':'Enc','outros':'OUT' }
     return m[s] || 'UN'
   }
+
   return (
     <>
-      <div className={`bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all h-full flex flex-col ${product.promocao ? 'border-4 border-dashed border-pink-500' : 'border-4 border-gray-100'}`}>
-        <div className="p-4 flex-1 flex flex-col">
-          <div className="w-full aspect-square rounded-xl flex items-center justify-center mb-4 bg-gray-50 overflow-hidden relative" style={{ backgroundColor }}>
-            {firstImage ? <img src={firstImage} alt={product.nome} className="w-full h-full object-cover rounded-xl" /> : <span className="text-5xl">🧁</span>}
-            {product.promocao && <div className="absolute top-4 -right-12 bg-red-500 text-white font-bold px-6 py-2 transform rotate-45 shadow-lg z-10" style={{ width: '180px', textAlign: 'center', fontSize: '0.8rem' }}>PROMOÇÃO</div>}
+      <div
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        style={{
+          background: '#fff',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          border: product.promocao ? '2px solid #f87171' : '1px solid #f0f0f0',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          transition: 'box-shadow 0.2s, transform 0.2s',
+          boxShadow: hover ? '0 8px 24px rgba(0,0,0,0.1)' : '0 1px 4px rgba(0,0,0,0.06)',
+          transform: hover ? 'translateY(-2px)' : 'none',
+          cursor: 'pointer',
+          position: 'relative',
+        }}
+        onClick={() => setShowModal(true)}
+      >
+        {/* Badge promoção */}
+        {product.promocao && (
+          <div style={{
+            position: 'absolute', top: '10px', left: '10px', zIndex: 10,
+            background: '#ef4444', color: 'white',
+            fontSize: '10px', fontWeight: 800,
+            padding: '3px 8px', borderRadius: '6px',
+            textTransform: 'uppercase', letterSpacing: '0.5px',
+          }}>
+            Promoção
           </div>
-          <div className="flex-1 flex flex-col">
-            <div className="flex justify-between items-start mb-3">
-              <h4 className="font-bold text-lg leading-tight flex-1 line-clamp-2">{product.nome}</h4>
-              <button onClick={() => onToggleFavorite(product.id)} className="p-2 text-gray-400 hover:text-red-500 ml-3 flex-shrink-0"><Heart className="w-5 h-5" style={{ fill: isFavorite ? '#ef4444' : 'none' }} /></button>
-            </div>
-            <p className="text-gray-600 text-base mb-4 line-clamp-3 flex-1">{product.descricao}</p>
-            <div className="mt-auto">
-              {product.promocao && product.preco_promocional ? (
-                <div className="mb-4">
-                  <span className="text-lg text-red-500 line-through block">R$ {product.preco_normal.toFixed(2)}</span>
-                  <div className="flex items-center gap-2"><span className="text-2xl font-bold text-green-600">R$ {product.preco_promocional.toFixed(2)}</span><span className="text-sm px-3 py-1 rounded-md" style={{ backgroundColor: '#6A0122', color: 'white' }}>{formatSale(product.forma_venda)}</span></div>
+        )}
+
+        {/* Favorito */}
+        <button
+          onClick={e => { e.stopPropagation(); onToggleFavorite(product.id) }}
+          style={{
+            position: 'absolute', top: '10px', right: '10px', zIndex: 10,
+            background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '50%',
+            width: '32px', height: '32px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+          }}
+        >
+          <Heart size={15} color={isFavorite ? '#ef4444' : '#d1d5db'} fill={isFavorite ? '#ef4444' : 'none'} />
+        </button>
+
+        {/* Imagem */}
+        <div style={{
+          width: '100%', aspectRatio: '4/3',
+          background: backgroundColor || '#f9fafb',
+          overflow: 'hidden',
+        }}>
+          {firstImage
+            ? <img src={firstImage} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '40px' }}>🧁</div>
+          }
+        </div>
+
+        {/* Conteúdo */}
+        <div style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <h4 style={{
+            margin: '0 0 4px', fontWeight: 700, fontSize: '14px',
+            color: '#1f2937', lineHeight: 1.3,
+            overflow: 'hidden', textOverflow: 'ellipsis',
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any,
+          }}>
+            {product.nome}
+          </h4>
+
+          <p style={{
+            margin: '0 0 10px', fontSize: '12px', color: '#9ca3af',
+            lineHeight: 1.4,
+            overflow: 'hidden', textOverflow: 'ellipsis',
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any,
+            flex: 1,
+          }}>
+            {product.descricao}
+          </p>
+
+          {/* Preço */}
+          <div style={{ marginTop: 'auto' }}>
+            {product.promocao && product.preco_promocional ? (
+              <div style={{ marginBottom: '10px' }}>
+                <span style={{ fontSize: '12px', color: '#ef4444', textDecoration: 'line-through' }}>
+                  R$ {product.preco_normal.toFixed(2)}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                  <span style={{ fontSize: '18px', fontWeight: 800, color: '#16a34a' }}>
+                    R$ {product.preco_promocional.toFixed(2)}
+                  </span>
+                  <span style={{
+                    fontSize: '10px', fontWeight: 700, padding: '2px 6px',
+                    borderRadius: '4px', background: '#374151', color: 'white',
+                  }}>
+                    {formatSale(product.forma_venda)}
+                  </span>
                 </div>
-              ) : (
-                <div className="flex items-center gap-2 mb-4"><span className="text-2xl font-bold text-green-600">R$ {product.preco_normal.toFixed(2)}</span><span className="text-sm px-3 py-1 rounded-md" style={{ backgroundColor: '#6A0122', color: 'white' }}>{formatSale(product.forma_venda)}</span></div>
-              )}
-              <button onClick={() => setShowModal(true)} className="w-full py-3 px-4 rounded-xl text-white text-base font-semibold hover:scale-105 shadow-lg transition-all" style={{ backgroundColor: corBotao }}>Adicionar ao carrinho</button>
-            </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '18px', fontWeight: 800, color: '#16a34a' }}>
+                  R$ {product.preco_normal.toFixed(2)}
+                </span>
+                <span style={{
+                  fontSize: '10px', fontWeight: 700, padding: '2px 6px',
+                  borderRadius: '4px', background: '#374151', color: 'white',
+                }}>
+                  {formatSale(product.forma_venda)}
+                </span>
+              </div>
+            )}
+
+            {/* Botão */}
+            <button
+              onClick={e => { e.stopPropagation(); setShowModal(true) }}
+              style={{
+                width: '100%', padding: '10px',
+                borderRadius: '10px', border: 'none',
+                background: corBotao, color: 'white',
+                fontSize: '13px', fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
+              onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+            >
+              Adicionar ao carrinho
+            </button>
           </div>
         </div>
       </div>
