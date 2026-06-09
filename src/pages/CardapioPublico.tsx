@@ -129,16 +129,6 @@ function DesktopHero({ design, config }: any) {
       maxWidth: '1200px', margin: '0 auto', padding: '20px 32px',
       display: 'flex', gap: '24px', alignItems: 'stretch',
     }}>
-      {/* Banner */}
-      {hasBanner && (
-        <div style={{
-          flex: '1 1 60%', borderRadius: '16px', overflow: 'hidden',
-          maxHeight: '260px', background: '#f5f5f5',
-        }}>
-          <img src={banners[0]} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-        </div>
-      )}
-
       {/* Info card */}
       <div style={{
         flex: hasBanner ? '1 1 40%' : '1 1 100%',
@@ -182,6 +172,16 @@ function DesktopHero({ design, config }: any) {
           <InfoChip icon={<MapPin size={12} />} config={config} type="local" />
         </div>
       </div>
+
+      {/* Banner */}
+      {hasBanner && (
+        <div style={{
+          flex: '1 1 55%', borderRadius: '16px', overflow: 'hidden',
+          maxHeight: '220px', background: '#f5f5f5',
+        }}>
+          <img src={banners[0]} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        </div>
+      )}
     </div>
   )
 }
