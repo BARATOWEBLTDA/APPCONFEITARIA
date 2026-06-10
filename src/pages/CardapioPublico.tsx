@@ -13,7 +13,7 @@ import { DesktopProductCard } from '@/components/desktop/ProductCard'
 import { DesktopFooter } from '@/components/desktop/Footer'
 import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
-import { Star, MapPin, MagnifyingGlass, ShoppingBag } from '@phosphor-icons/react'
+import { Star, MapPin, MagnifyingGlass, ShoppingBag, House, Tag, Info, User } from '@phosphor-icons/react'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
 
@@ -22,11 +22,10 @@ import { formatCurrency } from '@/utils/helpers'
 /* ══════════════════════════════════════════════ */
 
 /* ── Nav Link com hover/active ── */
-function NavLink({ label, isFirst, isNavDark, navBg, textColor }: any) {
+function NavLink({ label, icon, isNavDark, navBg, textColor }: any) {
   const [hovered, setHovered] = useState(false)
   const [active, setActive] = useState(false)
 
-  // Cor do hover: levemente mais claro (nav escuro) ou mais escuro (nav claro)
   const hoverBg = isNavDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)'
   const activeBg = '#ffffff'
   const activeText = isNavDark ? navBg : '#1f2937'
@@ -52,8 +51,12 @@ function NavLink({ label, isFirst, isNavDark, navBg, textColor }: any) {
         fontFamily: 'inherit',
         transition: 'background 0.15s, color 0.15s',
         whiteSpace: 'nowrap',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '7px',
       }}
     >
+      {icon}
       {label}
     </button>
   )
@@ -98,8 +101,13 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
 
         {/* CENTRO — Links grandes */}
         <nav style={{ display:'flex', gap:'4px' }}>
-          {links.map((label, i) => (
-            <NavLink key={label} label={label} isFirst={i === 0} isNavDark={isNavDark} navBg={navBg} textColor={textColor} />
+          {[
+            { label: 'Início',     icon: <House size={18} weight="duotone" /> },
+            { label: 'Promoções',  icon: <Tag   size={18} weight="duotone" /> },
+            { label: 'Sobre nós',  icon: <Info  size={18} weight="duotone" /> },
+            { label: 'Minha conta',icon: <User  size={18} weight="duotone" /> },
+          ].map(({ label, icon }) => (
+            <NavLink key={label} label={label} icon={icon} isNavDark={isNavDark} navBg={navBg} textColor={textColor} />
           ))}
         </nav>
 
