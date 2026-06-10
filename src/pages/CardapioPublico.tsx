@@ -527,7 +527,7 @@ function CardapioContent() {
       <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
       <DeskNav design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
-      <div style={{ display:'flex', flexDirection:'column', gap:'20px', paddingBottom:'0', width:'100%', flex: 1 }}>
+      <div style={{ display:'flex', flexDirection:'column', gap:'20px', paddingBottom:'0', paddingTop:'24px', width:'100%', flex: 1 }}>
         {/* trust bar removida */}
 
         {/* Dropdown de categorias — entre trust bar e produtos */}
