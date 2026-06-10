@@ -521,7 +521,7 @@ function CardapioContent() {
   if (!isDesktop) {
     return (
       <div className="min-h-screen relative" style={{ backgroundColor: '#f8f8f8' }}>
-        <NavigationMenu />
+        <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
         <div style={{ height: '160px', backgroundColor: design.cor_borda || '#ec4899' }} />
         <Logo logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={design.cor_nome} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars} />
         <div style={{ marginTop:'16px' }}>
@@ -543,7 +543,7 @@ function CardapioContent() {
   /* ═══ DESKTOP ═══ */
   return (
     <div style={{ minHeight:'100vh', background:'#fafafa', fontFamily:'Inter, system-ui, sans-serif' }}>
-      <NavigationMenu />
+      <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
       <DeskNav design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
       <div style={{ display:'flex', flexDirection:'column', gap:'20px', paddingBottom:'0', width:'100%' }}>
