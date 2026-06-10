@@ -26,6 +26,28 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
   const { items } = useCart()
   const count = items.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
   const cor = design.cor_borda || '#ec4899'
+  const navBg = design.cor_navbar || '#ffffff'
+
+  // Detecta se o fundo do navbar é escuro para adaptar cores
+  const isNavDark = (() => {
+    const hex = navBg.replace('#', '')
+    if (hex.length < 6) return false
+    const r = parseInt(hex.slice(0,2), 16)
+    const g = parseInt(hex.slice(2,4), 16)
+    const b = parseInt(hex.slice(4,6), 16)
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    return luminance < 0.5
+  })()
+
+  // Cor do texto adaptada ao fundo
+  const textColor = isNavDark ? '#ffffff' : '#1f2937'
+  const textMuted = isNavDark ? 'rgba(255,255,255,0.55)' : '#9ca3af'
+  const textNav   = isNavDark ? 'rgba(255,255,255,0.75)' : '#4b5563'
+  // Hover: fundo levemente mais claro/escuro que o navbar
+  const hoverBg   = isNavDark ? 'rgba(255,255,255,0.12)' : '#f3f4f6'
+  // Ativo: um pouco mais destacado que o hover mas ainda na paleta do navbar
+  const activeBg  = isNavDark ? 'rgba(255,255,255,0.2)' : cor
+  const activeText = isNavDark ? '#ffffff' : '#ffffff'
 
   const links = [
     { icon: <Home size={15}/>, label: 'Início', active: true },
@@ -36,18 +58,18 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
   ]
 
   return (
-    <div style={{ background: design.cor_navbar || '#fff', borderBottom:'1px solid #f0f0f0', position:'sticky', top:0, zIndex:40, boxShadow:'0 1px 8px rgba(0,0,0,0.06)' }}>
+    <div style={{ background: navBg, borderBottom: isNavDark ? 'none' : '1px solid #f0f0f0', position:'sticky', top:0, zIndex:40, boxShadow:'0 1px 8px rgba(0,0,0,0.08)' }}>
       <div style={{ width:'100%', padding:'0 48px', boxSizing:'border-box', display:'flex', alignItems:'center', height:'72px', gap:'16px' }}>
 
-        {/* Logo + nome + slogan */}
+        {/* Logo + nome + cidade */}
         <div style={{ display:'flex', alignItems:'center', gap:'12px', marginRight:'8px', flexShrink:0 }}>
           {design.logo_url
             ? <img src={design.logo_url} alt="" style={{ width:'48px', height:'48px', borderRadius:'50%', objectFit:'cover', border:`2px solid ${cor}` }}/>
             : <div style={{ width:'48px', height:'48px', borderRadius:'50%', background:cor, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'20px', fontWeight:800, flexShrink:0 }}>{design.nome_loja?.charAt(0)}</div>
           }
           <div style={{ display:'flex', flexDirection:'column', justifyContent:'center', gap:'4px' }}>
-            <span style={{ fontWeight:800, fontSize:'16px', color:'#1f2937', lineHeight:1, fontFamily:'inherit' }}>{design.nome_loja}</span>
-            <span style={{ fontSize:'11px', color:'#9ca3af', fontWeight:500, lineHeight:1 }}>
+            <span style={{ fontWeight:800, fontSize:'16px', color: design.cor_nome || textColor, lineHeight:1, fontFamily:'inherit' }}>{design.nome_loja}</span>
+            <span style={{ fontSize:'11px', color: textMuted, fontWeight:500, lineHeight:1 }}>
               {design.cidade_estado || 'Doces que encantam'}
             </span>
           </div>
@@ -59,13 +81,13 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
             <button key={l.label} style={{
               display:'flex', alignItems:'center', gap:'6px',
               padding:'8px 14px', borderRadius:'6px', border:'none',
-              background: l.active ? cor : 'transparent',
-              color: l.active ? '#fff' : '#4b5563',
+              background: l.active ? activeBg : 'transparent',
+              color: l.active ? activeText : textNav,
               fontSize:'13px', fontWeight:600, cursor:'pointer', fontFamily:'inherit',
               transition:'all 0.15s',
             }}
-              onMouseOver={e => { if (!l.active) (e.currentTarget as HTMLElement).style.background='#f3f4f6' }}
-              onMouseOut={e => { if (!l.active) (e.currentTarget as HTMLElement).style.background='transparent' }}
+              onMouseOver={e => { if (!l.active) (e.currentTarget as HTMLElement).style.background = hoverBg }}
+              onMouseOut={e => { if (!l.active) (e.currentTarget as HTMLElement).style.background = 'transparent' }}
             >
               {l.icon} {l.label}
             </button>
@@ -76,19 +98,19 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
 
         {/* Search */}
         <div style={{ position:'relative', width:'300px' }}>
-          <Search size={15} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'#9ca3af' }}/>
+          <Search size={15} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color: textMuted }}/>
           <input value={searchTerm} onChange={(e: any) => onSearchChange(e.target.value)}
             placeholder="Busque por um produto..."
-            style={{ width:'100%', padding:'10px 14px 10px 40px', border:'1.5px solid #e5e7eb', borderRadius:'8px', fontSize:'13px', color:'#374151', outline:'none', fontFamily:'inherit', boxSizing:'border-box', background:'#f9fafb' }}
-            onFocus={(e: any) => { e.target.style.borderColor = cor; e.target.style.background = '#fff' }}
-            onBlur={(e: any) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb' }}
+            style={{ width:'100%', padding:'10px 14px 10px 40px', border: isNavDark ? '1.5px solid rgba(255,255,255,0.2)' : '1.5px solid #e5e7eb', borderRadius:'8px', fontSize:'13px', color: isNavDark ? '#fff' : '#374151', outline:'none', fontFamily:'inherit', boxSizing:'border-box', background: isNavDark ? 'rgba(255,255,255,0.1)' : '#f9fafb' }}
+            onFocus={(e: any) => { e.target.style.borderColor = cor; e.target.style.background = isNavDark ? 'rgba(255,255,255,0.15)' : '#fff' }}
+            onBlur={(e: any) => { e.target.style.borderColor = isNavDark ? 'rgba(255,255,255,0.2)' : '#e5e7eb'; e.target.style.background = isNavDark ? 'rgba(255,255,255,0.1)' : '#f9fafb' }}
           />
         </div>
 
         {/* Sacola */}
         <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
           display:'flex', alignItems:'center', gap:'8px', padding:'10px 22px', borderRadius:'8px',
-          border:'none', background:cor, color:'#fff', fontSize:'14px', fontWeight:700,
+          border:'none', background: cor, color:'#fff', fontSize:'14px', fontWeight:700,
           cursor:'pointer', fontFamily:'inherit', position:'relative', flexShrink:0,
           boxShadow:`0 2px 8px ${cor}44`, transition:'opacity 0.15s',
         }}
