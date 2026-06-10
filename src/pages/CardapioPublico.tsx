@@ -42,7 +42,8 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
         <div style={{ display:'flex', alignItems:'center', gap:'10px', marginRight:'16px', flexShrink:0 }}>
           {design.logo_url && <img src={design.logo_url} alt="" style={{ width:'40px', height:'40px', borderRadius:'50%', objectFit:'cover' }}/>}
           <div>
-            <span style={{ fontWeight:800, fontSize:'16px', color:'#1f2937', fontStyle:'italic' }}>{design.nome_loja}</span>
+            <span style={{ fontWeight:800, fontSize:'16px', color:'#1f2937', fontStyle:'italic', display:'block', lineHeight:1.2 }}>{design.nome_loja}</span>
+            {design.cidade_estado && <span style={{ fontSize:'11px', color:'#9ca3af', fontWeight:500 }}>{design.cidade_estado}</span>}
           </div>
         </div>
 
@@ -418,7 +419,7 @@ function CardapioContent() {
   return (
     <div style={{ minHeight:'100vh', background:'#fafafa', fontFamily:'Inter, system-ui, sans-serif' }}>
       <NavigationMenu />
-      <DeskNav design={design} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+      <DeskNav design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
       <div style={{ display:'flex', flexDirection:'column', gap:'20px', paddingBottom:'0', width:'100%' }}>
         <DeskHero design={design} />
