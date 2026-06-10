@@ -35,11 +35,11 @@ import CardapioDesign from "@/pages/CardapioDesign";
 import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 import CardapioPublico from "@/pages/CardapioPublico";
 
-const Pedidos = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>📋 Pedidos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
-const Financeiro = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>💰 Financeiro</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
-const Promocoes = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🏷️ Promoções</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
-const Estoque = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>📦 Estoque</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
-const Arquivos = () => <div style={{padding:"2rem",fontFamily:"DM Sans,sans-serif"}}><h2>🗂️ Arquivos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+const Pedidos = () => <div style={{padding:"2rem"}}><h2>📋 Pedidos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+const Financeiro = () => <div style={{padding:"2rem"}}><h2>💰 Financeiro</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+const Promocoes = () => <div style={{padding:"2rem"}}><h2>🏷️ Promoções</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+const Estoque = () => <div style={{padding:"2rem"}}><h2>📦 Estoque</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
+const Arquivos = () => <div style={{padding:"2rem"}}><h2>🗂️ Arquivos</h2><p style={{color:"#9ca3af",marginTop:"0.5rem"}}>Em breve...</p></div>;
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<any>(undefined);
