@@ -542,11 +542,11 @@ function CardapioContent() {
 
   /* ═══ DESKTOP ═══ */
   return (
-    <div style={{ minHeight:'100vh', background:'#fafafa', fontFamily:'Inter, system-ui, sans-serif' }}>
+    <div style={{ minHeight:'100vh', background:'#fafafa', fontFamily:'Inter, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
       <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
       <DeskNav design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
-      <div style={{ display:'flex', flexDirection:'column', gap:'20px', paddingBottom:'0', width:'100%' }}>
+      <div style={{ display:'flex', flexDirection:'column', gap:'20px', paddingBottom:'0', width:'100%', flex: 1 }}>
         <DeskTrustBar />
 
         {/* Dropdown de categorias — entre trust bar e produtos */}
@@ -614,6 +614,7 @@ function CardapioContent() {
 
       </div>
 
+      <div style={{ flex: 1 }} />
       <DeskFooterBar design={design} config={config} />
     </div>
   )
