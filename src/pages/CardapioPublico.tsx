@@ -94,8 +94,8 @@ function DeskHero({ design }: any) {
   if (!banners.length) return null
 
   return (
-    <div style={{ maxWidth:'1280px', margin:'0 auto', padding:'20px 32px 0' }}>
-      <div style={{ width:'100%', height:'280px', borderRadius:'16px', overflow:'hidden', position:'relative', background:'#1a1a1a' }}>
+    <div style={{ maxWidth:'100%', margin:'0 auto', padding:'20px 16px 0' }}>
+      <div style={{ width:'100%', height:'300px', borderRadius:'12px', overflow:'hidden', position:'relative', background:'#1a1a1a' }}>
         <img src={banners[0]!} alt="Banner" style={{ width:'100%', height:'100%', objectFit:'cover', opacity:0.9 }}/>
       </div>
     </div>
