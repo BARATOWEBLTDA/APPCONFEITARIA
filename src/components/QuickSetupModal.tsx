@@ -197,19 +197,19 @@ export function QuickSetupModal({ step, userId, onClose, onSaved }: Props) {
         .qsm-modal { background: white; border-radius: 20px; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: qsmIn 0.25s cubic-bezier(0.16,1,0.3,1); }
         @keyframes qsmIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .qsm-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.25rem 0; }
-        .qsm-title { font-size: 1rem; font-weight: 700; color: #1f2937; margin: 0; font-family: 'Inter', sans-serif; }
+        .qsm-title { font-size: 1rem; font-weight: 700; color: #1f2937; margin: 0; font-family: 'Geist', sans-serif; }
         .qsm-close { background: #f3f4f6; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; color: #6b7280; }
         .qsm-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.85rem; }
         .qsm-avatar { border-radius: 50%; border: 2px dashed #fbcfe8; background: #fff0f6; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; transition: border-color 0.2s; }
         .qsm-avatar:hover { border-color: #f9007a; }
         .qsm-field { display: flex; flex-direction: column; gap: 0.3rem; }
-        .qsm-field label { font-size: 0.82rem; font-weight: 600; color: #374151; font-family: 'Inter', sans-serif; }
-        .qsm-field input { padding: 0.7rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; outline: none; transition: border-color 0.2s; }
+        .qsm-field label { font-size: 0.82rem; font-weight: 600; color: #374151; font-family: 'Geist', sans-serif; }
+        .qsm-field input { padding: 0.7rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: #1f2937; outline: none; transition: border-color 0.2s; }
         .qsm-field input:focus { border-color: #f9007a; }
-        .qsm-hint { font-size: 0.75rem; color: #9ca3af; margin: 0; font-family: 'Inter', sans-serif; }
+        .qsm-hint { font-size: 0.75rem; color: #9ca3af; margin: 0; font-family: 'Geist', sans-serif; }
         .qsm-footer { display: flex; gap: 0.75rem; padding: 0 1.25rem 1.25rem; }
-        .qsm-btn-cancel { flex: 1; padding: 0.75rem; background: #f3f4f6; color: #6b7280; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
-        .qsm-btn-save { flex: 1; padding: 0.75rem; background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .qsm-btn-cancel { flex: 1; padding: 0.75rem; background: #f3f4f6; color: #6b7280; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+        .qsm-btn-save { flex: 1; padding: 0.75rem; background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .qsm-btn-save:disabled { opacity: 0.7; cursor: not-allowed; }
         .qsm-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }

@@ -506,7 +506,7 @@ export default function CardapioConfigPage() {
           padding-bottom:3rem; background:#f8f9fb;
         }
         .ccc-root {
-          font-family:'Inter', sans-serif; width:100%; max-width:1160px;
+          font-family:'Geist', sans-serif; width:100%; max-width:1160px;
           display:flex; flex-direction:column; gap:1.5rem;
           box-sizing:border-box; padding:0 1.5rem;
         }
@@ -586,7 +586,7 @@ export default function CardapioConfigPage() {
         .ccc-field-icon { display:flex; align-items:center; flex-shrink:0; color:#c4c8ce; }
         .ccc-field-input {
           flex:1; border:none; outline:none;
-          font-family:'Inter', sans-serif; font-size:0.88rem;
+          font-family:'Geist', sans-serif; font-size:0.88rem;
           color:#111827; background:transparent; min-width:0;
         }
         .ccc-field-input::placeholder { color:#c4c8ce; }
@@ -627,7 +627,7 @@ export default function CardapioConfigPage() {
         .ccc-dia-btn {
           padding:0.3rem 0.6rem; border-radius:8px;
           border:1.5px solid #e8e8e8; background:#ffffff;
-          font-family:'Inter', sans-serif; font-size:0.76rem;
+          font-family:'Geist', sans-serif; font-size:0.76rem;
           font-weight:600; color:#6b7280; cursor:pointer; transition:all 0.15s;
         }
         .ccc-dia-btn:hover { border-color:#F583BF; color:#e060a8; }
@@ -638,7 +638,7 @@ export default function CardapioConfigPage() {
         .ccc-time-field label { font-size:0.72rem; font-weight:600; color:#6b7280; }
         .ccc-time-field input {
           padding:0.55rem 0.8rem; border:1.5px solid #e8e8e8;
-          border-radius:10px; font-family:'Inter', sans-serif;
+          border-radius:10px; font-family:'Geist', sans-serif;
           font-size:0.86rem; color:#111827; outline:none;
           transition:border-color 0.2s; width:100%; background:#ffffff;
         }
@@ -649,7 +649,7 @@ export default function CardapioConfigPage() {
         .ccc-nota-btn {
           padding:0.7rem 0.4rem; border:1.5px solid #e8e8e8;
           border-radius:12px; background:#ffffff;
-          font-family:'Inter', sans-serif; font-size:0.86rem;
+          font-family:'Geist', sans-serif; font-size:0.86rem;
           font-weight:700; color:#374151; cursor:pointer;
           transition:all 0.2s; display:flex; flex-direction:column;
           align-items:center; gap:0.2rem;
@@ -666,7 +666,7 @@ export default function CardapioConfigPage() {
           display:flex; align-items:center; gap:0.65rem;
           border:1.5px solid #e8e8e8; border-radius:10px;
           padding:0.6rem 1rem; background:#ffffff;
-          font-family:'Inter', sans-serif; cursor:pointer;
+          font-family:'Geist', sans-serif; cursor:pointer;
           width:100%; transition:border-color 0.2s; text-align:left;
         }
         .ccc-horario-btn:hover { border-color:#F583BF; }
@@ -677,7 +677,7 @@ export default function CardapioConfigPage() {
           padding:0.22rem 0.65rem;
           background:linear-gradient(135deg,#F583BF,#e060a8);
           color:white; border:none; border-radius:20px;
-          font-family:'Inter', sans-serif; font-size:0.7rem;
+          font-family:'Geist', sans-serif; font-size:0.7rem;
           font-weight:700; cursor:pointer; transition:opacity 0.2s;
           white-space:nowrap; flex-shrink:0;
         }
@@ -695,7 +695,7 @@ export default function CardapioConfigPage() {
           padding:0.9rem;
           background:linear-gradient(135deg,#F583BF,#e060a8);
           color:white; border:none; border-radius:50px;
-          font-family:'Inter', sans-serif; font-size:0.95rem;
+          font-family:'Geist', sans-serif; font-size:0.95rem;
           font-weight:700; cursor:pointer; letter-spacing:0.01em;
           display:flex; align-items:center; justify-content:center;
           min-height:50px; transition:opacity 0.2s, transform 0.15s;
@@ -724,11 +724,11 @@ export default function CardapioConfigPage() {
         .ccc-modal-times { display:flex; align-items:center; gap:0.75rem; margin-bottom:1.5rem; }
         .ccc-modal-time-field { display:flex; flex-direction:column; gap:0.3rem; flex:1; }
         .ccc-modal-time-field label { font-size:0.75rem; font-weight:600; color:#6b7280; }
-        .ccc-modal-time-field input { padding:0.55rem; border:2px solid #fce7f3; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.95rem; font-weight:600; color:#111827; outline:none; text-align:center; background:#fdf2f8; width:100%; }
+        .ccc-modal-time-field input { padding:0.55rem; border:2px solid #fce7f3; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.95rem; font-weight:600; color:#111827; outline:none; text-align:center; background:#fdf2f8; width:100%; }
         .ccc-modal-time-field input:focus { border-color:#F583BF; background:white; }
         .ccc-modal-actions { display:flex; gap:0.75rem; }
-        .ccc-modal-cancel { flex:1; padding:0.85rem; border:1.5px solid #e5e7eb; border-radius:50px; background:white; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:600; color:#6b7280; cursor:pointer; }
-        .ccc-modal-confirm { flex:1; padding:0.85rem; background:linear-gradient(135deg,#F583BF,#e060a8); border:none; border-radius:50px; color:white; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
+        .ccc-modal-cancel { flex:1; padding:0.85rem; border:1.5px solid #e5e7eb; border-radius:50px; background:white; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:600; color:#6b7280; cursor:pointer; }
+        .ccc-modal-confirm { flex:1; padding:0.85rem; background:linear-gradient(135deg,#F583BF,#e060a8); border:none; border-radius:50px; color:white; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
 
         /* ── Responsivo ── */
 

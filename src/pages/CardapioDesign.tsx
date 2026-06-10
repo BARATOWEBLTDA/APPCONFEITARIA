@@ -387,7 +387,7 @@ export default function CardapioDesign() {
       <style>{`
         @keyframes cdspin { to { transform:rotate(360deg); } }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-        .cd-root { font-family:'Nunito',sans-serif; max-width:520px; width:100%; box-sizing:border-box; display:flex; flex-direction:column; gap:0.85rem; }
+        .cd-root { font-family:'Geist', sans-serif; max-width:520px; width:100%; box-sizing:border-box; display:flex; flex-direction:column; gap:0.85rem; }
         .cd-page-header { padding-top:1.5rem; text-align:center; margin-bottom:0.15rem; }
         .cd-page-title { font-size:1.25rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.3rem; }
         .cd-page-sub { font-size:0.84rem; color:#4b5563; margin:0; font-style:italic; }
@@ -411,7 +411,7 @@ export default function CardapioDesign() {
         .cd-banner-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
         .cd-slot-locked { align-items:center; justify-content:center; background:#fdf2f8; border:2px dashed #fce7f3; border-radius:12px; aspect-ratio:16/9; padding:0.5rem; }
         .cd-remove-btn { position:absolute; top:0.3rem; right:0.3rem; background:rgba(0,0,0,0.5); border:none; border-radius:50%; width:22px; height:22px; color:white; font-size:0.65rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-        .cd-change-btn { align-self:center; padding:0.45rem 1.25rem; background:var(--bg-subtle,#f3f4f6); border:1.5px solid var(--border,#e5e7eb); border-radius:50px; font-family:'Nunito',sans-serif; font-size:0.82rem; font-weight:700; color:var(--text-secondary,#374151); cursor:pointer; }
+        .cd-change-btn { align-self:center; padding:0.45rem 1.25rem; background:var(--bg-subtle,#f3f4f6); border:1.5px solid var(--border,#e5e7eb); border-radius:50px; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:700; color:var(--text-secondary,#374151); cursor:pointer; }
         .cd-change-btn:hover { border-color:#F583BF; color:#F583BF; }
         .cd-change-btn-sm { font-size:0.7rem; font-weight:700; color:#F583BF; background:none; border:none; cursor:pointer; padding:0; text-align:center; }
         .cd-change-btn-sm:hover { text-decoration:underline; }
@@ -427,8 +427,8 @@ export default function CardapioDesign() {
         .cd-picker-wrap { padding:0.75rem; background:#f9fafb; border-radius:12px; border:1px solid #f3f4f6; margin-top:4px; }
         .cd-hex-input { flex:1; min-width:0; padding:6px 8px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:0.78rem; font-family:monospace; color:#374151; outline:none; }
         .cd-hex-input:focus { border-color:#F583BF; }
-        .cd-picker-close { padding:6px 10px; background:#ec4899; color:white; border:none; border-radius:8px; font-size:0.75rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Nunito',sans-serif; flex-shrink:0; }
-        .cd-restore-btn { padding:6px 8px; background:#f3f4f6; color:#6b7280; border:1.5px solid #e5e7eb; border-radius:8px; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Nunito',sans-serif; flex-shrink:0; }
+        .cd-picker-close { padding:6px 10px; background:#ec4899; color:white; border:none; border-radius:8px; font-size:0.75rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; }
+        .cd-restore-btn { padding:6px 8px; background:#f3f4f6; color:#6b7280; border:1.5px solid #e5e7eb; border-radius:8px; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; }
         .cd-restore-btn:hover { border-color:#F583BF; color:#F583BF; }
         .cd-upgrade-box { background:#fdf2f8; border:1.5px dashed #f9a8d4; border-radius:16px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; }
         .cd-upgrade-title { font-size:0.88rem; font-weight:700; color:#374151; margin:0 0 2px; }

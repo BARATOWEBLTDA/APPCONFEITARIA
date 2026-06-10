@@ -348,7 +348,7 @@ export default function Layout() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .layout-root { display: flex; min-height: 100vh; font-family: 'Inter', sans-serif; background: #F8F9FA; position: relative; }
+        .layout-root { display: flex; min-height: 100vh; font-family: 'Geist', sans-serif; background: #F8F9FA; position: relative; }
         .mob-top-header { display: none; }
         .bottom-nav { display: none; }
 
@@ -375,7 +375,7 @@ export default function Layout() {
         .nav-item:focus { background: #1D2550; color: #FFFFFF; outline: none; }
         .nav-item.active { background: linear-gradient(90deg,#FF4FA3,#FF6BB5); color: #FFFFFF; font-weight: 600; }
         .nav-item.active .nav-icon { opacity:1; }
-        .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; font-family: 'Inter',sans-serif; padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #D0D8F0; transition: background 0.15s, color 0.15s; display: flex; align-items: center; gap: 0.6rem; box-sizing: border-box; margin: 0; }
+        .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; font-family: 'Geist', sans-serif; padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #D0D8F0; transition: background 0.15s, color 0.15s; display: flex; align-items: center; gap: 0.6rem; box-sizing: border-box; margin: 0; }
         .nav-group-btn:hover { background: #1D2550; color: #FFFFFF; }
         .nav-group-btn.active { color: #FF4FA3; }
         .nav-subitems { display: flex; flex-direction: column; padding: 0 0 0.25rem 0; }
@@ -449,7 +449,7 @@ export default function Layout() {
             background: none;
             border: none;
             cursor: pointer;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Geist', sans-serif;
             transition: color 0.15s;
           }
 
@@ -483,7 +483,7 @@ export default function Layout() {
           @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
           .gestao-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 0 auto 1rem; }
           .gestao-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
-          .gestao-title { font-size: 1rem; font-weight: 700; color: #ffffff; margin: 0; font-family: 'Inter', sans-serif; }
+          .gestao-title { font-size: 1rem; font-weight: 700; color: #ffffff; margin: 0; font-family: 'Geist', sans-serif; }
           .gestao-close { background: rgba(255,255,255,0.08); border: none; color: rgba(255,255,255,0.6); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; }
           .gestao-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem; }
           .gestao-item {
@@ -496,7 +496,7 @@ export default function Layout() {
           .gestao-item:hover { background: rgba(245,131,191,0.15); border-color: rgba(245,131,191,0.3); }
           .gestao-item.active { background: rgba(245,131,191,0.2); border-color: rgba(245,131,191,0.4); }
           .gestao-icon { color: #F583BF; display: flex; align-items: center; }
-          .gestao-label { font-size: 0.72rem; font-weight: 600; color: #ffffff; text-align: center; font-family: 'Inter', sans-serif; line-height: 1.2; }
+          .gestao-label { font-size: 0.72rem; font-weight: 600; color: #ffffff; text-align: center; font-family: 'Geist', sans-serif; line-height: 1.2; }
         }
             `}</style>
     </div>

@@ -138,7 +138,7 @@ export default function ResetPassword() {
         * { box-sizing:border-box; margin:0; padding:0; }
         html, body, #root { height:100%; overflow:hidden; }
 
-        .rp-root { height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; font-family:'Inter',sans-serif; padding:1.5rem; }
+        .rp-root { height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; font-family:'Geist', sans-serif; padding:1.5rem; }
         .rp-bg { position:fixed; inset:0; z-index:0; background:linear-gradient(120deg,#F583BF 0%,#e060a8 45%,#f9a8d4 100%); }
         .rp-glow { position:fixed; z-index:1; width:350px; height:350px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,rgba(255,255,255,0) 70%); transform:translate(-50%,-50%); pointer-events:none; }
 
@@ -155,17 +155,17 @@ export default function ResetPassword() {
         .rp-form { display:flex; flex-direction:column; gap:1rem; }
         .rp-field { display:flex; flex-direction:column; gap:0.35rem; }
         .rp-field label { font-size:0.88rem; font-weight:500; color:#374151; }
-        .rp-field input { padding:0.72rem 1rem; border:1.5px solid #e5e7eb; border-radius:8px; font-family:'Inter',sans-serif; font-size:0.95rem; color:#1f2937; outline:none; transition:border-color 0.2s; width:100%; }
+        .rp-field input { padding:0.72rem 1rem; border:1.5px solid #e5e7eb; border-radius:8px; font-family:'Geist', sans-serif; font-size:0.95rem; color:#1f2937; outline:none; transition:border-color 0.2s; width:100%; }
         .rp-field input:focus { border-color:#F583BF; }
         .rp-field input::placeholder { color:#9ca3af; }
 
         .rp-error { background:#fff1f2; border:1px solid #fecdd3; color:#be123c; border-radius:8px; padding:0.6rem 0.9rem; font-size:0.85rem; }
 
-        .rp-btn { padding:0.85rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:8px; font-family:'Inter',sans-serif; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; min-height:48px; transition:opacity 0.2s; }
+        .rp-btn { padding:0.85rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:8px; font-family:'Geist', sans-serif; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; min-height:48px; transition:opacity 0.2s; }
         .rp-btn:hover:not(:disabled) { opacity:0.9; }
         .rp-btn:disabled { opacity:0.6; cursor:not-allowed; }
 
-        .rp-back { background:none; border:none; color:#9ca3af; font-family:'Inter',sans-serif; font-size:0.88rem; cursor:pointer; text-align:center; padding:0.25rem; }
+        .rp-back { background:none; border:none; color:#9ca3af; font-family:'Geist', sans-serif; font-size:0.88rem; cursor:pointer; text-align:center; padding:0.25rem; }
         .rp-back:hover { color:#F583BF; }
 
         .rp-success { text-align:center; display:flex; flex-direction:column; gap:0.75rem; }

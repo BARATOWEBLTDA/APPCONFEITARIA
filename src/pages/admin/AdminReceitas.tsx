@@ -115,11 +115,11 @@ export default function AdminReceitas() {
         .adm-loading { color: #9ca3af; padding: 2rem; }
         .adm-empty { color: #9ca3af; padding: 2rem; text-align: center; }
         .adm-filter-tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-        .adm-filter-tab { padding: 0.5rem 1rem; border-radius: 20px; border: 1.5px solid #e5e7eb; background: white; font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.15s; color: #6b7280; }
+        .adm-filter-tab { padding: 0.5rem 1rem; border-radius: 20px; border: 1.5px solid #e5e7eb; background: white; font-family: 'Geist', sans-serif; font-size: 0.82rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; transition: all 0.15s; color: #6b7280; }
         .adm-filter-tab.active { background: #f9007a; color: white; border-color: #f9007a; }
         .adm-filter-count { background: rgba(0,0,0,0.15); border-radius: 20px; padding: 0.05rem 0.4rem; font-size: 0.72rem; }
         .adm-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1rem; max-width: 400px; }
-        .adm-search { border: none; outline: none; flex: 1; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; }
+        .adm-search { border: none; outline: none; flex: 1; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: #1f2937; }
         .adm-receitas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
         .adm-receita-card { background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; position: relative; }
         .adm-receita-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
@@ -141,9 +141,9 @@ export default function AdminReceitas() {
         .adm-detail-meta { font-size: 0.82rem; color: #9ca3af; margin: 0 1.25rem 0.75rem; }
         .adm-detail-content { padding: 0 1.25rem; font-size: 0.85rem; color: #374151; line-height: 1.6; }
         .adm-detail-actions { display: flex; gap: 0.5rem; padding: 1rem 1.25rem 1.25rem; flex-wrap: wrap; }
-        .adm-btn-approve { flex: 1; padding: 0.7rem; background: #dcfce7; color: #16a34a; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
-        .adm-btn-reject { flex: 1; padding: 0.7rem; background: #fff7ed; color: #f59e0b; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
-        .adm-btn-delete { padding: 0.7rem 1rem; background: #fff1f2; color: #ef4444; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+        .adm-btn-approve { flex: 1; padding: 0.7rem; background: #dcfce7; color: #16a34a; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+        .adm-btn-reject { flex: 1; padding: 0.7rem; background: #fff7ed; color: #f59e0b; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
+        .adm-btn-delete { padding: 0.7rem 1rem; background: #fff1f2; color: #ef4444; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-weight: 600; cursor: pointer; font-size: 0.85rem; }
       `}</style>
     </div>
   );

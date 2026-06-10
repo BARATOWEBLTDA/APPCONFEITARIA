@@ -42,7 +42,7 @@ export function SplashScreen({ onDone }: { onDone?: () => void }) {
         }
         .splash-tag {
           position: absolute; bottom: 2.5rem;
-          font-family: 'Inter', sans-serif;
+          font-family: 'Geist', sans-serif;
           font-size: 0.82rem; font-weight: 500;
           color: rgba(255,255,255,0.75);
           letter-spacing: 0.1em; text-transform: uppercase;

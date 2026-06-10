@@ -144,7 +144,7 @@ export default function AdminPDFs() {
         .adm-page-title { font-size:1.5rem; font-weight:700; color:#1f2937; margin:0 0 0.25rem; }
         .adm-page-sub { font-size:0.88rem; color:#9ca3af; margin:0; }
         .adm-loading { color:#9ca3af; padding:2rem; }
-        .adm-btn-primary { padding:0.7rem 1.25rem; background:linear-gradient(135deg,#f9007a,#d4006a); color:white; border:none; border-radius:10px; font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+        .adm-btn-primary { padding:0.7rem 1.25rem; background:linear-gradient(135deg,#f9007a,#d4006a); color:white; border:none; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:600; cursor:pointer; white-space:nowrap; }
         .adm-pdf-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1rem; }
         .adm-pdf-card { background:white; border-radius:14px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
         .adm-pdf-capa { height:140px; background:#f9fafb; display:flex; align-items:center; justify-content:center; font-size:3rem; overflow:hidden; }
@@ -153,22 +153,22 @@ export default function AdminPDFs() {
         .adm-pdf-cat { font-size:0.68rem; font-weight:600; color:#f9007a; background:#fff0f6; padding:0.2rem 0.6rem; border-radius:20px; }
         .adm-pdf-titulo { font-size:0.9rem; font-weight:600; color:#1f2937; margin:0.4rem 0 0.2rem; }
         .adm-pdf-desc { font-size:0.75rem; color:#9ca3af; margin:0; line-height:1.4; }
-        .adm-act-sm { padding:0.4rem 0.75rem; border:none; border-radius:8px; font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:600; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; }
+        .adm-act-sm { padding:0.4rem 0.75rem; border:none; border-radius:8px; font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:600; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; }
         .adm-act-sm.view { background:#eff6ff; color:#3b82f6; flex:1; justify-content:center; }
         .adm-act-sm.edit { background:#f0fdf4; color:#16a34a; }
         .adm-act-sm.delete { background:#fff1f2; color:#ef4444; }
         .adm-modal-overlay { position:fixed; inset:0; z-index:100; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:1rem; }
         .adm-form-modal { background:white; border-radius:20px; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; padding:1.5rem; }
         .adm-modal-close { background:#f3f4f6; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:0.8rem; }
-        .adm-form-capa { width:100%; height:140px; background:#f9fafb; border:2px dashed #e5e7eb; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-bottom:1rem; overflow:hidden; font-size:0.88rem; color:#9ca3af; font-family:'Inter',sans-serif; }
+        .adm-form-capa { width:100%; height:140px; background:#f9fafb; border:2px dashed #e5e7eb; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer; margin-bottom:1rem; overflow:hidden; font-size:0.88rem; color:#9ca3af; font-family:'Geist', sans-serif; }
         .adm-form-capa img { width:100%; height:100%; object-fit:cover; }
         .adm-form-fields { display:flex; flex-direction:column; gap:0.75rem; }
         .adm-form-field { display:flex; flex-direction:column; gap:0.3rem; }
-        .adm-form-field label { font-size:0.82rem; font-weight:600; color:#374151; font-family:'Inter',sans-serif; }
-        .adm-form-field input, .adm-form-field textarea { padding:0.65rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:8px; font-family:'Inter',sans-serif; font-size:0.88rem; color:#1f2937; outline:none; resize:none; }
+        .adm-form-field label { font-size:0.82rem; font-weight:600; color:#374151; font-family:'Geist', sans-serif; }
+        .adm-form-field input, .adm-form-field textarea { padding:0.65rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:8px; font-family:'Geist', sans-serif; font-size:0.88rem; color:#1f2937; outline:none; resize:none; }
         .adm-form-field input:focus, .adm-form-field textarea:focus { border-color:#f9007a; }
-        .adm-upload-btn { padding:0.65rem 0.9rem; border:1.5px dashed #e5e7eb; border-radius:8px; background:#f9fafb; font-family:'Inter',sans-serif; font-size:0.85rem; color:#6b7280; cursor:pointer; text-align:left; }
-        .adm-btn-cancel { padding:0.7rem 1.25rem; background:#f3f4f6; color:#6b7280; border:none; border-radius:10px; font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:600; cursor:pointer; }
+        .adm-upload-btn { padding:0.65rem 0.9rem; border:1.5px dashed #e5e7eb; border-radius:8px; background:#f9fafb; font-family:'Geist', sans-serif; font-size:0.85rem; color:#6b7280; cursor:pointer; text-align:left; }
+        .adm-btn-cancel { padding:0.7rem 1.25rem; background:#f3f4f6; color:#6b7280; border:none; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:600; cursor:pointer; }
       `}</style>
     </div>
   );
