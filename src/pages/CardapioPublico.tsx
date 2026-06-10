@@ -473,7 +473,7 @@ function DeskFooterBar({ design, config }: any) {
   } catch {}
   if (config?.telefone) telefone = config.telefone
 
-  const cor = design?.cor_navbar || design?.cor_borda || '#ec4899'
+  const cor = design?.cor_rodape || design?.cor_navbar || design?.cor_borda || '#ec4899'
 
   const linha2Parts = []
   if (cnpj) linha2Parts.push(`CNPJ: ${cnpj}`)
