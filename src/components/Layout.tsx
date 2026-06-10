@@ -320,11 +320,11 @@ export default function Layout() {
           ) : (
             <>
               <NavLink to="/inicio" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-                <Home size={22} />
+                <House size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/inicio" ? " nav-label-active" : ""}`}>Início</span>
               </NavLink>
               <button className={`bottom-item${cardapioNav ? " active" : ""}`} onClick={() => { setCardapioNav(true); navigate("/cardapio-config"); }}>
-                <UtensilsCrossed size={22} />
+                <ForkKnife size={22} weight="duotone" />
                 <span className="nav-label">Cardápio</span>
               </button>
               <NavLink to="/clientes" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
@@ -336,7 +336,7 @@ export default function Layout() {
                 <span className={`nav-label${location.pathname === "/receitas" ? " nav-label-active" : ""}`}>Receitas</span>
               </NavLink>
               <button className={`bottom-item ${gestaoOpen ? "active" : ""}`} onClick={() => setGestaoOpen(!gestaoOpen)}>
-                <Menu size={22} />
+                <List size={22} weight="duotone" />
                 <span className={`nav-label${gestaoOpen ? " nav-label-active" : ""}`}>Gestão</span>
               </button>
             </>
