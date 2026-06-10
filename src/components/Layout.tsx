@@ -157,10 +157,10 @@ export default function Layout() {
         {/* Topbar desktop */}
         <div className="desk-topbar">
           <div style={{flex:1, display:"flex", flexDirection:"column", justifyContent:"center"}}>
-            <span style={{fontSize:"1rem", fontWeight:800, color:"#1f2937", lineHeight:1.2}}>
+            <span style={{fontSize:"1rem", fontWeight:800, color:"#ffffff", lineHeight:1.2}}>
               {(() => { const h = now.getHours(); return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"; })()}, <span style={{color:"#FF4FA3"}}>{profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"}</span>!
             </span>
-            <span style={{fontSize:"0.78rem", color:"#6b7280", marginTop:"2px"}}>
+            <span style={{fontSize:"0.78rem", color:"#8E99C2", marginTop:"2px"}}>
               {(() => {
                 const feriados: Record<string, string> = {
                   "01-01": "Ano Novo 🎆",
@@ -386,10 +386,10 @@ export default function Layout() {
         .layout-main { margin-left: 220px; flex: 1; padding: 2rem; min-height: 100vh; }
         .desk-topbar { display: none; }
         @media (min-width: 900px) {
-          .desk-topbar { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 2rem; border-bottom: 1px solid #f3f4f6; background: white; margin: -2rem -2rem 1.5rem -2rem; position: sticky; top: 0; z-index: 9; }
+          .desk-topbar { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.06); background: #10111A; margin: -2rem -2rem 1.5rem -2rem; position: sticky; top: 0; z-index: 9; }
         }
-        .topbar-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6b7280; transition: background 0.2s; position: relative; flex-shrink: 0; }
-        .topbar-btn:hover { background: rgba(0,0,0,0.08); }
+        .topbar-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; color: #8E99C2; transition: background 0.2s; position: relative; flex-shrink: 0; }
+        .topbar-btn:hover { background: rgba(255,255,255,0.14); }
         .notif-dropdown { position: absolute; right: 0; top: calc(100% + 8px); width: 320px; background: white; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); border: 1px solid #f3f4f6; z-index: 100; overflow: hidden; }
         .notif-header { padding: 0.85rem 1rem; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem; color: #1f2937; }
         .notif-header button { background: none; border: none; cursor: pointer; color: #9ca3af; font-size: 1rem; }
