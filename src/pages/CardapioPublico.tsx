@@ -91,8 +91,14 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
         {/* ESQUERDA — Logo */}
         <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
           {design.logo_url
-            ? <img src={design.logo_url} alt="" style={{ width:'72px', height:'72px', borderRadius:'50%', objectFit:'cover', border:`3px solid ${isNavDark ? 'rgba(255,255,255,0.4)' : corBorda}` }}/>
-            : <div style={{ width:'72px', height:'72px', borderRadius:'50%', background: isNavDark ? 'rgba(255,255,255,0.2)' : corBorda, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'28px', fontWeight:800, flexShrink:0 }}>{design.nome_loja?.charAt(0)}</div>
+            ? <div style={{ width:'72px', height:'72px', borderRadius:'50%', border:`3px solid ${corBorda}`, padding:'3px', backgroundColor:'white', overflow:'hidden', flexShrink:0 }}>
+                <div style={{ width:'100%', height:'100%', borderRadius:'50%', border:'3px solid white', overflow:'hidden' }}>
+                  <img src={design.logo_url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:'50%' }}/>
+                </div>
+              </div>
+            : <div style={{ width:'72px', height:'72px', borderRadius:'50%', border:`3px solid ${corBorda}`, padding:'3px', backgroundColor:'white', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <div style={{ width:'100%', height:'100%', borderRadius:'50%', background:corBorda, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'28px', fontWeight:800 }}>{design.nome_loja?.charAt(0)}</div>
+              </div>
           }
           <div>
             <p style={{ margin:0, fontWeight:800, fontSize:'18px', color: textColor, lineHeight:1.2 }}>{design.nome_loja}</p>
