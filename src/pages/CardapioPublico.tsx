@@ -367,7 +367,7 @@ function DeskFooterBar({ design, config }: any) {
       <div style={{ width:'100%', padding:'28px 24px', display:'grid', boxSizing:'border-box', gridTemplateColumns:'repeat(4,1fr)', gap:'24px' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
           <div style={{ width:'40px', height:'40px', borderRadius:'50%', background:'#25D366', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <MessageCircle size={20} color="#fff"/>
+            <ChatCircle size={20} weight="duotone" color="#fff"/>
           </div>
           <div>
             <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'#fff' }}>Fale conosco pelo WhatsApp</p>
@@ -394,7 +394,7 @@ function DeskFooterBar({ design, config }: any) {
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
           <div style={{ width:'40px', height:'40px', borderRadius:'50%', background:'#374151', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <Shield size={20} color="#9ca3af"/>
+            <ShieldCheck size={20} weight="duotone" color="#9ca3af"/>
           </div>
           <div>
             <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'#fff' }}>Curta nossas redes</p>
