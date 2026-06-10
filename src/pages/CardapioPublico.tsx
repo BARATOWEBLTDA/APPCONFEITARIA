@@ -27,6 +27,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
   const count = items.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
   const corBorda = design.cor_borda || '#ec4899'
   const corBotao = design.cor_botao || '#ec4899'
+  const corSacola = design.cor_sacola || design.cor_botao || '#ec4899'
   const navBg = design.cor_navbar || '#ffffff'
 
   // Detecta se o fundo do navbar é escuro para adaptar cores
@@ -111,9 +112,9 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
         {/* Sacola */}
         <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
           display:'flex', alignItems:'center', gap:'8px', padding:'10px 22px', borderRadius:'8px',
-          border:'none', background: corBotao, color:'#fff', fontSize:'14px', fontWeight:700,
+          border:'none', background: corSacola, color:'#fff', fontSize:'14px', fontWeight:700,
           cursor:'pointer', fontFamily:'inherit', position:'relative', flexShrink:0,
-          boxShadow:`0 2px 8px ${cor}44`, transition:'opacity 0.15s',
+          boxShadow:`0 2px 8px ${corSacola}44`, transition:'opacity 0.15s',
         }}
           onMouseOver={e => (e.currentTarget.style.opacity='0.9')}
           onMouseOut={e => (e.currentTarget.style.opacity='1')}
@@ -121,7 +122,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
           <ShoppingBag size={17}/>
           Sacola
           {count > 0 && (
-            <span style={{ background:'#fff', color:corBotao, borderRadius:'4px', width:'20px', height:'20px', fontSize:'11px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', marginLeft:'2px' }}>{count}</span>
+            <span style={{ background:'#fff', color:corSacola, borderRadius:'4px', width:'20px', height:'20px', fontSize:'11px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', marginLeft:'2px' }}>{count}</span>
           )}
         </button>
 

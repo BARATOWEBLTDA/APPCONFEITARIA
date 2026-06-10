@@ -25,6 +25,7 @@ export default function CardapioDesign() {
   const [corNome, setCorNome] = useState("#1f2937");
   const [corBotao, setCorBotao] = useState("#ec4899");
   const [corNavbar, setCorNavbar] = useState("#ffffff");
+  const [corSacola, setCorSacola] = useState("#ec4899");
   const [activePicker, setActivePicker] = useState<string | null>(null);
 
   const logoRef = useRef<HTMLInputElement>(null);
@@ -40,7 +41,7 @@ export default function CardapioDesign() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || "");
         setBannerUrl(data.banner_url || "");
@@ -52,6 +53,7 @@ export default function CardapioDesign() {
         setCorNome(data.cor_nome || "#1f2937");
         setCorBotao(data.cor_botao || "#ec4899");
         setCorNavbar(data.cor_navbar || "#ffffff");
+        setCorSacola(data.cor_sacola || "#ec4899");
       }
       setLoading(false);
     };
@@ -349,6 +351,30 @@ export default function CardapioDesign() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                   <input type="text" value={corNavbar} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_navbar', e.target.value, setCorNavbar) }} className="cd-hex-input" />
                   <button className="cd-restore-btn" onClick={() => handleColorChange('cor_navbar', '#ffffff', setCorNavbar)}>↺</button>
+                  <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Cor da sacola */}
+          <div>
+            <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_sacola' ? null : 'cor_sacola')}>
+              <div className="cd-color-info">
+                <span className="cd-color-label">Botão "Sacola" (navbar)</span>
+                <span className="cd-color-value">{corSacola}</span>
+              </div>
+              <div className="cd-color-swatch" style={{ background: corSacola }} />
+            </div>
+            {activePicker === 'cor_sacola' && (
+              <div className="cd-picker-wrap">
+                <div style={{ padding: '10px', borderRadius: '10px', background: '#f9fafb', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+                  <button style={{ padding: '9px 20px', background: corSacola, color: 'white', border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '13px', fontFamily: 'inherit' }}>🛍 Sacola</button>
+                </div>
+                <HexColorPicker color={corSacola} onChange={v => handleColorChange('cor_sacola', v, setCorSacola)} style={{ width: '100%', height: '160px' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                  <input type="text" value={corSacola} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_sacola', e.target.value, setCorSacola) }} className="cd-hex-input" />
+                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_sacola', '#ec4899', setCorSacola)}>↺</button>
                   <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
                 </div>
               </div>
