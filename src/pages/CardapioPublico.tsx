@@ -21,10 +21,14 @@ import { formatCurrency } from '@/utils/helpers'
 /*          DESKTOP COMPONENTS                    */
 /* ══════════════════════════════════════════════ */
 
-function DesktopNavBar({ color }: { color: string }) {
+function DesktopNavBar({ color, searchTerm, onSearchChange }: { color: string; searchTerm: string; onSearchChange: (t: string) => void }) {
+  const { items, totalPrice } = useCart()
+  const count = items.reduce((acc, i) => acc + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
+
   return (
-    <div style={{ background: color, padding: '0 32px' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', height: '48px', gap: '4px' }}>
+    <div style={{ background: color, padding: '0 32px', position: 'sticky', top: 0, zIndex: 40 }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', height: '52px', gap: '6px' }}>
+        {/* Nav links */}
         {[
           { icon: <Home size={14} />, label: 'Início' },
           { icon: <Tag size={14} />, label: 'Promoções' },
@@ -32,7 +36,7 @@ function DesktopNavBar({ color }: { color: string }) {
         ].map(t => (
           <button key={t.label} style={{
             display: 'flex', alignItems: 'center', gap: '6px',
-            padding: '6px 16px', borderRadius: '50px',
+            padding: '7px 16px', borderRadius: '50px',
             background: t.label === 'Início' ? 'rgba(255,255,255,0.25)' : 'transparent',
             border: 'none', color: 'white', fontSize: '13px', fontWeight: 600,
             cursor: 'pointer', fontFamily: 'inherit',
@@ -40,6 +44,48 @@ function DesktopNavBar({ color }: { color: string }) {
             {t.icon} {t.label}
           </button>
         ))}
+
+        <div style={{ flex: 1 }} />
+
+        {/* Search */}
+        <div style={{ position: 'relative', width: '240px' }}>
+          <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.5)' }} />
+          <input
+            value={searchTerm} onChange={e => onSearchChange(e.target.value)}
+            placeholder="Busque por um produto"
+            style={{
+              width: '100%', padding: '7px 12px 7px 32px',
+              border: '1.5px solid rgba(255,255,255,0.3)', borderRadius: '8px',
+              fontSize: '12px', color: 'white', outline: 'none',
+              fontFamily: 'inherit', boxSizing: 'border-box',
+              background: 'rgba(255,255,255,0.15)',
+            }}
+          />
+        </div>
+
+        {/* Sacola */}
+        <button
+          onClick={() => window.dispatchEvent(new Event('open-cart'))}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            padding: '7px 16px', borderRadius: '50px',
+            background: 'rgba(255,255,255,0.2)', border: '1.5px solid rgba(255,255,255,0.3)',
+            color: 'white', fontSize: '13px', fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit',
+            position: 'relative',
+          }}
+        >
+          <ShoppingBag size={15} />
+          Sacola
+          {count > 0 && (
+            <span style={{
+              position: 'absolute', top: '-6px', right: '-6px',
+              background: '#ef4444', color: 'white', borderRadius: '50%',
+              width: '20px', height: '20px', fontSize: '11px', fontWeight: 800,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>{count}</span>
+          )}
+        </button>
       </div>
     </div>
   )
@@ -186,14 +232,34 @@ function DesktopSidebar({ design }: { design: DesignSettings }) {
         )}
       </div>
 
-      {/* Info entrega */}
+      {/* Programa de fidelidade */}
       <div style={{
         background: '#fff', borderRadius: '12px', border: '1px solid #f0f0f0',
-        padding: '16px', fontSize: '13px', color: '#6b7280',
+        padding: '16px',
       }}>
-        <p style={{ margin: '0 0 6px', fontWeight: 700, color: '#3e3e3e', fontSize: '14px' }}>📦 Informações</p>
-        <p style={{ margin: 0, lineHeight: 1.6 }}>
-          Faça seu pedido e finalize pelo WhatsApp. Escolha entrega ou retirada no checkout.
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>🏆</div>
+          <span style={{ fontWeight: 700, fontSize: '14px', color: '#3e3e3e' }}>Programa de fidelidade</span>
+        </div>
+        <p style={{ margin: 0, fontSize: '12px', color: '#6b7280', lineHeight: 1.5 }}>
+          A cada <strong>R$ 100,00</strong> em compras você ganha <strong>1 ponto</strong> que pode ser trocado por prêmios.
+        </p>
+        <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#9ca3af' }}>
+          Novos clientes ganham automaticamente 50 pontos.
+        </p>
+      </div>
+
+      {/* Calcular entrega */}
+      <div style={{
+        background: '#fff', borderRadius: '12px', border: '1px solid #f0f0f0',
+        padding: '16px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+          <span style={{ fontSize: '16px' }}>🚚</span>
+          <span style={{ fontWeight: 700, fontSize: '13px', color: '#3e3e3e' }}>Entrega e retirada</span>
+        </div>
+        <p style={{ margin: 0, fontSize: '12px', color: '#6b7280', lineHeight: 1.5 }}>
+          Finalize pelo WhatsApp. Escolha entrega ou retirada no checkout.
         </p>
       </div>
     </div>
@@ -370,7 +436,7 @@ function CardapioContent() {
       <NavigationMenu />
 
       {/* Top nav colorida */}
-      <DesktopNavBar color={design.cor_borda || '#ec4899'} />
+      <DesktopNavBar color={design.cor_borda || '#ec4899'} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
       {/* Banner hero + info da loja */}
       <DesktopHeroBanner design={design} config={config} />

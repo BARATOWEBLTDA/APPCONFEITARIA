@@ -127,6 +127,13 @@ export function NavigationMenu() {
     } catch {}
   }, [isOpen])
 
+  // Escuta evento do top bar desktop para abrir carrinho
+  useEffect(() => {
+    const handler = () => setIsOpen(true)
+    window.addEventListener('open-cart', handler)
+    return () => window.removeEventListener('open-cart', handler)
+  }, [])
+
   const count = items.reduce((acc, i) => acc + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
 
   // Cálculos
@@ -299,17 +306,7 @@ export function NavigationMenu() {
           </div>
         </>
       ) : (
-        <>
-          <div className="fixed left-0 top-0 bottom-0 z-30 shadow-lg border-r w-20 flex flex-col justify-center" style={{background:'linear-gradient(135deg, #ec4899 0%, #f472b6 50%, #f9a8d4 100%)'}}>
-            <div className="px-4 py-3 flex justify-center">
-              <button onClick={() => setIsOpen(true)} className="bg-white text-pink-600 relative px-6 rounded-full py-2 flex items-center gap-2 font-semibold">
-                <ShoppingBag className="w-5 h-5" />
-                {count > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">{count}</span>}
-              </button>
-            </div>
-          </div>
-          <div className="w-20" />
-        </>
+        <>{/* Desktop: sem sidebar, o top bar está no CardapioPublico */}</>
       )}
 
       {/* ═══════ MODAL CHECKOUT ═══════ */}
