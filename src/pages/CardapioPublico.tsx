@@ -245,82 +245,55 @@ function DeskInfoRow({ design, config }: any) {
 
 /* ── Category Dropdown ── */
 function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, corBotao }: any) {
-  const [open, setOpen] = useState(false)
   const cats = categories.filter((c: any) => c.name !== 'Todos')
-  const activeLabel = selectedCategory || 'Categorias'
 
   return (
-    <div style={{ padding:'0 24px', boxSizing:'border-box', width:'100%' }}>
-      <div style={{ position:'relative', display:'inline-block' }}>
-        <button
-          onClick={() => setOpen(o => !o)}
-          style={{
-            display:'flex', alignItems:'center', gap:'8px', padding:'9px 16px',
-            background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:'8px',
-            fontSize:'13px', fontWeight:600, color:'#374151', cursor:'pointer',
-            fontFamily:'inherit', transition:'border-color 0.15s',
-            borderColor: open ? corBotao : '#e5e7eb',
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="9" y2="18"/>
-          </svg>
-          {activeLabel}
-          {selectedCategory && (
-            <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:corBotao, flexShrink:0 }}/>
-          )}
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-            style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition:'transform 0.2s' }}>
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-        </button>
-
-        {open && (
-          <div style={{
-            position:'absolute', top:'calc(100% + 6px)', left:0, zIndex:50,
-            background:'#fff', border:'1.5px solid #e5e7eb', borderRadius:'10px',
-            boxShadow:'0 8px 24px rgba(0,0,0,0.1)', minWidth:'180px', overflow:'hidden',
-          }}>
-            {/* Todos */}
-            <button
-              onClick={() => { onSelectCategory(null); setOpen(false) }}
-              style={{
-                width:'100%', padding:'10px 16px', textAlign:'left', border:'none',
-                background: !selectedCategory ? `${corBotao}12` : '#fff',
-                color: !selectedCategory ? corBotao : '#374151',
-                fontSize:'13px', fontWeight: !selectedCategory ? 700 : 500,
-                cursor:'pointer', fontFamily:'inherit', display:'flex', alignItems:'center', gap:'8px',
-                borderBottom:'1px solid #f3f4f6',
-              }}
-              onMouseOver={e => { if (selectedCategory) (e.currentTarget as HTMLElement).style.background='#f9fafb' }}
-              onMouseOut={e => { if (selectedCategory) (e.currentTarget as HTMLElement).style.background='#fff' }}
-            >
-              {!selectedCategory && <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:corBotao, flexShrink:0 }}/>}
-              Todos os produtos
-            </button>
-
-            {cats.map((c: any) => (
-              <button
-                key={c.name}
-                onClick={() => { onSelectCategory(c.name); setOpen(false) }}
-                style={{
-                  width:'100%', padding:'10px 16px', textAlign:'left', border:'none',
-                  background: selectedCategory === c.name ? `${corBotao}12` : '#fff',
-                  color: selectedCategory === c.name ? corBotao : '#374151',
-                  fontSize:'13px', fontWeight: selectedCategory === c.name ? 700 : 500,
-                  cursor:'pointer', fontFamily:'inherit', display:'flex', alignItems:'center', gap:'8px',
-                  borderBottom:'1px solid #f3f4f6',
-                }}
-                onMouseOver={e => { if (selectedCategory !== c.name) (e.currentTarget as HTMLElement).style.background='#f9fafb' }}
-                onMouseOut={e => { if (selectedCategory !== c.name) (e.currentTarget as HTMLElement).style.background='#fff' }}
-              >
-                {selectedCategory === c.name && <span style={{ width:'6px', height:'6px', borderRadius:'50%', background:corBotao, flexShrink:0 }}/>}
-                {c.name}
-              </button>
-            ))}
-          </div>
-        )}
+    <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', overflow:'hidden' }}>
+      <div style={{ padding:'12px 14px', borderBottom:'1px solid #f3f4f6' }}>
+        <span style={{ fontSize:'12px', fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.05em' }}>Categorias</span>
       </div>
+
+      {/* Todos */}
+      <button
+        onClick={() => onSelectCategory(null)}
+        style={{
+          width:'100%', padding:'11px 14px', textAlign:'left', border:'none',
+          background: !selectedCategory ? `${corBotao}12` : '#fff',
+          color: !selectedCategory ? corBotao : '#374151',
+          fontSize:'13px', fontWeight: !selectedCategory ? 700 : 500,
+          cursor:'pointer', fontFamily:'inherit',
+          display:'flex', alignItems:'center', gap:'8px',
+          borderBottom:'1px solid #f3f4f6',
+          transition:'background 0.1s',
+        }}
+        onMouseOver={e => { if (selectedCategory) (e.currentTarget as HTMLElement).style.background='#f9fafb' }}
+        onMouseOut={e => { if (selectedCategory) (e.currentTarget as HTMLElement).style.background='#fff' }}
+      >
+        {!selectedCategory && <span style={{ width:'5px', height:'5px', borderRadius:'50%', background:corBotao, flexShrink:0 }}/>}
+        Todos os produtos
+      </button>
+
+      {cats.map((c: any) => (
+        <button
+          key={c.name}
+          onClick={() => onSelectCategory(c.name)}
+          style={{
+            width:'100%', padding:'11px 14px', textAlign:'left', border:'none',
+            background: selectedCategory === c.name ? `${corBotao}12` : '#fff',
+            color: selectedCategory === c.name ? corBotao : '#374151',
+            fontSize:'13px', fontWeight: selectedCategory === c.name ? 700 : 500,
+            cursor:'pointer', fontFamily:'inherit',
+            display:'flex', alignItems:'center', gap:'8px',
+            borderBottom:'1px solid #f3f4f6',
+            transition:'background 0.1s',
+          }}
+          onMouseOver={e => { if (selectedCategory !== c.name) (e.currentTarget as HTMLElement).style.background='#f9fafb' }}
+          onMouseOut={e => { if (selectedCategory !== c.name) (e.currentTarget as HTMLElement).style.background='#fff' }}
+        >
+          {selectedCategory === c.name && <span style={{ width:'5px', height:'5px', borderRadius:'50%', background:corBotao, flexShrink:0 }}/>}
+          {c.name}
+        </button>
+      ))}
     </div>
   )
 }
@@ -527,21 +500,21 @@ function CardapioContent() {
       <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
       <DeskNav design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
-      <div style={{ display:'flex', flexDirection:'column', gap:'20px', paddingBottom:'0', paddingTop:'24px', width:'100%', flex: 1 }}>
+      <div style={{ display:'flex', flexDirection:'column', gap:'0', paddingBottom:'0', paddingTop:'24px', width:'100%', flex: 1 }}>
         {/* trust bar removida */}
 
-        {/* Dropdown de categorias — entre trust bar e produtos */}
-        <DeskCategoryDropdown
-          categories={getCategories()}
-          selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
-          corBotao={design.cor_botao || '#ec4899'}
-        />
+        {/* Layout principal: categorias esquerda, produtos centro, sidebar direita */}
+        <div style={{ display:'grid', gridTemplateColumns:'200px 1fr 280px', gap:'16px', padding:'0 24px', boxSizing:'border-box', width:'100%', alignItems:'start' }}>
 
-        {/* Layout principal: produtos à esquerda, sidebar à direita */}
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 280px', gap:'16px', padding:'0 24px', boxSizing:'border-box', width:'100%', alignItems:'start' }}>
-
-          {/* COLUNA ESQUERDA — Produtos */}
+          {/* COLUNA ESQUERDA — Categorias */}
+          <div style={{ position:'sticky', top:'100px' }}>
+            <DeskCategoryDropdown
+              categories={getCategories()}
+              selectedCategory={selectedCategory}
+              onSelectCategory={setSelectedCategory}
+              corBotao={design.cor_botao || '#ec4899'}
+            />
+          </div>
           <DeskProducts
             produtos={filteredProdutos} favorites={favorites} onToggleFavorite={toggleFavorite}
             design={design}
