@@ -293,6 +293,45 @@ export default function CardapioDesign() {
             )}
           </div>
 
+          {/* Cor do botão — PRO */}
+          {isPro ? (
+            <div>
+              <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_botao' ? null : 'cor_botao')}>
+                <div className="cd-color-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span className="cd-color-label">Botão "Adicionar ao carrinho"</span>
+                    <span className="cd-pro-badge">✦ PRO</span>
+                  </div>
+                  <span className="cd-color-value">{corBotao}</span>
+                </div>
+                <div className="cd-color-swatch" style={{ background: corBotao }} />
+              </div>
+              {activePicker === 'cor_botao' && (
+                <div className="cd-picker-wrap">
+                  <div style={{ padding: '12px', borderRadius: '10px', background: '#f9fafb', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+                    <button style={{ padding: '10px 24px', background: corBotao, color: 'white', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '14px', fontFamily: 'inherit' }}>
+                      Adicionar · R$ 50,00
+                    </button>
+                  </div>
+                  <HexColorPicker color={corBotao} onChange={v => handleColorChange('cor_botao', v, setCorBotao)} style={{ width: '100%', height: '160px' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                    <input type="text" value={corBotao} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_botao', e.target.value, setCorBotao) }} className="cd-hex-input" />
+                    <button className="cd-restore-btn" onClick={() => handleColorChange('cor_botao', '#ec4899', setCorBotao)}>↺</button>
+                    <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="cd-upgrade-box" style={{ marginTop: '4px' }}>
+              <img src="/diamante.png" alt="PRO" style={{ width: '24px', height: '24px' }} />
+              <div>
+                <p className="cd-upgrade-title">Cor do botão de compra</p>
+                <p className="cd-upgrade-sub">Personalize a cor do botão "Adicionar ao carrinho" com o plano PRO</p>
+              </div>
+            </div>
+          )}
+
           {/* Cor do navbar */}
           <div>
             <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_navbar' ? null : 'cor_navbar')}>
