@@ -154,51 +154,53 @@ function DeskInfoRow({ design, config }: any) {
     <div style={{ width:'100%', padding:'0 24px', boxSizing:'border-box' }}>
       <div style={{ display:'grid', gridTemplateColumns:'1fr 280px', gap:'16px', width:'100%', alignItems:'start' }}>
 
-        {/* Coluna esquerda: Fidelidade + Entrega lado a lado */}
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
+        {/* Coluna esquerda vazia — produtos vêm logo abaixo */}
+        <div />
+
+        {/* Coluna direita: Sacola + Fidelidade + Entrega empilhados */}
+        <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+
+          {/* Sacola */}
+          <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'24px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
+            {count === 0 ? (
+              <>
+                <ShoppingBag size={28} color="#d4d4d4" style={{ marginBottom:'6px' }}/>
+                <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'#3e3e3e' }}>Sacola vazia</p>
+                <p style={{ margin:'2px 0 0', fontSize:'11px', color:'#9ca3af' }}>Adicione itens do cardápio e monte seu pedido.</p>
+              </>
+            ) : (
+              <>
+                <ShoppingBag size={24} color={design.cor_borda||'#ec4899'} style={{ marginBottom:'4px' }}/>
+                <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'#3e3e3e' }}>{count} {count===1?'item':'itens'}</p>
+                <p style={{ margin:'2px 0 6px', fontWeight:800, fontSize:'16px', color:'#16a34a' }}>{formatCurrency(totalPrice)}</p>
+                <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
+                  padding:'8px 20px', borderRadius:'8px', border:'none', background:design.cor_botao||'#ec4899',
+                  color:'#fff', fontSize:'12px', fontWeight:700, cursor:'pointer', fontFamily:'inherit',
+                }}>Ver sacola</button>
+              </>
+            )}
+          </div>
 
           {/* Fidelidade */}
-          <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'18px 20px' }}>
+          <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'16px' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
-              <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#fef3c7', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px' }}>🏆</div>
-              <span style={{ fontWeight:700, fontSize:'14px', color:'#1f2937' }}>Programa de fidelidade</span>
+              <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#fef3c7', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0 }}>🏆</div>
+              <span style={{ fontWeight:700, fontSize:'13px', color:'#1f2937' }}>Programa de fidelidade</span>
             </div>
-            <p style={{ margin:0, fontSize:'12px', color:'#6b7280', lineHeight:1.5 }}>A cada <strong>R$ 100,00</strong> em compras você ganha <strong>1 ponto</strong> que pode ser trocado por prêmios.</p>
-            <p style={{ margin:'4px 0 0', fontSize:'11px', color:'#9ca3af' }}>Novos clientes ganham automaticamente 50 pontos.</p>
+            <p style={{ margin:0, fontSize:'11px', color:'#6b7280', lineHeight:1.5 }}>A cada <strong>R$ 100,00</strong> em compras você ganha <strong>1 ponto</strong> que pode ser trocado por prêmios.</p>
+            <p style={{ margin:'4px 0 0', fontSize:'10px', color:'#9ca3af' }}>Novos clientes ganham automaticamente 50 pontos.</p>
           </div>
 
           {/* Entrega */}
-          <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'18px 20px' }}>
+          <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'16px' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
-              <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#dbeafe', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px' }}>🚚</div>
-              <span style={{ fontWeight:700, fontSize:'14px', color:'#1f2937' }}>Entrega e retirada</span>
+              <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#dbeafe', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0 }}>🚚</div>
+              <span style={{ fontWeight:700, fontSize:'13px', color:'#1f2937' }}>Entrega e retirada</span>
             </div>
-            <p style={{ margin:0, fontSize:'12px', color:'#6b7280', lineHeight:1.5 }}>Finalize pelo WhatsApp. Escolha entrega ou retirada no checkout.</p>
+            <p style={{ margin:0, fontSize:'11px', color:'#6b7280', lineHeight:1.5 }}>Finalize pelo WhatsApp. Escolha entrega ou retirada no checkout.</p>
           </div>
 
         </div>
-
-        {/* Coluna direita: Sacola */}
-        <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'24px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
-          {count === 0 ? (
-            <>
-              <ShoppingBag size={28} color="#d4d4d4" style={{ marginBottom:'6px' }}/>
-              <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'#3e3e3e' }}>Sacola vazia</p>
-              <p style={{ margin:'2px 0 0', fontSize:'11px', color:'#9ca3af' }}>Adicione itens do cardápio e monte seu pedido.</p>
-            </>
-          ) : (
-            <>
-              <ShoppingBag size={24} color={design.cor_borda||'#ec4899'} style={{ marginBottom:'4px' }}/>
-              <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'#3e3e3e' }}>{count} {count===1?'item':'itens'}</p>
-              <p style={{ margin:'2px 0 6px', fontWeight:800, fontSize:'16px', color:'#16a34a' }}>{formatCurrency(totalPrice)}</p>
-              <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
-                padding:'8px 20px', borderRadius:'8px', border:'none', background:design.cor_botao||'#ec4899',
-                color:'#fff', fontSize:'12px', fontWeight:700, cursor:'pointer', fontFamily:'inherit',
-              }}>Ver sacola</button>
-            </>
-          )}
-        </div>
-
       </div>
     </div>
   )
@@ -210,7 +212,7 @@ function DeskProducts({ produtos, favorites, onToggleFavorite, design, categorie
   const cats = categories.filter((c: any) => c.name !== 'Todos')
 
   return (
-    <div style={{ width:'100%', padding:'0 24px', boxSizing:'border-box' }}>
+    <div style={{ width:'100%', boxSizing:'border-box' }}>
       {/* Header */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'16px' }}>
         <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'#1f2937' }}>Nosso Cardápio</h2>
@@ -316,6 +318,8 @@ function CardapioContent() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [favorites, setFavorites] = useState<string[]>([])
   const device = useDeviceDetection()
+  const { items: cartItems, totalPrice: cartTotal } = useCart()
+  const cartCount = cartItems.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
 
   useEffect(() => {
     if (!slug) return
@@ -410,12 +414,63 @@ function CardapioContent() {
       <div style={{ display:'flex', flexDirection:'column', gap:'20px', paddingBottom:'0', width:'100%' }}>
         <DeskHero design={design} />
         <DeskTrustBar />
-        <DeskInfoRow design={design} config={config} />
-        <DeskProducts
-          produtos={filteredProdutos} favorites={favorites} onToggleFavorite={toggleFavorite}
-          design={design} categories={getCategories()} selectedCategory={selectedCategory}
-          onSelectCategory={setSelectedCategory}
-        />
+
+        {/* Layout principal: produtos à esquerda, sidebar à direita */}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 280px', gap:'16px', padding:'0 24px', boxSizing:'border-box', width:'100%', alignItems:'start' }}>
+
+          {/* COLUNA ESQUERDA — Produtos */}
+          <DeskProducts
+            produtos={filteredProdutos} favorites={favorites} onToggleFavorite={toggleFavorite}
+            design={design} categories={getCategories()} selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+          />
+
+          {/* COLUNA DIREITA — Sacola + Fidelidade + Entrega */}
+          <div style={{ display:'flex', flexDirection:'column', gap:'12px', position:'sticky', top:'80px' }}>
+
+            {/* Sacola */}
+            <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'24px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
+              {cartCount === 0 ? (
+                <>
+                  <ShoppingBag size={28} color="#d4d4d4" style={{ marginBottom:'6px' }}/>
+                  <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'#3e3e3e' }}>Sacola vazia</p>
+                  <p style={{ margin:'2px 0 0', fontSize:'11px', color:'#9ca3af' }}>Adicione itens do cardápio e monte seu pedido.</p>
+                </>
+              ) : (
+                <>
+                  <ShoppingBag size={24} color={design.cor_borda||'#ec4899'} style={{ marginBottom:'4px' }}/>
+                  <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'#3e3e3e' }}>{cartCount} {cartCount===1?'item':'itens'}</p>
+                  <p style={{ margin:'2px 0 6px', fontWeight:800, fontSize:'16px', color:'#16a34a' }}>{formatCurrency(cartTotal)}</p>
+                  <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
+                    padding:'8px 20px', borderRadius:'8px', border:'none', background:design.cor_botao||'#ec4899',
+                    color:'#fff', fontSize:'12px', fontWeight:700, cursor:'pointer', fontFamily:'inherit',
+                  }}>Ver sacola</button>
+                </>
+              )}
+            </div>
+
+            {/* Fidelidade */}
+            <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'16px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
+                <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#fef3c7', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0 }}>🏆</div>
+                <span style={{ fontWeight:700, fontSize:'13px', color:'#1f2937' }}>Programa de fidelidade</span>
+              </div>
+              <p style={{ margin:0, fontSize:'11px', color:'#6b7280', lineHeight:1.5 }}>A cada <strong>R$ 100,00</strong> em compras você ganha <strong>1 ponto</strong> que pode ser trocado por prêmios.</p>
+              <p style={{ margin:'4px 0 0', fontSize:'10px', color:'#9ca3af' }}>Novos clientes ganham automaticamente 50 pontos.</p>
+            </div>
+
+            {/* Entrega */}
+            <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'16px' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
+                <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#dbeafe', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0 }}>🚚</div>
+                <span style={{ fontWeight:700, fontSize:'13px', color:'#1f2937' }}>Entrega e retirada</span>
+              </div>
+              <p style={{ margin:0, fontSize:'11px', color:'#6b7280', lineHeight:1.5 }}>Finalize pelo WhatsApp. Escolha entrega ou retirada no checkout.</p>
+            </div>
+
+          </div>
+        </div>
+
       </div>
 
       <DeskFooterBar design={design} config={config} />
