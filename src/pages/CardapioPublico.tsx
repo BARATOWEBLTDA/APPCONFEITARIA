@@ -26,9 +26,8 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
   const { items } = useCart()
   const count = items.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
   const navBg = design.cor_navbar || design.cor_borda || '#ec4899'
-  const corSacola = design.cor_sacola || design.cor_botao || '#ec4899'
+  const corBorda = design.cor_borda || '#ec4899'
 
-  // Detecta se fundo é escuro pra adaptar texto
   const isNavDark = (() => {
     const hex = navBg.replace('#', '')
     if (hex.length < 6) return true
@@ -39,43 +38,55 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
   })()
 
   const textColor = isNavDark ? '#ffffff' : '#1f2937'
-  const hoverUnderline = isNavDark ? 'rgba(255,255,255,0.9)' : '#1f2937'
+  const textMuted = isNavDark ? 'rgba(255,255,255,0.7)' : '#6b7280'
 
   const links = ['Início', 'Promoções', 'Sobre nós', 'Minha conta']
 
   return (
-    <div style={{ background: navBg, position:'sticky', top:0, zIndex:40, boxShadow:'0 2px 12px rgba(0,0,0,0.12)' }}>
-      <div style={{ width:'100%', padding:'0 48px', boxSizing:'border-box', display:'flex', alignItems:'center', justifyContent:'space-between', height:'68px' }}>
+    <div style={{ background: navBg, position:'sticky', top:0, zIndex:40, boxShadow:'0 2px 12px rgba(0,0,0,0.15)' }}>
+      <div style={{ width:'100%', padding:'0 40px', boxSizing:'border-box', display:'grid', gridTemplateColumns:'1fr auto 1fr', alignItems:'center', height:'80px', gap:'24px' }}>
 
-        {/* Links centrais */}
-        <nav style={{ display:'flex', gap:'4px', flex:1, justifyContent:'center' }}>
+        {/* ESQUERDA — Logo */}
+        <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+          {design.logo_url
+            ? <img src={design.logo_url} alt="" style={{ width:'60px', height:'60px', borderRadius:'50%', objectFit:'cover', border:`3px solid ${isNavDark ? 'rgba(255,255,255,0.4)' : corBorda}` }}/>
+            : <div style={{ width:'60px', height:'60px', borderRadius:'50%', background: isNavDark ? 'rgba(255,255,255,0.2)' : corBorda, display:'flex', alignItems:'center', justifyContent:'center', color: isNavDark ? '#fff' : '#fff', fontSize:'24px', fontWeight:800, flexShrink:0 }}>{design.nome_loja?.charAt(0)}</div>
+          }
+          <div>
+            <p style={{ margin:0, fontWeight:800, fontSize:'17px', color: textColor, lineHeight:1.2 }}>{design.nome_loja}</p>
+            <p style={{ margin:'3px 0 0', fontSize:'12px', color: textMuted, fontWeight:500 }}>{design.cidade_estado || 'Doces que encantam'}</p>
+          </div>
+        </div>
+
+        {/* CENTRO — Links grandes */}
+        <nav style={{ display:'flex', gap:'0px' }}>
           {links.map((label, i) => (
             <button key={label} style={{
-              padding:'8px 20px', border:'none', background:'transparent',
-              color: textColor, fontSize:'16px', fontWeight:700,
-              cursor:'pointer', fontFamily:'inherit', letterSpacing:'0.01em',
+              padding:'8px 22px', border:'none', background:'transparent',
+              color: textColor, fontSize:'17px', fontWeight:700,
+              cursor:'pointer', fontFamily:'inherit',
               position:'relative', transition:'opacity 0.15s',
-              opacity: i === 0 ? 1 : 0.85,
+              opacity: i === 0 ? 1 : 0.8,
             }}
               onMouseOver={e => {
                 const el = e.currentTarget as HTMLElement
                 el.style.opacity = '1'
                 const line = el.querySelector('.nav-line') as HTMLElement
-                if (line) { line.style.width = '100%'; line.style.opacity = '1' }
+                if (line) { line.style.width = 'calc(100% - 44px)'; line.style.opacity = '1' }
               }}
               onMouseOut={e => {
                 const el = e.currentTarget as HTMLElement
-                el.style.opacity = i === 0 ? '1' : '0.85'
+                el.style.opacity = i === 0 ? '1' : '0.8'
                 const line = el.querySelector('.nav-line') as HTMLElement
                 if (line && i !== 0) { line.style.width = '0%'; line.style.opacity = '0' }
               }}
             >
               {label}
-              {/* Underline hover */}
               <span className="nav-line" style={{
-                position:'absolute', bottom:'4px', left:'20px',
-                height:'2px', background: hoverUnderline,
-                width: i === 0 ? '100%' : '0%',
+                position:'absolute', bottom:'2px', left:'22px',
+                height:'2.5px',
+                background: textColor,
+                width: i === 0 ? 'calc(100% - 44px)' : '0%',
                 opacity: i === 0 ? '1' : '0',
                 transition:'width 0.2s ease, opacity 0.2s ease',
                 borderRadius:'2px',
@@ -85,42 +96,43 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
           ))}
         </nav>
 
-        {/* Sacola */}
-        <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
-          display:'flex', alignItems:'center', gap:'8px', padding:'9px 20px', borderRadius:'8px',
-          border:`2px solid ${isNavDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.2)'}`,
-          background:'transparent', color: textColor, fontSize:'14px', fontWeight:700,
-          cursor:'pointer', fontFamily:'inherit', flexShrink:0, transition:'all 0.15s',
-        }}
-          onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = isNavDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)' }}
-          onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-        >
-          <ShoppingBag size={17}/>
-          Sacola
-          {count > 0 && (
-            <span style={{ background: isNavDark ? '#fff' : '#1f2937', color: isNavDark ? navBg : '#fff', borderRadius:'6px', minWidth:'20px', height:'20px', padding:'0 5px', fontSize:'11px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center' }}>{count}</span>
-          )}
-        </button>
+        {/* DIREITA — Busca + Sacola */}
+        <div style={{ display:'flex', alignItems:'center', gap:'12px', justifyContent:'flex-end' }}>
+          {/* Search */}
+          <div style={{ position:'relative', width:'220px' }}>
+            <MagnifyingGlass size={14} style={{ position:'absolute', left:'12px', top:'50%', transform:'translateY(-50%)', color: textMuted }}/>
+            <input value={searchTerm} onChange={(e: any) => onSearchChange(e.target.value)}
+              placeholder="Buscar produto..."
+              style={{
+                width:'100%', padding:'9px 12px 9px 36px', boxSizing:'border-box',
+                border: `1.5px solid ${isNavDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.15)'}`,
+                borderRadius:'8px', fontSize:'13px', outline:'none', fontFamily:'inherit',
+                background: isNavDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.3)',
+                color: textColor,
+              }}
+              onFocus={(e: any) => { e.target.style.background = isNavDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.6)'; e.target.style.borderColor = isNavDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.3)' }}
+              onBlur={(e: any) => { e.target.style.background = isNavDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.3)'; e.target.style.borderColor = isNavDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.15)' }}
+            />
+          </div>
 
-      </div>
-
-      {/* Barra de busca abaixo do nav */}
-      <div style={{ padding:'0 48px 12px', boxSizing:'border-box' }}>
-        <div style={{ position:'relative', maxWidth:'500px', margin:'0 auto' }}>
-          <MagnifyingGlass size={15} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color: isNavDark ? 'rgba(255,255,255,0.5)' : '#9ca3af' }}/>
-          <input value={searchTerm} onChange={(e: any) => onSearchChange(e.target.value)}
-            placeholder="Busque por um produto..."
-            style={{
-              width:'100%', padding:'10px 14px 10px 40px', boxSizing:'border-box',
-              border: isNavDark ? '1.5px solid rgba(255,255,255,0.25)' : '1.5px solid #e5e7eb',
-              borderRadius:'8px', fontSize:'13px', outline:'none', fontFamily:'inherit',
-              background: isNavDark ? 'rgba(255,255,255,0.12)' : '#f9fafb',
-              color: isNavDark ? '#fff' : '#374151',
-            }}
-            onFocus={(e: any) => { e.target.style.background = isNavDark ? 'rgba(255,255,255,0.2)' : '#fff'; e.target.style.borderColor = isNavDark ? 'rgba(255,255,255,0.6)' : '#ec4899' }}
-            onBlur={(e: any) => { e.target.style.background = isNavDark ? 'rgba(255,255,255,0.12)' : '#f9fafb'; e.target.style.borderColor = isNavDark ? 'rgba(255,255,255,0.25)' : '#e5e7eb' }}
-          />
+          {/* Sacola */}
+          <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
+            display:'flex', alignItems:'center', gap:'8px', padding:'9px 20px', borderRadius:'8px',
+            border:`2px solid ${isNavDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.2)'}`,
+            background:'transparent', color: textColor, fontSize:'15px', fontWeight:700,
+            cursor:'pointer', fontFamily:'inherit', flexShrink:0, transition:'all 0.15s',
+          }}
+            onMouseOver={e => { (e.currentTarget as HTMLElement).style.background = isNavDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)' }}
+            onMouseOut={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+          >
+            <ShoppingBag size={18}/>
+            Sacola
+            {count > 0 && (
+              <span style={{ background: isNavDark ? '#fff' : '#1f2937', color: isNavDark ? navBg : '#fff', borderRadius:'6px', minWidth:'20px', height:'20px', padding:'0 5px', fontSize:'11px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center' }}>{count}</span>
+            )}
+          </button>
         </div>
+
       </div>
     </div>
   )
