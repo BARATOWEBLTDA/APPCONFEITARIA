@@ -145,39 +145,36 @@ function DesktopHeroBanner({ design, config }: { design: DesignSettings; config:
       }}>
         {/* Logo */}
         <div style={{
-          width: '72px', height: '72px', borderRadius: '14px',
+          width: '88px', height: '88px', borderRadius: '16px',
           border: `3px solid ${design.cor_borda || '#ec4899'}`,
           background: '#fff', overflow: 'hidden', flexShrink: 0,
         }}>
           {design.logo_url
             ? <img src={design.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: design.cor_borda || '#ec4899', color: 'white', fontSize: '28px', fontWeight: 800 }}>{design.nome_loja?.charAt(0)}</div>
+            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: design.cor_borda || '#ec4899', color: 'white', fontSize: '32px', fontWeight: 800 }}>{design.nome_loja?.charAt(0)}</div>
           }
         </div>
 
-        {/* Textos */}
+        {/* Textos: Nome → Cidade → Avaliações */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#1f2937' }}>{design.nome_loja}</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px', flexWrap: 'wrap' }}>
+          <h1 style={{ margin: 0, fontSize: '24px', fontWeight: 800, color: '#1f2937' }}>{design.nome_loja}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
+            {locationText && (
+              <span style={{ fontSize: '13px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <MapPin size={12} /> {locationText}
+              </span>
+            )}
             {statusText && (
-              <span style={{ fontSize: '12px', fontWeight: 600, color: isOpen ? '#16a34a' : '#ef4444' }}>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: isOpen ? '#16a34a' : '#ef4444' }}>
                 ● {statusText}
               </span>
             )}
-            {locationText && (
-              <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                <MapPin size={11} /> {locationText}
-              </span>
-            )}
-            {!design.hide_stars && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                {renderStars(config?.avaliacao_media || 5)}
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>{config?.avaliacao_media || 5}/5.0</span>
-              </span>
-            )}
           </div>
-          {design.descricao_loja && (
-            <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#9ca3af', lineHeight: 1.4 }}>{design.descricao_loja}</p>
+          {!design.hide_stars && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '6px' }}>
+              {renderStars(config?.avaliacao_media || 5)}
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#6b7280', marginLeft: '2px' }}>{config?.avaliacao_media || 5}/5.0</span>
+            </div>
           )}
         </div>
       </div>
