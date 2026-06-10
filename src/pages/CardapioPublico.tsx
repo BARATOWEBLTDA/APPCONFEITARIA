@@ -25,7 +25,8 @@ import { formatCurrency } from '@/utils/helpers'
 function DeskNav({ design, searchTerm, onSearchChange }: any) {
   const { items } = useCart()
   const count = items.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
-  const cor = design.cor_borda || '#ec4899'
+  const corBorda = design.cor_borda || '#ec4899'
+  const corBotao = design.cor_botao || '#ec4899'
   const navBg = design.cor_navbar || '#ffffff'
 
   // Detecta se o fundo do navbar é escuro para adaptar cores
@@ -46,7 +47,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
   // Hover: fundo levemente mais claro/escuro que o navbar
   const hoverBg   = isNavDark ? 'rgba(255,255,255,0.12)' : '#f3f4f6'
   // Ativo: um pouco mais destacado que o hover mas ainda na paleta do navbar
-  const activeBg  = isNavDark ? 'rgba(255,255,255,0.2)' : cor
+  const activeBg  = isNavDark ? 'rgba(255,255,255,0.2)' : corBotao
   const activeText = isNavDark ? '#ffffff' : '#ffffff'
 
   const links = [
@@ -64,8 +65,8 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
         {/* Logo + nome + cidade */}
         <div style={{ display:'flex', alignItems:'center', gap:'12px', marginRight:'8px', flexShrink:0 }}>
           {design.logo_url
-            ? <img src={design.logo_url} alt="" style={{ width:'48px', height:'48px', borderRadius:'50%', objectFit:'cover', border:`2px solid ${cor}` }}/>
-            : <div style={{ width:'48px', height:'48px', borderRadius:'50%', background:cor, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'20px', fontWeight:800, flexShrink:0 }}>{design.nome_loja?.charAt(0)}</div>
+            ? <img src={design.logo_url} alt="" style={{ width:'48px', height:'48px', borderRadius:'50%', objectFit:'cover', border:`2px solid ${corBorda}` }}/>
+            : <div style={{ width:'48px', height:'48px', borderRadius:'50%', background:corBorda, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'20px', fontWeight:800, flexShrink:0 }}>{design.nome_loja?.charAt(0)}</div>
           }
           <div style={{ display:'flex', flexDirection:'column', justifyContent:'center', gap:'4px' }}>
             <span style={{ fontWeight:800, fontSize:'16px', color: design.cor_nome || textColor, lineHeight:1, fontFamily:'inherit' }}>{design.nome_loja}</span>
@@ -102,7 +103,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
           <input value={searchTerm} onChange={(e: any) => onSearchChange(e.target.value)}
             placeholder="Busque por um produto..."
             style={{ width:'100%', padding:'10px 14px 10px 40px', border: isNavDark ? '1.5px solid rgba(255,255,255,0.2)' : '1.5px solid #e5e7eb', borderRadius:'8px', fontSize:'13px', color: isNavDark ? '#fff' : '#374151', outline:'none', fontFamily:'inherit', boxSizing:'border-box', background: isNavDark ? 'rgba(255,255,255,0.1)' : '#f9fafb' }}
-            onFocus={(e: any) => { e.target.style.borderColor = cor; e.target.style.background = isNavDark ? 'rgba(255,255,255,0.15)' : '#fff' }}
+            onFocus={(e: any) => { e.target.style.borderColor = corBotao; e.target.style.background = isNavDark ? 'rgba(255,255,255,0.15)' : '#fff' }}
             onBlur={(e: any) => { e.target.style.borderColor = isNavDark ? 'rgba(255,255,255,0.2)' : '#e5e7eb'; e.target.style.background = isNavDark ? 'rgba(255,255,255,0.1)' : '#f9fafb' }}
           />
         </div>
@@ -110,7 +111,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
         {/* Sacola */}
         <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
           display:'flex', alignItems:'center', gap:'8px', padding:'10px 22px', borderRadius:'8px',
-          border:'none', background: cor, color:'#fff', fontSize:'14px', fontWeight:700,
+          border:'none', background: corBotao, color:'#fff', fontSize:'14px', fontWeight:700,
           cursor:'pointer', fontFamily:'inherit', position:'relative', flexShrink:0,
           boxShadow:`0 2px 8px ${cor}44`, transition:'opacity 0.15s',
         }}
@@ -120,7 +121,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
           <ShoppingBag size={17}/>
           Sacola
           {count > 0 && (
-            <span style={{ background:'#fff', color:cor, borderRadius:'4px', width:'20px', height:'20px', fontSize:'11px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', marginLeft:'2px' }}>{count}</span>
+            <span style={{ background:'#fff', color:corBotao, borderRadius:'4px', width:'20px', height:'20px', fontSize:'11px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', marginLeft:'2px' }}>{count}</span>
           )}
         </button>
 
