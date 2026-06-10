@@ -547,7 +547,6 @@ function CardapioContent() {
       <DeskNav design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
       <div style={{ display:'flex', flexDirection:'column', gap:'20px', paddingBottom:'0', width:'100%' }}>
-        <DeskHero design={design} />
         <DeskTrustBar />
 
         {/* Dropdown de categorias — entre trust bar e produtos */}
