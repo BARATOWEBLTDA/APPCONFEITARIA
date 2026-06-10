@@ -37,7 +37,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
 
   return (
     <div style={{ background:'#fff', borderBottom:'1px solid #f0f0f0', position:'sticky', top:0, zIndex:40 }}>
-      <div style={{ maxWidth:'1280px', margin:'0 auto', padding:'0 32px', display:'flex', alignItems:'center', height:'64px', gap:'8px' }}>
+      <div style={{ maxWidth:'100%', margin:'0 auto', padding:'0 24px', boxSizing:'border-box', display:'flex', alignItems:'center', height:'64px', gap:'8px' }}>
         {/* Logo + nome */}
         <div style={{ display:'flex', alignItems:'center', gap:'10px', marginRight:'16px', flexShrink:0 }}>
           {design.logo_url && <img src={design.logo_url} alt="" style={{ width:'40px', height:'40px', borderRadius:'50%', objectFit:'cover' }}/>}
@@ -94,9 +94,9 @@ function DeskHero({ design }: any) {
   if (!banners.length) return null
 
   return (
-    <div style={{ maxWidth:'100%', margin:'0 auto', padding:'20px 16px 0' }}>
-      <div style={{ width:'100%', height:'300px', borderRadius:'12px', overflow:'hidden', position:'relative', background:'#1a1a1a' }}>
-        <img src={banners[0]!} alt="Banner" style={{ width:'100%', height:'100%', objectFit:'cover', opacity:0.9 }}/>
+    <div style={{ width:'100%', padding:'16px 24px 0', boxSizing:'border-box' }}>
+      <div style={{ width:'100%', height:'300px', borderRadius:'16px', overflow:'hidden', background:'#1a1a1a' }}>
+        <img src={banners[0]!} alt="Banner" style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }}/>
       </div>
     </div>
   )
@@ -111,7 +111,7 @@ function DeskTrustBar() {
     { icon: '🔒', title: 'Pagamento seguro', sub: 'Ambiente 100% seguro' },
   ]
   return (
-    <div style={{ maxWidth:'1280px', margin:'0 auto', padding:'0 32px' }}>
+    <div style={{ maxWidth:'100%', margin:'0 auto', padding:'0 24px', boxSizing:'border-box' }}>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0', background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', overflow:'hidden' }}>
         {items.map((item, i) => (
           <div key={i} style={{ padding:'18px 20px', display:'flex', alignItems:'center', gap:'12px', borderRight: i < 3 ? '1px solid #f0f0f0' : 'none' }}>
@@ -150,7 +150,7 @@ function DeskInfoRow({ design, config }: any) {
   const renderStars = (r: number) => Array.from({length:5},(_,i) => <Star key={i} size={14} fill={i<Math.floor(r)?'#fbbf24':'none'} color={i<Math.ceil(r)?'#fbbf24':'#d1d5db'}/>)
 
   return (
-    <div style={{ maxWidth:'1280px', margin:'0 auto', padding:'0 32px' }}>
+    <div style={{ maxWidth:'100%', margin:'0 auto', padding:'0 24px', boxSizing:'border-box' }}>
       <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr', gap:'12px' }}>
         {/* Loja */}
         <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'18px 20px', display:'flex', alignItems:'center', gap:'14px' }}>
@@ -223,7 +223,7 @@ function DeskProducts({ produtos, favorites, onToggleFavorite, design, categorie
   const cats = categories.filter((c: any) => c.name !== 'Todos')
 
   return (
-    <div style={{ maxWidth:'1280px', margin:'0 auto', padding:'0 32px' }}>
+    <div style={{ maxWidth:'100%', margin:'0 auto', padding:'0 24px', boxSizing:'border-box' }}>
       {/* Header */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'16px' }}>
         <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'#1f2937' }}>Nosso Cardápio</h2>
@@ -269,7 +269,7 @@ function DeskFooterBar({ design, config }: any) {
   const whatsapp = config?.telefone || ''
   return (
     <div style={{ background:'#1f2937', marginTop:'48px' }}>
-      <div style={{ maxWidth:'1280px', margin:'0 auto', padding:'28px 32px', display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'24px' }}>
+      <div style={{ maxWidth:'100%', margin:'0 auto', padding:'28px 24px', display:'grid', boxSizing:'border-box', gridTemplateColumns:'repeat(4,1fr)', gap:'24px' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
           <div style={{ width:'40px', height:'40px', borderRadius:'50%', background:'#25D366', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
             <MessageCircle size={20} color="#fff"/>
