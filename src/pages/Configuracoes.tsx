@@ -41,7 +41,7 @@ export default function Configuracoes() {
   };
 
   const [form, setForm] = useState({
-    nome: "", nome_loja: "", foto_url: "", telefone: "",
+    nome: "", nome_loja: "", foto_url: "", og_image_url: "", telefone: "",
     rua: "", numero: "", bairro: "", cidade: "", estado: "", cep: ""
   });
   const [entrega, setEntrega] = useState({
@@ -82,6 +82,7 @@ export default function Configuracoes() {
         setForm({ nome: data.nome || "", nome_loja: data.nome_loja || "", foto_url: data.foto_url || "", telefone: data.telefone || "", rua: addr.rua || "", numero: addr.numero || "", bairro: addr.bairro || "", cidade: addr.cidade || "", estado: addr.estado || "", cep: addr.cep || "" });
         setNomeSalvo(data.nome || "");
         if (data.foto_url) setPreview(data.foto_url);
+        if (data.og_image_url) setOgPreview(data.og_image_url);
         if (data.horario) { try { setHorario(h => ({ ...h, ...JSON.parse(data.horario) })); } catch {} }
         setEntrega({ faz_entrega: data.faz_entrega || false, taxa_entrega: data.taxa_entrega ? data.taxa_entrega.toString() : "", tempo_entrega: data.tempo_entrega || "", area_entrega: data.area_entrega || "", pedido_minimo: data.pedido_minimo ? data.pedido_minimo.toString() : "", entrega_gratis_acima: data.entrega_gratis_acima ? data.entrega_gratis_acima.toString() : "", horario_entrega: data.horario_entrega || "", observacoes_entrega: data.observacoes_entrega || "" });
         const { data: cats } = await supabase.from("categorias").select("nome").eq("user_id", user.id).order("nome");
@@ -130,6 +131,10 @@ export default function Configuracoes() {
   const [showExcluir, setShowExcluir] = useState(false);
   const [excluirConfirm, setExcluirConfirm] = useState("");
   const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains("dark"));
+  const [copied, setCopied] = useState(false);
+  const [ogPreview, setOgPreview] = useState<string | null>(null);
+  const [ogUploading, setOgUploading] = useState(false);
+  const ogFileRef = useRef<HTMLInputElement>(null);
 
   const handleAlterarSenha = async () => {
     if (novaSenha.length < 6) return setSenhaMsg("Senha deve ter ao menos 6 caracteres.");
@@ -147,6 +152,30 @@ export default function Configuracoes() {
     navigate("/login");
   };
 
+  const handleOgFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+    setOgUploading(true);
+    setOgPreview(URL.createObjectURL(file));
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const path = `og_images/${userId}.${ext}`;
+    const { error: uploadError } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
+    if (!uploadError) {
+      const { data } = supabase.storage.from("profiles").getPublicUrl(path);
+      const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
+      setForm(f => ({ ...f, og_image_url: publicUrl }));
+      setOgPreview(publicUrl);
+    }
+    setOgUploading(false);
+  };
+
+  const [notifDesativar, setNotifDesativar] = useState(false);
+  const [notifs, setNotifs] = useState({ receitas: true, comunidade: false, atualizacoes: true });
+  const toggleNotifDesativar = (val: boolean) => {
+    setNotifDesativar(val);
+    if (val) setNotifs({ receitas: false, comunidade: false, atualizacoes: false });
+  };
+
   const toggleDark = () => {
     const html = document.documentElement;
     if (html.classList.contains("dark")) { html.classList.remove("dark"); setDarkMode(false); localStorage.setItem("theme", "light"); }
@@ -157,7 +186,7 @@ export default function Configuracoes() {
     if (!userId) return;
     setSaving(true); setError("");
     const endereco = JSON.stringify({ rua: form.rua, numero: form.numero, bairro: form.bairro, cidade: form.cidade, estado: form.estado, cep: form.cep });
-    const payload: any = { id: userId, nome: form.nome, nome_loja: form.nome_loja, foto_url: form.foto_url, telefone: form.telefone, endereco, faz_entrega: entrega.faz_entrega, taxa_entrega: entrega.taxa_entrega ? parseFloat(entrega.taxa_entrega) : null, tempo_entrega: entrega.tempo_entrega, area_entrega: entrega.area_entrega };
+    const payload: any = { id: userId, nome: form.nome, nome_loja: form.nome_loja, foto_url: form.foto_url, og_image_url: form.og_image_url, telefone: form.telefone, endereco, faz_entrega: entrega.faz_entrega, taxa_entrega: entrega.taxa_entrega ? parseFloat(entrega.taxa_entrega) : null, tempo_entrega: entrega.tempo_entrega, area_entrega: entrega.area_entrega };
     if (entrega.pedido_minimo) payload.pedido_minimo = parseFloat(entrega.pedido_minimo) || null;
     if (entrega.entrega_gratis_acima) payload.entrega_gratis_acima = parseFloat(entrega.entrega_gratis_acima) || null;
     if (entrega.horario_entrega !== undefined) payload.horario_entrega = entrega.horario_entrega;
@@ -414,7 +443,7 @@ export default function Configuracoes() {
               {plano === "pro" && (
                 <div className="cfg-plan-info cfg-plan-info--pro">
                   <p className="cfg-plan-title">Plano PRO ativo</p>
-                  <p className="cfg-plan-sub">Você tem acesso completo a todos os recursos do Doonly.</p>
+                  <p className="cfg-plan-sub">Você tem acesso completo a todos os recursos do Doonly — Gestão para Confeitarias.</p>
                 </div>
               )}
               {plano === "trial" && (
@@ -438,29 +467,105 @@ export default function Configuracoes() {
                 <span>Notificações</span>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
-                {[
-                  { key:"receitas",    label:"Novas receitas" },
-                  { key:"comunidade",  label:"Comunidade" },
-                  { key:"atualizacoes",label:"Atualizações do app" },
-                ].map(item => (
+                {([
+                  { key:"receitas",     label:"Novas receitas" },
+                  { key:"comunidade",   label:"Comunidade" },
+                  { key:"atualizacoes", label:"Atualizações do app" },
+                ] as { key: keyof typeof notifs; label: string }[]).map(item => (
                   <div key={item.key} className="cfg-notif-row">
-                    <p className="cfg-notif-label">{item.label}</p>
+                    <p className="cfg-notif-label" style={{color: notifDesativar ? "#d1d5db" : undefined}}>{item.label}</p>
                     <label className="toggle">
-                      <input type="checkbox" defaultChecked={item.key !== "comunidade"} />
-                      <span className="toggle-slider" />
+                      <input
+                        type="checkbox"
+                        checked={notifs[item.key]}
+                        disabled={notifDesativar}
+                        onChange={e => setNotifs(n => ({...n, [item.key]: e.target.checked}))}
+                      />
+                      <span className="toggle-slider" style={{opacity: notifDesativar ? 0.4 : 1}} />
                     </label>
                   </div>
                 ))}
-                <div className="cfg-notif-row" style={{paddingTop:"0.25rem",borderTop:"1px solid var(--border,#f3f4f6)"}}>
-                  <p className="cfg-notif-label" style={{color:"#9ca3af"}}>Não quero receber notificações</p>
+                <div className="cfg-notif-row" style={{paddingTop:"0.5rem",borderTop:"1px solid var(--border,#f3f4f6)"}}>
+                  <p className="cfg-notif-label" style={{color:"#9ca3af",fontSize:"0.82rem"}}>Não quero receber notificações</p>
                   <label className="toggle">
-                    <input type="checkbox" />
+                    <input type="checkbox" checked={notifDesativar} onChange={e => toggleNotifDesativar(e.target.checked)} />
                     <span className="toggle-slider" />
                   </label>
                 </div>
               </div>
             </div>
 
+          </div>
+
+          {/* ── Card 3 — Link do cardápio + OG Image ── */}
+          <div className="cfg-desk-card">
+            <div className="cfg-card-header">
+              <span className="cfg-card-icon">🔗</span>
+              <span>Seu cardápio público</span>
+            </div>
+
+            {/* Link */}
+            <div className="cfg-link-box">
+              <p className="cfg-link-url">appconfeitaria.vercel.app/cardapio/{userId || '...'}</p>
+              <div style={{display:"flex",gap:"0.5rem",marginTop:"0.75rem"}}>
+                <button
+                  className="cfg-desk-inline-btn"
+                  style={{flex:1,justifyContent:"center"}}
+                  onClick={() => {
+                    navigator.clipboard.writeText(`https://appconfeitaria.vercel.app/cardapio/${userId}`);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                >
+                  {copied
+                    ? <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copiado!</>
+                    : <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar link</>
+                  }
+                </button>
+                <button
+                  className="cfg-desk-inline-btn"
+                  style={{flex:1,justifyContent:"center"}}
+                  onClick={() => window.open(`https://appconfeitaria.vercel.app/cardapio/${userId}`, '_blank')}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  Abrir cardápio
+                </button>
+              </div>
+            </div>
+
+            {/* OG Image */}
+            <div style={{display:"flex",flexDirection:"column",gap:"0.6rem"}}>
+              <p className="cfg-og-label">Imagem de compartilhamento</p>
+              <p className="cfg-og-hint">Aparece quando você compartilha o link no WhatsApp, Instagram e outros apps.</p>
+
+              <div
+                className={`cfg-og-upload${ogPreview ? " cfg-og-upload--has-img" : ""}`}
+                onClick={() => ogFileRef.current?.click()}
+              >
+                {ogPreview
+                  ? <img src={ogPreview} alt="og" className="cfg-og-img" />
+                  : <div className="cfg-og-placeholder">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      <p style={{fontSize:"0.78rem",color:"#9ca3af",margin:"0.4rem 0 0"}}>Clique para adicionar imagem</p>
+                      <p style={{fontSize:"0.7rem",color:"#d1d5db",margin:"0.15rem 0 0"}}>Recomendado: 1200 × 630px</p>
+                    </div>
+                }
+                {ogUploading && (
+                  <div className="cfg-og-uploading">
+                    <span className="cfg-spinner" />
+                  </div>
+                )}
+              </div>
+              <input ref={ogFileRef} type="file" accept="image/*" onChange={handleOgFileChange} style={{display:"none"}} />
+              {ogPreview && (
+                <button
+                  onClick={() => { setOgPreview(null); setForm(f => ({...f, og_image_url: ""})); }}
+                  style={{fontSize:"0.75rem",color:"#9ca3af",background:"none",border:"none",cursor:"pointer",textAlign:"left",padding:0}}
+                >
+                  Remover imagem
+                </button>
+              )}
+            </div>
           </div>
 
         </div>{/* fim cfg-desk-grid2 */}
@@ -569,6 +674,18 @@ export default function Configuracoes() {
 
         .cfg-notif-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
         .cfg-notif-label { font-size: 0.88rem; font-weight: 500; color: var(--text-primary,#374151); margin: 0; }
+
+        .cfg-link-box { background: var(--bg-subtle,#f9fafb); border: 1px solid var(--border,#e5e7eb); border-radius: 12px; padding: 0.85rem 1rem; }
+        .cfg-link-url { font-size: 0.78rem; color: var(--text-muted,#6b7280); margin: 0; word-break: break-all; font-family: monospace; }
+
+        .cfg-og-label { font-size: 0.82rem; font-weight: 600; color: var(--text-primary,#374151); margin: 0; }
+        .cfg-og-hint  { font-size: 0.75rem; color: var(--text-muted,#9ca3af); margin: 0; line-height: 1.5; }
+        .cfg-og-upload { border: 2px dashed var(--border,#e5e7eb); border-radius: 12px; min-height: 120px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; transition: border-color 0.2s; background: var(--bg-subtle,#f9fafb); }
+        .cfg-og-upload:hover { border-color: #F583BF; }
+        .cfg-og-upload--has-img { border-style: solid; border-color: var(--border,#e5e7eb); }
+        .cfg-og-placeholder { display: flex; flex-direction: column; align-items: center; padding: 1.5rem; }
+        .cfg-og-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .cfg-og-uploading { position: absolute; inset: 0; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; }
 
         .cfg-desk-card { background: var(--bg-card,white); border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 1rem; border: 1px solid var(--border,#f3f4f6); }
 
