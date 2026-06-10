@@ -213,44 +213,6 @@ export default function Configuracoes() {
 
   if (loading) return <div className="cfg-loading"><span className="cfg-spinner-lg" /></div>;
 
-  const HorarioSection = ({ desk = false }: { desk?: boolean }) => (
-    <div className={desk ? "cfg-desk-card" : ""} style={desk ? {} : {display:"flex",flexDirection:"column",gap:"0.7rem"}}>
-      {desk && <div className="cfg-card-header"><span className="cfg-card-icon">🕐</span><span>Horários</span></div>}
-      {!desk && <SectionLabel>Horários de funcionamento</SectionLabel>}
-      <p className="cfg-hint">Dias que sua loja funciona (seg–sex)</p>
-      <div className="dias-grid">
-        {DIAS.slice(0,5).map(dia => (
-          <button key={dia} className={`dia-btn${horario.dias.includes(dia) ? " active" : ""}`} onClick={() => toggleDia(dia)}>{dia.slice(0,3)}</button>
-        ))}
-      </div>
-      <div className="cfg-row-2" style={{marginTop:"0.75rem"}}>
-        <div className="cfg-time-field"><label>Abertura</label><input type="time" value={horario.abertura} onChange={e => setHorario({...horario, abertura: e.target.value})} /></div>
-        <div className="cfg-time-field"><label>Fechamento</label><input type="time" value={horario.fechamento} onChange={e => setHorario({...horario, fechamento: e.target.value})} /></div>
-      </div>
-      <div className="cfg-divider" />
-      <div className="cfg-toggle-row">
-        <div><p className="cfg-toggle-label">Abre Sábado?</p></div>
-        <label className="toggle"><input type="checkbox" checked={horario.abre_sabado} onChange={e => setHorario({...horario, abre_sabado: e.target.checked})} /><span className="toggle-slider" /></label>
-      </div>
-      {horario.abre_sabado && (
-        <div className="cfg-row-2">
-          <div className="cfg-time-field"><label>Abertura (sáb)</label><input type="time" value={horario.sabado_abertura} onChange={e => setHorario({...horario, sabado_abertura: e.target.value})} /></div>
-          <div className="cfg-time-field"><label>Fechamento (sáb)</label><input type="time" value={horario.sabado_fechamento} onChange={e => setHorario({...horario, sabado_fechamento: e.target.value})} /></div>
-        </div>
-      )}
-      <div className="cfg-toggle-row" style={{marginTop: horario.abre_sabado ? "0.75rem" : undefined}}>
-        <div><p className="cfg-toggle-label">Abre Domingo?</p></div>
-        <label className="toggle"><input type="checkbox" checked={horario.abre_domingo} onChange={e => setHorario({...horario, abre_domingo: e.target.checked})} /><span className="toggle-slider" /></label>
-      </div>
-      {horario.abre_domingo && (
-        <div className="cfg-row-2">
-          <div className="cfg-time-field"><label>Abertura (dom)</label><input type="time" value={horario.domingo_abertura} onChange={e => setHorario({...horario, domingo_abertura: e.target.value})} /></div>
-          <div className="cfg-time-field"><label>Fechamento (dom)</label><input type="time" value={horario.domingo_fechamento} onChange={e => setHorario({...horario, domingo_fechamento: e.target.value})} /></div>
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <div className="cfg-root">
 
@@ -312,7 +274,7 @@ export default function Configuracoes() {
           )}
         </div>
 
-        {/* Tema */}
+        {/* Tema — apenas mobile */}
         <div className="cfg-accordion">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.85rem 1rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -340,10 +302,10 @@ export default function Configuracoes() {
               <p style={{ fontSize: "0.82rem", color: "#6b7280", margin: 0 }}>Esta ação é irreversível. Todos os seus dados serão removidos permanentemente.</p>
               <p style={{ fontSize: "0.82rem", color: "#374151", margin: 0 }}>Digite <strong>EXCLUIR</strong> para confirmar:</p>
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>} placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={(e: any) => setExcluirConfirm(e.target.value)} />
-              <button onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"} style={{ padding: "0.75rem", background: excluirConfirm === "EXCLUIR" ? "#ef4444" : "#f3f4f6", color: excluirConfirm === "EXCLUIR" ? "white" : "#9ca3af", border: "none", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", fontWeight: 700, cursor: excluirConfirm === "EXCLUIR" ? "pointer" : "not-allowed" }}>
+              <button onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"} style={{ padding: "0.75rem", background: excluirConfirm === "EXCLUIR" ? "#ef4444" : "#f3f4f6", color: excluirConfirm === "EXCLUIR" ? "white" : "#9ca3af", border: "none", borderRadius: "12px", fontFamily: "Geist, sans-serif", fontSize: "0.88rem", fontWeight: 700, cursor: excluirConfirm === "EXCLUIR" ? "pointer" : "not-allowed" }}>
                 Excluir minha conta
               </button>
-              <button onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }} style={{ padding: "0.75rem", background: "none", border: "1.5px solid #e5e7eb", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", fontWeight: 600, color: "#6b7280", cursor: "pointer" }}>
+              <button onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }} style={{ padding: "0.75rem", background: "none", border: "1.5px solid #e5e7eb", borderRadius: "12px", fontFamily: "Geist, sans-serif", fontSize: "0.88rem", fontWeight: 600, color: "#6b7280", cursor: "pointer" }}>
                 Cancelar
               </button>
             </div>
@@ -351,7 +313,6 @@ export default function Configuracoes() {
         </div>
 
         <button className="cfg-btn-logout" onClick={handleLogout}>Sair da conta</button>
-
       </div>
 
       {/* ─────────────── DESKTOP ─────────────── */}
@@ -359,116 +320,187 @@ export default function Configuracoes() {
         <div className="cfg-desk-header">
           <div>
             <h1 className="cfg-desk-h1">Configurações</h1>
-            <p className="cfg-desk-sub">Personalize sua loja e horários de funcionamento</p>
+            <p className="cfg-desk-sub">Gerencie sua conta e preferências</p>
           </div>
-          <div className="cfg-desk-actions">
+          <div className="cfg-desk-header-actions">
             {error && <span className="cfg-toast cfg-toast-error" style={{width:"auto"}}>{error}</span>}
             {success && <span className="cfg-toast cfg-toast-success" style={{width:"auto"}}>✓ Salvo!</span>}
+            <button className="cfg-btn-save cfg-btn-save--sm" onClick={handleSave} disabled={saving || uploading}>
+              {saving ? <span className="cfg-spinner" /> : "Salvar alterações"}
+            </button>
           </div>
         </div>
 
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
 
-        <div className="cfg-desk-grid">
-          <div className="cfg-desk-col">
-            <div className="cfg-desk-card">
-              <div className="cfg-card-header"><span className="cfg-card-icon">🏪</span><span>Sua loja</span></div>
-              <div className="cfg-desk-avatar-row">
-                <div className="cfg-hero-avatar cfg-hero-avatar--sm" onClick={() => !uploading && fileRef.current?.click()}>
-                  {preview ? <img src={preview} alt="foto" className="cfg-hero-img" /> : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
-                  <div className="cfg-hero-cam">{uploading ? <span className="cfg-spinner-sm" /> : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>}</div>
-                </div>
-                <div>
-                  <p className="cfg-desk-avatar-name">{form.nome || "Seu nome"}</p>
-                  <p className="cfg-desk-avatar-sub">{uploading ? "Enviando foto..." : "Clique para alterar foto"}</p>
-                </div>
-              </div>
-              <div className="cfg-desk-fields">
-                <div className="cfg-desk-field"><label>Seu nome</label><input type="text" placeholder="Ex: Ana Paula" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} /></div>
-                <div className="cfg-desk-field"><label>Nome da confeitaria</label><input type="text" placeholder="Ex: Doces da Ana" value={form.nome_loja} onChange={e => setForm({...form, nome_loja: e.target.value})} /></div>
-                <div className="cfg-desk-field"><label>WhatsApp</label><input type="tel" placeholder="(41) 9 9999-9999" value={form.telefone} onChange={e => setForm({...form, telefone: formatPhone(e.target.value)})} /></div>
-              </div>
-              <button className="cfg-btn-save" onClick={handleSave} disabled={saving || uploading}>
-                {saving ? <span className="cfg-spinner" /> : "Salvar alterações"}
-              </button>
+        {/* Perfil — faixa superior */}
+        <div className="cfg-desk-profile-banner">
+          <div className="cfg-desk-profile-left">
+            <div className="cfg-hero-avatar cfg-hero-avatar--md" onClick={() => !uploading && fileRef.current?.click()}>
+              {preview ? <img src={preview} alt="foto" className="cfg-hero-img" /> : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
+              <div className="cfg-hero-cam">{uploading ? <span className="cfg-spinner-sm" /> : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>}</div>
             </div>
+            <div>
+              <p className="cfg-desk-profile-name">{form.nome || "Seu nome"}</p>
+              <p className="cfg-desk-profile-email">{userEmail}</p>
+              {plano === "pro" && <span className="cfg-badge cfg-badge-pro" style={{background:"#fce7f3",color:"#ec4899"}}>✨ PRO ativo</span>}
+              {plano === "trial" && <span className="cfg-badge cfg-badge-trial" style={{background:"#f3f4f6",color:"#6b7280"}}>Plano Grátis</span>}
+              {plano === "expirado" && <span className="cfg-badge cfg-badge-expirado" style={{background:"#fff1f2",color:"#ef4444"}}>⚠️ Expirado</span>}
+            </div>
+          </div>
+          <p className="cfg-desk-profile-hint">Clique na foto para alterar</p>
+        </div>
 
-            <HorarioSection desk />
+        {/* Grid 3 colunas */}
+        <div className="cfg-desk-grid3">
 
-            <div className="cfg-desk-card">
-              <div className="cfg-card-header"><span className="cfg-card-icon">🛵</span><span>Entrega</span></div>
-              <div className="cfg-toggle-row">
-                <div><p className="cfg-toggle-label">Faz entrega?</p><p className="cfg-toggle-sub">Ative para exibir opção de entrega</p></div>
-                <label className="toggle"><input type="checkbox" checked={entrega.faz_entrega} onChange={e => setEntrega({...entrega, faz_entrega: e.target.checked})} /><span className="toggle-slider" /></label>
+          {/* Card 1 — Dados da loja */}
+          <div className="cfg-desk-card">
+            <div className="cfg-card-header">
+              <span className="cfg-card-icon">🏪</span>
+              <span>Dados da loja</span>
+            </div>
+            <div className="cfg-desk-fields">
+              <div className="cfg-desk-field">
+                <label>Seu nome</label>
+                <input type="text" placeholder="Ex: Ana Paula" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} />
               </div>
-              {entrega.faz_entrega && (
-                <div className="cfg-desk-fields" style={{marginTop:"0.75rem"}}>
-                  <div className="cfg-divider" />
-                  <div className="cfg-desk-field"><label>Taxa (R$)</label><input type="number" placeholder="5.00" value={entrega.taxa_entrega} onChange={e => setEntrega({...entrega, taxa_entrega: e.target.value})} /></div>
-                  <div className="cfg-desk-field"><label>Tempo estimado</label><input type="text" placeholder="30 a 60 minutos" value={entrega.tempo_entrega} onChange={e => setEntrega({...entrega, tempo_entrega: e.target.value})} /></div>
-                  <div className="cfg-desk-field"><label>Área de entrega</label><input type="text" placeholder="Bairros ou cidades atendidas" value={entrega.area_entrega} onChange={e => setEntrega({...entrega, area_entrega: e.target.value})} /></div>
-                </div>
-              )}
+              <div className="cfg-desk-field">
+                <label>Nome da confeitaria</label>
+                <input type="text" placeholder="Ex: Doces da Ana" value={form.nome_loja} onChange={e => setForm({...form, nome_loja: e.target.value})} />
+              </div>
+              <div className="cfg-desk-field">
+                <label>WhatsApp</label>
+                <input type="tel" placeholder="(41) 9 9999-9999" value={form.telefone} onChange={e => setForm({...form, telefone: formatPhone(e.target.value)})} />
+              </div>
+              <div className="cfg-desk-field">
+                <label>E-mail</label>
+                <input type="email" value={userEmail} disabled style={{opacity:0.5, cursor:"not-allowed"}} />
+              </div>
             </div>
           </div>
 
-          <div className="cfg-desk-col">
-            <div className="cfg-desk-card">
-              <div className="cfg-card-header"><span className="cfg-card-icon">🔒</span><span>Alterar Senha</span></div>
-              {!showAlterarSenha ? (
-                <button onClick={() => setShowAlterarSenha(true)} style={{ padding: "0.6rem 1.2rem", background: "#fdf2f8", color: "#ec4899", border: "1px solid #fce7f3", borderRadius: "10px", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", fontWeight: 600, cursor: "pointer" }}>Alterar senha</button>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Nova senha" value={novaSenha} onChange={(e: any) => setNovaSenha(e.target.value)} type="password" />
-                  <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Confirmar nova senha" value={confirmSenha} onChange={(e: any) => setConfirmSenha(e.target.value)} type="password" />
-                  {senhaMsg && <p style={{ fontSize: "0.82rem", color: senhaMsg.startsWith("✓") ? "#22c55e" : "#ef4444", margin: 0 }}>{senhaMsg}</p>}
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <button onClick={() => setShowAlterarSenha(false)} style={{ flex: 1, padding: "0.6rem", background: "#f3f4f6", border: "none", borderRadius: "10px", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", cursor: "pointer" }}>Cancelar</button>
-                    <button onClick={handleAlterarSenha} disabled={savingSenha} style={{ flex: 2, padding: "0.6rem", background: "#ec4899", color: "white", border: "none", borderRadius: "10px", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", fontWeight: 600, cursor: "pointer" }}>{savingSenha ? "Salvando..." : "Confirmar"}</button>
-                  </div>
-                </div>
-              )}
+          {/* Card 2 — Alterar Senha */}
+          <div className="cfg-desk-card">
+            <div className="cfg-card-header">
+              <span className="cfg-card-icon">🔒</span>
+              <span>Alterar Senha</span>
             </div>
-
-            <div className="cfg-desk-card">
-              <div className="cfg-card-header"><span className="cfg-card-icon">🌙</span><span>Tema {darkMode ? "Escuro" : "Claro"}</span></div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.5rem 0" }}>
-                <p style={{ fontSize: "0.85rem", color: "var(--text-muted,#9ca3af)", margin: 0 }}>Alterar aparência do app</p>
-                <button onClick={toggleDark} style={{ width: "48px", height: "26px", borderRadius: "13px", border: "none", cursor: "pointer", background: darkMode ? "#ec4899" : "#e5e7eb", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
-                  <div style={{ width: "20px", height: "20px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: darkMode ? "25px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
-                </button>
+            {!showAlterarSenha ? (
+              <div style={{display:"flex", flexDirection:"column", gap:"0.5rem"}}>
+                <p style={{fontSize:"0.82rem", color:"var(--text-muted,#9ca3af)", margin:0}}>Troque sua senha de acesso ao Doonly.</p>
+                <button onClick={() => setShowAlterarSenha(true)} className="cfg-btn-outline">Alterar senha</button>
               </div>
-            </div>
-
-            <div className="cfg-desk-card">
-              <div className="cfg-card-header"><span className="cfg-card-icon">ℹ️</span><span>Versão do app</span></div>
-              <p style={{ fontSize: "0.88rem", color: "var(--text-muted,#9ca3af)", margin: 0 }}>Doonly v1.0.0</p>
-            </div>
-
-            <div className="cfg-desk-card" style={{ border: "1px solid #fee2e2" }}>
-              <div className="cfg-card-header"><span className="cfg-card-icon" style={{ color: "#ef4444" }}>🗑️</span><span style={{ color: "#ef4444" }}>Excluir conta</span></div>
-              {!showExcluir ? (
-                <button onClick={() => setShowExcluir(true)} style={{ padding: "0.6rem 1.2rem", background: "#fff1f2", color: "#ef4444", border: "1px solid #fecdd3", borderRadius: "10px", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", fontWeight: 600, cursor: "pointer" }}>Excluir minha conta</button>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  <p style={{ fontSize: "0.82rem", color: "#6b7280", margin: 0 }}>Esta ação é irreversível. Digite <strong>EXCLUIR</strong> para confirmar:</p>
-                  <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>} placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={(e: any) => setExcluirConfirm(e.target.value)} />
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <button onClick={() => setShowExcluir(false)} style={{ flex: 1, padding: "0.6rem", background: "#f3f4f6", border: "none", borderRadius: "10px", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", cursor: "pointer" }}>Cancelar</button>
-                    <button onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"} style={{ flex: 2, padding: "0.6rem", background: excluirConfirm === "EXCLUIR" ? "#ef4444" : "#f3f4f6", color: excluirConfirm === "EXCLUIR" ? "white" : "#9ca3af", border: "none", borderRadius: "10px", fontFamily: "Inter, sans-serif", fontSize: "0.85rem", fontWeight: 600, cursor: excluirConfirm === "EXCLUIR" ? "pointer" : "not-allowed" }}>Confirmar exclusão</button>
-                  </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                <div className="cfg-desk-field">
+                  <label>Nova senha</label>
+                  <input type="password" placeholder="Mínimo 6 caracteres" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} />
                 </div>
-              )}
-            </div>
-
-            <button className="cfg-btn-logout" onClick={handleLogout} style={{width:"100%"}}>Sair da conta</button>
+                <div className="cfg-desk-field">
+                  <label>Confirmar nova senha</label>
+                  <input type="password" placeholder="Repita a senha" value={confirmSenha} onChange={e => setConfirmSenha(e.target.value)} />
+                </div>
+                {senhaMsg && <p style={{ fontSize: "0.82rem", color: senhaMsg.startsWith("✓") ? "#22c55e" : "#ef4444", margin: 0 }}>{senhaMsg}</p>}
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button onClick={() => setShowAlterarSenha(false)} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
+                  <button onClick={handleAlterarSenha} disabled={savingSenha} className="cfg-btn-save" style={{flex:2, minHeight:"38px", fontSize:"0.85rem"}}>
+                    {savingSenha ? <span className="cfg-spinner" /> : "Confirmar"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Card 3 — Excluir Conta */}
+          <div className="cfg-desk-card cfg-desk-card--danger">
+            <div className="cfg-card-header">
+              <span className="cfg-card-icon">🗑️</span>
+              <span style={{color:"#ef4444"}}>Excluir conta</span>
+            </div>
+            {!showExcluir ? (
+              <div style={{display:"flex", flexDirection:"column", gap:"0.5rem"}}>
+                <p style={{fontSize:"0.82rem", color:"var(--text-muted,#9ca3af)", margin:0}}>Ação irreversível. Todos os dados serão removidos permanentemente.</p>
+                <button onClick={() => setShowExcluir(true)} className="cfg-btn-danger-outline">Excluir minha conta</button>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                <p style={{ fontSize: "0.82rem", color: "#6b7280", margin: 0 }}>Digite <strong>EXCLUIR</strong> para confirmar:</p>
+                <div className="cfg-desk-field">
+                  <input type="text" placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} style={{borderColor: excluirConfirm === "EXCLUIR" ? "#ef4444" : undefined}} />
+                </div>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
+                  <button onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"} style={{ flex: 2, padding: "0.6rem", background: excluirConfirm === "EXCLUIR" ? "#ef4444" : "#f3f4f6", color: excluirConfirm === "EXCLUIR" ? "white" : "#9ca3af", border: "none", borderRadius: "10px", fontFamily: "Geist, sans-serif", fontSize: "0.85rem", fontWeight: 600, cursor: excluirConfirm === "EXCLUIR" ? "pointer" : "not-allowed" }}>
+                    Confirmar
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+        </div>
+
+        {/* Rodapé desktop */}
+        <div className="cfg-desk-footer">
+          <button className="cfg-btn-logout" onClick={handleLogout} style={{width:"auto", padding:"0.65rem 2rem"}}>Sair da conta</button>
         </div>
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; }
+
+        /* ── Shared ── */
+        .cfg-loading { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
+        .cfg-spinner-lg { width: 36px; height: 36px; border: 3px solid #ede9fe; border-top-color: #F583BF; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+        .cfg-spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.35); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+        .cfg-spinner-sm { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.35); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .cfg-hero-avatar { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; flex-shrink: 0; }
+        .cfg-hero-avatar--md { width: 64px; height: 64px; background: #f3f4f6; border: 2px solid #e5e7eb; }
+        .cfg-hero-img { width: 100%; height: 100%; object-fit: cover; }
+        .cfg-hero-cam { position: absolute; bottom: 0; right: 0; background: rgba(0,0,0,0.45); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 50% 0 0 0; }
+
+        .cfg-field { display: flex; align-items: center; gap: 0.7rem; border: 1.5px solid var(--border, #e5e7eb); border-radius: 50px; padding: 0.65rem 1.1rem; background: var(--bg-input, white); transition: border-color 0.2s; min-width: 0; }
+        .cfg-field:focus-within { border-color: #F583BF; }
+        .cfg-field-icon { display: flex; align-items: center; flex-shrink: 0; color: var(--text-muted, #9ca3af); }
+        .cfg-field-input { flex: 1; border: none; outline: none; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: var(--text-primary, #1f2937); background: transparent; min-width: 0; }
+
+        .cfg-toast { width: 100%; border-radius: 12px; padding: 0.7rem 1rem; font-size: 0.85rem; font-weight: 500; }
+        .cfg-toast-error { background: #fff1f2; border: 1px solid #fecdd3; color: #be123c; }
+        .cfg-toast-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+
+        .cfg-btn-save { width: 100%; padding: 0.9rem; background: linear-gradient(135deg, #F583BF, #e060a8); color: white; border: none; border-radius: 50px; font-family: 'Geist', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 50px; letter-spacing: 0.3px; transition: opacity 0.2s, transform 0.1s; }
+        .cfg-btn-save:hover { opacity: 0.92; }
+        .cfg-btn-save:active { transform: scale(0.98); }
+        .cfg-btn-save:disabled { opacity: 0.65; cursor: not-allowed; }
+        .cfg-btn-save--sm { width: auto; padding: 0.6rem 1.5rem; min-height: 40px; font-size: 0.88rem; border-radius: 50px; }
+
+        .cfg-btn-logout { width: 100%; padding: 0.8rem; background: none; border: 1.5px solid #e5e7eb; border-radius: 50px; font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600; color: #6b7280; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+        .cfg-btn-logout:hover { border-color: #ef4444; color: #ef4444; }
+
+        .cfg-btn-outline { padding: 0.6rem 1rem; background: #fdf2f8; color: #ec4899; border: 1px solid #fce7f3; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .cfg-btn-outline:hover { background: #fce7f3; }
+
+        .cfg-btn-danger-outline { padding: 0.6rem 1rem; background: #fff1f2; color: #ef4444; border: 1px solid #fecdd3; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .cfg-btn-danger-outline:hover { background: #fee2e2; }
+
+        .cfg-btn-ghost { padding: 0.6rem 1rem; background: #f3f4f6; color: #6b7280; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; }
+
+        .cfg-badge { display: inline-block; margin-top: 0.25rem; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.68rem; font-weight: 600; }
+        .cfg-badge-pro { background: rgba(255,255,255,0.25); color: white; }
+        .cfg-badge-trial { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+        .cfg-badge-expirado { background: rgba(239,68,68,0.3); color: white; }
+
+        /* ── Mobile ── */
+        .cfg-mobile { display: flex; flex-direction: column; gap: 0.85rem; }
+        .cfg-desktop { display: none; }
+
+        .cfg-hero { background: linear-gradient(135deg, #F583BF 0%, #e060a8 100%); border-radius: 20px; padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        .cfg-hero-left { display: flex; flex-direction: column; gap: 0; flex: 1; min-width: 0; }
+        .cfg-hero-saudacao { font-size: 1rem; color: white; margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
         .cfg-accordion { background: white; border-radius: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
         .cfg-accordion-header { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 1rem 1.15rem; background: none; border: none; cursor: pointer; font-family: 'Geist', sans-serif; text-align: left; }
         .cfg-accordion-icon { color: #9ca3af; display: flex; align-items: center; }
@@ -476,91 +508,55 @@ export default function Configuracoes() {
         .cfg-accordion-chevron { color: #9ca3af; transition: transform 0.2s; flex-shrink: 0; }
         .cfg-accordion-chevron.open { transform: rotate(180deg); }
         .cfg-accordion-body { padding: 0 1.15rem 1.15rem; display: flex; flex-direction: column; gap: 0.7rem; border-top: 1px solid #f3f4f6; padding-top: 1rem; }
+
         :root.dark .cfg-accordion { background: transparent; border-radius: 0; box-shadow: none; border-bottom: 1px solid var(--border, #2a2a2a); }
         :root.dark .cfg-accordion:first-of-type { border-top: 1px solid var(--border, #2a2a2a); }
         :root.dark .cfg-accordion-header { padding: 1rem 0; }
-        :root.dark .cfg-accordion-body { padding: 0 0 1.25rem; border-top: 1px solid var(--border, #2a2a2a); padding-top: 1rem; margin-top: 0; }
-        .cfg-mobile { display: flex; flex-direction: column; gap: 0.85rem; }
-        .cfg-desktop { display: none; }
-        @media (min-width: 900px) { .cfg-mobile { display: none; } .cfg-desktop { display: block; } }
-        .cfg-loading { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
-        .cfg-spinner-lg { width: 36px; height: 36px; border: 3px solid #ede9fe; border-top-color: #7c3aed; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
-        .cfg-hero { background: linear-gradient(135deg, #F583BF 0%, #e060a8 100%); border-radius: 20px; padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-        .cfg-hero-left { display: flex; flex-direction: column; gap: 0; flex: 1; min-width: 0; }
-        .cfg-hero-saudacao { font-size: 1rem; color: white; margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cfg-hero-loja { font-size: 0.78rem; color: rgba(255,255,255,0.85); margin: 0.1rem 0 0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cfg-hero-email { font-size: 0.68rem; color: rgba(255,255,255,0.6); margin: 0.1rem 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cfg-badge { display: inline-block; margin-top: 0.25rem; padding: 0.15rem 0.4rem; border-radius: 6px; font-size: 0.65rem; font-weight: 600; white-space: nowrap; align-self: flex-start; }
-        .cfg-badge-pro { background: rgba(255,255,255,0.25); color: white; }
-        .cfg-badge-trial { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
-        .cfg-badge-expirado { background: rgba(239,68,68,0.3); color: white; }
-        .cfg-hero-avatar { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; flex-shrink: 0; }
-        .cfg-hero-avatar--sm { width: 56px; height: 56px; }
-        .cfg-hero-img { width: 100%; height: 100%; object-fit: cover; }
-        .cfg-hero-cam { position: absolute; bottom: 0; right: 0; background: rgba(0,0,0,0.45); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 50% 0 0 0; }
-        .cfg-card { background: white; border-radius: 18px; padding: 1.15rem; box-shadow: 0 2px 12px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 0.7rem; width: 100%; }
+        :root.dark .cfg-accordion-body { padding: 0 0 1.25rem; border-top: 1px solid var(--border, #2a2a2a); padding-top: 1rem; }
+
         .cfg-section-label { font-size: 0.7rem; font-weight: 700; color: #F583BF; text-transform: uppercase; letter-spacing: 0.07em; margin: 0; }
-        .cfg-hint { font-size: 0.75rem; color: #9ca3af; margin: -0.3rem 0 0; }
-        .cfg-field { display: flex; align-items: center; gap: 0.7rem; border: 1.5px solid var(--border, #e5e7eb); border-radius: 50px; padding: 0.65rem 1.1rem; background: var(--bg-input, white); transition: border-color 0.2s; min-width: 0; }
-        .cfg-field:focus-within { border-color: #F583BF; }
-        .cfg-field-icon { display: flex; align-items: center; flex-shrink: 0; color: var(--text-muted, #9ca3af); }
-        .cfg-field-input { flex: 1; border: none; outline: none; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: var(--text-primary, #1f2937); background: transparent; min-width: 0; }
-        .cfg-row-2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 0.5rem; }
-        .cfg-time-field { display: flex; flex-direction: column; gap: 0.25rem; }
-        .cfg-time-field label { font-size: 0.74rem; font-weight: 600; color: #6b7280; }
-        .cfg-time-field input { padding: 0.6rem 0.85rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.88rem; color: #1f2937; outline: none; transition: border-color 0.2s; width: 100%; }
-        .cfg-time-field input:focus { border-color: #7c3aed; }
-        .cfg-divider { border: none; border-top: 1px solid #f3f4f6; margin: 0; }
         .cfg-toggle-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
         .cfg-toggle-label { font-size: 0.88rem; font-weight: 600; color: #374151; margin: 0; }
-        .cfg-toggle-sub { font-size: 0.74rem; color: #9ca3af; margin: 0.1rem 0 0; }
         .toggle { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
         .toggle input { opacity: 0; width: 0; height: 0; }
         .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #e5e7eb; border-radius: 26px; transition: 0.3s; }
         .toggle-slider:before { content: ""; position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
         .toggle input:checked + .toggle-slider { background: #F583BF; }
         .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
-        .dias-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-        .dia-btn { padding: 0.35rem 0.7rem; border-radius: 20px; border: 1.5px solid #e5e7eb; background: white; font-family: 'Geist', sans-serif; font-size: 0.78rem; font-weight: 500; color: #6b7280; cursor: pointer; transition: all 0.15s; }
-        .dia-btn.active { background: #fce7f3; border-color: #F583BF; color: #F583BF; font-weight: 700; }
-        .cfg-cat-add { display: flex; gap: 0.5rem; align-items: center; }
-        .cfg-cat-list { display: flex; flex-direction: column; gap: 0.4rem; }
-        .cfg-cat-item { display: flex; justify-content: space-between; align-items: center; background: #f9fafb; border-radius: 10px; padding: 0.6rem 0.9rem; font-size: 0.88rem; font-weight: 500; color: #374151; }
-        .cfg-cat-remove { background: #fef2f2; border: none; color: #ef4444; border-radius: 6px; padding: 0.2rem 0.5rem; cursor: pointer; font-size: 0.75rem; font-weight: 600; }
-        .cfg-empty { color: #9ca3af; font-size: 0.82rem; text-align: center; padding: 0.75rem; }
-        .cfg-toast { width: 100%; border-radius: 12px; padding: 0.7rem 1rem; font-size: 0.85rem; font-weight: 500; }
-        .cfg-toast-error { background: #fff1f2; border: 1px solid #fecdd3; color: #be123c; }
-        .cfg-toast-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
-        .cfg-btn-save { width: 100%; padding: 0.9rem; background: linear-gradient(135deg, #F583BF, #e060a8); color: white; border: none; border-radius: 50px; font-family: 'Geist', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 50px; letter-spacing: 0.3px; transition: opacity 0.2s, transform 0.1s; }
-        .cfg-btn-save:hover { opacity: 0.92; }
-        .cfg-btn-save:active { transform: scale(0.98); }
-        .cfg-btn-save:disabled { opacity: 0.65; cursor: not-allowed; }
-        .cfg-btn-logout { width: 100%; padding: 0.8rem; background: none; border: 1.5px solid #e5e7eb; border-radius: 50px; font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600; color: #6b7280; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
-        .cfg-btn-logout:hover { border-color: #ef4444; color: #ef4444; }
-        .cfg-spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.35); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
-        .cfg-spinner-sm { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.35); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
-        .cfg-spinner-xs { width: 12px; height: 12px; border: 2px solid #e5e7eb; border-top-color: #F583BF; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .cfg-desk-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap; }
-        .cfg-desk-h1 { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin: 0 0 0.2rem; }
-        .cfg-desk-sub { font-size: 0.88rem; color: #9ca3af; margin: 0; }
-        .cfg-desk-actions { display: flex; align-items: center; gap: 0.75rem; }
-        .cfg-desk-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 1.25rem; align-items: start; }
-        .cfg-desk-col { display: flex; flex-direction: column; gap: 1.25rem; }
-        .cfg-desk-card { background: white; border-radius: 16px; padding: 1.25rem; box-shadow: 0 2px 10px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 0.9rem; }
-        .cfg-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; font-weight: 700; color: #1f2937; }
+
+        /* ── Desktop ── */
+        @media (min-width: 900px) {
+          .cfg-mobile { display: none; }
+          .cfg-desktop { display: block; }
+        }
+
+        .cfg-desk-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; gap: 1rem; flex-wrap: wrap; }
+        .cfg-desk-h1 { font-size: 1.6rem; font-weight: 700; color: var(--text-primary, #1f2937); margin: 0 0 0.2rem; }
+        .cfg-desk-sub { font-size: 0.88rem; color: var(--text-muted, #9ca3af); margin: 0; }
+        .cfg-desk-header-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+        .cfg-desk-profile-banner { background: var(--bg-card, white); border-radius: 16px; padding: 1.25rem 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; gap: 1rem; }
+        .cfg-desk-profile-left { display: flex; align-items: center; gap: 1rem; }
+        .cfg-desk-profile-name { font-size: 1.05rem; font-weight: 700; color: var(--text-primary, #1f2937); margin: 0; }
+        .cfg-desk-profile-email { font-size: 0.82rem; color: var(--text-muted, #9ca3af); margin: 0.15rem 0 0.3rem; }
+        .cfg-desk-profile-hint { font-size: 0.78rem; color: var(--text-muted, #9ca3af); }
+
+        .cfg-desk-grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; align-items: start; }
+
+        .cfg-desk-card { background: var(--bg-card, white); border-radius: 16px; padding: 1.25rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 0.9rem; border: 1px solid var(--border, #f3f4f6); transition: box-shadow 0.2s; }
+        .cfg-desk-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .cfg-desk-card--danger { border-color: #fee2e2; }
+
+        .cfg-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; font-weight: 700; color: var(--text-primary, #1f2937); padding-bottom: 0.5rem; border-bottom: 1px solid var(--border, #f3f4f6); }
         .cfg-card-icon { font-size: 1rem; }
-        .cfg-desk-avatar-row { display: flex; align-items: center; gap: 0.85rem; padding-bottom: 0.5rem; }
-        .cfg-desk-avatar-name { font-size: 0.95rem; font-weight: 600; color: #1f2937; margin: 0; }
-        .cfg-desk-avatar-sub { font-size: 0.78rem; color: #9ca3af; margin: 0.15rem 0 0; cursor: pointer; }
+
         .cfg-desk-fields { display: flex; flex-direction: column; gap: 0.75rem; }
         .cfg-desk-field { display: flex; flex-direction: column; gap: 0.28rem; }
-        .cfg-desk-field label { font-size: 0.78rem; font-weight: 600; color: #374151; }
-        .cfg-desk-field input { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: #1f2937; outline: none; transition: border-color 0.2s; width: 100%; }
-        .cfg-desk-field input:focus { border-color: #7c3aed; }
-        .cfg-desk-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 0.65rem; }
-        .cfg-cep-hint { font-size: 0.72rem; color: #9ca3af; margin: -0.2rem 0 0; }
-        .cfg-cep-editar { color: #F583BF; font-weight: 600; cursor: pointer; text-decoration: underline; }
+        .cfg-desk-field label { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary, #374151); }
+        .cfg-desk-field input { padding: 0.65rem 0.9rem; border: 1.5px solid var(--border, #e5e7eb); border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: var(--text-primary, #1f2937); background: var(--bg-input, white); outline: none; transition: border-color 0.2s; width: 100%; }
+        .cfg-desk-field input:focus { border-color: #F583BF; }
+
+        .cfg-desk-footer { display: flex; align-items: center; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border, #f3f4f6); }
       `}</style>
     </div>
   );
