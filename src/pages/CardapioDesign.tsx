@@ -24,6 +24,7 @@ export default function CardapioDesign() {
   const [corBackground, setCorBackground] = useState("#fef2f2");
   const [corNome, setCorNome] = useState("#1f2937");
   const [corBotao, setCorBotao] = useState("#ec4899");
+  const [corNavbar, setCorNavbar] = useState("#ffffff");
   const [activePicker, setActivePicker] = useState<string | null>(null);
 
   const logoRef = useRef<HTMLInputElement>(null);
@@ -39,7 +40,7 @@ export default function CardapioDesign() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome, cor_botao").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || "");
         setBannerUrl(data.banner_url || "");
@@ -50,6 +51,7 @@ export default function CardapioDesign() {
         setCorBackground(data.cor_background || "#fef2f2");
         setCorNome(data.cor_nome || "#1f2937");
         setCorBotao(data.cor_botao || "#ec4899");
+        setCorNavbar(data.cor_navbar || "#ffffff");
       }
       setLoading(false);
     };
@@ -354,6 +356,30 @@ export default function CardapioDesign() {
               </div>
             </div>
           )}
+
+          {/* Cor do navbar */}
+          <div>
+            <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_navbar' ? null : 'cor_navbar')}>
+              <div className="cd-color-info">
+                <span className="cd-color-label">Fundo da barra de navegação</span>
+                <span className="cd-color-value">{corNavbar}</span>
+              </div>
+              <div className="cd-color-swatch" style={{ background: corNavbar, border: '1px solid #e5e7eb' }} />
+            </div>
+            {activePicker === 'cor_navbar' && (
+              <div className="cd-picker-wrap">
+                <div style={{ padding: '12px', borderRadius: '10px', background: corNavbar, marginBottom: '12px', height: '40px', border: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 600 }}>Prévia da barra</span>
+                </div>
+                <HexColorPicker color={corNavbar} onChange={v => handleColorChange('cor_navbar', v, setCorNavbar)} style={{ width: '100%', height: '160px' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                  <input type="text" value={corNavbar} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_navbar', e.target.value, setCorNavbar) }} className="cd-hex-input" />
+                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_navbar', '#ffffff', setCorNavbar)}>↺</button>
+                  <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
+                </div>
+              </div>
+            )}
+          </div>
 
         </div>
       </div>
