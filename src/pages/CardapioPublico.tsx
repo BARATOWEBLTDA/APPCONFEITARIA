@@ -212,7 +212,7 @@ function DeskInfoRow({ design, config }: any) {
                 <p style={{ margin:'2px 0 6px', fontWeight:800, fontSize:'16px', color:'#16a34a' }}>{formatCurrency(totalPrice)}</p>
                 <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
                   padding:'8px 20px', borderRadius:'8px', border:'none', background:design.cor_botao||'#ec4899',
-                  color:'#fff', fontSize:'12px', fontWeight:700, cursor:'pointer', fontFamily:'inherit',
+                  color:'#fff', fontSize:'12px', fontWeight:700, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
                 }}>Ver sacola</button>
               </>
             )}
@@ -261,7 +261,7 @@ function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, 
           background: !selectedCategory ? `${corBotao}12` : '#fff',
           color: !selectedCategory ? corBotao : '#374151',
           fontSize:'13px', fontWeight: !selectedCategory ? 700 : 500,
-          cursor:'pointer', fontFamily:'inherit',
+          cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
           display:'flex', alignItems:'center', gap:'8px',
           borderBottom:'1px solid #f3f4f6',
           transition:'background 0.1s',
@@ -282,7 +282,7 @@ function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, 
             background: selectedCategory === c.name ? `${corBotao}12` : '#fff',
             color: selectedCategory === c.name ? corBotao : '#374151',
             fontSize:'13px', fontWeight: selectedCategory === c.name ? 700 : 500,
-            cursor:'pointer', fontFamily:'inherit',
+            cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
             display:'flex', alignItems:'center', gap:'8px',
             borderBottom:'1px solid #f3f4f6',
             transition:'background 0.1s',
@@ -365,7 +365,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
             <span style={{ fontWeight:700, fontSize:'14px', color:'#1f2937' }}>Sua sacola</span>
             <button
               onClick={() => window.dispatchEvent(new Event('open-cart'))}
-              style={{ background:'none', border:'none', fontSize:'12px', fontWeight:600, color:cor, cursor:'pointer', fontFamily:'inherit' }}
+              style={{ background:'none', border:'none', fontSize:'12px', fontWeight:600, color:cor, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif' }}
             >LIMPAR</button>
           </div>
 
@@ -411,7 +411,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
           {/* Botão finalizar */}
           <button
             onClick={() => window.dispatchEvent(new Event('open-cart'))}
-            style={{ width:'100%', padding:'13px', background:cor, color:'#fff', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:700, cursor:'pointer', fontFamily:'inherit', marginBottom:'0' }}
+            style={{ width:'100%', padding:'13px', background:cor, color:'#fff', border:'none', borderRadius:'10px', fontSize:'14px', fontWeight:700, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif', marginBottom:'0' }}
           >
             Finalizar pedido
           </button>
@@ -445,11 +445,11 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
               value={cupomDigitado}
               onChange={e => setCupomDigitado(e.target.value.toUpperCase())}
               placeholder="Digite o código"
-              style={{ flex:1, padding:'10px 12px', border:'1.5px solid #e5e7eb', borderRadius:'8px', fontSize:'13px', color:'#1f2937', outline:'none', fontFamily:'inherit', textTransform:'uppercase' }}
+              style={{ flex:1, padding:'10px 12px', border:'1.5px solid #e5e7eb', borderRadius:'8px', fontSize:'13px', color:'#1f2937', outline:'none', fontFamily:'Geist, system-ui, sans-serif', textTransform:'uppercase' }}
               onFocus={e => (e.target.style.borderColor = cor)}
               onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
             />
-            <button style={{ padding:'10px 14px', background:cor, color:'#fff', border:'none', borderRadius:'8px', fontSize:'13px', fontWeight:700, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}>
+            <button style={{ padding:'10px 14px', background:cor, color:'#fff', border:'none', borderRadius:'8px', fontSize:'13px', fontWeight:700, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif', whiteSpace:'nowrap' }}>
               Aplicar
             </button>
           </div>
@@ -629,7 +629,7 @@ function CardapioContent() {
 
   /* ═══ DESKTOP ═══ */
   return (
-    <div style={{ minHeight:'100vh', background:'#fafafa', fontFamily:'Inter, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
+    <div style={{ minHeight:'100vh', background:'#fafafa', fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
       <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
       <DeskNav design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
