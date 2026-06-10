@@ -76,7 +76,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
     const r = parseInt(hex.slice(0,2), 16)
     const g = parseInt(hex.slice(2,4), 16)
     const b = parseInt(hex.slice(4,6), 16)
-    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.6
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5
   })()
 
   const textColor = isNavDark ? '#ffffff' : '#1f2937'
@@ -481,11 +481,11 @@ function DeskFooterBar({ design, config }: any) {
 
   return (
     <div style={{ background: cor, padding: '18px 24px', textAlign: 'center' }}>
-      <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.95)' }}>
+      <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#ffffff' }}>
         {nome} — {ano}. Todos os direitos reservados
       </p>
       {linha2Parts.length > 0 && (
-        <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.75)' }}>
+        <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>
           {linha2Parts.join(' | ')}
         </p>
       )}
