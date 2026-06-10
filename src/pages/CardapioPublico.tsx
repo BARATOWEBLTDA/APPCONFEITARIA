@@ -13,7 +13,7 @@ import { DesktopProductCard } from '@/components/desktop/ProductCard'
 import { DesktopFooter } from '@/components/desktop/Footer'
 import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
-import { Star, MapPin, MagnifyingGlass, ShoppingBag, House, Storefront, Tag, ClipboardText, Users, CaretDown, Clock, Truck, CreditCard, ShieldCheck, Heart, ChatCircle } from '@phosphor-icons/react'
+import { Star, MapPin, MagnifyingGlass, ShoppingBag, House, Storefront, Tag, ClipboardText, Users } from '@phosphor-icons/react'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
 
@@ -361,47 +361,33 @@ function DeskProducts({ produtos, favorites, onToggleFavorite, design }: any) {
 
 /* ── Desktop Footer ── */
 function DeskFooterBar({ design, config }: any) {
-  const whatsapp = config?.telefone || ''
+  const nome = design?.nome_loja || 'Confeitaria'
+  const ano = new Date().getFullYear()
+
+  let cnpj = ''
+  let telefone = ''
+  try {
+    const end = config?.endereco ? JSON.parse(config.endereco) : null
+    if (end?.cnpj) cnpj = end.cnpj
+  } catch {}
+  if (config?.telefone) telefone = config.telefone
+
+  const cor = design?.cor_borda || '#ec4899'
+
+  const linha2Parts = []
+  if (cnpj) linha2Parts.push(`CNPJ: ${cnpj}`)
+  if (telefone) linha2Parts.push(telefone)
+
   return (
-    <div style={{ background:'#1f2937', marginTop:'48px' }}>
-      <div style={{ width:'100%', padding:'28px 24px', display:'grid', boxSizing:'border-box', gridTemplateColumns:'repeat(4,1fr)', gap:'24px' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
-          <div style={{ width:'40px', height:'40px', borderRadius:'50%', background:'#25D366', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <ChatCircle size={20} weight="duotone" color="#fff"/>
-          </div>
-          <div>
-            <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'#fff' }}>Fale conosco pelo WhatsApp</p>
-            <p style={{ margin:'2px 0 0', fontSize:'11px', color:'#9ca3af' }}>Tire dúvidas e faça seu pedido</p>
-          </div>
-        </div>
-        <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
-          <div style={{ width:'40px', height:'40px', borderRadius:'50%', background:'#374151', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <CreditCard size={20} color="#9ca3af"/>
-          </div>
-          <div>
-            <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'#fff' }}>Formas de pagamento</p>
-            <p style={{ margin:'2px 0 0', fontSize:'11px', color:'#9ca3af' }}>Pix, Cartão de crédito, Débito e Dinheiro</p>
-          </div>
-        </div>
-        <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
-          <div style={{ width:'40px', height:'40px', borderRadius:'50%', background:'#374151', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <Heart size={20} weight="duotone" color="#9ca3af"/>
-          </div>
-          <div>
-            <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'#fff' }}>Aceitamos encomendas</p>
-            <p style={{ margin:'2px 0 0', fontSize:'11px', color:'#9ca3af' }}>Encomende sua festa, evento ou data especial</p>
-          </div>
-        </div>
-        <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
-          <div style={{ width:'40px', height:'40px', borderRadius:'50%', background:'#374151', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <ShieldCheck size={20} weight="duotone" color="#9ca3af"/>
-          </div>
-          <div>
-            <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'#fff' }}>Curta nossas redes</p>
-            <p style={{ margin:'2px 0 0', fontSize:'11px', color:'#9ca3af' }}>Siga-nos e fique por dentro das novidades!</p>
-          </div>
-        </div>
-      </div>
+    <div style={{ background: cor, padding: '18px 24px', textAlign: 'center' }}>
+      <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.95)' }}>
+        {nome} — {ano}. Todos os direitos reservados
+      </p>
+      {linha2Parts.length > 0 && (
+        <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.75)' }}>
+          {linha2Parts.join(' | ')}
+        </p>
+      )}
     </div>
   )
 }
