@@ -112,7 +112,7 @@ function DeskTrustBar() {
   ]
   return (
     <div style={{ maxWidth:'100%', margin:'0 auto', padding:'0 24px', boxSizing:'border-box' }}>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0', background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', overflow:'hidden' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0', background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', overflow:'hidden', width:'100%' }}>
         {items.map((item, i) => (
           <div key={i} style={{ padding:'18px 20px', display:'flex', alignItems:'center', gap:'12px', borderRight: i < 3 ? '1px solid #f0f0f0' : 'none' }}>
             <span style={{ fontSize:'28px', flexShrink:0 }}>{item.icon}</span>
@@ -151,7 +151,7 @@ function DeskInfoRow({ design, config }: any) {
 
   return (
     <div style={{ maxWidth:'100%', margin:'0 auto', padding:'0 24px', boxSizing:'border-box' }}>
-      <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr', gap:'12px' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr', gap:'12px', width:'100%' }}>
         {/* Loja */}
         <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'18px 20px', display:'flex', alignItems:'center', gap:'14px' }}>
           <div style={{ width:'64px', height:'64px', borderRadius:'14px', overflow:'hidden', flexShrink:0, border:`2px solid ${design.cor_borda||'#ec4899'}` }}>
@@ -247,7 +247,7 @@ function DeskProducts({ produtos, favorites, onToggleFavorite, design, categorie
       </div>
 
       {/* Grid */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(240px, 1fr))', gap:'16px' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(240px, 1fr))', gap:'16px', width:'100%' }}>
         {produtos.map((p: Produto) => (
           <DesktopProductCard key={p.id} product={p} isFavorite={favorites.includes(p.id)} onToggleFavorite={onToggleFavorite}
             backgroundColor={design.cor_background||'#fff'} borderColor={cor} corBotao={design.cor_botao||'#1f2937'} />
@@ -420,7 +420,7 @@ function CardapioContent() {
       <NavigationMenu />
       <DeskNav design={design} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
-      <div style={{ display:'flex', flexDirection:'column', gap:'20px', paddingBottom:'0' }}>
+      <div style={{ display:'flex', flexDirection:'column', gap:'20px', paddingBottom:'0', width:'100%' }}>
         <DeskHero design={design} />
         <DeskTrustBar />
         <DeskInfoRow design={design} config={config} />
