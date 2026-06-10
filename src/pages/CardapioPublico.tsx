@@ -13,7 +13,7 @@ import { DesktopProductCard } from '@/components/desktop/ProductCard'
 import { DesktopFooter } from '@/components/desktop/Footer'
 import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
-import { Star, MapPin, Search, ShoppingBag, Home, Store, Tag, ClipboardList, Users, ChevronDown, Clock, Truck, CreditCard, Shield, Heart, MessageCircle } from 'lucide-react'
+import { Star, MapPin, MagnifyingGlass, ShoppingBag, House, Storefront, Tag, ClipboardText, Users, CaretDown, Clock, Truck, CreditCard, ShieldCheck, Heart, ChatCircle } from '@phosphor-icons/react'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
 
@@ -52,11 +52,11 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
   const activeText = isNavDark ? '#ffffff' : '#ffffff'
 
   const links = [
-    { icon: <Home size={15}/>, label: 'Início', active: true },
-    { icon: <Store size={15}/>, label: 'Produtos', active: false },
-    { icon: <Tag size={15}/>, label: 'Promoções', active: false },
-    { icon: <ClipboardList size={15}/>, label: 'Pedidos', active: false },
-    { icon: <Users size={15}/>, label: 'Sobre nós', active: false },
+    { icon: <House size={15} </Heart>, label: 'Início', active: true },
+    { icon: <Storefront size={15} </Heart>, label: 'Produtos', active: false },
+    { icon: <Tag size={15} </Heart>, label: 'Promoções', active: false },
+    { icon: <ClipboardText size={15} </Heart>, label: 'Pedidos', active: false },
+    { icon: <Users size={15} </Heart>, label: 'Sobre nós', active: false },
   ]
 
   return (
@@ -100,7 +100,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
 
         {/* Search */}
         <div style={{ position:'relative', width:'300px' }}>
-          <Search size={15} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color: textMuted }}/>
+          <MagnifyingGlass size={15} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color: textMuted }}/>
           <input value={searchTerm} onChange={(e: any) => onSearchChange(e.target.value)}
             placeholder="Busque por um produto..."
             style={{ width:'100%', padding:'10px 14px 10px 40px', border: isNavDark ? '1.5px solid rgba(255,255,255,0.2)' : '1.5px solid #e5e7eb', borderRadius:'8px', fontSize:'13px', color: isNavDark ? '#fff' : '#374151', outline:'none', fontFamily:'inherit', boxSizing:'border-box', background: isNavDark ? 'rgba(255,255,255,0.1)' : '#f9fafb' }}
@@ -190,7 +190,7 @@ function DeskInfoRow({ design, config }: any) {
     if (e?.cidade) locationText = `${e.bairro ? e.bairro+', ' : ''}${e.cidade} - ${e.estado}`
   } catch {}
 
-  const renderStars = (r: number) => Array.from({length:5},(_,i) => <Star key={i} size={14} fill={i<Math.floor(r)?'#fbbf24':'none'} color={i<Math.ceil(r)?'#fbbf24':'#d1d5db'}/>)
+  const renderStars = (r: number) => Array.from({length:5},(_,i) => <Star key={i} size={14} weight={i<Math.floor(r)?"fill":"regular"} color={i<Math.floor(r)?"#fbbf24":"#d1d5db"}/>)
 
   return (
     <div style={{ width:'100%', padding:'0 24px', boxSizing:'border-box' }}>
@@ -351,7 +351,7 @@ function DeskProducts({ produtos, favorites, onToggleFavorite, design }: any) {
 
       {produtos.length === 0 && (
         <div style={{ textAlign:'center', padding:'48px', color:'#9ca3af' }}>
-          <Search size={40} style={{ margin:'0 auto 12px', display:'block', opacity:0.3 }}/>
+          <MagnifyingGlass size={40} style={{ margin:'0 auto 12px', display:'block', opacity:0.3 }}/>
           <p style={{ fontWeight:700, fontSize:'16px', color:'#6b7280' }}>Nenhum produto encontrado</p>
         </div>
       )}
