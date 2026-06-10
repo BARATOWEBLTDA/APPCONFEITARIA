@@ -437,6 +437,35 @@ function CardapioContent() {
       setCategoriasList(categoriasList || [])
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
+
+      // ── Open Graph meta tags ──
+      const setMeta = (prop: string, content: string) => {
+        let el = document.querySelector(`meta[property="${prop}"]`) as HTMLMetaElement
+        if (!el) { el = document.createElement('meta'); el.setAttribute('property', prop); document.head.appendChild(el) }
+        el.setAttribute('content', content)
+      }
+      const setMetaName = (name: string, content: string) => {
+        let el = document.querySelector(`meta[name="${name}"]`) as HTMLMetaElement
+        if (!el) { el = document.createElement('meta'); el.setAttribute('name', name); document.head.appendChild(el) }
+        el.setAttribute('content', content)
+      }
+      const pageTitle = `${design.nome_loja} — Cardápio Digital`
+      const pageDesc  = design.descricao_loja || `Conheça o cardápio de ${design.nome_loja}. Encomende pelo WhatsApp!`
+      const pageUrl   = window.location.href
+      const ogImage   = (design as any).og_image_url || design.logo_url || ''
+
+      document.title = pageTitle
+      setMeta('og:title',       pageTitle)
+      setMeta('og:description', pageDesc)
+      setMeta('og:url',         pageUrl)
+      setMeta('og:type',        'website')
+      setMeta('og:site_name',   'Doonly')
+      if (ogImage) setMeta('og:image', ogImage)
+      setMetaName('description',    pageDesc)
+      setMetaName('twitter:card',   'summary_large_image')
+      setMetaName('twitter:title',  pageTitle)
+      setMetaName('twitter:description', pageDesc)
+      if (ogImage) setMetaName('twitter:image', ogImage)
       if (config) {
         localStorage.setItem('cardapio_checkout_config', JSON.stringify({
           formas_pagamento: config.formas_pagamento || ['pix'],
