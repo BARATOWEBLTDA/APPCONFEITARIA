@@ -54,6 +54,7 @@ async function fetchByUserId(userId: string, profile: any) {
     hide_stars: profile.hide_stars || false,
     cor_botao: profile.cor_botao || '#ec4899',
     cor_navbar: profile.cor_navbar || '#ffffff',
+    cor_sacola: profile.cor_sacola || '#ec4899',
     ocultar_categorias: profile.ocultar_categorias || false,
   }
 
