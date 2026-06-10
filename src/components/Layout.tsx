@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef, type ReactNode } from "react";
-import { Home, Calendar, ShoppingBag, ClipboardList, Users, BookOpen, Package, DollarSign, Settings, LogOut, ChevronDown, UtensilsCrossed, Menu } from "lucide-react";
+import { House, CalendarDots, ShoppingBag, ClipboardText, Users, BookOpen, Package, CurrencyDollar, Gear, SignOut, CaretDown, ForkKnife, List } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { supabase } from "@/lib/supabase";
@@ -13,7 +13,7 @@ function SidebarGroup({ label, icon, paths, location, children }: { label: strin
       <button className={`nav-group-btn ${isAnyActive ? "active" : ""}`} onClick={() => setOpen(o => !o)}>
         {icon && <span className="nav-icon">{icon}</span>}
         <span style={{ flex: 1 }}>{label}</span>
-        <ChevronDown size={13} style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.5 }} />
+        <CaretDown size={13} style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", opacity: 0.5 }} />
       </button>
       {open && <div className="nav-subitems">{children}</div>}
     </div>
@@ -98,13 +98,13 @@ export default function Layout() {
 
         <nav className="sidebar-nav">
           <NavLink to="/inicio" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><Home size={16} /></span>Início
+            <span className="nav-icon"><House size={18} weight="duotone" /></span>Início
           </NavLink>
           <NavLink to="/agenda" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><Calendar size={16} /></span>Agenda
+            <span className="nav-icon"><CalendarDots size={18} weight="duotone" /></span>Agenda
           </NavLink>
 
-          <SidebarGroup label="Cardápio" icon={<ShoppingBag size={16} />} paths={["/cardapio-config","/cardapio-design","/cardapio-preview","/categorias","/produtos","/checkout-config"]} location={location}>
+          <SidebarGroup label="Cardápio" icon={<ShoppingBag size={18} weight="duotone" />} paths={["/cardapio-config","/cardapio-design","/cardapio-preview","/categorias","/produtos","/checkout-config"]} location={location}>
             <NavLink to="/cardapio-config" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Configuração</NavLink>
             <NavLink to="/cardapio-design" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Design</NavLink>
             <NavLink to="/cardapio-preview" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Prévia</NavLink>
@@ -114,27 +114,27 @@ export default function Layout() {
           </SidebarGroup>
 
           <NavLink to="/pedidos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><ClipboardList size={16} /></span>Pedidos
+            <span className="nav-icon"><ClipboardText size={18} weight="duotone" /></span>Pedidos
           </NavLink>
           <NavLink to="/clientes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><Users size={16} /></span>Clientes
+            <span className="nav-icon"><Users size={18} weight="duotone" /></span>Clientes
           </NavLink>
 
-          <SidebarGroup label="Receitas" icon={<BookOpen size={16} />} paths={["/receitas","/comunidade"]} location={location}>
+          <SidebarGroup label="Receitas" icon={<BookOpen size={18} weight="duotone" />} paths={["/receitas","/comunidade"]} location={location}>
             <NavLink to="/receitas" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Minhas receitas</NavLink>
             <NavLink to="/receitas?tipo=app" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Receitas do app</NavLink>
             <NavLink to="/comunidade" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Comunidade</NavLink>
           </SidebarGroup>
 
-          <SidebarGroup label="Estoque" icon={<Package size={16} />} paths={["/insumos","/estoque"]} location={location}>
+          <SidebarGroup label="Estoque" icon={<Package size={18} weight="duotone" />} paths={["/insumos","/estoque"]} location={location}>
             <NavLink to="/insumos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Ingredientes</NavLink>
           </SidebarGroup>
 
           <NavLink to="/financeiro" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><DollarSign size={16} /></span>Financeiro
+            <span className="nav-icon"><CurrencyDollar size={18} weight="duotone" /></span>Financeiro
           </NavLink>
           <NavLink to="/configuracoes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><Settings size={16} /></span>Configurações
+            <span className="nav-icon"><Gear size={18} weight="duotone" /></span>Configurações
           </NavLink>
         </nav>
 
@@ -148,7 +148,7 @@ export default function Layout() {
           style={{display:"flex",alignItems:"center",gap:"0.6rem",width:"calc(100% - 0.5rem)",margin:"0 0.25rem 1rem",background:"none",border:"none",cursor:"pointer",padding:"0.6rem 1rem",borderRadius:"10px",color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",fontWeight:500,fontFamily:"Inter,sans-serif",transition:"all 0.15s"}}
           onMouseEnter={e => (e.currentTarget.style.color="rgba(255,255,255,0.7)")}
           onMouseLeave={e => (e.currentTarget.style.color="rgba(255,255,255,0.4)")}>
-          <LogOut size={15} />
+          <SignOut size={16} weight="duotone" />
           Sair
         </button>
       </aside>
