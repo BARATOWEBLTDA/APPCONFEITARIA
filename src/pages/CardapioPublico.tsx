@@ -114,11 +114,11 @@ function DeskTrustBar() {
     <div style={{ maxWidth:'100%', margin:'0 auto', padding:'0 24px', boxSizing:'border-box' }}>
       <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0', background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', overflow:'hidden', width:'100%' }}>
         {items.map((item, i) => (
-          <div key={i} style={{ padding:'18px 20px', display:'flex', alignItems:'center', gap:'12px', borderRight: i < 3 ? '1px solid #f0f0f0' : 'none' }}>
-            <span style={{ fontSize:'28px', flexShrink:0 }}>{item.icon}</span>
+          <div key={i} style={{ padding:'24px 28px', display:'flex', alignItems:'center', gap:'14px', borderRight: i < 3 ? '1px solid #f0f0f0' : 'none' }}>
+            <span style={{ fontSize:'32px', flexShrink:0 }}>{item.icon}</span>
             <div>
-              <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'#1f2937' }}>{item.title}</p>
-              <p style={{ margin:'2px 0 0', fontSize:'11px', color:'#9ca3af' }}>{item.sub}</p>
+              <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'#1f2937' }}>{item.title}</p>
+              <p style={{ margin:'3px 0 0', fontSize:'12px', color:'#9ca3af' }}>{item.sub}</p>
             </div>
           </div>
         ))}
@@ -151,17 +151,17 @@ function DeskInfoRow({ design, config }: any) {
 
   return (
     <div style={{ maxWidth:'100%', margin:'0 auto', padding:'0 24px', boxSizing:'border-box' }}>
-      <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr', gap:'12px', width:'100%' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr', gap:'16px', width:'100%' }}>
         {/* Loja */}
-        <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'18px 20px', display:'flex', alignItems:'center', gap:'14px' }}>
-          <div style={{ width:'64px', height:'64px', borderRadius:'14px', overflow:'hidden', flexShrink:0, border:`2px solid ${design.cor_borda||'#ec4899'}` }}>
+        <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'24px', display:'flex', alignItems:'center', gap:'16px' }}>
+          <div style={{ width:'72px', height:'72px', borderRadius:'14px', overflow:'hidden', flexShrink:0, border:`2px solid ${design.cor_borda||'#ec4899'}` }}>
             {design.logo_url
               ? <img src={design.logo_url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
               : <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', background:design.cor_borda||'#ec4899', color:'#fff', fontSize:'24px', fontWeight:800 }}>{design.nome_loja?.charAt(0)}</div>
             }
           </div>
           <div>
-            <h2 style={{ margin:0, fontSize:'18px', fontWeight:800, color:'#1f2937' }}>{design.nome_loja}</h2>
+            <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'#1f2937' }}>{design.nome_loja}</h2>
             <div style={{ display:'flex', alignItems:'center', gap:'8px', marginTop:'4px', flexWrap:'wrap' }}>
               {locationText && <span style={{ fontSize:'12px', color:'#6b7280', display:'flex', alignItems:'center', gap:'3px' }}><MapPin size={11}/> {locationText}</span>}
               {statusText && <span style={{ fontSize:'12px', fontWeight:600, color:isOpen?'#16a34a':'#ef4444' }}>● {statusText}</span>}
@@ -177,7 +177,7 @@ function DeskInfoRow({ design, config }: any) {
         <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'18px 20px' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
             <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#fef3c7', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px' }}>🏆</div>
-            <span style={{ fontWeight:700, fontSize:'13px', color:'#1f2937' }}>Programa de fidelidade</span>
+            <span style={{ fontWeight:700, fontSize:'14px', color:'#1f2937' }}>Programa de fidelidade</span>
           </div>
           <p style={{ margin:0, fontSize:'12px', color:'#6b7280', lineHeight:1.5 }}>A cada <strong>R$ 100,00</strong> em compras você ganha <strong>1 ponto</strong> que pode ser trocado por prêmios.</p>
           <p style={{ margin:'4px 0 0', fontSize:'11px', color:'#9ca3af' }}>Novos clientes ganham automaticamente 50 pontos.</p>
@@ -187,13 +187,13 @@ function DeskInfoRow({ design, config }: any) {
         <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'18px 20px' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
             <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#dbeafe', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px' }}>🚚</div>
-            <span style={{ fontWeight:700, fontSize:'13px', color:'#1f2937' }}>Entrega e retirada</span>
+            <span style={{ fontWeight:700, fontSize:'14px', color:'#1f2937' }}>Entrega e retirada</span>
           </div>
           <p style={{ margin:0, fontSize:'12px', color:'#6b7280', lineHeight:1.5 }}>Finalize pelo WhatsApp. Escolha entrega ou retirada no checkout.</p>
         </div>
 
         {/* Sacola */}
-        <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'18px 20px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
+        <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'24px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
           {count === 0 ? (
             <>
               <ShoppingBag size={28} color="#d4d4d4" style={{ marginBottom:'6px' }}/>
