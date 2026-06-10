@@ -491,7 +491,7 @@ function CardapioContent() {
   /* ═══ MOBILE ═══ */
   if (!isDesktop) {
     return (
-      <div className="min-h-screen relative" style={{ backgroundColor: design.cor_background || '#fef2f2' }}>
+      <div className="min-h-screen relative" style={{ backgroundColor: '#f8f8f8' }}>
         <NavigationMenu />
         <div style={{ height: '160px', backgroundColor: design.cor_borda || '#ec4899' }} />
         <Logo logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={design.cor_nome} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars} />
