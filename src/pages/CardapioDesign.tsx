@@ -263,32 +263,6 @@ export default function CardapioDesign() {
             )}
           </div>
 
-          {/* Cor do fundo */}
-          <div>
-            <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_background' ? null : 'cor_background')}>
-              <div className="cd-color-info">
-                <span className="cd-color-label">Fundo da página</span>
-                <span className="cd-color-value">{corBackground}</span>
-              </div>
-              <div className="cd-color-swatch" style={{ background: corBackground }} />
-            </div>
-            {activePicker === 'cor_background' && (
-              <div className="cd-picker-wrap">
-                {/* Preview fundo */}
-                <div style={{ height: '56px', borderRadius: '10px', background: corBackground, marginBottom: '12px', border: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '0.75rem', color: corNome, fontWeight: 600 }}>Fundo do cardápio</span>
-                </div>
-                <HexColorPicker color={corBackground} onChange={v => handleColorChange('cor_background', v, setCorBackground)} style={{ width: '100%', height: '160px' }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                  
-                  <input type="text" value={corBackground} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_background', e.target.value, setCorBackground) }} className="cd-hex-input" />
-                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_background', '#fef2f2', setCorBackground)}>↺</button>
-                  <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Cor do nome */}
           <div>
             <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_nome' ? null : 'cor_nome')}>
