@@ -36,7 +36,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
   ]
 
   return (
-    <div style={{ background:'#fff', borderBottom:'1px solid #f0f0f0', position:'sticky', top:0, zIndex:40, boxShadow:'0 1px 8px rgba(0,0,0,0.06)' }}>
+    <div style={{ background: design.cor_navbar || '#fff', borderBottom:'1px solid #f0f0f0', position:'sticky', top:0, zIndex:40, boxShadow:'0 1px 8px rgba(0,0,0,0.06)' }}>
       <div style={{ width:'100%', padding:'0 48px', boxSizing:'border-box', display:'flex', alignItems:'center', height:'72px', gap:'16px' }}>
 
         {/* Logo + nome + slogan */}
