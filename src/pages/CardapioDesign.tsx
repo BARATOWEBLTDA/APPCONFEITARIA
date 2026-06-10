@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { HexColorPicker } from "react-colorful";
 import { ImageCropper } from "@/components/ui/ImageCropper";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const SectionLabel = ({ children }: any) => <p className="cd-section-label">{children}</p>;
 
@@ -18,6 +19,7 @@ export default function CardapioDesign() {
   const [success, setSuccess] = useState(false);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const { isPro } = usePlano();
+  const isMobile = useIsMobile();
 
   // Cores
   const [corBorda, setCorBorda] = useState("#ec4899");
@@ -233,7 +235,7 @@ export default function CardapioDesign() {
       </div>
 
       {/* Cores */}
-      <div className="cd-card" style={{ gridColumn:'2', gridRow:'2/4' }}>
+      <div className="cd-card" style={isMobile ? {} : { gridColumn:'2', gridRow:'2/4' }}>
         <SectionLabel>Cores</SectionLabel>
         <p className="cd-hint">Toque para personalizar e veja em tempo real</p>
         <div className="cd-colors-list">
@@ -417,6 +419,10 @@ export default function CardapioDesign() {
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         .cd-root { font-family:'Geist', sans-serif; max-width:960px; width:100%; box-sizing:border-box; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto auto 1fr; gap:0.85rem; align-items:start; }
         .cd-page-header { grid-column:1/-1; padding-top:1.5rem; text-align:center; margin-bottom:0.15rem; }
+        @media (max-width: 768px) {
+          .cd-root { display:flex; flex-direction:column; max-width:100%; }
+          .cd-page-header { grid-column:unset; }
+        }
         .cd-page-title { font-size:1.25rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.3rem; }
         .cd-page-sub { font-size:0.84rem; color:#4b5563; margin:0; font-style:italic; }
         .cd-autosave { font-size:0.75rem; font-weight:600; color:#22c55e; display:flex; align-items:center; justify-content:center; gap:0.25rem; animation:fadeIn 0.3s ease; margin-top:0.3rem; }
