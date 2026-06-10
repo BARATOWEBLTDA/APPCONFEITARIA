@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { refreshProfile } from "@/hooks/useProfile";
 
-const DIAS = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-
 const Field = ({ icon, placeholder, value, onChange, type = "text", maxLength, disabled }: any) => (
   <div className={`cfg-field${disabled ? " cfg-field-disabled" : ""}`}>
     <span className="cfg-field-icon">{icon}</span>
@@ -20,10 +18,6 @@ const Field = ({ icon, placeholder, value, onChange, type = "text", maxLength, d
   </div>
 );
 
-const SectionLabel = ({ children }: { children: React.ReactNode }) => (
-  <p className="cfg-section-label">{children}</p>
-);
-
 export default function Configuracoes() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -35,9 +29,7 @@ export default function Configuracoes() {
   const [preview, setPreview] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState("");
   const [nomeSalvo, setNomeSalvo] = useState("");
-  const [nomeLojaSalvo, setNomeLojaSalvo] = useState("");
   const [plano, setPlano] = useState<"pro" | "trial" | "expirado">("trial");
-  const [diasRestantes, setDiasRestantes] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const getSaudacao = () => {
@@ -56,36 +48,9 @@ export default function Configuracoes() {
     pedido_minimo: "", entrega_gratis_acima: "", horario_entrega: "", observacoes_entrega: ""
   });
   const [categorias, setCategorias] = useState<string[]>([]);
-  const [novaCategoria, setNovaCategoria] = useState("");
-  const [savingCat, setSavingCat] = useState(false);
-  const [buscandoCep, setBuscandoCep] = useState(false);
-  const [cepPreenchido, setCepPreenchido] = useState(false);
-  const [modalHorario, setModalHorario] = useState(false);
-  const [horarioEntregaTemp, setHorarioEntregaTemp] = useState({ inicio: "08:00", fim: "18:00" });
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [ocultarCategorias, setOcultarCategorias] = useState(false);
   const toggleSection = (s: string) => setOpenSection(prev => prev === s ? null : s);
-
-  const buscarCep = async (cep: string) => {
-    const limpo = cep.replace(/\D/g, "");
-    if (limpo.length !== 8) return;
-    setBuscandoCep(true);
-    try {
-      const res = await fetch(`https://viacep.com.br/ws/${limpo}/json/`);
-      const data = await res.json();
-      if (!data.erro) {
-        setForm(f => ({
-          ...f,
-          rua: data.logradouro || f.rua,
-          cidade: data.localidade || f.cidade,
-          estado: data.uf || f.estado,
-          bairro: data.bairro || (f as any).bairro || ""
-        }));
-        setCepPreenchido(true);
-      }
-    } catch {}
-    setBuscandoCep(false);
-  };
 
   const [horario, setHorario] = useState({
     dias: ["Segunda","Terça","Quarta","Quinta","Sexta"] as string[],
@@ -105,7 +70,6 @@ export default function Configuracoes() {
       const hoje = new Date();
       const diffDias = Math.floor((hoje.getTime() - criado.getTime()) / (1000 * 60 * 60 * 24));
       const restantes = Math.max(0, 14 - diffDias);
-      setDiasRestantes(restantes);
       const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       const proExpira = data?.pro_expira_em ? new Date(data.pro_expira_em) : null;
       const isPROAtivo = data?.plano === "pro" && (!proExpira || proExpira > hoje);
@@ -115,7 +79,6 @@ export default function Configuracoes() {
         try { addr = data.endereco ? JSON.parse(data.endereco) : {}; } catch {}
         setForm({ nome: data.nome || "", nome_loja: data.nome_loja || "", foto_url: data.foto_url || "", telefone: data.telefone || "", rua: addr.rua || "", numero: addr.numero || "", bairro: addr.bairro || "", cidade: addr.cidade || "", estado: addr.estado || "", cep: addr.cep || "" });
         setNomeSalvo(data.nome || "");
-        setNomeLojaSalvo(data.nome_loja || "");
         if (data.foto_url) setPreview(data.foto_url);
         if (data.horario) { try { setHorario(h => ({ ...h, ...JSON.parse(data.horario) })); } catch {} }
         setEntrega({ faz_entrega: data.faz_entrega || false, taxa_entrega: data.taxa_entrega ? data.taxa_entrega.toString() : "", tempo_entrega: data.tempo_entrega || "", area_entrega: data.area_entrega || "", pedido_minimo: data.pedido_minimo ? data.pedido_minimo.toString() : "", entrega_gratis_acima: data.entrega_gratis_acima ? data.entrega_gratis_acima.toString() : "", horario_entrega: data.horario_entrega || "", observacoes_entrega: data.observacoes_entrega || "" });
@@ -147,24 +110,16 @@ export default function Configuracoes() {
     setUploading(false);
   };
 
-  const toggleDia = (dia: string) => setHorario(h => ({ ...h, dias: h.dias.includes(dia) ? h.dias.filter(d => d !== dia) : [...h.dias, dia] }));
-  const formatPhone = (value: string) => { const d = value.replace(/\D/g, "").slice(0, 11); if (d.length <= 2) return `(${d}`; if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`; if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`; return `(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`; };
-
-  const handleAddCategoria = async () => {
-    if (!novaCategoria.trim() || !userId) return;
-    setSavingCat(true);
-    const { error } = await supabase.from("categorias").insert({ nome: novaCategoria.trim(), user_id: userId });
-    if (!error) { setCategorias(prev => [...prev, novaCategoria.trim()].sort()); setNovaCategoria(""); }
-    setSavingCat(false);
-  };
-
-  const handleDeleteCategoria = async (nome: string) => {
-    if (!userId) return;
-    await supabase.from("categorias").delete().eq("user_id", userId).eq("nome", nome);
-    setCategorias(prev => prev.filter(c => c !== nome));
+  const formatPhone = (value: string) => {
+    const d = value.replace(/\D/g, "").slice(0, 11);
+    if (d.length <= 2) return `(${d}`;
+    if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`;
+    if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+    return `(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`;
   };
 
   const handleLogout = async () => { await supabase.auth.signOut(); navigate("/login"); };
+
   const [showAlterarSenha, setShowAlterarSenha] = useState(false);
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmSenha, setConfirmSenha] = useState("");
@@ -207,7 +162,7 @@ export default function Configuracoes() {
     if (entrega.observacoes_entrega !== undefined) payload.observacoes_entrega = entrega.observacoes_entrega;
     payload.ocultar_categorias = ocultarCategorias;
     const { error: err } = await supabase.from("profiles").upsert(payload, { onConflict: "id" });
-    if (err) { setError("Erro ao salvar. Tente novamente."); } else { setSuccess(true); setNomeSalvo(form.nome); setNomeLojaSalvo(form.nome_loja); await refreshProfile(); setTimeout(() => setSuccess(false), 3000); }
+    if (err) { setError("Erro ao salvar. Tente novamente."); } else { setSuccess(true); setNomeSalvo(form.nome); await refreshProfile(); setTimeout(() => setSuccess(false), 3000); }
     setSaving(false);
   };
 
@@ -255,7 +210,7 @@ export default function Configuracoes() {
           )}
         </div>
 
-        {/* Alterar Senha */}
+        {/* Alterar Senha — mobile */}
         <div className="cfg-accordion">
           <button className="cfg-accordion-header" onClick={() => setShowAlterarSenha(v => !v)}>
             <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
@@ -290,7 +245,7 @@ export default function Configuracoes() {
           </div>
         </div>
 
-        {/* Excluir Conta */}
+        {/* Excluir Conta — mobile */}
         <div className="cfg-accordion">
           <button className="cfg-accordion-header" onClick={() => setShowExcluir(v => !v)}>
             <span className="cfg-accordion-icon" style={{ color: "#ef4444" }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
@@ -325,41 +280,37 @@ export default function Configuracoes() {
           <div className="cfg-desk-header-actions">
             {error && <span className="cfg-toast cfg-toast-error" style={{width:"auto"}}>{error}</span>}
             {success && <span className="cfg-toast cfg-toast-success" style={{width:"auto"}}>✓ Salvo!</span>}
-            <button className="cfg-btn-save cfg-btn-save--sm" onClick={handleSave} disabled={saving || uploading}>
-              {saving ? <span className="cfg-spinner" /> : "Salvar alterações"}
-            </button>
           </div>
         </div>
 
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
 
-        {/* Perfil — faixa superior */}
+        {/* Faixa de perfil */}
         <div className="cfg-desk-profile-banner">
           <div className="cfg-desk-profile-left">
             <div className="cfg-hero-avatar cfg-hero-avatar--md" onClick={() => !uploading && fileRef.current?.click()}>
-              {preview ? <img src={preview} alt="foto" className="cfg-hero-img" /> : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
-              <div className="cfg-hero-cam">{uploading ? <span className="cfg-spinner-sm" /> : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>}</div>
+              {preview ? <img src={preview} alt="foto" className="cfg-hero-img" /> : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
+              <div className="cfg-hero-cam">{uploading ? <span className="cfg-spinner-sm" /> : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>}</div>
             </div>
             <div>
               <p className="cfg-desk-profile-name">{form.nome || "Seu nome"}</p>
               <p className="cfg-desk-profile-email">{userEmail}</p>
-              {plano === "pro" && <span className="cfg-badge cfg-badge-pro" style={{background:"#fce7f3",color:"#ec4899"}}>✨ PRO ativo</span>}
-              {plano === "trial" && <span className="cfg-badge cfg-badge-trial" style={{background:"#f3f4f6",color:"#6b7280"}}>Plano Grátis</span>}
-              {plano === "expirado" && <span className="cfg-badge cfg-badge-expirado" style={{background:"#fff1f2",color:"#ef4444"}}>⚠️ Expirado</span>}
+              {plano === "pro" && <span className="cfg-badge" style={{background:"#fce7f3",color:"#ec4899"}}>✨ PRO ativo</span>}
+              {plano === "trial" && <span className="cfg-badge" style={{background:"#f3f4f6",color:"#6b7280"}}>Plano Grátis</span>}
+              {plano === "expirado" && <span className="cfg-badge" style={{background:"#fff1f2",color:"#ef4444"}}>⚠️ Expirado</span>}
             </div>
           </div>
           <p className="cfg-desk-profile-hint">Clique na foto para alterar</p>
         </div>
 
-        {/* Grid 3 colunas */}
-        <div className="cfg-desk-grid3">
-
-          {/* Card 1 — Dados da loja */}
+        {/* Card único à esquerda */}
+        <div className="cfg-desk-single-col">
           <div className="cfg-desk-card">
             <div className="cfg-card-header">
               <span className="cfg-card-icon">🏪</span>
               <span>Dados da loja</span>
             </div>
+
             <div className="cfg-desk-fields">
               <div className="cfg-desk-field">
                 <label>Seu nome</label>
@@ -378,79 +329,85 @@ export default function Configuracoes() {
                 <input type="email" value={userEmail} disabled style={{opacity:0.5, cursor:"not-allowed"}} />
               </div>
             </div>
-          </div>
 
-          {/* Card 2 — Alterar Senha */}
-          <div className="cfg-desk-card">
-            <div className="cfg-card-header">
-              <span className="cfg-card-icon">🔒</span>
-              <span>Alterar Senha</span>
-            </div>
+            {/* Divisor */}
+            <div className="cfg-desk-divider" />
+
+            {/* Alterar Senha inline */}
             {!showAlterarSenha ? (
-              <div style={{display:"flex", flexDirection:"column", gap:"0.5rem"}}>
-                <p style={{fontSize:"0.82rem", color:"var(--text-muted,#9ca3af)", margin:0}}>Troque sua senha de acesso ao Doonly.</p>
-                <button onClick={() => setShowAlterarSenha(true)} className="cfg-btn-outline">Alterar senha</button>
-              </div>
+              <button onClick={() => setShowAlterarSenha(true)} className="cfg-desk-inline-btn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Alterar senha
+              </button>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                <div className="cfg-desk-field">
-                  <label>Nova senha</label>
-                  <input type="password" placeholder="Mínimo 6 caracteres" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} />
-                </div>
-                <div className="cfg-desk-field">
-                  <label>Confirmar nova senha</label>
-                  <input type="password" placeholder="Repita a senha" value={confirmSenha} onChange={e => setConfirmSenha(e.target.value)} />
+              <div className="cfg-desk-inline-section">
+                <p className="cfg-desk-inline-label">🔒 Alterar Senha</p>
+                <div className="cfg-desk-fields">
+                  <div className="cfg-desk-field">
+                    <label>Nova senha</label>
+                    <input type="password" placeholder="Mínimo 6 caracteres" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} />
+                  </div>
+                  <div className="cfg-desk-field">
+                    <label>Confirmar nova senha</label>
+                    <input type="password" placeholder="Repita a senha" value={confirmSenha} onChange={e => setConfirmSenha(e.target.value)} />
+                  </div>
                 </div>
                 {senhaMsg && <p style={{ fontSize: "0.82rem", color: senhaMsg.startsWith("✓") ? "#22c55e" : "#ef4444", margin: 0 }}>{senhaMsg}</p>}
                 <div style={{ display: "flex", gap: "8px" }}>
-                  <button onClick={() => setShowAlterarSenha(false)} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
-                  <button onClick={handleAlterarSenha} disabled={savingSenha} className="cfg-btn-save" style={{flex:2, minHeight:"38px", fontSize:"0.85rem"}}>
-                    {savingSenha ? <span className="cfg-spinner" /> : "Confirmar"}
+                  <button onClick={() => { setShowAlterarSenha(false); setNovaSenha(""); setConfirmSenha(""); setSenhaMsg(""); }} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
+                  <button onClick={handleAlterarSenha} disabled={savingSenha} className="cfg-btn-save" style={{flex:2, minHeight:"38px", fontSize:"0.85rem", borderRadius:"10px"}}>
+                    {savingSenha ? <span className="cfg-spinner" /> : "Confirmar alteração"}
                   </button>
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Card 3 — Excluir Conta */}
-          <div className="cfg-desk-card cfg-desk-card--danger">
-            <div className="cfg-card-header">
-              <span className="cfg-card-icon">🗑️</span>
-              <span style={{color:"#ef4444"}}>Excluir conta</span>
-            </div>
+            {/* Divisor */}
+            <div className="cfg-desk-divider" />
+
+            {/* Excluir Conta inline */}
             {!showExcluir ? (
-              <div style={{display:"flex", flexDirection:"column", gap:"0.5rem"}}>
-                <p style={{fontSize:"0.82rem", color:"var(--text-muted,#9ca3af)", margin:0}}>Ação irreversível. Todos os dados serão removidos permanentemente.</p>
-                <button onClick={() => setShowExcluir(true)} className="cfg-btn-danger-outline">Excluir minha conta</button>
-              </div>
+              <button onClick={() => setShowExcluir(true)} className="cfg-desk-inline-btn cfg-desk-inline-btn--danger">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                Excluir conta
+              </button>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                <p style={{ fontSize: "0.82rem", color: "#6b7280", margin: 0 }}>Digite <strong>EXCLUIR</strong> para confirmar:</p>
+              <div className="cfg-desk-inline-section cfg-desk-inline-section--danger">
+                <p className="cfg-desk-inline-label" style={{color:"#ef4444"}}>🗑️ Excluir conta</p>
+                <p style={{ fontSize: "0.82rem", color: "#6b7280", margin: 0 }}>Esta ação é <strong>irreversível</strong>. Todos os seus dados serão removidos permanentemente.</p>
                 <div className="cfg-desk-field">
-                  <input type="text" placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} style={{borderColor: excluirConfirm === "EXCLUIR" ? "#ef4444" : undefined}} />
+                  <label>Digite <strong>EXCLUIR</strong> para confirmar</label>
+                  <input type="text" placeholder="EXCLUIR" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} style={{borderColor: excluirConfirm === "EXCLUIR" ? "#ef4444" : undefined}} />
                 </div>
                 <div style={{ display: "flex", gap: "8px" }}>
                   <button onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
                   <button onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"} style={{ flex: 2, padding: "0.6rem", background: excluirConfirm === "EXCLUIR" ? "#ef4444" : "#f3f4f6", color: excluirConfirm === "EXCLUIR" ? "white" : "#9ca3af", border: "none", borderRadius: "10px", fontFamily: "Geist, sans-serif", fontSize: "0.85rem", fontWeight: 600, cursor: excluirConfirm === "EXCLUIR" ? "pointer" : "not-allowed" }}>
-                    Confirmar
+                    Confirmar exclusão
                   </button>
                 </div>
               </div>
             )}
+
+            {/* Divisor */}
+            <div className="cfg-desk-divider" />
+
+            {/* Salvar + Sair */}
+            <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+              <button className="cfg-btn-save cfg-btn-save--sm" onClick={handleSave} disabled={saving || uploading} style={{flex:1}}>
+                {saving ? <span className="cfg-spinner" /> : "Salvar alterações"}
+              </button>
+              <button className="cfg-btn-logout" onClick={handleLogout} style={{width:"auto", padding:"0.6rem 1.5rem", flexShrink:0}}>
+                Sair da conta
+              </button>
+            </div>
+
           </div>
-
-        </div>
-
-        {/* Rodapé desktop */}
-        <div className="cfg-desk-footer">
-          <button className="cfg-btn-logout" onClick={handleLogout} style={{width:"auto", padding:"0.65rem 2rem"}}>Sair da conta</button>
         </div>
       </div>
 
       <style>{`
         *, *::before, *::after { box-sizing: border-box; }
 
-        /* ── Shared ── */
         .cfg-loading { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
         .cfg-spinner-lg { width: 36px; height: 36px; border: 3px solid #ede9fe; border-top-color: #F583BF; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         .cfg-spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.35); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
@@ -462,16 +419,16 @@ export default function Configuracoes() {
         .cfg-hero-img { width: 100%; height: 100%; object-fit: cover; }
         .cfg-hero-cam { position: absolute; bottom: 0; right: 0; background: rgba(0,0,0,0.45); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 50% 0 0 0; }
 
-        .cfg-field { display: flex; align-items: center; gap: 0.7rem; border: 1.5px solid var(--border, #e5e7eb); border-radius: 50px; padding: 0.65rem 1.1rem; background: var(--bg-input, white); transition: border-color 0.2s; min-width: 0; }
+        .cfg-field { display: flex; align-items: center; gap: 0.7rem; border: 1.5px solid var(--border,#e5e7eb); border-radius: 50px; padding: 0.65rem 1.1rem; background: var(--bg-input,white); transition: border-color 0.2s; min-width: 0; }
         .cfg-field:focus-within { border-color: #F583BF; }
-        .cfg-field-icon { display: flex; align-items: center; flex-shrink: 0; color: var(--text-muted, #9ca3af); }
-        .cfg-field-input { flex: 1; border: none; outline: none; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: var(--text-primary, #1f2937); background: transparent; min-width: 0; }
+        .cfg-field-icon { display: flex; align-items: center; flex-shrink: 0; color: var(--text-muted,#9ca3af); }
+        .cfg-field-input { flex: 1; border: none; outline: none; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: var(--text-primary,#1f2937); background: transparent; min-width: 0; }
 
         .cfg-toast { width: 100%; border-radius: 12px; padding: 0.7rem 1rem; font-size: 0.85rem; font-weight: 500; }
         .cfg-toast-error { background: #fff1f2; border: 1px solid #fecdd3; color: #be123c; }
         .cfg-toast-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
 
-        .cfg-btn-save { width: 100%; padding: 0.9rem; background: linear-gradient(135deg, #F583BF, #e060a8); color: white; border: none; border-radius: 50px; font-family: 'Geist', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 50px; letter-spacing: 0.3px; transition: opacity 0.2s, transform 0.1s; }
+        .cfg-btn-save { width: 100%; padding: 0.9rem; background: linear-gradient(135deg, #F583BF, #e060a8); color: white; border: none; border-radius: 50px; font-family: 'Geist', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: opacity 0.2s, transform 0.1s; }
         .cfg-btn-save:hover { opacity: 0.92; }
         .cfg-btn-save:active { transform: scale(0.98); }
         .cfg-btn-save:disabled { opacity: 0.65; cursor: not-allowed; }
@@ -480,18 +437,9 @@ export default function Configuracoes() {
         .cfg-btn-logout { width: 100%; padding: 0.8rem; background: none; border: 1.5px solid #e5e7eb; border-radius: 50px; font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600; color: #6b7280; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
         .cfg-btn-logout:hover { border-color: #ef4444; color: #ef4444; }
 
-        .cfg-btn-outline { padding: 0.6rem 1rem; background: #fdf2f8; color: #ec4899; border: 1px solid #fce7f3; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        .cfg-btn-outline:hover { background: #fce7f3; }
-
-        .cfg-btn-danger-outline { padding: 0.6rem 1rem; background: #fff1f2; color: #ef4444; border: 1px solid #fecdd3; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        .cfg-btn-danger-outline:hover { background: #fee2e2; }
-
         .cfg-btn-ghost { padding: 0.6rem 1rem; background: #f3f4f6; color: #6b7280; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; }
 
-        .cfg-badge { display: inline-block; margin-top: 0.25rem; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.68rem; font-weight: 600; }
-        .cfg-badge-pro { background: rgba(255,255,255,0.25); color: white; }
-        .cfg-badge-trial { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
-        .cfg-badge-expirado { background: rgba(239,68,68,0.3); color: white; }
+        .cfg-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.68rem; font-weight: 600; }
 
         /* ── Mobile ── */
         .cfg-mobile { display: flex; flex-direction: column; gap: 0.85rem; }
@@ -500,6 +448,9 @@ export default function Configuracoes() {
         .cfg-hero { background: linear-gradient(135deg, #F583BF 0%, #e060a8 100%); border-radius: 20px; padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
         .cfg-hero-left { display: flex; flex-direction: column; gap: 0; flex: 1; min-width: 0; }
         .cfg-hero-saudacao { font-size: 1rem; color: white; margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cfg-badge-pro { background: rgba(255,255,255,0.25); color: white; }
+        .cfg-badge-trial { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+        .cfg-badge-expirado { background: rgba(239,68,68,0.3); color: white; }
 
         .cfg-accordion { background: white; border-radius: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
         .cfg-accordion-header { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 1rem 1.15rem; background: none; border: none; cursor: pointer; font-family: 'Geist', sans-serif; text-align: left; }
@@ -509,12 +460,11 @@ export default function Configuracoes() {
         .cfg-accordion-chevron.open { transform: rotate(180deg); }
         .cfg-accordion-body { padding: 0 1.15rem 1.15rem; display: flex; flex-direction: column; gap: 0.7rem; border-top: 1px solid #f3f4f6; padding-top: 1rem; }
 
-        :root.dark .cfg-accordion { background: transparent; border-radius: 0; box-shadow: none; border-bottom: 1px solid var(--border, #2a2a2a); }
-        :root.dark .cfg-accordion:first-of-type { border-top: 1px solid var(--border, #2a2a2a); }
+        :root.dark .cfg-accordion { background: transparent; border-radius: 0; box-shadow: none; border-bottom: 1px solid var(--border,#2a2a2a); }
+        :root.dark .cfg-accordion:first-of-type { border-top: 1px solid var(--border,#2a2a2a); }
         :root.dark .cfg-accordion-header { padding: 1rem 0; }
-        :root.dark .cfg-accordion-body { padding: 0 0 1.25rem; border-top: 1px solid var(--border, #2a2a2a); padding-top: 1rem; }
+        :root.dark .cfg-accordion-body { padding: 0 0 1.25rem; border-top: 1px solid var(--border,#2a2a2a); padding-top: 1rem; }
 
-        .cfg-section-label { font-size: 0.7rem; font-weight: 700; color: #F583BF; text-transform: uppercase; letter-spacing: 0.07em; margin: 0; }
         .cfg-toggle-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
         .cfg-toggle-label { font-size: 0.88rem; font-weight: 600; color: #374151; margin: 0; }
         .toggle { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
@@ -531,32 +481,39 @@ export default function Configuracoes() {
         }
 
         .cfg-desk-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; gap: 1rem; flex-wrap: wrap; }
-        .cfg-desk-h1 { font-size: 1.6rem; font-weight: 700; color: var(--text-primary, #1f2937); margin: 0 0 0.2rem; }
-        .cfg-desk-sub { font-size: 0.88rem; color: var(--text-muted, #9ca3af); margin: 0; }
+        .cfg-desk-h1 { font-size: 1.6rem; font-weight: 700; color: var(--text-primary,#1f2937); margin: 0 0 0.2rem; }
+        .cfg-desk-sub { font-size: 0.88rem; color: var(--text-muted,#9ca3af); margin: 0; }
         .cfg-desk-header-actions { display: flex; align-items: center; gap: 0.75rem; }
 
-        .cfg-desk-profile-banner { background: var(--bg-card, white); border-radius: 16px; padding: 1.25rem 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; gap: 1rem; }
+        .cfg-desk-profile-banner { background: var(--bg-card,white); border-radius: 16px; padding: 1.25rem 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; gap: 1rem; border: 1px solid var(--border,#f3f4f6); }
         .cfg-desk-profile-left { display: flex; align-items: center; gap: 1rem; }
-        .cfg-desk-profile-name { font-size: 1.05rem; font-weight: 700; color: var(--text-primary, #1f2937); margin: 0; }
-        .cfg-desk-profile-email { font-size: 0.82rem; color: var(--text-muted, #9ca3af); margin: 0.15rem 0 0.3rem; }
-        .cfg-desk-profile-hint { font-size: 0.78rem; color: var(--text-muted, #9ca3af); }
+        .cfg-desk-profile-name { font-size: 1.05rem; font-weight: 700; color: var(--text-primary,#1f2937); margin: 0; }
+        .cfg-desk-profile-email { font-size: 0.82rem; color: var(--text-muted,#9ca3af); margin: 0.1rem 0 0.25rem; }
+        .cfg-desk-profile-hint { font-size: 0.78rem; color: var(--text-muted,#9ca3af); }
 
-        .cfg-desk-grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; align-items: start; }
+        .cfg-desk-single-col { max-width: 520px; }
 
-        .cfg-desk-card { background: var(--bg-card, white); border-radius: 16px; padding: 1.25rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 0.9rem; border: 1px solid var(--border, #f3f4f6); transition: box-shadow 0.2s; }
-        .cfg-desk-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .cfg-desk-card--danger { border-color: #fee2e2; }
+        .cfg-desk-card { background: var(--bg-card,white); border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 1rem; border: 1px solid var(--border,#f3f4f6); }
 
-        .cfg-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; font-weight: 700; color: var(--text-primary, #1f2937); padding-bottom: 0.5rem; border-bottom: 1px solid var(--border, #f3f4f6); }
+        .cfg-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; font-weight: 700; color: var(--text-primary,#1f2937); }
         .cfg-card-icon { font-size: 1rem; }
 
         .cfg-desk-fields { display: flex; flex-direction: column; gap: 0.75rem; }
         .cfg-desk-field { display: flex; flex-direction: column; gap: 0.28rem; }
-        .cfg-desk-field label { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary, #374151); }
-        .cfg-desk-field input { padding: 0.65rem 0.9rem; border: 1.5px solid var(--border, #e5e7eb); border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: var(--text-primary, #1f2937); background: var(--bg-input, white); outline: none; transition: border-color 0.2s; width: 100%; }
+        .cfg-desk-field label { font-size: 0.78rem; font-weight: 600; color: var(--text-secondary,#374151); }
+        .cfg-desk-field input { padding: 0.65rem 0.9rem; border: 1.5px solid var(--border,#e5e7eb); border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: var(--text-primary,#1f2937); background: var(--bg-input,white); outline: none; transition: border-color 0.2s; width: 100%; }
         .cfg-desk-field input:focus { border-color: #F583BF; }
 
-        .cfg-desk-footer { display: flex; align-items: center; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border, #f3f4f6); }
+        .cfg-desk-divider { border: none; border-top: 1px solid var(--border,#f3f4f6); margin: 0; }
+
+        .cfg-desk-inline-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; background: #fdf2f8; color: #ec4899; border: 1px solid #fce7f3; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; width: fit-content; transition: background 0.2s; }
+        .cfg-desk-inline-btn:hover { background: #fce7f3; }
+        .cfg-desk-inline-btn--danger { background: #fff1f2; color: #ef4444; border-color: #fecdd3; }
+        .cfg-desk-inline-btn--danger:hover { background: #fee2e2; }
+
+        .cfg-desk-inline-section { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem; background: var(--bg-subtle,#f9fafb); border-radius: 12px; border: 1px solid var(--border,#f3f4f6); }
+        .cfg-desk-inline-section--danger { background: #fff8f8; border-color: #fecdd3; }
+        .cfg-desk-inline-label { font-size: 0.88rem; font-weight: 700; color: var(--text-primary,#1f2937); margin: 0; }
       `}</style>
     </div>
   );
