@@ -21,6 +21,44 @@ import { formatCurrency } from '@/utils/helpers'
 /*     DESKTOP COMPONENTS — Layout profissional   */
 /* ══════════════════════════════════════════════ */
 
+/* ── Nav Link com hover/active ── */
+function NavLink({ label, isFirst, isNavDark, navBg, textColor }: any) {
+  const [hovered, setHovered] = useState(false)
+  const [active, setActive] = useState(false)
+
+  // Cor do hover: levemente mais claro (nav escuro) ou mais escuro (nav claro)
+  const hoverBg = isNavDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)'
+  const activeBg = '#ffffff'
+  const activeText = isNavDark ? navBg : '#1f2937'
+
+  const bg = active ? activeBg : hovered ? hoverBg : 'transparent'
+  const color = active ? activeText : textColor
+
+  return (
+    <button
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => { setHovered(false); setActive(false) }}
+      onMouseDown={() => setActive(true)}
+      onMouseUp={() => setActive(false)}
+      style={{
+        padding: '8px 18px',
+        border: 'none',
+        borderRadius: '8px',
+        background: bg,
+        color: color,
+        fontSize: '16px',
+        fontWeight: 700,
+        cursor: 'pointer',
+        fontFamily: 'inherit',
+        transition: 'background 0.15s, color 0.15s',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
 /* ── Top Nav Bar ── */
 function DeskNav({ design, searchTerm, onSearchChange }: any) {
   const { items } = useCart()
@@ -59,40 +97,9 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
         </div>
 
         {/* CENTRO — Links grandes */}
-        <nav style={{ display:'flex', gap:'0px' }}>
+        <nav style={{ display:'flex', gap:'4px' }}>
           {links.map((label, i) => (
-            <button key={label} style={{
-              padding:'8px 22px', border:'none', background:'transparent',
-              color: textColor, fontSize:'17px', fontWeight:700,
-              cursor:'pointer', fontFamily:'inherit',
-              position:'relative', transition:'opacity 0.15s',
-              opacity: i === 0 ? 1 : 0.8,
-            }}
-              onMouseOver={e => {
-                const el = e.currentTarget as HTMLElement
-                el.style.opacity = '1'
-                const line = el.querySelector('.nav-line') as HTMLElement
-                if (line) { line.style.width = 'calc(100% - 44px)'; line.style.opacity = '1' }
-              }}
-              onMouseOut={e => {
-                const el = e.currentTarget as HTMLElement
-                el.style.opacity = i === 0 ? '1' : '0.8'
-                const line = el.querySelector('.nav-line') as HTMLElement
-                if (line && i !== 0) { line.style.width = '0%'; line.style.opacity = '0' }
-              }}
-            >
-              {label}
-              <span className="nav-line" style={{
-                position:'absolute', bottom:'2px', left:'22px',
-                height:'2.5px',
-                background: textColor,
-                width: i === 0 ? 'calc(100% - 44px)' : '0%',
-                opacity: i === 0 ? '1' : '0',
-                transition:'width 0.2s ease, opacity 0.2s ease',
-                borderRadius:'2px',
-                display:'block',
-              }}/>
-            </button>
+            <NavLink key={label} label={label} isFirst={i === 0} isNavDark={isNavDark} navBg={navBg} textColor={textColor} />
           ))}
         </nav>
 
