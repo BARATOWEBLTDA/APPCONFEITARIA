@@ -58,7 +58,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
           {links.map(l => (
             <button key={l.label} style={{
               display:'flex', alignItems:'center', gap:'6px',
-              padding:'8px 14px', borderRadius:'50px', border:'none',
+              padding:'8px 14px', borderRadius:'6px', border:'none',
               background: l.active ? cor : 'transparent',
               color: l.active ? '#fff' : '#4b5563',
               fontSize:'13px', fontWeight:600, cursor:'pointer', fontFamily:'inherit',
@@ -74,23 +74,23 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
 
         <div style={{ flex:1 }}/>
 
-        {/* Search — maior */}
+        {/* Search */}
         <div style={{ position:'relative', width:'300px' }}>
           <Search size={15} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'#9ca3af' }}/>
           <input value={searchTerm} onChange={(e: any) => onSearchChange(e.target.value)}
             placeholder="Busque por um produto..."
-            style={{ width:'100%', padding:'10px 14px 10px 40px', border:'1.5px solid #e5e7eb', borderRadius:'50px', fontSize:'13px', color:'#374151', outline:'none', fontFamily:'inherit', boxSizing:'border-box', background:'#f9fafb' }}
+            style={{ width:'100%', padding:'10px 14px 10px 40px', border:'1.5px solid #e5e7eb', borderRadius:'8px', fontSize:'13px', color:'#374151', outline:'none', fontFamily:'inherit', boxSizing:'border-box', background:'#f9fafb' }}
             onFocus={(e: any) => { e.target.style.borderColor = cor; e.target.style.background = '#fff' }}
             onBlur={(e: any) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb' }}
           />
         </div>
 
-        {/* Sacola — destaque com cor do design */}
+        {/* Sacola */}
         <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
-          display:'flex', alignItems:'center', gap:'8px', padding:'10px 22px', borderRadius:'50px',
+          display:'flex', alignItems:'center', gap:'8px', padding:'10px 22px', borderRadius:'8px',
           border:'none', background:cor, color:'#fff', fontSize:'14px', fontWeight:700,
           cursor:'pointer', fontFamily:'inherit', position:'relative', flexShrink:0,
-          boxShadow:`0 4px 14px ${cor}55`, transition:'opacity 0.15s',
+          boxShadow:`0 2px 8px ${cor}44`, transition:'opacity 0.15s',
         }}
           onMouseOver={e => (e.currentTarget.style.opacity='0.9')}
           onMouseOut={e => (e.currentTarget.style.opacity='1')}
@@ -98,7 +98,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
           <ShoppingBag size={17}/>
           Sacola
           {count > 0 && (
-            <span style={{ background:'#fff', color:cor, borderRadius:'50%', width:'20px', height:'20px', fontSize:'11px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', marginLeft:'2px' }}>{count}</span>
+            <span style={{ background:'#fff', color:cor, borderRadius:'4px', width:'20px', height:'20px', fontSize:'11px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', marginLeft:'2px' }}>{count}</span>
           )}
         </button>
 
