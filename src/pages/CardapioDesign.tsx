@@ -240,7 +240,7 @@ export default function CardapioDesign() {
           <div>
             <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_borda' ? null : 'cor_borda')}>
               <div className="cd-color-info">
-                <span className="cd-color-label">Barra do topo e borda da logo</span>
+                <span className="cd-color-label">Borda da logo</span>
                 <span className="cd-color-value">{corBorda}</span>
               </div>
               <div className="cd-color-swatch" style={{ background: corBorda }} />
@@ -361,7 +361,7 @@ export default function CardapioDesign() {
           <div>
             <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_sacola' ? null : 'cor_sacola')}>
               <div className="cd-color-info">
-                <span className="cd-color-label">Botão "Sacola" (navbar)</span>
+                <span className="cd-color-label">Botão "Carrinho"</span>
                 <span className="cd-color-value">{corSacola}</span>
               </div>
               <div className="cd-color-swatch" style={{ background: corSacola }} />
