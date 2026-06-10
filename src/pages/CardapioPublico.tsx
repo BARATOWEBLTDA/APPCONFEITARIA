@@ -36,19 +36,26 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
   ]
 
   return (
-    <div style={{ background:'#fff', borderBottom:'1px solid #f0f0f0', position:'sticky', top:0, zIndex:40 }}>
-      <div style={{ width:'100%', padding:'0 24px', boxSizing:'border-box', display:'flex', alignItems:'center', height:'64px', gap:'8px' }}>
-        {/* Logo + nome */}
-        <div style={{ display:'flex', alignItems:'center', gap:'10px', marginRight:'16px', flexShrink:0 }}>
-          {design.logo_url && <img src={design.logo_url} alt="" style={{ width:'40px', height:'40px', borderRadius:'50%', objectFit:'cover' }}/>}
+    <div style={{ background:'#fff', borderBottom:'1px solid #f0f0f0', position:'sticky', top:0, zIndex:40, boxShadow:'0 1px 8px rgba(0,0,0,0.06)' }}>
+      <div style={{ width:'100%', padding:'0 24px', boxSizing:'border-box', display:'flex', alignItems:'center', height:'72px', gap:'16px' }}>
+
+        {/* Logo + nome + slogan */}
+        <div style={{ display:'flex', alignItems:'center', gap:'12px', marginRight:'8px', flexShrink:0 }}>
+          {design.logo_url
+            ? <img src={design.logo_url} alt="" style={{ width:'48px', height:'48px', borderRadius:'50%', objectFit:'cover', border:`2px solid ${cor}` }}/>
+            : <div style={{ width:'48px', height:'48px', borderRadius:'50%', background:cor, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'20px', fontWeight:800, flexShrink:0 }}>{design.nome_loja?.charAt(0)}</div>
+          }
           <div>
-            <span style={{ fontWeight:800, fontSize:'16px', color:'#1f2937', fontStyle:'italic', display:'block', lineHeight:1.2 }}>{design.nome_loja}</span>
-            {design.cidade_estado && <span style={{ fontSize:'11px', color:'#9ca3af', fontWeight:500 }}>{design.cidade_estado}</span>}
+            <span style={{ fontWeight:800, fontSize:'18px', color:'#1f2937', display:'block', lineHeight:1.2, fontFamily:'inherit' }}>{design.nome_loja}</span>
+            {design.cidade_estado
+              ? <span style={{ fontSize:'11px', color:'#9ca3af', fontWeight:500 }}>{design.cidade_estado}</span>
+              : <span style={{ fontSize:'11px', color:'#9ca3af', fontWeight:500 }}>Doces que encantam</span>
+            }
           </div>
         </div>
 
         {/* Nav links */}
-        <nav style={{ display:'flex', gap:'4px' }}>
+        <nav style={{ display:'flex', gap:'2px' }}>
           {links.map(l => (
             <button key={l.label} style={{
               display:'flex', alignItems:'center', gap:'6px',
@@ -56,8 +63,11 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
               background: l.active ? cor : 'transparent',
               color: l.active ? '#fff' : '#4b5563',
               fontSize:'13px', fontWeight:600, cursor:'pointer', fontFamily:'inherit',
-              transition:'background 0.15s',
-            }}>
+              transition:'all 0.15s',
+            }}
+              onMouseOver={e => { if (!l.active) (e.currentTarget as HTMLElement).style.background='#f3f4f6' }}
+              onMouseOut={e => { if (!l.active) (e.currentTarget as HTMLElement).style.background='transparent' }}
+            >
               {l.icon} {l.label}
             </button>
           ))}
@@ -65,25 +75,34 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
 
         <div style={{ flex:1 }}/>
 
-        {/* Search */}
-        <div style={{ position:'relative', width:'240px' }}>
-          <Search size={15} style={{ position:'absolute', left:'12px', top:'50%', transform:'translateY(-50%)', color:'#9ca3af' }}/>
-          <input value={searchTerm} onChange={(e: any) => onSearchChange(e.target.value)} placeholder="Busque por um produto..."
-            style={{ width:'100%', padding:'9px 12px 9px 36px', border:'1.5px solid #e5e7eb', borderRadius:'10px', fontSize:'13px', color:'#374151', outline:'none', fontFamily:'inherit', boxSizing:'border-box', background:'#f9fafb' }}
-            onFocus={(e: any) => (e.target.style.borderColor=cor)} onBlur={(e: any) => (e.target.style.borderColor='#e5e7eb')}
+        {/* Search — maior */}
+        <div style={{ position:'relative', width:'300px' }}>
+          <Search size={15} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'#9ca3af' }}/>
+          <input value={searchTerm} onChange={(e: any) => onSearchChange(e.target.value)}
+            placeholder="Busque por um produto..."
+            style={{ width:'100%', padding:'10px 14px 10px 40px', border:'1.5px solid #e5e7eb', borderRadius:'50px', fontSize:'13px', color:'#374151', outline:'none', fontFamily:'inherit', boxSizing:'border-box', background:'#f9fafb' }}
+            onFocus={(e: any) => { e.target.style.borderColor = cor; e.target.style.background = '#fff' }}
+            onBlur={(e: any) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb' }}
           />
         </div>
 
-        {/* Sacola */}
+        {/* Sacola — destaque com cor do design */}
         <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
-          display:'flex', alignItems:'center', gap:'6px', padding:'9px 18px', borderRadius:'50px',
-          border:'1.5px solid #e5e7eb', background:'#fff', color:'#374151', fontSize:'13px', fontWeight:700,
-          cursor:'pointer', fontFamily:'inherit', position:'relative', marginLeft:'8px',
-        }}>
-          <ShoppingBag size={16}/>
+          display:'flex', alignItems:'center', gap:'8px', padding:'10px 22px', borderRadius:'50px',
+          border:'none', background:cor, color:'#fff', fontSize:'14px', fontWeight:700,
+          cursor:'pointer', fontFamily:'inherit', position:'relative', flexShrink:0,
+          boxShadow:`0 4px 14px ${cor}55`, transition:'opacity 0.15s',
+        }}
+          onMouseOver={e => (e.currentTarget.style.opacity='0.9')}
+          onMouseOut={e => (e.currentTarget.style.opacity='1')}
+        >
+          <ShoppingBag size={17}/>
           Sacola
-          {count > 0 && <span style={{ position:'absolute', top:'-4px', right:'-4px', background:'#ef4444', color:'#fff', borderRadius:'50%', width:'20px', height:'20px', fontSize:'11px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center' }}>{count}</span>}
+          {count > 0 && (
+            <span style={{ background:'#fff', color:cor, borderRadius:'50%', width:'20px', height:'20px', fontSize:'11px', fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', marginLeft:'2px' }}>{count}</span>
+          )}
         </button>
+
       </div>
     </div>
   )
