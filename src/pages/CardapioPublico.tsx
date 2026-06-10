@@ -22,17 +22,13 @@ import { formatCurrency } from '@/utils/helpers'
 /* ══════════════════════════════════════════════ */
 
 /* ── Nav Link com hover/active ── */
-function NavLink({ label, icon, isNavDark, navBg, textColor, defaultActive }: any) {
+function NavLink({ label, icon, defaultActive }: any) {
   const [hovered, setHovered] = useState(false)
   const [active, setActive] = useState(false)
 
-  const hoverBg = isNavDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)'
-  const activeBg = '#ffffff'
-  const activeText = isNavDark ? navBg : '#1f2937'
-
   const isActive = defaultActive || active
-  const bg = isActive ? activeBg : hovered ? hoverBg : 'transparent'
-  const color = isActive ? activeText : textColor
+  const bg = isActive ? '#ffffff' : hovered ? 'rgba(255,255,255,0.15)' : 'transparent'
+  const color = isActive ? '#1f2937' : '#ffffff'
 
   return (
     <button
@@ -70,20 +66,6 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
   const navBg = design.cor_navbar || design.cor_borda || '#ec4899'
   const corBorda = design.cor_borda || '#ec4899'
 
-  const isNavDark = (() => {
-    const hex = navBg.replace('#', '')
-    if (hex.length < 6) return true
-    const r = parseInt(hex.slice(0,2), 16)
-    const g = parseInt(hex.slice(2,4), 16)
-    const b = parseInt(hex.slice(4,6), 16)
-    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5
-  })()
-
-  const textColor = isNavDark ? '#ffffff' : '#1f2937'
-  const textMuted = isNavDark ? 'rgba(255,255,255,0.7)' : '#6b7280'
-
-  const links = ['Início', 'Promoções', 'Sobre nós', 'Minha conta']
-
   return (
     <div style={{ background: navBg, position:'sticky', top:0, zIndex:40, boxShadow:'0 2px 12px rgba(0,0,0,0.15)' }}>
       <div style={{ width:'100%', padding:'0 40px', boxSizing:'border-box', display:'grid', gridTemplateColumns:'1fr auto 1fr', alignItems:'center', height:'92px', gap:'24px' }}>
@@ -101,8 +83,8 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
               </div>
           }
           <div>
-            <p style={{ margin:0, fontWeight:800, fontSize:'18px', color: design.cor_nome || textColor, lineHeight:1.2 }}>{design.nome_loja}</p>
-            <p style={{ margin:'3px 0 0', fontSize:'13px', color: textMuted, fontWeight:500 }}>{design.cidade_estado || 'Doces que encantam'}</p>
+            <p style={{ margin:0, fontWeight:800, fontSize:'18px', color: design.cor_nome || '#ffffff', lineHeight:1.2 }}>{design.nome_loja}</p>
+            <p style={{ margin:'3px 0 0', fontSize:'13px', color:'rgba(255,255,255,0.75)', fontWeight:500 }}>{design.cidade_estado || 'Doces que encantam'}</p>
           </div>
         </div>
 
@@ -114,7 +96,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
             { label: 'Sobre nós',   icon: <Info  size={20} weight="duotone" />, defaultActive: false },
             { label: 'Minha conta', icon: <User  size={20} weight="duotone" />, defaultActive: false },
           ].map(({ label, icon, defaultActive }) => (
-            <NavLink key={label} label={label} icon={icon} defaultActive={defaultActive} isNavDark={isNavDark} navBg={navBg} textColor={textColor} />
+            <NavLink key={label} label={label} icon={icon} defaultActive={defaultActive} />
           ))}
         </nav>
 
