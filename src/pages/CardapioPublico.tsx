@@ -22,7 +22,7 @@ import { formatCurrency } from '@/utils/helpers'
 /* ══════════════════════════════════════════════ */
 
 /* ── Nav Link com hover/active ── */
-function NavLink({ label, icon, isNavDark, navBg, textColor }: any) {
+function NavLink({ label, icon, isNavDark, navBg, textColor, defaultActive }: any) {
   const [hovered, setHovered] = useState(false)
   const [active, setActive] = useState(false)
 
@@ -30,8 +30,9 @@ function NavLink({ label, icon, isNavDark, navBg, textColor }: any) {
   const activeBg = '#ffffff'
   const activeText = isNavDark ? navBg : '#1f2937'
 
-  const bg = active ? activeBg : hovered ? hoverBg : 'transparent'
-  const color = active ? activeText : textColor
+  const isActive = defaultActive || active
+  const bg = isActive ? activeBg : hovered ? hoverBg : 'transparent'
+  const color = isActive ? activeText : textColor
 
   return (
     <button
@@ -40,12 +41,12 @@ function NavLink({ label, icon, isNavDark, navBg, textColor }: any) {
       onMouseDown={() => setActive(true)}
       onMouseUp={() => setActive(false)}
       style={{
-        padding: '8px 18px',
+        padding: '10px 22px',
         border: 'none',
         borderRadius: '8px',
         background: bg,
         color: color,
-        fontSize: '16px',
+        fontSize: '18px',
         fontWeight: 700,
         cursor: 'pointer',
         fontFamily: 'inherit',
@@ -53,7 +54,7 @@ function NavLink({ label, icon, isNavDark, navBg, textColor }: any) {
         whiteSpace: 'nowrap',
         display: 'flex',
         alignItems: 'center',
-        gap: '7px',
+        gap: '8px',
       }}
     >
       {icon}
@@ -85,29 +86,29 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
 
   return (
     <div style={{ background: navBg, position:'sticky', top:0, zIndex:40, boxShadow:'0 2px 12px rgba(0,0,0,0.15)' }}>
-      <div style={{ width:'100%', padding:'0 40px', boxSizing:'border-box', display:'grid', gridTemplateColumns:'1fr auto 1fr', alignItems:'center', height:'80px', gap:'24px' }}>
+      <div style={{ width:'100%', padding:'0 40px', boxSizing:'border-box', display:'grid', gridTemplateColumns:'1fr auto 1fr', alignItems:'center', height:'92px', gap:'24px' }}>
 
         {/* ESQUERDA — Logo */}
         <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
           {design.logo_url
-            ? <img src={design.logo_url} alt="" style={{ width:'60px', height:'60px', borderRadius:'50%', objectFit:'cover', border:`3px solid ${isNavDark ? 'rgba(255,255,255,0.4)' : corBorda}` }}/>
-            : <div style={{ width:'60px', height:'60px', borderRadius:'50%', background: isNavDark ? 'rgba(255,255,255,0.2)' : corBorda, display:'flex', alignItems:'center', justifyContent:'center', color: isNavDark ? '#fff' : '#fff', fontSize:'24px', fontWeight:800, flexShrink:0 }}>{design.nome_loja?.charAt(0)}</div>
+            ? <img src={design.logo_url} alt="" style={{ width:'72px', height:'72px', borderRadius:'50%', objectFit:'cover', border:`3px solid ${isNavDark ? 'rgba(255,255,255,0.4)' : corBorda}` }}/>
+            : <div style={{ width:'72px', height:'72px', borderRadius:'50%', background: isNavDark ? 'rgba(255,255,255,0.2)' : corBorda, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'28px', fontWeight:800, flexShrink:0 }}>{design.nome_loja?.charAt(0)}</div>
           }
           <div>
-            <p style={{ margin:0, fontWeight:800, fontSize:'17px', color: textColor, lineHeight:1.2 }}>{design.nome_loja}</p>
-            <p style={{ margin:'3px 0 0', fontSize:'12px', color: textMuted, fontWeight:500 }}>{design.cidade_estado || 'Doces que encantam'}</p>
+            <p style={{ margin:0, fontWeight:800, fontSize:'18px', color: textColor, lineHeight:1.2 }}>{design.nome_loja}</p>
+            <p style={{ margin:'3px 0 0', fontSize:'13px', color: textMuted, fontWeight:500 }}>{design.cidade_estado || 'Doces que encantam'}</p>
           </div>
         </div>
 
         {/* CENTRO — Links grandes */}
         <nav style={{ display:'flex', gap:'4px' }}>
           {[
-            { label: 'Início',     icon: <House size={18} weight="duotone" /> },
-            { label: 'Promoções',  icon: <Tag   size={18} weight="duotone" /> },
-            { label: 'Sobre nós',  icon: <Info  size={18} weight="duotone" /> },
-            { label: 'Minha conta',icon: <User  size={18} weight="duotone" /> },
-          ].map(({ label, icon }) => (
-            <NavLink key={label} label={label} icon={icon} isNavDark={isNavDark} navBg={navBg} textColor={textColor} />
+            { label: 'Início',      icon: <House size={20} weight="duotone" />, defaultActive: true  },
+            { label: 'Promoções',   icon: <Tag   size={20} weight="duotone" />, defaultActive: false },
+            { label: 'Sobre nós',   icon: <Info  size={20} weight="duotone" />, defaultActive: false },
+            { label: 'Minha conta', icon: <User  size={20} weight="duotone" />, defaultActive: false },
+          ].map(({ label, icon, defaultActive }) => (
+            <NavLink key={label} label={label} icon={icon} defaultActive={defaultActive} isNavDark={isNavDark} navBg={navBg} textColor={textColor} />
           ))}
         </nav>
 
