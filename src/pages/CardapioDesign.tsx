@@ -335,28 +335,42 @@ export default function CardapioDesign() {
           )}
 
           {/* Cor do navbar */}
-          <div>
-            <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_navbar' ? null : 'cor_navbar')}>
-              <div className="cd-color-info">
-                <span className="cd-color-label">Fundo da barra de navegação</span>
-                <span className="cd-color-value">{corNavbar}</span>
+          {/* Cor do navbar — PRO */}
+          {isPro ? (
+            <div>
+              <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_navbar' ? null : 'cor_navbar')}>
+                <div className="cd-color-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span className="cd-color-label">Fundo da barra de navegação</span>
+                    <span className="cd-pro-badge">✦ PRO</span>
+                  </div>
+                  <span className="cd-color-value">{corNavbar}</span>
+                </div>
+                <div className="cd-color-swatch" style={{ background: corNavbar, border: '1px solid #e5e7eb' }} />
               </div>
-              <div className="cd-color-swatch" style={{ background: corNavbar, border: '1px solid #e5e7eb' }} />
+              {activePicker === 'cor_navbar' && (
+                <div className="cd-picker-wrap">
+                  <div style={{ padding: '12px', borderRadius: '10px', background: corNavbar, marginBottom: '12px', height: '40px', border: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 600 }}>Prévia da barra</span>
+                  </div>
+                  <HexColorPicker color={corNavbar} onChange={v => handleColorChange('cor_navbar', v, setCorNavbar)} style={{ width: '100%', height: '160px' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                    <input type="text" value={corNavbar} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_navbar', e.target.value, setCorNavbar) }} className="cd-hex-input" />
+                    <button className="cd-restore-btn" onClick={() => handleColorChange('cor_navbar', '#ffffff', setCorNavbar)}>↺</button>
+                    <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
+                  </div>
+                </div>
+              )}
             </div>
-            {activePicker === 'cor_navbar' && (
-              <div className="cd-picker-wrap">
-                <div style={{ padding: '12px', borderRadius: '10px', background: corNavbar, marginBottom: '12px', height: '40px', border: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 600 }}>Prévia da barra</span>
-                </div>
-                <HexColorPicker color={corNavbar} onChange={v => handleColorChange('cor_navbar', v, setCorNavbar)} style={{ width: '100%', height: '160px' }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                  <input type="text" value={corNavbar} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_navbar', e.target.value, setCorNavbar) }} className="cd-hex-input" />
-                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_navbar', '#ffffff', setCorNavbar)}>↺</button>
-                  <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
-                </div>
+          ) : (
+            <div className="cd-upgrade-box" style={{ marginTop: '4px' }}>
+              <img src="/diamante.png" alt="PRO" style={{ width: '24px', height: '24px' }} />
+              <div>
+                <p className="cd-upgrade-title">Cor da barra de navegação</p>
+                <p className="cd-upgrade-sub">Personalize o fundo da barra de navegação com o plano PRO</p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Cor do rodapé — PRO */}
           {isPro ? (
@@ -429,7 +443,7 @@ export default function CardapioDesign() {
         .cd-change-btn:hover { border-color:#F583BF; color:#F583BF; }
         .cd-change-btn-sm { font-size:0.7rem; font-weight:700; color:#F583BF; background:none; border:none; cursor:pointer; padding:0; text-align:center; }
         .cd-change-btn-sm:hover { text-decoration:underline; }
-        .cd-pro-badge { background:linear-gradient(135deg,#ec4899,#a855f7); color:white; font-size:0.68rem; font-weight:800; padding:2px 10px; border-radius:50px; letter-spacing:0.1em; }
+        .cd-pro-badge { background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.68rem; font-weight:800; padding:2px 10px; border-radius:50px; letter-spacing:0.1em; box-shadow: 0 1px 4px rgba(217,119,6,0.4); }
         .cd-pro-ribbon { position:absolute; top:12px; right:-16px; background:linear-gradient(135deg,#ec4899,#f472b6); color:white; font-size:0.58rem; font-weight:900; letter-spacing:0.1em; padding:3px 24px; transform:rotate(45deg); z-index:10; box-shadow:0 2px 6px rgba(236,72,153,0.4); width:80px; text-align:center; }
         .cd-colors-list { display:flex; flex-direction:column; gap:0.5rem; }
         .cd-color-row { display:flex; align-items:center; justify-content:space-between; padding:0.65rem 0.75rem; background:#fafafa; border-radius:12px; border:1px solid #f3f4f6; cursor:pointer; transition:border-color 0.2s; }
