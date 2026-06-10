@@ -55,6 +55,7 @@ async function fetchByUserId(userId: string, profile: any) {
     cor_botao: profile.cor_botao || '#ec4899',
     cor_navbar: profile.cor_navbar || '#ffffff',
     cor_sacola: profile.cor_sacola || '#ec4899',
+    cor_rodape: profile.cor_rodape || '#ec4899',
     ocultar_categorias: profile.ocultar_categorias || false,
   }
 

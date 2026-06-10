@@ -33,6 +33,7 @@ export interface DesignSettings {
   cor_botao?: string
   cor_navbar?: string
   cor_sacola?: string
+  cor_rodape?: string
   ocultar_categorias?: boolean
   banner_gradient?: string
   banner1_url?: string

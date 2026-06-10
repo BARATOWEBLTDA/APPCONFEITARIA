@@ -26,6 +26,7 @@ export default function CardapioDesign() {
   const [corBotao, setCorBotao] = useState("#ec4899");
   const [corNavbar, setCorNavbar] = useState("#ffffff");
   const [corSacola, setCorSacola] = useState("#ec4899");
+  const [corRodape, setCorRodape] = useState("#ec4899");
   const [activePicker, setActivePicker] = useState<string | null>(null);
 
   const logoRef = useRef<HTMLInputElement>(null);
@@ -41,7 +42,7 @@ export default function CardapioDesign() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || "");
         setBannerUrl(data.banner_url || "");
@@ -54,6 +55,7 @@ export default function CardapioDesign() {
         setCorBotao(data.cor_botao || "#ec4899");
         setCorNavbar(data.cor_navbar || "#ffffff");
         setCorSacola(data.cor_sacola || "#ec4899");
+        setCorRodape(data.cor_rodape || "#ec4899");
       }
       setLoading(false);
     };
@@ -355,6 +357,43 @@ export default function CardapioDesign() {
               </div>
             )}
           </div>
+
+          {/* Cor do rodapé — PRO */}
+          {isPro ? (
+            <div>
+              <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_rodape' ? null : 'cor_rodape')}>
+                <div className="cd-color-info">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span className="cd-color-label">Rodapé do cardápio</span>
+                    <span className="cd-pro-badge">✦ PRO</span>
+                  </div>
+                  <span className="cd-color-value">{corRodape}</span>
+                </div>
+                <div className="cd-color-swatch" style={{ background: corRodape }} />
+              </div>
+              {activePicker === 'cor_rodape' && (
+                <div className="cd-picker-wrap">
+                  <div style={{ padding: '12px', borderRadius: '10px', background: corRodape, marginBottom: '12px', textAlign: 'center' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Prévia do rodapé</span>
+                  </div>
+                  <HexColorPicker color={corRodape} onChange={v => handleColorChange('cor_rodape', v, setCorRodape)} style={{ width: '100%', height: '160px' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                    <input type="text" value={corRodape} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_rodape', e.target.value, setCorRodape) }} className="cd-hex-input" />
+                    <button className="cd-restore-btn" onClick={() => handleColorChange('cor_rodape', '#ec4899', setCorRodape)}>↺</button>
+                    <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="cd-upgrade-box" style={{ marginTop: '4px' }}>
+              <img src="/diamante.png" alt="PRO" style={{ width: '24px', height: '24px' }} />
+              <div>
+                <p className="cd-upgrade-title">Cor do rodapé</p>
+                <p className="cd-upgrade-sub">Personalize a cor do rodapé do seu cardápio com o plano PRO</p>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
