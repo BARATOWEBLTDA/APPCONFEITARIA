@@ -101,7 +101,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
               </div>
           }
           <div>
-            <p style={{ margin:0, fontWeight:800, fontSize:'18px', color: textColor, lineHeight:1.2 }}>{design.nome_loja}</p>
+            <p style={{ margin:0, fontWeight:800, fontSize:'18px', color: design.cor_nome || textColor, lineHeight:1.2 }}>{design.nome_loja}</p>
             <p style={{ margin:'3px 0 0', fontSize:'13px', color: textMuted, fontWeight:500 }}>{design.cidade_estado || 'Doces que encantam'}</p>
           </div>
         </div>
@@ -473,7 +473,7 @@ function DeskFooterBar({ design, config }: any) {
   } catch {}
   if (config?.telefone) telefone = config.telefone
 
-  const cor = design?.cor_borda || '#ec4899'
+  const cor = design?.cor_navbar || design?.cor_borda || '#ec4899'
 
   const linha2Parts = []
   if (cnpj) linha2Parts.push(`CNPJ: ${cnpj}`)
