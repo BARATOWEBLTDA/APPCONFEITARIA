@@ -281,11 +281,33 @@ function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, 
 }
 
 /* ── Products Section ── */
-function DeskProducts({ produtos, favorites, onToggleFavorite, design }: any) {
+function DeskProducts({ produtos, favorites, onToggleFavorite, design, searchTerm, onSearchChange }: any) {
   const cor = design.cor_borda || '#ec4899'
 
   return (
     <div style={{ width:'100%', boxSizing:'border-box' }}>
+      {/* Busca */}
+      <div style={{ position:'relative', marginBottom:'12px' }}>
+        <MagnifyingGlass size={16} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'#9ca3af' }}/>
+        <input
+          value={searchTerm}
+          onChange={(e: any) => onSearchChange(e.target.value)}
+          placeholder="Busque por um produto..."
+          style={{
+            width:'100%', padding:'13px 14px 13px 42px', boxSizing:'border-box',
+            border:'1.5px solid #e5e7eb', borderRadius:'10px',
+            fontSize:'14px', color:'#374151', outline:'none',
+            fontFamily:'inherit', background:'#fff',
+            transition:'border-color 0.2s',
+          }}
+          onFocus={e => (e.target.style.borderColor = cor)}
+          onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
+        />
+        {searchTerm && (
+          <button onClick={() => onSearchChange('')} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#9ca3af', fontSize:'16px', lineHeight:1 }}>✕</button>
+        )}
+      </div>
+
       {/* Header */}
       <div style={{ display:'flex', alignItems:'center', marginBottom:'16px' }}>
         <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'#1f2937' }}>Nosso Cardápio</h2>
@@ -459,7 +481,6 @@ function DeskFooterBar({ design, config }: any) {
 
   const linha2Parts = []
   if (cnpj) linha2Parts.push(`CNPJ: ${cnpj}`)
-  if (telefone) linha2Parts.push(telefone)
 
   return (
     <div style={{ background: cor, padding: '18px 24px', textAlign: 'center' }}>
@@ -632,7 +653,7 @@ function CardapioContent() {
           </div>
           <DeskProducts
             produtos={filteredProdutos} favorites={favorites} onToggleFavorite={toggleFavorite}
-            design={design}
+            design={design} searchTerm={searchTerm} onSearchChange={setSearchTerm}
           />
 
           {/* COLUNA DIREITA — Sacola */}
