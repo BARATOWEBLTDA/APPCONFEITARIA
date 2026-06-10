@@ -118,7 +118,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
 
       <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '6px', paddingTop: '100px', margin: '0 16px', marginTop: '-100px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 20, position: 'relative' }}>
         <div style={{ textAlign: 'center', marginTop: '28px', marginBottom: '12px' }}>
-          <h1 style={{ fontSize: '22px', fontWeight: 700, color: corNome || '#1f2937', marginBottom: '4px' }}>{storeName}</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#1f2937', marginBottom: '4px' }}>{storeName}</h1>
 
           {!hideStars && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
