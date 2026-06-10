@@ -553,7 +553,7 @@ export default function Receitas() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
-        .rec-root { font-family: 'Inter', sans-serif; }
+        .rec-root { font-family: 'Geist', sans-serif; }
 
         .rec-mobile { display: flex; flex-direction: column; }
         .rec-desktop { display: none; }
@@ -574,13 +574,13 @@ export default function Receitas() {
         .rec-mob-module-title { font-size: 0.9rem; font-weight: 700; color: #1f2937; margin: 0 0 0.2rem; }
         .rec-mob-module-desc { font-size: 0.75rem; color: #9ca3af; margin: 0; }
 
-        .rec-mob-back { display: flex; align-items: center; gap: 0.5rem; background: none; border: none; font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; color: #1f2937; cursor: pointer; padding: 0 0 1rem; }
+        .rec-mob-back { display: flex; align-items: center; gap: 0.5rem; background: none; border: none; font-family: 'Geist', sans-serif; font-size: 0.95rem; font-weight: 600; color: #1f2937; cursor: pointer; padding: 0 0 1rem; }
         .rec-mob-content { display: flex; flex-direction: column; }
 
         /* ===== DESKTOP ===== */
         .rec-sidebar { width: 220px; flex-shrink: 0; background: white; border-radius: 14px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: sticky; top: 1rem; }
         .rec-sidebar-title { font-size: 1rem; font-weight: 700; color: #1f2937; margin: 0 0 1rem; }
-        .rec-sidebar-item { display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.7rem 0.75rem; background: none; border: none; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 500; color: #6b7280; cursor: pointer; text-align: left; transition: all 0.15s; }
+        .rec-sidebar-item { display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.7rem 0.75rem; background: none; border: none; border-radius: 8px; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 500; color: #6b7280; cursor: pointer; text-align: left; transition: all 0.15s; }
         .rec-sidebar-item:hover { background: #f9fafb; color: #1f2937; }
         .rec-sidebar-item.active { background: #fff0f6; font-weight: 600; }
 
@@ -589,7 +589,7 @@ export default function Receitas() {
         .rec-page-sub { font-size: 0.88rem; color: #9ca3af; margin: -0.75rem 0 1.25rem; }
 
         .rec-home-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-        .rec-home-card { background: white; border-radius: 14px; padding: 1.5rem; text-align: left; cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.15s, box-shadow 0.15s; font-family: 'Inter', sans-serif; }
+        .rec-home-card { background: white; border-radius: 14px; padding: 1.5rem; text-align: left; cursor: pointer; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.06); transition: transform 0.15s, box-shadow 0.15s; font-family: 'Geist', sans-serif; }
         .rec-home-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
         .rec-home-emoji { font-size: 2rem; display: block; margin-bottom: 0.75rem; }
         .rec-home-card h3 { font-size: 0.95rem; font-weight: 700; color: #1f2937; margin: 0 0 0.4rem; }
@@ -597,7 +597,7 @@ export default function Receitas() {
 
         /* Filtros */
         .rec-filtros { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-        .rec-filtro { padding: 0.45rem 0.9rem; border-radius: 20px; border: 1.5px solid #e5e7eb; background: white; font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; color: #6b7280; transition: all 0.15s; }
+        .rec-filtro { padding: 0.45rem 0.9rem; border-radius: 20px; border: 1.5px solid #e5e7eb; background: white; font-family: 'Geist', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; color: #6b7280; transition: all 0.15s; }
         .rec-filtro.active { background: #f9007a; color: white; border-color: #f9007a; }
 
         /* Cards grid */
@@ -630,7 +630,7 @@ export default function Receitas() {
         .rec-pdf-baixar { display: inline-block; margin-top: 0.5rem; font-size: 0.78rem; font-weight: 600; color: #8b5cf6; }
 
         /* Botão nova receita */
-        .rec-btn-new { padding: 0.7rem 1.25rem; background: linear-gradient(270deg, #f9007a, #ff6eb4, #d4006a, #f9007a); background-size: 300% 300%; animation: gradientShift 3s ease infinite; color: white; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-bottom: 1rem; box-shadow: 0 4px 15px rgba(249,0,122,0.3); }
+        .rec-btn-new { padding: 0.7rem 1.25rem; background: linear-gradient(270deg, #f9007a, #ff6eb4, #d4006a, #f9007a); background-size: 300% 300%; animation: gradientShift 3s ease infinite; color: white; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; margin-bottom: 1rem; box-shadow: 0 4px 15px rgba(249,0,122,0.3); }
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .rec-loading { display: flex; justify-content: center; padding: 3rem; }
@@ -646,20 +646,20 @@ export default function Receitas() {
         .rec-form-header h2 { font-size: 1rem; font-weight: 700; color: #1f2937; margin: 0; }
         .rec-close { background: #f3f4f6; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; }
         .rec-form-scroll { flex: 1; overflow-y: auto; padding: 1rem 1.25rem; }
-        .rec-form-foto { width: 100%; height: 140px; background: #f9fafb; border: 2px dashed #e5e7eb; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 1rem; overflow: hidden; font-size: 0.88rem; color: #9ca3af; font-family: 'Inter', sans-serif; }
+        .rec-form-foto { width: 100%; height: 140px; background: #f9fafb; border: 2px dashed #e5e7eb; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 1rem; overflow: hidden; font-size: 0.88rem; color: #9ca3af; font-family: 'Geist', sans-serif; }
         .rec-form-foto img { width: 100%; height: 100%; object-fit: cover; }
         .rec-fields { display: flex; flex-direction: column; gap: 0.85rem; }
         .rec-field { display: flex; flex-direction: column; gap: 0.3rem; }
         .rec-field label { font-size: 0.82rem; font-weight: 600; color: #374151; }
-        .rec-field input, .rec-field select, .rec-field textarea { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.88rem; color: #1f2937; outline: none; resize: none; }
+        .rec-field input, .rec-field select, .rec-field textarea { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-family: 'Geist', sans-serif; font-size: 0.88rem; color: #1f2937; outline: none; resize: none; }
         .rec-field input:focus, .rec-field select:focus, .rec-field textarea:focus { border-color: #f9007a; }
         .rec-share-toggle { display: flex; flex-direction: column; gap: 0.2rem; cursor: pointer; background: #f9fafb; border-radius: 10px; padding: 0.75rem; }
         .rec-share-toggle input { margin-right: 0.5rem; accent-color: #f9007a; }
         .rec-share-toggle span { font-size: 0.88rem; font-weight: 600; color: #1f2937; }
         .rec-share-toggle small { font-size: 0.75rem; color: #9ca3af; }
         .rec-form-footer { display: flex; gap: 0.75rem; padding: 0.75rem 1.25rem 1.25rem; border-top: 1px solid #f3f4f6; }
-        .rec-btn-cancel { flex: 1; padding: 0.8rem; background: #f3f4f6; color: #6b7280; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 600; cursor: pointer; }
-        .rec-btn-save { flex: 1; padding: 0.8rem; background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .rec-btn-cancel { flex: 1; padding: 0.8rem; background: #f3f4f6; color: #6b7280; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-weight: 600; cursor: pointer; }
+        .rec-btn-save { flex: 1; padding: 0.8rem; background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .rec-btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
 
         /* Detalhe modal */
@@ -675,7 +675,7 @@ export default function Receitas() {
         .rec-detail-section h3 { font-size: 0.88rem; font-weight: 700; color: #374151; margin: 0 0 0.4rem; }
         .rec-detail-section p { font-size: 0.85rem; color: #6b7280; line-height: 1.6; margin: 0; white-space: pre-line; }
         .rec-detail-actions { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
-        .rec-act-btn { flex: 1; padding: 0.75rem; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+        .rec-act-btn { flex: 1; padding: 0.75rem; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
         .rec-act-btn.curtir { background: #fff0f6; color: #f9007a; }
         .rec-act-btn.salvar { background: #f0fdf4; color: #16a34a; }
         .rec-act-btn.editar { background: #eff6ff; color: #3b82f6; }

@@ -470,7 +470,7 @@ export default function Configuracoes() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; }
         .cfg-accordion { background: white; border-radius: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: hidden; }
-        .cfg-accordion-header { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 1rem 1.15rem; background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; text-align: left; }
+        .cfg-accordion-header { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 1rem 1.15rem; background: none; border: none; cursor: pointer; font-family: 'Geist', sans-serif; text-align: left; }
         .cfg-accordion-icon { color: #9ca3af; display: flex; align-items: center; }
         .cfg-accordion-title { flex: 1; font-size: 0.88rem; font-weight: 700; color: #F583BF; text-transform: uppercase; letter-spacing: 0.07em; }
         .cfg-accordion-chevron { color: #9ca3af; transition: transform 0.2s; flex-shrink: 0; }
@@ -504,11 +504,11 @@ export default function Configuracoes() {
         .cfg-field { display: flex; align-items: center; gap: 0.7rem; border: 1.5px solid var(--border, #e5e7eb); border-radius: 50px; padding: 0.65rem 1.1rem; background: var(--bg-input, white); transition: border-color 0.2s; min-width: 0; }
         .cfg-field:focus-within { border-color: #F583BF; }
         .cfg-field-icon { display: flex; align-items: center; flex-shrink: 0; color: var(--text-muted, #9ca3af); }
-        .cfg-field-input { flex: 1; border: none; outline: none; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: var(--text-primary, #1f2937); background: transparent; min-width: 0; }
+        .cfg-field-input { flex: 1; border: none; outline: none; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: var(--text-primary, #1f2937); background: transparent; min-width: 0; }
         .cfg-row-2 { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 0.5rem; }
         .cfg-time-field { display: flex; flex-direction: column; gap: 0.25rem; }
         .cfg-time-field label { font-size: 0.74rem; font-weight: 600; color: #6b7280; }
-        .cfg-time-field input { padding: 0.6rem 0.85rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.88rem; color: #1f2937; outline: none; transition: border-color 0.2s; width: 100%; }
+        .cfg-time-field input { padding: 0.6rem 0.85rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.88rem; color: #1f2937; outline: none; transition: border-color 0.2s; width: 100%; }
         .cfg-time-field input:focus { border-color: #7c3aed; }
         .cfg-divider { border: none; border-top: 1px solid #f3f4f6; margin: 0; }
         .cfg-toggle-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
@@ -521,7 +521,7 @@ export default function Configuracoes() {
         .toggle input:checked + .toggle-slider { background: #F583BF; }
         .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
         .dias-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-        .dia-btn { padding: 0.35rem 0.7rem; border-radius: 20px; border: 1.5px solid #e5e7eb; background: white; font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 500; color: #6b7280; cursor: pointer; transition: all 0.15s; }
+        .dia-btn { padding: 0.35rem 0.7rem; border-radius: 20px; border: 1.5px solid #e5e7eb; background: white; font-family: 'Geist', sans-serif; font-size: 0.78rem; font-weight: 500; color: #6b7280; cursor: pointer; transition: all 0.15s; }
         .dia-btn.active { background: #fce7f3; border-color: #F583BF; color: #F583BF; font-weight: 700; }
         .cfg-cat-add { display: flex; gap: 0.5rem; align-items: center; }
         .cfg-cat-list { display: flex; flex-direction: column; gap: 0.4rem; }
@@ -531,11 +531,11 @@ export default function Configuracoes() {
         .cfg-toast { width: 100%; border-radius: 12px; padding: 0.7rem 1rem; font-size: 0.85rem; font-weight: 500; }
         .cfg-toast-error { background: #fff1f2; border: 1px solid #fecdd3; color: #be123c; }
         .cfg-toast-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
-        .cfg-btn-save { width: 100%; padding: 0.9rem; background: linear-gradient(135deg, #F583BF, #e060a8); color: white; border: none; border-radius: 50px; font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 50px; letter-spacing: 0.3px; transition: opacity 0.2s, transform 0.1s; }
+        .cfg-btn-save { width: 100%; padding: 0.9rem; background: linear-gradient(135deg, #F583BF, #e060a8); color: white; border: none; border-radius: 50px; font-family: 'Geist', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 50px; letter-spacing: 0.3px; transition: opacity 0.2s, transform 0.1s; }
         .cfg-btn-save:hover { opacity: 0.92; }
         .cfg-btn-save:active { transform: scale(0.98); }
         .cfg-btn-save:disabled { opacity: 0.65; cursor: not-allowed; }
-        .cfg-btn-logout { width: 100%; padding: 0.8rem; background: none; border: 1.5px solid #e5e7eb; border-radius: 50px; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; color: #6b7280; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+        .cfg-btn-logout { width: 100%; padding: 0.8rem; background: none; border: 1.5px solid #e5e7eb; border-radius: 50px; font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600; color: #6b7280; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
         .cfg-btn-logout:hover { border-color: #ef4444; color: #ef4444; }
         .cfg-spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.35); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         .cfg-spinner-sm { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.35); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
@@ -556,7 +556,7 @@ export default function Configuracoes() {
         .cfg-desk-fields { display: flex; flex-direction: column; gap: 0.75rem; }
         .cfg-desk-field { display: flex; flex-direction: column; gap: 0.28rem; }
         .cfg-desk-field label { font-size: 0.78rem; font-weight: 600; color: #374151; }
-        .cfg-desk-field input { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; outline: none; transition: border-color 0.2s; width: 100%; }
+        .cfg-desk-field input { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: #1f2937; outline: none; transition: border-color 0.2s; width: 100%; }
         .cfg-desk-field input:focus { border-color: #7c3aed; }
         .cfg-desk-row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 0.65rem; }
         .cfg-cep-hint { font-size: 0.72rem; color: #9ca3af; margin: -0.2rem 0 0; }

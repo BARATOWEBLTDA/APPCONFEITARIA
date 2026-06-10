@@ -186,10 +186,10 @@ export default function AdminNotificacoes() {
         .adm-page-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin: 0 0 0.25rem; }
         .adm-page-sub { font-size: 0.88rem; color: #9ca3af; margin: 0; }
         .adm-loading { color: #9ca3af; padding: 2rem; }
-        .adm-btn-primary { padding: 0.7rem 1.25rem; background: linear-gradient(135deg,#f9007a,#d4006a); color: white; border: none; border-radius: 10px; font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+        .adm-btn-primary { padding: 0.7rem 1.25rem; background: linear-gradient(135deg,#f9007a,#d4006a); color: white; border: none; border-radius: 10px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:600; cursor:pointer; white-space:nowrap; }
         .adm-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-        .adm-btn-cancel { flex: 1; padding: 0.7rem; background: #f3f4f6; color: #6b7280; border: none; border-radius: 8px; font-family:'Inter',sans-serif; font-weight:600; cursor:pointer; }
-        .adm-btn-danger { flex: 1; padding: 0.7rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-family:'Inter',sans-serif; font-weight:600; cursor:pointer; }
+        .adm-btn-cancel { flex: 1; padding: 0.7rem; background: #f3f4f6; color: #6b7280; border: none; border-radius: 8px; font-family:'Geist', sans-serif; font-weight:600; cursor:pointer; }
+        .adm-btn-danger { flex: 1; padding: 0.7rem; background: #ef4444; color: white; border: none; border-radius: 8px; font-family:'Geist', sans-serif; font-weight:600; cursor:pointer; }
 
         .ntf-adm-list { display: flex; flex-direction: column; gap: 0; background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         .ntf-adm-empty { text-align: center; padding: 3rem; color: #9ca3af; }
@@ -214,8 +214,8 @@ export default function AdminNotificacoes() {
         .ntf-form-img:hover { border-color: #f9007a; }
         .adm-form-fields { display: flex; flex-direction: column; gap: 0.75rem; }
         .adm-form-field { display: flex; flex-direction: column; gap: 0.3rem; }
-        .adm-form-field label { font-size: 0.82rem; font-weight: 600; color: #374151; font-family:'Inter',sans-serif; }
-        .adm-form-field input { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-family:'Inter',sans-serif; font-size:0.88rem; color:#1f2937; outline:none; }
+        .adm-form-field label { font-size: 0.82rem; font-weight: 600; color: #374151; font-family:'Geist', sans-serif; }
+        .adm-form-field input { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-family:'Geist', sans-serif; font-size:0.88rem; color:#1f2937; outline:none; }
         .adm-form-field input:focus { border-color: #f9007a; }
         .adm-modal { background: white; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 360px; text-align: center; }
         .adm-modal h3 { font-size: 1rem; font-weight: 600; color: #1f2937; margin: 0 0 0.4rem; }

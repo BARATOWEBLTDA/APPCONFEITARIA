@@ -1170,12 +1170,12 @@ function Styles() {
   return (
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-      .ins-root { font-family:'Inter',sans-serif; display:flex; flex-direction:column; gap:1rem; padding-bottom:2rem; }
+      .ins-root { font-family:'Geist', sans-serif; display:flex; flex-direction:column; gap:1rem; padding-bottom:2rem; }
       .ins-desktop { max-width:100%; }
       .ins-header { display:flex; align-items:center; justify-content:space-between; }
       .ins-title { font-size:1.6rem; font-weight:800; color:#1f2937; margin:0; }
       .ins-sub { font-size:0.82rem; color:#9ca3af; margin:0.15rem 0 0; }
-      .ins-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.65rem 1.25rem; background:linear-gradient(135deg,#FF4FA3,#FF6BB5); color:white; border:none; border-radius:50px; font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(255,79,163,0.35); }
+      .ins-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.65rem 1.25rem; background:linear-gradient(135deg,#FF4FA3,#FF6BB5); color:white; border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(255,79,163,0.35); }
 
       /* Stats */
       .ins-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
@@ -1189,14 +1189,14 @@ function Styles() {
       .ins-toolbar { display:flex; gap:0.75rem; align-items:center; }
       .ins-search-wrap { position:relative; }
       .ins-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); pointer-events:none; }
-      .ins-search { width:100%; padding:0.65rem 1rem 0.65rem 2.4rem; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.88rem; outline:none; box-sizing:border-box; background:white; }
+      .ins-search { width:100%; padding:0.65rem 1rem 0.65rem 2.4rem; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.88rem; outline:none; box-sizing:border-box; background:white; }
       .ins-search:focus { border-color:#FF4FA3; }
-      .ins-select { padding:0.62rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.85rem; color:#374151; outline:none; background:white; cursor:pointer; }
+      .ins-select { padding:0.62rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.85rem; color:#374151; outline:none; background:white; cursor:pointer; }
       .ins-select:focus { border-color:#FF4FA3; }
 
       /* Filtros */
       .ins-filtros { display:flex; gap:0.4rem; flex-wrap:wrap; }
-      .ins-filtro-btn { padding:0.35rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:8px; background:white; font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:500; color:#6b7280; cursor:pointer; white-space:nowrap; transition:all 0.15s; }
+      .ins-filtro-btn { padding:0.35rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:8px; background:white; font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:500; color:#6b7280; cursor:pointer; white-space:nowrap; transition:all 0.15s; }
       .ins-filtro-btn.active { border-color:#FF4FA3; color:#FF4FA3; background:#fdf2f8; font-weight:700; }
 
       /* Tabela */
@@ -1230,7 +1230,7 @@ function Styles() {
       .ins-pagination { display:flex; align-items:center; justify-content:space-between; padding:0.85rem 1.25rem; border-top:1px solid #f3f4f6; }
       .ins-pag-info { font-size:0.78rem; color:#9ca3af; }
       .ins-pag-btns { display:flex; align-items:center; gap:4px; }
-      .ins-pag-btn { width:32px; height:32px; border-radius:8px; border:1.5px solid #e5e7eb; background:white; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:600; color:#374151; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+      .ins-pag-btn { width:32px; height:32px; border-radius:8px; border:1.5px solid #e5e7eb; background:white; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:600; color:#374151; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
       .ins-pag-btn:hover:not(:disabled) { border-color:#FF4FA3; color:#FF4FA3; }
       .ins-pag-btn.active { background:#FF4FA3; border-color:#FF4FA3; color:white; }
       .ins-pag-btn:disabled { opacity:0.4; cursor:not-allowed; }
@@ -1258,25 +1258,25 @@ function Styles() {
       .ins-form { display:flex; flex-direction:column; gap:0.85rem; }
       .ins-field { display:flex; flex-direction:column; gap:0.3rem; }
       .ins-field label { font-size:0.78rem; font-weight:600; color:#374151; }
-      .ins-field input, .ins-field select { padding:0.65rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:10px; font-family:'Inter',sans-serif; font-size:0.9rem; color:#1f2937; outline:none; transition:border-color 0.2s; width:100%; box-sizing:border-box; }
+      .ins-field input, .ins-field select { padding:0.65rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.9rem; color:#1f2937; outline:none; transition:border-color 0.2s; width:100%; box-sizing:border-box; }
       .ins-field input:focus, .ins-field select:focus { border-color:#ec4899; }
       .ins-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
       .ins-input-unit { display:flex; border:1.5px solid #e5e7eb; border-radius:10px; overflow:hidden; transition:border-color 0.2s; }
       .ins-input-unit:focus-within { border-color:#ec4899; }
-      .ins-input-unit input { border:none; flex:1; padding:0.65rem 0.9rem; font-family:'Inter',sans-serif; font-size:0.9rem; color:#1f2937; outline:none; }
+      .ins-input-unit input { border:none; flex:1; padding:0.65rem 0.9rem; font-family:'Geist', sans-serif; font-size:0.9rem; color:#1f2937; outline:none; }
       .ins-input-unit span { background:#f9fafb; padding:0 0.75rem; display:flex; align-items:center; font-size:0.78rem; font-weight:600; color:#6b7280; border-left:1px solid #e5e7eb; }
       .ins-nova-row { display:flex; gap:6px; margin-top:6px; }
-      .ins-nova-row input { flex:1; padding:0.55rem 0.75rem; border:1.5px solid #e5e7eb; border-radius:8px; font-family:'Inter',sans-serif; font-size:0.85rem; outline:none; }
+      .ins-nova-row input { flex:1; padding:0.55rem 0.75rem; border:1.5px solid #e5e7eb; border-radius:8px; font-family:'Geist', sans-serif; font-size:0.85rem; outline:none; }
       .ins-nova-row input:focus { border-color:#ec4899; }
-      .ins-nova-row button { padding:0.55rem 0.85rem; background:linear-gradient(135deg,#ec4899,#f9007a); color:white; border:none; border-radius:8px; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+      .ins-nova-row button { padding:0.55rem 0.85rem; background:linear-gradient(135deg,#ec4899,#f9007a); color:white; border:none; border-radius:8px; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:600; cursor:pointer; white-space:nowrap; }
       .ins-custo-calc { display:flex; align-items:center; gap:6px; background:#fdf2f8; border-radius:10px; padding:0.6rem 0.9rem; font-size:0.82rem; color:#374151; }
       .ins-footer { display:flex; gap:0.75rem; padding-top:0.5rem; }
-      .ins-btn-cancel { flex:1; padding:0.8rem; background:#f3f4f6; color:#6b7280; border:none; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; }
-      .ins-btn-primary { flex:2; padding:0.8rem; background:linear-gradient(135deg,#ec4899,#f9007a); color:white; border:none; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+      .ins-btn-cancel { flex:1; padding:0.8rem; background:#f3f4f6; color:#6b7280; border:none; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; }
+      .ins-btn-primary { flex:2; padding:0.8rem; background:linear-gradient(135deg,#ec4899,#f9007a); color:white; border:none; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
       .ins-btn-primary:disabled { opacity:0.6; cursor:not-allowed; }
       .ins-btn-saida { background:linear-gradient(135deg,#ef4444,#dc2626) !important; }
       .ins-detalhe-estoque { border-radius:14px; padding:1rem 1.25rem; display:flex; align-items:center; justify-content:space-between; border:1.5px solid; }
-      .ins-mov-btn { padding:0.5rem 0.85rem; border:none; border-radius:10px; font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:700; cursor:pointer; }
+      .ins-mov-btn { padding:0.5rem 0.85rem; border:none; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:700; cursor:pointer; }
       .ins-mov-entrada { background:#dcfce7; color:#16a34a; }
       .ins-mov-saida { background:#fee2e2; color:#ef4444; }
       .ins-imagem-preview { width:100%; height:200px; border-radius:16px; overflow:hidden; background:#f9fafb; border:2px dashed #e5e7eb; display:flex; align-items:center; justify-content:center; }
@@ -1285,10 +1285,10 @@ function Styles() {
       .ins-imagem-empty p { font-size:0.9rem; font-weight:600; margin:0; color:#374151; }
       .ins-imagem-empty span { font-size:0.78rem; }
       .ins-imagem-actions { display:flex; flex-direction:column; gap:0.75rem; }
-      .ins-btn-buscar { display:flex; align-items:center; justify-content:center; gap:8px; padding:0.8rem; background:linear-gradient(135deg,#ec4899,#f9007a); color:white; border:none; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
-      .ins-btn-upload { display:flex; align-items:center; justify-content:center; gap:8px; padding:0.8rem; background:white; color:#374151; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; }
+      .ins-btn-buscar { display:flex; align-items:center; justify-content:center; gap:8px; padding:0.8rem; background:linear-gradient(135deg,#ec4899,#f9007a); color:white; border:none; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
+      .ins-btn-upload { display:flex; align-items:center; justify-content:center; gap:8px; padding:0.8rem; background:white; color:#374151; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; }
       .ins-busca-row { display:flex; gap:8px; }
-      .ins-busca-input { flex:1; padding:0.7rem 1rem; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Inter',sans-serif; font-size:0.9rem; outline:none; }
+      .ins-busca-input { flex:1; padding:0.7rem 1rem; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; outline:none; }
       .ins-busca-input:focus { border-color:#ec4899; }
       .ins-btn-buscar-go { width:44px; height:44px; background:linear-gradient(135deg,#ec4899,#f9007a); border:none; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
       .ins-btn-buscar-go:disabled { opacity:0.7; }
@@ -1301,11 +1301,11 @@ function Styles() {
       .ins-review-card { background:white; border-radius:16px; padding:1.25rem; box-shadow:0 2px 10px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:1rem; }
       .ins-review-img { display:flex; align-items:center; gap:1rem; }
       .ins-review-img img { width:72px; height:72px; border-radius:10px; object-fit:cover; }
-      .ins-review-alterar { background:none; border:none; color:#ec4899; font-size:0.8rem; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; }
+      .ins-review-alterar { background:none; border:none; color:#ec4899; font-size:0.8rem; font-weight:600; cursor:pointer; font-family:'Geist', sans-serif; }
       .ins-review-section { display:flex; flex-direction:column; gap:0.5rem; }
       .ins-review-row-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem; }
       .ins-review-row-header span { font-size:0.82rem; font-weight:700; color:#ec4899; text-transform:uppercase; letter-spacing:0.05em; }
-      .ins-review-row-header button { background:none; border:none; color:#6b7280; font-size:0.8rem; cursor:pointer; font-family:'Inter',sans-serif; text-decoration:underline; }
+      .ins-review-row-header button { background:none; border:none; color:#6b7280; font-size:0.8rem; cursor:pointer; font-family:'Geist', sans-serif; text-decoration:underline; }
       .ins-review-item { display:flex; justify-content:space-between; align-items:center; padding:0.4rem 0; border-bottom:1px solid #f3f4f6; }
       .ins-review-item:last-child { border-bottom:none; }
       .ins-review-item span { font-size:0.8rem; color:#6b7280; }
@@ -1314,7 +1314,7 @@ function Styles() {
       .ins-sucesso-icon { width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,#22c55e,#16a34a); display:flex; align-items:center; justify-content:center; margin-bottom:0.5rem; }
       .ins-overlay { position:fixed; inset:0; z-index:200; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; padding:1rem; }
       .ins-modal { background:white; border-radius:20px; padding:1.5rem; width:100%; max-width:360px; }
-      .ins-btn-del-confirm { flex:1; padding:0.75rem; background:#ef4444; color:white; border:none; border-radius:10px; font-family:'Inter',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
+      .ins-btn-del-confirm { flex:1; padding:0.75rem; background:#ef4444; color:white; border:none; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
       .ins-spinner { width:20px; height:20px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:insSpin 0.7s linear infinite; display:inline-block; }
       @keyframes insSpin { to { transform:rotate(360deg); } }
     `}</style>

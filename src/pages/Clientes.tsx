@@ -390,7 +390,7 @@ export default function Clientes() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; }
-        .cli-root { font-family: 'Inter', sans-serif; }
+        .cli-root { font-family: 'Geist', sans-serif; }
 
         /* Mobile/Desktop switch */
         .cli-mobile { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -468,7 +468,7 @@ export default function Clientes() {
           background: linear-gradient(270deg, #f9007a, #ff6eb4, #d4006a, #f9007a);
           background-size: 300% 300%; animation: gradientShift 3s ease infinite;
           color: white; border: none; border-radius: 10px;
-          font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600;
+          font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600;
           cursor: pointer; white-space: nowrap; flex-shrink: 0;
           box-shadow: 0 4px 15px rgba(249,0,122,0.35);
         }
@@ -476,7 +476,7 @@ export default function Clientes() {
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .cli-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 0.85rem 1rem; flex: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-        .cli-search { border: none; outline: none; flex: 1; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; background: transparent; }
+        .cli-search { border: none; outline: none; flex: 1; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: #1f2937; background: transparent; }
         .cli-search::placeholder { color: #9ca3af; }
 
         .cli-loading { display: flex; justify-content: center; padding: 3rem; }
@@ -516,7 +516,7 @@ export default function Clientes() {
         .modal-box h3 { font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.4rem; }
         .modal-box p { font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.25rem; }
         .modal-actions { display: flex; gap: 0.75rem; }
-        .modal-btn { flex: 1; padding: 0.7rem; border-radius: 8px; border: none; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+        .modal-btn { flex: 1; padding: 0.7rem; border-radius: 8px; border: none; font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
         .modal-btn.cancel { background: #f3f4f6; color: #6b7280; }
         .modal-btn.confirm { background: #ef4444; color: white; }
 
@@ -538,10 +538,10 @@ export default function Clientes() {
         .form-fields { display: flex; flex-direction: column; gap: 0.85rem; }
         .form-field { display: flex; flex-direction: column; gap: 0.3rem; }
         .form-field label { font-size: 0.82rem; font-weight: 500; color: #374151; }
-        .form-field input, .form-field select { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: #1f2937; outline: none; transition: border-color 0.2s; background: white; }
+        .form-field input, .form-field select { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: #1f2937; outline: none; transition: border-color 0.2s; background: white; }
         .form-field input:focus, .form-field select:focus { border-color: #f9007a; }
         .form-footer { display: flex; gap: 0.75rem; padding: 0.75rem 1.25rem 1.25rem; border-top: 1px solid #f3f4f6; }
-        .form-btn { flex: 1; padding: 0.8rem; border-radius: 10px; border: none; font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
+        .form-btn { flex: 1; padding: 0.8rem; border-radius: 10px; border: none; font-family: 'Geist', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
         .form-btn.cancel { background: #f3f4f6; color: #6b7280; }
         .form-btn.save { background: linear-gradient(135deg, #f9007a, #d4006a); color: white; }
         .form-btn.save:disabled { opacity: 0.6; cursor: not-allowed; }

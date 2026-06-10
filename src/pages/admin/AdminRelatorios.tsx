@@ -25,7 +25,7 @@ export default function AdminRelatorios() {
         .adm-coming-soon h2 { font-size:1.25rem; font-weight:700; color:#1f2937; margin:0 0 0.5rem; }
         .adm-coming-soon p { font-size:0.88rem; color:#6b7280; margin:0 0 1.5rem; line-height:1.6; }
         .adm-cs-features { display:flex; flex-direction:column; gap:0.5rem; text-align:left; }
-        .adm-cs-item { background:#f9fafb; border-radius:8px; padding:0.65rem 1rem; font-size:0.85rem; color:#374151; font-family:'Inter',sans-serif; }
+        .adm-cs-item { background:#f9fafb; border-radius:8px; padding:0.65rem 1rem; font-size:0.85rem; color:#374151; font-family:'Geist', sans-serif; }
       `}</style>
     </div>
   );

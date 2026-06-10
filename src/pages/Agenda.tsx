@@ -172,7 +172,7 @@ export default function Agenda() {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        .ag-root { font-family: 'Inter', sans-serif; padding: 0; }
+        .ag-root { font-family: 'Geist', sans-serif; padding: 0; }
         .ag-header { margin-bottom: 1.5rem; }
         .ag-title { font-size: 1.5rem; font-weight: 800; color: #1f2937; margin: 0 0 0.25rem; }
         .ag-sub { font-size: 0.85rem; color: #9ca3af; margin: 0; }
@@ -188,7 +188,7 @@ export default function Agenda() {
         .ag-dow-grid { display: grid; grid-template-columns: repeat(7, 1fr); margin-bottom: 0.5rem; }
         .ag-dow { text-align: center; font-size: 0.72rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; padding: 0.35rem 0; }
         .ag-day-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-        .ag-day { position: relative; aspect-ratio: 1; border-radius: 12px; border: none; background: transparent; cursor: pointer; font-size: 0.9rem; font-weight: 500; color: #374151; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; transition: all 0.15s; }
+        .ag-day { position: relative; aspect-ratio: 1; border-radius: 12px; border: none; background: transparent; cursor: pointer; font-size: 0.9rem; font-weight: 500; color: #374151; font-family: 'Geist', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; transition: all 0.15s; }
         .ag-day:hover { background: #fdf2f8; color: #FF4FA3; }
         .ag-day.hoje { background: #fdf2f8; color: #FF4FA3; font-weight: 800; }
         .ag-day.selecionado { background: linear-gradient(135deg,#FF4FA3,#FF6BB5) !important; color: white !important; font-weight: 800; box-shadow: 0 4px 12px rgba(255,79,163,0.4); }
@@ -205,9 +205,9 @@ export default function Agenda() {
         .ag-pedidos-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
         .ag-pedidos-title { font-size: 1.05rem; font-weight: 700; color: #1f2937; margin: 0 0 0.2rem; text-transform: capitalize; }
         .ag-pedidos-sub { font-size: 0.78rem; color: #9ca3af; margin: 0; }
-        .ag-btn-novo { background: linear-gradient(135deg,#FF4FA3,#FF6BB5); color: white; border: none; border-radius: 10px; padding: 0.55rem 1rem; font-family: 'Inter',sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .ag-btn-novo { background: linear-gradient(135deg,#FF4FA3,#FF6BB5); color: white; border: none; border-radius: 10px; padding: 0.55rem 1rem; font-family: 'Geist', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
         .ag-filtros { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1rem; }
-        .ag-filtro { padding: 0.35rem 0.85rem; border-radius: 8px; border: 1.5px solid #e5e7eb; background: white; color: #9ca3af; font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: 'Inter',sans-serif; transition: all 0.15s; }
+        .ag-filtro { padding: 0.35rem 0.85rem; border-radius: 8px; border: 1.5px solid #e5e7eb; background: white; color: #9ca3af; font-size: 0.78rem; font-weight: 600; cursor: pointer; font-family: 'Geist', sans-serif; transition: all 0.15s; }
         .ag-filtro:hover { border-color: #FF4FA3; color: #FF4FA3; }
         .ag-filtro.ativo { background: #FF4FA3; border-color: #FF4FA3; color: white; }
         .ag-loading { text-align: center; color: #9ca3af; font-size: 0.85rem; padding: 2rem 0; }

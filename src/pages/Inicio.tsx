@@ -509,7 +509,7 @@ const load = async () => {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        .ini-root { font-family: 'Inter', sans-serif; }
+        .ini-root { font-family: 'Geist', sans-serif; }
 
         /* Switch */
         .ini-mobile { display: flex; flex-direction: column; gap: 0.85rem; }
@@ -544,7 +544,7 @@ const load = async () => {
         /* Atalhos mobile */
         .mob-section-title { font-size: 0.88rem; font-weight: 700; color: #1f2937; }
         .mob-atalhos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-        .mob-atalho { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 0.7rem 0.4rem; cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color 0.15s; }
+        .mob-atalho { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 0.7rem 0.4rem; cursor: pointer; font-family: 'Geist', sans-serif; transition: border-color 0.15s; }
         .mob-atalho:hover { border-color: #f9007a; }
         .mob-atalho-icon { display: flex; align-items: center; justify-content: center; }
         .mob-atalho-label { font-size: 0.68rem; font-weight: 500; color: #374151; }
@@ -560,7 +560,7 @@ const load = async () => {
         .mob-next-step { background: #fff0f6; border-radius: 10px; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
         .mob-next-label { font-size: 0.7rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
         .mob-next-text { font-size: 0.85rem; font-weight: 600; color: #1f2937; margin: 0; }
-        .mob-next-btn { align-self: flex-start; background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 8px; padding: 0.45rem 0.9rem; font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+        .mob-next-btn { align-self: flex-start; background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 8px; padding: 0.45rem 0.9rem; font-family: 'Geist', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
 
         /* Config card dark */
         .mob-config-card {
@@ -623,7 +623,7 @@ const load = async () => {
         .mob-config-next { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
         .mob-config-next-label { font-size: 0.68rem; color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.2rem; }
         .mob-config-next-text { font-size: 0.82rem; font-weight: 600; color: white; margin: 0; }
-        .mob-config-next-btn { background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 8px; padding: 0.5rem 0.9rem; font-family: 'Inter', sans-serif; font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(249,0,122,0.4); }
+        .mob-config-next-btn { background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 8px; padding: 0.5rem 0.9rem; font-family: 'Geist', sans-serif; font-size: 0.78rem; font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(249,0,122,0.4); }
 
         /* ===== DESKTOP ===== */
         .ini-header { background: white; padding: 1rem 1.75rem; margin: -2rem -2rem 1.25rem -2rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f3f4f6; }
@@ -655,15 +655,15 @@ const load = async () => {
         .dash-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; }
         .dash-card-title { font-size: 0.95rem; font-weight: 700; color: #1f2937; margin: 0; }
         .dash-card-sub { font-size: 0.78rem; color: #9ca3af; margin: 0.15rem 0 0; }
-        .dash-ver-todos { background: none; border: none; color: #FF4FA3; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: 'Inter',sans-serif; }
+        .dash-ver-todos { background: none; border: none; color: #FF4FA3; font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: 'Geist', sans-serif; }
         .dash-progress-pct { font-size: 1rem; font-weight: 800; color: #FF4FA3; flex-shrink: 0; }
         .dash-progress-bar { height: 8px; background: #f3f4f6; border-radius: 999px; overflow: hidden; margin: 0.75rem 0; }
         .dash-progress-fill { height: 100%; background: linear-gradient(90deg,#FF4FA3,#FF6BB5); border-radius: 999px; transition: width 0.5s; }
         .dash-next-step { background: #fdf2f8; border-radius: 10px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
-        .dash-btn-config { background: linear-gradient(135deg,#FF4FA3,#FF6BB5); color: white; border: none; border-radius: 8px; padding: 0.45rem 0.9rem; font-family: 'Inter',sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .dash-btn-config { background: linear-gradient(135deg,#FF4FA3,#FF6BB5); color: white; border: none; border-radius: 8px; padding: 0.45rem 0.9rem; font-family: 'Geist', sans-serif; font-size: 0.8rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
         .dash-steps { display: flex; flex-direction: column; gap: 0.25rem; }
         .dash-atalhos { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.6rem; }
-        .dash-atalho-btn { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; background: #fafafa; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 0.75rem 0.5rem; cursor: pointer; transition: border-color 0.15s, transform 0.15s; font-family: 'Inter',sans-serif; }
+        .dash-atalho-btn { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; background: #fafafa; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 0.75rem 0.5rem; cursor: pointer; transition: border-color 0.15s, transform 0.15s; font-family: 'Geist', sans-serif; }
         .dash-atalho-btn:hover { border-color: #FF4FA3; transform: translateY(-1px); }
         .dash-atalho-icon { display: flex; align-items: center; justify-content: center; }
         .dash-atalho-label { font-size: 0.72rem; font-weight: 500; color: #374151; }
@@ -674,7 +674,7 @@ const load = async () => {
         .cal-grid-header { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 0.35rem; }
         .cal-dow { text-align: center; font-size: 0.72rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; padding: 0.3rem 0; }
         .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
-        .cal-day { position: relative; aspect-ratio: 1; border-radius: 10px; border: none; background: transparent; cursor: pointer; font-size: 0.88rem; font-weight: 500; color: #374151; font-family: 'Inter',sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background 0.15s; gap: 2px; }
+        .cal-day { position: relative; aspect-ratio: 1; border-radius: 10px; border: none; background: transparent; cursor: pointer; font-size: 0.88rem; font-weight: 500; color: #374151; font-family: 'Geist', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background 0.15s; gap: 2px; }
         .cal-day:hover { background: #fdf2f8; color: #FF4FA3; }
         .cal-day.hoje { background: #fdf2f8; color: #FF4FA3; font-weight: 800; }
         .cal-day.selecionado { background: linear-gradient(135deg,#FF4FA3,#FF6BB5) !important; color: white !important; font-weight: 800; }
@@ -695,11 +695,11 @@ const load = async () => {
         .trial-benefits { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.75rem; }
         .trial-benefit-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: rgba(255,255,255,0.85); }
         .trial-benefit-dot { font-size: 0.7rem; flex-shrink: 0; }
-        .trial-card-btn { width: 100%; padding: 0.65rem; background: linear-gradient(135deg, #f9c74f, #f8961e); color: #1a1a2e; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 16px rgba(248,150,30,0.3); transition: opacity 0.2s; }
+        .trial-card-btn { width: 100%; padding: 0.65rem; background: linear-gradient(135deg, #f9c74f, #f8961e); color: #1a1a2e; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.88rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 16px rgba(248,150,30,0.3); transition: opacity 0.2s; }
         .trial-card-btn:hover { opacity: 0.92; }
 
         .atalhos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
-        .atalho-btn { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 0.75rem 0.5rem; cursor: pointer; transition: border-color 0.15s, transform 0.15s; font-family: 'Inter', sans-serif; }
+        .atalho-btn { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 12px; padding: 0.75rem 0.5rem; cursor: pointer; transition: border-color 0.15s, transform 0.15s; font-family: 'Geist', sans-serif; }
         .atalho-btn:hover { border-color: #f9007a; transform: translateY(-1px); }
         .atalho-icon { display: flex; align-items: center; justify-content: center; }
         .atalho-label { font-size: 0.72rem; font-weight: 500; color: #374151; }
@@ -717,18 +717,18 @@ const load = async () => {
         .next-step-dot { width: 10px; height: 10px; border-radius: 50%; background: #f9c74f; flex-shrink: 0; box-shadow: 0 0 0 3px rgba(249,199,79,0.2); }
         .next-step-label { font-size: 0.72rem; color: #9ca3af; font-weight: 500; margin: 0 0 0.2rem; text-transform: uppercase; letter-spacing: 0.05em; }
         .next-step-text { font-size: 0.88rem; font-weight: 600; color: #1f2937; margin: 0; }
-        .next-step-btn { background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 8px; padding: 0.55rem 1rem; font-family: 'Inter', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+        .next-step-btn { background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 8px; padding: 0.55rem 1rem; font-family: 'Geist', sans-serif; font-size: 0.82rem; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 
         .steps-list { display: flex; flex-direction: column; gap: 0.5rem; }
         .step-group { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden; }
-        .step-group-header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.1rem; background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; }
+        .step-group-header { width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 0.9rem 1.1rem; background: none; border: none; cursor: pointer; font-family: 'Geist', sans-serif; }
         .step-group-left { display: flex; align-items: center; gap: 0.6rem; }
         .step-group-title { font-size: 0.88rem; font-weight: 600; color: #1f2937; }
         .step-group-right { display: flex; align-items: center; gap: 0.5rem; }
         .step-badge { font-size: 0.72rem; font-weight: 600; color: #6b7280; background: #f3f4f6; padding: 0.2rem 0.6rem; border-radius: 20px; }
         .step-badge.done { background: #dcfce7; color: #16a34a; }
         .step-items { border-top: 1px solid #f3f4f6; }
-        .step-item { width: 100%; display: flex; align-items: center; gap: 0.7rem; padding: 0.8rem 1.1rem; background: none; border: none; border-bottom: 1px solid #f9fafb; cursor: pointer; font-family: 'Inter', sans-serif; text-align: left; transition: background 0.15s; }
+        .step-item { width: 100%; display: flex; align-items: center; gap: 0.7rem; padding: 0.8rem 1.1rem; background: none; border: none; border-bottom: 1px solid #f9fafb; cursor: pointer; font-family: 'Geist', sans-serif; text-align: left; transition: background 0.15s; }
         .step-item:hover { background: #fff0f6; }
         .step-item:last-child { border-bottom: none; }
         .step-check { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; border: 2px solid #e5e7eb; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
