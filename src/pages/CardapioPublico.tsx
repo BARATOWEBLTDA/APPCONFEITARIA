@@ -117,41 +117,51 @@ function DesktopHeroBanner({ design, config }: { design: DesignSettings; config:
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 32px' }}>
       {/* Banner */}
-      <div style={{
-        width: '100%', height: hasBanner ? '240px' : '120px',
-        borderRadius: '0 0 16px 16px', overflow: 'hidden',
-        background: hasBanner ? '#f5f5f5' : (design.cor_borda || '#ec4899'),
-        position: 'relative',
-      }}>
-        {hasBanner && <img src={banners[0]!} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-        {!hasBanner && <div style={{ width: '100%', height: '100%', background: `linear-gradient(135deg, ${design.cor_borda || '#ec4899'}, ${design.cor_borda || '#ec4899'}dd)` }} />}
-      </div>
+      {hasBanner && (
+        <div style={{
+          width: '100%', height: '220px',
+          borderRadius: '0 0 16px 16px', overflow: 'hidden',
+          background: '#f5f5f5',
+        }}>
+          <img src={banners[0]!} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+      )}
+      {!hasBanner && (
+        <div style={{
+          width: '100%', height: '100px',
+          background: `linear-gradient(135deg, ${design.cor_borda || '#ec4899'}, ${design.cor_borda || '#ec4899'}cc)`,
+          borderRadius: '0 0 16px 16px',
+        }} />
+      )}
 
-      {/* Info overlay */}
+      {/* Info abaixo do banner com fundo branco */}
       <div style={{
-        display: 'flex', alignItems: 'flex-end', gap: '16px',
-        marginTop: '-36px', padding: '0 24px', position: 'relative', zIndex: 10,
+        background: '#fff', borderRadius: '12px',
+        margin: '-24px 16px 0', position: 'relative', zIndex: 10,
+        padding: '16px 20px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+        border: '1px solid #f0f0f0',
+        display: 'flex', alignItems: 'center', gap: '16px',
       }}>
         {/* Logo */}
         <div style={{
-          width: '80px', height: '80px', borderRadius: '16px',
-          border: '4px solid white', background: '#fff',
-          overflow: 'hidden', flexShrink: 0,
-          boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
+          width: '72px', height: '72px', borderRadius: '14px',
+          border: `3px solid ${design.cor_borda || '#ec4899'}`,
+          background: '#fff', overflow: 'hidden', flexShrink: 0,
         }}>
           {design.logo_url
             ? <img src={design.logo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: design.cor_borda || '#ec4899', color: 'white', fontSize: '32px', fontWeight: 800 }}>{design.nome_loja?.charAt(0)}</div>
+            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: design.cor_borda || '#ec4899', color: 'white', fontSize: '28px', fontWeight: 800 }}>{design.nome_loja?.charAt(0)}</div>
           }
         </div>
 
-        {/* Store info */}
-        <div style={{ paddingBottom: '4px' }}>
-          <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 800, color: '#1f2937' }}>{design.nome_loja}</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px', flexWrap: 'wrap' }}>
+        {/* Textos */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#1f2937' }}>{design.nome_loja}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px', flexWrap: 'wrap' }}>
             {statusText && (
               <span style={{ fontSize: '12px', fontWeight: 600, color: isOpen ? '#16a34a' : '#ef4444' }}>
-                {isOpen ? '●' : '●'} {statusText}
+                ● {statusText}
               </span>
             )}
             {locationText && (
@@ -167,7 +177,7 @@ function DesktopHeroBanner({ design, config }: { design: DesignSettings; config:
             )}
           </div>
           {design.descricao_loja && (
-            <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#6b7280', maxWidth: '500px' }}>{design.descricao_loja}</p>
+            <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#9ca3af', lineHeight: 1.4 }}>{design.descricao_loja}</p>
           )}
         </div>
       </div>
