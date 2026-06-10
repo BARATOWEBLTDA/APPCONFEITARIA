@@ -52,11 +52,11 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
   const activeText = isNavDark ? '#ffffff' : '#ffffff'
 
   const links = [
-    { icon: <House size={15} </Heart>, label: 'Início', active: true },
-    { icon: <Storefront size={15} </Heart>, label: 'Produtos', active: false },
-    { icon: <Tag size={15} </Heart>, label: 'Promoções', active: false },
-    { icon: <ClipboardText size={15} </Heart>, label: 'Pedidos', active: false },
-    { icon: <Users size={15} </Heart>, label: 'Sobre nós', active: false },
+    { icon: <House size={15} weight="duotone" />, label: 'Início', active: true },
+    { icon: <Storefront size={15} weight="duotone" />, label: 'Produtos', active: false },
+    { icon: <Tag size={15} weight="duotone" />, label: 'Promoções', active: false },
+    { icon: <ClipboardText size={15} weight="duotone" />, label: 'Pedidos', active: false },
+    { icon: <Users size={15} weight="duotone" />, label: 'Sobre nós', active: false },
   ]
 
   return (
@@ -385,7 +385,7 @@ function DeskFooterBar({ design, config }: any) {
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
           <div style={{ width:'40px', height:'40px', borderRadius:'50%', background:'#374151', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <Heart size={20} color="#9ca3af"/>
+            <Heart size={20} weight="duotone" color="#9ca3af"/>
           </div>
           <div>
             <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'#fff' }}>Aceitamos encomendas</p>
