@@ -300,7 +300,7 @@ export default function CardapioDesign() {
             <div>
               <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_botao' ? null : 'cor_botao')}>
                 <div className="cd-color-info">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div className="cd-color-label-row">
                     <span className="cd-color-label">Botão "Adicionar ao carrinho"</span>
                     <span className="cd-pro-badge">✦ PRO</span>
                   </div>
@@ -340,7 +340,7 @@ export default function CardapioDesign() {
             <div>
               <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_navbar' ? null : 'cor_navbar')}>
                 <div className="cd-color-info">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div className="cd-color-label-row">
                     <span className="cd-color-label">Fundo da barra de navegação</span>
                     <span className="cd-pro-badge">✦ PRO</span>
                   </div>
@@ -377,7 +377,7 @@ export default function CardapioDesign() {
             <div>
               <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_rodape' ? null : 'cor_rodape')}>
                 <div className="cd-color-info">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div className="cd-color-label-row">
                     <span className="cd-color-label">Rodapé do cardápio</span>
                     <span className="cd-pro-badge">✦ PRO</span>
                   </div>
@@ -443,12 +443,14 @@ export default function CardapioDesign() {
         .cd-change-btn:hover { border-color:#F583BF; color:#F583BF; }
         .cd-change-btn-sm { font-size:0.7rem; font-weight:700; color:#F583BF; background:none; border:none; cursor:pointer; padding:0; text-align:center; }
         .cd-change-btn-sm:hover { text-decoration:underline; }
-        .cd-pro-badge { background:linear-gradient(135deg,#f59e0b,#d97706); color:white; font-size:0.68rem; font-weight:800; padding:2px 10px; border-radius:50px; letter-spacing:0.1em; box-shadow: 0 1px 4px rgba(217,119,6,0.4); }
+        @keyframes proShine { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+        .cd-pro-badge { background:linear-gradient(90deg,#f59e0b,#d97706,#fbbf24,#d97706,#f59e0b); background-size:300% 300%; animation:proShine 2.5s ease infinite; color:white; font-size:0.68rem; font-weight:800; padding:3px 10px; border-radius:6px; letter-spacing:0.08em; white-space:nowrap; flex-shrink:0; }
         .cd-pro-ribbon { position:absolute; top:12px; right:-16px; background:linear-gradient(135deg,#ec4899,#f472b6); color:white; font-size:0.58rem; font-weight:900; letter-spacing:0.1em; padding:3px 24px; transform:rotate(45deg); z-index:10; box-shadow:0 2px 6px rgba(236,72,153,0.4); width:80px; text-align:center; }
         .cd-colors-list { display:flex; flex-direction:column; gap:0.5rem; }
         .cd-color-row { display:flex; align-items:center; justify-content:space-between; padding:0.65rem 0.75rem; background:#fafafa; border-radius:12px; border:1px solid #f3f4f6; cursor:pointer; transition:border-color 0.2s; }
         .cd-color-row:hover { border-color:#F583BF; }
-        .cd-color-info { display:flex; flex-direction:column; gap:2px; }
+        .cd-color-info { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
+        .cd-color-label-row { display:flex; align-items:center; gap:6px; }
         .cd-color-label { font-size:0.82rem; font-weight:600; color:#374151; }
         .cd-color-value { font-size:0.7rem; color:#9ca3af; font-family:monospace; }
         .cd-color-swatch { width:38px; height:38px; border-radius:10px; border:2px solid rgba(0,0,0,0.08); flex-shrink:0; box-shadow:0 2px 6px rgba(0,0,0,0.12); }
