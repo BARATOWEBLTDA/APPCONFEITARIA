@@ -21,11 +21,12 @@ export default {
         },
       },
       fontFamily: {
-        display: ["'Playfair Display'", "serif"],
-        body: ["'DM Sans'", "sans-serif"],
+        geist:   ["'Geist'", "sans-serif"],
+        display: ["'Geist'", "sans-serif"],
+        body:    ["'Geist'", "sans-serif"],
       },
       borderRadius: {
-        xl: "1rem",
+        xl:   "1rem",
         "2xl": "1.5rem",
         "3xl": "2rem",
       },
