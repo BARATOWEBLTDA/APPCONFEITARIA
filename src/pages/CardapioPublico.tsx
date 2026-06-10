@@ -45,12 +45,11 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
             ? <img src={design.logo_url} alt="" style={{ width:'48px', height:'48px', borderRadius:'50%', objectFit:'cover', border:`2px solid ${cor}` }}/>
             : <div style={{ width:'48px', height:'48px', borderRadius:'50%', background:cor, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'20px', fontWeight:800, flexShrink:0 }}>{design.nome_loja?.charAt(0)}</div>
           }
-          <div>
-            <span style={{ fontWeight:800, fontSize:'18px', color:'#1f2937', display:'block', lineHeight:1.2, fontFamily:'inherit' }}>{design.nome_loja}</span>
-            {design.cidade_estado
-              ? <span style={{ fontSize:'11px', color:'#9ca3af', fontWeight:500 }}>{design.cidade_estado}</span>
-              : <span style={{ fontSize:'11px', color:'#9ca3af', fontWeight:500 }}>Doces que encantam</span>
-            }
+          <div style={{ display:'flex', flexDirection:'column', justifyContent:'center', gap:'1px' }}>
+            <span style={{ fontWeight:800, fontSize:'16px', color:'#1f2937', lineHeight:1, fontFamily:'inherit' }}>{design.nome_loja}</span>
+            <span style={{ fontSize:'11px', color:'#9ca3af', fontWeight:500, lineHeight:1 }}>
+              {design.cidade_estado || 'Doces que encantam'}
+            </span>
           </div>
         </div>
 
