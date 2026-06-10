@@ -152,48 +152,33 @@ function DeskInfoRow({ design, config }: any) {
 
   return (
     <div style={{ width:'100%', padding:'0 24px', boxSizing:'border-box' }}>
-      <div style={{ display:'grid', gridTemplateColumns:'1.5fr 1fr 1fr 1fr', gap:'16px', width:'100%' }}>
-        {/* Loja */}
-        <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'24px', display:'flex', alignItems:'center', gap:'16px' }}>
-          <div style={{ width:'72px', height:'72px', borderRadius:'14px', overflow:'hidden', flexShrink:0, border:`2px solid ${design.cor_borda||'#ec4899'}` }}>
-            {design.logo_url
-              ? <img src={design.logo_url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
-              : <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', background:design.cor_borda||'#ec4899', color:'#fff', fontSize:'24px', fontWeight:800 }}>{design.nome_loja?.charAt(0)}</div>
-            }
-          </div>
-          <div>
-            <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'#1f2937' }}>{design.nome_loja}</h2>
-            <div style={{ display:'flex', alignItems:'center', gap:'8px', marginTop:'4px', flexWrap:'wrap' }}>
-              {locationText && <span style={{ fontSize:'12px', color:'#6b7280', display:'flex', alignItems:'center', gap:'3px' }}><MapPin size={11}/> {locationText}</span>}
-              {statusText && <span style={{ fontSize:'12px', fontWeight:600, color:isOpen?'#16a34a':'#ef4444' }}>● {statusText}</span>}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 280px', gap:'16px', width:'100%', alignItems:'start' }}>
+
+        {/* Coluna esquerda: Fidelidade + Entrega lado a lado */}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
+
+          {/* Fidelidade */}
+          <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'18px 20px' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
+              <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#fef3c7', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px' }}>🏆</div>
+              <span style={{ fontWeight:700, fontSize:'14px', color:'#1f2937' }}>Programa de fidelidade</span>
             </div>
-            <div style={{ display:'flex', alignItems:'center', gap:'4px', marginTop:'4px' }}>
-              {renderStars(config?.avaliacao_media||5)}
-              <span style={{ fontSize:'12px', fontWeight:600, color:'#6b7280', marginLeft:'2px' }}>{config?.avaliacao_media||5}/5</span>
+            <p style={{ margin:0, fontSize:'12px', color:'#6b7280', lineHeight:1.5 }}>A cada <strong>R$ 100,00</strong> em compras você ganha <strong>1 ponto</strong> que pode ser trocado por prêmios.</p>
+            <p style={{ margin:'4px 0 0', fontSize:'11px', color:'#9ca3af' }}>Novos clientes ganham automaticamente 50 pontos.</p>
+          </div>
+
+          {/* Entrega */}
+          <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'18px 20px' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
+              <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#dbeafe', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px' }}>🚚</div>
+              <span style={{ fontWeight:700, fontSize:'14px', color:'#1f2937' }}>Entrega e retirada</span>
             </div>
+            <p style={{ margin:0, fontSize:'12px', color:'#6b7280', lineHeight:1.5 }}>Finalize pelo WhatsApp. Escolha entrega ou retirada no checkout.</p>
           </div>
+
         </div>
 
-        {/* Fidelidade */}
-        <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'18px 20px' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
-            <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#fef3c7', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px' }}>🏆</div>
-            <span style={{ fontWeight:700, fontSize:'14px', color:'#1f2937' }}>Programa de fidelidade</span>
-          </div>
-          <p style={{ margin:0, fontSize:'12px', color:'#6b7280', lineHeight:1.5 }}>A cada <strong>R$ 100,00</strong> em compras você ganha <strong>1 ponto</strong> que pode ser trocado por prêmios.</p>
-          <p style={{ margin:'4px 0 0', fontSize:'11px', color:'#9ca3af' }}>Novos clientes ganham automaticamente 50 pontos.</p>
-        </div>
-
-        {/* Entrega */}
-        <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'18px 20px' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
-            <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#dbeafe', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px' }}>🚚</div>
-            <span style={{ fontWeight:700, fontSize:'14px', color:'#1f2937' }}>Entrega e retirada</span>
-          </div>
-          <p style={{ margin:0, fontSize:'12px', color:'#6b7280', lineHeight:1.5 }}>Finalize pelo WhatsApp. Escolha entrega ou retirada no checkout.</p>
-        </div>
-
-        {/* Sacola */}
+        {/* Coluna direita: Sacola */}
         <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'24px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
           {count === 0 ? (
             <>
@@ -213,6 +198,7 @@ function DeskInfoRow({ design, config }: any) {
             </>
           )}
         </div>
+
       </div>
     </div>
   )
