@@ -309,7 +309,7 @@ function DeskProducts({ produtos, favorites, onToggleFavorite, design, searchTer
       </div>
 
       {/* Header */}
-      <div style={{ display:'flex', alignItems:'center', marginBottom:'16px' }}>
+      <div style={{ display:'flex', alignItems:'center', marginBottom:'16px', marginTop:'12px' }}>
         <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'#1f2937' }}>Nosso Cardápio</h2>
       </div>
 
