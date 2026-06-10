@@ -662,8 +662,6 @@ export default function Configuracoes() {
         .cfg-hero-avatar--desk { width: 72px; height: 72px; background: rgba(255,255,255,0.2); border: 2.5px solid rgba(255,255,255,0.5); }
 
         .cfg-desk-grid2 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1.25rem; align-items: start; }
-        .cfg-desk-grid2 > :first-child { grid-column: 1; }
-        .cfg-desk-grid2 > :nth-child(2) { grid-column: 2; }
 
         .cfg-plan-info { border-radius: 12px; padding: 0.85rem 1rem; }
         .cfg-plan-info--pro   { background: #f0fdf4; border: 1px solid #bbf7d0; }
