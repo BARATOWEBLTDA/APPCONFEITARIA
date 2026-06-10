@@ -330,16 +330,24 @@ export default function Configuracoes() {
               </div>
             </div>
 
-            {/* Divisor */}
-            <div className="cfg-desk-divider" />
+            {/* Alterar Senha + Excluir Conta — mesma linha */}
+            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+              {!showAlterarSenha && !showExcluir && (
+                <>
+                  <button onClick={() => setShowAlterarSenha(true)} className="cfg-desk-inline-btn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Alterar senha
+                  </button>
+                  <button onClick={() => setShowExcluir(true)} className="cfg-desk-inline-btn cfg-desk-inline-btn--danger">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                    Excluir conta
+                  </button>
+                </>
+              )}
+            </div>
 
-            {/* Alterar Senha inline */}
-            {!showAlterarSenha ? (
-              <button onClick={() => setShowAlterarSenha(true)} className="cfg-desk-inline-btn">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                Alterar senha
-              </button>
-            ) : (
+            {/* Painel Alterar Senha expandido */}
+            {showAlterarSenha && (
               <div className="cfg-desk-inline-section">
                 <p className="cfg-desk-inline-label">🔒 Alterar Senha</p>
                 <div className="cfg-desk-fields">
@@ -362,16 +370,8 @@ export default function Configuracoes() {
               </div>
             )}
 
-            {/* Divisor */}
-            <div className="cfg-desk-divider" />
-
-            {/* Excluir Conta inline */}
-            {!showExcluir ? (
-              <button onClick={() => setShowExcluir(true)} className="cfg-desk-inline-btn cfg-desk-inline-btn--danger">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                Excluir conta
-              </button>
-            ) : (
+            {/* Painel Excluir Conta expandido */}
+            {showExcluir && (
               <div className="cfg-desk-inline-section cfg-desk-inline-section--danger">
                 <p className="cfg-desk-inline-label" style={{color:"#ef4444"}}>🗑️ Excluir conta</p>
                 <p style={{ fontSize: "0.82rem", color: "#6b7280", margin: 0 }}>Esta ação é <strong>irreversível</strong>. Todos os seus dados serão removidos permanentemente.</p>
@@ -388,18 +388,10 @@ export default function Configuracoes() {
               </div>
             )}
 
-            {/* Divisor */}
-            <div className="cfg-desk-divider" />
-
-            {/* Salvar + Sair */}
-            <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-              <button className="cfg-btn-save cfg-btn-save--sm" onClick={handleSave} disabled={saving || uploading} style={{flex:1}}>
-                {saving ? <span className="cfg-spinner" /> : "Salvar alterações"}
-              </button>
-              <button className="cfg-btn-logout" onClick={handleLogout} style={{width:"auto", padding:"0.6rem 1.5rem", flexShrink:0}}>
-                Sair da conta
-              </button>
-            </div>
+            {/* Salvar */}
+            <button className="cfg-btn-save cfg-btn-save--sm" onClick={handleSave} disabled={saving || uploading} style={{alignSelf:"flex-start"}}>
+              {saving ? <span className="cfg-spinner" /> : "Salvar alterações"}
+            </button>
 
           </div>
         </div>
