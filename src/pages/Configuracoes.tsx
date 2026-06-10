@@ -30,6 +30,7 @@ export default function Configuracoes() {
   const [userEmail, setUserEmail] = useState("");
   const [nomeSalvo, setNomeSalvo] = useState("");
   const [plano, setPlano] = useState<"pro" | "trial" | "expirado">("trial");
+  const [diasRestantes, setDiasRestantes] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const getSaudacao = () => {
@@ -73,6 +74,7 @@ export default function Configuracoes() {
       const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       const proExpira = data?.pro_expira_em ? new Date(data.pro_expira_em) : null;
       const isPROAtivo = data?.plano === "pro" && (!proExpira || proExpira > hoje);
+      setDiasRestantes(restantes);
       if (isPROAtivo) { setPlano("pro"); } else { setPlano(restantes > 0 ? "trial" : "expirado"); }
       if (data) {
         let addr: any = {};
@@ -285,32 +287,39 @@ export default function Configuracoes() {
 
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
 
-        {/* Faixa de perfil */}
+        {/* Faixa de perfil — gradiente rosa */}
         <div className="cfg-desk-profile-banner">
           <div className="cfg-desk-profile-left">
-            <div className="cfg-hero-avatar cfg-hero-avatar--md" onClick={() => !uploading && fileRef.current?.click()}>
-              {preview ? <img src={preview} alt="foto" className="cfg-hero-img" /> : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
-              <div className="cfg-hero-cam">{uploading ? <span className="cfg-spinner-sm" /> : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>}</div>
+            <div className="cfg-hero-avatar cfg-hero-avatar--desk" onClick={() => !uploading && fileRef.current?.click()}>
+              {preview
+                ? <img src={preview} alt="foto" className="cfg-hero-img" />
+                : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
+              <div className="cfg-hero-cam">
+                {uploading
+                  ? <span className="cfg-spinner-sm" />
+                  : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>}
+              </div>
             </div>
             <div>
               <p className="cfg-desk-profile-name">{form.nome || "Seu nome"}</p>
+              {form.nome_loja && <p className="cfg-desk-profile-loja">{form.nome_loja}</p>}
               <p className="cfg-desk-profile-email">{userEmail}</p>
-              {plano === "pro" && <span className="cfg-badge" style={{background:"#fce7f3",color:"#ec4899"}}>✨ PRO ativo</span>}
-              {plano === "trial" && <span className="cfg-badge" style={{background:"#f3f4f6",color:"#6b7280"}}>Plano Grátis</span>}
-              {plano === "expirado" && <span className="cfg-badge" style={{background:"#fff1f2",color:"#ef4444"}}>⚠️ Expirado</span>}
+              {plano === "pro"      && <span className="cfg-badge cfg-badge--pro-desk">✨ PRO ativo</span>}
+              {plano === "trial"    && <span className="cfg-badge cfg-badge--trial-desk">Plano Grátis</span>}
+              {plano === "expirado" && <span className="cfg-badge cfg-badge--exp-desk">⚠️ Expirado</span>}
             </div>
           </div>
-          <p className="cfg-desk-profile-hint">Clique na foto para alterar</p>
         </div>
 
-        {/* Card único à esquerda */}
-        <div className="cfg-desk-single-col">
+        {/* Grid 2 cards + espaço vazio */}
+        <div className="cfg-desk-grid2">
+
+          {/* ── Card 1 — Dados da loja ── */}
           <div className="cfg-desk-card">
             <div className="cfg-card-header">
               <span className="cfg-card-icon">🏪</span>
               <span>Dados da loja</span>
             </div>
-
             <div className="cfg-desk-fields">
               <div className="cfg-desk-field">
                 <label>Seu nome</label>
@@ -326,12 +335,12 @@ export default function Configuracoes() {
               </div>
               <div className="cfg-desk-field">
                 <label>E-mail</label>
-                <input type="email" value={userEmail} disabled style={{opacity:0.5, cursor:"not-allowed"}} />
+                <input type="email" value={userEmail} disabled style={{opacity:0.5,cursor:"not-allowed"}} />
               </div>
             </div>
 
             {/* Alterar Senha + Excluir Conta — mesma linha */}
-            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <div style={{ display:"flex", gap:"0.75rem", flexWrap:"wrap" }}>
               {!showAlterarSenha && !showExcluir && (
                 <>
                   <button onClick={() => setShowAlterarSenha(true)} className="cfg-desk-inline-btn">
@@ -346,7 +355,7 @@ export default function Configuracoes() {
               )}
             </div>
 
-            {/* Painel Alterar Senha expandido */}
+            {/* Painel Alterar Senha */}
             {showAlterarSenha && (
               <div className="cfg-desk-inline-section">
                 <p className="cfg-desk-inline-label">🔒 Alterar Senha</p>
@@ -360,41 +369,101 @@ export default function Configuracoes() {
                     <input type="password" placeholder="Repita a senha" value={confirmSenha} onChange={e => setConfirmSenha(e.target.value)} />
                   </div>
                 </div>
-                {senhaMsg && <p style={{ fontSize: "0.82rem", color: senhaMsg.startsWith("✓") ? "#22c55e" : "#ef4444", margin: 0 }}>{senhaMsg}</p>}
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button onClick={() => { setShowAlterarSenha(false); setNovaSenha(""); setConfirmSenha(""); setSenhaMsg(""); }} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
-                  <button onClick={handleAlterarSenha} disabled={savingSenha} className="cfg-btn-save" style={{flex:2, minHeight:"38px", fontSize:"0.85rem", borderRadius:"10px"}}>
+                {senhaMsg && <p style={{fontSize:"0.82rem",color:senhaMsg.startsWith("✓")?"#22c55e":"#ef4444",margin:0}}>{senhaMsg}</p>}
+                <div style={{display:"flex",gap:"8px"}}>
+                  <button onClick={() => {setShowAlterarSenha(false);setNovaSenha("");setConfirmSenha("");setSenhaMsg("");}} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
+                  <button onClick={handleAlterarSenha} disabled={savingSenha} className="cfg-btn-save" style={{flex:2,minHeight:"38px",fontSize:"0.85rem",borderRadius:"10px"}}>
                     {savingSenha ? <span className="cfg-spinner" /> : "Confirmar alteração"}
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Painel Excluir Conta expandido */}
+            {/* Painel Excluir Conta */}
             {showExcluir && (
               <div className="cfg-desk-inline-section cfg-desk-inline-section--danger">
                 <p className="cfg-desk-inline-label" style={{color:"#ef4444"}}>🗑️ Excluir conta</p>
-                <p style={{ fontSize: "0.82rem", color: "#6b7280", margin: 0 }}>Esta ação é <strong>irreversível</strong>. Todos os seus dados serão removidos permanentemente.</p>
+                <p style={{fontSize:"0.82rem",color:"#6b7280",margin:0}}>Esta ação é <strong>irreversível</strong>. Todos os seus dados serão removidos permanentemente.</p>
                 <div className="cfg-desk-field">
                   <label>Digite <strong>EXCLUIR</strong> para confirmar</label>
-                  <input type="text" placeholder="EXCLUIR" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} style={{borderColor: excluirConfirm === "EXCLUIR" ? "#ef4444" : undefined}} />
+                  <input type="text" placeholder="EXCLUIR" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} style={{borderColor:excluirConfirm==="EXCLUIR"?"#ef4444":undefined}} />
                 </div>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <button onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
-                  <button onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"} style={{ flex: 2, padding: "0.6rem", background: excluirConfirm === "EXCLUIR" ? "#ef4444" : "#f3f4f6", color: excluirConfirm === "EXCLUIR" ? "white" : "#9ca3af", border: "none", borderRadius: "10px", fontFamily: "Geist, sans-serif", fontSize: "0.85rem", fontWeight: 600, cursor: excluirConfirm === "EXCLUIR" ? "pointer" : "not-allowed" }}>
+                <div style={{display:"flex",gap:"8px"}}>
+                  <button onClick={() => {setShowExcluir(false);setExcluirConfirm("");}} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
+                  <button onClick={handleExcluirConta} disabled={excluirConfirm!=="EXCLUIR"} style={{flex:2,padding:"0.6rem",background:excluirConfirm==="EXCLUIR"?"#ef4444":"#f3f4f6",color:excluirConfirm==="EXCLUIR"?"white":"#9ca3af",border:"none",borderRadius:"10px",fontFamily:"Geist,sans-serif",fontSize:"0.85rem",fontWeight:600,cursor:excluirConfirm==="EXCLUIR"?"pointer":"not-allowed"}}>
                     Confirmar exclusão
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Salvar */}
-            <button className="cfg-btn-save cfg-btn-save--sm" onClick={handleSave} disabled={saving || uploading} style={{alignSelf:"flex-start"}}>
+            <button className="cfg-btn-save cfg-btn-save--sm" onClick={handleSave} disabled={saving||uploading} style={{alignSelf:"flex-start"}}>
               {saving ? <span className="cfg-spinner" /> : "Salvar alterações"}
             </button>
+          </div>
+
+          {/* ── Card 2 — Assinatura + Notificações ── */}
+          <div style={{display:"flex",flexDirection:"column",gap:"1.25rem"}}>
+
+            {/* Assinatura */}
+            <div className="cfg-desk-card">
+              <div className="cfg-card-header">
+                <span className="cfg-card-icon">💎</span>
+                <span>Sua assinatura</span>
+              </div>
+              {plano === "pro" && (
+                <div className="cfg-plan-info cfg-plan-info--pro">
+                  <p className="cfg-plan-title">Plano PRO ativo</p>
+                  <p className="cfg-plan-sub">Você tem acesso completo a todos os recursos do Doonly.</p>
+                </div>
+              )}
+              {plano === "trial" && (
+                <div className="cfg-plan-info cfg-plan-info--trial">
+                  <p className="cfg-plan-title">Período gratuito</p>
+                  <p className="cfg-plan-sub">Você tem <strong>{diasRestantes} dias restantes</strong> no seu período de teste.</p>
+                </div>
+              )}
+              {plano === "expirado" && (
+                <div className="cfg-plan-info cfg-plan-info--exp">
+                  <p className="cfg-plan-title">Período expirado</p>
+                  <p className="cfg-plan-sub">Seu período gratuito encerrou. Assine para continuar usando o Doonly.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Notificações */}
+            <div className="cfg-desk-card">
+              <div className="cfg-card-header">
+                <span className="cfg-card-icon">🔔</span>
+                <span>Notificações</span>
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
+                {[
+                  { key:"receitas",    label:"Novas receitas" },
+                  { key:"comunidade",  label:"Comunidade" },
+                  { key:"atualizacoes",label:"Atualizações do app" },
+                ].map(item => (
+                  <div key={item.key} className="cfg-notif-row">
+                    <p className="cfg-notif-label">{item.label}</p>
+                    <label className="toggle">
+                      <input type="checkbox" defaultChecked={item.key !== "comunidade"} />
+                      <span className="toggle-slider" />
+                    </label>
+                  </div>
+                ))}
+                <div className="cfg-notif-row" style={{paddingTop:"0.25rem",borderTop:"1px solid var(--border,#f3f4f6)"}}>
+                  <p className="cfg-notif-label" style={{color:"#9ca3af"}}>Não quero receber notificações</p>
+                  <label className="toggle">
+                    <input type="checkbox" />
+                    <span className="toggle-slider" />
+                  </label>
+                </div>
+              </div>
+            </div>
 
           </div>
-        </div>
+
+        </div>{/* fim cfg-desk-grid2 */}
       </div>
 
       <style>{`
@@ -477,13 +546,29 @@ export default function Configuracoes() {
         .cfg-desk-sub { font-size: 0.88rem; color: var(--text-muted,#9ca3af); margin: 0; }
         .cfg-desk-header-actions { display: flex; align-items: center; gap: 0.75rem; }
 
-        .cfg-desk-profile-banner { background: var(--bg-card,white); border-radius: 16px; padding: 1.25rem 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; gap: 1rem; border: 1px solid var(--border,#f3f4f6); }
-        .cfg-desk-profile-left { display: flex; align-items: center; gap: 1rem; }
-        .cfg-desk-profile-name { font-size: 1.05rem; font-weight: 700; color: var(--text-primary,#1f2937); margin: 0; }
-        .cfg-desk-profile-email { font-size: 0.82rem; color: var(--text-muted,#9ca3af); margin: 0.1rem 0 0.25rem; }
-        .cfg-desk-profile-hint { font-size: 0.78rem; color: var(--text-muted,#9ca3af); }
+        .cfg-desk-profile-banner { background: linear-gradient(135deg, #F583BF 0%, #e060a8 100%); border-radius: 20px; padding: 1.5rem 1.75rem; box-shadow: 0 4px 20px rgba(245,131,191,0.35); display: flex; align-items: center; margin-bottom: 1.5rem; gap: 1.25rem; }
+        .cfg-desk-profile-left { display: flex; align-items: center; gap: 1.25rem; }
+        .cfg-desk-profile-name { font-size: 1.15rem; font-weight: 700; color: white; margin: 0; }
+        .cfg-desk-profile-loja { font-size: 0.88rem; color: rgba(255,255,255,0.8); margin: 0.1rem 0 0; font-weight: 500; }
+        .cfg-desk-profile-email { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin: 0.2rem 0 0.35rem; }
+        .cfg-badge--pro-desk   { background: rgba(255,255,255,0.25); color: white; border: 1px solid rgba(255,255,255,0.3); }
+        .cfg-badge--trial-desk { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
+        .cfg-badge--exp-desk   { background: rgba(239,68,68,0.35); color: white; }
+        .cfg-hero-avatar--desk { width: 72px; height: 72px; background: rgba(255,255,255,0.2); border: 2.5px solid rgba(255,255,255,0.5); }
 
-        .cfg-desk-single-col { max-width: 520px; }
+        .cfg-desk-grid2 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1.25rem; align-items: start; }
+        .cfg-desk-grid2 > :first-child { grid-column: 1; }
+        .cfg-desk-grid2 > :nth-child(2) { grid-column: 2; }
+
+        .cfg-plan-info { border-radius: 12px; padding: 0.85rem 1rem; }
+        .cfg-plan-info--pro   { background: #f0fdf4; border: 1px solid #bbf7d0; }
+        .cfg-plan-info--trial { background: #fdf2f8; border: 1px solid #fce7f3; }
+        .cfg-plan-info--exp   { background: #fff1f2; border: 1px solid #fecdd3; }
+        .cfg-plan-title { font-size: 0.9rem; font-weight: 700; color: var(--text-primary,#1f2937); margin: 0 0 0.25rem; }
+        .cfg-plan-sub   { font-size: 0.82rem; color: var(--text-secondary,#6b7280); margin: 0; line-height: 1.5; }
+
+        .cfg-notif-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        .cfg-notif-label { font-size: 0.88rem; font-weight: 500; color: var(--text-primary,#374151); margin: 0; }
 
         .cfg-desk-card { background: var(--bg-card,white); border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 1rem; border: 1px solid var(--border,#f3f4f6); }
 
