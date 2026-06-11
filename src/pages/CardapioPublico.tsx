@@ -286,7 +286,7 @@ function DeskProducts({ produtos, favorites, onToggleFavorite, design, searchTer
   return (
     <div style={{ width:'100%', boxSizing:'border-box' }}>
       {/* Busca */}
-      <div style={{ position:'relative', marginBottom:'12px' }}>
+      <div style={{ position:'relative', marginBottom:'12px', maxWidth:'50%' }}>
         <MagnifyingGlass size={16} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'#9ca3af' }}/>
         <input
           value={searchTerm}
