@@ -1,6 +1,11 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef, type ReactNode } from "react";
-import { House, CalendarDots, ShoppingBag, ClipboardText, Users, BookOpen, Package, CurrencyDollar, Gear, SignOut, CaretDown, ForkKnife, List } from "@phosphor-icons/react";
+import {
+  House, CalendarDots, ShoppingBag, ClipboardText, Users, BookOpen,
+  Package, CurrencyDollar, Gear, SignOut, CaretDown, ForkKnife, List,
+  Eye, Storefront, Rows, PaintBrush, Sliders, Tag, QrCode,
+  ChartBar, Files, Percent, User, ArrowLeft, Bell
+} from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
 import { supabase } from "@/lib/supabase";
@@ -76,9 +81,21 @@ export default function Layout() {
     navigate("/login");
   };
 
+  // ── Itens do drawer Gestão ──
+  const gestaoItems = [
+    { label: "Dashboard", path: "/dashboard",     icon: <ChartBar    size={22} weight="duotone" /> },
+    { label: "Pedidos",   path: "/pedidos",        icon: <ClipboardText size={22} weight="duotone" /> },
+    { label: "Produtos",  path: "/produtos",       icon: <Storefront  size={22} weight="duotone" /> },
+    { label: "Estoque",   path: "/estoque",        icon: <Package     size={22} weight="duotone" /> },
+    { label: "Financeiro",path: "/financeiro",     icon: <CurrencyDollar size={22} weight="duotone" /> },
+    { label: "Promoções", path: "/promocoes",      icon: <Percent     size={22} weight="duotone" /> },
+    { label: "Arquivos",  path: "/arquivos",       icon: <Files       size={22} weight="duotone" /> },
+    { label: "Config.",   path: "/configuracoes",  icon: <Gear        size={22} weight="duotone" /> },
+  ];
+
   return (
     <div className="layout-root">
-      {/* Sidebar Desktop */}
+      {/* ── Sidebar Desktop ── */}
       <aside className="sidebar">
         <div className="sidebar-profile">
           <div style={{ position: "relative", display: "inline-block" }}>
@@ -86,7 +103,7 @@ export default function Layout() {
               <div className="sidebar-avatar">
                 {profile?.foto_url
                   ? <img src={profile.foto_url} alt="Foto de perfil" />
-                  : <div className="sidebar-avatar-placeholder"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+                  : <div className="sidebar-avatar-placeholder"><User size={36} weight="duotone" color="#FF4FA3" /></div>
                 }
               </div>
             </div>
@@ -145,7 +162,7 @@ export default function Layout() {
         )}
 
         <button onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}
-          style={{display:"flex",alignItems:"center",gap:"0.6rem",width:"calc(100% - 0.5rem)",margin:"0 0.25rem 1rem",background:"none",border:"none",cursor:"pointer",padding:"0.6rem 1rem",borderRadius:"10px",color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",fontWeight:500,fontFamily:"Inter,sans-serif",transition:"all 0.15s"}}
+          style={{display:"flex",alignItems:"center",gap:"0.6rem",width:"calc(100% - 0.5rem)",margin:"0 0.25rem 1rem",background:"none",border:"none",cursor:"pointer",padding:"0.6rem 1rem",borderRadius:"10px",color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",fontWeight:500,fontFamily:"Geist,sans-serif",transition:"all 0.15s"}}
           onMouseEnter={e => (e.currentTarget.style.color="rgba(255,255,255,0.7)")}
           onMouseLeave={e => (e.currentTarget.style.color="rgba(255,255,255,0.4)")}>
           <SignOut size={16} weight="duotone" />
@@ -157,20 +174,15 @@ export default function Layout() {
         {/* Topbar desktop */}
         <div className="desk-topbar">
           <div style={{flex:1, display:"flex", flexDirection:"column", justifyContent:"center"}}>
-            <span style={{fontSize:"1rem", fontWeight:800, color:"#ffffff", lineHeight:1.2}}>
+            <span style={{fontSize:"1rem", fontWeight:800, color:"#1f2937", lineHeight:1.2}}>
               {(() => { const h = now.getHours(); return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"; })()}, <span style={{color:"#FF4FA3"}}>{profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"}</span>!
             </span>
-            <span style={{fontSize:"0.78rem", color:"#8E99C2", marginTop:"2px"}}>
+            <span style={{fontSize:"0.78rem", color:"#6b7280", marginTop:"2px"}}>
               {(() => {
                 const feriados: Record<string, string> = {
-                  "01-01": "Ano Novo 🎆",
-                  "21-04": "Tiradentes ⚖️",
-                  "01-05": "Dia do Trabalho 👷",
-                  "07-09": "Independência do Brasil 🇧🇷",
-                  "12-10": "Nossa Senhora Aparecida 🙏",
-                  "02-11": "Finados 🕯️",
-                  "15-11": "Proclamação da República 🏛️",
-                  "25-12": "Natal 🎄",
+                  "01-01": "Ano Novo 🎆", "21-04": "Tiradentes ⚖️", "01-05": "Dia do Trabalho 👷",
+                  "07-09": "Independência do Brasil 🇧🇷", "12-10": "Nossa Senhora Aparecida 🙏",
+                  "02-11": "Finados 🕯️", "15-11": "Proclamação da República 🏛️", "25-12": "Natal 🎄",
                 };
                 const dias = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
                 const d = now;
@@ -219,7 +231,7 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      {/* Gestão Drawer */}
+      {/* ── Gestão Drawer ── */}
       {gestaoOpen && (
         <div className="gestao-overlay" onClick={() => setGestaoOpen(false)}>
           <div className="gestao-drawer" onClick={e => e.stopPropagation()}>
@@ -229,17 +241,7 @@ export default function Layout() {
               <button className="gestao-close" onClick={() => setGestaoOpen(false)}>✕</button>
             </div>
             <div className="gestao-grid">
-              {[
-                { label: "Dashboard", path: "/dashboard", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> },
-                { label: "Pedidos", path: "/pedidos", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> },
-                { label: "Produtos", path: "/produtos", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> },
-                { label: "Estoque", path: "/estoque", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> },
-                { label: "Financeiro", path: "/financeiro", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> },
-                { label: "Promoções", path: "/promocoes", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg> },
-                { label: "Arquivos", path: "/arquivos", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> },
-                { label: "Configurações", path: "/configuracoes", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> },
-                { label: "Personalização", path: "/personalizacao", icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M2 12h20"/></svg> },
-              ].map((item) => (
+              {gestaoItems.map((item) => (
                 <NavLink key={item.path} to={item.path} className="gestao-item" onClick={() => setGestaoOpen(false)}>
                   <span className="gestao-icon">{item.icon}</span>
                   <span className="gestao-label">{item.label}</span>
@@ -250,70 +252,70 @@ export default function Layout() {
         </div>
       )}
 
-      {/* Mobile top header */}
+      {/* ── Mobile top header ── */}
       {!isAssinar && !isPrevia && (
-      <div className="mob-top-header">
-        <img src="/logoheader.png" alt="Doonly" className="mob-top-logo" />
-        <div className="mob-top-icons">
-          {!isPro && (
-          <button className="mob-top-icon" onClick={() => navigate("/assinar")}>
-            <img src="/diamante.png" alt="Assinar" style={{width:"24px",height:"24px",objectFit:"contain"}} />
-          </button>
-          )}
-          <button className="mob-top-icon" onClick={() => {
-              localStorage.setItem("notif_last_seen", new Date().toISOString());
-              setNotifCount(0);
-              navigate("/notificacoes");
-            }} style={{position:"relative"}}>
-            <img src="/notifica.png" alt="Notificações" style={{width:"24px",height:"24px",objectFit:"contain"}} />
-            {notifCount > 0 && (
-              <span style={{
-                position:"absolute", top:"-4px", right:"-4px",
-                background:"#ef4444", color:"white",
-                fontSize:"0.6rem", fontWeight:700,
-                width:"16px", height:"16px", borderRadius:"50%",
-                display:"flex", alignItems:"center", justifyContent:"center",
-                border:"2px solid #f9007a", lineHeight:1
-              }}>{notifCount > 9 ? "9+" : notifCount}</span>
+        <div className="mob-top-header">
+          <img src="/logoheader.png" alt="Doonly" className="mob-top-logo" />
+          <div className="mob-top-icons">
+            {!isPro && (
+              <button className="mob-top-icon" onClick={() => navigate("/assinar")}>
+                <img src="/diamante.png" alt="Assinar" style={{width:"24px",height:"24px",objectFit:"contain"}} />
+              </button>
             )}
-          </button>
-          <button className="mob-top-icon" onClick={() => navigate("/configuracoes")}>
-            {profile?.foto_url
-              ? <img src={profile.foto_url} alt="perfil" style={{width:"24px",height:"24px",borderRadius:"50%",objectFit:"cover",border:"2px solid white"}} />
-              : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            }
-          </button>
+            <button className="mob-top-icon" onClick={() => {
+                localStorage.setItem("notif_last_seen", new Date().toISOString());
+                setNotifCount(0);
+                navigate("/notificacoes");
+              }} style={{position:"relative"}}>
+              <Bell size={24} weight="duotone" color="white" />
+              {notifCount > 0 && (
+                <span style={{
+                  position:"absolute", top:"-4px", right:"-4px",
+                  background:"#ef4444", color:"white",
+                  fontSize:"0.6rem", fontWeight:700,
+                  width:"16px", height:"16px", borderRadius:"50%",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  border:"2px solid #f9007a", lineHeight:1
+                }}>{notifCount > 9 ? "9+" : notifCount}</span>
+              )}
+            </button>
+            <button className="mob-top-icon" onClick={() => navigate("/configuracoes")}>
+              {profile?.foto_url
+                ? <img src={profile.foto_url} alt="perfil" style={{width:"28px",height:"28px",borderRadius:"50%",objectFit:"cover",border:"2px solid white"}} />
+                : <User size={24} weight="duotone" color="white" />
+              }
+            </button>
+          </div>
         </div>
-      </div>
       )}
 
-      {/* Bottom nav Mobile */}
+      {/* ── Bottom nav Mobile ── */}
       {!isReceitas && !isPrevia && (
         <nav className="bottom-nav">
           {(cardapioNav || isCardapioMode) ? (
             <>
               <button className={`bottom-item${location.pathname === "/cardapio-preview" ? " active" : ""}`} onClick={() => navigate("/cardapio-preview")}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                <Eye size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/cardapio-preview" ? " nav-label-active" : ""}`}>Prévia</span>
               </button>
               <button className={`bottom-item${location.pathname === "/produtos" ? " active" : ""}`} onClick={() => navigate("/produtos")}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                <Storefront size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/produtos" ? " nav-label-active" : ""}`}>Produtos</span>
               </button>
               <button className={`bottom-item${location.pathname === "/categorias" ? " active" : ""}`} onClick={() => navigate("/categorias")}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <Rows size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/categorias" ? " nav-label-active" : ""}`}>Categorias</span>
               </button>
               <button className={`bottom-item${location.pathname === "/cardapio-design" ? " active" : ""}`} onClick={() => navigate("/cardapio-design")}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M2 12h20"/></svg>
+                <PaintBrush size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/cardapio-design" ? " nav-label-active" : ""}`}>Design</span>
               </button>
               <button className={`bottom-item${location.pathname === "/cardapio-config" ? " active" : ""}`} onClick={() => navigate("/cardapio-config")}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06-.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <Sliders size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/cardapio-config" ? " nav-label-active" : ""}`}>Config</span>
               </button>
               <button className="bottom-item" onClick={() => { setCardapioNav(false); navigate("/inicio"); }}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"/></svg>
+                <ArrowLeft size={22} weight="duotone" />
                 <span className="nav-label">Voltar</span>
               </button>
             </>
@@ -328,11 +330,11 @@ export default function Layout() {
                 <span className="nav-label">Cardápio</span>
               </button>
               <NavLink to="/clientes" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-                <Users size={22} />
+                <Users size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/clientes" ? " nav-label-active" : ""}`}>Clientes</span>
               </NavLink>
               <NavLink to="/receitas" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-                <BookOpen size={22} />
+                <BookOpen size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/receitas" ? " nav-label-active" : ""}`}>Receitas</span>
               </NavLink>
               <button className={`bottom-item ${gestaoOpen ? "active" : ""}`} onClick={() => setGestaoOpen(!gestaoOpen)}>
@@ -345,7 +347,6 @@ export default function Layout() {
       )}
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         .layout-root { display: flex; min-height: 100vh; font-family: 'Geist', sans-serif; background: #F8F9FA; position: relative; }
@@ -361,11 +362,7 @@ export default function Layout() {
 
         .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid #ffffff; background: rgba(255,79,163,0.1); }
         .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #FF4FA3; }
-
-        .sidebar-profile-info { display: flex; flex-direction: column; align-items: center; text-align: center; width: 100%; }
-        .sidebar-ola { font-size: 0.92rem; font-weight: 600; color: #ffffff; }
-        .sidebar-datetime { font-size: 0.72rem; color: #8E99C2; white-space: nowrap; }
+        .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 
         .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; overflow-y: auto; }
         .nav-icon { display:flex; align-items:center; flex-shrink:0; opacity:0.7; }
@@ -386,10 +383,10 @@ export default function Layout() {
         .layout-main { margin-left: 220px; flex: 1; padding: 2rem; min-height: 100vh; }
         .desk-topbar { display: none; }
         @media (min-width: 900px) {
-          .desk-topbar { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 2rem; border-bottom: 1px solid rgba(255,255,255,0.06); background: #10111A; margin: -2rem -2rem 1.5rem -2rem; position: sticky; top: 0; z-index: 9; }
+          .desk-topbar { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 2rem; border-bottom: 1px solid #f3f4f6; background: white; margin: -2rem -2rem 1.5rem -2rem; position: sticky; top: 0; z-index: 9; }
         }
-        .topbar-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; color: #8E99C2; transition: background 0.2s; position: relative; flex-shrink: 0; }
-        .topbar-btn:hover { background: rgba(255,255,255,0.14); }
+        .topbar-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: center; color: #6b7280; transition: background 0.2s; position: relative; flex-shrink: 0; }
+        .topbar-btn:hover { background: rgba(0,0,0,0.08); }
         .notif-dropdown { position: absolute; right: 0; top: calc(100% + 8px); width: 320px; background: white; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); border: 1px solid #f3f4f6; z-index: 100; overflow: hidden; }
         .notif-header { padding: 0.85rem 1rem; border-bottom: 1px solid #f3f4f6; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem; color: #1f2937; }
         .notif-header button { background: none; border: none; cursor: pointer; color: #9ca3af; font-size: 1rem; }
@@ -453,12 +450,7 @@ export default function Layout() {
             transition: color 0.15s;
           }
 
-          .nav-label {
-            font-size: 0.6rem;
-            font-weight: 600;
-            color: inherit;
-            white-space: nowrap;
-          }
+          .nav-label { font-size: 0.6rem; font-weight: 600; color: inherit; white-space: nowrap; }
           .nav-label-active { font-size: 0.6rem; font-weight: 800; color: #F583BF; }
 
           .bottom-nav { animation: fadeInUp 0.2s ease; }
@@ -498,7 +490,7 @@ export default function Layout() {
           .gestao-icon { color: #F583BF; display: flex; align-items: center; }
           .gestao-label { font-size: 0.72rem; font-weight: 600; color: #ffffff; text-align: center; font-family: 'Geist', sans-serif; line-height: 1.2; }
         }
-            `}</style>
+      `}</style>
     </div>
   );
 }
