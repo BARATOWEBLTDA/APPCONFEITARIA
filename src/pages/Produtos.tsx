@@ -261,23 +261,23 @@ export default function Produtos() {
     )}
     <div className="prod-root">
 
+      {/* ── Tab Categorias ── */}
+      {activeTab === "categorias" && <Categorias hideHeader={true} onVoltar={() => setActiveTab("produtos")} />}
+
+      {/* ── Tab Produtos ── */}
+      {activeTab === "produtos" && <>
+
       {/* ── Tabs ── */}
       <div className="prod-tabs">
-        <button className={`prod-tab${activeTab==="produtos"?" prod-tab--active":""}`} onClick={()=>setActiveTab("produtos")}>
+        <button className={`prod-tab prod-tab--active`} onClick={()=>setActiveTab("produtos")}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
           Produtos
         </button>
-        <button className={`prod-tab${activeTab==="categorias"?" prod-tab--active":""}`} onClick={()=>setActiveTab("categorias")}>
+        <button className={`prod-tab`} onClick={()=>setActiveTab("categorias")}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
           Categorias
         </button>
       </div>
-
-      {/* ── Tab Categorias ── */}
-      {activeTab === "categorias" && <Categorias hideHeader={true} />}
-
-      {/* ── Tab Produtos ── */}
-      {activeTab === "produtos" && <>
 
       {/* Header: Novo produto | título | toggle */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "1.5rem" }}>
