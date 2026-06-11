@@ -71,6 +71,17 @@ export default function CardapioConfigPage() {
     entrega_gratis_acima: "", horario_entrega: "", area_entrega: "", observacoes_entrega: "",
   });
 
+  // Estados de entrega avançada
+  const [fazEntrega, setFazEntrega] = useState(false);
+  const [fazRetirada, setFazRetirada] = useState(true);
+  const [metodoEntrega, setMetodoEntrega] = useState<'taxa_fixa' | 'faixas'>('taxa_fixa');
+  const [taxaFixa, setTaxaFixa] = useState('');
+  const [entregaGratis, setEntregaGratis] = useState('');
+  const [valorMinimo, setValorMinimo] = useState('');
+  const [faixasDistancia, setFaixasDistancia] = useState<{km: string; valor: string}[]>([
+    { km: '3', valor: '' },
+  ]);
+
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [autoSaved, setAutoSaved] = useState(false);
@@ -89,10 +100,14 @@ export default function CardapioConfigPage() {
         hide_stars: form.hide_stars, avaliacao_media: form.avaliacao_media,
         endereco, mostrar_localizacao: form.mostrar_localizacao,
         mostrar_apenas_cidade: form.mostrar_apenas_cidade,
-        faz_entrega: form.faz_entrega,
-        taxa_entrega: form.taxa_entrega ? parseFloat(form.taxa_entrega) : null,
+        faz_entrega: fazEntrega,
+        faz_retirada: fazRetirada,
+        metodo_entrega: metodoEntrega,
+        taxa_entrega: taxaFixa ? parseFloat(taxaFixa) : null,
+        entrega_gratis_acima: entregaGratis ? parseFloat(entregaGratis) : null,
+        valor_minimo_entrega: valorMinimo ? parseFloat(valorMinimo) : null,
+        faixas_distancia: faixasDistancia,
         pedido_minimo: form.pedido_minimo ? parseFloat(form.pedido_minimo) : null,
-        entrega_gratis_acima: form.entrega_gratis_acima ? parseFloat(form.entrega_gratis_acima) : null,
         horario_entrega: form.horario_entrega, area_entrega: form.area_entrega,
         observacoes_entrega: form.observacoes_entrega,
         horario: JSON.stringify(horario),
@@ -101,7 +116,7 @@ export default function CardapioConfigPage() {
       setTimeout(() => setAutoSaved(false), 2000);
     }, 2000);
     return () => { if (autoSaveRef.current) clearTimeout(autoSaveRef.current); };
-  }, [form, horario]);
+  }, [form, horario, fazEntrega, fazRetirada, metodoEntrega, taxaFixa, entregaGratis, valorMinimo, faixasDistancia]);
 
   const formatPhone = (v: string) => {
     const d = v.replace(/\D/g, "").slice(0, 11);
@@ -117,7 +132,7 @@ export default function CardapioConfigPage() {
       if (!user) return;
       setUserId(user.id);
       const { data } = await supabase.from("profiles")
-        .select("nome_loja, telefone, foto_url, descricao_loja, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega, horario")
+        .select("nome_loja, telefone, foto_url, descricao_loja, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega, horario, faz_retirada, metodo_entrega, faixas_distancia, valor_minimo_entrega")
         .eq("id", user.id).single();
       if (data) {
         let addr: any = {};
@@ -141,6 +156,14 @@ export default function CardapioConfigPage() {
         if (data.foto_url) setPreview(data.foto_url);
         if (addr.cep) setCepPreenchido(true);
         if (data.horario) { try { setHorario(h => ({ ...h, ...JSON.parse(data.horario) })); } catch {} }
+        // Entrega avançada
+        setFazEntrega(data.faz_entrega || false);
+        setFazRetirada(data.faz_retirada !== false);
+        setMetodoEntrega(data.metodo_entrega || 'taxa_fixa');
+        setTaxaFixa(data.taxa_entrega ? data.taxa_entrega.toString() : '');
+        setEntregaGratis(data.entrega_gratis_acima ? data.entrega_gratis_acima.toString() : '');
+        setValorMinimo(data.valor_minimo_entrega ? data.valor_minimo_entrega.toString() : '');
+        if (data.faixas_distancia?.length) setFaixasDistancia(data.faixas_distancia);
       }
       setLoading(false);
     };
@@ -437,26 +460,128 @@ export default function CardapioConfigPage() {
 
         {/* Card Entrega */}
         <div className="ccc-card">
-          <SectionLabel>Entrega</SectionLabel>
-          <div className="ccc-toggle-row">
-            <div><p className="ccc-toggle-label">Faz entrega?</p><p className="ccc-toggle-sub">Ative para configurar opções e taxas de entrega no seu cardápio.</p></div>
-            <label className="ccc-toggle"><input type="checkbox" checked={form.faz_entrega} onChange={e => setForm({...form, faz_entrega: e.target.checked})} /><span className="ccc-toggle-slider" /></label>
+          <SectionLabel>Entrega e Retirada</SectionLabel>
+
+          {/* Toggles Entrega + Retirada */}
+          <div style={{ display:'flex', flexDirection:'column', gap:'0.75rem' }}>
+            <div className="ccc-toggle-row">
+              <div>
+                <p className="ccc-toggle-label">🚚 Faz entrega?</p>
+                <p className="ccc-toggle-sub">Entrego no endereço do cliente.</p>
+              </div>
+              <label className="ccc-toggle">
+                <input type="checkbox" checked={fazEntrega} onChange={e => setFazEntrega(e.target.checked)} />
+                <span className="ccc-toggle-slider" />
+              </label>
+            </div>
+            <div className="ccc-toggle-row">
+              <div>
+                <p className="ccc-toggle-label">🏪 Retirada no local?</p>
+                <p className="ccc-toggle-sub">Cliente retira no meu endereço.</p>
+              </div>
+              <label className="ccc-toggle">
+                <input type="checkbox" checked={fazRetirada} onChange={e => setFazRetirada(e.target.checked)} />
+                <span className="ccc-toggle-slider" />
+              </label>
+            </div>
           </div>
-          {form.faz_entrega && (
+
+          {/* Conteúdo de entrega — só aparece se fazEntrega */}
+          {fazEntrega && (
             <>
               <div className="ccc-divider" />
-              <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>} placeholder="Taxa de entrega" value={form.taxa_entrega} onChange={(v: string) => setForm({...form, taxa_entrega: v})} />
-              <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>} placeholder="Pedido mínimo" value={form.pedido_minimo} onChange={(v: string) => setForm({...form, pedido_minimo: v})} />
-              <MoneyField icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/></svg>} placeholder="Entrega grátis acima de" value={form.entrega_gratis_acima} onChange={(v: string) => setForm({...form, entrega_gratis_acima: v})} />
+
+              {/* Valor mínimo + Entrega grátis */}
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.75rem' }}>
+                <MoneyField
+                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>}
+                  placeholder="Pedido mínimo para entrega"
+                  value={valorMinimo}
+                  onChange={(v: string) => setValorMinimo(v)}
+                />
+                <MoneyField
+                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/></svg>}
+                  placeholder="Entrega grátis acima de"
+                  value={entregaGratis}
+                  onChange={(v: string) => setEntregaGratis(v)}
+                />
+              </div>
+
+              <div className="ccc-divider" />
+
+              {/* Método de cálculo */}
+              <p className="ccc-section-label" style={{ marginBottom:'0.5rem' }}>Método de cálculo</p>
+              <div style={{ display:'flex', flexDirection:'column', gap:'0.5rem' }}>
+                <label style={{ display:'flex', alignItems:'center', gap:'10px', padding:'12px 14px', borderRadius:'10px', border:`2px solid ${metodoEntrega === 'taxa_fixa' ? '#F583BF' : '#f0f0f0'}`, background: metodoEntrega === 'taxa_fixa' ? '#fdf2f8' : '#fff', cursor:'pointer', transition:'all 0.15s' }}>
+                  <input type="radio" name="metodo" checked={metodoEntrega === 'taxa_fixa'} onChange={() => setMetodoEntrega('taxa_fixa')} style={{ accentColor:'#F583BF' }} />
+                  <div>
+                    <p style={{ margin:0, fontWeight:600, fontSize:'0.88rem', color:'#111827' }}>Taxa fixa para toda a cidade</p>
+                    <p style={{ margin:0, fontSize:'0.75rem', color:'#9ca3af' }}>Mesmo valor para qualquer endereço</p>
+                  </div>
+                </label>
+                <label style={{ display:'flex', alignItems:'center', gap:'10px', padding:'12px 14px', borderRadius:'10px', border:`2px solid ${metodoEntrega === 'faixas' ? '#F583BF' : '#f0f0f0'}`, background: metodoEntrega === 'faixas' ? '#fdf2f8' : '#fff', cursor:'pointer', transition:'all 0.15s' }}>
+                  <input type="radio" name="metodo" checked={metodoEntrega === 'faixas'} onChange={() => setMetodoEntrega('faixas')} style={{ accentColor:'#F583BF' }} />
+                  <div>
+                    <p style={{ margin:0, fontWeight:600, fontSize:'0.88rem', color:'#111827' }}>Taxa por faixa de distância</p>
+                    <p style={{ margin:0, fontSize:'0.75rem', color:'#9ca3af' }}>Valor diferente por km percorrido</p>
+                  </div>
+                </label>
+              </div>
+
+              {/* Taxa fixa */}
+              {metodoEntrega === 'taxa_fixa' && (
+                <MoneyField
+                  icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
+                  placeholder="Taxa de entrega"
+                  value={taxaFixa}
+                  onChange={(v: string) => setTaxaFixa(v)}
+                />
+              )}
+
+              {/* Faixas de distância */}
+              {metodoEntrega === 'faixas' && (
+                <div style={{ display:'flex', flexDirection:'column', gap:'0.5rem' }}>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr auto', gap:'8px', padding:'0 2px' }}>
+                    <span style={{ fontSize:'0.72rem', fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.05em' }}>Até (km)</span>
+                    <span style={{ fontSize:'0.72rem', fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.05em' }}>Taxa (R$)</span>
+                    <span />
+                  </div>
+                  {faixasDistancia.map((f, i) => (
+                    <div key={i} style={{ display:'grid', gridTemplateColumns:'1fr 1fr auto', gap:'8px', alignItems:'center' }}>
+                      <div className="ccc-field" style={{ margin:0 }}>
+                        <input className="ccc-field-input" type="number" placeholder="Ex: 3" value={f.km}
+                          onChange={e => setFaixasDistancia(prev => prev.map((x, j) => j === i ? { ...x, km: e.target.value } : x))} />
+                      </div>
+                      <div className="ccc-field" style={{ margin:0 }}>
+                        <input className="ccc-field-input" type="number" placeholder="Ex: 8,00" value={f.valor}
+                          onChange={e => setFaixasDistancia(prev => prev.map((x, j) => j === i ? { ...x, valor: e.target.value } : x))} />
+                      </div>
+                      <button onClick={() => setFaixasDistancia(prev => prev.filter((_, j) => j !== i))}
+                        style={{ width:'32px', height:'32px', borderRadius:'8px', border:'1.5px solid #fecaca', background:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'#ef4444', fontSize:'16px', flexShrink:0 }}>
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  <button onClick={() => setFaixasDistancia(prev => [...prev, { km:'', valor:'' }])}
+                    style={{ padding:'9px', borderRadius:'10px', border:'1.5px dashed #F583BF', background:'#fdf2f8', color:'#F583BF', fontSize:'0.85rem', fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>
+                    + Adicionar faixa
+                  </button>
+                </div>
+              )}
+
+              <div className="ccc-divider" />
+
+              {/* Horário de entregas */}
               <button className="ccc-horario-btn" onClick={() => { if (form.horario_entrega) { const [ini,fim] = form.horario_entrega.split(" às "); setHorarioTemp({inicio:ini||"08:00",fim:fim||"18:00"}); } setModalHorario(true); }}>
                 <span className="ccc-field-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
                 <span style={{flex:1,textAlign:"left",color:form.horario_entrega?"#111827":"#9ca3af",fontSize:"0.9rem"}}>{form.horario_entrega || "Horário de entregas"}</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
               </button>
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>} placeholder="Área de entrega" value={form.area_entrega} onChange={(e: any) => setForm({...form, area_entrega: e.target.value})} />
+
+              {/* Observações */}
               <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1rem"}}>
                 <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                <textarea className="ccc-field-input" placeholder="Observações" value={form.observacoes_entrega} onChange={e => setForm({...form, observacoes_entrega: e.target.value})} rows={3} style={{resize:"none"}} />
+                <textarea className="ccc-field-input" placeholder="Observações de entrega" value={form.observacoes_entrega} onChange={e => setForm({...form, observacoes_entrega: e.target.value})} rows={2} style={{resize:"none"}} />
               </div>
             </>
           )}
