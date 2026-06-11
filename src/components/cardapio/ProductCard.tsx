@@ -55,9 +55,6 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
           <div className="flex-1 flex flex-col">
             <div className="flex justify-between items-start mb-1">
               <h4 className="font-semibold text-xs leading-tight flex-1 line-clamp-2">{product.nome}</h4>
-              <button onClick={() => onToggleFavorite(product.id)} className="p-1 bg-transparent border-none cursor-pointer text-gray-400 hover:text-red-500 ml-1 flex-shrink-0">
-                <Heart className="w-3 h-3" style={{ fill: isFavorite ? '#ef4444' : 'none' }} />
-              </button>
             </div>
             <p className="text-gray-500 text-xs mb-2 line-clamp-4 leading-tight flex-1">{product.descricao}</p>
             <div className="mt-auto">
