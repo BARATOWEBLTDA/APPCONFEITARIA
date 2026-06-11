@@ -256,8 +256,6 @@ export default function CardapioConfigPage() {
   if (loading) return (
     <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"40vh"}}>
       <span className="ccc-spinner-lg" />
-      </>{/* fim tab Geral */}}
-
       <style>{`@keyframes ccspin{to{transform:rotate(360deg)}} .ccc-spinner-lg{width:32px;height:32px;border:3px solid #fce7f3;border-top-color:#F583BF;border-radius:50%;animation:ccspin 0.7s linear infinite;display:inline-block;}`}</style>
     </div>
   );
@@ -646,6 +644,8 @@ export default function CardapioConfigPage() {
           </div>
         </div>
       )}
+
+      </>{/* fim tab Geral */}}
 
       <style>{`
         @keyframes ccspin { to { transform:rotate(360deg); } }
