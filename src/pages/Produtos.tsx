@@ -947,7 +947,8 @@ export default function Produtos() {
         .prod-confirm-btns { display:flex; gap:0.75rem; }
         .prod-confirm-btns button { flex:1; padding:0.75rem; border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; background:var(--bg-subtle,#f3f4f6); color:var(--text-secondary,#374151); }
       `}</style>
-      </>{/* fim tab Produtos */}}
+      </>
+      }
     </div>
     </>
   );
