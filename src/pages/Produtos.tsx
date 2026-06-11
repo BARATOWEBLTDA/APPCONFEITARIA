@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { ImageCropper } from "@/components/ui/ImageCropper";
+import Categorias from "@/pages/Categorias";
 
 type Tamanho = { label: string; preco: number };
 
@@ -71,6 +72,7 @@ const EMPTY: Produto = {
 };
 
 export default function Produtos() {
+  const [activeTab, setActiveTab] = useState<"produtos"|"categorias">("produtos");
   const [userId, setUserId] = useState("");
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [categorias, setCategorias] = useState<string[]>([]);
@@ -258,6 +260,25 @@ export default function Produtos() {
       />
     )}
     <div className="prod-root">
+
+      {/* ── Tabs ── */}
+      <div className="prod-tabs">
+        <button className={`prod-tab${activeTab==="produtos"?" prod-tab--active":""}`} onClick={()=>setActiveTab("produtos")}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+          Produtos
+        </button>
+        <button className={`prod-tab${activeTab==="categorias"?" prod-tab--active":""}`} onClick={()=>setActiveTab("categorias")}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          Categorias
+        </button>
+      </div>
+
+      {/* ── Tab Categorias ── */}
+      {activeTab === "categorias" && <Categorias />}
+
+      {/* ── Tab Produtos ── */}
+      {activeTab === "produtos" && <>
+
       {/* Header: Novo produto | título | toggle */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "1.5rem" }}>
         <button className="prod-btn-novo" onClick={openNovo}>
@@ -843,6 +864,13 @@ export default function Produtos() {
       )}
 
       <style>{`
+                /* ── Tabs Produtos ── */
+        .prod-tabs { display:flex; gap:0.25rem; background:#f4f4f5; border-radius:12px; padding:4px; width:fit-content; margin-bottom:0.5rem; margin-top:1rem; }
+        .prod-tab { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 1.1rem; border-radius:9px; border:none; background:transparent; font-family:'Geist',sans-serif; font-size:0.86rem; font-weight:600; color:#71717a; cursor:pointer; transition:all 0.18s; white-space:nowrap; }
+        .prod-tab:hover { color:#18181b; background:rgba(255,255,255,0.6); }
+        .prod-tab--active { background:#ffffff; color:#F583BF; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+        @media(max-width:640px) { .prod-tabs { width:100%; } .prod-tab { flex:1; justify-content:center; padding:0.5rem 0.25rem; font-size:0.78rem; } }
+
         .prod-root { font-family:'Geist', sans-serif; max-width:800px; display:flex; flex-direction:column; gap:1rem; }
         .prod-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
         .prod-spinner-sm { width:18px; height:18px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
@@ -919,6 +947,7 @@ export default function Produtos() {
         .prod-confirm-btns { display:flex; gap:0.75rem; }
         .prod-confirm-btns button { flex:1; padding:0.75rem; border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; background:var(--bg-subtle,#f3f4f6); color:var(--text-secondary,#374151); }
       `}</style>
+      </>{/* fim tab Produtos */}}
     </div>
     </>
   );
