@@ -650,15 +650,26 @@ function CardapioContent() {
 
         </div>
 
-        {/* LINHA INFERIOR — Produtos */}
-        <div style={{ padding:'0 24px', boxSizing:'border-box', width:'100%' }}>
-          <div style={{ display:'flex', alignItems:'center', marginBottom:'16px', marginTop:'8px' }}>
-            <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'#1f2937' }}>Nosso Cardápio</h2>
+        {/* LINHA INFERIOR — Produtos full width */}
+        <div style={{ display:'grid', gridTemplateColumns:'200px 1fr 340px', gap:'16px', padding:'0 24px', boxSizing:'border-box', width:'100%', alignItems:'start' }}>
+
+          {/* Espaço vazio esquerda */}
+          <div />
+
+          {/* Produtos */}
+          <div>
+            <div style={{ display:'flex', alignItems:'center', marginBottom:'16px' }}>
+              <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'#1f2937' }}>Nosso Cardápio</h2>
+            </div>
+            <DeskProducts
+              produtos={filteredProdutos} favorites={favorites} onToggleFavorite={toggleFavorite}
+              design={design}
+            />
           </div>
-          <DeskProducts
-            produtos={filteredProdutos} favorites={favorites} onToggleFavorite={toggleFavorite}
-            design={design}
-          />
+
+          {/* Espaço vazio direita */}
+          <div />
+
         </div>
 
       </div>
