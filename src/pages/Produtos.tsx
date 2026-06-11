@@ -274,7 +274,7 @@ export default function Produtos() {
       </div>
 
       {/* ── Tab Categorias ── */}
-      {activeTab === "categorias" && <Categorias />}
+      {activeTab === "categorias" && <Categorias hideHeader={true} />}
 
       {/* ── Tab Produtos ── */}
       {activeTab === "produtos" && <>
