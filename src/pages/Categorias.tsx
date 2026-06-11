@@ -107,16 +107,16 @@ export default function Categorias({ hideHeader = false }: { hideHeader?: boolea
   return (
     <div className="cat-root">
       {!hideHeader && (
-      <div className="cat-header">
-        <div>
-          <h1 className="cat-title">Categorias</h1>
-          <p className="cat-sub">{categorias.length} categoria{categorias.length !== 1 ? "s" : ""}</p>
+        <div className="cat-header">
+          <div>
+            <h1 className="cat-title">Categorias</h1>
+            <p className="cat-sub">{categorias.length} categoria{categorias.length !== 1 ? "s" : ""}</p>
+          </div>
+          <button className="cat-btn-novo" onClick={openNova}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nova categoria
+          </button>
         </div>
-        <button className="cat-btn-novo" onClick={openNova}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nova categoria
-        </button>
-      </div>
       )}
       {hideHeader && (
         <div style={{display:"flex",justifyContent:"flex-end",marginBottom:"0.75rem"}}>
