@@ -540,19 +540,19 @@ export default function CardapioConfigPage() {
 
               {/* Faixas de distância */}
               {metodoEntrega === 'faixas' && (
-                <div style={{ display:'flex', flexDirection:'column', gap:'0.5rem' }}>
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr auto', gap:'8px', padding:'0 2px' }}>
+                <div style={{ display:'flex', flexDirection:'column', gap:'0.5rem', width:'100%', minWidth:0, overflow:'hidden' }}>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 32px', gap:'8px', padding:'0 2px', minWidth:0 }}>
                     <span style={{ fontSize:'0.72rem', fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.05em' }}>Até (km)</span>
                     <span style={{ fontSize:'0.72rem', fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.05em' }}>Taxa (R$)</span>
                     <span />
                   </div>
                   {faixasDistancia.map((f, i) => (
-                    <div key={i} style={{ display:'grid', gridTemplateColumns:'1fr 1fr auto', gap:'8px', alignItems:'center' }}>
-                      <div className="ccc-field" style={{ margin:0 }}>
+                    <div key={i} style={{ display:'grid', gridTemplateColumns:'1fr 1fr 32px', gap:'8px', alignItems:'center', minWidth:0 }}>
+                      <div className="ccc-field" style={{ margin:0, minWidth:0 }}>
                         <input className="ccc-field-input" type="number" placeholder="Ex: 3" value={f.km}
                           onChange={e => setFaixasDistancia(prev => prev.map((x, j) => j === i ? { ...x, km: e.target.value } : x))} />
                       </div>
-                      <div className="ccc-field" style={{ margin:0 }}>
+                      <div className="ccc-field" style={{ margin:0, minWidth:0 }}>
                         <input className="ccc-field-input" type="number" placeholder="Ex: 8,00" value={f.valor}
                           onChange={e => setFaixasDistancia(prev => prev.map((x, j) => j === i ? { ...x, valor: e.target.value } : x))} />
                       </div>
@@ -629,11 +629,13 @@ export default function CardapioConfigPage() {
         .ccc-outer {
           width:100%; display:flex; justify-content:center;
           padding-bottom:3rem; background:#fafafa;
+          overflow-x:hidden;
         }
         .ccc-root {
           font-family:'Geist', sans-serif; width:100%; max-width:1500px;
           display:flex; flex-direction:column; gap:1.5rem;
           box-sizing:border-box; padding:0 2rem;
+          overflow-x:hidden;
         }
 
         /* ── Header da página ── */
