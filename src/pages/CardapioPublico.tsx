@@ -226,8 +226,9 @@ function DeskInfoRow({ design, config }: any) {
 }
 
 /* ── Category Dropdown ── */
-function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, corBotao }: any) {
+function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, corBotao, navBg }: any) {
   const cats = categories.filter((c: any) => c.name !== 'Todos')
+  const activeBg = navBg || corBotao || '#ec4899'
 
   return (
     <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', overflow:'hidden' }}>
@@ -240,18 +241,17 @@ function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, 
         onClick={() => onSelectCategory(null)}
         style={{
           width:'100%', padding:'11px 14px', textAlign:'left', border:'none',
-          background: !selectedCategory ? `${corBotao}12` : '#fff',
-          color: !selectedCategory ? corBotao : '#374151',
+          background: !selectedCategory ? activeBg : '#fff',
+          color: !selectedCategory ? '#ffffff' : '#374151',
           fontSize:'13px', fontWeight: !selectedCategory ? 700 : 500,
           cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
-          display:'flex', alignItems:'center', gap:'8px',
+          display:'flex', alignItems:'center',
           borderBottom:'1px solid #f3f4f6',
-          transition:'background 0.1s',
+          transition:'background 0.15s, color 0.15s',
         }}
-        onMouseOver={e => { if (selectedCategory) (e.currentTarget as HTMLElement).style.background='#f9fafb' }}
-        onMouseOut={e => { if (selectedCategory) (e.currentTarget as HTMLElement).style.background='#fff' }}
+        onMouseOver={e => { if (selectedCategory) { (e.currentTarget as HTMLElement).style.background='#f3f4f6' } }}
+        onMouseOut={e => { if (selectedCategory) { (e.currentTarget as HTMLElement).style.background='#fff' } }}
       >
-        {!selectedCategory && <span style={{ width:'5px', height:'5px', borderRadius:'50%', background:corBotao, flexShrink:0 }}/>}
         Todos os produtos
       </button>
 
@@ -261,18 +261,17 @@ function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, 
           onClick={() => onSelectCategory(c.name)}
           style={{
             width:'100%', padding:'11px 14px', textAlign:'left', border:'none',
-            background: selectedCategory === c.name ? `${corBotao}12` : '#fff',
-            color: selectedCategory === c.name ? corBotao : '#374151',
+            background: selectedCategory === c.name ? activeBg : '#fff',
+            color: selectedCategory === c.name ? '#ffffff' : '#374151',
             fontSize:'13px', fontWeight: selectedCategory === c.name ? 700 : 500,
             cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
-            display:'flex', alignItems:'center', gap:'8px',
+            display:'flex', alignItems:'center',
             borderBottom:'1px solid #f3f4f6',
-            transition:'background 0.1s',
+            transition:'background 0.15s, color 0.15s',
           }}
-          onMouseOver={e => { if (selectedCategory !== c.name) (e.currentTarget as HTMLElement).style.background='#f9fafb' }}
-          onMouseOut={e => { if (selectedCategory !== c.name) (e.currentTarget as HTMLElement).style.background='#fff' }}
+          onMouseOver={e => { if (selectedCategory !== c.name) { (e.currentTarget as HTMLElement).style.background='#f3f4f6' } }}
+          onMouseOut={e => { if (selectedCategory !== c.name) { (e.currentTarget as HTMLElement).style.background='#fff' } }}
         >
-          {selectedCategory === c.name && <span style={{ width:'5px', height:'5px', borderRadius:'50%', background:corBotao, flexShrink:0 }}/>}
           {c.name}
         </button>
       ))}
@@ -649,6 +648,7 @@ function CardapioContent() {
               selectedCategory={selectedCategory}
               onSelectCategory={setSelectedCategory}
               corBotao={design.cor_botao || '#ec4899'}
+              navBg={design.cor_navbar || design.cor_borda || '#ec4899'}
             />
           </div>
           <DeskProducts
