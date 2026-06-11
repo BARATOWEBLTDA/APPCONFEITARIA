@@ -642,7 +642,7 @@ function CardapioContent() {
         <div style={{ display:'grid', gridTemplateColumns:'200px 1fr 340px', gap:'16px', padding:'0 24px', boxSizing:'border-box', width:'100%', alignItems:'start' }}>
 
           {/* COLUNA ESQUERDA — Categorias */}
-          <div style={{ position:'sticky', top:'100px' }}>
+          <div style={{ position:'sticky', top:'100px', paddingTop:'68px' }}>
             <DeskCategoryDropdown
               categories={getCategories()}
               selectedCategory={selectedCategory}
