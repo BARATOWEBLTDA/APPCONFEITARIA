@@ -611,64 +611,60 @@ function CardapioContent() {
 
       <div style={{ display:'flex', flexDirection:'column', gap:'16px', paddingBottom:'0', paddingTop:'24px', width:'100%', flex: 1 }}>
 
-        {/* LINHA SUPERIOR — Categorias | Busca | Sacola */}
+        {/* Layout 3 colunas */}
         <div style={{ display:'grid', gridTemplateColumns:'200px 1fr 340px', gap:'16px', padding:'0 24px', boxSizing:'border-box', width:'100%', alignItems:'start' }}>
 
-          {/* Categorias */}
-          <DeskCategoryDropdown
-            categories={getCategories()}
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-            corBotao={design.cor_botao || '#ec4899'}
-            navBg={design.cor_navbar || design.cor_borda || '#ec4899'}
-          />
-
-          {/* Busca */}
-          <div style={{ position:'relative' }}>
-            <MagnifyingGlass size={16} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'#9ca3af' }}/>
-            <input
-              value={searchTerm}
-              onChange={(e: any) => setSearchTerm(e.target.value)}
-              placeholder="Busque por um produto..."
-              style={{
-                width:'100%', padding:'13px 14px 13px 42px', boxSizing:'border-box',
-                border:'1.5px solid #e5e7eb', borderRadius:'10px',
-                fontSize:'14px', color:'#374151', outline:'none',
-                fontFamily:'inherit', background:'#fff',
-                transition:'border-color 0.2s',
-              }}
-              onFocus={e => (e.target.style.borderColor = design.cor_borda || '#ec4899')}
-              onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
+          {/* ESQUERDA — Categorias */}
+          <div style={{ position:'sticky', top:'100px' }}>
+            <DeskCategoryDropdown
+              categories={getCategories()}
+              selectedCategory={selectedCategory}
+              onSelectCategory={setSelectedCategory}
+              corBotao={design.cor_botao || '#ec4899'}
+              navBg={design.cor_navbar || design.cor_borda || '#ec4899'}
             />
-            {searchTerm && (
-              <button onClick={() => setSearchTerm('')} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#9ca3af', fontSize:'16px', lineHeight:1 }}>✕</button>
-            )}
           </div>
 
-          {/* Sacola */}
-          <DeskSacola cartCount={cartCount} cartTotal={cartTotal} design={design} items={cartItems} />
-
-        </div>
-
-        {/* LINHA INFERIOR — Produtos full width */}
-        <div style={{ display:'grid', gridTemplateColumns:'200px 1fr 340px', gap:'16px', padding:'0 24px', boxSizing:'border-box', width:'100%', alignItems:'start' }}>
-
-          {/* Espaço vazio esquerda */}
-          <div />
-
-          {/* Produtos */}
+          {/* CENTRO — Busca + Título + Produtos */}
           <div>
+            {/* Busca */}
+            <div style={{ position:'relative', marginBottom:'16px' }}>
+              <MagnifyingGlass size={16} style={{ position:'absolute', left:'14px', top:'50%', transform:'translateY(-50%)', color:'#9ca3af' }}/>
+              <input
+                value={searchTerm}
+                onChange={(e: any) => setSearchTerm(e.target.value)}
+                placeholder="Busque por um produto..."
+                style={{
+                  width:'100%', padding:'13px 14px 13px 42px', boxSizing:'border-box',
+                  border:'1.5px solid #e5e7eb', borderRadius:'10px',
+                  fontSize:'14px', color:'#374151', outline:'none',
+                  fontFamily:'inherit', background:'#fff',
+                  transition:'border-color 0.2s',
+                }}
+                onFocus={e => (e.target.style.borderColor = design.cor_borda || '#ec4899')}
+                onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
+              />
+              {searchTerm && (
+                <button onClick={() => setSearchTerm('')} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#9ca3af', fontSize:'16px', lineHeight:1 }}>✕</button>
+              )}
+            </div>
+
+            {/* Título */}
             <div style={{ display:'flex', alignItems:'center', marginBottom:'16px' }}>
               <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'#1f2937' }}>Nosso Cardápio</h2>
             </div>
+
+            {/* Produtos */}
             <DeskProducts
               produtos={filteredProdutos} favorites={favorites} onToggleFavorite={toggleFavorite}
               design={design}
             />
           </div>
 
-          {/* Espaço vazio direita */}
-          <div />
+          {/* DIREITA — Sacola */}
+          <div style={{ position:'sticky', top:'100px' }}>
+            <DeskSacola cartCount={cartCount} cartTotal={cartTotal} design={design} items={cartItems} />
+          </div>
 
         </div>
 
