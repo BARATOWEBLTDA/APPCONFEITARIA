@@ -40,7 +40,7 @@ export default function Layout() {
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
   const isPrevia = location.pathname === "/cardapio-preview";
-  const isCardapioMode = ["/cardapio-config", "/produtos", "/categorias"].includes(location.pathname);
+  const isCardapioMode = ["/cardapio-config", "/produtos"].includes(location.pathname);
   const [cardapioNav, setCardapioNav] = useState(false);
 
   useEffect(() => {
@@ -124,7 +124,6 @@ export default function Layout() {
           <SidebarGroup label="Cardápio" icon={<ShoppingBag size={18} weight="duotone" />} paths={["/cardapio-config","/cardapio-design","/cardapio-preview","/categorias","/produtos","/checkout-config"]} location={location}>
             <NavLink to="/cardapio-config" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Configuração</NavLink>
             <NavLink to="/cardapio-preview" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Prévia</NavLink>
-            <NavLink to="/categorias" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Categorias</NavLink>
             <NavLink to="/produtos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Produtos</NavLink>
           </SidebarGroup>
 
@@ -300,11 +299,6 @@ export default function Layout() {
                 <Storefront size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/produtos" ? " nav-label-active" : ""}`}>Produtos</span>
               </button>
-              <button className={`bottom-item${location.pathname === "/categorias" ? " active" : ""}`} onClick={() => navigate("/categorias")}>
-                <Rows size={22} weight="duotone" />
-                <span className={`nav-label${location.pathname === "/categorias" ? " nav-label-active" : ""}`}>Categorias</span>
-              </button>
-
               <button className={`bottom-item${location.pathname === "/cardapio-config" ? " active" : ""}`} onClick={() => navigate("/cardapio-config")}>
                 <Sliders size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/cardapio-config" ? " nav-label-active" : ""}`}>Config</span>
