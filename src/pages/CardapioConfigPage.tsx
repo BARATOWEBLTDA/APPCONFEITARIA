@@ -492,7 +492,7 @@ export default function CardapioConfigPage() {
               <div className="ccc-divider" />
 
               {/* Valor mínimo + Entrega grátis */}
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'0.75rem' }}>
+              <div className="ccc-entrega-grid">
                 <MoneyField
                   icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>}
                   placeholder="Pedido mínimo para entrega"
@@ -667,7 +667,7 @@ export default function CardapioConfigPage() {
           .ccc-row-top > .ccc-card:nth-child(3) { grid-column:3; grid-row:1; height:auto; }
           .ccc-row-top > .ccc-card:nth-child(4) { grid-column:3; grid-row:2; height:auto; }
         }
-        .ccc-row-bottom { display:grid; grid-template-columns:1fr; gap:1.25rem; align-items:start; }
+        .ccc-row-bottom { display:grid; grid-template-columns:1fr; gap:1.25rem; align-items:start; overflow:hidden; }
 
         /* ── Card base ── */
         .ccc-card {
@@ -748,6 +748,7 @@ export default function CardapioConfigPage() {
         .ccc-cep-hint { font-size:0.74rem; color:#71717a; margin:0; }
         .ccc-row-2 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0.6rem; }
         .ccc-divider { border:none; border-top:1px solid #f4f4f5; margin:0.25rem 0; }
+        .ccc-entrega-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; width:100%; min-width:0; box-sizing:border-box; }
 
         /* ── Toggle ── */
         .ccc-toggle-row { display:flex; justify-content:space-between; align-items:center; gap:1rem; }
@@ -906,6 +907,7 @@ export default function CardapioConfigPage() {
           .ccc-page-header { padding-top:1.25rem; }
           .ccc-card { padding:1.15rem; }
           .ccc-btn-save { align-self:stretch; width:100%; border-radius:50px; min-height:50px; }
+          .ccc-entrega-grid { grid-template-columns:1fr; }
           .ccc-modal-overlay { align-items:flex-end; padding:0; }
           .ccc-modal { border-radius:24px 24px 0 0; max-width:100%; padding:1.5rem 1.5rem 2rem; animation:slideUp 0.25s ease; }
           .ccc-toast { width:calc(100% - 2rem); bottom:1rem; }
