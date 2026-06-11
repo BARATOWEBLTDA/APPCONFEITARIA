@@ -56,19 +56,6 @@ export function DesktopProductCard({ product, isFavorite, onToggleFavorite, back
           </div>
         )}
 
-        {/* Favorito */}
-        <button
-          onClick={e => { e.stopPropagation(); onToggleFavorite(product.id) }}
-          style={{
-            position: 'absolute', top: '10px', right: '10px', zIndex: 10,
-            background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '50%',
-            width: '32px', height: '32px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-          }}
-        >
-          <Heart size={15} color={isFavorite ? '#ef4444' : '#d1d5db'} fill={isFavorite ? '#ef4444' : 'none'} />
-        </button>
 
         {/* Imagem */}
         <div style={{
