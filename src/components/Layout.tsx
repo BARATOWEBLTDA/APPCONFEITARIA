@@ -40,7 +40,7 @@ export default function Layout() {
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
   const isPrevia = location.pathname === "/cardapio-preview";
-  const isCardapioMode = ["/cardapio-config", "/produtos", "/categorias", "/cardapio-design", "/checkout-config"].includes(location.pathname);
+  const isCardapioMode = ["/cardapio-config", "/produtos", "/categorias"].includes(location.pathname);
   const [cardapioNav, setCardapioNav] = useState(false);
 
   useEffect(() => {
@@ -304,10 +304,7 @@ export default function Layout() {
                 <Rows size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/categorias" ? " nav-label-active" : ""}`}>Categorias</span>
               </button>
-              <button className={`bottom-item${location.pathname === "/cardapio-design" ? " active" : ""}`} onClick={() => navigate("/cardapio-design")}>
-                <PaintBrush size={22} weight="duotone" />
-                <span className={`nav-label${location.pathname === "/cardapio-design" ? " nav-label-active" : ""}`}>Design</span>
-              </button>
+
               <button className={`bottom-item${location.pathname === "/cardapio-config" ? " active" : ""}`} onClick={() => navigate("/cardapio-config")}>
                 <Sliders size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/cardapio-config" ? " nav-label-active" : ""}`}>Config</span>
