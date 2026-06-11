@@ -631,9 +631,9 @@ export default function CardapioConfigPage() {
           padding-bottom:3rem; background:#fafafa;
         }
         .ccc-root {
-          font-family:'Geist', sans-serif; width:100%; max-width:1160px;
+          font-family:'Geist', sans-serif; width:100%; max-width:1500px;
           display:flex; flex-direction:column; gap:1.5rem;
-          box-sizing:border-box; padding:0 1.5rem;
+          box-sizing:border-box; padding:0 2rem;
         }
 
         /* ── Header da página ── */
@@ -657,6 +657,13 @@ export default function CardapioConfigPage() {
           display:grid;
           grid-template-columns:1fr 1fr;
           gap:1.25rem; align-items:stretch;
+        }
+        @media (min-width:1180px) {
+          .ccc-row-top { grid-template-columns:repeat(3,1fr); grid-auto-rows:min-content; align-items:start; }
+          .ccc-row-top > .ccc-card:nth-child(1) { grid-column:1; grid-row:1 / span 2; }
+          .ccc-row-top > .ccc-card:nth-child(2) { grid-column:2; grid-row:1 / span 2; }
+          .ccc-row-top > .ccc-card:nth-child(3) { grid-column:3; grid-row:1; height:auto; }
+          .ccc-row-top > .ccc-card:nth-child(4) { grid-column:3; grid-row:2; height:auto; }
         }
         .ccc-row-bottom { display:grid; grid-template-columns:1fr; gap:1.25rem; align-items:start; }
 
