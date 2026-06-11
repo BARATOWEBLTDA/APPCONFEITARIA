@@ -11,7 +11,7 @@ type Categoria = {
 
 const SYSTEM_ICONS = Array.from({ length: 42 }, (_, i) => `/categoriaicones/icone (${i + 1}).png`);
 
-export default function Categorias() {
+export default function Categorias({ hideHeader = false }: { hideHeader?: boolean }) {
   const [userId, setUserId] = useState("");
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [produtos, setProdutos] = useState<{ categoria: string }[]>([]);
@@ -106,6 +106,7 @@ export default function Categorias() {
 
   return (
     <div className="cat-root">
+      {!hideHeader && (
       <div className="cat-header">
         <div>
           <h1 className="cat-title">Categorias</h1>
@@ -116,6 +117,7 @@ export default function Categorias() {
           Nova categoria
         </button>
       </div>
+      )}
 
       {categorias.length === 0 ? (
         <div className="cat-empty">
