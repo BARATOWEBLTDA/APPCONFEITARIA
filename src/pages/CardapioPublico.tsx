@@ -628,29 +628,27 @@ function CardapioContent() {
           {/* CENTRO — Busca + Título + Produtos */}
           <div>
             {/* Busca */}
-            <div style={{ position:'relative', marginBottom:'16px', display:'flex', alignItems:'center', gap:'10px' }}>
-              <div style={{ width:'46px', height:'46px', borderRadius:'10px', background: design.cor_navbar || design.cor_borda || '#ec4899', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            <div style={{ position:'relative', marginBottom:'16px', display:'flex', alignItems:'stretch', borderRadius:'10px', overflow:'hidden', border:'1.5px solid #e5e7eb', background:'#fff', transition:'border-color 0.2s' }}
+              onFocusCapture={e => (e.currentTarget.style.borderColor = design.cor_navbar || design.cor_borda || '#ec4899')}
+              onBlurCapture={e => (e.currentTarget.style.borderColor = '#e5e7eb')}
+            >
+              {/* Fundo colorido com ícone na esquerda */}
+              <div style={{ width:'46px', background: design.cor_navbar || design.cor_borda || '#ec4899', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                 <MagnifyingGlass size={20} weight="bold" color="#ffffff" />
               </div>
-              <div style={{ position:'relative', flex:1 }}>
-                <input
-                  value={searchTerm}
-                  onChange={(e: any) => setSearchTerm(e.target.value)}
-                  placeholder="Busque por um produto..."
-                  style={{
-                    width:'100%', padding:'13px 14px', boxSizing:'border-box',
-                    border:'1.5px solid #e5e7eb', borderRadius:'10px',
-                    fontSize:'14px', color:'#374151', outline:'none',
-                    fontFamily:'inherit', background:'#fff',
-                    transition:'border-color 0.2s',
-                  }}
-                  onFocus={e => (e.target.style.borderColor = design.cor_borda || '#ec4899')}
-                  onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
-                />
-                {searchTerm && (
-                  <button onClick={() => setSearchTerm('')} style={{ position:'absolute', right:'12px', top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#9ca3af', fontSize:'16px', lineHeight:1 }}>✕</button>
-                )}
-              </div>
+              <input
+                value={searchTerm}
+                onChange={(e: any) => setSearchTerm(e.target.value)}
+                placeholder="Busque por um produto..."
+                style={{
+                  flex:1, padding:'13px 14px', border:'none', outline:'none',
+                  fontSize:'14px', color:'#374151',
+                  fontFamily:'inherit', background:'#fff',
+                }}
+              />
+              {searchTerm && (
+                <button onClick={() => setSearchTerm('')} style={{ padding:'0 14px', background:'none', border:'none', cursor:'pointer', color:'#9ca3af', fontSize:'16px', lineHeight:1 }}>✕</button>
+              )}
             </div>
 
             {/* Título */}
