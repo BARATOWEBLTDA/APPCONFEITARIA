@@ -645,7 +645,8 @@ export default function CardapioConfigPage() {
         </div>
       )}
 
-      </>{/* fim tab Geral */}}
+      </>
+      }
 
       <style>{`
         @keyframes ccspin { to { transform:rotate(360deg); } }
