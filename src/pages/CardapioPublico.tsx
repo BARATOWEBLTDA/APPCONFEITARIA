@@ -22,13 +22,13 @@ import { formatCurrency } from '@/utils/helpers'
 /* ══════════════════════════════════════════════ */
 
 /* ── Nav Link com hover/active ── */
-function NavLink({ label, icon, defaultActive }: any) {
+function NavLink({ label, icon, defaultActive, navBg }: any) {
   const [hovered, setHovered] = useState(false)
   const [active, setActive] = useState(false)
 
   const isActive = defaultActive || active
   const bg = isActive ? '#ffffff' : hovered ? 'rgba(255,255,255,0.15)' : 'transparent'
-  const color = isActive ? '#1f2937' : '#ffffff'
+  const color = isActive ? (navBg || '#ec4899') : '#ffffff'
 
   return (
     <button
@@ -96,7 +96,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
             { label: 'Sobre nós',   icon: <Info  size={20} weight="duotone" />, defaultActive: false },
             { label: 'Minha conta', icon: <User  size={20} weight="duotone" />, defaultActive: false },
           ].map(({ label, icon, defaultActive }) => (
-            <NavLink key={label} label={label} icon={icon} defaultActive={defaultActive} />
+            <NavLink key={label} label={label} icon={icon} defaultActive={defaultActive} navBg={navBg} />
           ))}
         </nav>
 
