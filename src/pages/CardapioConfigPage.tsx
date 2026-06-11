@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { supabase } from "@/lib/supabase";
+import CardapioDesign from "@/pages/CardapioDesign";
+import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 
 const SectionLabel = ({ children }: any) => <p className="ccc-section-label">{children}</p>;
 
@@ -42,6 +44,7 @@ const MoneyField = ({ icon, placeholder, value, onChange }: any) => {
 const DIAS = ["Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"];
 
 export default function CardapioConfigPage() {
+  const [activeTab, setActiveTab] = useState<"geral"|"design"|"checkout">("geral");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -253,6 +256,8 @@ export default function CardapioConfigPage() {
   if (loading) return (
     <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"40vh"}}>
       <span className="ccc-spinner-lg" />
+      </>{/* fim tab Geral */}}
+
       <style>{`@keyframes ccspin{to{transform:rotate(360deg)}} .ccc-spinner-lg{width:32px;height:32px;border:3px solid #fce7f3;border-top-color:#F583BF;border-radius:50%;animation:ccspin 0.7s linear infinite;display:inline-block;}`}</style>
     </div>
   );
@@ -277,8 +282,33 @@ export default function CardapioConfigPage() {
           <h1 className="ccc-page-title">Configuração do Cardápio</h1>
           <p className="ccc-page-sub">Personalize as informações do seu cardápio público</p>
         </div>
-        {autoSaved && <span className="ccc-autosave">✓ Salvo automaticamente</span>}
+        {autoSaved && activeTab === "geral" && <span className="ccc-autosave">✓ Salvo automaticamente</span>}
       </div>
+
+      {/* ── Tabs ── */}
+      <div className="ccc-tabs">
+        <button className={`ccc-tab${activeTab==="geral"?" ccc-tab--active":""}`} onClick={()=>setActiveTab("geral")}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Geral
+        </button>
+        <button className={`ccc-tab${activeTab==="design"?" ccc-tab--active":""}`} onClick={()=>setActiveTab("design")}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Design
+        </button>
+        <button className={`ccc-tab${activeTab==="checkout"?" ccc-tab--active":""}`} onClick={()=>setActiveTab("checkout")}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          Checkout
+        </button>
+      </div>
+
+      {/* ── Tab Design ── */}
+      {activeTab === "design" && <CardapioDesign />}
+
+      {/* ── Tab Checkout ── */}
+      {activeTab === "checkout" && <CheckoutConfigPage />}
+
+      {/* ── Tab Geral ── */}
+      {activeTab === "geral" && <>
 
       {/* LINHA 1: 4 cards */}
       <div className="ccc-row-top">
@@ -619,6 +649,13 @@ export default function CardapioConfigPage() {
 
       <style>{`
         @keyframes ccspin { to { transform:rotate(360deg); } }
+
+        /* ── Tabs ── */
+        .ccc-tabs { display:flex; gap:0.25rem; background:#f4f4f5; border-radius:12px; padding:4px; width:fit-content; margin-bottom:0.5rem; }
+        .ccc-tab { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 1.1rem; border-radius:9px; border:none; background:transparent; font-family:'Geist',sans-serif; font-size:0.86rem; font-weight:600; color:#71717a; cursor:pointer; transition:all 0.18s; white-space:nowrap; }
+        .ccc-tab:hover { color:#18181b; background:rgba(255,255,255,0.6); }
+        .ccc-tab--active { background:#ffffff; color:#F583BF; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+        @media(max-width:640px) { .ccc-tabs { width:100%; } .ccc-tab { flex:1; justify-content:center; padding:0.5rem 0.25rem; font-size:0.78rem; } }
         @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
         @keyframes toastIn { from{opacity:0;transform:translate(-50%,12px)} to{opacity:1;transform:translate(-50%,0)} }
 
