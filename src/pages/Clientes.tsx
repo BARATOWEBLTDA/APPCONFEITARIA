@@ -480,7 +480,7 @@ export default function Clientes() {
         .cli-aniv-badge.soon { background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); box-shadow: 0 2px 8px rgba(255,111,169,0.4); }
 
         /* Modais */
-        .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; overflow: hidden; touch-action: none; }
+        .modal-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-overlay); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; overflow: hidden; touch-action: none; }
         @media (min-width: 768px) { .modal-overlay { align-items: center; padding: 1rem; } }
         .modal-box { background: var(--bg-card, #FFFFFF); border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 360px; text-align: center; }
         .modal-box h3 { font-size: 1rem; font-weight: 600; color: var(--text-title, #1F2937); margin-bottom: 0.4rem; }
