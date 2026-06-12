@@ -139,7 +139,7 @@ export default function Clientes() {
         <div className="form-scroll">
           <div className="form-avatar-wrap">
             <div className="form-avatar" onClick={() => fileRef.current?.click()}>
-              {preview ? <img src={preview} alt="foto" /> : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f9007a" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
+              {preview ? <img src={preview} alt="foto" /> : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary, #FF6FA9)" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
               <div className="form-avatar-overlay">📷</div>
             </div>
             <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
@@ -176,28 +176,24 @@ export default function Clientes() {
       {/* ===== MOBILE ===== */}
       <div className="cli-mobile">
 
-        {/* Banner 1 - Cadastrar */}
         <button className="mob-banner" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
           <img src="/bannercadastro.png" alt="Cadastrar Cliente" className="mob-banner-img" />
         </button>
 
-        {/* Banner 2 - Ver Cadastrados */}
         <button className="mob-banner" onClick={() => setShowLista(true)}>
           <img src="/bannercadastrados.png" alt="Ver Clientes" className="mob-banner-img" />
         </button>
 
-        {/* Banner 3 - Aniversariantes */}
         <button className="mob-banner" onClick={() => setShowNiver(true)}>
           <img src="/bannerniver.png" alt="Aniversariantes" className="mob-banner-img" />
         </button>
 
-        {/* Log ultimos adicionados */}
         <div className="mob-log">
           <h3 className="mob-log-title">Últimos Cadastros</h3>
           {loading ? (
             <div style={{textAlign:"center",padding:"2rem"}}><span className="spinner" /></div>
           ) : ultimosAdicionados.length === 0 ? (
-            <p style={{color:"#9ca3af",fontSize:"0.85rem",textAlign:"center",padding:"1rem"}}>Nenhum cliente ainda</p>
+            <p style={{color:"var(--text-muted, #9CA3AF)",fontSize:"0.85rem",textAlign:"center",padding:"1rem"}}>Nenhum cliente ainda</p>
           ) : (
             ultimosAdicionados.map(c => (
               <div key={c.id} className="mob-log-item">
@@ -226,7 +222,7 @@ export default function Clientes() {
               </div>
               <div style={{padding:"0 1.25rem 1.5rem",overflowY:"auto",maxHeight:"60vh"}}>
                 {aniversariantes.length === 0 ? (
-                  <p style={{color:"#9ca3af",textAlign:"center",padding:"2rem"}}>Nenhum aniversariante nos próximos 30 dias</p>
+                  <p style={{color:"var(--text-muted, #9CA3AF)",textAlign:"center",padding:"2rem"}}>Nenhum aniversariante nos próximos 30 dias</p>
                 ) : aniversariantes.map(c => {
                   const nasc = new Date(c.data_nascimento!);
                   const diff = getDaysUntil(c.data_nascimento!);
@@ -267,11 +263,11 @@ export default function Clientes() {
               </div>
               <div style={{padding:"0 1rem",overflowY:"auto",maxHeight:"65vh"}}>
                 <div className="cli-search-wrap" style={{margin:"0 0 1rem"}}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                   <input type="text" placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
                 </div>
                 {filtered.length === 0 ? (
-                  <p style={{color:"#9ca3af",textAlign:"center",padding:"2rem"}}>Nenhum cliente encontrado</p>
+                  <p style={{color:"var(--text-muted, #9CA3AF)",textAlign:"center",padding:"2rem"}}>Nenhum cliente encontrado</p>
                 ) : (
                   <div className="cli-list" style={{paddingBottom:"1rem"}}>
                     {filtered.map(c => (
@@ -308,7 +304,7 @@ export default function Clientes() {
                 + Cadastrar Cliente
               </button>
               <div className="cli-search-wrap">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input type="text" placeholder="Buscar por nome ou telefone..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
               </div>
             </div>
@@ -404,52 +400,26 @@ export default function Clientes() {
         .mob-banner {
           width: 100%; border: none; cursor: pointer; border-radius: 16px;
           overflow: hidden; padding: 0; position: relative;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+          box-shadow: var(--shadow-md, 0 4px 16px rgba(0,0,0,0.15));
           transition: transform 0.2s, box-shadow 0.2s;
         }
         .mob-banner:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
         .mob-banner-img { width: 100%; height: auto; display: block; }
-        .mob-banner-overlay {
-          position: absolute; bottom: 0; left: 0; right: 0;
-          background: linear-gradient(transparent, rgba(0,0,0,0.5));
-          padding: 0.75rem 1rem;
-          display: flex; justify-content: flex-end;
-        }
-        .mob-banner-count {
-          background: rgba(255,255,255,0.2); backdrop-filter: blur(8px);
-          color: white; font-size: 0.78rem; font-weight: 600;
-          padding: 0.25rem 0.75rem; border-radius: 20px;
-        }
-
-        .mob-banner-cadastrar {
-          background: linear-gradient(135deg, #f9007a, #d4006a);
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 1.1rem 1.25rem;
-        }
-        .mob-banner-ver {
-          background: linear-gradient(135deg, #1a1a2e, #16213e);
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 1.1rem 1.25rem;
-        }
-        .mob-banner-content { display: flex; align-items: center; gap: 0.9rem; }
-        .mob-banner-icon { font-size: 1.8rem; }
-        .mob-banner-title { font-size: 1rem; font-weight: 700; color: white; margin: 0 0 0.2rem; text-align: left; }
-        .mob-banner-sub { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin: 0; text-align: left; }
 
         /* Log mobile */
-        .mob-log { background: white; border-radius: 16px; padding: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-        .mob-log-title { font-size: 1.05rem; font-weight: 700; color: #1f2937; margin: 0 0 0.75rem; text-align: center; letter-spacing: 0.12em; text-transform: uppercase; }
-        .mob-log-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0; border-bottom: 1px solid #f3f4f6; }
+        .mob-log { background: var(--bg-card, #FFFFFF); border-radius: 16px; padding: 1rem; box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); }
+        .mob-log-title { font-size: 1.05rem; font-weight: 700; color: var(--text-title, #1F2937); margin: 0 0 0.75rem; text-align: center; letter-spacing: 0.12em; text-transform: uppercase; }
+        .mob-log-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0; border-bottom: 1px solid var(--border, #E9E9EE); }
         .mob-log-item:last-child { border-bottom: none; }
-        .mob-log-avatar { width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0; background: linear-gradient(135deg, #fce7f3, #fbcfe8); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: #f9007a; overflow: hidden; }
+        .mob-log-avatar { width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0; background: var(--primary-light, #FFF1F7); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: var(--primary, #FF6FA9); overflow: hidden; }
         .mob-log-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .mob-log-info { flex: 1; min-width: 0; }
-        .mob-log-nome { font-size: 0.88rem; font-weight: 600; color: #1f2937; margin: 0 0 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .mob-log-data { font-size: 0.75rem; color: #9ca3af; margin: 0; }
+        .mob-log-nome { font-size: 0.88rem; font-weight: 600; color: var(--text-title, #1F2937); margin: 0 0 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mob-log-data { font-size: 0.75rem; color: var(--text-muted, #9CA3AF); margin: 0; }
 
         /* Modal mobile */
         .mob-modal {
-          background: white; border-radius: 24px 24px 0 0;
+          background: var(--bg-card, #FFFFFF); border-radius: 24px 24px 0 0;
           width: 100%; max-height: 85vh;
           display: flex; flex-direction: column;
           position: fixed; bottom: 0; left: 0; right: 0;
@@ -465,37 +435,37 @@ export default function Clientes() {
         .cli-topbar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
         .cli-btn-new {
           padding: 0.85rem 1.4rem;
-          background: linear-gradient(270deg, #f9007a, #ff6eb4, #d4006a, #f9007a);
+          background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
           background-size: 300% 300%; animation: gradientShift 3s ease infinite;
-          color: white; border: none; border-radius: 10px;
+          color: var(--text-inverse, #FFFFFF); border: none; border-radius: 10px;
           font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600;
           cursor: pointer; white-space: nowrap; flex-shrink: 0;
-          box-shadow: 0 4px 15px rgba(249,0,122,0.35);
+          box-shadow: 0 4px 15px rgba(255,111,169,0.35);
         }
-        .cli-btn-new:hover { box-shadow: 0 6px 20px rgba(249,0,122,0.5); transform: translateY(-1px); }
+        .cli-btn-new:hover { box-shadow: 0 6px 20px rgba(255,111,169,0.5); transform: translateY(-1px); }
         @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        .cli-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid #e5e7eb; border-radius: 10px; padding: 0.85rem 1rem; flex: 1; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
-        .cli-search { border: none; outline: none; flex: 1; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: #1f2937; background: transparent; }
-        .cli-search::placeholder { color: #9ca3af; }
+        .cli-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: var(--bg-card, #FFFFFF); border: 1.5px solid var(--border, #E9E9EE); border-radius: 10px; padding: 0.85rem 1rem; flex: 1; box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); }
+        .cli-search { border: none; outline: none; flex: 1; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: var(--text-title, #1F2937); background: transparent; }
+        .cli-search::placeholder { color: var(--text-muted, #9CA3AF); }
 
         .cli-loading { display: flex; justify-content: center; padding: 3rem; }
-        .cli-empty { text-align: center; padding: 3rem; color: #9ca3af; }
+        .cli-empty { text-align: center; padding: 3rem; color: var(--text-muted, #9CA3AF); }
         .cli-list { display: flex; flex-direction: column; gap: 0.6rem; }
 
-        .cli-card { display: flex; align-items: center; gap: 0.9rem; background: white; border-radius: 14px; padding: 0.75rem 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.04); transition: box-shadow 0.2s, transform 0.2s; }
-        .cli-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.15); transform: translateY(-1px); }
-        .cli-avatar { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0; background: linear-gradient(135deg, #fce7f3, #fbcfe8); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; color: #f9007a; overflow: hidden; }
+        .cli-card { display: flex; align-items: center; gap: 0.9rem; background: var(--bg-card, #FFFFFF); border-radius: 14px; padding: 0.75rem 1rem; box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); border: 1px solid var(--border, #E9E9EE); transition: box-shadow 0.2s, transform 0.2s; }
+        .cli-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.12); transform: translateY(-1px); }
+        .cli-avatar { width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0; background: var(--primary-light, #FFF1F7); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: 700; color: var(--primary, #FF6FA9); overflow: hidden; }
         .cli-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .cli-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
-        .cli-nome { font-size: 0.95rem; font-weight: 600; color: #1f2937; margin: 0 0 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cli-nome { font-size: 0.95rem; font-weight: 600; color: var(--text-title, #1F2937); margin: 0 0 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cli-whatsapp-link { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; color: #25D366; font-weight: 500; text-decoration: none; }
         .cli-whatsapp-link:hover { text-decoration: underline; }
-        .cli-act { width: 34px; height: 34px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; background: #fff0f6; flex-shrink: 0; }
+        .cli-act { width: 34px; height: 34px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; background: var(--primary-light, #FFF1F7); flex-shrink: 0; }
 
         /* Painel aniversariantes desktop */
-        .cli-panel { background: white; border-radius: 14px; padding: 1rem 1.1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-        .cli-panel-empty { font-size: 0.82rem; color: #9ca3af; text-align: center; padding: 0.5rem 0; }
+        .cli-panel { background: var(--bg-card, #FFFFFF); border-radius: 14px; padding: 1rem 1.1rem; box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); }
+        .cli-panel-empty { font-size: 0.82rem; color: var(--text-muted, #9CA3AF); text-align: center; padding: 0.5rem 0; }
 
         .cli-aniv-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; margin-bottom: 0.5rem; border-radius: 12px; background: linear-gradient(135deg, #1a1a2e, #16213e); position: relative; overflow: hidden; }
         .cli-aniv-item:last-child { margin-bottom: 0; }
@@ -504,50 +474,50 @@ export default function Clientes() {
         .cli-aniv-avatar { width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; color: #ffd700; overflow: hidden; }
         .cli-aniv-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .cli-aniv-info { flex: 1; min-width: 0; }
-        .cli-aniv-nome { font-size: 0.82rem; font-weight: 600; color: white; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cli-aniv-nome { font-size: 0.82rem; font-weight: 600; color: var(--text-inverse, #FFFFFF); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cli-aniv-data { font-size: 0.72rem; color: rgba(255,215,0,0.7); margin: 0; display: flex; align-items: center; }
         .cli-aniv-badge { font-size: 0.72rem; font-weight: 700; color: #1a1a2e; background: linear-gradient(135deg, #ffd700, #ffa500); padding: 0.25rem 0.6rem; border-radius: 20px; white-space: nowrap; flex-shrink: 0; box-shadow: 0 2px 8px rgba(255,165,0,0.4); }
-        .cli-aniv-badge.soon { background: linear-gradient(135deg, #f9007a, #ff6eb4); color: white; box-shadow: 0 2px 8px rgba(249,0,122,0.4); }
+        .cli-aniv-badge.soon { background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); box-shadow: 0 2px 8px rgba(255,111,169,0.4); }
 
         /* Modais */
         .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; overflow: hidden; touch-action: none; }
         @media (min-width: 768px) { .modal-overlay { align-items: center; padding: 1rem; } }
-        .modal-box { background: white; border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 360px; text-align: center; }
-        .modal-box h3 { font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.4rem; }
-        .modal-box p { font-size: 0.85rem; color: #9ca3af; margin-bottom: 1.25rem; }
+        .modal-box { background: var(--bg-card, #FFFFFF); border-radius: 16px; padding: 1.5rem; width: 90%; max-width: 360px; text-align: center; }
+        .modal-box h3 { font-size: 1rem; font-weight: 600; color: var(--text-title, #1F2937); margin-bottom: 0.4rem; }
+        .modal-box p { font-size: 0.85rem; color: var(--text-muted, #9CA3AF); margin-bottom: 1.25rem; }
         .modal-actions { display: flex; gap: 0.75rem; }
         .modal-btn { flex: 1; padding: 0.7rem; border-radius: 8px; border: none; font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
-        .modal-btn.cancel { background: #f3f4f6; color: #6b7280; }
-        .modal-btn.confirm { background: #ef4444; color: white; }
+        .modal-btn.cancel { background: var(--bg-body, #F7F7F8); color: var(--text-secondary, #6B7280); }
+        .modal-btn.confirm { background: var(--error, #EF4444); color: var(--text-inverse, #FFFFFF); }
 
-        .form-drawer { background: white; border-radius: 24px 24px 0 0; width: 100%; max-height: 90vh; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .form-drawer { background: var(--bg-card, #FFFFFF); border-radius: 24px 24px 0 0; width: 100%; max-height: 90vh; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @media (min-width: 768px) { .form-drawer { border-radius: 20px; max-width: 520px; animation: fadeScale 0.25s cubic-bezier(0.16, 1, 0.3, 1); } }
         @keyframes fadeScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
 
-        .form-handle { width: 40px; height: 4px; background: #e5e7eb; border-radius: 2px; margin: 0.75rem auto 0; }
+        .form-handle { width: 40px; height: 4px; background: var(--border, #E9E9EE); border-radius: 2px; margin: 0.75rem auto 0; }
         .form-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem 0.5rem; }
-        .form-header h2 { font-size: 1.1rem; font-weight: 600; color: #1f2937; }
-        .form-close { background: #f3f4f6; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; }
+        .form-header h2 { font-size: 1.1rem; font-weight: 600; color: var(--text-title, #1F2937); }
+        .form-close { background: var(--bg-body, #F7F7F8); border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; }
         .form-scroll { flex: 1; overflow-y: auto; padding: 0.75rem 1.25rem; }
         .form-avatar-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 1.25rem; gap: 0.4rem; }
-        .form-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px dashed #fbcfe8; background: #fff0f6; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; }
+        .form-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px dashed var(--primary-light, #FFF1F7); background: var(--primary-light, #FFF1F7); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; }
         .form-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .form-avatar-overlay { position: absolute; inset: 0; background: rgba(249,0,122,0.4); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; opacity: 0; transition: opacity 0.2s; }
+        .form-avatar-overlay { position: absolute; inset: 0; background: rgba(255,111,169,0.4); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; opacity: 0; transition: opacity 0.2s; }
         .form-avatar:hover .form-avatar-overlay { opacity: 1; }
-        .form-avatar-hint { font-size: 0.78rem; color: #9ca3af; }
+        .form-avatar-hint { font-size: 0.78rem; color: var(--text-muted, #9CA3AF); }
         .form-fields { display: flex; flex-direction: column; gap: 0.85rem; }
         .form-field { display: flex; flex-direction: column; gap: 0.3rem; }
-        .form-field label { font-size: 0.82rem; font-weight: 500; color: #374151; }
-        .form-field input, .form-field select { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: #1f2937; outline: none; transition: border-color 0.2s; background: white; }
-        .form-field input:focus, .form-field select:focus { border-color: #f9007a; }
-        .form-footer { display: flex; gap: 0.75rem; padding: 0.75rem 1.25rem 1.25rem; border-top: 1px solid #f3f4f6; }
+        .form-field label { font-size: 0.82rem; font-weight: 500; color: var(--text-primary, #374151); }
+        .form-field input, .form-field select { padding: 0.65rem 0.9rem; border: 1.5px solid var(--border, #E9E9EE); border-radius: 8px; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: var(--text-title, #1F2937); outline: none; transition: border-color 0.2s; background: var(--bg-card, #FFFFFF); }
+        .form-field input:focus, .form-field select:focus { border-color: var(--border-focus, #FF6FA9); }
+        .form-footer { display: flex; gap: 0.75rem; padding: 0.75rem 1.25rem 1.25rem; border-top: 1px solid var(--border, #E9E9EE); }
         .form-btn { flex: 1; padding: 0.8rem; border-radius: 10px; border: none; font-family: 'Geist', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
-        .form-btn.cancel { background: #f3f4f6; color: #6b7280; }
-        .form-btn.save { background: linear-gradient(135deg, #f9007a, #d4006a); color: white; }
+        .form-btn.cancel { background: var(--bg-body, #F7F7F8); color: var(--text-secondary, #6B7280); }
+        .form-btn.save { background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); }
         .form-btn.save:disabled { opacity: 0.6; cursor: not-allowed; }
-        .form-btn.delete-btn { background: #fff1f2; color: #ef4444; flex: 0 0 auto; padding: 0.8rem 1rem; }
+        .form-btn.delete-btn { background: #fff1f2; color: var(--error, #EF4444); flex: 0 0 auto; padding: 0.8rem 1rem; }
 
-        .spinner { width: 24px; height: 24px; border: 2px solid #fce7f3; border-top-color: #f9007a; border-radius: 50%; animation: spin 0.7s linear infinite; }
+        .spinner { width: 24px; height: 24px; border: 2px solid var(--primary-light, #FFF1F7); border-top-color: var(--primary, #FF6FA9); border-radius: 50%; animation: spin 0.7s linear infinite; }
         .spinner-sm { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
