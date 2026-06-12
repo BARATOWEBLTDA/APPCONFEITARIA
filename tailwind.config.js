@@ -7,17 +7,27 @@ export default {
   theme: {
     extend: {
       colors: {
-        rosa: {
-          50:  "#fff0f6",
-          100: "#fce7f3",
-          200: "#fbcfe8",
-          300: "#f9a8d4",
-          400: "#f472b6",
-          500: "#ec4899",
-          600: "#db2777",
-          700: "#be185d",
-          800: "#9d174d",
-          900: "#831843",
+        primary: {
+          DEFAULT: "#FF6FA9",
+          dark:    "#F85A9A",
+          light:   "#FFF1F7",
+        },
+        neutral: {
+          title:     "#1F2937",
+          body:      "#374151",
+          secondary: "#6B7280",
+          disabled:  "#9CA3AF",
+        },
+        surface: {
+          app:    "#F7F7F8",
+          card:   "#FFFFFF",
+          border: "#E9E9EE",
+        },
+        state: {
+          success: "#22C55E",
+          warning: "#F59E0B",
+          error:   "#EF4444",
+          info:    "#3B82F6",
         },
       },
       fontFamily: {
@@ -26,7 +36,7 @@ export default {
         body:    ["'Geist'", "sans-serif"],
       },
       borderRadius: {
-        xl:   "1rem",
+        xl:    "1rem",
         "2xl": "1.5rem",
         "3xl": "2rem",
       },
