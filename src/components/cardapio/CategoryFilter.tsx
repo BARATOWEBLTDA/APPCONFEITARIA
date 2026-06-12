@@ -28,7 +28,7 @@ export function CategoryFilter({ categories, selectedCategory, onCategorySelect,
               <div style={{
                 width: '64px', height: '64px', borderRadius: '50%',
                 backgroundColor: isSelected ? '#2E2E2E' : '#fe62a6',
-                border: '3px solid #DBDFE4', outline: '3px solid white',
+                border: '3px solid var(--border)', outline: '3px solid var(--bg-card)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 overflow: 'hidden', transition: 'all 0.2s',
                 boxShadow: isSelected ? '0 4px 12px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.1)',
@@ -42,7 +42,7 @@ export function CategoryFilter({ categories, selectedCategory, onCategorySelect,
               </div>
               <span style={{
                 fontSize: '0.65rem', fontWeight: isSelected ? 700 : 500,
-                color: isSelected ? '#1f2937' : '#6b7280',
+                color: isSelected ? 'var(--text-title)' : 'var(--text-secondary)',
                 maxWidth: '64px', textAlign: 'center',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>{cat.name}</span>
