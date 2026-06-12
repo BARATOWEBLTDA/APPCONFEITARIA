@@ -228,7 +228,7 @@ export default function Produtos() {
 
   const Toggle = ({ label, value, onChange, colorClass }: any) => (
     <div className={`prod-toggle-item${value ? ` ${colorClass}` : ""}`} onClick={() => onChange(!value)}>
-      <div className={`prod-toggle-slider${value ? " active" : ""}`} style={{ background: value ? (colorClass === "active-green" ? "#22c55e" : "#F583BF") : "#e5e7eb" }}>
+      <div className={`prod-toggle-slider${value ? " active" : ""}`} style={{ background: value ? (colorClass === "active-green" ? "var(--success, #22C55E)" : "var(--primary, #FF6FA9)") : "var(--border, #E9E9EE)" }}>
         <div className="prod-toggle-thumb" style={{ transform: value ? "translateX(20px)" : "translateX(0)" }} />
       </div>
       <span>{label}</span>
@@ -238,9 +238,9 @@ export default function Produtos() {
   const TagList = ({ items, onRemove }: { items: string[], onRemove: (i: number) => void }) => (
     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "6px" }}>
       {items.map((item, i) => (
-        <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: "#fce7f3", color: "#be185d", borderRadius: "50px", fontSize: "0.8rem", fontWeight: 600 }}>
+        <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: "var(--primary-light, #FFF1F7)", color: "var(--primary-dark, #F85A9A)", borderRadius: "50px", fontSize: "0.8rem", fontWeight: 600 }}>
           {item}
-          <button onClick={() => onRemove(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#be185d", padding: 0, lineHeight: 1, fontSize: "0.85rem" }}>×</button>
+          <button onClick={() => onRemove(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--primary-dark, #F85A9A)", padding: 0, lineHeight: 1, fontSize: "0.85rem" }}>×</button>
         </span>
       ))}
     </div>
@@ -277,7 +277,7 @@ export default function Produtos() {
 
       {activeTab === "produtos" && <>
 
-      {/* Header: Novo produto | título | toggle */}
+      {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "1.5rem" }}>
         <button className="prod-btn-novo" onClick={openNovo}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -287,28 +287,25 @@ export default function Produtos() {
           <h1 className="prod-title">Produtos</h1>
           <p className="prod-sub">{produtos.length} cadastrado{produtos.length !== 1 ? "s" : ""}</p>
         </div>
-        <div style={{ display: "flex", background: "var(--bg-subtle,#f3f4f6)", borderRadius: "10px", padding: "3px", gap: "2px" }}>
-          <button onClick={() => { setViewMode("grid"); localStorage.setItem("prod_viewMode", "grid"); }} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "grid" ? "white" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "grid" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "grid" ? "#ec4899" : "#9ca3af"} strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <div style={{ display: "flex", background: "var(--bg-subtle, #FFF1F7)", borderRadius: "10px", padding: "3px", gap: "2px" }}>
+          <button onClick={() => { setViewMode("grid"); localStorage.setItem("prod_viewMode", "grid"); }} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "grid" ? "var(--bg-card, #FFFFFF)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "grid" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "grid" ? "var(--primary, #FF6FA9)" : "var(--text-muted, #9CA3AF)"} strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
           </button>
-          <button onClick={() => { setViewMode("lista"); localStorage.setItem("prod_viewMode", "lista"); }} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "lista" ? "white" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "lista" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "lista" ? "#ec4899" : "#9ca3af"} strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <button onClick={() => { setViewMode("lista"); localStorage.setItem("prod_viewMode", "lista"); }} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "lista" ? "var(--bg-card, #FFFFFF)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "lista" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "lista" ? "var(--primary, #FF6FA9)" : "var(--text-muted, #9CA3AF)"} strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
         </div>
       </div>
 
       {/* Barra de pesquisa */}
       <div style={{ position: "relative" }}>
-        <svg style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <svg style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input
           type="text"
           placeholder="Buscar produto..."
           value={buscaTexto}
-          onChange={e => {
-            setBuscaTexto(e.target.value);
-            setFiltroCategoria("todas");
-          }}
-          style={{ width: "100%", padding: "0.65rem 1rem 0.65rem 2.5rem", border: "1.5px solid var(--border,#e5e7eb)", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", outline: "none", boxSizing: "border-box", background: "var(--bg-card,white)" }}
+          onChange={e => { setBuscaTexto(e.target.value); setFiltroCategoria("todas"); }}
+          style={{ width: "100%", padding: "0.65rem 1rem 0.65rem 2.5rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", outline: "none", boxSizing: "border-box", background: "var(--bg-card, #FFFFFF)" }}
         />
       </div>
 
@@ -327,7 +324,7 @@ export default function Produtos() {
                 Esses produtos aparecem apenas em "Todos" no cardápio. Edite-os e selecione uma categoria válida.
               </p>
             </div>
-            <button onClick={() => setFiltroCategoria("__orfaos__")} style={{ padding: "5px 12px", background: "#f59e0b", color: "white", border: "none", borderRadius: "8px", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+            <button onClick={() => setFiltroCategoria("__orfaos__")} style={{ padding: "5px 12px", background: "var(--warning, #F59E0B)", color: "var(--text-inverse, #FFFFFF)", border: "none", borderRadius: "8px", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
               Ver {orfaos.length}
             </button>
           </div>
@@ -368,12 +365,12 @@ export default function Produtos() {
                   <p className="prod-card-nome">{p.nome}</p>
                   <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <p className="prod-card-preco" style={{ margin: 0 }}>R$ {formatPreco(p.preco_normal)}</p>
-                    {p.promocao && <span style={{ background: "#F583BF", color: "white", fontSize: "0.55rem", fontWeight: 700, padding: "2px 5px", borderRadius: "6px" }}>Promoção</span>}
+                    {p.promocao && <span style={{ background: "var(--primary, #FF6FA9)", color: "var(--text-inverse, #FFFFFF)", fontSize: "0.55rem", fontWeight: 700, padding: "2px 5px", borderRadius: "6px" }}>Promoção</span>}
                   </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexShrink: 0 }}>
                   <button className="prod-card-btn-edit" onClick={() => openEditar(p)}>Editar</button>
-                  <button onClick={() => setDeleteConfirm(p.id!)} style={{ width: "30px", height: "30px", background: "#fff1f2", border: "none", borderRadius: "8px", color: "#ef4444", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <button onClick={() => setDeleteConfirm(p.id!)} style={{ width: "30px", height: "30px", background: "#fff1f2", border: "none", borderRadius: "8px", color: "var(--error, #EF4444)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                   </button>
                 </div>
@@ -386,10 +383,10 @@ export default function Produtos() {
                 {!p.disponivel && <div className="prod-card-indisponivel">Indisponível</div>}
                 {p.promocao && <div className="prod-card-promo">Promoção</div>}
                 {p.pronta_entrega === false && <div className="prod-card-encomenda">Encomenda</div>}
-                {catInvalida && <div style={{ position: "absolute", top: "0.4rem", left: "0.4rem", background: "#f59e0b", color: "white", fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "6px" }}>⚠️ Sem categoria</div>}
+                {catInvalida && <div style={{ position: "absolute", top: "0.4rem", left: "0.4rem", background: "var(--warning, #F59E0B)", color: "var(--text-inverse, #FFFFFF)", fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "6px" }}>⚠️ Sem categoria</div>}
               </div>
               <div className="prod-card-info">
-                <p className="prod-card-cat" style={{ color: catInvalida ? "#f59e0b" : undefined }}>{catInvalida ? `⚠️ ${p.categoria}` : p.categoria}</p>
+                <p className="prod-card-cat" style={{ color: catInvalida ? "var(--warning, #F59E0B)" : undefined }}>{catInvalida ? `⚠️ ${p.categoria}` : p.categoria}</p>
                 <p className="prod-card-nome">{p.nome}</p>
                 <p className="prod-card-preco">R$ {formatPreco(p.preco_normal)}</p>
               </div>
@@ -426,8 +423,8 @@ export default function Produtos() {
                     const ref = slot === 0 ? imgRef : slot === 1 ? img2Ref : img3Ref;
                     return (
                       <div key={slot} style={{ position: "relative" }}>
-                        {slot > 0 && <span style={{ fontSize: "0.65rem", color: "#9ca3af", display: "block", marginBottom: "3px", textAlign: "center" }}>Foto {slot + 1}</span>}
-                        {slot === 0 && <span style={{ fontSize: "0.65rem", color: "#9ca3af", display: "block", marginBottom: "3px", textAlign: "center" }}>Principal</span>}
+                        {slot > 0 && <span style={{ fontSize: "0.65rem", color: "var(--text-muted, #9CA3AF)", display: "block", marginBottom: "3px", textAlign: "center" }}>Foto {slot + 1}</span>}
+                        {slot === 0 && <span style={{ fontSize: "0.65rem", color: "var(--text-muted, #9CA3AF)", display: "block", marginBottom: "3px", textAlign: "center" }}>Principal</span>}
                         <div
                           className="prod-img-upload"
                           style={{ width: "100%", height: "90px", borderRadius: "12px", cursor: isLocked ? "default" : "pointer", position: "relative", overflow: "hidden", background: slot > 0 ? "#f0f4ff" : undefined, border: slot > 0 ? "2px dashed #c7d2fe" : undefined }}
@@ -441,7 +438,7 @@ export default function Produtos() {
                           ) : isLocked ? (
                             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: "4px" }}>
                               <img src="/diamante.png" alt="PRO" style={{ width: "20px", height: "20px" }} />
-                              <span style={{ fontSize: "0.6rem", color: "#9ca3af", textAlign: "center" }}>PRO</span>
+                              <span style={{ fontSize: "0.6rem", color: "var(--text-muted, #9CA3AF)", textAlign: "center" }}>PRO</span>
                             </div>
                           ) : (
                             <div className="prod-img-placeholder">
@@ -450,9 +447,8 @@ export default function Produtos() {
                               )}
                             </div>
                           )}
-                          {/* Faixa PRO diagonal — sempre nos slots extras */}
                           {slot > 0 && (
-                            <div style={{ position: "absolute", top: "10px", right: "-16px", background: "linear-gradient(135deg,#ec4899,#f472b6)", color: "white", fontSize: "0.55rem", fontWeight: 900, padding: "2px 20px", transform: "rotate(45deg)", zIndex: 10, width: "70px", textAlign: "center" }}>PRO</div>
+                            <div style={{ position: "absolute", top: "10px", right: "-16px", background: "var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A))", color: "var(--text-inverse, #FFFFFF)", fontSize: "0.55rem", fontWeight: 900, padding: "2px 20px", transform: "rotate(45deg)", zIndex: 10, width: "70px", textAlign: "center" }}>PRO</div>
                           )}
                         </div>
                         <input ref={ref} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleImageUpload(e, slot)} />
@@ -460,7 +456,7 @@ export default function Produtos() {
                     );
                   })}
                 </div>
-                {!isPro && <p style={{ fontSize: "0.72rem", color: "#9ca3af", margin: "4px 0 0", textAlign: "center" }}>Fotos 2 e 3 disponíveis no plano PRO</p>}
+                {!isPro && <p style={{ fontSize: "0.72rem", color: "var(--text-muted, #9CA3AF)", margin: "4px 0 0", textAlign: "center" }}>Fotos 2 e 3 disponíveis no plano PRO</p>}
               </div>
 
               {/* Informações */}
@@ -499,7 +495,7 @@ export default function Produtos() {
                           setForm(f => ({ ...f, descricao: "" }));
                         }
                       }}
-                      style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: (form.nome.trim() && isPro) ? "linear-gradient(135deg,#F583BF,#e060a8)" : "#e5e7eb", color: (form.nome.trim() && isPro) ? "white" : "#9ca3af", border: "none", borderRadius: "20px", fontFamily: "Inter, sans-serif", fontSize: "0.7rem", fontWeight: 700, cursor: (form.nome.trim() && isPro) ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}
+                      style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: (form.nome.trim() && isPro) ? "var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A))" : "var(--border, #E9E9EE)", color: (form.nome.trim() && isPro) ? "var(--text-inverse, #FFFFFF)" : "var(--text-muted, #9CA3AF)", border: "none", borderRadius: "20px", fontFamily: "Inter, sans-serif", fontSize: "0.7rem", fontWeight: 700, cursor: (form.nome.trim() && isPro) ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}
                       title={!isPro ? "Disponível apenas no plano PRO" : ""}
                     >
                       ✨ {isPro ? "Gerar com IA" : "IA — PRO"}
@@ -528,7 +524,6 @@ export default function Produtos() {
                   </div>
                 </div>
 
-                {/* Tamanhos/Quantidades — contextual por forma de venda */}
                 {!["kit-festa", "sob-encomenda"].includes(form.forma_venda) && (() => {
                   const config: Record<string, { label: string; sub: string; placeholder: string; placeholderPreco: string; suffix?: string }> = {
                     unidade:  { label: "Opções de quantidade", sub: "Ex: 6 unidades, 12 unidades, 24 unidades", placeholder: "Ex: 6, 12, 24...", placeholderPreco: "Preço", suffix: "un" },
@@ -563,32 +558,20 @@ export default function Produtos() {
 
                   return (
                     <div className="prod-field">
-                      <label>{cfg.label} <span style={{ color: "#9ca3af", fontWeight: 400 }}>(opcional)</span></label>
-                      <p style={{ fontSize: "0.75rem", color: "#9ca3af", margin: "0 0 6px" }}>{cfg.sub}</p>
+                      <label>{cfg.label} <span style={{ color: "var(--text-muted, #9CA3AF)", fontWeight: 400 }}>(opcional)</span></label>
+                      <p style={{ fontSize: "0.75rem", color: "var(--text-muted, #9CA3AF)", margin: "0 0 6px" }}>{cfg.sub}</p>
                       {(form.tamanhos_disponiveis || []).map((t, i) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "#fdf2f8", borderRadius: "8px", marginBottom: "4px" }}>
-                          <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "#ec4899" }}>{t.label}</span>
+                        <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "var(--primary-light, #FFF1F7)", borderRadius: "8px", marginBottom: "4px" }}>
+                          <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--primary, #FF6FA9)" }}>{t.label}</span>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <span style={{ fontSize: "0.82rem", color: "#22c55e", fontWeight: 700 }}>R$ {t.preco.toFixed(2).replace(".", ",")}</span>
-                            <button onClick={() => removeTamanho(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1rem", padding: 0 }}>×</button>
+                            <span style={{ fontSize: "0.82rem", color: "var(--success, #22C55E)", fontWeight: 700 }}>R$ {t.preco.toFixed(2).replace(".", ",")}</span>
+                            <button onClick={() => removeTamanho(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--error, #EF4444)", fontSize: "1rem", padding: 0 }}>×</button>
                           </div>
                         </div>
                       ))}
                       <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
-                        <input
-                          type="text"
-                          placeholder={cfg.placeholder}
-                          value={novoTamanho.label}
-                          onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))}
-                          style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }}
-                        />
-                        <input
-                          type="text"
-                          placeholder={cfg.placeholderPreco}
-                          value={novoTamanho.preco}
-                          onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))}
-                          style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }}
-                        />
+                        <input type="text" placeholder={cfg.placeholder} value={novoTamanho.label} onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))} style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                        <input type="text" placeholder={cfg.placeholderPreco} value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
                         <button onClick={() => {
                           if (!novoTamanho.label.trim()) return;
                           const preco = parseFloat(novoTamanho.preco.replace(",", "."));
@@ -596,7 +579,7 @@ export default function Produtos() {
                           const label = formatLabel(novoTamanho.label.trim());
                           setForm(f => ({ ...f, tamanhos_disponiveis: [...(f.tamanhos_disponiveis || []), { label, preco }] }));
                           setNovoTamanho({ label: "", preco: "" });
-                        }} style={{ padding: "0.5rem 0.85rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
+                        }} style={{ padding: "0.5rem 0.85rem", background: "var(--primary, #FF6FA9)", color: "var(--text-inverse, #FFFFFF)", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
                       </div>
                     </div>
                   );
@@ -607,15 +590,15 @@ export default function Produtos() {
               {form.forma_venda === "kit-festa" && (
                 <div className="prod-section">
                   <p className="prod-section-label">🎉 Itens do Kit</p>
-                  <p style={{ fontSize: "0.82rem", color: "#6b7280", margin: "0" }}>Adicione cada item que estará incluso no kit festa</p>
+                  <p style={{ fontSize: "0.82rem", color: "var(--text-secondary, #6B7280)", margin: "0" }}>Adicione cada item que estará incluso no kit festa</p>
 
                   {(form.kit_itens || []).map((item, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "#fdf2f8", borderRadius: "10px", marginBottom: "6px", border: "1px solid #fce7f3" }}>
+                    <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "var(--primary-light, #FFF1F7)", borderRadius: "10px", marginBottom: "6px", border: "1px solid var(--primary-light, #FFF1F7)" }}>
                       <div>
-                        <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "#374151" }}>{item.nome}</span>
-                        <span style={{ fontSize: "0.8rem", color: "#ec4899", marginLeft: "8px", fontWeight: 600 }}>× {item.quantidade}</span>
+                        <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary, #374151)" }}>{item.nome}</span>
+                        <span style={{ fontSize: "0.8rem", color: "var(--primary, #FF6FA9)", marginLeft: "8px", fontWeight: 600 }}>× {item.quantidade}</span>
                       </div>
-                      <button onClick={() => setForm(f => ({ ...f, kit_itens: (f.kit_itens || []).filter((_, idx) => idx !== i) }))} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444", fontSize: "1.1rem", padding: 0 }}>×</button>
+                      <button onClick={() => setForm(f => ({ ...f, kit_itens: (f.kit_itens || []).filter((_, idx) => idx !== i) }))} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--error, #EF4444)", fontSize: "1.1rem", padding: 0 }}>×</button>
                     </div>
                   ))}
 
@@ -632,7 +615,7 @@ export default function Produtos() {
                       if (!novoKitItem.nome.trim()) return;
                       setForm(f => ({ ...f, kit_itens: [...(f.kit_itens || []), { nome: novoKitItem.nome.trim(), quantidade: novoKitItem.quantidade || "1" }] }));
                       setNovoKitItem({ nome: "", quantidade: "" });
-                    }} style={{ padding: "0.65rem 1rem", background: "#F583BF", color: "white", border: "none", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", marginBottom: "1px" }}>+ Adicionar</button>
+                    }} style={{ padding: "0.65rem 1rem", background: "var(--primary, #FF6FA9)", color: "var(--text-inverse, #FFFFFF)", border: "none", borderRadius: "10px", fontSize: "0.88rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", marginBottom: "1px" }}>+ Adicionar</button>
                   </div>
 
                   <div className="prod-field">
@@ -653,14 +636,13 @@ export default function Produtos() {
 
                 {form.permite_personalizacao && (
                   <>
-                    {/* Zero Açúcar */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: "#fafafa", borderRadius: "12px", border: "1px solid #f3f4f6" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: "var(--bg-body, #F7F7F8)", borderRadius: "12px", border: "1px solid var(--border, #E9E9EE)" }}>
                       <div>
-                        <p style={{ fontSize: "0.85rem", fontWeight: 700, color: "#374151", margin: "0 0 2px" }}>🚫 Zero Açúcar</p>
-                        <p style={{ fontSize: "0.72rem", color: "#9ca3af", margin: 0 }}>Disponível versão sem açúcar</p>
+                        <p style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary, #374151)", margin: "0 0 2px" }}>🚫 Zero Açúcar</p>
+                        <p style={{ fontSize: "0.72rem", color: "var(--text-muted, #9CA3AF)", margin: 0 }}>Disponível versão sem açúcar</p>
                       </div>
                       <button onClick={() => setForm(f => ({ ...f, zero_acucar: !f.zero_acucar }))}
-                        style={{ width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer", background: form.zero_acucar ? "#ec4899" : "#e5e7eb", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                        style={{ width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer", background: form.zero_acucar ? "var(--primary, #FF6FA9)" : "var(--border, #E9E9EE)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
                         <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: form.zero_acucar ? "23px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
                       </button>
                     </div>
@@ -670,51 +652,51 @@ export default function Produtos() {
                       { label: "Sabores / Recheios", campo: "recheios_disponiveis" as const, key: "recheio" as const, placeholder: "Ex: Morango, Brigadeiro..." },
                       { label: "Coberturas", campo: "coberturas_disponiveis" as const, key: "cobertura" as const, placeholder: "Ex: Ganache, Chantilly..." },
                     ].map(({ label, campo, key, placeholder }) => (
-                      <div key={campo} style={{ background: "#fafafa", borderRadius: "12px", padding: "10px 12px", border: "1px solid #f3f4f6" }}>
-                        <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "#374151", margin: "0 0 8px" }}>{label}</p>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", padding: "8px 10px", border: "1.5px solid #e5e7eb", borderRadius: "10px", background: "white", cursor: "text" }}
+                      <div key={campo} style={{ background: "var(--bg-body, #F7F7F8)", borderRadius: "12px", padding: "10px 12px", border: "1px solid var(--border, #E9E9EE)" }}>
+                        <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary, #374151)", margin: "0 0 8px" }}>{label}</p>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", padding: "8px 10px", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "10px", background: "var(--bg-card, #FFFFFF)", cursor: "text" }}
                           onClick={() => (document.getElementById(`input-${key}`) as HTMLInputElement)?.focus()}>
                           {(form[campo] || []).map((item: string, i: number) => (
-                            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "3px", padding: "2px 8px 2px 10px", background: "#fce7f3", border: "1px solid #f9a8d4", color: "#be185d", borderRadius: "50px", fontSize: "0.78rem", fontWeight: 600, whiteSpace: "nowrap" }}>
+                            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "3px", padding: "2px 8px 2px 10px", background: "var(--primary-light, #FFF1F7)", border: "1px solid var(--primary-light, #FFF1F7)", color: "var(--primary-dark, #F85A9A)", borderRadius: "50px", fontSize: "0.78rem", fontWeight: 600, whiteSpace: "nowrap" }}>
                               {item}
-                              <button onClick={e => { e.stopPropagation(); removeOpcao(campo, i); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#be185d", padding: "0 2px", lineHeight: 1, fontSize: "0.85rem" }}>×</button>
+                              <button onClick={e => { e.stopPropagation(); removeOpcao(campo, i); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--primary-dark, #F85A9A)", padding: "0 2px", lineHeight: 1, fontSize: "0.85rem" }}>×</button>
                             </span>
                           ))}
                           <input id={`input-${key}`} type="text" placeholder={(form[campo] || []).length === 0 ? placeholder : "Adicionar..."} value={novaOpcao[key]} onChange={e => setNovaOpcao(o => ({ ...o, [key]: e.target.value }))} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addOpcao(campo, key); } }} style={{ border: "none", outline: "none", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", flex: 1, minWidth: "100px", background: "transparent", padding: "2px 0" }} />
                         </div>
-                        <p style={{ fontSize: "0.68rem", color: "#9ca3af", margin: "4px 0 0" }}>Pressione Enter ou clique em + Add</p>
-                        <button onClick={() => addOpcao(campo, key)} style={{ marginTop: "6px", padding: "0.4rem 1rem", background: "#F583BF", color: "white", border: "none", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
+                        <p style={{ fontSize: "0.68rem", color: "var(--text-muted, #9CA3AF)", margin: "4px 0 0" }}>Pressione Enter ou clique em + Add</p>
+                        <button onClick={() => addOpcao(campo, key)} style={{ marginTop: "6px", padding: "0.4rem 1rem", background: "var(--primary, #FF6FA9)", color: "var(--text-inverse, #FFFFFF)", border: "none", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
                       </div>
                     ))}
                   </>
                 )}
               </div>
 
-              {/* Adicionais — Vela, Topo, Papel de Arroz, Outro */}
+              {/* Adicionais */}
               <div className="prod-section">
                 <p className="prod-section-label">✨ Adicionais</p>
-                <p style={{ fontSize: "0.78rem", color: "#9ca3af", margin: "0" }}>Itens extras que o cliente pode solicitar</p>
+                <p style={{ fontSize: "0.78rem", color: "var(--text-muted, #9CA3AF)", margin: "0" }}>Itens extras que o cliente pode solicitar</p>
 
                 {[
                   { label: "Velas", sub: "Cliente escolhe se quer velas", campo: "tem_vela" as const, valor: "valor_vela" as const },
                   { label: "Topo de Bolo", sub: "Cliente escolhe o topo personalizado", campo: "tem_topo" as const, valor: "valor_topo" as const },
                   { label: "Papel de Arroz", sub: "Impressão comestível personalizada", campo: "tem_papel_arroz" as const, valor: "valor_papel_arroz" as const },
                 ].map(({ label, sub, campo, valor }) => (
-                  <div key={campo} style={{ background: "#fafafa", borderRadius: "12px", border: "1px solid #f3f4f6", overflow: "hidden" }}>
+                  <div key={campo} style={{ background: "var(--bg-body, #F7F7F8)", borderRadius: "12px", border: "1px solid var(--border, #E9E9EE)", overflow: "hidden" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px" }}>
                       <div>
-                        <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "#374151", margin: "0 0 2px" }}>{label}</p>
-                        <p style={{ fontSize: "0.72rem", color: "#9ca3af", margin: 0 }}>{sub}</p>
+                        <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary, #374151)", margin: "0 0 2px" }}>{label}</p>
+                        <p style={{ fontSize: "0.72rem", color: "var(--text-muted, #9CA3AF)", margin: 0 }}>{sub}</p>
                       </div>
                       <button onClick={() => setForm(f => ({ ...f, [campo]: !f[campo] }))}
-                        style={{ width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer", background: form[campo] ? "#ec4899" : "#e5e7eb", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                        style={{ width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer", background: form[campo] ? "var(--primary, #FF6FA9)" : "var(--border, #E9E9EE)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
                         <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: form[campo] ? "23px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
                       </button>
                     </div>
                     {form[campo] && (
-                      <div style={{ padding: "0 12px 12px", borderTop: "1px solid #f3f4f6" }}>
-                        <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#6b7280", display: "block", margin: "8px 0 4px" }}>Valor adicional</label>
-                        <div className="prod-preco-input" style={{ background: "white" }}>
+                      <div style={{ padding: "0 12px 12px", borderTop: "1px solid var(--border, #E9E9EE)" }}>
+                        <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary, #6B7280)", display: "block", margin: "8px 0 4px" }}>Valor adicional</label>
+                        <div className="prod-preco-input" style={{ background: "var(--bg-card, #FFFFFF)" }}>
                           <span>R$</span>
                           <input type="text" placeholder="0,00" value={form[valor] ? formatPreco(form[valor] as number) : ""} onChange={e => setForm(f => ({ ...f, [valor]: parsePreco(e.target.value) }))} />
                         </div>
@@ -723,27 +705,26 @@ export default function Produtos() {
                   </div>
                 ))}
 
-                {/* Outro — título personalizado */}
-                <div style={{ background: "#fafafa", borderRadius: "12px", border: "1px solid #f3f4f6", overflow: "hidden" }}>
+                <div style={{ background: "var(--bg-body, #F7F7F8)", borderRadius: "12px", border: "1px solid var(--border, #E9E9EE)", overflow: "hidden" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px" }}>
                     <div>
-                      <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "#374151", margin: "0 0 2px" }}>Outro</p>
-                      <p style={{ fontSize: "0.72rem", color: "#9ca3af", margin: 0 }}>Adicional personalizado</p>
+                      <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary, #374151)", margin: "0 0 2px" }}>Outro</p>
+                      <p style={{ fontSize: "0.72rem", color: "var(--text-muted, #9CA3AF)", margin: 0 }}>Adicional personalizado</p>
                     </div>
                     <button onClick={() => setForm(f => ({ ...f, tem_outro: !f.tem_outro }))}
-                      style={{ width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer", background: form.tem_outro ? "#ec4899" : "#e5e7eb", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                      style={{ width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer", background: form.tem_outro ? "var(--primary, #FF6FA9)" : "var(--border, #E9E9EE)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
                       <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: form.tem_outro ? "23px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
                     </button>
                   </div>
                   {form.tem_outro && (
-                    <div style={{ padding: "0 12px 12px", borderTop: "1px solid #f3f4f6", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div style={{ padding: "0 12px 12px", borderTop: "1px solid var(--border, #E9E9EE)", display: "flex", flexDirection: "column", gap: "8px" }}>
                       <div>
-                        <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#6b7280", display: "block", margin: "8px 0 4px" }}>Nome do adicional</label>
-                        <input type="text" placeholder="Ex: Embalagem especial, Laço..." value={form.titulo_outro || ""} onChange={e => setForm(f => ({ ...f, titulo_outro: e.target.value }))} style={{ width: "100%", padding: "0.55rem 0.85rem", border: "1.5px solid #e5e7eb", borderRadius: "10px", fontSize: "0.85rem", fontFamily: "Inter, sans-serif", outline: "none", boxSizing: "border-box", background: "white" }} />
+                        <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary, #6B7280)", display: "block", margin: "8px 0 4px" }}>Nome do adicional</label>
+                        <input type="text" placeholder="Ex: Embalagem especial, Laço..." value={form.titulo_outro || ""} onChange={e => setForm(f => ({ ...f, titulo_outro: e.target.value }))} style={{ width: "100%", padding: "0.55rem 0.85rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "10px", fontSize: "0.85rem", fontFamily: "Inter, sans-serif", outline: "none", boxSizing: "border-box", background: "var(--bg-card, #FFFFFF)" }} />
                       </div>
                       <div>
-                        <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "#6b7280", display: "block", margin: "0 0 4px" }}>Valor adicional</label>
-                        <div className="prod-preco-input" style={{ background: "white" }}>
+                        <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary, #6B7280)", display: "block", margin: "0 0 4px" }}>Valor adicional</label>
+                        <div className="prod-preco-input" style={{ background: "var(--bg-card, #FFFFFF)" }}>
                           <span>R$</span>
                           <input type="text" placeholder="0,00" value={form.valor_outro ? formatPreco(form.valor_outro) : ""} onChange={e => setForm(f => ({ ...f, valor_outro: parsePreco(e.target.value) }))} />
                         </div>
@@ -760,17 +741,16 @@ export default function Produtos() {
 
                 {form.promocao && (
                   <>
-                    {/* Tipo de promoção */}
                     <div style={{ display: "flex", gap: "8px" }}>
                       <button
                         onClick={() => setForm(f => ({ ...f, tipo_promocao: 'fixo' }))}
-                        style={{ flex: 1, padding: "8px", borderRadius: "10px", border: `2px solid ${form.tipo_promocao !== 'percentual' ? '#ec4899' : '#e5e7eb'}`, background: form.tipo_promocao !== 'percentual' ? '#fdf2f8' : 'white', fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 700, color: form.tipo_promocao !== 'percentual' ? '#ec4899' : '#6b7280', cursor: "pointer" }}
+                        style={{ flex: 1, padding: "8px", borderRadius: "10px", border: `2px solid ${form.tipo_promocao !== 'percentual' ? 'var(--primary, #FF6FA9)' : 'var(--border, #E9E9EE)'}`, background: form.tipo_promocao !== 'percentual' ? 'var(--primary-light, #FFF1F7)' : 'var(--bg-card, #FFFFFF)', fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 700, color: form.tipo_promocao !== 'percentual' ? 'var(--primary, #FF6FA9)' : 'var(--text-secondary, #6B7280)', cursor: "pointer" }}
                       >
                         💰 Preço fixo
                       </button>
                       <button
                         onClick={() => setForm(f => ({ ...f, tipo_promocao: 'percentual' }))}
-                        style={{ flex: 1, padding: "8px", borderRadius: "10px", border: `2px solid ${form.tipo_promocao === 'percentual' ? '#ec4899' : '#e5e7eb'}`, background: form.tipo_promocao === 'percentual' ? '#fdf2f8' : 'white', fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 700, color: form.tipo_promocao === 'percentual' ? '#ec4899' : '#6b7280', cursor: "pointer" }}
+                        style={{ flex: 1, padding: "8px", borderRadius: "10px", border: `2px solid ${form.tipo_promocao === 'percentual' ? 'var(--primary, #FF6FA9)' : 'var(--border, #E9E9EE)'}`, background: form.tipo_promocao === 'percentual' ? 'var(--primary-light, #FFF1F7)' : 'var(--bg-card, #FFFFFF)', fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 700, color: form.tipo_promocao === 'percentual' ? 'var(--primary, #FF6FA9)' : 'var(--text-secondary, #6B7280)', cursor: "pointer" }}
                       >
                         % Desconto
                       </button>
@@ -780,7 +760,7 @@ export default function Produtos() {
                       <div className="prod-field">
                         <label>Percentual de desconto</label>
                         <div className="prod-preco-input">
-                          <span style={{ color: "#ec4899" }}>%</span>
+                          <span style={{ color: "var(--primary, #FF6FA9)" }}>%</span>
                           <input
                             type="text"
                             placeholder="Ex: 10, 20, 50..."
@@ -794,13 +774,13 @@ export default function Produtos() {
                         </div>
                         {form.desconto_percentual > 0 && form.preco_normal > 0 && (
                           <div style={{ marginTop: "6px", padding: "8px 12px", background: "#dcfce7", borderRadius: "8px" }}>
-                            <p style={{ fontSize: "0.78rem", color: "#15803d", fontWeight: 600, margin: 0 }}>
+                            <p style={{ fontSize: "0.78rem", color: "var(--success, #22C55E)", fontWeight: 600, margin: 0 }}>
                               Preço base: R$ {formatPreco(form.preco_normal)} → R$ {formatPreco(form.preco_normal * (1 - (form.desconto_percentual || 0) / 100))}
                             </p>
                             {(form.tamanhos_disponiveis || []).length > 0 && (
                               <div style={{ marginTop: "4px", display: "flex", flexDirection: "column", gap: "2px" }}>
                                 {(form.tamanhos_disponiveis || []).map((t, i) => (
-                                  <p key={i} style={{ fontSize: "0.72rem", color: "#15803d", margin: 0 }}>
+                                  <p key={i} style={{ fontSize: "0.72rem", color: "var(--success, #22C55E)", margin: 0 }}>
                                     {t.label}: R$ {formatPreco(t.preco)} → R$ {formatPreco(t.preco * (1 - (form.desconto_percentual || 0) / 100))}
                                   </p>
                                 ))}
@@ -817,7 +797,7 @@ export default function Produtos() {
                           <input type="text" placeholder="0,00" value={form.preco_promocional ? formatPreco(form.preco_promocional) : ""} onChange={e => setForm(f => ({ ...f, preco_promocional: parsePreco(e.target.value) }))} />
                         </div>
                         {form.preco_normal > 0 && form.preco_promocional > 0 && (
-                          <p style={{ fontSize: "0.75rem", color: "#ec4899", fontWeight: 600, margin: "4px 0 0" }}>
+                          <p style={{ fontSize: "0.75rem", color: "var(--primary, #FF6FA9)", fontWeight: 600, margin: "4px 0 0" }}>
                             Desconto de {Math.round((1 - form.preco_promocional / form.preco_normal) * 100)}%
                           </p>
                         )}
@@ -827,7 +807,7 @@ export default function Produtos() {
                 )}
               </div>
 
-              {/* Disponível e Pronta entrega — por último */}
+              {/* Status */}
               <div className="prod-section">
                 <p className="prod-section-label">📋 Status</p>
                 <div className="prod-toggles" style={{ gap: "0.5rem" }}>
@@ -855,7 +835,7 @@ export default function Produtos() {
             <p className="prod-confirm-sub">Esta ação não pode ser desfeita.</p>
             <div className="prod-confirm-btns">
               <button onClick={() => setDeleteConfirm(null)}>Cancelar</button>
-              <button onClick={() => handleDelete(deleteConfirm)} style={{ background: "#ef4444", color: "white" }}>Excluir</button>
+              <button onClick={() => handleDelete(deleteConfirm)} style={{ background: "var(--error, #EF4444)", color: "var(--text-inverse, #FFFFFF)" }}>Excluir</button>
             </div>
           </div>
         </div>
@@ -866,87 +846,86 @@ export default function Produtos() {
 
       <style>{`
         /* ── Tabs ── */
-        .prod-tabs { display:flex; gap:0.25rem; background:#e5e7eb; border-radius:12px; padding:4px; width:fit-content; margin-bottom:0.5rem; }
-        .prod-tab { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 1.1rem; border-radius:9px; border:none; background:transparent; font-family:'Geist',sans-serif; font-size:0.86rem; font-weight:600; color:#71717a; cursor:pointer; transition:all 0.18s; white-space:nowrap; }
-        .prod-tab:hover { color:#18181b; background:rgba(255,255,255,0.6); }
-        .prod-tab--active { background:#ffffff; color:#F583BF; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+        .prod-tabs { display:flex; gap:0.25rem; background:var(--border, #E9E9EE); border-radius:12px; padding:4px; width:fit-content; margin-bottom:0.5rem; }
+        .prod-tab { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 1.1rem; border-radius:9px; border:none; background:transparent; font-family:'Geist',sans-serif; font-size:0.86rem; font-weight:600; color:var(--text-secondary, #6B7280); cursor:pointer; transition:all 0.18s; white-space:nowrap; }
+        .prod-tab:hover { color:var(--text-title, #1F2937); background:rgba(255,255,255,0.6); }
+        .prod-tab--active { background:var(--bg-card, #FFFFFF); color:var(--primary, #FF6FA9); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
         @media(max-width:640px) { .prod-tabs { width:100%; } .prod-tab { flex:1; justify-content:center; padding:0.5rem 0.25rem; font-size:0.78rem; } }
 
         .prod-root { font-family:'Geist', sans-serif; max-width:800px; display:flex; flex-direction:column; gap:1rem; }
-        .prod-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
+        .prod-spinner { width:32px; height:32px; border:3px solid var(--primary-light, #FFF1F7); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
         .prod-spinner-sm { width:18px; height:18px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
         @keyframes pspin { to { transform:rotate(360deg); } }
-        .prod-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
-        .prod-title { font-size:1.3rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.15rem; }
-        .prod-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0; }
-        .prod-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.7rem 1.2rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+        .prod-title { font-size:1.3rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.15rem; }
+        .prod-sub { font-size:0.82rem; color:var(--text-muted, #9CA3AF); margin:0; }
+        .prod-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.7rem 1.2rem; background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color:var(--text-inverse, #FFFFFF); border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; }
         .prod-filtros { display:flex; gap:0.4rem; flex-wrap:wrap; }
-        .prod-filtro-btn { padding:0.35rem 0.7rem; border:1.5px solid var(--border,#e5e7eb); border-radius:8px; background:var(--bg-card,white); font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:500; color:var(--text-secondary,#6b7280); cursor:pointer; }
-        .prod-filtro-btn.active { border-color:#F583BF; color:#F583BF; background:#fdf2f8; font-weight:700; }
+        .prod-filtro-btn { padding:0.35rem 0.7rem; border:1.5px solid var(--border, #E9E9EE); border-radius:8px; background:var(--bg-card, #FFFFFF); font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:500; color:var(--text-secondary, #6B7280); cursor:pointer; }
+        .prod-filtro-btn.active { border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); background:var(--primary-light, #FFF1F7); font-weight:700; }
         .prod-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; padding:3rem 1rem; text-align:center; }
-        .prod-empty-title { font-size:1rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0; }
-        .prod-empty-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0; }
+        .prod-empty-title { font-size:1rem; font-weight:700; color:var(--text-title, #1F2937); margin:0; }
+        .prod-empty-sub { font-size:0.82rem; color:var(--text-muted, #9CA3AF); margin:0; }
         .prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.75rem; }
         .prod-list { display:flex; flex-direction:column; gap:0.5rem; }
-        .prod-list-item { background:var(--bg-card,white); border-radius:14px; padding:0.65rem; display:flex; align-items:center; gap:0.85rem; box-shadow:var(--shadow-card,0 2px 8px rgba(0,0,0,0.06)); }
-        .prod-list-img { width:64px; height:64px; border-radius:10px; overflow:hidden; background:#fdf2f8; display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative; cursor:pointer; }
+        .prod-list-item { background:var(--bg-card, #FFFFFF); border-radius:14px; padding:0.65rem; display:flex; align-items:center; gap:0.85rem; box-shadow:var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06)); }
+        .prod-list-img { width:64px; height:64px; border-radius:10px; overflow:hidden; background:var(--primary-light, #FFF1F7); display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative; cursor:pointer; }
         .prod-list-img img { width:100%; height:100%; object-fit:cover; }
         .prod-list-info { flex:1; min-width:0; }
-        .prod-card { background:var(--bg-card,white); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-card,0 2px 8px rgba(0,0,0,0.06)); display:flex; flex-direction:column; }
-        .prod-card-img { aspect-ratio:1; background:var(--bg-subtle,#f9fafb); display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; overflow:hidden; }
+        .prod-card { background:var(--bg-card, #FFFFFF); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06)); display:flex; flex-direction:column; }
+        .prod-card-img { aspect-ratio:1; background:var(--bg-subtle, #FFF1F7); display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; overflow:hidden; }
         .prod-card-img img { width:100%; height:100%; object-fit:cover; }
         .prod-card-indisponivel { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; color:white; font-size:0.72rem; font-weight:700; }
-        .prod-card-promo { position:absolute; top:0.4rem; left:0.4rem; background:#F583BF; color:white; font-size:0.65rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:20px; }
-        .prod-card-encomenda { position:absolute; top:0.4rem; right:0.4rem; background:#f59e0b; color:white; font-size:0.65rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:20px; }
+        .prod-card-promo { position:absolute; top:0.4rem; left:0.4rem; background:var(--primary, #FF6FA9); color:var(--text-inverse, #FFFFFF); font-size:0.65rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:20px; }
+        .prod-card-encomenda { position:absolute; top:0.4rem; right:0.4rem; background:var(--warning, #F59E0B); color:var(--text-inverse, #FFFFFF); font-size:0.65rem; font-weight:700; padding:0.15rem 0.45rem; border-radius:20px; }
         .prod-card-info { padding:0.65rem 0.75rem; flex:1; }
-        .prod-card-cat { font-size:0.68rem; color:#F583BF; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 0.15rem; }
-        .prod-card-nome { font-size:0.85rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.25rem; line-height:1.3; }
-        .prod-card-preco { font-size:0.88rem; font-weight:600; color:#22c55e; margin:0; }
-        .prod-card-actions { display:flex; gap:0.4rem; padding:0.5rem 0.75rem; border-top:1px solid var(--border,#f3f4f6); }
-        .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle,#f9fafb); border:none; border-radius:8px; font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
-        .prod-card-btn-del { padding:0.4rem 0.6rem; background:#fff1f2; border:none; border-radius:8px; color:#ef4444; cursor:pointer; display:flex; align-items:center; }
+        .prod-card-cat { font-size:0.68rem; color:var(--primary, #FF6FA9); font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 0.15rem; }
+        .prod-card-nome { font-size:0.85rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.25rem; line-height:1.3; }
+        .prod-card-preco { font-size:0.88rem; font-weight:600; color:var(--success, #22C55E); margin:0; }
+        .prod-card-actions { display:flex; gap:0.4rem; padding:0.5rem 0.75rem; border-top:1px solid var(--border, #E9E9EE); }
+        .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle, #FFF1F7); border:none; border-radius:8px; font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:600; color:var(--text-primary, #374151); cursor:pointer; }
+        .prod-card-btn-del { padding:0.4rem 0.6rem; background:#fff1f2; border:none; border-radius:8px; color:var(--error, #EF4444); cursor:pointer; display:flex; align-items:center; }
         .prod-modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.5); display:flex; align-items:flex-end; justify-content:center; padding:0 12px; }
-        .prod-modal { background:var(--bg-card,white); border-radius:24px 24px 16px 16px; width:100%; max-width:520px; max-height:88vh; display:flex; flex-direction:column; animation:slideUp 0.25s ease; margin-bottom:12px; }
+        .prod-modal { background:var(--bg-card, #FFFFFF); border-radius:24px 24px 16px 16px; width:100%; max-width:520px; max-height:88vh; display:flex; flex-direction:column; animation:slideUp 0.25s ease; margin-bottom:12px; }
         @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
-        .prod-modal-header { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1.25rem 0.75rem; border-bottom:1px solid var(--border,#f3f4f6); flex-shrink:0; }
-        .prod-modal-title { font-size:1rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0; }
-        .prod-modal-close { background:var(--bg-subtle,#f3f4f6); border:none; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-muted,#6b7280); font-size:0.75rem; }
+        .prod-modal-header { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1.25rem 0.75rem; border-bottom:1px solid var(--border, #E9E9EE); flex-shrink:0; }
+        .prod-modal-title { font-size:1rem; font-weight:700; color:var(--text-title, #1F2937); margin:0; }
+        .prod-modal-close { background:var(--bg-subtle, #FFF1F7); border:none; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-secondary, #6B7280); font-size:0.75rem; }
         .prod-modal-body { flex:1; overflow-y:auto; padding:1rem 1.25rem; display:flex; flex-direction:column; gap:1.25rem; }
-        .prod-modal-footer { padding:1rem 1.25rem; border-top:1px solid var(--border,#f3f4f6); display:flex; gap:0.75rem; flex-shrink:0; }
+        .prod-modal-footer { padding:1rem 1.25rem; border-top:1px solid var(--border, #E9E9EE); display:flex; gap:0.75rem; flex-shrink:0; }
         .prod-section { display:flex; flex-direction:column; gap:0.75rem; }
-        .prod-section-label { font-size:0.78rem; font-weight:700; color:#F583BF; text-transform:uppercase; letter-spacing:0.06em; margin:0; }
-        .prod-img-upload { width:120px; height:120px; border-radius:16px; border:2px dashed #fce7f3; background:#fdf2f8; cursor:pointer; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+        .prod-section-label { font-size:0.78rem; font-weight:700; color:var(--primary, #FF6FA9); text-transform:uppercase; letter-spacing:0.06em; margin:0; }
+        .prod-img-upload { width:120px; height:120px; border-radius:16px; border:2px dashed var(--primary-light, #FFF1F7); background:var(--primary-light, #FFF1F7); cursor:pointer; position:relative; overflow:hidden; display:flex; align-items:center; justify-content:center; }
         .prod-img-placeholder { display:flex; flex-direction:column; align-items:center; gap:0.35rem; padding:0.75rem; text-align:center; }
-        .prod-img-placeholder p { font-size:0.78rem; font-weight:600; color:#374151; margin:0; }
-        .prod-img-placeholder span { font-size:0.68rem; color:#9ca3af; }
+        .prod-img-placeholder p { font-size:0.78rem; font-weight:600; color:var(--text-primary, #374151); margin:0; }
+        .prod-img-placeholder span { font-size:0.68rem; color:var(--text-muted, #9CA3AF); }
         .prod-img-remove { position:absolute; top:0.35rem; right:0.35rem; background:rgba(0,0,0,0.5); border:none; border-radius:50%; width:22px; height:22px; color:white; font-size:0.65rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
         .prod-field { display:flex; flex-direction:column; gap:0.3rem; }
-        .prod-field label { font-size:0.78rem; font-weight:600; color:var(--text-secondary,#374151); }
-        .prod-field input, .prod-field select, .prod-field textarea { padding:0.65rem 0.9rem; border:1.5px solid var(--border,#e5e7eb); border-radius:12px; font-family:'Geist', sans-serif; font-size:0.88rem; color:var(--text-primary,#1f2937); background:var(--bg-input,white); outline:none; transition:border-color 0.2s; width:100%; box-sizing:border-box; }
-        .prod-field input:focus, .prod-field select:focus, .prod-field textarea:focus { border-color:#F583BF; }
+        .prod-field label { font-size:0.78rem; font-weight:600; color:var(--text-primary, #374151); }
+        .prod-field input, .prod-field select, .prod-field textarea { padding:0.65rem 0.9rem; border:1.5px solid var(--border, #E9E9EE); border-radius:12px; font-family:'Geist', sans-serif; font-size:0.88rem; color:var(--text-title, #1F2937); background:var(--bg-input, #FFFFFF); outline:none; transition:border-color 0.2s; width:100%; box-sizing:border-box; }
+        .prod-field input:focus, .prod-field select:focus, .prod-field textarea:focus { border-color:var(--border-focus, #FF6FA9); }
         .prod-field textarea { resize:none; }
         .prod-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
-        .prod-preco-input { display:flex; align-items:center; border:1.5px solid var(--border,#e5e7eb); border-radius:12px; overflow:hidden; background:var(--bg-input,white); }
-        .prod-preco-input span { padding:0 0.75rem; font-weight:700; color:#22c55e; font-size:0.88rem; flex-shrink:0; }
+        .prod-preco-input { display:flex; align-items:center; border:1.5px solid var(--border, #E9E9EE); border-radius:12px; overflow:hidden; background:var(--bg-input, #FFFFFF); }
+        .prod-preco-input span { padding:0 0.75rem; font-weight:700; color:var(--success, #22C55E); font-size:0.88rem; flex-shrink:0; }
         .prod-preco-input input { border:none !important; border-radius:0 !important; flex:1; padding:0.65rem 0.5rem 0.65rem 0 !important; outline:none !important; box-shadow:none !important; }
-        .prod-preco-input:focus-within { border-color:#F583BF; }
+        .prod-preco-input:focus-within { border-color:var(--border-focus, #FF6FA9); }
         .prod-nova-cat { display:flex; gap:0.4rem; margin-top:0.4rem; }
-        .prod-nova-cat input { flex:1; padding:0.55rem 0.8rem; border:1.5px solid #F583BF; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.85rem; outline:none; }
-        .prod-nova-cat button { padding:0.55rem 0.9rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+        .prod-nova-cat input { flex:1; padding:0.55rem 0.8rem; border:1.5px solid var(--primary, #FF6FA9); border-radius:10px; font-family:'Geist', sans-serif; font-size:0.85rem; outline:none; }
+        .prod-nova-cat button { padding:0.55rem 0.9rem; background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color:var(--text-inverse, #FFFFFF); border:none; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; }
         .prod-toggles { display:flex; gap:0.75rem; flex-wrap:wrap; }
-        .prod-toggle-item { display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0.75rem; border-radius:10px; background:var(--bg-subtle,#f3f4f6); cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-secondary,#374151); transition:all 0.2s; flex:1; min-width:100px; }
+        .prod-toggle-item { display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0.75rem; border-radius:10px; background:var(--bg-subtle, #FFF1F7); cursor:pointer; font-size:0.8rem; font-weight:600; color:var(--text-primary, #374151); transition:all 0.2s; flex:1; min-width:100px; }
         .prod-toggle-item.active-green { background:#dcfce7; color:#15803d; }
-        .prod-toggle-item.active-pink { background:#fce7f3; color:#be185d; }
-        .prod-toggle-slider { width:40px; height:22px; border-radius:11px; background:#e5e7eb; position:relative; flex-shrink:0; transition:background 0.2s; }
+        .prod-toggle-item.active-pink { background:var(--primary-light, #FFF1F7); color:var(--primary-dark, #F85A9A); }
+        .prod-toggle-slider { width:40px; height:22px; border-radius:11px; background:var(--border, #E9E9EE); position:relative; flex-shrink:0; transition:background 0.2s; }
         .prod-toggle-thumb { width:18px; height:18px; border-radius:50%; background:white; position:absolute; top:2px; left:2px; transition:transform 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
-        .prod-btn-cancelar { flex:1; padding:0.85rem; background:var(--bg-subtle,#f3f4f6); border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
-        .prod-btn-salvar { flex:2; padding:0.85rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+        .prod-btn-cancelar { flex:1; padding:0.85rem; background:var(--bg-body, #F7F7F8); border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:600; color:var(--text-secondary, #6B7280); cursor:pointer; }
+        .prod-btn-salvar { flex:2; padding:0.85rem; background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color:var(--text-inverse, #FFFFFF); border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
         .prod-btn-salvar:disabled { opacity:0.65; cursor:not-allowed; }
-        .prod-confirm { background:var(--bg-card,white); border-radius:18px; padding:1.5rem; width:90%; max-width:320px; margin:auto; }
-        .prod-confirm-title { font-size:1rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.4rem; }
-        .prod-confirm-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0 0 1.25rem; }
+        .prod-confirm { background:var(--bg-card, #FFFFFF); border-radius:18px; padding:1.5rem; width:90%; max-width:320px; margin:auto; }
+        .prod-confirm-title { font-size:1rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.4rem; }
+        .prod-confirm-sub { font-size:0.82rem; color:var(--text-muted, #9CA3AF); margin:0 0 1.25rem; }
         .prod-confirm-btns { display:flex; gap:0.75rem; }
-        .prod-confirm-btns button { flex:1; padding:0.75rem; border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; background:var(--bg-subtle,#f3f4f6); color:var(--text-secondary,#374151); }
+        .prod-confirm-btns button { flex:1; padding:0.75rem; border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; background:var(--bg-body, #F7F7F8); color:var(--text-secondary, #6B7280); }
       `}</style>
     </div>
     </>
