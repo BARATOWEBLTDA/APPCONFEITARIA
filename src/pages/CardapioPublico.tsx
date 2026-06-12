@@ -132,13 +132,13 @@ function DeskTrustBar() {
   ]
   return (
     <div style={{ width:'100%', padding:'0 24px', boxSizing:'border-box' }}>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0', background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', overflow:'hidden', width:'100%' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0', background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', overflow:'hidden', width:'100%' }}>
         {items.map((item, i) => (
-          <div key={i} style={{ padding:'24px 28px', display:'flex', alignItems:'center', gap:'14px', borderRight: i < 3 ? '1px solid #f0f0f0' : 'none' }}>
+          <div key={i} style={{ padding:'24px 28px', display:'flex', alignItems:'center', gap:'14px', borderRight: i < 3 ? '1px solid var(--border, #E9E9EE)' : 'none' }}>
             <span style={{ fontSize:'32px', flexShrink:0 }}>{item.icon}</span>
             <div>
-              <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'#1f2937' }}>{item.title}</p>
-              <p style={{ margin:'3px 0 0', fontSize:'12px', color:'#9ca3af' }}>{item.sub}</p>
+              <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title, #1F2937)' }}>{item.title}</p>
+              <p style={{ margin:'3px 0 0', fontSize:'12px', color:'var(--text-muted, #9CA3AF)' }}>{item.sub}</p>
             </div>
           </div>
         ))}
@@ -180,18 +180,18 @@ function DeskInfoRow({ design, config }: any) {
         <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
 
           {/* Sacola */}
-          <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'24px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', padding:'24px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
             {count === 0 ? (
               <>
                 <ShoppingBag size={28} color="#d4d4d4" style={{ marginBottom:'6px' }}/>
-                <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'#3e3e3e' }}>Sacola vazia</p>
-                <p style={{ margin:'2px 0 0', fontSize:'11px', color:'#9ca3af' }}>Adicione itens do cardápio e monte seu pedido.</p>
+                <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'var(--text-title, #1F2937)' }}>Sacola vazia</p>
+                <p style={{ margin:'2px 0 0', fontSize:'11px', color:'var(--text-muted, #9CA3AF)' }}>Adicione itens do cardápio e monte seu pedido.</p>
               </>
             ) : (
               <>
                 <ShoppingBag size={24} color={design.cor_borda||'#ec4899'} style={{ marginBottom:'4px' }}/>
-                <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'#3e3e3e' }}>{count} {count===1?'item':'itens'}</p>
-                <p style={{ margin:'2px 0 6px', fontWeight:800, fontSize:'16px', color:'#16a34a' }}>{formatCurrency(totalPrice)}</p>
+                <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title, #1F2937)' }}>{count} {count===1?'item':'itens'}</p>
+                <p style={{ margin:'2px 0 6px', fontWeight:800, fontSize:'16px', color:'var(--success, #22C55E)' }}>{formatCurrency(totalPrice)}</p>
                 <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
                   padding:'8px 20px', borderRadius:'8px', border:'none', background:design.cor_botao||'#ec4899',
                   color:'#fff', fontSize:'12px', fontWeight:700, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
@@ -201,22 +201,22 @@ function DeskInfoRow({ design, config }: any) {
           </div>
 
           {/* Fidelidade */}
-          <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'16px' }}>
+          <div style={{ background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', padding:'16px' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
               <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#fef3c7', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0 }}>🏆</div>
-              <span style={{ fontWeight:700, fontSize:'13px', color:'#1f2937' }}>Programa de fidelidade</span>
+              <span style={{ fontWeight:700, fontSize:'13px', color:'var(--text-title, #1F2937)' }}>Programa de fidelidade</span>
             </div>
-            <p style={{ margin:0, fontSize:'11px', color:'#6b7280', lineHeight:1.5 }}>A cada <strong>R$ 100,00</strong> em compras você ganha <strong>1 ponto</strong> que pode ser trocado por prêmios.</p>
-            <p style={{ margin:'4px 0 0', fontSize:'10px', color:'#9ca3af' }}>Novos clientes ganham automaticamente 50 pontos.</p>
+            <p style={{ margin:0, fontSize:'11px', color:'var(--text-secondary, #6B7280)', lineHeight:1.5 }}>A cada <strong>R$ 100,00</strong> em compras você ganha <strong>1 ponto</strong> que pode ser trocado por prêmios.</p>
+            <p style={{ margin:'4px 0 0', fontSize:'10px', color:'var(--text-muted, #9CA3AF)' }}>Novos clientes ganham automaticamente 50 pontos.</p>
           </div>
 
           {/* Entrega */}
-          <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', padding:'16px' }}>
+          <div style={{ background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', padding:'16px' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
               <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#dbeafe', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0 }}>🚚</div>
-              <span style={{ fontWeight:700, fontSize:'13px', color:'#1f2937' }}>Entrega e retirada</span>
+              <span style={{ fontWeight:700, fontSize:'13px', color:'var(--text-title, #1F2937)' }}>Entrega e retirada</span>
             </div>
-            <p style={{ margin:0, fontSize:'11px', color:'#6b7280', lineHeight:1.5 }}>Finalize pelo WhatsApp. Escolha entrega ou retirada no checkout.</p>
+            <p style={{ margin:0, fontSize:'11px', color:'var(--text-secondary, #6B7280)', lineHeight:1.5 }}>Finalize pelo WhatsApp. Escolha entrega ou retirada no checkout.</p>
           </div>
 
         </div>
@@ -231,9 +231,9 @@ function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, 
   const activeBg = navBg || corBotao || '#ec4899'
 
   return (
-    <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', overflow:'hidden' }}>
-      <div style={{ padding:'12px 14px', borderBottom:'1px solid #f3f4f6' }}>
-        <span style={{ fontSize:'12px', fontWeight:700, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.05em' }}>Categorias</span>
+    <div style={{ background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', overflow:'hidden' }}>
+      <div style={{ padding:'12px 14px', borderBottom:'1px solid var(--border, #E9E9EE)' }}>
+        <span style={{ fontSize:'12px', fontWeight:700, color:'var(--text-muted, #9CA3AF)', textTransform:'uppercase', letterSpacing:'0.05em' }}>Categorias</span>
       </div>
 
       {/* Todos */}
@@ -246,11 +246,11 @@ function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, 
           fontSize:'13px', fontWeight: !selectedCategory ? 700 : 500,
           cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
           display:'flex', alignItems:'center',
-          borderBottom:'1px solid #f3f4f6',
+          borderBottom:'1px solid var(--border, #E9E9EE)',
           transition:'background 0.15s, color 0.15s',
         }}
-        onMouseOver={e => { if (selectedCategory) { (e.currentTarget as HTMLElement).style.background='#f3f4f6' } }}
-        onMouseOut={e => { if (selectedCategory) { (e.currentTarget as HTMLElement).style.background='#fff' } }}
+        onMouseOver={e => { if (selectedCategory) { (e.currentTarget as HTMLElement).style.background='var(--bg-body, #F7F7F8)' } }}
+        onMouseOut={e => { if (selectedCategory) { (e.currentTarget as HTMLElement).style.background='var(--bg-card, #FFFFFF)' } }}
       >
         Todos os produtos
       </button>
@@ -266,11 +266,11 @@ function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, 
             fontSize:'13px', fontWeight: selectedCategory === c.name ? 700 : 500,
             cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
             display:'flex', alignItems:'center',
-            borderBottom:'1px solid #f3f4f6',
+            borderBottom:'1px solid var(--border, #E9E9EE)',
             transition:'background 0.15s, color 0.15s',
           }}
-          onMouseOver={e => { if (selectedCategory !== c.name) { (e.currentTarget as HTMLElement).style.background='#f3f4f6' } }}
-          onMouseOut={e => { if (selectedCategory !== c.name) { (e.currentTarget as HTMLElement).style.background='#fff' } }}
+          onMouseOver={e => { if (selectedCategory !== c.name) { (e.currentTarget as HTMLElement).style.background='var(--bg-body, #F7F7F8)' } }}
+          onMouseOut={e => { if (selectedCategory !== c.name) { (e.currentTarget as HTMLElement).style.background='var(--bg-card, #FFFFFF)' } }}
         >
           {c.name}
         </button>
@@ -295,9 +295,9 @@ function DeskProducts({ produtos, favorites, onToggleFavorite, design }: any) {
       </div>
 
       {produtos.length === 0 && (
-        <div style={{ textAlign:'center', padding:'48px', color:'#9ca3af' }}>
+        <div style={{ textAlign:'center', padding:'48px', color:'var(--text-muted, #9CA3AF)' }}>
           <MagnifyingGlass size={40} style={{ margin:'0 auto 12px', display:'block', opacity:0.3 }}/>
-          <p style={{ fontWeight:700, fontSize:'16px', color:'#6b7280' }}>Nenhum produto encontrado</p>
+          <p style={{ fontWeight:700, fontSize:'16px', color:'var(--text-secondary, #6B7280)' }}>Nenhum produto encontrado</p>
         </div>
       )}
     </div>
@@ -311,15 +311,15 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
   const cor = design.cor_botao || design.cor_borda || '#ec4899'
 
   return (
-    <div style={{ background:'#fff', borderRadius:'12px', border:'1px solid #f0f0f0', overflow:'hidden' }}>
+    <div style={{ background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', overflow:'hidden' }}>
 
       {/* Calcular taxa */}
-      <div style={{ padding:'14px 16px', borderBottom:'1px solid #f0f0f0', display:'flex', alignItems:'center', gap:'10px', cursor:'pointer' }}
+      <div style={{ padding:'14px 16px', borderBottom:'1px solid var(--border, #E9E9EE)', display:'flex', alignItems:'center', gap:'10px', cursor:'pointer' }}
         onMouseOver={e => (e.currentTarget as HTMLElement).style.background='#fafafa'}
-        onMouseOut={e => (e.currentTarget as HTMLElement).style.background='#fff'}
+        onMouseOut={e => (e.currentTarget as HTMLElement).style.background='var(--bg-card, #FFFFFF)'}
       >
         <MapPin size={18} color={cor} weight="duotone" style={{ flexShrink:0 }}/>
-        <span style={{ flex:1, fontSize:'13px', fontWeight:600, color:'#1f2937' }}>Calcular taxa e tempo de entrega</span>
+        <span style={{ flex:1, fontSize:'13px', fontWeight:600, color:'var(--text-title, #1F2937)' }}>Calcular taxa e tempo de entrega</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={cor} strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
 
@@ -332,14 +332,14 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
               <path d="M16 10a4 4 0 0 1-8 0"/>
             </svg>
           </div>
-          <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'#3e3e3e' }}>Sacola vazia</p>
-          <p style={{ margin:0, fontSize:'12px', color:'#9ca3af', textAlign:'center', lineHeight:1.5 }}>Adicione itens do cardápio<br/>e monte seu pedido</p>
+          <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title, #1F2937)' }}>Sacola vazia</p>
+          <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted, #9CA3AF)', textAlign:'center', lineHeight:1.5 }}>Adicione itens do cardápio<br/>e monte seu pedido</p>
         </div>
       ) : (
         <div style={{ padding:'14px 16px' }}>
           {/* Header sacola */}
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'12px' }}>
-            <span style={{ fontWeight:700, fontSize:'14px', color:'#1f2937' }}>Sua sacola</span>
+            <span style={{ fontWeight:700, fontSize:'14px', color:'var(--text-title, #1F2937)' }}>Sua sacola</span>
             <button
               onClick={() => window.dispatchEvent(new Event('open-cart'))}
               style={{ background:'none', border:'none', fontSize:'12px', fontWeight:600, color:cor, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif' }}
@@ -356,32 +356,32 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
                     {img ? <img src={img} alt={item.name} style={{ width:'100%', height:'100%', objectFit:'cover' }}/> : <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px' }}>🧁</div>}
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'#1f2937', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                    <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'var(--text-title, #1F2937)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                       {item.saleType === 'kg' ? `${item.quantity}kg` : `${Math.floor(item.quantity)}x`} {item.name}
                     </p>
-                    <p style={{ margin:'2px 0 0', fontSize:'12px', color:'#9ca3af' }}>{formatCurrency(item.price * item.quantity)}</p>
+                    <p style={{ margin:'2px 0 0', fontSize:'12px', color:'var(--text-muted, #9CA3AF)' }}>{formatCurrency(item.price * item.quantity)}</p>
                   </div>
                 </div>
               )
             })}
             {items.length > 4 && (
-              <p style={{ margin:0, fontSize:'12px', color:'#9ca3af' }}>+{items.length - 4} item(ns) a mais</p>
+              <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted, #9CA3AF)' }}>+{items.length - 4} item(ns) a mais</p>
             )}
           </div>
 
           {/* Subtotal / Total */}
           <div style={{ borderTop:'1px solid #f0f0f0', paddingTop:'12px', display:'flex', flexDirection:'column', gap:'4px', marginBottom:'14px' }}>
             <div style={{ display:'flex', justifyContent:'space-between' }}>
-              <span style={{ fontSize:'13px', color:'#9ca3af' }}>Subtotal</span>
-              <span style={{ fontSize:'13px', color:'#9ca3af' }}>{formatCurrency(cartTotal)}</span>
+              <span style={{ fontSize:'13px', color:'var(--text-muted, #9CA3AF)' }}>Subtotal</span>
+              <span style={{ fontSize:'13px', color:'var(--text-muted, #9CA3AF)' }}>{formatCurrency(cartTotal)}</span>
             </div>
             <div style={{ display:'flex', justifyContent:'space-between' }}>
-              <span style={{ fontSize:'13px', color:'#9ca3af' }}>Taxa de entrega</span>
-              <span style={{ fontSize:'13px', color:'#9ca3af' }}>A definir</span>
+              <span style={{ fontSize:'13px', color:'var(--text-muted, #9CA3AF)' }}>Taxa de entrega</span>
+              <span style={{ fontSize:'13px', color:'var(--text-muted, #9CA3AF)' }}>A definir</span>
             </div>
             <div style={{ display:'flex', justifyContent:'space-between', marginTop:'4px' }}>
-              <span style={{ fontSize:'15px', fontWeight:800, color:'#1f2937' }}>Total</span>
-              <span style={{ fontSize:'15px', fontWeight:800, color:'#1f2937' }}>{formatCurrency(cartTotal)}</span>
+              <span style={{ fontSize:'15px', fontWeight:800, color:'var(--text-title, #1F2937)' }}>Total</span>
+              <span style={{ fontSize:'15px', fontWeight:800, color:'var(--text-title, #1F2937)' }}>{formatCurrency(cartTotal)}</span>
             </div>
           </div>
 
@@ -401,14 +401,14 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
           onClick={() => setCupomAberto(o => !o)}
           style={{ padding:'14px 16px', display:'flex', alignItems:'center', gap:'10px', cursor:'pointer' }}
           onMouseOver={e => (e.currentTarget as HTMLElement).style.background='#fafafa'}
-          onMouseOut={e => (e.currentTarget as HTMLElement).style.background='#fff'}
+          onMouseOut={e => (e.currentTarget as HTMLElement).style.background='var(--bg-card, #FFFFFF)'}
         >
           <div style={{ width:'32px', height:'32px', borderRadius:'8px', background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
           </div>
           <div style={{ flex:1 }}>
-            <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'#1f2937' }}>Tem um cupom?</p>
-            <p style={{ margin:0, fontSize:'12px', color:'#9ca3af' }}>Clique e insira o código</p>
+            <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'var(--text-title, #1F2937)' }}>Tem um cupom?</p>
+            <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted, #9CA3AF)' }}>Clique e insira o código</p>
           </div>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5"
             style={{ transform: cupomAberto ? 'rotate(90deg)' : 'rotate(0deg)', transition:'transform 0.2s' }}>
@@ -422,7 +422,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
               value={cupomDigitado}
               onChange={e => setCupomDigitado(e.target.value.toUpperCase())}
               placeholder="Digite o código"
-              style={{ flex:1, padding:'10px 12px', border:'1.5px solid #e5e7eb', borderRadius:'8px', fontSize:'13px', color:'#1f2937', outline:'none', fontFamily:'Geist, system-ui, sans-serif', textTransform:'uppercase' }}
+              style={{ flex:1, padding:'10px 12px', border:'1.5px solid var(--border, #E9E9EE)', borderRadius:'8px', fontSize:'13px', color:'var(--text-title, #1F2937)', outline:'none', fontFamily:'Geist, system-ui, sans-serif', textTransform:'uppercase' }}
               onFocus={e => (e.target.style.borderColor = cor)}
               onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
             />
@@ -562,18 +562,18 @@ function CardapioContent() {
   if (loading) return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center' }}>
       <div style={{ textAlign:'center' }}>
-        <div style={{ width:'40px', height:'40px', border:'3px solid #fce7f3', borderTopColor:'#ec4899', borderRadius:'50%', animation:'spin 0.7s linear infinite', margin:'0 auto 12px' }}/>
-        <p style={{ color:'#6b7280', fontSize:'14px' }}>Carregando cardápio...</p>
+        <div style={{ width:'40px', height:'40px', border:'3px solid #fce7f3', borderTopColor:'var(--primary, #FF6FA9)', borderRadius:'50%', animation:'spin 0.7s linear infinite', margin:'0 auto 12px' }}/>
+        <p style={{ color:'var(--text-secondary, #6B7280)', fontSize:'14px' }}>Carregando cardápio...</p>
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     </div>
   )
 
   if (error || !design) return (
-    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f9fafb' }}>
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg-body, #F7F7F8)' }}>
       <div style={{ textAlign:'center' }}>
-        <h1 style={{ fontSize:'24px', fontWeight:800, color:'#1f2937' }}>Cardápio não encontrado</h1>
-        <p style={{ color:'#6b7280' }}>{error || 'Verifique o link e tente novamente.'}</p>
+        <h1 style={{ fontSize:'24px', fontWeight:800, color:'var(--text-title, #1F2937)' }}>Cardápio não encontrado</h1>
+        <p style={{ color:'var(--text-secondary, #6B7280)' }}>{error || 'Verifique o link e tente novamente.'}</p>
       </div>
     </div>
   )
@@ -605,7 +605,7 @@ function CardapioContent() {
 
   /* ═══ DESKTOP ═══ */
   return (
-    <div style={{ minHeight:'100vh', background:'#fafafa', fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
+    <div style={{ minHeight:'100vh', background:'var(--bg-body, #F7F7F8)', fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
       <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
       <DeskNav design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
@@ -628,7 +628,7 @@ function CardapioContent() {
           {/* CENTRO — Busca + Título + Produtos */}
           <div>
             {/* Busca */}
-            <div style={{ position:'relative', marginBottom:'16px', display:'flex', alignItems:'stretch', borderRadius:'10px', overflow:'hidden', border:'1.5px solid #e5e7eb', background:'#fff', transition:'border-color 0.2s' }}
+            <div style={{ position:'relative', marginBottom:'16px', display:'flex', alignItems:'stretch', borderRadius:'10px', overflow:'hidden', border:'1.5px solid var(--border, #E9E9EE)', background:'var(--bg-card, #FFFFFF)', transition:'border-color 0.2s' }}
               onFocusCapture={e => (e.currentTarget.style.borderColor = design.cor_navbar || design.cor_borda || '#ec4899')}
               onBlurCapture={e => (e.currentTarget.style.borderColor = '#e5e7eb')}
             >
@@ -642,18 +642,18 @@ function CardapioContent() {
                 placeholder="Busque por um produto..."
                 style={{
                   flex:1, padding:'13px 14px', border:'none', outline:'none',
-                  fontSize:'14px', color:'#374151',
-                  fontFamily:'inherit', background:'#fff',
+                  fontSize:'14px', color:'var(--text-primary, #374151)',
+                  fontFamily:'inherit', background:'var(--bg-card, #FFFFFF)',
                 }}
               />
               {searchTerm && (
-                <button onClick={() => setSearchTerm('')} style={{ padding:'0 14px', background:'none', border:'none', cursor:'pointer', color:'#9ca3af', fontSize:'16px', lineHeight:1 }}>✕</button>
+                <button onClick={() => setSearchTerm('')} style={{ padding:'0 14px', background:'none', border:'none', cursor:'pointer', color:'var(--text-muted, #9CA3AF)', fontSize:'16px', lineHeight:1 }}>✕</button>
               )}
             </div>
 
             {/* Título */}
             <div style={{ display:'flex', alignItems:'center', marginBottom:'16px', marginTop:'24px' }}>
-              <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'#1f2937' }}>Nosso Cardápio</h2>
+              <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'var(--text-title, #1F2937)' }}>Nosso Cardápio</h2>
             </div>
 
             {/* Produtos */}
