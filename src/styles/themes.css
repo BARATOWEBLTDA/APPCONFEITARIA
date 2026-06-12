@@ -19,6 +19,7 @@
   /* Superfícies */
   --bg-body:          #F7F7F8;
   --bg-card:          #FFFFFF;
+  --bg-surface:       var(--bg-card);
   --bg-input:         #FFFFFF;
   --bg-elevated:      #FFFFFF;
   --bg-overlay:       rgba(0,0,0,0.4);
