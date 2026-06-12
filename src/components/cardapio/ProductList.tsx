@@ -45,7 +45,7 @@ export function ProductList({ produtos, favorites, onToggleFavorite, backgroundC
     const firstImage = p.imagem_url?.split(',')[0]?.trim() || null
 
     return (
-      <div onClick={() => setModalProduct(p)} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'white', borderRadius: '14px', padding: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', cursor: 'pointer', border: isPromo ? '1.5px dashed #ec4899' : '1px solid #f3f4f6' }}>
+      <div onClick={() => setModalProduct(p)} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', borderRadius: '14px', padding: '10px', boxShadow: 'var(--shadow-sm)', cursor: 'pointer', border: isPromo ? '1.5px dashed #ec4899' : '1px solid #f3f4f6' }}>
         {/* Imagem */}
         <div style={{ width: '72px', height: '72px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, background: '#fdf2f8' }}>
           {firstImage
@@ -55,12 +55,12 @@ export function ProductList({ produtos, favorites, onToggleFavorite, backgroundC
         </div>
         {/* Info */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#111827', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nome}</p>
-          {p.descricao && <p style={{ fontSize: '0.72rem', color: '#9ca3af', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.descricao}</p>}
+          <p style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-title)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nome}</p>
+          {p.descricao && <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.descricao}</p>}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             {isPromo && precoPromo > 0
               ? <>
-                  <span style={{ fontSize: '0.75rem', color: '#9ca3af', textDecoration: 'line-through' }}>R$ {p.preco_normal.toFixed(2)}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textDecoration: 'line-through' }}>R$ {p.preco_normal.toFixed(2)}</span>
                   <span style={{ fontSize: '0.92rem', fontWeight: 800, color: '#ec4899' }}>R$ {precoPromo.toFixed(2)}</span>
                 </>
               : <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#22c55e' }}>R$ {p.preco_normal.toFixed(2)}</span>
@@ -85,7 +85,7 @@ export function ProductList({ produtos, favorites, onToggleFavorite, backgroundC
             <input type="text" placeholder="Buscar produtos..." value={searchTerm} onChange={e => onSearchChange(e.target.value)} className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-lg focus:border-pink-400 focus:outline-none" style={{ backgroundColor: '#fff' }} />
           </div>
           {/* Toggle grid/lista */}
-          <div style={{ display: 'flex', background: 'white', borderRadius: '10px', padding: '3px', gap: '2px', border: '1px solid #f3f4f6', flexShrink: 0 }}>
+          <div style={{ display: 'flex', background: 'var(--bg-card)', borderRadius: '10px', padding: '3px', gap: '2px', border: '1px solid var(--border)', flexShrink: 0 }}>
             <button onClick={() => toggleView('grid')} style={{ width: '34px', height: '34px', borderRadius: '8px', border: 'none', cursor: 'pointer', background: viewMode === 'grid' ? '#fdf2f8' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === 'grid' ? '#ec4899' : '#9ca3af'} strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
             </button>
