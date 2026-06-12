@@ -40,7 +40,7 @@ export default function Layout() {
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
   const isPrevia = location.pathname === "/cardapio-preview";
-  const isCardapioMode = ["/cardapio-config", "/produtos"].includes(location.pathname);
+  const isCardapioMode = ["/cardapio-config", "/produtos", "/categorias", "/cardapio-design", "/checkout-config"].includes(location.pathname);
   const [cardapioNav, setCardapioNav] = useState(false);
 
   useEffect(() => {
@@ -123,8 +123,11 @@ export default function Layout() {
 
           <SidebarGroup label="Cardápio" icon={<ShoppingBag size={18} weight="duotone" />} paths={["/cardapio-config","/cardapio-design","/cardapio-preview","/categorias","/produtos","/checkout-config"]} location={location}>
             <NavLink to="/cardapio-config" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Configuração</NavLink>
+            <NavLink to="/cardapio-design" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Design</NavLink>
             <NavLink to="/cardapio-preview" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Prévia</NavLink>
+            <NavLink to="/categorias" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Categorias</NavLink>
             <NavLink to="/produtos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Produtos</NavLink>
+            <NavLink to="/checkout-config" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Checkout</NavLink>
           </SidebarGroup>
 
           <NavLink to="/pedidos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
@@ -299,6 +302,14 @@ export default function Layout() {
                 <Storefront size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/produtos" ? " nav-label-active" : ""}`}>Produtos</span>
               </button>
+              <button className={`bottom-item${location.pathname === "/categorias" ? " active" : ""}`} onClick={() => navigate("/categorias")}>
+                <Rows size={22} weight="duotone" />
+                <span className={`nav-label${location.pathname === "/categorias" ? " nav-label-active" : ""}`}>Categorias</span>
+              </button>
+              <button className={`bottom-item${location.pathname === "/cardapio-design" ? " active" : ""}`} onClick={() => navigate("/cardapio-design")}>
+                <PaintBrush size={22} weight="duotone" />
+                <span className={`nav-label${location.pathname === "/cardapio-design" ? " nav-label-active" : ""}`}>Design</span>
+              </button>
               <button className={`bottom-item${location.pathname === "/cardapio-config" ? " active" : ""}`} onClick={() => navigate("/cardapio-config")}>
                 <Sliders size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/cardapio-config" ? " nav-label-active" : ""}`}>Config</span>
@@ -338,7 +349,7 @@ export default function Layout() {
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .layout-root { display: flex; min-height: 100vh; font-family: 'Geist', sans-serif; background: #F8F9FA; position: relative; }
+        .layout-root { display: flex; min-height: 100vh; font-family: 'Geist', sans-serif; background: var(--bg-body, #f5f5f5); position: relative; }
         .mob-top-header { display: none; }
         .bottom-nav { display: none; }
 
@@ -408,7 +419,7 @@ export default function Layout() {
           .mob-top-icon { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0.2rem; }
 
           .layout-main { margin-left: 0; padding: 0.75rem; padding-top: 5rem; padding-bottom: 5.5rem; background: var(--bg-body, #f5f5f5); min-height: 100vh; width: 100%; box-sizing: border-box; }
-          .layout-main--no-header { padding-top: 1rem; background: #f8f8f8; }
+          .layout-main--no-header { padding-top: 1rem; background: var(--bg-body, #f5f5f5); }
 
           .bottom-nav {
             display: flex !important;
