@@ -1,11 +1,11 @@
 /* ── Tema Claro ── */
 :root {
   /* Primária */
-  --primary:          #FF6FA9;
-  --primary-dark:     #F85A9A;
-  --primary-light:    #FFF1F7;
-  --primary-gradient: linear-gradient(135deg, #FF6FA9, #F85A9A);
-  --primary-rgb:      255, 111, 169;
+  --primary:          #6E3548;
+  --primary-dark:     #431524;
+  --primary-light:    #986274;
+  --primary-gradient: linear-gradient(135deg, #986274, #6E3548);
+  --primary-rgb:      110, 53, 72;
 
   /* Tipografia */
   --text-title:       #1F2937;
@@ -14,7 +14,7 @@
   --text-muted:       #9CA3AF;
   --text-inverse:     #FFFFFF;
   --text-disabled:    #D1D5DB;
-  --text-link:        #FF6FA9;
+  --text-link:        #6E3548;
 
   /* Superfícies */
   --bg-body:          #F7F7F8;
@@ -23,20 +23,20 @@
   --bg-input:         #FFFFFF;
   --bg-elevated:      #FFFFFF;
   --bg-overlay:       rgba(0,0,0,0.4);
-  --bg-subtle:        #FFF1F7;
+  --bg-subtle:        #ECC2D0;
 
   /* Bordas */
   --border:           #E9E9EE;
-  --border-focus:     #FF6FA9;
-  --focus-ring:       0 0 0 3px rgba(255,111,169,0.25);
+  --border-focus:     #6E3548;
+  --focus-ring:       0 0 0 3px rgba(110, 53, 72, 0.25);
 
   /* ── Sidebar / Nav ── */
   --sidebar-bg:           var(--bg-card, #FFFFFF);
   --sidebar-text:         var(--text-primary, #374151);
   --sidebar-text-muted:   var(--text-muted, #9CA3AF);
   --sidebar-hover-bg:     var(--menu-hover-bg, #F3F4F6);
-  --sidebar-active-bg:    var(--menu-active-bg, #FFF1F7);
-  --sidebar-active-text:  var(--menu-active, #FF6FA9);
+  --sidebar-active-bg:    var(--menu-active-bg, #ECC2D0);
+  --sidebar-active-text:  var(--menu-active, #431524);
   --sidebar-border:       var(--border, #E9E9EE);
   --sidebar-border-right: #E9E9EE;
 
@@ -56,8 +56,8 @@
   --drawer-bg:            #120706;
   --drawer-item-bg:       rgba(255,255,255,0.05);
   --drawer-item-border:   rgba(255,255,255,0.07);
-  --drawer-item-hover-bg: rgba(255,111,169,0.15);
-  --drawer-item-hover-border: rgba(255,111,169,0.3);
+  --drawer-item-hover-bg: rgba(110, 53, 72, 0.15);
+  --drawer-item-hover-border: rgba(110, 53, 72, 0.3);
   --drawer-handle:        rgba(255,255,255,0.15);
   --drawer-close-bg:      rgba(255,255,255,0.08);
   --drawer-close-text:    rgba(255,255,255,0.6);
@@ -67,8 +67,8 @@
   /* ── Menu (legado) ── */
   --menu-bg:          #FFFFFF;
   --menu-inactive:    #6B7280;
-  --menu-active:      #FF6FA9;
-  --menu-active-bg:   #FFF1F7;
+  --menu-active:      #6E3548;
+  --menu-active-bg:   #ECC2D0;
   --menu-hover-bg:    #F3F4F6;
 
   /* ── Estados globais ── */
@@ -77,8 +77,8 @@
   --state-active:     var(--menu-active);
 
   /* Botões */
-  --btn-primary-bg:       #FF6FA9;
-  --btn-primary-hover:    #F85A9A;
+  --btn-primary-bg:       #6E3548;
+  --btn-primary-hover:    #431524;
   --btn-primary-text:     #FFFFFF;
   --btn-secondary-bg:     #FFFFFF;
   --btn-secondary-border: #E9E9EE;
@@ -109,11 +109,11 @@
 /* ── Tema Escuro ── */
 :root.dark {
   /* Primária */
-  --primary:          #FF6FA9;
-  --primary-dark:     #F85A9A;
-  --primary-light:    #4A1F33;
-  --primary-gradient: linear-gradient(135deg, #FF6FA9, #F85A9A);
-  --primary-rgb:      255, 111, 169;
+  --primary:          #C39EAA;
+  --primary-dark:     #986274;
+  --primary-light:    #330716;
+  --primary-gradient: linear-gradient(135deg, #ECC2D0, #C39EAA);
+  --primary-rgb:      195, 158, 170;
 
   /* Tipografia */
   --text-title:       #F9FAFB;
@@ -127,11 +127,11 @@
   --bg-body:          #0F1115;
   --bg-card:          #171923;
   --bg-input:         #171923;
-  --bg-subtle:        #4A1F33;
+  --bg-subtle:        #330716;
 
   /* Bordas */
   --border:           #2A2D3A;
-  --border-focus:     #FF6FA9;
+  --border-focus:     #C39EAA;
 
   /* ── Sidebar / Nav ── */
   --sidebar-bg:           #0D0E14;
@@ -156,8 +156,8 @@
   --drawer-bg:            #0D0E14;
   --drawer-item-bg:       rgba(255,255,255,0.04);
   --drawer-item-border:   rgba(255,255,255,0.06);
-  --drawer-item-hover-bg: rgba(255,111,169,0.12);
-  --drawer-item-hover-border: rgba(255,111,169,0.25);
+  --drawer-item-hover-bg: rgba(195, 158, 170, 0.12);
+  --drawer-item-hover-border: rgba(195, 158, 170, 0.25);
   --drawer-handle:        rgba(255,255,255,0.1);
   --drawer-close-bg:      rgba(255,255,255,0.06);
   --drawer-close-text:    rgba(255,255,255,0.5);
@@ -166,13 +166,13 @@
   /* ── Menu (legado) ── */
   --menu-bg:          #171923;
   --menu-inactive:    #9CA3AF;
-  --menu-active:      #FF6FA9;
-  --menu-active-bg:   #4A1F33;
+  --menu-active:      #C39EAA;
+  --menu-active-bg:   #330716;
   --menu-hover-bg:    #1e2130;
 
   /* Botões */
-  --btn-primary-bg:       #FF6FA9;
-  --btn-primary-hover:    #F85A9A;
+  --btn-primary-bg:       #986274;
+  --btn-primary-hover:    #C39EAA;
   --btn-primary-text:     #FFFFFF;
   --btn-secondary-bg:     #171923;
   --btn-secondary-border: #2A2D3A;
