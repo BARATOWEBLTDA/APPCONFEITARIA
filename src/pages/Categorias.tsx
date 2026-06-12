@@ -11,7 +11,7 @@ type Categoria = {
 
 const SYSTEM_ICONS = Array.from({ length: 42 }, (_, i) => `/categoriaicones/icone (${i + 1}).png`);
 
-export default function Categorias({ hideHeader = false, onVoltar }: { hideHeader?: boolean; onVoltar?: () => void }) {
+export default function Categorias({ hideHeader = false }: { hideHeader?: boolean }) {
   const [userId, setUserId] = useState("");
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [produtos, setProdutos] = useState<{ categoria: string }[]>([]);
@@ -104,33 +104,14 @@ export default function Categorias({ hideHeader = false, onVoltar }: { hideHeade
     </div>
   );
 
+  const Wrapper = hideHeader ? ({ children }: any) => <>{children}</> : ({ children }: any) => <div className="cat-root">{children}</div>;
   return (
-    <div className="cat-root">
+    <Wrapper>
       {!hideHeader && (
         <div className="cat-header">
           <div>
             <h1 className="cat-title">Categorias</h1>
             <p className="cat-sub">{categorias.length} categoria{categorias.length !== 1 ? "s" : ""}</p>
-          </div>
-          <button className="cat-btn-novo" onClick={openNova}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nova categoria
-          </button>
-        </div>
-      )}
-      {hideHeader && (
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.75rem",paddingTop:"1rem"}}>
-          <div className="prod-tabs" style={{marginTop:0,marginBottom:0}}>
-            {onVoltar && (
-              <button className="prod-tab" onClick={onVoltar}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
-                Produtos
-              </button>
-            )}
-            <button className="prod-tab prod-tab--active">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-              Categorias
-            </button>
           </div>
           <button className="cat-btn-novo" onClick={openNova}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -324,6 +305,6 @@ export default function Categorias({ hideHeader = false, onVoltar }: { hideHeade
         .cat-confirm-btns { display:flex; gap:0.75rem; }
         .cat-confirm-btns button { flex:1; padding:0.75rem; border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; background:var(--bg-subtle,#f3f4f6); color:var(--text-secondary,#374151); }
       `}</style>
-    </div>
+    </Wrapper>
   );
 }
