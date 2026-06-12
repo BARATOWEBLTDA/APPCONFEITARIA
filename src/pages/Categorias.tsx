@@ -272,7 +272,7 @@ export default function Categorias() {
         .cat-order-btn:disabled { opacity:0.3; cursor:not-allowed; }
         .cat-edit-btn { padding:0.35rem 0.75rem; background:var(--bg-body, #F7F7F8); border:none; border-radius:8px; font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:600; color:var(--text-primary, #374151); cursor:pointer; }
         .cat-del-btn { width:30px; height:30px; background:#fff1f2; border:none; border-radius:8px; color:var(--error, #EF4444); cursor:pointer; display:flex; align-items:center; justify-content:center; }
-        .cat-modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.5); display:flex; align-items:flex-end; justify-content:center; }
+        .cat-modal-overlay { position:fixed; inset:0; z-index:500; background:var(--bg-overlay); display:flex; align-items:flex-end; justify-content:center; }
         .cat-modal { background:var(--bg-card, #FFFFFF); border-radius:24px 24px 0 0; width:100%; max-width:520px; max-height:92vh; display:flex; flex-direction:column; animation:slideUp 0.25s ease; }
         .cat-modal-header { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1.25rem 0.75rem; border-bottom:1px solid var(--border, #E9E9EE); flex-shrink:0; }
         .cat-modal-title { font-size:1rem; font-weight:700; color:var(--text-title, #1F2937); margin:0; }
