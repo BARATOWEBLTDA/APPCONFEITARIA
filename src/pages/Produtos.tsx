@@ -945,6 +945,8 @@ export default function Produtos() {
         </div>
       )}
 
+      </>
+      }
       <style>{`
         .prod-root { font-family:'Geist', sans-serif; max-width:800px; display:flex; flex-direction:column; gap:1rem; }
         .prod-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
@@ -1021,6 +1023,7 @@ export default function Produtos() {
         .prod-confirm-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0 0 1.25rem; }
         .prod-confirm-btns { display:flex; gap:0.75rem; }
         .prod-confirm-btns button { flex:1; padding:0.75rem; border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; background:var(--bg-subtle,#f3f4f6); color:var(--text-secondary,#374151); }
+
         /* ── Categorias CSS ── */
         .cat-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:prodspin 0.7s linear infinite; display:inline-block; }
         .cat-spinner-sm { width:18px; height:18px; border:2px solid rgba(245,131,191,0.3); border-top-color:#F583BF; border-radius:50%; animation:prodspin 0.7s linear infinite; display:inline-block; }
@@ -1061,6 +1064,8 @@ export default function Produtos() {
         .cat-confirm-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0 0 1.25rem; }
         .cat-confirm-btns { display:flex; gap:0.75rem; }
         .cat-confirm-btns button { flex:1; padding:0.75rem; border:none; border-radius:50px; font-family:'Geist',sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; background:var(--bg-subtle,#f3f4f6); color:var(--text-secondary,#374151); }
+      </>
+      }
       `}</style>
     </div>
     </>
