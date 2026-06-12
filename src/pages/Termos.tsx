@@ -1,8 +1,8 @@
 export default function Termos() {
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif', maxWidth: '720px', margin: '0 auto', padding: '2rem 1.5rem', color: '#374151', lineHeight: '1.7' }}>
-      <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#111827', marginBottom: '0.25rem' }}>Termos de Uso</h1>
-      <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '2rem' }}>Última atualização: junho de 2026</p>
+    <div style={{ fontFamily: 'Inter, sans-serif', maxWidth: '720px', margin: '0 auto', padding: '2rem 1.5rem', color: 'var(--text-primary, #374151)', lineHeight: '1.7' }}>
+      <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-title, #1F2937)', marginBottom: '0.25rem' }}>Termos de Uso</h1>
+      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #9CA3AF)', marginBottom: '2rem' }}>Última atualização: junho de 2026</p>
 
       <p>Bem-vindo ao <strong>Doonly</strong>. Ao criar uma conta e utilizar nosso serviço, você concorda com os seguintes Termos de Uso. Leia atentamente antes de usar a plataforma.</p>
 
@@ -40,10 +40,10 @@ export default function Termos() {
       <p>Podemos atualizar estes termos periodicamente. Notificaremos sobre mudanças significativas por e-mail ou dentro da plataforma. O uso continuado após as alterações implica aceitação dos novos termos.</p>
 
       <h2>10. Contato</h2>
-      <p>Dúvidas sobre estes Termos de Uso? Entre em contato: <a href="mailto:contato@doonly.com.br" style={{ color: '#ec4899' }}>contato@doonly.com.br</a></p>
+      <p>Dúvidas sobre estes Termos de Uso? Entre em contato: <a href="mailto:contato@doonly.com.br" style={{ color: 'var(--primary, #FF6FA9)' }}>contato@doonly.com.br</a></p>
 
       <style>{`
-        h2 { font-size: 1rem; font-weight: 700; color: #111827; margin: 1.75rem 0 0.5rem; }
+        h2 { font-size: 1rem; font-weight: 700; color: var(--text-title, #1F2937); margin: 1.75rem 0 0.5rem; }
         ul { padding-left: 1.5rem; margin: 0.5rem 0; }
         li { margin-bottom: 0.25rem; }
         p { margin-bottom: 0.75rem; }

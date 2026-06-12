@@ -38,25 +38,6 @@ export default function CardapioPrevia() {
     if (url) window.open(url, "_blank");
   };
 
-  // Dimensões do iframe por modo
-  const frameStyle: React.CSSProperties =
-    viewMode === "mobile"
-      ? {
-          width: "390px",
-          height: "844px",
-          border: "none",
-          background: "white",
-          borderRadius: "0px",
-          flexShrink: 0,
-        }
-      : {
-          width: "100%",
-          height: "100%",
-          border: "none",
-          background: "white",
-          flexShrink: 0,
-        };
-
   return (
     <div
       style={{
@@ -117,7 +98,6 @@ export default function CardapioPrevia() {
             Prévia do Cardápio
           </span>
 
-          {/* Toggle Mobile / Desktop */}
           <div
             style={{
               display: "flex",
@@ -127,7 +107,6 @@ export default function CardapioPrevia() {
               gap: "2px",
             }}
           >
-            {/* Mobile */}
             <button
               onClick={() => setViewMode("mobile")}
               title="Visão mobile"
@@ -147,7 +126,6 @@ export default function CardapioPrevia() {
                 fontFamily: "inherit",
               }}
             >
-              {/* Phone icon */}
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
                 <line x1="12" y1="18" x2="12.01" y2="18" strokeLinecap="round" strokeWidth="3" />
@@ -155,7 +133,6 @@ export default function CardapioPrevia() {
               Mobile
             </button>
 
-            {/* Desktop */}
             <button
               onClick={() => setViewMode("desktop")}
               title="Visão desktop"
@@ -175,7 +152,6 @@ export default function CardapioPrevia() {
                 fontFamily: "inherit",
               }}
             >
-              {/* Monitor icon */}
               <svg width="14" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
                 <line x1="8" y1="21" x2="16" y2="21" />
@@ -188,7 +164,6 @@ export default function CardapioPrevia() {
 
         {/* Ações direita */}
         <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
-          {/* Abrir em nova aba */}
           <button
             onClick={openInTab}
             title="Abrir em nova aba"
@@ -218,7 +193,6 @@ export default function CardapioPrevia() {
             Abrir
           </button>
 
-          {/* Copiar link */}
           <button
             onClick={handleShare}
             style={{
@@ -226,7 +200,7 @@ export default function CardapioPrevia() {
               border: "none",
               borderRadius: "8px",
               padding: "0.45rem 0.9rem",
-              color: copied ? "#4ade80" : "rgba(255,255,255,0.85)",
+              color: copied ? "var(--success, #22C55E)" : "rgba(255,255,255,0.85)",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -272,7 +246,6 @@ export default function CardapioPrevia() {
           }}
         >
           {viewMode === "mobile" ? (
-            /* ── Moldura do smartphone ── */
             <div
               style={{
                 position: "relative",
@@ -301,9 +274,7 @@ export default function CardapioPrevia() {
                   gap: "8px",
                 }}
               >
-                {/* Camera */}
                 <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#2a2a2e", border: "1.5px solid #333" }} />
-                {/* Pill */}
                 <div style={{ width: "50px", height: "5px", borderRadius: "4px", background: "#2a2a2e" }} />
               </div>
 
@@ -314,7 +285,7 @@ export default function CardapioPrevia() {
                   height: "780px",
                   borderRadius: "30px",
                   overflow: "hidden",
-                  background: "#fff",
+                  background: "var(--bg-card, #FFFFFF)",
                   position: "relative",
                 }}
               >
@@ -331,10 +302,9 @@ export default function CardapioPrevia() {
               </div>
             </div>
           ) : (
-            /* ── Iframe desktop full ── */
             <iframe
               src={url}
-              style={{ width: "100%", height: "100%", border: "none", background: "white" }}
+              style={{ width: "100%", height: "100%", border: "none", background: "var(--bg-card, #FFFFFF)" }}
               title="Prévia desktop"
             />
           )}

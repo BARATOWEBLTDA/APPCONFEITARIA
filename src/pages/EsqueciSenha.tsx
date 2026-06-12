@@ -27,7 +27,7 @@ export default function EsqueciSenha() {
       const t = timeRef.current;
       const angle = 120 + 20 * Math.sin(t);
       if (bgRef.current) {
-        bgRef.current.style.background = `linear-gradient(${angle}deg, #f9007a 0%, #ff6eb4 45%, #ffb3d9 100%)`;
+        bgRef.current.style.background = `linear-gradient(${angle}deg, #FF6FA9 0%, #F85A9A 45%, #ffb3d9 100%)`;
       }
       currentRef.current.x += (mouseRef.current.x - currentRef.current.x) * 0.06;
       currentRef.current.y += (mouseRef.current.y - currentRef.current.y) * 0.06;
@@ -51,14 +51,6 @@ export default function EsqueciSenha() {
     setError("");
 
     try {
-      // Verifica se o email existe no banco
-      const { data, error: checkError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", email)
-        .maybeSingle();
-
-      // Tenta enviar o reset independente — Supabase não expõe se email existe por segurança
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
@@ -100,8 +92,8 @@ export default function EsqueciSenha() {
                   onChange={(e) => { setEmail(e.target.value); setError(""); }}
                   required
                   style={{
-                    backgroundColor: email ? "#fff0f6" : "white",
-                    borderColor: email ? "#ffb3d9" : "#e5e7eb",
+                    backgroundColor: email ? "var(--primary-light, #FFF1F7)" : "var(--bg-card, #FFFFFF)",
+                    borderColor: email ? "var(--primary-light, #FFF1F7)" : "var(--border, #E9E9EE)",
                   }}
                 />
               </div>
@@ -143,99 +135,40 @@ export default function EsqueciSenha() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
         html, body, #root { height: 100%; overflow: hidden; }
-
-        .auth-root {
-          height: 100vh; display: flex; flex-direction: column;
-          align-items: center; justify-content: center;
-          position: relative; overflow: hidden;
-          font-family: 'Geist', sans-serif;
-          padding: 1.5rem; padding-bottom: 5rem;
-        }
-
-        .auth-bg { position: fixed; inset: 0; z-index: 0; background: linear-gradient(120deg, #f9007a 0%, #ff6eb4 45%, #ffb3d9 100%); }
-
-        .mouse-glow {
-          position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%;
-          background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-          transform: translate(-50%, -50%); pointer-events: none;
-        }
-
-        .auth-card {
-          position: relative; z-index: 2; background: #ffffff;
-          border-radius: 16px; padding: 2.5rem 2.2rem 2rem;
-          width: calc(100% - 2.5rem); max-width: 440px;
-          box-shadow: 0 8px 40px rgba(0,0,0,0.12);
-          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
+        .auth-root { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; font-family: 'Geist', sans-serif; padding: 1.5rem; padding-bottom: 5rem; }
+        .auth-bg { position: fixed; inset: 0; z-index: 0; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); }
+        .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; }
+        .auth-card { position: relative; z-index: 2; background: var(--bg-card, #FFFFFF); border-radius: 16px; padding: 2.5rem 2.2rem 2rem; width: calc(100% - 2.5rem); max-width: 440px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         .auth-logo-wrap { display: flex; justify-content: center; margin-bottom: 1.5rem; }
         .auth-logo-img { height: 90px; object-fit: contain; }
-
         .auth-text { text-align: center; margin-bottom: 1.5rem; }
-        .auth-text h2 { font-size: 1.2rem; font-weight: 600; color: #1f2937; margin-bottom: 0.5rem; }
-        .auth-text p { font-size: 0.88rem; color: #6b7280; line-height: 1.5; }
-
+        .auth-text h2 { font-size: 1.2rem; font-weight: 600; color: var(--text-title, #1F2937); margin-bottom: 0.5rem; }
+        .auth-text p { font-size: 0.88rem; color: var(--text-secondary, #6B7280); line-height: 1.5; }
         .auth-form { display: flex; flex-direction: column; gap: 1rem; }
         .field { display: flex; flex-direction: column; gap: 0.35rem; }
-        .field label { font-size: 0.88rem; font-weight: 500; color: #374151; }
-        .field input {
-          padding: 0.72rem 1rem; border: 1.5px solid #e5e7eb; border-radius: 8px;
-          font-family: 'Geist', sans-serif; font-size: 0.95rem; color: #1f2937;
-          outline: none; transition: background-color 0.2s, border-color 0.2s; width: 100%;
-        }
-        .field input::placeholder { color: #9ca3af; }
-
-        .auth-error {
-          background: #fff1f2; border: 1px solid #fecdd3;
-          color: #be123c; border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem;
-        }
-
-        .auth-btn {
-          padding: 0.85rem; background: linear-gradient(135deg, #f9007a, #d4006a);
-          color: white; border: none; border-radius: 8px;
-          font-family: 'Geist', sans-serif; font-size: 1rem; font-weight: 600;
-          cursor: pointer; transition: opacity 0.2s, transform 0.15s;
-          display: flex; align-items: center; justify-content: center; min-height: 48px;
-        }
+        .field label { font-size: 0.88rem; font-weight: 500; color: var(--text-primary, #374151); }
+        .field input { padding: 0.72rem 1rem; border: 1.5px solid var(--border, #E9E9EE); border-radius: 8px; font-family: 'Geist', sans-serif; font-size: 0.95rem; color: var(--text-title, #1F2937); outline: none; transition: background-color 0.2s, border-color 0.2s; width: 100%; }
+        .field input::placeholder { color: var(--text-muted, #9CA3AF); }
+        .auth-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error, #EF4444); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; }
+        .auth-btn { padding: 0.85rem; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); border: none; border-radius: 8px; font-family: 'Geist', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; min-height: 48px; }
         .auth-btn:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
         .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-
-        .back-btn {
-          background: none; border: none; color: #9ca3af;
-          font-family: 'Geist', sans-serif; font-size: 0.88rem;
-          cursor: pointer; text-align: center; padding: 0.25rem;
-          transition: color 0.2s;
-        }
-        .back-btn:hover { color: #f9007a; }
-
+        .back-btn { background: none; border: none; color: var(--text-muted, #9CA3AF); font-family: 'Geist', sans-serif; font-size: 0.88rem; cursor: pointer; text-align: center; padding: 0.25rem; transition: color 0.2s; }
+        .back-btn:hover { color: var(--primary, #FF6FA9); }
         .sent-wrap { text-align: center; display: flex; flex-direction: column; gap: 0.75rem; }
         .sent-icon { font-size: 3rem; }
-        .sent-wrap h2 { font-size: 1.2rem; font-weight: 600; color: #1f2937; }
-        .sent-wrap p { font-size: 0.88rem; color: #6b7280; line-height: 1.5; }
-        .sent-tip { font-size: 0.8rem; color: #9ca3af; }
+        .sent-wrap h2 { font-size: 1.2rem; font-weight: 600; color: var(--text-title, #1F2937); }
+        .sent-wrap p { font-size: 0.88rem; color: var(--text-secondary, #6B7280); line-height: 1.5; }
+        .sent-tip { font-size: 0.8rem; color: var(--text-muted, #9CA3AF); }
         .sent-wrap .auth-btn { margin-top: 0.5rem; }
-
-        .spinner {
-          width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4);
-          border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite;
-        }
+        .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        .auth-footer {
-          position: fixed; bottom: 0; left: 0; right: 0; z-index: 3;
-          background: rgba(180, 0, 90, 0.2); backdrop-filter: blur(12px);
-          padding: 0.75rem 1rem; text-align: center;
-        }
-        .footer-title { display: block; font-weight: 600; font-size: 0.9rem; color: #fff; margin-bottom: 0.25rem; }
+        .auth-footer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 3; background: rgba(180, 0, 90, 0.2); backdrop-filter: blur(12px); padding: 0.75rem 1rem; text-align: center; }
+        .footer-title { display: block; font-weight: 600; font-size: 0.9rem; color: var(--text-inverse, #FFFFFF); margin-bottom: 0.25rem; }
         .footer-links { display: flex; justify-content: center; }
-        .footer-links a { display: flex; align-items: center; gap: 0.35rem; color: #fff; text-decoration: none; font-size: 0.85rem; font-weight: 500; }
+        .footer-links a { display: flex; align-items: center; gap: 0.35rem; color: var(--text-inverse, #FFFFFF); text-decoration: none; font-size: 0.85rem; font-weight: 500; }
         .footer-links a:hover { opacity: 0.8; }
       `}</style>
     </div>
