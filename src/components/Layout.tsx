@@ -253,13 +253,13 @@ export default function Layout() {
                 setNotifCount(0);
                 navigate("/notificacoes");
               }} style={{ position: "relative" }}>
-              <Bell size={24} weight="duotone" color="var(--sidebar-text)" />
+              <Bell size={24} weight="duotone" color="var(--topbar-text)" />
               {notifCount > 0 && <span className="mob-notif-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
             </button>
             <button className="mob-top-icon" onClick={() => navigate("/configuracoes")}>
               {profile?.foto_url
-                ? <img src={profile.foto_url} alt="perfil" style={{ width: "28px", height: "28px", borderRadius: "50%", objectFit: "cover", border: "2px solid var(--sidebar-text)" }} />
-                : <User size={24} weight="duotone" color="var(--sidebar-text)" />
+                ? <img src={profile.foto_url} alt="perfil" style={{ width: "28px", height: "28px", borderRadius: "50%", objectFit: "cover", border: "2px solid var(--topbar-text)" }} />
+                : <User size={24} weight="duotone" color="var(--topbar-text)" />
               }
             </button>
           </div>
@@ -326,10 +326,11 @@ export default function Layout() {
         .sidebar {
           width: 220px; min-height: 100vh;
           background: var(--sidebar-bg);
+          border-right: 1px solid var(--sidebar-border);
           display: flex; flex-direction: column;
           padding: 1.5rem 1rem;
           position: fixed; top: 0; left: 0; bottom: 0; z-index: 10;
-          box-shadow: 4px 0 20px rgba(0,0,0,0.25);
+          box-shadow: var(--shadow-card);
         }
 
         .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; }
@@ -352,8 +353,7 @@ export default function Layout() {
         .nav-item:hover { background: var(--sidebar-hover-bg); color: var(--text-inverse); }
         .nav-item:hover .nav-icon { opacity: 1; }
         .nav-item:focus { background: var(--sidebar-hover-bg); color: var(--text-inverse); outline: none; }
-        .nav-item.active { background: var(--sidebar-active-bg); color: var(--sidebar-active-text); font-weight: 600; }
-        .nav-item.active .nav-icon { opacity: 1; }
+        .nav-item.active { background: var(--sidebar-active-bg); color: var(--sidebar-active-text); font-weight: 600; }        .nav-item.active .nav-icon { opacity: 1; }
 
         .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; font-family: var(--font-base); padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: var(--sidebar-text); transition: background 0.15s, color 0.15s; display: flex; align-items: center; gap: 0.6rem; box-sizing: border-box; margin: 0; }
         .nav-group-btn:hover { background: var(--sidebar-hover-bg); color: var(--text-inverse); }
@@ -404,6 +404,7 @@ export default function Layout() {
             display: flex !important;
             position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
             background: var(--topbar-bg);
+            border-bottom: 1px solid var(--topbar-border);
             padding: 0.65rem 1.25rem;
             align-items: center; justify-content: space-between;
             box-shadow: var(--topbar-shadow);

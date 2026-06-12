@@ -26,17 +26,19 @@
   --border-focus:     #FF6FA9;
 
   /* ── Sidebar / Nav ── */
-  --sidebar-bg:           #10111A;
-  --sidebar-text:         #D0D8F0;
-  --sidebar-text-muted:   #8E99C2;
-  --sidebar-hover-bg:     #1D2550;
-  --sidebar-active-bg:    var(--primary-gradient);
-  --sidebar-active-text:  #FFFFFF;
-  --sidebar-border:       rgba(255,255,255,0.07);
+  --sidebar-bg:           var(--bg-card, #FFFFFF);
+  --sidebar-text:         var(--text-primary, #374151);
+  --sidebar-text-muted:   var(--text-muted, #9CA3AF);
+  --sidebar-hover-bg:     var(--menu-hover-bg, #F3F4F6);
+  --sidebar-active-bg:    var(--menu-active-bg, #FFF1F7);
+  --sidebar-active-text:  var(--menu-active, #FF6FA9);
+  --sidebar-border:       var(--border, #E9E9EE);
 
   /* ── Header Mobile / Top Bar ── */
-  --topbar-bg:            #10111A;
-  --topbar-shadow:        0 4px 12px rgba(0,0,0,0.25);
+  --topbar-bg:            var(--bg-card, #FFFFFF);
+  --topbar-text:          var(--text-title, #1F2937);
+  --topbar-border:        var(--border, #E9E9EE);
+  --topbar-shadow:        0 4px 12px rgba(0,0,0,0.08);
 
   /* ── Bottom Nav Mobile ── */
   --bottomnav-bg:         #FFFFFF;
