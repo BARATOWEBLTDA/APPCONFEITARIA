@@ -569,7 +569,7 @@ export default function Receitas() {
         .rec-loading { display: flex; justify-content: center; padding: 3rem; }
         .rec-empty { color: var(--text-muted, #9CA3AF); text-align: center; padding: 2rem; font-size: 0.88rem; line-height: 1.6; }
 
-        .rec-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; }
+        .rec-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-overlay); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; }
         @media (min-width: 768px) { .rec-overlay { align-items: center; padding: 1rem; } }
         .rec-form-modal { background: var(--bg-card, #FFFFFF); border-radius: 24px 24px 0 0; width: 100%; max-width: 520px; max-height: 90vh; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1); }
         @media (min-width: 768px) { .rec-form-modal { border-radius: 20px; } }
