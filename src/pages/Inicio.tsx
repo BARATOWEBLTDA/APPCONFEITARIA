@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { QuickSetupModal } from "@/components/QuickSetupModal";
+import { MetricCard } from "@/components/MetricCard";
 
 export default function Inicio() {
   const navigate = useNavigate();
@@ -283,47 +284,28 @@ const load = async () => {
 
         {/* 3 Cards métricas */}
         <div className="dash-metrics">
-          {/* Pedidos */}
-          <div className="dash-metric-card" onClick={() => navigate("/pedidos")} style={{background:"linear-gradient(135deg,var(--primary, #FF6FA9), #F85A9A)",overflow:"hidden",position:"relative"}}>
-            <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
-            <div className="dash-metric-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            </div>
-            <div style={{zIndex:1}}>
-              {pedidos === 0
-                ? <p className="dash-metric-empty" style={{color:"rgba(255,255,255,0.9)"}}>Sem pedidos ainda</p>
-                : <p className="dash-metric-num" style={{color:"white"}}>{pedidos}</p>
-              }
-              <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Pedidos do mês</p>
-            </div>
-          </div>
-
-          {/* Faturamento */}
-          <div className="dash-metric-card" style={{background:"linear-gradient(135deg,#10b981,#059669)",overflow:"hidden",position:"relative"}}>
-            <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
-            <div className="dash-metric-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            </div>
-            <div style={{zIndex:1}}>
-              <p className="dash-metric-num" style={{color:"white",fontSize:"1.1rem"}}>R$ 0,00</p>
-              <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Faturamento do mês</p>
-            </div>
-          </div>
-
-          {/* Clientes */}
-          <div className="dash-metric-card" onClick={() => navigate("/clientes")} style={{background:"linear-gradient(135deg,#6366f1,#8b5cf6)",overflow:"hidden",position:"relative"}}>
-            <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
-            <div className="dash-metric-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-            <div style={{zIndex:1}}>
-              {clientes === 0
-                ? <p className="dash-metric-empty" style={{color:"rgba(255,255,255,0.9)"}}>Nenhum cliente ainda</p>
-                : <p className="dash-metric-num" style={{color:"white"}}>{clientes}</p>
-              }
-              <p className="dash-metric-label" style={{color:"rgba(255,255,255,0.8)"}}>Clientes</p>
-            </div>
-          </div>
+          <MetricCard
+            variant="orders"
+            label="Pedidos do mês"
+            value={pedidos !== 0 ? pedidos : undefined}
+            emptyText="Sem pedidos ainda"
+            onClick={() => navigate("/pedidos")}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}
+          />
+          <MetricCard
+            variant="revenue"
+            label="Faturamento do mês"
+            value="R$ 0,00"
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
+          />
+          <MetricCard
+            variant="customers"
+            label="Clientes"
+            value={clientes !== 0 ? clientes : undefined}
+            emptyText="Nenhum cliente ainda"
+            onClick={() => navigate("/clientes")}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+          />
         </div>
 
         {/* Seções abaixo dos cards — 3 colunas */}
