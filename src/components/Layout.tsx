@@ -34,7 +34,6 @@ export default function Layout() {
   const [notifCount, setNotifCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notificacoes, setNotificacoes] = useState<any[]>([]);
-  const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains("dark"));
   const notifRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const isReceitas = location.pathname === "/receitas";
@@ -68,20 +67,9 @@ export default function Layout() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const toggleDark = () => {
-    const html = document.documentElement;
-    if (html.classList.contains("dark")) { html.classList.remove("dark"); setDarkMode(false); localStorage.setItem("tema", "light"); }
-    else { html.classList.add("dark"); setDarkMode(true); localStorage.setItem("tema", "dark"); }
-  };
   const formatDate = (d: Date) => d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
   const formatTime = (d: Date) => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/login");
-  };
-
-  // ── Itens do drawer Gestão ──
   const gestaoItems = [
     { label: "Dashboard", path: "/dashboard",     icon: <ChartBar    size={22} weight="duotone" /> },
     { label: "Pedidos",   path: "/pedidos",        icon: <ClipboardText size={22} weight="duotone" /> },
@@ -103,11 +91,11 @@ export default function Layout() {
               <div className="sidebar-avatar">
                 {profile?.foto_url
                   ? <img src={profile.foto_url} alt="Foto de perfil" />
-                  : <div className="sidebar-avatar-placeholder"><User size={36} weight="duotone" color="var(--primary, #FF6FA9)" /></div>
+                  : <div className="sidebar-avatar-placeholder"><User size={36} weight="duotone" color="var(--primary)" /></div>
                 }
               </div>
             </div>
-            <div style={{ position: "absolute", bottom: "-8px", left: "50%", transform: "translateX(-50%)", background: isPro ? "var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A))" : "#111111", border: isPro ? "none" : "1px solid rgba(255,255,255,0.2)", color: "white", fontSize: "0.65rem", fontWeight: 700, padding: "3px 10px", borderRadius: isPro ? "20px" : "6px", whiteSpace: "nowrap", letterSpacing: "0.05em" }}>
+            <div className={`sidebar-badge ${isPro ? "sidebar-badge--pro" : "sidebar-badge--free"}`}>
               {isPro ? "❤️ Premium" : "Free"}
             </div>
           </div>
@@ -153,15 +141,15 @@ export default function Layout() {
         </nav>
 
         {!isPro && (
-          <a href="/assinar" style={{display:"block",margin:"0 0.25rem 0.5rem",background:"rgba(255,111,169,0.12)",border:"1px solid rgba(255,111,169,0.2)",borderRadius:"14px",padding:"0.75rem 1rem",textDecoration:"none",textAlign:"center"}}>
-            <span style={{fontSize:"0.78rem",fontWeight:700,color:"var(--primary, #FF6FA9)"}}>✨ Fazer upgrade</span>
+          <a href="/assinar" className="sidebar-upgrade">
+            <span className="sidebar-upgrade-text">✨ Fazer upgrade</span>
           </a>
         )}
 
-        <button onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}
-          style={{display:"flex",alignItems:"center",gap:"0.6rem",width:"calc(100% - 0.5rem)",margin:"0 0.25rem 1rem",background:"none",border:"none",cursor:"pointer",padding:"0.6rem 1rem",borderRadius:"10px",color:"rgba(255,255,255,0.4)",fontSize:"0.82rem",fontWeight:500,fontFamily:"Geist,sans-serif",transition:"all 0.15s"}}
-          onMouseEnter={e => (e.currentTarget.style.color="rgba(255,255,255,0.7)")}
-          onMouseLeave={e => (e.currentTarget.style.color="rgba(255,255,255,0.4)")}>
+        <button
+          onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}
+          className="sidebar-logout"
+        >
           <SignOut size={16} weight="duotone" />
           Sair
         </button>
@@ -170,11 +158,12 @@ export default function Layout() {
       <main className={`layout-main${isAssinar ? " layout-main--no-header" : ""}`}>
         {/* Topbar desktop */}
         <div className="desk-topbar">
-          <div style={{flex:1, display:"flex", flexDirection:"column", justifyContent:"center"}}>
-            <span style={{fontSize:"1rem", fontWeight:800, color:"var(--text-title, #1F2937)", lineHeight:1.2}}>
-              {(() => { const h = now.getHours(); return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"; })()}, <span style={{color:"var(--primary, #FF6FA9)"}}>{profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"}</span>!
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <span className="topbar-greeting">
+              {(() => { const h = now.getHours(); return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"; })()},{" "}
+              <span style={{ color: "var(--primary)" }}>{profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"}</span>!
             </span>
-            <span style={{fontSize:"0.78rem", color:"var(--text-secondary, #6B7280)", marginTop:"2px"}}>
+            <span className="topbar-date">
               {(() => {
                 const feriados: Record<string, string> = {
                   "01-01": "Ano Novo 🎆", "21-04": "Tiradentes ⚖️", "01-05": "Dia do Trabalho 👷",
@@ -197,8 +186,8 @@ export default function Layout() {
           {/* Notificações com dropdown */}
           <div style={{ position: "relative" }} ref={notifRef}>
             <button className="topbar-btn" onClick={() => { setNotifOpen(o => !o); if (!notifOpen) { localStorage.setItem("notif_last_seen", new Date().toISOString()); setNotifCount(0); } }}>
-              <img src="/notifica.png" alt="Notificações" style={{width:"20px",height:"20px",objectFit:"contain"}} />
-              {notifCount > 0 && <span style={{ position: "absolute", top: "2px", right: "2px", width: "16px", height: "16px", borderRadius: "50%", background: "var(--primary, #FF6FA9)", color: "var(--text-inverse, #FFFFFF)", fontSize: "0.6rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>{notifCount > 9 ? "9+" : notifCount}</span>}
+              <img src="/notifica.png" alt="Notificações" style={{ width: "20px", height: "20px", objectFit: "contain" }} />
+              {notifCount > 0 && <span className="topbar-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
             </button>
             {notifOpen && (
               <div className="notif-dropdown">
@@ -256,30 +245,21 @@ export default function Layout() {
           <div className="mob-top-icons">
             {!isPro && (
               <button className="mob-top-icon" onClick={() => navigate("/assinar")}>
-                <img src="/diamante.png" alt="Assinar" style={{width:"24px",height:"24px",objectFit:"contain"}} />
+                <img src="/diamante.png" alt="Assinar" style={{ width: "24px", height: "24px", objectFit: "contain" }} />
               </button>
             )}
             <button className="mob-top-icon" onClick={() => {
                 localStorage.setItem("notif_last_seen", new Date().toISOString());
                 setNotifCount(0);
                 navigate("/notificacoes");
-              }} style={{position:"relative"}}>
-              <Bell size={24} weight="duotone" color="white" />
-              {notifCount > 0 && (
-                <span style={{
-                  position:"absolute", top:"-4px", right:"-4px",
-                  background:"var(--error, #EF4444)", color:"var(--text-inverse, #FFFFFF)",
-                  fontSize:"0.6rem", fontWeight:700,
-                  width:"16px", height:"16px", borderRadius:"50%",
-                  display:"flex", alignItems:"center", justifyContent:"center",
-                  border:"2px solid var(--primary-dark, #F85A9A)", lineHeight:1
-                }}>{notifCount > 9 ? "9+" : notifCount}</span>
-              )}
+              }} style={{ position: "relative" }}>
+              <Bell size={24} weight="duotone" color="var(--sidebar-text)" />
+              {notifCount > 0 && <span className="mob-notif-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
             </button>
             <button className="mob-top-icon" onClick={() => navigate("/configuracoes")}>
               {profile?.foto_url
-                ? <img src={profile.foto_url} alt="perfil" style={{width:"28px",height:"28px",borderRadius:"50%",objectFit:"cover",border:"2px solid white"}} />
-                : <User size={24} weight="duotone" color="white" />
+                ? <img src={profile.foto_url} alt="perfil" style={{ width: "28px", height: "28px", borderRadius: "50%", objectFit: "cover", border: "2px solid var(--sidebar-text)" }} />
+                : <User size={24} weight="duotone" color="var(--sidebar-text)" />
               }
             </button>
           </div>
@@ -338,146 +318,144 @@ export default function Layout() {
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .layout-root { display: flex; min-height: 100vh; font-family: 'Geist', sans-serif; background: var(--bg-body, #F7F7F8); position: relative; }
+        .layout-root { display: flex; min-height: 100vh; font-family: var(--font-base); background: var(--bg-body); position: relative; }
         .mob-top-header { display: none; }
         .bottom-nav { display: none; }
 
-        .sidebar { width: 220px; min-height: 100vh; background: #10111A; display: flex; flex-direction: column; padding: 1.5rem 1rem; position: fixed; top: 0; left: 0; bottom: 0; z-index: 10; box-shadow: 4px 0 20px rgba(0,0,0,0.25); }
+        /* ── Sidebar ── */
+        .sidebar {
+          width: 220px; min-height: 100vh;
+          background: var(--sidebar-bg);
+          display: flex; flex-direction: column;
+          padding: 1.5rem 1rem;
+          position: fixed; top: 0; left: 0; bottom: 0; z-index: 10;
+          box-shadow: 4px 0 20px rgba(0,0,0,0.25);
+        }
 
         .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; }
 
-        .sidebar-avatar-ring { width: 100px; height: 100px; border-radius: 50%; padding: 3px; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); background-size: 300% 300%; animation: gradientRing 3s ease infinite; flex-shrink: 0; }
+        .sidebar-avatar-ring { width: 100px; height: 100px; border-radius: 50%; padding: 3px; background: var(--primary-gradient); background-size: 300% 300%; animation: gradientRing 3s ease infinite; flex-shrink: 0; }
         @keyframes gradientRing { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid var(--text-inverse, #FFFFFF); background: rgba(255,111,169,0.1); }
+        .sidebar-avatar { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; border: 3px solid var(--text-inverse); background: rgba(var(--primary-rgb), 0.1); }
         .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 
-        .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; overflow-y: auto; }
-        .nav-icon { display:flex; align-items:center; flex-shrink:0; opacity:0.7; }
-        .nav-item { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #D0D8F0; text-decoration: none; transition: background 0.15s, color 0.15s; outline: none; display: flex; align-items: center; gap: 0.6rem; }
-        .nav-item:hover { background: #1D2550; color: var(--text-inverse, #FFFFFF); }
-        .nav-item:hover .nav-icon { opacity:1; }
-        .nav-item:focus { background: #1D2550; color: var(--text-inverse, #FFFFFF); outline: none; }
-        .nav-item.active { background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); font-weight: 600; }
-        .nav-item.active .nav-icon { opacity:1; }
-        .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; font-family: 'Geist', sans-serif; padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: #D0D8F0; transition: background 0.15s, color 0.15s; display: flex; align-items: center; gap: 0.6rem; box-sizing: border-box; margin: 0; }
-        .nav-group-btn:hover { background: #1D2550; color: var(--text-inverse, #FFFFFF); }
-        .nav-group-btn.active { color: var(--primary, #FF6FA9); }
-        .nav-subitems { display: flex; flex-direction: column; padding: 0 0 0.25rem 0; }
-        .nav-subitem { display: flex; align-items: center; padding: 0.5rem 0.85rem 0.5rem 1.75rem; border-radius: 8px; font-size: 0.85rem; color: #8E99C2; text-decoration: none; transition: all 0.15s; }
-        .nav-subitem:hover { color: var(--text-inverse, #FFFFFF); background: #1D2550; }
-        .nav-subitem.active { color: var(--text-inverse, #FFFFFF); background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); font-weight: 600; }
+        .sidebar-badge { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); font-size: 0.65rem; font-weight: 700; padding: 3px 10px; white-space: nowrap; letter-spacing: 0.05em; color: var(--text-inverse); }
+        .sidebar-badge--pro { background: var(--primary-gradient); border-radius: 20px; }
+        .sidebar-badge--free { background: #111111; border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; }
 
+        .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; overflow-y: auto; }
+        .nav-icon { display: flex; align-items: center; flex-shrink: 0; opacity: 0.7; }
+
+        .nav-item { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: var(--sidebar-text); text-decoration: none; transition: background 0.15s, color 0.15s; outline: none; display: flex; align-items: center; gap: 0.6rem; }
+        .nav-item:hover { background: var(--sidebar-hover-bg); color: var(--text-inverse); }
+        .nav-item:hover .nav-icon { opacity: 1; }
+        .nav-item:focus { background: var(--sidebar-hover-bg); color: var(--text-inverse); outline: none; }
+        .nav-item.active { background: var(--sidebar-active-bg); color: var(--sidebar-active-text); font-weight: 600; }
+        .nav-item.active .nav-icon { opacity: 1; }
+
+        .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; font-family: var(--font-base); padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: var(--sidebar-text); transition: background 0.15s, color 0.15s; display: flex; align-items: center; gap: 0.6rem; box-sizing: border-box; margin: 0; }
+        .nav-group-btn:hover { background: var(--sidebar-hover-bg); color: var(--text-inverse); }
+        .nav-group-btn.active { color: var(--primary); }
+
+        .nav-subitems { display: flex; flex-direction: column; padding: 0 0 0.25rem 0; }
+        .nav-subitem { display: flex; align-items: center; padding: 0.5rem 0.85rem 0.5rem 1.75rem; border-radius: 8px; font-size: 0.85rem; color: var(--sidebar-text-muted); text-decoration: none; transition: all 0.15s; }
+        .nav-subitem:hover { color: var(--text-inverse); background: var(--sidebar-hover-bg); }
+        .nav-subitem.active { color: var(--sidebar-active-text); background: var(--sidebar-active-bg); font-weight: 600; }
+
+        .sidebar-upgrade { display: block; margin: 0 0.25rem 0.5rem; background: rgba(var(--primary-rgb), 0.12); border: 1px solid rgba(var(--primary-rgb), 0.2); border-radius: 14px; padding: 0.75rem 1rem; text-decoration: none; text-align: center; }
+        .sidebar-upgrade-text { font-size: 0.78rem; font-weight: 700; color: var(--primary); }
+
+        .sidebar-logout { display: flex; align-items: center; gap: 0.6rem; width: calc(100% - 0.5rem); margin: 0 0.25rem 1rem; background: none; border: none; cursor: pointer; padding: 0.6rem 1rem; border-radius: 10px; color: var(--sidebar-text-muted); font-size: 0.82rem; font-weight: 500; font-family: var(--font-base); transition: color 0.15s; }
+        .sidebar-logout:hover { color: var(--sidebar-text); }
+
+        /* ── Layout main ── */
         .layout-main { margin-left: 220px; flex: 1; padding: 2rem; min-height: 100vh; }
         .desk-topbar { display: none; }
-        @media (min-width: 900px) {
-          .desk-topbar { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 2rem; border-bottom: 1px solid var(--border, #E9E9EE); background: var(--bg-card, #FFFFFF); margin: -2rem -2rem 1.5rem -2rem; position: sticky; top: 0; z-index: 9; }
-        }
-        .topbar-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary, #6B7280); transition: background 0.2s; position: relative; flex-shrink: 0; }
-        .topbar-btn:hover { background: rgba(0,0,0,0.08); }
-        .notif-dropdown { position: absolute; right: 0; top: calc(100% + 8px); width: 320px; background: var(--bg-card, #FFFFFF); border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); border: 1px solid var(--border, #E9E9EE); z-index: 100; overflow: hidden; }
-        .notif-header { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border, #E9E9EE); display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem; color: var(--text-title, #1F2937); }
-        .notif-header button { background: none; border: none; cursor: pointer; color: var(--text-muted, #9CA3AF); font-size: 1rem; }
-        .notif-body { max-height: 360px; overflow-y: auto; }
-        .notif-empty { padding: 1.5rem; text-align: center; color: var(--text-muted, #9CA3AF); font-size: 0.85rem; margin: 0; }
-        .notif-item { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border, #E9E9EE); display: flex; gap: 0.75rem; align-items: flex-start; }
-        .notif-item:last-child { border-bottom: none; }
-        .notif-title { font-size: 0.85rem; font-weight: 600; color: var(--text-title, #1F2937); margin: 0 0 2px; }
-        .notif-msg { font-size: 0.78rem; color: var(--text-secondary, #6B7280); margin: 0; }
-        .notif-time { font-size: 0.7rem; color: var(--text-muted, #9CA3AF); margin: 4px 0 0; }
 
+        @media (min-width: 900px) {
+          .desk-topbar { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 2rem; border-bottom: 1px solid var(--border); background: var(--bg-card); margin: -2rem -2rem 1.5rem -2rem; position: sticky; top: 0; z-index: 9; }
+        }
+
+        .topbar-greeting { font-size: 1rem; font-weight: 800; color: var(--text-title); line-height: 1.2; }
+        .topbar-date { font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px; }
+
+        .topbar-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: background 0.2s; position: relative; flex-shrink: 0; }
+        .topbar-btn:hover { background: rgba(0,0,0,0.08); }
+        .topbar-badge { position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--primary); color: var(--text-inverse); font-size: 0.6rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+        .notif-dropdown { position: absolute; right: 0; top: calc(100% + 8px); width: 320px; background: var(--bg-card); border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border); z-index: 100; overflow: hidden; }
+        .notif-header { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem; color: var(--text-title); }
+        .notif-header button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1rem; }
+        .notif-body { max-height: 360px; overflow-y: auto; }
+        .notif-empty { padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; margin: 0; }
+        .notif-item { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); display: flex; gap: 0.75rem; align-items: flex-start; }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-title { font-size: 0.85rem; font-weight: 600; color: var(--text-title); margin: 0 0 2px; }
+        .notif-msg { font-size: 0.78rem; color: var(--text-secondary); margin: 0; }
+        .notif-time { font-size: 0.7rem; color: var(--text-muted); margin: 4px 0 0; }
+
+        /* ── Mobile ── */
         @media (max-width: 900px) {
           .sidebar { display: none; }
 
           .mob-top-header {
             display: flex !important;
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            z-index: 9999;
-            background: #10111A;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+            background: var(--topbar-bg);
             padding: 0.65rem 1.25rem;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
+            align-items: center; justify-content: space-between;
+            box-shadow: var(--topbar-shadow);
+            transform: translateZ(0); -webkit-transform: translateZ(0);
           }
           .mob-top-logo { height: 42px; object-fit: contain; }
           .mob-top-icons { display: flex; align-items: center; gap: 0.6rem; }
           .mob-top-icon { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0.2rem; }
 
-          .layout-main { margin-left: 0; padding: 0.75rem; padding-top: 5rem; padding-bottom: 5.5rem; background: var(--bg-body, #F7F7F8); min-height: 100vh; width: 100%; box-sizing: border-box; }
-          .layout-main--no-header { padding-top: 1rem; background: var(--bg-body, #F7F7F8); }
+          .mob-notif-badge {
+            position: absolute; top: -4px; right: -4px;
+            background: var(--error); color: var(--text-inverse);
+            font-size: 0.6rem; font-weight: 700;
+            width: 16px; height: 16px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid var(--primary-dark); line-height: 1;
+          }
+
+          .layout-main { margin-left: 0; padding: 0.75rem; padding-top: 5rem; padding-bottom: 5.5rem; background: var(--bg-body); min-height: 100vh; width: 100%; box-sizing: border-box; }
+          .layout-main--no-header { padding-top: 1rem; background: var(--bg-body); }
 
           .bottom-nav {
             display: flex !important;
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            z-index: 50;
-            background: var(--bg-card, #FFFFFF);
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+            background: var(--bottomnav-bg);
             padding: 0.5rem 0 1rem;
-            justify-content: space-around;
-            align-items: center;
-            box-shadow: 0 -2px 12px rgba(0,0,0,0.12);
+            justify-content: space-around; align-items: center;
+            box-shadow: var(--bottomnav-shadow);
           }
-
-          .bottom-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex: 1;
-            gap: 0.2rem;
-            padding: 0.35rem 0.1rem;
-            color: var(--text-muted, #9CA3AF);
-            text-decoration: none;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-family: 'Geist', sans-serif;
-            transition: color 0.15s;
-          }
-
+          .bottom-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 0.2rem; padding: 0.35rem 0.1rem; color: var(--bottomnav-inactive); text-decoration: none; background: none; border: none; cursor: pointer; font-family: var(--font-base); transition: color 0.15s; }
           .nav-label { font-size: 0.6rem; font-weight: 600; color: inherit; white-space: nowrap; }
-          .nav-label-active { font-size: 0.6rem; font-weight: 800; color: var(--primary, #FF6FA9); }
-
+          .nav-label-active { font-size: 0.6rem; font-weight: 800; color: var(--bottomnav-active); }
           .bottom-nav { animation: fadeInUp 0.2s ease; }
-          @keyframes fadeInUp { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
-          .bottom-item.active { color: var(--primary, #FF6FA9); font-weight: 700; }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+          .bottom-item.active { color: var(--bottomnav-active); font-weight: 700; }
           .bottom-item.active .nav-label { font-weight: 800 !important; }
-          .bottom-item:hover { color: var(--primary, #FF6FA9); }
+          .bottom-item:hover { color: var(--bottomnav-active); }
 
-          :root.dark .mob-top-header { background: #000000; }
-          .gestao-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); }
-          .gestao-drawer {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: #120706;
-            border-radius: 24px 24px 0 0;
-            padding: 0.75rem 1.25rem 2rem;
-            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            border-top: 1px solid rgba(255,111,169,0.2);
-            max-height: 80vh;
-            overflow-y: auto;
-            z-index: 101;
-          }
+          /* ── Gestão Drawer ── */
+          .gestao-overlay { position: fixed; inset: 0; z-index: 100; background: var(--drawer-overlay); backdrop-filter: blur(6px); }
+          .gestao-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--drawer-bg); border-radius: 24px 24px 0 0; padding: 0.75rem 1.25rem 2rem; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); border-top: 1px solid rgba(var(--primary-rgb), 0.2); max-height: 80vh; overflow-y: auto; z-index: 101; }
           @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-          .gestao-handle { width: 40px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; margin: 0 auto 1rem; }
+          .gestao-handle { width: 40px; height: 4px; background: var(--drawer-handle); border-radius: 2px; margin: 0 auto 1rem; }
           .gestao-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
-          .gestao-title { font-size: 1rem; font-weight: 700; color: var(--text-inverse, #FFFFFF); margin: 0; font-family: 'Geist', sans-serif; }
-          .gestao-close { background: rgba(255,255,255,0.08); border: none; color: rgba(255,255,255,0.6); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; }
+          .gestao-title { font-size: 1rem; font-weight: 700; color: var(--text-inverse); margin: 0; font-family: var(--font-base); }
+          .gestao-close { background: var(--drawer-close-bg); border: none; color: var(--drawer-close-text); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; }
           .gestao-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem; }
-          .gestao-item {
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 0.45rem; background: rgba(255,255,255,0.05);
-            border-radius: 16px; padding: 0.9rem 0.5rem;
-            text-decoration: none; transition: background 0.15s;
-            border: 1px solid rgba(255,255,255,0.07);
-          }
-          .gestao-item:hover { background: rgba(255,111,169,0.15); border-color: rgba(255,111,169,0.3); }
-          .gestao-item.active { background: rgba(255,111,169,0.2); border-color: rgba(255,111,169,0.4); }
-          .gestao-icon { color: var(--primary, #FF6FA9); display: flex; align-items: center; }
-          .gestao-label { font-size: 0.72rem; font-weight: 600; color: var(--text-inverse, #FFFFFF); text-align: center; font-family: 'Geist', sans-serif; line-height: 1.2; }
+          .gestao-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.45rem; background: var(--drawer-item-bg); border-radius: 16px; padding: 0.9rem 0.5rem; text-decoration: none; transition: background 0.15s; border: 1px solid var(--drawer-item-border); }
+          .gestao-item:hover { background: var(--drawer-item-hover-bg); border-color: var(--drawer-item-hover-border); }
+          .gestao-item.active { background: var(--drawer-item-hover-bg); border-color: var(--drawer-item-hover-border); }
+          .gestao-icon { color: var(--primary); display: flex; align-items: center; }
+          .gestao-label { font-size: 0.72rem; font-weight: 600; color: var(--text-inverse); text-align: center; font-family: var(--font-base); line-height: 1.2; }
         }
       `}</style>
     </div>

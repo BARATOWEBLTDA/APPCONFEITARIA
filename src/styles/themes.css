@@ -5,6 +5,7 @@
   --primary-dark:     #F85A9A;
   --primary-light:    #FFF1F7;
   --primary-gradient: linear-gradient(135deg, #FF6FA9, #F85A9A);
+  --primary-rgb:      255, 111, 169;
 
   /* Tipografia */
   --text-title:       #1F2937;
@@ -12,19 +13,49 @@
   --text-secondary:   #6B7280;
   --text-muted:       #9CA3AF;
   --text-inverse:     #FFFFFF;
+  --text-disabled:    #D1D5DB;
 
   /* Superfícies */
   --bg-body:          #F7F7F8;
   --bg-card:          #FFFFFF;
   --bg-input:         #FFFFFF;
-  --bg-sidebar:       #FFFFFF;
   --bg-subtle:        #FFF1F7;
 
   /* Bordas */
   --border:           #E9E9EE;
   --border-focus:     #FF6FA9;
 
-  /* Menu */
+  /* ── Sidebar / Nav ── */
+  --sidebar-bg:           #10111A;
+  --sidebar-text:         #D0D8F0;
+  --sidebar-text-muted:   #8E99C2;
+  --sidebar-hover-bg:     #1D2550;
+  --sidebar-active-bg:    var(--primary-gradient);
+  --sidebar-active-text:  #FFFFFF;
+  --sidebar-border:       rgba(255,255,255,0.07);
+
+  /* ── Header Mobile / Top Bar ── */
+  --topbar-bg:            #10111A;
+  --topbar-shadow:        0 4px 12px rgba(0,0,0,0.25);
+
+  /* ── Bottom Nav Mobile ── */
+  --bottomnav-bg:         #FFFFFF;
+  --bottomnav-shadow:     0 -2px 12px rgba(0,0,0,0.12);
+  --bottomnav-inactive:   #9CA3AF;
+  --bottomnav-active:     var(--primary);
+
+  /* ── Gestão Drawer ── */
+  --drawer-bg:            #120706;
+  --drawer-item-bg:       rgba(255,255,255,0.05);
+  --drawer-item-border:   rgba(255,255,255,0.07);
+  --drawer-item-hover-bg: rgba(255,111,169,0.15);
+  --drawer-item-hover-border: rgba(255,111,169,0.3);
+  --drawer-handle:        rgba(255,255,255,0.15);
+  --drawer-close-bg:      rgba(255,255,255,0.08);
+  --drawer-close-text:    rgba(255,255,255,0.6);
+  --drawer-overlay:       rgba(0,0,0,0.6);
+
+  /* ── Menu (legado) ── */
   --menu-bg:          #FFFFFF;
   --menu-inactive:    #6B7280;
   --menu-active:      #FF6FA9;
@@ -66,6 +97,7 @@
   --primary-dark:     #F85A9A;
   --primary-light:    #4A1F33;
   --primary-gradient: linear-gradient(135deg, #FF6FA9, #F85A9A);
+  --primary-rgb:      255, 111, 169;
 
   /* Tipografia */
   --text-title:       #F9FAFB;
@@ -73,19 +105,49 @@
   --text-secondary:   #9CA3AF;
   --text-muted:       #6B7280;
   --text-inverse:     #0d0d0d;
+  --text-disabled:    #4B5563;
 
   /* Superfícies */
   --bg-body:          #0F1115;
   --bg-card:          #171923;
   --bg-input:         #171923;
-  --bg-sidebar:       #171923;
   --bg-subtle:        #4A1F33;
 
   /* Bordas */
   --border:           #2A2D3A;
   --border-focus:     #FF6FA9;
 
-  /* Menu */
+  /* ── Sidebar / Nav ── */
+  --sidebar-bg:           #0D0E14;
+  --sidebar-text:         #C8D2EE;
+  --sidebar-text-muted:   #7A86B0;
+  --sidebar-hover-bg:     #181C30;
+  --sidebar-active-bg:    var(--primary-gradient);
+  --sidebar-active-text:  #FFFFFF;
+  --sidebar-border:       rgba(255,255,255,0.05);
+
+  /* ── Header Mobile / Top Bar ── */
+  --topbar-bg:            #0D0E14;
+  --topbar-shadow:        0 4px 12px rgba(0,0,0,0.5);
+
+  /* ── Bottom Nav Mobile ── */
+  --bottomnav-bg:         #171923;
+  --bottomnav-shadow:     0 -2px 12px rgba(0,0,0,0.4);
+  --bottomnav-inactive:   #6B7280;
+  --bottomnav-active:     var(--primary);
+
+  /* ── Gestão Drawer ── */
+  --drawer-bg:            #0D0E14;
+  --drawer-item-bg:       rgba(255,255,255,0.04);
+  --drawer-item-border:   rgba(255,255,255,0.06);
+  --drawer-item-hover-bg: rgba(255,111,169,0.12);
+  --drawer-item-hover-border: rgba(255,111,169,0.25);
+  --drawer-handle:        rgba(255,255,255,0.1);
+  --drawer-close-bg:      rgba(255,255,255,0.06);
+  --drawer-close-text:    rgba(255,255,255,0.5);
+  --drawer-overlay:       rgba(0,0,0,0.75);
+
+  /* ── Menu (legado) ── */
   --menu-bg:          #171923;
   --menu-inactive:    #9CA3AF;
   --menu-active:      #FF6FA9;
