@@ -2,9 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { ImageCropper } from "@/components/ui/ImageCropper";
-
-type Categoria = { id?: string; user_id?: string; nome: string; imagem_url?: string; ordem?: number; };
-const SYSTEM_ICONS = Array.from({length: 42}, (_, i) => `/categoriaicones/icone (${i+1}).png`);
+import Categorias from "@/pages/Categorias";
 
 type Tamanho = { label: string; preco: number };
 
@@ -75,17 +73,6 @@ const EMPTY: Produto = {
 
 export default function Produtos() {
   const [activeTab, setActiveTab] = useState<"produtos"|"categorias">("produtos");
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
-  const [cat_prods, setCat_prods] = useState<{categoria:string}[]>([]);
-  const [cat_loading, setCat_loading] = useState(true);
-  const [cat_uploading, setCat_uploading] = useState<string|null>(null);
-  const [cat_modal, setCat_modal] = useState(false);
-  const [cat_form, setCat_form] = useState<Categoria>({nome:"",imagem_url:"",ordem:0});
-  const [cat_delConfirm, setCat_delConfirm] = useState<string|null>(null);
-  const [cat_saving, setCat_saving] = useState(false);
-  const [cat_galeria, setCat_galeria] = useState(false);
-  const [cat_userId, setCat_userId] = useState("");
-  const cat_imgRef = useRef<HTMLInputElement>(null);
   const [userId, setUserId] = useState("");
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [categorias, setCategorias] = useState<string[]>([]);
@@ -135,18 +122,6 @@ export default function Produtos() {
   const openNovo = () => { setForm(EMPTY); setModal(true); };
   const openEditar = (p: Produto) => { setForm({ ...EMPTY, ...p }); setModal(true); };
   const fecharModal = () => { setModal(false); setForm(EMPTY); };
-
-  const loadCats = async (uid:string) => { const {data} = await supabase.from("categorias").select("*").eq("user_id",uid).order("ordem").order("nome"); if(data) setCategorias(data); };
-  const loadCatProds = async (uid:string) => { const {data} = await supabase.from("produtos").select("categoria").eq("user_id",uid); if(data) setCat_prods(data); };
-  useEffect(()=>{ const load=async()=>{ const {data:{user}}=await supabase.auth.getUser(); if(!user) return; setCat_userId(user.id); await Promise.all([loadCats(user.id),loadCatProds(user.id)]); setCat_loading(false); }; load(); },[]);
-  const catCount = (nome:string) => cat_prods.filter(p=>p.categoria===nome).length;
-  const cat_openNova = () => { setCat_form({nome:"",imagem_url:"",ordem:categorias.length}); setCat_galeria(false); setCat_modal(true); };
-  const cat_openEdit = (c:Categoria) => { setCat_form({...c}); setCat_galeria(false); setCat_modal(true); };
-  const cat_close = () => { setCat_modal(false); setCat_galeria(false); setCat_form({nome:"",imagem_url:"",ordem:0}); };
-  const cat_imgUpload = async (e:React.ChangeEvent<HTMLInputElement>) => { const file=e.target.files?.[0]; if(!file||!cat_userId) return; setCat_uploading("img"); const ext=file.name.split(".").pop(); const path=`categorias/${cat_userId}-${Date.now()}.${ext}`; const {error}=await supabase.storage.from("products").upload(path,file,{upsert:true}); if(!error){const {data}=supabase.storage.from("products").getPublicUrl(path); setCat_form(f=>({...f,imagem_url:data.publicUrl}));} setCat_uploading(null); };
-  const cat_salvar = async () => { if(!cat_form.nome.trim()) return alert("Nome é obrigatório"); if(!cat_form.imagem_url) return alert("Selecione um ícone"); setCat_saving(true); if(cat_form.id){await supabase.from("categorias").update({nome:cat_form.nome,imagem_url:cat_form.imagem_url,ordem:cat_form.ordem}).eq("id",cat_form.id);}else{await supabase.from("categorias").insert({nome:cat_form.nome,imagem_url:cat_form.imagem_url,ordem:cat_form.ordem,user_id:cat_userId});} await loadCats(cat_userId); setCat_saving(false); cat_close(); };
-  const cat_delete = async (id:string) => { await supabase.from("categorias").delete().eq("id",id); setCategorias(c=>c.filter(x=>x.id!==id)); setCat_delConfirm(null); };
-  const cat_mover = async (id:string, dir:-1|1) => { const idx=categorias.findIndex(c=>c.id===id); if(idx<0) return; const ni=idx+dir; if(ni<0||ni>=categorias.length) return; const upd=[...categorias]; [upd[idx],upd[ni]]=[upd[ni],upd[idx]]; upd.forEach((c,i)=>c.ordem=i); setCategorias(upd); await Promise.all(upd.map(c=>supabase.from("categorias").update({ordem:c.ordem}).eq("id",c.id!))); };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: number = 0) => {
     const file = e.target.files?.[0];
@@ -298,67 +273,8 @@ export default function Produtos() {
         </button>
       </div>
 
-      {/* ── Tab Categorias ── */}
-      {activeTab === "categorias" && (
-        <div style={{display:"flex",flexDirection:"column",gap:"1rem",paddingTop:"0.5rem"}}>
-          <div style={{display:"flex",justifyContent:"flex-end"}}>
-            <button className="cat-btn-novo" onClick={cat_openNova}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Nova categoria
-            </button>
-          </div>
-          {cat_loading ? (
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"20vh"}}>
-              <span className="cat-spinner" />
-            </div>
-          ) : categorias.length === 0 ? (
-            <div className="cat-empty"><span style={{fontSize:"3rem"}}>🏷️</span><p className="cat-empty-title">Nenhuma categoria ainda</p><p className="cat-empty-sub">Crie categorias para organizar seus produtos no cardápio</p></div>
-          ) : (
-            <div className="cat-list">
-              {categorias.map((cat, idx) => (
-                <div key={cat.id} className="cat-item">
-                  <div className="cat-item-icon">{cat.imagem_url ? <img src={cat.imagem_url} alt={cat.nome} style={{width:"100%",height:"100%",objectFit:"cover",borderRadius:"50%"}} /> : <span style={{fontSize:"1.5rem"}}>🏷️</span>}</div>
-                  <div style={{flex:1,minWidth:0}}><p className="cat-item-nome">{cat.nome}</p><p className="cat-item-sub">{catCount(cat.nome)} produto{catCount(cat.nome)!==1?"s":""}</p></div>
-                  <div className="cat-item-actions">
-                    <button className="cat-order-btn" onClick={()=>cat_mover(cat.id!,-1)} disabled={idx===0}>↑</button>
-                    <button className="cat-order-btn" onClick={()=>cat_mover(cat.id!,1)} disabled={idx===categorias.length-1}>↓</button>
-                    <button className="cat-edit-btn" onClick={()=>cat_openEdit(cat)}>Editar</button>
-                    <button className="cat-del-btn" onClick={()=>setCat_delConfirm(cat.id!)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          {cat_modal && (
-            <div className="cat-modal-overlay" onClick={cat_close}>
-              <div className="cat-modal" onClick={e=>e.stopPropagation()}>
-                <div className="cat-modal-header"><h2 className="cat-modal-title">{cat_form.id?"Editar Categoria":"Nova Categoria"}</h2><button className="cat-modal-close" onClick={cat_close}>✕</button></div>
-                <div className="cat-modal-body">
-                  <div className="cat-section">
-                    <p className="cat-section-label">🖼️ Ícone <span style={{color:"#ef4444"}}>*</span></p>
-                    <div style={{display:"flex",alignItems:"center",gap:"16px",marginBottom:"12px"}}>
-                      <div className="cat-icon-preview">{cat_form.imagem_url?<img src={cat_form.imagem_url} alt="ícone" style={{width:"100%",height:"100%",objectFit:"contain",borderRadius:"50%"}}/>:<span style={{fontSize:"2rem"}}>?</span>}</div>
-                      <div><p style={{fontSize:"0.82rem",fontWeight:600,color:"#374151",margin:"0 0 4px"}}>{cat_form.imagem_url?"Ícone selecionado":"Nenhum ícone"}</p>{cat_form.imagem_url&&<button onClick={()=>setCat_form(f=>({...f,imagem_url:""}))} style={{fontSize:"0.72rem",color:"#ef4444",background:"none",border:"none",cursor:"pointer",padding:0}}>Remover</button>}</div>
-                    </div>
-                    <div style={{display:"flex",gap:"8px",marginBottom:"10px"}}>
-                      <button onClick={()=>setCat_galeria(false)} style={{flex:1,padding:"8px",borderRadius:"10px",border:"2px solid",borderColor:!cat_galeria?"#ec4899":"#e5e7eb",background:!cat_galeria?"#fdf2f8":"white",fontFamily:"Geist,sans-serif",fontSize:"0.8rem",fontWeight:600,color:!cat_galeria?"#ec4899":"#6b7280",cursor:"pointer"}}>📁 Upload</button>
-                      <button onClick={()=>setCat_galeria(true)} style={{flex:1,padding:"8px",borderRadius:"10px",border:"2px solid",borderColor:cat_galeria?"#ec4899":"#e5e7eb",background:cat_galeria?"#fdf2f8":"white",fontFamily:"Geist,sans-serif",fontSize:"0.8rem",fontWeight:600,color:cat_galeria?"#ec4899":"#6b7280",cursor:"pointer"}}>🎨 Ícones</button>
-                    </div>
-                    {!cat_galeria&&<div className="cat-upload-area" onClick={()=>!cat_uploading&&cat_imgRef.current?.click()}>{cat_uploading?<span className="cat-spinner-sm"/>:<><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><p style={{fontSize:"0.82rem",fontWeight:600,color:"#374151",margin:0}}>Toque para enviar</p><span style={{fontSize:"0.7rem",color:"#9ca3af"}}>PNG transparente</span></></div>}
-                    {cat_galeria&&<div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:"8px",maxHeight:"240px",overflowY:"auto",padding:"4px"}}>{SYSTEM_ICONS.map((src,i)=><button key={i} onClick={()=>setCat_form(f=>({...f,imagem_url:src}))} style={{aspectRatio:"1",borderRadius:"10px",border:`2px solid ${cat_form.imagem_url===src?"#ec4899":"#f3f4f6"}`,background:cat_form.imagem_url===src?"#fdf2f8":"white",padding:"4px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><img src={src} alt={`i${i}`} style={{width:"100%",height:"100%",objectFit:"contain"}} onError={e=>{e.currentTarget.parentElement!.style.display="none"}}/></button>)}</div>}
-                    <input ref={cat_imgRef} type="file" accept="image/*" style={{display:"none"}} onChange={cat_imgUpload}/>
-                  </div>
-                  <div className="cat-section"><p className="cat-section-label">✏️ Nome <span style={{color:"#ef4444"}}>*</span></p><input type="text" placeholder="Ex: Bolos, Doces..." value={cat_form.nome} onChange={e=>setCat_form(f=>({...f,nome:e.target.value}))} className="cat-input"/></div>
-                </div>
-                <div className="cat-modal-footer"><button className="cat-btn-cancelar" onClick={cat_close}>Cancelar</button><button className="cat-btn-salvar" onClick={cat_salvar} disabled={cat_saving}>{cat_saving?<span className="cat-spinner-sm"/>:(cat_form.id?"Salvar":"Criar categoria")}</button></div>
-              </div>
-            </div>
-          )}
-          {cat_delConfirm&&<div className="cat-modal-overlay" onClick={()=>setCat_delConfirm(null)}><div className="cat-confirm" onClick={e=>e.stopPropagation()}><p className="cat-confirm-title">Excluir categoria?</p><p className="cat-confirm-sub">Os produtos não serão excluídos.</p><div className="cat-confirm-btns"><button onClick={()=>setCat_delConfirm(null)}>Cancelar</button><button onClick={()=>cat_delete(cat_delConfirm)} style={{background:"#ef4444",color:"white"}}>Excluir</button></div></div></div>}
-        </div>
-      )}
+      {activeTab === "categorias" && <Categorias />}
 
-      {/* ── Tab Produtos ── */}
       {activeTab === "produtos" && <>
 
       {/* Header: Novo produto | título | toggle */}
@@ -947,7 +863,15 @@ export default function Produtos() {
 
       </>
       }
+
       <style>{`
+        /* ── Tabs ── */
+        .prod-tabs { display:flex; gap:0.25rem; background:#f4f4f5; border-radius:12px; padding:4px; width:fit-content; margin-bottom:0.5rem; }
+        .prod-tab { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 1.1rem; border-radius:9px; border:none; background:transparent; font-family:'Geist',sans-serif; font-size:0.86rem; font-weight:600; color:#71717a; cursor:pointer; transition:all 0.18s; white-space:nowrap; }
+        .prod-tab:hover { color:#18181b; background:rgba(255,255,255,0.6); }
+        .prod-tab--active { background:#ffffff; color:#F583BF; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
+        @media(max-width:640px) { .prod-tabs { width:100%; } .prod-tab { flex:1; justify-content:center; padding:0.5rem 0.25rem; font-size:0.78rem; } }
+
         .prod-root { font-family:'Geist', sans-serif; max-width:800px; display:flex; flex-direction:column; gap:1rem; }
         .prod-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
         .prod-spinner-sm { width:18px; height:18px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
@@ -1023,49 +947,6 @@ export default function Produtos() {
         .prod-confirm-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0 0 1.25rem; }
         .prod-confirm-btns { display:flex; gap:0.75rem; }
         .prod-confirm-btns button { flex:1; padding:0.75rem; border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; background:var(--bg-subtle,#f3f4f6); color:var(--text-secondary,#374151); }
-
-        /* ── Categorias CSS ── */
-        .cat-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:prodspin 0.7s linear infinite; display:inline-block; }
-        .cat-spinner-sm { width:18px; height:18px; border:2px solid rgba(245,131,191,0.3); border-top-color:#F583BF; border-radius:50%; animation:prodspin 0.7s linear infinite; display:inline-block; }
-        .cat-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.7rem 1.2rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:50px; font-family:'Geist',sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; }
-        .cat-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; padding:3rem 1rem; text-align:center; }
-        .cat-empty-title { font-size:1rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0; }
-        .cat-empty-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0; }
-        .cat-list { display:flex; flex-direction:column; gap:0.5rem; }
-        .cat-item { background:var(--bg-card,white); border-radius:16px; padding:0.85rem 1rem; display:flex; align-items:center; gap:1rem; box-shadow:var(--shadow-card,0 2px 8px rgba(0,0,0,0.06)); }
-        .cat-item-icon { width:52px; height:52px; border-radius:50%; background:#fdf2f8; border:3px solid #fce7f3; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
-        .cat-item-nome { font-size:0.88rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 1px; }
-        .cat-item-sub { font-size:0.7rem; color:var(--text-muted,#9ca3af); margin:0; }
-        .cat-item-actions { display:flex; align-items:center; gap:0.25rem; flex-shrink:0; }
-        .cat-order-btn { width:28px; height:28px; background:var(--bg-subtle,#f3f4f6); border:none; border-radius:8px; cursor:pointer; font-size:0.75rem; display:flex; align-items:center; justify-content:center; color:#6b7280; }
-        .cat-order-btn:disabled { opacity:0.3; cursor:not-allowed; }
-        .cat-edit-btn { padding:0.35rem 0.75rem; background:var(--bg-subtle,#f3f4f6); border:none; border-radius:8px; font-family:'Geist',sans-serif; font-size:0.78rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
-        .cat-del-btn { width:30px; height:30px; background:#fff1f2; border:none; border-radius:8px; color:#ef4444; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-        .cat-modal-overlay { position:fixed; inset:0; z-index:500; background:rgba(0,0,0,0.5); display:flex; align-items:flex-end; justify-content:center; }
-        .cat-modal { background:var(--bg-card,white); border-radius:24px 24px 0 0; width:100%; max-width:520px; max-height:92vh; display:flex; flex-direction:column; animation:slideUpCat 0.25s ease; }
-        @keyframes slideUpCat { from{transform:translateY(100%)} to{transform:translateY(0)} }
-        .cat-modal-header { display:flex; align-items:center; justify-content:space-between; padding:1.1rem 1.25rem 0.75rem; border-bottom:1px solid var(--border,#f3f4f6); flex-shrink:0; }
-        .cat-modal-title { font-size:1rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0; }
-        .cat-modal-close { background:var(--bg-subtle,#f3f4f6); border:none; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-muted,#6b7280); font-size:0.75rem; }
-        .cat-modal-body { flex:1; overflow-y:auto; padding:1rem 1.25rem; display:flex; flex-direction:column; gap:1.25rem; }
-        .cat-modal-footer { padding:1rem 1.25rem; border-top:1px solid var(--border,#f3f4f6); display:flex; gap:0.75rem; flex-shrink:0; }
-        .cat-section { display:flex; flex-direction:column; gap:0.75rem; }
-        .cat-section-label { font-size:0.78rem; font-weight:700; color:#F583BF; text-transform:uppercase; letter-spacing:0.06em; margin:0; }
-        .cat-icon-preview { width:72px; height:72px; border-radius:50%; border:3px solid #fce7f3; background:#fdf2f8; display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
-        .cat-upload-area { border:2px dashed #fce7f3; border-radius:12px; background:#fdf2f8; padding:20px; display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; }
-        .cat-upload-area:hover { border-color:#F583BF; }
-        .cat-input { padding:0.75rem 1rem; border:1.5px solid var(--border,#e5e7eb); border-radius:12px; font-family:'Geist',sans-serif; font-size:0.9rem; color:var(--text-primary,#1f2937); outline:none; width:100%; box-sizing:border-box; background:var(--bg-input,white); }
-        .cat-input:focus { border-color:#F583BF; }
-        .cat-btn-cancelar { flex:1; padding:0.85rem; background:var(--bg-subtle,#f3f4f6); border:none; border-radius:50px; font-family:'Geist',sans-serif; font-size:0.9rem; font-weight:600; color:var(--text-secondary,#374151); cursor:pointer; }
-        .cat-btn-salvar { flex:2; padding:0.85rem; background:linear-gradient(135deg,#F583BF,#e060a8); color:white; border:none; border-radius:50px; font-family:'Geist',sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-        .cat-btn-salvar:disabled { opacity:0.65; cursor:not-allowed; }
-        .cat-confirm { background:var(--bg-card,white); border-radius:18px; padding:1.5rem; width:90%; max-width:320px; margin:auto; }
-        .cat-confirm-title { font-size:1rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.4rem; }
-        .cat-confirm-sub { font-size:0.82rem; color:var(--text-muted,#9ca3af); margin:0 0 1.25rem; }
-        .cat-confirm-btns { display:flex; gap:0.75rem; }
-        .cat-confirm-btns button { flex:1; padding:0.75rem; border:none; border-radius:50px; font-family:'Geist',sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; background:var(--bg-subtle,#f3f4f6); color:var(--text-secondary,#374151); }
-      </>
-      }
       `}</style>
     </div>
     </>
