@@ -21,14 +21,13 @@ export default function CardapioDesign() {
   const { isPro } = usePlano();
   const isMobile = useIsMobile();
 
-  // Cores
-  const [corBorda, setCorBorda] = useState("#ec4899");
-  const [corBackground, setCorBackground] = useState("#fef2f2");
+  const [corBorda, setCorBorda] = useState("#FF6FA9");
+  const [corBackground, setCorBackground] = useState("#FFF1F7");
   const [corNome, setCorNome] = useState("#1f2937");
-  const [corBotao, setCorBotao] = useState("#ec4899");
+  const [corBotao, setCorBotao] = useState("#FF6FA9");
   const [corNavbar, setCorNavbar] = useState("#ffffff");
-  const [corSacola, setCorSacola] = useState("#ec4899");
-  const [corRodape, setCorRodape] = useState("#ec4899");
+  const [corSacola, setCorSacola] = useState("#FF6FA9");
+  const [corRodape, setCorRodape] = useState("#FF6FA9");
   const [activePicker, setActivePicker] = useState<string | null>(null);
 
   const logoRef = useRef<HTMLInputElement>(null);
@@ -51,13 +50,13 @@ export default function CardapioDesign() {
         setBanner1Url(data.banner1_url || "");
         setBanner2Url(data.banner2_url || "");
         setBanner3Url(data.banner3_url || "");
-        setCorBorda(data.cor_borda || "#ec4899");
-        setCorBackground(data.cor_background || "#fef2f2");
+        setCorBorda(data.cor_borda || "#FF6FA9");
+        setCorBackground(data.cor_background || "#FFF1F7");
         setCorNome(data.cor_nome || "#1f2937");
-        setCorBotao(data.cor_botao || "#ec4899");
+        setCorBotao(data.cor_botao || "#FF6FA9");
         setCorNavbar(data.cor_navbar || "#ffffff");
-        setCorSacola(data.cor_sacola || "#ec4899");
-        setCorRodape(data.cor_rodape || "#ec4899");
+        setCorSacola(data.cor_sacola || "#FF6FA9");
+        setCorRodape(data.cor_rodape || "#FF6FA9");
       }
       setLoading(false);
     };
@@ -139,7 +138,7 @@ export default function CardapioDesign() {
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "40vh" }}>
       <span className="cd-spinner" />
-      <style>{`@keyframes cdspin{to{transform:rotate(360deg)}} .cd-spinner{width:32px;height:32px;border:3px solid #fce7f3;border-top-color:#F583BF;border-radius:50%;animation:cdspin 0.7s linear infinite;display:inline-block;}`}</style>
+      <style>{`@keyframes cdspin{to{transform:rotate(360deg)}} .cd-spinner{width:32px;height:32px;border:3px solid var(--primary-light,#FFF1F7);border-top-color:var(--primary,#FF6FA9);border-radius:50%;animation:cdspin 0.7s linear infinite;display:inline-block;}`}</style>
     </div>
   );
 
@@ -175,7 +174,7 @@ export default function CardapioDesign() {
             <div className="cd-upload-box cd-upload-logo" onClick={() => uploading !== "logo" && logoRef.current?.click()}>
               {uploading === "logo" ? <span className="cd-spinner" /> : (
                 <>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary, #FF6FA9)" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   <p className="cd-upload-label">Enviar logo</p>
                   <span className="cd-upload-hint">PNG ou JPG</span>
                 </>
@@ -191,7 +190,6 @@ export default function CardapioDesign() {
       <div className="cd-card">
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <SectionLabel>Banners</SectionLabel>
-
         </div>
         <p className="cd-hint">
           {isPro ? "Até 4 banners — aparecem em carrossel no cardápio" : "1 banner disponível. Assine o PRO para até 4 banners em carrossel"}
@@ -212,7 +210,7 @@ export default function CardapioDesign() {
                   {i > 0 && <div className="cd-pro-ribbon">PRO</div>}
                   {uploading === `banner${i}` ? <span className="cd-spinner-sm" /> : (
                     <>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F583BF" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary, #FF6FA9)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                       <span className="cd-upload-hint">Adicionar</span>
                     </>
                   )}
@@ -240,7 +238,7 @@ export default function CardapioDesign() {
         <p className="cd-hint">Toque para personalizar e veja em tempo real</p>
         <div className="cd-colors-list">
 
-          {/* Cor da borda/topo */}
+          {/* Cor da borda */}
           <div>
             <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_borda' ? null : 'cor_borda')}>
               <div className="cd-color-info">
@@ -251,18 +249,16 @@ export default function CardapioDesign() {
             </div>
             {activePicker === 'cor_borda' && (
               <div className="cd-picker-wrap">
-                {/* Preview logo com borda */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', padding: '10px', background: corBackground, borderRadius: '10px' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', border: `4px solid ${corBorda}`, overflow: 'hidden', flexShrink: 0, background: 'white' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', border: `4px solid ${corBorda}`, overflow: 'hidden', flexShrink: 0, background: 'var(--bg-card, #FFFFFF)' }}>
                     {logoUrl ? <img src={logoUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: corBorda, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🧁</div>}
                   </div>
                   <div style={{ height: '20px', width: '80px', borderRadius: '4px', background: corBorda, opacity: 0.8 }} />
                 </div>
                 <HexColorPicker color={corBorda} onChange={v => handleColorChange('cor_borda', v, setCorBorda)} style={{ width: '100%', height: '160px' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                  
                   <input type="text" value={corBorda} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_borda', e.target.value, setCorBorda) }} className="cd-hex-input" />
-                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_borda', '#ec4899', setCorBorda)}>↺</button>
+                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_borda', '#FF6FA9', setCorBorda)}>↺</button>
                   <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
                 </div>
               </div>
@@ -280,7 +276,6 @@ export default function CardapioDesign() {
             </div>
             {activePicker === 'cor_nome' && (
               <div className="cd-picker-wrap">
-                {/* Preview nome */}
                 <div style={{ padding: '12px', borderRadius: '10px', background: corBackground, marginBottom: '12px', textAlign: 'center' }}>
                   <span style={{ fontSize: '1.1rem', fontWeight: 800, color: corNome, fontFamily: 'Nunito, sans-serif' }}>
                     Nome da sua loja
@@ -288,7 +283,6 @@ export default function CardapioDesign() {
                 </div>
                 <HexColorPicker color={corNome} onChange={v => handleColorChange('cor_nome', v, setCorNome)} style={{ width: '100%', height: '160px' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                  
                   <input type="text" value={corNome} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_nome', e.target.value, setCorNome) }} className="cd-hex-input" />
                   <button className="cd-restore-btn" onClick={() => handleColorChange('cor_nome', '#1f2937', setCorNome)}>↺</button>
                   <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
@@ -312,7 +306,7 @@ export default function CardapioDesign() {
               </div>
               {activePicker === 'cor_botao' && (
                 <div className="cd-picker-wrap">
-                  <div style={{ padding: '12px', borderRadius: '10px', background: '#f9fafb', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ padding: '12px', borderRadius: '10px', background: 'var(--bg-body, #F7F7F8)', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
                     <button style={{ padding: '10px 24px', background: corBotao, color: 'white', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '14px', fontFamily: 'inherit' }}>
                       Adicionar · R$ 50,00
                     </button>
@@ -320,7 +314,7 @@ export default function CardapioDesign() {
                   <HexColorPicker color={corBotao} onChange={v => handleColorChange('cor_botao', v, setCorBotao)} style={{ width: '100%', height: '160px' }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                     <input type="text" value={corBotao} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_botao', e.target.value, setCorBotao) }} className="cd-hex-input" />
-                    <button className="cd-restore-btn" onClick={() => handleColorChange('cor_botao', '#ec4899', setCorBotao)}>↺</button>
+                    <button className="cd-restore-btn" onClick={() => handleColorChange('cor_botao', '#FF6FA9', setCorBotao)}>↺</button>
                     <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
                   </div>
                 </div>
@@ -336,7 +330,6 @@ export default function CardapioDesign() {
             </div>
           )}
 
-          {/* Cor do navbar */}
           {/* Cor do navbar — PRO */}
           {isPro ? (
             <div>
@@ -348,12 +341,12 @@ export default function CardapioDesign() {
                   </div>
                   <span className="cd-color-value">{corNavbar}</span>
                 </div>
-                <div className="cd-color-swatch" style={{ background: corNavbar, border: '1px solid #e5e7eb' }} />
+                <div className="cd-color-swatch" style={{ background: corNavbar, border: '1px solid var(--border, #E9E9EE)' }} />
               </div>
               {activePicker === 'cor_navbar' && (
                 <div className="cd-picker-wrap">
-                  <div style={{ padding: '12px', borderRadius: '10px', background: corNavbar, marginBottom: '12px', height: '40px', border: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 600 }}>Prévia da barra</span>
+                  <div style={{ padding: '12px', borderRadius: '10px', background: corNavbar, marginBottom: '12px', height: '40px', border: '1px solid var(--border, #E9E9EE)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted, #9CA3AF)', fontWeight: 600 }}>Prévia da barra</span>
                   </div>
                   <HexColorPicker color={corNavbar} onChange={v => handleColorChange('cor_navbar', v, setCorNavbar)} style={{ width: '100%', height: '160px' }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
@@ -395,7 +388,7 @@ export default function CardapioDesign() {
                   <HexColorPicker color={corRodape} onChange={v => handleColorChange('cor_rodape', v, setCorRodape)} style={{ width: '100%', height: '160px' }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                     <input type="text" value={corRodape} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_rodape', e.target.value, setCorRodape) }} className="cd-hex-input" />
-                    <button className="cd-restore-btn" onClick={() => handleColorChange('cor_rodape', '#ec4899', setCorRodape)}>↺</button>
+                    <button className="cd-restore-btn" onClick={() => handleColorChange('cor_rodape', '#FF6FA9', setCorRodape)}>↺</button>
                     <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
                   </div>
                 </div>
@@ -423,54 +416,54 @@ export default function CardapioDesign() {
           .cd-root { display:flex; flex-direction:column; max-width:100%; }
           .cd-page-header { grid-column:unset; }
         }
-        .cd-page-title { font-size:1.25rem; font-weight:700; color:var(--text-primary,#1f2937); margin:0 0 0.3rem; }
-        .cd-page-sub { font-size:0.84rem; color:#4b5563; margin:0; font-style:italic; }
-        .cd-autosave { font-size:0.75rem; font-weight:600; color:#22c55e; display:flex; align-items:center; justify-content:center; gap:0.25rem; animation:fadeIn 0.3s ease; margin-top:0.3rem; }
-        .cd-section-label { font-size:0.75rem; font-weight:800; color:#F583BF; text-transform:uppercase; letter-spacing:0.12em; margin:0; }
-        .cd-hint { font-size:0.78rem; color:var(--text-muted,#9ca3af); margin:0; }
-        .cd-card { background:var(--bg-card,white); border-radius:18px; padding:1.15rem; box-shadow:var(--shadow-card,0 2px 12px rgba(0,0,0,0.06)); display:flex; flex-direction:column; gap:0.75rem; width:100%; box-sizing:border-box; }
-        .cd-upload-box { border:2px dashed #fce7f3; border-radius:12px; background:#fdf2f8; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:border-color 0.2s; gap:0.3rem; }
-        .cd-upload-box:hover { border-color:#F583BF; }
+        .cd-page-title { font-size:1.25rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.3rem; }
+        .cd-page-sub { font-size:0.84rem; color:var(--text-secondary, #6B7280); margin:0; font-style:italic; }
+        .cd-autosave { font-size:0.75rem; font-weight:600; color:var(--success, #22C55E); display:flex; align-items:center; justify-content:center; gap:0.25rem; animation:fadeIn 0.3s ease; margin-top:0.3rem; }
+        .cd-section-label { font-size:0.75rem; font-weight:800; color:var(--primary, #FF6FA9); text-transform:uppercase; letter-spacing:0.12em; margin:0; }
+        .cd-hint { font-size:0.78rem; color:var(--text-muted, #9CA3AF); margin:0; }
+        .cd-card { background:var(--bg-card, #FFFFFF); border-radius:18px; padding:1.15rem; box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); display:flex; flex-direction:column; gap:0.75rem; width:100%; box-sizing:border-box; }
+        .cd-upload-box { border:2px dashed var(--primary-light, #FFF1F7); border-radius:12px; background:var(--primary-light, #FFF1F7); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:border-color 0.2s; gap:0.3rem; }
+        .cd-upload-box:hover { border-color:var(--primary, #FF6FA9); }
         .cd-upload-logo { width:130px; height:130px; border-radius:50%; }
         .cd-upload-slot { width:100%; aspect-ratio:16/9; }
-        .cd-upload-label { font-size:0.88rem; font-weight:700; color:#374151; margin:0; }
-        .cd-upload-hint { font-size:0.72rem; color:#9ca3af; margin:0; }
+        .cd-upload-label { font-size:0.88rem; font-weight:700; color:var(--text-primary, #374151); margin:0; }
+        .cd-upload-hint { font-size:0.72rem; color:var(--text-muted, #9CA3AF); margin:0; }
         .cd-logo-area { display:flex; flex-direction:column; align-items:center; gap:0.75rem; }
-        .cd-logo-preview { position:relative; width:130px; height:130px; border-radius:50%; overflow:hidden; border:3px solid #fce7f3; flex-shrink:0; }
+        .cd-logo-preview { position:relative; width:130px; height:130px; border-radius:50%; overflow:hidden; border:3px solid var(--primary-light, #FFF1F7); flex-shrink:0; }
         .cd-logo-preview img { width:100%; height:100%; object-fit:cover; }
         .cd-banners-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
         .cd-banner-slot { display:flex; flex-direction:column; gap:0.3rem; }
-        .cd-banner-slot-label { font-size:0.7rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.08em; }
+        .cd-banner-slot-label { font-size:0.7rem; font-weight:700; color:var(--text-muted, #9CA3AF); text-transform:uppercase; letter-spacing:0.08em; }
         .cd-banner-thumb { position:relative; width:100%; aspect-ratio:16/9; border-radius:10px; overflow:hidden; }
         .cd-banner-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
-        .cd-slot-locked { align-items:center; justify-content:center; background:#fdf2f8; border:2px dashed #fce7f3; border-radius:12px; aspect-ratio:16/9; padding:0.5rem; }
+        .cd-slot-locked { align-items:center; justify-content:center; background:var(--primary-light, #FFF1F7); border:2px dashed var(--primary-light, #FFF1F7); border-radius:12px; aspect-ratio:16/9; padding:0.5rem; }
         .cd-remove-btn { position:absolute; top:0.3rem; right:0.3rem; background:rgba(0,0,0,0.5); border:none; border-radius:50%; width:22px; height:22px; color:white; font-size:0.65rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-        .cd-change-btn { align-self:center; padding:0.45rem 1.25rem; background:var(--bg-subtle,#f3f4f6); border:1.5px solid var(--border,#e5e7eb); border-radius:50px; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:700; color:var(--text-secondary,#374151); cursor:pointer; }
-        .cd-change-btn:hover { border-color:#F583BF; color:#F583BF; }
-        .cd-change-btn-sm { font-size:0.7rem; font-weight:700; color:#F583BF; background:none; border:none; cursor:pointer; padding:0; text-align:center; }
+        .cd-change-btn { align-self:center; padding:0.45rem 1.25rem; background:var(--bg-body, #F7F7F8); border:1.5px solid var(--border, #E9E9EE); border-radius:50px; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:700; color:var(--text-primary, #374151); cursor:pointer; }
+        .cd-change-btn:hover { border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); }
+        .cd-change-btn-sm { font-size:0.7rem; font-weight:700; color:var(--primary, #FF6FA9); background:none; border:none; cursor:pointer; padding:0; text-align:center; }
         .cd-change-btn-sm:hover { text-decoration:underline; }
         @keyframes proShine { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
         .cd-pro-badge { background:linear-gradient(90deg,#f59e0b,#d97706,#fbbf24,#d97706,#f59e0b); background-size:300% 300%; animation:proShine 2.5s ease infinite; color:white; font-size:0.68rem; font-weight:800; padding:3px 10px; border-radius:6px; letter-spacing:0.08em; white-space:nowrap; flex-shrink:0; }
-        .cd-pro-ribbon { position:absolute; top:12px; right:-16px; background:linear-gradient(135deg,#ec4899,#f472b6); color:white; font-size:0.58rem; font-weight:900; letter-spacing:0.1em; padding:3px 24px; transform:rotate(45deg); z-index:10; box-shadow:0 2px 6px rgba(236,72,153,0.4); width:80px; text-align:center; }
+        .cd-pro-ribbon { position:absolute; top:12px; right:-16px; background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color:var(--text-inverse, #FFFFFF); font-size:0.58rem; font-weight:900; letter-spacing:0.1em; padding:3px 24px; transform:rotate(45deg); z-index:10; box-shadow:0 2px 6px rgba(255,111,169,0.4); width:80px; text-align:center; }
         .cd-colors-list { display:flex; flex-direction:column; gap:0.5rem; }
-        .cd-color-row { display:flex; align-items:center; justify-content:space-between; padding:0.65rem 0.75rem; background:#fafafa; border-radius:12px; border:1px solid #f3f4f6; cursor:pointer; transition:border-color 0.2s; }
-        .cd-color-row:hover { border-color:#F583BF; }
+        .cd-color-row { display:flex; align-items:center; justify-content:space-between; padding:0.65rem 0.75rem; background:var(--bg-body, #F7F7F8); border-radius:12px; border:1px solid var(--border, #E9E9EE); cursor:pointer; transition:border-color 0.2s; }
+        .cd-color-row:hover { border-color:var(--primary, #FF6FA9); }
         .cd-color-info { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
         .cd-color-label-row { display:flex; align-items:center; gap:6px; }
-        .cd-color-label { font-size:0.82rem; font-weight:600; color:#374151; }
-        .cd-color-value { font-size:0.7rem; color:#9ca3af; font-family:monospace; }
+        .cd-color-label { font-size:0.82rem; font-weight:600; color:var(--text-primary, #374151); }
+        .cd-color-value { font-size:0.7rem; color:var(--text-muted, #9CA3AF); font-family:monospace; }
         .cd-color-swatch { width:38px; height:38px; border-radius:10px; border:2px solid rgba(0,0,0,0.08); flex-shrink:0; box-shadow:0 2px 6px rgba(0,0,0,0.12); }
-        .cd-picker-wrap { padding:0.75rem; background:#f9fafb; border-radius:12px; border:1px solid #f3f4f6; margin-top:4px; }
-        .cd-hex-input { flex:1; min-width:0; padding:6px 8px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:0.78rem; font-family:monospace; color:#374151; outline:none; }
-        .cd-hex-input:focus { border-color:#F583BF; }
-        .cd-picker-close { padding:6px 10px; background:#ec4899; color:white; border:none; border-radius:8px; font-size:0.75rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; }
-        .cd-restore-btn { padding:6px 8px; background:#f3f4f6; color:#6b7280; border:1.5px solid #e5e7eb; border-radius:8px; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; }
-        .cd-restore-btn:hover { border-color:#F583BF; color:#F583BF; }
-        .cd-upgrade-box { background:#fdf2f8; border:1.5px dashed #f9a8d4; border-radius:16px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; }
-        .cd-upgrade-title { font-size:0.88rem; font-weight:700; color:#374151; margin:0 0 2px; }
-        .cd-upgrade-sub { font-size:0.76rem; color:#9ca3af; margin:0; }
-        .cd-spinner { width:32px; height:32px; border:3px solid #fce7f3; border-top-color:#F583BF; border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
-        .cd-spinner-sm { width:16px; height:16px; border:2px solid rgba(245,131,191,0.3); border-top-color:#F583BF; border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
+        .cd-picker-wrap { padding:0.75rem; background:var(--bg-body, #F7F7F8); border-radius:12px; border:1px solid var(--border, #E9E9EE); margin-top:4px; }
+        .cd-hex-input { flex:1; min-width:0; padding:6px 8px; border:1.5px solid var(--border, #E9E9EE); border-radius:8px; font-size:0.78rem; font-family:monospace; color:var(--text-primary, #374151); outline:none; }
+        .cd-hex-input:focus { border-color:var(--border-focus, #FF6FA9); }
+        .cd-picker-close { padding:6px 10px; background:var(--primary, #FF6FA9); color:var(--text-inverse, #FFFFFF); border:none; border-radius:8px; font-size:0.75rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; }
+        .cd-restore-btn { padding:6px 8px; background:var(--bg-body, #F7F7F8); color:var(--text-secondary, #6B7280); border:1.5px solid var(--border, #E9E9EE); border-radius:8px; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; }
+        .cd-restore-btn:hover { border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); }
+        .cd-upgrade-box { background:var(--primary-light, #FFF1F7); border:1.5px dashed var(--primary-light, #FFF1F7); border-radius:16px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; }
+        .cd-upgrade-title { font-size:0.88rem; font-weight:700; color:var(--text-primary, #374151); margin:0 0 2px; }
+        .cd-upgrade-sub { font-size:0.76rem; color:var(--text-muted, #9CA3AF); margin:0; }
+        .cd-spinner { width:32px; height:32px; border:3px solid var(--primary-light, #FFF1F7); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
+        .cd-spinner-sm { width:16px; height:16px; border:2px solid rgba(255,111,169,0.3); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
       `}</style>
     </div>
     </>
