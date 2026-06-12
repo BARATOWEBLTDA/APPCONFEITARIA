@@ -352,7 +352,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
               const img = item.imageUrl?.split(',')[0]?.trim()
               return (
                 <div key={item.id} style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                  <div style={{ width:'48px', height:'48px', borderRadius:'8px', overflow:'hidden', flexShrink:0, background:'#f3f4f6' }}>
+                  <div style={{ width:'48px', height:'48px', borderRadius:'8px', overflow:'hidden', flexShrink:0, background:'var(--bg-body)' }}>
                     {img ? <img src={img} alt={item.name} style={{ width:'100%', height:'100%', objectFit:'cover' }}/> : <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px' }}>🧁</div>}
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
@@ -370,7 +370,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
           </div>
 
           {/* Subtotal / Total */}
-          <div style={{ borderTop:'1px solid #f0f0f0', paddingTop:'12px', display:'flex', flexDirection:'column', gap:'4px', marginBottom:'14px' }}>
+          <div style={{ borderTop:'1px solid var(--border)', paddingTop:'12px', display:'flex', flexDirection:'column', gap:'4px', marginBottom:'14px' }}>
             <div style={{ display:'flex', justifyContent:'space-between' }}>
               <span style={{ fontSize:'13px', color:'var(--text-muted, #9CA3AF)' }}>Subtotal</span>
               <span style={{ fontSize:'13px', color:'var(--text-muted, #9CA3AF)' }}>{formatCurrency(cartTotal)}</span>
@@ -396,21 +396,21 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
       )}
 
       {/* Cupom */}
-      <div style={{ borderTop:'1px solid #f0f0f0' }}>
+      <div style={{ borderTop:'1px solid var(--border)' }}>
         <div
           onClick={() => setCupomAberto(o => !o)}
           style={{ padding:'14px 16px', display:'flex', alignItems:'center', gap:'10px', cursor:'pointer' }}
           onMouseOver={e => (e.currentTarget as HTMLElement).style.background='#fafafa'}
           onMouseOut={e => (e.currentTarget as HTMLElement).style.background='var(--bg-card, #FFFFFF)'}
         >
-          <div style={{ width:'32px', height:'32px', borderRadius:'8px', background:'#f3f4f6', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          <div style={{ width:'32px', height:'32px', borderRadius:'8px', background:'var(--bg-body)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
           </div>
           <div style={{ flex:1 }}>
             <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'var(--text-title, #1F2937)' }}>Tem um cupom?</p>
             <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted, #9CA3AF)' }}>Clique e insira o código</p>
           </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5"
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5"
             style={{ transform: cupomAberto ? 'rotate(90deg)' : 'rotate(0deg)', transition:'transform 0.2s' }}>
             <polyline points="9 18 15 12 9 6"/>
           </svg>
@@ -424,7 +424,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
               placeholder="Digite o código"
               style={{ flex:1, padding:'10px 12px', border:'1.5px solid var(--border, #E9E9EE)', borderRadius:'8px', fontSize:'13px', color:'var(--text-title, #1F2937)', outline:'none', fontFamily:'Geist, system-ui, sans-serif', textTransform:'uppercase' }}
               onFocus={e => (e.target.style.borderColor = cor)}
-              onBlur={e => (e.target.style.borderColor = '#e5e7eb')}
+              onBlur={e => (e.target.style.borderColor = 'var(--border)')}
             />
             <button style={{ padding:'10px 14px', background:cor, color:'#fff', border:'none', borderRadius:'8px', fontSize:'13px', fontWeight:700, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif', whiteSpace:'nowrap' }}>
               Aplicar
@@ -630,7 +630,7 @@ function CardapioContent() {
             {/* Busca */}
             <div style={{ position:'relative', marginBottom:'16px', display:'flex', alignItems:'stretch', borderRadius:'10px', overflow:'hidden', border:'1.5px solid var(--border, #E9E9EE)', background:'var(--bg-card, #FFFFFF)', transition:'border-color 0.2s' }}
               onFocusCapture={e => (e.currentTarget.style.borderColor = design.cor_navbar || design.cor_borda || '#ec4899')}
-              onBlurCapture={e => (e.currentTarget.style.borderColor = '#e5e7eb')}
+              onBlurCapture={e => (e.currentTarget.style.borderColor = 'var(--border)')}
             >
               {/* Fundo colorido com ícone na esquerda */}
               <div style={{ width:'46px', background: design.cor_navbar || design.cor_borda || '#ec4899', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
