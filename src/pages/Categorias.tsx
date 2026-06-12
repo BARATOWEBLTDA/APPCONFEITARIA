@@ -11,7 +11,7 @@ type Categoria = {
 
 const SYSTEM_ICONS = Array.from({ length: 42 }, (_, i) => `/categoriaicones/icone (${i + 1}).png`);
 
-export default function Categorias({ hideHeader = false }: { hideHeader?: boolean }) {
+export default function Categorias() {
   const [userId, setUserId] = useState("");
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [produtos, setProdutos] = useState<{ categoria: string }[]>([]);
@@ -104,21 +104,18 @@ export default function Categorias({ hideHeader = false }: { hideHeader?: boolea
     </div>
   );
 
-  const Wrapper = hideHeader ? ({ children }: any) => <>{children}</> : ({ children }: any) => <div className="cat-root">{children}</div>;
   return (
-    <Wrapper>
-      {!hideHeader && (
-        <div className="cat-header">
-          <div>
-            <h1 className="cat-title">Categorias</h1>
-            <p className="cat-sub">{categorias.length} categoria{categorias.length !== 1 ? "s" : ""}</p>
-          </div>
-          <button className="cat-btn-novo" onClick={openNova}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Nova categoria
-          </button>
+    <div className="cat-root">
+      <div className="cat-header">
+        <div>
+          <h1 className="cat-title">Categorias</h1>
+          <p className="cat-sub">{categorias.length} categoria{categorias.length !== 1 ? "s" : ""}</p>
         </div>
-      )}
+        <button className="cat-btn-novo" onClick={openNova}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nova categoria
+        </button>
+      </div>
 
       {categorias.length === 0 ? (
         <div className="cat-empty">
@@ -305,6 +302,6 @@ export default function Categorias({ hideHeader = false }: { hideHeader?: boolea
         .cat-confirm-btns { display:flex; gap:0.75rem; }
         .cat-confirm-btns button { flex:1; padding:0.75rem; border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; background:var(--bg-subtle,#f3f4f6); color:var(--text-secondary,#374151); }
       `}</style>
-    </Wrapper>
+    </div>
   );
 }
