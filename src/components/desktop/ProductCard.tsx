@@ -28,7 +28,7 @@ export function DesktopProductCard({ product, isFavorite, onToggleFavorite, back
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
         style={{
-          background: '#fff',
+          background: 'var(--bg-card)',
           borderRadius: '12px',
           overflow: 'hidden',
           border: product.promocao ? '2px solid #f87171' : '1px solid #f0f0f0',
@@ -73,7 +73,7 @@ export function DesktopProductCard({ product, isFavorite, onToggleFavorite, back
         <div style={{ padding: '14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
           <h4 style={{
             margin: '0 0 4px', fontWeight: 700, fontSize: '14px',
-            color: '#1f2937', lineHeight: 1.3,
+            color: 'var(--text-title)', lineHeight: 1.3,
             overflow: 'hidden', textOverflow: 'ellipsis',
             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any,
           }}>
@@ -81,7 +81,7 @@ export function DesktopProductCard({ product, isFavorite, onToggleFavorite, back
           </h4>
 
           <p style={{
-            margin: '0 0 10px', fontSize: '12px', color: '#9ca3af',
+            margin: '0 0 10px', fontSize: '12px', color: 'var(--text-muted)',
             lineHeight: 1.4,
             overflow: 'hidden', textOverflow: 'ellipsis',
             display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any,

@@ -30,7 +30,7 @@ export function DesktopProductList({ produtos, favorites, onToggleFavorite, back
       {/* Promoções */}
       {promo.length > 0 && (
         <div style={{ marginBottom: '32px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#1f2937', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-title)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span>🔥</span> Promoções
           </h3>
           <div style={{
@@ -46,7 +46,7 @@ export function DesktopProductList({ produtos, favorites, onToggleFavorite, back
       {/* Produtos */}
       {regular.length > 0 && (
         <div style={{ marginBottom: '32px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#1f2937', marginBottom: '16px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-title)', marginBottom: '16px' }}>
             {selectedCategory || 'Todos os Produtos'}
           </h3>
           <div style={{
@@ -60,9 +60,9 @@ export function DesktopProductList({ produtos, favorites, onToggleFavorite, back
       )}
 
       {filtered.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: '#9ca3af' }}>
+        <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
           <Search size={40} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.3 }} />
-          <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#6b7280', margin: '0 0 4px' }}>Nenhum produto encontrado</h3>
+          <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-secondary)', margin: '0 0 4px' }}>Nenhum produto encontrado</h3>
           <p style={{ fontSize: '13px', margin: 0 }}>Tente buscar por outro termo</p>
         </div>
       )}

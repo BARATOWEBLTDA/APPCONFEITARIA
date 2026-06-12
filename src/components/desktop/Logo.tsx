@@ -24,8 +24,8 @@ export function DesktopLogo({ logoUrl, borderColor, storeName, storeDescription,
           <div style={{
             width: '96px', height: '96px', borderRadius: '50%',
             border: `3px solid ${borderColor || '#ec4899'}`,
-            padding: '3px', backgroundColor: 'white', overflow: 'hidden',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+            padding: '3px', backgroundColor: 'var(--bg-card)', overflow: 'hidden',
+            boxShadow: 'var(--shadow-md)',
           }}>
             <img src={logoUrl} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '50%' }} />
           </div>
@@ -36,7 +36,7 @@ export function DesktopLogo({ logoUrl, borderColor, storeName, storeDescription,
             backgroundColor: borderColor || '#ec4899',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '36px', color: 'white',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+            boxShadow: 'var(--shadow-md)',
           }}>
             {storeName?.charAt(0) || '🧁'}
           </div>
@@ -45,24 +45,24 @@ export function DesktopLogo({ logoUrl, borderColor, storeName, storeDescription,
 
       {/* Card info */}
       <div style={{
-        backgroundColor: 'white', borderRadius: '12px',
+        backgroundColor: 'var(--bg-card)', borderRadius: '12px',
         padding: '60px 24px 20px',
         marginTop: '-48px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        boxShadow: 'var(--shadow-sm)',
         textAlign: 'center',
         position: 'relative', zIndex: 20,
       }}>
-        <h1 style={{ fontSize: '22px', fontWeight: 800, color: corNome || '#1f2937', margin: '0 0 6px', letterSpacing: '-0.3px' }}>
+        <h1 style={{ fontSize: '22px', fontWeight: 800, color: corNome || 'var(--text-title)', margin: '0 0 6px', letterSpacing: '-0.3px' }}>
           {storeName}
         </h1>
         {!hideStars && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '8px' }}>
             <div style={{ display: 'flex', gap: '1px' }}>{renderStars(avaliacaoMedia)}</div>
-            <span style={{ fontSize: '13px', fontWeight: 600, color: '#6b7280' }}>{avaliacaoMedia}/5.0</span>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>{avaliacaoMedia}/5.0</span>
           </div>
         )}
         {storeDescription && (
-          <p style={{ fontSize: '13px', color: '#9ca3af', margin: 0, lineHeight: 1.5 }}>{storeDescription}</p>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, lineHeight: 1.5 }}>{storeDescription}</p>
         )}
       </div>
     </div>
