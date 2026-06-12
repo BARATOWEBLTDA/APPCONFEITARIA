@@ -63,16 +63,16 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
         width: '100%',
         maxWidth: '380px',
         overflow: 'hidden',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        boxShadow: 'var(--shadow-lg)',
         display: 'flex',
         flexDirection: 'column',
       }}>
         {/* Header */}
-        <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f3f4f6' }}>
-          <button onClick={onCancel} style={{ background: '#f3f4f6', border: 'none', borderRadius: '8px', padding: '7px 14px', color: '#374151', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
+        <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)' }}>
+          <button onClick={onCancel} style={{ background: 'var(--menu-hover-bg)', border: 'none', borderRadius: '8px', padding: '7px 14px', color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
             Cancelar
           </button>
-          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: '#111827' }}>
+          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-title)' }}>
             {cropShape === 'round' ? 'Ajustar logo' : 'Ajustar foto'}
           </span>
           <button onClick={handleDone} disabled={loading} style={{ background: '#ec4899', border: 'none', borderRadius: '8px', padding: '7px 14px', color: 'white', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
@@ -104,9 +104,9 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
 
         {/* Slider */}
         <div style={{ padding: '10px 20px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="range" min={1} max={3} step={0.05} value={zoom} onChange={e => setZoom(Number(e.target.value))} style={{ flex: 1, accentColor: '#ec4899', height: '3px', cursor: 'pointer' }} />
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
         </div>
       </div>
     </div>
