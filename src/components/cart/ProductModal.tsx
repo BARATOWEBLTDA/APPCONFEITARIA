@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react'
+import { X, Plus, Minus } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
 import { Produto } from '@/types/database'
 import { formatCurrency } from '@/utils/helpers'
@@ -43,7 +43,6 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     }
   }, [product])
 
-  // Scroll automático entre imagens
   const [imgCount, setImgCount] = useState(0)
   useEffect(() => {
     if (!product) return
@@ -57,8 +56,6 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     return () => clearInterval(timer)
   }, [imgCount, isOpen])
 
-  // Scroll automático entre imagens
-  // Bloquear scroll do body quando modal aberto
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
@@ -98,21 +95,21 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   }
 
   const SelectGroup = ({ label, options, value, onChange }: any) => (
-    <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '14px' }}>
+    <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-        <span style={{ fontSize: '14px', fontWeight: 700, color: '#1f2937' }}>{label}</span>
-        <span style={{ fontSize: '11px', color: '#9ca3af', background: '#f3f4f6', padding: '2px 8px', borderRadius: '50px' }}>Opcional</span>
+        <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-title)' }}>{label}</span>
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'var(--border)', padding: '2px 8px', borderRadius: '50px' }}>Opcional</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         {options.map((opt: string) => (
           <button key={opt} onClick={() => onChange(value === opt ? '' : opt)} style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '10px 14px', borderRadius: '10px',
-            border: `2px solid ${value === opt ? '#ec4899' : '#f3f4f6'}`,
-            background: value === opt ? '#fdf2f8' : 'white', cursor: 'pointer', transition: 'all 0.15s',
+            border: `2px solid ${value === opt ? '#ec4899' : 'var(--border)'}`,
+            background: value === opt ? '#fdf2f8' : 'var(--bg-card)', cursor: 'pointer', transition: 'all 0.15s',
           }}>
-            <span style={{ fontSize: '14px', color: '#374151', fontWeight: 500 }}>{opt}</span>
-            <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: `2px solid ${value === opt ? '#ec4899' : '#d1d5db'}`, background: value === opt ? '#ec4899' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 500 }}>{opt}</span>
+            <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: `2px solid ${value === opt ? '#ec4899' : '#d1d5db'}`, background: value === opt ? '#ec4899' : 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {value === opt && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'white' }} />}
             </div>
           </button>
@@ -133,20 +130,20 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
   return (
     <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', zIndex: 50 }} />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', zIndex: 50 }} />
 
       <div style={{
         position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 51,
-        background: 'white', borderRadius: '24px',
+        background: 'var(--bg-card)', borderRadius: '24px',
         width: '92vw', maxWidth: '400px',
         maxHeight: '88vh', display: 'flex', flexDirection: 'column',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+        boxShadow: 'var(--shadow-lg)',
         animation: 'popIn 0.25s ease',
       }}>
 
         {/* Imagem com carrossel coverflow */}
         <div style={{ position: 'relative', flexShrink: 0, overflow: 'hidden', borderRadius: '24px 24px 0 0' }}>
-          <div style={{ width: '100%', height: '200px', background: 'white', position: 'relative', cursor: images.length > 1 ? 'grab' : 'default' }}>
+          <div style={{ width: '100%', height: '200px', background: 'var(--bg-card)', position: 'relative', cursor: images.length > 1 ? 'grab' : 'default' }}>
             {images.length > 1 ? (
               <div style={{ display: 'flex', width: '100%', height: '100%', gap: '3px' }}
                 onTouchStart={e => { setTouchStart(e.touches[0].clientX); setTouchDelta(0); setDragging(true); }}
@@ -159,23 +156,19 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                   setTouchStart(null); setTouchDelta(0); setDragging(false);
                 }}
               >
-                {/* Lateral esquerda — 25% — sempre a imagem anterior (circular) */}
                 <div onClick={() => setImgIndex(i => (i - 1 + images.length) % images.length)}
                   style={{ width: '25%', height: '100%', overflow: 'hidden', cursor: 'pointer', opacity: 0.55, flexShrink: 0, transition: 'opacity 0.5s ease' }}>
                   <img src={images[(imgIndex - 1 + images.length) % images.length]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'all 0.5s ease' }} />
                 </div>
-                {/* Central — 50% */}
                 <div style={{ flex: 1, height: '100%', overflow: 'hidden', flexShrink: 0, transition: 'all 0.5s ease' }}>
                   <img src={images[imgIndex]} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', userSelect: 'none', pointerEvents: 'none', transition: 'all 0.5s ease' }} />
                 </div>
-                {/* Lateral direita — 25% — sempre a próxima (circular) */}
                 <div onClick={() => setImgIndex(i => (i + 1) % images.length)}
                   style={{ width: '25%', height: '100%', overflow: 'hidden', cursor: 'pointer', opacity: 0.55, flexShrink: 0, transition: 'opacity 0.5s ease' }}>
                   <img src={images[(imgIndex + 1) % images.length]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'all 0.5s ease' }} />
                 </div>
               </div>
             ) : images.length === 2 ? (
-              /* 2 imagens — 50/50 com destaque na selecionada */
               <div style={{ display: 'flex', width: '100%', height: '100%', gap: '3px' }}
                 onTouchStart={e => { setTouchStart(e.touches[0].clientX); setTouchDelta(0); setDragging(true); }}
                 onTouchMove={e => { if (touchStart === null) return; setTouchDelta(e.touches[0].clientX - touchStart); }}
@@ -221,32 +214,31 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
           {/* Nome, forma de venda e preço */}
           <div>
-            <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#111827', margin: '0 0 6px' }}>{product.nome}</h3>
-            {/* Badge pronta entrega abaixo do título */}
+            <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-title)', margin: '0 0 6px' }}>{product.nome}</h3>
             {prontaEntrega ? (
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#fdf2f8', color: '#ec4899', fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', border: '1px solid #fce7f3', marginBottom: '6px' }}>✓ Pronta entrega</span>
             ) : (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#f3f4f6', color: '#6b7280', fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', marginBottom: '6px' }}>⏱ Sob encomenda</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--border)', color: 'var(--text-secondary)', fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', marginBottom: '6px' }}>⏱ Sob encomenda</span>
             )}
-            {product.descricao && <p style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.5', margin: '0 0 8px' }}>{product.descricao}</p>}
+            {product.descricao && <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 8px' }}>{product.descricao}</p>}
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
               {product.promocao && unitPrice < product.preco_normal ? (
                 <>
-                  <span style={{ fontSize: '13px', color: '#9ca3af', textDecoration: 'line-through' }}>{formatCurrency(product.preco_normal)}</span>
+                  <span style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'line-through' }}>{formatCurrency(product.preco_normal)}</span>
                   <span style={{ fontSize: '20px', fontWeight: 800, color: '#ec4899' }}>{formatCurrency(unitPrice)}</span>
                 </>
               ) : (
                 <span style={{ fontSize: '20px', fontWeight: 800, color: '#ec4899' }}>{formatCurrency(basePrice)}</span>
               )}
-              <span style={{ fontSize: '12px', color: '#9ca3af', fontWeight: 500 }}>/ {FORMA_LABEL[product.forma_venda] || product.forma_venda}</span>
+              <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>/ {FORMA_LABEL[product.forma_venda] || product.forma_venda}</span>
             </div>
           </div>
 
           {/* Kit Festa */}
           {product.forma_venda === 'kit-festa' && (product as any).kit_itens?.length > 0 && (
-            <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '14px' }}>
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: '#1f2937' }}>🎉 O que está incluso</span>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-title)' }}>🎉 O que está incluso</span>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   {(product as any).kit_serve_pessoas && (
                     <span style={{ fontSize: '11px', background: '#fdf2f8', color: '#ec4899', fontWeight: 700, padding: '3px 8px', borderRadius: '50px' }}>
@@ -262,8 +254,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {(product as any).kit_itens.map((item: any, i: number) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#fafafa', borderRadius: '10px', border: '1px solid #f3f4f6' }}>
-                    <span style={{ fontSize: '13px', color: '#374151', fontWeight: 500 }}>✓ {item.nome}</span>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'var(--bg-body)', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>✓ {item.nome}</span>
                     <span style={{ fontSize: '13px', fontWeight: 700, color: '#ec4899' }}>× {item.quantidade}</span>
                   </div>
                 ))}
@@ -273,23 +265,23 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
           {/* Tamanhos */}
           {tamanhos.length > 0 && (
-            <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '14px' }}>
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#1f2937', display: 'block', marginBottom: '10px' }}>Escolha o tamanho</span>
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-title)', display: 'block', marginBottom: '10px' }}>Escolha o tamanho</span>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {tamanhos.map((t: any, i: number) => (
                   <button key={i} onClick={() => setSelectedTamanho(t)} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '10px 14px', borderRadius: '10px',
-                    border: `2px solid ${selectedTamanho?.label === t.label ? '#ec4899' : '#f3f4f6'}`,
-                    background: selectedTamanho?.label === t.label ? '#fdf2f8' : 'white', cursor: 'pointer',
+                    border: `2px solid ${selectedTamanho?.label === t.label ? '#ec4899' : 'var(--border)'}`,
+                    background: selectedTamanho?.label === t.label ? '#fdf2f8' : 'var(--bg-card)', cursor: 'pointer',
                   }}>
-                    <span style={{ fontSize: '14px', fontWeight: 600, color: '#374151' }}>{t.label}</span>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{t.label}</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <div style={{ textAlign: 'right' }}>
-                        {descPct > 0 && <span style={{ fontSize: '12px', color: '#9ca3af', textDecoration: 'line-through', display: 'block' }}>{formatCurrency(t.preco)}</span>}
+                        {descPct > 0 && <span style={{ fontSize: '12px', color: 'var(--text-muted)', textDecoration: 'line-through', display: 'block' }}>{formatCurrency(t.preco)}</span>}
                         <span style={{ fontSize: '14px', fontWeight: 700, color: '#22c55e' }}>{formatCurrency(applyDiscount(t.preco))}</span>
                       </div>
-                      <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: `2px solid ${selectedTamanho?.label === t.label ? '#ec4899' : '#d1d5db'}`, background: selectedTamanho?.label === t.label ? '#ec4899' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: `2px solid ${selectedTamanho?.label === t.label ? '#ec4899' : '#d1d5db'}`, background: selectedTamanho?.label === t.label ? '#ec4899' : 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {selectedTamanho?.label === t.label && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'white' }} />}
                       </div>
                     </div>
@@ -312,49 +304,49 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
           {/* Adicionais */}
           {((product as any).tem_vela || (product as any).tem_topo || (product as any).tem_papel_arroz) && (
-            <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '14px' }}>
-              <span style={{ fontSize: '14px', fontWeight: 700, color: '#1f2937', display: 'block', marginBottom: '10px' }}>✨ Adicionais</span>
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
+              <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-title)', display: 'block', marginBottom: '10px' }}>✨ Adicionais</span>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {(product as any).tem_vela && (
-                  <button onClick={() => setSelectedVela(v => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '12px', border: `2px solid ${selectedVela ? '#ec4899' : '#f3f4f6'}`, background: selectedVela ? '#fdf2f8' : 'white', cursor: 'pointer' }}>
+                  <button onClick={() => setSelectedVela(v => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '12px', border: `2px solid ${selectedVela ? '#ec4899' : 'var(--border)'}`, background: selectedVela ? '#fdf2f8' : 'var(--bg-card)', cursor: 'pointer' }}>
                     <div style={{ textAlign: 'left' }}>
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 }}>Velas</p>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Velas</p>
                       {(product as any).valor_vela > 0 && <p style={{ fontSize: '12px', color: '#ec4899', fontWeight: 700, margin: 0 }}>+ {formatCurrency((product as any).valor_vela)}</p>}
                     </div>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${selectedVela ? '#ec4899' : '#d1d5db'}`, background: selectedVela ? '#ec4899' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${selectedVela ? '#ec4899' : '#d1d5db'}`, background: selectedVela ? '#ec4899' : 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       {selectedVela && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
                     </div>
                   </button>
                 )}
                 {(product as any).tem_topo && (
-                  <button onClick={() => setSelectedTopo(v => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '12px', border: `2px solid ${selectedTopo ? '#ec4899' : '#f3f4f6'}`, background: selectedTopo ? '#fdf2f8' : 'white', cursor: 'pointer' }}>
+                  <button onClick={() => setSelectedTopo(v => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '12px', border: `2px solid ${selectedTopo ? '#ec4899' : 'var(--border)'}`, background: selectedTopo ? '#fdf2f8' : 'var(--bg-card)', cursor: 'pointer' }}>
                     <div style={{ textAlign: 'left' }}>
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 }}>Topo de Bolo</p>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Topo de Bolo</p>
                       {(product as any).valor_topo > 0 && <p style={{ fontSize: '12px', color: '#ec4899', fontWeight: 700, margin: 0 }}>+ {formatCurrency((product as any).valor_topo)}</p>}
                     </div>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${selectedTopo ? '#ec4899' : '#d1d5db'}`, background: selectedTopo ? '#ec4899' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${selectedTopo ? '#ec4899' : '#d1d5db'}`, background: selectedTopo ? '#ec4899' : 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       {selectedTopo && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
                     </div>
                   </button>
                 )}
                 {(product as any).tem_papel_arroz && (
-                  <button onClick={() => setSelectedPapelArroz(v => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '12px', border: `2px solid ${selectedPapelArroz ? '#ec4899' : '#f3f4f6'}`, background: selectedPapelArroz ? '#fdf2f8' : 'white', cursor: 'pointer' }}>
+                  <button onClick={() => setSelectedPapelArroz(v => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '12px', border: `2px solid ${selectedPapelArroz ? '#ec4899' : 'var(--border)'}`, background: selectedPapelArroz ? '#fdf2f8' : 'var(--bg-card)', cursor: 'pointer' }}>
                     <div style={{ textAlign: 'left' }}>
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 }}>Papel de Arroz</p>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Papel de Arroz</p>
                       {(product as any).valor_papel_arroz > 0 && <p style={{ fontSize: '12px', color: '#ec4899', fontWeight: 700, margin: 0 }}>+ {formatCurrency((product as any).valor_papel_arroz)}</p>}
                     </div>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${selectedPapelArroz ? '#ec4899' : '#d1d5db'}`, background: selectedPapelArroz ? '#ec4899' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${selectedPapelArroz ? '#ec4899' : '#d1d5db'}`, background: selectedPapelArroz ? '#ec4899' : 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       {selectedPapelArroz && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
                     </div>
                   </button>
                 )}
                 {(product as any).tem_outro && (product as any).titulo_outro && (
-                  <button onClick={() => setSelectedOutro((v: boolean) => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '12px', border: `2px solid ${selectedOutro ? '#ec4899' : '#f3f4f6'}`, background: selectedOutro ? '#fdf2f8' : 'white', cursor: 'pointer' }}>
+                  <button onClick={() => setSelectedOutro((v: boolean) => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '12px', border: `2px solid ${selectedOutro ? '#ec4899' : 'var(--border)'}`, background: selectedOutro ? '#fdf2f8' : 'var(--bg-card)', cursor: 'pointer' }}>
                     <div style={{ textAlign: 'left' }}>
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#374151', margin: 0 }}>{(product as any).titulo_outro}</p>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{(product as any).titulo_outro}</p>
                       {(product as any).valor_outro > 0 && <p style={{ fontSize: '12px', color: '#ec4899', fontWeight: 700, margin: 0 }}>+ {formatCurrency((product as any).valor_outro)}</p>}
                     </div>
-                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${selectedOutro ? '#ec4899' : '#d1d5db'}`, background: selectedOutro ? '#ec4899' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${selectedOutro ? '#ec4899' : '#d1d5db'}`, background: selectedOutro ? '#ec4899' : 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       {selectedOutro && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
                     </div>
                   </button>
@@ -363,27 +355,27 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             </div>
           )}
 
-          {/* Observações — sempre abertas */}
-          <div style={{ borderTop: '1px solid #f3f4f6', paddingTop: '14px' }}>
-            <span style={{ fontSize: '13px', fontWeight: 700, color: '#1f2937', display: 'block', marginBottom: '8px' }}>Alguma observação?</span>
-            <textarea value={observations} onChange={e => setObservations(e.target.value)} placeholder="Ex: sem cereja, embalagem para presente..." style={{ width: '100%', padding: '10px 12px', border: '1.5px solid #e5e7eb', borderRadius: '12px', fontSize: '13px', color: '#374151', resize: 'none', minHeight: '64px', boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none' }} />
+          {/* Observações */}
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-title)', display: 'block', marginBottom: '8px' }}>Alguma observação?</span>
+            <textarea value={observations} onChange={e => setObservations(e.target.value)} placeholder="Ex: sem cereja, embalagem para presente..." style={{ width: '100%', padding: '10px 12px', border: '1.5px solid var(--border)', borderRadius: '12px', fontSize: '13px', color: 'var(--text-primary)', resize: 'none', minHeight: '64px', boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none' }} />
           </div>
 
           <div style={{ height: '4px' }} />
         </div>
 
         {/* Rodapé */}
-        <div style={{ padding: '12px 16px 24px', borderTop: '1px solid #f3f4f6', background: 'white', flexShrink: 0, borderRadius: '0 0 24px 24px' }}>
+        <div style={{ padding: '12px 16px 24px', borderTop: '1px solid var(--border)', background: 'var(--bg-card)', flexShrink: 0, borderRadius: '0 0 24px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden' }}>
-              <button onClick={dec} style={{ width: '40px', height: '44px', background: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Minus size={16} color="#374151" />
+            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+              <button onClick={dec} style={{ width: '40px', height: '44px', background: 'var(--bg-card)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Minus size={16} color="var(--text-primary)" />
               </button>
-              <span style={{ minWidth: '36px', textAlign: 'center', fontSize: '15px', fontWeight: 700, color: '#111827' }}>
+              <span style={{ minWidth: '36px', textAlign: 'center', fontSize: '15px', fontWeight: 700, color: 'var(--text-title)' }}>
                 {isKg ? `${quantity}kg` : quantity}
               </span>
-              <button onClick={inc} style={{ width: '40px', height: '44px', background: 'white', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Plus size={16} color="#374151" />
+              <button onClick={inc} style={{ width: '40px', height: '44px', background: 'var(--bg-card)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Plus size={16} color="var(--text-primary)" />
               </button>
             </div>
             <button onClick={handleAdd} style={{ flex: 1, height: '44px', background: corBotao, color: 'white', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', fontFamily: 'inherit' }}>

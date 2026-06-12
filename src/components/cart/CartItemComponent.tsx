@@ -22,13 +22,13 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
   return (
     <div style={{
       display:'flex', gap:'12px', padding:'12px',
-      background:'#fff', borderRadius:'12px',
-      border:'1px solid #f0f0f0',
+      background:'var(--bg-card)', borderRadius:'12px',
+      border:'1px solid var(--border)',
     }}>
       {/* Imagem */}
       <div style={{
         width:'72px', height:'72px', borderRadius:'10px',
-        overflow:'hidden', flexShrink:0, background:'#f5f5f5',
+        overflow:'hidden', flexShrink:0, background:'var(--bg-body)',
         position:'relative',
       }}>
         {item.imageUrl
@@ -46,7 +46,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
             cursor:'pointer',
           }}
         >
-          <X size={10} color="#fff" />
+          <X size={10} color="var(--text-inverse)" />
         </button>
       </div>
 
@@ -54,7 +54,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
       <div style={{flex:1, minWidth:0, display:'flex', flexDirection:'column', justifyContent:'space-between'}}>
         {/* Nome */}
         <h4 style={{
-          margin:0, fontWeight:700, fontSize:'14px', color:'#3e3e3e',
+          margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-primary)',
           whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
           lineHeight:'1.3',
         }}>
@@ -64,20 +64,20 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
         {/* Opcionais */}
         {(item.selectedMassa || item.selectedRecheio || item.selectedCobertura) && (
           <div style={{display:'flex',flexWrap:'wrap',gap:'4px',marginTop:'2px'}}>
-            {item.selectedMassa && <span style={{fontSize:'11px',color:'#717171',background:'#f5f5f5',padding:'1px 6px',borderRadius:'4px'}}>🎂 {item.selectedMassa}</span>}
-            {item.selectedRecheio && <span style={{fontSize:'11px',color:'#717171',background:'#f5f5f5',padding:'1px 6px',borderRadius:'4px'}}>🥄 {item.selectedRecheio}</span>}
-            {item.selectedCobertura && <span style={{fontSize:'11px',color:'#717171',background:'#f5f5f5',padding:'1px 6px',borderRadius:'4px'}}>✨ {item.selectedCobertura}</span>}
+            {item.selectedMassa && <span style={{fontSize:'11px',color:'var(--text-secondary)',background:'var(--bg-body)',padding:'1px 6px',borderRadius:'4px'}}>🎂 {item.selectedMassa}</span>}
+            {item.selectedRecheio && <span style={{fontSize:'11px',color:'var(--text-secondary)',background:'var(--bg-body)',padding:'1px 6px',borderRadius:'4px'}}>🥄 {item.selectedRecheio}</span>}
+            {item.selectedCobertura && <span style={{fontSize:'11px',color:'var(--text-secondary)',background:'var(--bg-body)',padding:'1px 6px',borderRadius:'4px'}}>✨ {item.selectedCobertura}</span>}
           </div>
         )}
 
         {/* Peso/Tamanho */}
-        <span style={{fontSize:'11px',color:'#a0a0a0',marginTop:'2px'}}>
+        <span style={{fontSize:'11px',color:'var(--text-muted)',marginTop:'2px'}}>
           {formatCurrency(item.price)}{unitLabel}
         </span>
 
         {/* Preço + stepper */}
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'6px'}}>
-          <span style={{fontWeight:800, fontSize:'16px', color:'#3e3e3e'}}>
+          <span style={{fontWeight:800, fontSize:'16px', color:'var(--text-primary)'}}>
             {formatCurrency(item.price * item.quantity)}
           </span>
 
