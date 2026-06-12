@@ -35,6 +35,7 @@
   --sidebar-active-bg:    var(--menu-active-bg, #FFF1F7);
   --sidebar-active-text:  var(--menu-active, #FF6FA9);
   --sidebar-border:       var(--border, #E9E9EE);
+  --sidebar-border-right: #E9E9EE;
 
   /* ── Header Mobile / Top Bar ── */
   --topbar-bg:            var(--bg-card, #FFFFFF);
