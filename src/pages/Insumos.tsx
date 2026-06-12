@@ -97,26 +97,22 @@ export default function Insumos() {
     load();
   }, []);
 
-  // Busca automática ao entrar na tela de buscar
   useEffect(() => {
     if (step === "buscar" && termoBuscaImg.trim() && imagensBusca.length === 0) {
       buscarImagens();
     }
   }, [step]);
+
   const calcCustoUnitario = (valorCompra: string, qtdEmbalagem: string) => {
     const v = parseFloat(valorCompra) || 0;
     const q = parseFloat(qtdEmbalagem) || 1;
     return q > 0 ? (v / q).toFixed(4) : "0";
   };
 
-  // Total em valor
   const totalEstoque = insumos.reduce((acc, i) => acc + (i.quantidade_estoque * i.valor_compra), 0);
-
-  // Alertas de estoque baixo
   const alertas = insumos.filter(i => i.quantidade_estoque > 0 && i.quantidade_estoque <= i.estoque_minimo);
   const semEstoque = insumos.filter(i => i.quantidade_estoque <= 0);
 
-  // Filtro + ordenação
   const insumosFiltrados = insumos
     .filter(i => {
       const matchBusca = i.nome.toLowerCase().includes(busca.toLowerCase());
@@ -185,7 +181,6 @@ export default function Insumos() {
       await supabase.from("insumos").update(payload).eq("id", editId);
     } else {
       const { data } = await supabase.from("insumos").insert(payload).select().single();
-      // Registrar entrada inicial se tiver quantidade
       if (data && parseFloat(form.quantidade_estoque) > 0) {
         await supabase.from("insumo_movimentacoes").insert({ user_id: userId, insumo_id: data.id, tipo: "entrada", quantidade: parseFloat(form.quantidade_estoque), motivo: "Estoque inicial" });
       }
@@ -237,9 +232,8 @@ export default function Insumos() {
   const formatCurrency = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
   const formatDate = (d: string) => new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 
-  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh", fontFamily: "Inter, sans-serif", color: "#9ca3af" }}>Carregando...</div>;
+  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh", fontFamily: "Inter, sans-serif", color: "var(--text-muted, #9CA3AF)" }}>Carregando...</div>;
 
-  // ─── LISTA ───
   const itensPorPagina = 8;
   const totalPaginas = Math.ceil(insumosFiltrados.length / itensPorPagina);
   const insumosPagina = insumosFiltrados.slice((paginaAtual - 1) * itensPorPagina, paginaAtual * itensPorPagina);
@@ -261,8 +255,7 @@ export default function Insumos() {
 
       {/* 4 Cards stats */}
       <div className="ins-stats">
-        {/* Total em estoque */}
-        <div className="ins-stat-card" style={{background:"linear-gradient(135deg,#FF4FA3,#FF6BB5)",overflow:"hidden",position:"relative",alignItems:"center"}}>
+        <div className="ins-stat-card" style={{background:"var(--primary-gradient, linear-gradient(135deg,#FF6FA9,#F85A9A))",overflow:"hidden",position:"relative",alignItems:"center"}}>
           <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
           <div className="ins-stat-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
@@ -274,7 +267,6 @@ export default function Insumos() {
           </div>
         </div>
 
-        {/* Itens cadastrados */}
         <div className="ins-stat-card" style={{background:"linear-gradient(135deg,#10b981,#059669)",overflow:"hidden",position:"relative",alignItems:"center"}}>
           <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
           <div className="ins-stat-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
@@ -287,7 +279,6 @@ export default function Insumos() {
           </div>
         </div>
 
-        {/* Estoque baixo */}
         <div className="ins-stat-card" style={{background:"linear-gradient(135deg,#f59e0b,#d97706)",overflow:"hidden",position:"relative",alignItems:"center"}}>
           <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
           <div className="ins-stat-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
@@ -300,7 +291,6 @@ export default function Insumos() {
           </div>
         </div>
 
-        {/* Sem estoque */}
         <div className="ins-stat-card" style={{background:"linear-gradient(135deg,#ef4444,#dc2626)",overflow:"hidden",position:"relative",alignItems:"center"}}>
           <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
           <div className="ins-stat-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
@@ -317,7 +307,7 @@ export default function Insumos() {
       {/* Busca + filtros */}
       <div className="ins-toolbar">
         <div className="ins-search-wrap" style={{flex:1}}>
-          <svg className="ins-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <svg className="ins-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input className="ins-search" placeholder="Buscar ingrediente..." value={busca} onChange={e => { setBusca(e.target.value); setPaginaAtual(1); }} />
         </div>
         <select className="ins-select" value={filtroCategoria} onChange={e => { setFiltroCategoria(e.target.value); setPaginaAtual(1); }}>
@@ -341,8 +331,8 @@ export default function Insumos() {
       {insumosFiltrados.length === 0 ? (
         <div className="ins-empty">
           <span style={{fontSize:"3rem"}}>🧂</span>
-          <p style={{fontWeight:700,color:"#1f2937",margin:0}}>Nenhum ingrediente ainda</p>
-          <p style={{color:"#9ca3af",fontSize:"0.85rem",margin:0}}>Cadastre seus ingredientes e embalagens</p>
+          <p style={{fontWeight:700,color:"var(--text-title, #1F2937)",margin:0}}>Nenhum ingrediente ainda</p>
+          <p style={{color:"var(--text-muted, #9CA3AF)",fontSize:"0.85rem",margin:0}}>Cadastre seus ingredientes e embalagens</p>
           <button className="ins-btn-novo" onClick={openNovo}>+ Novo Ingrediente</button>
         </div>
       ) : (
@@ -380,13 +370,13 @@ export default function Insumos() {
                       <span className="ins-cat-badge">{insumo.categoria}</span>
                     </td>
                     <td>
-                      <span style={{fontWeight:700, color: status==="vazio"?"#ef4444":status==="baixo"?"#f59e0b":"#10b981"}}>
+                      <span style={{fontWeight:700, color: status==="vazio"?"var(--error, #EF4444)":status==="baixo"?"var(--warning, #F59E0B)":"var(--success, #22C55E)"}}>
                         {insumo.quantidade_estoque}
                       </span>
                     </td>
-                    <td style={{color:"#6b7280",fontSize:"0.82rem"}}>{insumo.unidade}</td>
-                    <td style={{fontWeight:600,color:"#374151"}}>{formatCurrency(insumo.valor_compra)}</td>
-                    <td style={{fontWeight:600,color:"#374151"}}>{formatCurrency(valorTotal)}</td>
+                    <td style={{color:"var(--text-secondary, #6B7280)",fontSize:"0.82rem"}}>{insumo.unidade}</td>
+                    <td style={{fontWeight:600,color:"var(--text-primary, #374151)"}}>{formatCurrency(insumo.valor_compra)}</td>
+                    <td style={{fontWeight:600,color:"var(--text-primary, #374151)"}}>{formatCurrency(valorTotal)}</td>
                     <td>
                       <span className={"ins-status-badge ins-status-" + status}>
                         {status==="ok"?"Em estoque":status==="baixo"?"Estoque baixo":"Sem estoque"}
@@ -418,7 +408,7 @@ export default function Insumos() {
               <button className="ins-pag-btn" onClick={() => setPaginaAtual(p => Math.max(1,p-1))} disabled={paginaAtual===1}>‹</button>
               {Array.from({length:totalPaginas},(_,i)=>i+1).filter(p => p===1||p===totalPaginas||Math.abs(p-paginaAtual)<=1).map((p,i,arr)=>(
                 <>
-                  {i>0 && arr[i-1]!==p-1 && <span key={"d"+p} style={{padding:"0 4px",color:"#9ca3af"}}>…</span>}
+                  {i>0 && arr[i-1]!==p-1 && <span key={"d"+p} style={{padding:"0 4px",color:"var(--text-muted, #9CA3AF)"}}>…</span>}
                   <button key={p} className={"ins-pag-btn"+(paginaAtual===p?" active":"")} onClick={() => setPaginaAtual(p)}>{p}</button>
                 </>
               ))}
@@ -442,8 +432,8 @@ export default function Insumos() {
       {deleteId && (
         <div className="ins-overlay" onClick={() => setDeleteId(null)}>
           <div className="ins-modal" onClick={e => e.stopPropagation()}>
-            <p style={{fontWeight:700,fontSize:"1rem",color:"#1f2937",margin:"0 0 8px"}}>Excluir ingrediente?</p>
-            <p style={{fontSize:"0.85rem",color:"#6b7280",margin:"0 0 1.5rem"}}>Esta ação não pode ser desfeita.</p>
+            <p style={{fontWeight:700,fontSize:"1rem",color:"var(--text-title, #1F2937)",margin:"0 0 8px"}}>Excluir ingrediente?</p>
+            <p style={{fontSize:"0.85rem",color:"var(--text-secondary, #6B7280)",margin:"0 0 1.5rem"}}>Esta ação não pode ser desfeita.</p>
             <div style={{display:"flex",gap:"8px"}}>
               <button className="ins-btn-cancel" onClick={() => setDeleteId(null)}>Cancelar</button>
               <button className="ins-btn-del-confirm" onClick={() => handleDelete(deleteId)}>Excluir</button>
@@ -456,7 +446,7 @@ export default function Insumos() {
         const st = estoqueStatus(previewInsumo);
         const statusLabel = st === "ok" ? "Em estoque" : st === "baixo" ? "Estoque baixo" : "Sem estoque";
         const statusIcon = st === "ok" ? "✅" : st === "baixo" ? "⚠️" : "❌";
-        const statusColor = st === "ok" ? "#16a34a" : st === "baixo" ? "#ca8a04" : "#ef4444";
+        const statusColor = st === "ok" ? "var(--success, #22C55E)" : st === "baixo" ? "var(--warning, #F59E0B)" : "var(--error, #EF4444)";
         const statusBg = st === "ok" ? "#f0fdf4" : st === "baixo" ? "#fefce8" : "#fff1f2";
         const statusBorder = st === "ok" ? "#bbf7d0" : st === "baixo" ? "#fde68a" : "#fecdd3";
         const p = previewInsumo as any;
@@ -464,57 +454,52 @@ export default function Insumos() {
           <div className="ins-overlay" onClick={() => setPreviewInsumo(null)}>
             <div className="ins-peek-modal" onClick={e => e.stopPropagation()}>
 
-              {/* Topo: label + fechar */}
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1.25rem"}}>
                 <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
-                  <div style={{width:"24px",height:"24px",borderRadius:"6px",background:"#fdf2f8",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FF4FA3" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <div style={{width:"24px",height:"24px",borderRadius:"6px",background:"var(--primary-light, #FFF1F7)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--primary, #FF6FA9)" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                   </div>
-                  <span style={{fontSize:"0.72rem",fontWeight:800,color:"#FF4FA3",textTransform:"uppercase",letterSpacing:"0.08em"}}>Ficha do ingrediente</span>
+                  <span style={{fontSize:"0.72rem",fontWeight:800,color:"var(--primary, #FF6FA9)",textTransform:"uppercase",letterSpacing:"0.08em"}}>Ficha do ingrediente</span>
                 </div>
                 <button
                   onClick={() => setPreviewInsumo(null)}
-                  style={{width:"28px",height:"28px",border:"none",background:"#f3f4f6",borderRadius:"50%",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#9ca3af",fontSize:"0.75rem",fontWeight:700,transition:"background 0.15s"}}
-                  onMouseOver={e => (e.currentTarget.style.background="#e5e7eb")}
-                  onMouseOut={e => (e.currentTarget.style.background="#f3f4f6")}
+                  style={{width:"28px",height:"28px",border:"none",background:"var(--bg-body, #F7F7F8)",borderRadius:"50%",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"var(--text-muted, #9CA3AF)",fontSize:"0.75rem",fontWeight:700,transition:"background 0.15s"}}
+                  onMouseOver={e => (e.currentTarget.style.background="var(--border, #E9E9EE)")}
+                  onMouseOut={e => (e.currentTarget.style.background="var(--bg-body, #F7F7F8)")}
                 >✕</button>
               </div>
 
-              {/* Foto + identidade */}
               <div style={{display:"flex",alignItems:"center",gap:"1rem",marginBottom:"1.25rem"}}>
-                <div style={{width:"72px",height:"72px",borderRadius:"14px",overflow:"hidden",background:"#f9fafb",border:"1.5px solid #f0f0f0",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
+                <div style={{width:"72px",height:"72px",borderRadius:"14px",overflow:"hidden",background:"var(--bg-body, #F7F7F8)",border:"1.5px solid var(--border, #E9E9EE)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06))"}}>
                   {previewInsumo.imagem_url
                     ? <img src={previewInsumo.imagem_url} alt={previewInsumo.nome} style={{width:"100%",height:"100%",objectFit:"cover"}} />
                     : <span style={{fontSize:"1.8rem"}}>🧂</span>
                   }
                 </div>
                 <div style={{flex:1,minWidth:0}}>
-                  <p style={{margin:"0 0 2px",fontSize:"1rem",fontWeight:800,color:"#111827",lineHeight:1.2,wordBreak:"break-word"}}>{previewInsumo.nome}</p>
-                  {p.marca && <p style={{margin:"0 0 6px",fontSize:"0.75rem",color:"#9ca3af",fontWeight:500}}>{p.marca}</p>}
+                  <p style={{margin:"0 0 2px",fontSize:"1rem",fontWeight:800,color:"var(--text-title, #1F2937)",lineHeight:1.2,wordBreak:"break-word"}}>{previewInsumo.nome}</p>
+                  {p.marca && <p style={{margin:"0 0 6px",fontSize:"0.75rem",color:"var(--text-muted, #9CA3AF)",fontWeight:500}}>{p.marca}</p>}
                   <span style={{display:"inline-flex",alignItems:"center",gap:"4px",padding:"3px 10px",borderRadius:"20px",fontSize:"0.7rem",fontWeight:700,background:statusBg,color:statusColor,border:`1px solid ${statusBorder}`}}>
                     {statusIcon} {statusLabel}
                   </span>
                 </div>
               </div>
 
-              {/* Divider */}
-              <div style={{height:"1px",background:"#f3f4f6",margin:"0 0 1rem"}} />
+              <div style={{height:"1px",background:"var(--border, #E9E9EE)",margin:"0 0 1rem"}} />
 
-              {/* Grupo: Estoque */}
-              <div style={{background:"#f9fafb",borderRadius:"12px",padding:"0.75rem 1rem",marginBottom:"0.85rem",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem"}}>
+              <div style={{background:"var(--bg-body, #F7F7F8)",borderRadius:"12px",padding:"0.75rem 1rem",marginBottom:"0.85rem",display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem"}}>
                 <div>
-                  <p style={{margin:"0 0 2px",fontSize:"0.68rem",color:"#9ca3af",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>Estoque atual</p>
-                  <p style={{margin:0,fontSize:"1.1rem",fontWeight:800,color:statusColor}}>{previewInsumo.quantidade_estoque} <span style={{fontSize:"0.75rem",fontWeight:500,color:"#6b7280"}}>{previewInsumo.unidade}</span></p>
+                  <p style={{margin:"0 0 2px",fontSize:"0.68rem",color:"var(--text-muted, #9CA3AF)",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>Estoque atual</p>
+                  <p style={{margin:0,fontSize:"1.1rem",fontWeight:800,color:statusColor}}>{previewInsumo.quantidade_estoque} <span style={{fontSize:"0.75rem",fontWeight:500,color:"var(--text-secondary, #6B7280)"}}>{previewInsumo.unidade}</span></p>
                 </div>
                 {previewInsumo.estoque_minimo > 0 && (
                   <div>
-                    <p style={{margin:"0 0 2px",fontSize:"0.68rem",color:"#9ca3af",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>Mínimo</p>
-                    <p style={{margin:0,fontSize:"1.1rem",fontWeight:800,color:"#374151"}}>{previewInsumo.estoque_minimo} <span style={{fontSize:"0.75rem",fontWeight:500,color:"#6b7280"}}>{previewInsumo.unidade}</span></p>
+                    <p style={{margin:"0 0 2px",fontSize:"0.68rem",color:"var(--text-muted, #9CA3AF)",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>Mínimo</p>
+                    <p style={{margin:0,fontSize:"1.1rem",fontWeight:800,color:"var(--text-primary, #374151)"}}>{previewInsumo.estoque_minimo} <span style={{fontSize:"0.75rem",fontWeight:500,color:"var(--text-secondary, #6B7280)"}}>{previewInsumo.unidade}</span></p>
                   </div>
                 )}
               </div>
 
-              {/* Campos em linha */}
               <div style={{display:"flex",flexDirection:"column",gap:0}}>
                 {[
                   { label: "Categoria", value: previewInsumo.categoria, icon: "🏷️" },
@@ -525,30 +510,28 @@ export default function Insumos() {
                   p.fornecedor ? { label: "Fornecedor", value: p.fornecedor, icon: "🏪" } : null,
                   p.subcategoria ? { label: "Subcategoria", value: p.subcategoria, icon: "📂" } : null,
                 ].filter(Boolean).map((item: any, i: number, arr: any[]) => (
-                  <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.5rem 0",borderBottom: i < arr.length - 1 ? "1px solid #f3f4f6" : "none"}}>
+                  <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.5rem 0",borderBottom: i < arr.length - 1 ? "1px solid var(--border, #E9E9EE)" : "none"}}>
                     <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
                       <span style={{fontSize:"0.85rem",lineHeight:1}}>{item.icon}</span>
-                      <span style={{fontSize:"0.78rem",color:"#6b7280",fontWeight:500}}>{item.label}</span>
+                      <span style={{fontSize:"0.78rem",color:"var(--text-secondary, #6B7280)",fontWeight:500}}>{item.label}</span>
                     </div>
-                    <span style={{fontSize:"0.82rem",fontWeight:700,color:item.highlight?"#FF4FA3":"#1f2937",textAlign:"right",maxWidth:"55%"}}>{item.value}</span>
+                    <span style={{fontSize:"0.82rem",fontWeight:700,color:item.highlight?"var(--primary, #FF6FA9)":"var(--text-title, #1F2937)",textAlign:"right",maxWidth:"55%"}}>{item.value}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Descrição se existir */}
               {p.descricao && (
-                <div style={{marginTop:"0.85rem",background:"#f9fafb",borderRadius:"10px",padding:"0.7rem 0.9rem"}}>
-                  <p style={{margin:"0 0 4px",fontSize:"0.68rem",color:"#9ca3af",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em"}}>Descrição</p>
-                  <p style={{margin:0,fontSize:"0.82rem",color:"#374151",lineHeight:1.5}}>{p.descricao}</p>
+                <div style={{marginTop:"0.85rem",background:"var(--bg-body, #F7F7F8)",borderRadius:"10px",padding:"0.7rem 0.9rem"}}>
+                  <p style={{margin:"0 0 4px",fontSize:"0.68rem",color:"var(--text-muted, #9CA3AF)",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.05em"}}>Descrição</p>
+                  <p style={{margin:0,fontSize:"0.82rem",color:"var(--text-primary, #374151)",lineHeight:1.5}}>{p.descricao}</p>
                 </div>
               )}
 
-              {/* Botão fechar */}
               <button
                 onClick={() => setPreviewInsumo(null)}
-                style={{marginTop:"1.25rem",width:"100%",padding:"0.75rem",background:"#f3f4f6",color:"#374151",border:"none",borderRadius:"12px",fontFamily:"Inter,sans-serif",fontSize:"0.88rem",fontWeight:700,cursor:"pointer",transition:"background 0.15s"}}
-                onMouseOver={e => (e.currentTarget.style.background="#e5e7eb")}
-                onMouseOut={e => (e.currentTarget.style.background="#f3f4f6")}
+                style={{marginTop:"1.25rem",width:"100%",padding:"0.75rem",background:"var(--bg-body, #F7F7F8)",color:"var(--text-primary, #374151)",border:"none",borderRadius:"12px",fontFamily:"Inter,sans-serif",fontSize:"0.88rem",fontWeight:700,cursor:"pointer",transition:"background 0.15s"}}
+                onMouseOver={e => (e.currentTarget.style.background="var(--border, #E9E9EE)")}
+                onMouseOut={e => (e.currentTarget.style.background="var(--bg-body, #F7F7F8)")}
               >Fechar</button>
 
             </div>
@@ -569,22 +552,21 @@ export default function Insumos() {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h2 className="ins-form-title">{insumoDetalhe.nome}</h2>
-          <button onClick={() => openEditar(insumoDetalhe)} style={{ background: "none", border: "none", color: "#ec4899", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer" }}>Editar</button>
+          <button onClick={() => openEditar(insumoDetalhe)} style={{ background: "none", border: "none", color: "var(--primary, #FF6FA9)", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer" }}>Editar</button>
         </div>
 
         {insumoDetalhe.imagem_url && (
-          <div style={{ width: "100%", height: "160px", borderRadius: "14px", overflow: "hidden", background: "#f9fafb" }}>
+          <div style={{ width: "100%", height: "160px", borderRadius: "14px", overflow: "hidden", background: "var(--bg-body, #F7F7F8)" }}>
             <img src={insumoDetalhe.imagem_url} alt={insumoDetalhe.nome} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           </div>
         )}
 
-        {/* Card estoque */}
         <div className="ins-detalhe-estoque" style={{ background: status === "vazio" ? "#fff1f2" : status === "baixo" ? "#fefce8" : "#f0fdf4", borderColor: status === "vazio" ? "#fecdd3" : status === "baixo" ? "#fde68a" : "#bbf7d0" }}>
           <div>
-            <p style={{ fontSize: "0.75rem", color: "#6b7280", margin: 0 }}>Estoque atual</p>
-            <p style={{ fontSize: "1.5rem", fontWeight: 800, color: "#1f2937", margin: 0 }}>{insumoDetalhe.quantidade_estoque} <span style={{ fontSize: "1rem" }}>{insumoDetalhe.unidade}</span></p>
-            {status === "baixo" && <p style={{ fontSize: "0.75rem", color: "#ca8a04", margin: 0 }}>⚠️ Abaixo do mínimo ({insumoDetalhe.estoque_minimo} {insumoDetalhe.unidade})</p>}
-            {status === "vazio" && <p style={{ fontSize: "0.75rem", color: "#ef4444", margin: 0 }}>❌ Sem estoque</p>}
+            <p style={{ fontSize: "0.75rem", color: "var(--text-secondary, #6B7280)", margin: 0 }}>Estoque atual</p>
+            <p style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--text-title, #1F2937)", margin: 0 }}>{insumoDetalhe.quantidade_estoque} <span style={{ fontSize: "1rem" }}>{insumoDetalhe.unidade}</span></p>
+            {status === "baixo" && <p style={{ fontSize: "0.75rem", color: "var(--warning, #F59E0B)", margin: 0 }}>⚠️ Abaixo do mínimo ({insumoDetalhe.estoque_minimo} {insumoDetalhe.unidade})</p>}
+            {status === "vazio" && <p style={{ fontSize: "0.75rem", color: "var(--error, #EF4444)", margin: 0 }}>❌ Sem estoque</p>}
           </div>
           <div style={{ display: "flex", gap: "8px" }}>
             <button className="ins-mov-btn ins-mov-saida" onClick={() => { setMovTipo("saida"); setShowMovModal(true); }}>− Saída</button>
@@ -592,35 +574,33 @@ export default function Insumos() {
           </div>
         </div>
 
-        {/* Info */}
         <div className="ins-review-card">
           <div className="ins-review-section">
             <div className="ins-review-item"><span>Categoria</span><strong>{insumoDetalhe.categoria}</strong></div>
             <div className="ins-review-item"><span>Unidade</span><strong>{insumoDetalhe.unidade}</strong></div>
             <div className="ins-review-item"><span>Valor de compra</span><strong>{formatCurrency(insumoDetalhe.valor_compra)}</strong></div>
             {insumoDetalhe.qtd_embalagem > 1 && <div className="ins-review-item"><span>Qtd por embalagem</span><strong>{insumoDetalhe.qtd_embalagem} {insumoDetalhe.unidade}</strong></div>}
-            {insumoDetalhe.custo_unitario > 0 && <div className="ins-review-item"><span>Custo por {insumoDetalhe.unidade}</span><strong style={{ color: "#ec4899" }}>{formatCurrency(insumoDetalhe.custo_unitario)}</strong></div>}
+            {insumoDetalhe.custo_unitario > 0 && <div className="ins-review-item"><span>Custo por {insumoDetalhe.unidade}</span><strong style={{ color: "var(--primary, #FF6FA9)" }}>{formatCurrency(insumoDetalhe.custo_unitario)}</strong></div>}
             {insumoDetalhe.fornecedor && <div className="ins-review-item"><span>Fornecedor</span><strong>{insumoDetalhe.fornecedor}</strong></div>}
           </div>
         </div>
 
-        {/* Histórico */}
         <div>
           <p className="ins-section-label" style={{ marginBottom: "0.5rem" }}>📋 Histórico de movimentações</p>
           {movimentacoes.length === 0 ? (
-            <p style={{ fontSize: "0.82rem", color: "#9ca3af", textAlign: "center", padding: "1rem" }}>Nenhuma movimentação ainda</p>
+            <p style={{ fontSize: "0.82rem", color: "var(--text-muted, #9CA3AF)", textAlign: "center", padding: "1rem" }}>Nenhuma movimentação ainda</p>
           ) : (
             <div className="ins-list">
               {movimentacoes.map(m => (
-                <div key={m.id} style={{ background: "white", borderRadius: "12px", padding: "0.75rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
+                <div key={m.id} style={{ background: "var(--bg-card, #FFFFFF)", borderRadius: "12px", padding: "0.75rem 1rem", display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06))" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <span style={{ fontSize: "1.2rem" }}>{m.tipo === "entrada" ? "📥" : "📤"}</span>
                     <div>
-                      <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "#1f2937", margin: 0 }}>{m.motivo || (m.tipo === "entrada" ? "Entrada" : "Saída")}</p>
-                      <p style={{ fontSize: "0.72rem", color: "#9ca3af", margin: 0 }}>{formatDate(m.created_at)}</p>
+                      <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-title, #1F2937)", margin: 0 }}>{m.motivo || (m.tipo === "entrada" ? "Entrada" : "Saída")}</p>
+                      <p style={{ fontSize: "0.72rem", color: "var(--text-muted, #9CA3AF)", margin: 0 }}>{formatDate(m.created_at)}</p>
                     </div>
                   </div>
-                  <span style={{ fontSize: "0.9rem", fontWeight: 700, color: m.tipo === "entrada" ? "#22c55e" : "#ef4444" }}>
+                  <span style={{ fontSize: "0.9rem", fontWeight: 700, color: m.tipo === "entrada" ? "var(--success, #22C55E)" : "var(--error, #EF4444)" }}>
                     {m.tipo === "entrada" ? "+" : "-"}{m.quantidade} {insumoDetalhe.unidade}
                   </span>
                 </div>
@@ -629,11 +609,10 @@ export default function Insumos() {
           )}
         </div>
 
-        {/* Modal movimentação */}
         {showMovModal && (
           <div className="ins-overlay" onClick={() => setShowMovModal(false)}>
             <div className="ins-modal" onClick={e => e.stopPropagation()}>
-              <p style={{ fontWeight: 700, fontSize: "1rem", color: "#1f2937", margin: "0 0 1rem" }}>
+              <p style={{ fontWeight: 700, fontSize: "1rem", color: "var(--text-title, #1F2937)", margin: "0 0 1rem" }}>
                 {movTipo === "entrada" ? "📥 Registrar Entrada" : "📤 Registrar Saída"}
               </p>
               <div className="ins-field" style={{ marginBottom: "0.75rem" }}>
@@ -667,7 +646,7 @@ export default function Insumos() {
         </button>
         <div>
           <h2 className="ins-form-title">{editId ? "Editar Ingrediente" : "Novo Ingrediente"}</h2>
-          <p style={{margin:0,fontSize:"0.78rem",color:"#9ca3af"}}>Preencha os dados do ingrediente que deseja adicionar ao seu estoque.</p>
+          <p style={{margin:0,fontSize:"0.78rem",color:"var(--text-muted, #9CA3AF)"}}>Preencha os dados do ingrediente que deseja adicionar ao seu estoque.</p>
         </div>
       </div>
 
@@ -677,18 +656,18 @@ export default function Insumos() {
         <div className="ins-card" style={{padding:0,overflow:"hidden"}}>
           <div className="ins-basicas-grid">
 
-            {/* Imagem — esquerda, altura total */}
+            {/* Imagem */}
             <div className="ins-imagem-inline">
-              <div className="ins-imagem-preview" style={{flex:1,borderRadius:0,border:"none",borderRight:"1px solid #f3f4f6",minHeight:"320px",aspectRatio:"1"}}>
+              <div className="ins-imagem-preview" style={{flex:1,borderRadius:0,border:"none",borderRight:"1px solid var(--border, #E9E9EE)",minHeight:"320px",aspectRatio:"1"}}>
                 {imagemSelecionada
                   ? <img src={imagemSelecionada} alt="imagem" style={{width:"100%",height:"100%",objectFit:"cover"}} />
                   : <div className="ins-imagem-empty">
-                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                      <p style={{fontSize:"0.85rem",fontWeight:600,color:"#9ca3af",margin:0}}>Sem imagem</p>
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--border, #E9E9EE)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      <p style={{fontSize:"0.85rem",fontWeight:600,color:"var(--text-muted, #9CA3AF)",margin:0}}>Sem imagem</p>
                     </div>
                 }
               </div>
-              <div style={{padding:"0.85rem",display:"flex",flexDirection:"column",gap:"0.5rem",borderRight:"1px solid #f3f4f6"}}>
+              <div style={{padding:"0.85rem",display:"flex",flexDirection:"column",gap:"0.5rem",borderRight:"1px solid var(--border, #E9E9EE)"}}>
                 {isPro ? (
                   <button className="ins-btn-buscar" style={{justifyContent:"center"}}
                     onClick={() => {
@@ -704,9 +683,9 @@ export default function Insumos() {
                     Buscar imagem do produto
                   </button>
                 ) : (
-                  <div style={{background:"#fdf2f8",border:"1px solid #fce7f3",borderRadius:"10px",padding:"0.6rem 0.75rem",textAlign:"center"}}>
-                    <p style={{fontSize:"0.72rem",color:"#FF4FA3",fontWeight:600,margin:0}}>✨ Recurso PRO</p>
-                    <p style={{fontSize:"0.68rem",color:"#9ca3af",margin:"2px 0 0"}}>Busca automática de imagens</p>
+                  <div style={{background:"var(--primary-light, #FFF1F7)",border:"1px solid var(--primary-light, #FFF1F7)",borderRadius:"10px",padding:"0.6rem 0.75rem",textAlign:"center"}}>
+                    <p style={{fontSize:"0.72rem",color:"var(--primary, #FF6FA9)",fontWeight:600,margin:0}}>✨ Recurso PRO</p>
+                    <p style={{fontSize:"0.68rem",color:"var(--text-muted, #9CA3AF)",margin:"2px 0 0"}}>Busca automática de imagens</p>
                   </div>
                 )}
                 <button className="ins-btn-upload" onClick={() => document.getElementById("ins-file-input-desk")?.click()}>
@@ -714,7 +693,7 @@ export default function Insumos() {
                   Upload manual
                 </button>
                 {imagemSelecionada && (
-                  <button onClick={() => setImagemSelecionada(null)} style={{background:"none",border:"none",color:"#ef4444",fontSize:"0.72rem",cursor:"pointer",fontFamily:"Inter,sans-serif",textAlign:"center"}}>
+                  <button onClick={() => setImagemSelecionada(null)} style={{background:"none",border:"none",color:"var(--error, #EF4444)",fontSize:"0.72rem",cursor:"pointer",fontFamily:"Inter,sans-serif",textAlign:"center"}}>
                     Remover imagem
                   </button>
                 )}
@@ -732,21 +711,20 @@ export default function Insumos() {
               </div>
             </div>
 
-            {/* Campos — direita */}
+            {/* Campos */}
             <div className="ins-form" style={{padding:"1.25rem",display:"flex",flexDirection:"column",flex:1}}>
               <p className="ins-section-label" style={{marginTop:0}}>1. Informações básicas</p>
 
-              {/* Nome + Marca na mesma linha */}
               <div className="ins-row-2">
                 <div className="ins-field">
-                  <label>Nome do ingrediente <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
+                  <label>Nome do ingrediente <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(Obrigatório)</span></label>
                   <input placeholder="Ex: Leite Condensado" value={form.nome} onChange={e => setForm((f: any) => ({ ...f, nome: e.target.value }))} />
                 </div>
                 <div className="ins-field">
-                  <label>Marca <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
+                  <label>Marca <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(opcional)</span></label>
                   {marcas.length === 0 && !showNovaMarca ? (
                     <button onClick={() => setShowNovaMarca(true)}
-                      style={{padding:"0.65rem 0.9rem",border:"1.5px dashed #e5e7eb",borderRadius:"10px",background:"white",fontFamily:"Inter,sans-serif",fontSize:"0.85rem",color:"#9ca3af",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:"6px"}}>
+                      style={{padding:"0.65rem 0.9rem",border:"1.5px dashed var(--border, #E9E9EE)",borderRadius:"10px",background:"var(--bg-card, #FFFFFF)",fontFamily:"Inter,sans-serif",fontSize:"0.85rem",color:"var(--text-muted, #9CA3AF)",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:"6px"}}>
                       <span style={{fontSize:"1rem",lineHeight:1}}>+</span> Cadastrar marca
                     </button>
                   ) : showNovaMarca ? (
@@ -754,7 +732,7 @@ export default function Insumos() {
                       <input placeholder="Ex: Nestlé, Moça..." value={novaMarca} onChange={e => setNovaMarca(e.target.value)} autoFocus
                         onKeyDown={e => { if (e.key === "Enter" && novaMarca.trim()) { setMarcas(prev => [...prev, novaMarca.trim()]); setForm((f: any) => ({...f, marca: novaMarca.trim()})); setNovaMarca(""); setShowNovaMarca(false); }}} />
                       <button onClick={() => { if (!novaMarca.trim()) return; setMarcas(prev => [...prev, novaMarca.trim()]); setForm((f: any) => ({...f, marca: novaMarca.trim()})); setNovaMarca(""); setShowNovaMarca(false); }}>✓</button>
-                      <button onClick={() => setShowNovaMarca(false)} style={{background:"#f3f4f6",color:"#6b7280"}}>✕</button>
+                      <button onClick={() => setShowNovaMarca(false)} style={{background:"var(--bg-body, #F7F7F8)",color:"var(--text-secondary, #6B7280)"}}>✕</button>
                     </div>
                   ) : (
                     <select value={form.marca || ""} onChange={e => { if (e.target.value === "__nova__") setShowNovaMarca(true); else setForm((f: any) => ({...f, marca: e.target.value})); }}>
@@ -768,7 +746,7 @@ export default function Insumos() {
 
               <div className="ins-row-2">
                 <div className="ins-field">
-                  <label>Categoria <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
+                  <label>Categoria <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(Obrigatório)</span></label>
                   <select value={form.categoria} onChange={e => { if (e.target.value === "__nova__") setShowNovaCategoria(true); else setForm((f: any) => ({ ...f, categoria: e.target.value })); }}>
                     {categorias.map(c => <option key={c} value={c}>{c}</option>)}
                     <option value="__nova__">+ Nova categoria</option>
@@ -777,12 +755,12 @@ export default function Insumos() {
                     <div className="ins-nova-row">
                       <input placeholder="Nome da categoria" value={novaCategoria} onChange={e => setNovaCategoria(e.target.value)} autoFocus />
                       <button onClick={adicionarCategoria}>Adicionar</button>
-                      <button onClick={() => setShowNovaCategoria(false)} style={{background:"#f3f4f6",color:"#6b7280"}}>✕</button>
+                      <button onClick={() => setShowNovaCategoria(false)} style={{background:"var(--bg-body, #F7F7F8)",color:"var(--text-secondary, #6B7280)"}}>✕</button>
                     </div>
                   )}
                 </div>
                 <div className="ins-field">
-                  <label>Subcategoria <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
+                  <label>Subcategoria <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(opcional)</span></label>
                   <select value={form.subcategoria || ""} onChange={e => { if (e.target.value === "__nova_sub__") setForm((f: any) => ({...f, _showNovaSubcat: true})); else setForm((f: any) => ({...f, subcategoria: e.target.value, _showNovaSubcat: false})); }}>
                     <option value="">Selecione a subcategoria</option>
                     {(form._subcats || []).map((s: string) => <option key={s} value={s}>{s}</option>)}
@@ -800,8 +778,8 @@ export default function Insumos() {
               </div>
 
               <div className="ins-field" style={{flex:1,display:"flex",flexDirection:"column"}}>
-                <label>Descrição <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
-                <textarea placeholder="Ex: Leite condensado tradicional, ideal para recheios e coberturas." value={form.descricao || ""} onChange={e => setForm((f: any) => ({...f, descricao: e.target.value}))} style={{flex:1,minHeight:"120px",padding:"0.65rem 0.9rem",border:"1.5px solid #e5e7eb",borderRadius:"10px",fontFamily:"Inter,sans-serif",fontSize:"0.88rem",color:"#1f2937",outline:"none",resize:"none",width:"100%",boxSizing:"border-box"}} onFocus={e => e.target.style.borderColor="#FF4FA3"} onBlur={e => e.target.style.borderColor="#e5e7eb"} />
+                <label>Descrição <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(opcional)</span></label>
+                <textarea placeholder="Ex: Leite condensado tradicional, ideal para recheios e coberturas." value={form.descricao || ""} onChange={e => setForm((f: any) => ({...f, descricao: e.target.value}))} style={{flex:1,minHeight:"120px",padding:"0.65rem 0.9rem",border:"1.5px solid var(--border, #E9E9EE)",borderRadius:"10px",fontFamily:"Inter,sans-serif",fontSize:"0.88rem",color:"var(--text-title, #1F2937)",outline:"none",resize:"none",width:"100%",boxSizing:"border-box"}} onFocus={e => e.target.style.borderColor="var(--border-focus, #FF6FA9)"} onBlur={e => e.target.style.borderColor="var(--border, #E9E9EE)"} />
               </div>
             </div>
 
@@ -814,7 +792,7 @@ export default function Insumos() {
           <div className="ins-row-2" style={{gap:"1.5rem"}}>
             <div style={{display:"flex",flexDirection:"column",gap:"1rem"}}>
               <div className="ins-field">
-                <label>Unidade de medida <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
+                <label>Unidade de medida <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(Obrigatório)</span></label>
                 <select value={form.unidade} onChange={e => { if (e.target.value === "__nova__") setShowNovaUnidade(true); else setForm((f: any) => ({ ...f, unidade: e.target.value })); }}>
                   <option value="">Selecione uma unidade</option>
                   {unidades.map(u => <option key={u.sigla} value={u.sigla}>{u.sigla} — {u.nome}</option>)}
@@ -825,26 +803,25 @@ export default function Insumos() {
                   <div className="ins-nova-row">
                     <input placeholder="Ex: dz (dúzia)" value={novaUnidade} onChange={e => setNovaUnidade(e.target.value)} autoFocus />
                     <button onClick={() => { if (!novaUnidade.trim()) return; setUnidades(prev => [...prev, {sigla:novaUnidade.trim(),nome:novaUnidade.trim(),tipo:"unidade"}]); setForm((f: any) => ({...f,unidade:novaUnidade.trim()})); setNovaUnidade(""); setShowNovaUnidade(false); }}>Adicionar</button>
-                    <button onClick={() => setShowNovaUnidade(false)} style={{background:"#f3f4f6",color:"#6b7280"}}>✕</button>
+                    <button onClick={() => setShowNovaUnidade(false)} style={{background:"var(--bg-body, #F7F7F8)",color:"var(--text-secondary, #6B7280)"}}>✕</button>
                   </div>
                 )}
               </div>
 
-              {/* Toggle aviso de estoque mínimo */}
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.75rem 1rem",background:"#f9fafb",borderRadius:"12px",border:"1px solid #f3f4f6"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.75rem 1rem",background:"var(--bg-body, #F7F7F8)",borderRadius:"12px",border:"1px solid var(--border, #E9E9EE)"}}>
                 <div>
-                  <p style={{margin:0,fontSize:"0.88rem",fontWeight:600,color:"#1f2937"}}>Aviso de estoque mínimo</p>
-                  <p style={{margin:0,fontSize:"0.72rem",color:"#9ca3af"}}>Alerta quando o estoque estiver baixo</p>
+                  <p style={{margin:0,fontSize:"0.88rem",fontWeight:600,color:"var(--text-title, #1F2937)"}}>Aviso de estoque mínimo</p>
+                  <p style={{margin:0,fontSize:"0.72rem",color:"var(--text-muted, #9CA3AF)"}}>Alerta quando o estoque estiver baixo</p>
                 </div>
                 <button onClick={() => setForm((f: any) => ({...f, _avisoEstoque: !f._avisoEstoque}))}
-                  style={{width:"44px",height:"24px",borderRadius:"99px",border:"none",cursor:"pointer",background:form._avisoEstoque?"#FF4FA3":"#d1d5db",position:"relative",transition:"background 0.2s",flexShrink:0}}>
+                  style={{width:"44px",height:"24px",borderRadius:"99px",border:"none",cursor:"pointer",background:form._avisoEstoque?"var(--primary, #FF6FA9)":"var(--border, #E9E9EE)",position:"relative",transition:"background 0.2s",flexShrink:0}}>
                   <div style={{width:"18px",height:"18px",borderRadius:"50%",background:"white",position:"absolute",top:"3px",transition:"left 0.2s",left:form._avisoEstoque?"23px":"3px",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}} />
                 </button>
               </div>
 
               {form._avisoEstoque && (
                 <div className="ins-field">
-                  <label>Estoque mínimo para avisos <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
+                  <label>Estoque mínimo para avisos <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(Obrigatório)</span></label>
                   <input type="number" placeholder="Ex: 2" min="0" value={form.estoque_minimo} onChange={e => setForm((f: any) => ({...f,estoque_minimo:e.target.value}))} />
                   <span className="ins-field-hint">Quantidade mínima para alerta de estoque</span>
                 </div>
@@ -853,12 +830,12 @@ export default function Insumos() {
 
             <div style={{display:"flex",flexDirection:"column",gap:"1rem"}}>
               <div className="ins-field">
-                <label>Quantidade por embalagem <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
+                <label>Quantidade por embalagem <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(Obrigatório)</span></label>
                 <input type="number" placeholder="Ex: 395" min="1" value={form.qtd_embalagem} onChange={e => setForm((f: any) => ({...f,qtd_embalagem:e.target.value}))} />
                 <span className="ins-field-hint">Informe a quantidade que vem na embalagem</span>
               </div>
               <div className="ins-field">
-                <label>Estoque atual <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
+                <label>Estoque atual <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(opcional)</span></label>
                 <input type="number" placeholder="Ex: 0" min="0" value={form.quantidade_estoque} onChange={e => setForm((f: any) => ({...f,quantidade_estoque:e.target.value}))} />
                 <span className="ins-field-hint">Quantidade disponível no momento</span>
               </div>
@@ -872,18 +849,18 @@ export default function Insumos() {
           <div className="ins-form">
             <div className="ins-row-2">
               <div className="ins-field">
-                <label>Valor de compra (R$) <span style={{color:"#9ca3af",fontWeight:400}}>(Obrigatório)</span></label>
+                <label>Valor de compra (R$) <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(Obrigatório)</span></label>
                 <input type="number" placeholder="0,00" min="0" step="0.01" value={form.valor_compra} onChange={e => setForm((f: any) => ({...f,valor_compra:e.target.value}))} />
               </div>
               <div className="ins-field">
-                <label>Fornecedor <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
+                <label>Fornecedor <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(opcional)</span></label>
                 <input placeholder="Ex: Nestlé, Arosa..." style={{maxWidth:"320px"}} value={form.fornecedor} onChange={e => setForm((f: any) => ({...f,fornecedor:e.target.value}))} />
               </div>
             </div>
             {parseFloat(form.valor_compra) > 0 && parseFloat(form.qtd_embalagem) > 0 && (
               <div className="ins-custo-calc">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF4FA3" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span>Custo por {form.unidade || "unidade"}: <strong style={{color:"#FF4FA3"}}>{formatCurrency(parseFloat(calcCustoUnitario(form.valor_compra, form.qtd_embalagem)))}</strong></span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary, #FF6FA9)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>Custo por {form.unidade || "unidade"}: <strong style={{color:"var(--primary, #FF6FA9)"}}>{formatCurrency(parseFloat(calcCustoUnitario(form.valor_compra, form.qtd_embalagem)))}</strong></span>
               </div>
             )}
           </div>
@@ -891,73 +868,66 @@ export default function Insumos() {
       </div>
 
       {/* 4. Validade */}
-        <div className="ins-card">
-          <p className="ins-section-label">4. Validade</p>
+      <div className="ins-card">
+        <p className="ins-section-label">4. Validade</p>
 
-          {/* Grid 2x2: Com/Sem validade | Validade exata / Validade média | aviso */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.85rem",marginBottom:"0.85rem"}}>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.85rem",marginBottom:"0.85rem"}}>
+          <label style={{display:"flex",alignItems:"flex-start",gap:"0.75rem",padding:"0.85rem 1rem",border:"2px solid",borderColor:temValidade?"var(--primary, #FF6FA9)":"var(--border, #E9E9EE)",borderRadius:"12px",cursor:"pointer",background:temValidade?"var(--primary-light, #FFF1F7)":"var(--bg-card, #FFFFFF)",transition:"all 0.15s"}}>
+            <div style={{width:"18px",height:"18px",borderRadius:"50%",border:"2px solid",borderColor:temValidade?"var(--primary, #FF6FA9)":"var(--border, #E9E9EE)",background:temValidade?"var(--primary, #FF6FA9)":"var(--bg-card, #FFFFFF)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"2px"}}>
+              {temValidade && <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"white"}} />}
+            </div>
+            <div>
+              <input type="radio" checked={temValidade} onChange={() => setTemValidade(true)} style={{display:"none"}} />
+              <p style={{margin:0,fontSize:"0.88rem",fontWeight:700,color:temValidade?"var(--primary, #FF6FA9)":"var(--text-title, #1F2937)"}}>Com validade</p>
+              <p style={{margin:0,fontSize:"0.75rem",color:"var(--text-muted, #9CA3AF)"}}>Este insumo possui data de validade</p>
+            </div>
+          </label>
 
-            {/* Com validade */}
-            <label style={{display:"flex",alignItems:"flex-start",gap:"0.75rem",padding:"0.85rem 1rem",border:"2px solid",borderColor:temValidade?"#FF4FA3":"#e5e7eb",borderRadius:"12px",cursor:"pointer",background:temValidade?"#fdf2f8":"white",transition:"all 0.15s"}}>
-              <div style={{width:"18px",height:"18px",borderRadius:"50%",border:"2px solid",borderColor:temValidade?"#FF4FA3":"#d1d5db",background:temValidade?"#FF4FA3":"white",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"2px"}}>
-                {temValidade && <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"white"}} />}
-              </div>
-              <div>
-                <input type="radio" checked={temValidade} onChange={() => setTemValidade(true)} style={{display:"none"}} />
-                <p style={{margin:0,fontSize:"0.88rem",fontWeight:700,color:temValidade?"#FF4FA3":"#1f2937"}}>Com validade</p>
-                <p style={{margin:0,fontSize:"0.75rem",color:"#9ca3af"}}>Este insumo possui data de validade</p>
-              </div>
-            </label>
+          <label style={{display:"flex",alignItems:"flex-start",gap:"0.75rem",padding:"0.85rem 1rem",border:"2px solid",borderColor:!temValidade?"var(--primary, #FF6FA9)":"var(--border, #E9E9EE)",borderRadius:"12px",cursor:"pointer",background:!temValidade?"var(--primary-light, #FFF1F7)":"var(--bg-card, #FFFFFF)",transition:"all 0.15s"}}>
+            <div style={{width:"18px",height:"18px",borderRadius:"50%",border:"2px solid",borderColor:!temValidade?"var(--primary, #FF6FA9)":"var(--border, #E9E9EE)",background:!temValidade?"var(--primary, #FF6FA9)":"var(--bg-card, #FFFFFF)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"2px"}}>
+              {!temValidade && <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"white"}} />}
+            </div>
+            <div>
+              <input type="radio" checked={!temValidade} onChange={() => setTemValidade(false)} style={{display:"none"}} />
+              <p style={{margin:0,fontSize:"0.88rem",fontWeight:700,color:!temValidade?"var(--primary, #FF6FA9)":"var(--text-title, #1F2937)"}}>Sem validade</p>
+              <p style={{margin:0,fontSize:"0.75rem",color:"var(--text-muted, #9CA3AF)"}}>Este insumo não possui data de validade</p>
+            </div>
+          </label>
 
-            {/* Sem validade */}
-            <label style={{display:"flex",alignItems:"flex-start",gap:"0.75rem",padding:"0.85rem 1rem",border:"2px solid",borderColor:!temValidade?"#FF4FA3":"#e5e7eb",borderRadius:"12px",cursor:"pointer",background:!temValidade?"#fdf2f8":"white",transition:"all 0.15s"}}>
-              <div style={{width:"18px",height:"18px",borderRadius:"50%",border:"2px solid",borderColor:!temValidade?"#FF4FA3":"#d1d5db",background:!temValidade?"#FF4FA3":"white",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"2px"}}>
-                {!temValidade && <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"white"}} />}
-              </div>
-              <div>
-                <input type="radio" checked={!temValidade} onChange={() => setTemValidade(false)} style={{display:"none"}} />
-                <p style={{margin:0,fontSize:"0.88rem",fontWeight:700,color:!temValidade?"#FF4FA3":"#1f2937"}}>Sem validade</p>
-                <p style={{margin:0,fontSize:"0.75rem",color:"#9ca3af"}}>Este insumo não possui data de validade</p>
-              </div>
-            </label>
-
-            {/* Validade exata */}
-            {temValidade && (
-              <div className="ins-field" style={{margin:0}}>
-                <label>Validade exata <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
-                <input type="date" value={form.validade_exata || ""} onChange={e => setForm((f: any) => ({...f, validade_exata: e.target.value}))} style={{colorScheme:"light"}} />
-                <span className="ins-field-hint">Data de validade impressa na embalagem</span>
-              </div>
-            )}
-
-            {/* Validade média */}
-            {temValidade && (
-              <div className="ins-field" style={{margin:0}}>
-                <label>Validade média (dias) <span style={{color:"#9ca3af",fontWeight:400}}>(opcional)</span></label>
-                <input type="number" placeholder="Ex: 180" min="1" value={validadeMedia} onChange={e => setValidadeMedia(e.target.value)} />
-                <span className="ins-field-hint">Tempo médio de validade após a compra</span>
-              </div>
-            )}
-          </div>
-
-          {/* Aviso rosa abaixo dos campos */}
           {temValidade && (
-            <div style={{background:"#fdf2f8",border:"1px solid #fce7f3",borderRadius:"12px",padding:"0.85rem 1rem",display:"flex",gap:"0.75rem",alignItems:"flex-start"}}>
-              <div style={{width:"20px",height:"20px",borderRadius:"50%",background:"#FF4FA3",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"1px"}}>
-                <span style={{color:"white",fontSize:"0.7rem",fontWeight:800}}>i</span>
-              </div>
-              <div>
-                <p style={{margin:"0 0 2px",fontSize:"0.82rem",fontWeight:700,color:"#FF4FA3"}}>Será usado para alertas</p>
-                <p style={{margin:0,fontSize:"0.75rem",color:"#9ca3af"}}>Enviaremos um alerta quando o insumo estiver próximo do vencimento.</p>
-              </div>
+            <div className="ins-field" style={{margin:0}}>
+              <label>Validade exata <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(opcional)</span></label>
+              <input type="date" value={form.validade_exata || ""} onChange={e => setForm((f: any) => ({...f, validade_exata: e.target.value}))} style={{colorScheme:"light"}} />
+              <span className="ins-field-hint">Data de validade impressa na embalagem</span>
             </div>
           )}
-          {!temValidade && (
-            <div style={{background:"#f9fafb",border:"1px solid #f3f4f6",borderRadius:"12px",padding:"0.85rem 1rem"}}>
-              <p style={{margin:0,fontSize:"0.82rem",color:"#9ca3af"}}>Sem alertas de vencimento para este insumo.</p>
+
+          {temValidade && (
+            <div className="ins-field" style={{margin:0}}>
+              <label>Validade média (dias) <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(opcional)</span></label>
+              <input type="number" placeholder="Ex: 180" min="1" value={validadeMedia} onChange={e => setValidadeMedia(e.target.value)} />
+              <span className="ins-field-hint">Tempo médio de validade após a compra</span>
             </div>
           )}
         </div>
+
+        {temValidade && (
+          <div style={{background:"var(--primary-light, #FFF1F7)",border:"1px solid var(--primary-light, #FFF1F7)",borderRadius:"12px",padding:"0.85rem 1rem",display:"flex",gap:"0.75rem",alignItems:"flex-start"}}>
+            <div style={{width:"20px",height:"20px",borderRadius:"50%",background:"var(--primary, #FF6FA9)",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:"1px"}}>
+              <span style={{color:"white",fontSize:"0.7rem",fontWeight:800}}>i</span>
+            </div>
+            <div>
+              <p style={{margin:"0 0 2px",fontSize:"0.82rem",fontWeight:700,color:"var(--primary, #FF6FA9)"}}>Será usado para alertas</p>
+              <p style={{margin:0,fontSize:"0.75rem",color:"var(--text-muted, #9CA3AF)"}}>Enviaremos um alerta quando o insumo estiver próximo do vencimento.</p>
+            </div>
+          </div>
+        )}
+        {!temValidade && (
+          <div style={{background:"var(--bg-body, #F7F7F8)",border:"1px solid var(--border, #E9E9EE)",borderRadius:"12px",padding:"0.85rem 1rem"}}>
+            <p style={{margin:0,fontSize:"0.82rem",color:"var(--text-muted, #9CA3AF)"}}>Sem alertas de vencimento para este insumo.</p>
+          </div>
+        )}
+      </div>
 
       {/* Footer */}
       <div className="ins-footer">
@@ -966,16 +936,17 @@ export default function Insumos() {
           {saving ? <span className="ins-spinner" /> : editId ? "Salvar alterações" : "Cadastrar ingrediente"}
         </button>
       </div>
+
       {/* Modal busca de imagem */}
       {showBuscarModal && (
         <div className="ins-overlay" onClick={() => setShowBuscarModal(false)}>
           <div className="ins-busca-modal" onClick={e => e.stopPropagation()}>
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1rem"}}>
               <div>
-                <h3 style={{margin:0,fontSize:"1rem",fontWeight:700,color:"#1f2937"}}>Buscar imagem do produto</h3>
-                <p style={{margin:"2px 0 0",fontSize:"0.75rem",color:"#9ca3af"}}>Selecione a imagem que melhor representa o ingrediente</p>
+                <h3 style={{margin:0,fontSize:"1rem",fontWeight:700,color:"var(--text-title, #1F2937)"}}>Buscar imagem do produto</h3>
+                <p style={{margin:"2px 0 0",fontSize:"0.75rem",color:"var(--text-muted, #9CA3AF)"}}>Selecione a imagem que melhor representa o ingrediente</p>
               </div>
-              <button onClick={() => setShowBuscarModal(false)} style={{background:"#f3f4f6",border:"none",width:"32px",height:"32px",borderRadius:"50%",cursor:"pointer",fontSize:"0.9rem",color:"#6b7280"}}>✕</button>
+              <button onClick={() => setShowBuscarModal(false)} style={{background:"var(--bg-body, #F7F7F8)",border:"none",width:"32px",height:"32px",borderRadius:"50%",cursor:"pointer",fontSize:"0.9rem",color:"var(--text-secondary, #6B7280)"}}>✕</button>
             </div>
             <div style={{display:"flex",gap:"8px",marginBottom:"1rem"}}>
               <input className="ins-busca-input" value={termoBuscaImg} onChange={e => setTermoBuscaImg(e.target.value)}
@@ -984,7 +955,7 @@ export default function Insumos() {
                 {buscandoImagem ? <span className="ins-spinner" /> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>}
               </button>
             </div>
-            {buscandoImagem && <p style={{textAlign:"center",color:"#9ca3af",fontSize:"0.85rem",padding:"1rem 0"}}>Buscando imagens...</p>}
+            {buscandoImagem && <p style={{textAlign:"center",color:"var(--text-muted, #9CA3AF)",fontSize:"0.85rem",padding:"1rem 0"}}>Buscando imagens...</p>}
             {imagensBusca.length > 0 && (
               <div className="ins-grid-imagens" style={{gridTemplateColumns:"repeat(4,1fr)",gap:"8px",maxHeight:"320px",overflowY:"auto"}}>
                 {imagensBusca.map((url, i) => (
@@ -1017,7 +988,7 @@ export default function Insumos() {
       <div className="ins-imagem-preview">
         {imagemSelecionada ? <img src={imagemSelecionada} alt="imagem" /> : (
           <div className="ins-imagem-empty">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--border, #E9E9EE)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             <p>Nenhuma imagem adicionada</p>
             <span>Adicione uma foto ou busque uma imagem</span>
           </div>
@@ -1072,7 +1043,7 @@ export default function Insumos() {
       </div>
 
       {buscandoImagem && (
-        <div style={{ textAlign: "center", padding: "2rem", color: "#9ca3af" }}>
+        <div style={{ textAlign: "center", padding: "2rem", color: "var(--text-muted, #9CA3AF)" }}>
           <p style={{ marginTop: "1rem" }}>Buscando imagens...</p>
         </div>
       )}
@@ -1087,7 +1058,7 @@ export default function Insumos() {
         </div>
       )}
 
-      <p style={{ fontSize: "0.72rem", color: "#9ca3af", textAlign: "center", margin: "0.5rem 0" }}>Resultados via Google Custom Search</p>
+      <p style={{ fontSize: "0.72rem", color: "var(--text-muted, #9CA3AF)", textAlign: "center", margin: "0.5rem 0" }}>Resultados via Google Custom Search</p>
       <Styles />
     </div>
   );
@@ -1135,7 +1106,7 @@ export default function Insumos() {
           {form.estoque_minimo && <div className="ins-review-item"><span>Estoque mínimo</span><strong>{form.estoque_minimo} {form.unidade}</strong></div>}
           <div className="ins-review-item"><span>Valor de compra</span><strong>R$ {parseFloat(form.valor_compra || "0").toFixed(2)}</strong></div>
           {parseFloat(form.qtd_embalagem) > 1 && <div className="ins-review-item"><span>Qtd por embalagem</span><strong>{form.qtd_embalagem} {form.unidade}</strong></div>}
-          {parseFloat(form.valor_compra) > 0 && <div className="ins-review-item"><span>Custo por {form.unidade}</span><strong style={{ color: "#ec4899" }}>{formatCurrency(parseFloat(calcCustoUnitario(form.valor_compra, form.qtd_embalagem)))}</strong></div>}
+          {parseFloat(form.valor_compra) > 0 && <div className="ins-review-item"><span>Custo por {form.unidade}</span><strong style={{ color: "var(--primary, #FF6FA9)" }}>{formatCurrency(parseFloat(calcCustoUnitario(form.valor_compra, form.qtd_embalagem)))}</strong></div>}
           {form.fornecedor && <div className="ins-review-item"><span>Fornecedor</span><strong>{form.fornecedor}</strong></div>}
         </div>
       </div>
@@ -1154,8 +1125,8 @@ export default function Insumos() {
         <div className="ins-sucesso-icon">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-        <h2 style={{ fontWeight: 800, color: "#1f2937", margin: "0 0 8px" }}>Insumo cadastrado!</h2>
-        <p style={{ color: "#6b7280", fontSize: "0.9rem", margin: "0 0 2rem", textAlign: "center" }}><strong>{ultimoCadastrado}</strong> foi adicionado ao seu estoque.</p>
+        <h2 style={{ fontWeight: 800, color: "var(--text-title, #1F2937)", margin: "0 0 8px" }}>Insumo cadastrado!</h2>
+        <p style={{ color: "var(--text-secondary, #6B7280)", fontSize: "0.9rem", margin: "0 0 2rem", textAlign: "center" }}><strong>{ultimoCadastrado}</strong> foi adicionado ao seu estoque.</p>
         <button className="ins-btn-primary" style={{ width: "100%" }} onClick={() => setStep("lista")}>Ver insumos</button>
         <button className="ins-btn-cancel" style={{ width: "100%", marginTop: "8px" }} onClick={() => { setForm(emptyForm); setImagemSelecionada(null); setEditId(null); setStep("dados"); }}>Cadastrar outro</button>
       </div>
@@ -1173,73 +1144,74 @@ function Styles() {
       .ins-root { font-family:'Geist', sans-serif; display:flex; flex-direction:column; gap:1rem; padding-bottom:2rem; }
       .ins-desktop { max-width:100%; }
       .ins-header { display:flex; align-items:center; justify-content:space-between; }
-      .ins-title { font-size:1.6rem; font-weight:800; color:#1f2937; margin:0; }
-      .ins-sub { font-size:0.82rem; color:#9ca3af; margin:0.15rem 0 0; }
-      .ins-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.65rem 1.25rem; background:linear-gradient(135deg,#FF4FA3,#FF6BB5); color:white; border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(255,79,163,0.35); }
+      .ins-title { font-size:1.6rem; font-weight:800; color:var(--text-title, #1F2937); margin:0; }
+      .ins-sub { font-size:0.82rem; color:var(--text-muted, #9CA3AF); margin:0.15rem 0 0; }
+      .ins-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.65rem 1.25rem; background:var(--primary-gradient, linear-gradient(135deg,#FF6FA9,#F85A9A)); color:var(--text-inverse, #FFFFFF); border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(255,111,169,0.35); }
 
       /* Stats */
       .ins-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
-      .ins-stat-card { background:white; border-radius:16px; padding:1.1rem 1.25rem; display:flex; align-items:center; gap:1rem; box-shadow:0 2px 10px rgba(0,0,0,0.06); }
+      .ins-stat-card { background:var(--bg-card, #FFFFFF); border-radius:16px; padding:1.1rem 1.25rem; display:flex; align-items:center; gap:1rem; box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); }
       .ins-stat-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-      .ins-stat-label { font-size:0.68rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 2px; }
-      .ins-stat-val { font-size:1.5rem; font-weight:800; color:#1f2937; margin:0; line-height:1; }
-      .ins-stat-sub { font-size:0.7rem; color:#9ca3af; margin:2px 0 0; }
+      .ins-stat-label { font-size:0.68rem; font-weight:700; color:var(--text-muted, #9CA3AF); text-transform:uppercase; letter-spacing:0.05em; margin:0 0 2px; }
+      .ins-stat-val { font-size:1.5rem; font-weight:800; color:var(--text-title, #1F2937); margin:0; line-height:1; }
+      .ins-stat-sub { font-size:0.7rem; color:var(--text-muted, #9CA3AF); margin:2px 0 0; }
 
       /* Toolbar */
       .ins-toolbar { display:flex; gap:0.75rem; align-items:center; }
       .ins-search-wrap { position:relative; }
       .ins-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); pointer-events:none; }
-      .ins-search { width:100%; padding:0.65rem 1rem 0.65rem 2.4rem; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.88rem; outline:none; box-sizing:border-box; background:white; }
-      .ins-search:focus { border-color:#FF4FA3; }
-      .ins-select { padding:0.62rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.85rem; color:#374151; outline:none; background:white; cursor:pointer; }
-      .ins-select:focus { border-color:#FF4FA3; }
+      .ins-search { width:100%; padding:0.65rem 1rem 0.65rem 2.4rem; border:1.5px solid var(--border, #E9E9EE); border-radius:12px; font-family:'Geist', sans-serif; font-size:0.88rem; outline:none; box-sizing:border-box; background:var(--bg-card, #FFFFFF); }
+      .ins-search:focus { border-color:var(--border-focus, #FF6FA9); }
+      .ins-select { padding:0.62rem 0.9rem; border:1.5px solid var(--border, #E9E9EE); border-radius:12px; font-family:'Geist', sans-serif; font-size:0.85rem; color:var(--text-primary, #374151); outline:none; background:var(--bg-card, #FFFFFF); cursor:pointer; }
+      .ins-select:focus { border-color:var(--border-focus, #FF6FA9); }
 
       /* Filtros */
       .ins-filtros { display:flex; gap:0.4rem; flex-wrap:wrap; }
-      .ins-filtro-btn { padding:0.35rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:8px; background:white; font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:500; color:#6b7280; cursor:pointer; white-space:nowrap; transition:all 0.15s; }
-      .ins-filtro-btn.active { border-color:#FF4FA3; color:#FF4FA3; background:#fdf2f8; font-weight:700; }
+      .ins-filtro-btn { padding:0.35rem 0.9rem; border:1.5px solid var(--border, #E9E9EE); border-radius:8px; background:var(--bg-card, #FFFFFF); font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:500; color:var(--text-secondary, #6B7280); cursor:pointer; white-space:nowrap; transition:all 0.15s; }
+      .ins-filtro-btn.active { border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); background:var(--primary-light, #FFF1F7); font-weight:700; }
 
       /* Tabela */
-      .ins-table-wrap { background:white; border-radius:16px; box-shadow:0 2px 10px rgba(0,0,0,0.06); overflow:hidden; }
+      .ins-table-wrap { background:var(--bg-card, #FFFFFF); border-radius:16px; box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); overflow:hidden; }
       .ins-table { width:100%; border-collapse:collapse; }
-      .ins-table thead tr { background:#f9fafb; border-bottom:1px solid #f3f4f6; }
-      .ins-table th { padding:0.75rem 1rem; text-align:left; font-size:0.72rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap; }
-      .ins-table-row { border-bottom:1px solid #f9fafb; cursor:pointer; transition:background 0.15s; }
-      .ins-table-row:hover { background:#fdf2f8; }
+      .ins-table thead tr { background:var(--bg-body, #F7F7F8); border-bottom:1px solid var(--border, #E9E9EE); }
+      .ins-table th { padding:0.75rem 1rem; text-align:left; font-size:0.72rem; font-weight:700; color:var(--text-muted, #9CA3AF); text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap; }
+      .ins-table-row { border-bottom:1px solid var(--border, #E9E9EE); cursor:pointer; transition:background 0.15s; }
+      .ins-table-row:hover { background:var(--primary-light, #FFF1F7); }
       .ins-table-row:last-child { border-bottom:none; }
       .ins-table td { padding:0.85rem 1rem; vertical-align:middle; }
       .ins-table-nome { display:flex; align-items:center; gap:0.75rem; }
-      .ins-table-img { width:44px; height:44px; border-radius:10px; overflow:hidden; background:#f9fafb; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.3rem; }
+      .ins-table-img { width:44px; height:44px; border-radius:10px; overflow:hidden; background:var(--bg-body, #F7F7F8); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.3rem; }
       .ins-table-img img { width:100%; height:100%; object-fit:cover; }
-      .ins-item-nome { font-size:0.88rem; font-weight:700; color:#1f2937; margin:0; }
-      .ins-cat-badge { padding:3px 10px; border-radius:6px; font-size:0.72rem; font-weight:600; background:#f3f4f6; color:#374151; }
+      .ins-item-nome { font-size:0.88rem; font-weight:700; color:var(--text-title, #1F2937); margin:0; }
+      .ins-cat-badge { padding:3px 10px; border-radius:6px; font-size:0.72rem; font-weight:600; background:var(--bg-body, #F7F7F8); color:var(--text-primary, #374151); }
       .ins-status-badge { padding:4px 10px; border-radius:8px; font-size:0.72rem; font-weight:700; white-space:nowrap; }
-      .ins-status-ok { background:#dcfce7; color:#16a34a; }
-      .ins-status-baixo { background:#fef9c3; color:#ca8a04; }
-      .ins-status-vazio { background:#fee2e2; color:#ef4444; }
+      .ins-status-ok { background:#dcfce7; color:var(--success, #22C55E); }
+      .ins-status-baixo { background:#fef9c3; color:var(--warning, #F59E0B); }
+      .ins-status-vazio { background:#fee2e2; color:var(--error, #EF4444); }
       .ins-act-btn { width:30px; height:30px; border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
-      .ins-act-edit { background:#fdf2f8; color:#FF4FA3; }
-      .ins-act-edit:hover { background:#FF4FA3; color:white; }
-      .ins-act-view { background:#f0fdf4; color:#16a34a; }
-      .ins-act-view:hover { background:#16a34a; color:white; }
-      .ins-act-del { background:#fff1f2; color:#ef4444; }
-      .ins-act-del:hover { background:#ef4444; color:white; }
-      .ins-peek-modal { background:white; border-radius:20px; padding:1.5rem; width:100%; max-width:380px; box-shadow:0 24px 64px rgba(0,0,0,0.18); animation:peekIn 0.22s cubic-bezier(0.16,1,0.3,1); max-height:90vh; overflow-y:auto; } @keyframes peekIn { from { opacity:0; transform:scale(0.94) translateY(12px); } to { opacity:1; transform:scale(1) translateY(0); } }
+      .ins-act-edit { background:var(--primary-light, #FFF1F7); color:var(--primary, #FF6FA9); }
+      .ins-act-edit:hover { background:var(--primary, #FF6FA9); color:var(--text-inverse, #FFFFFF); }
+      .ins-act-view { background:#f0fdf4; color:var(--success, #22C55E); }
+      .ins-act-view:hover { background:var(--success, #22C55E); color:var(--text-inverse, #FFFFFF); }
+      .ins-act-del { background:#fff1f2; color:var(--error, #EF4444); }
+      .ins-act-del:hover { background:var(--error, #EF4444); color:var(--text-inverse, #FFFFFF); }
+      .ins-peek-modal { background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.5rem; width:100%; max-width:380px; box-shadow:0 24px 64px rgba(0,0,0,0.18); animation:peekIn 0.22s cubic-bezier(0.16,1,0.3,1); max-height:90vh; overflow-y:auto; } @keyframes peekIn { from { opacity:0; transform:scale(0.94) translateY(12px); } to { opacity:1; transform:scale(1) translateY(0); } }
 
       /* Paginação */
-      .ins-pagination { display:flex; align-items:center; justify-content:space-between; padding:0.85rem 1.25rem; border-top:1px solid #f3f4f6; }
-      .ins-pag-info { font-size:0.78rem; color:#9ca3af; }
+      .ins-pagination { display:flex; align-items:center; justify-content:space-between; padding:0.85rem 1.25rem; border-top:1px solid var(--border, #E9E9EE); }
+      .ins-pag-info { font-size:0.78rem; color:var(--text-muted, #9CA3AF); }
       .ins-pag-btns { display:flex; align-items:center; gap:4px; }
-      .ins-pag-btn { width:32px; height:32px; border-radius:8px; border:1.5px solid #e5e7eb; background:white; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:600; color:#374151; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
-      .ins-pag-btn:hover:not(:disabled) { border-color:#FF4FA3; color:#FF4FA3; }
-      .ins-pag-btn.active { background:#FF4FA3; border-color:#FF4FA3; color:white; }
+      .ins-pag-btn { width:32px; height:32px; border-radius:8px; border:1.5px solid var(--border, #E9E9EE); background:var(--bg-card, #FFFFFF); font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:600; color:var(--text-primary, #374151); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+      .ins-pag-btn:hover:not(:disabled) { border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); }
+      .ins-pag-btn.active { background:var(--primary, #FF6FA9); border-color:var(--primary, #FF6FA9); color:var(--text-inverse, #FFFFFF); }
       .ins-pag-btn:disabled { opacity:0.4; cursor:not-allowed; }
 
       /* Rodapé dica */
       .ins-footer-dica { background:#fffbeb; border:1px solid #fde68a; border-radius:14px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; }
 
       /* Empty */
-      .ins-empty { display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:3rem 1rem; text-align:center; background:white; border-radius:16px; box-shadow:0 2px 10px rgba(0,0,0,0.06); }
+      .ins-empty { display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:3rem 1rem; text-align:center; background:var(--bg-card, #FFFFFF); border-radius:16px; box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); }
+
       /* Grid informações básicas + imagem */
       .ins-basicas-grid { display:grid; grid-template-columns:320px 1fr; align-items:stretch; }
       .ins-imagem-inline { display:flex; flex-direction:column; }
@@ -1247,74 +1219,75 @@ function Styles() {
         .ins-basicas-grid { grid-template-columns:1fr; }
         .ins-imagem-inline { display:none; }
       }
-      .ins-field-hint { font-size:0.72rem; color:#9ca3af; margin:3px 0 0; }
-      .ins-busca-modal { background:white; border-radius:20px; padding:1.5rem; width:100%; max-width:560px; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:qsmIn 0.25s cubic-bezier(0.16,1,0.3,1); }
+      .ins-field-hint { font-size:0.72rem; color:var(--text-muted, #9CA3AF); margin:3px 0 0; }
+      .ins-busca-modal { background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.5rem; width:100%; max-width:560px; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:qsmIn 0.25s cubic-bezier(0.16,1,0.3,1); }
       @keyframes qsmIn { from { opacity:0; transform:scale(0.95) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
-      .ins-section-label { font-size:1rem; font-weight:800; color:#1f2937; letter-spacing:0.04em; margin:0 0 0.75rem; }
-      .ins-back { width:36px; height:36px; background:#f3f4f6; border:none; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-      .ins-form-title { font-size:1.1rem; font-weight:800; color:#1f2937; margin:0; flex:1; }
-      .ins-optional-badge { font-size:0.7rem; background:#f3f4f6; color:#9ca3af; padding:3px 8px; border-radius:20px; }
-      .ins-card { background:white; border-radius:16px; padding:1.25rem; box-shadow:none; border:1px solid #f3f4f6; display:flex; flex-direction:column; gap:0.85rem; }
+      .ins-section-label { font-size:1rem; font-weight:800; color:var(--text-title, #1F2937); letter-spacing:0.04em; margin:0 0 0.75rem; }
+      .ins-back { width:36px; height:36px; background:var(--bg-body, #F7F7F8); border:none; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+      .ins-form-header { display:flex; align-items:center; gap:0.75rem; }
+      .ins-form-title { font-size:1.1rem; font-weight:800; color:var(--text-title, #1F2937); margin:0; flex:1; }
+      .ins-optional-badge { font-size:0.7rem; background:var(--bg-body, #F7F7F8); color:var(--text-muted, #9CA3AF); padding:3px 8px; border-radius:20px; }
+      .ins-card { background:var(--bg-card, #FFFFFF); border-radius:16px; padding:1.25rem; box-shadow:none; border:1px solid var(--border, #E9E9EE); display:flex; flex-direction:column; gap:0.85rem; }
       .ins-form { display:flex; flex-direction:column; gap:0.85rem; }
       .ins-field { display:flex; flex-direction:column; gap:0.3rem; }
-      .ins-field label { font-size:0.78rem; font-weight:600; color:#374151; }
-      .ins-field input, .ins-field select { padding:0.65rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.9rem; color:#1f2937; outline:none; transition:border-color 0.2s; width:100%; box-sizing:border-box; }
-      .ins-field input:focus, .ins-field select:focus { border-color:#ec4899; }
+      .ins-field label { font-size:0.78rem; font-weight:600; color:var(--text-primary, #374151); }
+      .ins-field input, .ins-field select { padding:0.65rem 0.9rem; border:1.5px solid var(--border, #E9E9EE); border-radius:10px; font-family:'Geist', sans-serif; font-size:0.9rem; color:var(--text-title, #1F2937); outline:none; transition:border-color 0.2s; width:100%; box-sizing:border-box; }
+      .ins-field input:focus, .ins-field select:focus { border-color:var(--border-focus, #FF6FA9); }
       .ins-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
-      .ins-input-unit { display:flex; border:1.5px solid #e5e7eb; border-radius:10px; overflow:hidden; transition:border-color 0.2s; }
-      .ins-input-unit:focus-within { border-color:#ec4899; }
-      .ins-input-unit input { border:none; flex:1; padding:0.65rem 0.9rem; font-family:'Geist', sans-serif; font-size:0.9rem; color:#1f2937; outline:none; }
-      .ins-input-unit span { background:#f9fafb; padding:0 0.75rem; display:flex; align-items:center; font-size:0.78rem; font-weight:600; color:#6b7280; border-left:1px solid #e5e7eb; }
+      .ins-input-unit { display:flex; border:1.5px solid var(--border, #E9E9EE); border-radius:10px; overflow:hidden; transition:border-color 0.2s; }
+      .ins-input-unit:focus-within { border-color:var(--border-focus, #FF6FA9); }
+      .ins-input-unit input { border:none; flex:1; padding:0.65rem 0.9rem; font-family:'Geist', sans-serif; font-size:0.9rem; color:var(--text-title, #1F2937); outline:none; }
+      .ins-input-unit span { background:var(--bg-body, #F7F7F8); padding:0 0.75rem; display:flex; align-items:center; font-size:0.78rem; font-weight:600; color:var(--text-secondary, #6B7280); border-left:1px solid var(--border, #E9E9EE); }
       .ins-nova-row { display:flex; gap:6px; margin-top:6px; }
-      .ins-nova-row input { flex:1; padding:0.55rem 0.75rem; border:1.5px solid #e5e7eb; border-radius:8px; font-family:'Geist', sans-serif; font-size:0.85rem; outline:none; }
-      .ins-nova-row input:focus { border-color:#ec4899; }
-      .ins-nova-row button { padding:0.55rem 0.85rem; background:linear-gradient(135deg,#ec4899,#f9007a); color:white; border:none; border-radius:8px; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:600; cursor:pointer; white-space:nowrap; }
-      .ins-custo-calc { display:flex; align-items:center; gap:6px; background:#fdf2f8; border-radius:10px; padding:0.6rem 0.9rem; font-size:0.82rem; color:#374151; }
+      .ins-nova-row input { flex:1; padding:0.55rem 0.75rem; border:1.5px solid var(--border, #E9E9EE); border-radius:8px; font-family:'Geist', sans-serif; font-size:0.85rem; outline:none; }
+      .ins-nova-row input:focus { border-color:var(--border-focus, #FF6FA9); }
+      .ins-nova-row button { padding:0.55rem 0.85rem; background:var(--primary-gradient, linear-gradient(135deg,#FF6FA9,#F85A9A)); color:var(--text-inverse, #FFFFFF); border:none; border-radius:8px; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+      .ins-custo-calc { display:flex; align-items:center; gap:6px; background:var(--primary-light, #FFF1F7); border-radius:10px; padding:0.6rem 0.9rem; font-size:0.82rem; color:var(--text-primary, #374151); }
       .ins-footer { display:flex; gap:0.75rem; padding-top:0.5rem; }
-      .ins-btn-cancel { flex:1; padding:0.8rem; background:#f3f4f6; color:#6b7280; border:none; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; }
-      .ins-btn-primary { flex:2; padding:0.8rem; background:linear-gradient(135deg,#ec4899,#f9007a); color:white; border:none; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+      .ins-btn-cancel { flex:1; padding:0.8rem; background:var(--bg-body, #F7F7F8); color:var(--text-secondary, #6B7280); border:none; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; }
+      .ins-btn-primary { flex:2; padding:0.8rem; background:var(--primary-gradient, linear-gradient(135deg,#FF6FA9,#F85A9A)); color:var(--text-inverse, #FFFFFF); border:none; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; }
       .ins-btn-primary:disabled { opacity:0.6; cursor:not-allowed; }
-      .ins-btn-saida { background:linear-gradient(135deg,#ef4444,#dc2626) !important; }
+      .ins-btn-saida { background:linear-gradient(135deg,var(--error, #EF4444),#dc2626) !important; }
       .ins-detalhe-estoque { border-radius:14px; padding:1rem 1.25rem; display:flex; align-items:center; justify-content:space-between; border:1.5px solid; }
       .ins-mov-btn { padding:0.5rem 0.85rem; border:none; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:700; cursor:pointer; }
-      .ins-mov-entrada { background:#dcfce7; color:#16a34a; }
-      .ins-mov-saida { background:#fee2e2; color:#ef4444; }
-      .ins-imagem-preview { width:100%; height:200px; border-radius:16px; overflow:hidden; background:#f9fafb; border:2px dashed #e5e7eb; display:flex; align-items:center; justify-content:center; }
+      .ins-mov-entrada { background:#dcfce7; color:var(--success, #22C55E); }
+      .ins-mov-saida { background:#fee2e2; color:var(--error, #EF4444); }
+      .ins-imagem-preview { width:100%; height:200px; border-radius:16px; overflow:hidden; background:var(--bg-body, #F7F7F8); border:2px dashed var(--border, #E9E9EE); display:flex; align-items:center; justify-content:center; }
       .ins-imagem-preview img { width:100%; height:100%; object-fit:contain; }
-      .ins-imagem-empty { display:flex; flex-direction:column; align-items:center; gap:0.5rem; color:#9ca3af; }
-      .ins-imagem-empty p { font-size:0.9rem; font-weight:600; margin:0; color:#374151; }
+      .ins-imagem-empty { display:flex; flex-direction:column; align-items:center; gap:0.5rem; color:var(--text-muted, #9CA3AF); }
+      .ins-imagem-empty p { font-size:0.9rem; font-weight:600; margin:0; color:var(--text-primary, #374151); }
       .ins-imagem-empty span { font-size:0.78rem; }
       .ins-imagem-actions { display:flex; flex-direction:column; gap:0.75rem; }
-      .ins-btn-buscar { display:flex; align-items:center; justify-content:center; gap:8px; padding:0.8rem; background:linear-gradient(135deg,#ec4899,#f9007a); color:white; border:none; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
-      .ins-btn-upload { display:flex; align-items:center; justify-content:center; gap:8px; padding:0.8rem; background:white; color:#374151; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; }
+      .ins-btn-buscar { display:flex; align-items:center; justify-content:center; gap:8px; padding:0.8rem; background:var(--primary-gradient, linear-gradient(135deg,#FF6FA9,#F85A9A)); color:var(--text-inverse, #FFFFFF); border:none; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
+      .ins-btn-upload { display:flex; align-items:center; justify-content:center; gap:8px; padding:0.8rem; background:var(--bg-card, #FFFFFF); color:var(--text-primary, #374151); border:1.5px solid var(--border, #E9E9EE); border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer; }
       .ins-busca-row { display:flex; gap:8px; }
-      .ins-busca-input { flex:1; padding:0.7rem 1rem; border:1.5px solid #e5e7eb; border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; outline:none; }
-      .ins-busca-input:focus { border-color:#ec4899; }
-      .ins-btn-buscar-go { width:44px; height:44px; background:linear-gradient(135deg,#ec4899,#f9007a); border:none; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+      .ins-busca-input { flex:1; padding:0.7rem 1rem; border:1.5px solid var(--border, #E9E9EE); border-radius:12px; font-family:'Geist', sans-serif; font-size:0.9rem; outline:none; }
+      .ins-busca-input:focus { border-color:var(--border-focus, #FF6FA9); }
+      .ins-btn-buscar-go { width:44px; height:44px; background:var(--primary-gradient, linear-gradient(135deg,#FF6FA9,#F85A9A)); border:none; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
       .ins-btn-buscar-go:disabled { opacity:0.7; }
       .ins-grid-imagens { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
-      .ins-img-thumb { aspect-ratio:1; border-radius:10px; overflow:hidden; background:#f9fafb; cursor:pointer; border:2px solid transparent; transition:border-color 0.2s; }
-      .ins-img-thumb:hover { border-color:#ec4899; }
+      .ins-img-thumb { aspect-ratio:1; border-radius:10px; overflow:hidden; background:var(--bg-body, #F7F7F8); cursor:pointer; border:2px solid transparent; transition:border-color 0.2s; }
+      .ins-img-thumb:hover { border-color:var(--primary, #FF6FA9); }
       .ins-img-thumb img { width:100%; height:100%; object-fit:cover; }
-      .ins-img-selected { width:100%; height:260px; border-radius:16px; overflow:hidden; background:#f9fafb; }
+      .ins-img-selected { width:100%; height:260px; border-radius:16px; overflow:hidden; background:var(--bg-body, #F7F7F8); }
       .ins-img-selected img { width:100%; height:100%; object-fit:contain; }
-      .ins-review-card { background:white; border-radius:16px; padding:1.25rem; box-shadow:0 2px 10px rgba(0,0,0,0.06); display:flex; flex-direction:column; gap:1rem; }
+      .ins-review-card { background:var(--bg-card, #FFFFFF); border-radius:16px; padding:1.25rem; box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); display:flex; flex-direction:column; gap:1rem; }
       .ins-review-img { display:flex; align-items:center; gap:1rem; }
       .ins-review-img img { width:72px; height:72px; border-radius:10px; object-fit:cover; }
-      .ins-review-alterar { background:none; border:none; color:#ec4899; font-size:0.8rem; font-weight:600; cursor:pointer; font-family:'Geist', sans-serif; }
+      .ins-review-alterar { background:none; border:none; color:var(--primary, #FF6FA9); font-size:0.8rem; font-weight:600; cursor:pointer; font-family:'Geist', sans-serif; }
       .ins-review-section { display:flex; flex-direction:column; gap:0.5rem; }
       .ins-review-row-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem; }
-      .ins-review-row-header span { font-size:0.82rem; font-weight:700; color:#ec4899; text-transform:uppercase; letter-spacing:0.05em; }
-      .ins-review-row-header button { background:none; border:none; color:#6b7280; font-size:0.8rem; cursor:pointer; font-family:'Geist', sans-serif; text-decoration:underline; }
-      .ins-review-item { display:flex; justify-content:space-between; align-items:center; padding:0.4rem 0; border-bottom:1px solid #f3f4f6; }
+      .ins-review-row-header span { font-size:0.82rem; font-weight:700; color:var(--primary, #FF6FA9); text-transform:uppercase; letter-spacing:0.05em; }
+      .ins-review-row-header button { background:none; border:none; color:var(--text-secondary, #6B7280); font-size:0.8rem; cursor:pointer; font-family:'Geist', sans-serif; text-decoration:underline; }
+      .ins-review-item { display:flex; justify-content:space-between; align-items:center; padding:0.4rem 0; border-bottom:1px solid var(--border, #E9E9EE); }
       .ins-review-item:last-child { border-bottom:none; }
-      .ins-review-item span { font-size:0.8rem; color:#6b7280; }
-      .ins-review-item strong { font-size:0.85rem; color:#1f2937; text-align:right; max-width:60%; }
+      .ins-review-item span { font-size:0.8rem; color:var(--text-secondary, #6B7280); }
+      .ins-review-item strong { font-size:0.85rem; color:var(--text-title, #1F2937); text-align:right; max-width:60%; }
       .ins-sucesso { display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:3rem 1rem; text-align:center; }
-      .ins-sucesso-icon { width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,#22c55e,#16a34a); display:flex; align-items:center; justify-content:center; margin-bottom:0.5rem; }
+      .ins-sucesso-icon { width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,var(--success, #22C55E),#16a34a); display:flex; align-items:center; justify-content:center; margin-bottom:0.5rem; }
       .ins-overlay { position:fixed; inset:0; z-index:200; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; padding:1rem; }
-      .ins-modal { background:white; border-radius:20px; padding:1.5rem; width:100%; max-width:360px; }
-      .ins-btn-del-confirm { flex:1; padding:0.75rem; background:#ef4444; color:white; border:none; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
+      .ins-modal { background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.5rem; width:100%; max-width:360px; }
+      .ins-btn-del-confirm { flex:1; padding:0.75rem; background:var(--error, #EF4444); color:var(--text-inverse, #FFFFFF); border:none; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
       .ins-spinner { width:20px; height:20px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:insSpin 0.7s linear infinite; display:inline-block; }
       @keyframes insSpin { to { transform:rotate(360deg); } }
     `}</style>
