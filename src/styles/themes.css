@@ -81,7 +81,7 @@
 
   /* Sombras */
   --shadow-card:      0 2px 12px rgba(0,0,0,0.06);
-  --shadow-md:        0 4px 16px rgba(0,0,0,0.1);
+  --shadow-md:        0 4px 16px rgba(0,0,0,0.08);
 
   /* Raios */
   --radius-card:      18px;
