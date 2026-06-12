@@ -1,8 +1,8 @@
 export default function Privacidade() {
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif', maxWidth: '720px', margin: '0 auto', padding: '2rem 1.5rem', color: '#374151', lineHeight: '1.7' }}>
-      <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#111827', marginBottom: '0.25rem' }}>Política de Privacidade</h1>
-      <p style={{ fontSize: '0.85rem', color: '#9ca3af', marginBottom: '2rem' }}>Última atualização: junho de 2026</p>
+    <div style={{ fontFamily: 'Inter, sans-serif', maxWidth: '720px', margin: '0 auto', padding: '2rem 1.5rem', color: 'var(--text-primary, #374151)', lineHeight: '1.7' }}>
+      <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-title, #1F2937)', marginBottom: '0.25rem' }}>Política de Privacidade</h1>
+      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #9CA3AF)', marginBottom: '2rem' }}>Última atualização: junho de 2026</p>
 
       <p>A <strong>Doonly Tecnologia Ltda</strong> leva sua privacidade a sério. Esta política explica como coletamos, usamos e protegemos suas informações ao usar o Doonly.</p>
 
@@ -41,7 +41,7 @@ export default function Privacidade() {
         <li>Solicitar a exclusão de seus dados</li>
         <li>Revogar o consentimento a qualquer momento</li>
       </ul>
-      <p>Para exercer esses direitos, entre em contato: <a href="mailto:contato@doonly.com.br" style={{ color: '#ec4899' }}>contato@doonly.com.br</a></p>
+      <p>Para exercer esses direitos, entre em contato: <a href="mailto:contato@doonly.com.br" style={{ color: 'var(--primary, #FF6FA9)' }}>contato@doonly.com.br</a></p>
 
       <h2>7. Cookies</h2>
       <p>Usamos cookies essenciais para manter sua sessão ativa. Não usamos cookies de rastreamento ou publicidade.</p>
@@ -56,10 +56,10 @@ export default function Privacidade() {
       <p>Podemos atualizar esta política periodicamente. Notificaremos sobre mudanças significativas por e-mail ou dentro da plataforma.</p>
 
       <h2>11. Contato</h2>
-      <p>Dúvidas sobre privacidade? Entre em contato: <a href="mailto:contato@doonly.com.br" style={{ color: '#ec4899' }}>contato@doonly.com.br</a></p>
+      <p>Dúvidas sobre privacidade? Entre em contato: <a href="mailto:contato@doonly.com.br" style={{ color: 'var(--primary, #FF6FA9)' }}>contato@doonly.com.br</a></p>
 
       <style>{`
-        h2 { font-size: 1rem; font-weight: 700; color: #111827; margin: 1.75rem 0 0.5rem; }
+        h2 { font-size: 1rem; font-weight: 700; color: var(--text-title, #1F2937); margin: 1.75rem 0 0.5rem; }
         ul { padding-left: 1.5rem; margin: 0.5rem 0; }
         li { margin-bottom: 0.25rem; }
         p { margin-bottom: 0.75rem; }
