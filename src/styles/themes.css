@@ -32,11 +32,11 @@
 
   /* ── Sidebar / Nav ── */
   --sidebar-bg:           var(--bg-card, #FFFFFF);
-  --sidebar-text:         var(--text-primary, #374151);
-  --sidebar-text-muted:   var(--text-muted, #9CA3AF);
-  --sidebar-hover-bg:     var(--menu-hover-bg, #F3F4F6);
-  --sidebar-active-bg:    var(--menu-active-bg, #ECC2D0);
-  --sidebar-active-text:  var(--menu-active, #431524);
+  --sidebar-text:         #330716; /* AJUSTADO: Tom mais escuro para legibilidade máxima */
+  --sidebar-text-muted:   #6E3548; /* AJUSTADO: Vinho médio para os itens inativos não sumirem no hover */
+  --sidebar-hover-bg:     #F3F4F6;
+  --sidebar-active-bg:    #ECC2D0; /* Mantido o rosa sutil que ficou ótimo no item 'Início' */
+  --sidebar-active-text:  #431524; 
   --sidebar-border:       var(--border, #E9E9EE);
   --sidebar-border-right: #E9E9EE;
 
@@ -66,8 +66,8 @@
 
   /* ── Menu (legado) ── */
   --menu-bg:          #FFFFFF;
-  --menu-inactive:    #6B7280;
-  --menu-active:      #6E3548;
+  --menu-inactive:    #6E3548; /* AJUSTADO: Vinho médio para garantir contraste */
+  --menu-active:      #431524;
   --menu-active-bg:   #ECC2D0;
   --menu-hover-bg:    #F3F4F6;
 
@@ -135,9 +135,9 @@
 
   /* ── Sidebar / Nav ── */
   --sidebar-bg:           #0D0E14;
-  --sidebar-text:         #C8D2EE;
-  --sidebar-text-muted:   #7A86B0;
-  --sidebar-hover-bg:     #181C30;
+  --sidebar-text:         #F9FAFB;
+  --sidebar-text-muted:   #C39EAA; /* AJUSTADO: Rosa claro para destacar bem no breu do dark mode */
+  --sidebar-hover-bg:     #330716;
   --sidebar-active-bg:    var(--primary-gradient);
   --sidebar-active-text:  #FFFFFF;
   --sidebar-border:       rgba(255,255,255,0.05);
@@ -165,7 +165,7 @@
 
   /* ── Menu (legado) ── */
   --menu-bg:          #171923;
-  --menu-inactive:    #9CA3AF;
+  --menu-inactive:    #C39EAA; /* AJUSTADO: Rosa claro visível no escuro */
   --menu-active:      #C39EAA;
   --menu-active-bg:   #330716;
   --menu-hover-bg:    #1e2130;
