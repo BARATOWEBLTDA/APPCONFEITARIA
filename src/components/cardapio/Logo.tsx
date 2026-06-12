@@ -116,22 +116,22 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
         )}
       </div>
 
-      <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '6px', paddingTop: '100px', margin: '0 16px', marginTop: '-100px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', zIndex: 20, position: 'relative' }}>
+      <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '12px', padding: '6px', paddingTop: '100px', margin: '0 16px', marginTop: '-100px', boxShadow: 'var(--shadow-md)', zIndex: 20, position: 'relative' }}>
         <div style={{ textAlign: 'center', marginTop: '28px', marginBottom: '12px' }}>
-          <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#1f2937', marginBottom: '4px' }}>{storeName}</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-title)', marginBottom: '4px' }}>{storeName}</h1>
 
           {!hideStars && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
               <div style={{ display: 'flex', gap: '2px' }}>{renderStars(avaliacaoMedia)}</div>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: '#374151' }}>{avaliacaoMedia}/5.0</span>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{avaliacaoMedia}/5.0</span>
             </div>
           )}
 
           {/* Cidade */}
           {(mostrarCidade || mostrarCompleto) && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span style={{ fontSize: '14px', color: '#6b7280', fontWeight: 500 }}>{cidade}</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: 500 }}>{cidade}</span>
               {mostrarCompleto && (
                 <button onClick={() => setModalEndereco(true)} style={{ fontSize: '12px', color: borderColor || '#ec4899', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
                   Ver endereço completo
@@ -141,7 +141,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
           )}
 
           {storeDescription && (
-            <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '4px', lineHeight: '1.4', padding: '0 1.25rem' }}>{storeDescription}</p>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px', lineHeight: '1.4', padding: '0 1.25rem' }}>{storeDescription}</p>
           )}
 
           {/* Status aberto/fechado */}
@@ -158,8 +158,8 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
 
       {/* Modal endereço completo */}
       {modalEndereco && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => setModalEndereco(false)}>
-          <div style={{ background: 'white', borderRadius: '24px 24px 0 0', width: '100%', maxWidth: '480px', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'var(--bg-overlay)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => setModalEndereco(false)}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '24px 24px 0 0', width: '100%', maxWidth: '480px', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
             
             {/* Mini mapa */}
             <iframe
@@ -174,7 +174,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
               {/* Endereço */}
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '1rem' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={borderColor || '#ec4899'} strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <p style={{ fontFamily: 'Nunito,sans-serif', fontSize: '0.9rem', color: '#374151', lineHeight: '1.5', margin: 0 }}>{enderecoCompleto}</p>
+                <p style={{ fontFamily: 'Nunito,sans-serif', fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: '1.5', margin: 0 }}>{enderecoCompleto}</p>
               </div>
 
               {/* Botões */}
@@ -201,7 +201,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
 
               <button
                 onClick={() => setModalEndereco(false)}
-                style={{ width: '100%', padding: '0.85rem', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '50px', fontFamily: 'Nunito,sans-serif', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}
+                style={{ width: '100%', padding: '0.85rem', background: 'var(--menu-hover-bg)', color: 'var(--text-primary)', border: 'none', borderRadius: '50px', fontFamily: 'Nunito,sans-serif', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}
               >
                 Fechar
               </button>
