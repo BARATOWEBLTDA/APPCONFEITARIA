@@ -912,7 +912,7 @@ export default function CardapioConfigPage() {
         /* ── Modal ── */
         .ccc-modal-overlay {
           position:fixed; inset:0; z-index:999;
-          background:rgba(9,9,11,0.5); backdrop-filter:blur(2px);
+          background:var(--bg-overlay); backdrop-filter:blur(2px);
           display:flex; align-items:center; justify-content:center;
           padding:1rem;
         }
