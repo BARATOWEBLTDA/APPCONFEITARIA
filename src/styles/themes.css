@@ -19,6 +19,8 @@
   --bg-body:          #F7F7F8;
   --bg-card:          #FFFFFF;
   --bg-input:         #FFFFFF;
+  --bg-elevated:      #FFFFFF;
+  --bg-overlay:       rgba(0,0,0,0.4);
   --bg-subtle:        #FFF1F7;
 
   /* Bordas */
