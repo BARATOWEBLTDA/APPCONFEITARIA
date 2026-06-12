@@ -60,6 +60,7 @@
   --drawer-close-bg:      rgba(255,255,255,0.08);
   --drawer-close-text:    rgba(255,255,255,0.6);
   --drawer-overlay:       rgba(0,0,0,0.6);
+  --overlay-light:        rgba(255,255,255,0.6);
 
   /* ── Menu (legado) ── */
   --menu-bg:          #FFFFFF;
