@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { QuickSetupModal } from "@/components/QuickSetupModal";
 import { MetricCard } from "@/components/MetricCard";
+import { TrialCardMobileExpiring, TrialCardMobileBanner, TrialCardDesktopReward } from "@/components/billing/TrialCard";
 
 export default function Inicio() {
   const navigate = useNavigate();
@@ -217,20 +218,7 @@ const load = async () => {
         ) : null)}
 
         {/* Card PRO teste — dias restantes */}
-        {!loading && isTeste && (
-          <div className="mob-pro-mini-card">
-            <div style={{display:"flex",alignItems:"center",gap:"0.65rem",width:"100%"}}>
-              <img src="/assine.png" alt="" style={{width:"38px",height:"38px",objectFit:"contain",flexShrink:0,borderRadius:"10px"}} />
-              <div style={{flex:1,minWidth:0}}>
-                <p className="mob-pro-mini-title">Seu acesso PRO expira em {diasProRestantes} dia{diasProRestantes !== 1 ? "s" : ""}.</p>
-                <p className="mob-pro-mini-sub">Continue com todas as funcionalidades sem interrupção por apenas <strong style={{color:"white"}}>R$ 19,90/mês</strong>.</p>
-              </div>
-            </div>
-            <button className="mob-assinar-btn-sm" style={{marginTop:"0.65rem",width:"100%"}} onClick={() => navigate("/assinar")}>
-              Assinar agora →
-            </button>
-          </div>
-        )}
+        {isTeste && <TrialCardMobileExpiring diasRestantes={diasProRestantes} loading={loading} />}
 
         {/* 2. Acesso rápido */}
         <div className="mob-section-title">Acesso rápido</div>
@@ -263,20 +251,7 @@ const load = async () => {
         </div>
 
         {/* 4. Banner premium por último */}
-        {!isPro && (
-        <div className="mob-trial" onClick={() => navigate("/assinar")}>
-          <div className="mob-trial-left">
-            <div className="mob-trial-icon">
-              <img src="/assine.png" alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-            </div>
-            <div>
-              <p className="mob-trial-title">ASSINE O DOONLY PREMIUM</p>
-              <p className="mob-trial-sub">Apenas R$ 19,90/mês após o teste</p>
-            </div>
-          </div>
-          <div className="mob-trial-badge">Recomendado</div>
-        </div>
-        )}
+        {!isPro && <TrialCardMobileBanner />}
       </div>
 
       {/* ===== DESKTOP ===== */}
@@ -461,16 +436,7 @@ const load = async () => {
             <div className="complete-banner" style={{marginTop:"0.75rem"}}>🎁 Complete 100% e ganhe 3 dias de PRO grátis!</div>
           </div>
         ) : !proResgatado ? (
-          <div className="dash-card" style={{background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",border:"1px solid #bbf7d0",marginBottom:"1rem"}}>
-            <div style={{textAlign:"center",padding:"0.5rem 0"}}>
-              <img src="/assine.png" alt="" style={{width:"64px",height:"64px",objectFit:"contain",marginBottom:"0.5rem"}} />
-              <h3 style={{fontWeight:800,color:"#15803d",margin:"0 0 0.25rem"}}>Configuração completa!</h3>
-              <p style={{fontSize:"0.85rem",color:"var(--success, #22C55E)",margin:"0 0 1rem"}}>Resgate agora 3 dias de acesso PRO como recompensa.</p>
-              <button className="mob-resgatar-btn" style={{width:"100%"}} onClick={handleResgatarPro} disabled={resgatando}>
-                {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
-              </button>
-            </div>
-          </div>
+          <TrialCardDesktopReward resgatando={resgatando} onResgatar={handleResgatarPro} />
         ) : null)}
 
       </div>
