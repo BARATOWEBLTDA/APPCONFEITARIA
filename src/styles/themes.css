@@ -27,6 +27,7 @@
   /* Bordas */
   --border:           #E9E9EE;
   --border-focus:     #FF6FA9;
+  --focus-ring:       0 0 0 3px rgba(255,111,169,0.25);
 
   /* ── Sidebar / Nav ── */
   --sidebar-bg:           var(--bg-card, #FFFFFF);
@@ -68,6 +69,11 @@
   --menu-active:      #FF6FA9;
   --menu-active-bg:   #FFF1F7;
   --menu-hover-bg:    #F3F4F6;
+
+  /* ── Estados globais ── */
+  --state-hover:      var(--menu-hover-bg);
+  --state-active-bg:  var(--menu-active-bg);
+  --state-active:     var(--menu-active);
 
   /* Botões */
   --btn-primary-bg:       #FF6FA9;
