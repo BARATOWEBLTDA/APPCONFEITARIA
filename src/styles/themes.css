@@ -1,4 +1,4 @@
-/* ── Tema Claro (padrão) ── */
+/* ── Tema Claro ── */
 :root {
   /* Primária */
   --primary:          #FF6FA9;
@@ -6,26 +6,41 @@
   --primary-light:    #FFF1F7;
   --primary-gradient: linear-gradient(135deg, #FF6FA9, #F85A9A);
 
+  /* Tipografia */
+  --text-title:       #1F2937;
+  --text-primary:     #374151;
+  --text-secondary:   #6B7280;
+  --text-muted:       #9CA3AF;
+  --text-inverse:     #FFFFFF;
+
   /* Superfícies */
   --bg-body:          #F7F7F8;
   --bg-card:          #FFFFFF;
   --bg-input:         #FFFFFF;
+  --bg-sidebar:       #FFFFFF;
   --bg-subtle:        #FFF1F7;
-  --bg-sidebar:       #181419;
-  --bg-header:        #120706;
-
-  /* Texto */
-  --text-primary:     #1F2937;
-  --text-secondary:   #374151;
-  --text-muted:       #6B7280;
-  --text-disabled:    #9CA3AF;
-  --text-inverse:     #FFFFFF;
 
   /* Bordas */
   --border:           #E9E9EE;
   --border-focus:     #FF6FA9;
 
-  /* Estados */
+  /* Menu */
+  --menu-bg:          #FFFFFF;
+  --menu-inactive:    #6B7280;
+  --menu-active:      #FF6FA9;
+  --menu-active-bg:   #FFF1F7;
+  --menu-hover-bg:    #F3F4F6;
+
+  /* Botões */
+  --btn-primary-bg:       #FF6FA9;
+  --btn-primary-hover:    #F85A9A;
+  --btn-primary-text:     #FFFFFF;
+  --btn-secondary-bg:     #FFFFFF;
+  --btn-secondary-border: #E9E9EE;
+  --btn-secondary-text:   #374151;
+  --btn-secondary-hover:  #F3F4F6;
+
+  /* Status */
   --success:          #22C55E;
   --warning:          #F59E0B;
   --error:            #EF4444;
@@ -46,38 +61,61 @@
 
 /* ── Tema Escuro ── */
 :root.dark {
+  /* Primária */
   --primary:          #FF6FA9;
   --primary-dark:     #F85A9A;
-  --primary-light:    #3D1525;
+  --primary-light:    #4A1F33;
   --primary-gradient: linear-gradient(135deg, #FF6FA9, #F85A9A);
 
-  --bg-body:          #111111;
-  --bg-card:          #1a1a1a;
-  --bg-input:         #242424;
-  --bg-subtle:        #1f1f1f;
-  --bg-sidebar:       #111111;
-  --bg-header:        #0a0a0a;
-
-  --text-primary:     #f1f1f1;
-  --text-secondary:   #a0a0a0;
-  --text-muted:       #666666;
-  --text-disabled:    #444444;
+  /* Tipografia */
+  --text-title:       #F9FAFB;
+  --text-primary:     #E5E7EB;
+  --text-secondary:   #9CA3AF;
+  --text-muted:       #6B7280;
   --text-inverse:     #0d0d0d;
 
-  --border:           #2a2a2a;
+  /* Superfícies */
+  --bg-body:          #0F1115;
+  --bg-card:          #171923;
+  --bg-input:         #171923;
+  --bg-sidebar:       #171923;
+  --bg-subtle:        #4A1F33;
+
+  /* Bordas */
+  --border:           #2A2D3A;
   --border-focus:     #FF6FA9;
 
+  /* Menu */
+  --menu-bg:          #171923;
+  --menu-inactive:    #9CA3AF;
+  --menu-active:      #FF6FA9;
+  --menu-active-bg:   #4A1F33;
+  --menu-hover-bg:    #1e2130;
+
+  /* Botões */
+  --btn-primary-bg:       #FF6FA9;
+  --btn-primary-hover:    #F85A9A;
+  --btn-primary-text:     #FFFFFF;
+  --btn-secondary-bg:     #171923;
+  --btn-secondary-border: #2A2D3A;
+  --btn-secondary-text:   #E5E7EB;
+  --btn-secondary-hover:  #1e2130;
+
+  /* Status */
   --success:          #22C55E;
   --warning:          #F59E0B;
   --error:            #EF4444;
   --info:             #3B82F6;
 
+  /* Sombras */
   --shadow-card:      0 2px 12px rgba(0,0,0,0.4);
   --shadow-md:        0 4px 16px rgba(0,0,0,0.5);
 
+  /* Raios */
   --radius-card:      18px;
   --radius-btn:       50px;
   --radius-input:     50px;
 
+  /* Fonte */
   --font-base: 'Geist', sans-serif;
 }
