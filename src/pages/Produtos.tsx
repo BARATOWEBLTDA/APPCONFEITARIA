@@ -866,7 +866,7 @@ export default function Produtos() {
 
       <style>{`
         /* ── Tabs ── */
-        .prod-tabs { display:flex; gap:0.25rem; background:#f4f4f5; border-radius:12px; padding:4px; width:fit-content; margin-bottom:0.5rem; }
+        .prod-tabs { display:flex; gap:0.25rem; background:#e5e7eb; border-radius:12px; padding:4px; width:fit-content; margin-bottom:0.5rem; }
         .prod-tab { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 1.1rem; border-radius:9px; border:none; background:transparent; font-family:'Geist',sans-serif; font-size:0.86rem; font-weight:600; color:#71717a; cursor:pointer; transition:all 0.18s; white-space:nowrap; }
         .prod-tab:hover { color:#18181b; background:rgba(255,255,255,0.6); }
         .prod-tab--active { background:#ffffff; color:#F583BF; box-shadow:0 1px 4px rgba(0,0,0,0.08); }
