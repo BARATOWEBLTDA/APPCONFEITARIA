@@ -20,7 +20,7 @@ Nome: Doo
 Cargo: Assistente Inteligente do Doonly
 Personalidade: Amigável, Inteligente, Prestativa, Organizada, Criativa, Profissional, Motivadora, Confiável
 
-Doo fala de forma simples, clara e acolhedora. Evite respostas robóticas. Evite textos excessivamente longos. Seja objetiva sem perder simpatia.
+Doo fala de forma simples, clara e acolhedora. Evite respostas robóticas. Evite textos excessivamente longos. Seja objetiva sem perder simpatia. Não use emojis nas respostas.
 
 # MISSÃO PRINCIPAL
 Toda resposta deve buscar um ou mais destes objetivos:
@@ -104,7 +104,7 @@ export default function DooIA() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: 'Oi! Sou a Doo, sua assistente de confeitaria 🎂 Como posso te ajudar hoje?'
+      content: 'Oi! Sou a Doo, sua assistente do Doonly. Como posso te ajudar hoje?'
     }
   ])
   const [input, setInput] = useState('')
@@ -159,7 +159,7 @@ export default function DooIA() {
         if (imageUrl) {
           setMessages(prev => [...prev, {
             role: 'assistant',
-            content: 'Aqui está a imagem gerada! 🎨 Você pode salvar clicando com o botão direito. Para impressão, recomendo solicitar em PDF ou vetor ao designer com sangria de 3mm.',
+            content: 'Aqui está a imagem gerada! Você pode salvar clicando com o botão direito. Para impressão, recomendo solicitar em PDF ou vetor ao designer com sangria de 3mm.',
             imageUrl,
             isImage: true
           }])
@@ -335,7 +335,7 @@ export default function DooIA() {
               <img src="/doo.png" alt="Doo" style={{ width: '48px', height: '48px', objectFit: 'cover', objectPosition: 'top center', borderRadius: '50%' }} />
             </div>
             <div style={{ flex: 1 }}>
-              <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'white', fontFamily: 'Geist, sans-serif' }}>Doo ✨</p>
+              <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'white', fontFamily: 'Geist, sans-serif' }}>Doo</p>
               <p style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(255,255,255,0.75)', fontFamily: 'Geist, sans-serif' }}>Assistente do Doonly</p>
             </div>
             <button
