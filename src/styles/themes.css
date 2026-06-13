@@ -1,11 +1,11 @@
 /* ── Tema Claro ── */
 :root {
   /* Primária */
-  --primary:          #6E3548;
-  --primary-dark:     #431524;
-  --primary-light:    #986274;
-  --primary-gradient: linear-gradient(135deg, #986274, #6E3548);
-  --primary-rgb:      110, 53, 72;
+  --primary:          #FF6FA9;
+  --primary-dark:     #F85A9A;
+  --primary-light:    #FFF1F7;
+  --primary-gradient: linear-gradient(135deg, #FF6FA9, #F85A9A);
+  --primary-rgb:      255, 111, 169;
 
   /* Tipografia */
   --text-title:       #1F2937;
@@ -14,7 +14,7 @@
   --text-muted:       #9CA3AF;
   --text-inverse:     #FFFFFF;
   --text-disabled:    #D1D5DB;
-  --text-link:        #6E3548;
+  --text-link:        #FF6FA9;
 
   /* Superfícies */
   --bg-body:          #F7F7F8;
@@ -23,20 +23,20 @@
   --bg-input:         #FFFFFF;
   --bg-elevated:      #FFFFFF;
   --bg-overlay:       rgba(0,0,0,0.4);
-  --bg-subtle:        #ECC2D0;
+  --bg-subtle:        #FFF1F7;
 
   /* Bordas */
   --border:           #E9E9EE;
-  --border-focus:     #6E3548;
-  --focus-ring:       0 0 0 3px rgba(110, 53, 72, 0.25);
+  --border-focus:     #FF6FA9;
+  --focus-ring:       0 0 0 3px rgba(255,111,169,0.25);
 
   /* ── Sidebar / Nav ── */
   --sidebar-bg:           var(--bg-card, #FFFFFF);
-  --sidebar-text:         #330716; /* AJUSTADO: Tom mais escuro para legibilidade máxima */
-  --sidebar-text-muted:   #6E3548; /* AJUSTADO: Vinho médio para os itens inativos não sumirem no hover */
-  --sidebar-hover-bg:     #F3F4F6;
-  --sidebar-active-bg:    #ECC2D0; /* Mantido o rosa sutil que ficou ótimo no item 'Início' */
-  --sidebar-active-text:  #431524; 
+  --sidebar-text:         var(--text-primary, #374151);
+  --sidebar-text-muted:   var(--text-muted, #9CA3AF);
+  --sidebar-hover-bg:     var(--menu-hover-bg, #F3F4F6);
+  --sidebar-active-bg:    var(--menu-active-bg, #FFF1F7);
+  --sidebar-active-text:  var(--menu-active, #FF6FA9);
   --sidebar-border:       var(--border, #E9E9EE);
   --sidebar-border-right: #E9E9EE;
 
@@ -56,8 +56,8 @@
   --drawer-bg:            #120706;
   --drawer-item-bg:       rgba(255,255,255,0.05);
   --drawer-item-border:   rgba(255,255,255,0.07);
-  --drawer-item-hover-bg: rgba(110, 53, 72, 0.15);
-  --drawer-item-hover-border: rgba(110, 53, 72, 0.3);
+  --drawer-item-hover-bg: rgba(255,111,169,0.15);
+  --drawer-item-hover-border: rgba(255,111,169,0.3);
   --drawer-handle:        rgba(255,255,255,0.15);
   --drawer-close-bg:      rgba(255,255,255,0.08);
   --drawer-close-text:    rgba(255,255,255,0.6);
@@ -66,9 +66,9 @@
 
   /* ── Menu (legado) ── */
   --menu-bg:          #FFFFFF;
-  --menu-inactive:    #6E3548; /* AJUSTADO: Vinho médio para garantir contraste */
-  --menu-active:      #431524;
-  --menu-active-bg:   #ECC2D0;
+  --menu-inactive:    #6B7280;
+  --menu-active:      #FF6FA9;
+  --menu-active-bg:   #FFF1F7;
   --menu-hover-bg:    #F3F4F6;
 
   /* ── Estados globais ── */
@@ -77,8 +77,8 @@
   --state-active:     var(--menu-active);
 
   /* Botões */
-  --btn-primary-bg:       #6E3548;
-  --btn-primary-hover:    #431524;
+  --btn-primary-bg:       #FF6FA9;
+  --btn-primary-hover:    #F85A9A;
   --btn-primary-text:     #FFFFFF;
   --btn-secondary-bg:     #FFFFFF;
   --btn-secondary-border: #E9E9EE;
@@ -109,11 +109,11 @@
 /* ── Tema Escuro ── */
 :root.dark {
   /* Primária */
-  --primary:          #C39EAA;
-  --primary-dark:     #986274;
-  --primary-light:    #330716;
-  --primary-gradient: linear-gradient(135deg, #ECC2D0, #C39EAA);
-  --primary-rgb:      195, 158, 170;
+  --primary:          #FF6FA9;
+  --primary-dark:     #F85A9A;
+  --primary-light:    #4A1F33;
+  --primary-gradient: linear-gradient(135deg, #FF6FA9, #F85A9A);
+  --primary-rgb:      255, 111, 169;
 
   /* Tipografia */
   --text-title:       #F9FAFB;
@@ -122,28 +122,36 @@
   --text-muted:       #6B7280;
   --text-inverse:     #0d0d0d;
   --text-disabled:    #4B5563;
+  --text-link:        #FF6FA9;
 
   /* Superfícies */
   --bg-body:          #0F1115;
   --bg-card:          #171923;
+  --bg-surface:       var(--bg-card);
   --bg-input:         #171923;
-  --bg-subtle:        #330716;
+  --bg-elevated:      #1E2130;
+  --bg-overlay:       rgba(0,0,0,0.75);
+  --bg-subtle:        #4A1F33;
 
   /* Bordas */
   --border:           #2A2D3A;
-  --border-focus:     #C39EAA;
+  --border-focus:     #FF6FA9;
+  --focus-ring:       0 0 0 3px rgba(255,111,169,0.2);
 
   /* ── Sidebar / Nav ── */
   --sidebar-bg:           #0D0E14;
-  --sidebar-text:         #F9FAFB;
-  --sidebar-text-muted:   #C39EAA; /* AJUSTADO: Rosa claro para destacar bem no breu do dark mode */
-  --sidebar-hover-bg:     #330716;
+  --sidebar-text:         #C8D2EE;
+  --sidebar-text-muted:   #7A86B0;
+  --sidebar-hover-bg:     #181C30;
   --sidebar-active-bg:    var(--primary-gradient);
   --sidebar-active-text:  #FFFFFF;
   --sidebar-border:       rgba(255,255,255,0.05);
+  --sidebar-border-right: rgba(255,255,255,0.07);
 
   /* ── Header Mobile / Top Bar ── */
   --topbar-bg:            #0D0E14;
+  --topbar-text:          #C8D2EE;
+  --topbar-border:        rgba(255,255,255,0.07);
   --topbar-shadow:        0 4px 12px rgba(0,0,0,0.5);
 
   /* ── Bottom Nav Mobile ── */
@@ -156,8 +164,8 @@
   --drawer-bg:            #0D0E14;
   --drawer-item-bg:       rgba(255,255,255,0.04);
   --drawer-item-border:   rgba(255,255,255,0.06);
-  --drawer-item-hover-bg: rgba(195, 158, 170, 0.12);
-  --drawer-item-hover-border: rgba(195, 158, 170, 0.25);
+  --drawer-item-hover-bg: rgba(255,111,169,0.12);
+  --drawer-item-hover-border: rgba(255,111,169,0.25);
   --drawer-handle:        rgba(255,255,255,0.1);
   --drawer-close-bg:      rgba(255,255,255,0.06);
   --drawer-close-text:    rgba(255,255,255,0.5);
@@ -165,14 +173,22 @@
 
   /* ── Menu (legado) ── */
   --menu-bg:          #171923;
-  --menu-inactive:    #C39EAA; /* AJUSTADO: Rosa claro visível no escuro */
-  --menu-active:      #C39EAA;
-  --menu-active-bg:   #330716;
+  --menu-inactive:    #9CA3AF;
+  --menu-active:      #FF6FA9;
+  --menu-active-bg:   #4A1F33;
   --menu-hover-bg:    #1e2130;
 
+  /* ── Estados globais ── */
+  --state-hover:      var(--menu-hover-bg);
+  --state-active-bg:  var(--menu-active-bg);
+  --state-active:     var(--menu-active);
+
+  /* ── Overlay ── */
+  --overlay-light:    rgba(255,255,255,0.08);
+
   /* Botões */
-  --btn-primary-bg:       #986274;
-  --btn-primary-hover:    #C39EAA;
+  --btn-primary-bg:       #FF6FA9;
+  --btn-primary-hover:    #F85A9A;
   --btn-primary-text:     #FFFFFF;
   --btn-secondary-bg:     #171923;
   --btn-secondary-border: #2A2D3A;
@@ -187,7 +203,9 @@
 
   /* Sombras */
   --shadow-card:      0 2px 12px rgba(0,0,0,0.4);
+  --shadow-sm:        0 1px 3px rgba(0,0,0,0.3);
   --shadow-md:        0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg:        0 10px 30px rgba(0,0,0,0.6);
 
   /* Raios */
   --radius-card:      18px;
