@@ -28,6 +28,7 @@ export default function Inicio() {
   const [pedidosFiltro, setPedidosFiltro] = useState<string>("todos");
   const [loadingPedidos, setLoadingPedidos] = useState(false);
   const [pedidosMes, setPedidosMes] = useState<Record<string,number>>({});
+  const [notifCount, setNotifCount] = useState(0);
 
   const calCells = () => {
     const ano = calMes.getFullYear();
@@ -94,6 +95,12 @@ export default function Inicio() {
         pedMes.forEach((p: any) => { if (p.data_entrega) map[p.data_entrega] = (map[p.data_entrega] || 0) + 1; });
         setPedidosMes(map);
       }
+      const lastSeen = localStorage.getItem("notif_last_seen");
+      const { data: notifs } = await supabase.from("notificacoes").select("created_at").order("created_at", { ascending: false }).limit(10);
+      if (notifs) {
+        const unseen = lastSeen ? notifs.filter((n: any) => n.created_at > lastSeen).length : notifs.length;
+        setNotifCount(unseen);
+      }
       setLoading(false);
     };
     load();
@@ -134,8 +141,13 @@ export default function Inicio() {
               }
             </button>
             <p className="mob-hero-title">{profile?.nome_loja || profile?.nome?.split(" ")[0] || "Bem-vinda"}</p>
-            <button className="mob-hero-icon" onClick={() => { navigate("/notificacoes"); }} style={{ position: "relative", marginLeft: "auto" }}>
-              <Bell size={26} weight="duotone" color="rgba(255,255,255,0.9)" />
+            <button
+              className={`mob-hero-bell${notifCount > 0 ? " has-notif" : ""}`}
+              onClick={() => { navigate("/notificacoes"); }}
+              style={{ position: "relative", marginLeft: "auto" }}
+            >
+              <Bell size={24} weight="duotone" color="rgba(255,255,255,0.9)" />
+              {notifCount > 0 && <span className="mob-hero-notif-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
             </button>
           </div>
         </div>
@@ -323,10 +335,14 @@ export default function Inicio() {
 
         /* Hero */
         .mob-hero { background: var(--primary-gradient); border-radius: 0 0 28px 28px; padding: 1.5rem 1.25rem 3rem; margin: -0.75rem -0.75rem 0; }
-        .mob-hero-row { display: flex; align-items: center; gap: 0.85rem; }
+        .mob-hero-row { display: flex; align-items: center; gap: 0.7rem; }
         .mob-hero-profile { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; overflow: hidden; }
         .mob-hero-icon { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .mob-hero-title { font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0; }
+        .mob-hero-bell { background: none; border: none; padding: 0.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; }
+        .mob-hero-bell.has-notif { background: rgba(255,255,255,0.15); animation: bell-pulse 1.8s ease-in-out infinite; }
+        .mob-hero-notif-badge { position: absolute; top: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: var(--error); color: #fff; font-size: 0.6rem; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid transparent; }
+        @keyframes bell-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); } 50% { box-shadow: 0 0 0 6px rgba(255,255,255,0); } }
+        .mob-hero-title { font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0; line-height: 1.2; }
 
         /* MetricCards no mobile */
         .mob-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: -32px; padding: 0 0.25rem; }
