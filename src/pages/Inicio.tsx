@@ -4,7 +4,6 @@ import { Bell, User } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
-import { QuickSetupModal } from "@/components/QuickSetupModal";
 import { MetricCard } from "@/components/MetricCard";
 import { TrialCardMobileBanner } from "@/components/billing/TrialCard";
 
@@ -21,11 +20,7 @@ export default function Inicio() {
   const [pedidos, setPedidos] = useState(0);
   const [loading, setLoading] = useState(true);
   const [openGroup, setOpenGroup] = useState<number | null>(0);
-  const [quickStep, setQuickStep] = useState<{label: string; path: string} | null>(null);
   const [profileUserId, setProfileUserId] = useState<string>("");
-  const [diasTrial] = useState(14);
-  const [proResgatado, setProResgatado] = useState(false);
-  const [resgatando, setResgatando] = useState(false);
   const [ultimosClientes, setUltimosClientes] = useState<any[]>([]);
   const [calMes, setCalMes] = useState(new Date());
   const [calDiaSelecionado, setCalDiaSelecionado] = useState<string | null>(null);
@@ -72,28 +67,15 @@ export default function Inicio() {
     buscarPedidosDia(dia);
   };
 
-  const handleResgatarPro = async () => {
-    const expira = new Date();
-    expira.setDate(expira.getDate() + 3);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ pro_expira_em: expira.toISOString(), plano: "pro" })
-      .eq("id", profileUserId);
-    if (!error) {
-      setProResgatado(true);
-      setProfile((p: any) => ({ ...p, pro_expira_em: expira.toISOString() }));
-    }
-    setResgatando(false);
-  };
+  const nome = profile?.nome?.split(" ")[0] || "";
 
   useEffect(() => {
-const load = async () => {
+    const load = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setProfileUserId(user.id);
       const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       setProfile(prof);
-      if (prof?.pro_expira_em) setProResgatado(true);
       const { count: pc } = await supabase.from("produtos").select("*", { count: "exact", head: true }).eq("user_id", user.id);
       const { count: cc } = await supabase.from("clientes").select("*", { count: "exact", head: true }).eq("user_id", user.id);
       const { count: ic } = await supabase.from("insumos").select("*", { count: "exact", head: true }).eq("user_id", user.id);
@@ -106,8 +88,6 @@ const load = async () => {
       setCategorias(catc || 0);
       const { data: uc } = await supabase.from("clientes").select("id,nome,foto_url,created_at").eq("user_id", user.id).order("created_at", { ascending: false }).limit(5);
       if (uc) setUltimosClientes(uc);
-
-      // Pedidos do mês atual para o calendário
       const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
       const fimMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString();
       const { data: pedMes } = await supabase.from("pedidos").select("data_entrega,status").eq("user_id", user.id).gte("data_entrega", inicioMes).lte("data_entrega", fimMes);
@@ -116,32 +96,10 @@ const load = async () => {
         pedMes.forEach((p: any) => { if (p.data_entrega) map[p.data_entrega] = (map[p.data_entrega] || 0) + 1; });
         setPedidosMes(map);
       }
-
       setLoading(false);
     };
     load();
   }, []);
-
-  const steps = [
-    {
-      title: "Configure sua loja", emoji: "🏪",
-      items: [
-        { label: "Qual é o seu nome?", path: "/configuracoes", done: !!profile?.nome },
-        { label: "Você já trabalha com confeitaria?", path: "/configuracoes", done: !!profile?.onboarding_trabalha_confeitaria },
-        { label: "Qual é o WhatsApp da sua loja?", path: "/configuracoes", done: !!profile?.telefone },
-        { label: "Cadastre 1 ingrediente", path: "/insumos", done: insumos > 0 },
-        { label: "Cadastre 1 cliente", path: "/clientes", done: clientes > 0 },
-        { label: "Cadastre 1 receita", path: "/receitas", done: receitas > 0 },
-      ],
-    },
-  ];
-
-  const allItems = steps.flatMap(s => s.items);
-  const doneCount = allItems.filter(i => i.done).length;
-  const totalCount = allItems.length;
-  const progress = Math.round((doneCount / totalCount) * 100);
-  const remaining = totalCount - doneCount;
-  const nextStep = allItems.find(i => !i.done);
   const nome = profile?.nome?.split(" ")[0] || "";
 
   const getGreeting = () => {
@@ -210,48 +168,6 @@ const load = async () => {
           />
         </div>
 
-
-        {!loading && (progress < 100 ? (
-        <div className="mob-config-card">
-          <div className="mob-config-header">
-            <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
-              <img src="/configureapp.png" alt="" style={{width:"46px",height:"46px",objectFit:"contain",flexShrink:0}} />
-              <div>
-                <p className="mob-config-title">Configure seu Doonly</p>
-                <p className="mob-config-sub">{progress === 100 ? "🎉 Tudo pronto!" : `${remaining === 1 ? "Resta apenas" : "Faltam apenas"} ${remaining} etapa${remaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}</p>
-              </div>
-            </div>
-            <div className="mob-config-circle">{progress}%</div>
-          </div>
-          <div className="mob-config-bar-bg">
-            <div className="mob-config-bar-fill" style={{ width: `${progress}%` }} />
-          </div>
-          {nextStep && (
-            <div className="mob-config-next">
-              <div>
-                <p className="mob-config-next-label">Próximo passo</p>
-                <p className="mob-config-next-text">{nextStep.label}</p>
-              </div>
-              <button className="mob-config-next-btn" onClick={() => setQuickStep(nextStep)}>Configurar →</button>
-            </div>
-          )}
-        </div>
-        ) : !proResgatado ? (
-          <div className="mob-config-card mob-config-card--done">
-            <div className="mob-config-header">
-              <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
-                <span style={{fontSize:"2rem"}}>🎉</span>
-                <div>
-                  <p className="mob-config-title">Configuração completa!</p>
-                  <p className="mob-config-sub">Resgate agora mesmo 3 dias de acesso completo sem limitações em nosso App como recompensa.</p>
-                </div>
-              </div>
-            </div>
-            <button className="mob-resgatar-btn" onClick={handleResgatarPro} disabled={resgatando}>
-              {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
-            </button>
-          </div>
-        ) : null)}
 
         {/* 2. Acesso rápido */}
         <div className="mob-section-title">Acesso rápido</div>
@@ -390,82 +306,7 @@ const load = async () => {
 
         </div>
 
-        {/* Checklist — abaixo das sections, largura completa */}
-        {!loading && (progress < 100 ? (
-          <div className="dash-card" style={{marginBottom:"1rem", maxWidth:"760px"}}>
-            <div className="dash-card-header">
-              <div style={{display:"flex",alignItems:"center",gap:"0.65rem"}}>
-                <img src="/configureapp.png" alt="" style={{width:"34px",height:"34px",objectFit:"contain"}} />
-                <div>
-                  <h3 className="dash-card-title">Configure seu Doonly</h3>
-                  <p className="dash-card-sub">{`${remaining} etapa${remaining !== 1 ? "s" : ""} restante${remaining !== 1 ? "s" : ""}`}</p>
-                </div>
-              </div>
-              <span className="dash-progress-pct">{progress}%</span>
-            </div>
-            <div className="dash-progress-bar">
-              <div className="dash-progress-fill" style={{width:`${progress}%`}} />
-            </div>
-            {nextStep && (
-              <div className="dash-next-step">
-                <div>
-                  <p style={{fontSize:"0.7rem",color:"var(--text-muted, #9CA3AF)",margin:0}}>Próximo passo</p>
-                  <p style={{fontSize:"0.85rem",fontWeight:600,color:"var(--text-title, #1F2937)",margin:0}}>{nextStep.label}</p>
-                </div>
-                <button className="dash-btn-config" onClick={() => setQuickStep(nextStep)}>Configurar →</button>
-              </div>
-            )}
-            <div className="dash-steps">
-              {steps.map((group, gi) => {
-                const groupDone = group.items.filter(i => i.done).length;
-                const isOpen = openGroup === gi;
-                const allDone = groupDone === group.items.length;
-                return (
-                  <div key={gi} className="step-group">
-                    <button className="step-group-header" onClick={() => setOpenGroup(isOpen ? null : gi)}>
-                      <div className="step-group-left"><span>{group.emoji}</span><span className="step-group-title">{group.title}</span></div>
-                      <div className="step-group-right">
-                        <span className={"step-badge" + (allDone ? " done" : "")}>{allDone ? "✓ Completo" : `${groupDone}/${group.items.length}`}</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" style={{transform:isOpen?"rotate(180deg)":"none",transition:"0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
-                      </div>
-                    </button>
-                    {isOpen && (
-                      <div className="step-items">
-                        {group.items.map((item, ii) => (
-                          <button key={ii} className="step-item" onClick={() => !item.done && setQuickStep(item)}>
-                            <div className={"step-check" + (item.done ? " checked" : "")}>
-                              {item.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
-                            </div>
-                            <span className="step-item-label">{item.label}</span>
-                            <span className={"step-status" + (item.done ? " done" : " pending")}>{item.done ? "Concluído" : "Fazer agora"}</span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="complete-banner" style={{marginTop:"0.75rem"}}>🎁 Complete 100% e ganhe 3 dias de PRO grátis!</div>
-          </div>
-        ) : null)}
-
       </div>
-
-      <QuickSetupModal
-        step={quickStep}
-        userId={profileUserId}
-        onClose={() => setQuickStep(null)}
-        onSaved={async () => {
-          const { data: { user } } = await supabase.auth.getUser();
-          if (!user) return;
-          const { data: prof } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-          setProfile(prof);
-          const { count: catc } = await supabase.from("categorias").select("*", { count: "exact", head: true }).eq("user_id", user.id);
-          setCategorias(catc || 0);
-        }}
-      />
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');

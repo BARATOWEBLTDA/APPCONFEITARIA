@@ -51,6 +51,11 @@ export default function Configuracoes() {
   const [categorias, setCategorias] = useState<string[]>([]);
   const [openSection, setOpenSection] = useState<string | null>(null);
   const [ocultarCategorias, setOcultarCategorias] = useState(false);
+  const [insumos, setInsumos] = useState(0);
+  const [receitas, setReceitas] = useState(0);
+  const [openGroup, setOpenGroup] = useState<number | null>(0);
+  const [proResgatado, setProResgatado] = useState(false);
+  const [resgatando, setResgatando] = useState(false);
   const toggleSection = (s: string) => setOpenSection(prev => prev === s ? null : s);
 
   const [horario, setHorario] = useState({
@@ -88,7 +93,12 @@ export default function Configuracoes() {
         const { data: cats } = await supabase.from("categorias").select("nome").eq("user_id", user.id).order("nome");
         if (cats) setCategorias(cats.map((c: any) => c.nome));
         setOcultarCategorias(data?.ocultar_categorias || false);
+        if (data?.pro_expira_em) setProResgatado(true);
       }
+      const { count: ic } = await supabase.from("insumos").select("*", { count: "exact", head: true }).eq("user_id", user.id);
+      const { count: rc } = await supabase.from("receitas_minhas").select("*", { count: "exact", head: true }).eq("user_id", user.id);
+      setInsumos(ic || 0);
+      setReceitas(rc || 0);
       setLoading(false);
     };
     load();
@@ -197,6 +207,36 @@ export default function Configuracoes() {
     setSaving(false);
   };
 
+  const handleResgatarPro = async () => {
+    if (!userId) return;
+    setResgatando(true);
+    const expira = new Date();
+    expira.setDate(expira.getDate() + 3);
+    const { error } = await supabase.from("profiles").update({ pro_expira_em: expira.toISOString(), plano: "pro" }).eq("id", userId);
+    if (!error) setProResgatado(true);
+    setResgatando(false);
+  };
+
+  const cfgSteps = [
+    {
+      title: "Configure sua loja", emoji: "🏪",
+      items: [
+        { label: "Qual é o seu nome?", path: "/configuracoes", done: !!form.nome },
+        { label: "Qual é o WhatsApp da sua loja?", path: "/configuracoes", done: !!form.telefone },
+        { label: "Cadastre 1 ingrediente", path: "/insumos", done: insumos > 0 },
+        { label: "Cadastre 1 cliente", path: "/clientes", done: false },
+        { label: "Cadastre 1 receita", path: "/receitas", done: receitas > 0 },
+      ],
+    },
+  ];
+
+  const cfgAllItems = cfgSteps.flatMap(s => s.items);
+  const cfgDoneCount = cfgAllItems.filter(i => i.done).length;
+  const cfgTotalCount = cfgAllItems.length;
+  const cfgProgress = Math.round((cfgDoneCount / cfgTotalCount) * 100);
+  const cfgRemaining = cfgTotalCount - cfgDoneCount;
+  const cfgNextStep = cfgAllItems.find(i => !i.done);
+
   if (loading) return <div className="cfg-loading"><span className="cfg-spinner-lg" /></div>;
 
   return (
@@ -219,6 +259,49 @@ export default function Configuracoes() {
         </div>
 
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
+
+        {/* Configure seu Doonly */}
+        {cfgProgress < 100 ? (
+          <div className="mob-config-card">
+            <div className="mob-config-header">
+              <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
+                <img src="/configureapp.png" alt="" style={{width:"46px",height:"46px",objectFit:"contain",flexShrink:0}} />
+                <div>
+                  <p className="mob-config-title">Configure seu Doonly</p>
+                  <p className="mob-config-sub">{`${cfgRemaining === 1 ? "Resta apenas" : "Faltam apenas"} ${cfgRemaining} etapa${cfgRemaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}</p>
+                </div>
+              </div>
+              <div className="mob-config-circle">{cfgProgress}%</div>
+            </div>
+            <div className="mob-config-bar-bg">
+              <div className="mob-config-bar-fill" style={{ width: `${cfgProgress}%` }} />
+            </div>
+            {cfgNextStep && (
+              <div className="mob-config-next">
+                <div>
+                  <p className="mob-config-next-label">Próximo passo</p>
+                  <p className="mob-config-next-text">{cfgNextStep.label}</p>
+                </div>
+                <button className="mob-config-next-btn" onClick={() => navigate(cfgNextStep.path)}>Configurar →</button>
+              </div>
+            )}
+          </div>
+        ) : !proResgatado ? (
+          <div className="mob-config-card mob-config-card--done">
+            <div className="mob-config-header">
+              <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
+                <span style={{fontSize:"2rem"}}>🎉</span>
+                <div>
+                  <p className="mob-config-title">Configuração completa!</p>
+                  <p className="mob-config-sub">Resgate agora mesmo 3 dias de acesso completo sem limitações.</p>
+                </div>
+              </div>
+            </div>
+            <button className="mob-resgatar-btn" onClick={handleResgatarPro} disabled={resgatando}>
+              {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
+            </button>
+          </div>
+        ) : null}
 
         {/* Minha Conta */}
         <div className="cfg-accordion">
@@ -459,6 +542,72 @@ export default function Configuracoes() {
                 </div>
               )}
             </div>
+
+            {/* Configure seu Doonly */}
+            {cfgProgress < 100 ? (
+              <div className="cfg-desk-card" style={{marginBottom:"0.5rem"}}>
+                <div className="cfg-card-header">
+                  <span className="cfg-card-icon">🛠️</span>
+                  <span>Configure seu Doonly</span>
+                  <span style={{marginLeft:"auto",fontSize:"0.85rem",fontWeight:700,color:"var(--primary)"}}>{cfgProgress}%</span>
+                </div>
+                <div className="dash-progress-bar" style={{margin:"0.5rem 0 0.75rem"}}>
+                  <div className="dash-progress-fill" style={{width:`${cfgProgress}%`}} />
+                </div>
+                {cfgNextStep && (
+                  <div className="dash-next-step" style={{marginBottom:"0.75rem"}}>
+                    <div>
+                      <p style={{fontSize:"0.7rem",color:"var(--text-muted)",margin:0}}>Próximo passo</p>
+                      <p style={{fontSize:"0.85rem",fontWeight:600,color:"var(--text-title)",margin:0}}>{cfgNextStep.label}</p>
+                    </div>
+                    <button className="dash-btn-config" onClick={() => navigate(cfgNextStep.path)}>Configurar →</button>
+                  </div>
+                )}
+                <div className="dash-steps">
+                  {cfgSteps.map((group, gi) => {
+                    const groupDone = group.items.filter(i => i.done).length;
+                    const isOpen = openGroup === gi;
+                    const allDone = groupDone === group.items.length;
+                    return (
+                      <div key={gi} className="step-group">
+                        <button className="step-group-header" onClick={() => setOpenGroup(isOpen ? null : gi)}>
+                          <div className="step-group-left"><span>{group.emoji}</span><span className="step-group-title">{group.title}</span></div>
+                          <div className="step-group-right">
+                            <span className={"step-badge" + (allDone ? " done" : "")}>{allDone ? "✓ Completo" : `${groupDone}/${group.items.length}`}</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" style={{transform:isOpen?"rotate(180deg)":"none",transition:"0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+                          </div>
+                        </button>
+                        {isOpen && (
+                          <div className="step-items">
+                            {group.items.map((item, ii) => (
+                              <button key={ii} className="step-item" onClick={() => !item.done && navigate(item.path)}>
+                                <div className={"step-check" + (item.done ? " checked" : "")}>
+                                  {item.done && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
+                                </div>
+                                <span className="step-item-label">{item.label}</span>
+                                <span className={"step-status" + (item.done ? " done" : " pending")}>{item.done ? "Concluído" : "Fazer agora"}</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-disabled)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="complete-banner" style={{marginTop:"0.75rem"}}>🎁 Complete 100% e ganhe 3 dias de PRO grátis!</div>
+              </div>
+            ) : !proResgatado ? (
+              <div className="cfg-desk-card" style={{marginBottom:"0.5rem",background:"linear-gradient(135deg,#f0fdf4,#dcfce7)",border:"1px solid #bbf7d0"}}>
+                <div style={{textAlign:"center",padding:"0.5rem 0"}}>
+                  <p style={{fontSize:"1.5rem",margin:"0 0 0.25rem"}}>🎉</p>
+                  <p style={{fontWeight:700,color:"#15803d",margin:"0 0 0.5rem"}}>Configuração completa!</p>
+                  <button onClick={handleResgatarPro} disabled={resgatando} style={{padding:"0.6rem 1.2rem",background:"linear-gradient(135deg,#22c55e,#16a34a)",color:"white",border:"none",borderRadius:"10px",fontFamily:"inherit",fontSize:"0.88rem",fontWeight:700,cursor:"pointer"}}>
+                    {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
+                  </button>
+                </div>
+              </div>
+            ) : null}
 
             {/* Notificações */}
             <div className="cfg-desk-card">
