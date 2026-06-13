@@ -142,31 +142,36 @@ export default function Layout() {
               <img src="/notifica.png" alt="Notificações" style={{ width: "20px", height: "20px", objectFit: "contain" }} />
               {notifCount > 0 && <span className="topbar-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
             </button>
-            {notifOpen && (
-              <div className="notif-dropdown">
-                <div className="notif-header">
-                  <span>Notificações</span>
-                  <button onClick={closeNotif}>✕</button>
-                </div>
-                <div className="notif-body">
-                  {notificacoes.length === 0
-                    ? <p className="notif-empty">Nenhuma notificação</p>
-                    : notificacoes.map((n: any) => (
-                      <div key={n.id} className="notif-item">
-                        {n.imagem_url && <img src={n.imagem_url} alt="" style={{ width: "40px", height: "40px", borderRadius: "8px", objectFit: "cover", flexShrink: 0 }} />}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p className="notif-title">{n.titulo || n.title}</p>
-                          <p className="notif-msg">{n.mensagem || n.body}</p>
-                          <p className="notif-time">{new Date(n.created_at).toLocaleDateString("pt-BR")}</p>
-                        </div>
-                      </div>
-                    ))
-                  }
-                </div>
-              </div>
-            )}
           </div>
         </div>
+
+        {/* Dropdown de notificações — fixo, funciona em mobile e desktop */}
+        {notifOpen && (
+          <div className="notif-overlay" onClick={closeNotif}>
+            <div className="notif-dropdown" ref={notifRef} onClick={e => e.stopPropagation()}>
+              <div className="notif-header">
+                <span>Notificações</span>
+                <button onClick={closeNotif}>✕</button>
+              </div>
+              <div className="notif-body">
+                {notificacoes.length === 0
+                  ? <p className="notif-empty">Nenhuma notificação</p>
+                  : notificacoes.map((n: any) => (
+                    <div key={n.id} className="notif-item">
+                      {n.imagem_url && <img src={n.imagem_url} alt="" style={{ width: "40px", height: "40px", borderRadius: "8px", objectFit: "cover", flexShrink: 0 }} />}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p className="notif-title">{n.titulo || n.title}</p>
+                        <p className="notif-msg">{n.mensagem || n.body}</p>
+                        <p className="notif-time">{new Date(n.created_at).toLocaleDateString("pt-BR")}</p>
+                      </div>
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+          </div>
+        )}
+
         <Outlet />
       </main>
 
@@ -308,7 +313,8 @@ export default function Layout() {
         .topbar-btn:hover { background: rgba(0,0,0,0.08); }
         .topbar-badge { position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--primary); color: var(--text-inverse); font-size: 0.6rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
 
-        .notif-dropdown { position: absolute; right: 0; top: calc(100% + 8px); width: 320px; background: var(--bg-card); border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border); z-index: 100; overflow: hidden; }
+        .notif-overlay { position: fixed; inset: 0; z-index: 9998; }
+        .notif-dropdown { position: fixed; right: 1rem; top: 4rem; width: 320px; background: var(--bg-card); border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border); z-index: 9999; overflow: hidden; }
         .notif-header { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 0.9rem; color: var(--text-title); }
         .notif-header button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 1rem; }
         .notif-body { max-height: 360px; overflow-y: auto; }
