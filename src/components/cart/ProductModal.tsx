@@ -122,7 +122,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
         position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 51,
         background: 'var(--bg-card)', borderRadius: '24px',
         width: isDesktop ? '90vw' : '92vw',
-        maxWidth: isDesktop ? '860px' : '400px',
+        maxWidth: isDesktop ? '960px' : '400px',
         maxHeight: '88vh',
         display: 'flex', flexDirection: isDesktop ? 'row' : 'column',
         boxShadow: 'var(--shadow-lg)',
@@ -141,7 +141,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           position: 'relative',
         }}>
           {/* Imagem principal */}
-          <div style={{ flex: 1, position: 'relative', minHeight: isDesktop ? '300px' : '200px', overflow: 'hidden' }}
+          <div style={{ flex: 1, position: 'relative', minHeight: isDesktop ? '360px' : '200px', overflow: 'hidden' }}
             onTouchStart={e => { setTouchStart(e.touches[0].clientX); setTouchDelta(0); setDragging(true); }}
             onTouchMove={e => { if (touchStart === null) return; setTouchDelta(e.touches[0].clientX - touchStart); }}
             onTouchEnd={() => {
@@ -199,7 +199,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           </button>
 
           {/* Conteúdo scrollável */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '24px 24px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
             {/* Nome, badge e preço */}
             <div>
@@ -297,7 +297,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           </div>
 
           {/* Rodapé */}
-          <div style={{ padding: '12px 20px 20px', borderTop: '1px solid var(--border)', background: 'var(--bg-card)', flexShrink: 0 }}>
+          <div style={{ padding: '12px 24px 24px', borderTop: '1px solid var(--border)', background: 'var(--bg-card)', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
                 <button onClick={dec} style={{ width: '40px', height: '44px', background: 'var(--bg-card)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
