@@ -158,31 +158,6 @@ export default function Layout() {
       <main className={`layout-main${isAssinar ? " layout-main--no-header" : ""}`}>
         {/* Topbar desktop */}
         <div className="desk-topbar">
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <span className="topbar-greeting">
-              {(() => { const h = now.getHours(); return h < 12 ? "Bom dia" : h < 18 ? "Boa tarde" : "Boa noite"; })()},{" "}
-              <span style={{ color: "var(--primary)" }}>{profile?.nome ? profile.nome.split(" ")[0] : "bem-vinda"}</span>!
-            </span>
-            <span className="topbar-date">
-              {(() => {
-                const feriados: Record<string, string> = {
-                  "01-01": "Ano Novo 🎆", "21-04": "Tiradentes ⚖️", "01-05": "Dia do Trabalho 👷",
-                  "07-09": "Independência do Brasil 🇧🇷", "12-10": "Nossa Senhora Aparecida 🙏",
-                  "02-11": "Finados 🕯️", "15-11": "Proclamação da República 🏛️", "25-12": "Natal 🎄",
-                };
-                const dias = ["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"];
-                const d = now;
-                const dd = String(d.getDate()).padStart(2,"0");
-                const mm = String(d.getMonth()+1).padStart(2,"0");
-                const chave = `${dd}-${mm}`;
-                const feriado = feriados[chave];
-                const diaSemana = dias[d.getDay()];
-                const dataStr = `${dd}/${mm}/${d.getFullYear()}`;
-                if (feriado) return `Hoje é feriado — ${feriado}`;
-                return `Hoje é ${diaSemana}, ${dataStr}`;
-              })()}
-            </span>
-          </div>
           {/* Notificações com dropdown */}
           <div style={{ position: "relative" }} ref={notifRef}>
             <button className="topbar-btn" onClick={() => { setNotifOpen(o => !o); if (!notifOpen) { localStorage.setItem("notif_last_seen", new Date().toISOString()); setNotifCount(0); } }}>
@@ -241,13 +216,7 @@ export default function Layout() {
       {/* ── Mobile top header ── */}
       {!isAssinar && !isPrevia && (
         <div className="mob-top-header">
-          <img src="/logoheader.png" alt="Doonly" className="mob-top-logo" />
           <div className="mob-top-icons">
-            {!isPro && (
-              <button className="mob-top-icon" onClick={() => navigate("/assinar")}>
-                <img src="/diamante.png" alt="Assinar" style={{ width: "24px", height: "24px", objectFit: "contain" }} />
-              </button>
-            )}
             <button className="mob-top-icon" onClick={() => {
                 localStorage.setItem("notif_last_seen", new Date().toISOString());
                 setNotifCount(0);
@@ -375,11 +344,10 @@ export default function Layout() {
         .desk-topbar { display: none; }
 
         @media (min-width: 900px) {
-          .desk-topbar { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 2rem; border-bottom: 1px solid var(--border); background: var(--bg-card); margin: -2rem -2rem 1.5rem -2rem; position: sticky; top: 0; z-index: 9; }
+          .desk-topbar { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; padding: 0.75rem 2rem; margin: -2rem -2rem 1.5rem -2rem; position: sticky; top: 0; z-index: 9; }
         }
 
-        .topbar-greeting { font-size: 1rem; font-weight: 800; color: var(--text-title); line-height: 1.2; }
-        .topbar-date { font-size: 0.78rem; color: var(--text-secondary); margin-top: 2px; }
+
 
         .topbar-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: background 0.2s; position: relative; flex-shrink: 0; }
         .topbar-btn:hover { background: rgba(0,0,0,0.08); }
@@ -403,14 +371,11 @@ export default function Layout() {
           .mob-top-header {
             display: flex !important;
             position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-            background: var(--topbar-bg);
-            border-bottom: 1px solid var(--topbar-border);
+            background: transparent;
             padding: 0.65rem 1.25rem;
-            align-items: center; justify-content: space-between;
-            box-shadow: var(--topbar-shadow);
-            transform: translateZ(0); -webkit-transform: translateZ(0);
+            align-items: center; justify-content: flex-end;
           }
-          .mob-top-logo { height: 42px; object-fit: contain; }
+
           .mob-top-icons { display: flex; align-items: center; gap: 0.6rem; }
           .mob-top-icon { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0.2rem; }
 
