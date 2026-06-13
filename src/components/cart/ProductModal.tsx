@@ -25,16 +25,11 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   const [touchDelta, setTouchDelta] = useState(0)
   const [dragging, setDragging] = useState(false)
 
-  const [selectedVela, setSelectedVela] = useState(false)
-  const [selectedTopo, setSelectedTopo] = useState(false)
-  const [selectedPapelArroz, setSelectedPapelArroz] = useState(false)
-  const [selectedOutro, setSelectedOutro] = useState(false)
 
   useEffect(() => {
     if (product) {
       setQuantity(1); setObservations(''); setSelectedMassa('')
       setSelectedRecheio(''); setSelectedCobertura(''); setShowObs(false)
-      setSelectedVela(false); setSelectedTopo(false); setSelectedPapelArroz(false); setSelectedOutro(false)
       const imgs = product.imagem_url?.split(',').map((s: string) => s.trim()).filter(Boolean) || []
       setImgIndex(0)
       const tamanhos = (product as any).tamanhos_disponiveis
@@ -63,10 +58,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       : 0
   const applyDiscount = (price: number) => descPct > 0 ? parseFloat((price * (1 - descPct)).toFixed(2)) : price
   const unitPrice = selectedTamanho ? applyDiscount(selectedTamanho.preco) : basePrice
-  const adicionais = ((product as any).tem_vela && selectedVela ? ((product as any).valor_vela || 0) : 0)
-    + ((product as any).tem_topo && selectedTopo ? ((product as any).valor_topo || 0) : 0)
-    + ((product as any).tem_papel_arroz && selectedPapelArroz ? ((product as any).valor_papel_arroz || 0) : 0)
-    + ((product as any).tem_outro && selectedOutro ? ((product as any).valor_outro || 0) : 0)
+  const adicionais = 0
   const total = (unitPrice * quantity) + adicionais
 
   const tamanhos: any[] = (product as any).tamanhos_disponiveis || []
@@ -285,59 +277,6 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             )}
             {product.permite_personalizacao && product.coberturas_disponiveis?.length > 0 && (
               <SelectGroup label="Cobertura" options={product.coberturas_disponiveis} value={selectedCobertura} onChange={setSelectedCobertura} />
-            )}
-
-            {/* Adicionais */}
-            {((product as any).tem_vela || (product as any).tem_topo || (product as any).tem_papel_arroz || (product as any).tem_outro) && (
-              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-title)', display: 'block', marginBottom: '10px' }}>✨ Adicionais</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {(product as any).tem_vela && (
-                    <button onClick={() => setSelectedVela(v => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '12px', border: `2px solid ${selectedVela ? corBotao : 'var(--border)'}`, background: selectedVela ? `${corBotao}15` : 'var(--bg-card)', cursor: 'pointer' }}>
-                      <div style={{ textAlign: 'left' }}>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Velas</p>
-                        {(product as any).valor_vela > 0 && <p style={{ fontSize: '12px', color: corBotao, fontWeight: 700, margin: 0 }}>+ {formatCurrency((product as any).valor_vela)}</p>}
-                      </div>
-                      <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${selectedVela ? corBotao : '#d1d5db'}`, background: selectedVela ? corBotao : 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        {selectedVela && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
-                      </div>
-                    </button>
-                  )}
-                  {(product as any).tem_topo && (
-                    <button onClick={() => setSelectedTopo(v => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '12px', border: `2px solid ${selectedTopo ? corBotao : 'var(--border)'}`, background: selectedTopo ? `${corBotao}15` : 'var(--bg-card)', cursor: 'pointer' }}>
-                      <div style={{ textAlign: 'left' }}>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Topo de Bolo</p>
-                        {(product as any).valor_topo > 0 && <p style={{ fontSize: '12px', color: corBotao, fontWeight: 700, margin: 0 }}>+ {formatCurrency((product as any).valor_topo)}</p>}
-                      </div>
-                      <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${selectedTopo ? corBotao : '#d1d5db'}`, background: selectedTopo ? corBotao : 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        {selectedTopo && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
-                      </div>
-                    </button>
-                  )}
-                  {(product as any).tem_papel_arroz && (
-                    <button onClick={() => setSelectedPapelArroz(v => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '12px', border: `2px solid ${selectedPapelArroz ? corBotao : 'var(--border)'}`, background: selectedPapelArroz ? `${corBotao}15` : 'var(--bg-card)', cursor: 'pointer' }}>
-                      <div style={{ textAlign: 'left' }}>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Papel de Arroz</p>
-                        {(product as any).valor_papel_arroz > 0 && <p style={{ fontSize: '12px', color: corBotao, fontWeight: 700, margin: 0 }}>+ {formatCurrency((product as any).valor_papel_arroz)}</p>}
-                      </div>
-                      <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${selectedPapelArroz ? corBotao : '#d1d5db'}`, background: selectedPapelArroz ? corBotao : 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        {selectedPapelArroz && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
-                      </div>
-                    </button>
-                  )}
-                  {(product as any).tem_outro && (product as any).titulo_outro && (
-                    <button onClick={() => setSelectedOutro((v: boolean) => !v)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', borderRadius: '12px', border: `2px solid ${selectedOutro ? corBotao : 'var(--border)'}`, background: selectedOutro ? `${corBotao}15` : 'var(--bg-card)', cursor: 'pointer' }}>
-                      <div style={{ textAlign: 'left' }}>
-                        <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{(product as any).titulo_outro}</p>
-                        {(product as any).valor_outro > 0 && <p style={{ fontSize: '12px', color: corBotao, fontWeight: 700, margin: 0 }}>+ {formatCurrency((product as any).valor_outro)}</p>}
-                      </div>
-                      <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${selectedOutro ? corBotao : '#d1d5db'}`, background: selectedOutro ? corBotao : 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        {selectedOutro && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'white' }} />}
-                      </div>
-                    </button>
-                  )}
-                </div>
-              </div>
             )}
 
             {/* Observações */}
