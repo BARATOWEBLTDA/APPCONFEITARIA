@@ -31,14 +31,14 @@
   --focus-ring:       0 0 0 3px rgba(152,98,116,0.25);
 
   /* ── Sidebar / Nav ── */
-  --sidebar-bg:           #E8DDE1;
-  --sidebar-text:         var(--text-primary, #431524);
-  --sidebar-text-muted:   var(--text-muted, #C39EAA);
-  --sidebar-hover-bg:     var(--menu-hover-bg, #D8C7CD);
-  --sidebar-active-bg:    var(--menu-active-bg, #986274);
+  --sidebar-bg:           #6E3548;
+  --sidebar-text:         #ECC2D0;
+  --sidebar-text-muted:   rgba(236,194,208,0.6);
+  --sidebar-hover-bg:     #7D3F55;
+  --sidebar-active-bg:    var(--menu-active-bg, #431524);
   --sidebar-active-text:  var(--menu-active, #FFFFFF);
-  --sidebar-border:       var(--border, #ECC2D0);
-  --sidebar-border-right: #ECC2D0;
+  --sidebar-border:       rgba(236,194,208,0.15);
+  --sidebar-border-right: rgba(236,194,208,0.15);
 
   /* ── Header Mobile / Top Bar ── */
   --topbar-bg:            var(--bg-card, #FFFFFF);
@@ -65,11 +65,11 @@
   --overlay-light:        rgba(255,255,255,0.6);
 
   /* ── Menu (legado) ── */
-  --menu-bg:          #FFFFFF;
-  --menu-inactive:    #C39EAA;
+  --menu-bg:          #6E3548;
+  --menu-inactive:    rgba(236,194,208,0.7);
   --menu-active:      #FFFFFF;
-  --menu-active-bg:   #986274;
-  --menu-hover-bg:    #D8C7CD;
+  --menu-active-bg:   #431524;
+  --menu-hover-bg:    #7D3F55;
 
   /* ── Estados globais ── */
   --state-hover:      var(--menu-hover-bg);
