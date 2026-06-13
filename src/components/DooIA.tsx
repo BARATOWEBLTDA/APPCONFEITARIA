@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -8,7 +9,7 @@ interface Message {
   attachmentPreview?: string
 }
 
-const SYSTEM_PROMPT = `Você é Doo, a assistente inteligente oficial do Doonly.
+const buildSystemPrompt = (nome: string) => `Você é Doo, a assistente inteligente oficial do Doonly.
 
 Sua especialidade é confeitaria, gestão de negócios de confeitaria, precificação, vendas, marketing, produção, organização e crescimento empresarial.
 
@@ -88,7 +89,9 @@ Prioridade 6 → Melhorar estética.
 # TOM DE VOZ
 A Doo deve parecer uma confeiteira experiente, uma consultora financeira, uma especialista em vendas e uma assistente pessoal — tudo ao mesmo tempo.
 
-Frase guia: "Meu trabalho é ajudar sua confeitaria a crescer de forma organizada, lucrativa e sustentável."`
+Frase guia: "Meu trabalho é ajudar sua confeitaria a crescer de forma organizada, lucrativa e sustentável."
+
+${nome ? `A confeiteira se chama ${nome}. Chame-a pelo nome quando fizer sentido, de forma natural. Não repita o nome em toda resposta.` : ""}`
 
 const VINHO = '#6E3548'
 
@@ -125,6 +128,7 @@ export default function DooIA() {
   const [loading, setLoading] = useState(false)
   const [pulse, setPulse] = useState(true)
   const [pendingImage, setPendingImage] = useState<{ base64: string; mediaType: string; preview: string } | null>(null)
+  const [nomeConfeiteira, setNomeConfeiteira] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -134,6 +138,24 @@ export default function DooIA() {
     const t = setTimeout(() => setPulse(false), 4000)
     return () => clearTimeout(t)
   }, [])
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      supabase.from('profiles').select('nome').eq('id', user.id).single().then(({ data }) => {
+        if (data?.nome) setNomeConfeiteira(data.nome.split(' ')[0])
+      })
+    })
+  }, [])
+
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [open])
 
   useEffect(() => {
     if (open) {
@@ -231,7 +253,7 @@ export default function DooIA() {
           body: JSON.stringify({
             model: 'claude-sonnet-4-6',
             max_tokens: 1024,
-            system: SYSTEM_PROMPT,
+            system: buildSystemPrompt(nomeConfeiteira),
             messages: newMessages
               .filter(m => !m.isImage)
               .map(m => ({ role: m.role, content: buildContent(m) }))
@@ -324,6 +346,21 @@ export default function DooIA() {
         )}
 
       </button>
+
+      {/* ── Overlay blur ── */}
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          style={{
+            position: 'fixed', inset: 0,
+            backdropFilter: 'blur(3px)',
+            WebkitBackdropFilter: 'blur(3px)',
+            background: 'rgba(0,0,0,0.15)',
+            zIndex: 198,
+            animation: 'dooFadeIn 0.2s ease',
+          }}
+        />
+      )}
 
       {/* ── Janela do chat ── */}
       {open && (
@@ -561,6 +598,10 @@ export default function DooIA() {
         @keyframes dooSlideUp {
           from { opacity: 0; transform: translateY(16px) scale(0.97); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes dooFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
         }
         @keyframes dooTyping {
           0%, 100% { transform: translateY(0); opacity: 0.4; }
