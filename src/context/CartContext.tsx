@@ -14,6 +14,9 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | null>(null)
 
+/** Normaliza undefined e null para null, evitando falso-negativo na comparação */
+const norm = (v: string | null | undefined): string | null => v ?? null
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
 
@@ -21,15 +24,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems(prev => {
       const existing = prev.find(i =>
         i.id === newItem.id &&
-        i.selectedMassa === newItem.selectedMassa &&
-        i.selectedRecheio === newItem.selectedRecheio &&
-        i.selectedCobertura === newItem.selectedCobertura
+        norm(i.selectedMassa)     === norm(newItem.selectedMassa) &&
+        norm(i.selectedRecheio)   === norm(newItem.selectedRecheio) &&
+        norm(i.selectedCobertura) === norm(newItem.selectedCobertura)
       )
+
       if (existing) {
+        // Item já existe com mesma personalização: apenas soma a quantidade
         return prev.map(i =>
           i === existing ? { ...i, quantity: i.quantity + newItem.quantity } : i
         )
       }
+
+      // Item novo: adiciona ao carrinho e dispara evento
       const updated = [...prev, newItem]
       window.dispatchEvent(new CustomEvent('cartUpdated', { detail: updated }))
       return updated
