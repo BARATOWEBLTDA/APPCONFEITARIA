@@ -174,7 +174,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
               {/* Endereço */}
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '1rem' }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={borderColor || '#ec4899'} strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <p style={{ fontFamily: 'Nunito,sans-serif', fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: '1.5', margin: 0 }}>{enderecoCompleto}</p>
+                <p style={{ fontFamily: 'inherit', fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: '1.5', margin: 0 }}>{enderecoCompleto}</p>
               </div>
 
               {/* Botões */}
@@ -183,7 +183,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
                   href={`https://waze.com/ul?q=${encodeURIComponent(enderecoCompleto)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#33CCFF', color: 'white', borderRadius: '12px', fontFamily: 'Nunito,sans-serif', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#33CCFF', color: 'white', borderRadius: '12px', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
                 >
                   <img src="/waze.png" alt="Waze" width="20" height="20" style={{objectFit:'contain'}} />
                   Waze
@@ -192,7 +192,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
                   href={`https://maps.google.com/?q=${encodeURIComponent(enderecoCompleto)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#ecf3ff', color: '#4285f4', borderRadius: '12px', fontFamily: 'Nunito,sans-serif', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#ecf3ff', color: '#4285f4', borderRadius: '12px', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
                 >
                   <img src="/google-maps.png" alt="Google Maps" width="20" height="20" style={{objectFit:'contain'}} />
                   Google Maps
@@ -201,7 +201,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
 
               <button
                 onClick={() => setModalEndereco(false)}
-                style={{ width: '100%', padding: '0.85rem', background: 'var(--menu-hover-bg)', color: 'var(--text-primary)', border: 'none', borderRadius: '50px', fontFamily: 'Nunito,sans-serif', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}
+                style={{ width: '100%', padding: '0.85rem', background: 'var(--menu-hover-bg)', color: 'var(--text-primary)', border: 'none', borderRadius: '50px', fontFamily: 'inherit', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}
               >
                 Fechar
               </button>
