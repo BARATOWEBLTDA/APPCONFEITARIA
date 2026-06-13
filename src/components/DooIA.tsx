@@ -230,7 +230,7 @@ export default function DooIA() {
           cursor: 'pointer',
           zIndex: 200,
           padding: 0,
-          display: 'flex',
+          display: open ? 'none' : 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
