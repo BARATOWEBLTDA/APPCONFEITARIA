@@ -170,18 +170,18 @@ const load = async () => {
 
         {/* Hero */}
         <div className="mob-hero">
-          <div className="mob-hero-icons">
-            <button className="mob-hero-icon" onClick={() => { navigate("/notificacoes"); }} style={{ position: "relative" }}>
-              <Bell size={24} weight="duotone" color="rgba(255,255,255,0.9)" />
-            </button>
-            <button className="mob-hero-icon" onClick={() => navigate("/configuracoes")}>
+          <div className="mob-hero-row">
+            <button className="mob-hero-profile" onClick={() => navigate("/configuracoes")}>
               {profile?.foto_url
-                ? <img src={profile.foto_url} alt="perfil" style={{ width: "30px", height: "30px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.6)" }} />
-                : <User size={24} weight="duotone" color="rgba(255,255,255,0.9)" />
+                ? <img src={profile.foto_url} alt="perfil" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.7)" }} />
+                : <User size={28} weight="duotone" color="rgba(255,255,255,0.9)" />
               }
             </button>
+            <p className="mob-hero-title">{profile?.nome_loja || profile?.nome?.split(" ")[0] || "Bem-vinda"}</p>
+            <button className="mob-hero-icon" onClick={() => { navigate("/notificacoes"); }} style={{ position: "relative", marginLeft: "auto" }}>
+              <Bell size={26} weight="duotone" color="rgba(255,255,255,0.9)" />
+            </button>
           </div>
-          <p className="mob-hero-title">{profile?.nome_loja || profile?.nome?.split(" ")[0] || "Bem-vinda"}</p>
         </div>
 
         {/* MetricCards flutuando sobre o hero */}
@@ -482,10 +482,11 @@ const load = async () => {
         /* ===== MOBILE ===== */
 
         /* Hero */
-        .mob-hero { background: var(--primary-gradient); border-radius: 0 0 28px 28px; padding: 3rem 1.25rem 3.5rem; margin: -0.75rem -0.75rem 0; display: flex; flex-direction: column; gap: 0.5rem; }
-        .mob-hero-icons { display: flex; justify-content: flex-end; gap: 0.6rem; margin-bottom: 0.5rem; }
-        .mob-hero-icon { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .mob-hero-title { font-size: 1.3rem; font-weight: 800; color: #fff; margin: 0; }
+        .mob-hero { background: var(--primary-gradient); border-radius: 0 0 28px 28px; padding: 1.5rem 1.25rem 3rem; margin: -0.75rem -0.75rem 0; }
+        .mob-hero-row { display: flex; align-items: center; gap: 0.6rem; }
+        .mob-hero-profile { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; overflow: hidden; }
+        .mob-hero-icon { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .mob-hero-title { font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0; }
 
         /* MetricCards no mobile */
         .mob-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: -32px; padding: 0 0.25rem; }
