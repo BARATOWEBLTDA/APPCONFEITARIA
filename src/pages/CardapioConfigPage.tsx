@@ -679,7 +679,7 @@ export default function CardapioConfigPage() {
         /* ── Header da página ── */
         .ccc-page-header {
           display:flex; align-items:flex-end; justify-content:space-between;
-          flex-wrap:wrap; gap:0.75rem; padding-top:2.25rem; padding-bottom:1.25rem;
+          flex-wrap:wrap; gap:0.75rem; padding-top:1rem; padding-bottom:1.25rem;
           border-bottom:1px solid var(--border, #E9E9EE);
         }
         .ccc-page-title { font-size:1.5rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.3rem; letter-spacing:-0.02em; }
