@@ -2,21 +2,21 @@ import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 
 const PAGAMENTOS = [
-  { key: 'pix',                icon: '⚡', label: 'Pix' },
-  { key: 'dinheiro',           icon: '💵', label: 'Dinheiro' },
-  { key: 'credito',            icon: '💳', label: 'Cartão de Crédito' },
-  { key: 'debito',             icon: '💳', label: 'Cartão de Débito' },
-  { key: 'link_pagamento',     icon: '🔗', label: 'Link de Pagamento' },
-  { key: 'mercado_pago',       icon: '🟦', label: 'Mercado Pago' },
-  { key: 'pagamento_retirada', icon: '🏪', label: 'Pagamento na Retirada' },
+  { key: 'pix',                label: 'Pix' },
+  { key: 'dinheiro',           label: 'Dinheiro' },
+  { key: 'credito',            label: 'Cartão de Crédito' },
+  { key: 'debito',             label: 'Cartão de Débito' },
+  { key: 'link_pagamento',     label: 'Link de Pagamento' },
+  { key: 'mercado_pago',       label: 'Mercado Pago' },
+  { key: 'pagamento_retirada', label: 'Pagamento na Retirada' },
 ]
 
 const ENTREGAS = [
-  { key: 'retirada',        icon: '🏪', label: 'Retirada no local' },
-  { key: 'entrega_propria', icon: '🚗', label: 'Entrega própria' },
-  { key: 'motoboy',         icon: '🏍️', label: 'Motoboy' },
-  { key: 'uber_flash',      icon: '🚀', label: 'Uber Flash' },
-  { key: 'combinar',        icon: '💬', label: 'Combinar pelo WhatsApp' },
+  { key: 'retirada',        label: 'Retirada no local' },
+  { key: 'entrega_propria', label: 'Entrega própria' },
+  { key: 'motoboy',         label: 'Motoboy' },
+  { key: 'uber_flash',      label: 'Uber Flash' },
+  { key: 'combinar',        label: 'Combinar pelo WhatsApp' },
 ]
 
 export default function CheckoutConfigPage() {
@@ -160,7 +160,6 @@ export default function CheckoutConfigPage() {
           <div style={{display:'flex',flexDirection:'column',gap:'0.45rem'}}>
             {PAGAMENTOS.map(p => (
               <div key={p.key} onClick={() => togglePagamento(p.key)} style={{...s.check, ...(formasPagamento.includes(p.key) ? s.checkActive : {})}}>
-                <span style={{fontSize:'1.2rem'}}>{p.icon}</span>
                 <span style={{flex:1,fontSize:'0.88rem',fontWeight:formasPagamento.includes(p.key)?700:500,color:formasPagamento.includes(p.key)?'var(--primary-dark, #F85A9A)':'var(--text-primary, #374151)'}}>{p.label}</span>
                 <div style={{width:'20px',height:'20px',borderRadius:'6px',border:formasPagamento.includes(p.key)?'2px solid var(--primary, #FF6FA9)':'2px solid var(--border, #E9E9EE)',background:formasPagamento.includes(p.key)?'var(--primary, #FF6FA9)':'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
                   {formasPagamento.includes(p.key) && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -194,7 +193,6 @@ export default function CheckoutConfigPage() {
           <div style={{display:'flex',flexDirection:'column',gap:'0.45rem'}}>
             {ENTREGAS.map(e => (
               <div key={e.key} onClick={() => toggleEntrega(e.key)} style={{...s.check, ...(formasEntrega.includes(e.key) ? s.checkActive : {})}}>
-                <span style={{fontSize:'1.2rem'}}>{e.icon}</span>
                 <span style={{flex:1,fontSize:'0.88rem',fontWeight:formasEntrega.includes(e.key)?700:500,color:formasEntrega.includes(e.key)?'var(--primary-dark, #F85A9A)':'var(--text-primary, #374151)'}}>{e.label}</span>
                 <div style={{width:'20px',height:'20px',borderRadius:'6px',border:formasEntrega.includes(e.key)?'2px solid var(--primary, #FF6FA9)':'2px solid var(--border, #E9E9EE)',background:formasEntrega.includes(e.key)?'var(--primary, #FF6FA9)':'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
                   {formasEntrega.includes(e.key) && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -206,7 +204,7 @@ export default function CheckoutConfigPage() {
           {formasEntrega.includes('retirada') && (
             <>
               <hr style={{border:'none',borderTop:'1px solid var(--border, #E9E9EE)',margin:'0.25rem 0'}} />
-              <p style={{margin:0,fontSize:'0.82rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>📍 Endereço de retirada</p>
+              <p style={{margin:0,fontSize:'0.82rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>Endereço de retirada</p>
               <input value={enderecoRetirada} onChange={e => setEnderecoRetirada(e.target.value)} placeholder="Rua, número, bairro..." style={s.input} />
               <input value={horarioRetirada} onChange={e => setHorarioRetirada(e.target.value)} placeholder="Horário de retirada (ex: 08h às 18h)" style={s.input} />
             </>
@@ -215,7 +213,7 @@ export default function CheckoutConfigPage() {
           {formasEntrega.includes('entrega_propria') && (
             <>
               <hr style={{border:'none',borderTop:'1px solid var(--border, #E9E9EE)',margin:'0.25rem 0'}} />
-              <p style={{margin:0,fontSize:'0.82rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>🚗 Valor da entrega própria</p>
+              <p style={{margin:0,fontSize:'0.82rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>Valor da entrega própria</p>
               <div style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
                 <span style={{fontSize:'0.88rem',color:'var(--text-secondary, #6B7280)'}}>R$</span>
                 <input value={valorEntregaPropria} onChange={e => setValorEntregaPropria(e.target.value.replace(/[^0-9.,]/g,''))} placeholder="0,00" style={{...s.input,width:'120px'}} />
