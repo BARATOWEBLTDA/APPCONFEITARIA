@@ -129,6 +129,7 @@ export default function Inicio() {
         {/* Hero */}
         <div className="mob-hero">
           <div className="mob-hero-row">
+            <span className="mob-hero-brand">Doonly</span>
             <div style={{ flex: 1 }} />
             <button
               className={`mob-hero-bell${notifCount > 0 ? " has-notif" : ""}`}
@@ -316,6 +317,7 @@ export default function Inicio() {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
         .ini-root { font-family: 'Geist', sans-serif; }
 
         /* Switch */
@@ -338,6 +340,7 @@ export default function Inicio() {
         .mob-hero-notif-badge { position: absolute; top: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: var(--error); color: #fff; font-size: 0.6rem; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid transparent; }
         @keyframes bell-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); } 50% { box-shadow: 0 0 0 6px rgba(255,255,255,0); } }
         .mob-hero-title { font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0; line-height: 1.2; }
+        .mob-hero-brand { font-family: 'Dancing Script', cursive; font-weight: 700; font-size: 1.6rem; color: #ffffff; text-shadow: 0 0 6px rgba(255,255,255,0.5); line-height: 1; }
 
         /* MetricCards no mobile */
         .mob-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: -52px; padding: 0 0.25rem; }
