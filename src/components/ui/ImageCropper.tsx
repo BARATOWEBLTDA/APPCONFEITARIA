@@ -69,13 +69,13 @@ export function ImageCropper({ imageSrc, aspect = 1, cropShape = 'round', onCanc
       }}>
         {/* Header */}
         <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)' }}>
-          <button onClick={onCancel} style={{ background: 'var(--menu-hover-bg)', border: 'none', borderRadius: '8px', padding: '7px 14px', color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={onCancel} style={{ background: 'var(--menu-hover-bg)', border: 'none', borderRadius: '8px', padding: '7px 14px', color: 'var(--text-primary)', fontFamily: 'inherit', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
             Cancelar
           </button>
-          <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-title)' }}>
+          <span style={{ fontFamily: 'inherit', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-title)' }}>
             {cropShape === 'round' ? 'Ajustar logo' : 'Ajustar foto'}
           </span>
-          <button onClick={handleDone} disabled={loading} style={{ background: '#ec4899', border: 'none', borderRadius: '8px', padding: '7px 14px', color: 'white', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
+          <button onClick={handleDone} disabled={loading} style={{ background: '#ec4899', border: 'none', borderRadius: '8px', padding: '7px 14px', color: 'white', fontFamily: 'inherit', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', opacity: loading ? 0.7 : 1 }}>
             {loading ? '...' : 'Confirmar'}
           </button>
         </div>

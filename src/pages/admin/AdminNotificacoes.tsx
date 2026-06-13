@@ -133,7 +133,7 @@ export default function AdminNotificacoes() {
               </div>
               <div className="adm-form-field">
                 <label>Mensagem</label>
-                <textarea rows={3} placeholder="Descreva a notificação..." value={form.mensagem} onChange={e => setForm({ ...form, mensagem: e.target.value })} style={{ padding: "0.65rem 0.9rem", border: "1.5px solid #e5e7eb", borderRadius: "8px", fontFamily: "Inter,sans-serif", fontSize: "0.88rem", color: "#1f2937", outline: "none", resize: "none", width: "100%" }} />
+                <textarea rows={3} placeholder="Descreva a notificação..." value={form.mensagem} onChange={e => setForm({ ...form, mensagem: e.target.value })} style={{ padding: "0.65rem 0.9rem", border: "1.5px solid #e5e7eb", borderRadius: "8px", fontFamily: "inherit", fontSize: "0.88rem", color: "#1f2937", outline: "none", resize: "none", width: "100%" }} />
               </div>
               <div className="adm-form-field">
                 <label>Tag <span style={{ fontWeight: 400, color: "#9ca3af" }}>(ex: nova receita!, atualização)</span></label>

@@ -86,7 +86,7 @@ export function QuickSetupModal({ step, userId, onClose, onSaved }: Props) {
       if (trabalhaConfeitaria === null) return (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           <p style={{ fontSize: "0.88rem", color: "#6b7280", margin: 0, textAlign: "center" }}>Isso nos ajuda a personalizar sua experiência</p>
-          <button onClick={() => setTrabalhaConfeitaria(true)} style={{ padding: "0.9rem", background: "#fdf2f8", border: "2px solid #fce7f3", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 600, color: "#ec4899", cursor: "pointer" }}>
+          <button onClick={() => setTrabalhaConfeitaria(true)} style={{ padding: "0.9rem", background: "#fdf2f8", border: "2px solid #fce7f3", borderRadius: "12px", fontFamily: "inherit", fontSize: "0.95rem", fontWeight: 600, color: "#ec4899", cursor: "pointer" }}>
             ✅ Sim, já tenho uma confeitaria
           </button>
           <button onClick={async () => {
@@ -94,7 +94,7 @@ export function QuickSetupModal({ step, userId, onClose, onSaved }: Props) {
             await supabase.from("profiles").upsert({ id: userId, onboarding_trabalha_confeitaria: true }, { onConflict: "id" });
             await refreshProfile();
             onSaved(); onClose(); setSaving(false);
-          }} style={{ padding: "0.9rem", background: "#f9fafb", border: "2px solid #e5e7eb", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.95rem", fontWeight: 600, color: "#6b7280", cursor: "pointer" }}>
+          }} style={{ padding: "0.9rem", background: "#f9fafb", border: "2px solid #e5e7eb", borderRadius: "12px", fontFamily: "inherit", fontSize: "0.95rem", fontWeight: 600, color: "#6b7280", cursor: "pointer" }}>
             🌱 Não, estou começando agora
           </button>
         </div>
