@@ -15,7 +15,7 @@ const ENTREGAS = [
   { key: 'retirada',        label: 'Retirada no local' },
   { key: 'entrega_propria', label: 'Entrega própria' },
   { key: 'motoboy',         label: 'Motoboy' },
-  { key: 'uber_flash',      label: 'Uber Flash' },
+  { key: 'uber_flash',      label: 'Uber' },
   { key: 'combinar',        label: 'Combinar pelo WhatsApp' },
 ]
 
