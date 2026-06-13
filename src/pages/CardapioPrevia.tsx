@@ -93,7 +93,7 @@ export default function CardapioPrevia() {
         </button>
 
         {/* Título + Toggle */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: 1, justifyContent: "center" }}>
+        <div style={{ display: window.innerWidth < 768 ? "none" : "flex", alignItems: "center", gap: "12px", flex: 1, justifyContent: "center" }}>
           <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.8rem", fontWeight: 500 }}>
             Você está vendo uma Prévia do seu Cardápio
           </span>
@@ -163,7 +163,7 @@ export default function CardapioPrevia() {
         </div>
 
         {/* Ações direita */}
-        <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+        <div style={{ display: window.innerWidth < 768 ? "none" : "flex", gap: "6px", flexShrink: 0 }}>
           <button
             onClick={openInTab}
             title="Abrir em nova aba"
