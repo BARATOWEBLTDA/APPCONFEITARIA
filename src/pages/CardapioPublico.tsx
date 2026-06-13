@@ -200,25 +200,6 @@ function DeskInfoRow({ design, config }: any) {
             )}
           </div>
 
-          {/* Fidelidade */}
-          <div style={{ background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', padding:'16px' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
-              <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#fef3c7', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0 }}>🏆</div>
-              <span style={{ fontWeight:700, fontSize:'13px', color:'var(--text-title, #1F2937)' }}>Programa de fidelidade</span>
-            </div>
-            <p style={{ margin:0, fontSize:'11px', color:'var(--text-secondary, #6B7280)', lineHeight:1.5 }}>A cada <strong>R$ 100,00</strong> em compras você ganha <strong>1 ponto</strong> que pode ser trocado por prêmios.</p>
-            <p style={{ margin:'4px 0 0', fontSize:'10px', color:'var(--text-muted, #9CA3AF)' }}>Novos clientes ganham automaticamente 50 pontos.</p>
-          </div>
-
-          {/* Entrega */}
-          <div style={{ background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', padding:'16px' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
-              <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#dbeafe', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0 }}>🚚</div>
-              <span style={{ fontWeight:700, fontSize:'13px', color:'var(--text-title, #1F2937)' }}>Entrega e retirada</span>
-            </div>
-            <p style={{ margin:0, fontSize:'11px', color:'var(--text-secondary, #6B7280)', lineHeight:1.5 }}>Finalize pelo WhatsApp. Escolha entrega ou retirada no checkout.</p>
-          </div>
-
         </div>
       </div>
     </div>
@@ -670,9 +651,18 @@ function CardapioContent() {
             />
           </div>
 
-          {/* DIREITA — Sacola */}
-          <div style={{ position:'sticky', top:'100px' }}>
+          {/* DIREITA — Sacola + Fidelidade */}
+          <div style={{ position:'sticky', top:'100px', display:'flex', flexDirection:'column', gap:'12px' }}>
             <DeskSacola cartCount={cartCount} cartTotal={cartTotal} design={design} items={cartItems} />
+            {(config as any).programa_fidelidade_ativo !== false && (
+              <div style={{ background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', padding:'16px' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
+                  <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#fef3c7', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0 }}>🏆</div>
+                  <span style={{ fontWeight:700, fontSize:'13px', color:'var(--text-title, #1F2937)' }}>Programa de Fidelidade</span>
+                </div>
+                <p style={{ margin:0, fontSize:'11px', color:'var(--text-secondary, #6B7280)', lineHeight:1.5 }}>A cada <strong>R$ 50,00</strong> em compras você ganha <strong>5% de cashback</strong> no próximo pedido.</p>
+              </div>
+            )}
           </div>
 
         </div>
