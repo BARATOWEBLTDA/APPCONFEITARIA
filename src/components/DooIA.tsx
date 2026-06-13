@@ -263,7 +263,7 @@ export default function DooIA() {
             <img
               src="/doo.png"
               alt="Doo"
-              style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }}
+              style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center' }}
             />
           </div>
         </div>
@@ -332,7 +332,7 @@ export default function DooIA() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               overflow: 'hidden', flexShrink: 0,
             }}>
-              <img src="/doo.png" alt="Doo" style={{ width: '34px', height: '34px', objectFit: 'cover', borderRadius: '50%' }} />
+              <img src="/doo.png" alt="Doo" style={{ width: '48px', height: '48px', objectFit: 'cover', objectPosition: 'top center', borderRadius: '50%' }} />
             </div>
             <div style={{ flex: 1 }}>
               <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'white', fontFamily: 'Geist, sans-serif' }}>Doo ✨</p>
@@ -366,7 +366,7 @@ export default function DooIA() {
                     width: '26px', height: '26px', borderRadius: '50%',
                     border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0,
                   }}>
-                    <img src="/doo.png" alt="Doo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src="/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
                   </div>
                 )}
                 <div style={{
@@ -396,7 +396,7 @@ export default function DooIA() {
             {loading && (
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
                 <div style={{ width: '26px', height: '26px', borderRadius: '50%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
-                  <img src="/doo.png" alt="Doo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src="/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
                 </div>
                 <div style={{
                   background: 'white', padding: '0.65rem 1rem', borderRadius: '16px 16px 16px 4px',
