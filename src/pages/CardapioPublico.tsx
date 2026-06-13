@@ -564,7 +564,14 @@ function CardapioContent() {
       <div style={{ textAlign:'center' }}>
         <div style={{ width:'40px', height:'40px', border:'3px solid #fce7f3', borderTopColor:'var(--primary, #FF6FA9)', borderRadius:'50%', animation:'spin 0.7s linear infinite', margin:'0 auto 12px' }}/>
         <p style={{ color:'var(--text-secondary, #6B7280)', fontSize:'14px' }}>Carregando cardápio...</p>
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        <style>{`
+          @keyframes spin{to{transform:rotate(360deg)}}
+          ::-webkit-scrollbar { width: 5px; height: 5px; }
+          ::-webkit-scrollbar-track { background: transparent; }
+          ::-webkit-scrollbar-thumb { background: ${design.cor_botao || '#ec4899'}; border-radius: 99px; opacity: 0.6; }
+          ::-webkit-scrollbar-thumb:hover { opacity: 1; }
+          * { scrollbar-width: thin; scrollbar-color: ${design.cor_botao || '#ec4899'} transparent; }
+        `}</style>
       </div>
     </div>
   )
