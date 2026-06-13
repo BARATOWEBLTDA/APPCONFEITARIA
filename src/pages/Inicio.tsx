@@ -146,21 +146,22 @@ export default function Inicio() {
             variant="orders"
             label="Pedidos do mês"
             value={pedidos !== 0 ? pedidos : undefined}
-            emptyText="Sem pedidos"
+            emptyText="Nenhum ainda"
             onClick={() => navigate("/pedidos")}
             icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}
           />
           <MetricCard
             variant="revenue"
             label="Faturamento"
-            value="R$ 0,00"
+            value={undefined}
+            emptyText="Sem vendas ainda"
             icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
           />
           <MetricCard
             variant="customers"
             label="Clientes"
             value={clientes !== 0 ? clientes : undefined}
-            emptyText="Nenhum ainda"
+            emptyText="Sem clientes ainda"
             onClick={() => navigate("/clientes")}
             icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
           />
@@ -322,7 +323,7 @@ export default function Inicio() {
 
         /* Hero */
         .mob-hero { background: var(--primary-gradient); border-radius: 0 0 28px 28px; padding: 1.5rem 1.25rem 3rem; margin: -0.75rem -0.75rem 0; }
-        .mob-hero-row { display: flex; align-items: center; gap: 0.6rem; }
+        .mob-hero-row { display: flex; align-items: center; gap: 0.85rem; }
         .mob-hero-profile { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; overflow: hidden; }
         .mob-hero-icon { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .mob-hero-title { font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0; }
