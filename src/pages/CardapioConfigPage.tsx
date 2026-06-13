@@ -681,7 +681,7 @@ export default function CardapioConfigPage() {
         .ccc-page-header {
           display:flex; align-items:flex-end; justify-content:space-between;
           flex-wrap:wrap; gap:0.75rem; padding-top:1rem; padding-bottom:1.25rem;
-          border-bottom:1px solid var(--border, #E9E9EE);
+          border-bottom: none;
         }
         .ccc-page-title { font-size:1.5rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.3rem; letter-spacing:-0.02em; }
         .ccc-page-sub { font-size:0.86rem; color:var(--text-secondary, #6B7280); margin:0; }
@@ -726,7 +726,7 @@ export default function CardapioConfigPage() {
         .ccc-section-label {
           font-size:0.7rem; font-weight:700; color:var(--text-muted, #9CA3AF);
           text-transform:uppercase; letter-spacing:0.12em; margin:0;
-          padding-bottom:0.75rem; border-bottom:1px solid var(--border, #E9E9EE);
+          padding-bottom:0.75rem; border-bottom: none;
           display:flex; align-items:center; gap:0.4rem;
         }
         .ccc-section-label::before {
@@ -786,7 +786,7 @@ export default function CardapioConfigPage() {
         .ccc-char-count { font-size:0.72rem; color:var(--text-muted, #9CA3AF); text-align:right; margin:0; }
         .ccc-cep-hint { font-size:0.74rem; color:var(--text-secondary, #6B7280); margin:0; }
         .ccc-row-2 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0.6rem; }
-        .ccc-divider { border:none; border-top:1px solid var(--border, #E9E9EE); margin:0.25rem 0; }
+        .ccc-divider { border:none; margin:0.25rem 0; }
         .ccc-entrega-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; width:100%; min-width:0; box-sizing:border-box; }
 
         /* ── Toggle ── */
