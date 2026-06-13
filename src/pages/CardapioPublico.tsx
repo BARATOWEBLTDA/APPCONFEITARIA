@@ -404,7 +404,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
           onMouseOut={e => (e.currentTarget as HTMLElement).style.background='var(--bg-card, #FFFFFF)'}
         >
           <div style={{ width:'32px', height:'32px', borderRadius:'8px', background:'var(--bg-body)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <img src="/desconto.png" alt="" style={{ width:'20px', height:'20px', objectFit:'contain' }} />
           </div>
           <div style={{ flex:1 }}>
             <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'var(--text-title, #1F2937)' }}>Tem um cupom?</p>
