@@ -300,7 +300,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
         onMouseOut={e => (e.currentTarget as HTMLElement).style.background='var(--bg-card, #FFFFFF)'}
       >
         <MapPin size={18} color="#6E3548" weight="duotone" style={{ flexShrink:0 }}/>
-        <span style={{ flex:1, fontSize:'13px', fontWeight:600, color:'var(--text-title, #1F2937)' }}>Calcular taxa e tempo de entrega</span>
+        <span style={{ flex:1, fontSize:'13px', fontWeight:600, color:'var(--text-title, #1F2937)' }}>Calcular taxa de entrega</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={cor} strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
 
