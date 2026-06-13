@@ -11,7 +11,7 @@ import { TrialCardMobileBanner } from "@/components/billing/TrialCard";
 export default function Inicio() {
   const navigate = useNavigate();
   const { isPro } = usePlano();
-  const { notifCount, notifOpen, notificacoes, openNotif, closeNotif } = useNotifications();
+  const { notifCount, openNotif } = useNotifications();
 
   const [profile, setProfile] = useState<any>(null);
   const [produtos, setProdutos] = useState(0);
@@ -314,34 +314,6 @@ export default function Inicio() {
 
       </div>
 
-      {/* ── Notificações Bottom Sheet (mobile) ── */}
-      {notifOpen && (
-        <div className="notif-sheet-overlay" onClick={closeNotif}>
-          <div className="notif-sheet" onClick={e => e.stopPropagation()}>
-            <div className="notif-sheet-handle" />
-            <div className="notif-header">
-              <span>Notificações</span>
-              <button onClick={closeNotif}>✕</button>
-            </div>
-            <div className="notif-body">
-              {notificacoes.length === 0
-                ? <p className="notif-empty">Nenhuma notificação</p>
-                : notificacoes.map((n: any) => (
-                  <div key={n.id} className="notif-item">
-                    {n.imagem_url && <img src={n.imagem_url} alt="" style={{ width: "40px", height: "40px", borderRadius: "8px", objectFit: "cover", flexShrink: 0 }} />}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p className="notif-title">{n.titulo || n.title}</p>
-                      <p className="notif-msg">{n.mensagem || n.body}</p>
-                      <p className="notif-time">{new Date(n.created_at).toLocaleDateString("pt-BR")}</p>
-                    </div>
-                  </div>
-                ))
-              }
-            </div>
-          </div>
-        </div>
-      )}
-
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         .ini-root { font-family: 'Geist', sans-serif; }
@@ -357,24 +329,18 @@ export default function Inicio() {
         /* ===== MOBILE ===== */
 
         /* Hero */
-        .mob-hero { background: var(--primary-gradient); border-radius: 0 0 28px 28px; padding: 1.5rem 1.25rem 4.5rem; margin: -0.75rem -0.75rem 0; }
+        .mob-hero { background: var(--primary-gradient); border-radius: 0 0 28px 28px; padding: 2.5rem 1.25rem 4.5rem; margin: -0.75rem -0.75rem 0; }
         .mob-hero-row { display: flex; align-items: center; gap: 0.7rem; }
         .mob-hero-profile { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; overflow: hidden; }
         .mob-hero-icon { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .mob-hero-bell { background: none; border: none; padding: 0.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; }
         .mob-hero-bell.has-notif { background: rgba(255,255,255,0.15); animation: bell-pulse 1.8s ease-in-out infinite; }
-
-        /* ── Notificações Bottom Sheet ── */
-        .notif-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: flex-end; }
-        .notif-sheet { background: var(--bg-card); border-radius: 20px 20px 0 0; width: 100%; max-height: 70vh; display: flex; flex-direction: column; animation: sheet-up 0.25s ease-out; }
-        .notif-sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 99px; margin: 0.75rem auto 0; flex-shrink: 0; }
-        @keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .mob-hero-notif-badge { position: absolute; top: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: var(--error); color: #fff; font-size: 0.6rem; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid transparent; }
         @keyframes bell-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); } 50% { box-shadow: 0 0 0 6px rgba(255,255,255,0); } }
         .mob-hero-title { font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0; line-height: 1.2; }
 
         /* MetricCards no mobile */
-        .mob-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: -32px; padding: 0 0.25rem; }
+        .mob-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: -52px; padding: 0 0.25rem; }
         .mob-metrics .dash-metric-card { padding: 0.75rem; border-radius: 14px; }
         .mob-metrics .dash-metric-num { font-size: 1.2rem; }
         .mob-metrics .dash-metric-label { font-size: 0.62rem; }
