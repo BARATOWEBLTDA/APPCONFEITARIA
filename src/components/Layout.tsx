@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
+import DooIA from "@/components/DooIA";
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import {
   House, CalendarDots, ShoppingBag, ClipboardText, Users, BookOpen,
@@ -244,6 +245,8 @@ export default function Layout() {
           )}
         </nav>
       )}
+
+      <DooIA />
 
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
