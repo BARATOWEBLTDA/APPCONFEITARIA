@@ -195,23 +195,23 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
             {/* Nome, badge e preço */}
             <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-title)', margin: '0 0 8px', paddingRight: '36px' }}>{product.nome}</h3>
+              <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-title)', margin: '0 0 8px', paddingRight: '36px', textTransform: 'capitalize', letterSpacing: '-0.01em' }}>{product.nome.toLowerCase()}</h3>
               {prontaEntrega ? (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: `${corBotao}15`, color: corBotao, fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', border: `1px solid ${corBotao}30`, marginBottom: '8px' }}>✓ Pronta entrega</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--border)', color: 'var(--text-secondary)', fontSize: '10px', fontWeight: 600, padding: '4px 10px', borderRadius: '6px', lineHeight: 1, marginBottom: '8px' }}>✓ Pronta entrega</span>
               ) : (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--border)', color: 'var(--text-secondary)', fontSize: '10px', fontWeight: 700, padding: '3px 8px', borderRadius: '6px', marginBottom: '8px' }}>⏱ Sob encomenda</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--border)', color: 'var(--text-secondary)', fontSize: '10px', fontWeight: 600, padding: '4px 10px', borderRadius: '6px', lineHeight: 1, marginBottom: '8px' }}>⏱ Sob encomenda</span>
               )}
-              {product.descricao && <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 10px' }}>{product.descricao}</p>}
+              {product.descricao && <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5', margin: '0 0 10px', fontWeight: 400 }}>{product.descricao}</p>}
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
                 {product.promocao && unitPrice < product.preco_normal ? (
                   <>
-                    <span style={{ fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'line-through' }}>{formatCurrency(product.preco_normal)}</span>
-                    <span style={{ fontSize: '22px', fontWeight: 800, color: corBotao }}>{formatCurrency(unitPrice)}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', textDecoration: 'line-through' }}>{formatCurrency(product.preco_normal)}</span>
+                    <span style={{ fontSize: '18px', fontWeight: 700, color: corBotao }}>{formatCurrency(unitPrice)}</span>
                   </>
                 ) : (
-                  <span style={{ fontSize: '22px', fontWeight: 800, color: corBotao }}>{formatCurrency(basePrice)}</span>
+                  <span style={{ fontSize: '18px', fontWeight: 700, color: corBotao }}>{formatCurrency(basePrice)}</span>
                 )}
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>/ {FORMA_LABEL[product.forma_venda] || product.forma_venda}</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 }}>/ {FORMA_LABEL[product.forma_venda] || product.forma_venda}</span>
               </div>
             </div>
 
@@ -243,16 +243,16 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             {/* Tamanhos */}
             {tamanhos.length > 0 && (
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-title)', display: 'block', marginBottom: '10px' }}>Escolha o tamanho</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-title)', display: 'block', marginBottom: '8px' }}>Escolha o tamanho</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                   {tamanhos.map((t: any, i: number) => (
                     <button key={i} onClick={() => setSelectedTamanho(t)} style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '10px 14px', borderRadius: '10px',
-                      border: `2px solid ${selectedTamanho?.label === t.label ? corBotao : 'var(--border)'}`,
-                      background: selectedTamanho?.label === t.label ? `${corBotao}15` : 'var(--bg-card)', cursor: 'pointer',
+                      padding: '8px 12px', borderRadius: '10px',
+                      border: `1.5px solid ${selectedTamanho?.label === t.label ? corBotao : 'var(--border)'}`,
+                      background: selectedTamanho?.label === t.label ? `${corBotao}10` : 'var(--bg-card)', cursor: 'pointer',
                     }}>
-                      <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{t.label}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{t.label}</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ textAlign: 'right' }}>
                           {descPct > 0 && <span style={{ fontSize: '12px', color: 'var(--text-muted)', textDecoration: 'line-through', display: 'block' }}>{formatCurrency(t.preco)}</span>}
@@ -281,7 +281,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
             {/* Observações */}
             <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-title)', display: 'block', marginBottom: '8px' }}>Alguma observação?</span>
+              <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Alguma observação?</span>
               <textarea value={observations} onChange={e => setObservations(e.target.value)} placeholder="Ex: sem cereja, embalagem para presente..." style={{ width: '100%', padding: '10px 12px', border: '1.5px solid var(--border)', borderRadius: '12px', fontSize: '13px', color: 'var(--text-primary)', resize: 'none', minHeight: '64px', boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none' }} />
             </div>
 
