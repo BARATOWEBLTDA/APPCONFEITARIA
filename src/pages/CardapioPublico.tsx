@@ -299,7 +299,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
         onMouseOver={e => (e.currentTarget as HTMLElement).style.background='#fafafa'}
         onMouseOut={e => (e.currentTarget as HTMLElement).style.background='var(--bg-card, #FFFFFF)'}
       >
-        <MapPin size={18} color={cor} weight="duotone" style={{ flexShrink:0 }}/>
+        <MapPin size={18} color="#6E3548" weight="duotone" style={{ flexShrink:0 }}/>
         <span style={{ flex:1, fontSize:'13px', fontWeight:600, color:'var(--text-title, #1F2937)' }}>Calcular taxa e tempo de entrega</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={cor} strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
@@ -657,10 +657,12 @@ function CardapioContent() {
             {(config as any).programa_fidelidade_ativo !== false && (
               <div style={{ background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', padding:'16px' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
-                  <div style={{ width:'28px', height:'28px', borderRadius:'8px', background:'#fef3c7', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', flexShrink:0 }}>🏆</div>
+                  <div style={{ width:'28px', height:'28px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                    <img src="/cashback.svg" alt="" style={{ width:'24px', height:'24px', objectFit:'contain' }} />
+                  </div>
                   <span style={{ fontWeight:700, fontSize:'13px', color:'var(--text-title, #1F2937)' }}>Programa de Fidelidade</span>
                 </div>
-                <p style={{ margin:0, fontSize:'11px', color:'var(--text-secondary, #6B7280)', lineHeight:1.5 }}>A cada <strong>R$ 50,00</strong> em compras você ganha <strong>5% de cashback</strong> no próximo pedido.</p>
+                <p style={{ margin:0, fontSize:'11px', color:'var(--text-secondary, #6B7280)', lineHeight:1.5 }}>A cada <strong>R$ 50,00</strong> em compras, você acumula <strong>5% de cashback</strong> para descontar no seu próximo pedido.</p>
               </div>
             )}
           </div>
