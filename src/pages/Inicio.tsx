@@ -134,20 +134,20 @@ export default function Inicio() {
         {/* Hero */}
         <div className="mob-hero">
           <div className="mob-hero-row">
-            <button className="mob-hero-profile" onClick={() => navigate("/configuracoes")}>
-              {profile?.foto_url
-                ? <img src={profile.foto_url} alt="perfil" style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.7)" }} />
-                : <User size={28} weight="duotone" color="rgba(255,255,255,0.9)" />
-              }
-            </button>
-            <p className="mob-hero-title">{profile?.nome_loja || profile?.nome?.split(" ")[0] || "Bem-vinda"}</p>
+            <div style={{ flex: 1 }} />
             <button
               className={`mob-hero-bell${notifCount > 0 ? " has-notif" : ""}`}
               onClick={() => { navigate("/notificacoes"); }}
-              style={{ position: "relative", marginLeft: "auto" }}
+              style={{ position: "relative" }}
             >
               <Bell size={24} weight="duotone" color="rgba(255,255,255,0.9)" />
               {notifCount > 0 && <span className="mob-hero-notif-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
+            </button>
+            <button className="mob-hero-profile" onClick={() => navigate("/configuracoes")}>
+              {profile?.foto_url
+                ? <img src={profile.foto_url} alt="perfil" style={{ width: "24px", height: "24px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.7)" }} />
+                : <User size={24} weight="duotone" color="rgba(255,255,255,0.9)" />
+              }
             </button>
           </div>
         </div>
@@ -336,7 +336,7 @@ export default function Inicio() {
         /* Hero */
         .mob-hero { background: var(--primary-gradient); border-radius: 0 0 28px 28px; padding: 1.5rem 1.25rem 3rem; margin: -0.75rem -0.75rem 0; }
         .mob-hero-row { display: flex; align-items: center; gap: 0.7rem; }
-        .mob-hero-profile { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; overflow: hidden; }
+        .mob-hero-profile { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; overflow: hidden; }
         .mob-hero-icon { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .mob-hero-bell { background: none; border: none; padding: 0.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; }
         .mob-hero-bell.has-notif { background: rgba(255,255,255,0.15); animation: bell-pulse 1.8s ease-in-out infinite; }
