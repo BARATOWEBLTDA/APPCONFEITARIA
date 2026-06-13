@@ -137,7 +137,7 @@ export default function CardapioPrevia() {
               onClick={() => setViewMode("desktop")}
               title="Visão desktop"
               style={{
-                display: "flex",
+                display: window.innerWidth < 768 ? "none" : "flex",
                 alignItems: "center",
                 gap: "5px",
                 padding: "5px 12px",
