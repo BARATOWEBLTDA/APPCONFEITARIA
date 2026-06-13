@@ -213,28 +213,6 @@ export default function Layout() {
         </div>
       )}
 
-      {/* ── Mobile top header ── */}
-      {!isAssinar && !isPrevia && (
-        <div className="mob-top-header">
-          <div className="mob-top-icons">
-            <button className="mob-top-icon" onClick={() => {
-                localStorage.setItem("notif_last_seen", new Date().toISOString());
-                setNotifCount(0);
-                navigate("/notificacoes");
-              }} style={{ position: "relative" }}>
-              <Bell size={24} weight="duotone" color="var(--topbar-text)" />
-              {notifCount > 0 && <span className="mob-notif-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
-            </button>
-            <button className="mob-top-icon" onClick={() => navigate("/configuracoes")}>
-              {profile?.foto_url
-                ? <img src={profile.foto_url} alt="perfil" style={{ width: "28px", height: "28px", borderRadius: "50%", objectFit: "cover", border: "2px solid var(--topbar-text)" }} />
-                : <User size={24} weight="duotone" color="var(--topbar-text)" />
-              }
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* ── Bottom nav Mobile ── */}
       {!isReceitas && !isPrevia && (
         <nav className="bottom-nav">
@@ -288,7 +266,6 @@ export default function Layout() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         .layout-root { display: flex; min-height: 100vh; font-family: var(--font-base); background: var(--bg-body); position: relative; }
-        .mob-top-header { display: none; }
         .bottom-nav { display: none; }
 
         /* ── Sidebar ── */
@@ -368,17 +345,6 @@ export default function Layout() {
         @media (max-width: 900px) {
           .sidebar { display: none; }
 
-          .mob-top-header {
-            display: flex !important;
-            position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
-            background: transparent;
-            padding: 0.65rem 1.25rem;
-            align-items: center; justify-content: flex-end;
-          }
-
-          .mob-top-icons { display: flex; align-items: center; gap: 0.6rem; }
-          .mob-top-icon { background: none; border: none; cursor: pointer; display: flex; align-items: center; padding: 0.2rem; }
-
           .mob-notif-badge {
             position: absolute; top: -4px; right: -4px;
             background: var(--error); color: var(--text-inverse);
@@ -388,7 +354,7 @@ export default function Layout() {
             border: 2px solid var(--primary-dark); line-height: 1;
           }
 
-          .layout-main { margin-left: 0; padding: 0.75rem; padding-top: 5rem; padding-bottom: 5.5rem; background: var(--bg-body); min-height: 100vh; width: 100%; box-sizing: border-box; }
+          .layout-main { margin-left: 0; padding: 0.75rem; padding-top: 0; padding-bottom: 5.5rem; background: var(--bg-body); min-height: 100vh; width: 100%; box-sizing: border-box; }
           .layout-main--no-header { padding-top: 1rem; background: var(--bg-body); }
 
           .bottom-nav {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Users, Package, ClipboardList, DollarSign, UtensilsCrossed, BookOpen } from "lucide-react";
+import { Bell, User } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
@@ -167,9 +168,49 @@ const load = async () => {
       {/* ===== MOBILE ===== */}
       <div className="ini-mobile">
 
+        {/* Hero */}
+        <div className="mob-hero">
+          <div className="mob-hero-icons">
+            <button className="mob-hero-icon" onClick={() => { navigate("/notificacoes"); }} style={{ position: "relative" }}>
+              <Bell size={24} weight="duotone" color="rgba(255,255,255,0.9)" />
+            </button>
+            <button className="mob-hero-icon" onClick={() => navigate("/configuracoes")}>
+              {profile?.foto_url
+                ? <img src={profile.foto_url} alt="perfil" style={{ width: "30px", height: "30px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.6)" }} />
+                : <User size={24} weight="duotone" color="rgba(255,255,255,0.9)" />
+              }
+            </button>
+          </div>
+          <p className="mob-hero-title">{profile?.nome_loja || profile?.nome?.split(" ")[0] || "Bem-vinda"}</p>
+        </div>
+
+        {/* MetricCards flutuando sobre o hero */}
+        <div className="mob-metrics">
+          <MetricCard
+            variant="orders"
+            label="Pedidos do mês"
+            value={pedidos !== 0 ? pedidos : undefined}
+            emptyText="Sem pedidos"
+            onClick={() => navigate("/pedidos")}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>}
+          />
+          <MetricCard
+            variant="revenue"
+            label="Faturamento"
+            value="R$ 0,00"
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>}
+          />
+          <MetricCard
+            variant="customers"
+            label="Clientes"
+            value={clientes !== 0 ? clientes : undefined}
+            emptyText="Nenhum ainda"
+            onClick={() => navigate("/clientes")}
+            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}
+          />
+        </div>
 
 
-        {/* 1. Configure seu Doonly - destaque escuro */}
         {!loading && (progress < 100 ? (
         <div className="mob-config-card">
           <div className="mob-config-header">
@@ -221,25 +262,6 @@ const load = async () => {
               <span className="mob-atalho-label">{a.label}</span>
             </button>
           ))}
-        </div>
-
-        {/* 3. Métricas - 3 lado a lado */}
-        <div className="mob-summary">
-          <div className="mob-sum-card" onClick={() => navigate("/pedidos")}>
-            <span className="mob-sum-icon">📦</span>
-            <p className="mob-sum-num">{pedidos}</p>
-            <p className="mob-sum-label">Pedidos</p>
-          </div>
-          <div className="mob-sum-card" onClick={() => navigate("/clientes")}>
-            <span className="mob-sum-icon">👥</span>
-            <p className="mob-sum-num">{clientes}</p>
-            <p className="mob-sum-label">Clientes</p>
-          </div>
-          <div className="mob-sum-card" onClick={() => navigate("/produtos")}>
-            <span className="mob-sum-icon">🎂</span>
-            <p className="mob-sum-num">{produtos}</p>
-            <p className="mob-sum-label">Produtos</p>
-          </div>
         </div>
 
         {/* 4. Banner premium por último */}
@@ -459,17 +481,19 @@ const load = async () => {
 
         /* ===== MOBILE ===== */
 
-        .mob-greeting { display: none; }
+        /* Hero */
+        .mob-hero { background: var(--primary-gradient); border-radius: 0 0 28px 28px; padding: 3rem 1.25rem 3.5rem; margin: -0.75rem -0.75rem 0; display: flex; flex-direction: column; gap: 0.5rem; }
+        .mob-hero-icons { display: flex; justify-content: flex-end; gap: 0.6rem; margin-bottom: 0.5rem; }
+        .mob-hero-icon { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .mob-hero-title { font-size: 1.3rem; font-weight: 800; color: #fff; margin: 0; }
 
+        /* MetricCards no mobile */
+        .mob-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: -32px; padding: 0 0.25rem; }
+        .mob-metrics .dash-metric-card { padding: 0.75rem; border-radius: 14px; }
+        .mob-metrics .dash-metric-num { font-size: 1.2rem; }
+        .mob-metrics .dash-metric-label { font-size: 0.62rem; }
+        .mob-metrics .dash-metric-icon { width: 36px; height: 36px; border-radius: 9px; display: none; }
 
-
-        /* Cards 3 lado a lado */
-        .mob-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
-        .mob-sum-card { background: var(--bg-card, #FFFFFF); border-radius: 12px; padding: 0.75rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); cursor: pointer; transition: transform 0.15s; }
-        .mob-sum-card:hover { transform: translateY(-1px); }
-        .mob-sum-icon { font-size: 1.3rem; }
-        .mob-sum-num { font-size: 1.2rem; font-weight: 800; color: var(--text-title, #1F2937); margin: 0; }
-        .mob-sum-label { font-size: 0.68rem; color: var(--text-muted, #9CA3AF); margin: 0; font-weight: 500; }
 
         /* Trial mobile */
         .mob-trial { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 14px; padding: 1rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; position: relative; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
