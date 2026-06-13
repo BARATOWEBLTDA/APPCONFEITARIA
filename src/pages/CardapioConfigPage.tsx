@@ -420,7 +420,6 @@ export default function CardapioConfigPage() {
         {/* Card 3 — Horários */}
         <div className="ccc-card">
           <SectionLabel>Horários de funcionamento</SectionLabel>
-          <p className="ccc-hint">Dias que sua loja funciona</p>
           <div className="ccc-dias-grid">
             {["Segunda","Terça","Quarta","Quinta","Sexta"].map(dia => (
               <button key={dia} className={`ccc-dia-btn${horario.dias.includes(dia) ? " active" : ""}`} onClick={() => setHorario(h => ({...h, dias: h.dias.includes(dia) ? h.dias.filter(d => d !== dia) : [...h.dias, dia]}))}>
@@ -814,7 +813,7 @@ export default function CardapioConfigPage() {
           font-weight:600; color:var(--text-secondary, #6B7280); cursor:pointer; transition:all 0.15s;
         }
         .ccc-dia-btn:hover { border-color:var(--primary, #FF6FA9); color:var(--primary-dark, #F85A9A); background:var(--bg-subtle, #FFF1F7); }
-        .ccc-dia-btn.active { background:var(--primary-light, #FFF1F7); border-color:var(--primary, #FF6FA9); color:var(--primary-dark, #F85A9A); font-weight:700; }
+        .ccc-dia-btn.active { background:var(--primary, #986274); border-color:var(--primary-dark, #6E3548); color:#ffffff; font-weight:700; }
 
         /* ── Time fields ── */
         .ccc-time-field { display:flex; flex-direction:column; gap:0.35rem; }
