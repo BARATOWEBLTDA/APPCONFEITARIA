@@ -322,14 +322,7 @@ export default function DooIA() {
         {pulse && (
           <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: `2px solid ${VINHO}`, animation: 'dooPulse 1.5s ease-out infinite' }} />
         )}
-        {!open && (
-          <span style={{
-            position: 'absolute', top: '-4px', right: '-4px',
-            background: VINHO, color: 'white', fontSize: '0.6rem', fontWeight: 700,
-            padding: '2px 6px', borderRadius: '10px', fontFamily: 'Geist, sans-serif',
-            letterSpacing: '0.05em', border: '2px solid white',
-          }}>IA</span>
-        )}
+
       </button>
 
       {/* ── Janela do chat ── */}
@@ -366,8 +359,10 @@ export default function DooIA() {
               <img src="/doo.png" alt="Doo" style={{ width: '48px', height: '48px', objectFit: 'cover', objectPosition: 'top center', borderRadius: '50%' }} />
             </div>
             <div style={{ flex: 1 }}>
-              <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'white', fontFamily: 'Geist, sans-serif' }}>Doo</p>
-              <p style={{ margin: 0, fontSize: '0.7rem', color: 'rgba(255,255,255,0.75)', fontFamily: 'Geist, sans-serif' }}>Assistente do Doonly</p>
+              <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'white', fontFamily: 'Geist, sans-serif' }}>
+                Doo
+                <span style={{ fontWeight: 400, fontSize: '0.8rem', color: 'rgba(255,220,150,0.88)', marginLeft: '0.35rem' }}>— Assistente Doonly</span>
+              </p>
             </div>
             <button
               onClick={() => setOpen(false)}
