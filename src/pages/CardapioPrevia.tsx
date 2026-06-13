@@ -38,6 +38,24 @@ export default function CardapioPrevia() {
     if (url) window.open(url, "_blank");
   };
 
+  const handleNativeShare = async () => {
+    if (!url) return;
+    if (navigator.share) {
+      try { await navigator.share({ title: "Meu Cardápio", url }); } catch {}
+    } else {
+      await handleShare();
+    }
+  };
+    if (!url) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Meu Cardápio", url });
+      } catch {}
+    } else {
+      await handleShare();
+    }
+  };
+
   return (
     <div
       style={{
@@ -93,9 +111,16 @@ export default function CardapioPrevia() {
         </button>
 
         {window.innerWidth < 768 && (
-          <span style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.72rem", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>
-            Você tá vendo uma prévia ao vivo do seu cardápio
-          </span>
+          <button
+            onClick={handleNativeShare}
+            style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "8px", padding: "0.45rem 0.75rem", color: "rgba(255,255,255,0.85)", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", fontSize: "0.82rem", fontWeight: 600, fontFamily: "inherit" }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            Compartilhar
+          </button>
         )}
 
         {/* Título + Toggle */}
