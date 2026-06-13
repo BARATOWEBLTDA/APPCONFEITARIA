@@ -5,6 +5,7 @@ interface Message {
   content: string
   imageUrl?: string
   isImage?: boolean
+  attachmentPreview?: string
 }
 
 const SYSTEM_PROMPT = `Você é Doo, a assistente inteligente oficial do Doonly.
@@ -59,6 +60,8 @@ Você pode ajudar na criação de topos de bolo, tags, adesivos, papelaria perso
 
 Ao orientar sobre papelaria e topos de bolo, sempre sugira as melhores práticas de entrega e impressão, recomendando formatos adequados (como PDF para alta qualidade de impressão ou orientações sobre sangria e margens de corte).
 
+Quando a usuária enviar uma imagem de referência, analise detalhadamente e ofereça insights práticos sobre técnica, precificação, reprodução ou melhorias.
+
 # COMPORTAMENTO
 Antes de responder: entenda o objetivo da usuária, identifique possíveis problemas, sugira melhorias práticas, entregue uma solução clara.
 
@@ -88,15 +91,26 @@ A Doo deve parecer uma confeiteira experiente, uma consultora financeira, uma es
 Frase guia: "Meu trabalho é ajudar sua confeitaria a crescer de forma organizada, lucrativa e sustentável."`
 
 const VINHO = '#6E3548'
-const VINHO_LIGHT = '#FFF1F7'
 
 function isImageRequest(text: string): boolean {
-  const keywords = ['gerar imagem', 'criar imagem', 'gera imagem', 'cria imagem', 'topo de bolo', 'gerar topo', 'criar topo', 'ilustração', 'desenha', 'desenhar', 'arte para', 'imagem de', 'foto de']
+  const keywords = ['gerar imagem', 'criar imagem', 'gera imagem', 'cria imagem', 'gerar topo', 'criar topo', 'ilustração', 'desenha', 'desenhar', 'arte para']
   return keywords.some(k => text.toLowerCase().includes(k))
 }
 
 function buildImagePrompt(userMessage: string): string {
   return `High quality digital art for a Brazilian confectionery business. ${userMessage}. Style: elegant, pastel colors, professional cake topper design, clean white background, suitable for printing. Detailed and beautiful.`
+}
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const result = reader.result as string
+      resolve(result.split(',')[1])
+    }
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
 }
 
 export default function DooIA() {
@@ -110,8 +124,11 @@ export default function DooIA() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [pulse, setPulse] = useState(true)
+  const [pendingImage, setPendingImage] = useState<{ base64: string; mediaType: string; preview: string } | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const t = setTimeout(() => setPulse(false), 4000)
@@ -125,18 +142,37 @@ export default function DooIA() {
     }
   }, [open, messages])
 
+  const handleFileSelect = async (file: File) => {
+    if (!file.type.startsWith('image/')) return
+    const base64 = await fileToBase64(file)
+    const preview = URL.createObjectURL(file)
+    setPendingImage({ base64, mediaType: file.type, preview })
+  }
+
+  const removePendingImage = () => {
+    if (pendingImage) URL.revokeObjectURL(pendingImage.preview)
+    setPendingImage(null)
+  }
+
   const sendMessage = async () => {
     const text = input.trim()
-    if (!text || loading) return
+    if ((!text && !pendingImage) || loading) return
 
-    const userMsg: Message = { role: 'user', content: text }
+    const userMsg: Message = {
+      role: 'user',
+      content: text || 'Analise essa imagem.',
+      attachmentPreview: pendingImage?.preview
+    }
+
     const newMessages = [...messages, userMsg]
     setMessages(newMessages)
     setInput('')
+    const imgPayload = pendingImage
+    setPendingImage(null)
     setLoading(true)
 
     try {
-      if (isImageRequest(text)) {
+      if (!imgPayload && isImageRequest(text)) {
         // Geração de imagem via DALL-E
         const imagePrompt = buildImagePrompt(text)
         const res = await fetch('https://api.openai.com/v1/images/generations', {
@@ -155,7 +191,6 @@ export default function DooIA() {
         })
         const data = await res.json()
         const imageUrl = data?.data?.[0]?.url
-
         if (imageUrl) {
           setMessages(prev => [...prev, {
             role: 'assistant',
@@ -167,7 +202,24 @@ export default function DooIA() {
           throw new Error('Sem imagem')
         }
       } else {
-        // Chat via Claude
+        // Chat via Claude — com ou sem imagem anexada
+        const buildContent = (msg: Message) => {
+          if (msg.role === 'user' && msg === userMsg && imgPayload) {
+            return [
+              {
+                type: 'image',
+                source: {
+                  type: 'base64',
+                  media_type: imgPayload.mediaType,
+                  data: imgPayload.base64
+                }
+              },
+              { type: 'text', text: msg.content }
+            ]
+          }
+          return msg.content
+        }
+
         const res = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
           headers: {
@@ -182,7 +234,7 @@ export default function DooIA() {
             system: SYSTEM_PROMPT,
             messages: newMessages
               .filter(m => !m.isImage)
-              .map(m => ({ role: m.role, content: m.content }))
+              .map(m => ({ role: m.role, content: buildContent(m) }))
           })
         })
         const data = await res.json()
@@ -215,6 +267,23 @@ export default function DooIA() {
 
   return (
     <>
+      {/* inputs ocultos */}
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = '' }}
+      />
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        style={{ display: 'none' }}
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = '' }}
+      />
+
       {/* ── Botão flutuante ── */}
       <button
         onClick={() => { setOpen(o => !o); setPulse(false) }}
@@ -236,64 +305,29 @@ export default function DooIA() {
         }}
         aria-label="Abrir assistente Doo"
       >
-        {/* Borda externa vinho */}
         <div style={{
-          width: '62px',
-          height: '62px',
-          borderRadius: '50%',
-          background: VINHO,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: `0 4px 20px rgba(110,53,72,0.45)`,
+          width: '62px', height: '62px', borderRadius: '50%',
+          background: VINHO, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 4px 20px rgba(110,53,72,0.45)',
           transition: 'transform 0.2s, box-shadow 0.2s',
-          transform: open ? 'scale(0.93)' : 'scale(1)',
         }}>
-          {/* Borda interna branca */}
           <div style={{
-            width: '54px',
-            height: '54px',
-            borderRadius: '50%',
-            background: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
+            width: '54px', height: '54px', borderRadius: '50%',
+            background: 'white', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', overflow: 'hidden',
           }}>
-            <img
-              src="/doo.png"
-              alt="Doo"
-              style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center' }}
-            />
+            <img src="/doo.png" alt="Doo" style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center' }} />
           </div>
         </div>
-
-        {/* Pulso de atenção inicial */}
         {pulse && (
-          <span style={{
-            position: 'absolute',
-            inset: 0,
-            borderRadius: '50%',
-            border: `2px solid ${VINHO}`,
-            animation: 'dooPulse 1.5s ease-out infinite',
-          }} />
+          <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: `2px solid ${VINHO}`, animation: 'dooPulse 1.5s ease-out infinite' }} />
         )}
-
-        {/* Badge "Doo" */}
         {!open && (
           <span style={{
-            position: 'absolute',
-            top: '-4px',
-            right: '-4px',
-            background: VINHO,
-            color: 'white',
-            fontSize: '0.6rem',
-            fontWeight: 700,
-            padding: '2px 6px',
-            borderRadius: '10px',
-            fontFamily: 'Geist, sans-serif',
-            letterSpacing: '0.05em',
-            border: '2px solid white',
+            position: 'absolute', top: '-4px', right: '-4px',
+            background: VINHO, color: 'white', fontSize: '0.6rem', fontWeight: 700,
+            padding: '2px 6px', borderRadius: '10px', fontFamily: 'Geist, sans-serif',
+            letterSpacing: '0.05em', border: '2px solid white',
           }}>IA</span>
         )}
       </button>
@@ -302,10 +336,10 @@ export default function DooIA() {
       {open && (
         <div style={{
           position: 'fixed',
-          bottom: '8.5rem',
+          bottom: '1.5rem',
           right: '1.25rem',
           width: 'min(380px, calc(100vw - 2.5rem))',
-          height: 'min(520px, calc(100vh - 12rem))',
+          height: 'min(560px, calc(100vh - 5rem))',
           background: 'white',
           borderRadius: '20px',
           boxShadow: '0 8px 40px rgba(110,53,72,0.18), 0 2px 8px rgba(0,0,0,0.08)',
@@ -321,10 +355,7 @@ export default function DooIA() {
           <div style={{
             background: `linear-gradient(135deg, ${VINHO}, #9B4468)`,
             padding: '0.85rem 1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.65rem',
-            flexShrink: 0,
+            display: 'flex', alignItems: 'center', gap: '0.65rem', flexShrink: 0,
           }}>
             <div style={{
               width: '38px', height: '38px', borderRadius: '50%',
@@ -346,26 +377,17 @@ export default function DooIA() {
 
           {/* Mensagens */}
           <div style={{
-            flex: 1,
-            overflowY: 'auto',
-            padding: '0.85rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.65rem',
-            background: '#fafafa',
+            flex: 1, overflowY: 'auto', padding: '0.85rem',
+            display: 'flex', flexDirection: 'column', gap: '0.65rem', background: '#fafafa',
           }}>
             {messages.map((msg, i) => (
               <div key={i} style={{
                 display: 'flex',
                 flexDirection: msg.role === 'user' ? 'row-reverse' : 'row',
-                alignItems: 'flex-end',
-                gap: '0.5rem',
+                alignItems: 'flex-end', gap: '0.5rem',
               }}>
                 {msg.role === 'assistant' && (
-                  <div style={{
-                    width: '26px', height: '26px', borderRadius: '50%',
-                    border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0,
-                  }}>
+                  <div style={{ width: '26px', height: '26px', borderRadius: '50%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
                     <img src="/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
                   </div>
                 )}
@@ -375,12 +397,17 @@ export default function DooIA() {
                   color: msg.role === 'user' ? 'white' : '#1F2937',
                   padding: '0.6rem 0.85rem',
                   borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                  fontSize: '0.83rem',
-                  lineHeight: 1.5,
-                  fontFamily: 'Geist, sans-serif',
+                  fontSize: '0.83rem', lineHeight: 1.5, fontFamily: 'Geist, sans-serif',
                   boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
                   border: msg.role === 'assistant' ? '1px solid #f0f0f0' : 'none',
                 }}>
+                  {msg.attachmentPreview && (
+                    <img
+                      src={msg.attachmentPreview}
+                      alt="Referência"
+                      style={{ width: '100%', borderRadius: '10px', marginBottom: '0.5rem', display: 'block', maxHeight: '160px', objectFit: 'cover' }}
+                    />
+                  )}
                   {msg.imageUrl && (
                     <img
                       src={msg.imageUrl}
@@ -416,15 +443,78 @@ export default function DooIA() {
             <div ref={bottomRef} />
           </div>
 
+          {/* Preview imagem pendente */}
+          {pendingImage && (
+            <div style={{
+              padding: '0.5rem 0.75rem 0',
+              background: 'white',
+              borderTop: '1px solid #f0f0f0',
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+            }}>
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <img
+                  src={pendingImage.preview}
+                  alt="Anexo"
+                  style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', border: `1.5px solid ${VINHO}` }}
+                />
+                <button
+                  onClick={removePendingImage}
+                  style={{
+                    position: 'absolute', top: '-6px', right: '-6px',
+                    width: '18px', height: '18px', borderRadius: '50%',
+                    background: VINHO, border: '2px solid white',
+                    color: 'white', fontSize: '0.6rem', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >✕</button>
+              </div>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: '#6B7280', fontFamily: 'Geist, sans-serif' }}>
+                Imagem anexada. Adicione uma mensagem ou envie diretamente.
+              </p>
+            </div>
+          )}
+
           {/* Input */}
           <div style={{
             padding: '0.75rem',
             borderTop: '1px solid #f0f0f0',
-            display: 'flex',
-            gap: '0.5rem',
-            background: 'white',
-            flexShrink: 0,
+            display: 'flex', gap: '0.4rem',
+            background: 'white', flexShrink: 0, alignItems: 'center',
           }}>
+            {/* Botão galeria */}
+            <button
+              onClick={() => fileRef.current?.click()}
+              title="Enviar imagem da galeria"
+              style={{
+                width: '36px', height: '36px', borderRadius: '10px',
+                background: '#f5f5f5', border: '1px solid #E9E9EE',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0, transition: 'background 0.15s',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={VINHO} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </button>
+
+            {/* Botão câmera */}
+            <button
+              onClick={() => cameraRef.current?.click()}
+              title="Tirar foto"
+              style={{
+                width: '36px', height: '36px', borderRadius: '10px',
+                background: '#f5f5f5', border: '1px solid #E9E9EE',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0, transition: 'background 0.15s',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={VINHO} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </button>
+
             <input
               ref={inputRef}
               value={input}
@@ -434,7 +524,7 @@ export default function DooIA() {
               disabled={loading}
               style={{
                 flex: 1,
-                border: `1.5px solid ${input ? VINHO : '#E9E9EE'}`,
+                border: `1.5px solid ${input || pendingImage ? VINHO : '#E9E9EE'}`,
                 borderRadius: '12px',
                 padding: '0.6rem 0.85rem',
                 fontSize: '0.83rem',
@@ -445,23 +535,23 @@ export default function DooIA() {
                 transition: 'border-color 0.15s',
               }}
             />
+
+            {/* Botão enviar */}
             <button
               onClick={sendMessage}
-              disabled={loading || !input.trim()}
+              disabled={loading || (!input.trim() && !pendingImage)}
               style={{
-                width: '38px', height: '38px',
-                borderRadius: '12px',
-                background: input.trim() ? `linear-gradient(135deg, ${VINHO}, #9B4468)` : '#E9E9EE',
+                width: '36px', height: '36px', borderRadius: '12px',
+                background: (input.trim() || pendingImage) ? `linear-gradient(135deg, ${VINHO}, #9B4468)` : '#E9E9EE',
                 border: 'none',
-                cursor: input.trim() ? 'pointer' : 'not-allowed',
+                cursor: (input.trim() || pendingImage) ? 'pointer' : 'not-allowed',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0,
-                transition: 'background 0.15s',
+                flexShrink: 0, transition: 'background 0.15s',
               }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13" />
-                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
               </svg>
             </button>
           </div>
