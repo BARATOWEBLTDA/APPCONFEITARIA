@@ -5,17 +5,12 @@ import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { QuickSetupModal } from "@/components/QuickSetupModal";
 import { MetricCard } from "@/components/MetricCard";
-import { TrialCardMobileExpiring, TrialCardMobileBanner, TrialCardDesktopReward } from "@/components/billing/TrialCard";
+import { TrialCardMobileBanner } from "@/components/billing/TrialCard";
 
 export default function Inicio() {
   const navigate = useNavigate();
-  const { isPro, proExpiraEm } = usePlano();
+  const { isPro } = usePlano();
 
-  const diasProRestantes = proExpiraEm
-    ? Math.max(0, Math.ceil((proExpiraEm.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))
-    : 0;
-  const isTeste = isPro && !!proExpiraEm; // PRO via resgate (tem data de expiração)
-  const diasProTotal = 3;
   const [profile, setProfile] = useState<any>(null);
   const [produtos, setProdutos] = useState(0);
   const [clientes, setClientes] = useState(0);
@@ -216,9 +211,6 @@ const load = async () => {
             </button>
           </div>
         ) : null)}
-
-        {/* Card PRO teste — dias restantes */}
-        {isTeste && <TrialCardMobileExpiring diasRestantes={diasProRestantes} loading={loading} />}
 
         {/* 2. Acesso rápido */}
         <div className="mob-section-title">Acesso rápido</div>
@@ -435,8 +427,6 @@ const load = async () => {
             </div>
             <div className="complete-banner" style={{marginTop:"0.75rem"}}>🎁 Complete 100% e ganhe 3 dias de PRO grátis!</div>
           </div>
-        ) : !proResgatado ? (
-          <TrialCardDesktopReward resgatando={resgatando} onResgatar={handleResgatarPro} />
         ) : null)}
 
       </div>
