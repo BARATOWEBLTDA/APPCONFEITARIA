@@ -67,8 +67,6 @@ export default function Inicio() {
     buscarPedidosDia(dia);
   };
 
-  const nome = profile?.nome?.split(" ")[0] || "";
-
   useEffect(() => {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser();
