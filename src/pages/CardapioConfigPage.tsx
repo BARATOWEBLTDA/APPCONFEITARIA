@@ -688,7 +688,12 @@ export default function CardapioConfigPage() {
 
         /* ── Responsivo ── */
         @media (max-width:640px) {
-          .ccc-outer { background:var(--bg-card, #FFFFFF); }
+          /* Corrige overflow: layout-main mobile tem padding 0.75rem (não 2rem) */
+          .ccc-outer {
+            width: calc(100% + 1.5rem);
+            margin: -0.75rem -0.75rem 0;
+            background: var(--bg-body, #F7F7F8);
+          }
           .ccc-root { padding:0 0.75rem; gap:1rem; }
           .ccc-row-top { grid-template-columns:1fr; }
           .ccc-page-title { font-size:1.2rem; }
