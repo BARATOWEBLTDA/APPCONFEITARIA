@@ -665,8 +665,9 @@ export default function CardapioConfigPage() {
 
         /* ── Layout geral ── */
         .ccc-outer {
-          width:100%; display:flex; justify-content:center;
-          padding-bottom:3rem; background:var(--bg-body, #F7F7F8);
+          width:calc(100% + 4rem); display:flex; justify-content:center;
+          margin: -2rem -2rem 0;
+          padding-top:1.25rem; padding-bottom:3rem; background:var(--bg-body, #F7F7F8);
           overflow-x:hidden;
         }
         .ccc-root {
