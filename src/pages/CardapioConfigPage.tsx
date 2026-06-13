@@ -277,8 +277,8 @@ export default function CardapioConfigPage() {
       {/* Cabeçalho */}
       <div className="ccc-page-header">
         <div>
-          <h1 className="ccc-page-title">Configuração do Cardápio</h1>
-          <p className="ccc-page-sub">Personalize as informações do seu cardápio público</p>
+          <h1 className="ccc-page-title">Cardápio Digital</h1>
+          <p className="ccc-page-sub">Deixe seu cardápio com a cara da sua confeitaria</p>
         </div>
         {autoSaved && activeTab === "geral" && <span className="ccc-autosave">✓ Salvo automaticamente</span>}
       </div>
