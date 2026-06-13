@@ -479,7 +479,7 @@ export default function CardapioConfigPage() {
 
       </div>{/* fim linha 1 */}
 
-      {/* LINHA 2: Entrega full width */}
+      {/* LINHA 2: Entrega */}
       <div className="ccc-row-bottom">
 
         {/* Card Entrega */}
@@ -490,7 +490,7 @@ export default function CardapioConfigPage() {
           <div style={{ display:'flex', flexDirection:'column', gap:'0.75rem' }}>
             <div className="ccc-toggle-row">
               <div>
-                <p className="ccc-toggle-label">🚚 Faz entrega?</p>
+                <p className="ccc-toggle-label">Faz entrega?</p>
                 <p className="ccc-toggle-sub">Entrego no endereço do cliente.</p>
               </div>
               <label className="ccc-toggle">
@@ -500,7 +500,7 @@ export default function CardapioConfigPage() {
             </div>
             <div className="ccc-toggle-row">
               <div>
-                <p className="ccc-toggle-label">🏪 Retirada no local?</p>
+                <p className="ccc-toggle-label">Retirada no local?</p>
                 <p className="ccc-toggle-sub">Cliente retira no meu endereço.</p>
               </div>
               <label className="ccc-toggle">
@@ -702,7 +702,8 @@ export default function CardapioConfigPage() {
           .ccc-row-top > .ccc-card:nth-child(3) { grid-column:3; grid-row:1; height:auto; }
           .ccc-row-top > .ccc-card:nth-child(4) { grid-column:3; grid-row:2; height:auto; }
         }
-        .ccc-row-bottom { display:grid; grid-template-columns:1fr; gap:1.25rem; align-items:start; overflow:hidden; }
+        .ccc-row-bottom { display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem; align-items:start; overflow:hidden; }
+        .ccc-row-bottom > .ccc-card { grid-column:1; }
 
         /* ── Card base ── */
         .ccc-card {
@@ -938,6 +939,7 @@ export default function CardapioConfigPage() {
           .ccc-root { padding:0 0.75rem; gap:1rem; }
           .ccc-row-top { grid-template-columns:1fr; }
           .ccc-row-bottom { grid-template-columns:1fr; }
+          .ccc-row-bottom > .ccc-card { grid-column:1; }
           .ccc-page-title { font-size:1.2rem; }
           .ccc-page-header { padding-top:1.25rem; }
           .ccc-card { padding:1.15rem; }
