@@ -92,6 +92,12 @@ export default function CardapioPrevia() {
           Voltar
         </button>
 
+        {window.innerWidth < 768 && (
+          <span style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.72rem", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>
+            Você tá vendo uma prévia ao vivo do seu cardápio
+          </span>
+        )}
+
         {/* Título + Toggle */}
         <div style={{ display: window.innerWidth < 768 ? "none" : "flex", alignItems: "center", gap: "12px", flex: 1, justifyContent: "center" }}>
           <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.8rem", fontWeight: 500 }}>
