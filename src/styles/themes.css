@@ -1,63 +1,63 @@
 /* ── Tema Claro ── */
 :root {
   /* Primária */
-  --primary:          #FF6FA9;
-  --primary-dark:     #F85A9A;
-  --primary-light:    #FFF1F7;
-  --primary-gradient: linear-gradient(135deg, #FF6FA9, #F85A9A);
-  --primary-rgb:      255, 111, 169;
+  --primary:          #986274;
+  --primary-dark:     #6E3548;
+  --primary-light:    #F7EEF1;
+  --primary-gradient: linear-gradient(135deg, #986274, #6E3548);
+  --primary-rgb:      152, 98, 116;
 
   /* Tipografia */
-  --text-title:       #1F2937;
-  --text-primary:     #374151;
-  --text-secondary:   #6B7280;
-  --text-muted:       #9CA3AF;
+  --text-title:       #431524;
+  --text-primary:     #431524;
+  --text-secondary:   #6E3548;
+  --text-muted:       #C39EAA;
   --text-inverse:     #FFFFFF;
   --text-disabled:    #D1D5DB;
-  --text-link:        #FF6FA9;
+  --text-link:        #986274;
 
   /* Superfícies */
-  --bg-body:          #F7F7F8;
+  --bg-body:          #F9F5F6;
   --bg-card:          #FFFFFF;
   --bg-surface:       var(--bg-card);
   --bg-input:         #FFFFFF;
   --bg-elevated:      #FFFFFF;
   --bg-overlay:       rgba(0,0,0,0.4);
-  --bg-subtle:        #FFF1F7;
+  --bg-subtle:        #F7EEF1;
 
   /* Bordas */
-  --border:           #E9E9EE;
-  --border-focus:     #FF6FA9;
-  --focus-ring:       0 0 0 3px rgba(255,111,169,0.25);
+  --border:           #ECC2D0;
+  --border-focus:     #986274;
+  --focus-ring:       0 0 0 3px rgba(152,98,116,0.25);
 
   /* ── Sidebar / Nav ── */
   --sidebar-bg:           var(--bg-card, #FFFFFF);
-  --sidebar-text:         var(--text-primary, #374151);
-  --sidebar-text-muted:   var(--text-muted, #9CA3AF);
-  --sidebar-hover-bg:     var(--menu-hover-bg, #F3F4F6);
-  --sidebar-active-bg:    var(--menu-active-bg, #FFF1F7);
-  --sidebar-active-text:  var(--menu-active, #FF6FA9);
-  --sidebar-border:       var(--border, #E9E9EE);
-  --sidebar-border-right: #E9E9EE;
+  --sidebar-text:         var(--text-primary, #431524);
+  --sidebar-text-muted:   var(--text-muted, #C39EAA);
+  --sidebar-hover-bg:     var(--menu-hover-bg, #F2E8EC);
+  --sidebar-active-bg:    var(--menu-active-bg, #F7EEF1);
+  --sidebar-active-text:  var(--menu-active, #986274);
+  --sidebar-border:       var(--border, #ECC2D0);
+  --sidebar-border-right: #ECC2D0;
 
   /* ── Header Mobile / Top Bar ── */
   --topbar-bg:            var(--bg-card, #FFFFFF);
-  --topbar-text:          var(--text-title, #1F2937);
-  --topbar-border:        var(--border, #E9E9EE);
+  --topbar-text:          var(--text-title, #431524);
+  --topbar-border:        var(--border, #ECC2D0);
   --topbar-shadow:        0 4px 12px rgba(0,0,0,0.08);
 
   /* ── Bottom Nav Mobile ── */
   --bottomnav-bg:         #FFFFFF;
   --bottomnav-shadow:     0 -2px 12px rgba(0,0,0,0.12);
-  --bottomnav-inactive:   #9CA3AF;
+  --bottomnav-inactive:   #C39EAA;
   --bottomnav-active:     var(--primary);
 
   /* ── Gestão Drawer ── */
-  --drawer-bg:            #120706;
+  --drawer-bg:            #330716;
   --drawer-item-bg:       rgba(255,255,255,0.05);
   --drawer-item-border:   rgba(255,255,255,0.07);
-  --drawer-item-hover-bg: rgba(255,111,169,0.15);
-  --drawer-item-hover-border: rgba(255,111,169,0.3);
+  --drawer-item-hover-bg: rgba(152,98,116,0.15);
+  --drawer-item-hover-border: rgba(152,98,116,0.3);
   --drawer-handle:        rgba(255,255,255,0.15);
   --drawer-close-bg:      rgba(255,255,255,0.08);
   --drawer-close-text:    rgba(255,255,255,0.6);
@@ -66,10 +66,10 @@
 
   /* ── Menu (legado) ── */
   --menu-bg:          #FFFFFF;
-  --menu-inactive:    #6B7280;
-  --menu-active:      #FF6FA9;
-  --menu-active-bg:   #FFF1F7;
-  --menu-hover-bg:    #F3F4F6;
+  --menu-inactive:    #C39EAA;
+  --menu-active:      #986274;
+  --menu-active-bg:   #F7EEF1;
+  --menu-hover-bg:    #F2E8EC;
 
   /* ── Estados globais ── */
   --state-hover:      var(--menu-hover-bg);
@@ -77,13 +77,13 @@
   --state-active:     var(--menu-active);
 
   /* Botões */
-  --btn-primary-bg:       #FF6FA9;
-  --btn-primary-hover:    #F85A9A;
+  --btn-primary-bg:       #986274;
+  --btn-primary-hover:    #6E3548;
   --btn-primary-text:     #FFFFFF;
   --btn-secondary-bg:     #FFFFFF;
-  --btn-secondary-border: #E9E9EE;
-  --btn-secondary-text:   #374151;
-  --btn-secondary-hover:  #F3F4F6;
+  --btn-secondary-border: #ECC2D0;
+  --btn-secondary-text:   #431524;
+  --btn-secondary-hover:  #F2E8EC;
 
   /* Status */
   --success:          #22C55E;
@@ -109,11 +109,11 @@
 /* ── Tema Escuro ── */
 :root.dark {
   /* Primária */
-  --primary:          #FF6FA9;
-  --primary-dark:     #F85A9A;
-  --primary-light:    #4A1F33;
-  --primary-gradient: linear-gradient(135deg, #FF6FA9, #F85A9A);
-  --primary-rgb:      255, 111, 169;
+  --primary:          #ECC2D0;
+  --primary-dark:     #C39EAA;
+  --primary-light:    #3D0F20;
+  --primary-gradient: linear-gradient(135deg, #ECC2D0, #C39EAA);
+  --primary-rgb:      236, 194, 208;
 
   /* Tipografia */
   --text-title:       #F9FAFB;
@@ -122,61 +122,61 @@
   --text-muted:       #6B7280;
   --text-inverse:     #0d0d0d;
   --text-disabled:    #4B5563;
-  --text-link:        #FF6FA9;
+  --text-link:        #ECC2D0;
 
   /* Superfícies */
-  --bg-body:          #0F1115;
-  --bg-card:          #171923;
+  --bg-body:          #330716;
+  --bg-card:          #431524;
   --bg-surface:       var(--bg-card);
-  --bg-input:         #171923;
-  --bg-elevated:      #1E2130;
+  --bg-input:         #431524;
+  --bg-elevated:      #4D1A2A;
   --bg-overlay:       rgba(0,0,0,0.75);
-  --bg-subtle:        #4A1F33;
+  --bg-subtle:        #3D0F20;
 
   /* Bordas */
-  --border:           #2A2D3A;
-  --border-focus:     #FF6FA9;
-  --focus-ring:       0 0 0 3px rgba(255,111,169,0.2);
+  --border:           #6E3548;
+  --border-focus:     #ECC2D0;
+  --focus-ring:       0 0 0 3px rgba(236,194,208,0.2);
 
   /* ── Sidebar / Nav ── */
-  --sidebar-bg:           #0D0E14;
-  --sidebar-text:         #C8D2EE;
-  --sidebar-text-muted:   #7A86B0;
-  --sidebar-hover-bg:     #181C30;
+  --sidebar-bg:           #2A0A14;
+  --sidebar-text:         #ECC2D0;
+  --sidebar-text-muted:   #986274;
+  --sidebar-hover-bg:     #3D0F20;
   --sidebar-active-bg:    var(--primary-gradient);
   --sidebar-active-text:  #FFFFFF;
-  --sidebar-border:       rgba(255,255,255,0.05);
-  --sidebar-border-right: rgba(255,255,255,0.07);
+  --sidebar-border:       rgba(236,194,208,0.08);
+  --sidebar-border-right: rgba(236,194,208,0.1);
 
   /* ── Header Mobile / Top Bar ── */
-  --topbar-bg:            #0D0E14;
-  --topbar-text:          #C8D2EE;
-  --topbar-border:        rgba(255,255,255,0.07);
+  --topbar-bg:            #2A0A14;
+  --topbar-text:          #ECC2D0;
+  --topbar-border:        rgba(236,194,208,0.1);
   --topbar-shadow:        0 4px 12px rgba(0,0,0,0.5);
 
   /* ── Bottom Nav Mobile ── */
-  --bottomnav-bg:         #171923;
+  --bottomnav-bg:         #431524;
   --bottomnav-shadow:     0 -2px 12px rgba(0,0,0,0.4);
-  --bottomnav-inactive:   #6B7280;
+  --bottomnav-inactive:   #986274;
   --bottomnav-active:     var(--primary);
 
   /* ── Gestão Drawer ── */
-  --drawer-bg:            #0D0E14;
+  --drawer-bg:            #330716;
   --drawer-item-bg:       rgba(255,255,255,0.04);
   --drawer-item-border:   rgba(255,255,255,0.06);
-  --drawer-item-hover-bg: rgba(255,111,169,0.12);
-  --drawer-item-hover-border: rgba(255,111,169,0.25);
+  --drawer-item-hover-bg: rgba(236,194,208,0.12);
+  --drawer-item-hover-border: rgba(236,194,208,0.25);
   --drawer-handle:        rgba(255,255,255,0.1);
   --drawer-close-bg:      rgba(255,255,255,0.06);
   --drawer-close-text:    rgba(255,255,255,0.5);
   --drawer-overlay:       rgba(0,0,0,0.75);
 
   /* ── Menu (legado) ── */
-  --menu-bg:          #171923;
-  --menu-inactive:    #9CA3AF;
-  --menu-active:      #FF6FA9;
-  --menu-active-bg:   #4A1F33;
-  --menu-hover-bg:    #1e2130;
+  --menu-bg:          #431524;
+  --menu-inactive:    #986274;
+  --menu-active:      #ECC2D0;
+  --menu-active-bg:   #3D0F20;
+  --menu-hover-bg:    #3D0F20;
 
   /* ── Estados globais ── */
   --state-hover:      var(--menu-hover-bg);
@@ -187,13 +187,13 @@
   --overlay-light:    rgba(255,255,255,0.08);
 
   /* Botões */
-  --btn-primary-bg:       #FF6FA9;
-  --btn-primary-hover:    #F85A9A;
-  --btn-primary-text:     #FFFFFF;
-  --btn-secondary-bg:     #171923;
-  --btn-secondary-border: #2A2D3A;
-  --btn-secondary-text:   #E5E7EB;
-  --btn-secondary-hover:  #1e2130;
+  --btn-primary-bg:       #ECC2D0;
+  --btn-primary-hover:    #C39EAA;
+  --btn-primary-text:     #431524;
+  --btn-secondary-bg:     #431524;
+  --btn-secondary-border: #6E3548;
+  --btn-secondary-text:   #ECC2D0;
+  --btn-secondary-hover:  #4D1A2A;
 
   /* Status */
   --success:          #22C55E;
