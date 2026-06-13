@@ -660,7 +660,7 @@ function CardapioContent() {
                   <div style={{ width:'28px', height:'28px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                     <img src="/cashback.svg" alt="" style={{ width:'24px', height:'24px', objectFit:'contain' }} />
                   </div>
-                  <span style={{ fontWeight:700, fontSize:'13px', color:'var(--text-title, #1F2937)' }}>Programa de Fidelidade</span>
+                  <span style={{ fontWeight:600, fontSize:'13px', color:'var(--text-title, #1F2937)' }}>Programa de Fidelidade</span>
                 </div>
                 <p style={{ margin:0, fontSize:'11px', color:'var(--text-secondary, #6B7280)', lineHeight:1.5 }}>A cada <strong>R$ 50,00</strong> em compras, você acumula <strong>5% de cashback</strong> para descontar no seu próximo pedido.</p>
               </div>
