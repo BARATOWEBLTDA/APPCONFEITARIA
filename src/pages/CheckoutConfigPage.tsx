@@ -101,7 +101,7 @@ export default function CheckoutConfigPage() {
 
   const s = {
     outer: { width:'100%',display:'flex',justifyContent:'center',paddingBottom:'3rem',background:'var(--bg-body, #F7F7F8)' } as React.CSSProperties,
-    root: { fontFamily:'Inter,sans-serif',width:'100%',maxWidth:'900px',display:'flex',flexDirection:'column' as const,gap:'1.25rem',padding:'0 1.5rem' },
+    root: { fontFamily:'inherit',width:'100%',maxWidth:'900px',display:'flex',flexDirection:'column' as const,gap:'1.25rem',padding:'0 1.5rem' },
     header: { display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:'2rem',paddingBottom:'0.75rem',borderBottom:'1px solid var(--border, #E9E9EE)',flexWrap:'wrap' as const,gap:'0.5rem' },
     title: { fontSize:'1.45rem',fontWeight:800,color:'var(--text-title, #1F2937)',margin:'0 0 0.2rem' },
     sub: { fontSize:'0.84rem',color:'var(--text-secondary, #6B7280)',margin:0,fontStyle:'italic' as const },
@@ -111,10 +111,10 @@ export default function CheckoutConfigPage() {
     hint: { fontSize:'0.75rem',color:'var(--text-muted, #9CA3AF)',margin:0 },
     check: { display:'flex',alignItems:'center',gap:'0.75rem',padding:'0.65rem 0.85rem',borderRadius:'10px',border:'1.5px solid var(--border, #E9E9EE)',cursor:'pointer',transition:'all 0.15s' } as React.CSSProperties,
     checkActive: { border:'1.5px solid var(--primary, #FF6FA9)',background:'var(--primary-light, #FFF1F7)' },
-    input: { width:'100%',padding:'0.6rem 1rem',border:'1.5px solid var(--border, #E9E9EE)',borderRadius:'10px',fontFamily:'Inter,sans-serif',fontSize:'0.88rem',color:'var(--text-title, #1F2937)',outline:'none',boxSizing:'border-box' as const,background:'var(--bg-input, #FFFFFF)' },
+    input: { width:'100%',padding:'0.6rem 1rem',border:'1.5px solid var(--border, #E9E9EE)',borderRadius:'10px',fontFamily:'inherit',fontSize:'0.88rem',color:'var(--text-title, #1F2937)',outline:'none',boxSizing:'border-box' as const,background:'var(--bg-input, #FFFFFF)' },
     toggle: { position:'relative' as const,display:'inline-block',width:'44px',height:'24px',flexShrink:0 },
     toggleRow: { display:'flex',justifyContent:'space-between',alignItems:'center',gap:'1rem' },
-    btnAdd: { padding:'0.5rem 1rem',background:'var(--primary-light, #FFF1F7)',border:'1.5px solid var(--primary-light, #FFF1F7)',borderRadius:'50px',fontFamily:'Inter,sans-serif',fontSize:'0.8rem',fontWeight:700,color:'var(--primary-dark, #F85A9A)',cursor:'pointer' },
+    btnAdd: { padding:'0.5rem 1rem',background:'var(--primary-light, #FFF1F7)',border:'1.5px solid var(--primary-light, #FFF1F7)',borderRadius:'50px',fontFamily:'inherit',fontSize:'0.8rem',fontWeight:700,color:'var(--primary-dark, #F85A9A)',cursor:'pointer' },
     btnRemove: { padding:'0.4rem',background:'#fff5f5',border:'1px solid #fee2e2',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center' },
   }
 

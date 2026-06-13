@@ -40,7 +40,7 @@ export default function AdminLayout() {
   };
 
   if (loading) return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", fontFamily: "Inter, sans-serif", color: "#9ca3af" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh", fontFamily: "inherit", color: "#9ca3af" }}>
       Verificando acesso...
     </div>
   );

@@ -1,6 +1,6 @@
 export default function Termos() {
   return (
-    <div style={{ fontFamily: 'Inter, sans-serif', maxWidth: '720px', margin: '0 auto', padding: '2rem 1.5rem', color: 'var(--text-primary, #374151)', lineHeight: '1.7' }}>
+    <div style={{ fontFamily: 'inherit', maxWidth: '720px', margin: '0 auto', padding: '2rem 1.5rem', color: 'var(--text-primary, #374151)', lineHeight: '1.7' }}>
       <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-title, #1F2937)', marginBottom: '0.25rem' }}>Termos de Uso</h1>
       <p style={{ fontSize: '0.85rem', color: 'var(--text-muted, #9CA3AF)', marginBottom: '2rem' }}>Última atualização: junho de 2026</p>
 

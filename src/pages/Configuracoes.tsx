@@ -674,7 +674,7 @@ export default function Configuracoes() {
         .cfg-notif-label { font-size: 0.88rem; font-weight: 500; color: var(--text-primary, #374151); margin: 0; }
 
         .cfg-link-box { background: var(--bg-subtle, #FFF1F7); border: 1px solid var(--border, #E9E9EE); border-radius: 12px; padding: 0.85rem 1rem; }
-        .cfg-link-url { font-size: 0.78rem; color: var(--text-secondary, #6B7280); margin: 0; word-break: break-all; font-family: monospace; }
+        .cfg-link-url { font-size: 0.78rem; color: var(--text-secondary, #6B7280); margin: 0; word-break: break-all; font-family: inherit; }
 
         .cfg-og-label { font-size: 0.82rem; font-weight: 600; color: var(--text-primary, #374151); margin: 0; }
         .cfg-og-hint  { font-size: 0.75rem; color: var(--text-muted, #9CA3AF); margin: 0; line-height: 1.5; }

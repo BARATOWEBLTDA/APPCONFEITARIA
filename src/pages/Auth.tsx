@@ -257,7 +257,7 @@ export default function Auth() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { height: 100%; overflow: hidden; }
         #root { height: 100%; overflow-y: auto; }
-        .auth-root { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-family: 'DM Sans', sans-serif; padding: 1.5rem; }
+        .auth-root { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-family: inherit; padding: 1.5rem; }
         .fade-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-card, #FFFFFF); opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
         .auth-bg { position: fixed; inset: 0; z-index: 0; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); }
@@ -269,7 +269,7 @@ export default function Auth() {
         .auth-form { display: flex; flex-direction: column; gap: 1rem; }
         .field { display: flex; flex-direction: column; gap: 0.35rem; }
         .field label { font-size: 0.88rem; font-weight: 500; color: var(--text-primary, #374151); }
-        .field input { padding: 0.72rem 1rem; border: 1.5px solid var(--border, #E9E9EE); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--text-title, #1F2937); outline: none; transition: background-color 0.2s, border-color 0.2s; width: 100%; }
+        .field input { padding: 0.72rem 1rem; border: 1.5px solid var(--border, #E9E9EE); border-radius: 8px; font-family: inherit; font-size: 0.95rem; color: var(--text-title, #1F2937); outline: none; transition: background-color 0.2s, border-color 0.2s; width: 100%; }
         .field input:focus { border-color: var(--border-focus, #FF6FA9); }
         .field input::placeholder { color: var(--text-muted, #9CA3AF); }
         .password-wrap { position: relative; }
@@ -283,16 +283,16 @@ export default function Auth() {
         .forgot-link { font-size: 0.82rem; color: var(--primary, #FF6FA9); text-decoration: none; white-space: nowrap; font-weight: 500; }
         .forgot-link:hover { text-decoration: underline; }
         .auth-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error, #EF4444); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; }
-        .auth-btn { padding: 0.85rem; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; min-height: 48px; }
+        .auth-btn { padding: 0.85rem; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); border: none; border-radius: 8px; font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; min-height: 48px; }
         .auth-btn:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
         .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; }
         .cadastro-link-wrap { text-align: center; font-size: 0.85rem; color: var(--text-secondary, #6B7280); }
-        .cadastro-link { background: none; border: none; color: var(--primary, #FF6FA9); font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; text-decoration: underline; }
+        .cadastro-link { background: none; border: none; color: var(--primary, #FF6FA9); font-weight: 600; cursor: pointer; font-family: inherit; font-size: 0.85rem; text-decoration: underline; }
         .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .auth-divider { display: flex; align-items: center; gap: 0.75rem; color: var(--border, #E9E9EE); font-size: 0.82rem; }
         .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border, #E9E9EE); }
-        .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0.75rem; background: var(--bg-card, #FFFFFF); color: var(--text-primary, #374151); border: 1.5px solid var(--border, #E9E9EE); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
+        .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0.75rem; background: var(--bg-card, #FFFFFF); color: var(--text-primary, #374151); border: 1.5px solid var(--border, #E9E9EE); border-radius: 8px; font-family: inherit; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
         .google-btn:hover { border-color: var(--text-muted, #9CA3AF); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
         .cadastro-back-inline { position: absolute; top: 1.25rem; left: 1.25rem; width: 36px; height: 36px; border-radius: 50%; background: var(--bg-body, #F7F7F8); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-primary, #374151); transition: background 0.15s; }
         .cadastro-back-inline:hover { background: var(--border, #E9E9EE); }
@@ -301,11 +301,11 @@ export default function Auth() {
         .cadastro-form { display: flex; flex-direction: column; gap: 0.9rem; }
         .cad-field { position: relative; display: flex; align-items: center; border: 1.5px solid var(--border, #E9E9EE); border-radius: 50px; overflow: hidden; background: var(--bg-card, #FFFFFF); transition: border-color 0.2s; }
         .cad-field:focus-within { border-color: var(--border-focus, #FF6FA9); }
-        .cad-field input { flex: 1; padding: 0.8rem 1.25rem; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; color: var(--text-title, #1F2937); background: transparent; }
+        .cad-field input { flex: 1; padding: 0.8rem 1.25rem; border: none; outline: none; font-family: inherit; font-size: 0.95rem; color: var(--text-title, #1F2937); background: transparent; }
         .cad-field input::placeholder { color: var(--text-muted, #9CA3AF); }
         .cad-icon { margin-right: 1rem; flex-shrink: 0; }
         .cad-eye { background: none; border: none; cursor: pointer; padding: 0 1rem 0 0; display: flex; align-items: center; color: var(--text-muted, #9CA3AF); }
-        .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); border: none; border-radius: 50px; font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
+        .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); border: none; border-radius: 50px; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
         .cad-btn:hover:not(:disabled) { opacity: 0.9; }
         .cad-btn:disabled { opacity: 0.7; cursor: not-allowed; }
       `}</style>

@@ -305,7 +305,7 @@ export default function Produtos() {
           placeholder="Buscar produto..."
           value={buscaTexto}
           onChange={e => { setBuscaTexto(e.target.value); setFiltroCategoria("todas"); }}
-          style={{ width: "100%", padding: "0.65rem 1rem 0.65rem 2.5rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "12px", fontFamily: "Inter, sans-serif", fontSize: "0.88rem", outline: "none", boxSizing: "border-box", background: "var(--bg-card, #FFFFFF)" }}
+          style={{ width: "100%", padding: "0.65rem 1rem 0.65rem 2.5rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "12px", fontFamily: "inherit", fontSize: "0.88rem", outline: "none", boxSizing: "border-box", background: "var(--bg-card, #FFFFFF)" }}
         />
       </div>
 
@@ -324,7 +324,7 @@ export default function Produtos() {
                 Esses produtos aparecem apenas em "Todos" no cardápio. Edite-os e selecione uma categoria válida.
               </p>
             </div>
-            <button onClick={() => setFiltroCategoria("__orfaos__")} style={{ padding: "5px 12px", background: "var(--warning, #F59E0B)", color: "var(--text-inverse, #FFFFFF)", border: "none", borderRadius: "8px", fontFamily: "Inter, sans-serif", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+            <button onClick={() => setFiltroCategoria("__orfaos__")} style={{ padding: "5px 12px", background: "var(--warning, #F59E0B)", color: "var(--text-inverse, #FFFFFF)", border: "none", borderRadius: "8px", fontFamily: "inherit", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
               Ver {orfaos.length}
             </button>
           </div>
@@ -495,7 +495,7 @@ export default function Produtos() {
                           setForm(f => ({ ...f, descricao: "" }));
                         }
                       }}
-                      style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: (form.nome.trim() && isPro) ? "var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A))" : "var(--border, #E9E9EE)", color: (form.nome.trim() && isPro) ? "var(--text-inverse, #FFFFFF)" : "var(--text-muted, #9CA3AF)", border: "none", borderRadius: "20px", fontFamily: "Inter, sans-serif", fontSize: "0.7rem", fontWeight: 700, cursor: (form.nome.trim() && isPro) ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}
+                      style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: (form.nome.trim() && isPro) ? "var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A))" : "var(--border, #E9E9EE)", color: (form.nome.trim() && isPro) ? "var(--text-inverse, #FFFFFF)" : "var(--text-muted, #9CA3AF)", border: "none", borderRadius: "20px", fontFamily: "inherit", fontSize: "0.7rem", fontWeight: 700, cursor: (form.nome.trim() && isPro) ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}
                       title={!isPro ? "Disponível apenas no plano PRO" : ""}
                     >
                       ✨ {isPro ? "Gerar com IA" : "IA — PRO"}
@@ -570,8 +570,8 @@ export default function Produtos() {
                         </div>
                       ))}
                       <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
-                        <input type="text" placeholder={cfg.placeholder} value={novoTamanho.label} onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))} style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
-                        <input type="text" placeholder={cfg.placeholderPreco} value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", outline: "none" }} />
+                        <input type="text" placeholder={cfg.placeholder} value={novoTamanho.label} onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))} style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "inherit", outline: "none" }} />
+                        <input type="text" placeholder={cfg.placeholderPreco} value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "inherit", outline: "none" }} />
                         <button onClick={() => {
                           if (!novoTamanho.label.trim()) return;
                           const preco = parseFloat(novoTamanho.preco.replace(",", "."));
@@ -662,7 +662,7 @@ export default function Produtos() {
                               <button onClick={e => { e.stopPropagation(); removeOpcao(campo, i); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--primary-dark, #F85A9A)", padding: "0 2px", lineHeight: 1, fontSize: "0.85rem" }}>×</button>
                             </span>
                           ))}
-                          <input id={`input-${key}`} type="text" placeholder={(form[campo] || []).length === 0 ? placeholder : "Adicionar..."} value={novaOpcao[key]} onChange={e => setNovaOpcao(o => ({ ...o, [key]: e.target.value }))} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addOpcao(campo, key); } }} style={{ border: "none", outline: "none", fontSize: "0.82rem", fontFamily: "Inter, sans-serif", flex: 1, minWidth: "100px", background: "transparent", padding: "2px 0" }} />
+                          <input id={`input-${key}`} type="text" placeholder={(form[campo] || []).length === 0 ? placeholder : "Adicionar..."} value={novaOpcao[key]} onChange={e => setNovaOpcao(o => ({ ...o, [key]: e.target.value }))} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addOpcao(campo, key); } }} style={{ border: "none", outline: "none", fontSize: "0.82rem", fontFamily: "inherit", flex: 1, minWidth: "100px", background: "transparent", padding: "2px 0" }} />
                         </div>
                         <p style={{ fontSize: "0.68rem", color: "var(--text-muted, #9CA3AF)", margin: "4px 0 0" }}>Pressione Enter ou clique em + Add</p>
                         <button onClick={() => addOpcao(campo, key)} style={{ marginTop: "6px", padding: "0.4rem 1rem", background: "var(--primary, #FF6FA9)", color: "var(--text-inverse, #FFFFFF)", border: "none", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
@@ -720,7 +720,7 @@ export default function Produtos() {
                     <div style={{ padding: "0 12px 12px", borderTop: "1px solid var(--border, #E9E9EE)", display: "flex", flexDirection: "column", gap: "8px" }}>
                       <div>
                         <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary, #6B7280)", display: "block", margin: "8px 0 4px" }}>Nome do adicional</label>
-                        <input type="text" placeholder="Ex: Embalagem especial, Laço..." value={form.titulo_outro || ""} onChange={e => setForm(f => ({ ...f, titulo_outro: e.target.value }))} style={{ width: "100%", padding: "0.55rem 0.85rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "10px", fontSize: "0.85rem", fontFamily: "Inter, sans-serif", outline: "none", boxSizing: "border-box", background: "var(--bg-card, #FFFFFF)" }} />
+                        <input type="text" placeholder="Ex: Embalagem especial, Laço..." value={form.titulo_outro || ""} onChange={e => setForm(f => ({ ...f, titulo_outro: e.target.value }))} style={{ width: "100%", padding: "0.55rem 0.85rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "10px", fontSize: "0.85rem", fontFamily: "inherit", outline: "none", boxSizing: "border-box", background: "var(--bg-card, #FFFFFF)" }} />
                       </div>
                       <div>
                         <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary, #6B7280)", display: "block", margin: "0 0 4px" }}>Valor adicional</label>
@@ -744,13 +744,13 @@ export default function Produtos() {
                     <div style={{ display: "flex", gap: "8px" }}>
                       <button
                         onClick={() => setForm(f => ({ ...f, tipo_promocao: 'fixo' }))}
-                        style={{ flex: 1, padding: "8px", borderRadius: "10px", border: `2px solid ${form.tipo_promocao !== 'percentual' ? 'var(--primary, #FF6FA9)' : 'var(--border, #E9E9EE)'}`, background: form.tipo_promocao !== 'percentual' ? 'var(--primary-light, #FFF1F7)' : 'var(--bg-card, #FFFFFF)', fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 700, color: form.tipo_promocao !== 'percentual' ? 'var(--primary, #FF6FA9)' : 'var(--text-secondary, #6B7280)', cursor: "pointer" }}
+                        style={{ flex: 1, padding: "8px", borderRadius: "10px", border: `2px solid ${form.tipo_promocao !== 'percentual' ? 'var(--primary, #FF6FA9)' : 'var(--border, #E9E9EE)'}`, background: form.tipo_promocao !== 'percentual' ? 'var(--primary-light, #FFF1F7)' : 'var(--bg-card, #FFFFFF)', fontFamily: "inherit", fontSize: "0.82rem", fontWeight: 700, color: form.tipo_promocao !== 'percentual' ? 'var(--primary, #FF6FA9)' : 'var(--text-secondary, #6B7280)', cursor: "pointer" }}
                       >
                         💰 Preço fixo
                       </button>
                       <button
                         onClick={() => setForm(f => ({ ...f, tipo_promocao: 'percentual' }))}
-                        style={{ flex: 1, padding: "8px", borderRadius: "10px", border: `2px solid ${form.tipo_promocao === 'percentual' ? 'var(--primary, #FF6FA9)' : 'var(--border, #E9E9EE)'}`, background: form.tipo_promocao === 'percentual' ? 'var(--primary-light, #FFF1F7)' : 'var(--bg-card, #FFFFFF)', fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 700, color: form.tipo_promocao === 'percentual' ? 'var(--primary, #FF6FA9)' : 'var(--text-secondary, #6B7280)', cursor: "pointer" }}
+                        style={{ flex: 1, padding: "8px", borderRadius: "10px", border: `2px solid ${form.tipo_promocao === 'percentual' ? 'var(--primary, #FF6FA9)' : 'var(--border, #E9E9EE)'}`, background: form.tipo_promocao === 'percentual' ? 'var(--primary-light, #FFF1F7)' : 'var(--bg-card, #FFFFFF)', fontFamily: "inherit", fontSize: "0.82rem", fontWeight: 700, color: form.tipo_promocao === 'percentual' ? 'var(--primary, #FF6FA9)' : 'var(--text-secondary, #6B7280)', cursor: "pointer" }}
                       >
                         % Desconto
                       </button>

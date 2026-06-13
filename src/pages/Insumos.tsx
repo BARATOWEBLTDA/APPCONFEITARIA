@@ -232,7 +232,7 @@ export default function Insumos() {
   const formatCurrency = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
   const formatDate = (d: string) => new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 
-  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh", fontFamily: "Inter, sans-serif", color: "var(--text-muted, #9CA3AF)" }}>Carregando...</div>;
+  if (loading) return <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh", fontFamily: "inherit", color: "var(--text-muted, #9CA3AF)" }}>Carregando...</div>;
 
   const itensPorPagina = 8;
   const totalPaginas = Math.ceil(insumosFiltrados.length / itensPorPagina);
@@ -529,7 +529,7 @@ export default function Insumos() {
 
               <button
                 onClick={() => setPreviewInsumo(null)}
-                style={{marginTop:"1.25rem",width:"100%",padding:"0.75rem",background:"var(--bg-body, #F7F7F8)",color:"var(--text-primary, #374151)",border:"none",borderRadius:"12px",fontFamily:"Inter,sans-serif",fontSize:"0.88rem",fontWeight:700,cursor:"pointer",transition:"background 0.15s"}}
+                style={{marginTop:"1.25rem",width:"100%",padding:"0.75rem",background:"var(--bg-body, #F7F7F8)",color:"var(--text-primary, #374151)",border:"none",borderRadius:"12px",fontFamily:"inherit",fontSize:"0.88rem",fontWeight:700,cursor:"pointer",transition:"background 0.15s"}}
                 onMouseOver={e => (e.currentTarget.style.background="var(--border, #E9E9EE)")}
                 onMouseOut={e => (e.currentTarget.style.background="var(--bg-body, #F7F7F8)")}
               >Fechar</button>
@@ -552,7 +552,7 @@ export default function Insumos() {
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
           </button>
           <h2 className="ins-form-title">{insumoDetalhe.nome}</h2>
-          <button onClick={() => openEditar(insumoDetalhe)} style={{ background: "none", border: "none", color: "var(--primary, #FF6FA9)", fontFamily: "Inter, sans-serif", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer" }}>Editar</button>
+          <button onClick={() => openEditar(insumoDetalhe)} style={{ background: "none", border: "none", color: "var(--primary, #FF6FA9)", fontFamily: "inherit", fontSize: "0.82rem", fontWeight: 600, cursor: "pointer" }}>Editar</button>
         </div>
 
         {insumoDetalhe.imagem_url && (
@@ -693,7 +693,7 @@ export default function Insumos() {
                   Upload manual
                 </button>
                 {imagemSelecionada && (
-                  <button onClick={() => setImagemSelecionada(null)} style={{background:"none",border:"none",color:"var(--error, #EF4444)",fontSize:"0.72rem",cursor:"pointer",fontFamily:"Inter,sans-serif",textAlign:"center"}}>
+                  <button onClick={() => setImagemSelecionada(null)} style={{background:"none",border:"none",color:"var(--error, #EF4444)",fontSize:"0.72rem",cursor:"pointer",fontFamily:"inherit",textAlign:"center"}}>
                     Remover imagem
                   </button>
                 )}
@@ -724,7 +724,7 @@ export default function Insumos() {
                   <label>Marca <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(opcional)</span></label>
                   {marcas.length === 0 && !showNovaMarca ? (
                     <button onClick={() => setShowNovaMarca(true)}
-                      style={{padding:"0.65rem 0.9rem",border:"1.5px dashed var(--border, #E9E9EE)",borderRadius:"10px",background:"var(--bg-card, #FFFFFF)",fontFamily:"Inter,sans-serif",fontSize:"0.85rem",color:"var(--text-muted, #9CA3AF)",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:"6px"}}>
+                      style={{padding:"0.65rem 0.9rem",border:"1.5px dashed var(--border, #E9E9EE)",borderRadius:"10px",background:"var(--bg-card, #FFFFFF)",fontFamily:"inherit",fontSize:"0.85rem",color:"var(--text-muted, #9CA3AF)",cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:"6px"}}>
                       <span style={{fontSize:"1rem",lineHeight:1}}>+</span> Cadastrar marca
                     </button>
                   ) : showNovaMarca ? (
@@ -779,7 +779,7 @@ export default function Insumos() {
 
               <div className="ins-field" style={{flex:1,display:"flex",flexDirection:"column"}}>
                 <label>Descrição <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(opcional)</span></label>
-                <textarea placeholder="Ex: Leite condensado tradicional, ideal para recheios e coberturas." value={form.descricao || ""} onChange={e => setForm((f: any) => ({...f, descricao: e.target.value}))} style={{flex:1,minHeight:"120px",padding:"0.65rem 0.9rem",border:"1.5px solid var(--border, #E9E9EE)",borderRadius:"10px",fontFamily:"Inter,sans-serif",fontSize:"0.88rem",color:"var(--text-title, #1F2937)",outline:"none",resize:"none",width:"100%",boxSizing:"border-box"}} onFocus={e => e.target.style.borderColor="var(--border-focus, #FF6FA9)"} onBlur={e => e.target.style.borderColor="var(--border, #E9E9EE)"} />
+                <textarea placeholder="Ex: Leite condensado tradicional, ideal para recheios e coberturas." value={form.descricao || ""} onChange={e => setForm((f: any) => ({...f, descricao: e.target.value}))} style={{flex:1,minHeight:"120px",padding:"0.65rem 0.9rem",border:"1.5px solid var(--border, #E9E9EE)",borderRadius:"10px",fontFamily:"inherit",fontSize:"0.88rem",color:"var(--text-title, #1F2937)",outline:"none",resize:"none",width:"100%",boxSizing:"border-box"}} onFocus={e => e.target.style.borderColor="var(--border-focus, #FF6FA9)"} onBlur={e => e.target.style.borderColor="var(--border, #E9E9EE)"} />
               </div>
             </div>
 
@@ -1285,7 +1285,7 @@ function Styles() {
       .ins-review-item strong { font-size:0.85rem; color:var(--text-title, #1F2937); text-align:right; max-width:60%; }
       .ins-sucesso { display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:3rem 1rem; text-align:center; }
       .ins-sucesso-icon { width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,var(--success, #22C55E),#16a34a); display:flex; align-items:center; justify-content:center; margin-bottom:0.5rem; }
-      .ins-overlay { position:fixed; inset:0; z-index:200; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; padding:1rem; }
+      .ins-overlay { position:fixed; inset:0; z-index:200; background:var(--bg-overlay); display:flex; align-items:center; justify-content:center; padding:1rem; }
       .ins-modal { background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.5rem; width:100%; max-width:360px; }
       .ins-btn-del-confirm { flex:1; padding:0.75rem; background:var(--error, #EF4444); color:var(--text-inverse, #FFFFFF); border:none; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
       .ins-spinner { width:20px; height:20px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:insSpin 0.7s linear infinite; display:inline-block; }

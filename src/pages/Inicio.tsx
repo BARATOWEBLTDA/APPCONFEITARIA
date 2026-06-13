@@ -164,7 +164,7 @@ const load = async () => {
     { label: "Receitas", icon: <BookOpen size={28} color="var(--primary, #FF6FA9)" />, path: "/receitas" },
   ];
 
-  if (loading) return <div style={{ padding: "2rem", fontFamily: "Inter, sans-serif", color: "var(--text-muted, #9CA3AF)" }}>Carregando...</div>;
+  if (loading) return <div style={{ padding: "2rem", fontFamily: "inherit", color: "var(--text-muted, #9CA3AF)" }}>Carregando...</div>;
 
   return (
     <div className="ini-root">
@@ -300,7 +300,7 @@ const load = async () => {
                   </div>
                   <p style={{fontSize:"0.85rem",fontWeight:600,color:"var(--text-primary, #374151)",margin:0}}>Nenhum pedido ainda</p>
                   <p style={{fontSize:"0.75rem",color:"var(--text-muted, #9CA3AF)",margin:0}}>Registre sua primeira venda</p>
-                  <button onClick={() => navigate("/pedidos")} style={{marginTop:"0.25rem",background:"linear-gradient(135deg,var(--primary, #FF6FA9), #F85A9A)",color:"white",border:"none",borderRadius:"8px",padding:"0.45rem 1rem",fontFamily:"Inter,sans-serif",fontSize:"0.8rem",fontWeight:600,cursor:"pointer"}}>
+                  <button onClick={() => navigate("/pedidos")} style={{marginTop:"0.25rem",background:"linear-gradient(135deg,var(--primary, #FF6FA9), #F85A9A)",color:"white",border:"none",borderRadius:"8px",padding:"0.45rem 1rem",fontFamily:"inherit",fontSize:"0.8rem",fontWeight:600,cursor:"pointer"}}>
                     Novo pedido
                   </button>
                 </div>
@@ -354,7 +354,7 @@ const load = async () => {
                   </div>
                   <p style={{fontSize:"0.85rem",fontWeight:600,color:"var(--text-primary, #374151)",margin:0}}>Nenhum cliente ainda</p>
                   <p style={{fontSize:"0.75rem",color:"var(--text-muted, #9CA3AF)",margin:0}}>Cadastre seu primeiro cliente</p>
-                  <button onClick={() => navigate("/clientes")} style={{marginTop:"0.25rem",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",color:"white",border:"none",borderRadius:"8px",padding:"0.45rem 1rem",fontFamily:"Inter,sans-serif",fontSize:"0.8rem",fontWeight:600,cursor:"pointer"}}>
+                  <button onClick={() => navigate("/clientes")} style={{marginTop:"0.25rem",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",color:"white",border:"none",borderRadius:"8px",padding:"0.45rem 1rem",fontFamily:"inherit",fontSize:"0.8rem",fontWeight:600,cursor:"pointer"}}>
                     Cadastrar cliente
                   </button>
                 </div>

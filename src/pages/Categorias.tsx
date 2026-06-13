@@ -183,10 +183,10 @@ export default function Categorias() {
                 </div>
 
                 <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
-                  <button onClick={() => setShowGaleria(false)} style={{ flex: 1, padding: "8px", borderRadius: "10px", border: "2px solid", borderColor: !showGaleria ? "var(--primary, #FF6FA9)" : "var(--border, #E9E9EE)", background: !showGaleria ? "var(--primary-light, #FFF1F7)" : "var(--bg-card, #FFFFFF)", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", fontWeight: 600, color: !showGaleria ? "var(--primary, #FF6FA9)" : "var(--text-secondary, #6B7280)", cursor: "pointer" }}>
+                  <button onClick={() => setShowGaleria(false)} style={{ flex: 1, padding: "8px", borderRadius: "10px", border: "2px solid", borderColor: !showGaleria ? "var(--primary, #FF6FA9)" : "var(--border, #E9E9EE)", background: !showGaleria ? "var(--primary-light, #FFF1F7)" : "var(--bg-card, #FFFFFF)", fontFamily: "inherit", fontSize: "0.8rem", fontWeight: 600, color: !showGaleria ? "var(--primary, #FF6FA9)" : "var(--text-secondary, #6B7280)", cursor: "pointer" }}>
                     📁 Fazer upload
                   </button>
-                  <button onClick={() => setShowGaleria(true)} style={{ flex: 1, padding: "8px", borderRadius: "10px", border: "2px solid", borderColor: showGaleria ? "var(--primary, #FF6FA9)" : "var(--border, #E9E9EE)", background: showGaleria ? "var(--primary-light, #FFF1F7)" : "var(--bg-card, #FFFFFF)", fontFamily: "Inter, sans-serif", fontSize: "0.8rem", fontWeight: 600, color: showGaleria ? "var(--primary, #FF6FA9)" : "var(--text-secondary, #6B7280)", cursor: "pointer" }}>
+                  <button onClick={() => setShowGaleria(true)} style={{ flex: 1, padding: "8px", borderRadius: "10px", border: "2px solid", borderColor: showGaleria ? "var(--primary, #FF6FA9)" : "var(--border, #E9E9EE)", background: showGaleria ? "var(--primary-light, #FFF1F7)" : "var(--bg-card, #FFFFFF)", fontFamily: "inherit", fontSize: "0.8rem", fontWeight: 600, color: showGaleria ? "var(--primary, #FF6FA9)" : "var(--text-secondary, #6B7280)", cursor: "pointer" }}>
                     🎨 Ícones do sistema
                   </button>
                 </div>

@@ -47,7 +47,7 @@ export default function CardapioPrevia() {
         display: "flex",
         flexDirection: "column",
         background: "#0f0f10",
-        fontFamily: "Inter, system-ui, sans-serif",
+        fontFamily: "inherit",
       }}
     >
       {/* ── Barra topo ── */}

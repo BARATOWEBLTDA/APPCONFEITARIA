@@ -277,7 +277,7 @@ export default function CardapioDesign() {
             {activePicker === 'cor_nome' && (
               <div className="cd-picker-wrap">
                 <div style={{ padding: '12px', borderRadius: '10px', background: corBackground, marginBottom: '12px', textAlign: 'center' }}>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 800, color: corNome, fontFamily: 'Nunito, sans-serif' }}>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 800, color: corNome, fontFamily: 'inherit' }}>
                     Nome da sua loja
                   </span>
                 </div>
@@ -451,10 +451,10 @@ export default function CardapioDesign() {
         .cd-color-info { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
         .cd-color-label-row { display:flex; align-items:center; gap:6px; }
         .cd-color-label { font-size:0.82rem; font-weight:600; color:var(--text-primary, #374151); }
-        .cd-color-value { font-size:0.7rem; color:var(--text-muted, #9CA3AF); font-family:monospace; }
+        .cd-color-value { font-size:0.7rem; color:var(--text-muted, #9CA3AF); font-family:inherit; }
         .cd-color-swatch { width:38px; height:38px; border-radius:10px; border:2px solid rgba(0,0,0,0.08); flex-shrink:0; box-shadow:0 2px 6px rgba(0,0,0,0.12); }
         .cd-picker-wrap { padding:0.75rem; background:var(--bg-body, #F7F7F8); border-radius:12px; border:1px solid var(--border, #E9E9EE); margin-top:4px; }
-        .cd-hex-input { flex:1; min-width:0; padding:6px 8px; border:1.5px solid var(--border, #E9E9EE); border-radius:8px; font-size:0.78rem; font-family:monospace; color:var(--text-primary, #374151); outline:none; }
+        .cd-hex-input { flex:1; min-width:0; padding:6px 8px; border:1.5px solid var(--border, #E9E9EE); border-radius:8px; font-size:0.78rem; font-family:inherit; color:var(--text-primary, #374151); outline:none; }
         .cd-hex-input:focus { border-color:var(--border-focus, #FF6FA9); }
         .cd-picker-close { padding:6px 10px; background:var(--primary, #FF6FA9); color:var(--text-inverse, #FFFFFF); border:none; border-radius:8px; font-size:0.75rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; }
         .cd-restore-btn { padding:6px 8px; background:var(--bg-body, #F7F7F8); color:var(--text-secondary, #6B7280); border:1.5px solid var(--border, #E9E9EE); border-radius:8px; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; }
