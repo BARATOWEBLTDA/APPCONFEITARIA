@@ -17,7 +17,7 @@
   --text-link:        #986274;
 
   /* Superfícies */
-  --bg-body:          #F9F5F6;
+  --bg-body:          #FAFAFA;
   --bg-card:          #FFFFFF;
   --bg-surface:       var(--bg-card);
   --bg-input:         #FFFFFF;
@@ -31,12 +31,12 @@
   --focus-ring:       0 0 0 3px rgba(152,98,116,0.25);
 
   /* ── Sidebar / Nav ── */
-  --sidebar-bg:           var(--bg-card, #FFFFFF);
+  --sidebar-bg:           #E8DDE1;
   --sidebar-text:         var(--text-primary, #431524);
   --sidebar-text-muted:   var(--text-muted, #C39EAA);
-  --sidebar-hover-bg:     var(--menu-hover-bg, #F2E8EC);
-  --sidebar-active-bg:    var(--menu-active-bg, #F7EEF1);
-  --sidebar-active-text:  var(--menu-active, #986274);
+  --sidebar-hover-bg:     var(--menu-hover-bg, #D8C7CD);
+  --sidebar-active-bg:    var(--menu-active-bg, #986274);
+  --sidebar-active-text:  var(--menu-active, #FFFFFF);
   --sidebar-border:       var(--border, #ECC2D0);
   --sidebar-border-right: #ECC2D0;
 
@@ -67,9 +67,9 @@
   /* ── Menu (legado) ── */
   --menu-bg:          #FFFFFF;
   --menu-inactive:    #C39EAA;
-  --menu-active:      #986274;
-  --menu-active-bg:   #F7EEF1;
-  --menu-hover-bg:    #F2E8EC;
+  --menu-active:      #FFFFFF;
+  --menu-active-bg:   #986274;
+  --menu-hover-bg:    #D8C7CD;
 
   /* ── Estados globais ── */
   --state-hover:      var(--menu-hover-bg);

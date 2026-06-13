@@ -319,18 +319,18 @@ export default function Layout() {
         .nav-icon { display: flex; align-items: center; flex-shrink: 0; opacity: 0.7; }
 
         .nav-item { padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: var(--sidebar-text); text-decoration: none; transition: background 0.15s, color 0.15s; outline: none; display: flex; align-items: center; gap: 0.6rem; }
-        .nav-item:hover { background: var(--sidebar-hover-bg); color: var(--text-inverse); }
+        .nav-item:hover { background: var(--sidebar-hover-bg); color: #431524; }
         .nav-item:hover .nav-icon { opacity: 1; }
-        .nav-item:focus { background: var(--sidebar-hover-bg); color: var(--text-inverse); outline: none; }
+        .nav-item:focus { background: var(--sidebar-hover-bg); color: #431524; outline: none; }
         .nav-item.active { background: var(--sidebar-active-bg); color: var(--sidebar-active-text); font-weight: 600; }        .nav-item.active .nav-icon { opacity: 1; }
 
         .nav-group-btn { width: 100%; text-align: left; cursor: pointer; background: none; border: none; font-family: var(--font-base); padding: 0.7rem 1rem; border-radius: 10px; font-size: 0.88rem; font-weight: 500; color: var(--sidebar-text); transition: background 0.15s, color 0.15s; display: flex; align-items: center; gap: 0.6rem; box-sizing: border-box; margin: 0; }
-        .nav-group-btn:hover { background: var(--sidebar-hover-bg); color: var(--text-inverse); }
+        .nav-group-btn:hover { background: var(--sidebar-hover-bg); color: #431524; }
         .nav-group-btn.active { color: var(--primary); }
 
         .nav-subitems { display: flex; flex-direction: column; padding: 0 0 0.25rem 0; }
         .nav-subitem { display: flex; align-items: center; padding: 0.5rem 0.85rem 0.5rem 1.75rem; border-radius: 8px; font-size: 0.85rem; color: var(--sidebar-text-muted); text-decoration: none; transition: all 0.15s; }
-        .nav-subitem:hover { color: var(--text-inverse); background: var(--sidebar-hover-bg); }
+        .nav-subitem:hover { color: #431524; background: var(--sidebar-hover-bg); }
         .nav-subitem.active { color: var(--sidebar-active-text); background: var(--sidebar-active-bg); font-weight: 600; }
 
         .sidebar-upgrade { display: block; margin: 0 0.25rem 0.5rem; background: rgba(var(--primary-rgb), 0.12); border: 1px solid rgba(var(--primary-rgb), 0.2); border-radius: 14px; padding: 0.75rem 1rem; text-decoration: none; text-align: center; }
