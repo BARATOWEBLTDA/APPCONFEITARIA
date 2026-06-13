@@ -100,8 +100,7 @@ export default function CheckoutConfigPage() {
   )
 
   const s = {
-    outer: { width:'100%',display:'flex',justifyContent:'center',paddingBottom:'3rem',background:'var(--bg-body, #F7F7F8)' } as React.CSSProperties,
-    root: { fontFamily:'inherit',width:'100%',maxWidth:'900px',display:'flex',flexDirection:'column' as const,gap:'1.25rem',padding:'0 1.5rem' },
+    root: { fontFamily:'inherit',width:'100%',display:'flex',flexDirection:'column' as const,gap:'1.25rem' },
     header: { display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:'2rem',paddingBottom:'0.75rem',borderBottom:'1px solid var(--border, #E9E9EE)',flexWrap:'wrap' as const,gap:'0.5rem' },
     title: { fontSize:'1.45rem',fontWeight:800,color:'var(--text-title, #1F2937)',margin:'0 0 0.2rem' },
     sub: { fontSize:'0.84rem',color:'var(--text-secondary, #6B7280)',margin:0,fontStyle:'italic' as const },
@@ -119,7 +118,7 @@ export default function CheckoutConfigPage() {
   }
 
   return (
-    <div style={s.outer}>
+    <>
       <style>{`
         .chk-grid {
           display: flex;
@@ -129,11 +128,11 @@ export default function CheckoutConfigPage() {
         @media (min-width: 900px) {
           .chk-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 1.25rem;
             align-items: start;
           }
-          .chk-col2 { display: flex; flex-direction: column; gap: 1.25rem; }
+          .chk-stack { display: flex; flex-direction: column; gap: 1.25rem; }
         }
       `}</style>
       <div style={s.root}>
@@ -180,34 +179,7 @@ export default function CheckoutConfigPage() {
             )}
           </div>
 
-          {/* ── COLUNA 2: Agendamento + Formas de Entrega + Cupons ── */}
-          <div className="chk-col2">
-
-          {/* ── AGENDAMENTO ── */}
-          <div style={s.card}>
-            <p style={s.label}>Agendamento</p>
-            <div style={s.toggleRow}>
-              <div>
-                <p style={{margin:0,fontSize:'0.85rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>Aceitar agendamento</p>
-                <p style={{margin:'0.1rem 0 0',fontSize:'0.72rem',color:'var(--text-muted, #9CA3AF)'}}>Cliente escolhe data e horário de entrega/retirada</p>
-              </div>
-              <label style={s.toggle}>
-                <input type="checkbox" checked={aceitaAgendamento} onChange={e => setAceitaAgendamento(e.target.checked)} style={{opacity:0,width:0,height:0}} />
-                <span style={{position:'absolute',cursor:'pointer',inset:0,background:aceitaAgendamento?'var(--primary, #FF6FA9)':'var(--border, #E9E9EE)',borderRadius:'24px',transition:'0.3s'}}>
-                  <span style={{position:'absolute',height:'18px',width:'18px',left:aceitaAgendamento?'23px':'3px',bottom:'3px',background:'var(--bg-card, #FFFFFF)',borderRadius:'50%',transition:'0.3s',boxShadow:'0 1px 4px rgba(0,0,0,0.18)'}} />
-                </span>
-              </label>
-            </div>
-            {aceitaAgendamento && (
-              <div style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
-                <span style={{fontSize:'0.82rem',color:'var(--text-primary, #374151)',fontWeight:500}}>Prazo mínimo de antecedência:</span>
-                <input value={prazoMinimo} onChange={e => setPrazoMinimo(e.target.value.replace(/\D/g,''))} style={{...s.input,width:'60px',textAlign:'center'}} />
-                <span style={{fontSize:'0.82rem',color:'var(--text-muted, #9CA3AF)'}}>horas</span>
-              </div>
-            )}
-          </div>
-
-          {/* ── FORMAS DE ENTREGA ── */}
+          {/* ── COLUNA 2: Formas de Entrega ── */}
           <div style={s.card}>
             <p style={s.label}>Formas de entrega</p>
             <p style={s.hint}>Marque as opções disponíveis</p>
@@ -259,6 +231,33 @@ export default function CheckoutConfigPage() {
             )}
           </div>
 
+          {/* ── COLUNA 3: Agendamento + Cupons ── */}
+          <div className="chk-stack">
+
+          {/* ── AGENDAMENTO ── */}
+          <div style={s.card}>
+            <p style={s.label}>Agendamento</p>
+            <div style={s.toggleRow}>
+              <div>
+                <p style={{margin:0,fontSize:'0.85rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>Aceitar agendamento</p>
+                <p style={{margin:'0.1rem 0 0',fontSize:'0.72rem',color:'var(--text-muted, #9CA3AF)'}}>Cliente escolhe data e horário de entrega/retirada</p>
+              </div>
+              <label style={s.toggle}>
+                <input type="checkbox" checked={aceitaAgendamento} onChange={e => setAceitaAgendamento(e.target.checked)} style={{opacity:0,width:0,height:0}} />
+                <span style={{position:'absolute',cursor:'pointer',inset:0,background:aceitaAgendamento?'var(--primary, #FF6FA9)':'var(--border, #E9E9EE)',borderRadius:'24px',transition:'0.3s'}}>
+                  <span style={{position:'absolute',height:'18px',width:'18px',left:aceitaAgendamento?'23px':'3px',bottom:'3px',background:'var(--bg-card, #FFFFFF)',borderRadius:'50%',transition:'0.3s',boxShadow:'0 1px 4px rgba(0,0,0,0.18)'}} />
+                </span>
+              </label>
+            </div>
+            {aceitaAgendamento && (
+              <div style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
+                <span style={{fontSize:'0.82rem',color:'var(--text-primary, #374151)',fontWeight:500}}>Prazo mínimo de antecedência:</span>
+                <input value={prazoMinimo} onChange={e => setPrazoMinimo(e.target.value.replace(/\D/g,''))} style={{...s.input,width:'60px',textAlign:'center'}} />
+                <span style={{fontSize:'0.82rem',color:'var(--text-muted, #9CA3AF)'}}>horas</span>
+              </div>
+            )}
+          </div>
+
           {/* ── CUPONS ── */}
           <div style={s.card}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
@@ -290,10 +289,10 @@ export default function CheckoutConfigPage() {
             ))}
           </div>
 
-          </div>{/* fim chk-col2 */}
+          </div>{/* fim chk-stack */}
 
         </div>{/* fim chk-grid */}
       </div>
-    </div>
+    </>
   )
 }
