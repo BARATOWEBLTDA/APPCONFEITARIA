@@ -95,7 +95,7 @@ export default function CardapioPrevia() {
         {/* Título + Toggle */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: 1, justifyContent: "center" }}>
           <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.8rem", fontWeight: 500 }}>
-            Prévia do Cardápio
+            Você está vendo uma Prévia do seu Cardápio
           </span>
 
           <div
@@ -130,7 +130,7 @@ export default function CardapioPrevia() {
                 <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
                 <line x1="12" y1="18" x2="12.01" y2="18" strokeLinecap="round" strokeWidth="3" />
               </svg>
-              Mobile
+              Celular
             </button>
 
             <button
@@ -157,7 +157,7 @@ export default function CardapioPrevia() {
                 <line x1="8" y1="21" x2="16" y2="21" />
                 <line x1="12" y1="17" x2="12" y2="21" />
               </svg>
-              Desktop
+              Computador
             </button>
           </div>
         </div>
