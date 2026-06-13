@@ -46,15 +46,6 @@ export default function CardapioPrevia() {
       await handleShare();
     }
   };
-    if (!url) return;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "Meu Cardápio", url });
-      } catch {}
-    } else {
-      await handleShare();
-    }
-  };
 
   return (
     <div
