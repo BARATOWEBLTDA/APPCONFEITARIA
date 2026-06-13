@@ -568,9 +568,9 @@ function CardapioContent() {
           @keyframes spin{to{transform:rotate(360deg)}}
           ::-webkit-scrollbar { width: 5px; height: 5px; }
           ::-webkit-scrollbar-track { background: transparent; }
-          ::-webkit-scrollbar-thumb { background: ${design.cor_botao || '#ec4899'}; border-radius: 99px; opacity: 0.6; }
+          ::-webkit-scrollbar-thumb { background: #ec4899; border-radius: 99px; opacity: 0.6; }
           ::-webkit-scrollbar-thumb:hover { opacity: 1; }
-          * { scrollbar-width: thin; scrollbar-color: ${design.cor_botao || '#ec4899'} transparent; }
+          * { scrollbar-width: thin; scrollbar-color: #ec4899 transparent; }
         `}</style>
       </div>
     </div>
