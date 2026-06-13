@@ -199,7 +199,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           </button>
 
           {/* Conteúdo scrollável */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '24px 24px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: isDesktop ? '24px 24px 0' : '16px 16px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
             {/* Nome, badge e preço */}
             <div>
@@ -297,7 +297,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           </div>
 
           {/* Rodapé */}
-          <div style={{ padding: '12px 24px 24px', borderTop: '1px solid var(--border)', background: 'var(--bg-card)', flexShrink: 0 }}>
+          <div style={{ padding: isDesktop ? '12px 24px 24px' : '12px 16px 20px', borderTop: '1px solid var(--border)', background: 'var(--bg-card)', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
                 <button onClick={dec} style={{ width: '40px', height: '44px', background: 'var(--bg-card)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
