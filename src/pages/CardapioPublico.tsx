@@ -403,7 +403,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
           onMouseOver={e => (e.currentTarget as HTMLElement).style.background='#fafafa'}
           onMouseOut={e => (e.currentTarget as HTMLElement).style.background='var(--bg-card, #FFFFFF)'}
         >
-          <div style={{ width:'32px', height:'32px', borderRadius:'8px', background:'var(--bg-body)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+          <div style={{ width:'32px', height:'32px', borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
             <img src="/desconto.png" alt="" style={{ width:'20px', height:'20px', objectFit:'contain' }} />
           </div>
           <div style={{ flex:1 }}>
