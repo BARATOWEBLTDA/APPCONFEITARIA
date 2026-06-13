@@ -407,7 +407,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
             <img src="/desconto.png" alt="" style={{ width:'20px', height:'20px', objectFit:'contain' }} />
           </div>
           <div style={{ flex:1 }}>
-            <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'var(--text-title, #1F2937)' }}>Tem um cupom?</p>
+            <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'var(--text-title, #1F2937)' }}>Tem um cupom de desconto?</p>
             <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted, #9CA3AF)' }}>Clique e insira o código</p>
           </div>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5"
