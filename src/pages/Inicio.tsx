@@ -4,12 +4,14 @@ import { Bell, User } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
+import { useNotifications } from "@/context/NotificationContext";
 import { MetricCard } from "@/components/MetricCard";
 import { TrialCardMobileBanner } from "@/components/billing/TrialCard";
 
 export default function Inicio() {
   const navigate = useNavigate();
   const { isPro } = usePlano();
+  const { notifCount, notifOpen, notificacoes, openNotif, closeNotif } = useNotifications();
 
   const [profile, setProfile] = useState<any>(null);
   const [produtos, setProdutos] = useState(0);
@@ -28,7 +30,6 @@ export default function Inicio() {
   const [pedidosFiltro, setPedidosFiltro] = useState<string>("todos");
   const [loadingPedidos, setLoadingPedidos] = useState(false);
   const [pedidosMes, setPedidosMes] = useState<Record<string,number>>({});
-  const [notifCount, setNotifCount] = useState(0);
 
   const calCells = () => {
     const ano = calMes.getFullYear();
@@ -95,12 +96,6 @@ export default function Inicio() {
         pedMes.forEach((p: any) => { if (p.data_entrega) map[p.data_entrega] = (map[p.data_entrega] || 0) + 1; });
         setPedidosMes(map);
       }
-      const lastSeen = localStorage.getItem("notif_last_seen");
-      const { data: notifs } = await supabase.from("notificacoes").select("created_at").order("created_at", { ascending: false }).limit(10);
-      if (notifs) {
-        const unseen = lastSeen ? notifs.filter((n: any) => n.created_at > lastSeen).length : notifs.length;
-        setNotifCount(unseen);
-      }
       setLoading(false);
     };
     load();
@@ -137,7 +132,7 @@ export default function Inicio() {
             <div style={{ flex: 1 }} />
             <button
               className={`mob-hero-bell${notifCount > 0 ? " has-notif" : ""}`}
-              onClick={() => { navigate("/notificacoes"); }}
+              onClick={openNotif}
               style={{ position: "relative" }}
             >
               <Bell size={26} weight="duotone" color="rgba(255,255,255,0.9)" />
@@ -319,6 +314,34 @@ export default function Inicio() {
 
       </div>
 
+      {/* ── Notificações Bottom Sheet (mobile) ── */}
+      {notifOpen && (
+        <div className="notif-sheet-overlay" onClick={closeNotif}>
+          <div className="notif-sheet" onClick={e => e.stopPropagation()}>
+            <div className="notif-sheet-handle" />
+            <div className="notif-header">
+              <span>Notificações</span>
+              <button onClick={closeNotif}>✕</button>
+            </div>
+            <div className="notif-body">
+              {notificacoes.length === 0
+                ? <p className="notif-empty">Nenhuma notificação</p>
+                : notificacoes.map((n: any) => (
+                  <div key={n.id} className="notif-item">
+                    {n.imagem_url && <img src={n.imagem_url} alt="" style={{ width: "40px", height: "40px", borderRadius: "8px", objectFit: "cover", flexShrink: 0 }} />}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p className="notif-title">{n.titulo || n.title}</p>
+                      <p className="notif-msg">{n.mensagem || n.body}</p>
+                      <p className="notif-time">{new Date(n.created_at).toLocaleDateString("pt-BR")}</p>
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         .ini-root { font-family: 'Geist', sans-serif; }
@@ -340,6 +363,12 @@ export default function Inicio() {
         .mob-hero-icon { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .mob-hero-bell { background: none; border: none; padding: 0.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; }
         .mob-hero-bell.has-notif { background: rgba(255,255,255,0.15); animation: bell-pulse 1.8s ease-in-out infinite; }
+
+        /* ── Notificações Bottom Sheet ── */
+        .notif-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: flex-end; }
+        .notif-sheet { background: var(--bg-card); border-radius: 20px 20px 0 0; width: 100%; max-height: 70vh; display: flex; flex-direction: column; animation: sheet-up 0.25s ease-out; }
+        .notif-sheet-handle { width: 40px; height: 4px; background: var(--border); border-radius: 99px; margin: 0.75rem auto 0; flex-shrink: 0; }
+        @keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .mob-hero-notif-badge { position: absolute; top: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: var(--error); color: #fff; font-size: 0.6rem; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid transparent; }
         @keyframes bell-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); } 50% { box-shadow: 0 0 0 6px rgba(255,255,255,0); } }
         .mob-hero-title { font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0; line-height: 1.2; }

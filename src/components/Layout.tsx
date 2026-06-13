@@ -8,6 +8,7 @@ import {
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
+import { useNotifications } from "@/context/NotificationContext";
 import { supabase } from "@/lib/supabase";
 
 function SidebarGroup({ label, icon, paths, location, children }: { label: string; icon?: ReactNode; paths: string[]; location: any; children: ReactNode }) {
@@ -29,12 +30,9 @@ export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { isPro } = usePlano();
+  const { notifCount, notifOpen, notificacoes, notifRef, toggleNotif, closeNotif } = useNotifications();
   const [now, setNow] = useState(new Date());
   const [gestaoOpen, setGestaoOpen] = useState(false);
-  const [notifCount, setNotifCount] = useState(0);
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [notificacoes, setNotificacoes] = useState<any[]>([]);
-  const notifRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
@@ -45,26 +43,6 @@ export default function Layout() {
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    const loadNotifCount = async () => {
-      const { data } = await supabase.from("notificacoes").select("*").order("created_at", { ascending: false }).limit(10);
-      if (!data || data.length === 0) return;
-      setNotificacoes(data);
-      const lastSeen = localStorage.getItem("notif_last_seen");
-      if (!lastSeen) { setNotifCount(data.length); }
-      else { const unseen = data.filter((n: any) => new Date(n.created_at) > new Date(lastSeen)); setNotifCount(unseen.length); }
-    };
-    loadNotifCount();
-  }, []);
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) setNotifOpen(false);
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
   const formatDate = (d: Date) => d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
@@ -160,7 +138,7 @@ export default function Layout() {
         <div className="desk-topbar">
           {/* Notificações com dropdown */}
           <div style={{ position: "relative" }} ref={notifRef}>
-            <button className="topbar-btn" onClick={() => { setNotifOpen(o => !o); if (!notifOpen) { localStorage.setItem("notif_last_seen", new Date().toISOString()); setNotifCount(0); } }}>
+            <button className="topbar-btn" onClick={toggleNotif}>
               <img src="/notifica.png" alt="Notificações" style={{ width: "20px", height: "20px", objectFit: "contain" }} />
               {notifCount > 0 && <span className="topbar-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
             </button>
@@ -168,7 +146,7 @@ export default function Layout() {
               <div className="notif-dropdown">
                 <div className="notif-header">
                   <span>Notificações</span>
-                  <button onClick={() => setNotifOpen(false)}>✕</button>
+                  <button onClick={closeNotif}>✕</button>
                 </div>
                 <div className="notif-body">
                   {notificacoes.length === 0

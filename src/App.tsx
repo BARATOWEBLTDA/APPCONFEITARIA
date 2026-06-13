@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "@/lib/supabase";
+import { NotificationProvider } from "@/context/NotificationContext";
 import Auth from "@/pages/Auth";
 import EsqueciSenha from "@/pages/EsqueciSenha";
 import ResetPassword from "@/pages/ResetPassword";
@@ -55,6 +56,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
+    <NotificationProvider>
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Auth />} />
@@ -104,5 +106,6 @@ export default function App() {
       </Routes>
       <Analytics />
     </BrowserRouter>
+    </NotificationProvider>
   );
 }
