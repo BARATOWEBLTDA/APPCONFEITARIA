@@ -15,7 +15,7 @@ const ENTREGAS = [
   { key: 'retirada',        label: 'Retirada no local' },
   { key: 'entrega_propria', label: 'Entrega própria' },
   { key: 'motoboy',         label: 'Motoboy' },
-  { key: 'uber_flash',      label: 'Uber' },
+  { key: 'uber_flash',      label: 'Uber Flash' },
   { key: 'combinar',        label: 'Combinar pelo WhatsApp' },
 ]
 
@@ -129,11 +129,11 @@ export default function CheckoutConfigPage() {
         @media (min-width: 900px) {
           .chk-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1.25rem;
             align-items: start;
           }
-          .chk-col1 { display: flex; flex-direction: column; gap: 1.25rem; }
+          .chk-col2 { display: flex; flex-direction: column; gap: 1.25rem; }
         }
       `}</style>
       <div style={s.root}>
@@ -147,69 +147,67 @@ export default function CheckoutConfigPage() {
 
         <div className="chk-grid">
 
-          {/* ── COLUNA 1: Agendamento + Pagamento ── */}
-          <div className="chk-col1">
-
-            {/* ── AGENDAMENTO ── */}
-            <div style={s.card}>
-              <p style={s.label}>Agendamento</p>
-              <div style={s.toggleRow}>
-                <div>
-                  <p style={{margin:0,fontSize:'0.85rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>Aceitar agendamento</p>
-                  <p style={{margin:'0.1rem 0 0',fontSize:'0.72rem',color:'var(--text-muted, #9CA3AF)'}}>Cliente escolhe data e horário de entrega/retirada</p>
-                </div>
-                <label style={s.toggle}>
-                  <input type="checkbox" checked={aceitaAgendamento} onChange={e => setAceitaAgendamento(e.target.checked)} style={{opacity:0,width:0,height:0}} />
-                  <span style={{position:'absolute',cursor:'pointer',inset:0,background:aceitaAgendamento?'var(--primary, #FF6FA9)':'var(--border, #E9E9EE)',borderRadius:'24px',transition:'0.3s'}}>
-                    <span style={{position:'absolute',height:'18px',width:'18px',left:aceitaAgendamento?'23px':'3px',bottom:'3px',background:'var(--bg-card, #FFFFFF)',borderRadius:'50%',transition:'0.3s',boxShadow:'0 1px 4px rgba(0,0,0,0.18)'}} />
-                  </span>
-                </label>
-              </div>
-              {aceitaAgendamento && (
-                <div style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
-                  <span style={{fontSize:'0.82rem',color:'var(--text-primary, #374151)',fontWeight:500}}>Prazo mínimo de antecedência:</span>
-                  <input value={prazoMinimo} onChange={e => setPrazoMinimo(e.target.value.replace(/\D/g,''))} style={{...s.input,width:'60px',textAlign:'center'}} />
-                  <span style={{fontSize:'0.82rem',color:'var(--text-muted, #9CA3AF)'}}>horas</span>
-                </div>
-              )}
-            </div>
-
-            {/* ── FORMAS DE PAGAMENTO ── */}
-            <div style={s.card}>
-              <p style={s.label}>Formas de pagamento</p>
-              <p style={s.hint}>Marque apenas as que você aceita</p>
-              <div style={{display:'flex',flexDirection:'column',gap:'0.45rem'}}>
-                {PAGAMENTOS.map(p => (
-                  <div key={p.key} onClick={() => togglePagamento(p.key)} style={{...s.check, ...(formasPagamento.includes(p.key) ? s.checkActive : {})}}>
-                    <span style={{flex:1,fontSize:'0.88rem',fontWeight:formasPagamento.includes(p.key)?700:500,color:formasPagamento.includes(p.key)?'var(--primary-dark, #F85A9A)':'var(--text-primary, #374151)'}}>{p.label}</span>
-                    <div style={{width:'20px',height:'20px',borderRadius:'6px',border:formasPagamento.includes(p.key)?'2px solid var(--primary, #FF6FA9)':'2px solid var(--border, #E9E9EE)',background:formasPagamento.includes(p.key)?'var(--primary, #FF6FA9)':'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                      {formasPagamento.includes(p.key) && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
-                    </div>
+          {/* ── COLUNA 1: Formas de Pagamento ── */}
+          <div style={s.card}>
+            <p style={s.label}>Formas de pagamento</p>
+            <p style={s.hint}>Marque apenas as que você aceita</p>
+            <div style={{display:'flex',flexDirection:'column',gap:'0.45rem'}}>
+              {PAGAMENTOS.map(p => (
+                <div key={p.key} onClick={() => togglePagamento(p.key)} style={{...s.check, ...(formasPagamento.includes(p.key) ? s.checkActive : {})}}>
+                  <span style={{flex:1,fontSize:'0.88rem',fontWeight:formasPagamento.includes(p.key)?700:500,color:formasPagamento.includes(p.key)?'var(--primary-dark, #F85A9A)':'var(--text-primary, #374151)'}}>{p.label}</span>
+                  <div style={{width:'20px',height:'20px',borderRadius:'6px',border:formasPagamento.includes(p.key)?'2px solid var(--primary, #FF6FA9)':'2px solid var(--border, #E9E9EE)',background:formasPagamento.includes(p.key)?'var(--primary, #FF6FA9)':'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                    {formasPagamento.includes(p.key) && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
                   </div>
-                ))}
-              </div>
-              {formasPagamento.includes('dinheiro') && (
-                <>
-                  <hr style={{border:'none',borderTop:'1px solid var(--border, #E9E9EE)',margin:'0.25rem 0'}} />
-                  <div style={s.toggleRow}>
-                    <div>
-                      <p style={{margin:0,fontSize:'0.85rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>Exibir campo "Troco para"</p>
-                      <p style={{margin:'0.1rem 0 0',fontSize:'0.72rem',color:'var(--text-muted, #9CA3AF)'}}>Quando o cliente pagar em dinheiro</p>
-                    </div>
-                    <label style={s.toggle}>
-                      <input type="checkbox" checked={exibirCampoTroco} onChange={e => setExibirCampoTroco(e.target.checked)} style={{opacity:0,width:0,height:0}} />
-                      <span style={{position:'absolute',cursor:'pointer',inset:0,background:exibirCampoTroco?'var(--primary, #FF6FA9)':'var(--border, #E9E9EE)',borderRadius:'24px',transition:'0.3s'}}>
-                        <span style={{position:'absolute',height:'18px',width:'18px',left:exibirCampoTroco?'23px':'3px',bottom:'3px',background:'var(--bg-card, #FFFFFF)',borderRadius:'50%',transition:'0.3s',boxShadow:'0 1px 4px rgba(0,0,0,0.18)'}} />
-                      </span>
-                    </label>
-                  </div>
-                </>
-              )}
+                </div>
+              ))}
             </div>
+            {formasPagamento.includes('dinheiro') && (
+              <>
+                <hr style={{border:'none',borderTop:'1px solid var(--border, #E9E9EE)',margin:'0.25rem 0'}} />
+                <div style={s.toggleRow}>
+                  <div>
+                    <p style={{margin:0,fontSize:'0.85rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>Exibir campo "Troco para"</p>
+                    <p style={{margin:'0.1rem 0 0',fontSize:'0.72rem',color:'var(--text-muted, #9CA3AF)'}}>Quando o cliente pagar em dinheiro</p>
+                  </div>
+                  <label style={s.toggle}>
+                    <input type="checkbox" checked={exibirCampoTroco} onChange={e => setExibirCampoTroco(e.target.checked)} style={{opacity:0,width:0,height:0}} />
+                    <span style={{position:'absolute',cursor:'pointer',inset:0,background:exibirCampoTroco?'var(--primary, #FF6FA9)':'var(--border, #E9E9EE)',borderRadius:'24px',transition:'0.3s'}}>
+                      <span style={{position:'absolute',height:'18px',width:'18px',left:exibirCampoTroco?'23px':'3px',bottom:'3px',background:'var(--bg-card, #FFFFFF)',borderRadius:'50%',transition:'0.3s',boxShadow:'0 1px 4px rgba(0,0,0,0.18)'}} />
+                    </span>
+                  </label>
+                </div>
+              </>
+            )}
+          </div>
 
-          </div>{/* fim col1 */}
+          {/* ── COLUNA 2: Agendamento + Formas de Entrega + Cupons ── */}
+          <div className="chk-col2">
 
-          {/* ── COLUNA 2: Formas de Entrega ── */}
+          {/* ── AGENDAMENTO ── */}
+          <div style={s.card}>
+            <p style={s.label}>Agendamento</p>
+            <div style={s.toggleRow}>
+              <div>
+                <p style={{margin:0,fontSize:'0.85rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>Aceitar agendamento</p>
+                <p style={{margin:'0.1rem 0 0',fontSize:'0.72rem',color:'var(--text-muted, #9CA3AF)'}}>Cliente escolhe data e horário de entrega/retirada</p>
+              </div>
+              <label style={s.toggle}>
+                <input type="checkbox" checked={aceitaAgendamento} onChange={e => setAceitaAgendamento(e.target.checked)} style={{opacity:0,width:0,height:0}} />
+                <span style={{position:'absolute',cursor:'pointer',inset:0,background:aceitaAgendamento?'var(--primary, #FF6FA9)':'var(--border, #E9E9EE)',borderRadius:'24px',transition:'0.3s'}}>
+                  <span style={{position:'absolute',height:'18px',width:'18px',left:aceitaAgendamento?'23px':'3px',bottom:'3px',background:'var(--bg-card, #FFFFFF)',borderRadius:'50%',transition:'0.3s',boxShadow:'0 1px 4px rgba(0,0,0,0.18)'}} />
+                </span>
+              </label>
+            </div>
+            {aceitaAgendamento && (
+              <div style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
+                <span style={{fontSize:'0.82rem',color:'var(--text-primary, #374151)',fontWeight:500}}>Prazo mínimo de antecedência:</span>
+                <input value={prazoMinimo} onChange={e => setPrazoMinimo(e.target.value.replace(/\D/g,''))} style={{...s.input,width:'60px',textAlign:'center'}} />
+                <span style={{fontSize:'0.82rem',color:'var(--text-muted, #9CA3AF)'}}>horas</span>
+              </div>
+            )}
+          </div>
+
+          {/* ── FORMAS DE ENTREGA ── */}
           <div style={s.card}>
             <p style={s.label}>Formas de entrega</p>
             <p style={s.hint}>Marque as opções disponíveis</p>
@@ -261,7 +259,7 @@ export default function CheckoutConfigPage() {
             )}
           </div>
 
-          {/* ── COLUNA 3: Cupons ── */}
+          {/* ── CUPONS ── */}
           <div style={s.card}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
               <p style={s.label}>Cupons de desconto</p>
@@ -291,6 +289,8 @@ export default function CheckoutConfigPage() {
               </div>
             ))}
           </div>
+
+          </div>{/* fim chk-col2 */}
 
         </div>{/* fim chk-grid */}
       </div>
