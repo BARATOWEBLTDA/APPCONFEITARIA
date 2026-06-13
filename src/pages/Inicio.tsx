@@ -357,7 +357,7 @@ export default function Inicio() {
         /* ===== MOBILE ===== */
 
         /* Hero */
-        .mob-hero { background: var(--primary-gradient); border-radius: 0 0 28px 28px; padding: 1.5rem 1.25rem 3rem; margin: -0.75rem -0.75rem 0; }
+        .mob-hero { background: var(--primary-gradient); border-radius: 0 0 28px 28px; padding: 1.5rem 1.25rem 4.5rem; margin: -0.75rem -0.75rem 0; }
         .mob-hero-row { display: flex; align-items: center; gap: 0.7rem; }
         .mob-hero-profile { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; overflow: hidden; }
         .mob-hero-icon { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
