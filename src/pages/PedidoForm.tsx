@@ -410,7 +410,7 @@ export default function PedidoForm() {
                   value={pedido.horario_entrega}
                   onChange={v => set('horario_entrega', v)}
                   placeholder="Selecionar horário"
-                  minuteStep={15}
+                  minuteStep={10}
                 />
               </div>
               <div className="pf-row2">

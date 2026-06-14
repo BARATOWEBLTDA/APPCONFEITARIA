@@ -5,13 +5,14 @@ interface TimePickerFieldProps {
   value: string // formato HH:MM
   onChange: (value: string) => void
   placeholder?: string
-  minuteStep?: 15 | 30 | 60
+  minuteStep?: 10 | 15 | 30 | 60
 }
 
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
 
-function getMinutes(step: 15 | 30 | 60) {
+function getMinutes(step: 10 | 15 | 30 | 60) {
   const steps: Record<number, string[]> = {
+    10: ['00', '10', '20', '30', '40', '50'],
     15: ['00', '15', '30', '45'],
     30: ['00', '30'],
     60: ['00'],
@@ -30,7 +31,7 @@ export function TimePickerField({
   value,
   onChange,
   placeholder = 'Selecionar horário',
-  minuteStep = 15,
+  minuteStep = 10,
 }: TimePickerFieldProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
