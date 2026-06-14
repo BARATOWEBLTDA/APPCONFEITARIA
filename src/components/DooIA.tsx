@@ -460,7 +460,7 @@ export default function DooIA() {
       <button
         onClick={() => { setOpen(o => !o); setPulse(false) }}
         style={{
-          position: 'fixed', bottom: '5.5rem', right: '1.25rem',
+          position: 'fixed', bottom: 'var(--doo-btn-bottom, 7rem)', right: 'var(--doo-btn-right, 1.25rem)',
           width: '62px', height: '62px', borderRadius: '50%',
           border: 'none', background: 'transparent', cursor: 'pointer',
           zIndex: 200, padding: 0,
@@ -470,13 +470,13 @@ export default function DooIA() {
         aria-label="Abrir assistente Doo"
       >
         <div style={{
-          width: '62px', height: '62px', borderRadius: '50%', background: VINHO,
+          width: '58px', height: '58px', borderRadius: '50%', background: VINHO,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 4px 20px rgba(110,53,72,0.45)',
+          boxShadow: '0 4px 16px rgba(110,53,72,0.3)',
           transition: 'transform 0.2s, box-shadow 0.2s',
         }}>
           <div style={{
-            width: '54px', height: '54px', borderRadius: '50%', background: 'white',
+            width: '51px', height: '51px', borderRadius: '50%', background: 'white',
             display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
           }}>
             <img src="/doo.png" alt="Doo" style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center' }} />
@@ -773,6 +773,16 @@ export default function DooIA() {
       )}
 
       <style>{`
+        :root {
+          --doo-btn-bottom: 7rem;
+          --doo-btn-right: 1.25rem;
+        }
+        @media (min-width: 768px) {
+          :root {
+            --doo-btn-bottom: 2rem;
+            --doo-btn-right: 2.25rem;
+          }
+        }
         @keyframes dooPulse {
           0% { transform: scale(1); opacity: 0.8; }
           100% { transform: scale(1.7); opacity: 0; }
