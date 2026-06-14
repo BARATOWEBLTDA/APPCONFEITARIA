@@ -481,6 +481,7 @@ function CardapioContent() {
       setCategoriasList(categoriasList || [])
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
+      if (design?.user_id) localStorage.setItem('cardapio_user_id', design.user_id)
 
       // ── Open Graph meta tags ──
       const setMeta = (prop: string, content: string) => {

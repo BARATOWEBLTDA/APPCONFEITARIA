@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { supabase } from '@/lib/supabase'
 import { ShoppingBag, X, MessageCircle, Trash2, Home, Tag, ClipboardList, User, ChevronRight, Minus, Plus, MapPin } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
 import { CartItemComponent } from '@/components/cart/CartItemComponent'
@@ -153,7 +154,7 @@ function CartContent({
 
   const removerCupom = () => { setCupomAplicado(null); setCupomDigitado(''); setCupomErro('') }
 
-  const enviarPedido = () => {
+  const enviarPedido = async () => {
     if (!nome.trim()) return alert('Preencha seu nome')
     if (!telefone.trim()) return alert('Preencha seu WhatsApp')
     if (config.aceita_agendamento && !dataEntrega) return alert('Selecione a data de entrega')
@@ -163,6 +164,7 @@ function CartContent({
 
     const whatsapp = localStorage.getItem('cardapio_whatsapp') || ''
     const storeName = localStorage.getItem('cardapio_nome') || 'Cardápio'
+    const confeteiraUserId = localStorage.getItem('cardapio_user_id') || ''
 
     let msg = `Olá! 👋\n\n`
     msg += `🧁 *NOVO PEDIDO — ${storeName.toUpperCase()}*\n\n`
@@ -204,6 +206,101 @@ function CartContent({
 
     const num = whatsapp.replace(/\D/g, '')
     window.open(`https://wa.me/55${num}?text=${encodeURIComponent(msg)}`, '_blank')
+
+    // ── Salva pedido no Supabase e vincula cliente ──
+    if (confeteiraUserId) {
+      try {
+        const telefoneLimpo = telefone.replace(/\D/g, '')
+
+        // Busca cliente pelo telefone ou cria novo
+        let clienteId: string | null = null
+        const { data: clienteExistente } = await supabase
+          .from('clientes')
+          .select('id')
+          .eq('user_id', confeteiraUserId)
+          .or(`telefone.ilike.%${telefoneLimpo}%,whatsapp.ilike.%${telefoneLimpo}%`)
+          .single()
+
+        if (clienteExistente) {
+          clienteId = clienteExistente.id
+        } else {
+          const { data: novoCliente } = await supabase
+            .from('clientes')
+            .insert({
+              user_id: confeteiraUserId,
+              nome: nome.trim(),
+              telefone: telefone.trim(),
+              whatsapp: telefone.trim(),
+            })
+            .select('id')
+            .single()
+          if (novoCliente) clienteId = novoCliente.id
+        }
+
+        // Salva o pedido
+        const valorProdutos = totalPrice
+        const totalFinalCalc = totalFinal
+
+        const { data: pedidoSalvo } = await supabase
+          .from('pedidos')
+          .insert({
+            user_id: confeteiraUserId,
+            cliente_id: clienteId,
+            cliente_nome: nome.trim(),
+            cliente_telefone: telefone.trim(),
+            cliente_whatsapp: telefone.trim(),
+            status: 'novo',
+            origem: 'cardapio',
+            prioridade: 'media',
+            data_entrega: dataEntrega || null,
+            horario_entrega: horaEntrega || null,
+            tipo_entrega: formaEntrega === 'retirada' ? 'retirada' : 'entrega',
+            taxa_entrega: freteValor,
+            forma_pagamento: formaPagamento,
+            status_pagamento: 'pendente',
+            valor_produtos: valorProdutos,
+            cupom_codigo: cupomAplicado?.codigo || null,
+            cupom_desconto: desconto || 0,
+            desconto: desconto || 0,
+            valor_total: totalFinalCalc,
+            observacoes: observacoes || null,
+          })
+          .select('id')
+          .single()
+
+        // Salva os itens do pedido
+        if (pedidoSalvo && items.length > 0) {
+          await supabase.from('pedido_itens').insert(
+            items.map((item: any) => ({
+              pedido_id: pedidoSalvo.id,
+              user_id: confeteiraUserId,
+              nome_produto: item.name,
+              quantidade: item.quantity,
+              valor_unitario: item.price,
+              desconto: 0,
+              observacoes: item.observations || null,
+              personalizacoes: {
+                massa: item.selectedMassa || null,
+                recheio: item.selectedRecheio || null,
+                cobertura: item.selectedCobertura || null,
+              },
+            }))
+          )
+
+          // Registra no histórico
+          await supabase.from('pedido_historico').insert({
+            pedido_id: pedidoSalvo.id,
+            user_id: confeteiraUserId,
+            evento: 'Pedido criado',
+            descricao: `Pedido recebido pelo Cardápio Digital`,
+          })
+        }
+      } catch (err) {
+        // Falha silenciosa — WhatsApp já foi aberto, não impacta o cliente
+        console.error('Erro ao salvar pedido no Supabase:', err)
+      }
+    }
+
     clearCart()
     setStep('cart')
     onClose()
