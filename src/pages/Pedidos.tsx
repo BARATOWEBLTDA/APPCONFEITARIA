@@ -65,18 +65,25 @@ function formatMoney(v: number) {
   return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
+function parseLocalDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
 function isAtrasado(pedido: Pedido) {
   if (['entregue', 'cancelado'].includes(pedido.status)) return false
   if (!pedido.data_entrega) return false
-  return new Date(pedido.data_entrega) < new Date(new Date().toDateString())
+  const hoje = new Date()
+  hoje.setHours(0, 0, 0, 0)
+  return parseLocalDate(pedido.data_entrega) < hoje
 }
 
 function diasParaEntrega(data: string) {
   if (!data) return null
-  const hoje = new Date(new Date().toDateString())
-  const entrega = new Date(data)
-  const diff = Math.ceil((entrega.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
-  return diff
+  const hoje = new Date()
+  hoje.setHours(0, 0, 0, 0)
+  const entrega = parseLocalDate(data)
+  return Math.ceil((entrega.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
 }
 
 export default function Pedidos() {
