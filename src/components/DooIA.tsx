@@ -9,6 +9,26 @@ interface Message {
   attachmentPreview?: string
 }
 
+const VINHO = '#6E3548'
+const MAX_HISTORY = 12
+
+const SUGGESTIONS = [
+  'Calcular o preço de um bolo',
+  'Criar legenda para o Instagram',
+  'Planejar produção da semana',
+  'Criar mensagem para cliente',
+  'Calcular CMV de receita',
+  'Sugerir promoção sazonal',
+]
+
+const PLACEHOLDERS = [
+  'Pergunte para a Doo...',
+  'Calcular preço de bolo...',
+  'Criar legenda para Instagram...',
+  'Planejar produção da semana...',
+  'Mensagem para cliente...',
+]
+
 const buildSystemPrompt = (nome: string) => `Você é Doo, a assistente inteligente oficial do Doonly.
 
 Sua especialidade é confeitaria, gestão de negócios de confeitaria, precificação, vendas, marketing, produção, organização e crescimento empresarial.
@@ -23,6 +43,8 @@ Cargo: Assistente Inteligente do Doonly
 Personalidade: Amigável, Inteligente, Prestativa, Organizada, Criativa, Profissional, Motivadora, Confiável
 
 Doo fala de forma simples, clara e acolhedora. Evite respostas robóticas. Evite textos excessivamente longos. Seja objetiva sem perder simpatia. Não use emojis nas respostas.
+
+Ao responder com listas de etapas, ingredientes ou itens, use marcadores com hífen (- item) para facilitar a leitura.
 
 # MISSÃO PRINCIPAL
 Toda resposta deve buscar um ou mais destes objetivos:
@@ -93,8 +115,6 @@ Frase guia: "Meu trabalho é ajudar sua confeitaria a crescer de forma organizad
 
 ${nome ? `A confeiteira se chama ${nome}. Chame-a pelo nome quando fizer sentido, de forma natural. Não repita o nome em toda resposta.` : ""}`
 
-const VINHO = '#6E3548'
-
 function isImageRequest(text: string): boolean {
   const keywords = ['gerar imagem', 'criar imagem', 'gera imagem', 'cria imagem', 'gerar topo', 'criar topo', 'ilustração', 'desenha', 'desenhar', 'arte para']
   return keywords.some(k => text.toLowerCase().includes(k))
@@ -107,39 +127,58 @@ function buildImagePrompt(userMessage: string): string {
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = () => {
-      const result = reader.result as string
-      resolve(result.split(',')[1])
-    }
+    reader.onload = () => resolve((reader.result as string).split(',')[1])
     reader.onerror = reject
     reader.readAsDataURL(file)
   })
 }
 
+function isMobile(): boolean {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+}
+
+function getErrorMessage(errorType: string, status?: number): string {
+  if (status === 429 || errorType === 'rate_limit_error') return 'Muitas mensagens em seguida. Aguarde um momento e tente novamente.'
+  if (status === 401 || errorType === 'authentication_error') return 'Problema de autenticação. Contate o suporte do Doonly.'
+  if (status === 500 || errorType === 'api_error') return 'O servidor está instável. Tente novamente em instantes.'
+  if (errorType === 'missing_key') return 'Configuração incompleta. Contate o suporte do Doonly.'
+  return 'Problema de conexão. Verifique sua internet e tente novamente.'
+}
+
+function formatText(text: string): string {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>(\n)?)+/g, (match) => `<ul style="margin: 4px 0 4px 1rem; padding: 0; list-style: disc;">${match}</ul>`)
+    .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+    .replace(/\n/g, '<br/>')
+}
+
 export default function DooIA() {
   const [open, setOpen] = useState(false)
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: 'Oi! Sou a Doo, sua assistente do Doonly. Como posso te ajudar hoje?'
-    }
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [copiedId, setCopiedId] = useState<number | null>(null)
+  const [generatingImage, setGeneratingImage] = useState(false)
   const [pulse, setPulse] = useState(true)
   const [pendingImage, setPendingImage] = useState<{ base64: string; mediaType: string; preview: string } | null>(null)
   const [nomeConfeiteira, setNomeConfeiteira] = useState('')
+  const [copiedId, setCopiedId] = useState<number | null>(null)
+  const [placeholderIdx, setPlaceholderIdx] = useState(0)
+  const [mobile] = useState(() => isMobile())
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const cameraRef = useRef<HTMLInputElement>(null)
 
+  // Pulso inicial
   useEffect(() => {
     const t = setTimeout(() => setPulse(false), 4000)
     return () => clearTimeout(t)
   }, [])
 
+  // Busca nome da confeiteira
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
@@ -149,6 +188,7 @@ export default function DooIA() {
     })
   }, [])
 
+  // Scroll lock ao abrir
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden'
@@ -158,12 +198,27 @@ export default function DooIA() {
     return () => { document.body.style.overflow = '' }
   }, [open])
 
+  // Scroll para última mensagem
   useEffect(() => {
     if (open) {
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
       setTimeout(() => inputRef.current?.focus(), 200)
     }
   }, [open, messages])
+
+  // Placeholder rotativo
+  useEffect(() => {
+    if (!open) return
+    const t = setInterval(() => setPlaceholderIdx(i => (i + 1) % PLACEHOLDERS.length), 3000)
+    return () => clearInterval(t)
+  }, [open])
+
+  const clearConversation = () => {
+    setMessages([])
+    setInput('')
+    setPendingImage(null)
+    setTimeout(() => inputRef.current?.focus(), 100)
+  }
 
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) return
@@ -177,9 +232,16 @@ export default function DooIA() {
     setPendingImage(null)
   }
 
-  const sendMessage = async () => {
-    const text = input.trim()
-    if ((!text && !pendingImage) || loading) return
+  const copyMessage = (text: string, index: number) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedId(index)
+      setTimeout(() => setCopiedId(null), 2000)
+    })
+  }
+
+  const sendMessage = async (overrideText?: string) => {
+    const text = (overrideText ?? input).trim()
+    if ((!text && !pendingImage) || loading || generatingImage) return
 
     const userMsg: Message = {
       role: 'user',
@@ -194,84 +256,71 @@ export default function DooIA() {
     setPendingImage(null)
     setLoading(true)
 
+    // Limita histórico enviado para a API — mantém display completo
+    const historyForApi = newMessages
+      .filter(m => !m.isImage)
+      .slice(-MAX_HISTORY)
+
     try {
       if (!imgPayload && isImageRequest(text)) {
-        // Geração de imagem via DALL-E
-        const imagePrompt = buildImagePrompt(text)
-        const res = await fetch('https://api.openai.com/v1/images/generations', {
+        setLoading(false)
+        setGeneratingImage(true)
+
+        const res = await fetch('/api/doo-image', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_KEY}`
-          },
-          body: JSON.stringify({
-            model: 'dall-e-3',
-            prompt: imagePrompt,
-            n: 1,
-            size: '1024x1024',
-            quality: 'standard'
-          })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: buildImagePrompt(text) })
         })
         const data = await res.json()
+
+        if (!res.ok) throw { type: data.error, status: res.status }
+
         const imageUrl = data?.data?.[0]?.url
         if (imageUrl) {
           setMessages(prev => [...prev, {
             role: 'assistant',
-            content: 'Aqui está a imagem gerada! Você pode salvar clicando com o botão direito. Para impressão, recomendo solicitar em PDF ou vetor ao designer com sangria de 3mm.',
+            content: 'Aqui está a imagem gerada. Você pode salvar clicando com o botão direito. Para impressão, recomendo solicitar em PDF ou vetor ao designer com sangria de 3mm.',
             imageUrl,
             isImage: true
           }])
         } else {
-          throw new Error('Sem imagem')
+          throw { type: 'api_error' }
         }
       } else {
-        // Chat via Claude — com ou sem imagem anexada
         const buildContent = (msg: Message) => {
           if (msg.role === 'user' && msg === userMsg && imgPayload) {
             return [
-              {
-                type: 'image',
-                source: {
-                  type: 'base64',
-                  media_type: imgPayload.mediaType,
-                  data: imgPayload.base64
-                }
-              },
+              { type: 'image', source: { type: 'base64', media_type: imgPayload.mediaType, data: imgPayload.base64 } },
               { type: 'text', text: msg.content }
             ]
           }
           return msg.content
         }
 
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
+        const res = await fetch('/api/doo-chat', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'anthropic-version': '2023-06-01',
-            'x-api-key': import.meta.env.VITE_ANTHROPIC_KEY,
-            'anthropic-dangerous-direct-browser-access': 'true'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 1024,
             system: buildSystemPrompt(nomeConfeiteira),
-            messages: newMessages
-              .filter(m => !m.isImage)
-              .map(m => ({ role: m.role, content: buildContent(m) }))
+            messages: historyForApi.map(m => ({ role: m.role, content: buildContent(m) }))
           })
         })
+
         const data = await res.json()
+        if (!res.ok) throw { type: data.error, status: res.status }
+
         const reply = data?.content?.[0]?.text || 'Não consegui responder agora. Tenta de novo!'
         setMessages(prev => [...prev, { role: 'assistant', content: reply }])
       }
-    } catch {
+    } catch (err: any) {
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Ops, tive um problema de conexão. Tenta novamente em instantes!'
+        content: getErrorMessage(err?.type ?? '', err?.status)
       }])
     }
 
     setLoading(false)
+    setGeneratingImage(false)
   }
 
   const handleKey = (e: React.KeyboardEvent) => {
@@ -281,111 +330,64 @@ export default function DooIA() {
     }
   }
 
-  const copyMessage = (text: string, index: number) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedId(index)
-      setTimeout(() => setCopiedId(null), 2000)
-    })
-  }
-
-  const formatText = (text: string) => {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\n/g, '<br/>')
-  }
+  const showSuggestions = messages.length === 0 && !loading
 
   return (
     <>
-      {/* inputs ocultos */}
-      <input
-        ref={fileRef}
-        type="file"
-        accept="image/*"
-        style={{ display: 'none' }}
-        onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = '' }}
-      />
-      <input
-        ref={cameraRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        style={{ display: 'none' }}
-        onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = '' }}
-      />
+      <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = '' }} />
+      <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }}
+        onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = '' }} />
 
       {/* ── Botão flutuante ── */}
       <button
         onClick={() => { setOpen(o => !o); setPulse(false) }}
         style={{
-          position: 'fixed',
-          bottom: '5.5rem',
-          right: '1.25rem',
-          width: '62px',
-          height: '62px',
-          borderRadius: '50%',
-          border: 'none',
-          background: 'transparent',
-          cursor: 'pointer',
-          zIndex: 200,
-          padding: 0,
+          position: 'fixed', bottom: '5.5rem', right: '1.25rem',
+          width: '62px', height: '62px', borderRadius: '50%',
+          border: 'none', background: 'transparent', cursor: 'pointer',
+          zIndex: 200, padding: 0,
           display: open ? 'none' : 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          alignItems: 'center', justifyContent: 'center',
         }}
         aria-label="Abrir assistente Doo"
       >
         <div style={{
-          width: '62px', height: '62px', borderRadius: '50%',
-          background: VINHO, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: '62px', height: '62px', borderRadius: '50%', background: VINHO,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 4px 20px rgba(110,53,72,0.45)',
           transition: 'transform 0.2s, box-shadow 0.2s',
         }}>
           <div style={{
-            width: '54px', height: '54px', borderRadius: '50%',
-            background: 'white', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', overflow: 'hidden',
+            width: '54px', height: '54px', borderRadius: '50%', background: 'white',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
           }}>
             <img src="/doo.png" alt="Doo" style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center' }} />
           </div>
         </div>
-        {pulse && (
-          <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: `2px solid ${VINHO}`, animation: 'dooPulse 1.5s ease-out infinite' }} />
-        )}
-
+        {pulse && <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: `2px solid ${VINHO}`, animation: 'dooPulse 1.5s ease-out infinite' }} />}
       </button>
 
       {/* ── Overlay blur ── */}
       {open && (
-        <div
-          onClick={() => setOpen(false)}
-          style={{
-            position: 'fixed', inset: 0,
-            backdropFilter: 'blur(3px)',
-            WebkitBackdropFilter: 'blur(3px)',
-            background: 'rgba(0,0,0,0.15)',
-            zIndex: 198,
-            animation: 'dooFadeIn 0.2s ease',
-          }}
-        />
+        <div onClick={() => setOpen(false)} style={{
+          position: 'fixed', inset: 0,
+          backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
+          background: 'rgba(0,0,0,0.15)', zIndex: 198,
+          animation: 'dooFadeIn 0.2s ease',
+        }} />
       )}
 
       {/* ── Janela do chat ── */}
       {open && (
         <div style={{
-          position: 'fixed',
-          bottom: '1.5rem',
-          right: '1.25rem',
+          position: 'fixed', bottom: '1.5rem', right: '1.25rem',
           width: 'min(380px, calc(100vw - 2.5rem))',
           height: 'min(560px, calc(100vh - 5rem))',
-          background: 'white',
-          borderRadius: '20px',
+          background: 'white', borderRadius: '20px',
           boxShadow: '0 8px 40px rgba(110,53,72,0.18), 0 2px 8px rgba(0,0,0,0.08)',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          zIndex: 199,
-          border: `1px solid rgba(110,53,72,0.12)`,
+          display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          zIndex: 199, border: `1px solid rgba(110,53,72,0.12)`,
           animation: 'dooSlideUp 0.25s cubic-bezier(0.16,1,0.3,1)',
         }}>
 
@@ -409,10 +411,32 @@ export default function DooIA() {
                 <span style={{ fontWeight: 400, fontSize: '0.8rem', color: 'rgba(255,220,150,0.88)', marginLeft: '0.35rem' }}>— Assistente Doonly</span>
               </p>
             </div>
-            <button
-              onClick={() => setOpen(false)}
-              style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', color: 'white', cursor: 'pointer', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            >✕</button>
+            <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+              {messages.length > 0 && (
+                <button
+                  onClick={clearConversation}
+                  title="Nova conversa"
+                  style={{
+                    background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: '8px',
+                    width: '28px', height: '28px', color: 'white', cursor: 'pointer',
+                    fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.53"/>
+                  </svg>
+                </button>
+              )}
+              <button
+                onClick={() => setOpen(false)}
+                style={{
+                  background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
+                  width: '28px', height: '28px', color: 'white', cursor: 'pointer',
+                  fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >✕</button>
+            </div>
           </div>
 
           {/* Mensagens */}
@@ -420,6 +444,41 @@ export default function DooIA() {
             flex: 1, overflowY: 'auto', padding: '0.85rem',
             display: 'flex', flexDirection: 'column', gap: '0.65rem', background: '#fafafa',
           }}>
+
+            {/* Estado vazio — boas-vindas + sugestões */}
+            {showSuggestions && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', padding: '0.25rem 0' }}>
+                <div style={{
+                  background: 'white', borderRadius: '16px 16px 16px 4px',
+                  padding: '0.75rem 1rem', border: '1px solid #f0f0f0',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+                  fontSize: '0.83rem', lineHeight: 1.5, color: '#1F2937',
+                  fontFamily: 'Geist, sans-serif',
+                }}>
+                  {nomeConfeiteira ? `Oi, ${nomeConfeiteira}! Sou a Doo, sua assistente do Doonly. Como posso te ajudar hoje?` : 'Oi! Sou a Doo, sua assistente do Doonly. Como posso te ajudar hoje?'}
+                </div>
+                <p style={{ margin: 0, fontSize: '0.72rem', color: '#9CA3AF', fontFamily: 'Geist, sans-serif', paddingLeft: '2px' }}>
+                  Sugestões
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                  {SUGGESTIONS.map(s => (
+                    <button
+                      key={s}
+                      onClick={() => sendMessage(s)}
+                      style={{
+                        background: 'white', border: `1px solid rgba(110,53,72,0.2)`,
+                        borderRadius: '20px', padding: '0.35rem 0.75rem',
+                        fontSize: '0.75rem', color: VINHO, cursor: 'pointer',
+                        fontFamily: 'Geist, sans-serif', fontWeight: 500,
+                        transition: 'background 0.15s, border-color 0.15s',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                      }}
+                    >{s}</button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {messages.map((msg, i) => (
               <div key={i} style={{
                 display: 'flex',
@@ -442,18 +501,12 @@ export default function DooIA() {
                     border: msg.role === 'assistant' ? '1px solid #f0f0f0' : 'none',
                   }}>
                     {msg.attachmentPreview && (
-                      <img
-                        src={msg.attachmentPreview}
-                        alt="Referência"
-                        style={{ width: '100%', borderRadius: '10px', marginBottom: '0.5rem', display: 'block', maxHeight: '160px', objectFit: 'cover' }}
-                      />
+                      <img src={msg.attachmentPreview} alt="Referência"
+                        style={{ width: '100%', borderRadius: '10px', marginBottom: '0.5rem', display: 'block', maxHeight: '160px', objectFit: 'cover' }} />
                     )}
                     {msg.imageUrl && (
-                      <img
-                        src={msg.imageUrl}
-                        alt="Imagem gerada"
-                        style={{ width: '100%', borderRadius: '10px', marginBottom: '0.5rem', display: 'block' }}
-                      />
+                      <img src={msg.imageUrl} alt="Imagem gerada"
+                        style={{ width: '100%', borderRadius: '10px', marginBottom: '0.5rem', display: 'block' }} />
                     )}
                     <span dangerouslySetInnerHTML={{ __html: formatText(msg.content) }} />
                   </div>
@@ -461,36 +514,18 @@ export default function DooIA() {
                     <button
                       onClick={() => copyMessage(msg.content, i)}
                       style={{
-                        alignSelf: 'flex-start',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                        padding: '2px 6px',
-                        borderRadius: '6px',
-                        fontSize: '0.7rem',
+                        alignSelf: 'flex-start', background: 'none', border: 'none',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px',
+                        padding: '2px 6px', borderRadius: '6px', fontSize: '0.7rem',
                         color: copiedId === i ? '#22C55E' : '#9CA3AF',
-                        fontFamily: 'Geist, sans-serif',
-                        transition: 'color 0.15s, background 0.15s',
+                        fontFamily: 'Geist, sans-serif', transition: 'color 0.15s',
                       }}
                       title="Copiar resposta"
                     >
                       {copiedId === i ? (
-                        <>
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12"/>
-                          </svg>
-                          Copiado
-                        </>
+                        <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>Copiado</>
                       ) : (
-                        <>
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                          </svg>
-                          Copiar
-                        </>
+                        <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copiar</>
                       )}
                     </button>
                   )}
@@ -498,6 +533,7 @@ export default function DooIA() {
               </div>
             ))}
 
+            {/* Loading text */}
             {loading && (
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
                 <div style={{ width: '26px', height: '26px', borderRadius: '50%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
@@ -518,33 +554,43 @@ export default function DooIA() {
                 </div>
               </div>
             )}
+
+            {/* Loading imagem — feedback diferenciado */}
+            {generatingImage && (
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
+                <div style={{ width: '26px', height: '26px', borderRadius: '50%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
+                  <img src="/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
+                </div>
+                <div style={{
+                  background: 'white', padding: '0.65rem 1rem', borderRadius: '16px 16px 16px 4px',
+                  border: '1px solid #f0f0f0', boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                }}>
+                  <span style={{ width: '14px', height: '14px', borderRadius: '50%', border: `2px solid ${VINHO}`, borderTopColor: 'transparent', animation: 'dooSpin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 }} />
+                  <span style={{ fontSize: '0.8rem', color: '#6B7280', fontFamily: 'Geist, sans-serif' }}>Gerando sua imagem...</span>
+                </div>
+              </div>
+            )}
+
             <div ref={bottomRef} />
           </div>
 
           {/* Preview imagem pendente */}
           {pendingImage && (
             <div style={{
-              padding: '0.5rem 0.75rem 0',
-              background: 'white',
-              borderTop: '1px solid #f0f0f0',
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              padding: '0.5rem 0.75rem 0', background: 'white',
+              borderTop: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', gap: '0.5rem',
             }}>
               <div style={{ position: 'relative', flexShrink: 0 }}>
-                <img
-                  src={pendingImage.preview}
-                  alt="Anexo"
-                  style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', border: `1.5px solid ${VINHO}` }}
-                />
-                <button
-                  onClick={removePendingImage}
-                  style={{
-                    position: 'absolute', top: '-6px', right: '-6px',
-                    width: '18px', height: '18px', borderRadius: '50%',
-                    background: VINHO, border: '2px solid white',
-                    color: 'white', fontSize: '0.6rem', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >✕</button>
+                <img src={pendingImage.preview} alt="Anexo"
+                  style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', border: `1.5px solid ${VINHO}` }} />
+                <button onClick={removePendingImage} style={{
+                  position: 'absolute', top: '-6px', right: '-6px',
+                  width: '18px', height: '18px', borderRadius: '50%',
+                  background: VINHO, border: '2px solid white',
+                  color: 'white', fontSize: '0.6rem', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>✕</button>
               </div>
               <p style={{ margin: 0, fontSize: '0.75rem', color: '#6B7280', fontFamily: 'Geist, sans-serif' }}>
                 Imagem anexada. Adicione uma mensagem ou envie diretamente.
@@ -554,70 +600,58 @@ export default function DooIA() {
 
           {/* Input */}
           <div style={{
-            padding: '0.75rem',
-            borderTop: '1px solid #f0f0f0',
-            display: 'flex', gap: '0.4rem',
-            background: 'white', flexShrink: 0, alignItems: 'center',
+            padding: '0.75rem', borderTop: '1px solid #f0f0f0',
+            display: 'flex', gap: '0.4rem', background: 'white',
+            flexShrink: 0, alignItems: 'center',
           }}>
-            {/* Botão galeria */}
-            <button
-              onClick={() => fileRef.current?.click()}
-              title="Enviar imagem da galeria"
+            <button onClick={() => fileRef.current?.click()} title="Enviar imagem da galeria"
               style={{
                 width: '36px', height: '36px', borderRadius: '10px',
                 background: '#f5f5f5', border: '1px solid #E9E9EE',
                 cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0, transition: 'background 0.15s',
-              }}
-            >
+              }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={VINHO} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
                 <polyline points="21 15 16 10 5 21"/>
               </svg>
             </button>
 
-            {/* Botão câmera */}
-            <button
-              onClick={() => cameraRef.current?.click()}
-              title="Tirar foto"
-              style={{
-                width: '36px', height: '36px', borderRadius: '10px',
-                background: '#f5f5f5', border: '1px solid #E9E9EE',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0, transition: 'background 0.15s',
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={VINHO} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                <circle cx="12" cy="13" r="4"/>
-              </svg>
-            </button>
+            {/* Câmera só no mobile */}
+            {mobile && (
+              <button onClick={() => cameraRef.current?.click()} title="Tirar foto"
+                style={{
+                  width: '36px', height: '36px', borderRadius: '10px',
+                  background: '#f5f5f5', border: '1px solid #E9E9EE',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0, transition: 'background 0.15s',
+                }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={VINHO} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+              </button>
+            )}
 
             <input
               ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKey}
-              placeholder="Pergunte para a Doo..."
-              disabled={loading}
+              placeholder={PLACEHOLDERS[placeholderIdx]}
+              disabled={loading || generatingImage}
               style={{
-                flex: 1,
-                border: `1.5px solid ${input || pendingImage ? VINHO : '#E9E9EE'}`,
-                borderRadius: '12px',
-                padding: '0.6rem 0.85rem',
-                fontSize: '0.83rem',
-                fontFamily: 'Geist, sans-serif',
-                outline: 'none',
-                color: '#1F2937',
-                background: '#fafafa',
+                flex: 1, border: `1.5px solid ${input || pendingImage ? VINHO : '#E9E9EE'}`,
+                borderRadius: '12px', padding: '0.6rem 0.85rem',
+                fontSize: '0.83rem', fontFamily: 'Geist, sans-serif',
+                outline: 'none', color: '#1F2937', background: '#fafafa',
                 transition: 'border-color 0.15s',
               }}
             />
 
-            {/* Botão enviar */}
             <button
-              onClick={sendMessage}
-              disabled={loading || (!input.trim() && !pendingImage)}
+              onClick={() => sendMessage()}
+              disabled={loading || generatingImage || (!input.trim() && !pendingImage)}
               style={{
                 width: '36px', height: '36px', borderRadius: '12px',
                 background: (input.trim() || pendingImage) ? `linear-gradient(135deg, ${VINHO}, #9B4468)` : '#E9E9EE',
@@ -628,8 +662,7 @@ export default function DooIA() {
               }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
               </svg>
             </button>
           </div>
@@ -652,6 +685,9 @@ export default function DooIA() {
         @keyframes dooTyping {
           0%, 100% { transform: translateY(0); opacity: 0.4; }
           50%       { transform: translateY(-4px); opacity: 1; }
+        }
+        @keyframes dooSpin {
+          to { transform: rotate(360deg); }
         }
       `}</style>
     </>
