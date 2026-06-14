@@ -9,6 +9,8 @@ import ResetPassword from "@/pages/ResetPassword";
 import Termos from "@/pages/Termos";
 import Privacidade from "@/pages/Privacidade";
 import Layout from "@/components/Layout";
+import Pedidos from "@/pages/Pedidos";
+import PedidoForm from "@/pages/PedidoForm";
 import Dashboard from "@/pages/Dashboard";
 import Inicio from "@/pages/Inicio";
 import Agenda from "@/pages/Agenda";
@@ -36,7 +38,7 @@ import CardapioDesign from "@/pages/CardapioDesign";
 import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 import CardapioPublico from "@/pages/CardapioPublico";
 
-const Pedidos = () => <div style={{padding:"2rem"}}><h2>📋 Pedidos</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
+
 const Financeiro = () => <div style={{padding:"2rem"}}><h2>💰 Financeiro</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
 const Promocoes = () => <div style={{padding:"2rem"}}><h2>🏷️ Promoções</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
 const Estoque = () => <div style={{padding:"2rem"}}><h2>📦 Estoque</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
@@ -75,6 +77,8 @@ export default function App() {
           <Route path="/produtos" element={<Produtos />} />
           <Route path="/categorias" element={<Categorias />} />
           <Route path="/pedidos" element={<Pedidos />} />
+          <Route path="/pedidos/novo" element={<PedidoForm />} />
+          <Route path="/pedidos/:id" element={<PedidoForm />} />
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/insumos" element={<Insumos />} />
           <Route path="/clientes" element={<Clientes />} />
