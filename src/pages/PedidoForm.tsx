@@ -252,10 +252,16 @@ export default function PedidoForm() {
 
   const formatTelefone = (tel: string) => {
     if (!tel) return ''
-    const digits = tel.replace(/\D/g, '')
-    if (digits.length === 11) return `${digits.slice(0,2)} ${digits[2]} ${digits.slice(3,7)}-${digits.slice(7)}`
-    if (digits.length === 10) return `${digits.slice(0,2)} ${digits.slice(2,6)}-${digits.slice(6)}`
-    return tel
+    const digits = tel.replace(/\D/g, '').slice(0, 11)
+    if (digits.length === 11) return `(${digits.slice(0,2)}) ${digits[2]} ${digits.slice(3,7)}-${digits.slice(7)}`
+    if (digits.length === 10) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`
+    if (digits.length > 6) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`
+    if (digits.length > 2) return `(${digits.slice(0,2)}) ${digits.slice(2)}`
+    return digits
+  }
+
+  const handleTelefone = (value: string, field: 'cliente_telefone' | 'cliente_whatsapp') => {
+    set(field, formatTelefone(value))
   }
 
   if (loading) return (
@@ -333,14 +339,28 @@ export default function PedidoForm() {
                 )}
               </div>
 
-              <div className="pf-row2">
+              <div className="pf-row2" style={{ marginTop: '0.75rem' }}>
                 <div className="pf-field">
                   <label className="pf-label">Telefone</label>
-                  <input className="pf-input" placeholder="(00) 00000-0000" value={pedido.cliente_telefone} onChange={e => set('cliente_telefone', e.target.value)} />
+                  <input
+                    className="pf-input"
+                    placeholder="(41) 9 9929-1790"
+                    value={pedido.cliente_telefone}
+                    onChange={e => handleTelefone(e.target.value, 'cliente_telefone')}
+                    inputMode="numeric"
+                    maxLength={16}
+                  />
                 </div>
                 <div className="pf-field">
                   <label className="pf-label">WhatsApp</label>
-                  <input className="pf-input" placeholder="(00) 00000-0000" value={pedido.cliente_whatsapp} onChange={e => set('cliente_whatsapp', e.target.value)} />
+                  <input
+                    className="pf-input"
+                    placeholder="(41) 9 9929-1790"
+                    value={pedido.cliente_whatsapp}
+                    onChange={e => handleTelefone(e.target.value, 'cliente_whatsapp')}
+                    inputMode="numeric"
+                    maxLength={16}
+                  />
                 </div>
               </div>
             </div>
