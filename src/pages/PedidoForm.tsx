@@ -246,9 +246,17 @@ export default function PedidoForm() {
     setTimeout(() => setToast(''), 3000)
   }
 
-  const clientesFiltrados = clientes.filter(c =>
-    c.nome?.toLowerCase().includes(buscaCliente.toLowerCase())
-  )
+  const clientesFiltrados = buscaCliente.length >= 3
+    ? clientes.filter(c => c.nome?.toLowerCase().includes(buscaCliente.toLowerCase()))
+    : []
+
+  const formatTelefone = (tel: string) => {
+    if (!tel) return ''
+    const digits = tel.replace(/\D/g, '')
+    if (digits.length === 11) return `${digits.slice(0,2)} ${digits[2]} ${digits.slice(3,7)}-${digits.slice(7)}`
+    if (digits.length === 10) return `${digits.slice(0,2)} ${digits.slice(2,6)}-${digits.slice(6)}`
+    return tel
+  }
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
@@ -299,21 +307,26 @@ export default function PedidoForm() {
                 <label className="pf-label">Nome do cliente *</label>
                 <input
                   className="pf-input"
-                  placeholder="Buscar ou digitar nome..."
+                  placeholder="Buscar pelo nome (mín. 3 letras)..."
                   value={buscaCliente || pedido.cliente_nome}
                   onChange={e => {
-                    setBuscaCliente(e.target.value)
-                    set('cliente_nome', e.target.value)
-                    setShowClienteDropdown(true)
+                    const val = e.target.value
+                    setBuscaCliente(val)
+                    set('cliente_nome', val)
+                    setShowClienteDropdown(val.length >= 3)
                   }}
-                  onFocus={() => setShowClienteDropdown(true)}
+                  onBlur={() => setTimeout(() => setShowClienteDropdown(false), 150)}
                 />
                 {showClienteDropdown && clientesFiltrados.length > 0 && (
                   <div className="pf-dropdown">
                     {clientesFiltrados.slice(0, 5).map(c => (
                       <button key={c.id} className="pf-dropdown-item" onClick={() => selecionarCliente(c)}>
-                        <span style={{ fontWeight: 600 }}>{c.nome}</span>
-                        {c.telefone && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted,#9CA3AF)' }}>{c.telefone}</span>}
+                        <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-title,#1F2937)' }}>{c.nome}</span>
+                        {(c.telefone || c.whatsapp) && (
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted,#9CA3AF)', marginTop: '1px' }}>
+                            {formatTelefone(c.telefone || c.whatsapp)}
+                          </span>
+                        )}
                       </button>
                     ))}
                   </div>
