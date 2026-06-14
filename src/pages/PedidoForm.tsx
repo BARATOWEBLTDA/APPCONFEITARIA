@@ -54,6 +54,11 @@ type Pedido = {
   valor_recebido: number
   observacoes: string
   etiquetas: string[]
+  responsavel_entrega: string
+  responsavel_producao: string
+  data_prevista_producao: string
+  status_producao: string
+  checklist_producao: any[]
 }
 
 const EMPTY_PEDIDO: Pedido = {
@@ -65,6 +70,8 @@ const EMPTY_PEDIDO: Pedido = {
   personalizacao_tema: '', personalizacao_nome: '', personalizacao_idade: '',
   personalizacao_cor: '', personalizacao_referencia: '', personalizacao_obs: '',
   valor_produtos: 0, desconto: 0, taxa_extra: 0, cupom_codigo: '', cupom_desconto: 0,
+  responsavel_entrega: '', responsavel_producao: '', data_prevista_producao: '',
+  status_producao: 'nao_iniciado', checklist_producao: [],
   valor_total: 0, forma_pagamento: 'pix', status_pagamento: 'pendente',
   valor_sinal: 0, data_sinal: '', valor_recebido: 0, observacoes: '', etiquetas: [],
 }
