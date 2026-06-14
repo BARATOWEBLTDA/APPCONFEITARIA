@@ -12,6 +12,7 @@ type Pedido = {
   data_entrega: string
   horario_entrega: string
   valor_total: number
+  valor_recebido: number
   tipo_entrega: string
   forma_pagamento: string
   etiquetas: string[]
@@ -32,22 +33,16 @@ const STATUS_LIST = [
 ]
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  novo:                 { label: 'Novo',           color: '#1d4ed8', bg: '#dbeafe' },
-  aguardando_pagamento: { label: 'Aguardando',     color: '#92400e', bg: '#fef3c7' },
-  confirmado:           { label: 'Confirmado',     color: '#5b21b6', bg: '#ede9fe' },
-  em_producao:          { label: 'Em produção',    color: '#9a3412', bg: '#ffedd5' },
-  pronto:               { label: 'Pronto',         color: '#14532d', bg: '#dcfce7' },
-  saiu_entrega:         { label: 'Saiu p/ entrega',color: '#065f46', bg: '#d1fae5' },
-  entregue:             { label: 'Entregue',       color: '#374151', bg: '#f3f4f6' },
-  cancelado:            { label: 'Cancelado',      color: '#991b1b', bg: '#fee2e2' },
-  atrasado:             { label: 'Atrasado',       color: '#991b1b', bg: '#fee2e2' },
-  pendente:             { label: 'Novo',           color: '#1d4ed8', bg: '#dbeafe' },
-}
-
-const PRIORIDADE_CONFIG: Record<string, { color: string; label: string }> = {
-  alta:  { color: '#ef4444', label: '↑ Alta' },
-  media: { color: '#f59e0b', label: '→ Média' },
-  baixa: { color: '#6b7280', label: '↓ Baixa' },
+  novo:                 { label: 'Novo',            color: '#1d4ed8', bg: '#dbeafe' },
+  aguardando_pagamento: { label: 'Aguardando',      color: '#92400e', bg: '#fef3c7' },
+  confirmado:           { label: 'Confirmado',      color: '#5b21b6', bg: '#ede9fe' },
+  em_producao:          { label: 'Em produção',     color: '#9a3412', bg: '#ffedd5' },
+  pronto:               { label: 'Pronto',          color: '#14532d', bg: '#dcfce7' },
+  saiu_entrega:         { label: 'Saiu p/ entrega', color: '#065f46', bg: '#d1fae5' },
+  entregue:             { label: 'Entregue',        color: '#374151', bg: '#f3f4f6' },
+  cancelado:            { label: 'Cancelado',       color: '#991b1b', bg: '#fee2e2' },
+  atrasado:             { label: 'Atrasado',        color: '#991b1b', bg: '#fee2e2' },
+  pendente:             { label: 'Novo',            color: '#1d4ed8', bg: '#dbeafe' },
 }
 
 const PAG_CONFIG: Record<string, string> = {
@@ -73,17 +68,28 @@ function parseLocalDate(dateStr: string): Date {
 function isAtrasado(pedido: Pedido) {
   if (['entregue', 'cancelado'].includes(pedido.status)) return false
   if (!pedido.data_entrega) return false
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0)
   return parseLocalDate(pedido.data_entrega) < hoje
 }
 
 function diasParaEntrega(data: string) {
   if (!data) return null
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-  const entrega = parseLocalDate(data)
-  return Math.ceil((entrega.getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+  const hoje = new Date(); hoje.setHours(0, 0, 0, 0)
+  return Math.ceil((parseLocalDate(data).getTime() - hoje.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+// Linha de alerta: ícone + texto na mesma linha
+function AlertaLinha({ icon, texto, cor }: { icon: React.ReactNode; texto: string; cor: string }) {
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'row', alignItems: 'center',
+      gap: '6px', color: cor, fontSize: '13px', fontWeight: 500,
+      lineHeight: '1.3', whiteSpace: 'nowrap', overflow: 'hidden',
+    }}>
+      <span style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>{icon}</span>
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{texto}</span>
+    </div>
+  )
 }
 
 export default function Pedidos() {
@@ -92,20 +98,17 @@ export default function Pedidos() {
   const [loading, setLoading] = useState(true)
   const [filtroStatus, setFiltroStatus] = useState('todos')
   const [busca, setBusca] = useState('')
-  const [userId, setUserId] = useState('')
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) { setUserId(user.id); fetchPedidos(user.id) }
+      if (user) fetchPedidos(user.id)
     })
   }, [])
 
   const fetchPedidos = async (uid: string) => {
     setLoading(true)
     const { data } = await supabase
-      .from('pedidos')
-      .select('*')
-      .eq('user_id', uid)
+      .from('pedidos').select('*').eq('user_id', uid)
       .order('created_at', { ascending: false })
     setPedidos(data || [])
     setLoading(false)
@@ -123,130 +126,198 @@ export default function Pedidos() {
   }, {} as Record<string, number>)
 
   return (
-    <div className="ped-root">
+    <div style={{ fontFamily: "'Geist', sans-serif", display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
-      {/* ── Header ── */}
-      <div className="ped-header">
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
-          <h1 className="ped-title">Pedidos</h1>
-          <p className="ped-subtitle">{pedidos.length} pedido{pedidos.length !== 1 ? 's' : ''} no total</p>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-title,#1F2937)', margin: 0 }}>Pedidos</h1>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted,#9CA3AF)', margin: '0.2rem 0 0' }}>{pedidos.length} pedido{pedidos.length !== 1 ? 's' : ''} no total</p>
         </div>
-        <button className="ped-btn-novo" onClick={() => navigate('/pedidos/novo')}>
+        <button onClick={() => navigate('/pedidos/novo')} style={{
+          display: 'flex', alignItems: 'center', gap: '0.4rem',
+          background: 'var(--primary,#FF6FA9)', color: 'white', border: 'none',
+          borderRadius: '10px', padding: '0.6rem 1.1rem', fontSize: '0.85rem',
+          fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+        }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Novo pedido
         </button>
       </div>
 
-      {/* ── Busca ── */}
-      <div className="ped-busca-wrap">
+      {/* Busca */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-card,#fff)', border: '1.5px solid var(--border,#E9E9EE)', borderRadius: '10px', padding: '0.55rem 0.85rem' }}>
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted,#9CA3AF)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input
-          className="ped-busca"
+          style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.85rem', fontFamily: 'inherit', color: 'var(--text-primary,#1F2937)', background: 'transparent' }}
           placeholder="Buscar por nome ou número..."
           value={busca}
           onChange={e => setBusca(e.target.value)}
         />
       </div>
 
-      {/* ── Filtro status ── */}
-      <div className="ped-filtros">
+      {/* Filtros */}
+      <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto', paddingBottom: '2px' }}>
         {STATUS_LIST.map(s => (
           <button
             key={s.key}
-            className={`ped-filtro-btn${filtroStatus === s.key ? ' ativo' : ''}`}
             onClick={() => setFiltroStatus(s.key)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.35rem',
+              background: filtroStatus === s.key ? 'var(--primary,#FF6FA9)' : 'var(--bg-card,#fff)',
+              border: `1.5px solid ${filtroStatus === s.key ? 'var(--primary,#FF6FA9)' : 'var(--border,#E9E9EE)'}`,
+              borderRadius: '20px', padding: '0.35rem 0.85rem',
+              fontSize: '0.78rem', fontWeight: 500,
+              color: filtroStatus === s.key ? 'white' : 'var(--text-secondary,#6B7280)',
+              cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+            }}
           >
             {s.label}
             {contadores[s.key] > 0 && (
-              <span className="ped-filtro-count">{contadores[s.key]}</span>
+              <span style={{
+                background: filtroStatus === s.key ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.08)',
+                borderRadius: '10px', padding: '0 6px', fontSize: '0.7rem', fontWeight: 700,
+              }}>{contadores[s.key]}</span>
             )}
           </button>
         ))}
       </div>
 
-      {/* ── Lista ── */}
+      {/* Lista */}
       {loading ? (
-        <div className="ped-empty">
-          <div className="ped-spinner" />
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+          <div style={{ width: '32px', height: '32px', border: '3px solid var(--primary-light,#FFF1F7)', borderTopColor: 'var(--primary,#FF6FA9)', borderRadius: '50%', animation: 'pedSpin 0.7s linear infinite' }} />
         </div>
       ) : pedidosFiltrados.length === 0 ? (
-        <div className="ped-empty">
-          <div className="ped-empty-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary,#FF6FA9)" strokeWidth="1.5" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4rem 1rem', gap: '0.5rem' }}>
+          <div style={{ width: '64px', height: '64px', background: 'var(--primary-light,#FFF1F7)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary,#FF6FA9)" strokeWidth="1.5" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
           </div>
-          <p className="ped-empty-title">{busca || filtroStatus !== 'todos' ? 'Nenhum pedido encontrado' : 'Nenhum pedido ainda'}</p>
-          <p className="ped-empty-sub">{busca || filtroStatus !== 'todos' ? 'Tente outro filtro ou busca' : 'Crie seu primeiro pedido agora'}</p>
+          <p style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-title,#1F2937)', margin: 0 }}>
+            {busca || filtroStatus !== 'todos' ? 'Nenhum pedido encontrado' : 'Nenhum pedido ainda'}
+          </p>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted,#9CA3AF)', margin: 0 }}>
+            {busca || filtroStatus !== 'todos' ? 'Tente outro filtro' : 'Crie seu primeiro pedido agora'}
+          </p>
           {filtroStatus === 'todos' && !busca && (
-            <button className="ped-btn-novo" onClick={() => navigate('/pedidos/novo')}>
+            <button onClick={() => navigate('/pedidos/novo')} style={{ marginTop: '0.5rem', background: 'var(--primary,#FF6FA9)', color: 'white', border: 'none', borderRadius: '10px', padding: '0.6rem 1.25rem', fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
               Criar primeiro pedido
             </button>
           )}
         </div>
       ) : (
-        <div className="ped-lista">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(420px, 1fr))', gap: '0.75rem' }}>
           {pedidosFiltrados.map(p => {
             const atrasado = isAtrasado(p)
             const status = atrasado ? 'atrasado' : (p.status || 'pendente')
             const cfg = STATUS_CONFIG[status] || STATUS_CONFIG['novo']
             const dias = diasParaEntrega(p.data_entrega)
-            const prio = PRIORIDADE_CONFIG[p.prioridade] || PRIORIDADE_CONFIG['media']
+
+            const corData = atrasado ? '#dc2626' : dias === 0 ? '#d97706' : dias === 1 ? '#d97706' : '#16a34a'
+            const textoData = atrasado ? 'Atrasada' : dias === 0 ? 'Hoje' : dias === 1 ? 'Amanhã' : `Em ${dias} dias`
 
             return (
               <div
                 key={p.id}
-                className="ped-card"
                 onClick={() => navigate(`/pedidos/${p.id}`)}
+                style={{
+                  background: 'var(--bg-card,#fff)',
+                  border: '1.5px solid var(--border,#E9E9EE)',
+                  borderRadius: '16px',
+                  padding: '1.1rem 1.25rem',
+                  cursor: 'pointer',
+                  transition: 'transform 0.15s, box-shadow 0.15s, border-color 0.15s',
+                  fontFamily: 'inherit',
+                }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLDivElement
+                  el.style.transform = 'translateY(-2px)'
+                  el.style.boxShadow = '0 8px 24px rgba(0,0,0,0.09)'
+                  el.style.borderColor = 'var(--primary,#FF6FA9)'
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLDivElement
+                  el.style.transform = ''
+                  el.style.boxShadow = ''
+                  el.style.borderColor = 'var(--border,#E9E9EE)'
+                }}
               >
-                {/* Linha 1 */}
-                <div className="ped-card-row1">
-                  <div className="ped-card-left">
-                    <span className="ped-numero">#{p.numero || '—'}</span>
+                {/* ── Header: nome + status ── */}
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: '0 0 0.15rem', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-title,#1F2937)', lineHeight: 1.3 }}>
+                      {p.cliente_nome || 'Cliente não informado'}
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted,#9CA3AF)', marginLeft: '6px' }}>#{p.numero || '—'}</span>
+                    </p>
                     {p.origem === 'cardapio' && (
-                      <span className="ped-origem-badge">Cardápio</span>
+                      <span style={{ display: 'inline-block', fontSize: '0.65rem', fontWeight: 700, background: '#ede9fe', color: '#5b21b6', borderRadius: '5px', padding: '1px 7px' }}>
+                        via Cardápio
+                      </span>
                     )}
                   </div>
-                  <span className="ped-status-pill" style={{ color: cfg.color, background: cfg.bg }}>
+                  <span style={{
+                    display: 'inline-block', fontSize: '0.72rem', fontWeight: 700,
+                    padding: '4px 10px', borderRadius: '6px', whiteSpace: 'nowrap',
+                    flexShrink: 0, color: cfg.color, background: cfg.bg,
+                  }}>
                     {cfg.label}
                   </span>
                 </div>
 
-                {/* Nome cliente */}
-                <p className="ped-cliente">{p.cliente_nome || 'Cliente não informado'}</p>
+                {/* ── Divisória ── */}
+                <div style={{ height: '1px', background: 'var(--border,#E9E9EE)', marginBottom: '0.75rem' }} />
 
-                {/* Linha info */}
-                <div className="ped-card-info">
-                  <div className="ped-info-item">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    {p.data_entrega ? (
-                      <span style={{ color: atrasado ? '#ef4444' : dias !== null && dias <= 1 ? '#f59e0b' : 'inherit' }}>
-                        {formatDate(p.data_entrega)}
-                        {dias !== null && !['entregue','cancelado'].includes(p.status) && (
-                          <span style={{ marginLeft: 4, fontSize: '0.7rem', opacity: 0.8 }}>
-                            {atrasado ? '• Atrasado' : dias === 0 ? '• Hoje' : dias === 1 ? '• Amanhã' : `• ${dias}d`}
-                          </span>
-                        )}
-                      </span>
-                    ) : '—'}
-                  </div>
-                  <div className="ped-info-item">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-                    {p.tipo_entrega === 'retirada' ? 'Retirada' : p.tipo_entrega === 'entrega' ? 'Entrega' : 'Local'}
-                  </div>
-                  <div className="ped-info-item">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    {PAG_CONFIG[p.forma_pagamento] || p.forma_pagamento || 'PIX'}
-                  </div>
+                {/* ── Alertas ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginBottom: '0.85rem' }}>
+
+                  {p.data_entrega && (
+                    <AlertaLinha
+                      cor={corData}
+                      texto={`${textoData} · ${formatDate(p.data_entrega)}${p.horario_entrega ? ` às ${p.horario_entrega.slice(0, 5)}` : ''}`}
+                      icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>}
+                    />
+                  )}
+
+                  {p.status_pagamento !== 'pago' ? (
+                    <AlertaLinha
+                      cor={p.status_pagamento === 'parcial' ? '#d97706' : '#dc2626'}
+                      texto={`${p.status_pagamento === 'parcial' ? 'Pagamento parcial' : 'Pagamento pendente'} · ${PAG_CONFIG[p.forma_pagamento] || 'PIX'}`}
+                      icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>}
+                    />
+                  ) : (
+                    <AlertaLinha
+                      cor="#16a34a"
+                      texto={`Pagamento recebido · ${PAG_CONFIG[p.forma_pagamento] || 'PIX'}`}
+                      icon={<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                    />
+                  )}
+
+                  <AlertaLinha
+                    cor="var(--text-secondary,#6B7280)"
+                    texto={p.tipo_entrega === 'retirada' ? 'Retirada no local' : p.tipo_entrega === 'entrega' ? 'Entrega' : 'Consumo no local'}
+                    icon={p.tipo_entrega === 'retirada'
+                      ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                      : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3"/><rect x="9" y="11" width="14" height="10" rx="2"/><circle cx="12" cy="21" r="1"/><circle cx="20" cy="21" r="1"/></svg>
+                    }
+                  />
                 </div>
 
-                {/* Linha bottom */}
-                <div className="ped-card-bottom">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span className="ped-prio" style={{ color: prio.color }}>{prio.label}</span>
-                    {(p.etiquetas || []).slice(0, 2).map((e: string) => (
-                      <span key={e} className="ped-etiqueta">{e}</span>
+                {/* ── Rodapé ── */}
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '1px solid var(--border,#E9E9EE)', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'row', gap: '0.35rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    {p.prioridade === 'alta' && (
+                      <span style={{ fontSize: '0.67rem', fontWeight: 700, background: '#fee2e2', color: '#dc2626', borderRadius: '5px', padding: '2px 7px', border: '1px solid #fecaca' }}>↑ Urgente</span>
+                    )}
+                    {(p.etiquetas || []).slice(0, 3).map((e: string) => (
+                      <span key={e} style={{ fontSize: '0.67rem', fontWeight: 600, background: 'var(--bg-body,#F7F7F8)', border: '1px solid var(--border,#E9E9EE)', color: 'var(--text-secondary,#6B7280)', borderRadius: '5px', padding: '2px 7px' }}>{e}</span>
                     ))}
+                    {p.prioridade !== 'alta' && !(p.etiquetas || []).length && (
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted,#9CA3AF)' }}>—</span>
+                    )}
                   </div>
-                  <span className="ped-valor">{formatMoney(p.valor_total)}</span>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-title,#1F2937)', whiteSpace: 'nowrap' }}>
+                    {formatMoney(p.valor_total)}
+                  </span>
                 </div>
               </div>
             )
@@ -255,82 +326,7 @@ export default function Pedidos() {
       )}
 
       <style>{`
-        .ped-root { font-family: 'Geist', sans-serif; display: flex; flex-direction: column; gap: 1rem; }
-
-        .ped-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-        .ped-title { font-size: 1.5rem; font-weight: 700; color: var(--text-title, #1F2937); margin: 0; }
-        .ped-subtitle { font-size: 0.82rem; color: var(--text-muted, #9CA3AF); margin: 0.2rem 0 0; }
-
-        .ped-btn-novo {
-          display: flex; align-items: center; gap: 0.4rem;
-          background: var(--primary, #FF6FA9); color: white;
-          border: none; border-radius: 10px; padding: 0.6rem 1.1rem;
-          font-size: 0.85rem; font-weight: 600; cursor: pointer;
-          font-family: 'Geist', sans-serif; white-space: nowrap;
-          transition: opacity 0.15s;
-        }
-        .ped-btn-novo:hover { opacity: 0.88; }
-
-        .ped-busca-wrap { display: flex; align-items: center; gap: 0.5rem; background: var(--bg-card, #fff); border: 1.5px solid var(--border, #E9E9EE); border-radius: 10px; padding: 0.55rem 0.85rem; }
-        .ped-busca { flex: 1; border: none; outline: none; font-size: 0.85rem; font-family: 'Geist', sans-serif; color: var(--text-primary, #1F2937); background: transparent; }
-        .ped-busca::placeholder { color: var(--text-muted, #9CA3AF); }
-
-        .ped-filtros { display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
-        .ped-filtros::-webkit-scrollbar { display: none; }
-        .ped-filtro-btn {
-          display: flex; align-items: center; gap: 0.35rem;
-          background: var(--bg-card, #fff); border: 1.5px solid var(--border, #E9E9EE);
-          border-radius: 20px; padding: 0.35rem 0.85rem;
-          font-size: 0.78rem; font-weight: 500; color: var(--text-secondary, #6B7280);
-          cursor: pointer; font-family: 'Geist', sans-serif; white-space: nowrap;
-          transition: all 0.15s;
-        }
-        .ped-filtro-btn.ativo { background: var(--primary, #FF6FA9); border-color: var(--primary, #FF6FA9); color: white; }
-        .ped-filtro-count { background: rgba(0,0,0,0.12); border-radius: 10px; padding: 0 6px; font-size: 0.7rem; font-weight: 700; }
-        .ped-filtro-btn.ativo .ped-filtro-count { background: rgba(255,255,255,0.3); }
-
-        .ped-lista { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
-
-        .ped-card {
-          background: var(--bg-card, #fff);
-          border: 1.5px solid var(--border, #E9E9EE);
-          border-radius: 16px;
-          padding: 1.1rem 1.25rem;
-          cursor: pointer;
-          transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
-          display: flex; flex-direction: column; gap: 0;
-        }
-        .ped-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.09); border-color: var(--primary,#FF6FA9); }
-
-        .ped-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; }
-        .ped-card-header-left { flex: 1; min-width: 0; }
-        .ped-nome { font-size: 1.05rem; font-weight: 700; color: var(--text-title,#1F2937); margin: 0 0 0.25rem; line-height: 1.3; }
-        .ped-num { font-size: 0.78rem; font-weight: 600; color: var(--text-muted,#9CA3AF); font-family: 'Geist Mono', monospace; }
-        .ped-origem-badge { display: inline-block; font-size: 0.65rem; font-weight: 700; background: #ede9fe; color: #5b21b6; border-radius: 6px; padding: 2px 7px; }
-        .ped-status-pill { font-size: 0.72rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; border: 1.5px solid transparent; }
-
-        .ped-divider { height: 1px; background: var(--border,#E9E9EE); margin: 0 0 0.75rem; }
-
-        .ped-alertas { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.85rem; }
-        .ped-alerta { display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 500; }
-
-        .ped-card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid var(--border,#E9E9EE); gap: 0.5rem; }
-        .ped-tag { font-size: 0.67rem; font-weight: 600; background: var(--bg-body,#F7F7F8); border: 1px solid var(--border,#E9E9EE); color: var(--text-secondary,#6B7280); border-radius: 6px; padding: 2px 8px; }
-        .ped-valor { font-size: 1.1rem; font-weight: 800; color: var(--text-title,#1F2937); white-space: nowrap; }
-
-        .ped-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 1rem; gap: 0.5rem; }
-        .ped-empty-icon { width: 64px; height: 64px; background: var(--primary-light, #FFF1F7); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; }
-        .ped-empty-title { font-size: 1rem; font-weight: 600; color: var(--text-title, #1F2937); margin: 0; }
-        .ped-empty-sub { font-size: 0.82rem; color: var(--text-muted, #9CA3AF); margin: 0; }
-        .ped-spinner { width: 32px; height: 32px; border: 3px solid var(--primary-light, #FFF1F7); border-top-color: var(--primary, #FF6FA9); border-radius: 50%; animation: pedSpin 0.7s linear infinite; }
         @keyframes pedSpin { to { transform: rotate(360deg); } }
-
-        @media (min-width: 768px) { .ped-lista { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 640px) {
-          .ped-title { font-size: 1.2rem; }
-          .ped-card { padding: 0.85rem; }
-          .ped-card-info { gap: 0.6rem; }
-        }
       `}</style>
     </div>
   )
