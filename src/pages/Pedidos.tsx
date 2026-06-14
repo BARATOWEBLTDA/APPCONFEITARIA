@@ -294,36 +294,29 @@ export default function Pedidos() {
         .ped-card {
           background: var(--bg-card, #fff);
           border: 1.5px solid var(--border, #E9E9EE);
-          border-radius: 14px; overflow: hidden;
-          cursor: pointer; transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
-          display: flex; flex-direction: row;
+          border-radius: 16px;
+          padding: 1.1rem 1.25rem;
+          cursor: pointer;
+          transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+          display: flex; flex-direction: column; gap: 0;
         }
-        .ped-card:hover { border-color: var(--primary, #FF6FA9); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .ped-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.09); border-color: var(--primary,#FF6FA9); }
 
-        .ped-card-bar { width: 5px; flex-shrink: 0; border-radius: 0; }
-        .ped-card-body { flex: 1; padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.6rem; min-width: 0; }
+        .ped-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .ped-card-header-left { flex: 1; min-width: 0; }
+        .ped-nome { font-size: 1.05rem; font-weight: 700; color: var(--text-title,#1F2937); margin: 0 0 0.25rem; line-height: 1.3; }
+        .ped-num { font-size: 0.78rem; font-weight: 600; color: var(--text-muted,#9CA3AF); font-family: 'Geist Mono', monospace; }
+        .ped-origem-badge { display: inline-block; font-size: 0.65rem; font-weight: 700; background: #ede9fe; color: #5b21b6; border-radius: 6px; padding: 2px 7px; }
+        .ped-status-pill { font-size: 0.72rem; font-weight: 700; padding: 4px 12px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; border: 1.5px solid transparent; }
 
-        .ped-card-top { display: flex; align-items: center; gap: 0.65rem; }
-        .ped-avatar {
-          width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 1rem; font-weight: 800;
-        }
-        .ped-card-top-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-        .ped-cliente { font-size: 0.92rem; font-weight: 700; color: var(--text-title, #1F2937); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .ped-numero { font-size: 0.72rem; font-weight: 600; color: var(--text-muted, #9CA3AF); font-family: 'Geist Mono', monospace; }
-        .ped-origem-badge { font-size: 0.62rem; font-weight: 700; background: #ede9fe; color: #5b21b6; border-radius: 6px; padding: 1px 6px; white-space: nowrap; }
-        .ped-status-pill { font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+        .ped-divider { height: 1px; background: var(--border,#E9E9EE); margin: 0 0 0.75rem; }
 
-        .ped-card-info { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-        .ped-info-item { display: flex; align-items: center; gap: 0.3rem; font-size: 0.77rem; color: var(--text-secondary, #6B7280); }
-        .ped-dias-badge { font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 6px; margin-left: 3px; }
-        .ped-pag-status { font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 6px; margin-left: 2px; }
+        .ped-alertas { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.85rem; }
+        .ped-alerta { display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 500; }
 
-        .ped-card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-        .ped-prio { font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
-        .ped-etiqueta { font-size: 0.65rem; font-weight: 600; background: var(--bg-body, #F7F7F8); border: 1px solid var(--border, #E9E9EE); color: var(--text-secondary, #6B7280); border-radius: 6px; padding: 1px 7px; }
-        .ped-valor { font-size: 1.05rem; font-weight: 800; color: var(--text-title, #1F2937); }
+        .ped-card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.75rem; border-top: 1px solid var(--border,#E9E9EE); gap: 0.5rem; }
+        .ped-tag { font-size: 0.67rem; font-weight: 600; background: var(--bg-body,#F7F7F8); border: 1px solid var(--border,#E9E9EE); color: var(--text-secondary,#6B7280); border-radius: 6px; padding: 2px 8px; }
+        .ped-valor { font-size: 1.1rem; font-weight: 800; color: var(--text-title,#1F2937); white-space: nowrap; }
 
         .ped-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem 1rem; gap: 0.5rem; }
         .ped-empty-icon { width: 64px; height: 64px; background: var(--primary-light, #FFF1F7); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 0.5rem; }
