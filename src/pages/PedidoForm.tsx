@@ -269,6 +269,8 @@ export default function PedidoForm() {
         </button>
       </div>
 
+      {/* ── Body: abas + conteúdo ── */}
+      <div className="pf-body">
       {/* ── Abas ── */}
       <div className="pf-abas">
         {ABAS.map(a => (
@@ -695,6 +697,8 @@ export default function PedidoForm() {
 
       </div>
 
+      </div>{/* fim pf-body */}
+
       {/* ── Botão salvar mobile ── */}
       <div className="pf-footer-mobile">
         <button className="pf-btn-salvar pf-btn-full" onClick={salvar} disabled={saving}>
@@ -706,7 +710,7 @@ export default function PedidoForm() {
       {toast && <div className="pf-toast">{toast}</div>}
 
       <style>{`
-        .pf-root { font-family: 'Geist', sans-serif; display: flex; flex-direction: column; gap: 1rem; max-width: 700px; padding-bottom: 5rem; }
+        .pf-root { font-family: 'Geist', sans-serif; display: flex; flex-direction: column; gap: 1rem; padding-bottom: 5rem; }
 
         .pf-header { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
         .pf-back { display: flex; align-items: center; gap: 0.3rem; background: none; border: none; cursor: pointer; font-size: 0.85rem; color: var(--text-secondary,#6B7280); font-family: 'Geist', sans-serif; padding: 0; }
@@ -718,9 +722,9 @@ export default function PedidoForm() {
         .pf-btn-full { width: 100%; padding: 0.85rem; font-size: 0.95rem; border-radius: 14px; }
         .pf-btn-cancel { background: var(--bg-body,#F7F7F8); color: var(--text-secondary,#6B7280); border: 1.5px solid var(--border,#E9E9EE); border-radius: 10px; padding: 0.6rem 1.2rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: 'Geist', sans-serif; }
 
-        .pf-abas { display: flex; gap: 0; overflow-x: auto; background: var(--bg-card,#fff); border: 1.5px solid var(--border,#E9E9EE); border-radius: 12px; padding: 4px; scrollbar-width: none; }
+        .pf-abas { display: flex; gap: 0; overflow-x: auto; background: var(--bg-card,#fff); border: 1.5px solid var(--border,#E9E9EE); border-radius: 12px; padding: 4px; scrollbar-width: none; flex-shrink: 0; }
         .pf-abas::-webkit-scrollbar { display: none; }
-        .pf-aba { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: none; border-radius: 8px; padding: 0.5rem 0.25rem; cursor: pointer; font-family: 'Geist', sans-serif; transition: background 0.15s; min-width: 60px; }
+        .pf-aba { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; background: none; border: none; border-radius: 8px; padding: 0.5rem 0.25rem; cursor: pointer; font-family: 'Geist', sans-serif; transition: background 0.15s; min-width: 60px; white-space: nowrap; }
         .pf-aba.ativa { background: var(--primary,#FF6FA9); }
         .pf-aba-icon { font-size: 1rem; }
         .pf-aba-label { font-size: 0.68rem; font-weight: 600; color: var(--text-secondary,#6B7280); white-space: nowrap; }
@@ -768,6 +772,14 @@ export default function PedidoForm() {
         .pf-etiqueta-btn { background: var(--bg-body,#F7F7F8); border: 1.5px solid var(--border,#E9E9EE); border-radius: 20px; padding: 0.3rem 0.75rem; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary,#6B7280); cursor: pointer; font-family: 'Geist', sans-serif; transition: all 0.15s; }
         .pf-etiqueta-btn.ativa { background: var(--primary-light,#FFF1F7); border-color: var(--primary,#FF6FA9); color: var(--primary,#FF6FA9); }
 
+        @media (min-width: 768px) {
+          .pf-body { display: grid; grid-template-columns: 160px 1fr; gap: 1rem; align-items: start; }
+          .pf-abas { flex-direction: column; overflow-x: visible; border-radius: 14px; padding: 6px; }
+          .pf-aba { flex: none; flex-direction: row; justify-content: flex-start; gap: 0.5rem; padding: 0.65rem 0.85rem; width: 100%; }
+          .pf-aba-icon { font-size: 1rem; }
+          .pf-aba-label { font-size: 0.82rem; }
+          .pf-content { min-width: 0; }
+        }
         .pf-footer-mobile { position: fixed; bottom: 0; left: 0; right: 0; padding: 0.75rem 1rem; background: var(--bg-card,#fff); border-top: 1px solid var(--border,#E9E9EE); z-index: 50; }
         @media (min-width: 768px) { .pf-footer-mobile { display: none; } }
 

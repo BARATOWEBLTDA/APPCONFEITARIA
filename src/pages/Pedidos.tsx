@@ -248,7 +248,7 @@ export default function Pedidos() {
       )}
 
       <style>{`
-        .ped-root { font-family: 'Geist', sans-serif; display: flex; flex-direction: column; gap: 1rem; max-width: 900px; }
+        .ped-root { font-family: 'Geist', sans-serif; display: flex; flex-direction: column; gap: 1rem; }
 
         .ped-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
         .ped-title { font-size: 1.5rem; font-weight: 700; color: var(--text-title, #1F2937); margin: 0; }
@@ -282,7 +282,7 @@ export default function Pedidos() {
         .ped-filtro-count { background: rgba(0,0,0,0.12); border-radius: 10px; padding: 0 6px; font-size: 0.7rem; font-weight: 700; }
         .ped-filtro-btn.ativo .ped-filtro-count { background: rgba(255,255,255,0.3); }
 
-        .ped-lista { display: flex; flex-direction: column; gap: 0.6rem; }
+        .ped-lista { display: grid; grid-template-columns: 1fr; gap: 0.6rem; }
 
         .ped-card {
           background: var(--bg-card, #fff);
@@ -317,6 +317,7 @@ export default function Pedidos() {
         .ped-spinner { width: 32px; height: 32px; border: 3px solid var(--primary-light, #FFF1F7); border-top-color: var(--primary, #FF6FA9); border-radius: 50%; animation: pedSpin 0.7s linear infinite; }
         @keyframes pedSpin { to { transform: rotate(360deg); } }
 
+        @media (min-width: 768px) { .ped-lista { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 640px) {
           .ped-title { font-size: 1.2rem; }
           .ped-card { padding: 0.85rem; }
