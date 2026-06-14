@@ -118,6 +118,8 @@ export default function PedidoForm() {
   const [showClienteDropdown, setShowClienteDropdown] = useState(false)
   const [novoItem, setNovoItem] = useState<PedidoItem>({ ...EMPTY_ITEM })
   const [adicionandoItem, setAdicionandoItem] = useState(false)
+  const [showPersonalizacao, setShowPersonalizacao] = useState(false)
+  const [showObservacoes, setShowObservacoes] = useState(false)
   const [toast, setToast] = useState('')
 
   useEffect(() => {
@@ -362,37 +364,89 @@ export default function PedidoForm() {
               </div>
             </div>
 
-            <div className="pf-card">
-              <h3 className="pf-card-title">Personalização</h3>
-              <div className="pf-row2">
-                <div className="pf-field">
-                  <label className="pf-label">Tema</label>
-                  <input className="pf-input" placeholder="Ex: Fazendinha, Frozen..." value={pedido.personalizacao_tema} onChange={e => set('personalizacao_tema', e.target.value)} />
+            <div className="pf-card pf-card-toggle">
+              <button
+                className={`pf-toggle-btn${showPersonalizacao ? ' ativo' : ''}`}
+                onClick={() => {
+                  if (showPersonalizacao) {
+                    set('personalizacao_tema', '')
+                    set('personalizacao_nome', '')
+                    set('personalizacao_idade', '')
+                    set('personalizacao_cor', '')
+                    set('personalizacao_obs', '')
+                  }
+                  setShowPersonalizacao(v => !v)
+                }}
+              >
+                <span className="pf-toggle-icon">
+                  {showPersonalizacao ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  )}
+                </span>
+                <span>Personalização</span>
+                {(pedido.personalizacao_tema || pedido.personalizacao_nome) && !showPersonalizacao && (
+                  <span className="pf-toggle-badge">preenchida</span>
+                )}
+              </button>
+
+              {showPersonalizacao && (
+                <div className="pf-toggle-content">
+                  <div className="pf-row2">
+                    <div className="pf-field">
+                      <label className="pf-label">Tema</label>
+                      <input className="pf-input" placeholder="Ex: Fazendinha, Frozen..." value={pedido.personalizacao_tema} onChange={e => set('personalizacao_tema', e.target.value)} />
+                    </div>
+                    <div className="pf-field">
+                      <label className="pf-label">Nome no bolo</label>
+                      <input className="pf-input" placeholder="Ex: Maria" value={pedido.personalizacao_nome} onChange={e => set('personalizacao_nome', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="pf-row2">
+                    <div className="pf-field">
+                      <label className="pf-label">Idade</label>
+                      <input className="pf-input" placeholder="Ex: 5 anos" value={pedido.personalizacao_idade} onChange={e => set('personalizacao_idade', e.target.value)} />
+                    </div>
+                    <div className="pf-field">
+                      <label className="pf-label">Cor principal</label>
+                      <input className="pf-input" placeholder="Ex: Rosa e dourado" value={pedido.personalizacao_cor} onChange={e => set('personalizacao_cor', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="pf-field">
+                    <label className="pf-label">Observações de personalização</label>
+                    <textarea className="pf-textarea" placeholder="Detalhes extras sobre a decoração..." value={pedido.personalizacao_obs} onChange={e => set('personalizacao_obs', e.target.value)} rows={3} />
+                  </div>
                 </div>
-                <div className="pf-field">
-                  <label className="pf-label">Nome no bolo</label>
-                  <input className="pf-input" placeholder="Ex: Maria" value={pedido.personalizacao_nome} onChange={e => set('personalizacao_nome', e.target.value)} />
-                </div>
-              </div>
-              <div className="pf-row2">
-                <div className="pf-field">
-                  <label className="pf-label">Idade</label>
-                  <input className="pf-input" placeholder="Ex: 5 anos" value={pedido.personalizacao_idade} onChange={e => set('personalizacao_idade', e.target.value)} />
-                </div>
-                <div className="pf-field">
-                  <label className="pf-label">Cor principal</label>
-                  <input className="pf-input" placeholder="Ex: Rosa e dourado" value={pedido.personalizacao_cor} onChange={e => set('personalizacao_cor', e.target.value)} />
-                </div>
-              </div>
-              <div className="pf-field">
-                <label className="pf-label">Observações de personalização</label>
-                <textarea className="pf-textarea" placeholder="Detalhes extras sobre a decoração..." value={pedido.personalizacao_obs} onChange={e => set('personalizacao_obs', e.target.value)} rows={3} />
-              </div>
+              )}
             </div>
 
-            <div className="pf-card">
-              <h3 className="pf-card-title">Observações gerais</h3>
-              <textarea className="pf-textarea" placeholder="Anotações sobre o pedido..." value={pedido.observacoes} onChange={e => set('observacoes', e.target.value)} rows={4} />
+            <div className="pf-card pf-card-toggle">
+              <button
+                className={`pf-toggle-btn${showObservacoes ? ' ativo' : ''}`}
+                onClick={() => {
+                  if (showObservacoes) set('observacoes', '')
+                  setShowObservacoes(v => !v)
+                }}
+              >
+                <span className="pf-toggle-icon">
+                  {showObservacoes ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  )}
+                </span>
+                <span>Observações gerais</span>
+                {pedido.observacoes && !showObservacoes && (
+                  <span className="pf-toggle-badge">preenchida</span>
+                )}
+              </button>
+
+              {showObservacoes && (
+                <div className="pf-toggle-content">
+                  <textarea className="pf-textarea" placeholder="Anotações sobre o pedido..." value={pedido.observacoes} onChange={e => set('observacoes', e.target.value)} rows={4} />
+                </div>
+              )}
             </div>
 
           </div>
@@ -779,6 +833,40 @@ export default function PedidoForm() {
           .pf-aba-icon { font-size: 1rem; }
           .pf-aba-label { font-size: 0.82rem; }
           .pf-content { min-width: 0; }
+        }
+        .pf-card-toggle { padding: 0; overflow: hidden; }
+        .pf-toggle-btn {
+          width: 100%; display: flex; align-items: center; gap: 0.5rem;
+          background: none; border: none; cursor: pointer;
+          padding: 0.9rem 1.1rem; font-family: 'Geist', sans-serif;
+          font-size: 0.88rem; font-weight: 600; color: var(--text-secondary,#6B7280);
+          transition: color 0.15s;
+        }
+        .pf-toggle-btn:hover { color: var(--primary,#FF6FA9); }
+        .pf-toggle-btn.ativo { color: var(--text-title,#1F2937); }
+        .pf-toggle-icon {
+          width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0;
+          background: var(--bg-body,#F7F7F8); border: 1.5px solid var(--border,#E9E9EE);
+          display: flex; align-items: center; justify-content: center;
+          transition: background 0.15s, border-color 0.15s;
+        }
+        .pf-toggle-btn.ativo .pf-toggle-icon {
+          background: var(--primary-light,#FFF1F7);
+          border-color: var(--primary,#FF6FA9);
+          color: var(--primary,#FF6FA9);
+        }
+        .pf-toggle-badge {
+          margin-left: auto; font-size: 0.68rem; font-weight: 600;
+          background: var(--primary-light,#FFF1F7); color: var(--primary,#FF6FA9);
+          padding: 2px 8px; border-radius: 10px;
+        }
+        .pf-toggle-content {
+          padding: 0 1.1rem 1.1rem;
+          animation: pfExpandIn 0.18s ease;
+        }
+        @keyframes pfExpandIn {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         .pf-footer-mobile { position: fixed; bottom: 0; left: 0; right: 0; padding: 0.75rem 1rem; background: var(--bg-card,#fff); border-top: 1px solid var(--border,#E9E9EE); z-index: 50; }
         @media (min-width: 768px) { .pf-footer-mobile { display: none; } }
