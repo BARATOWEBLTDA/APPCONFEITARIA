@@ -165,8 +165,8 @@ export default function PedidoForm() {
       ...p,
       cliente_id: c.id,
       cliente_nome: c.nome,
-      cliente_telefone: c.telefone || '',
-      cliente_whatsapp: c.whatsapp || c.telefone || '',
+      cliente_telefone: formatTelefone(c.telefone || ''),
+      cliente_whatsapp: formatTelefone(c.whatsapp || c.telefone || ''),
     }))
     setBuscaCliente(c.nome)
     setShowClienteDropdown(false)
