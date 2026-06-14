@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { DatePickerField } from '@/components/DatePickerField'
+import { TimePickerField } from '@/components/TimePickerField'
 import { supabase } from '@/lib/supabase'
 
 type PedidoItem = {
@@ -404,10 +405,13 @@ export default function PedidoForm() {
                   minDate={new Date()}
                   placeholder="Selecionar data"
                 />
-                <div className="pf-field">
-                  <label className="pf-label">Horário</label>
-                  <input className="pf-input" type="time" value={pedido.horario_entrega} onChange={e => set('horario_entrega', e.target.value)} />
-                </div>
+                <TimePickerField
+                  label="Horário"
+                  value={pedido.horario_entrega}
+                  onChange={v => set('horario_entrega', v)}
+                  placeholder="Selecionar horário"
+                  minuteStep={15}
+                />
               </div>
               <div className="pf-row2">
                 <div className="pf-field">
