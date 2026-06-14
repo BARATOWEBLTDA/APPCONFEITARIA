@@ -172,6 +172,24 @@ export default function PedidoForm() {
     setShowClienteDropdown(false)
   }
 
+  const cadastrarNovoCliente = async () => {
+    if (!buscaCliente.trim()) return
+    const { data, error } = await supabase.from('clientes').insert({
+      user_id: userId,
+      nome: buscaCliente.trim(),
+      telefone: pedido.cliente_telefone || null,
+      whatsapp: pedido.cliente_whatsapp || null,
+    }).select('id,nome,telefone,whatsapp').single()
+
+    if (!error && data) {
+      selecionarCliente(data)
+      setClientes(prev => [...prev, data])
+      showToast(`Cliente "${data.nome}" cadastrado com sucesso!`)
+    } else {
+      showToast('Erro ao cadastrar cliente. Tente novamente.')
+    }
+  }
+
   const toggleEtiqueta = (e: string) => {
     const atual = pedido.etiquetas || []
     setPedido(p => ({
@@ -323,7 +341,7 @@ export default function PedidoForm() {
                   }}
                   onBlur={() => setTimeout(() => setShowClienteDropdown(false), 150)}
                 />
-                {showClienteDropdown && clientesFiltrados.length > 0 && (
+                {showClienteDropdown && (clientesFiltrados.length > 0 || buscaCliente.length >= 3) && (
                   <div className="pf-dropdown">
                     {clientesFiltrados.slice(0, 5).map(c => (
                       <button key={c.id} className="pf-dropdown-item" onClick={() => selecionarCliente(c)}>
@@ -335,6 +353,15 @@ export default function PedidoForm() {
                         )}
                       </button>
                     ))}
+                    {clientesFiltrados.length === 0 && (
+                      <div style={{ padding: '0.5rem 0.85rem', fontSize: '0.78rem', color: 'var(--text-muted,#9CA3AF)' }}>
+                        Nenhum cliente encontrado
+                      </div>
+                    )}
+                    <button className="pf-dropdown-cadastrar" onClick={cadastrarNovoCliente}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      Cadastrar <strong>"{buscaCliente}"</strong> como novo cliente
+                    </button>
                   </div>
                 )}
               </div>
@@ -833,6 +860,16 @@ export default function PedidoForm() {
         .pf-dropdown-item { width: 100%; display: flex; flex-direction: column; align-items: flex-start; padding: 0.6rem 0.85rem; background: none; border: none; border-bottom: 1px solid var(--border,#E9E9EE); cursor: pointer; font-family: 'Geist', sans-serif; transition: background 0.1s; text-align: left; }
         .pf-dropdown-item:last-child { border-bottom: none; }
         .pf-dropdown-item:hover { background: var(--bg-body,#F7F7F8); }
+        .pf-dropdown-cadastrar {
+          width: 100%; display: flex; align-items: center; gap: 0.5rem;
+          padding: 0.65rem 0.85rem; background: var(--primary-light,#FFF1F7);
+          border: none; border-top: 1px solid var(--border,#E9E9EE);
+          cursor: pointer; font-family: 'Geist', sans-serif;
+          font-size: 0.8rem; color: var(--primary,#FF6FA9);
+          text-align: left; transition: background 0.1s;
+        }
+        .pf-dropdown-cadastrar:hover { background: #FFE4F0; }
+        .pf-dropdown-cadastrar strong { font-weight: 700; }
 
         .pf-tipo-entrega { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.6rem; }
         .pf-tipo-btn { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; background: var(--bg-body,#F7F7F8); border: 1.5px solid var(--border,#E9E9EE); border-radius: 10px; padding: 0.75rem 0.5rem; cursor: pointer; font-family: 'Geist', sans-serif; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary,#6B7280); transition: all 0.15s; }
