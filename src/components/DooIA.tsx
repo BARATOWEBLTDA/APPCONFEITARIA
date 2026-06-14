@@ -13,11 +13,11 @@ const VINHO = '#6E3548'
 const MAX_HISTORY = 12
 
 const SUGGESTIONS = [
+  'Criar receita de bolo',
   'Calcular o preço de um bolo',
   'Criar legenda para o Instagram',
   'Planejar produção da semana',
   'Criar mensagem para cliente',
-  'Calcular CMV de receita',
   'Sugerir promoção sazonal',
 ]
 
@@ -256,9 +256,6 @@ function fileToBase64(file: File): Promise<string> {
   })
 }
 
-function isMobile(): boolean {
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-}
 
 function getErrorMessage(errorType: string, status?: number): string {
   if (status === 429 || errorType === 'rate_limit_error') return 'Muitas mensagens em seguida. Aguarde um momento e tente novamente.'
@@ -289,11 +286,9 @@ export default function DooIA() {
   const [nomeConfeiteira, setNomeConfeiteira] = useState('')
   const [copiedId, setCopiedId] = useState<number | null>(null)
   const [placeholderIdx, setPlaceholderIdx] = useState(0)
-  const [mobile] = useState(() => isMobile())
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
-  const cameraRef = useRef<HTMLInputElement>(null)
 
   // Pulso inicial
   useEffect(() => {
@@ -459,8 +454,7 @@ export default function DooIA() {
     <>
       <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
         onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = '' }} />
-      <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }}
-        onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelect(f); e.target.value = '' }} />
+
 
       {/* ── Botão flutuante ── */}
       <button
@@ -723,9 +717,10 @@ export default function DooIA() {
 
           {/* Input */}
           <div style={{
-            padding: '0.75rem', borderTop: '1px solid #f0f0f0',
-            display: 'flex', gap: '0.4rem', background: 'white',
+            padding: '0.6rem 0.75rem', borderTop: '1px solid #f0f0f0',
+            display: 'flex', gap: '0.35rem', background: 'white',
             flexShrink: 0, alignItems: 'center',
+            overflow: 'hidden', minWidth: 0,
           }}>
             <button onClick={() => fileRef.current?.click()} title="Enviar imagem da galeria"
               style={{
@@ -740,21 +735,6 @@ export default function DooIA() {
               </svg>
             </button>
 
-            {/* Câmera só no mobile */}
-            {mobile && (
-              <button onClick={() => cameraRef.current?.click()} title="Tirar foto"
-                style={{
-                  width: '36px', height: '36px', borderRadius: '10px',
-                  background: '#f5f5f5', border: '1px solid #E9E9EE',
-                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  flexShrink: 0, transition: 'background 0.15s',
-                }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={VINHO} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                  <circle cx="12" cy="13" r="4"/>
-                </svg>
-              </button>
-            )}
 
             <input
               ref={inputRef}
@@ -764,8 +744,8 @@ export default function DooIA() {
               placeholder={PLACEHOLDERS[placeholderIdx]}
               disabled={loading || generatingImage}
               style={{
-                flex: 1, border: `1.5px solid ${input || pendingImage ? VINHO : '#E9E9EE'}`,
-                borderRadius: '12px', padding: '0.6rem 0.85rem',
+                flex: 1, minWidth: 0, border: `1.5px solid ${input || pendingImage ? VINHO : '#E9E9EE'}`,
+                borderRadius: '12px', padding: '0.55rem 0.75rem',
                 fontSize: '0.83rem', fontFamily: 'Geist, sans-serif',
                 outline: 'none', color: '#1F2937', background: '#fafafa',
                 transition: 'border-color 0.15s',
