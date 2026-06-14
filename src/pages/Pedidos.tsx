@@ -32,6 +32,11 @@ const STATUS_LIST = [
   { key: 'cancelado', label: 'Cancelado' },
 ]
 
+// Só mostra filtros com pedidos (exceto "Todos")
+const STATUS_LIST_VISIVEIS = (pedidos: Pedido[]) => STATUS_LIST.filter(
+  s => s.key === 'todos' || pedidos.some(p => p.status === s.key)
+)
+
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   novo:                 { label: 'Novo',            color: '#1d4ed8', bg: '#dbeafe' },
   aguardando_pagamento: { label: 'Aguardando',      color: '#92400e', bg: '#fef3c7' },
@@ -158,7 +163,7 @@ export default function Pedidos() {
 
       {/* Filtros */}
       <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto', paddingBottom: '2px' }}>
-        {STATUS_LIST.map(s => (
+        {STATUS_LIST_VISIVEIS(pedidos).map(s => (
           <button
             key={s.key}
             onClick={() => setFiltroStatus(s.key)}
@@ -242,19 +247,16 @@ export default function Pedidos() {
                   el.style.borderColor = 'var(--border,#E9E9EE)'
                 }}
               >
-                {/* ── Header: nome + status ── */}
-                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: '0 0 0.15rem', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-title,#1F2937)', lineHeight: 1.3 }}>
-                      {p.cliente_nome || 'Cliente não informado'}
-                      <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted,#9CA3AF)', marginLeft: '6px' }}>#{p.numero || '—'}</span>
-                    </p>
+                {/* ── Header: número + status ── */}
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', marginBottom: '0.25rem' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted,#9CA3AF)' }}>
+                    Pedido #{p.numero || '—'}
                     {p.origem === 'cardapio' && (
-                      <span style={{ display: 'inline-block', fontSize: '0.65rem', fontWeight: 700, background: '#ede9fe', color: '#5b21b6', borderRadius: '5px', padding: '1px 7px' }}>
+                      <span style={{ marginLeft: '6px', fontSize: '0.65rem', fontWeight: 700, background: '#ede9fe', color: '#5b21b6', borderRadius: '5px', padding: '1px 7px' }}>
                         via Cardápio
                       </span>
                     )}
-                  </div>
+                  </span>
                   <span style={{
                     display: 'inline-block', fontSize: '0.72rem', fontWeight: 700,
                     padding: '4px 10px', borderRadius: '6px', whiteSpace: 'nowrap',
@@ -263,6 +265,11 @@ export default function Pedidos() {
                     {cfg.label}
                   </span>
                 </div>
+
+                {/* ── Nome do cliente ── */}
+                <p style={{ margin: '0 0 0.75rem', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-title,#1F2937)', lineHeight: 1.3 }}>
+                  {p.cliente_nome || 'Cliente não informado'}
+                </p>
 
                 {/* ── Divisória ── */}
                 <div style={{ height: '1px', background: 'var(--border,#E9E9EE)', marginBottom: '0.75rem' }} />
