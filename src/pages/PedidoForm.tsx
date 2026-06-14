@@ -226,7 +226,42 @@ export default function PedidoForm() {
 
     setSaving(true)
     try {
-      const payload = { ...pedido, user_id: userId }
+      // Monta payload sem campos undefined, id vazio ou campos que o banco gera automaticamente
+      const { id: _id, numero: _numero, ...pedidoSemId } = pedido as any
+      const payload = {
+        ...pedidoSemId,
+        user_id: userId,
+        // garante tipos corretos
+        taxa_entrega: pedido.taxa_entrega || 0,
+        taxa_extra: pedido.taxa_extra || 0,
+        desconto: pedido.desconto || 0,
+        cupom_desconto: pedido.cupom_desconto || 0,
+        valor_produtos: pedido.valor_produtos || 0,
+        valor_total: pedido.valor_total || 0,
+        valor_sinal: pedido.valor_sinal || 0,
+        valor_recebido: pedido.valor_recebido || 0,
+        // campos opcionais — null em vez de string vazia
+        cliente_id: pedido.cliente_id || null,
+        horario_entrega: pedido.horario_entrega || null,
+        data_sinal: pedido.data_sinal || null,
+        cupom_codigo: pedido.cupom_codigo || null,
+        endereco_cep: pedido.endereco_cep || null,
+        endereco_rua: pedido.endereco_rua || null,
+        endereco_numero: pedido.endereco_numero || null,
+        endereco_complemento: pedido.endereco_complemento || null,
+        endereco_bairro: pedido.endereco_bairro || null,
+        endereco_cidade: pedido.endereco_cidade || null,
+        personalizacao_tema: pedido.personalizacao_tema || null,
+        personalizacao_nome: pedido.personalizacao_nome || null,
+        personalizacao_idade: pedido.personalizacao_idade || null,
+        personalizacao_cor: pedido.personalizacao_cor || null,
+        personalizacao_referencia: pedido.personalizacao_referencia || null,
+        personalizacao_obs: pedido.personalizacao_obs || null,
+        responsavel_entrega: pedido.responsavel_entrega || null,
+        responsavel_producao: pedido.responsavel_producao || null,
+        data_prevista_producao: pedido.data_prevista_producao || null,
+        observacoes: pedido.observacoes || null,
+      }
 
       let pedidoId = id
       if (isEdicao) {
