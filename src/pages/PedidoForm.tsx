@@ -140,6 +140,16 @@ function MoneyInput({ value, onChange, placeholder }: { value: number; onChange:
   )
 }
 
+function formatTelefone(tel: string): string {
+  if (!tel) return ''
+  const digits = tel.replace(/\D/g, '').slice(0, 11)
+  if (digits.length === 11) return `(${digits.slice(0,2)}) ${digits[2]} ${digits.slice(3,7)}-${digits.slice(7)}`
+  if (digits.length === 10) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`
+  if (digits.length > 6) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`
+  if (digits.length > 2) return `(${digits.slice(0,2)}) ${digits.slice(2)}`
+  return digits
+}
+
 export default function PedidoForm() {
   const navigate = useNavigate()
   const { id } = useParams()
@@ -203,15 +213,7 @@ export default function PedidoForm() {
 
   const set = (field: keyof Pedido, value: any) => setPedido(p => ({ ...p, [field]: value }))
 
-  const formatTelefone = (tel: string) => {
-    if (!tel) return ''
-    const digits = tel.replace(/\D/g, '').slice(0, 11)
-    if (digits.length === 11) return `(${digits.slice(0,2)}) ${digits[2]} ${digits.slice(3,7)}-${digits.slice(7)}`
-    if (digits.length === 10) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`
-    if (digits.length > 6) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`
-    if (digits.length > 2) return `(${digits.slice(0,2)}) ${digits.slice(2)}`
-    return digits
-  }
+  // formatTelefone definida fora do componente (ver acima do export default)
 
   const selecionarCliente = (c: any) => {
     let endereco: Record<string, string> = {}
@@ -221,12 +223,16 @@ export default function PedidoForm() {
       } catch { /* ignora se não for JSON */ }
     }
 
+    // Resolve whatsapp: tenta campo whatsapp, depois telefone, depois limpa o campo
+    const whatsappRaw = c.whatsapp || c.telefone || ''
+    const whatsappFormatado = formatTelefone(whatsappRaw)
+
     setPedido(p => ({
       ...p,
       cliente_id: c.id,
       cliente_nome: c.nome,
       cliente_telefone: formatTelefone(c.telefone || ''),
-      cliente_whatsapp: formatTelefone(c.whatsapp || c.telefone || ''),
+      cliente_whatsapp: whatsappFormatado,
       ...(endereco.rua ? {
         endereco_cep: endereco.cep || p.endereco_cep,
         endereco_rua: endereco.rua || p.endereco_rua,
@@ -459,12 +465,12 @@ export default function PedidoForm() {
                     setPedido(p => ({ ...p, cliente_nome: val, cliente_id: undefined }))
                     setShowClienteDropdown(val.length >= 3)
                   }}
-                  onBlur={() => setTimeout(() => setShowClienteDropdown(false), 150)}
+                  onBlur={() => setTimeout(() => setShowClienteDropdown(false), 200)}
                 />
                 {showClienteDropdown && (clientesFiltrados.length > 0 || buscaCliente.length >= 3) && (
-                  <div className="pf-dropdown">
+                  <div className="pf-dropdown" onMouseDown={e => e.preventDefault()}>
                     {clientesFiltrados.slice(0, 5).map(c => (
-                      <button key={c.id} className="pf-dropdown-item" onClick={() => selecionarCliente(c)}>
+                      <button key={c.id} className="pf-dropdown-item" onMouseDown={() => selecionarCliente(c)}>
                         <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-title,#1F2937)' }}>{c.nome}</span>
                         {(c.telefone || c.whatsapp) && (
                           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted,#9CA3AF)', marginTop: '1px' }}>
@@ -478,7 +484,7 @@ export default function PedidoForm() {
                         Nenhum cliente encontrado
                       </div>
                     )}
-                    <button className="pf-dropdown-cadastrar" onClick={cadastrarNovoCliente}>
+                    <button className="pf-dropdown-cadastrar" onMouseDown={e => { e.preventDefault(); cadastrarNovoCliente() }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                       Cadastrar <strong>"{buscaCliente}"</strong> como novo cliente
                     </button>
