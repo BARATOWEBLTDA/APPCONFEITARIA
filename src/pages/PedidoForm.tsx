@@ -145,7 +145,7 @@ export default function PedidoForm() {
 
   const carregarDados = async (uid: string) => {
     const [{ data: cls }, { data: prds }] = await Promise.all([
-      supabase.from('clientes').select('id,nome,telefone,whatsapp,como_conheceu').eq('user_id', uid).order('nome'),
+      supabase.from('clientes').select('id,nome,telefone,whatsapp,como_conheceu,endereco').eq('user_id', uid).order('nome'),
       supabase.from('produtos').select('id,nome,preco_normal,forma_venda').eq('user_id', uid).eq('disponivel', true).order('nome'),
     ])
     setClientes(cls || [])
@@ -172,12 +172,29 @@ export default function PedidoForm() {
   const set = (field: keyof Pedido, value: any) => setPedido(p => ({ ...p, [field]: value }))
 
   const selecionarCliente = (c: any) => {
+    // Tenta parsear endereço do cliente (campo pode ser string JSON ou objeto)
+    let endereco: Record<string, string> = {}
+    if (c.endereco) {
+      try {
+        endereco = typeof c.endereco === 'string' ? JSON.parse(c.endereco) : c.endereco
+      } catch { /* ignora se não for JSON */ }
+    }
+
     setPedido(p => ({
       ...p,
       cliente_id: c.id,
       cliente_nome: c.nome,
       cliente_telefone: formatTelefone(c.telefone || ''),
       cliente_whatsapp: formatTelefone(c.whatsapp || c.telefone || ''),
+      // Auto-preenche endereço de entrega se disponível no cadastro
+      ...(endereco.rua ? {
+        endereco_cep: endereco.cep || p.endereco_cep,
+        endereco_rua: endereco.rua || p.endereco_rua,
+        endereco_numero: endereco.numero || p.endereco_numero,
+        endereco_complemento: endereco.complemento || p.endereco_complemento,
+        endereco_bairro: endereco.bairro || p.endereco_bairro,
+        endereco_cidade: endereco.cidade || p.endereco_cidade,
+      } : {}),
     }))
     setComoConheceu(c.como_conheceu || '')
     setBuscaCliente(c.nome)
@@ -333,6 +350,9 @@ export default function PedidoForm() {
     ? clientes.filter(c => c.nome?.toLowerCase().includes(buscaCliente.toLowerCase()))
     : []
 
+  // True quando o cliente foi selecionado via dropdown (nao digitado manualmente)
+  const clienteSelecionado = !!(pedido.cliente_id && pedido.cliente_nome && buscaCliente === pedido.cliente_nome)
+
   const formatTelefone = (tel: string) => {
     if (!tel) return ''
     const digits = tel.replace(/\D/g, '').slice(0, 11)
@@ -394,7 +414,19 @@ export default function PedidoForm() {
 
             <div className="pf-row2">
               <div className="pf-field" style={{ position: 'relative', flex: 2 }}>
-                <label className="pf-label">Nome do cliente<span className="pf-required-badge">Obrigatório</span></label>
+                <label className="pf-label">
+                  Nome do cliente<span className="pf-required-badge">Obrigatório</span>
+                  {clienteSelecionado && (
+                    <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', fontWeight: 600, color: '#16a34a', background: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: '999px', padding: '1px 8px', verticalAlign: 'middle' }}>
+                      ✓ Cadastrado
+                    </span>
+                  )}
+                  {!clienteSelecionado && pedido.cliente_nome && (
+                    <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', fontWeight: 600, color: '#d97706', background: '#fef9c3', border: '1px solid #fde68a', borderRadius: '999px', padding: '1px 8px', verticalAlign: 'middle' }}>
+                      + Novo cliente
+                    </span>
+                  )}
+                </label>
                 <input
                   className="pf-input"
                   placeholder="Buscar pelo nome (mín. 3 letras)..."
@@ -402,7 +434,8 @@ export default function PedidoForm() {
                   onChange={e => {
                     const val = e.target.value
                     setBuscaCliente(val)
-                    set('cliente_nome', val)
+                    // BUG FIX: limpa cliente_id ao editar manualmente, evitando gravar no cliente errado
+                    setPedido(p => ({ ...p, cliente_nome: val, cliente_id: undefined }))
                     setShowClienteDropdown(val.length >= 3)
                   }}
                   onBlur={() => setTimeout(() => setShowClienteDropdown(false), 150)}
@@ -453,7 +486,18 @@ export default function PedidoForm() {
                 />
               </div>
               <div className="pf-field">
-                <label className="pf-label">WhatsApp</label>
+                <label className="pf-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  WhatsApp
+                  {pedido.cliente_telefone && pedido.cliente_telefone !== pedido.cliente_whatsapp && (
+                    <button
+                      type="button"
+                      onClick={() => set('cliente_whatsapp', pedido.cliente_telefone)}
+                      style={{ fontSize: '0.68rem', fontWeight: 600, color: '#16a34a', background: 'none', border: '1px solid #bbf7d0', borderRadius: '999px', padding: '1px 8px', cursor: 'pointer', lineHeight: 1.4 }}
+                    >
+                      = Mesmo número
+                    </button>
+                  )}
+                </label>
                 <input
                   className="pf-input"
                   placeholder="(41) 9 9929-1790"
