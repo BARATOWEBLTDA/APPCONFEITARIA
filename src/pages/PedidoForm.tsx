@@ -674,10 +674,6 @@ export default function PedidoForm() {
                     <MoneyInput value={novoItem.valor_unitario} onChange={v => setNovoItem(p => ({ ...p, valor_unitario: v }))} />
                   </div>
                 </div>
-                <div className="pf-field">
-                  <label className="pf-label">Observações do item</label>
-                  <input className="pf-input" placeholder="Ex: Chantininho, Nome Ana, Topo floral..." value={novoItem.observacoes} onChange={e => setNovoItem(p => ({ ...p, observacoes: e.target.value }))} />
-                </div>
                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                   <button className="pf-btn-salvar" onClick={adicionarItem}>Adicionar</button>
                   <button className="pf-btn-cancel" onClick={() => { setAdicionandoItem(false); setNovoItem({ ...EMPTY_ITEM }) }}>Cancelar</button>
