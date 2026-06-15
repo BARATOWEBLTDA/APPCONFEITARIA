@@ -678,29 +678,41 @@ export default function PedidoForm() {
 
             <div className="pf-card" style={{ flex: 1, minWidth: 0 }}>
               <h3 className="pf-card-title" style={{ marginBottom: '0.85rem' }}>Origem do pedido</h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                {[
-                  { value: 'manual',    label: 'Manual' },
-                  { value: 'cardapio',  label: 'Cardápio Digital' },
-                  { value: 'whatsapp',  label: 'WhatsApp' },
-                  { value: 'instagram', label: 'Instagram' },
-                ].map(o => (
-                  <button
-                    key={o.value}
-                    type="button"
-                    onClick={() => set('origem', o.value)}
-                    style={{
-                      padding: '0.35rem 0.85rem', borderRadius: '20px',
-                      border: `1.5px solid ${pedido.origem === o.value ? 'var(--primary,#FF6FA9)' : 'var(--border,#E9E9EE)'}`,
-                      background: pedido.origem === o.value ? 'var(--primary-light,#FFF1F7)' : 'var(--bg-body,#FAFAFA)',
-                      color: pedido.origem === o.value ? 'var(--primary,#FF6FA9)' : 'var(--text-secondary,#6B7280)',
-                      fontFamily: 'Geist, sans-serif', fontSize: '0.78rem',
-                      fontWeight: pedido.origem === o.value ? 700 : 500,
-                      cursor: 'pointer', transition: 'all 0.15s',
-                    }}
-                  >{o.label}</button>
-                ))}
-              </div>
+              {pedido.origem === 'cardapio' ? (
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+                  padding: '0.35rem 0.85rem', borderRadius: '20px',
+                  border: '1.5px solid var(--primary,#FF6FA9)',
+                  background: 'var(--primary-light,#FFF1F7)',
+                  color: 'var(--primary,#FF6FA9)',
+                  fontFamily: 'Geist, sans-serif', fontSize: '0.78rem', fontWeight: 700,
+                }}>
+                  Pedido feito pelo Cardápio Digital
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                  {[
+                    { value: 'manual',    label: 'Manual / Outro' },
+                    { value: 'whatsapp',  label: 'WhatsApp' },
+                    { value: 'instagram', label: 'Instagram' },
+                  ].map(o => (
+                    <button
+                      key={o.value}
+                      type="button"
+                      onClick={() => set('origem', o.value)}
+                      style={{
+                        padding: '0.35rem 0.85rem', borderRadius: '20px',
+                        border: `1.5px solid ${pedido.origem === o.value ? 'var(--primary,#FF6FA9)' : 'var(--border,#E9E9EE)'}`,
+                        background: pedido.origem === o.value ? 'var(--primary-light,#FFF1F7)' : 'var(--bg-body,#FAFAFA)',
+                        color: pedido.origem === o.value ? 'var(--primary,#FF6FA9)' : 'var(--text-secondary,#6B7280)',
+                        fontFamily: 'Geist, sans-serif', fontSize: '0.78rem',
+                        fontWeight: pedido.origem === o.value ? 700 : 500,
+                        cursor: 'pointer', transition: 'all 0.15s',
+                      }}
+                    >{o.label}</button>
+                  ))}
+                </div>
+              )}
               {pedido.cupom_codigo && (
                 <div style={{ marginTop: '0.85rem', paddingTop: '0.85rem', borderTop: '1px solid var(--border,#E9E9EE)' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted,#9CA3AF)' }}>Cupom aplicado: </span>
