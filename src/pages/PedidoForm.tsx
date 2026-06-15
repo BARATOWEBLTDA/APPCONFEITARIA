@@ -12,6 +12,7 @@ type PedidoItem = {
   valor_unitario: number
   desconto: number
   observacoes: string
+  imagem_url?: string
   personalizacoes: Record<string, string>
 }
 
@@ -80,7 +81,7 @@ const EMPTY_PEDIDO: Pedido = {
 
 const EMPTY_ITEM: PedidoItem = {
   nome_produto: '', quantidade: 1, valor_unitario: 0,
-  desconto: 0, observacoes: '', personalizacoes: {},
+  desconto: 0, observacoes: '', imagem_url: '', personalizacoes: {},
 }
 
 const STATUS_OPTIONS = [
@@ -198,7 +199,7 @@ export default function PedidoForm() {
   const carregarDados = async (uid: string) => {
     const [{ data: cls }, { data: prds }, { data: cups }] = await Promise.all([
       supabase.from('clientes').select('id,nome,telefone,whatsapp,como_conheceu,endereco').eq('user_id', uid).order('nome'),
-      supabase.from('produtos').select('id,nome,preco_normal,forma_venda').eq('user_id', uid).eq('disponivel', true).order('nome'),
+      supabase.from('produtos').select('id,nome,preco_normal,forma_venda,imagem_url').eq('user_id', uid).eq('disponivel', true).order('nome'),
       supabase.from('cupons').select('id,codigo,desconto,tipo').eq('user_id', uid).eq('ativo', true).order('codigo'),
     ])
     setClientes(cls || [])
@@ -300,6 +301,7 @@ export default function PedidoForm() {
       produto_id: p.id,
       nome_produto: p.nome,
       valor_unitario: p.preco_normal || 0,
+      imagem_url: p.imagem_url || '',
     }))
   }
 
@@ -639,14 +641,32 @@ export default function PedidoForm() {
 
             {itens.map((item, idx) => (
               <div key={idx} className="pf-item-card">
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-title,#1F2937)' }}>{item.nome_produto}</p>
+                {/* Thumbnail do produto */}
+                {item.imagem_url ? (
+                  <img
+                    src={item.imagem_url}
+                    alt={item.nome_produto}
+                    style={{
+                      width: 48, height: 48, borderRadius: 8,
+                      objectFit: 'cover', flexShrink: 0,
+                      border: '1.5px solid var(--border,#E9E9EE)',
+                    }}
+                  />
+                ) : (
+                  <div style={{
+                    width: 48, height: 48, borderRadius: 8, flexShrink: 0,
+                    background: 'var(--border,#E9E9EE)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '1.3rem',
+                  }}>🎂</div>
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-title,#1F2937)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.nome_produto}</p>
                   <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--text-muted,#9CA3AF)' }}>
                     {item.quantidade}x {formatMoney(item.valor_unitario)}
                   </p>
-                  {item.observacoes && <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: 'var(--text-secondary,#6B7280)' }}>{item.observacoes}</p>}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
                   <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-title,#1F2937)' }}>
                     {formatMoney(item.valor_unitario * item.quantidade)}
                   </span>
@@ -659,13 +679,27 @@ export default function PedidoForm() {
               <div className="pf-add-item-form">
                 <div className="pf-field">
                   <label className="pf-label">Produto</label>
-                  <select className="pf-input" value={novoItem.produto_id || ''} onChange={e => {
-                    const prod = produtos.find(p => p.id === e.target.value)
-                    if (prod) selecionarProduto(prod)
-                  }}>
-                    <option value="">Selecionar produto cadastrado...</option>
-                    {produtos.map(p => <option key={p.id} value={p.id}>{p.nome} — {formatMoney(p.preco_normal)}</option>)}
-                  </select>
+                  <div className="pf-produto-grid">
+                    {produtos.map(p => {
+                      const isActive = novoItem.produto_id === p.id
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          className={`pf-produto-card${isActive ? ' ativo' : ''}`}
+                          onClick={() => selecionarProduto(p)}
+                        >
+                          {p.imagem_url ? (
+                            <img src={p.imagem_url} alt={p.nome} className="pf-produto-thumb" />
+                          ) : (
+                            <div className="pf-produto-thumb pf-produto-thumb-empty">🎂</div>
+                          )}
+                          <span className="pf-produto-nome">{p.nome}</span>
+                          <span className="pf-produto-preco">{formatMoney(p.preco_normal)}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
                 <div className="pf-field">
                   <label className="pf-label">Nome (ou descreva manualmente)</label>
@@ -1140,6 +1174,23 @@ export default function PedidoForm() {
 
         .pf-spinner { width: 32px; height: 32px; border: 3px solid var(--primary-light,#FFF1F7); border-top-color: var(--primary,#FF6FA9); border-radius: 50%; animation: pfSpin 0.7s linear infinite; }
         @keyframes pfSpin { to { transform: rotate(360deg); } }
+
+        /* Grid de seleção de produto */
+        .pf-produto-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; max-height: 260px; overflow-y: auto; padding: 2px; }
+        .pf-produto-card {
+          display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+          padding: 0.5rem 0.4rem; border-radius: 10px;
+          border: 1.5px solid var(--border,#E9E9EE);
+          background: var(--bg-body,#FAFAFA);
+          cursor: pointer; font-family: 'Geist', sans-serif;
+          transition: all 0.15s; text-align: center;
+        }
+        .pf-produto-card:hover { border-color: var(--primary,#FF6FA9); background: var(--primary-light,#FFF1F7); }
+        .pf-produto-card.ativo { border-color: var(--primary,#FF6FA9); background: var(--primary-light,#FFF1F7); box-shadow: 0 0 0 2px rgba(255,111,169,0.15); }
+        .pf-produto-thumb { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border,#E9E9EE); }
+        .pf-produto-thumb-empty { display: flex; align-items: center; justify-content: center; background: var(--border,#E9E9EE); font-size: 1.4rem; }
+        .pf-produto-nome { font-size: 0.72rem; font-weight: 600; color: var(--text-title,#1F2937); line-height: 1.2; word-break: break-word; }
+        .pf-produto-preco { font-size: 0.7rem; font-weight: 700; color: var(--primary,#FF6FA9); }
 
         @media (max-width: 640px) {
           .pf-row2 { flex-direction: column; gap: 0.5rem; }
