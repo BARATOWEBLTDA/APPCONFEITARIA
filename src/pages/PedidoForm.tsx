@@ -181,6 +181,7 @@ export default function PedidoForm() {
   const [toast, setToast] = useState('')
   const [buscaProduto, setBuscaProduto] = useState('')
   const [showProdutoDropdown, setShowProdutoDropdown] = useState(false)
+  const [showSinal, setShowSinal] = useState(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -327,6 +328,7 @@ export default function PedidoForm() {
         valor_total: pedido.valor_total || 0,
         valor_sinal: pedido.valor_sinal || 0,
         valor_recebido: pedido.valor_recebido || 0,
+        status_pagamento: statusPagamentoAuto,
         cliente_id: pedido.cliente_id || null,
         horario_entrega: pedido.horario_entrega || null,
         data_sinal: pedido.data_sinal || null,
@@ -403,8 +405,22 @@ export default function PedidoForm() {
   const clienteSelecionado = !!(pedido.cliente_id && pedido.cliente_nome && buscaCliente === pedido.cliente_nome)
 
   // Valor restante = total - sinal - recebido (sinal já é parte do recebido em muitos casos)
-  // Aqui: restante = total - valor_recebido (valor_sinal é apenas registro do sinal inicial)
-  const valorRestante = Math.max(0, pedido.valor_total - pedido.valor_recebido)
+  // Restante = total - sinal - valor pago na entrega
+  const totalPago = pedido.valor_sinal + pedido.valor_recebido
+  const valorRestante = Math.max(0, pedido.valor_total - totalPago)
+
+  // Status derivado automaticamente
+  const statusPagamentoAuto = valorRestante === 0 && pedido.valor_total > 0
+    ? 'pago'
+    : totalPago > 0
+      ? 'parcial'
+      : 'pendente'
+
+  const STATUS_PAG_CONFIG = {
+    pendente: { label: 'Pendente',        color: '#d97706', bg: '#fef3c7', dot: '#f59e0b' },
+    parcial:  { label: 'Sinal recebido',  color: '#3b82f6', bg: '#eff6ff', dot: '#3b82f6' },
+    pago:     { label: 'Pago',            color: '#16a34a', bg: '#f0fdf4', dot: '#22c55e' },
+  } as const
 
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
@@ -801,45 +817,89 @@ export default function PedidoForm() {
           {/* ── Pagamento + Valores (lado a lado) ── */}
           <div className="pf-row-cards">
             <div className="pf-card" style={{ flex: 1, minWidth: 0 }}>
-              <h3 className="pf-card-title">Pagamento</h3>
-
-              <div className="pf-row2">
-                <div className="pf-field">
-                  <label className="pf-label">Forma de pagamento</label>
-                  <select className="pf-input" value={pedido.forma_pagamento} onChange={e => set('forma_pagamento', e.target.value)}>
-                    <option value="pix">PIX</option>
-                    <option value="dinheiro">Dinheiro</option>
-                    <option value="credito">Cartão de crédito</option>
-                    <option value="debito">Cartão de débito</option>
-                    <option value="transferencia">Transferência</option>
-                  </select>
-                </div>
-                <div className="pf-field">
-                  <label className="pf-label">Status do pagamento</label>
-                  <select className="pf-input" value={pedido.status_pagamento} onChange={e => set('status_pagamento', e.target.value)}>
-                    <option value="pendente">Pendente</option>
-                    <option value="parcial">Parcial (sinal pago)</option>
-                    <option value="pago">Pago</option>
-                  </select>
-                </div>
+              {/* Título + badge de status automático */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+                <h3 className="pf-card-title" style={{ margin: 0 }}>Pagamento</h3>
+                <span style={{
+                  fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
+                  borderRadius: '999px',
+                  color: STATUS_PAG_CONFIG[statusPagamentoAuto].color,
+                  background: STATUS_PAG_CONFIG[statusPagamentoAuto].bg,
+                  display: 'flex', alignItems: 'center', gap: '5px',
+                }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: STATUS_PAG_CONFIG[statusPagamentoAuto].dot, display: 'inline-block' }} />
+                  {STATUS_PAG_CONFIG[statusPagamentoAuto].label}
+                </span>
               </div>
 
-              {/* Sinal */}
-              <div className="pf-row2">
-                <div className="pf-field">
-                  <label className="pf-label">Sinal recebido (R$)</label>
-                  <MoneyInput value={pedido.valor_sinal} onChange={v => set('valor_sinal', v)} />
-                </div>
-                <div className="pf-field">
-                  <label className="pf-label">Data do sinal</label>
-                  <input className="pf-input" type="date" value={pedido.data_sinal} onChange={e => set('data_sinal', e.target.value)} />
-                </div>
+              {/* Forma de pagamento — botões visuais */}
+              <label className="pf-label" style={{ marginBottom: '0.4rem', display: 'block' }}>Forma de pagamento</label>
+              <div className="pf-pagamento-grid" style={{ marginBottom: '0.85rem' }}>
+                {[
+                  { value: 'pix',          label: 'PIX',        icon: '⚡' },
+                  { value: 'dinheiro',     label: 'Dinheiro',   icon: '💵' },
+                  { value: 'credito',      label: 'Crédito',    icon: '💳' },
+                  { value: 'debito',       label: 'Débito',     icon: '💳' },
+                  { value: 'transferencia',label: 'Transfer.',  icon: '🏦' },
+                ].map(f => {
+                  const isActive = pedido.forma_pagamento === f.value
+                  return (
+                    <button
+                      key={f.value}
+                      type="button"
+                      onClick={() => set('forma_pagamento', f.value)}
+                      className={`pf-pagamento-btn${isActive ? ' ativo' : ''}`}
+                    >
+                      <span className="pf-pagamento-icon">{f.icon}</span>
+                      <span>{f.label}</span>
+                    </button>
+                  )
+                })}
               </div>
 
-              {/* Recebido + Restante */}
-              <div className="pf-row2">
+              {/* Toggle sinal */}
+              <button
+                type="button"
+                className={`pf-sinal-toggle${showSinal || pedido.valor_sinal > 0 ? ' ativo' : ''}`}
+                onClick={() => {
+                  if (showSinal && pedido.valor_sinal === 0) {
+                    setShowSinal(false)
+                  } else {
+                    setShowSinal(v => !v)
+                  }
+                }}
+              >
+                <span className="pf-sinal-check">
+                  {(showSinal || pedido.valor_sinal > 0)
+                    ? <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    : null
+                  }
+                </span>
+                <span>Sinal recebido</span>
+                {pedido.valor_sinal > 0 && (
+                  <span style={{ marginLeft: 'auto', fontSize: '0.78rem', fontWeight: 700, color: '#3b82f6' }}>
+                    {formatMoney(pedido.valor_sinal)}
+                  </span>
+                )}
+              </button>
+
+              {(showSinal || pedido.valor_sinal > 0) && (
+                <div className="pf-row2" style={{ marginTop: '0.65rem' }}>
+                  <div className="pf-field">
+                    <label className="pf-label">Valor do sinal (R$)</label>
+                    <MoneyInput value={pedido.valor_sinal} onChange={v => set('valor_sinal', v)} />
+                  </div>
+                  <div className="pf-field">
+                    <label className="pf-label">Data do sinal</label>
+                    <input className="pf-input" type="date" value={pedido.data_sinal} onChange={e => set('data_sinal', e.target.value)} />
+                  </div>
+                </div>
+              )}
+
+              {/* Valor pago na entrega + Restante */}
+              <div className="pf-row2" style={{ marginTop: '0.75rem' }}>
                 <div className="pf-field">
-                  <label className="pf-label">Total recebido (R$)</label>
+                  <label className="pf-label">Valor pago na entrega (R$)</label>
                   <MoneyInput value={pedido.valor_recebido} onChange={v => set('valor_recebido', v)} />
                 </div>
                 <div className="pf-field">
@@ -853,11 +913,10 @@ export default function PedidoForm() {
                 </div>
               </div>
 
-              {/* Data de pagamento do restante — só aparece quando há saldo */}
               {valorRestante > 0 && (
-                <div style={{ maxWidth: '50%' }}>
+                <div style={{ maxWidth: '50%', marginTop: '0.1rem' }}>
                   <div className="pf-field">
-                    <label className="pf-label">Pagar restante em</label>
+                    <label className="pf-label">Receber restante em</label>
                     <input
                       className="pf-input"
                       type="date"
@@ -1240,6 +1299,43 @@ export default function PedidoForm() {
         .pf-spinner { width: 32px; height: 32px; border: 3px solid var(--primary-light,#FFF1F7); border-top-color: var(--primary,#FF6FA9); border-radius: 50%; animation: pfSpin 0.7s linear infinite; }
         @keyframes pfSpin { to { transform: rotate(360deg); } }
 
+        /* Pagamento */
+        .pf-pagamento-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.4rem; }
+        .pf-pagamento-btn {
+          display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+          padding: 0.5rem 0.25rem; border-radius: 8px;
+          border: 1.5px solid var(--border,#E9E9EE);
+          background: var(--bg-body,#FAFAFA);
+          cursor: pointer; font-family: 'Geist', sans-serif;
+          font-size: 0.7rem; font-weight: 600;
+          color: var(--text-secondary,#6B7280);
+          transition: all 0.15s;
+        }
+        .pf-pagamento-btn:hover { border-color: var(--primary,#FF6FA9); color: var(--primary,#FF6FA9); }
+        .pf-pagamento-btn.ativo { border-color: var(--primary,#FF6FA9); background: var(--primary-light,#FFF1F7); color: var(--primary,#FF6FA9); font-weight: 700; }
+        .pf-pagamento-icon { font-size: 1.1rem; }
+
+        /* Toggle sinal */
+        .pf-sinal-toggle {
+          width: 100%; display: flex; align-items: center; gap: 0.6rem;
+          padding: 0.6rem 0.75rem; border-radius: 8px;
+          border: 1.5px solid var(--border,#E9E9EE);
+          background: var(--bg-body,#FAFAFA);
+          cursor: pointer; font-family: 'Geist', sans-serif;
+          font-size: 0.83rem; font-weight: 500;
+          color: var(--text-secondary,#6B7280);
+          transition: all 0.15s;
+        }
+        .pf-sinal-toggle.ativo { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; font-weight: 600; }
+        .pf-sinal-check {
+          width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
+          border: 1.5px solid var(--border,#D1D5DB);
+          background: white;
+          display: flex; align-items: center; justify-content: center;
+          transition: all 0.15s;
+        }
+        .pf-sinal-toggle.ativo .pf-sinal-check { background: #3b82f6; border-color: #3b82f6; }
+
         /* Dropdown produto */
         .pf-dropdown-produto { flex-direction: row; align-items: center; gap: 0.6rem; }
 
@@ -1248,6 +1344,7 @@ export default function PedidoForm() {
           .pf-row3 { flex-direction: row; }
           .pf-row-cards { flex-direction: column; }
           .pf-toggle-entrega { flex-direction: column; }
+          .pf-pagamento-grid { grid-template-columns: repeat(3, 1fr); }
         }
       `}</style>
     </div>
