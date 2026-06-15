@@ -518,7 +518,7 @@ export default function PedidoForm() {
             {/* WhatsApp — ocupa metade (não 100%) */}
             <div className="pf-row2" style={{ marginTop: '0.75rem' }}>
               <div className="pf-field">
-                <label className="pf-label">WhatsApp</label>
+                <label className="pf-label">WhatsApp / Contato</label>
                 <input
                   className="pf-input"
                   placeholder="(41) 9 9929-1790"
@@ -540,7 +540,7 @@ export default function PedidoForm() {
             {/* Data + Hora */}
             <div className="pf-row2" style={{ marginBottom: '0.85rem' }}>
               <DatePickerField
-                label="Data de entrega"
+                label="Data de entrega / Pedido"
                 value={pedido.data_entrega}
                 onChange={v => set('data_entrega', v)}
                 required
@@ -560,8 +560,8 @@ export default function PedidoForm() {
             <label className="pf-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Tipo de entrega</label>
             <div className="pf-toggle-entrega">
               {[
-                { value: 'retirada', label: 'Retirada', icon: '🛍️' },
-                { value: 'entrega',  label: 'Entrega',  icon: '🚗' },
+                { value: 'retirada', label: 'Retirada' },
+                { value: 'entrega',  label: 'Entrega' },
               ].map(t => {
                 const isActive = pedido.tipo_entrega === t.value
                 return (
@@ -571,7 +571,6 @@ export default function PedidoForm() {
                     onClick={() => set('tipo_entrega', t.value)}
                     className={`pf-entrega-toggle${isActive ? ' ativo' : ''}`}
                   >
-                    <span className="pf-entrega-icon">{t.icon}</span>
                     <span className="pf-entrega-label">{t.label}</span>
                     <span className="pf-entrega-check">{isActive ? '✓' : ''}</span>
                   </button>
@@ -713,8 +712,7 @@ export default function PedidoForm() {
           <div className="pf-card">
             <h3 className="pf-card-title" style={{ marginBottom: '0.85rem' }}>Status do pedido</h3>
 
-            <label className="pf-label" style={{ marginBottom: '0.4rem', display: 'block' }}>Status</label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginBottom: '1rem' }}>
+            <div className="pf-status-list" style={{ marginBottom: '1rem' }}>
               {STATUS_OPTIONS.map(s => {
                 const isActive = pedido.status === s.value
                 return (
@@ -722,19 +720,14 @@ export default function PedidoForm() {
                     key={s.value}
                     type="button"
                     onClick={() => set('status', s.value)}
-                    style={{
-                      padding: '0.55rem 0.5rem',
-                      borderRadius: '8px',
-                      border: `1.5px solid ${isActive ? s.border : 'var(--border,#E9E9EE)'}`,
-                      background: isActive ? s.bg : 'var(--bg-body,#FAFAFA)',
-                      color: isActive ? s.color : 'var(--text-secondary,#6B7280)',
-                      fontFamily: 'Geist, sans-serif',
-                      fontSize: '0.82rem',
-                      fontWeight: isActive ? 700 : 500,
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                    }}
-                  >{s.label}</button>
+                    className={`pf-status-item${isActive ? ' ativo' : ''}`}
+                  >
+                    <span className="pf-status-dot" style={{ background: s.color }} />
+                    <span className="pf-status-name">{s.label}</span>
+                    {isActive && (
+                      <span className="pf-status-check">✓</span>
+                    )}
+                  </button>
                 )
               })}
             </div>
@@ -1090,6 +1083,24 @@ export default function PedidoForm() {
         }
         .pf-entrega-icon { font-size: 1.1rem; }
         .pf-entrega-label { flex: 1; }
+
+        /* Status lista */
+        .pf-status-list { display: flex; flex-direction: column; border: 1.5px solid var(--border,#E9E9EE); border-radius: 10px; overflow: hidden; }
+        .pf-status-item {
+          display: flex; align-items: center; gap: 0.75rem;
+          padding: 0.7rem 1rem; background: none; border: none;
+          border-bottom: 1px solid var(--border,#E9E9EE);
+          cursor: pointer; font-family: 'Geist', sans-serif;
+          font-size: 0.85rem; font-weight: 500;
+          color: var(--text-secondary,#6B7280);
+          transition: background 0.12s; text-align: left;
+        }
+        .pf-status-item:last-child { border-bottom: none; }
+        .pf-status-item:hover { background: var(--bg-body,#F7F7F8); }
+        .pf-status-item.ativo { background: var(--bg-body,#F7F7F8); font-weight: 700; color: var(--text-title,#1F2937); }
+        .pf-status-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+        .pf-status-name { flex: 1; }
+        .pf-status-check { font-size: 0.75rem; color: var(--primary,#FF6FA9); font-weight: 800; }
         .pf-entrega-check {
           width: 18px; height: 18px; border-radius: 50%;
           border: 1.5px solid var(--border,#E9E9EE);
