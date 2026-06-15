@@ -85,8 +85,6 @@ const ABAS = [
   { key: 'geral',      label: 'Geral',      icon: '📋' },
   { key: 'produtos',   label: 'Produtos',   icon: '🎂' },
   { key: 'financeiro', label: 'Financeiro', icon: '💰' },
-  { key: 'entrega',    label: 'Entrega',    icon: '🚚' },
-  { key: 'mais',       label: 'Mais',       icon: '⚙️' },
 ]
 
 const STATUS_OPTIONS = [
@@ -521,6 +519,47 @@ export default function PedidoForm() {
                   >{t.label}</button>
                 ))}
               </div>
+
+              {/* Endereço — só aparece quando Entrega */}
+              {pedido.tipo_entrega === 'entrega' && (
+                <div style={{ marginTop: '0.85rem', borderTop: '1px solid var(--border,#E9E9EE)', paddingTop: '0.85rem' }}>
+                  <label className="pf-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Endereço de entrega</label>
+                  <div className="pf-row2">
+                    <div className="pf-field">
+                      <label className="pf-label">CEP</label>
+                      <input className="pf-input" placeholder="00000-000" value={pedido.endereco_cep} onChange={e => set('endereco_cep', e.target.value)} />
+                    </div>
+                    <div className="pf-field" style={{ flex: 2 }}>
+                      <label className="pf-label">Rua / Avenida</label>
+                      <input className="pf-input" placeholder="Rua..." value={pedido.endereco_rua} onChange={e => set('endereco_rua', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="pf-row2">
+                    <div className="pf-field">
+                      <label className="pf-label">Número</label>
+                      <input className="pf-input" placeholder="Nº" value={pedido.endereco_numero} onChange={e => set('endereco_numero', e.target.value)} />
+                    </div>
+                    <div className="pf-field" style={{ flex: 2 }}>
+                      <label className="pf-label">Complemento</label>
+                      <input className="pf-input" placeholder="Apto, bloco..." value={pedido.endereco_complemento} onChange={e => set('endereco_complemento', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="pf-row2">
+                    <div className="pf-field">
+                      <label className="pf-label">Bairro</label>
+                      <input className="pf-input" value={pedido.endereco_bairro} onChange={e => set('endereco_bairro', e.target.value)} />
+                    </div>
+                    <div className="pf-field">
+                      <label className="pf-label">Cidade</label>
+                      <input className="pf-input" value={pedido.endereco_cidade} onChange={e => set('endereco_cidade', e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="pf-field">
+                    <label className="pf-label">Taxa de entrega (R$)</label>
+                    <input className="pf-input" type="number" min="0" step="0.01" value={pedido.taxa_entrega} onChange={e => set('taxa_entrega', Number(e.target.value))} />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* ── Bloco Status ── */}
@@ -537,7 +576,7 @@ export default function PedidoForm() {
                   style={{ paddingLeft: '2.2rem', appearance: 'none', WebkitAppearance: 'none' }}
                 >
                   {STATUS_OPTIONS.map(s => (
-                    <option key={s.value} value={s.value}>{s.icon} {s.label}</option>
+                    <option key={s.value} value={s.value}>{s.label}</option>
                   ))}
                 </select>
                 <span style={{
@@ -633,6 +672,18 @@ export default function PedidoForm() {
                   <div className="pf-field">
                     <label className="pf-label">Observações de personalização</label>
                     <textarea className="pf-textarea" placeholder="Detalhes extras sobre a decoração..." value={pedido.personalizacao_obs} onChange={e => set('personalizacao_obs', e.target.value)} rows={3} />
+                  </div>
+                  <div className="pf-field" style={{ marginTop: '0.75rem' }}>
+                    <label className="pf-label" style={{ marginBottom: '0.4rem', display: 'block' }}>Etiquetas</label>
+                    <div className="pf-etiquetas">
+                      {ETIQUETAS_SUGERIDAS.map(e => (
+                        <button
+                          key={e}
+                          className={`pf-etiqueta-btn${(pedido.etiquetas || []).includes(e) ? ' ativa' : ''}`}
+                          onClick={() => toggleEtiqueta(e)}
+                        >{e}</button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -834,132 +885,36 @@ export default function PedidoForm() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* ─── ABA ENTREGA ─── */}
-        {aba === 'entrega' && (
-          <div className="pf-section-list">
-            <div className="pf-card">
-              <h3 className="pf-card-title">Tipo de entrega</h3>
-              <div className="pf-tipo-entrega">
-                {[
-                  { value: 'retirada', label: 'Retirada', icon: '🏪' },
-                  { value: 'entrega',  label: 'Entrega',  icon: '🛵' },
-                  { value: 'local',    label: 'No local', icon: '📍' },
-                ].map(t => (
-                  <button
-                    key={t.value}
-                    className={`pf-tipo-btn${pedido.tipo_entrega === t.value ? ' ativo' : ''}`}
-                    onClick={() => set('tipo_entrega', t.value)}
-                  >
-                    <span style={{ fontSize: '1.4rem' }}>{t.icon}</span>
-                    <span>{t.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {pedido.tipo_entrega === 'entrega' && (
-              <div className="pf-card">
-                <h3 className="pf-card-title">Endereço de entrega</h3>
-                <div className="pf-row2">
-                  <div className="pf-field">
-                    <label className="pf-label">CEP</label>
-                    <input className="pf-input" placeholder="00000-000" value={pedido.endereco_cep} onChange={e => set('endereco_cep', e.target.value)} />
-                  </div>
-                  <div className="pf-field" style={{ flex: 2 }}>
-                    <label className="pf-label">Rua / Avenida</label>
-                    <input className="pf-input" placeholder="Rua..." value={pedido.endereco_rua} onChange={e => set('endereco_rua', e.target.value)} />
-                  </div>
-                </div>
-                <div className="pf-row2">
-                  <div className="pf-field">
-                    <label className="pf-label">Número</label>
-                    <input className="pf-input" placeholder="Nº" value={pedido.endereco_numero} onChange={e => set('endereco_numero', e.target.value)} />
-                  </div>
-                  <div className="pf-field" style={{ flex: 2 }}>
-                    <label className="pf-label">Complemento</label>
-                    <input className="pf-input" placeholder="Apto, bloco..." value={pedido.endereco_complemento} onChange={e => set('endereco_complemento', e.target.value)} />
-                  </div>
-                </div>
-                <div className="pf-row2">
-                  <div className="pf-field">
-                    <label className="pf-label">Bairro</label>
-                    <input className="pf-input" value={pedido.endereco_bairro} onChange={e => set('endereco_bairro', e.target.value)} />
-                  </div>
-                  <div className="pf-field">
-                    <label className="pf-label">Cidade</label>
-                    <input className="pf-input" value={pedido.endereco_cidade} onChange={e => set('endereco_cidade', e.target.value)} />
-                  </div>
-                </div>
-                <div className="pf-field">
-                  <label className="pf-label">Taxa de entrega (R$)</label>
-                  <input className="pf-input" type="number" min="0" step="0.01" value={pedido.taxa_entrega} onChange={e => set('taxa_entrega', Number(e.target.value))} />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ─── ABA MAIS ─── */}
-        {aba === 'mais' && (
-          <div className="pf-section-list">
-            <div className="pf-card">
-              <h3 className="pf-card-title">Etiquetas</h3>
-              <div className="pf-etiquetas">
-                {ETIQUETAS_SUGERIDAS.map(e => (
-                  <button
-                    key={e}
-                    className={`pf-etiqueta-btn${(pedido.etiquetas || []).includes(e) ? ' ativa' : ''}`}
-                    onClick={() => toggleEtiqueta(e)}
-                  >
-                    {e}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="pf-card">
-              <h3 className="pf-card-title">Produção</h3>
-              <div className="pf-row2">
-                <div className="pf-field">
-                  <label className="pf-label">Status de produção</label>
-                  <select className="pf-input" value={pedido.status || 'nao_iniciado'} onChange={e => set('status', e.target.value)}>
-                    <option value="nao_iniciado">Não iniciado</option>
-                    <option value="em_producao">Em produção</option>
-                    <option value="pronto">Finalizado</option>
-                  </select>
-                </div>
-                <div className="pf-field">
-                  <label className="pf-label">Responsável</label>
-                  <input className="pf-input" placeholder="Nome da responsável" value={pedido.observacoes} onChange={e => set('observacoes', e.target.value)} />
-                </div>
-              </div>
-            </div>
-
             <div className="pf-card">
               <h3 className="pf-card-title">Origem do pedido</h3>
-              <div className="pf-tipo-entrega">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                 {[
-                  { value: 'manual',   label: 'Manual',          icon: '✏️' },
-                  { value: 'cardapio', label: 'Cardápio Digital', icon: '📱' },
-                  { value: 'whatsapp', label: 'WhatsApp',         icon: '💬' },
-                  { value: 'instagram',label: 'Instagram',        icon: '📸' },
+                  { value: 'manual',    label: 'Manual' },
+                  { value: 'cardapio',  label: 'Cardápio Digital' },
+                  { value: 'whatsapp',  label: 'WhatsApp' },
+                  { value: 'instagram', label: 'Instagram' },
                 ].map(o => (
                   <button
                     key={o.value}
-                    className={`pf-tipo-btn${pedido.origem === o.value ? ' ativo' : ''}`}
+                    type="button"
                     onClick={() => set('origem', o.value)}
-                  >
-                    <span style={{ fontSize: '1.2rem' }}>{o.icon}</span>
-                    <span>{o.label}</span>
-                  </button>
+                    style={{
+                      padding: '0.35rem 0.85rem', borderRadius: '20px',
+                      border: `1.5px solid ${pedido.origem === o.value ? 'var(--primary,#FF6FA9)' : 'var(--border,#E9E9EE)'}`,
+                      background: pedido.origem === o.value ? 'var(--primary-light,#FFF1F7)' : 'var(--bg-body,#FAFAFA)',
+                      color: pedido.origem === o.value ? 'var(--primary,#FF6FA9)' : 'var(--text-secondary,#6B7280)',
+                      fontFamily: 'Geist, sans-serif', fontSize: '0.78rem',
+                      fontWeight: pedido.origem === o.value ? 700 : 500,
+                      cursor: 'pointer', transition: 'all 0.15s',
+                    }}
+                  >{o.label}</button>
                 ))}
               </div>
             </div>
           </div>
         )}
+
+
 
       </div>
 
