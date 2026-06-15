@@ -5,6 +5,16 @@ import { supabase } from '@/lib/supabase'
 type PedidoItem = {
   nome_produto: string
   quantidade: number
+  valor_unitario: number
+  observacoes?: string
+  personalizacoes?: {
+    massa?: string | null
+    recheio?: string | null
+    cobertura?: string | null
+  }
+  produtos?: {
+    imagem_url?: string | null
+  } | null
 }
 
 type Pedido = {
@@ -92,9 +102,54 @@ function horasParaEntrega(data: string, hora: string) {
   return Math.ceil((entrega.getTime() - Date.now()) / (1000 * 60 * 60))
 }
 
-function resumoItens(itens: PedidoItem[] = []) {
+function MiniCarrinho({ itens = [] }: { itens?: PedidoItem[] }) {
   if (!itens.length) return null
-  return itens.slice(0, 2).map(i => `${i.nome_produto}${i.quantidade !== 1 ? ` ${i.quantidade}x` : ''}`).join(', ') + (itens.length > 2 ? ` +${itens.length - 2}` : '')
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: '0.5rem 0 0.75rem' }}>
+      {itens.map((item, i) => {
+        const imgUrl = item.produtos?.imagem_url
+        const pers = item.personalizacoes
+        const hasPersonalizacoes = pers && (pers.massa || pers.recheio || pers.cobertura)
+        return (
+          <div key={i} style={{
+            display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '0.6rem',
+            background: 'var(--bg-body,#F7F7F8)', borderRadius: '10px', padding: '0.6rem 0.75rem',
+          }}>
+            {/* Thumbnail */}
+            <div style={{
+              width: '44px', height: '44px', borderRadius: '8px', flexShrink: 0,
+              background: 'var(--border,#E9E9EE)', overflow: 'hidden',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {imgUrl
+                ? <img src={imgUrl} alt={item.nome_produto} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted,#9CA3AF)" strokeWidth="1.5" strokeLinecap="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+              }
+            </div>
+            {/* Info */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.83rem', fontWeight: 700, color: 'var(--text-title,#1F2937)', lineHeight: 1.3 }}>{item.nome_produto}</span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-title,#1F2937)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  {item.quantidade}x
+                </span>
+              </div>
+              {hasPersonalizacoes && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', marginTop: '3px' }}>
+                  {pers!.massa && <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary,#6B7280)' }}>🍰 {pers!.massa}</span>}
+                  {pers!.recheio && <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary,#6B7280)' }}>🍫 {pers!.recheio}</span>}
+                  {pers!.cobertura && <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary,#6B7280)' }}>✨ {pers!.cobertura}</span>}
+                </div>
+              )}
+              {item.observacoes && (
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted,#9CA3AF)', display: 'block', marginTop: '2px', fontStyle: 'italic' }}>{item.observacoes}</span>
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 export default function Pedidos() {
@@ -114,7 +169,7 @@ export default function Pedidos() {
     setLoading(true)
     const { data } = await supabase
       .from('pedidos')
-      .select('*, pedido_itens(nome_produto, quantidade)')
+      .select('*, pedido_itens(nome_produto, quantidade, valor_unitario, observacoes, personalizacoes, produtos(imagem_url))')
       .eq('user_id', uid)
       .order('created_at', { ascending: false })
     setPedidos(data || [])
@@ -229,7 +284,7 @@ export default function Pedidos() {
             const cfg = STATUS_CONFIG[status] || STATUS_CONFIG['novo']
             const dias = diasParaEntrega(p.data_entrega)
             const horas = dias === 0 ? horasParaEntrega(p.data_entrega, p.horario_entrega) : null
-            const itensResumo = resumoItens(p.pedido_itens)
+
             const valorPendente = Math.max(0, (p.valor_total || 0) - (p.valor_recebido || 0))
             const isUrgente = p.prioridade === 'alta' || (horas !== null && horas <= 3 && horas >= 0)
 
@@ -295,15 +350,11 @@ export default function Pedidos() {
                     {p.cliente_nome || 'Cliente não informado'}
                   </p>
 
-                  {/* Produtos */}
-                  {itensResumo && (
-                    <p style={{ margin: '0 0 0.75rem', fontSize: '0.82rem', color: 'var(--text-secondary,#6B7280)', fontWeight: 500 }}>
-                      {itensResumo}
-                    </p>
-                  )}
+                  {/* Mini carrinho */}
+                  <MiniCarrinho itens={p.pedido_itens} />
 
                   {/* Divisória */}
-                  <div style={{ height: '1px', background: 'var(--border,#E9E9EE)', margin: `${itensResumo ? '0' : '0.75rem'} 0 0.75rem` }} />
+                  <div style={{ height: '1px', background: 'var(--border,#E9E9EE)', margin: '0 0 0.75rem' }} />
 
                   {/* Data + hora em destaque */}
                   {p.data_entrega && (
