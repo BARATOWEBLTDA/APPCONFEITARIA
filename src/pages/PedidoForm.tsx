@@ -562,8 +562,9 @@ export default function PedidoForm() {
               )}
             </div>
 
-            {/* ── Bloco Status ── */}
-            <div className="pf-card">
+            {/* ── Bloco Status + Pagamento (lado a lado) ── */}
+            <div className="pf-row-cards">
+            <div className="pf-card" style={{ flex: 1, minWidth: 0 }}>
               <h3 className="pf-card-title" style={{ marginBottom: '0.85rem' }}>Status do pedido</h3>
 
               {/* Status — dropdown simples */}
@@ -611,6 +612,36 @@ export default function PedidoForm() {
                   )
                 })}
               </div>
+            </div>
+
+            <div className="pf-card" style={{ flex: 1, minWidth: 0 }}>
+              <h3 className="pf-card-title" style={{ marginBottom: '0.85rem' }}>Pagamento</h3>
+
+              {/* Status do pagamento — dropdown */}
+              <label className="pf-label" style={{ marginBottom: '0.4rem', display: 'block' }}>Status do pagamento</label>
+              <div style={{ marginBottom: '1rem' }}>
+                <select
+                  className="pf-input"
+                  value={pedido.status_pagamento}
+                  onChange={e => set('status_pagamento', e.target.value)}
+                >
+                  <option value="pendente">Pendente</option>
+                  <option value="parcial">Parcial</option>
+                  <option value="pago">Pago</option>
+                </select>
+              </div>
+
+              {/* Valor recebido */}
+              <label className="pf-label" style={{ marginBottom: '0.4rem', display: 'block' }}>Valor recebido (R$)</label>
+              <input
+                className="pf-input"
+                type="number"
+                min="0"
+                step="0.01"
+                value={pedido.valor_recebido}
+                onChange={e => set('valor_recebido', Number(e.target.value))}
+              />
+            </div>
             </div>
 
             <div className="pf-card pf-card-toggle">
@@ -980,6 +1011,7 @@ export default function PedidoForm() {
 
         .pf-content { display: flex; flex-direction: column; }
         .pf-section-list { display: flex; flex-direction: column; gap: 0.85rem; }
+        .pf-row-cards { display: flex; gap: 0.85rem; }
 
         .pf-card { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#E9E9EE); border-radius: 14px; padding: 1.1rem; }
         .pf-card-title { font-size: 0.88rem; font-weight: 700; color: var(--text-title,#1F2937); margin: 0 0 0.85rem; }
@@ -1075,6 +1107,7 @@ export default function PedidoForm() {
         @media (max-width: 640px) {
           .pf-row2 { flex-direction: column; gap: 0.5rem; }
           .pf-row3 { flex-direction: row; }
+          .pf-row-cards { flex-direction: column; }
           .pf-tipo-entrega { grid-template-columns: repeat(2,1fr); }
         }
       `}</style>

@@ -97,23 +97,6 @@ export default function PedidosKanban({ pedidos, onStatusChange, onNovo }: {
   return (
     <div style={{ fontFamily: "'Geist', sans-serif", display: 'flex', flexDirection: 'column', gap: '1rem', height: '100%' }}>
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-title,#1F2937)', margin: 0 }}>Pedidos</h1>
-          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted,#9CA3AF)', margin: '0.2rem 0 0' }}>{pedidos.filter(p => p.status !== 'cancelado').length} pedidos ativos</p>
-        </div>
-        <button onClick={onNovo} style={{
-          display: 'flex', alignItems: 'center', gap: '0.4rem',
-          background: 'var(--primary,#FF6FA9)', color: 'white', border: 'none',
-          borderRadius: '10px', padding: '0.6rem 1.1rem', fontSize: '0.85rem',
-          fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Novo pedido
-        </button>
-      </div>
-
       {/* Kanban */}
       <div style={{
         display: 'flex', gap: '0.75rem',
