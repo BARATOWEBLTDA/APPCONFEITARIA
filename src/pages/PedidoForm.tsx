@@ -100,6 +100,8 @@ const ETIQUETAS_SUGERIDAS = [
   'BOLO', 'DOCES', 'KIT FESTA',
 ]
 
+const COMO_CONHECEU = ['Instagram', 'Indicação', 'Google', 'Facebook', 'TikTok', 'Outro']
+
 function formatMoney(v: number) {
   return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
@@ -118,6 +120,7 @@ export default function PedidoForm() {
   const [userId, setUserId] = useState('')
   const [buscaCliente, setBuscaCliente] = useState('')
   const [showClienteDropdown, setShowClienteDropdown] = useState(false)
+  const [comoConheceu, setComoConheceu] = useState('')
   const [novoItem, setNovoItem] = useState<PedidoItem>({ ...EMPTY_ITEM })
   const [adicionandoItem, setAdicionandoItem] = useState(false)
   const [showPersonalizacao, setShowPersonalizacao] = useState(false)
@@ -142,7 +145,7 @@ export default function PedidoForm() {
 
   const carregarDados = async (uid: string) => {
     const [{ data: cls }, { data: prds }] = await Promise.all([
-      supabase.from('clientes').select('id,nome,telefone,whatsapp').eq('user_id', uid).order('nome'),
+      supabase.from('clientes').select('id,nome,telefone,whatsapp,como_conheceu').eq('user_id', uid).order('nome'),
       supabase.from('produtos').select('id,nome,preco_normal,forma_venda').eq('user_id', uid).eq('disponivel', true).order('nome'),
     ])
     setClientes(cls || [])
@@ -155,7 +158,13 @@ export default function PedidoForm() {
       supabase.from('pedidos').select('*').eq('id', id).eq('user_id', uid).single(),
       supabase.from('pedido_itens').select('*').eq('pedido_id', id),
     ])
-    if (ped) setPedido(ped)
+    if (ped) {
+      setPedido(ped)
+      if (ped.cliente_id) {
+        const { data: cli } = await supabase.from('clientes').select('como_conheceu').eq('id', ped.cliente_id).single()
+        setComoConheceu(cli?.como_conheceu || '')
+      }
+    }
     if (its) setItens(its)
     setLoading(false)
   }
@@ -170,6 +179,7 @@ export default function PedidoForm() {
       cliente_telefone: formatTelefone(c.telefone || ''),
       cliente_whatsapp: formatTelefone(c.whatsapp || c.telefone || ''),
     }))
+    setComoConheceu(c.como_conheceu || '')
     setBuscaCliente(c.nome)
     setShowClienteDropdown(false)
   }
@@ -181,7 +191,8 @@ export default function PedidoForm() {
       nome: buscaCliente.trim(),
       telefone: pedido.cliente_telefone || null,
       whatsapp: pedido.cliente_whatsapp || null,
-    }).select('id,nome,telefone,whatsapp').single()
+      como_conheceu: comoConheceu || null,
+    }).select('id,nome,telefone,whatsapp,como_conheceu').single()
 
     if (!error && data) {
       selecionarCliente(data)
@@ -289,6 +300,11 @@ export default function PedidoForm() {
         )
       }
 
+      // Atualiza "como nos conheceu" no cadastro do cliente
+      if (pedido.cliente_id) {
+        await supabase.from('clientes').update({ como_conheceu: comoConheceu || null }).eq('id', pedido.cliente_id)
+      }
+
       navigate('/pedidos')
     } catch {
       showToast('Erro ao salvar pedido. Tente novamente.')
@@ -375,43 +391,52 @@ export default function PedidoForm() {
           <div className="pf-card">
             <h3 className="pf-card-title">Cliente</h3>
 
-            <div className="pf-field" style={{ position: 'relative' }}>
-              <label className="pf-label">Nome do cliente *</label>
-              <input
-                className="pf-input"
-                placeholder="Buscar pelo nome (mín. 3 letras)..."
-                value={buscaCliente || pedido.cliente_nome}
-                onChange={e => {
-                  const val = e.target.value
-                  setBuscaCliente(val)
-                  set('cliente_nome', val)
-                  setShowClienteDropdown(val.length >= 3)
-                }}
-                onBlur={() => setTimeout(() => setShowClienteDropdown(false), 150)}
-              />
-              {showClienteDropdown && (clientesFiltrados.length > 0 || buscaCliente.length >= 3) && (
-                <div className="pf-dropdown">
-                  {clientesFiltrados.slice(0, 5).map(c => (
-                    <button key={c.id} className="pf-dropdown-item" onClick={() => selecionarCliente(c)}>
-                      <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-title,#1F2937)' }}>{c.nome}</span>
-                      {(c.telefone || c.whatsapp) && (
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted,#9CA3AF)', marginTop: '1px' }}>
-                          {formatTelefone(c.telefone || c.whatsapp)}
-                        </span>
-                      )}
+            <div className="pf-row2">
+              <div className="pf-field" style={{ position: 'relative', flex: 2 }}>
+                <label className="pf-label">Nome do cliente *</label>
+                <input
+                  className="pf-input"
+                  placeholder="Buscar pelo nome (mín. 3 letras)..."
+                  value={buscaCliente || pedido.cliente_nome}
+                  onChange={e => {
+                    const val = e.target.value
+                    setBuscaCliente(val)
+                    set('cliente_nome', val)
+                    setShowClienteDropdown(val.length >= 3)
+                  }}
+                  onBlur={() => setTimeout(() => setShowClienteDropdown(false), 150)}
+                />
+                {showClienteDropdown && (clientesFiltrados.length > 0 || buscaCliente.length >= 3) && (
+                  <div className="pf-dropdown">
+                    {clientesFiltrados.slice(0, 5).map(c => (
+                      <button key={c.id} className="pf-dropdown-item" onClick={() => selecionarCliente(c)}>
+                        <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-title,#1F2937)' }}>{c.nome}</span>
+                        {(c.telefone || c.whatsapp) && (
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted,#9CA3AF)', marginTop: '1px' }}>
+                            {formatTelefone(c.telefone || c.whatsapp)}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                    {clientesFiltrados.length === 0 && (
+                      <div style={{ padding: '0.5rem 0.85rem', fontSize: '0.78rem', color: 'var(--text-muted,#9CA3AF)' }}>
+                        Nenhum cliente encontrado
+                      </div>
+                    )}
+                    <button className="pf-dropdown-cadastrar" onClick={cadastrarNovoCliente}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      Cadastrar <strong>"{buscaCliente}"</strong> como novo cliente
                     </button>
-                  ))}
-                  {clientesFiltrados.length === 0 && (
-                    <div style={{ padding: '0.5rem 0.85rem', fontSize: '0.78rem', color: 'var(--text-muted,#9CA3AF)' }}>
-                      Nenhum cliente encontrado
-                    </div>
-                  )}
-                  <button className="pf-dropdown-cadastrar" onClick={cadastrarNovoCliente}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Cadastrar <strong>"{buscaCliente}"</strong> como novo cliente
-                  </button>
-                </div>
-              )}
+                  </div>
+                )}
+              </div>
+              <div className="pf-field">
+                <label className="pf-label">Como nos conheceu</label>
+                <select className="pf-input" value={comoConheceu} onChange={e => setComoConheceu(e.target.value)}>
+                  <option value="">Selecionar...</option>
+                  {COMO_CONHECEU.map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
             </div>
 
             <div className="pf-row2" style={{ marginTop: '0.75rem' }}>
