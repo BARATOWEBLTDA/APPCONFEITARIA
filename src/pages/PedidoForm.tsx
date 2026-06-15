@@ -872,12 +872,38 @@ export default function PedidoForm() {
             <div className="pf-card" style={{ flex: 1, minWidth: 0 }}>
               <h3 className="pf-card-title">Valores</h3>
               <div className="pf-resumo-fin">
-                <div className="pf-fin-row"><span>Produtos</span><span>{formatMoney(pedido.valor_produtos)}</span></div>
-                <div className="pf-fin-row"><span>Taxa de entrega</span><span>{formatMoney(pedido.taxa_entrega)}</span></div>
-                {pedido.taxa_extra > 0 && <div className="pf-fin-row"><span>Taxa extra</span><span>{formatMoney(pedido.taxa_extra)}</span></div>}
-                {pedido.desconto > 0 && <div className="pf-fin-row" style={{ color: '#16a34a' }}><span>Desconto</span><span>- {formatMoney(pedido.desconto)}</span></div>}
-                {pedido.cupom_desconto > 0 && <div className="pf-fin-row" style={{ color: '#16a34a' }}><span>Cupom {pedido.cupom_codigo}</span><span>- {formatMoney(pedido.cupom_desconto)}</span></div>}
-                <div className="pf-fin-row pf-fin-total"><span>Total</span><span>{formatMoney(pedido.valor_total)}</span></div>
+                <div className="pf-fin-row">
+                  <span>Produtos</span>
+                  <span>{formatMoney(pedido.valor_produtos)}</span>
+                </div>
+                {pedido.taxa_entrega > 0 && (
+                  <div className="pf-fin-row">
+                    <span>Taxa de entrega</span>
+                    <span>{formatMoney(pedido.taxa_entrega)}</span>
+                  </div>
+                )}
+                {pedido.taxa_extra > 0 && (
+                  <div className="pf-fin-row">
+                    <span>Taxa extra</span>
+                    <span>{formatMoney(pedido.taxa_extra)}</span>
+                  </div>
+                )}
+                {pedido.desconto > 0 && (
+                  <div className="pf-fin-row pf-fin-row-desconto">
+                    <span>↓ Desconto</span>
+                    <span>- {formatMoney(pedido.desconto)}</span>
+                  </div>
+                )}
+                {pedido.cupom_desconto > 0 && (
+                  <div className="pf-fin-row pf-fin-row-desconto">
+                    <span>🏷️ {pedido.cupom_codigo}</span>
+                    <span>- {formatMoney(pedido.cupom_desconto)}</span>
+                  </div>
+                )}
+                <div className="pf-fin-total-bloco">
+                  <span className="pf-fin-total-label">Total do pedido</span>
+                  <span className="pf-fin-total-valor">{formatMoney(pedido.valor_total)}</span>
+                </div>
               </div>
 
               <div className="pf-row2" style={{ marginTop: '1rem' }}>
@@ -1159,9 +1185,18 @@ export default function PedidoForm() {
         .pf-add-item-form { background: var(--bg-body,#F7F7F8); border-radius: 10px; padding: 0.85rem; margin-top: 0.5rem; }
         .pf-item-total { display: flex; justify-content: space-between; padding: 0.75rem 0 0; border-top: 1.5px solid var(--border,#E9E9EE); margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary,#6B7280); }
 
-        .pf-resumo-fin { background: var(--bg-body,#F7F7F8); border-radius: 10px; padding: 0.75rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
-        .pf-fin-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-secondary,#6B7280); }
-        .pf-fin-total { font-size: 1rem; font-weight: 700; color: var(--text-title,#1F2937); padding-top: 0.5rem; border-top: 1.5px solid var(--border,#E9E9EE); margin-top: 0.25rem; }
+        .pf-resumo-fin { border-radius: 12px; overflow: hidden; border: 1.5px solid var(--border,#E9E9EE); display: flex; flex-direction: column; }
+        .pf-fin-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.83rem; color: var(--text-secondary,#6B7280); padding: 0.55rem 0.9rem; border-bottom: 1px solid var(--border,#E9E9EE); background: var(--bg-body,#FAFAFA); }
+        .pf-fin-row:last-of-type { border-bottom: none; }
+        .pf-fin-row-desconto { color: #16a34a; background: #f0fdf4; font-weight: 600; }
+        .pf-fin-total-bloco {
+          display: flex; justify-content: space-between; align-items: center;
+          padding: 0.85rem 0.9rem;
+          background: #3d1a24;
+          border-top: none;
+        }
+        .pf-fin-total-label { font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.75); letter-spacing: 0.02em; text-transform: uppercase; }
+        .pf-fin-total-valor { font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -0.01em; }
 
         .pf-card-toggle { padding: 0; overflow: hidden; }
         .pf-toggle-btn {
