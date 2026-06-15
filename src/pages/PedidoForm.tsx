@@ -142,7 +142,7 @@ export default function PedidoForm() {
 
   // Recalcula total automaticamente
   useEffect(() => {
-    const totalItens = itens.reduce((acc, i) => acc + (i.valor_unitario * i.quantidade - i.desconto), 0)
+    const totalItens = itens.reduce((acc, i) => acc + (i.valor_unitario * i.quantidade), 0)
     const total = totalItens + pedido.taxa_entrega + pedido.taxa_extra - pedido.desconto - pedido.cupom_desconto
     setPedido(p => ({ ...p, valor_produtos: totalItens, valor_total: Math.max(0, total) }))
   }, [itens, pedido.taxa_entrega, pedido.taxa_extra, pedido.desconto, pedido.cupom_desconto])
@@ -583,13 +583,12 @@ export default function PedidoForm() {
                     <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-title,#1F2937)' }}>{item.nome_produto}</p>
                     <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--text-muted,#9CA3AF)' }}>
                       {item.quantidade}x {formatMoney(item.valor_unitario)}
-                      {item.desconto > 0 && ` — desc. ${formatMoney(item.desconto)}`}
                     </p>
                     {item.observacoes && <p style={{ margin: '2px 0 0', fontSize: '0.75rem', color: 'var(--text-secondary,#6B7280)' }}>{item.observacoes}</p>}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-title,#1F2937)' }}>
-                      {formatMoney(item.valor_unitario * item.quantidade - item.desconto)}
+                      {formatMoney(item.valor_unitario * item.quantidade)}
                     </span>
                     <button className="pf-btn-remove" onClick={() => removerItem(idx)}>✕</button>
                   </div>
@@ -612,18 +611,14 @@ export default function PedidoForm() {
                     <label className="pf-label">Nome (ou descreva manualmente)</label>
                     <input className="pf-input" placeholder="Ex: Bolo Red Velvet 2kg" value={novoItem.nome_produto} onChange={e => setNovoItem(p => ({ ...p, nome_produto: e.target.value }))} />
                   </div>
-                  <div className="pf-row3">
+                  <div className="pf-row2">
                     <div className="pf-field">
                       <label className="pf-label">Qtd</label>
                       <input className="pf-input" type="number" min="0.1" step="0.1" value={novoItem.quantidade} onChange={e => setNovoItem(p => ({ ...p, quantidade: Number(e.target.value) }))} />
                     </div>
                     <div className="pf-field">
-                      <label className="pf-label">Valor unit.</label>
+                      <label className="pf-label">Valor unit. (R$)</label>
                       <input className="pf-input" type="number" min="0" step="0.01" value={novoItem.valor_unitario} onChange={e => setNovoItem(p => ({ ...p, valor_unitario: Number(e.target.value) }))} />
-                    </div>
-                    <div className="pf-field">
-                      <label className="pf-label">Desconto</label>
-                      <input className="pf-input" type="number" min="0" step="0.01" value={novoItem.desconto} onChange={e => setNovoItem(p => ({ ...p, desconto: Number(e.target.value) }))} />
                     </div>
                   </div>
                   <div className="pf-field">
