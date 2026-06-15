@@ -105,45 +105,59 @@ function horasParaEntrega(data: string, hora: string) {
 function MiniCarrinho({ itens = [] }: { itens?: PedidoItem[] }) {
   if (!itens.length) return null
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: '0.5rem 0 0.75rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0', margin: '0.5rem 0 0.75rem' }}>
       {itens.map((item, i) => {
         const imgUrl = item.produtos?.imagem_url
         const pers = item.personalizacoes
-        const hasPersonalizacoes = pers && (pers.massa || pers.recheio || pers.cobertura)
+        const chips: string[] = []
+        if (pers?.massa) chips.push(pers.massa)
+        if (pers?.recheio) chips.push(pers.recheio)
+        if (pers?.cobertura) chips.push(pers.cobertura)
+        if (item.observacoes) chips.push(item.observacoes)
+
         return (
-          <div key={i} style={{
-            display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '0.6rem',
-            background: 'var(--bg-body,#F7F7F8)', borderRadius: '10px', padding: '0.6rem 0.75rem',
-          }}>
-            {/* Thumbnail */}
-            <div style={{
-              width: '44px', height: '44px', borderRadius: '8px', flexShrink: 0,
-              background: 'var(--border,#E9E9EE)', overflow: 'hidden',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              {imgUrl
-                ? <img src={imgUrl} alt={item.nome_produto} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted,#9CA3AF)" strokeWidth="1.5" strokeLinecap="round"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
-              }
-            </div>
-            {/* Info */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.83rem', fontWeight: 700, color: 'var(--text-title,#1F2937)', lineHeight: 1.3 }}>{item.nome_produto}</span>
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-title,#1F2937)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  {item.quantidade}x
-                </span>
+          <div key={i}>
+            {i > 0 && <div style={{ height: '1px', background: 'var(--border,#E9E9EE)', margin: '0.5rem 0' }} />}
+            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '0.65rem' }}>
+              {/* Thumbnail 60x60 */}
+              <div style={{
+                width: '60px', height: '60px', borderRadius: '8px', flexShrink: 0,
+                background: 'var(--bg-body,#F3F4F6)',
+                border: '1px solid var(--border,#E9E9EE)',
+                overflow: 'hidden',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {imgUrl
+                  ? <img src={imgUrl} alt={item.nome_produto} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted,#C4C4C4)" strokeWidth="1.5" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                }
               </div>
-              {hasPersonalizacoes && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', marginTop: '3px' }}>
-                  {pers!.massa && <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary,#6B7280)' }}>🍰 {pers!.massa}</span>}
-                  {pers!.recheio && <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary,#6B7280)' }}>🍫 {pers!.recheio}</span>}
-                  {pers!.cobertura && <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary,#6B7280)' }}>✨ {pers!.cobertura}</span>}
+
+              {/* Info */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', marginBottom: chips.length ? '0.4rem' : 0 }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-title,#1F2937)', lineHeight: 1.3 }}>
+                    {item.nome_produto}
+                  </span>
+                  <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary,#6B7280)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                    {item.quantidade}x
+                  </span>
                 </div>
-              )}
-              {item.observacoes && (
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-muted,#9CA3AF)', display: 'block', marginTop: '2px', fontStyle: 'italic' }}>{item.observacoes}</span>
-              )}
+                {chips.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '0.3rem' }}>
+                    {chips.map((chip, ci) => (
+                      <span key={ci} style={{
+                        fontSize: '0.68rem', fontWeight: 500,
+                        background: 'var(--primary-light,#FFF1F7)',
+                        color: 'var(--primary,#FF6FA9)',
+                        border: '1px solid rgba(255,111,169,0.2)',
+                        borderRadius: '5px', padding: '2px 7px',
+                        whiteSpace: 'nowrap',
+                      }}>+ {chip}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )
@@ -324,7 +338,7 @@ export default function Pedidos() {
                     fontSize: '0.72rem', fontWeight: 700, color: '#dc2626',
                     display: 'flex', alignItems: 'center', gap: '5px',
                   }}>
-                    {atrasado ? '⚠ ATRASADO' : horas !== null && horas <= 3 ? `🔥 Entrega em ${horas}h` : '↑ URGENTE'}
+                    {atrasado ? 'ATRASADO' : horas !== null && horas <= 3 ? `Entrega em ${horas}h` : 'URGENTE'}
                   </div>
                 )}
 
@@ -345,10 +359,13 @@ export default function Pedidos() {
                     </span>
                   </div>
 
-                  {/* Nome do cliente — destaque principal */}
-                  <p style={{ margin: '0 0 0.2rem', fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-title,#1F2937)', lineHeight: 1.25 }}>
-                    {p.cliente_nome || 'Cliente não informado'}
-                  </p>
+                  {/* Cliente */}
+                  <div style={{ marginBottom: '0.65rem' }}>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted,#9CA3AF)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cliente</span>
+                    <p style={{ margin: '1px 0 0', fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-title,#1F2937)', lineHeight: 1.25 }}>
+                      {p.cliente_nome || 'Não informado'}
+                    </p>
+                  </div>
 
                   {/* Mini carrinho */}
                   <MiniCarrinho itens={p.pedido_itens} />
@@ -356,29 +373,22 @@ export default function Pedidos() {
                   {/* Divisória */}
                   <div style={{ height: '1px', background: 'var(--border,#E9E9EE)', margin: '0 0 0.75rem' }} />
 
-                  {/* Data + hora em destaque */}
+                  {/* Data + hora + entrega */}
                   {p.data_entrega && (
-                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0.75rem', marginBottom: '0.55rem' }}>
-                      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '1rem', lineHeight: 1 }}>📅</span>
-                        <div>
-                          <div style={{ fontSize: '0.82rem', fontWeight: 700, color: atrasado ? '#dc2626' : dias === 0 ? '#d97706' : 'var(--text-title,#1F2937)', lineHeight: 1.2 }}>
-                            {atrasado ? 'Atrasado' : dias === 0 ? 'Hoje' : dias === 1 ? 'Amanhã' : formatDate(p.data_entrega)}
-                          </div>
-                          {p.horario_entrega && (
-                            <div style={{ fontSize: '1rem', fontWeight: 800, color: atrasado ? '#dc2626' : dias === 0 ? '#d97706' : 'var(--text-title,#1F2937)', lineHeight: 1.1 }}>
-                              {p.horario_entrega.slice(0, 5)}
-                            </div>
-                          )}
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                      <div>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 600, color: atrasado ? '#dc2626' : dias === 0 ? '#d97706' : 'var(--text-secondary,#6B7280)', lineHeight: 1.2 }}>
+                          {atrasado ? 'Atrasado' : dias === 0 ? 'Hoje' : dias === 1 ? 'Amanhã' : formatDate(p.data_entrega)}
                         </div>
+                        {p.horario_entrega && (
+                          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: atrasado ? '#dc2626' : dias === 0 ? '#d97706' : 'var(--text-title,#1F2937)', lineHeight: 1.1 }}>
+                            {p.horario_entrega.slice(0, 5)}
+                          </div>
+                        )}
                       </div>
                       <div style={{ width: '1px', height: '32px', background: 'var(--border,#E9E9EE)' }} />
-                      <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '6px', fontSize: '0.82rem', color: 'var(--text-secondary,#6B7280)', fontWeight: 500 }}>
-                        {p.tipo_entrega === 'retirada'
-                          ? <span>🏠</span>
-                          : <span>🛵</span>
-                        }
-                        {p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}
+                      <div style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--text-secondary,#6B7280)' }}>
+                        {p.tipo_entrega === 'retirada' ? 'Retirada' : p.tipo_entrega === 'entrega' ? 'Entrega' : 'Local'}
                       </div>
                     </div>
                   )}
@@ -386,7 +396,6 @@ export default function Pedidos() {
                   {/* Pagamento */}
                   {p.status_pagamento !== 'pago' ? (
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '6px', marginBottom: '0.85rem' }}>
-                      <span style={{ fontSize: '1rem', lineHeight: 1 }}>💳</span>
                       <span style={{ fontSize: '0.82rem', fontWeight: 600, color: p.status_pagamento === 'parcial' ? '#d97706' : '#dc2626' }}>
                         {PAG_CONFIG[p.forma_pagamento] || 'PIX'} {p.status_pagamento === 'parcial' ? 'parcial' : 'pendente'}
                         {valorPendente > 0 && ` · ${formatMoney(valorPendente)}`}
@@ -394,7 +403,6 @@ export default function Pedidos() {
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '6px', marginBottom: '0.85rem' }}>
-                      <span style={{ fontSize: '1rem', lineHeight: 1 }}>✅</span>
                       <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#16a34a' }}>
                         {PAG_CONFIG[p.forma_pagamento] || 'PIX'} · Pago
                       </span>
