@@ -233,6 +233,7 @@ export default function PedidoForm() {
 
   const salvar = async () => {
     if (!pedido.cliente_nome) { showToast('Informe o nome do cliente'); return }
+    if (itens.length === 0) { showToast('Adicione pelo menos um item ao pedido'); return }
     if (!pedido.data_entrega) { showToast('Informe a data de entrega'); return }
 
     setSaving(true)
@@ -393,7 +394,7 @@ export default function PedidoForm() {
 
             <div className="pf-row2">
               <div className="pf-field" style={{ position: 'relative', flex: 2 }}>
-                <label className="pf-label">Nome do cliente *</label>
+                <label className="pf-label">Nome do cliente<span className="pf-required-badge">Obrigatório</span></label>
                 <input
                   className="pf-input"
                   placeholder="Buscar pelo nome (mín. 3 letras)..."
@@ -562,7 +563,7 @@ export default function PedidoForm() {
           {/* ── Bloco Itens do pedido ── */}
           <div className="pf-card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-              <h3 className="pf-card-title" style={{ margin: 0 }}>Itens do pedido</h3>
+              <h3 className="pf-card-title" style={{ margin: 0 }}>Itens do pedido<span className="pf-required-badge">Obrigatório</span></h3>
               <button className="pf-btn-add" onClick={() => setAdicionandoItem(true)}>+ Adicionar</button>
             </div>
 
@@ -998,6 +999,11 @@ export default function PedidoForm() {
 
         .pf-card { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#E9E9EE); border-radius: 14px; padding: 1.1rem; }
         .pf-card-title { font-size: 0.88rem; font-weight: 700; color: var(--text-title,#1F2937); margin: 0 0 0.85rem; }
+        .pf-required-badge {
+          margin-left: 0.4rem; font-size: 0.68rem; font-weight: 700;
+          color: #dc2626; background: #fee2e2;
+          padding: 1px 7px; border-radius: 8px; vertical-align: middle;
+        }
 
         .pf-field { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
         .pf-label { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary,#6B7280); }

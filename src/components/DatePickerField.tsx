@@ -52,7 +52,7 @@ export function DatePickerField({
 
   return (
     <div className="dpf-wrap" ref={ref}>
-      <label className="pf-label">{label}{required && ' *'}</label>
+      <label className="pf-label">{label}{required && <span className="pf-required-badge">Obrigatório</span>}</label>
 
       <button
         type="button"
@@ -104,6 +104,12 @@ export function DatePickerField({
 
       <style>{`
         .dpf-wrap { position: relative; display: flex; flex-direction: column; gap: 0.3rem; }
+
+        .pf-required-badge {
+          margin-left: 0.4rem; font-size: 0.68rem; font-weight: 700;
+          color: #dc2626; background: #fee2e2;
+          padding: 1px 7px; border-radius: 8px; vertical-align: middle;
+        }
 
         .dpf-trigger {
           display: flex; align-items: center; gap: 0.5rem;
