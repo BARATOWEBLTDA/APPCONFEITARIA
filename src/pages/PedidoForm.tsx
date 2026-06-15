@@ -87,7 +87,6 @@ const STATUS_OPTIONS = [
   { value: 'novo',        label: 'Novo',        color: '#3b82f6', bg: '#eff6ff', border: '#bfdbfe' },
   { value: 'em_producao', label: 'Em produção', color: '#f97316', bg: '#fff7ed', border: '#fed7aa' },
   { value: 'pronto',      label: 'Finalizado',  color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0' },
-  { value: 'cancelado',   label: 'Cancelado',   color: '#dc2626', bg: '#fee2e2', border: '#fca5a5' },
 ]
 
 // Origens unificadas (antigo "origem" + "como nos conheceu")
@@ -732,36 +731,7 @@ export default function PedidoForm() {
               })}
             </div>
 
-            <label className="pf-label" style={{ marginBottom: '0.4rem', display: 'block' }}>Prioridade</label>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              {[
-                { value: 'baixa', label: 'Baixa',  color: '#6b7280', bg: '#f3f4f6', border: '#d1d5db' },
-                { value: 'media', label: 'Média',   color: '#d97706', bg: '#fef3c7', border: '#fcd34d' },
-                { value: 'alta',  label: 'Alta',    color: '#dc2626', bg: '#fee2e2', border: '#fca5a5' },
-              ].map(pr => {
-                const isActive = pedido.prioridade === pr.value
-                return (
-                  <button
-                    key={pr.value}
-                    type="button"
-                    onClick={() => set('prioridade', pr.value)}
-                    style={{
-                      flex: 1,
-                      padding: '0.55rem 0.5rem',
-                      borderRadius: '8px',
-                      border: `1.5px solid ${isActive ? pr.border : 'var(--border,#E9E9EE)'}`,
-                      background: isActive ? pr.bg : 'var(--bg-body,#FAFAFA)',
-                      color: isActive ? pr.color : 'var(--text-secondary,#6B7280)',
-                      fontFamily: 'Geist, sans-serif',
-                      fontSize: '0.82rem',
-                      fontWeight: isActive ? 700 : 500,
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                    }}
-                  >{pr.label}</button>
-                )
-              })}
-            </div>
+
           </div>
 
           {/* ── Pagamento + Valores (lado a lado) ── */}
@@ -1097,10 +1067,12 @@ export default function PedidoForm() {
         }
         .pf-status-item:last-child { border-bottom: none; }
         .pf-status-item:hover { background: var(--bg-body,#F7F7F8); }
-        .pf-status-item.ativo { background: var(--bg-body,#F7F7F8); font-weight: 700; color: var(--text-title,#1F2937); }
+        .pf-status-item.ativo { background: #3d1a24; font-weight: 700; color: #fff; }
         .pf-status-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
         .pf-status-name { flex: 1; }
         .pf-status-check { font-size: 0.75rem; color: var(--primary,#FF6FA9); font-weight: 800; }
+        .pf-status-item.ativo .pf-status-check { color: #fff; }
+        .pf-status-item.ativo:hover { background: #3d1a24; }
         .pf-entrega-check {
           width: 18px; height: 18px; border-radius: 50%;
           border: 1.5px solid var(--border,#E9E9EE);
