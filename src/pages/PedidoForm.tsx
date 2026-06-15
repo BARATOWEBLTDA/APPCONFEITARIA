@@ -90,15 +90,22 @@ const ABAS = [
 ]
 
 const STATUS_OPTIONS = [
-  { value: 'novo',                 label: 'Novo' },
-  { value: 'aguardando_pagamento', label: 'Aguardando pagamento' },
-  { value: 'confirmado',           label: 'Confirmado' },
-  { value: 'em_producao',          label: 'Em produção' },
-  { value: 'pronto',               label: 'Pronto' },
-  { value: 'saiu_entrega',         label: 'Saiu para entrega' },
-  { value: 'entregue',             label: 'Entregue' },
-  { value: 'cancelado',            label: 'Cancelado' },
+  { value: 'novo',        label: 'Novo',         icon: '🟢' },
+  { value: 'em_producao', label: 'Em produção',  icon: '🧁' },
+  { value: 'pronto',      label: 'Finalizado',   icon: '✅' },
+  { value: 'cancelado',   label: 'Cancelado',    icon: '❌' },
 ]
+
+const STATUS_LABEL: Record<string, string> = {
+  novo: 'Novo', em_producao: 'Em produção', pronto: 'Finalizado', cancelado: 'Cancelado',
+  aguardando_pagamento: 'Aguardando', confirmado: 'Confirmado',
+  saiu_entrega: 'Saiu p/ entrega', entregue: 'Entregue',
+}
+
+const STATUS_ICON: Record<string, string> = {
+  novo: '🟢', em_producao: '🧁', pronto: '✅', cancelado: '❌',
+  aguardando_pagamento: '🟡', confirmado: '🔵', saiu_entrega: '🚚', entregue: '🏁',
+}
 
 const ETIQUETAS_SUGERIDAS = [
   'URGENTE', 'VIP', 'PIX', 'ENTREGA', 'RETIRADA',
@@ -303,6 +310,17 @@ export default function PedidoForm() {
     setSaving(false)
   }
 
+  const salvarEIniciarOutro = async () => {
+    await salvar()
+    navigate('/pedidos/novo')
+  }
+
+  const abrirWhatsApp = () => {
+    const tel = (pedido.cliente_whatsapp || pedido.cliente_telefone || '').replace(/\D/g, '')
+    if (!tel) { showToast('WhatsApp não informado'); return }
+    window.open(`https://wa.me/55${tel}`, '_blank')
+  }
+
   const showToast = (msg: string) => {
     setToast(msg)
     setTimeout(() => setToast(''), 3000)
@@ -342,9 +360,25 @@ export default function PedidoForm() {
           Pedidos
         </button>
         <h1 className="pf-title">{isEdicao ? 'Editar pedido' : 'Novo pedido'}</h1>
-        <button className="pf-btn-salvar" onClick={salvar} disabled={saving}>
-          {saving ? 'Salvando...' : 'Salvar'}
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {!isEdicao && (
+            <button
+              onClick={salvarEIniciarOutro}
+              disabled={saving}
+              style={{
+                padding: '0.6rem 1rem', fontSize: '0.82rem', fontWeight: 600,
+                border: '1.5px solid var(--primary,#FF6FA9)', borderRadius: '10px',
+                background: 'white', color: 'var(--primary,#FF6FA9)',
+                cursor: 'pointer', fontFamily: 'Geist, sans-serif', whiteSpace: 'nowrap',
+              }}
+            >
+              Salvar e iniciar outro
+            </button>
+          )}
+          <button className="pf-btn-salvar" onClick={salvar} disabled={saving}>
+            {saving ? 'Salvando...' : 'Salvar pedido'}
+          </button>
+        </div>
       </div>
 
       {/* ── Abas ── */}
@@ -493,50 +527,25 @@ export default function PedidoForm() {
             <div className="pf-card">
               <h3 className="pf-card-title" style={{ marginBottom: '0.85rem' }}>Status do pedido</h3>
 
-              {/* Status — pills */}
+              {/* Status — dropdown simples */}
               <label className="pf-label" style={{ marginBottom: '0.4rem', display: 'block' }}>Status</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1rem' }}>
-                {STATUS_OPTIONS.map(s => {
-                  const cfgs: Record<string, { color: string; bg: string; activeBg: string }> = {
-                    novo:                 { color: '#1d4ed8', bg: '#dbeafe', activeBg: '#bfdbfe' },
-                    aguardando_pagamento: { color: '#92400e', bg: '#fef3c7', activeBg: '#fde68a' },
-                    confirmado:           { color: '#5b21b6', bg: '#ede9fe', activeBg: '#ddd6fe' },
-                    em_producao:          { color: '#9a3412', bg: '#ffedd5', activeBg: '#fed7aa' },
-                    pronto:               { color: '#14532d', bg: '#dcfce7', activeBg: '#bbf7d0' },
-                    saiu_entrega:         { color: '#065f46', bg: '#d1fae5', activeBg: '#a7f3d0' },
-                    entregue:             { color: '#374151', bg: '#f3f4f6', activeBg: '#e5e7eb' },
-                    cancelado:            { color: '#991b1b', bg: '#fee2e2', activeBg: '#fecaca' },
-                  }
-                  const c = cfgs[s.value] || cfgs['novo']
-                  const isActive = pedido.status === s.value
-                  return (
-                    <button
-                      key={s.value}
-                      type="button"
-                      onClick={() => set('status', s.value)}
-                      style={{
-                        padding: '0.35rem 0.85rem',
-                        borderRadius: '20px',
-                        border: `1.5px solid ${isActive ? c.color : 'var(--border,#E9E9EE)'}`,
-                        background: isActive ? c.bg : 'var(--bg-body,#FAFAFA)',
-                        color: isActive ? c.color : 'var(--text-secondary,#6B7280)',
-                        fontFamily: 'Geist, sans-serif',
-                        fontSize: '0.78rem',
-                        fontWeight: isActive ? 700 : 500,
-                        cursor: 'pointer',
-                        transition: 'all 0.15s',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                      }}
-                    >
-                      {isActive && (
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: c.color, flexShrink: 0, display: 'inline-block' }} />
-                      )}
-                      {s.label}
-                    </button>
-                  )
-                })}
+              <div style={{ position: 'relative', marginBottom: '1rem' }}>
+                <select
+                  className="pf-input"
+                  value={pedido.status}
+                  onChange={e => set('status', e.target.value)}
+                  style={{ paddingLeft: '2.2rem', appearance: 'none', WebkitAppearance: 'none' }}
+                >
+                  {STATUS_OPTIONS.map(s => (
+                    <option key={s.value} value={s.value}>{s.icon} {s.label}</option>
+                  ))}
+                </select>
+                <span style={{
+                  position: 'absolute', left: '0.75rem', top: '50%',
+                  transform: 'translateY(-50%)', fontSize: '1rem', pointerEvents: 'none',
+                }}>
+                  {STATUS_ICON[pedido.status] || '🟢'}
+                </span>
               </div>
 
               {/* Prioridade — 3 botões */}
@@ -955,10 +964,46 @@ export default function PedidoForm() {
       </div>
 
       {/* ── Botão salvar mobile ── */}
-      <div className="pf-footer-mobile">
-        <button className="pf-btn-salvar pf-btn-full" onClick={salvar} disabled={saving}>
-          {saving ? 'Salvando...' : isEdicao ? 'Salvar alterações' : 'Criar pedido'}
+      {/* Botão flutuante WhatsApp */}
+      {pedido.cliente_whatsapp || pedido.cliente_telefone ? (
+        <button
+          onClick={abrirWhatsApp}
+          style={{
+            position: 'fixed', bottom: '5.5rem', left: '1.25rem',
+            background: '#25D366', color: 'white', border: 'none',
+            borderRadius: '50px', padding: '0.6rem 1.1rem',
+            display: 'flex', alignItems: 'center', gap: '0.5rem',
+            fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer',
+            fontFamily: 'Geist, sans-serif', zIndex: 100,
+            boxShadow: '0 4px 16px rgba(37,211,102,0.4)',
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Abrir WhatsApp
         </button>
+      ) : null}
+
+      <div className="pf-footer-mobile">
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button className="pf-btn-salvar pf-btn-full" onClick={salvar} disabled={saving} style={{ flex: 1 }}>
+            {saving ? 'Salvando...' : 'Salvar pedido'}
+          </button>
+          {!isEdicao && (
+            <button
+              onClick={salvarEIniciarOutro}
+              disabled={saving}
+              style={{
+                flex: 1, padding: '0.85rem', fontSize: '0.82rem', fontWeight: 600,
+                border: '1.5px solid var(--primary,#FF6FA9)', borderRadius: '14px',
+                background: 'white', color: 'var(--primary,#FF6FA9)',
+                cursor: 'pointer', fontFamily: 'Geist, sans-serif',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              Salvar e iniciar outro
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Toast ── */}
