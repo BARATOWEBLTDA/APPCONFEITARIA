@@ -179,6 +179,8 @@ export default function PedidoForm() {
   const [showPersonalizacao, setShowPersonalizacao] = useState(false)
   const [showObservacoes, setShowObservacoes] = useState(false)
   const [toast, setToast] = useState('')
+  const [buscaProduto, setBuscaProduto] = useState('')
+  const [showProdutoDropdown, setShowProdutoDropdown] = useState(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -288,6 +290,7 @@ export default function PedidoForm() {
     if (!novoItem.nome_produto) return
     setItens(prev => [...prev, { ...novoItem }])
     setNovoItem({ ...EMPTY_ITEM })
+    setBuscaProduto('')
     setAdicionandoItem(false)
   }
 
@@ -677,29 +680,56 @@ export default function PedidoForm() {
 
             {adicionandoItem && (
               <div className="pf-add-item-form">
-                <div className="pf-field">
+                <div className="pf-field" style={{ position: 'relative' }}>
                   <label className="pf-label">Produto</label>
-                  <div className="pf-produto-grid">
-                    {produtos.map(p => {
-                      const isActive = novoItem.produto_id === p.id
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          className={`pf-produto-card${isActive ? ' ativo' : ''}`}
-                          onClick={() => selecionarProduto(p)}
-                        >
-                          {p.imagem_url ? (
-                            <img src={p.imagem_url} alt={p.nome} className="pf-produto-thumb" />
-                          ) : (
-                            <div className="pf-produto-thumb pf-produto-thumb-empty">🎂</div>
-                          )}
-                          <span className="pf-produto-nome">{p.nome}</span>
-                          <span className="pf-produto-preco">{formatMoney(p.preco_normal)}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
+                  <input
+                    className="pf-input"
+                    placeholder="Buscar produto..."
+                    value={buscaProduto}
+                    onChange={e => {
+                      setBuscaProduto(e.target.value)
+                      setShowProdutoDropdown(true)
+                      if (!e.target.value) {
+                        setNovoItem(p => ({ ...p, produto_id: undefined, nome_produto: '', imagem_url: '' }))
+                      }
+                    }}
+                    onFocus={() => setShowProdutoDropdown(true)}
+                    onBlur={() => setTimeout(() => setShowProdutoDropdown(false), 200)}
+                  />
+                  {showProdutoDropdown && (
+                    <div className="pf-dropdown" onMouseDown={e => e.preventDefault()}>
+                      {produtos
+                        .filter(p => !buscaProduto || p.nome.toLowerCase().includes(buscaProduto.toLowerCase()))
+                        .slice(0, 6)
+                        .map(p => (
+                          <button
+                            key={p.id}
+                            className="pf-dropdown-item pf-dropdown-produto"
+                            onMouseDown={() => {
+                              selecionarProduto(p)
+                              setBuscaProduto(p.nome)
+                              setShowProdutoDropdown(false)
+                            }}
+                          >
+                            {p.imagem_url ? (
+                              <img src={p.imagem_url} alt={p.nome} style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+                            ) : (
+                              <div style={{ width: 36, height: 36, borderRadius: 6, background: 'var(--border,#E9E9EE)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>🎂</div>
+                            )}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-title,#1F2937)' }}>{p.nome}</div>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--primary,#FF6FA9)', fontWeight: 700 }}>{formatMoney(p.preco_normal)}</div>
+                            </div>
+                          </button>
+                        ))
+                      }
+                      {produtos.filter(p => !buscaProduto || p.nome.toLowerCase().includes(buscaProduto.toLowerCase())).length === 0 && (
+                        <div style={{ padding: '0.6rem 0.85rem', fontSize: '0.78rem', color: 'var(--text-muted,#9CA3AF)' }}>
+                          Nenhum produto encontrado
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="pf-field">
                   <label className="pf-label">Nome (ou descreva manualmente)</label>
@@ -717,7 +747,7 @@ export default function PedidoForm() {
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                   <button className="pf-btn-salvar" onClick={adicionarItem}>Adicionar</button>
-                  <button className="pf-btn-cancel" onClick={() => { setAdicionandoItem(false); setNovoItem({ ...EMPTY_ITEM }) }}>Cancelar</button>
+                  <button className="pf-btn-cancel" onClick={() => { setAdicionandoItem(false); setNovoItem({ ...EMPTY_ITEM }); setBuscaProduto('') }}>Cancelar</button>
                 </div>
               </div>
             )}
@@ -1175,22 +1205,8 @@ export default function PedidoForm() {
         .pf-spinner { width: 32px; height: 32px; border: 3px solid var(--primary-light,#FFF1F7); border-top-color: var(--primary,#FF6FA9); border-radius: 50%; animation: pfSpin 0.7s linear infinite; }
         @keyframes pfSpin { to { transform: rotate(360deg); } }
 
-        /* Grid de seleção de produto */
-        .pf-produto-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; max-height: 260px; overflow-y: auto; padding: 2px; }
-        .pf-produto-card {
-          display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
-          padding: 0.5rem 0.4rem; border-radius: 10px;
-          border: 1.5px solid var(--border,#E9E9EE);
-          background: var(--bg-body,#FAFAFA);
-          cursor: pointer; font-family: 'Geist', sans-serif;
-          transition: all 0.15s; text-align: center;
-        }
-        .pf-produto-card:hover { border-color: var(--primary,#FF6FA9); background: var(--primary-light,#FFF1F7); }
-        .pf-produto-card.ativo { border-color: var(--primary,#FF6FA9); background: var(--primary-light,#FFF1F7); box-shadow: 0 0 0 2px rgba(255,111,169,0.15); }
-        .pf-produto-thumb { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border,#E9E9EE); }
-        .pf-produto-thumb-empty { display: flex; align-items: center; justify-content: center; background: var(--border,#E9E9EE); font-size: 1.4rem; }
-        .pf-produto-nome { font-size: 0.72rem; font-weight: 600; color: var(--text-title,#1F2937); line-height: 1.2; word-break: break-word; }
-        .pf-produto-preco { font-size: 0.7rem; font-weight: 700; color: var(--primary,#FF6FA9); }
+        /* Dropdown produto */
+        .pf-dropdown-produto { flex-direction: row; align-items: center; gap: 0.6rem; }
 
         @media (max-width: 640px) {
           .pf-row2 { flex-direction: column; gap: 0.5rem; }
