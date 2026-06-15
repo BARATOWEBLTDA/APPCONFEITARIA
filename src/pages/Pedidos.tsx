@@ -22,6 +22,7 @@ type Pedido = {
   id: string
   numero: number
   cliente_nome: string
+  cliente_telefone: string
   status: string
   status_pagamento: string
   prioridade: string
