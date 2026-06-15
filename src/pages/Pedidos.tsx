@@ -362,7 +362,7 @@ export default function Pedidos() {
                   {/* Cliente */}
                   <div style={{ marginBottom: '0.65rem' }}>
                     <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted,#9CA3AF)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cliente</span>
-                    <p style={{ margin: '1px 0 0', fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-title,#1F2937)', lineHeight: 1.25 }}>
+                    <p style={{ margin: '1px 0 0', fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-title,#1F2937)', lineHeight: 1.25 }}>
                       {p.cliente_nome || 'Não informado'}
                     </p>
                   </div>
