@@ -436,9 +436,12 @@ export default function PedidoForm() {
               </div>
             </div>
 
+            {/* ── Bloco Entrega ── */}
             <div className="pf-card">
-              <h3 className="pf-card-title">Datas e Status</h3>
-              <div className="pf-row2">
+              <h3 className="pf-card-title">Entrega</h3>
+
+              {/* Data + Hora */}
+              <div className="pf-row2" style={{ marginBottom: '0.85rem' }}>
                 <DatePickerField
                   label="Data de entrega"
                   value={pedido.data_entrega}
@@ -455,21 +458,117 @@ export default function PedidoForm() {
                   minuteStep={10}
                 />
               </div>
-              <div className="pf-row2">
-                <div className="pf-field">
-                  <label className="pf-label">Status</label>
-                  <select className="pf-input" value={pedido.status} onChange={e => set('status', e.target.value)}>
-                    {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-                  </select>
-                </div>
-                <div className="pf-field">
-                  <label className="pf-label">Prioridade</label>
-                  <select className="pf-input" value={pedido.prioridade} onChange={e => set('prioridade', e.target.value)}>
-                    <option value="baixa">↓ Baixa</option>
-                    <option value="media">→ Média</option>
-                    <option value="alta">↑ Alta</option>
-                  </select>
-                </div>
+
+              {/* Tipo de entrega — botões visuais */}
+              <label className="pf-label" style={{ marginBottom: '0.4rem', display: 'block' }}>Tipo de entrega</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {[
+                  { value: 'retirada', label: 'Retirada' },
+                  { value: 'entrega',  label: 'Entrega' },
+                  { value: 'local',    label: 'No local' },
+                ].map(t => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => set('tipo_entrega', t.value)}
+                    style={{
+                      flex: 1,
+                      padding: '0.55rem 0.5rem',
+                      borderRadius: '8px',
+                      border: `1.5px solid ${pedido.tipo_entrega === t.value ? 'var(--primary,#FF6FA9)' : 'var(--border,#E9E9EE)'}`,
+                      background: pedido.tipo_entrega === t.value ? 'var(--primary-light,#FFF1F7)' : 'var(--bg-body,#FAFAFA)',
+                      color: pedido.tipo_entrega === t.value ? 'var(--primary,#FF6FA9)' : 'var(--text-secondary,#6B7280)',
+                      fontFamily: 'Geist, sans-serif',
+                      fontSize: '0.82rem',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s',
+                    }}
+                  >{t.label}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Bloco Status ── */}
+            <div className="pf-card">
+              <h3 className="pf-card-title" style={{ marginBottom: '0.85rem' }}>Status do pedido</h3>
+
+              {/* Status — pills */}
+              <label className="pf-label" style={{ marginBottom: '0.4rem', display: 'block' }}>Status</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1rem' }}>
+                {STATUS_OPTIONS.map(s => {
+                  const cfgs: Record<string, { color: string; bg: string; activeBg: string }> = {
+                    novo:                 { color: '#1d4ed8', bg: '#dbeafe', activeBg: '#bfdbfe' },
+                    aguardando_pagamento: { color: '#92400e', bg: '#fef3c7', activeBg: '#fde68a' },
+                    confirmado:           { color: '#5b21b6', bg: '#ede9fe', activeBg: '#ddd6fe' },
+                    em_producao:          { color: '#9a3412', bg: '#ffedd5', activeBg: '#fed7aa' },
+                    pronto:               { color: '#14532d', bg: '#dcfce7', activeBg: '#bbf7d0' },
+                    saiu_entrega:         { color: '#065f46', bg: '#d1fae5', activeBg: '#a7f3d0' },
+                    entregue:             { color: '#374151', bg: '#f3f4f6', activeBg: '#e5e7eb' },
+                    cancelado:            { color: '#991b1b', bg: '#fee2e2', activeBg: '#fecaca' },
+                  }
+                  const c = cfgs[s.value] || cfgs['novo']
+                  const isActive = pedido.status === s.value
+                  return (
+                    <button
+                      key={s.value}
+                      type="button"
+                      onClick={() => set('status', s.value)}
+                      style={{
+                        padding: '0.35rem 0.85rem',
+                        borderRadius: '20px',
+                        border: `1.5px solid ${isActive ? c.color : 'var(--border,#E9E9EE)'}`,
+                        background: isActive ? c.bg : 'var(--bg-body,#FAFAFA)',
+                        color: isActive ? c.color : 'var(--text-secondary,#6B7280)',
+                        fontFamily: 'Geist, sans-serif',
+                        fontSize: '0.78rem',
+                        fontWeight: isActive ? 700 : 500,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                      }}
+                    >
+                      {isActive && (
+                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: c.color, flexShrink: 0, display: 'inline-block' }} />
+                      )}
+                      {s.label}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Prioridade — 3 botões */}
+              <label className="pf-label" style={{ marginBottom: '0.4rem', display: 'block' }}>Prioridade</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {[
+                  { value: 'baixa', label: 'Baixa',  color: '#6b7280', bg: '#f3f4f6', border: '#d1d5db' },
+                  { value: 'media', label: 'Média',   color: '#d97706', bg: '#fef3c7', border: '#fcd34d' },
+                  { value: 'alta',  label: 'Alta',    color: '#dc2626', bg: '#fee2e2', border: '#fca5a5' },
+                ].map(pr => {
+                  const isActive = pedido.prioridade === pr.value
+                  return (
+                    <button
+                      key={pr.value}
+                      type="button"
+                      onClick={() => set('prioridade', pr.value)}
+                      style={{
+                        flex: 1,
+                        padding: '0.55rem 0.5rem',
+                        borderRadius: '8px',
+                        border: `1.5px solid ${isActive ? pr.border : 'var(--border,#E9E9EE)'}`,
+                        background: isActive ? pr.bg : 'var(--bg-body,#FAFAFA)',
+                        color: isActive ? pr.color : 'var(--text-secondary,#6B7280)',
+                        fontFamily: 'Geist, sans-serif',
+                        fontSize: '0.82rem',
+                        fontWeight: isActive ? 700 : 500,
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                      }}
+                    >{pr.label}</button>
+                  )
+                })}
               </div>
             </div>
 
