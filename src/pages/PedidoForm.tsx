@@ -573,18 +573,11 @@ export default function PedidoForm() {
                   className="pf-input"
                   value={pedido.status}
                   onChange={e => set('status', e.target.value)}
-                  style={{ paddingLeft: '2.2rem', appearance: 'none', WebkitAppearance: 'none' }}
                 >
                   {STATUS_OPTIONS.map(s => (
                     <option key={s.value} value={s.value}>{s.label}</option>
                   ))}
                 </select>
-                <span style={{
-                  position: 'absolute', left: '0.75rem', top: '50%',
-                  transform: 'translateY(-50%)', fontSize: '1rem', pointerEvents: 'none',
-                }}>
-                  {STATUS_ICON[pedido.status] || '🟢'}
-                </span>
               </div>
 
               {/* Prioridade — 3 botões */}
