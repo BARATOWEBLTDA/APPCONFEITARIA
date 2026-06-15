@@ -129,14 +129,23 @@ function MoneyInput({ value, onChange, placeholder }: { value: number; onChange:
   }
 
   return (
-    <input
-      className="pf-input"
-      inputMode="numeric"
-      placeholder={placeholder || '0,00'}
-      value={display}
-      onChange={handleChange}
-      onFocus={e => e.target.select()}
-    />
+    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+      <span style={{
+        position: 'absolute', left: '0.75rem',
+        fontSize: '0.85rem', fontWeight: 600,
+        color: 'var(--text-secondary,#6B7280)',
+        pointerEvents: 'none', userSelect: 'none',
+      }}>R$</span>
+      <input
+        className="pf-input"
+        inputMode="numeric"
+        placeholder={placeholder || '0,00'}
+        value={display}
+        onChange={handleChange}
+        onFocus={e => e.target.select()}
+        style={{ paddingLeft: '2.2rem' }}
+      />
+    </div>
   )
 }
 
