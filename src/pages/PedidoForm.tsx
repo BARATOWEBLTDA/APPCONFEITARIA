@@ -182,6 +182,8 @@ export default function PedidoForm() {
   const [buscaProduto, setBuscaProduto] = useState('')
   const [showProdutoDropdown, setShowProdutoDropdown] = useState(false)
   const [showSinal, setShowSinal] = useState(false)
+  const [showDesconto, setShowDesconto] = useState(false)
+  const [showCupom, setShowCupom] = useState(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -968,50 +970,97 @@ export default function PedidoForm() {
                 </div>
               </div>
 
-              <div className="pf-row2" style={{ marginTop: '1rem' }}>
-                <div className="pf-field">
-                  <label className="pf-label">Desconto (R$)</label>
-                  <MoneyInput value={pedido.desconto} onChange={v => set('desconto', v)} />
-                </div>
-                <div className="pf-field">
-                  <label className="pf-label">Taxa extra (R$)</label>
-                  <MoneyInput value={pedido.taxa_extra} onChange={v => set('taxa_extra', v)} />
-                </div>
-              </div>
-
-              {/* Cupom — lista de cupons ativos */}
-              <div className="pf-row2">
-                <div className="pf-field" style={{ flex: 2 }}>
-                  <label className="pf-label">Cupom</label>
-                  {cupons.length > 0 ? (
-                    <select
-                      className="pf-input"
-                      value={pedido.cupom_codigo}
-                      onChange={e => {
-                        const cup = cupons.find(c => c.codigo === e.target.value)
-                        aplicarCupom(cup || null)
-                      }}
-                    >
-                      <option value="">Sem cupom</option>
-                      {cupons.map(c => (
-                        <option key={c.id} value={c.codigo}>
-                          {c.codigo} — {c.tipo === 'percentual' ? `${c.desconto}%` : formatMoney(c.desconto)}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      className="pf-input"
-                      placeholder="Código do cupom"
-                      value={pedido.cupom_codigo}
-                      onChange={e => set('cupom_codigo', e.target.value)}
-                    />
+              {/* Toggle desconto */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.85rem' }}>
+                <button
+                  type="button"
+                  className={`pf-sinal-toggle${showDesconto || pedido.desconto > 0 ? ' ativo' : ''}`}
+                  onClick={() => {
+                    if (showDesconto && pedido.desconto === 0) setShowDesconto(false)
+                    else setShowDesconto(v => !v)
+                  }}
+                >
+                  <span className="pf-sinal-check">
+                    {(showDesconto || pedido.desconto > 0) && (
+                      <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    )}
+                  </span>
+                  <span>Aplicar desconto</span>
+                  {pedido.desconto > 0 && (
+                    <span style={{ marginLeft: 'auto', fontSize: '0.78rem', fontWeight: 700, color: '#16a34a' }}>
+                      - {formatMoney(pedido.desconto)}
+                    </span>
                   )}
-                </div>
-                <div className="pf-field">
-                  <label className="pf-label">Desconto cupom (R$)</label>
-                  <MoneyInput value={pedido.cupom_desconto} onChange={v => set('cupom_desconto', v)} />
-                </div>
+                </button>
+                {(showDesconto || pedido.desconto > 0) && (
+                  <div className="pf-row2" style={{ paddingLeft: '0.25rem' }}>
+                    <div className="pf-field">
+                      <label className="pf-label">Valor do desconto (R$)</label>
+                      <MoneyInput value={pedido.desconto} onChange={v => set('desconto', v)} />
+                    </div>
+                    <div className="pf-field">
+                      <label className="pf-label">Taxa extra (R$)</label>
+                      <MoneyInput value={pedido.taxa_extra} onChange={v => set('taxa_extra', v)} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Toggle cupom */}
+                <button
+                  type="button"
+                  className={`pf-sinal-toggle${showCupom || pedido.cupom_codigo ? ' ativo' : ''}`}
+                  onClick={() => {
+                    if (showCupom && !pedido.cupom_codigo) setShowCupom(false)
+                    else setShowCupom(v => !v)
+                  }}
+                >
+                  <span className="pf-sinal-check">
+                    {(showCupom || pedido.cupom_codigo) && (
+                      <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    )}
+                  </span>
+                  <span>Aplicar cupom</span>
+                  {pedido.cupom_codigo && (
+                    <span style={{ marginLeft: 'auto', fontSize: '0.78rem', fontWeight: 700, color: '#16a34a' }}>
+                      {pedido.cupom_codigo} — - {formatMoney(pedido.cupom_desconto)}
+                    </span>
+                  )}
+                </button>
+                {(showCupom || pedido.cupom_codigo) && (
+                  <div className="pf-row2" style={{ paddingLeft: '0.25rem' }}>
+                    <div className="pf-field" style={{ flex: 2 }}>
+                      <label className="pf-label">Cupom</label>
+                      {cupons.length > 0 ? (
+                        <select
+                          className="pf-input"
+                          value={pedido.cupom_codigo}
+                          onChange={e => {
+                            const cup = cupons.find(c => c.codigo === e.target.value)
+                            aplicarCupom(cup || null)
+                          }}
+                        >
+                          <option value="">Selecionar cupom...</option>
+                          {cupons.map(c => (
+                            <option key={c.id} value={c.codigo}>
+                              {c.codigo} — {c.tipo === 'percentual' ? `${c.desconto}%` : formatMoney(c.desconto)}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          className="pf-input"
+                          placeholder="Código do cupom"
+                          value={pedido.cupom_codigo}
+                          onChange={e => set('cupom_codigo', e.target.value)}
+                        />
+                      )}
+                    </div>
+                    <div className="pf-field">
+                      <label className="pf-label">Desconto cupom (R$)</label>
+                      <MoneyInput value={pedido.cupom_desconto} onChange={v => set('cupom_desconto', v)} />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
