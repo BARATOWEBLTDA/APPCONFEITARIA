@@ -183,6 +183,7 @@ export default function PedidoForm() {
   const [showSinal, setShowSinal] = useState(false)
   const [showDesconto, setShowDesconto] = useState(false)
   const [showCupom, setShowCupom] = useState(false)
+  const [etapaAtiva, setEtapaAtiva] = useState<string>('cliente')
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -422,6 +423,51 @@ export default function PedidoForm() {
     pago:     { label: 'Pago',            color: '#16a34a', bg: '#f0fdf4', dot: '#22c55e' },
   } as const
 
+  // Regras de desbloqueio progressivo
+  const clienteOk = !!(pedido.cliente_nome)
+  const produtoOk = itens.length > 0
+
+  const etapas = {
+    cliente:        { label: '1', unlocked: true },
+    produto:        { label: '2', unlocked: clienteOk },
+    personalizacao: { label: '3', unlocked: produtoOk },
+    entrega:        { label: '4', unlocked: produtoOk },
+    valores:        { label: '5', unlocked: produtoOk },
+    pagamento:      { label: '6', unlocked: produtoOk },
+    status:         { label: '7', unlocked: true },
+  } as const
+
+  type EtapaKey = keyof typeof etapas
+
+  const CardWrapper = ({
+    id, children, className = '', style = {},
+  }: {
+    id: EtapaKey
+    children: React.ReactNode
+    className?: string
+    style?: React.CSSProperties
+  }) => {
+    const unlocked = etapas[id].unlocked
+    return (
+      <div
+        id={`etapa-${id}`}
+        className={`pf-etapa-wrapper${unlocked ? '' : ' bloqueado'} ${className}`}
+        style={style}
+        onClick={() => { if (unlocked) setEtapaAtiva(id) }}
+      >
+        {children}
+        {!unlocked && (
+          <div className="pf-etapa-overlay">
+            <span className="pf-etapa-lock">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              {id === 'produto' ? 'Preencha o cliente primeiro' : 'Adicione um produto primeiro'}
+            </span>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   if (loading) return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
       <div className="pf-spinner" />
@@ -463,7 +509,8 @@ export default function PedidoForm() {
       <div className="pf-content">
         <div className="pf-section-list">
 
-          {/* ── Bloco Cliente ── */}
+          {/* ── 1. Cliente ── */}
+          <CardWrapper id="cliente">
           <div className="pf-card">
             <h3 className="pf-card-title">Cliente</h3>
 
@@ -552,99 +599,10 @@ export default function PedidoForm() {
               <div className="pf-field" />
             </div>
           </div>
+          </CardWrapper>
 
-          {/* ── Bloco Entrega ── */}
-          <div className="pf-card">
-            <h3 className="pf-card-title">Entrega</h3>
-
-            {/* Data + Hora */}
-            <div className="pf-row2" style={{ marginBottom: '0.85rem' }}>
-              <DatePickerField
-                label="Data de entrega / Pedido"
-                value={pedido.data_entrega}
-                onChange={v => set('data_entrega', v)}
-                required
-                minDate={new Date()}
-                placeholder="Selecionar data"
-              />
-              <TimePickerField
-                label="Horário"
-                value={pedido.horario_entrega}
-                onChange={v => set('horario_entrega', v)}
-                placeholder="Selecionar horário"
-                minuteStep={10}
-              />
-            </div>
-
-            {/* Tipo de entrega — toggle visual (só Entrega / Retirada) */}
-            <label className="pf-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Tipo de entrega</label>
-            <div className="pf-toggle-entrega">
-              {[
-                { value: 'retirada', label: 'Retirada' },
-                { value: 'entrega',  label: 'Entrega' },
-              ].map(t => {
-                const isActive = pedido.tipo_entrega === t.value
-                return (
-                  <button
-                    key={t.value}
-                    type="button"
-                    onClick={() => set('tipo_entrega', t.value)}
-                    className={`pf-entrega-toggle${isActive ? ' ativo' : ''}`}
-                  >
-                    <span className="pf-entrega-label">{t.label}</span>
-                    <span className="pf-entrega-check">{isActive ? '✓' : ''}</span>
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Endereço — só aparece quando Entrega */}
-            {pedido.tipo_entrega === 'entrega' && (
-              <div style={{ marginTop: '0.85rem', borderTop: '1px solid var(--border,#E9E9EE)', paddingTop: '0.85rem' }}>
-                <label className="pf-label" style={{ marginBottom: '0.5rem', display: 'block', color: 'var(--text-title,#1F2937)', fontWeight: 700 }}>
-                  Endereço de entrega
-                </label>
-                <div className="pf-row2">
-                  <div className="pf-field">
-                    <label className="pf-label">CEP</label>
-                    <input className="pf-input" placeholder="00000-000" value={pedido.endereco_cep} onChange={e => set('endereco_cep', e.target.value)} />
-                  </div>
-                  <div className="pf-field" style={{ flex: 2 }}>
-                    <label className="pf-label">Rua / Avenida</label>
-                    <input className="pf-input" placeholder="Rua..." value={pedido.endereco_rua} onChange={e => set('endereco_rua', e.target.value)} />
-                  </div>
-                </div>
-                <div className="pf-row2">
-                  <div className="pf-field">
-                    <label className="pf-label">Número</label>
-                    <input className="pf-input" placeholder="Nº" value={pedido.endereco_numero} onChange={e => set('endereco_numero', e.target.value)} />
-                  </div>
-                  <div className="pf-field" style={{ flex: 2 }}>
-                    <label className="pf-label">Complemento</label>
-                    <input className="pf-input" placeholder="Apto, bloco..." value={pedido.endereco_complemento} onChange={e => set('endereco_complemento', e.target.value)} />
-                  </div>
-                </div>
-                <div className="pf-row2">
-                  <div className="pf-field">
-                    <label className="pf-label">Bairro</label>
-                    <input className="pf-input" value={pedido.endereco_bairro} onChange={e => set('endereco_bairro', e.target.value)} />
-                  </div>
-                  <div className="pf-field">
-                    <label className="pf-label">Cidade</label>
-                    <input className="pf-input" value={pedido.endereco_cidade} onChange={e => set('endereco_cidade', e.target.value)} />
-                  </div>
-                </div>
-                <div style={{ maxWidth: '50%' }}>
-                  <div className="pf-field">
-                    <label className="pf-label">Taxa de entrega (R$)</label>
-                    <MoneyInput value={pedido.taxa_entrega} onChange={v => set('taxa_entrega', v)} />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* ── Bloco Itens do pedido ── */}
+          {/* ── 2. Itens do pedido ── */}
+          <CardWrapper id="produto">
           <div className="pf-card">
             {/* Cabeçalho sem botão "+ Adicionar" no topo */}
             <h3 className="pf-card-title" style={{ marginBottom: '1rem' }}>
@@ -786,35 +744,165 @@ export default function PedidoForm() {
               </>
             )}
           </div>
+          </CardWrapper>
 
-          {/* ── Status do pedido ── */}
+          {/* ── 3. Personalização ── */}
+          <CardWrapper id="personalizacao">
+            <button
+              className={`pf-toggle-btn${showPersonalizacao ? ' ativo' : ''}`}
+              onClick={() => {
+                if (showPersonalizacao) {
+                  setPedido(p => ({
+                    ...p,
+                    personalizacao_tema: '',
+                    personalizacao_nome: '',
+                    personalizacao_idade: '',
+                    personalizacao_cor: '',
+                    personalizacao_obs: '',
+                  }))
+                }
+                setShowPersonalizacao(v => !v)
+              }}
+            >
+              <span className="pf-toggle-icon">
+                {showPersonalizacao ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                ) : (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                )}
+              </span>
+              <span>Personalização</span>
+              {(pedido.personalizacao_tema || pedido.personalizacao_nome) && !showPersonalizacao && (
+                <span className="pf-toggle-badge">preenchida</span>
+              )}
+            </button>
+
+            {showPersonalizacao && (
+              <div className="pf-toggle-content">
+                <div className="pf-row2">
+                  <div className="pf-field">
+                    <label className="pf-label">Tema</label>
+                    <input className="pf-input" placeholder="Ex: Fazendinha, Frozen..." value={pedido.personalizacao_tema} onChange={e => set('personalizacao_tema', e.target.value)} />
+                  </div>
+                  <div className="pf-field">
+                    <label className="pf-label">Nome no bolo</label>
+                    <input className="pf-input" placeholder="Ex: Maria" value={pedido.personalizacao_nome} onChange={e => set('personalizacao_nome', e.target.value)} />
+                  </div>
+                </div>
+                <div className="pf-row2">
+                  <div className="pf-field">
+                    <label className="pf-label">Idade</label>
+                    <input className="pf-input" placeholder="Ex: 5 anos" value={pedido.personalizacao_idade} onChange={e => set('personalizacao_idade', e.target.value)} />
+                  </div>
+                  <div className="pf-field">
+                    <label className="pf-label">Cor principal</label>
+                    <input className="pf-input" placeholder="Ex: Rosa e dourado" value={pedido.personalizacao_cor} onChange={e => set('personalizacao_cor', e.target.value)} />
+                  </div>
+                </div>
+                <div className="pf-field">
+                  <label className="pf-label">Observações de personalização</label>
+                  <textarea className="pf-textarea" placeholder="Detalhes extras sobre a decoração..." value={pedido.personalizacao_obs} onChange={e => set('personalizacao_obs', e.target.value)} rows={3} />
+                </div>
+              </div>
+            )}
+          </div>
+          </CardWrapper>
+
+          {/* ── 4. Entrega ── */}
+          <CardWrapper id="entrega">
           <div className="pf-card">
-            <h3 className="pf-card-title" style={{ marginBottom: '0.85rem' }}>Status do pedido</h3>
+            <h3 className="pf-card-title">Entrega</h3>
 
-            <div className="pf-status-list" style={{ marginBottom: '1rem' }}>
-              {STATUS_OPTIONS.map(s => {
-                const isActive = pedido.status === s.value
+            {/* Data + Hora */}
+            <div className="pf-row2" style={{ marginBottom: '0.85rem' }}>
+              <DatePickerField
+                label="Data de entrega / Pedido"
+                value={pedido.data_entrega}
+                onChange={v => set('data_entrega', v)}
+                required
+                minDate={new Date()}
+                placeholder="Selecionar data"
+              />
+              <TimePickerField
+                label="Horário"
+                value={pedido.horario_entrega}
+                onChange={v => set('horario_entrega', v)}
+                placeholder="Selecionar horário"
+                minuteStep={10}
+              />
+            </div>
+
+            {/* Tipo de entrega — toggle visual (só Entrega / Retirada) */}
+            <label className="pf-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Tipo de entrega</label>
+            <div className="pf-toggle-entrega">
+              {[
+                { value: 'retirada', label: 'Retirada' },
+                { value: 'entrega',  label: 'Entrega' },
+              ].map(t => {
+                const isActive = pedido.tipo_entrega === t.value
                 return (
                   <button
-                    key={s.value}
+                    key={t.value}
                     type="button"
-                    onClick={() => set('status', s.value)}
-                    className={`pf-status-item${isActive ? ' ativo' : ''}`}
+                    onClick={() => set('tipo_entrega', t.value)}
+                    className={`pf-entrega-toggle${isActive ? ' ativo' : ''}`}
                   >
-                    <span className="pf-status-dot" style={{ background: s.color }} />
-                    <span className="pf-status-name">{s.label}</span>
-                    {isActive && (
-                      <span className="pf-status-check">✓</span>
-                    )}
+                    <span className="pf-entrega-label">{t.label}</span>
+                    <span className="pf-entrega-check">{isActive ? '✓' : ''}</span>
                   </button>
                 )
               })}
             </div>
 
-
+            {/* Endereço — só aparece quando Entrega */}
+            {pedido.tipo_entrega === 'entrega' && (
+              <div style={{ marginTop: '0.85rem', borderTop: '1px solid var(--border,#E9E9EE)', paddingTop: '0.85rem' }}>
+                <label className="pf-label" style={{ marginBottom: '0.5rem', display: 'block', color: 'var(--text-title,#1F2937)', fontWeight: 700 }}>
+                  Endereço de entrega
+                </label>
+                <div className="pf-row2">
+                  <div className="pf-field">
+                    <label className="pf-label">CEP</label>
+                    <input className="pf-input" placeholder="00000-000" value={pedido.endereco_cep} onChange={e => set('endereco_cep', e.target.value)} />
+                  </div>
+                  <div className="pf-field" style={{ flex: 2 }}>
+                    <label className="pf-label">Rua / Avenida</label>
+                    <input className="pf-input" placeholder="Rua..." value={pedido.endereco_rua} onChange={e => set('endereco_rua', e.target.value)} />
+                  </div>
+                </div>
+                <div className="pf-row2">
+                  <div className="pf-field">
+                    <label className="pf-label">Número</label>
+                    <input className="pf-input" placeholder="Nº" value={pedido.endereco_numero} onChange={e => set('endereco_numero', e.target.value)} />
+                  </div>
+                  <div className="pf-field" style={{ flex: 2 }}>
+                    <label className="pf-label">Complemento</label>
+                    <input className="pf-input" placeholder="Apto, bloco..." value={pedido.endereco_complemento} onChange={e => set('endereco_complemento', e.target.value)} />
+                  </div>
+                </div>
+                <div className="pf-row2">
+                  <div className="pf-field">
+                    <label className="pf-label">Bairro</label>
+                    <input className="pf-input" value={pedido.endereco_bairro} onChange={e => set('endereco_bairro', e.target.value)} />
+                  </div>
+                  <div className="pf-field">
+                    <label className="pf-label">Cidade</label>
+                    <input className="pf-input" value={pedido.endereco_cidade} onChange={e => set('endereco_cidade', e.target.value)} />
+                  </div>
+                </div>
+                <div style={{ maxWidth: '50%' }}>
+                  <div className="pf-field">
+                    <label className="pf-label">Taxa de entrega (R$)</label>
+                    <MoneyInput value={pedido.taxa_entrega} onChange={v => set('taxa_entrega', v)} />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
+          </CardWrapper>
 
-          {/* ── Pagamento + Valores (lado a lado) ── */}
+          {/* ── 5+6. Valores + Pagamento ── */}
+          <CardWrapper id="valores">
           <div className="pf-row-cards">
             <div className="pf-card" style={{ flex: 1, minWidth: 0 }}>
               {/* Título + badge de status automático */}
@@ -1058,70 +1146,39 @@ export default function PedidoForm() {
               </div>
             </div>
           </div>
+          </CardWrapper>
 
-          {/* ── Personalização (opcional) ── */}
-          <div className="pf-card pf-card-toggle">
-            <button
-              className={`pf-toggle-btn${showPersonalizacao ? ' ativo' : ''}`}
-              onClick={() => {
-                if (showPersonalizacao) {
-                  setPedido(p => ({
-                    ...p,
-                    personalizacao_tema: '',
-                    personalizacao_nome: '',
-                    personalizacao_idade: '',
-                    personalizacao_cor: '',
-                    personalizacao_obs: '',
-                  }))
-                }
-                setShowPersonalizacao(v => !v)
-              }}
-            >
-              <span className="pf-toggle-icon">
-                {showPersonalizacao ? (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                ) : (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                )}
-              </span>
-              <span>Personalização</span>
-              {(pedido.personalizacao_tema || pedido.personalizacao_nome) && !showPersonalizacao && (
-                <span className="pf-toggle-badge">preenchida</span>
-              )}
-            </button>
+          {/* ── 7. Status do pedido ── */}
+          <CardWrapper id="status">
+          <div className="pf-card">
+            <h3 className="pf-card-title" style={{ marginBottom: '0.85rem' }}>Status do pedido</h3>
 
-            {showPersonalizacao && (
-              <div className="pf-toggle-content">
-                <div className="pf-row2">
-                  <div className="pf-field">
-                    <label className="pf-label">Tema</label>
-                    <input className="pf-input" placeholder="Ex: Fazendinha, Frozen..." value={pedido.personalizacao_tema} onChange={e => set('personalizacao_tema', e.target.value)} />
-                  </div>
-                  <div className="pf-field">
-                    <label className="pf-label">Nome no bolo</label>
-                    <input className="pf-input" placeholder="Ex: Maria" value={pedido.personalizacao_nome} onChange={e => set('personalizacao_nome', e.target.value)} />
-                  </div>
-                </div>
-                <div className="pf-row2">
-                  <div className="pf-field">
-                    <label className="pf-label">Idade</label>
-                    <input className="pf-input" placeholder="Ex: 5 anos" value={pedido.personalizacao_idade} onChange={e => set('personalizacao_idade', e.target.value)} />
-                  </div>
-                  <div className="pf-field">
-                    <label className="pf-label">Cor principal</label>
-                    <input className="pf-input" placeholder="Ex: Rosa e dourado" value={pedido.personalizacao_cor} onChange={e => set('personalizacao_cor', e.target.value)} />
-                  </div>
-                </div>
-                <div className="pf-field">
-                  <label className="pf-label">Observações de personalização</label>
-                  <textarea className="pf-textarea" placeholder="Detalhes extras sobre a decoração..." value={pedido.personalizacao_obs} onChange={e => set('personalizacao_obs', e.target.value)} rows={3} />
-                </div>
-              </div>
-            )}
+            <div className="pf-status-list" style={{ marginBottom: '1rem' }}>
+              {STATUS_OPTIONS.map(s => {
+                const isActive = pedido.status === s.value
+                return (
+                  <button
+                    key={s.value}
+                    type="button"
+                    onClick={() => set('status', s.value)}
+                    className={`pf-status-item${isActive ? ' ativo' : ''}`}
+                  >
+                    <span className="pf-status-dot" style={{ background: s.color }} />
+                    <span className="pf-status-name">{s.label}</span>
+                    {isActive && (
+                      <span className="pf-status-check">✓</span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+
+
           </div>
+          </CardWrapper>
 
-          {/* ── Observações gerais (opcional) ── */}
-          <div className="pf-card pf-card-toggle">
+          {/* ── Observações ── */}
+          <div>
             <button
               className={`pf-toggle-btn${showObservacoes ? ' ativo' : ''}`}
               onClick={() => {
@@ -1148,6 +1205,8 @@ export default function PedidoForm() {
               </div>
             )}
           </div>
+          </div>
+
 
         </div>
       </div>
@@ -1180,6 +1239,26 @@ export default function PedidoForm() {
 
       <style>{`
         .pf-root { font-family: 'Geist', sans-serif; display: flex; flex-direction: column; gap: 1rem; padding-bottom: 5rem; }
+
+        /* Accordion progressivo */
+        .pf-etapa-wrapper { position: relative; border-radius: 14px; transition: opacity 0.2s; }
+        .pf-etapa-wrapper.bloqueado { pointer-events: none; }
+        .pf-etapa-wrapper.bloqueado > *:not(.pf-etapa-overlay) { opacity: 0.35; filter: blur(1.5px); user-select: none; }
+        .pf-etapa-overlay {
+          position: absolute; inset: 0; border-radius: 14px;
+          background: rgba(255,255,255,0.6);
+          backdrop-filter: blur(2px);
+          display: flex; align-items: center; justify-content: center;
+          z-index: 10; pointer-events: none;
+        }
+        .pf-etapa-lock {
+          display: flex; align-items: center; gap: 0.5rem;
+          background: white; border: 1.5px solid var(--border,#E9E9EE);
+          border-radius: 999px; padding: 0.4rem 1rem;
+          font-size: 0.78rem; font-weight: 600;
+          color: var(--text-secondary,#6B7280);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
 
         .pf-header { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
         .pf-back { display: flex; align-items: center; gap: 0.3rem; background: none; border: none; cursor: pointer; font-size: 0.85rem; color: var(--text-secondary,#6B7280); font-family: 'Geist', sans-serif; padding: 0; }
