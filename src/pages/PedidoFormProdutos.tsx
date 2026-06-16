@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { type Pedido, type PedidoItem, EMPTY_ITEM, formatMoney, parseMoney, formatMoneyInput } from '@/pages/pedidoFormTypes'
+import { type Pedido, type PedidoItem, EMPTY_ITEM, formatMoney } from '@/pages/pedidoFormTypes'
 
 type Props = {
   pedido: Pedido
@@ -9,27 +9,6 @@ type Props = {
   produtos: any[]
   onNext: () => void
   onBack: () => void
-}
-
-function MoneyInput({ value, onChange, placeholder }: { value: number; onChange: (v: number) => void; placeholder?: string }) {
-  const [display, setDisplay] = useState(value > 0 ? formatMoneyInput(value) : '')
-  const prev = useRef(value)
-  if (value !== prev.current && value !== parseMoney(display)) {
-    prev.current = value
-    setDisplay(value > 0 ? formatMoneyInput(value) : '')
-  }
-  return (
-    <div style={{ position: 'relative' }}>
-      <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', pointerEvents: 'none' }}>R$</span>
-      <input
-        className="pf2-input" inputMode="numeric"
-        placeholder={placeholder || '0,00'} value={display}
-        onChange={e => { const n = parseMoney(e.target.value); prev.current = n; setDisplay(formatMoneyInput(n)); onChange(n) }}
-        onFocus={e => e.target.select()}
-        style={{ paddingLeft: '2.2rem' }}
-      />
-    </div>
-  )
 }
 
 export default function StepProdutos({ pedido, set, itens, setItens, produtos, onNext, onBack }: Props) {
