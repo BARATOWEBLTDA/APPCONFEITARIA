@@ -115,7 +115,6 @@ function HorarioSheet({ value, onChange, onClose }: {
               inputMode="numeric"
               maxLength={5}
               value={customHora}
-              autoFocus
               onChange={e => {
                 const digits = e.target.value.replace(/\D/g, '').slice(0, 4)
                 const formatted = digits.length > 2 ? `${digits.slice(0,2)}:${digits.slice(2)}` : digits
