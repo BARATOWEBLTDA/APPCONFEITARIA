@@ -391,28 +391,43 @@ export default function PedidoForm() {
         </div>
       </div>
 
-      {/* ── Indicador de progresso ── */}
-      <div className="pf-progresso">
-        {[
-          { id: 'cliente',  label: 'Cliente',  done: clienteOk },
-          { id: 'produto',  label: 'Produtos', done: produtoOk },
-          { id: 'entrega',  label: 'Entrega',  done: !!(pedido.data_entrega) },
-          { id: 'valores',  label: 'Valores',  done: pedido.valor_total > 0 },
-          { id: 'pagamento',label: 'Pagamento',done: pedido.forma_pagamento !== '' },
-          { id: 'status',   label: 'Status',   done: !!(pedido.status) },
-        ].map((etapa, idx, arr) => (
-          <div key={etapa.id} className="pf-prog-etapa">
-            <div className={`pf-prog-dot${etapa.done ? ' done' : ''}`}>
-              {etapa.done
-                ? <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                : <span>{idx + 1}</span>
-              }
+      {/* ── Indicador de progresso compacto ── */}
+      {(() => {
+        const etapas = [
+          { id: 'cliente',   label: 'Cliente',   done: clienteOk },
+          { id: 'produto',   label: 'Produtos',  done: produtoOk },
+          { id: 'entrega',   label: 'Entrega',   done: !!(pedido.data_entrega) },
+          { id: 'valores',   label: 'Valores',   done: pedido.valor_total > 0 },
+          { id: 'pagamento', label: 'Pagamento', done: pedido.forma_pagamento !== '' },
+          { id: 'status',    label: 'Status',    done: !!(pedido.status) },
+        ]
+        const currentIdx = etapas.findIndex(e => !e.done)
+        const atual = currentIdx === -1 ? etapas.length - 1 : currentIdx
+        const concluidas = etapas.filter(e => e.done).length
+        return (
+          <div className="pf-progresso">
+            <div className="pf-prog-dots">
+              {etapas.map((etapa, idx) => (
+                <div key={etapa.id} className="pf-prog-item">
+                  <div className={`pf-prog-dot${etapa.done ? ' done' : idx === atual ? ' atual' : ''}`}>
+                    {etapa.done
+                      ? <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      : null
+                    }
+                  </div>
+                  {idx < etapas.length - 1 && (
+                    <div className={`pf-prog-linha${etapa.done ? ' done' : ''}`} />
+                  )}
+                </div>
+              ))}
             </div>
-            <span className={`pf-prog-label${etapa.done ? ' done' : ''}`}>{etapa.label}</span>
-            {idx < arr.length - 1 && <div className={`pf-prog-linha${etapa.done ? ' done' : ''}`} />}
+            <div className="pf-prog-info">
+              <span className="pf-prog-contador">{concluidas}/{etapas.length}</span>
+              <span className="pf-prog-atual">{etapas[atual]?.label}</span>
+            </div>
           </div>
-        ))}
-      </div>
+        )
+      })()}
 
       <div className="pf-content">
         <div className="pf-section-list">
@@ -923,23 +938,24 @@ export default function PedidoForm() {
         /* ── Header sticky desktop ── */
         .pf-header-sticky { position: sticky; top: 0; z-index: 40; background: var(--bg-body,#FAFAFA); padding: 0.75rem 0; margin: -0.75rem 0 0; border-bottom: 1px solid var(--border,#E9E9EE); }
 
-        /* ── Indicador de progresso ── */
-        .pf-progresso { display: flex; align-items: center; padding: 0.75rem 0; overflow-x: auto; gap: 0; scrollbar-width: none; }
-        .pf-progresso::-webkit-scrollbar { display: none; }
-        .pf-prog-etapa { display: flex; align-items: center; gap: 0; flex-shrink: 0; }
+        /* ── Indicador de progresso compacto ── */
+        .pf-progresso { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0; }
+        .pf-prog-dots { display: flex; align-items: center; flex-shrink: 0; }
+        .pf-prog-item { display: flex; align-items: center; }
         .pf-prog-dot {
-          width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+          width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
           border: 2px solid var(--border,#E9E9EE);
           background: var(--bg-body,#F7F7F8);
           display: flex; align-items: center; justify-content: center;
-          font-size: 0.68rem; font-weight: 700; color: var(--text-muted,#9CA3AF);
           transition: all 0.2s;
         }
-        .pf-prog-dot.done { background: #16a34a; border-color: #16a34a; color: white; }
-        .pf-prog-label { font-size: 0.68rem; font-weight: 600; color: var(--text-muted,#9CA3AF); margin: 0 0.3rem; white-space: nowrap; transition: color 0.2s; }
-        .pf-prog-label.done { color: #16a34a; }
-        .pf-prog-linha { height: 2px; width: 16px; background: var(--border,#E9E9EE); flex-shrink: 0; transition: background 0.2s; }
+        .pf-prog-dot.done { background: #16a34a; border-color: #16a34a; }
+        .pf-prog-dot.atual { border-color: var(--primary,#FF6FA9); background: var(--primary-light,#FFF1F7); }
+        .pf-prog-linha { height: 2px; width: 12px; background: var(--border,#E9E9EE); flex-shrink: 0; transition: background 0.2s; }
         .pf-prog-linha.done { background: #16a34a; }
+        .pf-prog-info { display: flex; align-items: center; gap: 0.4rem; }
+        .pf-prog-contador { font-size: 0.72rem; font-weight: 700; color: var(--text-muted,#9CA3AF); background: var(--bg-body,#F7F7F8); border: 1.5px solid var(--border,#E9E9EE); border-radius: 999px; padding: 1px 7px; white-space: nowrap; }
+        .pf-prog-atual { font-size: 0.78rem; font-weight: 700; color: var(--primary,#FF6FA9); white-space: nowrap; }
 
         /* ── Check de etapa concluída ── */
         .pf-etapa-concluida { font-size: 0.72rem; font-weight: 700; color: #16a34a; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 999px; padding: 2px 10px; }
