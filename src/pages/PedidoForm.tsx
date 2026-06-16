@@ -189,6 +189,8 @@ export default function PedidoForm() {
   const [showSinal, setShowSinal] = useState(false)
   const [showDesconto, setShowDesconto] = useState(false)
   const [showCupom, setShowCupom] = useState(false)
+  const [tocados, setTocados] = useState<Record<string, boolean>>({})
+  const tocar = (campo: string) => setTocados(t => ({ ...t, [campo]: true }))
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -371,7 +373,7 @@ export default function PedidoForm() {
     <div className="pf-root">
 
       {/* ── Header ── */}
-      <div className="pf-header">
+      <div className="pf-header pf-header-sticky">
         <button className="pf-back" onClick={() => navigate('/pedidos')}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
           Pedidos
@@ -389,12 +391,40 @@ export default function PedidoForm() {
         </div>
       </div>
 
+      {/* ── Indicador de progresso ── */}
+      <div className="pf-progresso">
+        {[
+          { id: 'cliente',  label: 'Cliente',  done: clienteOk },
+          { id: 'produto',  label: 'Produtos', done: produtoOk },
+          { id: 'entrega',  label: 'Entrega',  done: !!(pedido.data_entrega) },
+          { id: 'valores',  label: 'Valores',  done: pedido.valor_total > 0 },
+          { id: 'pagamento',label: 'Pagamento',done: pedido.forma_pagamento !== '' },
+          { id: 'status',   label: 'Status',   done: !!(pedido.status) },
+        ].map((etapa, idx, arr) => (
+          <div key={etapa.id} className="pf-prog-etapa">
+            <div className={`pf-prog-dot${etapa.done ? ' done' : ''}`}>
+              {etapa.done
+                ? <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                : <span>{idx + 1}</span>
+              }
+            </div>
+            <span className={`pf-prog-label${etapa.done ? ' done' : ''}`}>{etapa.label}</span>
+            {idx < arr.length - 1 && <div className={`pf-prog-linha${etapa.done ? ' done' : ''}`} />}
+          </div>
+        ))}
+      </div>
+
       <div className="pf-content">
         <div className="pf-section-list">
 
           {/* ══ 1. CLIENTE ══ */}
           <div className="pf-card">
-            <h3 className="pf-card-title">Cliente</h3>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+              <h3 className="pf-card-title" style={{ margin: 0 }}>Cliente</h3>
+              {clienteOk && (
+                <span className="pf-etapa-concluida">✓ Concluído</span>
+              )}
+            </div>
             <div className="pf-row2">
               <div className="pf-field" style={{ position: 'relative', flex: 2 }}>
                 <label className="pf-label">
@@ -407,7 +437,7 @@ export default function PedidoForm() {
                   )}
                 </label>
                 <input
-                  className="pf-input"
+                  className={`pf-input${tocados['cliente_nome'] && !pedido.cliente_nome ? ' pf-input-erro' : ''}`}
                   placeholder="Buscar pelo nome (mín. 3 letras)..."
                   value={buscaCliente || pedido.cliente_nome}
                   onChange={e => {
@@ -416,8 +446,11 @@ export default function PedidoForm() {
                     setPedido(p => ({ ...p, cliente_nome: val, cliente_id: undefined }))
                     setShowClienteDropdown(val.length >= 3)
                   }}
-                  onBlur={() => setTimeout(() => setShowClienteDropdown(false), 200)}
+                  onBlur={() => { tocar('cliente_nome'); setTimeout(() => setShowClienteDropdown(false), 200) }}
                 />
+                {tocados['cliente_nome'] && !pedido.cliente_nome && (
+                  <span className="pf-erro-msg">Campo obrigatório</span>
+                )}
                 {showClienteDropdown && (clientesFiltrados.length > 0 || buscaCliente.length >= 3) && (
                   <div className="pf-dropdown" onMouseDown={e => e.preventDefault()}>
                     {clientesFiltrados.slice(0, 5).map(c => (
@@ -458,7 +491,12 @@ export default function PedidoForm() {
           {/* ══ 2. ITENS DO PEDIDO ══ */}
           <div className={`pf-etapa-wrapper${clienteOk ? '' : ' bloqueado'}`}>
             <div className="pf-card">
-              <h3 className="pf-card-title">Itens do pedido<span className="pf-required-badge">Obrigatório</span></h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0' }}>
+                <h3 className="pf-card-title" style={{ margin: 0 }}>Itens do pedido<span className="pf-required-badge">Obrigatório</span></h3>
+                {produtoOk && (
+                  <span className="pf-etapa-concluida">✓ Concluído</span>
+                )}
+              </div>
               {itens.length === 0 && !adicionandoItem && (
                 <div className="pf-empty-items">
                   <p>Nenhum produto adicionado</p>
@@ -545,67 +583,78 @@ export default function PedidoForm() {
                   )}
                 </>
               )}
+
+                {/* Personalização — colapsável dentro dos itens */}
+                <div style={{ borderTop: '1px solid var(--border,#E9E9EE)', marginTop: '0.5rem', paddingTop: '0.5rem' }}>
+                  <button
+                    type="button"
+                    className={`pf-toggle-btn${showPersonalizacao ? ' ativo' : ''}`}
+                    style={{ padding: '0.6rem 0', width: '100%' }}
+                    onClick={() => {
+                      if (showPersonalizacao) setPedido(p => ({ ...p, personalizacao_tema: '', personalizacao_nome: '', personalizacao_idade: '', personalizacao_cor: '', personalizacao_obs: '' }))
+                      setShowPersonalizacao(v => !v)
+                    }}
+                  >
+                    <span className="pf-toggle-icon">
+                      {showPersonalizacao
+                        ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      }
+                    </span>
+                    <span style={{ fontSize: '0.83rem' }}>Personalização do pedido</span>
+                    {(pedido.personalizacao_tema || pedido.personalizacao_nome) && !showPersonalizacao && <span className="pf-toggle-badge">preenchida</span>}
+                  </button>
+                  {showPersonalizacao && (
+                    <div style={{ paddingTop: '0.5rem' }}>
+                      <div className="pf-row2">
+                        <div className="pf-field">
+                          <label className="pf-label">Tema</label>
+                          <input className="pf-input" placeholder="Ex: Fazendinha, Frozen..." value={pedido.personalizacao_tema} onChange={e => set('personalizacao_tema', e.target.value)} />
+                        </div>
+                        <div className="pf-field">
+                          <label className="pf-label">Nome no bolo</label>
+                          <input className="pf-input" placeholder="Ex: Maria" value={pedido.personalizacao_nome} onChange={e => set('personalizacao_nome', e.target.value)} />
+                        </div>
+                      </div>
+                      <div className="pf-row2">
+                        <div className="pf-field">
+                          <label className="pf-label">Idade</label>
+                          <input className="pf-input" placeholder="Ex: 5 anos" value={pedido.personalizacao_idade} onChange={e => set('personalizacao_idade', e.target.value)} />
+                        </div>
+                        <div className="pf-field">
+                          <label className="pf-label">Cor principal</label>
+                          <input className="pf-input" placeholder="Ex: Rosa e dourado" value={pedido.personalizacao_cor} onChange={e => set('personalizacao_cor', e.target.value)} />
+                        </div>
+                      </div>
+                      <div className="pf-field">
+                        <label className="pf-label">Observações de personalização</label>
+                        <textarea className="pf-textarea" placeholder="Detalhes extras sobre a decoração..." value={pedido.personalizacao_obs} onChange={e => set('personalizacao_obs', e.target.value)} rows={3} />
+                      </div>
+                    </div>
+                  )}
+                </div>
             </div>
             {!clienteOk && <BloqueioOverlay mensagem="Preencha o cliente primeiro" />}
           </div>
 
-          {/* ══ 3. PERSONALIZAÇÃO ══ */}
-          <div className={`pf-etapa-wrapper${produtoOk ? '' : ' bloqueado'}`}>
-            <div className="pf-card pf-card-toggle">
-              <button
-                className={`pf-toggle-btn${showPersonalizacao ? ' ativo' : ''}`}
-                onClick={() => {
-                  if (showPersonalizacao) setPedido(p => ({ ...p, personalizacao_tema: '', personalizacao_nome: '', personalizacao_idade: '', personalizacao_cor: '', personalizacao_obs: '' }))
-                  setShowPersonalizacao(v => !v)
-                }}
-              >
-                <span className="pf-toggle-icon">
-                  {showPersonalizacao
-                    ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  }
-                </span>
-                <span>Personalização</span>
-                {(pedido.personalizacao_tema || pedido.personalizacao_nome) && !showPersonalizacao && <span className="pf-toggle-badge">preenchida</span>}
-              </button>
-              {showPersonalizacao && (
-                <div className="pf-toggle-content">
-                  <div className="pf-row2">
-                    <div className="pf-field">
-                      <label className="pf-label">Tema</label>
-                      <input className="pf-input" placeholder="Ex: Fazendinha, Frozen..." value={pedido.personalizacao_tema} onChange={e => set('personalizacao_tema', e.target.value)} />
-                    </div>
-                    <div className="pf-field">
-                      <label className="pf-label">Nome no bolo</label>
-                      <input className="pf-input" placeholder="Ex: Maria" value={pedido.personalizacao_nome} onChange={e => set('personalizacao_nome', e.target.value)} />
-                    </div>
-                  </div>
-                  <div className="pf-row2">
-                    <div className="pf-field">
-                      <label className="pf-label">Idade</label>
-                      <input className="pf-input" placeholder="Ex: 5 anos" value={pedido.personalizacao_idade} onChange={e => set('personalizacao_idade', e.target.value)} />
-                    </div>
-                    <div className="pf-field">
-                      <label className="pf-label">Cor principal</label>
-                      <input className="pf-input" placeholder="Ex: Rosa e dourado" value={pedido.personalizacao_cor} onChange={e => set('personalizacao_cor', e.target.value)} />
-                    </div>
-                  </div>
-                  <div className="pf-field">
-                    <label className="pf-label">Observações de personalização</label>
-                    <textarea className="pf-textarea" placeholder="Detalhes extras sobre a decoração..." value={pedido.personalizacao_obs} onChange={e => set('personalizacao_obs', e.target.value)} rows={3} />
-                  </div>
-                </div>
-              )}
-            </div>
-            {!produtoOk && <BloqueioOverlay mensagem="Adicione um produto primeiro" />}
-          </div>
+
 
           {/* ══ 4. ENTREGA ══ */}
           <div className={`pf-etapa-wrapper${produtoOk ? '' : ' bloqueado'}`}>
             <div className="pf-card">
-              <h3 className="pf-card-title">Entrega</h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+                <h3 className="pf-card-title" style={{ margin: 0 }}>Entrega</h3>
+                {pedido.data_entrega && (
+                  <span className="pf-etapa-concluida">✓ Concluído</span>
+                )}
+              </div>
               <div className="pf-row2" style={{ marginBottom: '0.85rem' }}>
-                <DatePickerField label="Data de entrega / Pedido" value={pedido.data_entrega} onChange={v => set('data_entrega', v)} required minDate={new Date()} placeholder="Selecionar data" />
+                <div className="pf-field" style={{ flex: 1 }}>
+                <DatePickerField label="Data de entrega / Pedido" value={pedido.data_entrega} onChange={v => { set('data_entrega', v); tocar('data_entrega') }} required minDate={new Date()} placeholder="Selecionar data" />
+                {tocados['data_entrega'] && !pedido.data_entrega && (
+                  <span className="pf-erro-msg">Campo obrigatório</span>
+                )}
+              </div>
                 <TimePickerField label="Horário" value={pedido.horario_entrega} onChange={v => set('horario_entrega', v)} placeholder="Selecionar horário" minuteStep={10} />
               </div>
               <label className="pf-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Tipo de entrega</label>
@@ -673,7 +722,7 @@ export default function PedidoForm() {
             <div className="pf-row-cards">
 
               {/* Pagamento */}
-              <div className="pf-card" style={{ flex: 1, minWidth: 0 }}>
+              <div className="pf-card pf-card-pagamento" style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
                   <h3 className="pf-card-title" style={{ margin: 0 }}>Pagamento</h3>
                   <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: '999px', color: STATUS_PAG_CONFIG[statusPagamentoAuto].color, background: STATUS_PAG_CONFIG[statusPagamentoAuto].bg, display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -745,7 +794,7 @@ export default function PedidoForm() {
               </div>
 
               {/* Valores */}
-              <div className="pf-card" style={{ flex: 1, minWidth: 0 }}>
+              <div className="pf-card pf-card-valores" style={{ flex: 1, minWidth: 0 }}>
                 <h3 className="pf-card-title">Valores</h3>
                 <div className="pf-resumo-fin">
                   <div className="pf-fin-row"><span>Produtos</span><span>{formatMoney(pedido.valor_produtos)}</span></div>
@@ -868,6 +917,34 @@ export default function PedidoForm() {
       <style>{`
         .pf-root { font-family: 'Geist', sans-serif; display: flex; flex-direction: column; gap: 1rem; padding-bottom: 5rem; }
 
+        /* ── Header sticky desktop ── */
+        .pf-header-sticky { position: sticky; top: 0; z-index: 40; background: var(--bg-body,#FAFAFA); padding: 0.75rem 0; margin: -0.75rem 0 0; border-bottom: 1px solid var(--border,#E9E9EE); }
+
+        /* ── Indicador de progresso ── */
+        .pf-progresso { display: flex; align-items: center; padding: 0.75rem 0; overflow-x: auto; gap: 0; scrollbar-width: none; }
+        .pf-progresso::-webkit-scrollbar { display: none; }
+        .pf-prog-etapa { display: flex; align-items: center; gap: 0; flex-shrink: 0; }
+        .pf-prog-dot {
+          width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+          border: 2px solid var(--border,#E9E9EE);
+          background: var(--bg-body,#F7F7F8);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 0.68rem; font-weight: 700; color: var(--text-muted,#9CA3AF);
+          transition: all 0.2s;
+        }
+        .pf-prog-dot.done { background: #16a34a; border-color: #16a34a; color: white; }
+        .pf-prog-label { font-size: 0.68rem; font-weight: 600; color: var(--text-muted,#9CA3AF); margin: 0 0.3rem; white-space: nowrap; transition: color 0.2s; }
+        .pf-prog-label.done { color: #16a34a; }
+        .pf-prog-linha { height: 2px; width: 16px; background: var(--border,#E9E9EE); flex-shrink: 0; transition: background 0.2s; }
+        .pf-prog-linha.done { background: #16a34a; }
+
+        /* ── Check de etapa concluída ── */
+        .pf-etapa-concluida { font-size: 0.72rem; font-weight: 700; color: #16a34a; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 999px; padding: 2px 10px; }
+
+        /* ── Validação inline ── */
+        .pf-input-erro { border-color: #dc2626 !important; background: #fff8f8 !important; }
+        .pf-erro-msg { font-size: 0.72rem; color: #dc2626; font-weight: 500; margin-top: 2px; }
+
         /* Accordion progressivo */
         .pf-etapa-wrapper { position: relative; border-radius: 14px; }
         .pf-etapa-wrapper.bloqueado { pointer-events: none; }
@@ -977,6 +1054,9 @@ export default function PedidoForm() {
           .pf-row-cards { flex-direction: column; }
           .pf-toggle-entrega { flex-direction: column; }
           .pf-pagamento-grid { grid-template-columns: repeat(3, 1fr); }
+          /* Valores aparece antes de Pagamento no mobile */
+          .pf-card-valores { order: 1; }
+          .pf-card-pagamento { order: 2; }
         }
       `}</style>
     </div>
