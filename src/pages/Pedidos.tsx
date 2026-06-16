@@ -291,7 +291,7 @@ export default function Pedidos() {
     <div style={{ fontFamily: "'Geist', sans-serif", display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
 
       {/* ── Header com padding mobile ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', paddingTop: isMobile ? '0.5rem' : 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', paddingTop: isMobile ? '1.25rem' : 0 }}>
         <div>
           <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-title,#431524)', margin: 0 }}>Pedidos</h1>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-muted,#C39EAA)', margin: '0.1rem 0 0' }}>
