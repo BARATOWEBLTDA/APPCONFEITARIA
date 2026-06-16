@@ -1019,7 +1019,7 @@ export default function PedidoForm() {
                 {(showCupom || pedido.cupom_codigo) && (
                   <div className="pf-row2" style={{ paddingLeft: '0.25rem' }}>
                     <div className="pf-field" style={{ flex: 2 }}>
-                      <label className="pf-label">Cupom</label>
+                      <label className="pf-label">Código do cupom</label>
                       {cupons.length > 0 ? (
                         <select
                           className="pf-input"
@@ -1045,10 +1045,14 @@ export default function PedidoForm() {
                         />
                       )}
                     </div>
-                    <div className="pf-field">
-                      <label className="pf-label">Desconto cupom (R$)</label>
-                      <MoneyInput value={pedido.cupom_desconto} onChange={v => set('cupom_desconto', v)} />
-                    </div>
+                    {pedido.cupom_desconto > 0 && (
+                      <div className="pf-field">
+                        <label className="pf-label">Desconto aplicado</label>
+                        <div className="pf-input pf-input-readonly" style={{ color: '#16a34a', fontWeight: 700 }}>
+                          - {formatMoney(pedido.cupom_desconto)}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
