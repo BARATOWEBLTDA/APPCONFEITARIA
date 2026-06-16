@@ -860,6 +860,7 @@ export default function PedidoForm() {
           </div>
 
           {/* ══ 7. STATUS DO PEDIDO ══ */}
+          <div className={`pf-etapa-wrapper${produtoOk ? '' : ' bloqueado'}`}>
           <div className="pf-card">
             <h3 className="pf-card-title" style={{ marginBottom: '0.85rem' }}>Status do pedido</h3>
             <div className="pf-status-list">
@@ -874,6 +875,8 @@ export default function PedidoForm() {
                 )
               })}
             </div>
+          </div>
+          {!produtoOk && <BloqueioOverlay mensagem="Adicione um produto primeiro" />}
           </div>
 
           {/* ══ OBSERVAÇÕES ══ */}
