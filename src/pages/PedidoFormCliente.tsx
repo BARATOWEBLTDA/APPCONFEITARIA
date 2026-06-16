@@ -20,6 +20,7 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
   const [showEndereco, setShowEndereco] = useState(pedido.tipo_entrega === 'entrega')
   const [criando, setCriando] = useState(false)
   const [tocado, setTocado] = useState(false)
+  const [buscandoCep, setBuscandoCep] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
 
   const clienteSelecionado = !!(pedido.cliente_id && busca === pedido.cliente_nome)
@@ -52,6 +53,32 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
     await onNovoCliente(busca.trim())
     setCriando(false)
     setShowDrop(false)
+  }
+
+  // ── Busca de CEP via ViaCEP ──────────────────────────────────────────────
+  const buscarCep = async (cep: string) => {
+    const digits = cep.replace(/\D/g, '')
+    if (digits.length !== 8) return
+    setBuscandoCep(true)
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`)
+      const data = await res.json()
+      if (!data.erro) {
+        set('endereco_rua', data.logradouro || '')
+        set('endereco_bairro', data.bairro || '')
+        set('endereco_cidade', data.localidade || '')
+      }
+    } catch { /* ignora erro silencioso */ }
+    setBuscandoCep(false)
+  }
+
+  const handleCepChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    // Formata CEP: 00000-000
+    const digits = val.replace(/\D/g, '').slice(0, 8)
+    const formatted = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits
+    set('endereco_cep', formatted)
+    if (digits.length === 8) buscarCep(digits)
   }
 
   const canNext = !!pedido.cliente_nome && !!pedido.data_entrega
@@ -90,6 +117,7 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
             <span className="pf2-error-msg">Campo obrigatório</span>
           )}
 
+          {/* Dropdown clientes */}
           {showDrop && (
             <div className="pf2-dropdown" ref={dropRef} onMouseDown={e => e.preventDefault()}>
               {filtrados.map(c => (
@@ -149,7 +177,6 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
         <p className="pf2-card-eyebrow">Quando e como entregar?</p>
 
         <div className="pf2-row">
-
           {/* ── Data ── */}
           <div className="pf2-field" style={{ flex: 2 }}>
             {isMobile ? (
@@ -157,24 +184,24 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
                 <label className="pf2-label">
                   Data de entrega <span className="pf2-required">*</span>
                 </label>
-                <div style={{ position: 'relative' }}>
+                <label className={`pf2-input pf2-native-display${pedido.data_entrega ? ' pf2-native-display--filled' : ''}`}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  <span style={{ flex: 1 }}>
+                    {pedido.data_entrega
+                      ? new Date(pedido.data_entrega + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+                      : 'Selecionar data'
+                    }
+                  </span>
                   <input
                     type="date"
                     value={pedido.data_entrega}
                     min={new Date().toISOString().split('T')[0]}
                     onChange={e => set('data_entrega', e.target.value)}
-                    style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer', zIndex: 1 }}
+                    style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', top: 0, left: 0, cursor: 'pointer' }}
                   />
-                  <div className={`pf2-input pf2-native-display${pedido.data_entrega ? ' pf2-native-display--filled' : ''}`}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                    </svg>
-                    {pedido.data_entrega
-                      ? new Date(pedido.data_entrega + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
-                      : 'Selecionar data'
-                    }
-                  </div>
-                </div>
+                </label>
               </>
             ) : (
               <DatePickerField
@@ -193,20 +220,20 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
             {isMobile ? (
               <>
                 <label className="pf2-label">Horário</label>
-                <div style={{ position: 'relative' }}>
+                <label className={`pf2-input pf2-native-display${pedido.horario_entrega ? ' pf2-native-display--filled' : ''}`}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <span style={{ flex: 1 }}>
+                    {pedido.horario_entrega || 'Definir horário'}
+                  </span>
                   <input
                     type="time"
                     value={pedido.horario_entrega}
                     onChange={e => set('horario_entrega', e.target.value)}
-                    style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer', zIndex: 1 }}
+                    style={{ position: 'absolute', opacity: 0, width: '100%', height: '100%', top: 0, left: 0, cursor: 'pointer' }}
                   />
-                  <div className={`pf2-input pf2-native-display${pedido.horario_entrega ? ' pf2-native-display--filled' : ''}`}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                    {pedido.horario_entrega || 'Definir horário'}
-                  </div>
-                </div>
+                </label>
               </>
             ) : (
               <TimePickerField
@@ -259,48 +286,44 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
             </div>
             {showEndereco && (
               <div className="pf2-optional-body">
+                {/* CEP com autopreenchimento */}
                 <div className="pf2-row">
                   <div className="pf2-field">
-                    <label className="pf2-label">CEP</label>
-                    <input className="pf2-input" placeholder="00000-000" value={pedido.endereco_cep} onChange={e => set('endereco_cep', e.target.value)} />
+                    <label className="pf2-label">
+                      CEP
+                      {buscandoCep && <span style={{ marginLeft: 6, fontSize: '0.68rem', color: 'var(--primary)' }}>buscando...</span>}
+                    </label>
+                    <input
+                      className="pf2-input"
+                      placeholder="00000-000"
+                      value={pedido.endereco_cep}
+                      onChange={handleCepChange}
+                      inputMode="numeric"
+                      maxLength={9}
+                    />
                   </div>
                   <div className="pf2-field" style={{ flex: 2 }}>
-                    <label className="pf2-label">Rua / Avenida</label>
-                    <input className="pf2-input" placeholder="Rua..." value={pedido.endereco_rua} onChange={e => set('endereco_rua', e.target.value)} />
-                  </div>
-                </div>
-                <div className="pf2-row">
-                  <div className="pf2-field">
                     <label className="pf2-label">Número</label>
                     <input className="pf2-input" placeholder="Nº" value={pedido.endereco_numero} onChange={e => set('endereco_numero', e.target.value)} />
                   </div>
-                  <div className="pf2-field" style={{ flex: 2 }}>
+                </div>
+                <div className="pf2-field" style={{ marginBottom: '0.65rem' }}>
+                  <label className="pf2-label">Rua / Avenida</label>
+                  <input className="pf2-input" placeholder="Preenchido automaticamente pelo CEP" value={pedido.endereco_rua} onChange={e => set('endereco_rua', e.target.value)} />
+                </div>
+                <div className="pf2-row">
+                  <div className="pf2-field">
                     <label className="pf2-label">Complemento</label>
                     <input className="pf2-input" placeholder="Apto, bloco..." value={pedido.endereco_complemento} onChange={e => set('endereco_complemento', e.target.value)} />
                   </div>
-                </div>
-                <div className="pf2-row">
                   <div className="pf2-field">
                     <label className="pf2-label">Bairro</label>
                     <input className="pf2-input" value={pedido.endereco_bairro} onChange={e => set('endereco_bairro', e.target.value)} />
                   </div>
-                  <div className="pf2-field">
-                    <label className="pf2-label">Cidade</label>
-                    <input className="pf2-input" value={pedido.endereco_cidade} onChange={e => set('endereco_cidade', e.target.value)} />
-                  </div>
                 </div>
-                <div className="pf2-field" style={{ maxWidth: '50%' }}>
-                  <label className="pf2-label">Taxa de entrega</label>
-                  <input
-                    className="pf2-input"
-                    placeholder="R$ 0,00"
-                    inputMode="numeric"
-                    value={pedido.taxa_entrega > 0 ? pedido.taxa_entrega.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : ''}
-                    onChange={e => {
-                      const digits = e.target.value.replace(/\D/g, '')
-                      set('taxa_entrega', digits ? parseInt(digits, 10) / 100 : 0)
-                    }}
-                  />
+                <div className="pf2-field">
+                  <label className="pf2-label">Cidade</label>
+                  <input className="pf2-input" value={pedido.endereco_cidade} onChange={e => set('endereco_cidade', e.target.value)} />
                 </div>
               </div>
             )}
@@ -325,17 +348,29 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
 
       <style>{`
         .pf2-native-display {
-          white-space: nowrap; overflow: hidden;
-          border-radius: 12px;
+          position: relative;
           display: flex;
           align-items: center;
-          gap: 7px;
+          gap: 8px;
+          border-radius: 12px;
           color: var(--text-muted, #C39EAA);
           cursor: pointer;
           user-select: none;
+          white-space: nowrap;
+          overflow: hidden;
         }
         .pf2-native-display--filled {
           color: var(--text-primary, #431524);
+        }
+        .pf2-native-display input[type="date"],
+        .pf2-native-display input[type="time"] {
+          position: absolute;
+          opacity: 0;
+          width: 100%;
+          height: 100%;
+          top: 0; left: 0;
+          cursor: pointer;
+          font-size: 16px;
         }
       `}</style>
     </div>

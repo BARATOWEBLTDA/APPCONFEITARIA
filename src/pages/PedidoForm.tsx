@@ -446,7 +446,7 @@ export default function PedidoForm() {
           border: 1.5px solid var(--border, #ECC2D0);
           border-radius: 14px; z-index: 50;
           box-shadow: var(--shadow-lg);
-          overflow: hidden;
+          overflow: visible;
         }
         .pf2-drop-item {
           width: 100%; display: flex; flex-direction: column; align-items: flex-start;
@@ -466,6 +466,7 @@ export default function PedidoForm() {
           padding: 0.65rem 0.9rem;
           background: var(--bg-subtle, #F7EEF1);
           border: none; border-top: 1px solid var(--border, #ECC2D0);
+          border-radius: 0 0 14px 14px;
           cursor: pointer; font-family: 'Geist', sans-serif;
           font-size: 0.8rem; color: var(--primary, #986274);
           transition: background 0.1s;
