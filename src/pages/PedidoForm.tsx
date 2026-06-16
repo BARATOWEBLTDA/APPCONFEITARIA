@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { type Pedido, type PedidoItem, EMPTY_PEDIDO, EMPTY_ITEM } from './types'
-import StepCliente from './StepCliente'
-import StepProdutos from './StepProdutos'
-import StepPagamento from './StepPagamento'
+import { type Pedido, type PedidoItem, EMPTY_PEDIDO, EMPTY_ITEM } from '@/pages/pedidoFormTypes'
+import StepCliente from '@/pages/PedidoFormCliente'
+import StepProdutos from '@/pages/PedidoFormProdutos'
+import StepPagamento from '@/pages/PedidoFormPagamento'
 
 // ─── Labels das etapas ────────────────────────────────────────────────────────
 const STEPS = [
