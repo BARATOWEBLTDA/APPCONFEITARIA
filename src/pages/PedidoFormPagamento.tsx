@@ -41,24 +41,28 @@ const FORMAS_PAGAMENTO = [
   { value: 'fiado',    label: 'Fiado',    icon: '🤝' },
 ]
 
-const STATUS_PAG = {
-  pendente: { label: 'Pendente',       color: '#d97706', bg: '#fef3c7', dot: '#f59e0b' },
-  parcial:  { label: 'Sinal recebido', color: '#3b82f6', bg: '#eff6ff', dot: '#3b82f6' },
-  pago:     { label: 'Pago',           color: '#16a34a', bg: '#f0fdf4', dot: '#22c55e' },
-} as const
-
-export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, onSalvarEIniciar, onBack, isEdicao }: Props) {
+export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, onBack, isEdicao }: Props) {
   const [showSinal, setShowSinal] = useState(pedido.valor_sinal > 0)
   const [showDesconto, setShowDesconto] = useState(pedido.desconto > 0 || !!pedido.cupom_codigo)
 
-  const totalPago = pedido.valor_sinal + pedido.valor_recebido
-  const valorRestante = Math.max(0, pedido.valor_total - totalPago)
-  const statusPagAuto: keyof typeof STATUS_PAG =
-    valorRestante === 0 && pedido.valor_total > 0 ? 'pago'
-    : totalPago > 0 ? 'parcial'
+  // ── Cálculo de status ────────────────────────────────────────────────────
+  const totalRecebido = pedido.valor_sinal
+  const restante = Math.max(0, pedido.valor_total - totalRecebido)
+  const statusPag: 'pendente' | 'parcial' | 'pago' =
+    restante === 0 && pedido.valor_total > 0 ? 'pago'
+    : totalRecebido > 0 ? 'parcial'
     : 'pendente'
 
-  const pagStatus = STATUS_PAG[statusPagAuto]
+  const STATUS_CONFIG = {
+    pendente: { label: 'Pendente',    color: '#d97706', bg: '#fef3c7', dot: '#f59e0b', icon: '⏳' },
+    parcial:  { label: 'Sinal pago',  color: '#3b82f6', bg: '#eff6ff', dot: '#3b82f6', icon: '🔵' },
+    pago:     { label: 'Pago',        color: '#16a34a', bg: '#f0fdf4', dot: '#22c55e', icon: '✅' },
+  }
+  const sc = STATUS_CONFIG[statusPag]
+
+  const pagarIntegral = () => {
+    set('valor_sinal', pedido.valor_total)
+  }
 
   const aplicarCupom = (cup: any) => {
     if (!cup) { set('cupom_codigo', ''); set('cupom_desconto', 0); return }
@@ -70,7 +74,7 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
   return (
     <div className="step-root">
 
-      {/* ── Total sempre visível ── */}
+      {/* ── Total fixo no topo ── */}
       <div className="pf2-total-bar">
         <div>
           <p className="pf2-total-label">Total do pedido</p>
@@ -81,17 +85,9 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
         <p className="pf2-total-value">{formatMoney(pedido.valor_total)}</p>
       </div>
 
-      {/* ── Bloco: Pagamento ── */}
+      {/* ── Forma de pagamento ── */}
       <div className="pf2-card">
-        <div className="pf2-card-head-row">
-          <p className="pf2-card-eyebrow" style={{ margin: 0 }}>Como vai pagar?</p>
-          <span className="pf2-pag-badge" style={{ background: pagStatus.bg, color: pagStatus.color }}>
-            <span className="pf2-pag-dot" style={{ background: pagStatus.dot }} />
-            {pagStatus.label}
-          </span>
-        </div>
-
-        {/* Formas de pagamento */}
+        <p className="pf2-card-eyebrow">Como vai pagar?</p>
         <div className="pf2-pay-grid">
           {FORMAS_PAGAMENTO.map(f => (
             <button
@@ -108,34 +104,6 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
             </button>
           ))}
         </div>
-
-        {/* Opcional: Sinal */}
-        <div
-          className={`pf2-optional-toggle${showSinal ? ' pf2-optional-toggle--on' : ''}`}
-          onClick={() => { if (showSinal) { set('valor_sinal', 0); set('data_sinal', '') }; setShowSinal(v => !v) }}
-        >
-          <div className={`pf2-check${showSinal ? ' pf2-check--on' : ''}`}>
-            {showSinal && <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-          </div>
-          <span className="pf2-opt-label">Sinal recebido</span>
-          {pedido.valor_sinal > 0 && !showSinal && (
-            <span className="pf2-opt-badge" style={{ color: '#3b82f6' }}>{formatMoney(pedido.valor_sinal)}</span>
-          )}
-        </div>
-        {showSinal && (
-          <div className="pf2-optional-body">
-            <div className="pf2-row">
-              <div className="pf2-field">
-                <label className="pf2-label">Valor do sinal</label>
-                <MoneyInput value={pedido.valor_sinal} onChange={v => set('valor_sinal', v)} />
-              </div>
-              <div className="pf2-field">
-                <label className="pf2-label">Data do sinal</label>
-                <input className="pf2-input" type="date" value={pedido.data_sinal} onChange={e => set('data_sinal', e.target.value)} />
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Opcional: Desconto / Cupom */}
         <div
@@ -180,34 +148,67 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
                 </div>
               )}
             </div>
-            {pedido.cupom_desconto > 0 && (
-              <p style={{ fontSize: '0.78rem', color: '#16a34a', fontWeight: 600, marginTop: '0.25rem' }}>
-                Cupom aplicado: -{formatMoney(pedido.cupom_desconto)}
-              </p>
-            )}
           </div>
         )}
       </div>
 
-      {/* ── Bloco: Valor pago + restante ── */}
+      {/* ── Recebimento ── */}
       <div className="pf2-card">
-        <p className="pf2-card-eyebrow">Recebimento</p>
-        <div className="pf2-row">
-          <div className="pf2-field">
-            <label className="pf2-label">Valor pago na entrega</label>
-            <MoneyInput value={pedido.valor_recebido} onChange={v => set('valor_recebido', v)} />
-          </div>
-          <div className="pf2-field">
-            <label className="pf2-label">Restante</label>
-            <div className="pf2-input pf2-input--readonly" style={{ color: valorRestante > 0 ? '#dc2626' : '#16a34a', fontWeight: 700 }}>
-              {formatMoney(valorRestante)}
-            </div>
-          </div>
+        <div className="pf2-receb-header">
+          <p className="pf2-card-eyebrow" style={{ margin: 0 }}>Recebimento</p>
+          <span className="pf2-status-pill" style={{ background: sc.bg, color: sc.color }}>
+            <span className="pf2-status-dot" style={{ background: sc.dot }} />
+            {sc.label}
+            {statusPag === 'pendente' && <span style={{ fontWeight: 700 }}> · {formatMoney(restante)}</span>}
+            {statusPag === 'parcial'  && <span style={{ fontWeight: 700 }}> · falta {formatMoney(restante)}</span>}
+          </span>
         </div>
-        {valorRestante > 0 && (
-          <div className="pf2-field" style={{ maxWidth: '50%' }}>
-            <label className="pf2-label">Receber restante em</label>
-            <input className="pf2-input" type="date" value={pedido.data_pagamento_restante} onChange={e => set('data_pagamento_restante', e.target.value)} />
+
+        {/* Botão pagar integral */}
+        {statusPag !== 'pago' && (
+          <button className="pf2-integral-btn" onClick={pagarIntegral}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Cliente pagou integral — {formatMoney(pedido.valor_total)}
+          </button>
+        )}
+
+        {/* Opcional: Sinal */}
+        <div
+          className={`pf2-optional-toggle${showSinal ? ' pf2-optional-toggle--on' : ''}`}
+          style={{ marginTop: '0.25rem' }}
+          onClick={() => {
+            if (showSinal) { set('valor_sinal', 0); set('data_sinal', '') }
+            setShowSinal(v => !v)
+          }}
+        >
+          <div className={`pf2-check${showSinal ? ' pf2-check--on' : ''}`}>
+            {showSinal && <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+          </div>
+          <span className="pf2-opt-label">Recebi sinal parcial</span>
+          {pedido.valor_sinal > 0 && !showSinal && (
+            <span className="pf2-opt-badge" style={{ color: '#3b82f6' }}>{formatMoney(pedido.valor_sinal)}</span>
+          )}
+        </div>
+        {showSinal && (
+          <div className="pf2-optional-body">
+            <div className="pf2-row">
+              <div className="pf2-field">
+                <label className="pf2-label">Valor do sinal</label>
+                <MoneyInput value={pedido.valor_sinal} onChange={v => set('valor_sinal', v)} />
+              </div>
+              <div className="pf2-field">
+                <label className="pf2-label">Data do sinal</label>
+                <input className="pf2-input" type="date" value={pedido.data_sinal} onChange={e => set('data_sinal', e.target.value)} />
+              </div>
+            </div>
+            {restante > 0 && (
+              <div className="pf2-receb-restante">
+                <span>Falta receber</span>
+                <span style={{ color: '#dc2626', fontWeight: 700 }}>{formatMoney(restante)}</span>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -242,23 +243,51 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
         </div>
       </div>
 
-      {/* ── Rodapé ── */}
+      {/* ── Rodapé — Voltar + Salvar ── */}
       <div className="pf2-footer">
         <button className="pf2-btn-ghost pf2-btn-back" onClick={onBack} disabled={saving}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
           Voltar
         </button>
-        <div style={{ display: 'flex', gap: '0.5rem', flex: 1 }}>
-          {!isEdicao && (
-            <button className="pf2-btn-ghost" style={{ flex: 1 }} onClick={onSalvarEIniciar} disabled={saving}>
-              Salvar e novo
-            </button>
-          )}
-          <button className="pf2-btn-salvar" style={{ flex: 2 }} onClick={onSalvar} disabled={saving}>
-            {saving ? 'Salvando...' : isEdicao ? 'Salvar alterações' : '✓ Salvar pedido'}
-          </button>
-        </div>
+        <button className="pf2-btn-salvar" style={{ flex: 1 }} onClick={onSalvar} disabled={saving}>
+          {saving ? 'Salvando...' : isEdicao ? '✓ Salvar alterações' : '✓ Salvar pedido'}
+        </button>
       </div>
+
+      <style>{`
+        .pf2-receb-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0.85rem 1rem 0.5rem;
+        }
+        .pf2-status-pill {
+          display: inline-flex; align-items: center; gap: 5px;
+          font-size: 0.72rem; font-weight: 600;
+          padding: 4px 10px; border-radius: 999px;
+        }
+        .pf2-status-dot {
+          width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+        }
+        .pf2-integral-btn {
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          width: calc(100% - 2rem); margin: 0 1rem 0.5rem;
+          padding: 0.75rem 1rem;
+          background: #f0fdf4;
+          border: 1.5px solid #22c55e;
+          border-radius: 12px;
+          font-size: 0.85rem; font-weight: 600;
+          color: #16a34a; font-family: 'Geist', sans-serif;
+          cursor: pointer; transition: background 0.15s;
+        }
+        .pf2-integral-btn:hover { background: #dcfce7; }
+        .pf2-receb-restante {
+          display: flex; justify-content: space-between;
+          padding: 0.5rem 0; margin-top: 0.25rem;
+          font-size: 0.85rem; color: var(--text-secondary);
+          border-top: 1px dashed var(--border, #ECC2D0);
+        }
+      `}</style>
     </div>
   )
 }
