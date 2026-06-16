@@ -196,10 +196,12 @@ export default function PedidoForm() {
 
   // ── Navegação entre steps ────────────────────────────────────────────────
   const goNext = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     if (step === 'cliente')  setStep('produtos')
     if (step === 'produtos') setStep('pagamento')
   }
   const goBack = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     if (step === 'produtos')  setStep('cliente')
     if (step === 'pagamento') setStep('produtos')
   }
