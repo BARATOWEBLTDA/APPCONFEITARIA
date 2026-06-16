@@ -38,6 +38,7 @@ export default function Layout() {
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
   const isPrevia = location.pathname === "/cardapio-preview";
+  const isPedidoForm = location.pathname.startsWith("/pedidos/") || location.pathname === "/pedidos/novo";
   const isCardapioMode = ["/cardapio-config", "/produtos"].includes(location.pathname);
   const [cardapioNav, setCardapioNav] = useState(false);
 
@@ -246,7 +247,7 @@ export default function Layout() {
         </nav>
       )}
 
-      <DooIA />
+      {!isPedidoForm && <DooIA />}
 
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
