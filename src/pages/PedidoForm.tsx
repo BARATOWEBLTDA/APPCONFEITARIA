@@ -349,7 +349,7 @@ export default function PedidoForm() {
         .pf2-step-label--done   { color: var(--success, #22C55E); }
 
         /* ── Conteúdo ── */
-        .pf2-content { flex: 1; padding: 1rem; padding-bottom: 10rem; }
+        .pf2-content { flex: 1; padding: 1rem; padding-bottom: 5rem; }
         .step-root { display: flex; flex-direction: column; gap: 0.85rem; }
 
         /* ── Cards ── */
@@ -717,13 +717,8 @@ export default function PedidoForm() {
 
         /* ── Rodapé fixo ── */
         .pf2-footer {
-          position: fixed; bottom: 64px; left: 0; right: 0;
           display: flex; align-items: center; gap: 0.5rem;
-          padding: 0.85rem 1rem;
-          background: var(--bg-card, #fff);
-          border-top: 1px solid var(--border, #ECC2D0);
-          box-shadow: var(--topbar-shadow);
-          z-index: 40;
+          padding: 0.85rem 0 0;
         }
         .pf2-btn-back { flex-shrink: 0; }
         .pf2-footer-hint {
@@ -734,7 +729,6 @@ export default function PedidoForm() {
         /* ── Desktop: rodapé não-fixo, largura controlada ── */
         @media (min-width: 768px) {
           .pf2-content  { max-width: 640px; margin: 0 auto; }
-          .pf2-footer   { position: static; border-top: none; box-shadow: none; padding: 0; background: none; margin-top: 0.5rem; }
           .pf2-total-bar { max-width: 640px; margin: 0 auto; }
           .pf2-resumo   { max-width: 640px; }
         }
