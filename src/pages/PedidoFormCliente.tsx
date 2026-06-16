@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { DatePickerField } from '@/components/DatePickerField'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { type Pedido, ORIGENS, formatTelefone } from '@/pages/pedidoFormTypes'
@@ -135,39 +135,13 @@ function HorarioSheet({ value, onChange, onClose }: {
 // ── Componente principal ─────────────────────────────────────────────────────
 export default function StepCliente({ pedido, set, clientes, salvarComoNovo, setSalvarComoNovo, onNext }: Props) {
   const isMobile = useIsMobile()
-  const [busca, setBusca] = useState(pedido.cliente_nome || '')
-  const [showDrop, setShowDrop] = useState(false)
   const [showOrigem, setShowOrigem] = useState(!!pedido.origem)
   const [showEndereco, setShowEndereco] = useState(pedido.tipo_entrega === 'entrega')
   const [showHorarioSheet, setShowHorarioSheet] = useState(false)
   const [tocado, setTocado] = useState(false)
   const [buscandoCep, setBuscandoCep] = useState(false)
-  const dropRef = useRef<HTMLDivElement>(null)
-
-  const clienteSelecionado = !!(pedido.cliente_id && busca === pedido.cliente_nome)
   const clienteNovo = !!pedido.cliente_nome && !clienteSelecionado
-  const filtrados = busca.length >= 2
-    ? clientes.filter(c => c.nome && c.nome.toLowerCase().includes(busca.toLowerCase())).slice(0, 5)
-    : []
 
-  const selecionarCliente = (c: any) => {
-    let endereco: Record<string, string> = {}
-    try { endereco = typeof c.endereco === 'string' ? JSON.parse(c.endereco) : (c.endereco || {}) } catch { /* ok */ }
-    setBusca(c.nome)
-    setShowDrop(false)
-    set('cliente_id', c.id)
-    set('cliente_nome', c.nome)
-    set('cliente_telefone', formatTelefone(c.telefone || ''))
-    set('cliente_whatsapp', formatTelefone(c.whatsapp || c.telefone || ''))
-    if (endereco.rua) {
-      set('endereco_cep', endereco.cep || '')
-      set('endereco_rua', endereco.rua || '')
-      set('endereco_numero', endereco.numero || '')
-      set('endereco_complemento', endereco.complemento || '')
-      set('endereco_bairro', endereco.bairro || '')
-      set('endereco_cidade', endereco.cidade || '')
-    }
-  }
 
 
 
@@ -203,43 +177,25 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
       <div className="pf2-card">
         <p className="pf2-card-eyebrow">Quem está pedindo?</p>
 
-        <div className="pf2-field" style={{ position: 'relative' }}>
+        <div className="pf2-field">
           <label className="pf2-label">
             Nome do cliente
             <span className="pf2-required">*</span>
-            {clienteSelecionado && <span className="pf2-badge pf2-badge--ok">✓ Cadastrado</span>}
+            {pedido.cliente_id && <span className="pf2-badge pf2-badge--ok">✓ Cadastrado</span>}
           </label>
           <input
             className={`pf2-input${tocado && !pedido.cliente_nome ? ' pf2-input--error' : ''}`}
             placeholder="Digite o nome..."
-            value={busca}
+            value={pedido.cliente_nome}
             onChange={e => {
-              const v = e.target.value
-              setBusca(v)
-              set('cliente_nome', v)
-              set('cliente_id', undefined)
-              setShowDrop(v.length >= 2)
+              set('cliente_nome', e.target.value)
+              if (pedido.cliente_id) set('cliente_id', undefined)
+              setClienteEncontrado(null)
             }}
-            onBlur={() => { setTocado(true); setTimeout(() => setShowDrop(false), 250) }}
-            onFocus={() => { if (busca.length >= 2) setShowDrop(true) }}
-            autoComplete="off"
+            onBlur={() => setTocado(true)}
           />
           {tocado && !pedido.cliente_nome && (
             <span className="pf2-error-msg">Campo obrigatório</span>
-          )}
-          {showDrop && filtrados.length > 0 && (
-            <div className="pf2-dropdown" ref={dropRef} onMouseDown={e => e.preventDefault()}>
-              {filtrados.map(c => (
-                <button key={c.id} className="pf2-drop-item" onMouseDown={() => selecionarCliente(c)}>
-                  <span className="pf2-drop-name">{c.nome}</span>
-                  {(c.whatsapp || c.telefone) && (
-                    <span className="pf2-drop-sub">{formatTelefone(c.whatsapp || c.telefone)}</span>
-                  )}
-                </button>
-              ))}
-
-
-            </div>
           )}
         </div>
 
@@ -249,10 +205,20 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
             className="pf2-input"
             placeholder="(41) 9 9999-0000"
             value={pedido.cliente_whatsapp}
-            onChange={e => set('cliente_whatsapp', formatTelefone(e.target.value))}
+            onChange={e => {
+              const formatted = formatTelefone(e.target.value)
+              set('cliente_whatsapp', formatted)
+              buscarPorTelefone(formatted)
+            }}
             inputMode="numeric"
             maxLength={16}
           />
+          {clienteEncontrado && (
+            <div className="pf2-cliente-encontrado">
+              <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              Cliente encontrado: <strong>{clienteEncontrado.nome}</strong>
+            </div>
+          )}
         </div>
 
         <div className="pf2-optional-toggle" onClick={() => { setShowOrigem(v => !v); if (showOrigem) set('origem', '') }}>
@@ -448,6 +414,13 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
         .pf2-hora-btn--filled { color: var(--text-primary, #431524); }
 
         /* ── Campo data nativo ── */
+        .pf2-cliente-encontrado {
+          display: flex; align-items: center; gap: 5px;
+          margin-top: 6px; padding: 6px 10px;
+          background: #f0fdf4; border: 1px solid #bbf7d0;
+          border-radius: 8px; font-size: 0.78rem; color: #16a34a;
+          font-family: 'Geist', sans-serif;
+        }
         .pf2-native-display {
           position: relative; display: flex; align-items: center; gap: 8px;
           border-radius: 12px; color: var(--text-muted, #C39EAA);
