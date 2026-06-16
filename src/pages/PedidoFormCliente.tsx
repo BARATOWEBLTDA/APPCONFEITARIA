@@ -104,7 +104,9 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
                 <div className="pf2-drop-empty">Nenhum resultado</div>
               )}
               <button className="pf2-drop-new" onMouseDown={handleCriarCliente} disabled={criando}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
                 {criando ? 'Cadastrando...' : <>Cadastrar <strong>"{busca}"</strong></>}
               </button>
             </div>
@@ -147,20 +149,32 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
         <p className="pf2-card-eyebrow">Quando e como entregar?</p>
 
         <div className="pf2-row">
-          {/* Data — nativo no mobile, picker customizado no desktop */}
+
+          {/* ── Data ── */}
           <div className="pf2-field" style={{ flex: 2 }}>
             {isMobile ? (
               <>
                 <label className="pf2-label">
                   Data de entrega <span className="pf2-required">*</span>
                 </label>
-                <input
-                  className="pf2-input"
-                  type="date"
-                  value={pedido.data_entrega}
-                  min={new Date().toISOString().split('T')[0]}
-                  onChange={e => set('data_entrega', e.target.value)}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="date"
+                    value={pedido.data_entrega}
+                    min={new Date().toISOString().split('T')[0]}
+                    onChange={e => set('data_entrega', e.target.value)}
+                    style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer', zIndex: 1 }}
+                  />
+                  <div className={`pf2-input pf2-native-display${pedido.data_entrega ? ' pf2-native-display--filled' : ''}`}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    {pedido.data_entrega
+                      ? new Date(pedido.data_entrega + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
+                      : 'Selecionar data'
+                    }
+                  </div>
+                </div>
               </>
             ) : (
               <DatePickerField
@@ -174,17 +188,25 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
             )}
           </div>
 
-          {/* Horário — nativo no mobile, picker customizado no desktop */}
+          {/* ── Horário ── */}
           <div className="pf2-field">
             {isMobile ? (
               <>
                 <label className="pf2-label">Horário</label>
-                <input
-                  className="pf2-input"
-                  type="time"
-                  value={pedido.horario_entrega}
-                  onChange={e => set('horario_entrega', e.target.value)}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="time"
+                    value={pedido.horario_entrega}
+                    onChange={e => set('horario_entrega', e.target.value)}
+                    style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer', zIndex: 1 }}
+                  />
+                  <div className={`pf2-input pf2-native-display${pedido.horario_entrega ? ' pf2-native-display--filled' : ''}`}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    {pedido.horario_entrega || 'Definir horário'}
+                  </div>
+                </div>
               </>
             ) : (
               <TimePickerField
@@ -300,6 +322,20 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
           </p>
         )}
       </div>
+
+      <style>{`
+        .pf2-native-display {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          color: var(--text-muted, #C39EAA);
+          cursor: pointer;
+          user-select: none;
+        }
+        .pf2-native-display--filled {
+          color: var(--text-primary, #431524);
+        }
+      `}</style>
     </div>
   )
 }
