@@ -1,197 +1,46 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { DatePickerField } from '@/components/DatePickerField'
-import { TimePickerField } from '@/components/TimePickerField'
 import { supabase } from '@/lib/supabase'
+import { type Pedido, type PedidoItem, EMPTY_PEDIDO, EMPTY_ITEM } from '@/pages/pedidoFormTypes'
+import StepCliente from '@/pages/PedidoFormCliente'
+import StepProdutos from '@/pages/PedidoFormProdutos'
+import StepPagamento from '@/pages/PedidoFormPagamento'
 
-type PedidoItem = {
-  id?: string
-  produto_id?: string
-  nome_produto: string
-  quantidade: number
-  valor_unitario: number
-  desconto: number
-  observacoes: string
-  imagem_url?: string
-  personalizacoes: Record<string, string>
-}
+// ─── Labels das etapas ────────────────────────────────────────────────────────
+const STEPS = [
+  { id: 'cliente',   label: 'Cliente' },
+  { id: 'produtos',  label: 'Produtos' },
+  { id: 'pagamento', label: 'Pagamento' },
+] as const
 
-type Pedido = {
-  id?: string
-  cliente_id?: string
-  cliente_nome: string
-  cliente_telefone: string
-  cliente_whatsapp: string
-  cliente_email: string
-  status: string
-  prioridade: string
-  origem: string
-  data_entrega: string
-  horario_entrega: string
-  tipo_entrega: string
-  taxa_entrega: number
-  endereco_cep: string
-  endereco_rua: string
-  endereco_numero: string
-  endereco_complemento: string
-  endereco_bairro: string
-  endereco_cidade: string
-  personalizacao_tema: string
-  personalizacao_nome: string
-  personalizacao_idade: string
-  personalizacao_cor: string
-  personalizacao_referencia: string
-  personalizacao_obs: string
-  valor_produtos: number
-  desconto: number
-  cupom_codigo: string
-  cupom_desconto: number
-  valor_total: number
-  forma_pagamento: string
-  status_pagamento: string
-  valor_sinal: number
-  data_sinal: string
-  valor_recebido: number
-  data_pagamento_restante: string
-  observacoes: string
-  etiquetas: string[]
-  responsavel_entrega: string
-  responsavel_producao: string
-  data_prevista_producao: string
-  status_producao: string
-  checklist_producao: any[]
-}
+type StepId = typeof STEPS[number]['id']
 
-const EMPTY_PEDIDO: Pedido = {
-  cliente_nome: '', cliente_telefone: '', cliente_whatsapp: '', cliente_email: '',
-  status: 'novo', prioridade: 'media', origem: '',
-  data_entrega: '', horario_entrega: '', tipo_entrega: 'retirada', taxa_entrega: 0,
-  endereco_cep: '', endereco_rua: '', endereco_numero: '', endereco_complemento: '',
-  endereco_bairro: '', endereco_cidade: '',
-  personalizacao_tema: '', personalizacao_nome: '', personalizacao_idade: '',
-  personalizacao_cor: '', personalizacao_referencia: '', personalizacao_obs: '',
-  valor_produtos: 0, desconto: 0, cupom_codigo: '', cupom_desconto: 0,
-  responsavel_entrega: '', responsavel_producao: '', data_prevista_producao: '',
-  status_producao: 'nao_iniciado', checklist_producao: [],
-  valor_total: 0, forma_pagamento: 'pix', status_pagamento: 'pendente',
-  valor_sinal: 0, data_sinal: '', valor_recebido: 0, data_pagamento_restante: '',
-  observacoes: '', etiquetas: [],
-}
-
-const EMPTY_ITEM: PedidoItem = {
-  nome_produto: '', quantidade: 1, valor_unitario: 0,
-  desconto: 0, observacoes: '', imagem_url: '', personalizacoes: {},
-}
-
-const STATUS_OPTIONS = [
-  { value: 'novo',        label: 'Novo',        color: '#3b82f6', dot: '#3b82f6' },
-  { value: 'em_producao', label: 'Em produção', color: '#f97316', dot: '#f97316' },
-  { value: 'pronto',      label: 'Finalizado',  color: '#22c55e', dot: '#22c55e' },
-]
-
-const ORIGENS = ['Instagram', 'Indicação', 'Google', 'Facebook', 'TikTok', 'WhatsApp', 'Cardápio Digital', 'Outro']
-
-function parseMoney(v: string): number {
-  const digits = v.replace(/\D/g, '')
-  return digits ? parseInt(digits, 10) / 100 : 0
-}
-
-function formatMoneyInput(v: number): string {
-  return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-}
-
-function formatMoney(v: number) {
-  return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
-
-function MoneyInput({ value, onChange, placeholder }: { value: number; onChange: (v: number) => void; placeholder?: string }) {
-  const [display, setDisplay] = useState(value > 0 ? formatMoneyInput(value) : '')
-  const prevValue = useRef(value)
-
-  useEffect(() => {
-    if (value !== prevValue.current) {
-      prevValue.current = value
-      setDisplay(value > 0 ? formatMoneyInput(value) : '')
-    }
-  }, [value])
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value
-    const numeric = parseMoney(raw)
-    prevValue.current = numeric
-    setDisplay(formatMoneyInput(numeric))
-    onChange(numeric)
-  }
-
-  return (
-    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-      <span style={{
-        position: 'absolute', left: '0.75rem', fontSize: '0.85rem', fontWeight: 600,
-        color: 'var(--text-secondary,#6B7280)', pointerEvents: 'none', userSelect: 'none',
-      }}>R$</span>
-      <input
-        className="pf-input" inputMode="numeric"
-        placeholder={placeholder || '0,00'} value={display}
-        onChange={handleChange} onFocus={e => e.target.select()}
-        style={{ paddingLeft: '2.2rem' }}
-      />
-    </div>
-  )
-}
-
-function formatTelefone(tel: string): string {
-  if (!tel) return ''
-  const digits = tel.replace(/\D/g, '').slice(0, 11)
-  if (digits.length === 11) return `(${digits.slice(0,2)}) ${digits[2]} ${digits.slice(3,7)}-${digits.slice(7)}`
-  if (digits.length === 10) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`
-  if (digits.length > 6) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`
-  if (digits.length > 2) return `(${digits.slice(0,2)}) ${digits.slice(2)}`
-  return digits
-}
-
-// ─── Bloco travado (overlay) ─────────────────────────────────────────────────
-function BloqueioOverlay({ mensagem }: { mensagem: string }) {
-  return (
-    <div className="pf-etapa-overlay">
-      <span className="pf-etapa-lock">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <rect x="3" y="11" width="18" height="11" rx="2"/>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-        </svg>
-        {mensagem}
-      </span>
-    </div>
-  )
-}
-
+// ─── Componente principal ─────────────────────────────────────────────────────
 export default function PedidoForm() {
   const navigate = useNavigate()
   const { id } = useParams()
   const isEdicao = !!id && id !== 'novo'
 
-  const [pedido, setPedido] = useState<Pedido>(EMPTY_PEDIDO)
-  const [itens, setItens] = useState<PedidoItem[]>([])
+  // Estado global do wizard
+  const [step, setStep]       = useState<StepId>('cliente')
+  const [pedido, setPedido]   = useState<Pedido>(EMPTY_PEDIDO)
+  const [itens, setItens]     = useState<PedidoItem[]>([])
   const [clientes, setClientes] = useState<any[]>([])
   const [produtos, setProdutos] = useState<any[]>([])
-  const [cupons, setCupons] = useState<any[]>([])
+  const [cupons, setCupons]   = useState<any[]>([])
+  const [userId, setUserId]   = useState('')
   const [loading, setLoading] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [userId, setUserId] = useState('')
-  const [buscaCliente, setBuscaCliente] = useState('')
-  const [showClienteDropdown, setShowClienteDropdown] = useState(false)
-  const [novoItem, setNovoItem] = useState<PedidoItem>({ ...EMPTY_ITEM })
-  const [adicionandoItem, setAdicionandoItem] = useState(false)
-  const [showPersonalizacao, setShowPersonalizacao] = useState(false)
-  const [showObservacoes, setShowObservacoes] = useState(false)
-  const [toast, setToast] = useState('')
-  const [buscaProduto, setBuscaProduto] = useState('')
-  const [showProdutoDropdown, setShowProdutoDropdown] = useState(false)
-  const [showSinal, setShowSinal] = useState(false)
-  const [showDesconto, setShowDesconto] = useState(false)
-  const [showCupom, setShowCupom] = useState(false)
-  const [tocados, setTocados] = useState<Record<string, boolean>>({})
-  const tocar = (campo: string) => setTocados(t => ({ ...t, [campo]: true }))
+  const [saving, setSaving]   = useState(false)
+  const [toast, setToast]     = useState('')
 
+  // ── Cálculo automático do total ──────────────────────────────────────────
+  useEffect(() => {
+    const totalItens = itens.reduce((acc, i) => acc + i.valor_unitario * i.quantidade, 0)
+    const total = totalItens + pedido.taxa_entrega - pedido.desconto - pedido.cupom_desconto
+    setPedido(p => ({ ...p, valor_produtos: totalItens, valor_total: Math.max(0, total) }))
+  }, [itens, pedido.taxa_entrega, pedido.desconto, pedido.cupom_desconto])
+
+  // ── Carregamento inicial ─────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
@@ -200,12 +49,6 @@ export default function PedidoForm() {
       if (isEdicao) carregarPedido(user.id)
     })
   }, [id])
-
-  useEffect(() => {
-    const totalItens = itens.reduce((acc, i) => acc + (i.valor_unitario * i.quantidade), 0)
-    const total = totalItens + pedido.taxa_entrega - pedido.desconto - pedido.cupom_desconto
-    setPedido(p => ({ ...p, valor_produtos: totalItens, valor_total: Math.max(0, total) }))
-  }, [itens, pedido.taxa_entrega, pedido.desconto, pedido.cupom_desconto])
 
   const carregarDados = async (uid: string) => {
     const [{ data: cls }, { data: prds }, { data: cups }] = await Promise.all([
@@ -229,95 +72,81 @@ export default function PedidoForm() {
     setLoading(false)
   }
 
-  const set = (field: keyof Pedido, value: any) => setPedido(p => ({ ...p, [field]: value }))
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  const set = (field: keyof Pedido, value: any) =>
+    setPedido(p => ({ ...p, [field]: value }))
 
-  const selecionarCliente = (c: any) => {
-    let endereco: Record<string, string> = {}
-    if (c.endereco) {
-      try { endereco = typeof c.endereco === 'string' ? JSON.parse(c.endereco) : c.endereco } catch { /* ignora */ }
-    }
-    const whatsappFormatado = formatTelefone(c.whatsapp || c.telefone || '')
-    setPedido(p => ({
-      ...p,
-      cliente_id: c.id,
-      cliente_nome: c.nome,
-      cliente_telefone: formatTelefone(c.telefone || ''),
-      cliente_whatsapp: whatsappFormatado,
-      ...(endereco.rua ? {
-        endereco_cep: endereco.cep || p.endereco_cep,
-        endereco_rua: endereco.rua || p.endereco_rua,
-        endereco_numero: endereco.numero || p.endereco_numero,
-        endereco_complemento: endereco.complemento || p.endereco_complemento,
-        endereco_bairro: endereco.bairro || p.endereco_bairro,
-        endereco_cidade: endereco.cidade || p.endereco_cidade,
-      } : {}),
-    }))
-    setBuscaCliente(c.nome)
-    setShowClienteDropdown(false)
+  const showToast = (msg: string) => {
+    setToast(msg)
+    setTimeout(() => setToast(''), 3000)
   }
 
-  const cadastrarNovoCliente = async () => {
-    if (!buscaCliente.trim()) return
-    const { data, error } = await supabase.from('clientes').insert({
-      user_id: userId, nome: buscaCliente.trim(), whatsapp: pedido.cliente_whatsapp || null,
-    }).select('id,nome,telefone,whatsapp,como_conheceu').single()
+  const cadastrarNovoCliente = async (nome: string) => {
+    const { data, error } = await supabase
+      .from('clientes')
+      .insert({ user_id: userId, nome, whatsapp: pedido.cliente_whatsapp || null })
+      .select('id,nome,telefone,whatsapp,como_conheceu')
+      .single()
     if (!error && data) {
-      selecionarCliente(data)
       setClientes(prev => [...prev, data])
-      showToast(`Cliente "${data.nome}" cadastrado!`)
+      set('cliente_id', data.id)
+      set('cliente_nome', data.nome)
+      showToast(`"${data.nome}" cadastrado!`)
     } else {
       showToast('Erro ao cadastrar cliente.')
     }
   }
 
-  const aplicarCupom = (cup: any) => {
-    if (!cup) { set('cupom_codigo', ''); set('cupom_desconto', 0); return }
-    const desconto = cup.tipo === 'percentual' ? (pedido.valor_total * cup.desconto) / 100 : cup.desconto
-    setPedido(p => ({ ...p, cupom_codigo: cup.codigo, cupom_desconto: desconto }))
-  }
-
-  const adicionarItem = () => {
-    if (!novoItem.nome_produto) return
-    setItens(prev => [...prev, { ...novoItem }])
-    setNovoItem({ ...EMPTY_ITEM })
-    setBuscaProduto('')
-    setAdicionandoItem(false)
-  }
-
-  const removerItem = (idx: number) => setItens(prev => prev.filter((_, i) => i !== idx))
-
-  const selecionarProduto = (p: any) => {
-    setNovoItem(prev => ({ ...prev, produto_id: p.id, nome_produto: p.nome, valor_unitario: p.preco_normal || 0, imagem_url: p.imagem_url || '' }))
-  }
-
+  // ── Salvamento ───────────────────────────────────────────────────────────
   const salvar = async () => {
-    if (!pedido.cliente_nome) { showToast('Informe o nome do cliente'); return }
-    if (itens.length === 0) { showToast('Adicione pelo menos um item'); return }
-    if (!pedido.data_entrega) { showToast('Informe a data de entrega'); return }
+    if (!pedido.cliente_nome) { showToast('Informe o nome do cliente'); setStep('cliente'); return }
+    if (itens.length === 0)   { showToast('Adicione pelo menos um produto'); setStep('produtos'); return }
+    if (!pedido.data_entrega) { showToast('Informe a data de entrega'); setStep('cliente'); return }
+
     setSaving(true)
     try {
+      const totalPago = pedido.valor_sinal + pedido.valor_recebido
+      const valorRestante = Math.max(0, pedido.valor_total - totalPago)
+      const statusPagamentoAuto =
+        valorRestante === 0 && pedido.valor_total > 0 ? 'pago'
+        : totalPago > 0 ? 'parcial'
+        : 'pendente'
+
       const { id: _id, numero: _numero, ...pedidoSemId } = pedido as any
       const payload = {
-        ...pedidoSemId, user_id: userId,
+        ...pedidoSemId,
+        user_id: userId,
         taxa_entrega: pedido.taxa_entrega || 0,
-        desconto: pedido.desconto || 0, cupom_desconto: pedido.cupom_desconto || 0,
-        valor_produtos: pedido.valor_produtos || 0, valor_total: pedido.valor_total || 0,
-        valor_sinal: pedido.valor_sinal || 0, valor_recebido: pedido.valor_recebido || 0,
+        desconto: pedido.desconto || 0,
+        cupom_desconto: pedido.cupom_desconto || 0,
+        valor_produtos: pedido.valor_produtos || 0,
+        valor_total: pedido.valor_total || 0,
+        valor_sinal: pedido.valor_sinal || 0,
+        valor_recebido: pedido.valor_recebido || 0,
         status_pagamento: statusPagamentoAuto,
         cliente_id: pedido.cliente_id || null,
         horario_entrega: pedido.horario_entrega || null,
         data_sinal: pedido.data_sinal || null,
         data_pagamento_restante: pedido.data_pagamento_restante || null,
         cupom_codigo: pedido.cupom_codigo || null,
-        endereco_cep: pedido.endereco_cep || null, endereco_rua: pedido.endereco_rua || null,
-        endereco_numero: pedido.endereco_numero || null, endereco_complemento: pedido.endereco_complemento || null,
-        endereco_bairro: pedido.endereco_bairro || null, endereco_cidade: pedido.endereco_cidade || null,
-        personalizacao_tema: pedido.personalizacao_tema || null, personalizacao_nome: pedido.personalizacao_nome || null,
-        personalizacao_idade: pedido.personalizacao_idade || null, personalizacao_cor: pedido.personalizacao_cor || null,
-        personalizacao_referencia: pedido.personalizacao_referencia || null, personalizacao_obs: pedido.personalizacao_obs || null,
-        responsavel_entrega: pedido.responsavel_entrega || null, responsavel_producao: pedido.responsavel_producao || null,
-        data_prevista_producao: pedido.data_prevista_producao || null, observacoes: pedido.observacoes || null,
+        endereco_cep: pedido.endereco_cep || null,
+        endereco_rua: pedido.endereco_rua || null,
+        endereco_numero: pedido.endereco_numero || null,
+        endereco_complemento: pedido.endereco_complemento || null,
+        endereco_bairro: pedido.endereco_bairro || null,
+        endereco_cidade: pedido.endereco_cidade || null,
+        personalizacao_tema: pedido.personalizacao_tema || null,
+        personalizacao_nome: pedido.personalizacao_nome || null,
+        personalizacao_idade: pedido.personalizacao_idade || null,
+        personalizacao_cor: pedido.personalizacao_cor || null,
+        personalizacao_referencia: pedido.personalizacao_referencia || null,
+        personalizacao_obs: pedido.personalizacao_obs || null,
+        responsavel_entrega: pedido.responsavel_entrega || null,
+        responsavel_producao: pedido.responsavel_producao || null,
+        data_prevista_producao: pedido.data_prevista_producao || null,
+        observacoes: pedido.observacoes || null,
       }
+
       let pedidoId = id
       if (isEdicao) {
         await supabase.from('pedidos').update(payload).eq('id', id)
@@ -325,16 +154,24 @@ export default function PedidoForm() {
         const { data } = await supabase.from('pedidos').insert(payload).select('id').single()
         pedidoId = data?.id
         if (pedidoId) {
-          await supabase.from('pedido_historico').insert({ pedido_id: pedidoId, user_id: userId, evento: 'Pedido criado', descricao: 'Pedido criado manualmente' })
+          await supabase.from('pedido_historico').insert({
+            pedido_id: pedidoId, user_id: userId,
+            evento: 'Pedido criado', descricao: 'Pedido criado manualmente',
+          })
         }
       }
+
       if (pedidoId && itens.length > 0) {
         await supabase.from('pedido_itens').delete().eq('pedido_id', pedidoId)
-        await supabase.from('pedido_itens').insert(itens.map(item => ({ ...item, pedido_id: pedidoId, user_id: userId })))
+        await supabase.from('pedido_itens').insert(
+          itens.map(item => ({ ...item, pedido_id: pedidoId, user_id: userId }))
+        )
       }
+
       if (pedido.cliente_id && pedido.origem) {
         await supabase.from('clientes').update({ como_conheceu: pedido.origem }).eq('id', pedido.cliente_id)
       }
+
       navigate('/pedidos')
     } catch {
       showToast('Erro ao salvar pedido.')
@@ -342,740 +179,594 @@ export default function PedidoForm() {
     setSaving(false)
   }
 
-  const salvarEIniciarOutro = async () => { await salvar(); navigate('/pedidos/novo') }
-  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 3000) }
+  const salvarEIniciar = async () => { await salvar(); navigate('/pedidos/novo') }
 
-  const clientesFiltrados = buscaCliente.length >= 3
-    ? clientes.filter(c => c.nome?.toLowerCase().includes(buscaCliente.toLowerCase()))
-    : []
+  // ── Navegação entre steps ────────────────────────────────────────────────
+  const goNext = () => {
+    if (step === 'cliente')  setStep('produtos')
+    if (step === 'produtos') setStep('pagamento')
+  }
+  const goBack = () => {
+    if (step === 'produtos')  setStep('cliente')
+    if (step === 'pagamento') setStep('produtos')
+  }
 
-  const clienteSelecionado = !!(pedido.cliente_id && pedido.cliente_nome && buscaCliente === pedido.cliente_nome)
-  const totalPago = pedido.valor_sinal + pedido.valor_recebido
-  const valorRestante = Math.max(0, pedido.valor_total - totalPago)
-  const statusPagamentoAuto = valorRestante === 0 && pedido.valor_total > 0 ? 'pago' : totalPago > 0 ? 'parcial' : 'pendente'
-  const STATUS_PAG_CONFIG = {
-    pendente: { label: 'Pendente',       color: '#d97706', bg: '#fef3c7', dot: '#f59e0b' },
-    parcial:  { label: 'Sinal recebido', color: '#3b82f6', bg: '#eff6ff', dot: '#3b82f6' },
-    pago:     { label: 'Pago',           color: '#16a34a', bg: '#f0fdf4', dot: '#22c55e' },
-  } as const
+  const stepIndex = STEPS.findIndex(s => s.id === step)
 
-  // Regras de desbloqueio progressivo
-  const clienteOk = !!pedido.cliente_nome
-  const produtoOk = itens.length > 0
-
+  // ── Loading ──────────────────────────────────────────────────────────────
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
-      <div className="pf-spinner" />
+    <div className="pf2-loader">
+      <div className="pf2-spinner" />
     </div>
   )
 
   return (
-    <div className="pf-root">
+    <div className="pf2-root">
 
       {/* ── Header ── */}
-      <div className="pf-header pf-header-sticky">
-        <button className="pf-back" onClick={() => navigate('/pedidos')}>
+      <div className="pf2-header">
+        <button className="pf2-back" onClick={() => navigate('/pedidos')}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
           Pedidos
         </button>
-        <h1 className="pf-title">{isEdicao ? 'Editar pedido' : 'Novo pedido'}</h1>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          {!isEdicao && (
-            <button onClick={salvarEIniciarOutro} disabled={saving} style={{ padding: '0.6rem 1rem', fontSize: '0.82rem', fontWeight: 600, border: '1.5px solid var(--primary,#FF6FA9)', borderRadius: '10px', background: 'white', color: 'var(--primary,#FF6FA9)', cursor: 'pointer', fontFamily: 'Geist, sans-serif', whiteSpace: 'nowrap' }}>
-              Salvar e iniciar outro
-            </button>
-          )}
-          <button className="pf-btn-salvar" onClick={salvar} disabled={saving}>
-            {saving ? 'Salvando...' : 'Salvar pedido'}
-          </button>
-        </div>
+        <h1 className="pf2-title">{isEdicao ? 'Editar pedido' : 'Novo pedido'}</h1>
+        {/* Espaço reservado para simetria */}
+        <div style={{ width: 64 }} />
       </div>
 
-      {/* ── Indicador de progresso compacto ── */}
-      {(() => {
-        const etapas = [
-          { id: 'cliente',   label: 'Cliente',   done: clienteOk },
-          { id: 'produto',   label: 'Produtos',  done: produtoOk },
-          { id: 'entrega',   label: 'Entrega',   done: !!(pedido.data_entrega) },
-          { id: 'valores',   label: 'Valores',   done: pedido.valor_total > 0 },
-          { id: 'pagamento', label: 'Pagamento', done: pedido.forma_pagamento !== '' },
-          { id: 'status',    label: 'Status',    done: !!(pedido.status) },
-        ]
-        const currentIdx = etapas.findIndex(e => !e.done)
-        const atual = currentIdx === -1 ? etapas.length - 1 : currentIdx
-        const concluidas = etapas.filter(e => e.done).length
-        return (
-          <div className="pf-progresso">
-            <div className="pf-prog-dots">
-              {etapas.map((etapa, idx) => (
-                <div key={etapa.id} className="pf-prog-item">
-                  <div className={`pf-prog-dot${etapa.done ? ' done' : idx === atual ? ' atual' : ''}`}>
-                    {etapa.done
-                      ? <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                      : null
-                    }
-                  </div>
-                  {idx < etapas.length - 1 && (
-                    <div className={`pf-prog-linha${etapa.done ? ' done' : ''}`} />
-                  )}
-                </div>
-              ))}
-            </div>
-            <div className="pf-prog-info">
-              <span className="pf-prog-contador">{concluidas}/{etapas.length}</span>
-              <span className="pf-prog-atual">{etapas[atual]?.label}</span>
-            </div>
-          </div>
-        )
-      })()}
-
-      <div className="pf-content">
-        <div className="pf-section-list">
-
-          {/* ══ 1. CLIENTE ══ */}
-          <div className="pf-card">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
-              <h3 className="pf-card-title" style={{ margin: 0 }}>Cliente</h3>
-              {clienteOk && (
-                <span className="pf-etapa-concluida">✓ Concluído</span>
-              )}
-            </div>
-            <div className="pf-row2">
-              <div className="pf-field" style={{ position: 'relative', flex: 2 }}>
-                <label className="pf-label">
-                  Nome do cliente<span className="pf-required-badge">Obrigatório</span>
-                  {clienteSelecionado && (
-                    <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', fontWeight: 600, color: '#16a34a', background: '#dcfce7', border: '1px solid #bbf7d0', borderRadius: '999px', padding: '1px 8px', verticalAlign: 'middle' }}>✓ Cadastrado</span>
-                  )}
-                  {!clienteSelecionado && pedido.cliente_nome && (
-                    <span style={{ marginLeft: '0.5rem', fontSize: '0.7rem', fontWeight: 600, color: '#d97706', background: '#fef9c3', border: '1px solid #fde68a', borderRadius: '999px', padding: '1px 8px', verticalAlign: 'middle' }}>+ Novo cliente</span>
-                  )}
-                </label>
-                <input
-                  className={`pf-input${tocados['cliente_nome'] && !pedido.cliente_nome ? ' pf-input-erro' : ''}`}
-                  placeholder="Buscar pelo nome (mín. 3 letras)..."
-                  value={buscaCliente || pedido.cliente_nome}
-                  onChange={e => {
-                    const val = e.target.value
-                    setBuscaCliente(val)
-                    setPedido(p => ({ ...p, cliente_nome: val, cliente_id: undefined }))
-                    setShowClienteDropdown(val.length >= 3)
-                  }}
-                  onBlur={() => { tocar('cliente_nome'); setTimeout(() => setShowClienteDropdown(false), 200) }}
-                />
-                {tocados['cliente_nome'] && !pedido.cliente_nome && (
-                  <span className="pf-erro-msg">Campo obrigatório</span>
-                )}
-                {showClienteDropdown && (clientesFiltrados.length > 0 || buscaCliente.length >= 3) && (
-                  <div className="pf-dropdown" onMouseDown={e => e.preventDefault()}>
-                    {clientesFiltrados.slice(0, 5).map(c => (
-                      <button key={c.id} className="pf-dropdown-item" onMouseDown={() => selecionarCliente(c)}>
-                        <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-title,#1F2937)' }}>{c.nome}</span>
-                        {(c.telefone || c.whatsapp) && (
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted,#9CA3AF)', marginTop: '1px' }}>{formatTelefone(c.telefone || c.whatsapp)}</span>
-                        )}
-                      </button>
-                    ))}
-                    {clientesFiltrados.length === 0 && (
-                      <div style={{ padding: '0.5rem 0.85rem', fontSize: '0.78rem', color: 'var(--text-muted,#9CA3AF)' }}>Nenhum cliente encontrado</div>
-                    )}
-                    <button className="pf-dropdown-cadastrar" onMouseDown={e => { e.preventDefault(); cadastrarNovoCliente() }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                      Cadastrar <strong>"{buscaCliente}"</strong> como novo cliente
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div className="pf-field">
-                <label className="pf-label">Origem do pedido</label>
-                <select className="pf-input" value={pedido.origem} onChange={e => set('origem', e.target.value)}>
-                  <option value="">Selecionar...</option>
-                  {ORIGENS.map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-            </div>
-            <div className="pf-row2" style={{ marginTop: '0.75rem' }}>
-              <div className="pf-field">
-                <label className="pf-label">WhatsApp / Contato</label>
-                <input className="pf-input" placeholder="(41) 9 9929-1790" value={pedido.cliente_whatsapp} onChange={e => set('cliente_whatsapp', formatTelefone(e.target.value))} inputMode="numeric" maxLength={16} />
-              </div>
-              <div className="pf-field" />
-            </div>
-          </div>
-
-          {/* ══ 2. ITENS DO PEDIDO ══ */}
-          <div className={`pf-etapa-wrapper${clienteOk ? '' : ' bloqueado'}`}>
-            <div className="pf-card">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0' }}>
-                <h3 className="pf-card-title" style={{ margin: 0 }}>Itens do pedido<span className="pf-required-badge">Obrigatório</span></h3>
-                {produtoOk && (
-                  <span className="pf-etapa-concluida">✓ Concluído</span>
-                )}
-              </div>
-              {itens.length === 0 && !adicionandoItem && (
-                <div className="pf-empty-items">
-                  <p>Nenhum produto adicionado</p>
-                  <button className="pf-btn-add" onClick={() => setAdicionandoItem(true)}>Adicionar produto</button>
-                </div>
-              )}
-              {itens.map((item, idx) => (
-                <div key={idx} className="pf-item-card">
-                  {item.imagem_url ? (
-                    <img src={item.imagem_url} alt={item.nome_produto} style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', flexShrink: 0, border: '1.5px solid var(--border,#E9E9EE)' }} />
-                  ) : (
-                    <div style={{ width: 48, height: 48, borderRadius: 8, flexShrink: 0, background: 'var(--border,#E9E9EE)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>🎂</div>
-                  )}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-title,#1F2937)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.nome_produto}</p>
-                    <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--text-muted,#9CA3AF)' }}>{item.quantidade}x {formatMoney(item.valor_unitario)}</p>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-title,#1F2937)' }}>{formatMoney(item.valor_unitario * item.quantidade)}</span>
-                    <button className="pf-btn-remove" onClick={() => removerItem(idx)}>✕</button>
-                  </div>
-                </div>
-              ))}
-              {adicionandoItem && (
-                <div className="pf-add-item-form">
-                  <div className="pf-field" style={{ position: 'relative' }}>
-                    <label className="pf-label">Produto</label>
-                    <input
-                      className="pf-input" placeholder="Buscar produto..."
-                      value={buscaProduto}
-                      onChange={e => { setBuscaProduto(e.target.value); setShowProdutoDropdown(true); if (!e.target.value) setNovoItem(p => ({ ...p, produto_id: undefined, nome_produto: '', imagem_url: '' })) }}
-                      onFocus={() => setShowProdutoDropdown(true)}
-                      onBlur={() => setTimeout(() => setShowProdutoDropdown(false), 200)}
-                    />
-                    {showProdutoDropdown && (
-                      <div className="pf-dropdown" onMouseDown={e => e.preventDefault()}>
-                        {produtos.filter(p => !buscaProduto || p.nome.toLowerCase().includes(buscaProduto.toLowerCase())).slice(0, 6).map(p => (
-                          <button key={p.id} className="pf-dropdown-item pf-dropdown-produto" onMouseDown={() => { selecionarProduto(p); setBuscaProduto(p.nome); setShowProdutoDropdown(false) }}>
-                            {p.imagem_url ? (
-                              <img src={p.imagem_url} alt={p.nome} style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
-                            ) : (
-                              <div style={{ width: 36, height: 36, borderRadius: 6, background: 'var(--border,#E9E9EE)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>🎂</div>
-                            )}
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-title,#1F2937)' }}>{p.nome}</div>
-                              <div style={{ fontSize: '0.75rem', color: 'var(--primary,#FF6FA9)', fontWeight: 700 }}>{formatMoney(p.preco_normal)}</div>
-                            </div>
-                          </button>
-                        ))}
-                        {produtos.filter(p => !buscaProduto || p.nome.toLowerCase().includes(buscaProduto.toLowerCase())).length === 0 && (
-                          <div style={{ padding: '0.6rem 0.85rem', fontSize: '0.78rem', color: 'var(--text-muted,#9CA3AF)' }}>Nenhum produto encontrado</div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="pf-field">
-                    <label className="pf-label">Nome (ou descreva manualmente)</label>
-                    <input className="pf-input" placeholder="Ex: Bolo Red Velvet 2kg" value={novoItem.nome_produto} onChange={e => setNovoItem(p => ({ ...p, nome_produto: e.target.value }))} />
-                  </div>
-                  <div className="pf-row2">
-                    <div className="pf-field">
-                      <label className="pf-label">Qtd</label>
-                      <input className="pf-input" type="number" min="0.1" step="0.1" value={novoItem.quantidade} onChange={e => setNovoItem(p => ({ ...p, quantidade: Number(e.target.value) }))} />
-                    </div>
-                    <div className="pf-field">
-                      <label className="pf-label">Valor unit. (R$)</label>
-                      <MoneyInput value={novoItem.valor_unitario} onChange={v => setNovoItem(p => ({ ...p, valor_unitario: v }))} />
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    <button className="pf-btn-salvar" onClick={adicionarItem}>Adicionar</button>
-                    <button className="pf-btn-cancel" onClick={() => { setAdicionandoItem(false); setNovoItem({ ...EMPTY_ITEM }); setBuscaProduto('') }}>Cancelar</button>
-                  </div>
-                </div>
-              )}
-              {itens.length > 0 && (
-                <>
-                  <div className="pf-item-total">
-                    <span>Total dos produtos</span>
-                    <span style={{ fontWeight: 700 }}>{formatMoney(pedido.valor_produtos)}</span>
-                  </div>
-                  {!adicionandoItem && (
-                    <button className="pf-btn-add" onClick={() => setAdicionandoItem(true)} style={{ marginTop: '0.75rem', width: '100%' }}>+ Adicionar produto</button>
-                  )}
-                </>
-              )}
-
-                {/* Personalização — colapsável dentro dos itens */}
-                <div style={{ borderTop: '1px solid var(--border,#E9E9EE)', marginTop: '0.5rem', paddingTop: '0.5rem' }}>
-                  <button
-                    type="button"
-                    className={`pf-toggle-btn${showPersonalizacao ? ' ativo' : ''}`}
-                    style={{ padding: '0.6rem 0', width: '100%' }}
-                    onClick={() => {
-                      if (showPersonalizacao) setPedido(p => ({ ...p, personalizacao_tema: '', personalizacao_nome: '', personalizacao_idade: '', personalizacao_cor: '', personalizacao_obs: '' }))
-                      setShowPersonalizacao(v => !v)
-                    }}
-                  >
-                    <span className="pf-toggle-icon">
-                      {showPersonalizacao
-                        ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                      }
-                    </span>
-                    <span style={{ fontSize: '0.83rem' }}>Personalização do pedido</span>
-                    {(pedido.personalizacao_tema || pedido.personalizacao_nome) && !showPersonalizacao && <span className="pf-toggle-badge">preenchida</span>}
-                  </button>
-                  {showPersonalizacao && (
-                    <div style={{ paddingTop: '0.5rem' }}>
-                      <div className="pf-row2">
-                        <div className="pf-field">
-                          <label className="pf-label">Tema</label>
-                          <input className="pf-input" placeholder="Ex: Fazendinha, Frozen..." value={pedido.personalizacao_tema} onChange={e => set('personalizacao_tema', e.target.value)} />
-                        </div>
-                        <div className="pf-field">
-                          <label className="pf-label">Nome no bolo</label>
-                          <input className="pf-input" placeholder="Ex: Maria" value={pedido.personalizacao_nome} onChange={e => set('personalizacao_nome', e.target.value)} />
-                        </div>
-                      </div>
-                      <div className="pf-row2">
-                        <div className="pf-field">
-                          <label className="pf-label">Idade</label>
-                          <input className="pf-input" placeholder="Ex: 5 anos" value={pedido.personalizacao_idade} onChange={e => set('personalizacao_idade', e.target.value)} />
-                        </div>
-                        <div className="pf-field">
-                          <label className="pf-label">Cor principal</label>
-                          <input className="pf-input" placeholder="Ex: Rosa e dourado" value={pedido.personalizacao_cor} onChange={e => set('personalizacao_cor', e.target.value)} />
-                        </div>
-                      </div>
-                      <div className="pf-field">
-                        <label className="pf-label">Observações de personalização</label>
-                        <textarea className="pf-textarea" placeholder="Detalhes extras sobre a decoração..." value={pedido.personalizacao_obs} onChange={e => set('personalizacao_obs', e.target.value)} rows={3} />
-                      </div>
-                    </div>
-                  )}
-                </div>
-            </div>
-            {!clienteOk && <BloqueioOverlay mensagem="Preencha o cliente primeiro" />}
-          </div>
-
-
-
-          {/* ══ 4. ENTREGA ══ */}
-          <div className={`pf-etapa-wrapper${produtoOk ? '' : ' bloqueado'}`}>
-            <div className="pf-card">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
-                <h3 className="pf-card-title" style={{ margin: 0 }}>Entrega</h3>
-                {pedido.data_entrega && (
-                  <span className="pf-etapa-concluida">✓ Concluído</span>
-                )}
-              </div>
-              <div className="pf-row2" style={{ marginBottom: '0.85rem' }}>
-                <div className="pf-field" style={{ flex: 1 }}>
-                <DatePickerField label="Data de entrega / Pedido" value={pedido.data_entrega} onChange={v => { set('data_entrega', v); tocar('data_entrega') }} required minDate={new Date()} placeholder="Selecionar data" />
-                {tocados['data_entrega'] && !pedido.data_entrega && (
-                  <span className="pf-erro-msg">Campo obrigatório</span>
-                )}
-              </div>
-                <TimePickerField label="Horário" value={pedido.horario_entrega} onChange={v => set('horario_entrega', v)} placeholder="Selecionar horário" minuteStep={10} />
-              </div>
-              <label className="pf-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Tipo de entrega</label>
-              <div className="pf-toggle-entrega">
-                {[
-                  { value: 'retirada', label: 'Retirada' },
-                  { value: 'entrega',  label: 'Entrega' },
-                ].map(t => {
-                  const isActive = pedido.tipo_entrega === t.value
-                  return (
-                    <button key={t.value} type="button" onClick={() => set('tipo_entrega', t.value)} className={`pf-entrega-toggle${isActive ? ' ativo' : ''}`}>
-                      <span className="pf-entrega-label">{t.label}</span>
-                      <span className="pf-entrega-check">{isActive ? '✓' : ''}</span>
-                    </button>
-                  )
-                })}
-              </div>
-              {pedido.tipo_entrega === 'entrega' && (
-                <div style={{ marginTop: '0.85rem', borderTop: '1px solid var(--border,#E9E9EE)', paddingTop: '0.85rem' }}>
-                  <label className="pf-label" style={{ marginBottom: '0.5rem', display: 'block', color: 'var(--text-title,#1F2937)', fontWeight: 700 }}>Endereço de entrega</label>
-                  <div className="pf-row2">
-                    <div className="pf-field">
-                      <label className="pf-label">CEP</label>
-                      <input className="pf-input" placeholder="00000-000" value={pedido.endereco_cep} onChange={e => set('endereco_cep', e.target.value)} />
-                    </div>
-                    <div className="pf-field" style={{ flex: 2 }}>
-                      <label className="pf-label">Rua / Avenida</label>
-                      <input className="pf-input" placeholder="Rua..." value={pedido.endereco_rua} onChange={e => set('endereco_rua', e.target.value)} />
-                    </div>
-                  </div>
-                  <div className="pf-row2">
-                    <div className="pf-field">
-                      <label className="pf-label">Número</label>
-                      <input className="pf-input" placeholder="Nº" value={pedido.endereco_numero} onChange={e => set('endereco_numero', e.target.value)} />
-                    </div>
-                    <div className="pf-field" style={{ flex: 2 }}>
-                      <label className="pf-label">Complemento</label>
-                      <input className="pf-input" placeholder="Apto, bloco..." value={pedido.endereco_complemento} onChange={e => set('endereco_complemento', e.target.value)} />
-                    </div>
-                  </div>
-                  <div className="pf-row2">
-                    <div className="pf-field">
-                      <label className="pf-label">Bairro</label>
-                      <input className="pf-input" value={pedido.endereco_bairro} onChange={e => set('endereco_bairro', e.target.value)} />
-                    </div>
-                    <div className="pf-field">
-                      <label className="pf-label">Cidade</label>
-                      <input className="pf-input" value={pedido.endereco_cidade} onChange={e => set('endereco_cidade', e.target.value)} />
-                    </div>
-                  </div>
-                  <div style={{ maxWidth: '50%' }}>
-                    <div className="pf-field">
-                      <label className="pf-label">Taxa de entrega (R$)</label>
-                      <MoneyInput value={pedido.taxa_entrega} onChange={v => set('taxa_entrega', v)} />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            {!produtoOk && <BloqueioOverlay mensagem="Adicione um produto primeiro" />}
-          </div>
-
-          {/* ══ 5+6. VALORES + PAGAMENTO ══ */}
-          <div className={`pf-etapa-wrapper${produtoOk ? '' : ' bloqueado'}`}>
-            <div className="pf-row-cards">
-
-              {/* Pagamento */}
-              <div className="pf-card pf-card-pagamento" style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
-                  <h3 className="pf-card-title" style={{ margin: 0 }}>Pagamento</h3>
-                  <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: '999px', color: STATUS_PAG_CONFIG[statusPagamentoAuto].color, background: STATUS_PAG_CONFIG[statusPagamentoAuto].bg, display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: STATUS_PAG_CONFIG[statusPagamentoAuto].dot, display: 'inline-block' }} />
-                    {STATUS_PAG_CONFIG[statusPagamentoAuto].label}
-                  </span>
-                </div>
-                <label className="pf-label" style={{ marginBottom: '0.4rem', display: 'block' }}>Forma de pagamento</label>
-                <div className="pf-pagamento-grid" style={{ marginBottom: '0.85rem' }}>
-                  {[
-                    { value: 'pix',      label: 'PIX',      img: '/pix.png' },
-                    { value: 'dinheiro', label: 'Dinheiro', icon: '💵' },
-                    { value: 'credito',  label: 'Crédito',  img: '/credito.webp' },
-                    { value: 'debito',   label: 'Débito',   img: '/debito.png' },
-                    { value: 'fiado',    label: 'Fiado',    icon: '🤝' },
-                  ].map(f => {
-                    const isActive = pedido.forma_pagamento === f.value
-                    return (
-                      <button key={f.value} type="button" onClick={() => set('forma_pagamento', f.value)} className={`pf-pagamento-btn${isActive ? ' ativo' : ''}`}>
-                        {'img' in f
-                          ? <img src={(f as any).img} alt={f.label} style={{ width: 28, height: 28, objectFit: 'contain' }} />
-                          : <span className="pf-pagamento-icon">{(f as any).icon}</span>
-                        }
-                        <span>{f.label}</span>
-                      </button>
-                    )
-                  })}
-                </div>
-                {/* Toggle sinal */}
-                <button type="button" className={`pf-sinal-toggle${showSinal || pedido.valor_sinal > 0 ? ' ativo' : ''}`} onClick={() => { if (showSinal && pedido.valor_sinal === 0) setShowSinal(false); else setShowSinal(v => !v) }}>
-                  <span className="pf-sinal-check">
-                    {(showSinal || pedido.valor_sinal > 0) && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                  </span>
-                  <span>Sinal recebido</span>
-                  {pedido.valor_sinal > 0 && <span style={{ marginLeft: 'auto', fontSize: '0.78rem', fontWeight: 700, color: '#3b82f6' }}>{formatMoney(pedido.valor_sinal)}</span>}
-                </button>
-                {(showSinal || pedido.valor_sinal > 0) && (
-                  <div className="pf-row2" style={{ marginTop: '0.65rem' }}>
-                    <div className="pf-field">
-                      <label className="pf-label">Valor do sinal (R$)</label>
-                      <MoneyInput value={pedido.valor_sinal} onChange={v => set('valor_sinal', v)} />
-                    </div>
-                    <div className="pf-field">
-                      <label className="pf-label">Data do sinal</label>
-                      <input className="pf-input" type="date" value={pedido.data_sinal} onChange={e => set('data_sinal', e.target.value)} />
-                    </div>
-                  </div>
-                )}
-                <div className="pf-row2" style={{ marginTop: '0.75rem' }}>
-                  <div className="pf-field">
-                    <label className="pf-label">Valor pago na entrega (R$)</label>
-                    <MoneyInput value={pedido.valor_recebido} onChange={v => set('valor_recebido', v)} />
-                  </div>
-                  <div className="pf-field">
-                    <label className="pf-label">Restante</label>
-                    <div className="pf-input pf-input-readonly" style={{ color: valorRestante > 0 ? '#dc2626' : '#16a34a', fontWeight: 700 }}>
-                      {formatMoney(valorRestante)}
-                    </div>
-                  </div>
-                </div>
-                {valorRestante > 0 && (
-                  <div style={{ maxWidth: '50%', marginTop: '0.1rem' }}>
-                    <div className="pf-field">
-                      <label className="pf-label">Receber restante em</label>
-                      <input className="pf-input" type="date" value={pedido.data_pagamento_restante} onChange={e => set('data_pagamento_restante', e.target.value)} />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Valores */}
-              <div className="pf-card pf-card-valores" style={{ flex: 1, minWidth: 0 }}>
-                <h3 className="pf-card-title">Valores</h3>
-                <div className="pf-resumo-fin">
-                  <div className="pf-fin-row"><span>Produtos</span><span>{formatMoney(pedido.valor_produtos)}</span></div>
-                  {pedido.taxa_entrega > 0 && <div className="pf-fin-row"><span>Taxa de entrega</span><span>{formatMoney(pedido.taxa_entrega)}</span></div>}
-                  {pedido.desconto > 0 && <div className="pf-fin-row pf-fin-row-desconto"><span>↓ Desconto</span><span>- {formatMoney(pedido.desconto)}</span></div>}
-                  {pedido.cupom_desconto > 0 && <div className="pf-fin-row pf-fin-row-desconto"><span>🏷️ {pedido.cupom_codigo}</span><span>- {formatMoney(pedido.cupom_desconto)}</span></div>}
-                  <div className="pf-fin-total-bloco">
-                    <span className="pf-fin-total-label">Total do pedido</span>
-                    <span className="pf-fin-total-valor">{formatMoney(pedido.valor_total)}</span>
-                  </div>
-                </div>
-                {/* Toggle desconto */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.85rem' }}>
-                  <button type="button" className={`pf-sinal-toggle${showDesconto || pedido.desconto > 0 ? ' ativo' : ''}`} onClick={() => { if (showDesconto && pedido.desconto === 0) setShowDesconto(false); else setShowDesconto(v => !v) }}>
-                    <span className="pf-sinal-check">
-                      {(showDesconto || pedido.desconto > 0) && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                    </span>
-                    <span>Aplicar desconto</span>
-                    {pedido.desconto > 0 && <span style={{ marginLeft: 'auto', fontSize: '0.78rem', fontWeight: 700, color: '#16a34a' }}>- {formatMoney(pedido.desconto)}</span>}
-                  </button>
-                  {(showDesconto || pedido.desconto > 0) && (
-                    <div className="pf-row2" style={{ paddingLeft: '0.25rem' }}>
-                      <div className="pf-field">
-                        <label className="pf-label">Valor do desconto (R$)</label>
-                        <MoneyInput value={pedido.desconto} onChange={v => set('desconto', v)} />
-                      </div>
-                    </div>
-                  )}
-                  {/* Toggle cupom */}
-                  <button type="button" className={`pf-sinal-toggle${showCupom || pedido.cupom_codigo ? ' ativo' : ''}`} onClick={() => { if (showCupom && !pedido.cupom_codigo) setShowCupom(false); else setShowCupom(v => !v) }}>
-                    <span className="pf-sinal-check">
-                      {(showCupom || pedido.cupom_codigo) && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                    </span>
-                    <span>Aplicar cupom</span>
-                    {pedido.cupom_codigo && <span style={{ marginLeft: 'auto', fontSize: '0.78rem', fontWeight: 700, color: '#16a34a' }}>{pedido.cupom_codigo} — - {formatMoney(pedido.cupom_desconto)}</span>}
-                  </button>
-                  {(showCupom || pedido.cupom_codigo) && (
-                    <div className="pf-row2" style={{ paddingLeft: '0.25rem' }}>
-                      <div className="pf-field" style={{ flex: 2 }}>
-                        <label className="pf-label">Código do cupom</label>
-                        {cupons.length > 0 ? (
-                          <select className="pf-input" value={pedido.cupom_codigo} onChange={e => { const cup = cupons.find(c => c.codigo === e.target.value); aplicarCupom(cup || null) }}>
-                            <option value="">Selecionar cupom...</option>
-                            {cupons.map(c => <option key={c.id} value={c.codigo}>{c.codigo} — {c.tipo === 'percentual' ? `${c.desconto}%` : formatMoney(c.desconto)}</option>)}
-                          </select>
-                        ) : (
-                          <input className="pf-input" placeholder="Código do cupom" value={pedido.cupom_codigo} onChange={e => set('cupom_codigo', e.target.value)} />
-                        )}
-                      </div>
-                      {pedido.cupom_desconto > 0 && (
-                        <div className="pf-field">
-                          <label className="pf-label">Desconto aplicado</label>
-                          <div className="pf-input pf-input-readonly" style={{ color: '#16a34a', fontWeight: 700 }}>- {formatMoney(pedido.cupom_desconto)}</div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-            </div>
-            {!produtoOk && <BloqueioOverlay mensagem="Adicione um produto primeiro" />}
-          </div>
-
-          {/* ══ 7. STATUS DO PEDIDO ══ */}
-          <div className={`pf-etapa-wrapper${produtoOk ? '' : ' bloqueado'}`}>
-          <div className="pf-card">
-            <h3 className="pf-card-title" style={{ marginBottom: '0.85rem' }}>Status do pedido</h3>
-            <div className="pf-status-list">
-              {STATUS_OPTIONS.map(s => {
-                const isActive = pedido.status === s.value
-                return (
-                  <button key={s.value} type="button" onClick={() => set('status', s.value)} className={`pf-status-item${isActive ? ' ativo' : ''}`}>
-                    <span className="pf-status-dot" style={{ background: s.color }} />
-                    <span className="pf-status-name">{s.label}</span>
-                    {isActive && <span className="pf-status-check">✓</span>}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-          {!produtoOk && <BloqueioOverlay mensagem="Adicione um produto primeiro" />}
-          </div>
-
-          {/* ══ OBSERVAÇÕES ══ */}
-          <div className="pf-card pf-card-toggle">
-            <button className={`pf-toggle-btn${showObservacoes ? ' ativo' : ''}`} onClick={() => { if (showObservacoes) set('observacoes', ''); setShowObservacoes(v => !v) }}>
-              <span className="pf-toggle-icon">
-                {showObservacoes
-                  ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      {/* ── Barra de progresso ── */}
+      <div className="pf2-steps">
+        {STEPS.map((s, i) => {
+          const isDone    = i < stepIndex
+          const isActive  = i === stepIndex
+          return (
+            <div key={s.id} className="pf2-step-item">
+              <div
+                className={`pf2-step-dot${isDone ? ' pf2-step-dot--done' : isActive ? ' pf2-step-dot--active' : ''}`}
+                onClick={() => isDone && setStep(s.id)}
+                style={{ cursor: isDone ? 'pointer' : 'default' }}
+              >
+                {isDone
+                  ? <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  : <span>{i + 1}</span>
                 }
-              </span>
-              <span>Observações gerais</span>
-              {pedido.observacoes && !showObservacoes && <span className="pf-toggle-badge">preenchida</span>}
-            </button>
-            {showObservacoes && (
-              <div className="pf-toggle-content">
-                <textarea className="pf-textarea" placeholder="Anotações sobre o pedido..." value={pedido.observacoes} onChange={e => set('observacoes', e.target.value)} rows={4} />
               </div>
-            )}
-          </div>
-
-        </div>
+              <span className={`pf2-step-label${isActive ? ' pf2-step-label--active' : isDone ? ' pf2-step-label--done' : ''}`}>
+                {s.label}
+              </span>
+              {i < STEPS.length - 1 && (
+                <div className={`pf2-step-line${isDone ? ' pf2-step-line--done' : ''}`} />
+              )}
+            </div>
+          )
+        })}
       </div>
 
-      {/* Footer mobile */}
-      <div className="pf-footer-mobile">
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button className="pf-btn-salvar pf-btn-full" onClick={salvar} disabled={saving} style={{ flex: 1 }}>
-            {saving ? 'Salvando...' : 'Salvar pedido'}
-          </button>
-          {!isEdicao && (
-            <button onClick={salvarEIniciarOutro} disabled={saving} style={{ flex: 1, padding: '0.85rem', fontSize: '0.82rem', fontWeight: 600, border: '1.5px solid var(--primary,#FF6FA9)', borderRadius: '14px', background: 'white', color: 'var(--primary,#FF6FA9)', cursor: 'pointer', fontFamily: 'Geist, sans-serif', whiteSpace: 'nowrap' }}>
-              Salvar e iniciar outro
-            </button>
-          )}
-        </div>
+      {/* ── Conteúdo da etapa ── */}
+      <div className="pf2-content">
+        {step === 'cliente' && (
+          <StepCliente
+            pedido={pedido}
+            set={set}
+            clientes={clientes}
+            onNovoCliente={cadastrarNovoCliente}
+            onNext={goNext}
+          />
+        )}
+        {step === 'produtos' && (
+          <StepProdutos
+            pedido={pedido}
+            set={set}
+            itens={itens}
+            setItens={setItens}
+            produtos={produtos}
+            onNext={goNext}
+            onBack={goBack}
+          />
+        )}
+        {step === 'pagamento' && (
+          <StepPagamento
+            pedido={pedido}
+            set={set}
+            cupons={cupons}
+            saving={saving}
+            onSalvar={salvar}
+            onSalvarEIniciar={salvarEIniciar}
+            onBack={goBack}
+            isEdicao={isEdicao}
+          />
+        )}
       </div>
 
-      {toast && <div className="pf-toast">{toast}</div>}
+      {/* ── Toast ── */}
+      {toast && <div className="pf2-toast">{toast}</div>}
 
       <style>{`
-        .pf-root { font-family: 'Geist', sans-serif; display: flex; flex-direction: column; gap: 1rem; padding-bottom: 5rem; }
+        /* ── Reset base ── */
+        .pf2-root { font-family: 'Geist', sans-serif; display: flex; flex-direction: column; min-height: 100dvh; background: var(--bg-body, #FAFAFA); }
 
-        /* ── Header sticky desktop ── */
-        .pf-header-sticky { position: sticky; top: 0; z-index: 40; background: var(--bg-body,#FAFAFA); padding: 0.75rem 0; margin: -0.75rem 0 0; border-bottom: 1px solid var(--border,#E9E9EE); }
+        /* ── Header ── */
+        .pf2-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0.85rem 1rem;
+          background: var(--bg-card, #fff);
+          border-bottom: 1px solid var(--border, #ECC2D0);
+          position: sticky; top: 0; z-index: 40;
+        }
+        .pf2-back {
+          display: flex; align-items: center; gap: 0.3rem;
+          background: none; border: none; cursor: pointer;
+          font-size: 0.85rem; font-weight: 500;
+          color: var(--text-secondary, #6E3548);
+          font-family: 'Geist', sans-serif; padding: 0;
+        }
+        .pf2-back:hover { color: var(--primary, #986274); }
+        .pf2-title {
+          font-size: 1.05rem; font-weight: 700;
+          color: var(--text-title, #431524); margin: 0;
+        }
 
-        /* ── Indicador de progresso compacto ── */
-        .pf-progresso { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0; }
-        .pf-prog-dots { display: flex; align-items: center; flex-shrink: 0; }
-        .pf-prog-item { display: flex; align-items: center; }
-        .pf-prog-dot {
-          width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
-          border: 2px solid var(--border,#E9E9EE);
-          background: var(--bg-body,#F7F7F8);
+        /* ── Barra de progresso ── */
+        .pf2-steps {
           display: flex; align-items: center; justify-content: center;
+          gap: 0; padding: 1rem 1.25rem;
+          background: var(--bg-card, #fff);
+          border-bottom: 1px solid var(--border, #ECC2D0);
+        }
+        .pf2-step-item { display: flex; align-items: center; gap: 0; }
+        .pf2-step-dot {
+          width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 0.72rem; font-weight: 700;
+          border: 2px solid var(--border, #ECC2D0);
+          background: var(--bg-body, #FAFAFA);
+          color: var(--text-muted, #C39EAA);
           transition: all 0.2s;
         }
-        .pf-prog-dot.done { background: #16a34a; border-color: #16a34a; }
-        .pf-prog-dot.atual { border-color: var(--primary,#FF6FA9); background: var(--primary-light,#FFF1F7); }
-        .pf-prog-linha { height: 2px; width: 12px; background: var(--border,#E9E9EE); flex-shrink: 0; transition: background 0.2s; }
-        .pf-prog-linha.done { background: #16a34a; }
-        .pf-prog-info { display: flex; align-items: center; gap: 0.4rem; }
-        .pf-prog-contador { font-size: 0.72rem; font-weight: 700; color: var(--text-muted,#9CA3AF); background: var(--bg-body,#F7F7F8); border: 1.5px solid var(--border,#E9E9EE); border-radius: 999px; padding: 1px 7px; white-space: nowrap; }
-        .pf-prog-atual { font-size: 0.78rem; font-weight: 700; color: var(--primary,#FF6FA9); white-space: nowrap; }
+        .pf2-step-dot--done {
+          background: var(--success, #22C55E);
+          border-color: var(--success, #22C55E); color: white;
+        }
+        .pf2-step-dot--active {
+          background: var(--primary, #986274);
+          border-color: var(--primary, #986274); color: white;
+          box-shadow: 0 0 0 4px var(--primary-light, #F7EEF1);
+        }
+        .pf2-step-line {
+          width: 40px; height: 2px;
+          background: var(--border, #ECC2D0);
+          flex-shrink: 0; margin: 0 4px;
+          transition: background 0.2s;
+        }
+        .pf2-step-line--done { background: var(--success, #22C55E); }
+        .pf2-step-label {
+          font-size: 0.72rem; font-weight: 500;
+          color: var(--text-muted, #C39EAA);
+          margin-left: 6px; white-space: nowrap;
+          transition: color 0.2s;
+        }
+        .pf2-step-label--active { color: var(--primary, #986274); font-weight: 700; }
+        .pf2-step-label--done   { color: var(--success, #22C55E); }
 
-        /* ── Check de etapa concluída ── */
-        .pf-etapa-concluida { font-size: 0.72rem; font-weight: 700; color: #16a34a; background: #dcfce7; border: 1px solid #bbf7d0; border-radius: 999px; padding: 2px 10px; }
+        /* ── Conteúdo ── */
+        .pf2-content { flex: 1; padding: 1rem; padding-bottom: 6rem; }
+        .step-root { display: flex; flex-direction: column; gap: 0.85rem; }
 
-        /* ── Validação inline ── */
-        .pf-input-erro { border-color: #dc2626 !important; background: #fff8f8 !important; }
-        .pf-erro-msg { font-size: 0.72rem; color: #dc2626; font-weight: 500; margin-top: 2px; }
+        /* ── Cards ── */
+        .pf2-card {
+          background: var(--bg-card, #fff);
+          border: 1.5px solid var(--border, #ECC2D0);
+          border-radius: var(--radius-card, 18px);
+          overflow: hidden;
+        }
+        .pf2-card-eyebrow {
+          font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+          letter-spacing: 0.06em; color: var(--text-muted, #C39EAA);
+          padding: 0.85rem 1rem 0;
+          margin: 0 0 0.75rem;
+        }
+        .pf2-card-head-row {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0.85rem 1rem 0; margin-bottom: 0.75rem;
+        }
 
-        /* Accordion progressivo */
-        .pf-etapa-wrapper { position: relative; border-radius: 14px; }
-        .pf-etapa-wrapper.bloqueado { pointer-events: none; }
-        .pf-etapa-wrapper.bloqueado > *:not(.pf-etapa-overlay) { opacity: 0.35; filter: blur(1.5px); user-select: none; }
-        .pf-etapa-overlay { position: absolute; inset: 0; border-radius: 14px; background: rgba(255,255,255,0.5); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 10; pointer-events: none; }
-        .pf-etapa-lock { display: flex; align-items: center; gap: 0.5rem; background: white; border: 1.5px solid var(--border,#E9E9EE); border-radius: 999px; padding: 0.4rem 1rem; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary,#6B7280); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        /* ── Campos ── */
+        .pf2-field { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
+        .pf2-row   { display: flex; gap: 0.65rem; padding: 0 1rem 0.75rem; }
+        .pf2-field:first-child:not(:only-child) .pf2-label,
+        .pf2-field:first-child:not(:only-child) .pf2-input { }
+        .pf2-label {
+          font-size: 0.72rem; font-weight: 600;
+          color: var(--text-secondary, #6E3548);
+          padding: 0 1rem;
+        }
+        .pf2-label ~ .pf2-input,
+        .pf2-label ~ div > .pf2-input { /* via wrapper */ }
 
-        .pf-header { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-        .pf-back { display: flex; align-items: center; gap: 0.3rem; background: none; border: none; cursor: pointer; font-size: 0.85rem; color: var(--text-secondary,#6B7280); font-family: 'Geist', sans-serif; padding: 0; }
-        .pf-back:hover { color: var(--primary,#FF6FA9); }
-        .pf-title { flex: 1; font-size: 1.3rem; font-weight: 700; color: var(--text-title,#1F2937); margin: 0; }
-        .pf-btn-salvar { background: var(--primary,#FF6FA9); color: white; border: none; border-radius: 10px; padding: 0.6rem 1.2rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: 'Geist', sans-serif; white-space: nowrap; transition: opacity 0.15s; }
-        .pf-btn-salvar:hover { opacity: 0.88; }
-        .pf-btn-salvar:disabled { opacity: 0.6; cursor: not-allowed; }
-        .pf-btn-full { width: 100%; padding: 0.85rem; font-size: 0.95rem; border-radius: 14px; }
-        .pf-btn-cancel { background: var(--bg-body,#F7F7F8); color: var(--text-secondary,#6B7280); border: 1.5px solid var(--border,#E9E9EE); border-radius: 10px; padding: 0.6rem 1.2rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: 'Geist', sans-serif; }
+        /* Quando field está dentro de .pf2-row, o label/input não tem padding lateral */
+        .pf2-row .pf2-label  { padding: 0; }
+        .pf2-row .pf2-error-msg { padding: 0; }
 
-        .pf-content { display: flex; flex-direction: column; }
-        .pf-section-list { display: flex; flex-direction: column; gap: 0.85rem; }
-        .pf-row-cards { display: flex; gap: 0.85rem; align-items: stretch; }
+        .pf2-input {
+          border: 1.5px solid var(--border, #ECC2D0);
+          border-radius: var(--radius-input, 50px);
+          padding: 0.6rem 0.9rem;
+          font-size: 0.88rem; font-family: 'Geist', sans-serif;
+          color: var(--text-primary, #431524);
+          background: var(--bg-input, #fff);
+          outline: none; width: 100%;
+          transition: border-color 0.15s, box-shadow 0.15s;
+          box-sizing: border-box;
+        }
+        .pf2-input:focus {
+          border-color: var(--primary, #986274);
+          box-shadow: var(--focus-ring);
+        }
+        .pf2-input--error  { border-color: var(--error, #EF4444) !important; background: #fff8f8 !important; }
+        .pf2-input--readonly {
+          background: var(--bg-subtle, #F7EEF1); cursor: default;
+          display: flex; align-items: center;
+          border-radius: var(--radius-input, 50px);
+          padding: 0.6rem 0.9rem;
+          font-size: 0.88rem; font-family: 'Geist', sans-serif;
+          border: 1.5px solid var(--border, #ECC2D0);
+          box-sizing: border-box; width: 100%;
+        }
+        .pf2-textarea {
+          border: 1.5px solid var(--border, #ECC2D0);
+          border-radius: 12px;
+          padding: 0.6rem 0.9rem;
+          font-size: 0.88rem; font-family: 'Geist', sans-serif;
+          color: var(--text-primary, #431524);
+          background: var(--bg-input, #fff);
+          outline: none; width: 100%; resize: vertical;
+          transition: border-color 0.15s;
+          box-sizing: border-box;
+        }
+        .pf2-textarea:focus { border-color: var(--primary, #986274); box-shadow: var(--focus-ring); }
+        .pf2-error-msg { font-size: 0.72rem; color: var(--error, #EF4444); font-weight: 500; padding: 0 1rem; }
 
-        .pf-card { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#E9E9EE); border-radius: 14px; padding: 1.1rem; }
-        .pf-card-title { font-size: 0.88rem; font-weight: 700; color: var(--text-title,#1F2937); margin: 0 0 0.85rem; }
-        .pf-required-badge { margin-left: 0.4rem; font-size: 0.68rem; font-weight: 700; color: #dc2626; background: #fee2e2; padding: 1px 7px; border-radius: 8px; vertical-align: middle; }
+        /* Campo standalone (dentro do card, sem .pf2-row) */
+        .pf2-card > .pf2-field { padding: 0 1rem 0.75rem; }
+        .pf2-card > .pf2-field .pf2-label { padding: 0; }
 
-        .pf-field { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
-        .pf-label { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary,#6B7280); }
-        .pf-input { border: 1.5px solid var(--border,#E9E9EE); border-radius: 8px; padding: 0.55rem 0.75rem; font-size: 0.85rem; font-family: 'Geist', sans-serif; color: var(--text-primary,#1F2937); background: var(--bg-body,#FAFAFA); outline: none; width: 100%; transition: border-color 0.15s; box-sizing: border-box; }
-        .pf-input:focus { border-color: var(--primary,#FF6FA9); }
-        .pf-input-readonly { display: flex; align-items: center; background: var(--bg-body,#F7F7F8); cursor: default; border-radius: 8px; padding: 0.55rem 0.75rem; font-size: 0.85rem; font-family: 'Geist', sans-serif; border: 1.5px solid var(--border,#E9E9EE); }
-        .pf-textarea { border: 1.5px solid var(--border,#E9E9EE); border-radius: 8px; padding: 0.55rem 0.75rem; font-size: 0.85rem; font-family: 'Geist', sans-serif; color: var(--text-primary,#1F2937); background: var(--bg-body,#FAFAFA); outline: none; width: 100%; resize: vertical; transition: border-color 0.15s; box-sizing: border-box; }
-        .pf-textarea:focus { border-color: var(--primary,#FF6FA9); }
-        .pf-row2 { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; }
+        /* ── Badges ── */
+        .pf2-required { color: var(--error, #EF4444); margin-left: 2px; }
+        .pf2-badge {
+          margin-left: 0.4rem; font-size: 0.68rem; font-weight: 700;
+          padding: 1px 8px; border-radius: 999px; vertical-align: middle;
+        }
+        .pf2-badge--ok  { color: #16a34a; background: #dcfce7; border: 1px solid #bbf7d0; }
+        .pf2-badge--new { color: #d97706; background: #fef9c3; border: 1px solid #fde68a; }
 
-        .pf-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card,#fff); border: 1.5px solid var(--border,#E9E9EE); border-radius: 10px; z-index: 50; box-shadow: 0 4px 16px rgba(0,0,0,0.1); margin-top: 2px; overflow: hidden; }
-        .pf-dropdown-item { width: 100%; display: flex; flex-direction: column; align-items: flex-start; padding: 0.6rem 0.85rem; background: none; border: none; border-bottom: 1px solid var(--border,#E9E9EE); cursor: pointer; font-family: 'Geist', sans-serif; transition: background 0.1s; text-align: left; }
-        .pf-dropdown-item:last-child { border-bottom: none; }
-        .pf-dropdown-item:hover { background: var(--bg-body,#F7F7F8); }
-        .pf-dropdown-produto { flex-direction: row; align-items: center; gap: 0.6rem; }
-        .pf-dropdown-cadastrar { width: 100%; display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 0.85rem; background: var(--primary-light,#FFF1F7); border: none; border-top: 1px solid var(--border,#E9E9EE); cursor: pointer; font-family: 'Geist', sans-serif; font-size: 0.8rem; color: var(--primary,#FF6FA9); text-align: left; transition: background 0.1s; }
-        .pf-dropdown-cadastrar:hover { background: #FFE4F0; }
-        .pf-dropdown-cadastrar strong { font-weight: 700; }
+        /* ── Dropdown ── */
+        .pf2-dropdown {
+          position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+          background: var(--bg-card, #fff);
+          border: 1.5px solid var(--border, #ECC2D0);
+          border-radius: 14px; z-index: 50;
+          box-shadow: var(--shadow-lg);
+          overflow: hidden;
+        }
+        .pf2-drop-item {
+          width: 100%; display: flex; flex-direction: column; align-items: flex-start;
+          padding: 0.6rem 0.9rem; background: none; border: none;
+          border-bottom: 1px solid var(--border, #ECC2D0);
+          cursor: pointer; font-family: 'Geist', sans-serif;
+          transition: background 0.1s; text-align: left;
+        }
+        .pf2-drop-item:last-child { border-bottom: none; }
+        .pf2-drop-item:hover { background: var(--bg-subtle, #F7EEF1); }
+        .pf2-drop-item--produto { flex-direction: row; align-items: center; gap: 0.6rem; }
+        .pf2-drop-name { font-size: 0.88rem; font-weight: 600; color: var(--text-title, #431524); }
+        .pf2-drop-sub  { font-size: 0.75rem; color: var(--text-muted, #C39EAA); margin-top: 1px; }
+        .pf2-drop-empty { padding: 0.65rem 0.9rem; font-size: 0.8rem; color: var(--text-muted, #C39EAA); }
+        .pf2-drop-new {
+          width: 100%; display: flex; align-items: center; gap: 0.5rem;
+          padding: 0.65rem 0.9rem;
+          background: var(--bg-subtle, #F7EEF1);
+          border: none; border-top: 1px solid var(--border, #ECC2D0);
+          cursor: pointer; font-family: 'Geist', sans-serif;
+          font-size: 0.8rem; color: var(--primary, #986274);
+          transition: background 0.1s;
+        }
+        .pf2-drop-new:hover { background: #ECC2D0; }
+        .pf2-drop-new strong { font-weight: 700; }
 
-        .pf-toggle-entrega { display: flex; gap: 0.6rem; }
-        .pf-entrega-toggle { flex: 1; display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 1rem; border-radius: 10px; border: 1.5px solid var(--border,#E9E9EE); background: var(--bg-body,#FAFAFA); cursor: pointer; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 500; color: var(--text-secondary,#6B7280); transition: all 0.15s; text-align: left; }
-        .pf-entrega-toggle.ativo { border-color: var(--primary,#FF6FA9); background: var(--primary-light,#FFF1F7); color: var(--primary,#FF6FA9); font-weight: 700; }
-        .pf-entrega-label { flex: 1; }
-        .pf-entrega-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--border,#E9E9EE); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; transition: all 0.15s; }
-        .pf-entrega-toggle.ativo .pf-entrega-check { background: var(--primary,#FF6FA9); border-color: var(--primary,#FF6FA9); color: white; }
+        /* ── Itens de produto ── */
+        .pf2-item {
+          display: flex; align-items: center; gap: 0.75rem;
+          padding: 0.65rem 1rem;
+          border-bottom: 1px solid var(--border, #ECC2D0);
+        }
+        .pf2-item:last-of-type { border-bottom: none; }
+        .pf2-item-img {
+          width: 44px; height: 44px; border-radius: 10px;
+          object-fit: cover; flex-shrink: 0;
+          border: 1.5px solid var(--border, #ECC2D0);
+        }
+        .pf2-item-img--placeholder {
+          background: var(--bg-subtle, #F7EEF1);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 1.2rem;
+        }
+        .pf2-item-info { flex: 1; min-width: 0; }
+        .pf2-item-name {
+          font-size: 0.88rem; font-weight: 600;
+          color: var(--text-title, #431524);
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+          margin: 0;
+        }
+        .pf2-item-meta { font-size: 0.75rem; color: var(--text-muted, #C39EAA); margin: 2px 0 0; }
+        .pf2-item-total { font-size: 0.9rem; font-weight: 700; color: var(--text-title, #431524); flex-shrink: 0; }
+        .pf2-item-remove {
+          background: none; border: none; cursor: pointer;
+          color: var(--text-muted, #C39EAA); padding: 4px; border-radius: 6px;
+          transition: color 0.15s; flex-shrink: 0;
+          display: flex; align-items: center;
+        }
+        .pf2-item-remove:hover { color: var(--error, #EF4444); }
+        .pf2-subtotal {
+          display: flex; justify-content: space-between;
+          padding: 0.6rem 1rem;
+          font-size: 0.82rem; color: var(--text-secondary, #6E3548); font-weight: 600;
+          border-top: 1px solid var(--border, #ECC2D0);
+          background: var(--bg-subtle, #F7EEF1);
+        }
 
-        .pf-item-card { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem; background: var(--bg-body,#F7F7F8); border-radius: 10px; margin-bottom: 0.5rem; }
-        .pf-btn-remove { background: none; border: none; cursor: pointer; color: var(--text-muted,#9CA3AF); font-size: 0.85rem; padding: 4px; border-radius: 6px; transition: color 0.15s; }
-        .pf-btn-remove:hover { color: #ef4444; }
-        .pf-btn-add { background: none; border: 1.5px solid var(--primary,#FF6FA9); border-radius: 8px; padding: 0.35rem 0.75rem; font-size: 0.8rem; font-weight: 600; color: var(--primary,#FF6FA9); cursor: pointer; font-family: 'Geist', sans-serif; white-space: nowrap; }
-        .pf-empty-items { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 2rem 0; }
-        .pf-empty-items p { color: var(--text-muted,#9CA3AF); font-size: 0.85rem; margin: 0; }
-        .pf-add-item-form { background: var(--bg-body,#F7F7F8); border-radius: 10px; padding: 0.85rem; margin-top: 0.5rem; }
-        .pf-item-total { display: flex; justify-content: space-between; padding: 0.75rem 0 0; border-top: 1.5px solid var(--border,#E9E9EE); margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary,#6B7280); }
+        /* Formulário de adicionar item */
+        .pf2-add-form {
+          padding: 0.85rem 1rem;
+          background: var(--bg-subtle, #F7EEF1);
+          border-top: 1px solid var(--border, #ECC2D0);
+          position: relative;
+        }
+        .pf2-add-form .pf2-field { padding: 0; }
+        .pf2-add-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
 
-        .pf-status-list { display: flex; flex-direction: column; border: 1.5px solid var(--border,#E9E9EE); border-radius: 10px; overflow: hidden; }
-        .pf-status-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; background: none; border: none; border-bottom: 1px solid var(--border,#E9E9EE); cursor: pointer; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 500; color: var(--text-secondary,#6B7280); transition: background 0.12s; text-align: left; }
-        .pf-status-item:last-child { border-bottom: none; }
-        .pf-status-item:hover { background: var(--bg-body,#F7F7F8); }
-        .pf-status-item.ativo { background: #3d1a24; font-weight: 700; color: #fff; }
-        .pf-status-item.ativo:hover { background: #3d1a24; }
-        .pf-status-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
-        .pf-status-name { flex: 1; }
-        .pf-status-check { font-size: 0.75rem; color: #fff; font-weight: 800; }
+        /* Empty state */
+        .pf2-empty {
+          display: flex; flex-direction: column; align-items: center;
+          gap: 0.4rem; padding: 1.75rem 1rem;
+        }
+        .pf2-empty-icon { font-size: 1.75rem; }
+        .pf2-empty-text { font-size: 0.85rem; color: var(--text-muted, #C39EAA); margin: 0; }
 
-        .pf-resumo-fin { border-radius: 12px; overflow: hidden; border: 1.5px solid var(--border,#E9E9EE); display: flex; flex-direction: column; }
-        .pf-fin-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.83rem; color: var(--text-secondary,#6B7280); padding: 0.55rem 0.9rem; border-bottom: 1px solid var(--border,#E9E9EE); background: var(--bg-body,#FAFAFA); }
-        .pf-fin-row-desconto { color: #16a34a; background: #f0fdf4; font-weight: 600; }
-        .pf-fin-total-bloco { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 0.9rem; background: #3d1a24; }
-        .pf-fin-total-label { font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.75); letter-spacing: 0.02em; text-transform: uppercase; }
-        .pf-fin-total-valor { font-size: 1.25rem; font-weight: 800; color: #fff; letter-spacing: -0.01em; }
+        /* Botão adicionar produto */
+        .pf2-btn-add {
+          display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+          width: calc(100% - 2rem); margin: 0.65rem 1rem;
+          padding: 0.55rem;
+          border: 1.5px dashed var(--primary, #986274);
+          border-radius: var(--radius-btn, 50px);
+          background: none; color: var(--primary, #986274);
+          font-size: 0.82rem; font-weight: 600;
+          font-family: 'Geist', sans-serif; cursor: pointer;
+          transition: background 0.15s;
+        }
+        .pf2-btn-add:hover { background: var(--primary-light, #F7EEF1); }
 
-        .pf-pagamento-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.4rem; }
-        .pf-pagamento-btn { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; padding: 0.5rem 0.25rem; border-radius: 8px; border: 1.5px solid var(--border,#E9E9EE); background: var(--bg-body,#FAFAFA); cursor: pointer; font-family: 'Geist', sans-serif; font-size: 0.7rem; font-weight: 600; color: var(--text-secondary,#6B7280); transition: all 0.15s; }
-        .pf-pagamento-btn:hover { border-color: var(--primary,#FF6FA9); color: var(--primary,#FF6FA9); }
-        .pf-pagamento-btn.ativo { border-color: var(--primary,#FF6FA9); background: var(--primary-light,#FFF1F7); color: var(--primary,#FF6FA9); font-weight: 700; }
-        .pf-pagamento-icon { font-size: 1.1rem; }
+        /* ── Opcionais (checkbox toggle) ── */
+        .pf2-optional-toggle {
+          display: flex; align-items: center; gap: 0.65rem;
+          padding: 0.7rem 1rem;
+          border-top: 1px solid var(--border, #ECC2D0);
+          cursor: pointer;
+          transition: background 0.12s;
+          user-select: none;
+        }
+        .pf2-optional-toggle:hover { background: var(--bg-subtle, #F7EEF1); }
+        .pf2-optional-toggle--on { background: var(--bg-subtle, #F7EEF1); }
+        .pf2-check {
+          width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0;
+          border: 1.5px solid var(--border, #ECC2D0);
+          background: var(--bg-card, #fff);
+          display: flex; align-items: center; justify-content: center;
+          transition: all 0.15s;
+        }
+        .pf2-check--on { background: var(--primary, #986274); border-color: var(--primary, #986274); }
+        .pf2-opt-label { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary, #6E3548); flex: 1; }
+        .pf2-opt-badge {
+          font-size: 0.7rem; font-weight: 600;
+          background: var(--primary-light, #F7EEF1);
+          color: var(--primary, #986274);
+          padding: 2px 8px; border-radius: 999px;
+          white-space: nowrap; max-width: 120px;
+          overflow: hidden; text-overflow: ellipsis;
+        }
+        .pf2-optional-body {
+          padding: 0.85rem 1rem;
+          background: var(--bg-subtle, #F7EEF1);
+          border-top: 1px solid var(--border, #ECC2D0);
+          display: flex; flex-direction: column; gap: 0.65rem;
+          animation: pf2Expand 0.18s ease;
+        }
+        .pf2-optional-body .pf2-field  { padding: 0; }
+        .pf2-optional-body .pf2-label  { padding: 0; }
+        .pf2-optional-body .pf2-row    { padding: 0; }
+        @keyframes pf2Expand {
+          from { opacity: 0; transform: translateY(-4px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
 
-        .pf-sinal-toggle { width: 100%; display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.75rem; border-radius: 8px; border: 1.5px solid var(--border,#E9E9EE); background: var(--bg-body,#FAFAFA); cursor: pointer; font-family: 'Geist', sans-serif; font-size: 0.83rem; font-weight: 500; color: var(--text-secondary,#6B7280); transition: all 0.15s; }
-        .pf-sinal-toggle.ativo { border-color: #3b82f6; background: #eff6ff; color: #1d4ed8; font-weight: 600; }
-        .pf-sinal-check { width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0; border: 1.5px solid var(--border,#D1D5DB); background: white; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-        .pf-sinal-toggle.ativo .pf-sinal-check { background: #3b82f6; border-color: #3b82f6; }
+        /* ── Toggle tipo de entrega ── */
+        .pf2-toggle-group { display: flex; gap: 0.5rem; padding: 0 1rem 0.85rem; }
+        .pf2-toggle-btn {
+          flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+          padding: 0.55rem 0.75rem;
+          border: 1.5px solid var(--border, #ECC2D0);
+          border-radius: var(--radius-btn, 50px);
+          background: var(--bg-body, #FAFAFA);
+          font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 500;
+          color: var(--text-secondary, #6E3548); cursor: pointer;
+          transition: all 0.15s;
+        }
+        .pf2-toggle-btn--on {
+          border-color: var(--primary, #986274);
+          background: var(--primary-light, #F7EEF1);
+          color: var(--primary, #986274); font-weight: 700;
+        }
 
-        .pf-card-toggle { padding: 0; overflow: hidden; }
-        .pf-toggle-btn { width: 100%; display: flex; align-items: center; gap: 0.5rem; background: none; border: none; cursor: pointer; padding: 0.9rem 1.1rem; font-family: 'Geist', sans-serif; font-size: 0.88rem; font-weight: 600; color: var(--text-secondary,#6B7280); transition: color 0.15s; }
-        .pf-toggle-btn:hover { color: var(--primary,#FF6FA9); }
-        .pf-toggle-btn.ativo { color: var(--text-title,#1F2937); }
-        .pf-toggle-icon { width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0; background: var(--bg-body,#F7F7F8); border: 1.5px solid var(--border,#E9E9EE); display: flex; align-items: center; justify-content: center; transition: background 0.15s, border-color 0.15s; }
-        .pf-toggle-btn.ativo .pf-toggle-icon { background: var(--primary-light,#FFF1F7); border-color: var(--primary,#FF6FA9); color: var(--primary,#FF6FA9); }
-        .pf-toggle-badge { margin-left: auto; font-size: 0.68rem; font-weight: 600; background: var(--primary-light,#FFF1F7); color: var(--primary,#FF6FA9); padding: 2px 8px; border-radius: 10px; }
-        .pf-toggle-content { padding: 0 1.1rem 1.1rem; animation: pfExpandIn 0.18s ease; }
-        @keyframes pfExpandIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+        /* ── Pagamento ── */
+        .pf2-pay-grid {
+          display: grid; grid-template-columns: repeat(5, 1fr);
+          gap: 0.4rem; padding: 0 1rem 0.75rem;
+        }
+        .pf2-pay-btn {
+          display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
+          padding: 0.5rem 0.2rem;
+          border: 1.5px solid var(--border, #ECC2D0);
+          border-radius: 10px;
+          background: var(--bg-body, #FAFAFA);
+          font-family: 'Geist', sans-serif;
+          font-size: 0.68rem; font-weight: 500; color: var(--text-secondary, #6E3548);
+          cursor: pointer; transition: all 0.15s;
+        }
+        .pf2-pay-btn:hover { border-color: var(--primary, #986274); color: var(--primary, #986274); }
+        .pf2-pay-btn--on {
+          border-color: var(--primary, #986274);
+          background: var(--primary-light, #F7EEF1);
+          color: var(--primary, #986274); font-weight: 700;
+        }
+        .pf2-pag-badge {
+          display: flex; align-items: center; gap: 5px;
+          font-size: 0.72rem; font-weight: 700;
+          padding: 3px 10px; border-radius: 999px;
+        }
+        .pf2-pag-dot { width: 7px; height: 7px; border-radius: 50%; }
 
-        .pf-footer-mobile { position: fixed; bottom: 0; left: 0; right: 0; padding: 0.75rem 1rem; background: var(--bg-card,#fff); border-top: 1px solid var(--border,#E9E9EE); z-index: 50; }
-        @media (min-width: 768px) { .pf-footer-mobile { display: none; } }
+        /* ── Total bar ── */
+        .pf2-total-bar {
+          display: flex; align-items: center; justify-content: space-between;
+          background: var(--primary-dark, #6E3548);
+          border-radius: var(--radius-card, 18px);
+          padding: 1rem 1.25rem;
+        }
+        .pf2-total-label {
+          font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+          letter-spacing: 0.06em; color: rgba(255,255,255,0.65); margin: 0;
+        }
+        .pf2-total-original {
+          font-size: 0.75rem; color: rgba(255,255,255,0.4);
+          text-decoration: line-through; margin: 2px 0 0;
+        }
+        .pf2-total-value {
+          font-size: 1.6rem; font-weight: 800; color: #fff;
+          letter-spacing: -0.02em; margin: 0;
+        }
 
-        .pf-toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%); background: #1F2937; color: white; padding: 0.65rem 1.25rem; border-radius: 10px; font-size: 0.83rem; font-family: 'Geist', sans-serif; z-index: 300; white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
-        .pf-spinner { width: 32px; height: 32px; border: 3px solid var(--primary-light,#FFF1F7); border-top-color: var(--primary,#FF6FA9); border-radius: 50%; animation: pfSpin 0.7s linear infinite; }
-        @keyframes pfSpin { to { transform: rotate(360deg); } }
+        /* ── Resumo financeiro ── */
+        .pf2-resumo {
+          border: 1.5px solid var(--border, #ECC2D0);
+          border-radius: var(--radius-card, 18px); overflow: hidden;
+        }
+        .pf2-resumo-row {
+          display: flex; justify-content: space-between;
+          padding: 0.55rem 1rem;
+          font-size: 0.82rem; color: var(--text-secondary, #6E3548);
+          background: var(--bg-card, #fff);
+          border-bottom: 1px solid var(--border, #ECC2D0);
+        }
+        .pf2-resumo-row--desconto { color: var(--success, #22C55E); background: #f0fdf4; font-weight: 600; }
+        .pf2-resumo-total {
+          display: flex; justify-content: space-between;
+          padding: 0.75rem 1rem;
+          font-size: 0.9rem; font-weight: 700;
+          background: var(--bg-subtle, #F7EEF1);
+          color: var(--text-title, #431524);
+        }
 
+        /* ── Botões ── */
+        .pf2-btn-primary {
+          display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+          background: var(--btn-primary-bg, #986274);
+          color: var(--btn-primary-text, #fff);
+          border: none; border-radius: var(--radius-btn, 50px);
+          padding: 0.75rem 1.25rem;
+          font-size: 0.88rem; font-weight: 600;
+          font-family: 'Geist', sans-serif; cursor: pointer;
+          transition: opacity 0.15s; white-space: nowrap;
+        }
+        .pf2-btn-primary:hover:not(:disabled) { opacity: 0.88; }
+        .pf2-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .pf2-btn-salvar {
+          display: flex; align-items: center; justify-content: center;
+          background: var(--success, #22C55E); color: #fff;
+          border: none; border-radius: var(--radius-btn, 50px);
+          padding: 0.75rem 1.25rem;
+          font-size: 0.88rem; font-weight: 600;
+          font-family: 'Geist', sans-serif; cursor: pointer;
+          transition: opacity 0.15s;
+        }
+        .pf2-btn-salvar:hover:not(:disabled) { opacity: 0.88; }
+        .pf2-btn-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
+        .pf2-btn-ghost {
+          display: flex; align-items: center; justify-content: center; gap: 0.3rem;
+          background: var(--bg-card, #fff);
+          border: 1.5px solid var(--border, #ECC2D0);
+          border-radius: var(--radius-btn, 50px);
+          padding: 0.75rem 1rem;
+          font-size: 0.85rem; font-weight: 600; color: var(--text-secondary, #6E3548);
+          font-family: 'Geist', sans-serif; cursor: pointer;
+          transition: background 0.15s;
+          white-space: nowrap;
+        }
+        .pf2-btn-ghost:hover:not(:disabled) { background: var(--bg-subtle, #F7EEF1); }
+        .pf2-btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ── Rodapé fixo ── */
+        .pf2-footer {
+          position: fixed; bottom: 0; left: 0; right: 0;
+          display: flex; align-items: center; gap: 0.5rem;
+          padding: 0.85rem 1rem;
+          background: var(--bg-card, #fff);
+          border-top: 1px solid var(--border, #ECC2D0);
+          box-shadow: var(--topbar-shadow);
+          z-index: 40;
+        }
+        .pf2-btn-back { flex-shrink: 0; }
+        .pf2-footer-hint {
+          font-size: 0.72rem; color: var(--text-muted, #C39EAA);
+          margin: 0; text-align: center;
+        }
+
+        /* ── Desktop: rodapé não-fixo, largura controlada ── */
+        @media (min-width: 768px) {
+          .pf2-content  { max-width: 640px; margin: 0 auto; }
+          .pf2-footer   { position: static; border-top: none; box-shadow: none; padding: 0; background: none; margin-top: 0.5rem; }
+          .pf2-total-bar { max-width: 640px; margin: 0 auto; }
+          .pf2-resumo   { max-width: 640px; }
+        }
+
+        /* ── Loading ── */
+        .pf2-loader { display: flex; align-items: center; justify-content: center; height: 60vh; }
+        .pf2-spinner {
+          width: 32px; height: 32px;
+          border: 3px solid var(--primary-light, #F7EEF1);
+          border-top-color: var(--primary, #986274);
+          border-radius: 50%;
+          animation: pf2Spin 0.7s linear infinite;
+        }
+        @keyframes pf2Spin { to { transform: rotate(360deg); } }
+
+        /* ── Toast ── */
+        .pf2-toast {
+          position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%);
+          background: var(--text-title, #431524); color: #fff;
+          padding: 0.65rem 1.25rem; border-radius: 50px;
+          font-size: 0.82rem; font-family: 'Geist', sans-serif;
+          z-index: 300; white-space: nowrap;
+          box-shadow: var(--shadow-lg);
+          animation: pf2ToastIn 0.2s ease;
+        }
+        @keyframes pf2ToastIn { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+        /* ── Mobile tweaks ── */
         @media (max-width: 640px) {
-          .pf-row2 { flex-direction: column; gap: 0.5rem; }
-          .pf-row-cards { flex-direction: column; }
-          .pf-toggle-entrega { flex-direction: column; }
-          .pf-pagamento-grid { grid-template-columns: repeat(3, 1fr); }
-          /* Valores aparece antes de Pagamento no mobile */
-          .pf-card-valores { order: 1; }
-          .pf-card-pagamento { order: 2; }
+          .pf2-step-label { display: none; }
+          .pf2-step-label--active { display: block; }
+          .pf2-step-line { width: 28px; }
+          .pf2-pay-grid { grid-template-columns: repeat(3, 1fr); }
         }
       `}</style>
     </div>
