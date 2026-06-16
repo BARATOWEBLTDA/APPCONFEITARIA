@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { type Pedido, type PedidoItem, EMPTY_PEDIDO, EMPTY_ITEM } from '@/pages/pedidoFormTypes'
-import StepCliente from '@/pages/PedidoFormCliente'
-import StepProdutos from '@/pages/PedidoFormProdutos'
-import StepPagamento from '@/pages/PedidoFormPagamento'
+import { type Pedido, type PedidoItem, EMPTY_PEDIDO, EMPTY_ITEM } from './types'
+import StepCliente from './StepCliente'
+import StepProdutos from './StepProdutos'
+import StepPagamento from './StepPagamento'
 
 // ─── Labels das etapas ────────────────────────────────────────────────────────
 const STEPS = [
@@ -389,7 +389,7 @@ export default function PedidoForm() {
 
         .pf2-input {
           border: 1.5px solid var(--border, #ECC2D0);
-          border-radius: var(--radius-input, 50px);
+          border-radius: 12px;
           padding: 0.6rem 0.9rem;
           font-size: 0.88rem; font-family: 'Geist', sans-serif;
           color: var(--text-primary, #431524);
@@ -406,7 +406,7 @@ export default function PedidoForm() {
         .pf2-input--readonly {
           background: var(--bg-subtle, #F7EEF1); cursor: default;
           display: flex; align-items: center;
-          border-radius: var(--radius-input, 50px);
+          border-radius: 12px;
           padding: 0.6rem 0.9rem;
           font-size: 0.88rem; font-family: 'Geist', sans-serif;
           border: 1.5px solid var(--border, #ECC2D0);
@@ -538,7 +538,7 @@ export default function PedidoForm() {
           width: calc(100% - 2rem); margin: 0.65rem 1rem;
           padding: 0.55rem;
           border: 1.5px dashed var(--primary, #986274);
-          border-radius: var(--radius-btn, 50px);
+          border-radius: 12px;
           background: none; color: var(--primary, #986274);
           font-size: 0.82rem; font-weight: 600;
           font-family: 'Geist', sans-serif; cursor: pointer;
@@ -595,7 +595,7 @@ export default function PedidoForm() {
           flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.3rem;
           padding: 0.55rem 0.75rem;
           border: 1.5px solid var(--border, #ECC2D0);
-          border-radius: var(--radius-btn, 50px);
+          border-radius: 50px;
           background: var(--bg-body, #FAFAFA);
           font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 500;
           color: var(--text-secondary, #6E3548); cursor: pointer;
@@ -681,7 +681,7 @@ export default function PedidoForm() {
           display: flex; align-items: center; justify-content: center; gap: 0.4rem;
           background: var(--btn-primary-bg, #986274);
           color: var(--btn-primary-text, #fff);
-          border: none; border-radius: var(--radius-btn, 50px);
+          border: none; border-radius: 12px;
           padding: 0.75rem 1.25rem;
           font-size: 0.88rem; font-weight: 600;
           font-family: 'Geist', sans-serif; cursor: pointer;
@@ -692,7 +692,7 @@ export default function PedidoForm() {
         .pf2-btn-salvar {
           display: flex; align-items: center; justify-content: center;
           background: var(--success, #22C55E); color: #fff;
-          border: none; border-radius: var(--radius-btn, 50px);
+          border: none; border-radius: 12px;
           padding: 0.75rem 1.25rem;
           font-size: 0.88rem; font-weight: 600;
           font-family: 'Geist', sans-serif; cursor: pointer;
@@ -704,7 +704,7 @@ export default function PedidoForm() {
           display: flex; align-items: center; justify-content: center; gap: 0.3rem;
           background: var(--bg-card, #fff);
           border: 1.5px solid var(--border, #ECC2D0);
-          border-radius: var(--radius-btn, 50px);
+          border-radius: 12px;
           padding: 0.75rem 1rem;
           font-size: 0.85rem; font-weight: 600; color: var(--text-secondary, #6E3548);
           font-family: 'Geist', sans-serif; cursor: pointer;

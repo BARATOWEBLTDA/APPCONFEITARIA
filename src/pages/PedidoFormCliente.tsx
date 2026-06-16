@@ -325,6 +325,8 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
 
       <style>{`
         .pf2-native-display {
+          white-space: nowrap; overflow: hidden;
+          border-radius: 12px;
           display: flex;
           align-items: center;
           gap: 7px;
