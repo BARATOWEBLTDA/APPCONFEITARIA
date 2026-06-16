@@ -349,7 +349,7 @@ export default function PedidoForm() {
         .pf2-step-label--done   { color: var(--success, #22C55E); }
 
         /* ── Conteúdo ── */
-        .pf2-content { flex: 1; padding: 1rem; padding-bottom: 6rem; }
+        .pf2-content { flex: 1; padding: 1rem; padding-bottom: 10rem; }
         .step-root { display: flex; flex-direction: column; gap: 0.85rem; }
 
         /* ── Cards ── */
@@ -717,7 +717,7 @@ export default function PedidoForm() {
 
         /* ── Rodapé fixo ── */
         .pf2-footer {
-          position: fixed; bottom: 0; left: 0; right: 0;
+          position: fixed; bottom: 64px; left: 0; right: 0;
           display: flex; align-items: center; gap: 0.5rem;
           padding: 0.85rem 1rem;
           background: var(--bg-card, #fff);
