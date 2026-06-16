@@ -44,7 +44,6 @@ type Pedido = {
   personalizacao_obs: string
   valor_produtos: number
   desconto: number
-  taxa_extra: number
   cupom_codigo: string
   cupom_desconto: number
   valor_total: number
@@ -71,7 +70,7 @@ const EMPTY_PEDIDO: Pedido = {
   endereco_bairro: '', endereco_cidade: '',
   personalizacao_tema: '', personalizacao_nome: '', personalizacao_idade: '',
   personalizacao_cor: '', personalizacao_referencia: '', personalizacao_obs: '',
-  valor_produtos: 0, desconto: 0, taxa_extra: 0, cupom_codigo: '', cupom_desconto: 0,
+  valor_produtos: 0, desconto: 0, cupom_codigo: '', cupom_desconto: 0,
   responsavel_entrega: '', responsavel_producao: '', data_prevista_producao: '',
   status_producao: 'nao_iniciado', checklist_producao: [],
   valor_total: 0, forma_pagamento: 'pix', status_pagamento: 'pendente',
@@ -197,9 +196,9 @@ export default function PedidoForm() {
   // Recalcula total automaticamente
   useEffect(() => {
     const totalItens = itens.reduce((acc, i) => acc + (i.valor_unitario * i.quantidade), 0)
-    const total = totalItens + pedido.taxa_entrega + pedido.taxa_extra - pedido.desconto - pedido.cupom_desconto
+    const total = totalItens + pedido.taxa_entrega - pedido.desconto - pedido.cupom_desconto
     setPedido(p => ({ ...p, valor_produtos: totalItens, valor_total: Math.max(0, total) }))
-  }, [itens, pedido.taxa_entrega, pedido.taxa_extra, pedido.desconto, pedido.cupom_desconto])
+  }, [itens, pedido.taxa_entrega, pedido.desconto, pedido.cupom_desconto])
 
   const carregarDados = async (uid: string) => {
     const [{ data: cls }, { data: prds }, { data: cups }] = await Promise.all([
@@ -323,7 +322,6 @@ export default function PedidoForm() {
         ...pedidoSemId,
         user_id: userId,
         taxa_entrega: pedido.taxa_entrega || 0,
-        taxa_extra: pedido.taxa_extra || 0,
         desconto: pedido.desconto || 0,
         cupom_desconto: pedido.cupom_desconto || 0,
         valor_produtos: pedido.valor_produtos || 0,
@@ -946,12 +944,7 @@ export default function PedidoForm() {
                     <span>{formatMoney(pedido.taxa_entrega)}</span>
                   </div>
                 )}
-                {pedido.taxa_extra > 0 && (
-                  <div className="pf-fin-row">
-                    <span>Taxa extra</span>
-                    <span>{formatMoney(pedido.taxa_extra)}</span>
-                  </div>
-                )}
+
                 {pedido.desconto > 0 && (
                   <div className="pf-fin-row pf-fin-row-desconto">
                     <span>↓ Desconto</span>
@@ -998,10 +991,7 @@ export default function PedidoForm() {
                       <label className="pf-label">Valor do desconto (R$)</label>
                       <MoneyInput value={pedido.desconto} onChange={v => set('desconto', v)} />
                     </div>
-                    <div className="pf-field">
-                      <label className="pf-label">Taxa extra (R$)</label>
-                      <MoneyInput value={pedido.taxa_extra} onChange={v => set('taxa_extra', v)} />
-                    </div>
+
                   </div>
                 )}
 
