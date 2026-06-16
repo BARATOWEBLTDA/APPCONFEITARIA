@@ -147,7 +147,7 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
   const clienteSelecionado = !!(pedido.cliente_id && busca === pedido.cliente_nome)
   const clienteNovo = !!pedido.cliente_nome && !clienteSelecionado
   const filtrados = busca.length >= 2
-    ? clientes.filter(c => c.nome?.toLowerCase().includes(busca.toLowerCase())).slice(0, 5)
+    ? clientes.filter(c => c.nome && c.nome.toLowerCase().includes(busca.toLowerCase())).slice(0, 5)
     : []
 
   const selecionarCliente = (c: any) => {
@@ -220,14 +220,14 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
               set('cliente_id', undefined)
               setShowDrop(v.length >= 2)
             }}
-            onBlur={() => { setTocado(true); setTimeout(() => setShowDrop(false), 180) }}
+            onBlur={() => { setTocado(true); setTimeout(() => setShowDrop(false), 250) }}
             onFocus={() => { if (busca.length >= 2) setShowDrop(true) }}
             autoComplete="off"
           />
           {tocado && !pedido.cliente_nome && (
             <span className="pf2-error-msg">Campo obrigatório</span>
           )}
-          {showDrop && (
+          {showDrop && filtrados.length > 0 && (
             <div className="pf2-dropdown" ref={dropRef} onMouseDown={e => e.preventDefault()}>
               {filtrados.map(c => (
                 <button key={c.id} className="pf2-drop-item" onMouseDown={() => selecionarCliente(c)}>
@@ -237,9 +237,7 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
                   )}
                 </button>
               ))}
-              {filtrados.length === 0 && busca.length >= 2 && (
-                <div className="pf2-drop-empty">Nenhum resultado</div>
-              )}
+
 
             </div>
           )}
