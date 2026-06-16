@@ -836,11 +836,11 @@ export default function PedidoForm() {
               <label className="pf-label" style={{ marginBottom: '0.4rem', display: 'block' }}>Forma de pagamento</label>
               <div className="pf-pagamento-grid" style={{ marginBottom: '0.85rem' }}>
                 {[
-                  { value: 'pix',          label: 'PIX',        icon: '⚡' },
-                  { value: 'dinheiro',     label: 'Dinheiro',   icon: '💵' },
-                  { value: 'credito',      label: 'Crédito',    icon: '💳' },
-                  { value: 'debito',       label: 'Débito',     icon: '💳' },
-                  { value: 'fiado',        label: 'Fiado',      icon: '🤝' },
+                  { value: 'pix',      label: 'PIX',      img: '/pix.png' },
+                  { value: 'dinheiro', label: 'Dinheiro', icon: '💵' },
+                  { value: 'credito',  label: 'Crédito',  img: '/credito.webp' },
+                  { value: 'debito',   label: 'Débito',   img: '/debito.png' },
+                  { value: 'fiado',    label: 'Fiado',    icon: '🤝' },
                 ].map(f => {
                   const isActive = pedido.forma_pagamento === f.value
                   return (
@@ -850,7 +850,10 @@ export default function PedidoForm() {
                       onClick={() => set('forma_pagamento', f.value)}
                       className={`pf-pagamento-btn${isActive ? ' ativo' : ''}`}
                     >
-                      <span className="pf-pagamento-icon">{f.icon}</span>
+                      {'img' in f
+                        ? <img src={f.img} alt={f.label} style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                        : <span className="pf-pagamento-icon">{f.icon}</span>
+                      }
                       <span>{f.label}</span>
                     </button>
                   )
