@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { DatePickerField } from '@/components/DatePickerField'
 import { TimePickerField } from '@/components/TimePickerField'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { type Pedido, ORIGENS, formatTelefone } from '@/pages/pedidoFormTypes'
 
 type Props = {
@@ -12,6 +13,7 @@ type Props = {
 }
 
 export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNext }: Props) {
+  const isMobile = useIsMobile()
   const [busca, setBusca] = useState(pedido.cliente_nome || '')
   const [showDrop, setShowDrop] = useState(false)
   const [showOrigem, setShowOrigem] = useState(!!pedido.origem)
@@ -145,24 +147,54 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
         <p className="pf2-card-eyebrow">Quando e como entregar?</p>
 
         <div className="pf2-row">
+          {/* Data — nativo no mobile, picker customizado no desktop */}
           <div className="pf2-field" style={{ flex: 2 }}>
-            <DatePickerField
-              label="Data de entrega"
-              value={pedido.data_entrega}
-              onChange={v => set('data_entrega', v)}
-              required
-              minDate={new Date()}
-              placeholder="Selecionar data"
-            />
+            {isMobile ? (
+              <>
+                <label className="pf2-label">
+                  Data de entrega <span className="pf2-required">*</span>
+                </label>
+                <input
+                  className="pf2-input"
+                  type="date"
+                  value={pedido.data_entrega}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={e => set('data_entrega', e.target.value)}
+                />
+              </>
+            ) : (
+              <DatePickerField
+                label="Data de entrega"
+                value={pedido.data_entrega}
+                onChange={v => set('data_entrega', v)}
+                required
+                minDate={new Date()}
+                placeholder="Selecionar data"
+              />
+            )}
           </div>
+
+          {/* Horário — nativo no mobile, picker customizado no desktop */}
           <div className="pf2-field">
-            <TimePickerField
-              label="Horário"
-              value={pedido.horario_entrega}
-              onChange={v => set('horario_entrega', v)}
-              placeholder="--:--"
-              minuteStep={10}
-            />
+            {isMobile ? (
+              <>
+                <label className="pf2-label">Horário</label>
+                <input
+                  className="pf2-input"
+                  type="time"
+                  value={pedido.horario_entrega}
+                  onChange={e => set('horario_entrega', e.target.value)}
+                />
+              </>
+            ) : (
+              <TimePickerField
+                label="Horário"
+                value={pedido.horario_entrega}
+                onChange={v => set('horario_entrega', v)}
+                placeholder="--:--"
+                minuteStep={10}
+              />
+            )}
           </div>
         </div>
 
@@ -170,7 +202,7 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
         <div className="pf2-toggle-group" style={{ marginTop: '0.25rem' }}>
           {[
             { value: 'retirada', label: 'Retirada' },
-            { value: 'entrega', label: 'Entrega' },
+            { value: 'entrega',  label: 'Entrega'  },
           ].map(t => (
             <button
               key={t.value}
@@ -183,7 +215,9 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
             >
               {t.label}
               {pedido.tipo_entrega === t.value && (
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ marginLeft: 4 }}><polyline points="2,6 5,9 10,3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ marginLeft: 4 }}>
+                  <polyline points="2,6 5,9 10,3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
               )}
             </button>
           ))}
@@ -197,7 +231,9 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
                 {showEndereco && <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
               <span className="pf2-opt-label">Endereço de entrega</span>
-              {pedido.endereco_rua && !showEndereco && <span className="pf2-opt-badge">{pedido.endereco_rua}, {pedido.endereco_numero}</span>}
+              {pedido.endereco_rua && !showEndereco && (
+                <span className="pf2-opt-badge">{pedido.endereco_rua}, {pedido.endereco_numero}</span>
+              )}
             </div>
             {showEndereco && (
               <div className="pf2-optional-body">
@@ -254,7 +290,9 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
       <div className="pf2-footer">
         <button className="pf2-btn-primary" onClick={onNext} disabled={!canNext}>
           Próximo: Produtos
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
         </button>
         {!canNext && (
           <p className="pf2-footer-hint">
