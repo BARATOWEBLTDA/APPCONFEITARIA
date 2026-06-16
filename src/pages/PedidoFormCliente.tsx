@@ -285,7 +285,7 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
                   <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                 </svg>
-                <span>{pedido.horario_entrega || '--:--'}</span>
+                <span>{pedido.horario_entrega || 'Definir'}</span>
               </button>
             ) : (
               <input className="pf2-input" type="time" value={pedido.horario_entrega} onChange={e => set('horario_entrega', e.target.value)} />
