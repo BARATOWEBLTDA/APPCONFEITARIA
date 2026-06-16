@@ -288,7 +288,7 @@ export default function PedidoForm() {
         /* ── Header ── */
         .pf2-header {
           display: flex; align-items: center; justify-content: space-between;
-          padding: 0.85rem 1rem;
+          padding: 1.25rem 1rem 0.85rem;
           background: var(--bg-card, #fff);
           border-bottom: 1px solid var(--border, #ECC2D0);
           position: sticky; top: 0; z-index: 40;
@@ -331,6 +331,11 @@ export default function PedidoForm() {
           background: var(--primary, #986274);
           border-color: var(--primary, #986274); color: white;
           box-shadow: 0 0 0 4px var(--primary-light, #F7EEF1);
+          animation: pf2Pulse 2s ease-in-out infinite;
+        }
+        @keyframes pf2Pulse {
+          0%, 100% { box-shadow: 0 0 0 4px var(--primary-light, #F7EEF1); }
+          50% { box-shadow: 0 0 0 7px var(--primary-light, #F7EEF1); }
         }
         .pf2-step-line {
           width: 40px; height: 2px;
