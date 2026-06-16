@@ -840,7 +840,7 @@ export default function PedidoForm() {
                   { value: 'dinheiro',     label: 'Dinheiro',   icon: '💵' },
                   { value: 'credito',      label: 'Crédito',    icon: '💳' },
                   { value: 'debito',       label: 'Débito',     icon: '💳' },
-                  { value: 'transferencia',label: 'Transfer.',  icon: '🏦' },
+                  { value: 'fiado',        label: 'Fiado',      icon: '🤝' },
                 ].map(f => {
                   const isActive = pedido.forma_pagamento === f.value
                   return (
