@@ -178,7 +178,7 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
           <label className="pf2-label">
             Nome do cliente
             <span className="pf2-required">*</span>
-            {pedido.cliente_id && <span className="pf2-badge pf2-badge--ok">✓ Cadastrado</span>}
+
           </label>
           <input
             className={`pf2-input${tocado && !pedido.cliente_nome ? ' pf2-input--error' : ''}`}
