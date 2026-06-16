@@ -7,7 +7,8 @@ type Props = {
   pedido: Pedido
   set: (field: keyof Pedido, value: any) => void
   clientes: any[]
-  onNovoCliente: (nome: string) => Promise<void>
+  salvarComoNovo: boolean
+  setSalvarComoNovo: (v: boolean) => void
   onNext: () => void
 }
 
@@ -133,19 +134,19 @@ function HorarioSheet({ value, onChange, onClose }: {
 }
 
 // ── Componente principal ─────────────────────────────────────────────────────
-export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNext }: Props) {
+export default function StepCliente({ pedido, set, clientes, salvarComoNovo, setSalvarComoNovo, onNext }: Props) {
   const isMobile = useIsMobile()
   const [busca, setBusca] = useState(pedido.cliente_nome || '')
   const [showDrop, setShowDrop] = useState(false)
   const [showOrigem, setShowOrigem] = useState(!!pedido.origem)
   const [showEndereco, setShowEndereco] = useState(pedido.tipo_entrega === 'entrega')
   const [showHorarioSheet, setShowHorarioSheet] = useState(false)
-  const [criando, setCriando] = useState(false)
   const [tocado, setTocado] = useState(false)
   const [buscandoCep, setBuscandoCep] = useState(false)
   const dropRef = useRef<HTMLDivElement>(null)
 
   const clienteSelecionado = !!(pedido.cliente_id && busca === pedido.cliente_nome)
+  const clienteNovo = !!pedido.cliente_nome && !clienteSelecionado
   const filtrados = busca.length >= 2
     ? clientes.filter(c => c.nome?.toLowerCase().includes(busca.toLowerCase())).slice(0, 5)
     : []
@@ -169,13 +170,7 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
     }
   }
 
-  const handleCriarCliente = async () => {
-    if (!busca.trim() || criando) return
-    setCriando(true)
-    await onNovoCliente(busca.trim())
-    setCriando(false)
-    setShowDrop(false)
-  }
+
 
   const buscarCep = async (cep: string) => {
     const digits = cep.replace(/\D/g, '')
@@ -214,7 +209,6 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
             Nome do cliente
             <span className="pf2-required">*</span>
             {clienteSelecionado && <span className="pf2-badge pf2-badge--ok">✓ Cadastrado</span>}
-            {!clienteSelecionado && pedido.cliente_nome && <span className="pf2-badge pf2-badge--new">Novo</span>}
           </label>
           <input
             className={`pf2-input${tocado && !pedido.cliente_nome ? ' pf2-input--error' : ''}`}
@@ -247,12 +241,7 @@ export default function StepCliente({ pedido, set, clientes, onNovoCliente, onNe
               {filtrados.length === 0 && busca.length >= 2 && (
                 <div className="pf2-drop-empty">Nenhum resultado</div>
               )}
-              <button className="pf2-drop-new" onMouseDown={handleCriarCliente} disabled={criando}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-                </svg>
-                {criando ? 'Cadastrando...' : <>Cadastrar <strong>"{busca}"</strong></>}
-              </button>
+
             </div>
           )}
         </div>

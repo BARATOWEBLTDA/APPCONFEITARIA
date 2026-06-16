@@ -29,6 +29,7 @@ export default function PedidoForm() {
   const [produtos, setProdutos] = useState<any[]>([])
   const [cupons, setCupons]   = useState<any[]>([])
   const [userId, setUserId]   = useState('')
+  const [salvarComoNovo, setSalvarComoNovo] = useState(false)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving]   = useState(false)
   const [toast, setToast]     = useState('')
@@ -111,6 +112,18 @@ export default function PedidoForm() {
         valorRestante === 0 && pedido.valor_total > 0 ? 'pago'
         : totalPago > 0 ? 'parcial'
         : 'pendente'
+
+      // Cria novo cliente se marcou a opção
+      if (salvarComoNovo && !pedido.cliente_id && pedido.cliente_nome) {
+        const { data: novoCliente } = await supabase
+          .from('clientes')
+          .insert({ user_id: userId, nome: pedido.cliente_nome, whatsapp: pedido.cliente_whatsapp || null })
+          .select('id')
+          .single()
+        if (novoCliente?.id) {
+          setPedido(p => ({ ...p, cliente_id: novoCliente.id }))
+        }
+      }
 
       const { id: _id, numero: _numero, ...pedidoSemId } = pedido as any
       const payload = {
@@ -249,7 +262,8 @@ export default function PedidoForm() {
             pedido={pedido}
             set={set}
             clientes={clientes}
-            onNovoCliente={cadastrarNovoCliente}
+            salvarComoNovo={salvarComoNovo}
+            setSalvarComoNovo={setSalvarComoNovo}
             onNext={goNext}
           />
         )}
