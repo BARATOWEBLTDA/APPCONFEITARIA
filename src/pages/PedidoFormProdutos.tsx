@@ -131,10 +131,6 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
                   onChange={e => setNovoItem(p => ({ ...p, quantidade: Number(e.target.value) }))}
                 />
               </div>
-              <div className="pf2-field">
-                <label className="pf2-label">Valor unit.</label>
-                <MoneyInput value={novoItem.valor_unitario} onChange={v => setNovoItem(p => ({ ...p, valor_unitario: v }))} />
-              </div>
             </div>
 
             <div className="pf2-add-actions">
