@@ -695,7 +695,7 @@ export default function Pedidos() {
           /* Cabeçalho */
           .ped-dt-header {
             display: grid;
-            grid-template-columns: 145px 160px 1fr 160px 110px 130px 100px;
+            grid-template-columns: 145px 160px 220px 160px 110px 130px 100px;
             align-items: center;
             padding: 0.55rem 1.25rem;
             background: #6E3548;
@@ -711,7 +711,7 @@ export default function Pedidos() {
           /* Cada linha de pedido no desktop */
           .ped-dt-row {
             display: grid;
-            grid-template-columns: 145px 160px 1fr 160px 110px 130px 100px;
+            grid-template-columns: 145px 160px 220px 160px 110px 130px 100px;
             align-items: center;
             padding: 0.8rem 1.25rem;
             gap: 16px;
@@ -766,9 +766,9 @@ export default function Pedidos() {
           /* Produto */
           .ped-dt-produto-row { display: flex; align-items: center; gap: 10px; min-width: 0; width: 100%; }
           .ped-dt-produto-img {
-            width: 46px; height: 46px; border-radius: 8px; flex-shrink: 0;
+            width: 36px; height: 36px; border-radius: 7px; flex-shrink: 0;
             background: var(--bg-subtle,#F7EEF1); border: 1px solid var(--border,#ECC2D0);
-            overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; line-height: 1;
+            overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1;
           }
           .ped-dt-produto-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
           .ped-dt-produto-info { flex: 1; min-width: 0; }
