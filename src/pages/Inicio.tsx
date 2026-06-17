@@ -9,6 +9,46 @@ import { useNotifications } from "@/context/NotificationContext";
 import { MetricCard } from "@/components/MetricCard";
 import { TrialCardMobileBanner } from "@/components/billing/TrialCard";
 
+const STATUS_CONFIG: Record<string, {label: string; color: string; bg: string}> = {
+  confirmado:          { label: 'Confirmado',          color: '#5b21b6', bg: '#ede9fe' },
+  em_producao:         { label: 'Em produção',         color: '#9a3412', bg: '#ffedd5' },
+  pronto:              { label: 'Pronto',              color: '#14532d', bg: '#dcfce7' },
+  aguardando_retirada: { label: 'Aguard. retirada',   color: '#0369a1', bg: '#e0f2fe' },
+  aguardando_entrega:  { label: 'Aguard. entrega',    color: '#3730a3', bg: '#eef2ff' },
+  entregue:            { label: 'Entregue',            color: '#374151', bg: '#f3f4f6' },
+  cancelado:           { label: 'Cancelado',           color: '#991b1b', bg: '#fee2e2' },
+  novo:                { label: 'Novo',                color: '#1d4ed8', bg: '#dbeafe' },
+};
+
+
+// ── Gráfico de faturamento (dados mock — substituir pelos reais futuramente) ──
+const FaturamentoChart = () => {
+  const hoje = new Date();
+  const mockData = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(hoje);
+    d.setDate(hoje.getDate() - (29 - i));
+    return {
+      dia: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+      valor: Math.floor(Math.random() * 800 + 100),
+    };
+  });
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <LineChart data={mockData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--border,#ECC2D0)" vertical={false} />
+        <XAxis dataKey="dia" tick={{ fontSize: 10, fill: 'var(--text-muted,#C39EAA)' }} tickLine={false} axisLine={false} interval={4} />
+        <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted,#C39EAA)' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `R$${v}`} />
+        <Tooltip
+          contentStyle={{ background: 'var(--bg-card,#fff)', border: '1px solid var(--border,#ECC2D0)', borderRadius: 10, fontSize: 12, fontFamily: 'Geist,sans-serif' }}
+          formatter={(v: any) => [`R$ ${v}`, 'Faturamento']}
+        />
+        <Line type="monotone" dataKey="valor" stroke="var(--primary,#986274)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: 'var(--primary,#986274)' }} />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+};
+
+
 export default function Inicio() {
   const navigate = useNavigate();
   const { isPro } = usePlano();
@@ -183,44 +223,6 @@ export default function Inicio() {
   ];
 
 
-  const STATUS_CONFIG: Record<string, {label: string; color: string; bg: string}> = {
-    confirmado:          { label: 'Confirmado',          color: '#5b21b6', bg: '#ede9fe' },
-    em_producao:         { label: 'Em produção',         color: '#9a3412', bg: '#ffedd5' },
-    pronto:              { label: 'Pronto',              color: '#14532d', bg: '#dcfce7' },
-    aguardando_retirada: { label: 'Aguard. retirada',   color: '#0369a1', bg: '#e0f2fe' },
-    aguardando_entrega:  { label: 'Aguard. entrega',    color: '#3730a3', bg: '#eef2ff' },
-    entregue:            { label: 'Entregue',            color: '#374151', bg: '#f3f4f6' },
-    cancelado:           { label: 'Cancelado',           color: '#991b1b', bg: '#fee2e2' },
-    novo:                { label: 'Novo',                color: '#1d4ed8', bg: '#dbeafe' },
-  };
-
-  // Gráfico mock — substituir por dados reais futuramente
-  const FaturamentoChart = () => {
-    const hoje = new Date();
-    const mockData = Array.from({ length: 30 }, (_, i) => {
-      const d = new Date(hoje);
-      d.setDate(hoje.getDate() - (29 - i));
-      return {
-        dia: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-        valor: Math.floor(Math.random() * 800 + 100),
-      };
-    });
-    return (
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={mockData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--border,#ECC2D0)" vertical={false} />
-          <XAxis dataKey="dia" tick={{ fontSize: 10, fill: 'var(--text-muted,#C39EAA)' }} tickLine={false} axisLine={false} interval={4} />
-          <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted,#C39EAA)' }} tickLine={false} axisLine={false} tickFormatter={v => `R$${v}`} />
-          <Tooltip
-            contentStyle={{ background: 'var(--bg-card,#fff)', border: '1px solid var(--border,#ECC2D0)', borderRadius: 10, fontSize: 12, fontFamily: 'Geist,sans-serif' }}
-            formatter={(v: any) => [`R$ ${v}`, 'Faturamento']}
-          />
-          <Line type="monotone" dataKey="valor" stroke="var(--primary,#986274)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: 'var(--primary,#986274)' }} />
-        </LineChart>
-      </ResponsiveContainer>
-    );
-  };
-
   if (loading) return <div style={{ padding: "2rem", fontFamily: "inherit", color: "var(--text-muted, #9CA3AF)" }}>Carregando...</div>;
 
   return (
@@ -279,7 +281,7 @@ export default function Inicio() {
         </div>
 
         {/* Acesso rápido */}
-        <div className="mob-section-title">Acesso rápido</div>
+        <p className="mob-section-title">Acesso rápido</p>
         <div className="mob-atalhos">
           {atalhos.map(a => (
             <button key={a.path} className="mob-atalho" onClick={() => navigate(a.path)}>
@@ -447,8 +449,6 @@ export default function Inicio() {
           </div>
         </div>
       </div>
-
-    </div>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
