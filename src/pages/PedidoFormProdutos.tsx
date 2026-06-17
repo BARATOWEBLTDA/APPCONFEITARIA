@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { type Pedido, type PedidoItem, EMPTY_ITEM, formatMoney } from '@/pages/pedidoFormTypes'
 
 type Props = {
@@ -11,7 +12,141 @@ type Props = {
   onBack: () => void
 }
 
+// ── Modal de produto (desktop) ───────────────────────────────────────────────
+function ProdutoModal({ produtos, onSelect, onClose }: {
+  produtos: any[]
+  onSelect: (p: any) => void
+  onClose: () => void
+}) {
+  const [busca, setBusca] = useState('')
+  const [selecionado, setSelecionado] = useState<any>(null)
+
+  const filtrados = produtos.filter(p =>
+    !busca || p.nome.toLowerCase().includes(busca.toLowerCase())
+  )
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [])
+
+  return (
+    <>
+      {/* Overlay com blur */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(67, 21, 36, 0.25)',
+          backdropFilter: 'blur(3px)',
+          zIndex: 1000,
+        }}
+      />
+      {/* Modal */}
+      <div style={{
+        position: 'fixed', top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 500, maxWidth: '90vw',
+        background: 'var(--bg-card,#fff)',
+        borderRadius: 18,
+        border: '1.5px solid var(--border,#ECC2D0)',
+        boxShadow: '0 24px 64px rgba(67,21,36,0.18)',
+        zIndex: 1001,
+        overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+        maxHeight: '80vh',
+      }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem 0.85rem', borderBottom: '1px solid var(--border,#ECC2D0)' }}>
+          <p style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--text-title,#431524)', fontFamily: "'Geist',sans-serif" }}>Adicionar produto</p>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '50%', border: '1.5px solid var(--border,#ECC2D0)', background: 'var(--bg-subtle,#F7EEF1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary,#6E3548)' }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        {/* Search */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0.75rem 1.25rem', borderBottom: '1px solid var(--border,#ECC2D0)', background: 'var(--bg-subtle,#F7EEF1)' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted,#C39EAA)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input
+            autoFocus
+            value={busca}
+            onChange={e => setBusca(e.target.value)}
+            placeholder="Buscar produto..."
+            style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.9rem', fontFamily: "'Geist',sans-serif", color: 'var(--text-primary,#431524)', background: 'transparent' }}
+          />
+          {busca && (
+            <button onClick={() => setBusca('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted,#C39EAA)', display: 'flex', padding: 0 }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          )}
+        </div>
+        {/* Lista */}
+        <div style={{ overflowY: 'auto', flex: 1 }}>
+          {filtrados.length === 0 ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted,#C39EAA)', fontSize: '0.85rem' }}>Nenhum produto encontrado</div>
+          ) : filtrados.map(p => (
+            <button
+              key={p.id}
+              onClick={() => setSelecionado(selecionado?.id === p.id ? null : p)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: '0.85rem',
+                padding: '0.85rem 1.25rem',
+                border: 'none', borderBottom: '1px solid var(--border,#ECC2D0)',
+                background: selecionado?.id === p.id ? 'var(--primary-light,#F7EEF1)' : 'var(--bg-card,#fff)',
+                cursor: 'pointer', transition: 'background 0.1s',
+                textAlign: 'left', fontFamily: "'Geist',sans-serif",
+              }}
+            >
+              {p.imagem_url
+                ? <img src={p.imagem_url} alt={p.nome} style={{ width: 48, height: 48, borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: '1px solid var(--border,#ECC2D0)' }} />
+                : <div style={{ width: 48, height: 48, borderRadius: 10, background: 'var(--bg-subtle,#F7EEF1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0 }}>🎂</div>
+              }
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-title,#431524)' }}>{p.nome}</p>
+                <p style={{ margin: '2px 0 0', fontSize: '0.82rem', color: 'var(--primary,#986274)', fontWeight: 600 }}>{(p.preco_normal || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+              </div>
+              <div style={{
+                width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                border: `2px solid ${selecionado?.id === p.id ? 'var(--primary,#986274)' : 'var(--border,#ECC2D0)'}`,
+                background: selecionado?.id === p.id ? 'var(--primary,#986274)' : 'transparent',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {selecionado?.id === p.id && (
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+        {/* Footer */}
+        <div style={{ padding: '0.85rem 1.25rem', borderTop: '1px solid var(--border,#ECC2D0)', background: 'var(--bg-subtle,#F7EEF1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary,#6E3548)', fontFamily: "'Geist',sans-serif" }}>
+            {selecionado ? <><strong style={{ color: 'var(--text-title,#431524)' }}>{selecionado.nome}</strong> selecionado</> : 'Selecione um produto'}
+          </p>
+          <button
+            disabled={!selecionado}
+            onClick={() => selecionado && onSelect(selecionado)}
+            style={{
+              background: selecionado ? 'var(--primary,#986274)' : 'var(--border,#ECC2D0)',
+              color: 'white', border: 'none', borderRadius: 10,
+              padding: '0.65rem 1.25rem',
+              fontSize: '0.88rem', fontWeight: 600,
+              fontFamily: "'Geist',sans-serif",
+              cursor: selecionado ? 'pointer' : 'not-allowed',
+              transition: 'background 0.15s',
+            }}
+          >
+            Adicionar produto →
+          </button>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export default function StepProdutos({ pedido, set, itens, setItens, produtos, onNext, onBack }: Props) {
+  const isMobile = useIsMobile()
+  const [showModal, setShowModal] = useState(false)
   const [novoItem, setNovoItem] = useState<PedidoItem>({ ...EMPTY_ITEM })
   const [adicionando, setAdicionando] = useState(false)
   const [buscaProduto, setBuscaProduto] = useState('')
@@ -192,12 +327,31 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
 
         {/* Botão adicionar */}
         {!adicionando && (
-          <button className="pf2-btn-add" onClick={() => setAdicionando(true)}>
+          <button className="pf2-btn-add" onClick={() => isMobile ? setAdicionando(true) : setShowModal(true)}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
             </svg>
             {itens.length === 0 ? 'Adicionar produto' : 'Adicionar outro'}
           </button>
+        )}
+
+        {/* Modal de produto — desktop only */}
+        {showModal && (
+          <ProdutoModal
+            produtos={produtos}
+            onSelect={(p) => {
+              setItens(prev => [...prev, {
+                ...EMPTY_ITEM,
+                produto_id: p.id,
+                nome_produto: p.nome,
+                valor_unitario: p.preco_normal || 0,
+                imagem_url: p.imagem_url || '',
+                quantidade: 1,
+              }])
+              setShowModal(false)
+            }}
+            onClose={() => setShowModal(false)}
+          />
         )}
 
         {/* Opcional: Personalização */}
@@ -319,7 +473,7 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
         @media (min-width: 768px) {
           .pf2-add-form { overflow: visible; }
           .step-root .pf2-card { overflow: visible; }
-          .pf2-dropdown { z-index: 9999; max-height: 180px; overflow-y: auto; border-radius: 12px; }
+          .pf2-dropdown { z-index: 9999; max-height: 160px !important; overflow-y: auto !important; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
         }
       `}</style>
     </div>
