@@ -748,7 +748,7 @@ export default function Pedidos() {
             flex-shrink: 0;
           }
           .ped-dt-cliente-nome {
-            font-size: 1rem; font-weight: 700;
+            font-size: 0.95rem; font-weight: 400;
             color: var(--text-title,#431524);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           }
@@ -764,11 +764,11 @@ export default function Pedidos() {
           .ped-dt-ver-btn:hover { background: var(--primary,#986274); color: white; }
 
           /* Produto */
-          .ped-dt-produto-row { display: flex; align-items: center; gap: 8px; min-width: 0; width: 100%; }
+          .ped-dt-produto-row { display: flex; align-items: center; gap: 10px; min-width: 0; width: 100%; }
           .ped-dt-produto-img {
-            width: 30px; height: 30px; border-radius: 6px; flex-shrink: 0;
+            width: 46px; height: 46px; border-radius: 8px; flex-shrink: 0;
             background: var(--bg-subtle,#F7EEF1); border: 1px solid var(--border,#ECC2D0);
-            overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1;
+            overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; line-height: 1;
           }
           .ped-dt-produto-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
           .ped-dt-produto-info { flex: 1; min-width: 0; }
