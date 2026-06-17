@@ -183,7 +183,7 @@ export default function PedidoForm() {
           supabase.from('pedido_historico').insert({
             pedido_id: pedidoId, user_id: userId,
             evento: 'Pedido criado', descricao: 'Pedido criado manualmente',
-          }).then(() => {}).catch(() => {})
+          }).then(() => {}, () => {})
         }
       }
 
