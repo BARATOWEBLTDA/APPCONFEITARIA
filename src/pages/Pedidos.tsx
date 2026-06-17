@@ -316,13 +316,15 @@ function PedidoCard({ p, isMobile, onAbrirMapa }: {
                 {dataLabel}{p.horario_entrega ? ` · ${p.horario_entrega.slice(0,5)}` : ''}
               </p>
             )}
-            <p className="ped-dt-tipo">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</p>
-            {temEndereco && (
-              <button type="button" className="ped-card-mapa" onClick={e => { e.stopPropagation(); onAbrirMapa(enderecoCompletoPedido(p)) }}>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                Ver no mapa
-              </button>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <p className="ped-dt-tipo">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</p>
+              {temEndereco && (
+                <button type="button" className="ped-card-mapa" onClick={e => { e.stopPropagation(); onAbrirMapa(enderecoCompletoPedido(p)) }}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Ver no mapa
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Status */}
@@ -741,7 +743,7 @@ export default function Pedidos() {
             flex-shrink: 0;
           }
           .ped-dt-cliente-nome {
-            font-size: 0.9rem; font-weight: 600;
+            font-size: 1rem; font-weight: 700;
             color: var(--text-title,#431524);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           }
