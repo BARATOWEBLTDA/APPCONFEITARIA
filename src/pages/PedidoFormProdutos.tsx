@@ -319,7 +319,7 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
         @media (min-width: 768px) {
           .pf2-add-form { overflow: visible; }
           .step-root .pf2-card { overflow: visible; }
-          .pf2-dropdown { z-index: 9999; max-height: 220px; overflow-y: auto; }
+          .pf2-dropdown { z-index: 9999; max-height: 180px; overflow-y: auto; border-radius: 12px; }
         }
       `}</style>
     </div>
