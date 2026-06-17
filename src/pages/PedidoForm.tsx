@@ -140,7 +140,6 @@ export default function PedidoForm() {
         cliente_id: pedido.cliente_id || null,
         horario_entrega: pedido.horario_entrega || null,
         data_sinal: pedido.data_sinal || null,
-        data_pagamento_restante: pedido.data_pagamento_restante || null,
         cupom_codigo: pedido.cupom_codigo || null,
         endereco_cep: pedido.endereco_cep || null,
         endereco_rua: pedido.endereco_rua || null,
