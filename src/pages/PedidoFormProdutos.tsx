@@ -317,10 +317,9 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
           padding: 0 8px; line-height: 44px;
         }
         @media (min-width: 768px) {
-          .pf2-dropdown {
-            top: auto;
-            bottom: calc(100% + 4px);
-          }
+          .pf2-add-form { overflow: visible; }
+          .step-root .pf2-card { overflow: visible; }
+          .pf2-dropdown { z-index: 9999; max-height: 220px; overflow-y: auto; }
         }
       `}</style>
     </div>

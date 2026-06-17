@@ -768,6 +768,7 @@ export default function PedidoForm() {
         @media (min-width: 768px) {
           .pf2-header { padding: 1rem 2rem; }
           .pf2-steps  { display: none; }
+          .pf2-card { overflow: visible; }
           .pf2-content { padding: 1.5rem 2rem; padding-bottom: 2rem; max-width: 100%; }
 
           /* Wizard oculto no desktop — mostra tudo de uma vez */
