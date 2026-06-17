@@ -712,12 +712,13 @@ export default function Pedidos() {
             align-items: center;
             padding: 0.8rem 1.25rem;
             gap: 16px;
-            border-bottom: 2px solid #C39EAA;
+            border-bottom: 2px solid #986274;
             cursor: pointer;
             transition: background 0.12s;
           }
           .ped-dt-row:last-child { border-bottom: none; }
-          .ped-dt-row:nth-child(even) { background: #FBF3F6; }
+          .ped-dt-row:nth-child(odd) { background: #ffffff; }
+          .ped-dt-row:nth-child(even) { background: #ffffff; }
           .ped-dt-row:hover { background: var(--bg-subtle,#F7EEF1); }
           .ped-dt-row > * { min-height: 54px; }
 
