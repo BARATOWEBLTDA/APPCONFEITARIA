@@ -717,6 +717,7 @@ export default function Pedidos() {
             transition: background 0.12s;
           }
           .ped-dt-row:last-child { border-bottom: none; }
+          .ped-dt-row:nth-child(even) { background: #FBF3F6; }
           .ped-dt-row:hover { background: var(--bg-subtle,#F7EEF1); }
           .ped-dt-row > * { min-height: 54px; }
 
