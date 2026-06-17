@@ -690,7 +690,7 @@ export default function Pedidos() {
           /* Cabeçalho */
           .ped-dt-header {
             display: grid;
-            grid-template-columns: 70px 1.2fr 1.6fr 1.1fr 110px 130px;
+            grid-template-columns: 80px 200px 1fr 180px 120px 140px;
             align-items: center;
             padding: 0.55rem 1.25rem;
             background: var(--bg-subtle,#F7EEF1);
@@ -706,7 +706,7 @@ export default function Pedidos() {
           /* Cada linha de pedido no desktop */
           .ped-dt-row {
             display: grid;
-            grid-template-columns: 70px 1.2fr 1.6fr 1.1fr 110px 130px;
+            grid-template-columns: 80px 200px 1fr 180px 120px 140px;
             align-items: center;
             padding: 0.8rem 1.25rem;
             gap: 16px;
