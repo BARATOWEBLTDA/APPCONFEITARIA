@@ -52,7 +52,8 @@ function ProdutoModal({ produtos, onSelect, onClose }: {
       <div style={{
         position: 'fixed', top: '50%', left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 500, maxWidth: '90vw',
+        width: 520, maxWidth: '90vw',
+        height: 520,
         background: 'var(--bg-card,#fff)',
         borderRadius: 18,
         border: '1.5px solid var(--border,#ECC2D0)',
@@ -60,7 +61,6 @@ function ProdutoModal({ produtos, onSelect, onClose }: {
         zIndex: 1001,
         overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
-        maxHeight: '80vh',
       }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem 0.85rem', borderBottom: '1px solid var(--border,#ECC2D0)' }}>
