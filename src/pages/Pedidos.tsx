@@ -695,13 +695,13 @@ export default function Pedidos() {
             grid-template-columns: 80px 200px 1fr 180px 120px 140px;
             align-items: center;
             padding: 0.55rem 1.25rem;
-            background: var(--bg-subtle,#F7EEF1);
+            background: #6E3548;
             border-bottom: 1.5px solid var(--border,#ECC2D0);
             font-size: 0.65rem;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            color: var(--text-muted,#C39EAA);
+            color: rgba(236,194,208,0.8);
             gap: 16px;
           }
 
@@ -749,18 +749,19 @@ export default function Pedidos() {
           }
 
           /* Produto */
-          .ped-dt-produto-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+          .ped-dt-produto-row { display: flex; align-items: center; gap: 10px; min-width: 0; width: 100%; }
           .ped-dt-produto-img {
             width: 38px; height: 38px; border-radius: 8px; flex-shrink: 0;
             background: var(--bg-subtle,#F7EEF1); border: 1px solid var(--border,#ECC2D0);
-            overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1rem;
+            overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; line-height: 1;
           }
-          .ped-dt-produto-img img { width: 100%; height: 100%; object-fit: cover; }
+          .ped-dt-produto-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+          .ped-dt-produto-info { flex: 1; min-width: 0; }
           .ped-dt-produto-nome {
             font-size: 0.84rem; font-weight: 600; color: var(--text-title,#431524);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; margin: 0;
           }
-          .ped-dt-produto-qtd { font-size: 0.72rem; color: var(--text-secondary,#6E3548); margin-top: 2px; }
+          .ped-dt-produto-qtd { font-size: 0.72rem; color: var(--text-secondary,#6E3548); margin: 2px 0 0; }
 
           /* Entrega */
           .ped-dt-data { font-size: 0.84rem; font-weight: 600; margin: 0; }
