@@ -370,6 +370,8 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
 
       {showHorarioSheet && <HorarioSheet value={pedido.horario_entrega} onChange={v => set('horario_entrega', v)} onClose={() => setShowHorarioSheet(false)} />}
 
+      <style>{`@media (min-width: 768px) { .pf2-footer { display: none !important; } }`}</style>
+
       <style>{`
         .pf2-cliente-encontrado {
           display: flex; align-items: center; gap: 5px;

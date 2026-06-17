@@ -245,7 +245,20 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
         </button>
       </div>
 
+
+      <div className="pf2-desktop-save">
+        <button className="pf2-btn-salvar" style={{ width: '100%', padding: '0.85rem' }} onClick={onSalvar} disabled={saving}>
+          {saving ? 'Salvando...' : isEdicao ? '✓ Salvar alterações' : '✓ Salvar pedido'}
+        </button>
+      </div>
+
       <style>{`
+        .pf2-desktop-save { display: none; }
+        @media (min-width: 768px) {
+          .pf2-desktop-save { display: block; margin-top: 0.5rem; }
+          .pf2-footer { display: none !important; }
+        }
+
         .pf2-receb-opcoes {
           display: flex; flex-direction: column;
           padding: 0.5rem 1rem 0.75rem;

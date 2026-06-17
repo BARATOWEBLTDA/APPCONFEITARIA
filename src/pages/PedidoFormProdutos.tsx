@@ -283,6 +283,8 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
       </div>
       {!canNext && <p className="pf2-footer-hint" style={{ textAlign: 'center', marginTop: '0.4rem' }}>Adicione pelo menos um produto</p>}
 
+      <style>{`@media (min-width: 768px) { .pf2-footer { display: none !important; } }`}</style>
+
       <style>{`
         .pf2-add-produto-selecionado {
           display: flex; align-items: center; gap: 10px;

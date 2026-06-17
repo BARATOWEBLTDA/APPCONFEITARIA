@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { type Pedido, type PedidoItem, EMPTY_PEDIDO, EMPTY_ITEM } from '@/pages/pedidoFormTypes'
@@ -32,6 +33,7 @@ export default function PedidoForm() {
   const [salvarComoNovo, setSalvarComoNovo] = useState(false)
   const [loading, setLoading] = useState(false)
   const [saving, setSaving]   = useState(false)
+  const isMobile = useIsMobile()
   const [toast, setToast]     = useState('')
 
   // ── Cálculo automático do total ──────────────────────────────────────────
@@ -256,40 +258,56 @@ export default function PedidoForm() {
         })}
       </div>
 
-      {/* ── Conteúdo da etapa ── */}
+      {/* ── Conteúdo ── */}
       <div className="pf2-content">
-        {step === 'cliente' && (
-          <StepCliente
-            pedido={pedido}
-            set={set}
-            clientes={clientes}
-            salvarComoNovo={salvarComoNovo}
-            setSalvarComoNovo={setSalvarComoNovo}
-            onNext={goNext}
-          />
-        )}
-        {step === 'produtos' && (
-          <StepProdutos
-            pedido={pedido}
-            set={set}
-            itens={itens}
-            setItens={setItens}
-            produtos={produtos}
-            onNext={goNext}
-            onBack={goBack}
-          />
-        )}
-        {step === 'pagamento' && (
-          <StepPagamento
-            pedido={pedido}
-            set={set}
-            cupons={cupons}
-            saving={saving}
-            onSalvar={salvar}
-            onSalvarEIniciar={salvarEIniciar}
-            onBack={goBack}
-            isEdicao={isEdicao}
-          />
+        {isMobile ? (
+          /* ── Mobile: wizard de etapas ── */
+          <>
+            {step === 'cliente' && (
+              <StepCliente
+                pedido={pedido} set={set} clientes={clientes}
+                salvarComoNovo={salvarComoNovo} setSalvarComoNovo={setSalvarComoNovo}
+                onNext={goNext}
+              />
+            )}
+            {step === 'produtos' && (
+              <StepProdutos
+                pedido={pedido} set={set} itens={itens} setItens={setItens}
+                produtos={produtos} onNext={goNext} onBack={goBack}
+              />
+            )}
+            {step === 'pagamento' && (
+              <StepPagamento
+                pedido={pedido} set={set} cupons={cupons} saving={saving}
+                onSalvar={salvar} onSalvarEIniciar={salvarEIniciar}
+                onBack={goBack} isEdicao={isEdicao}
+              />
+            )}
+          </>
+        ) : (
+          /* ── Desktop: tudo numa página, 2 colunas ── */
+          <div className="pf2-desktop-form">
+            {/* Coluna esquerda: Cliente + Entrega + Pagamento */}
+            <div className="pf2-desktop-col">
+              <StepCliente
+                pedido={pedido} set={set} clientes={clientes}
+                salvarComoNovo={salvarComoNovo} setSalvarComoNovo={setSalvarComoNovo}
+                onNext={goNext}
+              />
+            </div>
+            {/* Coluna direita: Produtos + Resumo + Salvar */}
+            <div className="pf2-desktop-col">
+              <StepProdutos
+                pedido={pedido} set={set} itens={itens} setItens={setItens}
+                produtos={produtos} onNext={goNext} onBack={goBack}
+              />
+              <StepPagamento
+                pedido={pedido} set={set} cupons={cupons} saving={saving}
+                onSalvar={salvar} onSalvarEIniciar={salvarEIniciar}
+                onBack={goBack} isEdicao={isEdicao}
+              />
+            </div>
+          </div>
         )}
       </div>
 
@@ -746,11 +764,36 @@ export default function PedidoForm() {
           margin: 0; text-align: center;
         }
 
-        /* ── Desktop: rodapé não-fixo, largura controlada ── */
+        /* ── Desktop: layout 2 colunas ── */
         @media (min-width: 768px) {
-          .pf2-content  { max-width: 640px; margin: 0 auto; }
-          .pf2-total-bar { max-width: 640px; margin: 0 auto; }
-          .pf2-resumo   { max-width: 640px; }
+          .pf2-header { padding: 1rem 2rem; }
+          .pf2-steps  { display: none; }
+          .pf2-content { padding: 1.5rem 2rem; padding-bottom: 2rem; max-width: 100%; }
+
+          /* Wizard oculto no desktop — mostra tudo de uma vez */
+          .pf2-desktop-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            align-items: start;
+          }
+          .pf2-desktop-col { display: flex; flex-direction: column; gap: 1rem; }
+
+          /* Steps bar mais compacta no desktop */
+          .pf2-steps { justify-content: flex-start; gap: 0; }
+
+          /* Footer inline no desktop */
+          .pf2-footer { position: static; padding: 0; border: none; box-shadow: none; background: none; margin-top: 1rem; justify-content: flex-end; }
+          .pf2-btn-primary { padding: 0.7rem 1.5rem; }
+          .pf2-btn-ghost   { padding: 0.7rem 1.25rem; }
+          .pf2-btn-salvar  { padding: 0.7rem 1.5rem; flex: none; }
+
+          /* Total bar e resumo largura normal */
+          .pf2-total-bar { margin: 0; }
+          .pf2-resumo    { margin: 0; }
+
+          /* Pay grid 5 colunas no desktop */
+          .pf2-pay-grid { grid-template-columns: repeat(5, 1fr); }
         }
 
         /* ── Loading ── */
