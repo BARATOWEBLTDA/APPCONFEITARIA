@@ -275,7 +275,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa }: {
             <span className="ped-dt-num">#{p.numero || '—'}</span>
             {p.origem === 'cardapio' && <span className="ped-card-origem">Cardápio</span>}
             <span className="ped-dt-criado">
-              {p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' }) : ''}
+              {p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' - ' + new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : ''}
             </span>
           </div>
 
@@ -692,7 +692,7 @@ export default function Pedidos() {
           /* Cabeçalho */
           .ped-dt-header {
             display: grid;
-            grid-template-columns: 80px 200px 1fr 180px 120px 140px;
+            grid-template-columns: 145px 200px 1fr 180px 120px 140px;
             align-items: center;
             padding: 0.55rem 1.25rem;
             background: #6E3548;
@@ -708,7 +708,7 @@ export default function Pedidos() {
           /* Cada linha de pedido no desktop */
           .ped-dt-row {
             display: grid;
-            grid-template-columns: 80px 200px 1fr 180px 120px 140px;
+            grid-template-columns: 145px 200px 1fr 180px 120px 140px;
             align-items: center;
             padding: 0.8rem 1.25rem;
             gap: 16px;
