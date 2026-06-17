@@ -695,7 +695,7 @@ export default function Pedidos() {
           /* Cabeçalho */
           .ped-dt-header {
             display: grid;
-            grid-template-columns: 145px 160px 220px 160px 110px 130px 100px;
+            grid-template-columns: 145px 160px 1fr 160px 110px 130px 100px;
             align-items: center;
             padding: 0.55rem 1.25rem;
             background: #6E3548;
@@ -711,7 +711,7 @@ export default function Pedidos() {
           /* Cada linha de pedido no desktop */
           .ped-dt-row {
             display: grid;
-            grid-template-columns: 145px 160px 220px 160px 110px 130px 100px;
+            grid-template-columns: 145px 160px 1fr 160px 110px 130px 100px;
             align-items: center;
             padding: 0.8rem 1.25rem;
             gap: 16px;
@@ -774,7 +774,7 @@ export default function Pedidos() {
           .ped-dt-produto-info { flex: 1; min-width: 0; }
           .ped-dt-produto-nome {
             font-size: 0.84rem; font-weight: 600; color: var(--text-title,#431524);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; margin: 0;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; margin: 0; max-width: 280px;
           }
           .ped-dt-produto-qtd { font-size: 0.72rem; color: var(--text-secondary,#6E3548); margin: 2px 0 0; }
 
