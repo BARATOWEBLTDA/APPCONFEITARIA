@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { type Pedido, formatMoney, parseMoney, formatMoneyInput } from '@/pages/pedidoFormTypes'
 
 type Props = {
@@ -62,10 +62,17 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
     set('valor_recebido', novoModo === 'integral' ? pedido.valor_total : 0)
   }
 
-  // Recalcula valor_recebido quando total muda e modo é integral
-  if (modo === 'integral' && pedido.valor_recebido !== pedido.valor_total && pedido.valor_total > 0) {
-    set('valor_recebido', pedido.valor_total)
-  }
+  // Recalcula valor_recebido quando o total muda e o modo é "integral".
+  // Fica num useEffect (e não direto no corpo do componente) porque aqui
+  // estamos atualizando o estado do componente PAI (via `set`) a partir de
+  // uma mudança detectada no filho — fazer isso durante o render é um
+  // anti-padrão no React e pode gerar o warning "Cannot update a component
+  // while rendering a different component".
+  useEffect(() => {
+    if (modo === 'integral' && pedido.valor_total > 0 && pedido.valor_recebido !== pedido.valor_total) {
+      set('valor_recebido', pedido.valor_total)
+    }
+  }, [modo, pedido.valor_total, pedido.valor_recebido, set])
 
   const totalRecebido = pedido.valor_recebido
   const restante = Math.max(0, pedido.valor_total - totalRecebido)
