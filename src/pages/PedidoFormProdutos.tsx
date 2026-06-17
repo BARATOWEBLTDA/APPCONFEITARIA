@@ -316,6 +316,12 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
           border-right: 1px solid var(--border,#ECC2D0);
           padding: 0 8px; line-height: 44px;
         }
+        @media (min-width: 768px) {
+          .pf2-dropdown {
+            top: auto;
+            bottom: calc(100% + 4px);
+          }
+        }
       `}</style>
     </div>
   )

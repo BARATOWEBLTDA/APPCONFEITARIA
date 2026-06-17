@@ -287,20 +287,20 @@ export default function PedidoForm() {
         ) : (
           /* ── Desktop: tudo numa página, 2 colunas ── */
           <div className="pf2-desktop-form">
-            {/* Coluna esquerda: Cliente + Entrega + Pagamento */}
+            {/* Coluna esquerda: Cliente + Entrega + Produtos */}
             <div className="pf2-desktop-col">
               <StepCliente
                 pedido={pedido} set={set} clientes={clientes}
                 salvarComoNovo={salvarComoNovo} setSalvarComoNovo={setSalvarComoNovo}
                 onNext={goNext}
               />
-            </div>
-            {/* Coluna direita: Produtos + Resumo + Salvar */}
-            <div className="pf2-desktop-col">
               <StepProdutos
                 pedido={pedido} set={set} itens={itens} setItens={setItens}
                 produtos={produtos} onNext={goNext} onBack={goBack}
               />
+            </div>
+            {/* Coluna direita: Pagamento + Resumo + Salvar */}
+            <div className="pf2-desktop-col">
               <StepPagamento
                 pedido={pedido} set={set} cupons={cupons} saving={saving}
                 onSalvar={salvar} onSalvarEIniciar={salvarEIniciar}
