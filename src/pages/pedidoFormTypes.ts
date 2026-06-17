@@ -108,3 +108,14 @@ export function formatTelefone(tel: string): string {
   if (digits.length > 2)   return `(${digits.slice(0,2)}) ${digits.slice(2)}`
   return digits
 }
+
+// ── Quantidade por forma de venda ───────────────────────────────────────────
+// Fonte única de verdade: produtos vendidos por peso ("kg") ou por "cento"
+// fazem sentido em fração (0,5 kg, meio cento). Os demais (unidade, fatia,
+// tamanho, caixa, kit-festa, sob-encomenda, outros) só fazem sentido em
+// números inteiros — não existe "1,5 trufa". Usada em todo lugar do pedido
+// onde a quantidade de um item é definida ou editada, pra nunca divergir
+// entre as telas (mobile, modal de desktop, edição de item já lançado).
+export function getQuantityStep(formaVenda?: string): number {
+  return formaVenda === 'kg' || formaVenda === 'cento' ? 0.5 : 1
+}

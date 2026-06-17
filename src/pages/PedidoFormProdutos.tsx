@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { type Pedido, type PedidoItem, EMPTY_ITEM, formatMoney } from '@/pages/pedidoFormTypes'
+import { type Pedido, type PedidoItem, EMPTY_ITEM, formatMoney, getQuantityStep } from '@/pages/pedidoFormTypes'
 
 type Props = {
   pedido: Pedido
@@ -15,15 +15,22 @@ type Props = {
 // ── Modal de produto (desktop) ───────────────────────────────────────────────
 function ProdutoModal({ produtos, onSelect, onClose }: {
   produtos: any[]
-  onSelect: (p: any) => void
+  onSelect: (p: any, quantidade: number) => void
   onClose: () => void
 }) {
   const [busca, setBusca] = useState('')
   const [selecionado, setSelecionado] = useState<any>(null)
+  const [quantidade, setQuantidade] = useState(1)
+  const step = getQuantityStep(selecionado?.forma_venda)
 
   const filtrados = produtos.filter(p =>
     !busca || p.nome.toLowerCase().includes(busca.toLowerCase())
   )
+
+  // Reseta a quantidade sempre que o produto selecionado muda
+  useEffect(() => {
+    setQuantidade(1)
+  }, [selecionado?.id])
 
   useEffect(() => {
     // Bloqueia scroll do fundo
@@ -124,14 +131,38 @@ function ProdutoModal({ produtos, onSelect, onClose }: {
           ))}
         </div>
         {/* Footer */}
-        <div style={{ padding: '0.85rem 1.25rem', borderTop: '1px solid var(--border,#ECC2D0)', background: 'var(--bg-subtle,#F7EEF1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-          <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary,#6E3548)', fontFamily: "'Geist',sans-serif" }}>
-            {selecionado ? <><strong style={{ color: 'var(--text-title,#431524)' }}>{selecionado.nome}</strong> selecionado</> : 'Selecione um produto'}
-          </p>
+        <div style={{ padding: '0.85rem 1.25rem', borderTop: '1px solid var(--border,#ECC2D0)', background: 'var(--bg-subtle,#F7EEF1)', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary,#6E3548)', fontFamily: "'Geist',sans-serif", minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {selecionado ? <><strong style={{ color: 'var(--text-title,#431524)' }}>{selecionado.nome}</strong> selecionado</> : 'Selecione um produto'}
+            </p>
+            {selecionado && (
+              <div className="pf2-stepper" style={{ flexShrink: 0 }}>
+                <button
+                  type="button"
+                  className="pf2-stepper-btn"
+                  onClick={() => setQuantidade(q => Math.max(step, parseFloat((q - step).toFixed(2))))}
+                  aria-label="Diminuir quantidade"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+                <span className="pf2-stepper-val">{quantidade}</span>
+                <button
+                  type="button"
+                  className="pf2-stepper-btn"
+                  onClick={() => setQuantidade(q => parseFloat((q + step).toFixed(2)))}
+                  aria-label="Aumentar quantidade"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              </div>
+            )}
+          </div>
           <button
             disabled={!selecionado}
-            onClick={() => selecionado && onSelect(selecionado)}
+            onClick={() => selecionado && onSelect(selecionado, quantidade)}
             style={{
+              width: '100%',
               background: selecionado ? 'var(--primary,#986274)' : 'var(--border,#ECC2D0)',
               color: 'white', border: 'none', borderRadius: 10,
               padding: '0.65rem 1.25rem',
@@ -181,6 +212,19 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
     !buscaProduto || p.nome.toLowerCase().includes(buscaProduto.toLowerCase())
   ).slice(0, 8)
 
+  // Passo certo pro produto que está sendo adicionado no fluxo mobile
+  const novoItemStep = getQuantityStep(produtos.find(p => p.id === novoItem.produto_id)?.forma_venda)
+
+  // Edita a quantidade de um item já lançado na lista, sem precisar remover e adicionar de novo
+  const alterarQuantidadeItem = (idx: number, delta: number) => {
+    setItens(prev => prev.map((item, i) => {
+      if (i !== idx) return item
+      const step = getQuantityStep(produtos.find(p => p.id === item.produto_id)?.forma_venda)
+      const nova = parseFloat((item.quantidade + delta * step).toFixed(2))
+      return { ...item, quantidade: Math.max(step, nova) }
+    }))
+  }
+
   const canNext = itens.length > 0
 
   return (
@@ -206,7 +250,18 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
             }
             <div className="pf2-item-info">
               <p className="pf2-item-name">{item.nome_produto}</p>
-              <p className="pf2-item-meta">{item.quantidade}x {formatMoney(item.valor_unitario)}</p>
+              <div className="pf2-item-qty-row">
+                <div className="pf2-item-stepper">
+                  <button type="button" onClick={() => alterarQuantidadeItem(idx, -1)} aria-label="Diminuir quantidade">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </button>
+                  <span>{item.quantidade}</span>
+                  <button type="button" onClick={() => alterarQuantidadeItem(idx, 1)} aria-label="Aumentar quantidade">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </button>
+                </div>
+                <span className="pf2-item-meta">× {formatMoney(item.valor_unitario)}</span>
+              </div>
             </div>
             <span className="pf2-item-total">{formatMoney(item.valor_unitario * item.quantidade)}</span>
             <button className="pf2-item-remove" onClick={() => removerItem(idx)} aria-label="Remover">
@@ -292,7 +347,7 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
                     <button
                       type="button"
                       className="pf2-stepper-btn"
-                      onClick={() => setNovoItem(p => ({ ...p, quantidade: Math.max(0.5, parseFloat((p.quantidade - 0.5).toFixed(1))) }))}
+                      onClick={() => setNovoItem(p => ({ ...p, quantidade: Math.max(novoItemStep, parseFloat((p.quantidade - novoItemStep).toFixed(2))) }))}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     </button>
@@ -300,7 +355,7 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
                     <button
                       type="button"
                       className="pf2-stepper-btn"
-                      onClick={() => setNovoItem(p => ({ ...p, quantidade: parseFloat((p.quantidade + 0.5).toFixed(1)) }))}
+                      onClick={() => setNovoItem(p => ({ ...p, quantidade: parseFloat((p.quantidade + novoItemStep).toFixed(2)) }))}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -344,14 +399,14 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
         {showModal && (
           <ProdutoModal
             produtos={produtos}
-            onSelect={(p) => {
+            onSelect={(p, quantidade) => {
               setItens(prev => [...prev, {
                 ...EMPTY_ITEM,
                 produto_id: p.id,
                 nome_produto: p.nome,
                 valor_unitario: p.preco_normal || 0,
                 imagem_url: p.imagem_url || '',
-                quantidade: 1,
+                quantidade,
               }])
               setShowModal(false)
             }}
@@ -474,6 +529,32 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
           border-left: 1px solid var(--border,#ECC2D0);
           border-right: 1px solid var(--border,#ECC2D0);
           padding: 0 8px; line-height: 44px;
+        }
+
+        /* ── Mini-stepper inline (editar item já lançado) ── */
+        .pf2-item-qty-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 3px; }
+        .pf2-item-qty-row .pf2-item-meta { margin: 0; }
+        .pf2-item-stepper {
+          display: flex; align-items: center;
+          border: 1.5px solid var(--border,#ECC2D0);
+          border-radius: 7px; overflow: hidden; flex-shrink: 0;
+        }
+        .pf2-item-stepper button {
+          width: 20px; height: 20px;
+          display: flex; align-items: center; justify-content: center;
+          background: var(--bg-subtle,#F7EEF1);
+          border: none; cursor: pointer; padding: 0;
+          color: var(--primary,#986274); transition: background 0.15s;
+        }
+        .pf2-item-stepper button:hover { background: #ECC2D0; }
+        .pf2-item-stepper span {
+          min-width: 22px; text-align: center;
+          font-size: 0.72rem; font-weight: 700;
+          color: var(--text-title,#431524);
+          font-family: 'Geist',sans-serif;
+          border-left: 1px solid var(--border,#ECC2D0);
+          border-right: 1px solid var(--border,#ECC2D0);
+          padding: 0 2px;
         }
         @media (min-width: 768px) {
           .pf2-add-form { overflow: visible; }
