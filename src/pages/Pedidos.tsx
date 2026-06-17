@@ -712,7 +712,7 @@ export default function Pedidos() {
             align-items: center;
             padding: 0.8rem 1.25rem;
             gap: 16px;
-            border-bottom: 1px solid var(--border,#ECC2D0);
+            border-bottom: 1.5px solid var(--border,#ECC2D0);
             cursor: pointer;
             transition: background 0.12s;
           }
