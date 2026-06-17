@@ -171,10 +171,7 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
         {/* Botão pagar integral */}
         {statusPag !== 'pago' ? (
           <button className="pf2-integral-btn" onClick={pagarIntegral}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            Cliente pagou integral — {formatMoney(pedido.valor_total)}
+            Marcar como pago integral — {formatMoney(pedido.valor_total)}
           </button>
         ) : (
           <div className="pf2-pago-banner">
@@ -268,11 +265,14 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
           display: flex; align-items: center; justify-content: center; gap: 8px;
           width: calc(100% - 2rem); margin: 0 1rem 0.5rem;
           padding: 0.75rem 1rem;
-          background: #f0fdf4; border: 1.5px solid #22c55e; border-radius: 12px;
-          font-size: 0.85rem; font-weight: 600; color: #16a34a;
-          font-family: 'Geist', sans-serif; cursor: pointer; transition: background 0.15s;
+          background: var(--bg-card,#fff);
+          border: 1.5px solid var(--border,#ECC2D0);
+          border-radius: 12px;
+          font-size: 0.85rem; font-weight: 600;
+          color: var(--text-secondary,#6E3548);
+          font-family: 'Geist', sans-serif; cursor: pointer; transition: all 0.15s;
         }
-        .pf2-integral-btn:hover { background: #dcfce7; }
+        .pf2-integral-btn:hover { border-color: var(--primary,#986274); color: var(--primary,#986274); background: var(--primary-light,#F7EEF1); }
         .pf2-pago-banner {
           display: flex; align-items: center; justify-content: space-between;
           margin: 0 1rem 0.5rem; padding: 0.75rem 1rem;
