@@ -281,12 +281,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa }: {
 
           {/* Cliente */}
           <div className="ped-dt-col ped-dt-col--cliente">
-            <div className="ped-dt-avatar">
-              {(p.cliente_nome || '?')[0].toUpperCase()}
-            </div>
-            <div className="ped-dt-cliente-info">
-              <span className="ped-dt-cliente-nome">{p.cliente_nome || 'Não informado'}</span>
-            </div>
+            <span className="ped-dt-cliente-nome">{p.cliente_nome || 'Não informado'}</span>
           </div>
 
           {/* Produto */}
@@ -339,6 +334,13 @@ function PedidoCard({ p, isMobile, onAbrirMapa }: {
           <div className="ped-dt-col ped-dt-col--valor">
             <p className="ped-dt-valor">{formatMoney(p.valor_total)}</p>
             <p className="ped-dt-pag" style={{ color: pagamentoCor }}>{pagamentoLabel}</p>
+          </div>
+
+          {/* Ver Pedido */}
+          <div className="ped-dt-col ped-dt-col--ver">
+            <button type="button" className="ped-dt-ver-btn" onClick={e => { e.stopPropagation(); navigate(`/pedidos/${p.id}`) }}>
+              Ver pedido
+            </button>
           </div>
         </div>
       )}
@@ -625,6 +627,7 @@ export default function Pedidos() {
                   <div className="ped-dt-col ped-dt-col--entrega">Entrega</div>
                   <div className="ped-dt-col ped-dt-col--status">Status</div>
                   <div className="ped-dt-col ped-dt-col--valor">Valor</div>
+                  <div className="ped-dt-col ped-dt-col--ver"></div>
                 </div>
               )}
               {pedidosFiltrados.map(p => (
@@ -692,7 +695,7 @@ export default function Pedidos() {
           /* Cabeçalho */
           .ped-dt-header {
             display: grid;
-            grid-template-columns: 145px 200px 1fr 180px 120px 140px;
+            grid-template-columns: 145px 160px 1fr 160px 110px 130px 100px;
             align-items: center;
             padding: 0.55rem 1.25rem;
             background: #6E3548;
@@ -708,7 +711,7 @@ export default function Pedidos() {
           /* Cada linha de pedido no desktop */
           .ped-dt-row {
             display: grid;
-            grid-template-columns: 145px 200px 1fr 180px 120px 140px;
+            grid-template-columns: 145px 160px 1fr 160px 110px 130px 100px;
             align-items: center;
             padding: 0.8rem 1.25rem;
             gap: 16px;
@@ -750,12 +753,22 @@ export default function Pedidos() {
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           }
 
+          .ped-dt-col--ver { align-items: flex-end; }
+          .ped-dt-ver-btn {
+            background: none; border: 1.5px solid var(--primary,#986274);
+            color: var(--primary,#986274); border-radius: 8px;
+            padding: 0.35rem 0.75rem; font-size: 0.75rem; font-weight: 600;
+            cursor: pointer; font-family: inherit; white-space: nowrap;
+            transition: all 0.15s;
+          }
+          .ped-dt-ver-btn:hover { background: var(--primary,#986274); color: white; }
+
           /* Produto */
-          .ped-dt-produto-row { display: flex; align-items: center; gap: 10px; min-width: 0; width: 100%; }
+          .ped-dt-produto-row { display: flex; align-items: center; gap: 8px; min-width: 0; width: 100%; }
           .ped-dt-produto-img {
-            width: 38px; height: 38px; border-radius: 8px; flex-shrink: 0;
+            width: 30px; height: 30px; border-radius: 6px; flex-shrink: 0;
             background: var(--bg-subtle,#F7EEF1); border: 1px solid var(--border,#ECC2D0);
-            overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; line-height: 1;
+            overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; line-height: 1;
           }
           .ped-dt-produto-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
           .ped-dt-produto-info { flex: 1; min-width: 0; }
