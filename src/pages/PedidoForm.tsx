@@ -54,14 +54,13 @@ export default function PedidoForm() {
   }, [id])
 
   const carregarDados = async (uid: string) => {
-    const [{ data: cls }, { data: prds }, { data: cups }] = await Promise.all([
+    const [{ data: cls }, { data: prds }] = await Promise.all([
       supabase.from('clientes').select('id,nome,telefone,whatsapp,como_conheceu,endereco').eq('user_id', uid).order('nome'),
       supabase.from('produtos').select('id,nome,preco_normal,forma_venda,imagem_url').eq('user_id', uid).eq('disponivel', true).order('nome'),
-      supabase.from('cupons').select('id,codigo,desconto,tipo').eq('user_id', uid).eq('ativo', true).order('codigo'),
     ])
     setClientes(cls || [])
     setProdutos(prds || [])
-    setCupons(cups || [])
+    setCupons([]) // tabela cupons não existe ainda
   }
 
   const carregarPedido = async (uid: string) => {
@@ -180,10 +179,11 @@ export default function PedidoForm() {
         const { data } = await supabase.from('pedidos').insert(payload).select('id').single()
         pedidoId = data?.id
         if (pedidoId) {
-          await supabase.from('pedido_historico').insert({
+          // pedido_historico é opcional — não falha se tabela não existir
+          supabase.from('pedido_historico').insert({
             pedido_id: pedidoId, user_id: userId,
             evento: 'Pedido criado', descricao: 'Pedido criado manualmente',
-          })
+          }).then(() => {}).catch(() => {})
         }
       }
 
@@ -209,7 +209,8 @@ export default function PedidoForm() {
       }
 
       navigate('/pedidos')
-    } catch {
+    } catch (err) {
+      console.error('Erro ao salvar pedido:', err)
       showToast('Erro ao salvar pedido.')
     }
     setSaving(false)
