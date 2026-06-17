@@ -268,14 +268,76 @@ function PedidoCard({ p, isMobile, onAbrirMapa }: {
           </div>
         </>
       ) : (
-        <div className="ped-card-grid">
-          <div className="ped-card-cliente-produto">
-            <p className="ped-card-cliente">{p.cliente_nome || 'Não informado'}</p>
-            {ProdutoRow}
+        /* ── Layout desktop: tabela limpa estilo design referência ── */
+        <div className="ped-dt-row">
+          {/* Pedido # + data criação */}
+          <div className="ped-dt-col ped-dt-col--num">
+            <span className="ped-dt-num">#{p.numero || '—'}</span>
+            {p.origem === 'cardapio' && <span className="ped-card-origem">Cardápio</span>}
+            <span className="ped-dt-criado">
+              {p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' }) : ''}
+            </span>
           </div>
-          {EntregaInfo}
-          <p className="ped-card-pagamento" style={{ color: pagamentoCor, margin: 0 }}>{pagamentoLabel}</p>
-          <p className="ped-card-valor" style={{ textAlign: 'right', margin: 0 }}>{formatMoney(p.valor_total)}</p>
+
+          {/* Cliente */}
+          <div className="ped-dt-col ped-dt-col--cliente">
+            <div className="ped-dt-avatar">
+              {(p.cliente_nome || '?')[0].toUpperCase()}
+            </div>
+            <div className="ped-dt-cliente-info">
+              <span className="ped-dt-cliente-nome">{p.cliente_nome || 'Não informado'}</span>
+            </div>
+          </div>
+
+          {/* Produto */}
+          <div className="ped-dt-col ped-dt-col--produto">
+            {primeiroItem ? (
+              <div className="ped-dt-produto-row">
+                <div className="ped-dt-produto-img">
+                  {primeiroItem.produtos?.imagem_url
+                    ? <img src={primeiroItem.produtos.imagem_url} alt={primeiroItem.nome_produto} />
+                    : <span>🎂</span>}
+                </div>
+                <div>
+                  <p className="ped-dt-produto-nome">
+                    {primeiroItem.nome_produto}
+                    {outrosItens > 0 && <span className="ped-card-mais-itens"> +{outrosItens}</span>}
+                  </p>
+                  <p className="ped-dt-produto-qtd">{formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</p>
+                </div>
+              </div>
+            ) : <span className="ped-dt-vazio">—</span>}
+          </div>
+
+          {/* Entrega */}
+          <div className="ped-dt-col ped-dt-col--entrega">
+            {dataLabel && (
+              <p className="ped-dt-data" style={{ color: dataCor }}>
+                {dataLabel}{p.horario_entrega ? ` · ${p.horario_entrega.slice(0,5)}` : ''}
+              </p>
+            )}
+            <p className="ped-dt-tipo">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</p>
+            {temEndereco && (
+              <button type="button" className="ped-card-mapa" onClick={e => { e.stopPropagation(); onAbrirMapa(enderecoCompletoPedido(p)) }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Ver no mapa
+              </button>
+            )}
+          </div>
+
+          {/* Status */}
+          <div className="ped-dt-col ped-dt-col--status">
+            <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
+              <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
+              {grupo.label}
+            </span>
+          </div>
+
+          {/* Valor + pagamento */}
+          <div className="ped-dt-col ped-dt-col--valor">
+            <p className="ped-dt-valor">{formatMoney(p.valor_total)}</p>
+            <p className="ped-dt-pag" style={{ color: pagamentoCor }}>{pagamentoLabel}</p>
+          </div>
         </div>
       )}
 
@@ -551,7 +613,18 @@ export default function Pedidos() {
               )}
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+            <div className={!isMobile ? 'ped-dt-wrapper' : ''} style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '0.65rem' : 0 }}>
+              {/* Cabeçalho da tabela — só desktop */}
+              {!isMobile && (
+                <div className="ped-dt-header">
+                  <div className="ped-dt-col ped-dt-col--num">Pedido</div>
+                  <div className="ped-dt-col ped-dt-col--cliente">Cliente</div>
+                  <div className="ped-dt-col ped-dt-col--produto">Produto</div>
+                  <div className="ped-dt-col ped-dt-col--entrega">Entrega</div>
+                  <div className="ped-dt-col ped-dt-col--status">Status</div>
+                  <div className="ped-dt-col ped-dt-col--valor">Valor</div>
+                </div>
+              )}
               {pedidosFiltrados.map(p => (
                 <PedidoCard key={p.id} p={p} isMobile={isMobile} onAbrirMapa={setMapaAberto} />
               ))}
@@ -609,11 +682,99 @@ export default function Pedidos() {
         .ped-card-rodape-direita { text-align: right; }
         .ped-card-rodape-direita .ped-card-valor { margin: 4px 0 0; }
 
-        /* Desktop: grid de uma linha só */
+        /* Desktop: tabela limpa ── */
         @media (min-width: 768px) {
-          .ped-card-grid { display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr; gap: 16px; align-items: center; padding: 0.85rem 1.1rem 1rem; }
-          .ped-card-cliente-produto { min-width: 0; }
-          .ped-card-cliente { margin-bottom: 0.4rem; font-size: 0.95rem; }
+          /* Wrapper da lista vira um bloco com borda e radius */
+          .ped-dt-wrapper { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); border-radius: 14px; overflow: hidden; }
+
+          /* Cabeçalho */
+          .ped-dt-header {
+            display: grid;
+            grid-template-columns: 72px 1fr 1.5fr 1fr 110px 130px;
+            align-items: center;
+            padding: 0.6rem 1.25rem;
+            background: var(--bg-subtle,#F7EEF1);
+            border-bottom: 1.5px solid var(--border,#ECC2D0);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted,#C39EAA);
+            gap: 16px;
+          }
+
+          /* Cada linha de pedido no desktop */
+          .ped-dt-row {
+            display: grid;
+            grid-template-columns: 72px 1fr 1.5fr 1fr 110px 130px;
+            align-items: center;
+            padding: 0.85rem 1.25rem;
+            gap: 16px;
+            border-bottom: 1px solid var(--border,#ECC2D0);
+            cursor: pointer;
+            transition: background 0.12s;
+          }
+          .ped-dt-row:last-child { border-bottom: none; }
+          .ped-dt-row:hover { background: var(--bg-subtle,#F7EEF1); }
+
+          /* Colunas individuais */
+          .ped-dt-col { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+          .ped-dt-col--num { gap: 2px; }
+          .ped-dt-col--cliente { flex-direction: row; align-items: center; gap: 10px; }
+          .ped-dt-col--produto { flex-direction: row; align-items: center; gap: 0; }
+          .ped-dt-col--entrega { gap: 2px; }
+          .ped-dt-col--status { align-items: flex-start; }
+          .ped-dt-col--valor { align-items: flex-end; }
+
+          /* Número do pedido */
+          .ped-dt-num { font-size: 0.9rem; font-weight: 700; color: var(--primary,#986274); }
+          .ped-dt-criado { font-size: 0.7rem; color: var(--text-muted,#C39EAA); margin-top: 1px; }
+
+          /* Avatar do cliente */
+          .ped-dt-avatar {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: var(--primary-light,#F7EEF1);
+            border: 1.5px solid var(--border,#ECC2D0);
+            color: var(--primary,#986274);
+            font-size: 0.78rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+          }
+          .ped-dt-cliente-nome {
+            font-size: 0.9rem; font-weight: 600;
+            color: var(--text-title,#431524);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+          }
+
+          /* Produto */
+          .ped-dt-produto-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+          .ped-dt-produto-img {
+            width: 38px; height: 38px; border-radius: 8px; flex-shrink: 0;
+            background: var(--bg-subtle,#F7EEF1); border: 1px solid var(--border,#ECC2D0);
+            overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1rem;
+          }
+          .ped-dt-produto-img img { width: 100%; height: 100%; object-fit: cover; }
+          .ped-dt-produto-nome {
+            font-size: 0.84rem; font-weight: 600; color: var(--text-title,#431524);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
+          }
+          .ped-dt-produto-qtd { font-size: 0.72rem; color: var(--text-secondary,#6E3548); margin-top: 2px; }
+
+          /* Entrega */
+          .ped-dt-data { font-size: 0.84rem; font-weight: 600; margin: 0; }
+          .ped-dt-tipo { font-size: 0.75rem; color: var(--text-secondary,#6E3548); margin: 2px 0 0; }
+
+          /* Valor */
+          .ped-dt-valor { font-size: 1rem; font-weight: 800; color: var(--text-title,#431524); letter-spacing: -0.02em; margin: 0; }
+          .ped-dt-pag { font-size: 0.72rem; font-weight: 600; margin: 3px 0 0; }
+
+          .ped-dt-vazio { color: var(--text-muted,#C39EAA); font-size: 0.85rem; }
+
+          /* No desktop, o card vira uma linha flat — sem borda/radius próprios */
+          .ped-card { border: none !important; border-radius: 0 !important; background: transparent !important; }
+
+          /* Banner de urgente ainda aparece no desktop */
+          .ped-card-banner { border-radius: 0; }
         }
 
         /* ── Modal de mapa ── */
