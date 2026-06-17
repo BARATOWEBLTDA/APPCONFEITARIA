@@ -48,7 +48,6 @@ export type Pedido = {
   valor_sinal: number
   data_sinal: string
   valor_recebido: number
-  data_pagamento_restante: string
   observacoes: string
   etiquetas: string[]
   responsavel_entrega: string
@@ -72,8 +71,7 @@ export const EMPTY_PEDIDO: Pedido = {
   responsavel_entrega: '', responsavel_producao: '', data_prevista_producao: '',
   status_producao: 'nao_iniciado', checklist_producao: [],
   valor_total: 0, forma_pagamento: 'pix', status_pagamento: 'pendente',
-  valor_sinal: 0, data_sinal: '', valor_recebido: 0, data_pagamento_restante: '',
-  observacoes: '', etiquetas: [],
+  valor_sinal: 0, data_sinal: '', valor_recebido: 0,  observacoes: '', etiquetas: [],
 }
 
 export const EMPTY_ITEM: PedidoItem = {
