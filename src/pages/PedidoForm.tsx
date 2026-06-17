@@ -127,22 +127,23 @@ export default function PedidoForm() {
         }
       }
 
-      const { id: _id, numero: _numero, ...pedidoSemId } = pedido as any
+      // Payload com exatamente os campos que existem no banco
       const payload = {
-        ...pedidoSemId,
         user_id: userId,
-        taxa_entrega: pedido.taxa_entrega || 0,
-        desconto: pedido.desconto || 0,
-        cupom_desconto: pedido.cupom_desconto || 0,
-        valor_produtos: pedido.valor_produtos || 0,
-        valor_total: pedido.valor_total || 0,
-        valor_sinal: pedido.valor_sinal || 0,
-        valor_recebido: pedido.valor_recebido || 0,
-        status_pagamento: statusPagamentoAuto,
         cliente_id: pedido.cliente_id || null,
+        cliente_nome: pedido.cliente_nome,
+        cliente_telefone: pedido.cliente_telefone || null,
+        cliente_whatsapp: pedido.cliente_whatsapp || null,
+        cliente_email: pedido.cliente_email || null,
+        status: pedido.status || 'confirmado',
+        prioridade: pedido.prioridade || 'media',
+        origem: pedido.origem || null,
+        etiquetas: pedido.etiquetas || [],
+        data_entrega: pedido.data_entrega,
         horario_entrega: pedido.horario_entrega || null,
-        data_sinal: pedido.data_sinal || null,
-        cupom_codigo: pedido.cupom_codigo || null,
+        tipo_entrega: pedido.tipo_entrega || 'retirada',
+        taxa_entrega: pedido.taxa_entrega || 0,
+        responsavel_entrega: pedido.responsavel_entrega || null,
         endereco_cep: pedido.endereco_cep || null,
         endereco_rua: pedido.endereco_rua || null,
         endereco_numero: pedido.endereco_numero || null,
@@ -155,9 +156,20 @@ export default function PedidoForm() {
         personalizacao_cor: pedido.personalizacao_cor || null,
         personalizacao_referencia: pedido.personalizacao_referencia || null,
         personalizacao_obs: pedido.personalizacao_obs || null,
-        responsavel_entrega: pedido.responsavel_entrega || null,
-        responsavel_producao: pedido.responsavel_producao || null,
+        valor_produtos: pedido.valor_produtos || 0,
+        desconto: pedido.desconto || 0,
+        cupom_codigo: pedido.cupom_codigo || null,
+        cupom_desconto: pedido.cupom_desconto || 0,
+        valor_total: pedido.valor_total || 0,
+        forma_pagamento: pedido.forma_pagamento || 'pix',
+        status_pagamento: statusPagamentoAuto,
+        valor_sinal: pedido.valor_sinal || 0,
+        data_sinal: pedido.data_sinal || null,
+        valor_recebido: pedido.valor_recebido || 0,
+        status_producao: pedido.status_producao || null,
         data_prevista_producao: pedido.data_prevista_producao || null,
+        responsavel_producao: pedido.responsavel_producao || null,
+        checklist_producao: pedido.checklist_producao || [],
         observacoes: pedido.observacoes || null,
       }
 
@@ -178,7 +190,17 @@ export default function PedidoForm() {
       if (pedidoId && itens.length > 0) {
         await supabase.from('pedido_itens').delete().eq('pedido_id', pedidoId)
         await supabase.from('pedido_itens').insert(
-          itens.map(({ imagem_url: _img, ...item }) => ({ ...item, pedido_id: pedidoId, user_id: userId }))
+          itens.map(item => ({
+            pedido_id: pedidoId,
+            user_id: userId,
+            produto_id: item.produto_id || null,
+            nome_produto: item.nome_produto,
+            quantidade: item.quantidade || 1,
+            valor_unitario: item.valor_unitario || 0,
+            desconto: item.desconto || 0,
+            observacoes: item.observacoes || null,
+            personalizacoes: item.personalizacoes || {},
+          }))
         )
       }
 
