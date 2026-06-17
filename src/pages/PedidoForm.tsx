@@ -178,7 +178,7 @@ export default function PedidoForm() {
       if (pedidoId && itens.length > 0) {
         await supabase.from('pedido_itens').delete().eq('pedido_id', pedidoId)
         await supabase.from('pedido_itens').insert(
-          itens.map(item => ({ ...item, pedido_id: pedidoId, user_id: userId }))
+          itens.map(({ imagem_url: _img, ...item }) => ({ ...item, pedido_id: pedidoId, user_id: userId }))
         )
       }
 
@@ -482,9 +482,13 @@ export default function PedidoForm() {
           position: absolute; top: calc(100% + 4px); left: 0; right: 0;
           background: var(--bg-card, #fff);
           border: 1.5px solid var(--border, #ECC2D0);
-          border-radius: 14px; z-index: 50;
+          border-radius: 14px; z-index: 9999;
           box-shadow: var(--shadow-lg);
-          overflow: visible;
+          overflow: hidden;
+          max-height: 240px;
+        }
+        @media (min-width: 768px) {
+          .pf2-dropdown { max-height: 160px; overflow-y: auto; }
         }
         .pf2-drop-item {
           width: 100%; display: flex; flex-direction: column; align-items: flex-start;
