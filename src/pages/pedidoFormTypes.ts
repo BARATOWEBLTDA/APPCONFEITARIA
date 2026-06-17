@@ -61,7 +61,7 @@ export type Pedido = {
 
 export const EMPTY_PEDIDO: Pedido = {
   cliente_nome: '', cliente_telefone: '', cliente_whatsapp: '', cliente_email: '',
-  status: 'novo', prioridade: 'media', origem: '',
+  status: 'confirmado', prioridade: 'media', origem: '',
   data_entrega: '', horario_entrega: '', tipo_entrega: 'retirada', taxa_entrega: 0,
   endereco_cep: '', endereco_rua: '', endereco_numero: '', endereco_complemento: '',
   endereco_bairro: '', endereco_cidade: '',
