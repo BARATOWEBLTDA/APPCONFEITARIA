@@ -776,7 +776,7 @@ export default function Pedidos() {
           .ped-dt-vazio { color: var(--text-muted,#C39EAA); font-size: 0.85rem; }
 
           /* No desktop, o card vira uma linha flat — sem borda/radius próprios */
-          .ped-card { border: none !important; border-radius: 0 !important; background: transparent !important; border-bottom: 2px solid #986274 !important; }
+          .ped-card { border: none !important; border-radius: 0 !important; background: transparent !important; border-bottom: 1.5px solid #D4A0B0 !important; }
           .ped-card:last-child { border-bottom: none !important; }
 
           /* Banner de urgente ainda aparece no desktop */
