@@ -242,7 +242,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa }: {
         </div>
       )}
 
-      <div className="ped-card-head">
+      <div className="ped-card-head" style={!isMobile ? { display: 'none' } : {}}>
         <span className="ped-card-numero">
           Pedido #{p.numero || '—'}
           {p.origem === 'cardapio' && <span className="ped-card-origem">via Cardápio</span>}
@@ -341,7 +341,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa }: {
         </div>
       )}
 
-      {(extras.length > 0 || (p.etiquetas || []).length > 0) && (
+      {(extras.length > 0 || (p.etiquetas || []).length > 0) && isMobile && (
         <div className="ped-card-extras">
           {extras.map((e, i) => <span key={i} className="ped-card-chip">{e}</span>)}
           {(p.etiquetas || []).slice(0, 4).map(e => <span key={e} className="ped-card-chip ped-card-chip--etiqueta">{e}</span>)}
