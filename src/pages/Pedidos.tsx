@@ -8,7 +8,7 @@ type PedidoItem = {
   nome_produto: string; quantidade: number; valor_unitario: number
   observacoes?: string
   personalizacoes?: { massa?: string | null; recheio?: string | null; cobertura?: string | null }
-  produtos?: { imagem_url?: string | null } | null
+  produtos?: { imagem_url?: string | null; forma_venda?: string | null } | null
 }
 
 type Pedido = {
@@ -17,10 +17,15 @@ type Pedido = {
   data_entrega: string; horario_entrega: string; valor_total: number
   valor_recebido: number; tipo_entrega: string; forma_pagamento: string
   etiquetas: string[]; origem: string; created_at: string
+  endereco_rua?: string; endereco_numero?: string; endereco_complemento?: string
+  endereco_bairro?: string; endereco_cidade?: string; endereco_cep?: string
+  personalizacao_tema?: string; personalizacao_nome?: string; personalizacao_idade?: string
+  personalizacao_cor?: string; personalizacao_obs?: string
+  observacoes?: string
   pedido_itens?: PedidoItem[]
 }
 
-// ── Status do sistema ────────────────────────────────────────────────────────
+// ── Status reais do sistema (usados pelo Kanban e pelo filtro) ────────────────
 const TODOS_STATUS = [
   { key: 'confirmado',          label: 'Confirmado',          color: '#5b21b6', bg: '#ede9fe', dot: '#8b5cf6' },
   { key: 'em_producao',         label: 'Em produção',         color: '#9a3412', bg: '#ffedd5', dot: '#f97316' },
@@ -32,14 +37,44 @@ const TODOS_STATUS = [
   { key: 'excluido',            label: 'Excluído',            color: '#6b7280', bg: '#f9fafb', dot: '#d1d5db' },
 ]
 
-const STATUS_CONFIG = Object.fromEntries(TODOS_STATUS.map(s => [s.key, s]))
-
 const PAG_CONFIG: Record<string, string> = {
   pix: 'PIX', dinheiro: 'Dinheiro', credito: 'Crédito', debito: 'Débito', transferencia: 'Transf.',
 }
 
 // Status visíveis por padrão (sem cancelado e excluído)
 const STATUS_PADRAO = TODOS_STATUS.filter(s => !['cancelado', 'excluido'].includes(s.key)).map(s => s.key)
+
+// ── Status simplificado, só pra exibição na lista ──────────────────────────────
+// O status real do pedido continua sendo um dos 8 acima (é o que o Kanban e o
+// filtro usam). Aqui só agrupamos visualmente em 4 etiquetas mais simples pro
+// card da lista — nada disso é gravado no banco.
+const STATUS_GROUPS = [
+  { key: 'novo',         label: 'Novo',         color: '#534AB7', bg: '#EEEDFE', dot: '#7F77DD' },
+  { key: 'em_producao',  label: 'Em produção',  color: '#854F0B', bg: '#FAEEDA', dot: '#EF9F27' },
+  { key: 'finalizado',   label: 'Finalizado',   color: '#085041', bg: '#E1F5EE', dot: '#1D9E75' },
+  { key: 'cancelado',    label: 'Cancelado',    color: '#791F1F', bg: '#FCEBEB', dot: '#E24B4A' },
+]
+const STATUS_GROUP_CONFIG = Object.fromEntries(STATUS_GROUPS.map(s => [s.key, s]))
+
+function getStatusGroup(status: string): string {
+  const s = status || 'confirmado'
+  if (s === 'cancelado' || s === 'excluido') return 'cancelado'
+  if (s === 'entregue') return 'finalizado'
+  if (s === 'confirmado') return 'novo'
+  return 'em_producao' // em_producao, pronto, aguardando_retirada, aguardando_entrega
+}
+
+// ── Quantidade com a unidade certa, conforme a forma de venda do produto ──────
+const UNIDADE_LABEL: Record<string, string> = {
+  fatia: 'fatia', kg: 'kg', cento: 'cento', caixa: 'caixa', 'kit-festa': 'kit',
+}
+function formatItemQuantidade(qtd: number, formaVenda?: string | null): string {
+  const unidade = formaVenda ? UNIDADE_LABEL[formaVenda] : undefined
+  const fracionavel = formaVenda === 'kg' || formaVenda === 'cento'
+  const qtdStr = Number.isInteger(qtd) ? String(qtd) : String(qtd).replace('.', ',')
+  if (!unidade) return `${qtdStr}x`
+  return fracionavel ? `${qtdStr} ${unidade}` : `${qtdStr}x ${unidade}`
+}
 
 function formatDate(d: string) {
   if (!d) return '—'
@@ -77,41 +112,179 @@ function horasParaEntrega(data: string, hora: string) {
   return Math.ceil((entrega.getTime() - Date.now()) / (1000 * 60 * 60))
 }
 
-function MiniCarrinho({ itens = [] }: { itens?: PedidoItem[] }) {
-  if (!itens.length) return null
+// ── Endereço de entrega completo, pro modal de mapa ────────────────────────────
+function enderecoCompletoPedido(p: Pedido): string {
+  return [
+    p.endereco_rua && p.endereco_numero ? `${p.endereco_rua}, ${p.endereco_numero}` : p.endereco_rua,
+    p.endereco_complemento,
+    p.endereco_bairro,
+    p.endereco_cidade,
+    p.endereco_cep,
+  ].filter(Boolean).join(', ')
+}
+
+// ── Modal de mapa (mesmo padrão já usado no cardápio público) ─────────────────
+function MapaModal({ endereco, onClose }: { endereco: string; onClose: () => void }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, margin: '0.5rem 0 0.65rem' }}>
-      {itens.map((item, i) => {
-        const imgUrl = item.produtos?.imagem_url
-        const chips: string[] = []
-        if (item.personalizacoes?.massa) chips.push(item.personalizacoes.massa)
-        if (item.personalizacoes?.recheio) chips.push(item.personalizacoes.recheio)
-        if (item.personalizacoes?.cobertura) chips.push(item.personalizacoes.cobertura)
-        if (item.observacoes) chips.push(item.observacoes)
-        return (
-          <div key={i}>
-            {i > 0 && <div style={{ height: 1, background: 'var(--border,#ECC2D0)', margin: '0.5rem 0' }} />}
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.65rem' }}>
-              <div style={{ width: 56, height: 56, borderRadius: 8, flexShrink: 0, background: 'var(--bg-subtle,#F7EEF1)', border: '1px solid var(--border,#ECC2D0)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {imgUrl ? <img src={imgUrl} alt={item.nome_produto} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: '1.25rem' }}>🎂</span>}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-title,#431524)', lineHeight: 1.3 }}>{item.nome_produto}</span>
-                  <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary,#6E3548)', whiteSpace: 'nowrap', flexShrink: 0 }}>{item.quantidade}x</span>
-                </div>
-                {chips.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.3rem' }}>
-                    {chips.map((chip, ci) => (
-                      <span key={ci} style={{ fontSize: '0.68rem', fontWeight: 500, background: 'var(--primary-light,#F7EEF1)', color: 'var(--primary,#986274)', border: '1px solid #ECC2D0', borderRadius: 5, padding: '2px 7px', whiteSpace: 'nowrap' }}>+ {chip}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
+    <>
+      <div className="map-overlay" onClick={onClose} />
+      <div className="map-sheet" onClick={e => e.stopPropagation()}>
+        <iframe
+          width="100%" height="200" style={{ border: 'none', display: 'block' }}
+          src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_KEY}&q=${encodeURIComponent(endereco)}`}
+          allowFullScreen
+        />
+        <div style={{ padding: '1.25rem' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '1rem' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary,#986274)" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <p style={{ fontFamily: 'inherit', fontSize: '0.9rem', color: 'var(--text-primary,#431524)', lineHeight: 1.5, margin: 0 }}>{endereco}</p>
+          </div>
+          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
+            <a href={`https://waze.com/ul?q=${encodeURIComponent(endereco)}`} target="_blank" rel="noopener noreferrer" className="map-btn map-btn--waze">
+              <img src="/waze.png" alt="" width={20} height={20} style={{ objectFit: 'contain' }} />
+              Waze
+            </a>
+            <a href={`https://maps.google.com/?q=${encodeURIComponent(endereco)}`} target="_blank" rel="noopener noreferrer" className="map-btn map-btn--maps">
+              <img src="/google-maps.png" alt="" width={20} height={20} style={{ objectFit: 'contain' }} />
+              Google Maps
+            </a>
+          </div>
+          <button onClick={onClose} className="map-btn-close">Fechar</button>
+        </div>
+      </div>
+    </>
+  )
+}
+
+// ── Card de pedido (lista) ──────────────────────────────────────────────────
+function PedidoCard({ p, isMobile, onAbrirMapa }: {
+  p: Pedido
+  isMobile: boolean
+  onAbrirMapa: (endereco: string) => void
+}) {
+  const navigate = useNavigate()
+  const atrasado = isAtrasado(p)
+  const dias = diasParaEntrega(p.data_entrega)
+  const horas = dias === 0 ? horasParaEntrega(p.data_entrega, p.horario_entrega) : null
+  const valorPendente = Math.max(0, (p.valor_total || 0) - (p.valor_recebido || 0))
+  const isUrgente = p.prioridade === 'alta' || (horas !== null && horas <= 3 && horas >= 0)
+  const grupo = STATUS_GROUP_CONFIG[getStatusGroup(p.status)]
+
+  const itens = p.pedido_itens || []
+  const primeiroItem = itens[0]
+  const outrosItens = itens.length - 1
+  const temEndereco = p.tipo_entrega === 'entrega' && !!p.endereco_rua
+
+  // Campos condicionais — só aparecem se a confeiteira preencheu no cadastro do pedido
+  const extras: string[] = []
+  if (p.personalizacao_tema) extras.push(`Tema: ${p.personalizacao_tema}`)
+  if (p.personalizacao_nome) extras.push(`Nome: ${p.personalizacao_nome}`)
+  if (p.personalizacao_idade) extras.push(`Idade: ${p.personalizacao_idade}`)
+  if (p.personalizacao_cor) extras.push(`Cor: ${p.personalizacao_cor}`)
+  if (p.personalizacao_obs) extras.push(`Decoração: ${p.personalizacao_obs}`)
+  if (p.observacoes) extras.push(`Obs: ${p.observacoes}`)
+  itens.forEach(item => {
+    if (item.personalizacoes?.massa) extras.push(item.personalizacoes.massa)
+    if (item.personalizacoes?.recheio) extras.push(item.personalizacoes.recheio)
+    if (item.personalizacoes?.cobertura) extras.push(item.personalizacoes.cobertura)
+    if (item.observacoes) extras.push(item.observacoes)
+  })
+
+  const dataLabel = !p.data_entrega ? null
+    : atrasado ? 'Atrasado'
+    : dias === 0 ? 'Hoje'
+    : dias === 1 ? 'Amanhã'
+    : formatDate(p.data_entrega)
+  const dataCor = atrasado ? '#dc2626' : dias === 0 ? '#d97706' : 'var(--text-secondary,#6E3548)'
+
+  const pagamentoLabel = p.status_pagamento === 'pago'
+    ? `${PAG_CONFIG[p.forma_pagamento] || 'PIX'} · Pago`
+    : `${PAG_CONFIG[p.forma_pagamento] || 'PIX'} · ${p.status_pagamento === 'parcial' ? 'Parcial' : 'Pendente'}${valorPendente > 0 ? ` · ${formatMoney(valorPendente)}` : ''}`
+  const pagamentoCor = p.status_pagamento === 'pago' ? '#16a34a' : p.status_pagamento === 'parcial' ? '#d97706' : '#dc2626'
+
+  const ProdutoRow = (
+    primeiroItem && (
+      <div className="ped-card-produto-row">
+        <div className="ped-card-produto-img">
+          {primeiroItem.produtos?.imagem_url
+            ? <img src={primeiroItem.produtos.imagem_url} alt={primeiroItem.nome_produto} />
+            : <span>🎂</span>}
+        </div>
+        <div className="ped-card-produto-info">
+          <p className="ped-card-produto-nome">
+            {primeiroItem.nome_produto}
+            {outrosItens > 0 && <span className="ped-card-mais-itens"> +{outrosItens} item{outrosItens > 1 ? 's' : ''}</span>}
+          </p>
+          <p className="ped-card-produto-qtd">{formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</p>
+        </div>
+      </div>
+    )
+  )
+
+  const EntregaInfo = (
+    <div>
+      {dataLabel && <p className="ped-card-data" style={{ color: dataCor }}>{dataLabel}{p.horario_entrega ? ` · ${p.horario_entrega.slice(0, 5)}` : ''}</p>}
+      <p className="ped-card-tipo-entrega">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</p>
+      {temEndereco && (
+        <button type="button" className="ped-card-mapa" onClick={e => { e.stopPropagation(); onAbrirMapa(enderecoCompletoPedido(p)) }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Ver no mapa
+        </button>
+      )}
+    </div>
+  )
+
+  return (
+    <div onClick={() => navigate(`/pedidos/${p.id}`)} className="ped-card" style={{ border: `1.5px solid ${isUrgente ? '#fca5a5' : 'var(--border,#ECC2D0)'}` }}>
+      {isUrgente && (
+        <div className="ped-card-banner">
+          {atrasado ? 'Atrasado' : horas !== null && horas <= 3 ? `Entrega em ${horas}h` : 'Urgente'}
+        </div>
+      )}
+
+      <div className="ped-card-head">
+        <span className="ped-card-numero">
+          Pedido #{p.numero || '—'}
+          {p.origem === 'cardapio' && <span className="ped-card-origem">via Cardápio</span>}
+        </span>
+        <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
+          <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
+          {grupo.label}
+        </span>
+      </div>
+
+      {isMobile ? (
+        <>
+          <div className="ped-card-body">
+            <p className="ped-card-cliente">{p.cliente_nome || 'Não informado'}</p>
+            {ProdutoRow}
+          </div>
+          <div className="ped-card-rodape">
+            {EntregaInfo}
+            <div className="ped-card-rodape-direita">
+              <p className="ped-card-pagamento" style={{ color: pagamentoCor }}>{pagamentoLabel}</p>
+              <p className="ped-card-valor">{formatMoney(p.valor_total)}</p>
             </div>
           </div>
-        )
-      })}
+        </>
+      ) : (
+        <div className="ped-card-grid">
+          <div className="ped-card-cliente-produto">
+            <p className="ped-card-cliente">{p.cliente_nome || 'Não informado'}</p>
+            {ProdutoRow}
+          </div>
+          {EntregaInfo}
+          <p className="ped-card-pagamento" style={{ color: pagamentoCor, margin: 0 }}>{pagamentoLabel}</p>
+          <p className="ped-card-valor" style={{ textAlign: 'right', margin: 0 }}>{formatMoney(p.valor_total)}</p>
+        </div>
+      )}
+
+      {(extras.length > 0 || (p.etiquetas || []).length > 0) && (
+        <div className="ped-card-extras">
+          {extras.map((e, i) => <span key={i} className="ped-card-chip">{e}</span>)}
+          {(p.etiquetas || []).slice(0, 4).map(e => <span key={e} className="ped-card-chip ped-card-chip--etiqueta">{e}</span>)}
+        </div>
+      )}
     </div>
   )
 }
@@ -235,6 +408,7 @@ export default function Pedidos() {
   const [periodoFiltro, setPeriodoFiltro] = useState('todos')
   const [dataInicio, setDataInicio] = useState('')
   const [dataFim, setDataFim] = useState('')
+  const [mapaAberto, setMapaAberto] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => { if (user) fetchPedidos(user.id) })
@@ -249,7 +423,7 @@ export default function Pedidos() {
     setLoading(true)
     const { data } = await supabase
       .from('pedidos')
-      .select('*, pedido_itens(nome_produto, quantidade, valor_unitario, observacoes, personalizacoes, produtos(imagem_url))')
+      .select('*, pedido_itens(nome_produto, quantidade, valor_unitario, observacoes, personalizacoes, produtos(imagem_url, forma_venda))')
       .eq('user_id', uid)
       .order('created_at', { ascending: false })
     setPedidos(data || [])
@@ -378,80 +552,9 @@ export default function Pedidos() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-              {pedidosFiltrados.map(p => {
-                const atrasado = isAtrasado(p)
-                const status = atrasado && !['entregue','cancelado','excluido'].includes(p.status) ? 'atrasado' : (p.status || 'confirmado')
-                const cfg = STATUS_CONFIG[status] || STATUS_CONFIG['confirmado']
-                const dias = diasParaEntrega(p.data_entrega)
-                const horas = dias === 0 ? horasParaEntrega(p.data_entrega, p.horario_entrega) : null
-                const valorPendente = Math.max(0, (p.valor_total || 0) - (p.valor_recebido || 0))
-                const isUrgente = p.prioridade === 'alta' || (horas !== null && horas <= 3 && horas >= 0)
-
-                return (
-                  <div
-                    key={p.id}
-                    onClick={() => navigate(`/pedidos/${p.id}`)}
-                    style={{ background: 'var(--bg-card,#fff)', border: `1.5px solid ${isUrgente ? '#fca5a5' : 'var(--border,#ECC2D0)'}`, borderRadius: 14, padding: '1rem 1.1rem', cursor: 'pointer', fontFamily: 'inherit', position: 'relative', overflow: 'hidden' }}
-                  >
-                    {isUrgente && (
-                      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: '#fee2e2', padding: '4px 1.1rem', fontSize: '0.72rem', fontWeight: 700, color: '#dc2626' }}>
-                        {atrasado ? 'ATRASADO' : horas !== null && horas <= 3 ? `Entrega em ${horas}h` : 'URGENTE'}
-                      </div>
-                    )}
-                    <div style={{ marginTop: isUrgente ? '1.5rem' : 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                        <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--text-muted,#C39EAA)' }}>
-                          Pedido #{p.numero || '—'}
-                          {p.origem === 'cardapio' && <span style={{ marginLeft: 6, background: '#ede9fe', color: '#5b21b6', borderRadius: 4, padding: '1px 6px', fontSize: '0.62rem', fontWeight: 700 }}>via Cardápio</span>}
-                        </span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.72rem', fontWeight: 700, color: cfg?.color || '#1d4ed8', background: cfg?.bg || '#dbeafe', padding: '3px 10px', borderRadius: 8 }}>
-                          <span style={{ width: 7, height: 7, borderRadius: '50%', background: cfg?.dot || '#3b82f6', display: 'inline-block' }} />
-                          {cfg?.label || p.status}
-                        </span>
-                      </div>
-                      <div style={{ marginBottom: '0.65rem' }}>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted,#C39EAA)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cliente</span>
-                        <p style={{ margin: '1px 0 0', fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-title,#431524)', lineHeight: 1.25 }}>{p.cliente_nome || 'Não informado'}</p>
-                      </div>
-                      <MiniCarrinho itens={p.pedido_itens} />
-                      <div style={{ height: 1, background: 'var(--border,#ECC2D0)', margin: '0 0 0.65rem' }} />
-                      {p.data_entrega && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.4rem' }}>
-                          <div>
-                            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: atrasado ? '#dc2626' : dias === 0 ? '#d97706' : 'var(--text-secondary,#6E3548)', lineHeight: 1.2 }}>
-                              {atrasado ? 'Atrasado' : dias === 0 ? 'Hoje' : dias === 1 ? 'Amanhã' : formatDate(p.data_entrega)}
-                            </div>
-                            {p.horario_entrega && <div style={{ fontSize: '1.05rem', fontWeight: 800, color: atrasado ? '#dc2626' : dias === 0 ? '#d97706' : 'var(--text-title,#431524)', lineHeight: 1.1 }}>{p.horario_entrega.slice(0, 5)}</div>}
-                          </div>
-                          <div style={{ width: 1, height: 32, background: 'var(--border,#ECC2D0)' }} />
-                          <div style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--text-secondary,#6E3548)' }}>
-                            {p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}
-                          </div>
-                        </div>
-                      )}
-                      <div style={{ marginBottom: '0.65rem' }}>
-                        {p.status_pagamento !== 'pago' ? (
-                          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: p.status_pagamento === 'parcial' ? '#d97706' : '#dc2626' }}>
-                            {PAG_CONFIG[p.forma_pagamento] || 'PIX'} {p.status_pagamento === 'parcial' ? 'parcial' : 'pendente'}
-                            {valorPendente > 0 && ` · ${formatMoney(valorPendente)}`}
-                          </span>
-                        ) : (
-                          <span style={{ fontSize: '0.82rem', fontWeight: 600, color: '#16a34a' }}>{PAG_CONFIG[p.forma_pagamento] || 'PIX'} · Pago ✓</span>
-                        )}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.65rem', borderTop: '1px solid var(--border,#ECC2D0)' }}>
-                        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
-                          {(p.etiquetas || []).slice(0, 2).map((e: string) => (
-                            <span key={e} style={{ fontSize: '0.67rem', fontWeight: 600, background: 'var(--bg-subtle,#F7EEF1)', border: '1px solid var(--border,#ECC2D0)', color: 'var(--text-secondary,#6E3548)', borderRadius: 5, padding: '2px 7px' }}>{e}</span>
-                          ))}
-                          {!(p.etiquetas || []).length && <span style={{ fontSize: '0.75rem', color: 'var(--text-muted,#C39EAA)' }}>—</span>}
-                        </div>
-                        <span style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-title,#431524)', whiteSpace: 'nowrap', letterSpacing: '-0.02em' }}>{formatMoney(p.valor_total)}</span>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
+              {pedidosFiltrados.map(p => (
+                <PedidoCard key={p.id} p={p} isMobile={isMobile} onAbrirMapa={setMapaAberto} />
+              ))}
             </div>
           )}
         </>
@@ -467,10 +570,59 @@ export default function Pedidos() {
         />
       )}
 
+      {mapaAberto && <MapaModal endereco={mapaAberto} onClose={() => setMapaAberto(null)} />}
+
       <style>{`
         @keyframes pedSpin { to { transform: rotate(360deg); } }
         @keyframes hsFadeIn { from { opacity: 0 } to { opacity: 1 } }
         @keyframes hsSlideUp { from { transform: translateY(100%) } to { transform: translateY(0) } }
+
+        /* ── Card de pedido ── */
+        .ped-card { background: var(--bg-card,#fff); border-radius: 14px; cursor: pointer; font-family: inherit; position: relative; overflow: hidden; }
+        .ped-card-banner { background: #fee2e2; padding: 4px 1.1rem; font-size: 0.72rem; font-weight: 700; color: #dc2626; }
+        .ped-card-head { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.1rem 0; gap: 0.5rem; }
+        .ped-card-numero { font-size: 0.72rem; font-weight: 600; color: var(--text-muted,#C39EAA); }
+        .ped-card-origem { margin-left: 6px; background: #ede9fe; color: #5b21b6; border-radius: 4px; padding: 1px 6px; font-size: 0.62rem; font-weight: 700; }
+        .ped-card-status { display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 8px; flex-shrink: 0; }
+        .ped-card-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .ped-card-body { padding: 0.65rem 1.1rem 0; }
+        .ped-card-cliente { margin: 0 0 0.5rem; font-size: 1.02rem; font-weight: 700; color: var(--text-title,#431524); line-height: 1.25; }
+        .ped-card-produto-row { display: flex; align-items: center; gap: 0.65rem; min-width: 0; }
+        .ped-card-produto-img { width: 42px; height: 42px; border-radius: 8px; flex-shrink: 0; background: var(--bg-subtle,#F7EEF1); border: 1px solid var(--border,#ECC2D0); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+        .ped-card-produto-img img { width: 100%; height: 100%; object-fit: cover; }
+        .ped-card-produto-info { flex: 1; min-width: 0; }
+        .ped-card-produto-nome { margin: 0; font-size: 0.85rem; font-weight: 600; color: var(--text-title,#431524); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ped-card-mais-itens { font-weight: 500; color: var(--text-muted,#C39EAA); }
+        .ped-card-produto-qtd { margin: 2px 0 0; font-size: 0.75rem; color: var(--text-secondary,#6E3548); }
+        .ped-card-data { margin: 0; font-size: 0.82rem; font-weight: 600; line-height: 1.3; }
+        .ped-card-tipo-entrega { margin: 1px 0 0; font-size: 0.75rem; color: var(--text-secondary,#6E3548); }
+        .ped-card-mapa { display: inline-flex; align-items: center; gap: 4px; background: none; border: none; padding: 0; margin-top: 3px; font-size: 0.72rem; font-weight: 600; color: var(--primary,#986274); cursor: pointer; font-family: inherit; }
+        .ped-card-mapa:hover { text-decoration: underline; }
+        .ped-card-pagamento { font-size: 0.82rem; font-weight: 600; }
+        .ped-card-valor { font-size: 1.15rem; font-weight: 800; color: var(--text-title,#431524); letter-spacing: -0.02em; }
+        .ped-card-extras { border-top: 1px solid var(--border,#ECC2D0); padding: 0.65rem 1.1rem; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.85rem; }
+        .ped-card-chip { font-size: 0.7rem; font-weight: 500; background: var(--bg-subtle,#F7EEF1); color: var(--primary,#986274); border: 1px solid var(--border,#ECC2D0); border-radius: 6px; padding: 3px 8px; }
+        .ped-card-chip--etiqueta { background: var(--bg-body,#FAFAFA); color: var(--text-secondary,#6E3548); }
+
+        /* Mobile: rodapé entrega + pagamento/valor lado a lado */
+        .ped-card-rodape { display: flex; align-items: flex-end; justify-content: space-between; padding: 0.85rem 1.1rem; gap: 0.75rem; }
+        .ped-card-rodape-direita { text-align: right; }
+        .ped-card-rodape-direita .ped-card-valor { margin: 4px 0 0; }
+
+        /* Desktop: grid de uma linha só */
+        @media (min-width: 768px) {
+          .ped-card-grid { display: grid; grid-template-columns: 2fr 1.2fr 1fr 1fr; gap: 16px; align-items: center; padding: 0.85rem 1.1rem 1rem; }
+          .ped-card-cliente-produto { min-width: 0; }
+          .ped-card-cliente { margin-bottom: 0.4rem; font-size: 0.95rem; }
+        }
+
+        /* ── Modal de mapa ── */
+        .map-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; animation: hsFadeIn 0.2s ease; }
+        .map-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card,#fff); border-radius: 20px 20px 0 0; z-index: 201; max-width: 480px; margin: 0 auto; max-height: 80vh; overflow-y: auto; animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
+        .map-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem; border-radius: 12px; font-family: inherit; font-size: 0.88rem; font-weight: 700; text-decoration: none; }
+        .map-btn--waze { background: #33CCFF; color: white; }
+        .map-btn--maps { background: #ecf3ff; color: #4285f4; }
+        .map-btn-close { width: 100%; padding: 0.85rem; background: var(--bg-subtle,#F7EEF1); color: var(--text-primary,#431524); border: none; border-radius: 50px; font-family: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
 
         .fd-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; animation: hsFadeIn 0.2s ease; }
         .fd-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card,#fff); border-radius: 20px 20px 0 0; z-index: 101; max-height: 85vh; display: flex; flex-direction: column; animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
