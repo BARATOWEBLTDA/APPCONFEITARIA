@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { DatePickerField } from '@/components/DatePickerField'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { type Pedido, ORIGENS, formatTelefone } from '@/pages/pedidoFormTypes'
 
@@ -258,22 +257,26 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
         <div className="pf2-row">
           {/* Data */}
           <div className="pf2-field" style={{ flex: 2 }}>
+            <label className="pf2-label">Data de entrega <span className="pf2-required">*</span></label>
             {isMobile ? (
-              <>
-                <label className="pf2-label">Data de entrega <span className="pf2-required">*</span></label>
-                <label className={`pf2-input pf2-native-display${pedido.data_entrega ? ' pf2-native-display--filled' : ''}`}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-                  </svg>
-                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {pedido.data_entrega ? new Date(pedido.data_entrega + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Selecionar data'}
-                  </span>
-                  <input type="date" value={pedido.data_entrega} min={new Date().toISOString().split('T')[0]} onChange={e => set('data_entrega', e.target.value)}
-                    style={{ position: 'absolute', opacity: 0, inset: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
-                </label>
-              </>
+              <label className={`pf2-input pf2-native-display${pedido.data_entrega ? ' pf2-native-display--filled' : ''}`}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {pedido.data_entrega ? new Date(pedido.data_entrega + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Selecionar data'}
+                </span>
+                <input type="date" value={pedido.data_entrega} min={new Date().toISOString().split('T')[0]} onChange={e => set('data_entrega', e.target.value)}
+                  style={{ position: 'absolute', opacity: 0, inset: 0, width: '100%', height: '100%', cursor: 'pointer' }} />
+              </label>
             ) : (
-              <DatePickerField label="Data de entrega" value={pedido.data_entrega} onChange={v => set('data_entrega', v)} required minDate={new Date()} placeholder="Selecionar data" />
+              <input
+                className="pf2-input"
+                type="date"
+                value={pedido.data_entrega}
+                min={new Date().toISOString().split('T')[0]}
+                onChange={e => set('data_entrega', e.target.value)}
+              />
             )}
           </div>
 
