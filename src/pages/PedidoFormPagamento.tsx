@@ -12,6 +12,8 @@ type Props = {
   isEdicao: boolean
 }
 
+type ModoRecebimento = 'integral' | 'sinal' | 'entrega'
+
 function MoneyInput({ value, onChange, placeholder }: { value: number; onChange: (v: number) => void; placeholder?: string }) {
   const [display, setDisplay] = useState(value > 0 ? formatMoneyInput(value) : '')
   const prev = useRef(value)
@@ -42,14 +44,31 @@ const FORMAS_PAGAMENTO = [
 ]
 
 export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, onBack, isEdicao }: Props) {
-  const [showSinal, setShowSinal] = useState(pedido.valor_sinal > 0)
   const [showDesconto, setShowDesconto] = useState(pedido.desconto > 0 || !!pedido.cupom_codigo)
 
-  // ── Status calculado com base em valor_recebido (campo único) ────────────
-  // valor_recebido = tudo que já entrou (sinal + pago na entrega)
-  const totalRecebido = pedido.valor_recebido || 0
-  const restante = Math.max(0, pedido.valor_total - totalRecebido)
+  // Detecta modo inicial baseado no estado do pedido
+  const getModoInicial = (): ModoRecebimento => {
+    if (pedido.valor_recebido >= pedido.valor_total && pedido.valor_total > 0) return 'integral'
+    if (pedido.valor_sinal > 0) return 'sinal'
+    return 'entrega'
+  }
+  const [modo, setModo] = useState<ModoRecebimento>(getModoInicial)
 
+  const handleModo = (novoModo: ModoRecebimento) => {
+    setModo(novoModo)
+    // Limpa valores anteriores ao trocar
+    set('valor_sinal', 0)
+    set('data_sinal', '')
+    set('valor_recebido', novoModo === 'integral' ? pedido.valor_total : 0)
+  }
+
+  // Recalcula valor_recebido quando total muda e modo é integral
+  if (modo === 'integral' && pedido.valor_recebido !== pedido.valor_total && pedido.valor_total > 0) {
+    set('valor_recebido', pedido.valor_total)
+  }
+
+  const totalRecebido = pedido.valor_recebido
+  const restante = Math.max(0, pedido.valor_total - totalRecebido)
   const statusPag: 'pendente' | 'parcial' | 'pago' =
     restante === 0 && pedido.valor_total > 0 ? 'pago'
     : totalRecebido > 0 ? 'parcial'
@@ -62,24 +81,18 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
   }
   const sc = STATUS_CONFIG[statusPag]
 
-  // Pagar integral — seta valor_recebido = total
-  const pagarIntegral = () => {
-    set('valor_recebido', pedido.valor_total)
-    set('valor_sinal', 0)
-    setShowSinal(false)
-  }
-
-  // Desfazer integral
-  const desfazerIntegral = () => {
-    set('valor_recebido', 0)
-  }
-
   const aplicarCupom = (cup: any) => {
     if (!cup) { set('cupom_codigo', ''); set('cupom_desconto', 0); return }
     const desc = cup.tipo === 'percentual' ? (pedido.valor_produtos * cup.desconto) / 100 : cup.desconto
     set('cupom_codigo', cup.codigo)
     set('cupom_desconto', desc)
   }
+
+  const MODOS: { key: ModoRecebimento; label: string }[] = [
+    { key: 'integral', label: 'Pago integralmente' },
+    { key: 'sinal',    label: 'Recebi um sinal' },
+    { key: 'entrega',  label: 'Receber na entrega' },
+  ]
 
   return (
     <div className="step-root">
@@ -158,75 +171,57 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
 
       {/* ── Recebimento ── */}
       <div className="pf2-card">
-        <div className="pf2-receb-header">
-          <p className="pf2-card-eyebrow" style={{ margin: 0 }}>Recebimento</p>
+        <div className="pf2-card-head-row">
+          <p className="pf2-card-eyebrow" style={{ margin: 0 }}>Como será o recebimento?</p>
           <span className="pf2-status-pill" style={{ background: sc.bg, color: sc.color }}>
             <span className="pf2-status-dot" style={{ background: sc.dot }} />
             {sc.label}
-            {statusPag === 'pendente' && <strong> · {formatMoney(restante)}</strong>}
-            {statusPag === 'parcial'  && <strong> · falta {formatMoney(restante)}</strong>}
           </span>
         </div>
 
-        {/* Botão pagar integral */}
-        {statusPag !== 'pago' ? (
-          <button className="pf2-integral-btn" onClick={pagarIntegral}>
-            Marcar como pago integral — {formatMoney(pedido.valor_total)}
-          </button>
-        ) : (
-          <div className="pf2-pago-banner">
-            <span>✅ {formatMoney(pedido.valor_recebido)} pago</span>
-            <button className="pf2-desfazer" onClick={desfazerIntegral}>desfazer</button>
-          </div>
-        )}
-
-        {/* Opcional: Sinal parcial — só mostra se não pagou integral */}
-        {statusPag !== 'pago' && (
-          <>
-            <div
-              className={`pf2-optional-toggle${showSinal ? ' pf2-optional-toggle--on' : ''}`}
-              style={{ marginTop: '0.25rem' }}
-              onClick={() => {
-                if (showSinal) { set('valor_sinal', 0); set('data_sinal', ''); set('valor_recebido', 0) }
-                setShowSinal(v => !v)
-              }}
+        {/* Radio options */}
+        <div className="pf2-receb-opcoes">
+          {MODOS.map(m => (
+            <button
+              key={m.key}
+              type="button"
+              className={`pf2-receb-opcao${modo === m.key ? ' pf2-receb-opcao--on' : ''}`}
+              onClick={() => handleModo(m.key)}
             >
-              <div className={`pf2-check${showSinal ? ' pf2-check--on' : ''}`}>
-                {showSinal && <svg width="9" height="9" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              <div className={`pf2-radio${modo === m.key ? ' pf2-radio--on' : ''}`}>
+                {modo === m.key && <div className="pf2-radio-dot" />}
               </div>
-              <span className="pf2-opt-label">Recebi sinal parcial</span>
-              {pedido.valor_sinal > 0 && !showSinal && (
-                <span className="pf2-opt-badge" style={{ color: '#3b82f6' }}>{formatMoney(pedido.valor_sinal)}</span>
-              )}
+              <span>{m.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Detalhe: Sinal */}
+        {modo === 'sinal' && (
+          <div className="pf2-optional-body" style={{ borderTop: '1px solid var(--border,#ECC2D0)' }}>
+            <div className="pf2-row">
+              <div className="pf2-field">
+                <label className="pf2-label">Valor do sinal</label>
+                <MoneyInput
+                  value={pedido.valor_sinal}
+                  onChange={v => {
+                    set('valor_sinal', v)
+                    set('valor_recebido', v)
+                  }}
+                />
+              </div>
+              <div className="pf2-field">
+                <label className="pf2-label">Data do sinal</label>
+                <input className="pf2-input" type="date" value={pedido.data_sinal} onChange={e => set('data_sinal', e.target.value)} />
+              </div>
             </div>
-            {showSinal && (
-              <div className="pf2-optional-body">
-                <div className="pf2-row">
-                  <div className="pf2-field">
-                    <label className="pf2-label">Valor do sinal</label>
-                    <MoneyInput
-                      value={pedido.valor_sinal}
-                      onChange={v => {
-                        set('valor_sinal', v)
-                        // valor_recebido = sinal (campo único de controle)
-                        set('valor_recebido', v)
-                      }}
-                    />
-                  </div>
-                  <div className="pf2-field">
-                    <label className="pf2-label">Data do sinal</label>
-                    <input className="pf2-input" type="date" value={pedido.data_sinal} onChange={e => set('data_sinal', e.target.value)} />
-                  </div>
-                </div>
-                {restante > 0 && (
-                  <div className="pf2-receb-restante">
-                    <span>Falta receber na entrega</span>
-                    <span style={{ color: '#dc2626', fontWeight: 700 }}>{formatMoney(restante)}</span>
-                  </div>
-                )}
+            {pedido.valor_sinal > 0 && restante > 0 && (
+              <div className="pf2-receb-restante">
+                <span>Falta receber na entrega</span>
+                <span style={{ color: '#dc2626', fontWeight: 700 }}>{formatMoney(restante)}</span>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
 
@@ -251,9 +246,50 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
       </div>
 
       <style>{`
-        .pf2-receb-header {
+        .pf2-receb-opcoes {
+          display: flex; flex-direction: column;
+          padding: 0.5rem 1rem 0.75rem;
+          gap: 0.5rem;
+        }
+        .pf2-receb-opcao {
+          display: flex; align-items: center; gap: 0.75rem;
+          padding: 0.75rem 1rem;
+          border: 1.5px solid var(--border,#ECC2D0);
+          border-radius: 12px;
+          background: var(--bg-body,#FAFAFA);
+          font-size: 0.88rem; font-weight: 500;
+          color: var(--text-secondary,#6E3548);
+          font-family: 'Geist',sans-serif;
+          cursor: pointer; transition: all 0.15s;
+          text-align: left; width: 100%;
+        }
+        .pf2-receb-opcao:hover { border-color: var(--primary,#986274); }
+        .pf2-receb-opcao--on {
+          border-color: var(--primary,#986274);
+          background: var(--primary-light,#F7EEF1);
+          color: var(--text-title,#431524);
+          font-weight: 600;
+        }
+        .pf2-radio {
+          width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+          border: 2px solid var(--border,#ECC2D0);
+          display: flex; align-items: center; justify-content: center;
+          transition: all 0.15s;
+        }
+        .pf2-radio--on { border-color: var(--primary,#986274); }
+        .pf2-radio-dot {
+          width: 8px; height: 8px; border-radius: 50%;
+          background: var(--primary,#986274);
+        }
+        .pf2-receb-restante {
+          display: flex; justify-content: space-between;
+          padding: 0.5rem 0; margin-top: 0.25rem;
+          font-size: 0.85rem; color: var(--text-secondary,#6E3548);
+          border-top: 1px dashed var(--border,#ECC2D0);
+        }
+        .pf2-card-head-row {
           display: flex; align-items: center; justify-content: space-between;
-          padding: 0.85rem 1rem 0.5rem;
+          padding: 0.85rem 1rem 0; margin-bottom: 0;
         }
         .pf2-status-pill {
           display: inline-flex; align-items: center; gap: 5px;
@@ -261,35 +297,6 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
           padding: 4px 10px; border-radius: 999px;
         }
         .pf2-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-        .pf2-integral-btn {
-          display: flex; align-items: center; justify-content: center; gap: 8px;
-          width: calc(100% - 2rem); margin: 0 1rem 0.5rem;
-          padding: 0.75rem 1rem;
-          background: var(--bg-card,#fff);
-          border: 1.5px solid var(--border,#ECC2D0);
-          border-radius: 12px;
-          font-size: 0.85rem; font-weight: 600;
-          color: var(--text-secondary,#6E3548);
-          font-family: 'Geist', sans-serif; cursor: pointer; transition: all 0.15s;
-        }
-        .pf2-integral-btn:hover { border-color: var(--primary,#986274); color: var(--primary,#986274); background: var(--primary-light,#F7EEF1); }
-        .pf2-pago-banner {
-          display: flex; align-items: center; justify-content: space-between;
-          margin: 0 1rem 0.5rem; padding: 0.6rem 1rem;
-          background: #f0fdf4; border: 1.5px solid #22c55e; border-radius: 12px;
-          font-size: 0.82rem; font-weight: 600; color: #16a34a;
-          white-space: nowrap; gap: 8px;
-        }
-        .pf2-desfazer {
-          background: none; border: none; font-size: 0.75rem; color: #6b7280;
-          cursor: pointer; font-family: 'Geist', sans-serif; text-decoration: underline;
-        }
-        .pf2-receb-restante {
-          display: flex; justify-content: space-between;
-          padding: 0.5rem 0; margin-top: 0.25rem;
-          font-size: 0.85rem; color: var(--text-secondary);
-          border-top: 1px dashed var(--border, #ECC2D0);
-        }
       `}</style>
     </div>
   )
