@@ -685,14 +685,14 @@ export default function Pedidos() {
         /* Desktop: tabela limpa ── */
         @media (min-width: 768px) {
           /* Wrapper da lista vira um bloco com borda e radius */
-          .ped-dt-wrapper { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); border-radius: 14px; overflow: hidden; max-width: 72%; }
+          .ped-dt-wrapper { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); border-radius: 14px; overflow: hidden; width: 100%; }
 
           /* Cabeçalho */
           .ped-dt-header {
             display: grid;
-            grid-template-columns: 52px 140px 160px 120px 96px 100px;
+            grid-template-columns: 70px 1.2fr 1.6fr 1.1fr 110px 130px;
             align-items: center;
-            padding: 0.5rem 0.9rem;
+            padding: 0.55rem 1.25rem;
             background: var(--bg-subtle,#F7EEF1);
             border-bottom: 1.5px solid var(--border,#ECC2D0);
             font-size: 0.65rem;
@@ -700,16 +700,16 @@ export default function Pedidos() {
             text-transform: uppercase;
             letter-spacing: 0.06em;
             color: var(--text-muted,#C39EAA);
-            gap: 10px;
+            gap: 16px;
           }
 
           /* Cada linha de pedido no desktop */
           .ped-dt-row {
             display: grid;
-            grid-template-columns: 52px 140px 160px 120px 96px 100px;
+            grid-template-columns: 70px 1.2fr 1.6fr 1.1fr 110px 130px;
             align-items: center;
-            padding: 0.65rem 0.9rem;
-            gap: 10px;
+            padding: 0.8rem 1.25rem;
+            gap: 16px;
             border-bottom: 1px solid var(--border,#ECC2D0);
             cursor: pointer;
             transition: background 0.12s;
