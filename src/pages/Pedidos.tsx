@@ -718,15 +718,16 @@ export default function Pedidos() {
           }
           .ped-dt-row:last-child { border-bottom: none; }
           .ped-dt-row:hover { background: var(--bg-subtle,#F7EEF1); }
+          .ped-dt-row > * { min-height: 54px; }
 
           /* Colunas individuais */
           .ped-dt-col { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
           .ped-dt-col--num { gap: 2px; }
-          .ped-dt-col--cliente { flex-direction: row; align-items: center; gap: 10px; }
+          .ped-dt-col--cliente { flex-direction: row; align-items: center; gap: 10px; width: 100%; }
           .ped-dt-col--produto { flex-direction: row; align-items: center; gap: 0; }
           .ped-dt-col--entrega { gap: 2px; }
           .ped-dt-col--status { align-items: flex-start; }
-          .ped-dt-col--valor { align-items: flex-end; }
+          .ped-dt-cliente-info { flex: 1; min-width: 0; }
 
           /* Número do pedido */
           .ped-dt-num { font-size: 0.9rem; font-weight: 700; color: var(--primary,#986274); }
