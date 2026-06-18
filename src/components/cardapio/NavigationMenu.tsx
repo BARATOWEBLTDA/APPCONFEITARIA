@@ -664,14 +664,29 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
             </div>
           )}
 
-          <div className="fixed bottom-0 left-0 right-0 z-30 border-t" style={{background:accent,paddingBottom:'env(safe-area-inset-bottom)'}}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-around',padding:'8px 0 10px'}}>
-              {tabs.map(({id,label,Icon}) => {
+          <div className="fixed bottom-0 left-0 right-0 z-30" style={{background: accent, paddingBottom:'env(safe-area-inset-bottom)', boxShadow:'0 -2px 12px rgba(0,0,0,0.15)'}}>
+            <div style={{display:'flex', alignItems:'center', justifyContent:'space-around', padding:'8px 8px 10px'}}>
+              {[
+                { id: 'inicio',   label: 'Início',  icon: <Home size={22} /> },
+                { id: 'pedidos',  label: 'Pedidos', icon: <ClipboardList size={22} /> },
+                { id: 'perfil',   label: 'Perfil',  icon: <User size={22} /> },
+              ].map(({ id, label, icon }) => {
                 const active = activeTab === id
                 return (
-                  <button key={id} onClick={() => setActiveTab(id)} style={{display:'flex',flexDirection:'column',alignItems:'center',gap:'3px',background:'none',border:'none',cursor:'pointer',padding:'4px 16px'}}>
-                    <Icon size={22} color={active ? 'white' : 'rgba(255,255,255,0.55)'} />
-                    <span style={{fontSize:'11px',fontWeight:active?700:400,color:active?'white':'rgba(255,255,255,0.55)'}}>{label}</span>
+                  <button
+                    key={id}
+                    onClick={() => setActiveTab(id)}
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
+                      border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                      padding: '6px 28px', borderRadius: '8px',
+                      background: active ? '#ffffff' : 'transparent',
+                      color: active ? accent : 'rgba(255,255,255,0.75)',
+                      transition: 'background 0.15s, color 0.15s',
+                    }}
+                  >
+                    {icon}
+                    <span style={{ fontSize: '11px', fontWeight: active ? 700 : 500 }}>{label}</span>
                   </button>
                 )
               })}
