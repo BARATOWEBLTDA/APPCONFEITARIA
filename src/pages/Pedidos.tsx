@@ -1024,6 +1024,11 @@ export default function Pedidos() {
 
         .fd-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; animation: hsFadeIn 0.2s ease; }
         .fd-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card,#fff); border-radius: 20px 20px 0 0; z-index: 101; max-height: 85vh; display: flex; flex-direction: column; animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
+        @media (min-width: 768px) {
+          .fd-drawer { top: 0; bottom: 0; left: auto; right: 0; width: 320px; border-radius: 0; max-height: 100vh; animation: hsSlideRight 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: -4px 0 32px rgba(0,0,0,0.15); }
+          .fd-handle { display: none; }
+        }
+        @keyframes hsSlideRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .fd-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border,#ECC2D0); margin: 10px auto 0; flex-shrink: 0; }
         .fd-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 10px; border-bottom: 1px solid var(--border,#ECC2D0); flex-shrink: 0; }
         .fd-title { font-size: 1rem; font-weight: 700; color: var(--text-title,#431524); font-family: 'Geist',sans-serif; }
