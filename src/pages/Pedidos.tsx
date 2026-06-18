@@ -157,10 +157,11 @@ function MapaModal({ endereco, onClose }: { endereco: string; onClose: () => voi
 }
 
 // ── Card de pedido (lista) ──────────────────────────────────────────────────
-function PedidoCard({ p, isMobile, onAbrirMapa }: {
+function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
   p: Pedido
   isMobile: boolean
   onAbrirMapa: (endereco: string) => void
+  onVerPedido: (p: Pedido) => void
 }) {
   const navigate = useNavigate()
   const atrasado = isAtrasado(p)
@@ -338,7 +339,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa }: {
 
           {/* Ver Pedido */}
           <div className="ped-dt-col ped-dt-col--ver">
-            <button type="button" className="ped-dt-ver-btn" onClick={e => { e.stopPropagation(); navigate(`/pedidos/${p.id}`) }}>
+            <button type="button" className="ped-dt-ver-btn" onClick={e => { e.stopPropagation(); onVerPedido(p) }}>
               Ver pedido
             </button>
           </div>
@@ -352,6 +353,131 @@ function PedidoCard({ p, isMobile, onAbrirMapa }: {
         </div>
       )}
     </div>
+  )
+}
+
+// ── Modal de detalhes do pedido ──────────────────────────────────────────────
+function ModalPedido({ p, onClose, onEditar }: { p: Pedido; onClose: () => void; onEditar: () => void }) {
+  const grupo = STATUS_GROUP_CONFIG[getStatusGroup(p.status)]
+  const itens = p.pedido_itens || []
+  const valorPendente = Math.max(0, (p.valor_total || 0) - (p.valor_recebido || 0))
+  const pagamentoCor = p.status_pagamento === 'pago' ? '#16a34a' : p.status_pagamento === 'parcial' ? '#d97706' : '#dc2626'
+  const pagamentoLabel = p.status_pagamento === 'pago'
+    ? `${PAG_CONFIG[p.forma_pagamento] || 'PIX'} · Pago`
+    : `${PAG_CONFIG[p.forma_pagamento] || 'PIX'} · ${p.status_pagamento === 'parcial' ? 'Parcial' : 'Pendente'}${valorPendente > 0 ? ` · ${formatMoney(valorPendente)}` : ''}`
+
+  const enderecoCompleto = [p.endereco_rua && p.endereco_numero ? `${p.endereco_rua}, ${p.endereco_numero}` : p.endereco_rua, p.endereco_complemento, p.endereco_bairro, p.endereco_cidade].filter(Boolean).join(', ')
+
+  return (
+    <>
+      <div className="mp-overlay" onClick={onClose} />
+      <div className="mp-modal" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="mp-header">
+          <div>
+            <span className="mp-numero">Pedido #{p.numero || '—'}</span>
+            {p.origem === 'cardapio' && <span className="ped-card-origem" style={{ marginLeft: 8 }}>via Cardápio</span>}
+            <p className="mp-criado">{p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' - ' + new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : ''}</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
+              <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
+              {grupo.label}
+            </span>
+            <button className="mp-fechar" onClick={onClose}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div className="mp-body">
+          {/* Grid 2 colunas */}
+          <div className="mp-grid">
+            {/* Cliente */}
+            <div className="mp-section">
+              <p className="mp-label">Cliente</p>
+              <p className="mp-value">{p.cliente_nome || '—'}</p>
+              {p.cliente_telefone && <p className="mp-sub">{p.cliente_telefone}</p>}
+            </div>
+
+            {/* Entrega */}
+            <div className="mp-section">
+              <p className="mp-label">Entrega</p>
+              <p className="mp-value">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</p>
+              {p.data_entrega && <p className="mp-sub">{formatDate(p.data_entrega)}{p.horario_entrega ? ` às ${p.horario_entrega.slice(0,5)}` : ''}</p>}
+              {enderecoCompleto && <p className="mp-sub" style={{ marginTop: 4 }}>{enderecoCompleto}</p>}
+            </div>
+
+            {/* Pagamento */}
+            <div className="mp-section">
+              <p className="mp-label">Pagamento</p>
+              <p className="mp-value" style={{ color: pagamentoCor }}>{pagamentoLabel}</p>
+              <p className="mp-value" style={{ marginTop: 4 }}>{formatMoney(p.valor_total)}</p>
+            </div>
+
+            {/* Personalização */}
+            {(p.personalizacao_tema || p.personalizacao_nome || p.personalizacao_idade || p.personalizacao_cor || p.personalizacao_obs) && (
+              <div className="mp-section">
+                <p className="mp-label">Personalização</p>
+                {p.personalizacao_tema && <p className="mp-sub">Tema: {p.personalizacao_tema}</p>}
+                {p.personalizacao_nome && <p className="mp-sub">Nome: {p.personalizacao_nome}</p>}
+                {p.personalizacao_idade && <p className="mp-sub">Idade: {p.personalizacao_idade}</p>}
+                {p.personalizacao_cor && <p className="mp-sub">Cor: {p.personalizacao_cor}</p>}
+                {p.personalizacao_obs && <p className="mp-sub">Decoração: {p.personalizacao_obs}</p>}
+              </div>
+            )}
+          </div>
+
+          {/* Observações */}
+          {p.observacoes && (
+            <div className="mp-section" style={{ marginTop: 16 }}>
+              <p className="mp-label">Observações</p>
+              <p className="mp-sub">{p.observacoes}</p>
+            </div>
+          )}
+
+          {/* Itens */}
+          {itens.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <p className="mp-label">Itens do pedido</p>
+              <div className="mp-itens">
+                {itens.map((item, i) => (
+                  <div key={i} className="mp-item">
+                    <div className="mp-item-img">
+                      {item.produtos?.imagem_url ? <img src={item.produtos.imagem_url} alt={item.nome_produto} /> : <span>🎂</span>}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p className="mp-item-nome">{item.nome_produto}</p>
+                      <p className="mp-item-qtd">{formatItemQuantidade(item.quantidade, item.produtos?.forma_venda)} · {formatMoney(item.valor_unitario)}</p>
+                      {item.personalizacoes?.massa && <p className="mp-item-extra">Massa: {item.personalizacoes.massa}</p>}
+                      {item.personalizacoes?.recheio && <p className="mp-item-extra">Recheio: {item.personalizacoes.recheio}</p>}
+                      {item.personalizacoes?.cobertura && <p className="mp-item-extra">Cobertura: {item.personalizacoes.cobertura}</p>}
+                      {item.observacoes && <p className="mp-item-extra">Obs: {item.observacoes}</p>}
+                    </div>
+                    <p className="mp-item-total">{formatMoney(item.quantidade * item.valor_unitario)}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="mp-footer">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary,#6E3548)' }}>Total:</span>
+            <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-title,#431524)' }}>{formatMoney(p.valor_total)}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button className="mp-btn-fechar" onClick={onClose}>Fechar</button>
+            <button className="mp-btn-editar" onClick={onEditar}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Editar pedido
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
   )
 }
 
@@ -475,6 +601,7 @@ export default function Pedidos() {
   const [dataInicio, setDataInicio] = useState('')
   const [dataFim, setDataFim] = useState('')
   const [mapaAberto, setMapaAberto] = useState<string | null>(null)
+  const [modalPedido, setModalPedido] = useState<Pedido | null>(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => { if (user) fetchPedidos(user.id) })
@@ -631,7 +758,7 @@ export default function Pedidos() {
                 </div>
               )}
               {pedidosFiltrados.map(p => (
-                <PedidoCard key={p.id} p={p} isMobile={isMobile} onAbrirMapa={setMapaAberto} />
+                <PedidoCard key={p.id} p={p} isMobile={isMobile} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} />
               ))}
             </div>
           )}
@@ -649,6 +776,7 @@ export default function Pedidos() {
       )}
 
       {mapaAberto && <MapaModal endereco={mapaAberto} onClose={() => setMapaAberto(null)} />}
+      {modalPedido && <ModalPedido p={modalPedido} onClose={() => setModalPedido(null)} onEditar={() => { setModalPedido(null); navigate(`/pedidos/${modalPedido.id}`) }} />}
 
       <style>{`
         @keyframes pedSpin { to { transform: rotate(360deg); } }
@@ -687,7 +815,34 @@ export default function Pedidos() {
         .ped-card-rodape-direita { text-align: right; }
         .ped-card-rodape-direita .ped-card-valor { margin: 4px 0 0; }
 
-        /* Desktop: tabela limpa ── */
+        /* ── Modal de pedido ── */
+        .mp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; animation: hsFadeIn 0.2s ease; }
+        .mp-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg-card,#fff); border-radius: 16px; z-index: 201; width: 560px; max-width: 95vw; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: hsFadeIn 0.2s ease; font-family: inherit; }
+        .mp-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 1.25rem 1.5rem 1rem; border-bottom: 1.5px solid var(--border,#ECC2D0); flex-shrink: 0; }
+        .mp-numero { font-size: 1.1rem; font-weight: 800; color: var(--text-title,#431524); }
+        .mp-criado { font-size: 0.72rem; color: var(--text-muted,#C39EAA); margin: 2px 0 0; }
+        .mp-fechar { background: none; border: none; cursor: pointer; color: var(--text-muted,#C39EAA); display: flex; padding: 4px; border-radius: 6px; }
+        .mp-fechar:hover { background: var(--bg-subtle,#F7EEF1); color: var(--text-title,#431524); }
+        .mp-body { overflow-y: auto; flex: 1; padding: 1.25rem 1.5rem; }
+        .mp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .mp-section { display: flex; flex-direction: column; gap: 2px; }
+        .mp-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted,#C39EAA); margin: 0 0 4px; }
+        .mp-value { font-size: 0.9rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
+        .mp-sub { font-size: 0.82rem; color: var(--text-secondary,#6E3548); margin: 0; }
+        .mp-itens { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+        .mp-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--bg-subtle,#F7EEF1); border-radius: 10px; }
+        .mp-item-img { width: 42px; height: 42px; border-radius: 8px; background: var(--bg-card,#fff); border: 1px solid var(--border,#ECC2D0); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+        .mp-item-img img { width: 100%; height: 100%; object-fit: cover; }
+        .mp-item-nome { font-size: 0.88rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
+        .mp-item-qtd { font-size: 0.75rem; color: var(--text-secondary,#6E3548); margin: 2px 0 0; }
+        .mp-item-extra { font-size: 0.72rem; color: var(--text-muted,#C39EAA); margin: 1px 0 0; }
+        .mp-item-total { font-size: 0.88rem; font-weight: 700; color: var(--text-title,#431524); flex-shrink: 0; }
+        .mp-footer { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-top: 1.5px solid var(--border,#ECC2D0); flex-shrink: 0; }
+        .mp-btn-fechar { background: var(--bg-subtle,#F7EEF1); border: none; color: var(--text-secondary,#6E3548); border-radius: 10px; padding: 0.6rem 1.25rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .mp-btn-editar { display: flex; align-items: center; gap: 6px; background: var(--primary,#986274); border: none; color: white; border-radius: 10px; padding: 0.6rem 1.25rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .mp-btn-editar:hover { background: var(--primary-dark,#6E3548); }
+
+
         @media (min-width: 768px) {
           /* Wrapper da lista vira um bloco com borda e radius */
           .ped-dt-wrapper { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); border-radius: 14px; overflow: hidden; width: 100%; }
