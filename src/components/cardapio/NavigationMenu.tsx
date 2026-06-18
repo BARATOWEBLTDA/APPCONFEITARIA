@@ -385,6 +385,70 @@ function CartContent({
               onClick={() => {
                 if (!nome.trim()) return alert('Preencha seu nome')
                 if (!telefone.trim() || telefone.replace(/\D/g,'').length < 10) return alert('Preencha seu WhatsApp')
+                setStep('entrega')
+              }}
+              style={{width:'100%',padding:'15px',background:accent,color:'white',border:'none',borderRadius:'14px',fontWeight:800,fontSize:'16px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit'}}>
+              Continuar <ChevronRight size={18} />
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* ═══ ENTREGA STEP ═══ */}
+      {step === 'entrega' && (
+        <>
+          <div className="ck-scroll" style={{flex:1,overflowY:'auto',padding:'20px',display:'flex',flexDirection:'column',gap:'16px'}}>
+            {/* Data e horário */}
+            {config.aceita_agendamento && (
+              <div>
+                <SectionHeader title="Data e horário" subtitle={`Agende com ${config.prazo_minimo_horas}h de antecedência`} />
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
+                  <div>
+                    <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Data</label>
+                    <input type="date" value={dataEntrega} min={minDate} onChange={e => setDataEntrega(e.target.value)}
+                      style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                      onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
+                  </div>
+                  <div>
+                    <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Horário</label>
+                    <input type="time" value={horaEntrega} onChange={e => setHoraEntrega(e.target.value)}
+                      style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                      onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Forma de entrega */}
+            <div>
+              <SectionHeader title="Forma de entrega" subtitle="Como deseja receber seu pedido?" />
+              <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
+                <OptionButton selected={formaEntrega==='retirada'} label="Retirar no local" detail="Grátis" accent={accent} onClick={() => { setFormaEntrega('retirada'); setBairroSelecionado('') }} />
+                <OptionButton selected={formaEntrega==='entrega_propria'} label="Entrega" detail={config.valor_entrega_propria > 0 ? formatCurrency(config.valor_entrega_propria) : 'Grátis'} accent={accent} onClick={() => { setFormaEntrega('entrega_propria'); setBairroSelecionado('') }} />
+              </div>
+              {formaEntrega === 'entrega_propria' && config.entrega_por_bairro.length > 0 && (
+                <div style={{marginTop:'10px'}}>
+                  <select value={bairroSelecionado} onChange={e => setBairroSelecionado(e.target.value)}
+                    style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',background:'#fff',fontFamily:'inherit'}}>
+                    <option value="">Escolha o bairro</option>
+                    {config.entrega_por_bairro.map((b: any) => <option key={b.bairro} value={b.bairro}>{b.bairro} — {formatCurrency(b.valor)}</option>)}
+                  </select>
+                </div>
+              )}
+              {formaEntrega === 'retirada' && config.endereco_retirada && (
+                <div style={{marginTop:'10px',padding:'10px 14px',background:'#f9fafb',borderRadius:'10px'}}>
+                  <p style={{margin:0,fontSize:'13px',color:'#3e3e3e',fontWeight:600}}>{config.endereco_retirada}</p>
+                  {config.horario_retirada && <p style={{margin:'2px 0 0',fontSize:'12px',color:'#717171'}}>{config.horario_retirada}</p>}
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{padding:'14px 20px',borderTop:'1px solid #f0f0f0'}}>
+            <button
+              onClick={() => {
+                if (config.aceita_agendamento && !dataEntrega) return alert('Selecione a data')
+                if (config.aceita_agendamento && !horaEntrega) return alert('Selecione o horário')
+                if (!formaEntrega) return alert('Selecione a forma de entrega')
                 setStep('checkout')
               }}
               style={{width:'100%',padding:'15px',background:accent,color:'white',border:'none',borderRadius:'14px',fontWeight:800,fontSize:'16px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit'}}>
@@ -394,161 +458,58 @@ function CartContent({
         </>
       )}
 
-      {/* ═══ CHECKOUT STEP ═══ */}
+      {/* ═══ CHECKOUT STEP (pagamento + obs) ═══ */}
       {step === 'checkout' && (
         <>
-          <div className="ck-scroll" style={{flex:1,overflowY:'auto'}}>
-
-            {/* 1. Data e horário */}
-            {config.aceita_agendamento && (
-              <>
-                <div style={{padding:'16px 20px'}}>
-                  <SectionHeader title="Data e horário" subtitle={`Agende com ${config.prazo_minimo_horas}h de antecedência`} />
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
-                    <div>
-                      <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Data da entrega</label>
-                      <input type="date" value={dataEntrega} min={minDate} onChange={e => setDataEntrega(e.target.value)}
-                        style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
-                        onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
-                    </div>
-                    <div>
-                      <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Horário</label>
-                      <input type="time" value={horaEntrega} onChange={e => setHoraEntrega(e.target.value)}
-                        style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
-                        onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
-                    </div>
-                  </div>
-                </div>
-                <Divider />
-              </>
-            )}
-
-            {/* 3. Forma de entrega — só Retirada ou Entrega */}
-            <div style={{padding:'16px 20px'}}>
-              <SectionHeader title="Forma de entrega" subtitle="Como deseja receber seu pedido?" />
-              <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
-                <OptionButton
-                  selected={formaEntrega === 'retirada'}
-                  label="Retirar no local"
-                  detail="Grátis"
-                  accent={accent}
-                  onClick={() => { setFormaEntrega('retirada'); setBairroSelecionado('') }}
-                />
-                <OptionButton
-                  selected={formaEntrega === 'entrega_propria'}
-                  label="Entrega"
-                  detail={config.valor_entrega_propria > 0 ? formatCurrency(config.valor_entrega_propria) : 'Grátis'}
-                  accent={accent}
-                  onClick={() => { setFormaEntrega('entrega_propria'); setBairroSelecionado('') }}
-                />
-              </div>
-
-              {formaEntrega === 'entrega_propria' && config.entrega_por_bairro.length > 0 && (
-                <div style={{marginTop:'10px'}}>
-                  <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Selecione seu bairro</label>
-                  <select value={bairroSelecionado} onChange={e => setBairroSelecionado(e.target.value)}
-                    style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',background:'#fff',fontFamily:'inherit'}}>
-                    <option value="">Escolha o bairro</option>
-                    {config.entrega_por_bairro.map((b: any) => (
-                      <option key={b.bairro} value={b.bairro}>{b.bairro} — {formatCurrency(b.valor)}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {formaEntrega === 'retirada' && config.endereco_retirada && (
-                <div style={{marginTop:'10px',padding:'10px 14px',background:'#f9fafb',borderRadius:'10px',display:'flex',alignItems:'flex-start',gap:'8px'}}>
-                  <MapPin size={14} color="#717171" style={{marginTop:'2px',flexShrink:0}} />
-                  <div>
-                    <p style={{margin:0,fontSize:'13px',color:'#3e3e3e',fontWeight:600}}>Endereço para retirada</p>
-                    <p style={{margin:'2px 0 0',fontSize:'12px',color:'#717171'}}>{config.endereco_retirada}</p>
-                    {config.horario_retirada && <p style={{margin:'2px 0 0',fontSize:'12px',color:'#717171'}}>🕒 {config.horario_retirada}</p>}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <Divider />
-
-            {/* 4. Pagamento — Cartão ou PIX/Dinheiro */}
-            <div style={{padding:'16px 20px'}}>
+          <div className="ck-scroll" style={{flex:1,overflowY:'auto',padding:'20px',display:'flex',flexDirection:'column',gap:'16px'}}>
+            {/* Pagamento */}
+            <div>
               <SectionHeader title="Forma de pagamento" />
               <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
-                <OptionButton
-                  selected={formaPagamento === 'credito' || formaPagamento === 'debito'}
-                  label="Cartão de Débito / Crédito"
-                  accent={accent}
-                  onClick={() => setFormaPagamento('credito')}
-                />
-                <OptionButton
-                  selected={formaPagamento === 'pix' || formaPagamento === 'dinheiro'}
-                  label="PIX / Dinheiro"
-                  accent={accent}
-                  onClick={() => setFormaPagamento('pix')}
-                />
+                <OptionButton selected={formaPagamento==='credito'||formaPagamento==='debito'} label="Cartão de Débito / Crédito" accent={accent} onClick={() => setFormaPagamento('credito')} />
+                <OptionButton selected={formaPagamento==='pix'||formaPagamento==='dinheiro'} label="PIX / Dinheiro" accent={accent} onClick={() => setFormaPagamento('pix')} />
               </div>
-
-              {(formaPagamento === 'dinheiro' || formaPagamento === 'pix') && config.exibir_campo_troco && (
-                <div style={{marginTop:'10px'}}>
-                  <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>💰 Precisa de troco para quanto?</label>
-                  <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-                    <span style={{fontSize:'14px',color:'#717171',fontWeight:600}}>R$</span>
-                    <input value={trocoParaStr} onChange={e => setTrocoParaStr(e.target.value.replace(/[^0-9.,]/g,''))}
-                      placeholder="0,00" inputMode="decimal"
-                      style={{flex:1,padding:'12px 14px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',fontFamily:'inherit'}}
-                      onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
-                  </div>
+              {(formaPagamento==='dinheiro'||formaPagamento==='pix') && config.exibir_campo_troco && (
+                <div style={{marginTop:'10px',display:'flex',alignItems:'center',gap:'8px'}}>
+                  <span style={{fontSize:'14px',color:'#717171',fontWeight:600}}>R$</span>
+                  <input value={trocoParaStr} onChange={e => setTrocoParaStr(e.target.value.replace(/[^0-9.,]/g,''))}
+                    placeholder="Troco para quanto?" inputMode="decimal"
+                    style={{flex:1,padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',fontFamily:'inherit'}}
+                    onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
                 </div>
               )}
             </div>
 
-            <Divider />
-
-            {/* 5. Cupom */}
+            {/* Cupom */}
             {config.cupons_desconto.length > 0 && (
-              <>
-                <div style={{padding:'16px 20px'}}>
-                  <SectionHeader title="Cupom de desconto" />
-                  {cupomAplicado ? (
-                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 14px',background:'#f0fdf4',border:'1.5px solid #bbf7d0',borderRadius:'10px'}}>
-                      <div>
-                        <span style={{fontWeight:700,fontSize:'14px',color:'#16a34a'}}>{cupomAplicado.codigo}</span>
-                        <span style={{fontSize:'13px',color:'#22c55e',marginLeft:'8px'}}>
-                          {cupomAplicado.tipo === 'percentual' ? `-${cupomAplicado.valor}%` : `-${formatCurrency(cupomAplicado.valor)}`}
-                        </span>
-                      </div>
-                      <button onClick={removerCupom} style={{background:'none',border:'none',cursor:'pointer',color:'#ef4444',fontSize:'13px',fontWeight:600}}>Remover</button>
-                    </div>
-                  ) : (
-                    <div style={{display:'flex',gap:'8px'}}>
-                      <input
-                        value={cupomDigitado} onChange={e => { setCupomDigitado(e.target.value.toUpperCase()); setCupomErro('') }}
-                        placeholder="Digite o código"
-                        style={{flex:1,padding:'12px 14px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',textTransform:'uppercase',fontFamily:'inherit'}}
-                        onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
-                      <button onClick={aplicarCupom} style={{padding:'12px 20px',background:accent,color:'white',border:'none',borderRadius:'10px',fontWeight:700,fontSize:'14px',cursor:'pointer',whiteSpace:'nowrap',fontFamily:'inherit'}}>
-                        Aplicar
-                      </button>
-                    </div>
-                  )}
-                  {cupomErro && <p style={{margin:'6px 0 0',fontSize:'12px',color:'#ef4444'}}>{cupomErro}</p>}
-                </div>
-                <Divider />
-              </>
+              <div>
+                <SectionHeader title="Cupom de desconto" />
+                {cupomAplicado ? (
+                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 14px',background:'#f0fdf4',border:'1.5px solid #bbf7d0',borderRadius:'10px'}}>
+                    <span style={{fontWeight:700,fontSize:'14px',color:'#16a34a'}}>{cupomAplicado.codigo} — {cupomAplicado.tipo==='percentual'?`-${cupomAplicado.valor}%`:`-${formatCurrency(cupomAplicado.valor)}`}</span>
+                    <button onClick={removerCupom} style={{background:'none',border:'none',cursor:'pointer',color:'#ef4444',fontSize:'13px',fontWeight:600}}>Remover</button>
+                  </div>
+                ) : (
+                  <div style={{display:'flex',gap:'8px'}}>
+                    <input value={cupomDigitado} onChange={e=>{setCupomDigitado(e.target.value.toUpperCase());setCupomErro('')}} placeholder="Código do cupom"
+                      style={{flex:1,padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',textTransform:'uppercase',fontFamily:'inherit'}}
+                      onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
+                    <button onClick={aplicarCupom} style={{padding:'12px 20px',background:accent,color:'white',border:'none',borderRadius:'10px',fontWeight:700,fontSize:'14px',cursor:'pointer',fontFamily:'inherit'}}>Aplicar</button>
+                  </div>
+                )}
+                {cupomErro && <p style={{margin:'6px 0 0',fontSize:'12px',color:'#ef4444'}}>{cupomErro}</p>}
+              </div>
             )}
 
-            {/* 6. Observações — por último */}
-            <div style={{padding:'16px 20px'}}>
+            {/* Observações */}
+            <div>
               <SectionHeader title="Observações" subtitle="Personalização, restrições, recados..." />
-              <textarea
-                value={observacoes} onChange={e => setObservacoes(e.target.value)}
-                placeholder={'Ex: Escrever "Parabéns Ana" no bolo\nSem morango\nEntregar após 18h'}
+              <textarea value={observacoes} onChange={e => setObservacoes(e.target.value)}
+                placeholder={'Ex: Escrever "Parabéns Ana" no bolo\nSem morango'}
                 rows={3}
-                style={{width:'100%',padding:'12px 14px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',resize:'none',boxSizing:'border-box',fontFamily:'inherit',lineHeight:'1.5'}}
+                style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',resize:'none',boxSizing:'border-box',fontFamily:'inherit',lineHeight:'1.5'}}
                 onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
             </div>
-
-            <div style={{height:'20px'}} />
           </div>
 
           {/* Footer checkout */}
@@ -602,7 +563,7 @@ function CartContent({
 export function NavigationMenu({ corBotao }: { corBotao?: string }) {
   const { items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart } = useCart()
   const [isOpen, setIsOpen] = useState(false)
-  const [step, setStep] = useState<'cart' | 'dados' | 'checkout'>('cart')
+  const [step, setStep] = useState<'cart' | 'dados' | 'entrega' | 'checkout'>('cart')
   const [activeTab, setActiveTab] = useState('inicio')
   const isMobile = useIsMobile()
 
@@ -747,8 +708,8 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                 </div>
                 <div style={{padding:'10px 20px 12px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                   <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
-                    {(step === 'dados' || step === 'checkout') && (
-                      <button onClick={() => step === 'checkout' ? setStep('dados') : setStep('cart')} style={{background:'none',border:'none',cursor:'pointer',padding:'4px',display:'flex'}}>
+                    {(step === 'dados' || step === 'entrega' || step === 'checkout') && (
+                      <button onClick={() => step === 'checkout' ? setStep('entrega') : step === 'entrega' ? setStep('dados') : setStep('cart')} style={{background:'none',border:'none',cursor:'pointer',padding:'4px',display:'flex'}}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
                       </button>
                     )}
@@ -757,10 +718,10 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                     </div>
                     <div>
                       <h3 style={{margin:0,fontWeight:800,fontSize:'18px',color:'#3e3e3e'}}>
-                        {step === 'cart' ? 'Sacola' : step === 'dados' ? 'Seus dados' : 'Finalizar pedido'}
+                        {step === 'cart' ? 'Sacola' : step === 'dados' ? 'Seus dados' : step === 'entrega' ? 'Entrega' : 'Pagamento'}
                       </h3>
                       <p style={{margin:0,fontSize:'13px',color:'#a0a0a0'}}>
-                        {step === 'cart' ? `${count} ${count===1?'item':'itens'}` : step === 'dados' ? 'Passo 1 de 2' : 'Passo 2 de 2'}
+                        {step === 'cart' ? `${count} ${count===1?'item':'itens'}` : step === 'dados' ? 'Passo 1 de 3' : step === 'entrega' ? 'Passo 2 de 3' : 'Passo 3 de 3'}
                       </p>
                     </div>
                   </div>
@@ -768,9 +729,9 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                     <X size={18} color="#717171" />
                   </button>
                 </div>
-                {(step === 'dados' || step === 'checkout') && (
+                {(step === 'dados' || step === 'entrega' || step === 'checkout') && (
                   <div style={{margin:'0 20px 12px',height:'3px',background:'#f0f0f0',borderRadius:'99px'}}>
-                    <div style={{height:'100%',width:step==='dados'?'50%':'100%',background:accent,borderRadius:'99px',transition:'width 0.3s'}} />
+                    <div style={{height:'100%',width:step==='dados'?'33%':step==='entrega'?'66%':'100%',background:accent,borderRadius:'99px',transition:'width 0.3s'}} />
                   </div>
                 )}
                 <div style={{height:'1px',background:'#f0f0f0',margin:'0 20px'}} />
