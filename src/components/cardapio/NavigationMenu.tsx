@@ -160,6 +160,10 @@ function CartContent({
     const storeName = localStorage.getItem('cardapio_nome') || 'Cardápio'
     const confeteiraUserId = localStorage.getItem('cardapio_user_id') || ''
 
+    const dataFormatada = dataEntrega.length === 10
+      ? dataEntrega // já está dd/mm/yyyy
+      : dataEntrega
+
     let msg = `Olá! 👋\n\n`
     msg += `🧁 *NOVO PEDIDO — ${storeName.toUpperCase()}*\n\n`
     msg += `👤 *Nome:* ${nome}\n📞 *WhatsApp:* ${telefone}\n\n`
@@ -177,7 +181,7 @@ function CartContent({
 
     msg += `━━━━━━━━━━━━━━━━━\n`
     if (config.aceita_agendamento && dataEntrega) {
-      msg += `📅 *Data:* ${dataEntrega.split('-').reverse().join('/')}\n`
+      msg += `📅 *Data:* ${dataFormatada}\n`
       msg += `🕒 *Horário:* ${horaEntrega}\n\n`
     }
     if (observacoes.trim()) msg += `📝 *Observações:* ${observacoes}\n\n`
@@ -405,16 +409,29 @@ function CartContent({
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
                   <div>
                     <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Data</label>
-                    <input type="date" value={dataEntrega} min={minDate} onChange={e => setDataEntrega(e.target.value)}
+                    <input
+                      type="text" value={dataEntrega} inputMode="numeric"
                       placeholder="Definir data"
-                      style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color: dataEntrega ? '#3e3e3e' : '#a0a0a0',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                      onChange={e => {
+                        let v = e.target.value.replace(/\D/g,'').slice(0,8)
+                        if (v.length > 4) v = v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4)
+                        else if (v.length > 2) v = v.slice(0,2)+'/'+v.slice(2)
+                        setDataEntrega(v)
+                      }}
+                      style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                       onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
                   </div>
                   <div>
                     <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Horário</label>
-                    <input type="time" value={horaEntrega} onChange={e => setHoraEntrega(e.target.value)}
+                    <input
+                      type="text" value={horaEntrega} inputMode="numeric"
                       placeholder="Definir hora"
-                      style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color: horaEntrega ? '#3e3e3e' : '#a0a0a0',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                      onChange={e => {
+                        let v = e.target.value.replace(/\D/g,'').slice(0,4)
+                        if (v.length > 2) v = v.slice(0,2)+':'+v.slice(2)
+                        setHoraEntrega(v)
+                      }}
+                      style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                       onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
                   </div>
                 </div>
