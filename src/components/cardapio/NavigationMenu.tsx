@@ -600,6 +600,15 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
 
   const handleClose = () => { setIsOpen(false); setStep('cart') }
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [isOpen])
+
   const sharedProps = {
     step, setStep, items, totalPrice,
     updateQuantity, updateObservations, removeItem, clearCart,

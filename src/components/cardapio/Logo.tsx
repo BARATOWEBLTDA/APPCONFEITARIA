@@ -102,7 +102,7 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
 
   return (
     <div className="relative">
-      <div style={{ position: 'absolute', top: '-50px', left: '50%', transform: 'translateX(-50%)', zIndex: 50 }}>
+      <div style={{ position: 'absolute', top: '-50px', left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
         {logoUrl ? (
           <div style={{ width: '160px', height: '160px', borderRadius: '50%', border: `3px solid ${borderColor || '#ec4899'}`, padding: '3px', backgroundColor: 'white', overflow: 'hidden' }}>
             <div style={{ width: '100%', height: '100%', borderRadius: '50%', border: '3px solid white', overflow: 'hidden' }}>
