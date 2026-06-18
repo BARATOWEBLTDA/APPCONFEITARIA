@@ -27,41 +27,40 @@ type Pedido = {
 
 // ── Status reais do sistema (usados pelo Kanban e pelo filtro) ────────────────
 const TODOS_STATUS = [
-  { key: 'confirmado',          label: 'Confirmado',          color: '#5b21b6', bg: '#ede9fe', dot: '#8b5cf6' },
-  { key: 'em_producao',         label: 'Em produção',         color: '#9a3412', bg: '#ffedd5', dot: '#f97316' },
-  { key: 'pronto',              label: 'Pronto',              color: '#14532d', bg: '#dcfce7', dot: '#22c55e' },
-  { key: 'aguardando_retirada', label: 'Aguard. retirada',   color: '#0369a1', bg: '#e0f2fe', dot: '#0ea5e9' },
-  { key: 'aguardando_entrega',  label: 'Aguard. entrega',    color: '#3730a3', bg: '#eef2ff', dot: '#6366f1' },
-  { key: 'entregue',            label: 'Entregue / Retirado', color: '#374151', bg: '#f3f4f6', dot: '#9ca3af' },
-  { key: 'cancelado',           label: 'Cancelado',           color: '#991b1b', bg: '#fee2e2', dot: '#ef4444' },
-  { key: 'excluido',            label: 'Excluído',            color: '#6b7280', bg: '#f9fafb', dot: '#d1d5db' },
+  { key: 'novo',        label: 'Novo',                 color: '#534AB7', bg: '#EEEDFE', dot: '#7F77DD' },
+  { key: 'em_producao', label: 'Em produção',          color: '#9a3412', bg: '#ffedd5', dot: '#f97316' },
+  { key: 'pronto',      label: 'Pronto',               color: '#14532d', bg: '#dcfce7', dot: '#22c55e' },
+  { key: 'a_caminho',   label: 'A Caminho / Retirado', color: '#0369a1', bg: '#e0f2fe', dot: '#0ea5e9' },
+  { key: 'concluido',   label: 'Concluído',            color: '#374151', bg: '#f3f4f6', dot: '#9ca3af' },
+  { key: 'cancelado',   label: 'Cancelado',            color: '#991b1b', bg: '#fee2e2', dot: '#ef4444' },
 ]
 
 const PAG_CONFIG: Record<string, string> = {
   pix: 'PIX', dinheiro: 'Dinheiro', credito: 'Crédito', debito: 'Débito', transferencia: 'Transf.',
 }
 
-// Status visíveis por padrão (sem cancelado e excluído)
-const STATUS_PADRAO = TODOS_STATUS.filter(s => !['cancelado', 'excluido'].includes(s.key)).map(s => s.key)
+// Status visíveis por padrão (sem cancelado)
+const STATUS_PADRAO = ['novo', 'em_producao', 'pronto', 'a_caminho', 'concluido']
 
 // ── Status simplificado, só pra exibição na lista ──────────────────────────────
-// O status real do pedido continua sendo um dos 8 acima (é o que o Kanban e o
-// filtro usam). Aqui só agrupamos visualmente em 4 etiquetas mais simples pro
-// card da lista — nada disso é gravado no banco.
 const STATUS_GROUPS = [
-  { key: 'novo',         label: 'Novo',         color: '#534AB7', bg: '#EEEDFE', dot: '#7F77DD' },
-  { key: 'em_producao',  label: 'Em produção',  color: '#854F0B', bg: '#FAEEDA', dot: '#EF9F27' },
-  { key: 'finalizado',   label: 'Finalizado',   color: '#085041', bg: '#E1F5EE', dot: '#1D9E75' },
-  { key: 'cancelado',    label: 'Cancelado',    color: '#791F1F', bg: '#FCEBEB', dot: '#E24B4A' },
+  { key: 'novo',        label: 'Novo',        color: '#534AB7', bg: '#EEEDFE', dot: '#7F77DD' },
+  { key: 'em_producao', label: 'Em produção', color: '#854F0B', bg: '#FAEEDA', dot: '#EF9F27' },
+  { key: 'pronto',      label: 'Pronto',      color: '#14532d', bg: '#dcfce7', dot: '#22c55e' },
+  { key: 'a_caminho',   label: 'A Caminho',   color: '#0369a1', bg: '#e0f2fe', dot: '#0ea5e9' },
+  { key: 'concluido',   label: 'Concluído',   color: '#374151', bg: '#f3f4f6', dot: '#9ca3af' },
+  { key: 'cancelado',   label: 'Cancelado',   color: '#791F1F', bg: '#FCEBEB', dot: '#E24B4A' },
 ]
 const STATUS_GROUP_CONFIG = Object.fromEntries(STATUS_GROUPS.map(s => [s.key, s]))
 
 function getStatusGroup(status: string): string {
-  const s = status || 'confirmado'
+  const s = status || 'novo'
   if (s === 'cancelado' || s === 'excluido') return 'cancelado'
-  if (s === 'entregue') return 'finalizado'
-  if (s === 'confirmado') return 'novo'
-  return 'em_producao' // em_producao, pronto, aguardando_retirada, aguardando_entrega
+  if (s === 'concluido' || s === 'entregue') return 'concluido'
+  if (s === 'a_caminho' || s === 'aguardando_retirada' || s === 'aguardando_entrega') return 'a_caminho'
+  if (s === 'pronto') return 'pronto'
+  if (s === 'em_producao') return 'em_producao'
+  return 'novo' // novo, confirmado
 }
 
 // ── Quantidade com a unidade certa, conforme a forma de venda do produto ──────
@@ -92,7 +91,7 @@ function parseLocalDate(dateStr: string): Date {
 }
 
 function isAtrasado(p: Pedido) {
-  if (['entregue', 'cancelado', 'excluido'].includes(p.status)) return false
+  if (['concluido', 'cancelado', 'excluido', 'entregue'].includes(p.status)) return false
   if (!p.data_entrega) return false
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0)
   return parseLocalDate(p.data_entrega) < hoje
