@@ -14,7 +14,7 @@ type Pedido = {
   forma_pagamento: string
   status_pagamento: string
   origem: string
-  pedido_itens?: { nome_produto: string; quantidade: number }[]
+  pedido_itens?: { nome_produto: string; quantidade: number; produtos?: { forma_venda?: string | null } | null }[]
 }
 
 const COLUNAS = [
@@ -42,6 +42,25 @@ const ANTERIOR: Record<string, string> = {
 const PAG_CONFIG: Record<string, string> = {
   pix: 'PIX', dinheiro: 'Dinheiro', credito: 'Crédito',
   debito: 'Débito', transferencia: 'Transf.',
+}
+
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  novo:        { label: 'Novo',              color: '#534AB7', bg: '#EEEDFE' },
+  em_producao: { label: 'Em Produção',       color: '#9a3412', bg: '#ffedd5' },
+  pronto:      { label: 'Pronto',            color: '#14532d', bg: '#dcfce7' },
+  a_caminho:   { label: 'A Caminho',         color: '#0369a1', bg: '#e0f2fe' },
+  concluido:   { label: 'Concluído',         color: '#374151', bg: '#f3f4f6' },
+  cancelado:   { label: 'Cancelado',         color: '#991b1b', bg: '#fee2e2' },
+}
+
+function formatQtd(qtd: number, formaVenda?: string | null): string {
+  const fv = formaVenda || ''
+  if (fv === 'kg') return `${qtd}kg`
+  if (fv === 'cento') return `${qtd} cento`
+  if (fv === 'fatia') return `${qtd} fatia${qtd > 1 ? 's' : ''}`
+  if (fv === 'caixa') return `${qtd} caixa${qtd > 1 ? 's' : ''}`
+  if (fv === 'kit-festa') return `${qtd} kit${qtd > 1 ? 's' : ''}`
+  return `${qtd}un`
 }
 
 function formatMoney(v: number) {
@@ -118,9 +137,10 @@ export default function PedidosKanban({ pedidos, onStatusChange, onNovo }: {
                 const dias = diasParaEntrega(p.data_entrega)
                 const atrasado = dias !== null && dias < 0 && !['concluido', 'cancelado', 'excluido'].includes(p.status)
                 const hoje = dias === 0
-                const resumo = p.pedido_itens?.slice(0, 2).map(i => i.nome_produto).join(', ') || ''
                 const isLoading = loading?.startsWith(p.id)
                 const proximo = getProximo(p)
+
+                const sc = STATUS_CONFIG[p.status] || STATUS_CONFIG['novo']
 
                 return (
                   <div
@@ -130,10 +150,12 @@ export default function PedidosKanban({ pedidos, onStatusChange, onNovo }: {
                     onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'}
                     onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.boxShadow = ''}
                   >
-                    {atrasado && <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#dc2626', background: '#fee2e2', borderRadius: 4, padding: '2px 7px', marginBottom: '0.5rem', display: 'inline-block' }}>ATRASADO</div>}
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted,#C39EAA)' }}>#{p.numero || '—'}</span>
+                    {/* Topo: número + status + botões */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted,#C39EAA)' }}>Pedido #{p.numero || '—'}</span>
+                        {atrasado && <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#dc2626', background: '#fee2e2', borderRadius: 4, padding: '1px 6px' }}>ATRASADO</span>}
+                      </div>
                       <div style={{ display: 'flex', gap: 3 }} onClick={e => e.stopPropagation()}>
                         {ANTERIOR[p.status] && (
                           <button onClick={e => voltar(e, p)} disabled={!!isLoading} title="Voltar" style={{ width: 24, height: 24, borderRadius: 6, border: '1.5px solid var(--border,#ECC2D0)', background: 'var(--bg-body,#FAFAFA)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary,#6E3548)' }}>
@@ -153,19 +175,43 @@ export default function PedidosKanban({ pedidos, onStatusChange, onNovo }: {
                       </div>
                     </div>
 
-                    <p style={{ margin: '0 0 0.2rem', fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-title,#431524)', lineHeight: 1.3 }}>{p.cliente_nome || 'Cliente não informado'}</p>
-                    {resumo && <p style={{ margin: '0 0 0.4rem', fontSize: '0.73rem', color: 'var(--text-secondary,#6E3548)' }}>{resumo}</p>}
+                    {/* Badge de status atual */}
+                    <div style={{ marginBottom: '0.4rem' }}>
+                      <span style={{ display: 'inline-block', fontSize: '0.65rem', fontWeight: 700, color: sc.color, background: sc.bg, borderRadius: 20, padding: '2px 8px' }}>
+                        {sc.label}
+                      </span>
+                    </div>
+
+                    {/* Cliente */}
+                    <p style={{ margin: '0 0 0.15rem', fontSize: '0.72rem', color: 'var(--text-muted,#C39EAA)', fontWeight: 500 }}>Cliente</p>
+                    <p style={{ margin: '0 0 0.4rem', fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-title,#431524)', lineHeight: 1.3 }}>{p.cliente_nome || 'Não informado'}</p>
+
+                    {/* Itens */}
+                    {p.pedido_itens && p.pedido_itens.length > 0 && (
+                      <div style={{ marginBottom: '0.4rem' }}>
+                        {p.pedido_itens.slice(0, 2).map((item, i) => (
+                          <p key={i} style={{ margin: '0 0 2px', fontSize: '0.75rem', color: 'var(--text-secondary,#6E3548)' }}>
+                            {item.nome_produto} ({formatQtd(item.quantidade, item.produtos?.forma_venda)})
+                          </p>
+                        ))}
+                        {p.pedido_itens.length > 2 && (
+                          <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-muted,#C39EAA)' }}>+{p.pedido_itens.length - 2} item(s)</p>
+                        )}
+                      </div>
+                    )}
 
                     <div style={{ height: 1, background: 'var(--border,#ECC2D0)', margin: '0.4rem 0' }} />
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem', color: 'var(--text-secondary,#6E3548)' }}>
+                    {/* Data e tipo entrega */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem', color: 'var(--text-secondary,#6E3548)', marginBottom: '0.35rem' }}>
                       <span style={{ color: atrasado ? '#dc2626' : hoje ? '#d97706' : 'inherit', fontWeight: atrasado || hoje ? 600 : 400 }}>
                         {p.data_entrega ? `${atrasado ? 'Atrasado' : hoje ? 'Hoje' : p.data_entrega.split('-').reverse().join('/')}${p.horario_entrega ? ` · ${p.horario_entrega.slice(0, 5)}` : ''}` : 'Sem data'}
                       </span>
                       <span>{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</span>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.35rem' }}>
+                    {/* Pagamento e valor */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '0.7rem', fontWeight: 500, color: p.status_pagamento === 'pago' ? '#16a34a' : '#dc2626' }}>
                         {PAG_CONFIG[p.forma_pagamento] || 'PIX'} · {p.status_pagamento === 'pago' ? 'Pago' : 'Pendente'}
                       </span>
