@@ -401,18 +401,20 @@ function CartContent({
             {/* Data e horário */}
             {config.aceita_agendamento && (
               <div>
-                <SectionHeader title="Data e horário" subtitle={`Agende com ${config.prazo_minimo_horas}h de antecedência`} />
+                <SectionHeader title="Data e horário" />
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
                   <div>
                     <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Data</label>
                     <input type="date" value={dataEntrega} min={minDate} onChange={e => setDataEntrega(e.target.value)}
-                      style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                      placeholder="Definir data"
+                      style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color: dataEntrega ? '#3e3e3e' : '#a0a0a0',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                       onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
                   </div>
                   <div>
                     <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Horário</label>
                     <input type="time" value={horaEntrega} onChange={e => setHoraEntrega(e.target.value)}
-                      style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                      placeholder="Definir hora"
+                      style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color: horaEntrega ? '#3e3e3e' : '#a0a0a0',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                       onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
                   </div>
                 </div>
@@ -625,6 +627,8 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
       <style>{`
         @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
         @keyframes slideRight { from{transform:translateX(100%)} to{transform:translateX(0)} }
+        @keyframes progressPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+        .ck-progress-bar { transition: width 0.4s cubic-bezier(0.4,0,0.2,1); animation: progressPulse 2s ease-in-out infinite; }
         .ck-scroll::-webkit-scrollbar { width:4px; }
         .ck-scroll::-webkit-scrollbar-thumb { background:#e5e7eb; border-radius:4px; }
       `}</style>
@@ -731,7 +735,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                 </div>
                 {(step === 'dados' || step === 'entrega' || step === 'checkout') && (
                   <div style={{margin:'0 20px 12px',height:'3px',background:'#f0f0f0',borderRadius:'99px'}}>
-                    <div style={{height:'100%',width:step==='dados'?'33%':step==='entrega'?'66%':'100%',background:accent,borderRadius:'99px',transition:'width 0.3s'}} />
+                    <div className="ck-progress-bar" style={{height:'100%',width:step==='dados'?'33%':step==='entrega'?'66%':'100%',background:accent,borderRadius:'99px'}} />
                   </div>
                 )}
                 <div style={{height:'1px',background:'#f0f0f0',margin:'0 20px'}} />
