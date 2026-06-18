@@ -821,11 +821,11 @@ export default function Pedidos() {
         .mp-fechar { background: none; border: none; cursor: pointer; color: var(--text-muted,#C39EAA); display: flex; padding: 4px; border-radius: 6px; }
         .mp-fechar:hover { background: var(--bg-subtle,#F7EEF1); color: var(--text-title,#431524); }
         .mp-body { overflow-y: auto; flex: 1; padding: 0.75rem 1.25rem; }
-        .mp-lista { display: flex; flex-direction: column; }
-        .mp-row { display: flex; align-items: baseline; justify-content: space-between; padding: 0.45rem 0; border-bottom: 1px solid var(--border,#ECC2D0); gap: 12px; }
+        .mp-lista { display: flex; flex-direction: column; gap: 0; }
+        .mp-row { display: flex; flex-direction: column; padding: 0.5rem 0; border-bottom: 1px solid var(--border,#ECC2D0); gap: 2px; }
         .mp-row:last-child { border-bottom: none; }
-        .mp-label { font-size: 0.72rem; font-weight: 600; color: var(--text-muted,#C39EAA); white-space: nowrap; flex-shrink: 0; margin: 0; }
-        .mp-val { font-size: 0.84rem; color: var(--text-title,#431524); text-align: right; }
+        .mp-label { font-size: 0.68rem; font-weight: 600; color: var(--text-muted,#C39EAA); white-space: nowrap; flex-shrink: 0; margin: 0; }
+        .mp-val { font-size: 0.88rem; color: var(--text-title,#431524); text-align: left; }
         .mp-itens { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
         .mp-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--bg-subtle,#F7EEF1); border-radius: 10px; }
         .mp-item-img { width: 36px; height: 36px; border-radius: 7px; background: var(--bg-card,#fff); border: 1px solid var(--border,#ECC2D0); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
