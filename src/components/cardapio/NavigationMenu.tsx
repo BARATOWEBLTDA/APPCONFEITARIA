@@ -330,7 +330,7 @@ function CartContent({
                 <span style={{fontSize:'20px',fontWeight:800,color:'#3e3e3e'}}>{formatCurrency(totalPrice)}</span>
               </div>
               <button
-                onClick={() => setStep('checkout')}
+                onClick={() => setStep('dados')}
                 style={{
                   width:'100%',padding:'15px',background:accent,color:'white',
                   border:'none',borderRadius:'14px',fontWeight:800,fontSize:'16px',
@@ -353,18 +353,19 @@ function CartContent({
         </>
       )}
 
-      {/* ═══ CHECKOUT STEP ═══ */}
-      {step === 'checkout' && (
+      {/* ═══ DADOS STEP ═══ */}
+      {step === 'dados' && (
         <>
-          <div className="ck-scroll" style={{flex:1,overflowY:'auto'}}>
-
-            {/* 1. Dados */}
-            <div style={{padding:'16px 20px'}}>
-              <SectionHeader title="Seus dados" />
-              <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
-                <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Seu nome"
-                  style={{width:'100%',padding:'12px 14px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+          <div className="ck-scroll" style={{flex:1,overflowY:'auto',padding:'20px'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
+              <div>
+                <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Seu nome</label>
+                <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Como podemos te chamar?"
+                  style={{width:'100%',padding:'14px',border:'2px solid #f0f0f0',borderRadius:'12px',fontSize:'15px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                   onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
+              </div>
+              <div>
+                <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>WhatsApp</label>
                 <input value={telefone} onChange={e => {
                   const v = e.target.value.replace(/\D/g,'').slice(0,11)
                   let f = v
@@ -373,15 +374,32 @@ function CartContent({
                   else if (v.length > 2) f = `(${v.slice(0,2)}) ${v.slice(2)}`
                   else if (v.length > 0) f = `(${v}`
                   setTelefone(f)
-                }} placeholder="WhatsApp: (00) 9 0000-0000" type="tel" inputMode="numeric"
-                  style={{width:'100%',padding:'12px 14px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                }} placeholder="(00) 9 0000-0000" type="tel" inputMode="numeric"
+                  style={{width:'100%',padding:'14px',border:'2px solid #f0f0f0',borderRadius:'12px',fontSize:'15px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                   onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
               </div>
             </div>
+          </div>
+          <div style={{padding:'14px 20px',borderTop:'1px solid #f0f0f0'}}>
+            <button
+              onClick={() => {
+                if (!nome.trim()) return alert('Preencha seu nome')
+                if (!telefone.trim() || telefone.replace(/\D/g,'').length < 10) return alert('Preencha seu WhatsApp')
+                setStep('checkout')
+              }}
+              style={{width:'100%',padding:'15px',background:accent,color:'white',border:'none',borderRadius:'14px',fontWeight:800,fontSize:'16px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit'}}>
+              Continuar <ChevronRight size={18} />
+            </button>
+          </div>
+        </>
+      )}
 
-            <Divider />
+      {/* ═══ CHECKOUT STEP ═══ */}
+      {step === 'checkout' && (
+        <>
+          <div className="ck-scroll" style={{flex:1,overflowY:'auto'}}>
 
-            {/* 2. Data e horário */}
+            {/* 1. Data e horário */}
             {config.aceita_agendamento && (
               <>
                 <div style={{padding:'16px 20px'}}>
@@ -729,8 +747,8 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                 </div>
                 <div style={{padding:'10px 20px 12px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                   <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
-                    {step === 'checkout' && (
-                      <button onClick={() => setStep('cart')} style={{background:'none',border:'none',cursor:'pointer',padding:'4px',display:'flex'}}>
+                    {(step === 'dados' || step === 'checkout') && (
+                      <button onClick={() => step === 'checkout' ? setStep('dados') : setStep('cart')} style={{background:'none',border:'none',cursor:'pointer',padding:'4px',display:'flex'}}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
                       </button>
                     )}
@@ -739,10 +757,10 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                     </div>
                     <div>
                       <h3 style={{margin:0,fontWeight:800,fontSize:'18px',color:'#3e3e3e'}}>
-                        {step === 'cart' ? 'Sacola' : 'Finalizar pedido'}
+                        {step === 'cart' ? 'Sacola' : step === 'dados' ? 'Seus dados' : 'Finalizar pedido'}
                       </h3>
                       <p style={{margin:0,fontSize:'13px',color:'#a0a0a0'}}>
-                        {step === 'cart' ? `${count} ${count===1?'item':'itens'}` : 'Preencha os dados abaixo'}
+                        {step === 'cart' ? `${count} ${count===1?'item':'itens'}` : step === 'dados' ? 'Passo 1 de 2' : 'Passo 2 de 2'}
                       </p>
                     </div>
                   </div>
@@ -750,6 +768,11 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                     <X size={18} color="#717171" />
                   </button>
                 </div>
+                {(step === 'dados' || step === 'checkout') && (
+                  <div style={{margin:'0 20px 12px',height:'3px',background:'#f0f0f0',borderRadius:'99px'}}>
+                    <div style={{height:'100%',width:step==='dados'?'50%':'100%',background:accent,borderRadius:'99px',transition:'width 0.3s'}} />
+                  </div>
+                )}
                 <div style={{height:'1px',background:'#f0f0f0',margin:'0 20px'}} />
                 <CartContent key={`mobile-${isOpen}`} {...sharedProps} />
               </div>
