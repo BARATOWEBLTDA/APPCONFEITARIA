@@ -817,31 +817,30 @@ export default function Pedidos() {
 
         /* ── Modal de pedido ── */
         .mp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; animation: hsFadeIn 0.2s ease; }
-        .mp-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg-card,#fff); border-radius: 16px; z-index: 201; width: 560px; max-width: 95vw; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: hsFadeIn 0.2s ease; font-family: inherit; }
-        .mp-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 1.25rem 1.5rem 1rem; border-bottom: 1.5px solid var(--border,#ECC2D0); flex-shrink: 0; }
-        .mp-numero { font-size: 1.1rem; font-weight: 800; color: var(--text-title,#431524); }
-        .mp-criado { font-size: 0.72rem; color: var(--text-muted,#C39EAA); margin: 2px 0 0; }
+        .mp-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg-card,#fff); border-radius: 16px; z-index: 201; width: 460px; max-width: 95vw; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: hsFadeIn 0.2s ease; font-family: inherit; }
+        .mp-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 1rem 1.25rem 0.75rem; border-bottom: 1.5px solid var(--border,#ECC2D0); flex-shrink: 0; }
+        .mp-numero { font-size: 1rem; font-weight: 800; color: var(--text-title,#431524); }
+        .mp-criado { font-size: 0.68rem; color: var(--text-muted,#C39EAA); margin: 2px 0 0; }
         .mp-fechar { background: none; border: none; cursor: pointer; color: var(--text-muted,#C39EAA); display: flex; padding: 4px; border-radius: 6px; }
         .mp-fechar:hover { background: var(--bg-subtle,#F7EEF1); color: var(--text-title,#431524); }
-        .mp-body { overflow-y: auto; flex: 1; padding: 1.25rem 1.5rem; }
-        .mp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .mp-body { overflow-y: auto; flex: 1; padding: 0.9rem 1.25rem; }
+        .mp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
         .mp-section { display: flex; flex-direction: column; gap: 2px; }
-        .mp-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted,#C39EAA); margin: 0 0 4px; }
-        .mp-value { font-size: 0.9rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
-        .mp-sub { font-size: 0.82rem; color: var(--text-secondary,#6E3548); margin: 0; }
-        .mp-itens { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
-        .mp-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--bg-subtle,#F7EEF1); border-radius: 10px; }
-        .mp-item-img { width: 42px; height: 42px; border-radius: 8px; background: var(--bg-card,#fff); border: 1px solid var(--border,#ECC2D0); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+        .mp-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted,#C39EAA); margin: 0 0 3px; }
+        .mp-value { font-size: 0.85rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
+        .mp-sub { font-size: 0.78rem; color: var(--text-secondary,#6E3548); margin: 0; }
+        .mp-itens { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+        .mp-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--bg-subtle,#F7EEF1); border-radius: 10px; }
+        .mp-item-img { width: 36px; height: 36px; border-radius: 7px; background: var(--bg-card,#fff); border: 1px solid var(--border,#ECC2D0); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
         .mp-item-img img { width: 100%; height: 100%; object-fit: cover; }
-        .mp-item-nome { font-size: 0.88rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
-        .mp-item-qtd { font-size: 0.75rem; color: var(--text-secondary,#6E3548); margin: 2px 0 0; }
-        .mp-item-extra { font-size: 0.72rem; color: var(--text-muted,#C39EAA); margin: 1px 0 0; }
-        .mp-item-total { font-size: 0.88rem; font-weight: 700; color: var(--text-title,#431524); flex-shrink: 0; }
-        .mp-footer { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-top: 1.5px solid var(--border,#ECC2D0); flex-shrink: 0; }
-        .mp-btn-fechar { background: var(--bg-subtle,#F7EEF1); border: none; color: var(--text-secondary,#6E3548); border-radius: 10px; padding: 0.6rem 1.25rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: inherit; }
-        .mp-btn-editar { display: flex; align-items: center; gap: 6px; background: var(--primary,#986274); border: none; color: white; border-radius: 10px; padding: 0.6rem 1.25rem; font-size: 0.88rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .mp-item-nome { font-size: 0.84rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
+        .mp-item-qtd { font-size: 0.72rem; color: var(--text-secondary,#6E3548); margin: 1px 0 0; }
+        .mp-item-extra { font-size: 0.68rem; color: var(--text-muted,#C39EAA); margin: 1px 0 0; }
+        .mp-item-total { font-size: 0.84rem; font-weight: 700; color: var(--text-title,#431524); flex-shrink: 0; }
+        .mp-footer { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.25rem; border-top: 1.5px solid var(--border,#ECC2D0); flex-shrink: 0; }
+        .mp-btn-fechar { background: var(--bg-subtle,#F7EEF1); border: none; color: var(--text-secondary,#6E3548); border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.84rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .mp-btn-editar { display: flex; align-items: center; gap: 6px; background: var(--primary,#986274); border: none; color: white; border-radius: 10px; padding: 0.5rem 1rem; font-size: 0.84rem; font-weight: 600; cursor: pointer; font-family: inherit; }
         .mp-btn-editar:hover { background: var(--primary-dark,#6E3548); }
-
 
         @media (min-width: 768px) {
           /* Wrapper da lista vira um bloco com borda e radius */
