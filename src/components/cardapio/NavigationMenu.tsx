@@ -423,7 +423,7 @@ function CartContent({
 
             {/* Forma de entrega */}
             <div>
-              <SectionHeader title="Forma de entrega" subtitle="Como deseja receber seu pedido?" />
+              <SectionHeader title="Forma de entrega" />
               <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
                 <OptionButton selected={formaEntrega==='retirada'} label="Retirar no local" detail="Grátis" accent={accent} onClick={() => { setFormaEntrega('retirada'); setBairroSelecionado('') }} />
                 <OptionButton selected={formaEntrega==='entrega_propria'} label="Entrega" detail={config.valor_entrega_propria > 0 ? formatCurrency(config.valor_entrega_propria) : 'Grátis'} accent={accent} onClick={() => { setFormaEntrega('entrega_propria'); setBairroSelecionado('') }} />
