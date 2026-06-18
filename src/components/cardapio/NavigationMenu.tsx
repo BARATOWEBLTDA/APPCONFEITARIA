@@ -50,39 +50,33 @@ const LABEL_PAGAMENTO: Record<string, { icon: string; label: string }> = {
   pagamento_retirada: { icon: '🏪', label: 'Pagamento na Retirada' },
 }
 
-function SectionHeader({ icon, title, subtitle }: { icon: React.ReactNode; title: string; subtitle?: string }) {
+function SectionHeader({ title, subtitle }: { icon?: React.ReactNode; title: string; subtitle?: string }) {
   return (
-    <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'10px'}}>
-      <div style={{width:'32px',height:'32px',borderRadius:'10px',background:'#f5f5f5',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',flexShrink:0}}>
-        {icon}
-      </div>
-      <div>
-        <p style={{margin:0,fontWeight:700,fontSize:'14px',color:'#3e3e3e'}}>{title}</p>
-        {subtitle && <p style={{margin:0,fontSize:'12px',color:'#a0a0a0'}}>{subtitle}</p>}
-      </div>
+    <div style={{marginBottom:'10px'}}>
+      <p style={{margin:0,fontWeight:700,fontSize:'14px',color:'#3e3e3e'}}>{title}</p>
+      {subtitle && <p style={{margin:'2px 0 0',fontSize:'12px',color:'#a0a0a0'}}>{subtitle}</p>}
     </div>
   )
 }
 
-function OptionButton({ selected, label, icon, detail, onClick }: any) {
+function OptionButton({ selected, label, detail, onClick, accent }: any) {
   return (
     <button
       onClick={onClick}
       style={{
-        width:'100%', display:'flex', alignItems:'center', gap:'10px',
+        width:'100%', display:'flex', alignItems:'center',
         padding:'12px 14px', borderRadius:'10px',
-        border: selected ? '2px solid #ea1d2c' : '1.5px solid #f0f0f0',
-        background: selected ? '#fff5f5' : '#fff',
+        border: selected ? `2px solid ${accent||'#ea1d2c'}` : '1.5px solid #f0f0f0',
+        background: selected ? '#fff' : '#fff',
         cursor:'pointer', textAlign:'left',
         transition:'all 0.15s',
       }}
     >
-      <span style={{fontSize:'18px',flexShrink:0}}>{icon}</span>
-      <span style={{flex:1,fontWeight:selected?700:500,fontSize:'14px',color:selected?'#ea1d2c':'#3e3e3e'}}>
+      <span style={{flex:1,fontWeight:selected?700:500,fontSize:'14px',color:selected?'#3e3e3e':'#717171'}}>
         {label}
       </span>
-      {detail && <span style={{fontSize:'13px',fontWeight:700,color:'#717171'}}>{detail}</span>}
-      {selected && <div style={{width:'18px',height:'18px',borderRadius:'50%',background:'#ea1d2c',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+      {detail && <span style={{fontSize:'13px',fontWeight:600,color:'#a0a0a0',marginRight:'8px'}}>{detail}</span>}
+      {selected && <div style={{width:'18px',height:'18px',borderRadius:'50%',background:accent||'#ea1d2c',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
       </div>}
     </button>
@@ -366,7 +360,7 @@ function CartContent({
 
             {/* 1. Dados */}
             <div style={{padding:'16px 20px'}}>
-              <SectionHeader icon={<User size={16} color="#717171" />} title="Seus dados" />
+              <SectionHeader title="Seus dados" />
               <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
                 <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Seu nome"
                   style={{width:'100%',padding:'12px 14px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
@@ -383,7 +377,7 @@ function CartContent({
             {config.aceita_agendamento && (
               <>
                 <div style={{padding:'16px 20px'}}>
-                  <SectionHeader icon="📅" title="Data e horário" subtitle={`Agende com ${config.prazo_minimo_horas}h de antecedência`} />
+                  <SectionHeader title="Data e horário" subtitle={`Agende com ${config.prazo_minimo_horas}h de antecedência`} />
                   <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
                     <div>
                       <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Data da entrega</label>
@@ -405,20 +399,20 @@ function CartContent({
 
             {/* 3. Forma de entrega — só Retirada ou Entrega */}
             <div style={{padding:'16px 20px'}}>
-              <SectionHeader icon="🚚" title="Forma de entrega" subtitle="Como deseja receber seu pedido?" />
+              <SectionHeader title="Forma de entrega" subtitle="Como deseja receber seu pedido?" />
               <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
                 <OptionButton
                   selected={formaEntrega === 'retirada'}
                   label="Retirar no local"
-                  icon="🏪"
                   detail="Grátis"
+                  accent={accent}
                   onClick={() => { setFormaEntrega('retirada'); setBairroSelecionado('') }}
                 />
                 <OptionButton
                   selected={formaEntrega === 'entrega_propria'}
                   label="Entrega"
-                  icon="🚗"
                   detail={config.valor_entrega_propria > 0 ? formatCurrency(config.valor_entrega_propria) : 'Grátis'}
+                  accent={accent}
                   onClick={() => { setFormaEntrega('entrega_propria'); setBairroSelecionado('') }}
                 />
               </div>
@@ -452,18 +446,18 @@ function CartContent({
 
             {/* 4. Pagamento — Cartão ou PIX/Dinheiro */}
             <div style={{padding:'16px 20px'}}>
-              <SectionHeader icon="💳" title="Forma de pagamento" />
+              <SectionHeader title="Forma de pagamento" />
               <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
                 <OptionButton
                   selected={formaPagamento === 'credito' || formaPagamento === 'debito'}
                   label="Cartão de Débito / Crédito"
-                  icon="💳"
+                  accent={accent}
                   onClick={() => setFormaPagamento('credito')}
                 />
                 <OptionButton
                   selected={formaPagamento === 'pix' || formaPagamento === 'dinheiro'}
                   label="PIX / Dinheiro"
-                  icon="⚡"
+                  accent={accent}
                   onClick={() => setFormaPagamento('pix')}
                 />
               </div>
@@ -488,7 +482,7 @@ function CartContent({
             {config.cupons_desconto.length > 0 && (
               <>
                 <div style={{padding:'16px 20px'}}>
-                  <SectionHeader icon="🏷️" title="Cupom de desconto" />
+                  <SectionHeader title="Cupom de desconto" />
                   {cupomAplicado ? (
                     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 14px',background:'#f0fdf4',border:'1.5px solid #bbf7d0',borderRadius:'10px'}}>
                       <div>
@@ -519,7 +513,7 @@ function CartContent({
 
             {/* 6. Observações — por último */}
             <div style={{padding:'16px 20px'}}>
-              <SectionHeader icon="📝" title="Observações" subtitle="Personalização, restrições, recados..." />
+              <SectionHeader title="Observações" subtitle="Personalização, restrições, recados..." />
               <textarea
                 value={observacoes} onChange={e => setObservacoes(e.target.value)}
                 placeholder={'Ex: Escrever "Parabéns Ana" no bolo\nSem morango\nEntregar após 18h'}
