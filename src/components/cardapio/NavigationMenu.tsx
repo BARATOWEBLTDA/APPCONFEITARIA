@@ -602,7 +602,7 @@ function CartContent({
 export function NavigationMenu({ corBotao }: { corBotao?: string }) {
   const { items, totalPrice, updateQuantity, updateObservations, removeItem, clearCart } = useCart()
   const [isOpen, setIsOpen] = useState(false)
-  const [step, setStep] = useState<'cart' | 'checkout'>('cart')
+  const [step, setStep] = useState<'cart' | 'dados' | 'checkout'>('cart')
   const [activeTab, setActiveTab] = useState('inicio')
   const isMobile = useIsMobile()
 
