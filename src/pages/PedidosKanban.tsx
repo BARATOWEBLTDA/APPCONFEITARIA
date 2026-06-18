@@ -18,28 +18,25 @@ type Pedido = {
 }
 
 const COLUNAS = [
-  { key: 'confirmado',          label: 'Confirmado',          color: '#8b5cf6', bg: '#f5f3ff', border: '#ddd6fe' },
-  { key: 'em_producao',         label: 'Em produção',         color: '#f97316', bg: '#fff7ed', border: '#fed7aa' },
-  { key: 'pronto',              label: 'Pronto',              color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0' },
-  { key: 'aguardando_retirada', label: 'Aguard. retirada',   color: '#0ea5e9', bg: '#f0f9ff', border: '#bae6fd' },
-  { key: 'aguardando_entrega',  label: 'Aguard. entrega',    color: '#6366f1', bg: '#eef2ff', border: '#c7d2fe' },
-  { key: 'entregue',            label: 'Entregue / Retirado', color: '#6b7280', bg: '#f9fafb', border: '#e5e7eb' },
+  { key: 'novo',        label: 'Novo',        color: '#986274', bg: '#F7EEF1', border: '#ECC2D0' },
+  { key: 'em_producao', label: 'Em Produção', color: '#f97316', bg: '#fff7ed', border: '#fed7aa' },
+  { key: 'pronto',      label: 'Pronto',      color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0' },
+  { key: 'a_caminho',   label: 'A Caminho / Retirado', color: '#0ea5e9', bg: '#f0f9ff', border: '#bae6fd' },
+  { key: 'concluido',   label: 'Concluído',   color: '#6b7280', bg: '#f9fafb', border: '#e5e7eb' },
 ]
 
 const PROXIMO: Record<string, string> = {
-  confirmado:          'em_producao',
-  em_producao:         'pronto',
-  pronto:              '', // definido dinamicamente pelo tipo_entrega
-  aguardando_retirada: 'entregue',
-  aguardando_entrega:  'entregue',
+  novo:        'em_producao',
+  em_producao: 'pronto',
+  pronto:      'a_caminho',
+  a_caminho:   'concluido',
 }
 
 const ANTERIOR: Record<string, string> = {
-  em_producao:         'confirmado',
-  pronto:              'em_producao',
-  aguardando_retirada: 'pronto',
-  aguardando_entrega:  'pronto',
-  entregue:            '', // não volta de entregue
+  em_producao: 'novo',
+  pronto:      'em_producao',
+  a_caminho:   'pronto',
+  concluido:   'a_caminho',
 }
 
 const PAG_CONFIG: Record<string, string> = {
@@ -70,12 +67,7 @@ export default function PedidosKanban({ pedidos, onStatusChange, onNovo }: {
   const navigate = useNavigate()
   const [loading, setLoading] = useState<string | null>(null)
 
-  const getProximo = (p: Pedido) => {
-    if (p.status === 'pronto') {
-      return p.tipo_entrega === 'entrega' ? 'aguardando_entrega' : 'aguardando_retirada'
-    }
-    return PROXIMO[p.status] || ''
-  }
+  const getProximo = (p: Pedido) => PROXIMO[p.status] || ''
 
   const avancar = async (e: React.MouseEvent, p: Pedido) => {
     e.stopPropagation()
@@ -124,7 +116,7 @@ export default function PedidosKanban({ pedidos, onStatusChange, onNovo }: {
               )}
               {colPedidos.map(p => {
                 const dias = diasParaEntrega(p.data_entrega)
-                const atrasado = dias !== null && dias < 0 && !['entregue', 'cancelado', 'excluido'].includes(p.status)
+                const atrasado = dias !== null && dias < 0 && !['concluido', 'cancelado', 'excluido'].includes(p.status)
                 const hoje = dias === 0
                 const resumo = p.pedido_itens?.slice(0, 2).map(i => i.nome_produto).join(', ') || ''
                 const isLoading = loading?.startsWith(p.id)
@@ -148,7 +140,7 @@ export default function PedidosKanban({ pedidos, onStatusChange, onNovo }: {
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
                           </button>
                         )}
-                        {p.status !== 'entregue' && (
+                        {p.status !== 'concluido' && (
                           <button onClick={e => cancelar(e, p)} disabled={!!isLoading} title="Cancelar" style={{ width: 24, height: 24, borderRadius: 6, border: '1.5px solid #fecaca', background: '#fee2e2', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#dc2626' }}>
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                           </button>

@@ -104,6 +104,29 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
   return (
     <div className="step-root">
 
+      {/* ── Status do pedido ── */}
+      <div className="pf2-card">
+        <p className="pf2-card-eyebrow">Status do pedido no Kanban</p>
+        <div className="pf2-status-grid">
+          {[
+            { key: 'novo',        label: '🆕 Novo' },
+            { key: 'em_producao', label: '🍰 Em Produção' },
+            { key: 'pronto',      label: '✅ Pronto' },
+            { key: 'a_caminho',   label: '🚗 A Caminho / Retirado' },
+            { key: 'concluido',   label: '🎉 Concluído' },
+          ].map(s => (
+            <button
+              key={s.key}
+              type="button"
+              className={`pf2-status-btn${pedido.status === s.key ? ' pf2-status-btn--on' : ''}`}
+              onClick={() => set('status', s.key)}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* ── Total fixo no topo ── */}
       <div className="pf2-total-bar">
         <div>
@@ -315,6 +338,29 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
           display: inline-flex; align-items: center; gap: 5px;
           font-size: 0.72rem; font-weight: 600;
           padding: 4px 10px; border-radius: 999px;
+        }
+        .pf2-status-grid {
+          display: flex; flex-direction: column; gap: 0.4rem;
+          padding: 0.5rem 1rem 0.75rem;
+        }
+        .pf2-status-btn {
+          display: flex; align-items: center;
+          padding: 0.6rem 1rem;
+          border: 1.5px solid var(--border,#ECC2D0);
+          border-radius: 10px;
+          background: var(--bg-body,#FAFAFA);
+          font-size: 0.88rem; font-weight: 500;
+          color: var(--text-secondary,#6E3548);
+          font-family: 'Geist',sans-serif;
+          cursor: pointer; transition: all 0.15s;
+          text-align: left; width: 100%;
+        }
+        .pf2-status-btn:hover { border-color: var(--primary,#986274); }
+        .pf2-status-btn--on {
+          border-color: var(--primary,#986274);
+          background: var(--primary-light,#F7EEF1);
+          color: var(--text-title,#431524);
+          font-weight: 700;
         }
         .pf2-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
       `}</style>
