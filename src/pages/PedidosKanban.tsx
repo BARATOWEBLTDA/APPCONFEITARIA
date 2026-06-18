@@ -176,9 +176,9 @@ export default function PedidosKanban({ pedidos, onStatusChange, onNovo }: {
                     </div>
 
                     {/* Badge de status atual */}
-                    <div style={{ marginBottom: '0.4rem' }}>
-                      <span style={{ display: 'inline-block', fontSize: '0.65rem', fontWeight: 700, color: sc.color, background: sc.bg, borderRadius: 20, padding: '2px 8px' }}>
-                        {sc.label}
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <span style={{ display: 'inline-block', fontSize: '0.65rem', fontWeight: 700, color: sc.color, background: sc.bg, borderRadius: 20, padding: '3px 10px', letterSpacing: '0.02em' }}>
+                        ● {sc.label}
                       </span>
                     </div>
 
