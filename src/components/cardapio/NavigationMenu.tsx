@@ -104,6 +104,30 @@ function CartContent({
   const [trocoParaStr, setTrocoParaStr] = useState('')
   const [nome, setNome] = useState('')
   const [telefone, setTelefone] = useState('')
+  const [cep, setCep] = useState('')
+  const [rua, setRua] = useState('')
+  const [numero, setNumero] = useState('')
+  const [complemento, setComplemento] = useState('')
+  const [bairro, setBairro] = useState('')
+  const [cidade, setCidade] = useState('')
+  const [cepLoading, setCepLoading] = useState(false)
+  const [cepErro, setCepErro] = useState('')
+
+  const buscarCep = async (v: string) => {
+    const c = v.replace(/\D/g,'')
+    if (c.length !== 8) return
+    setCepLoading(true); setCepErro('')
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${c}/json/`)
+      const d = await res.json()
+      if (d.erro) { setCepErro('CEP não encontrado'); } else {
+        setRua(d.logradouro || '')
+        setBairro(d.bairro || '')
+        setCidade(d.localidade || '')
+      }
+    } catch { setCepErro('Erro ao buscar CEP') }
+    setCepLoading(false)
+  }
 
   const count = items.reduce((acc: number, i: any) => acc + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
 
@@ -189,7 +213,11 @@ function CartContent({
 
     const entregaLabel = LABEL_ENTREGA[formaEntrega]?.label || formaEntrega
     msg += `🚚 *Entrega:* ${entregaLabel}\n`
-    if (formaEntrega === 'entrega_propria' && bairroSelecionado) msg += `   📍 Bairro: ${bairroSelecionado}\n`
+    if (formaEntrega === 'entrega_propria') {
+      if (rua) msg += `   📍 ${rua}${numero ? ', '+numero : ''}${complemento ? ' - '+complemento : ''}\n`
+      if (bairro) msg += `   🏘️ ${bairro}${cidade ? ' - '+cidade : ''}\n`
+      if (cep) msg += `   📮 CEP: ${cep}\n`
+    }
 
     const pgtoLabel = LABEL_PAGAMENTO[formaPagamento]?.label || formaPagamento
     msg += `💳 *Pagamento:* ${pgtoLabel}\n`
@@ -254,6 +282,12 @@ function CartContent({
             horario_entrega: horaEntrega || null,
             tipo_entrega: formaEntrega === 'retirada' ? 'retirada' : 'entrega',
             taxa_entrega: freteValor,
+            endereco_rua: formaEntrega === 'entrega_propria' ? rua : null,
+            endereco_numero: formaEntrega === 'entrega_propria' ? numero : null,
+            endereco_complemento: formaEntrega === 'entrega_propria' ? complemento : null,
+            endereco_bairro: formaEntrega === 'entrega_propria' ? bairro : null,
+            endereco_cidade: formaEntrega === 'entrega_propria' ? cidade : null,
+            endereco_cep: formaEntrega === 'entrega_propria' ? cep.replace(/\D/g,'') : null,
             forma_pagamento: formaPagamento,
             status_pagamento: 'pendente',
             valor_produtos: valorProdutos,
@@ -441,6 +475,44 @@ function CartContent({
                     <option value="">Escolha o bairro</option>
                     {config.entrega_por_bairro.map((b: any) => <option key={b.bairro} value={b.bairro}>{b.bairro} — {formatCurrency(b.valor)}</option>)}
                   </select>
+                </div>
+              )}
+
+              {formaEntrega === 'entrega_propria' && (
+                <div style={{marginTop:'12px',display:'flex',flexDirection:'column',gap:'8px'}}>
+                  {/* CEP */}
+                  <div style={{position:'relative'}}>
+                    <input
+                      value={cep} placeholder="CEP" inputMode="numeric"
+                      onChange={e => {
+                        let v = e.target.value.replace(/\D/g,'').slice(0,8)
+                        if (v.length > 5) v = v.slice(0,5)+'-'+v.slice(5)
+                        setCep(v)
+                        if (v.replace(/\D/g,'').length === 8) buscarCep(v)
+                      }}
+                      style={{width:'100%',padding:'12px',paddingRight:'40px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                      onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
+                    {cepLoading && <div style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',width:'16px',height:'16px',border:'2px solid #f0f0f0',borderTopColor:accent,borderRadius:'50%',animation:'spin 0.6s linear infinite'}} />}
+                  </div>
+                  {cepErro && <p style={{margin:0,fontSize:'12px',color:'#ef4444'}}>{cepErro}</p>}
+                  {/* Rua + Número */}
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 80px',gap:'8px'}}>
+                    <input value={rua} onChange={e=>setRua(e.target.value)} placeholder="Rua / Avenida"
+                      style={{padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                      onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
+                    <input value={numero} onChange={e=>setNumero(e.target.value)} placeholder="Nº"
+                      style={{padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                      onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
+                  </div>
+                  <input value={complemento} onChange={e=>setComplemento(e.target.value)} placeholder="Complemento (apto, bloco...)"
+                    style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                    onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
+                  <input value={bairro} onChange={e=>setBairro(e.target.value)} placeholder="Bairro"
+                    style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                    onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
+                  <input value={cidade} onChange={e=>setCidade(e.target.value)} placeholder="Cidade"
+                    style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                    onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
                 </div>
               )}
               {formaEntrega === 'retirada' && config.endereco_retirada && (
@@ -633,6 +705,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
       <style>{`
         @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
         @keyframes slideRight { from{transform:translateX(100%)} to{transform:translateX(0)} }
+        @keyframes spin { to{transform:translateY(-50%) rotate(360deg)} }
         @keyframes progressPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
         .ck-progress-bar { transition: width 0.4s cubic-bezier(0.4,0,0.2,1); animation: progressPulse 2s ease-in-out infinite; }
         .ck-scroll::-webkit-scrollbar { width:4px; }
