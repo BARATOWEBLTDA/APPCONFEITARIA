@@ -365,7 +365,15 @@ function CartContent({
                 <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Seu nome"
                   style={{width:'100%',padding:'12px 14px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                   onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
-                <input value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="WhatsApp: (00) 9 0000-0000" type="tel"
+                <input value={telefone} onChange={e => {
+                  const v = e.target.value.replace(/\D/g,'').slice(0,11)
+                  let f = v
+                  if (v.length > 10) f = `(${v.slice(0,2)}) ${v.slice(2,7)}-${v.slice(7)}`
+                  else if (v.length > 6) f = `(${v.slice(0,2)}) ${v.slice(2,6)}-${v.slice(6)}`
+                  else if (v.length > 2) f = `(${v.slice(0,2)}) ${v.slice(2)}`
+                  else if (v.length > 0) f = `(${v}`
+                  setTelefone(f)
+                }} placeholder="WhatsApp: (00) 9 0000-0000" type="tel" inputMode="numeric"
                   style={{width:'100%',padding:'12px 14px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                   onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
               </div>
