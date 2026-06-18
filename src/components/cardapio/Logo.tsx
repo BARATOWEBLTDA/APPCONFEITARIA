@@ -128,13 +128,13 @@ export function Logo({ logoUrl, borderColor, storeName, storeDescription, corNom
           )}
 
           {/* Cidade */}
-          {(mostrarCidade || mostrarCompleto) && (
+          {(cidade || enderecoCompleto) && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginBottom: '4px' }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
               <span style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: 500 }}>{cidade}</span>
-              {mostrarCompleto && (
+              {enderecoCompleto && (
                 <button onClick={() => setModalEndereco(true)} style={{ fontSize: '12px', color: borderColor || '#ec4899', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}>
-                  Ver endereço completo
+                  Ver no mapa
                 </button>
               )}
             </div>
