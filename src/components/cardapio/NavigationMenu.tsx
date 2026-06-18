@@ -409,30 +409,19 @@ function CartContent({
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px'}}>
                   <div>
                     <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Data</label>
-                    <input
-                      type="text" value={dataEntrega} inputMode="numeric"
-                      placeholder="Definir data"
-                      onChange={e => {
-                        let v = e.target.value.replace(/\D/g,'').slice(0,8)
-                        if (v.length > 4) v = v.slice(0,2)+'/'+v.slice(2,4)+'/'+v.slice(4)
-                        else if (v.length > 2) v = v.slice(0,2)+'/'+v.slice(2)
-                        setDataEntrega(v)
-                      }}
-                      style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
-                      onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
+                    <label style={{position:'relative',display:'flex',alignItems:'center',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color: dataEntrega ? '#3e3e3e' : '#a0a0a0',background:'#fff',cursor:'pointer',boxSizing:'border-box',fontFamily:'inherit'}}>
+                      {dataEntrega ? new Date(dataEntrega + 'T12:00:00').toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'}) : 'Definir data'}
+                      <input type="date" value={dataEntrega} min={minDate} onChange={e => setDataEntrega(e.target.value)}
+                        style={{position:'absolute',opacity:0,inset:0,width:'100%',height:'100%',cursor:'pointer',fontSize:'16px'}} />
+                    </label>
                   </div>
                   <div>
                     <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Horário</label>
-                    <input
-                      type="text" value={horaEntrega} inputMode="numeric"
-                      placeholder="Definir hora"
-                      onChange={e => {
-                        let v = e.target.value.replace(/\D/g,'').slice(0,4)
-                        if (v.length > 2) v = v.slice(0,2)+':'+v.slice(2)
-                        setHoraEntrega(v)
-                      }}
-                      style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
-                      onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
+                    <label style={{position:'relative',display:'flex',alignItems:'center',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color: horaEntrega ? '#3e3e3e' : '#a0a0a0',background:'#fff',cursor:'pointer',boxSizing:'border-box',fontFamily:'inherit'}}>
+                      {horaEntrega || 'Definir hora'}
+                      <input type="time" value={horaEntrega} onChange={e => setHoraEntrega(e.target.value)}
+                        style={{position:'absolute',opacity:0,inset:0,width:'100%',height:'100%',cursor:'pointer',fontSize:'16px'}} />
+                    </label>
                   </div>
                 </div>
               </div>
