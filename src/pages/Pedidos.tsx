@@ -391,55 +391,52 @@ function ModalPedido({ p, onClose, onEditar }: { p: Pedido; onClose: () => void;
         </div>
 
         <div className="mp-body">
-          {/* Grid 2 colunas */}
-          <div className="mp-grid">
-            {/* Cliente */}
-            <div className="mp-section">
-              <p className="mp-label">Cliente</p>
-              <p className="mp-value">{p.cliente_nome || '—'}</p>
-              {p.cliente_telefone && <p className="mp-sub">{p.cliente_telefone}</p>}
+          <div className="mp-lista">
+            <div className="mp-row">
+              <span className="mp-label">Cliente</span>
+              <span className="mp-val">{p.cliente_nome || '—'}</span>
             </div>
-
-            {/* Entrega */}
-            <div className="mp-section">
-              <p className="mp-label">Entrega</p>
-              <p className="mp-value">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</p>
-              {p.data_entrega && <p className="mp-sub">{formatDate(p.data_entrega)}{p.horario_entrega ? ` às ${p.horario_entrega.slice(0,5)}` : ''}</p>}
-              {enderecoCompleto && <p className="mp-sub" style={{ marginTop: 4 }}>{enderecoCompleto}</p>}
-            </div>
-
-            {/* Pagamento */}
-            <div className="mp-section">
-              <p className="mp-label">Pagamento</p>
-              <p className="mp-value" style={{ color: pagamentoCor }}>{pagamentoLabel}</p>
-              <p className="mp-value" style={{ marginTop: 4 }}>{formatMoney(p.valor_total)}</p>
-            </div>
-
-            {/* Personalização */}
-            {(p.personalizacao_tema || p.personalizacao_nome || p.personalizacao_idade || p.personalizacao_cor || p.personalizacao_obs) && (
-              <div className="mp-section">
-                <p className="mp-label">Personalização</p>
-                {p.personalizacao_tema && <p className="mp-sub">Tema: {p.personalizacao_tema}</p>}
-                {p.personalizacao_nome && <p className="mp-sub">Nome: {p.personalizacao_nome}</p>}
-                {p.personalizacao_idade && <p className="mp-sub">Idade: {p.personalizacao_idade}</p>}
-                {p.personalizacao_cor && <p className="mp-sub">Cor: {p.personalizacao_cor}</p>}
-                {p.personalizacao_obs && <p className="mp-sub">Decoração: {p.personalizacao_obs}</p>}
+            {p.cliente_telefone && (
+              <div className="mp-row">
+                <span className="mp-label">Telefone</span>
+                <span className="mp-val">{p.cliente_telefone}</span>
               </div>
             )}
+            <div className="mp-row">
+              <span className="mp-label">Entrega</span>
+              <span className="mp-val">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</span>
+            </div>
+            {p.data_entrega && (
+              <div className="mp-row">
+                <span className="mp-label">Data</span>
+                <span className="mp-val">{formatDate(p.data_entrega)}{p.horario_entrega ? ` às ${p.horario_entrega.slice(0,5)}` : ''}</span>
+              </div>
+            )}
+            {enderecoCompleto && (
+              <div className="mp-row">
+                <span className="mp-label">Endereço</span>
+                <span className="mp-val">{enderecoCompleto}</span>
+              </div>
+            )}
+            <div className="mp-row">
+              <span className="mp-label">Pagamento</span>
+              <span className="mp-val" style={{ color: pagamentoCor }}>{pagamentoLabel}</span>
+            </div>
+            <div className="mp-row">
+              <span className="mp-label">Valor total</span>
+              <span className="mp-val" style={{ fontWeight: 700 }}>{formatMoney(p.valor_total)}</span>
+            </div>
+            {p.personalizacao_tema && <div className="mp-row"><span className="mp-label">Tema</span><span className="mp-val">{p.personalizacao_tema}</span></div>}
+            {p.personalizacao_nome && <div className="mp-row"><span className="mp-label">Nome</span><span className="mp-val">{p.personalizacao_nome}</span></div>}
+            {p.personalizacao_idade && <div className="mp-row"><span className="mp-label">Idade</span><span className="mp-val">{p.personalizacao_idade}</span></div>}
+            {p.personalizacao_cor && <div className="mp-row"><span className="mp-label">Cor</span><span className="mp-val">{p.personalizacao_cor}</span></div>}
+            {p.personalizacao_obs && <div className="mp-row"><span className="mp-label">Decoração</span><span className="mp-val">{p.personalizacao_obs}</span></div>}
+            {p.observacoes && <div className="mp-row"><span className="mp-label">Observações</span><span className="mp-val">{p.observacoes}</span></div>}
           </div>
 
-          {/* Observações */}
-          {p.observacoes && (
-            <div className="mp-section" style={{ marginTop: 16 }}>
-              <p className="mp-label">Observações</p>
-              <p className="mp-sub">{p.observacoes}</p>
-            </div>
-          )}
-
-          {/* Itens */}
           {itens.length > 0 && (
-            <div style={{ marginTop: 16 }}>
-              <p className="mp-label">Itens do pedido</p>
+            <div style={{ marginTop: 14 }}>
+              <p className="mp-label" style={{ marginBottom: 6 }}>Itens do pedido</p>
               <div className="mp-itens">
                 {itens.map((item, i) => (
                   <div key={i} className="mp-item">
@@ -817,18 +814,18 @@ export default function Pedidos() {
 
         /* ── Modal de pedido ── */
         .mp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; animation: hsFadeIn 0.2s ease; }
-        .mp-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg-card,#fff); border-radius: 16px; z-index: 201; width: 460px; max-width: 95vw; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: hsFadeIn 0.2s ease; font-family: inherit; }
+        .mp-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg-card,#fff); border-radius: 16px; z-index: 201; width: 420px; max-width: 95vw; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: hsFadeIn 0.2s ease; font-family: inherit; }
         .mp-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 1rem 1.25rem 0.75rem; border-bottom: 1.5px solid var(--border,#ECC2D0); flex-shrink: 0; }
         .mp-numero { font-size: 1rem; font-weight: 800; color: var(--text-title,#431524); }
         .mp-criado { font-size: 0.68rem; color: var(--text-muted,#C39EAA); margin: 2px 0 0; }
         .mp-fechar { background: none; border: none; cursor: pointer; color: var(--text-muted,#C39EAA); display: flex; padding: 4px; border-radius: 6px; }
         .mp-fechar:hover { background: var(--bg-subtle,#F7EEF1); color: var(--text-title,#431524); }
-        .mp-body { overflow-y: auto; flex: 1; padding: 0.9rem 1.25rem; }
-        .mp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-        .mp-section { display: flex; flex-direction: column; gap: 2px; }
-        .mp-label { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted,#C39EAA); margin: 0 0 3px; }
-        .mp-value { font-size: 0.85rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
-        .mp-sub { font-size: 0.78rem; color: var(--text-secondary,#6E3548); margin: 0; }
+        .mp-body { overflow-y: auto; flex: 1; padding: 0.75rem 1.25rem; }
+        .mp-lista { display: flex; flex-direction: column; }
+        .mp-row { display: flex; align-items: baseline; justify-content: space-between; padding: 0.45rem 0; border-bottom: 1px solid var(--border,#ECC2D0); gap: 12px; }
+        .mp-row:last-child { border-bottom: none; }
+        .mp-label { font-size: 0.72rem; font-weight: 600; color: var(--text-muted,#C39EAA); white-space: nowrap; flex-shrink: 0; margin: 0; }
+        .mp-val { font-size: 0.84rem; color: var(--text-title,#431524); text-align: right; }
         .mp-itens { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
         .mp-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--bg-subtle,#F7EEF1); border-radius: 10px; }
         .mp-item-img { width: 36px; height: 36px; border-radius: 7px; background: var(--bg-card,#fff); border: 1px solid var(--border,#ECC2D0); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
