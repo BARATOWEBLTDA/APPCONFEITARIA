@@ -603,10 +603,21 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
+      document.documentElement.style.overflow = 'hidden'
+      const main = document.querySelector('.layout-main') as HTMLElement
+      if (main) main.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+      const main = document.querySelector('.layout-main') as HTMLElement
+      if (main) main.style.overflow = ''
     }
-    return () => { document.body.style.overflow = '' }
+    return () => {
+      document.body.style.overflow = ''
+      document.documentElement.style.overflow = ''
+      const main = document.querySelector('.layout-main') as HTMLElement
+      if (main) main.style.overflow = ''
+    }
   }, [isOpen])
 
   const sharedProps = {
