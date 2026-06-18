@@ -1022,11 +1022,14 @@ export default function Pedidos() {
         .map-btn--maps { background: #ecf3ff; color: #4285f4; }
         .map-btn-close { width: 100%; padding: 0.85rem; background: var(--bg-subtle,#F7EEF1); color: var(--text-primary,#431524); border: none; border-radius: 50px; font-family: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
 
-        .fd-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; animation: hsFadeIn 0.2s ease; }
-        .fd-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card,#fff); border-radius: 20px 20px 0 0; z-index: 101; max-height: 85vh; display: flex; flex-direction: column; animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
+        .fd-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; animation: hsFadeIn 0.2s ease; }
+        .fd-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card,#fff); border-radius: 20px 20px 0 0; z-index: 301; max-height: 85vh; display: flex; flex-direction: column; animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
         @media (min-width: 768px) {
           .fd-drawer { top: 0; bottom: 0; left: auto; right: 0; width: 320px; border-radius: 0; max-height: 100vh; animation: hsSlideRight 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: -4px 0 32px rgba(0,0,0,0.15); }
           .fd-handle { display: none; }
+          .fd-datas { flex-direction: column; gap: 8px; }
+          .fd-data-field { width: 100%; }
+          .fd-data-input { width: 100%; box-sizing: border-box; }
         }
         @keyframes hsSlideRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .fd-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border,#ECC2D0); margin: 10px auto 0; flex-shrink: 0; }
