@@ -714,14 +714,14 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
           {/* Backdrop */}
           <div
             onClick={handleClose}
-            style={{position:'fixed',inset:0,zIndex:50,background:'rgba(0,0,0,0.4)',backdropFilter:'blur(2px)'}}
+            style={{position:'fixed',inset:0,zIndex:200,background:'rgba(0,0,0,0.4)',backdropFilter:'blur(2px)'}}
           />
 
           {/* Sidebar */}
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              position:'fixed',top:0,right:0,bottom:0,zIndex:51,
+              position:'fixed',top:0,right:0,bottom:0,zIndex:201,
               width:'420px',maxWidth:'96vw',
               background:'#fff',
               display:'flex',flexDirection:'column',
