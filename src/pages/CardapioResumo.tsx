@@ -73,7 +73,7 @@ export default function CardapioResumo() {
   return (
     <div style={{ padding: '1.25rem 1rem 5.5rem', maxWidth: 640, margin: '0 auto' }}>
       <h1 style={{ margin: '0 0 4px', fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-title,#431524)' }}>Visão Geral do Cardápio</h1>
-      <p style={{ margin: '0 0 1.25rem', fontSize: '0.85rem', color: 'var(--text-muted,#C39EAA)' }}>Como seu cardápio está performando</p>
+      <p style={{ margin: '0 0 1.5rem', fontSize: '0.85rem', color: 'var(--text-muted,#C39EAA)' }}>Como seu cardápio está performando</p>
 
       {/* Link de compartilhamento — destaque */}
       <div style={{ background: 'linear-gradient(135deg, var(--primary,#986274), var(--primary-dark,#6E3548))', borderRadius: 16, padding: '1.25rem', marginBottom: '1rem', color: '#fff' }}>
