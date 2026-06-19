@@ -152,7 +152,7 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
         .eq('user_id', confeteiraUserId).like('telefone', `%${tel.slice(-8)}%`).maybeSingle()
       const c = existe
         ? { id: existe.id, nome: existe.nome, telefone: existe.telefone }
-        : await supabase.from('clientes').insert({ user_id: confeteiraUserId, nome: cadNome.trim(), telefone: cadTel })
+        : await supabase.from('clientes').insert({ user_id: confeteiraUserId, nome: cadNome.trim(), telefone: tel, whatsapp: tel, email: cadEmail || null })
             .select('id, nome, telefone').single().then(r => r.data ? { id: r.data.id, nome: r.data.nome, telefone: r.data.telefone } : null)
       if (c) {
         setCliente(c); localStorage.setItem(`cardapio_cliente_${confeteiraUserId}`, JSON.stringify(c))
