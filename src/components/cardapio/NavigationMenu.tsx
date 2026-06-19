@@ -744,6 +744,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
         @keyframes slideRight { from{transform:translateX(100%)} to{transform:translateX(0)} }
         @keyframes spin { to{transform:translateY(-50%) rotate(360deg)} }
         @keyframes progressPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+        @keyframes fadeScaleIn { from{opacity:0;transform:translate(-50%,-50%) scale(0.95)} to{opacity:1;transform:translate(-50%,-50%) scale(1)} }
         .ck-progress-bar { transition: width 0.4s cubic-bezier(0.4,0,0.2,1); animation: progressPulse 2s ease-in-out infinite; }
         .ck-scroll::-webkit-scrollbar { width:4px; }
         .ck-scroll::-webkit-scrollbar-thumb { background:#e5e7eb; border-radius:4px; }
@@ -884,52 +885,48 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
         </>
       )}
 
-      {/* ═══ DESKTOP: sidebar deslizando da direita ═══ */}
+      {/* ═══ DESKTOP: modal centralizado ═══ */}
       {!isMobile && isOpen && (
         <>
-          {/* Backdrop */}
-          <div
-            onClick={handleClose}
-            style={{position:'fixed',inset:0,zIndex:200,background:'rgba(0,0,0,0.4)',backdropFilter:'blur(2px)'}}
-          />
-
-          {/* Sidebar */}
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              position:'fixed',top:0,right:0,bottom:0,zIndex:201,
-              width:'420px',maxWidth:'96vw',
-              background:'#fff',
-              display:'flex',flexDirection:'column',
-              boxShadow:'-8px 0 40px rgba(0,0,0,0.15)',
-              animation:'slideRight 0.3s cubic-bezier(0.32,0.72,0,1)',
-            }}
-          >
+          <div onClick={handleClose} style={{position:'fixed',inset:0,zIndex:200,background:'rgba(0,0,0,0.5)',backdropFilter:'blur(2px)'}} />
+          <div onClick={e => e.stopPropagation()} style={{
+            position:'fixed',top:'50%',left:'50%',transform:'translate(-50%,-50%)',
+            width:'520px',maxWidth:'95vw',height:'80vh',
+            background:'#fff',zIndex:201,
+            display:'flex',flexDirection:'column',
+            boxShadow:'0 24px 64px rgba(0,0,0,0.2)',
+            borderRadius:'20px',overflow:'hidden',
+            animation:'fadeScaleIn 0.2s ease',
+          }}>
             {/* Header */}
-            <div style={{padding:'20px 20px 14px',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:'1px solid #f0f0f0'}}>
+            <div style={{padding:'16px 20px',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:'1px solid #f0f0f0',flexShrink:0}}>
               <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
-                {step === 'checkout' && (
-                  <button onClick={() => setStep('cart')} style={{background:'none',border:'none',cursor:'pointer',padding:'4px',display:'flex'}}>
+                {(step === 'dados' || step === 'entrega' || step === 'checkout') && (
+                  <button onClick={() => step === 'checkout' ? setStep('entrega') : step === 'entrega' ? setStep('dados') : setStep('cart')} style={{background:'none',border:'none',cursor:'pointer',padding:'4px',display:'flex'}}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3e3e3e" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
                   </button>
                 )}
-                <div style={{width:'44px',height:'44px',borderRadius:'12px',background:accent,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                  <ShoppingBag size={22} color="#fff" />
+                <div style={{width:'40px',height:'40px',borderRadius:'12px',background:accent,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <ShoppingBag size={20} color="#fff" />
                 </div>
                 <div>
-                  <h3 style={{margin:0,fontWeight:800,fontSize:'19px',color:'#1f2937',fontFamily:'inherit'}}>
-                    {step === 'cart' ? 'Sacola' : 'Finalizar pedido'}
+                  <h3 style={{margin:0,fontWeight:800,fontSize:'17px',color:'#1f2937',fontFamily:'inherit'}}>
+                    {step === 'cart' ? 'Sacola' : step === 'dados' ? 'Seus dados' : step === 'entrega' ? 'Entrega' : 'Pagamento'}
                   </h3>
-                  <p style={{margin:0,fontSize:'13px',color:'#9ca3af'}}>
-                    {step === 'cart' ? `${count} ${count===1?'item':'itens'}` : 'Preencha os dados abaixo'}
+                  <p style={{margin:0,fontSize:'12px',color:'#9ca3af'}}>
+                    {step === 'cart' ? `${count} ${count===1?'item':'itens'}` : step === 'dados' ? 'Passo 1 de 3' : step === 'entrega' ? 'Passo 2 de 3' : 'Passo 3 de 3'}
                   </p>
                 </div>
               </div>
-              <button onClick={handleClose} style={{width:'36px',height:'36px',borderRadius:'50%',background:'#f5f5f5',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                <X size={18} color="#6b7280" />
+              <button onClick={handleClose} style={{width:'32px',height:'32px',borderRadius:'50%',background:'#f5f5f5',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                <X size={16} color="#6b7280" />
               </button>
             </div>
-
+            {(step === 'dados' || step === 'entrega' || step === 'checkout') && (
+              <div style={{margin:'0 20px 0',height:'3px',background:'#f0f0f0'}}>
+                <div className="ck-progress-bar" style={{height:'100%',width:step==='dados'?'33%':step==='entrega'?'66%':'100%',background:accent,borderRadius:'99px'}} />
+              </div>
+            )}
             <CartContent key={`desktop-${isOpen}`} {...sharedProps} />
           </div>
         </>
