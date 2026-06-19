@@ -11,7 +11,7 @@ export default function CardapioResumo() {
   const [copiado, setCopiado] = useState(false)
   const [periodo, setPeriodo] = useState<'7d' | '30d' | 'tudo'>('30d')
 
-  const link = (profile as any)?.slug ? `${window.location.origin}/cardapio/${(profile as any).slug}` : ''
+  const link = profile?.slug ? `${window.location.origin}/cardapio/${profile.slug}` : ''
 
   useEffect(() => {
     if (!profile?.id) return

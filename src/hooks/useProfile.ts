@@ -6,11 +6,13 @@ export interface Profile {
   nome: string;
   nome_loja: string;
   foto_url: string | null;
+  slug?: string;
 }
 
 // Store global para compartilhar o perfil entre componentes
 let globalProfile: Profile | null = null;
 const listeners: Set<(p: Profile | null) => void> = new Set();
+let channelStarted = false;
 
 function notifyListeners(profile: Profile | null) {
   globalProfile = profile;
@@ -28,6 +30,22 @@ export async function refreshProfile() {
   if (data) notifyListeners(data);
 }
 
+// Garante que o canal realtime seja criado uma única vez em toda a aplicação
+function ensureRealtimeChannel() {
+  if (channelStarted) return;
+  channelStarted = true;
+  supabase
+    .channel("profile-changes")
+    .on("postgres_changes", {
+      event: "UPDATE",
+      schema: "public",
+      table: "profiles",
+    }, (payload) => {
+      notifyListeners(payload.new as Profile);
+    })
+    .subscribe();
+}
+
 export function useProfile() {
   const [profile, setProfile] = useState<Profile | null>(globalProfile);
   const [loading, setLoading] = useState(!globalProfile);
@@ -43,21 +61,11 @@ export function useProfile() {
       setLoading(false);
     }
 
-    // Escuta mudanças em tempo real no Supabase
-    const channel = supabase
-      .channel("profile-changes")
-      .on("postgres_changes", {
-        event: "UPDATE",
-        schema: "public",
-        table: "profiles",
-      }, (payload) => {
-        notifyListeners(payload.new as Profile);
-      })
-      .subscribe();
+    // Garante o canal realtime único (não recria a cada montagem)
+    ensureRealtimeChannel();
 
     return () => {
       listeners.delete(setProfile);
-      supabase.removeChannel(channel);
     };
   }, []);
 
