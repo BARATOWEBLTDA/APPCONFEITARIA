@@ -385,9 +385,23 @@ function CartContent({
 
             <button
               onClick={() => window.open(pedidoConfirmado.whatsapp, '_blank')}
-              style={{width:'100%',padding:'14px',background:'#25D366',color:'white',border:'none',borderRadius:'14px',fontWeight:700,fontSize:'15px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit',marginTop:'4px',boxSizing:'border-box'}}>
-              <MessageCircle size={18} /> Enviar mensagem no WhatsApp
+              className="wa-btn-gradient"
+              style={{width:'100%',padding:'14px',color:'white',border:'none',borderRadius:'14px',fontWeight:700,fontSize:'15px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',fontFamily:'inherit',marginTop:'4px',boxSizing:'border-box'}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.004c5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm5.84 14.07c-.25.7-1.45 1.35-2 1.43-.51.08-1.16.11-1.87-.12-.43-.14-.98-.32-1.69-.63-2.97-1.28-4.91-4.26-5.06-4.46-.15-.2-1.21-1.61-1.21-3.07s.76-2.18 1.03-2.47c.27-.3.59-.37.79-.37.2 0 .39 0 .56.01.18.01.42-.07.66.5.25.6.84 2.07.91 2.22.07.15.12.33.02.53-.1.2-.15.33-.3.5-.15.18-.31.4-.45.54-.15.15-.3.31-.13.61.17.3.76 1.25 1.63 2.02 1.12 1 2.06 1.31 2.36 1.46.3.15.48.13.65-.08.18-.2.74-.86.94-1.16.2-.3.4-.25.67-.15.27.1 1.72.81 2.02.96.3.15.5.22.57.35.07.13.07.74-.18 1.44z"/></svg>
+              Enviar mensagem no WhatsApp
             </button>
+            <style>{`
+              .wa-btn-gradient {
+                background: linear-gradient(270deg, #25D366, #1ebe5d, #25D366, #2bd96e);
+                background-size: 300% 300%;
+                animation: waGradientMove 4s ease infinite;
+              }
+              @keyframes waGradientMove {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+              }
+            `}</style>
 
             <button
               onClick={() => { setPedidoConfirmado(null); onClose() }}
