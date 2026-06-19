@@ -733,6 +733,14 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
   const [activeTab, setActiveTab] = useState('inicio')
   const isMobile = useIsMobile()
 
+  const clienteLogado = (() => {
+    try {
+      const uid = localStorage.getItem('cardapio_user_id') || ''
+      const saved = localStorage.getItem(`cardapio_cliente_${uid}`)
+      return saved ? JSON.parse(saved) : null
+    } catch { return null }
+  })()
+
   const [config, setConfig] = useState<CheckoutConfig>(DEFAULT_CONFIG)
 
   useEffect(() => {
@@ -966,7 +974,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                     {step === 'cart' ? 'Sacola' : step === 'dados' ? 'Seus dados' : step === 'entrega' ? 'Entrega' : 'Pagamento'}
                   </h3>
                   <p style={{margin:0,fontSize:'12px',color:'#9ca3af'}}>
-                    {step === 'cart' ? `${count} ${count===1?'item':'itens'}` : step === 'dados' ? 'Passo 1 de 3' : step === 'entrega' ? 'Passo 2 de 3' : 'Passo 3 de 3'}
+                    {step === 'cart' ? `${count} ${count===1?'item':'itens'}` : step === 'dados' ? 'Passo 1 de 3' : step === 'entrega' ? (clienteLogado ? 'Passo 1 de 2' : 'Passo 2 de 3') : (clienteLogado ? 'Passo 2 de 2' : 'Passo 3 de 3')}
                   </p>
                 </div>
               </div>
@@ -976,7 +984,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
             </div>
             {(step === 'dados' || step === 'entrega' || step === 'checkout') && (
               <div style={{margin:'0 20px 0',height:'3px',background:'#f0f0f0'}}>
-                <div className="ck-progress-bar" style={{height:'100%',width:step==='dados'?'33%':step==='entrega'?'66%':'100%',background:accent,borderRadius:'99px'}} />
+                <div className="ck-progress-bar" style={{height:'100%',width:step==='dados'?'33%':step==='entrega'?(clienteLogado?'50%':'66%'):'100%',background:accent,borderRadius:'99px'}} />
               </div>
             )}
             <CartContent key={`desktop-${isOpen}`} {...sharedProps} />
