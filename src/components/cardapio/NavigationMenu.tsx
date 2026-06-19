@@ -396,16 +396,16 @@ function CartContent({
       {/* ═══ DADOS STEP ═══ */}
       {step === 'dados' && (
         <>
-          <div className="ck-scroll" style={{flex:1,overflowY:'auto',padding:'20px'}}>
-            <div style={{display:'flex',flexDirection:'column',gap:'12px'}}>
+          <div className="ck-scroll" style={{flex:1,overflowY:'auto',padding:'24px 24px 8px'}}>
+            <div style={{display:'flex',flexDirection:'column',gap:'16px'}}>
               <div>
-                <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>Seu nome</label>
+                <label style={{fontSize:'13px',fontWeight:600,color:'#717171',display:'block',marginBottom:'8px'}}>Seu nome</label>
                 <input value={nome} onChange={e => setNome(e.target.value)} placeholder="Como podemos te chamar?"
-                  style={{width:'100%',padding:'14px',border:'2px solid #f0f0f0',borderRadius:'12px',fontSize:'15px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                  style={{width:'100%',padding:'16px',border:'2px solid #f0f0f0',borderRadius:'12px',fontSize:'16px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                   onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
               </div>
               <div>
-                <label style={{fontSize:'12px',fontWeight:600,color:'#717171',display:'block',marginBottom:'6px'}}>WhatsApp</label>
+                <label style={{fontSize:'13px',fontWeight:600,color:'#717171',display:'block',marginBottom:'8px'}}>WhatsApp</label>
                 <input value={telefone} onChange={e => {
                   const v = e.target.value.replace(/\D/g,'').slice(0,11)
                   let f = v
@@ -415,19 +415,19 @@ function CartContent({
                   else if (v.length > 0) f = `(${v}`
                   setTelefone(f)
                 }} placeholder="(00) 9 0000-0000" type="tel" inputMode="numeric"
-                  style={{width:'100%',padding:'14px',border:'2px solid #f0f0f0',borderRadius:'12px',fontSize:'15px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                  style={{width:'100%',padding:'16px',border:'2px solid #f0f0f0',borderRadius:'12px',fontSize:'16px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                   onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
               </div>
             </div>
           </div>
-          <div style={{padding:'14px 20px',borderTop:'1px solid #f0f0f0'}}>
+          <div style={{padding:'16px 24px 24px',borderTop:'1px solid #f0f0f0'}}>
             <button
               onClick={() => {
                 if (!nome.trim()) return alert('Preencha seu nome')
                 if (!telefone.trim() || telefone.replace(/\D/g,'').length < 10) return alert('Preencha seu WhatsApp')
                 setStep('entrega')
               }}
-              style={{width:'100%',padding:'15px',background:accent,color:'white',border:'none',borderRadius:'14px',fontWeight:800,fontSize:'16px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit'}}>
+              style={{width:'100%',padding:'16px',background:accent,color:'white',border:'none',borderRadius:'14px',fontWeight:800,fontSize:'16px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit'}}>
               Continuar <ChevronRight size={18} />
             </button>
           </div>
@@ -891,7 +891,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
           <div onClick={handleClose} style={{position:'fixed',inset:0,zIndex:200,background:'rgba(0,0,0,0.5)',backdropFilter:'blur(2px)'}} />
           <div onClick={e => e.stopPropagation()} style={{
             position:'fixed',top:'50%',left:'50%',transform:'translate(-50%,-50%)',
-            width:'520px',maxWidth:'95vw',height:'80vh',
+            width:'520px',maxWidth:'95vw',height:'auto',
             background:'#fff',zIndex:201,
             display:'flex',flexDirection:'column',
             boxShadow:'0 24px 64px rgba(0,0,0,0.2)',
