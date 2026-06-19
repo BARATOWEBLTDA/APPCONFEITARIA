@@ -114,6 +114,29 @@ function CartContent({
   const [pedidoConfirmado, setPedidoConfirmado] = useState<{numero: number; resumo: string; whatsapp: string; storeName: string} | null>(null)
   const [cepErro, setCepErro] = useState('')
 
+  // Toca som de sucesso quando o pedido é confirmado
+  useEffect(() => {
+    if (pedidoConfirmado) {
+      try {
+        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+        const tocarNota = (freq: number, inicio: number, duracao: number) => {
+          const osc = ctx.createOscillator()
+          const gain = ctx.createGain()
+          osc.connect(gain); gain.connect(ctx.destination)
+          osc.type = 'sine'
+          osc.frequency.value = freq
+          gain.gain.setValueAtTime(0, ctx.currentTime + inicio)
+          gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + inicio + 0.02)
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + inicio + duracao)
+          osc.start(ctx.currentTime + inicio)
+          osc.stop(ctx.currentTime + inicio + duracao)
+        }
+        tocarNota(880, 0, 0.15)
+        tocarNota(1175, 0.12, 0.25)
+      } catch {}
+    }
+  }, [pedidoConfirmado])
+
   // Pegar dados do cliente logado
   const clienteLogado = (() => {
     try {
@@ -318,45 +341,60 @@ function CartContent({
 
   return (
     <>
-      {/* ═══ TELA DE SUCESSO ═══ */}
+      {/* ═══ TELA DE SUCESSO — fullscreen rosa ═══ */}
       {pedidoConfirmado && (
-        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'32px 24px',textAlign:'center',gap:'12px'}}>
-          <div style={{width:'72px',height:'72px',borderRadius:'50%',background:'#22c55e',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'8px'}}>
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <div style={{
+          position:'fixed',inset:0,zIndex:500,
+          background:accent,
+          display:'flex',alignItems:'center',justifyContent:'center',
+          padding:'24px',
+          animation:'fadeIn 0.25s ease',
+        }}>
+          <div style={{
+            background:'#fff',borderRadius:'24px',
+            width:'420px',maxWidth:'100%',maxHeight:'90vh',overflowY:'auto',
+            padding:'32px 24px',textAlign:'center',
+            boxShadow:'0 24px 64px rgba(0,0,0,0.25)',
+            animation:'successPop 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+            display:'flex',flexDirection:'column',gap:'12px',alignItems:'center',
+          }}>
+            <div style={{width:'80px',height:'80px',borderRadius:'50%',background:'#22c55e',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'4px',animation:'checkPop 0.5s 0.2s both cubic-bezier(0.34,1.56,0.64,1)'}}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <p style={{margin:0,fontWeight:800,fontSize:'24px',color:'#3e3e3e'}}>Pedido Enviado!</p>
+            <p style={{margin:0,fontSize:'14px',color:'#a0a0a0'}}>Agradecemos sua preferência!</p>
+            {pedidoConfirmado.numero > 0 && (
+              <p style={{margin:0,fontWeight:700,fontSize:'17px',color:accent}}>Pedido #{pedidoConfirmado.numero}</p>
+            )}
+
+            {/* Resumo */}
+            <div style={{background:'#f9fafb',borderRadius:'14px',padding:'16px',width:'100%',textAlign:'left',marginTop:'4px',boxSizing:'border-box'}}>
+              <p style={{margin:'0 0 6px',fontSize:'12px',fontWeight:700,color:'#a0a0a0',textTransform:'uppercase',letterSpacing:'0.05em'}}>Resumo</p>
+              <p style={{margin:0,fontSize:'14px',color:'#3e3e3e'}}>{pedidoConfirmado.resumo}</p>
+            </div>
+
+            {/* Mensagem da loja */}
+            <div style={{background:`${accent}10`,border:`1.5px solid ${accent}30`,borderRadius:'14px',padding:'14px',width:'100%',textAlign:'left',boxSizing:'border-box'}}>
+              <p style={{margin:0,fontSize:'13px',color:'#3e3e3e',lineHeight:'1.5'}}>
+                A loja <strong>{pedidoConfirmado.storeName}</strong> entrará em contato com você pelo WhatsApp informado em breve.
+              </p>
+              <p style={{margin:'8px 0 0',fontSize:'12px',color:'#717171'}}>
+                Se quiser agilizar, envie uma mensagem para a loja:
+              </p>
+            </div>
+
+            <button
+              onClick={() => window.open(pedidoConfirmado.whatsapp, '_blank')}
+              style={{width:'100%',padding:'14px',background:'#25D366',color:'white',border:'none',borderRadius:'14px',fontWeight:700,fontSize:'15px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit',marginTop:'4px',boxSizing:'border-box'}}>
+              <MessageCircle size={18} /> Enviar mensagem no WhatsApp
+            </button>
+
+            <button
+              onClick={() => { setPedidoConfirmado(null); onClose() }}
+              style={{width:'100%',padding:'12px',background:'#f5f5f5',color:'#717171',border:'none',borderRadius:'14px',fontWeight:600,fontSize:'14px',cursor:'pointer',fontFamily:'inherit',boxSizing:'border-box'}}>
+              Voltar ao cardápio
+            </button>
           </div>
-          <p style={{margin:0,fontWeight:800,fontSize:'22px',color:'#3e3e3e'}}>Pedido Enviado!</p>
-          <p style={{margin:0,fontSize:'14px',color:'#a0a0a0'}}>Agradecemos sua preferência!</p>
-          {pedidoConfirmado.numero > 0 && (
-            <p style={{margin:0,fontWeight:700,fontSize:'16px',color:'#3e3e3e'}}>Pedido #{pedidoConfirmado.numero}</p>
-          )}
-
-          {/* Resumo */}
-          <div style={{background:'#f9fafb',borderRadius:'14px',padding:'16px',width:'100%',textAlign:'left',marginTop:'4px'}}>
-            <p style={{margin:'0 0 6px',fontSize:'12px',fontWeight:700,color:'#a0a0a0',textTransform:'uppercase',letterSpacing:'0.05em'}}>Resumo</p>
-            <p style={{margin:0,fontSize:'14px',color:'#3e3e3e'}}>{pedidoConfirmado.resumo}</p>
-          </div>
-
-          {/* Mensagem da loja */}
-          <div style={{background:`${accent}10`,border:`1.5px solid ${accent}30`,borderRadius:'14px',padding:'14px',width:'100%',textAlign:'left'}}>
-            <p style={{margin:0,fontSize:'13px',color:'#3e3e3e',lineHeight:'1.5'}}>
-              A loja <strong>{pedidoConfirmado.storeName}</strong> entrará em contato com você pelo WhatsApp informado em breve.
-            </p>
-            <p style={{margin:'8px 0 0',fontSize:'12px',color:'#717171'}}>
-              Se quiser agilizar, envie uma mensagem para a loja:
-            </p>
-          </div>
-
-          <button
-            onClick={() => window.open(pedidoConfirmado.whatsapp, '_blank')}
-            style={{width:'100%',padding:'14px',background:'#25D366',color:'white',border:'none',borderRadius:'14px',fontWeight:700,fontSize:'15px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit',marginTop:'4px'}}>
-            <MessageCircle size={18} /> Enviar mensagem no WhatsApp
-          </button>
-
-          <button
-            onClick={() => { setPedidoConfirmado(null); onClose() }}
-            style={{width:'100%',padding:'12px',background:'#f5f5f5',color:'#717171',border:'none',borderRadius:'14px',fontWeight:600,fontSize:'14px',cursor:'pointer',fontFamily:'inherit'}}>
-            Voltar ao cardápio
-          </button>
         </div>
       )}
 
@@ -756,6 +794,9 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
         @keyframes spin { to{transform:translateY(-50%) rotate(360deg)} }
         @keyframes progressPulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
         @keyframes fadeScaleIn { from{opacity:0;transform:translate(-50%,-50%) scale(0.95)} to{opacity:1;transform:translate(-50%,-50%) scale(1)} }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes successPop { 0%{opacity:0;transform:scale(0.8)} 100%{opacity:1;transform:scale(1)} }
+        @keyframes checkPop { 0%{transform:scale(0)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
         .ck-progress-bar { transition: width 0.4s cubic-bezier(0.4,0,0.2,1); animation: progressPulse 2s ease-in-out infinite; }
         .ck-scroll::-webkit-scrollbar { width:4px; }
         .ck-scroll::-webkit-scrollbar-thumb { background:#e5e7eb; border-radius:4px; }
