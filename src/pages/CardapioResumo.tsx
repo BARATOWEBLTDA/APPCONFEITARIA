@@ -6,7 +6,7 @@ export default function CardapioResumo() {
   const { profile } = useProfile()
   const [visitas, setVisitas] = useState(0)
   const [pedidos, setPedidos] = useState(0)
-  const [produtoTop, setProdutoTop] = useState<{ nome: string; qtd: number; imagem?: string } | null>(null)
+  const [produtosTop, setProdutosTop] = useState<{ nome: string; qtd: number; imagem?: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [copiado, setCopiado] = useState(false)
   const [periodo, setPeriodo] = useState<'hoje' | '7d' | '30d' | 'tudo'>('hoje')
@@ -45,7 +45,7 @@ export default function CardapioResumo() {
       setVisitas(visitasCount || 0)
       setPedidos(pedidosCardapio?.length || 0)
 
-      // Produto mais pedido
+      // Top 3 produtos mais pedidos
       const contagem: Record<string, { qtd: number; imagem?: string }> = {}
       pedidosCardapio?.forEach(p => {
         p.pedido_itens?.forEach((item: any) => {
@@ -53,21 +53,24 @@ export default function CardapioResumo() {
           contagem[item.nome_produto].qtd += item.quantidade
         })
       })
-      const top = Object.entries(contagem).sort((a, b) => b[1].qtd - a[1].qtd)[0]
+      const ranking = Object.entries(contagem).sort((a, b) => b[1].qtd - a[1].qtd).slice(0, 3)
 
-      // Fallback: se o item não tinha produto_id vinculado, tenta casar pelo nome
-      let imagemTop = top?.[1]?.imagem
-      if (top && !imagemTop) {
-        const { data: prodMatch } = await supabase
-          .from('produtos')
-          .select('imagem_url')
-          .eq('user_id', profile!.id)
-          .ilike('nome', top[0])
-          .maybeSingle()
-        imagemTop = prodMatch?.imagem_url
-      }
+      // Fallback: busca imagem por nome para itens sem produto_id vinculado
+      const ranqueados = await Promise.all(ranking.map(async ([nome, info]) => {
+        let imagem = info.imagem
+        if (!imagem) {
+          const { data: prodMatch } = await supabase
+            .from('produtos')
+            .select('imagem_url')
+            .eq('user_id', profile!.id)
+            .ilike('nome', nome)
+            .maybeSingle()
+          imagem = prodMatch?.imagem_url
+        }
+        return { nome, qtd: info.qtd, imagem }
+      }))
 
-      setProdutoTop(top ? { nome: top[0], qtd: top[1].qtd, imagem: imagemTop } : null)
+      setProdutosTop(ranqueados)
     } catch (err) {
       console.error('Erro ao carregar resumo do cardápio:', err)
     }
@@ -143,18 +146,27 @@ export default function CardapioResumo() {
             )}
           </div>
 
-          {/* Produto mais pedido */}
+          {/* Ranking de produtos mais pedidos */}
           <div style={{ background: '#fff', border: '1.5px solid var(--border,#ECC2D0)', borderRadius: 14, padding: '1.1rem' }}>
-            <p style={{ margin: '0 0 10px', fontSize: '0.78rem', color: 'var(--text-muted,#C39EAA)', fontWeight: 600 }}>Produto mais pedido</p>
-            {produtoTop ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 52, height: 52, borderRadius: 10, background: 'var(--bg-subtle,#F7EEF1)', border: '1px solid var(--border,#ECC2D0)', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
-                  {produtoTop.imagem ? <img src={produtoTop.imagem} alt={produtoTop.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '🎂'}
-                </div>
-                <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                  <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-title,#431524)' }}>{produtoTop.nome}</span>
-                  <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary,#986274)', background: 'var(--bg-subtle,#F7EEF1)', padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap' }}>{produtoTop.qtd}x pedido{produtoTop.qtd > 1 ? 's' : ''}</span>
-                </div>
+            <p style={{ margin: '0 0 12px', fontSize: '0.78rem', color: 'var(--text-muted,#C39EAA)', fontWeight: 600 }}>Mais pedidos do período</p>
+            {produtosTop.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {produtosTop.map((p, i) => {
+                  const trofeu = ['🥇', '🥈', '🥉'][i]
+                  const corPosicao = ['#d4af37', '#a8a8a8', '#cd7f32'][i]
+                  return (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: '1.3rem', width: 28, textAlign: 'center', flexShrink: 0 }}>{trofeu}</span>
+                      <div style={{ width: 46, height: 46, borderRadius: 10, background: 'var(--bg-subtle,#F7EEF1)', border: `1.5px solid ${corPosicao}40`, overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
+                        {p.imagem ? <img src={p.imagem} alt={p.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '🎂'}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                        <span style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-title,#431524)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.nome}</span>
+                        <span style={{ fontSize: '0.76rem', fontWeight: 700, color: corPosicao, background: `${corPosicao}15`, padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap', flexShrink: 0 }}>{p.qtd}x</span>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             ) : (
               <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted,#C39EAA)' }}>Nenhum pedido no período selecionado</p>
