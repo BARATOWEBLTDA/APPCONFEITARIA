@@ -486,6 +486,36 @@ function CartContent({
                     <span style={{fontSize:'11px',fontWeight:600,color:'#a0a0a0',whiteSpace:'nowrap'}}>Endereço de entrega</span>
                     <div style={{flex:1,height:'1px',background:'#f0f0f0'}} />
                   </div>
+
+                  {/* Endereços salvos */}
+                  {(() => {
+                    const userId = localStorage.getItem('cardapio_user_id') || ''
+                    const telCliente = localStorage.getItem(`cardapio_cliente_${userId}`) ? JSON.parse(localStorage.getItem(`cardapio_cliente_${userId}`)!).telefone : ''
+                    const key = `enderecos_${userId}_${telCliente.replace(/\D/g,'')}`
+                    const saved = (() => { try { return JSON.parse(localStorage.getItem(key)||'[]') } catch { return [] } })()
+                    if (saved.length === 0) return null
+                    return (
+                      <div style={{display:'flex',flexDirection:'column',gap:'6px',marginBottom:'4px'}}>
+                        <p style={{margin:0,fontSize:'11px',fontWeight:600,color:'#a0a0a0'}}>Endereços salvos</p>
+                        {saved.map((e: any, i: number) => (
+                          <button key={i} type="button"
+                            onClick={() => { setRua(e.rua); setNumero(e.numero); setComplemento(e.complemento); setBairro(e.bairro); setCidade(e.cidade); setCep(e.cep) }}
+                            style={{display:'flex',alignItems:'center',gap:'10px',padding:'10px 12px',border:`1.5px solid ${rua===e.rua&&numero===e.numero?accent:'#f0f0f0'}`,borderRadius:'10px',background:rua===e.rua&&numero===e.numero?`${accent}08`:'#fff',cursor:'pointer',textAlign:'left',width:'100%',fontFamily:'inherit'}}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={rua===e.rua&&numero===e.numero?accent:'#a0a0a0'} strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <div>
+                              <p style={{margin:0,fontSize:'13px',fontWeight:600,color:'#3e3e3e'}}>{e.rua}, {e.numero}</p>
+                              <p style={{margin:0,fontSize:'11px',color:'#a0a0a0'}}>{e.bairro}{e.cidade?` · ${e.cidade}`:''}</p>
+                            </div>
+                          </button>
+                        ))}
+                        <div style={{display:'flex',alignItems:'center',gap:'8px',margin:'4px 0'}}>
+                          <div style={{flex:1,height:'1px',background:'#f0f0f0'}} />
+                          <span style={{fontSize:'11px',color:'#a0a0a0'}}>ou preencha manualmente</span>
+                          <div style={{flex:1,height:'1px',background:'#f0f0f0'}} />
+                        </div>
+                      </div>
+                    )
+                  })()}
                   {/* CEP */}
                   <div style={{position:'relative'}}>
                     <input
