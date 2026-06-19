@@ -290,6 +290,13 @@ function CartContent({
           if (novoCliente) clienteId = novoCliente.id
         }
 
+        // Loga o cliente automaticamente após o pedido (se ainda não estiver logado)
+        if (clienteId && !localStorage.getItem(`cardapio_cliente_${confeteiraUserId}`)) {
+          localStorage.setItem(`cardapio_cliente_${confeteiraUserId}`, JSON.stringify({
+            id: clienteId, nome: nome.trim(), telefone: telefone.trim(),
+          }))
+        }
+
         const { data: pedidoSalvo } = await supabase.from('pedidos').insert({
             user_id: confeteiraUserId, cliente_id: clienteId,
             cliente_nome: nome.trim(), cliente_telefone: telefone.trim(), cliente_whatsapp: telefone.trim(),
