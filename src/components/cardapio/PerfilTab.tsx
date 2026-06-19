@@ -20,7 +20,7 @@ export type EnderecoSalvo = {
   rua: string; numero: string; complemento: string; bairro: string; cidade: string; cep: string
 }
 
-type Cliente = { id: string; nome: string; telefone: string; email?: string }
+type Cliente = { id: string; nome: string; telefone: string }
 type Pedido = {
   id: string; numero: number; status: string; created_at: string; valor_total: number
   forma_pagamento: string; status_pagamento: string; tipo_entrega: string
@@ -39,10 +39,8 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
   const [showCadastro, setShowCadastro] = useState(false)
   const [showAddEndereco, setShowAddEndereco] = useState(false)
   const [loginTel, setLoginTel] = useState('')
-  const [loginEmail, setLoginEmail] = useState('')
   const [cadNome, setCadNome] = useState('')
   const [cadTel, setCadTel] = useState('')
-  const [cadEmail, setCadEmail] = useState('')
   const [erro, setErro] = useState('')
   const [enderecos, setEnderecos] = useState<EnderecoSalvo[]>([])
 
@@ -124,9 +122,13 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
     if (tel.length < 10) { setErro('Digite um telefone válido'); return }
     setLoading(true)
     try {
+      // Tenta buscar pelos últimos 8 dígitos em telefone ou whatsapp
+      const sufixo = tel.slice(-8)
       const { data } = await supabase
         .from('clientes').select('id, nome, telefone, email')
-        .eq('user_id', confeteiraUserId).like('telefone', `%${tel.slice(-8)}%`).maybeSingle()
+        .eq('user_id', confeteiraUserId)
+        .or(`telefone.ilike.%${sufixo}%,whatsapp.ilike.%${sufixo}%`)
+        .maybeSingle()
       if (data) {
         const c = { id: data.id, nome: data.nome, telefone: data.telefone, email: data.email }
         setCliente(c)
@@ -150,7 +152,7 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
         .eq('user_id', confeteiraUserId).like('telefone', `%${tel.slice(-8)}%`).maybeSingle()
       const c = existe
         ? { id: existe.id, nome: existe.nome, telefone: existe.telefone }
-        : await supabase.from('clientes').insert({ user_id: confeteiraUserId, nome: cadNome.trim(), telefone: cadTel, email: cadEmail||null })
+        : await supabase.from('clientes').insert({ user_id: confeteiraUserId, nome: cadNome.trim(), telefone: cadTel })
             .select('id, nome, telefone').single().then(r => r.data ? { id: r.data.id, nome: r.data.nome, telefone: r.data.telefone } : null)
       if (c) {
         setCliente(c); localStorage.setItem(`cardapio_cliente_${confeteiraUserId}`, JSON.stringify(c))
@@ -220,7 +222,6 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
           <p style={{margin:'0 0 20px',fontSize:'13px',color:'#a0a0a0',textAlign:'center',lineHeight:'1.5'}}>Informe seu telefone para continuar.</p>
           <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
             {inp('Telefone (obrigatório)', loginTel, v => setLoginTel(maskTel(v)), true)}
-            {inp('E-mail (opcional)', loginEmail, setLoginEmail)}
           </div>
           {erro && <p style={{margin:'8px 0 0',fontSize:'12px',color:'#ef4444',textAlign:'center'}}>{erro}</p>}
           <button onClick={handleLogin} disabled={loading}
@@ -245,7 +246,6 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
           <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
             {inp('Nome completo', cadNome, setCadNome)}
             {inp('Telefone', cadTel, v => setCadTel(maskTel(v)), true)}
-            {inp('E-mail (opcional)', cadEmail, setCadEmail)}
           </div>
           {erro && <p style={{margin:'8px 0 0',fontSize:'12px',color:'#ef4444',textAlign:'center'}}>{erro}</p>}
           <button onClick={handleCadastro} disabled={loading}
@@ -318,7 +318,6 @@ export function PerfilTab({ accent, confeteiraUserId }: { accent: string; confet
               <div>
                 <p style={{margin:0,fontWeight:700,fontSize:'15px',color:'#3e3e3e'}}>{cliente.nome}</p>
                 <p style={{margin:0,fontSize:'13px',color:'#a0a0a0'}}>{cliente.telefone}</p>
-                {cliente.email && <p style={{margin:0,fontSize:'12px',color:'#a0a0a0'}}>{cliente.email}</p>}
               </div>
             </div>
 
