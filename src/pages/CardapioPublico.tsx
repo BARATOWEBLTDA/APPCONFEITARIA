@@ -13,6 +13,8 @@ import { DesktopProductCard } from '@/components/desktop/ProductCard'
 import { DesktopFooter } from '@/components/desktop/Footer'
 import { CartProvider } from '@/context/CartContext'
 import { DesignSettings, Configuracoes, Produto } from '@/types/database'
+import { PerfilTab } from '@/components/cardapio/PerfilTab'
+import { PedidosTab } from '@/components/cardapio/PedidosTab'
 import { Star, MapPin, MagnifyingGlass, ShoppingBag, House, Tag, Info, User } from '@phosphor-icons/react'
 import { useCart } from '@/hooks/useCart'
 import { formatCurrency } from '@/utils/helpers'
@@ -22,7 +24,7 @@ import { formatCurrency } from '@/utils/helpers'
 /* ══════════════════════════════════════════════ */
 
 /* ── Nav Link com hover/active ── */
-function NavLink({ label, icon, defaultActive, navBg }: any) {
+function NavLink({ label, icon, defaultActive, navBg, onClick }: any) {
   const [hovered, setHovered] = useState(false)
   const [active, setActive] = useState(false)
 
@@ -36,21 +38,13 @@ function NavLink({ label, icon, defaultActive, navBg }: any) {
       onMouseLeave={() => { setHovered(false); setActive(false) }}
       onMouseDown={() => setActive(true)}
       onMouseUp={() => setActive(false)}
+      onClick={onClick}
       style={{
-        padding: '10px 22px',
-        border: 'none',
-        borderRadius: '8px',
-        background: bg,
-        color: color,
-        fontSize: '18px',
-        fontWeight: 700,
-        cursor: 'pointer',
-        fontFamily: 'inherit',
-        transition: 'background 0.15s, color 0.15s',
-        whiteSpace: 'nowrap',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
+        padding: '10px 22px', border: 'none', borderRadius: '8px',
+        background: bg, color: color, fontSize: '18px', fontWeight: 700,
+        cursor: 'pointer', fontFamily: 'inherit',
+        transition: 'background 0.15s, color 0.15s', whiteSpace: 'nowrap',
+        display: 'flex', alignItems: 'center', gap: '8px',
       }}
     >
       {icon}
@@ -65,8 +59,13 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
   const count = items.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
   const navBg = design.cor_navbar || design.cor_borda || '#ec4899'
   const corBorda = design.cor_borda || '#ec4899'
+  const [showConta, setShowConta] = useState(false)
+  const [contaAba, setContaAba] = useState<'pedidos'|'perfil'>('pedidos')
+  const confeteiraUserId = localStorage.getItem('cardapio_user_id') || ''
+  const accent = design.cor_botao || design.cor_borda || '#ec4899'
 
   return (
+    <>
     <div style={{ background: navBg, position:'sticky', top:0, zIndex:40, boxShadow:'0 2px 12px rgba(0,0,0,0.15)' }}>
       <div style={{ width:'100%', padding:'0 40px', boxSizing:'border-box', display:'grid', gridTemplateColumns:'1fr auto 1fr', alignItems:'center', height:'92px', gap:'24px' }}>
 
@@ -91,20 +90,48 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
         {/* CENTRO — Links grandes */}
         <nav style={{ display:'flex', gap:'4px' }}>
           {[
-            { label: 'Início',      icon: <House size={20} weight="duotone" />, defaultActive: true  },
-            { label: 'Promoções',   icon: <Tag   size={20} weight="duotone" />, defaultActive: false },
-            { label: 'Sobre nós',   icon: <Info  size={20} weight="duotone" />, defaultActive: false },
-            { label: 'Minha conta', icon: <User  size={20} weight="duotone" />, defaultActive: false },
-          ].map(({ label, icon, defaultActive }) => (
-            <NavLink key={label} label={label} icon={icon} defaultActive={defaultActive} navBg={navBg} />
+            { label: 'Início',      icon: <House size={20} weight="duotone" />, defaultActive: true,  onClick: undefined },
+            { label: 'Promoções',   icon: <Tag   size={20} weight="duotone" />, defaultActive: false, onClick: undefined },
+            { label: 'Sobre nós',   icon: <Info  size={20} weight="duotone" />, defaultActive: false, onClick: undefined },
+            { label: 'Minha conta', icon: <User  size={20} weight="duotone" />, defaultActive: false, onClick: () => setShowConta(true) },
+          ].map(({ label, icon, defaultActive, onClick }) => (
+            <NavLink key={label} label={label} icon={icon} defaultActive={defaultActive} navBg={navBg} onClick={onClick} />
           ))}
         </nav>
 
-        {/* DIREITA — vazio para manter grid centralizado */}
+        {/* DIREITA */}
         <div />
-
       </div>
     </div>
+
+    {/* Drawer Minha Conta */}
+    {showConta && (
+      <>
+        <div onClick={() => setShowConta(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:200}} />
+        <div style={{position:'fixed',top:0,right:0,bottom:0,width:'420px',maxWidth:'95vw',background:'#fff',zIndex:201,display:'flex',flexDirection:'column',boxShadow:'-4px 0 32px rgba(0,0,0,0.15)',animation:'slideRight 0.28s cubic-bezier(0.32,0.72,0,1)'}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'20px',borderBottom:'1px solid #f0f0f0',flexShrink:0}}>
+            <div style={{display:'flex',gap:'8px'}}>
+              {(['pedidos','perfil'] as const).map(a => (
+                <button key={a} onClick={() => setContaAba(a)}
+                  style={{padding:'8px 16px',borderRadius:'20px',border:'none',cursor:'pointer',fontFamily:'inherit',fontSize:'13px',fontWeight:contaAba===a?700:500,background:contaAba===a?accent:'#f5f5f5',color:contaAba===a?'#fff':'#717171',transition:'all 0.15s'}}>
+                  {a === 'pedidos' ? 'Meus Pedidos' : 'Perfil'}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setShowConta(false)} style={{background:'none',border:'none',cursor:'pointer',color:'#a0a0a0',display:'flex'}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column'}}>
+            {contaAba === 'pedidos'
+              ? <PedidosTab accent={accent} confeteiraUserId={confeteiraUserId} onIrParaPerfil={() => setContaAba('perfil')} />
+              : <PerfilTab accent={accent} confeteiraUserId={confeteiraUserId} />
+            }
+          </div>
+        </div>
+      </>
+    )}
+    </>
   )
 }
 
@@ -548,6 +575,7 @@ function CardapioContent() {
         <p style={{ color:'var(--text-secondary, #6B7280)', fontSize:'14px' }}>Carregando cardápio...</p>
         <style>{`
           @keyframes spin{to{transform:rotate(360deg)}}
+          @keyframes slideRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
           ::-webkit-scrollbar { width: 5px; height: 5px; }
           ::-webkit-scrollbar-track { background: transparent; }
           ::-webkit-scrollbar-thumb { background: #ec4899; border-radius: 99px; opacity: 0.6; }
