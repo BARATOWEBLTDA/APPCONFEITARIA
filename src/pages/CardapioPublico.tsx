@@ -104,24 +104,26 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
       </div>
     </div>
 
-    {/* Drawer Minha Conta */}
+    {/* Modal Minha Conta — centralizado */}
     {showConta && (
       <>
-        <div onClick={() => setShowConta(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:200}} />
-        <div style={{position:'fixed',top:0,right:0,bottom:0,width:'420px',maxWidth:'95vw',background:'#fff',zIndex:201,display:'flex',flexDirection:'column',boxShadow:'-4px 0 32px rgba(0,0,0,0.15)',animation:'slideRight 0.28s cubic-bezier(0.32,0.72,0,1)'}}>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'20px',borderBottom:'1px solid #f0f0f0',flexShrink:0}}>
+        <div onClick={() => setShowConta(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:200}} />
+        <div style={{position:'fixed',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:'600px',maxWidth:'95vw',height:'75vh',background:'#fff',zIndex:201,display:'flex',flexDirection:'column',boxShadow:'0 24px 64px rgba(0,0,0,0.2)',borderRadius:'20px',overflow:'hidden',animation:'fadeScaleIn 0.2s ease'}}>
+          {/* Header */}
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'20px 24px',borderBottom:'1px solid #f0f0f0',flexShrink:0,background:'#fafafa'}}>
             <div style={{display:'flex',gap:'8px'}}>
               {(['pedidos','perfil'] as const).map(a => (
                 <button key={a} onClick={() => setContaAba(a)}
-                  style={{padding:'8px 16px',borderRadius:'20px',border:'none',cursor:'pointer',fontFamily:'inherit',fontSize:'13px',fontWeight:contaAba===a?700:500,background:contaAba===a?accent:'#f5f5f5',color:contaAba===a?'#fff':'#717171',transition:'all 0.15s'}}>
+                  style={{padding:'8px 20px',borderRadius:'20px',border:'none',cursor:'pointer',fontFamily:'inherit',fontSize:'14px',fontWeight:contaAba===a?700:500,background:contaAba===a?accent:'#efefef',color:contaAba===a?'#fff':'#717171',transition:'all 0.15s'}}>
                   {a === 'pedidos' ? 'Meus Pedidos' : 'Perfil'}
                 </button>
               ))}
             </div>
-            <button onClick={() => setShowConta(false)} style={{background:'none',border:'none',cursor:'pointer',color:'#a0a0a0',display:'flex'}}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <button onClick={() => setShowConta(false)} style={{width:'32px',height:'32px',borderRadius:'50%',background:'#f0f0f0',border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',color:'#717171'}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
+          {/* Conteúdo */}
           <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column'}}>
             {contaAba === 'pedidos'
               ? <PedidosTab accent={accent} confeteiraUserId={confeteiraUserId} onIrParaPerfil={() => setContaAba('perfil')} />
@@ -576,6 +578,7 @@ function CardapioContent() {
         <style>{`
           @keyframes spin{to{transform:rotate(360deg)}}
           @keyframes slideRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
+          @keyframes fadeScaleIn{from{opacity:0;transform:translate(-50%,-50%) scale(0.95)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
           ::-webkit-scrollbar { width: 5px; height: 5px; }
           ::-webkit-scrollbar-track { background: transparent; }
           ::-webkit-scrollbar-thumb { background: #ec4899; border-radius: 99px; opacity: 0.6; }
