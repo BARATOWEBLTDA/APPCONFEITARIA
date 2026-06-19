@@ -54,7 +54,20 @@ export default function CardapioResumo() {
         })
       })
       const top = Object.entries(contagem).sort((a, b) => b[1].qtd - a[1].qtd)[0]
-      setProdutoTop(top ? { nome: top[0], qtd: top[1].qtd, imagem: top[1].imagem } : null)
+
+      // Fallback: se o item não tinha produto_id vinculado, tenta casar pelo nome
+      let imagemTop = top?.[1]?.imagem
+      if (top && !imagemTop) {
+        const { data: prodMatch } = await supabase
+          .from('produtos')
+          .select('imagem_url')
+          .eq('user_id', profile!.id)
+          .ilike('nome', top[0])
+          .maybeSingle()
+        imagemTop = prodMatch?.imagem_url
+      }
+
+      setProdutoTop(top ? { nome: top[0], qtd: top[1].qtd, imagem: imagemTop } : null)
     } catch (err) {
       console.error('Erro ao carregar resumo do cardápio:', err)
     }

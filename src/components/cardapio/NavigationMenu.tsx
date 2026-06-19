@@ -320,7 +320,7 @@ function CartContent({
           if (items.length > 0) {
             await supabase.from('pedido_itens').insert(
               items.map((item: any) => ({
-                pedido_id: pedidoSalvo.id, user_id: confeteiraUserId,
+                pedido_id: pedidoSalvo.id, user_id: confeteiraUserId, produto_id: item.id,
                 nome_produto: item.name, quantidade: item.quantity, valor_unitario: item.price,
                 desconto: 0, observacoes: item.observations || null,
                 personalizacoes: { massa: item.selectedMassa||null, recheio: item.selectedRecheio||null, cobertura: item.selectedCobertura||null },
