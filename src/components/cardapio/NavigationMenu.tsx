@@ -6,6 +6,7 @@ import { CartItemComponent } from '@/components/cart/CartItemComponent'
 import { formatCurrency } from '@/utils/helpers'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { PerfilTab } from './PerfilTab'
+import { PedidosTab } from './PedidosTab'
 
 interface CheckoutConfig {
   formas_pagamento: string[]
@@ -817,13 +818,13 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
 
           {/* Painel Pedidos */}
           {activeTab === 'pedidos' && (
-            <div style={{position:'fixed',inset:0,zIndex:200,background:'#fff',display:'flex',flexDirection:'column',paddingBottom:'env(safe-area-inset-bottom)'}}>
-              <div style={{padding:'20px 16px 12px',borderBottom:'1px solid #f0f0f0',flexShrink:0}}>
-                <p style={{margin:0,fontWeight:700,fontSize:'16px',color:'#3e3e3e'}}>Meus Pedidos</p>
-              </div>
-              <div style={{flex:1,overflowY:'auto',padding:'16px',paddingBottom:'80px'}}>
-                <p style={{textAlign:'center',color:'#a0a0a0',fontSize:'14px',marginTop:'40px'}}>Acesse seu perfil para ver os pedidos.</p>
-              </div>
+            <div style={{position:'fixed',inset:0,zIndex:200,background:'#fff',display:'flex',flexDirection:'column'}}>
+              <div style={{flexShrink:0,height:'0px'}} />
+              <PedidosTab
+                accent={accent}
+                confeteiraUserId={localStorage.getItem('cardapio_user_id') || ''}
+                onIrParaPerfil={() => setActiveTab('perfil')}
+              />
               <div style={{height:'62px',flexShrink:0}} />
             </div>
           )}
