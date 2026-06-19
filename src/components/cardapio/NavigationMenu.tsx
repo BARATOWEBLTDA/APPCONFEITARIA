@@ -111,7 +111,7 @@ function CartContent({
   const [bairro, setBairro] = useState('')
   const [cidade, setCidade] = useState('')
   const [cepLoading, setCepLoading] = useState(false)
-  const [pedidoConfirmado, setPedidoConfirmado] = useState<{numero: number; resumo: string; whatsapp: string; storeName: string} | null>(null)
+  const [pedidoConfirmado, setPedidoConfirmado] = useState<{numero: number; itens: any[]; whatsapp: string; storeName: string} | null>(null)
   const [cepErro, setCepErro] = useState('')
 
   // Toca som de sucesso quando o pedido é confirmado
@@ -268,8 +268,7 @@ function CartContent({
     const num = whatsapp.replace(/\D/g, '')
     const whatsappUrl = `https://wa.me/55${num}?text=${encodeURIComponent(msg)}`
 
-    // Resumo para tela de sucesso
-    const resumoItens = items.map((i: any) => i.name).join(', ')
+    // Resumo para tela de sucesso (mantém referência aos itens originais)
 
     // ── Salva pedido no Supabase e vincula cliente ──
     let numeroPedido = 0
@@ -341,7 +340,7 @@ function CartContent({
     clearCart()
     setStep('cart')
     // Mostra tela de sucesso em vez de fechar
-    setPedidoConfirmado({ numero: numeroPedido, resumo: resumoItens, whatsapp: whatsappUrl, storeName })
+    setPedidoConfirmado({ numero: numeroPedido, itens: items, whatsapp: whatsappUrl, storeName })
   }
 
   const accent = corBotao || '#ea1d2c'
@@ -376,8 +375,31 @@ function CartContent({
 
             {/* Resumo */}
             <div style={{background:'#f9fafb',borderRadius:'14px',padding:'16px',width:'100%',textAlign:'left',marginTop:'4px',boxSizing:'border-box'}}>
-              <p style={{margin:'0 0 6px',fontSize:'12px',fontWeight:700,color:'#a0a0a0',textTransform:'uppercase',letterSpacing:'0.05em'}}>Resumo</p>
-              <p style={{margin:0,fontSize:'14px',color:'#3e3e3e'}}>{pedidoConfirmado.resumo}</p>
+              <p style={{margin:'0 0 10px',fontSize:'12px',fontWeight:700,color:'#a0a0a0',textTransform:'uppercase',letterSpacing:'0.05em'}}>Resumo do pedido</p>
+              <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+                {pedidoConfirmado.itens.map((item: any, i: number) => (
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',gap:'10px'}}>
+                    <div style={{flex:1,minWidth:0}}>
+                      <p style={{margin:0,fontSize:'14px',fontWeight:600,color:'#3e3e3e'}}>
+                        {item.saleType === 'kg' ? '' : `${item.quantity}x `}{item.name}
+                      </p>
+                      {(item.selectedMassa || item.selectedRecheio || item.selectedCobertura) && (
+                        <div style={{marginTop:'2px',display:'flex',flexDirection:'column',gap:'1px'}}>
+                          {item.selectedMassa && <span style={{fontSize:'12px',color:'#a0a0a0'}}>Massa: {item.selectedMassa}</span>}
+                          {item.selectedRecheio && <span style={{fontSize:'12px',color:'#a0a0a0'}}>Recheio: {item.selectedRecheio}</span>}
+                          {item.selectedCobertura && <span style={{fontSize:'12px',color:'#a0a0a0'}}>Cobertura: {item.selectedCobertura}</span>}
+                        </div>
+                      )}
+                      {item.observations && (
+                        <p style={{margin:'2px 0 0',fontSize:'12px',color:'#a0a0a0',fontStyle:'italic'}}>Obs: {item.observations}</p>
+                      )}
+                    </div>
+                    <span style={{fontSize:'14px',fontWeight:700,color:'#3e3e3e',whiteSpace:'nowrap'}}>
+                      {formatCurrency(item.price * (item.saleType === 'kg' ? item.quantity : item.quantity))}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Mensagem da loja */}
