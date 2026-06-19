@@ -259,7 +259,7 @@ export default function Inicio() {
             variant="cardapio"
             label="Cardápio"
             value={undefined}
-            emptyText="Ver cardápio"
+            emptyText="Acessar"
             onClick={() => navigate("/cardapio-resumo")}
             icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>}
           />
@@ -267,7 +267,7 @@ export default function Inicio() {
             variant="customers"
             label="Agenda"
             value={undefined}
-            emptyText="Ver agenda"
+            emptyText="Acessar"
             onClick={() => navigate("/agenda")}
             icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>}
           />
@@ -275,7 +275,7 @@ export default function Inicio() {
             variant="revenue"
             label="Financeiro"
             value={undefined}
-            emptyText="Ver financeiro"
+            emptyText="Acessar"
             onClick={() => navigate("/financeiro")}
             icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>}
           />
@@ -470,7 +470,8 @@ export default function Inicio() {
         .mob-hero-title { font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0; line-height: 1.2; }
         .mob-hero-brand { font-family: 'Dancing Script', cursive; font-weight: 700; font-size: 1.6rem; color: #ffffff; text-shadow: 0 0 6px rgba(255,255,255,0.5); line-height: 1; }
         .mob-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: -52px; padding: 0 0.25rem; }
-        .mob-metrics .dash-metric-card { padding: 0.75rem; border-radius: 14px; }
+        .mob-metrics .dash-metric-card { padding: 0.65rem 0.5rem; border-radius: 14px; flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+        .mob-metrics .dash-metric-icon { width: 30px; height: 30px; }
         .mob-section-title { font-size: 0.88rem; font-weight: 700; color: var(--text-title, #1F2937); }
         .mob-atalhos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
         .mob-atalho { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; background: var(--bg-card, #FFFFFF); border: 1.5px solid var(--border, #E9E9EE); border-radius: 12px; padding: 0.7rem 0.4rem; cursor: pointer; font-family: 'Geist', sans-serif; transition: border-color 0.15s; }
