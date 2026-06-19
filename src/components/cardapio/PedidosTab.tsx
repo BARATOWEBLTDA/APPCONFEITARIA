@@ -49,15 +49,21 @@ export function PedidosTab({ accent, confeteiraUserId, onIrParaPerfil }: {
     setLoading(true)
     try {
       const tel = telefone.replace(/\D/g,'')
-      const { data } = await supabase
+      const sufixo = tel.slice(-8)
+
+      const { data, error } = await supabase
         .from('pedidos')
         .select('*, pedido_itens(nome_produto, quantidade, valor_unitario, produtos(imagem_url))')
         .eq('user_id', confeteiraUserId)
-        .like('cliente_telefone', `%${tel.slice(-8)}%`)
+        .or(`cliente_telefone.ilike.%${sufixo}%,cliente_whatsapp.ilike.%${sufixo}%`)
         .order('created_at', { ascending: false })
         .limit(20)
+
+      if (error) console.error('Erro ao buscar pedidos:', error)
       setPedidos(data || [])
-    } catch {}
+    } catch (err) {
+      console.error('Erro ao buscar pedidos:', err)
+    }
     setLoading(false)
   }
 
