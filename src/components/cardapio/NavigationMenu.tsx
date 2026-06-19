@@ -104,8 +104,6 @@ function CartContent({
   const [bairroSelecionado, setBairroSelecionado] = useState('')
   const [formaPagamento, setFormaPagamento] = useState('')
   const [trocoParaStr, setTrocoParaStr] = useState('')
-  const [nome, setNome] = useState('')
-  const [telefone, setTelefone] = useState('')
   const [cep, setCep] = useState('')
   const [rua, setRua] = useState('')
   const [numero, setNumero] = useState('')
@@ -115,6 +113,17 @@ function CartContent({
   const [cepLoading, setCepLoading] = useState(false)
   const [pedidoConfirmado, setPedidoConfirmado] = useState<{numero: number; resumo: string; whatsapp: string; storeName: string} | null>(null)
   const [cepErro, setCepErro] = useState('')
+
+  // Pegar dados do cliente logado
+  const clienteLogado = (() => {
+    try {
+      const uid = localStorage.getItem('cardapio_user_id') || ''
+      const saved = localStorage.getItem(`cardapio_cliente_${uid}`)
+      return saved ? JSON.parse(saved) : null
+    } catch { return null }
+  })()
+  const [nome, setNome] = useState(clienteLogado?.nome || '')
+  const [telefone, setTelefone] = useState(clienteLogado?.telefone || '')
 
   const buscarCep = async (v: string) => {
     const c = v.replace(/\D/g,'')
@@ -378,7 +387,7 @@ function CartContent({
                 <span style={{fontSize:'20px',fontWeight:800,color:'#3e3e3e'}}>{formatCurrency(totalPrice)}</span>
               </div>
               <button
-                onClick={() => setStep('dados')}
+                onClick={() => setStep(clienteLogado ? 'entrega' : 'dados')}
                 style={{
                   width:'100%',padding:'15px',background:accent,color:'white',
                   border:'none',borderRadius:'14px',fontWeight:800,fontSize:'16px',
@@ -866,7 +875,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                         {step === 'cart' ? 'Sacola' : step === 'dados' ? 'Seus dados' : step === 'entrega' ? 'Entrega' : 'Pagamento'}
                       </h3>
                       <p style={{margin:0,fontSize:'13px',color:'#a0a0a0'}}>
-                        {step === 'cart' ? `${count} ${count===1?'item':'itens'}` : step === 'dados' ? 'Passo 1 de 3' : step === 'entrega' ? 'Passo 2 de 3' : 'Passo 3 de 3'}
+                        {step === 'cart' ? `${count} ${count===1?'item':'itens'}` : step === 'dados' ? 'Passo 1 de 3' : step === 'entrega' ? (clienteLogado ? 'Passo 1 de 2' : 'Passo 2 de 3') : (clienteLogado ? 'Passo 2 de 2' : 'Passo 3 de 3')}
                       </p>
                     </div>
                   </div>
@@ -876,7 +885,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                 </div>
                 {(step === 'dados' || step === 'entrega' || step === 'checkout') && (
                   <div style={{margin:'0 20px 12px',height:'3px',background:'#f0f0f0',borderRadius:'99px'}}>
-                    <div className="ck-progress-bar" style={{height:'100%',width:step==='dados'?'33%':step==='entrega'?'66%':'100%',background:accent,borderRadius:'99px'}} />
+                    <div className="ck-progress-bar" style={{height:'100%',width:step==='dados'?'33%':step==='entrega'?(clienteLogado?'50%':'66%'):(clienteLogado?'100%':'100%'),background:accent,borderRadius:'99px'}} />
                   </div>
                 )}
                 <div style={{height:'1px',background:'#f0f0f0',margin:'0 20px'}} />
