@@ -11,6 +11,9 @@ const METRIC_VARIANTS = {
   customers: {
     gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
   },
+  cardapio: {
+    gradient: "linear-gradient(135deg, #f97316, #ea580c)",
+  },
 } as const;
 
 type MetricVariant = keyof typeof METRIC_VARIANTS;
