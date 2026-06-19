@@ -113,6 +113,7 @@ function CartContent({
   const [bairro, setBairro] = useState('')
   const [cidade, setCidade] = useState('')
   const [cepLoading, setCepLoading] = useState(false)
+  const [pedidoConfirmado, setPedidoConfirmado] = useState<{numero: number; resumo: string; whatsapp: string; storeName: string} | null>(null)
   const [cepErro, setCepErro] = useState('')
 
   const buscarCep = async (v: string) => {
@@ -233,55 +234,35 @@ function CartContent({
     msg += `\n✅ *TOTAL: ${formatCurrency(totalFinal)}*`
 
     const num = whatsapp.replace(/\D/g, '')
-    window.open(`https://wa.me/55${num}?text=${encodeURIComponent(msg)}`, '_blank')
+    const whatsappUrl = `https://wa.me/55${num}?text=${encodeURIComponent(msg)}`
+
+    // Resumo para tela de sucesso
+    const resumoItens = items.map((i: any) => i.name).join(', ')
 
     // ── Salva pedido no Supabase e vincula cliente ──
+    let numeroPedido = 0
     if (confeteiraUserId) {
       try {
         const telefoneLimpo = telefone.replace(/\D/g, '')
-
-        // Busca cliente pelo telefone ou cria novo
         let clienteId: string | null = null
         const { data: clienteExistente } = await supabase
-          .from('clientes')
-          .select('id')
-          .eq('user_id', confeteiraUserId)
-          .or(`telefone.ilike.%${telefoneLimpo}%,whatsapp.ilike.%${telefoneLimpo}%`)
-          .single()
+          .from('clientes').select('id').eq('user_id', confeteiraUserId)
+          .or(`telefone.ilike.%${telefoneLimpo}%,whatsapp.ilike.%${telefoneLimpo}%`).single()
 
         if (clienteExistente) {
           clienteId = clienteExistente.id
         } else {
-          const { data: novoCliente } = await supabase
-            .from('clientes')
-            .insert({
-              user_id: confeteiraUserId,
-              nome: nome.trim(),
-              telefone: telefone.trim(),
-              whatsapp: telefone.trim(),
-            })
-            .select('id')
-            .single()
+          const { data: novoCliente } = await supabase.from('clientes')
+            .insert({ user_id: confeteiraUserId, nome: nome.trim(), telefone: telefone.trim(), whatsapp: telefone.trim() })
+            .select('id').single()
           if (novoCliente) clienteId = novoCliente.id
         }
 
-        // Salva o pedido
-        const valorProdutos = totalPrice
-        const totalFinalCalc = totalFinal
-
-        const { data: pedidoSalvo } = await supabase
-          .from('pedidos')
-          .insert({
-            user_id: confeteiraUserId,
-            cliente_id: clienteId,
-            cliente_nome: nome.trim(),
-            cliente_telefone: telefone.trim(),
-            cliente_whatsapp: telefone.trim(),
-            status: 'novo',
-            origem: 'cardapio',
-            prioridade: 'media',
-            data_entrega: dataEntrega || null,
-            horario_entrega: horaEntrega || null,
+        const { data: pedidoSalvo } = await supabase.from('pedidos').insert({
+            user_id: confeteiraUserId, cliente_id: clienteId,
+            cliente_nome: nome.trim(), cliente_telefone: telefone.trim(), cliente_whatsapp: telefone.trim(),
+            status: 'novo', origem: 'cardapio', prioridade: 'media',
+            data_entrega: dataEntrega || null, horario_entrega: horaEntrega || null,
             tipo_entrega: formaEntrega === 'retirada' ? 'retirada' : 'entrega',
             taxa_entrega: freteValor,
             endereco_rua: formaEntrega === 'entrega_propria' ? rua : null,
@@ -290,60 +271,87 @@ function CartContent({
             endereco_bairro: formaEntrega === 'entrega_propria' ? bairro : null,
             endereco_cidade: formaEntrega === 'entrega_propria' ? cidade : null,
             endereco_cep: formaEntrega === 'entrega_propria' ? cep.replace(/\D/g,'') : null,
-            forma_pagamento: formaPagamento,
-            status_pagamento: 'pendente',
-            valor_produtos: valorProdutos,
-            cupom_codigo: cupomAplicado?.codigo || null,
-            cupom_desconto: desconto || 0,
-            desconto: desconto || 0,
-            valor_total: totalFinalCalc,
-            observacoes: observacoes || null,
-          })
-          .select('id')
-          .single()
+            forma_pagamento: formaPagamento, status_pagamento: 'pendente',
+            valor_produtos: totalPrice, cupom_codigo: cupomAplicado?.codigo || null,
+            cupom_desconto: desconto || 0, desconto: desconto || 0,
+            valor_total: totalFinal, observacoes: observacoes || null,
+          }).select('id, numero').single()
 
-        // Salva os itens do pedido
-        if (pedidoSalvo && items.length > 0) {
-          await supabase.from('pedido_itens').insert(
-            items.map((item: any) => ({
-              pedido_id: pedidoSalvo.id,
-              user_id: confeteiraUserId,
-              nome_produto: item.name,
-              quantidade: item.quantity,
-              valor_unitario: item.price,
-              desconto: 0,
-              observacoes: item.observations || null,
-              personalizacoes: {
-                massa: item.selectedMassa || null,
-                recheio: item.selectedRecheio || null,
-                cobertura: item.selectedCobertura || null,
-              },
-            }))
-          )
-
-          // Registra no histórico
-          await supabase.from('pedido_historico').insert({
-            pedido_id: pedidoSalvo.id,
-            user_id: confeteiraUserId,
-            evento: 'Pedido criado',
-            descricao: `Pedido recebido pelo Cardápio Digital`,
-          })
+        if (pedidoSalvo) {
+          numeroPedido = pedidoSalvo.numero
+          if (items.length > 0) {
+            await supabase.from('pedido_itens').insert(
+              items.map((item: any) => ({
+                pedido_id: pedidoSalvo.id, user_id: confeteiraUserId,
+                nome_produto: item.name, quantidade: item.quantity, valor_unitario: item.price,
+                desconto: 0, observacoes: item.observations || null,
+                personalizacoes: { massa: item.selectedMassa||null, recheio: item.selectedRecheio||null, cobertura: item.selectedCobertura||null },
+              }))
+            )
+            await supabase.from('pedido_historico').insert({
+              pedido_id: pedidoSalvo.id, user_id: confeteiraUserId,
+              evento: 'Pedido criado', descricao: 'Pedido recebido pelo Cardápio Digital',
+            })
+          }
         }
       } catch (err) {
-        // Falha silenciosa — WhatsApp já foi aberto, não impacta o cliente
         console.error('Erro ao salvar pedido no Supabase:', err)
       }
     }
 
     clearCart()
     setStep('cart')
-    onClose()
+    // Mostra tela de sucesso em vez de fechar
+    setPedidoConfirmado({ numero: numeroPedido, resumo: resumoItens, whatsapp: whatsappUrl, storeName })
   }
 
   const accent = corBotao || '#ea1d2c'
 
   return (
     <>
+      {/* ═══ TELA DE SUCESSO ═══ */}
+      {pedidoConfirmado && (
+        <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'32px 24px',textAlign:'center',gap:'12px'}}>
+          <div style={{width:'72px',height:'72px',borderRadius:'50%',background:'#22c55e',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'8px'}}>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <p style={{margin:0,fontWeight:800,fontSize:'22px',color:'#3e3e3e'}}>Pedido Enviado!</p>
+          <p style={{margin:0,fontSize:'14px',color:'#a0a0a0'}}>Agradecemos sua preferência!</p>
+          {pedidoConfirmado.numero > 0 && (
+            <p style={{margin:0,fontWeight:700,fontSize:'16px',color:'#3e3e3e'}}>Pedido #{pedidoConfirmado.numero}</p>
+          )}
+
+          {/* Resumo */}
+          <div style={{background:'#f9fafb',borderRadius:'14px',padding:'16px',width:'100%',textAlign:'left',marginTop:'4px'}}>
+            <p style={{margin:'0 0 6px',fontSize:'12px',fontWeight:700,color:'#a0a0a0',textTransform:'uppercase',letterSpacing:'0.05em'}}>Resumo</p>
+            <p style={{margin:0,fontSize:'14px',color:'#3e3e3e'}}>{pedidoConfirmado.resumo}</p>
+          </div>
+
+          {/* Mensagem da loja */}
+          <div style={{background:`${accent}10`,border:`1.5px solid ${accent}30`,borderRadius:'14px',padding:'14px',width:'100%',textAlign:'left'}}>
+            <p style={{margin:0,fontSize:'13px',color:'#3e3e3e',lineHeight:'1.5'}}>
+              A loja <strong>{pedidoConfirmado.storeName}</strong> entrará em contato com você pelo WhatsApp informado em breve.
+            </p>
+            <p style={{margin:'8px 0 0',fontSize:'12px',color:'#717171'}}>
+              Se quiser agilizar, envie uma mensagem para a loja:
+            </p>
+          </div>
+
+          <button
+            onClick={() => window.open(pedidoConfirmado.whatsapp, '_blank')}
+            style={{width:'100%',padding:'14px',background:'#25D366',color:'white',border:'none',borderRadius:'14px',fontWeight:700,fontSize:'15px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit',marginTop:'4px'}}>
+            <MessageCircle size={18} /> Enviar mensagem no WhatsApp
+          </button>
+
+          <button
+            onClick={() => { setPedidoConfirmado(null); onClose() }}
+            style={{width:'100%',padding:'12px',background:'#f5f5f5',color:'#717171',border:'none',borderRadius:'14px',fontWeight:600,fontSize:'14px',cursor:'pointer',fontFamily:'inherit'}}>
+            Voltar ao cardápio
+          </button>
+        </div>
+      )}
+
+      {!pedidoConfirmado && (<>
       {/* ═══ CART STEP ═══ */}
       {step === 'cart' && (
         <>
@@ -527,7 +535,7 @@ function CartContent({
                         setCep(v)
                         if (v.replace(/\D/g,'').length === 8) buscarCep(v)
                       }}
-                      style={{width:'100%',padding:'12px',paddingRight:'40px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                      style={{width:'100%',padding:'14px',paddingRight:'40px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'15px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                       onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
                     {cepLoading && <div style={{position:'absolute',right:'12px',top:'50%',transform:'translateY(-50%)',width:'16px',height:'16px',border:'2px solid #f0f0f0',borderTopColor:accent,borderRadius:'50%',animation:'spin 0.6s linear infinite'}} />}
                   </div>
@@ -535,20 +543,20 @@ function CartContent({
                   {/* Rua + Número */}
                   <div style={{display:'grid',gridTemplateColumns:'1fr 80px',gap:'8px'}}>
                     <input value={rua} onChange={e=>setRua(e.target.value)} placeholder="Rua / Avenida"
-                      style={{padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                      style={{padding:'14px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'15px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                       onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
                     <input value={numero} onChange={e=>setNumero(e.target.value)} placeholder="Nº"
-                      style={{padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                      style={{padding:'14px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'15px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                       onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
                   </div>
                   <input value={complemento} onChange={e=>setComplemento(e.target.value)} placeholder="Complemento (apto, bloco...)"
-                    style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                    style={{width:'100%',padding:'14px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'15px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                     onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
                   <input value={bairro} onChange={e=>setBairro(e.target.value)} placeholder="Bairro"
-                    style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                    style={{width:'100%',padding:'14px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'15px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                     onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
                   <input value={cidade} onChange={e=>setCidade(e.target.value)} placeholder="Cidade"
-                    style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
+                    style={{width:'100%',padding:'14px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'15px',color:'#3e3e3e',outline:'none',boxSizing:'border-box',fontFamily:'inherit'}}
                     onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
                 </div>
               )}
@@ -583,10 +591,12 @@ function CartContent({
             <div>
               <SectionHeader title="Forma de pagamento" />
               <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
-                <OptionButton selected={formaPagamento==='credito'||formaPagamento==='debito'} label="Cartão de Débito / Crédito" accent={accent} onClick={() => setFormaPagamento('credito')} />
-                <OptionButton selected={formaPagamento==='pix'||formaPagamento==='dinheiro'} label="PIX / Dinheiro" accent={accent} onClick={() => setFormaPagamento('pix')} />
+                <OptionButton selected={formaPagamento==='pix'} label="PIX" accent={accent} onClick={() => setFormaPagamento('pix')} />
+                <OptionButton selected={formaPagamento==='dinheiro'} label="Dinheiro" accent={accent} onClick={() => setFormaPagamento('dinheiro')} />
+                <OptionButton selected={formaPagamento==='credito'} label="Cartão de Crédito" accent={accent} onClick={() => setFormaPagamento('credito')} />
+                <OptionButton selected={formaPagamento==='debito'} label="Cartão de Débito" accent={accent} onClick={() => setFormaPagamento('debito')} />
               </div>
-              {(formaPagamento==='dinheiro'||formaPagamento==='pix') && config.exibir_campo_troco && (
+              {formaPagamento==='dinheiro' && config.exibir_campo_troco && (
                 <div style={{marginTop:'10px',display:'flex',alignItems:'center',gap:'8px'}}>
                   <span style={{fontSize:'14px',color:'#717171',fontWeight:600}}>R$</span>
                   <input value={trocoParaStr} onChange={e => setTrocoParaStr(e.target.value.replace(/[^0-9.,]/g,''))}
@@ -620,9 +630,9 @@ function CartContent({
 
             {/* Observações */}
             <div>
-              <SectionHeader title="Observações" subtitle="Personalização, restrições, recados..." />
+              <SectionHeader title="Observações" />
               <textarea value={observacoes} onChange={e => setObservacoes(e.target.value)}
-                placeholder={'Ex: Escrever "Parabéns Ana" no bolo\nSem morango'}
+                placeholder='Personalização, restrições, recados...'
                 rows={3}
                 style={{width:'100%',padding:'12px',border:'2px solid #f0f0f0',borderRadius:'10px',fontSize:'14px',color:'#3e3e3e',outline:'none',resize:'none',boxSizing:'border-box',fontFamily:'inherit',lineHeight:'1.5'}}
                 onFocus={e=>(e.target.style.borderColor=accent)} onBlur={e=>(e.target.style.borderColor='#f0f0f0')} />
@@ -656,22 +666,14 @@ function CartContent({
               </div>
             </div>
 
-            <button
-              onClick={enviarPedido}
-              style={{
-                width:'100%',padding:'16px',
-                background:'#25D366',color:'white',
-                border:'none',borderRadius:'14px',
-                fontWeight:800,fontSize:'16px',cursor:'pointer',
-                display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',
-                boxShadow:'0 4px 20px rgba(37,211,102,0.3)',fontFamily:'inherit',
-              }}
-            >
-              <MessageCircle size={20} /> Pedir pelo WhatsApp
+            <button onClick={enviarPedido}
+              style={{width:'100%',padding:'16px',background:accent,color:'white',border:'none',borderRadius:'14px',fontWeight:800,fontSize:'16px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',fontFamily:'inherit'}}>
+              Finalizar Pedido
             </button>
           </div>
         </>
       )}
+      </>)}
     </>
   )
 }
