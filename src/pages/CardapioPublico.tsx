@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { getCardapioBySlug } from '@/services/cardapio'
+import { supabase } from '@/lib/supabase'
 import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 import { BannerAd } from '@/components/cardapio/BannerAd'
 import { Logo } from '@/components/cardapio/Logo'
@@ -510,7 +511,15 @@ function CardapioContent() {
       setCategoriasList(categoriasList || [])
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
-      if (design?.user_id) localStorage.setItem('cardapio_user_id', design.user_id)
+      if (design?.user_id) {
+        localStorage.setItem('cardapio_user_id', design.user_id)
+        // Registra a visita (1x por sessão de navegador, pra não inflar o número)
+        const visitKey = `cardapio_visita_${design.user_id}`
+        if (!sessionStorage.getItem(visitKey)) {
+          supabase.from('cardapio_visitas').insert({ user_id: design.user_id }).then(() => {})
+          sessionStorage.setItem(visitKey, '1')
+        }
+      }
 
       // ── Open Graph meta tags ──
       const setMeta = (prop: string, content: string) => {

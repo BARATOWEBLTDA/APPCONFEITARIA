@@ -203,6 +203,10 @@ export default function Layout() {
         <nav className="bottom-nav">
           {(cardapioNav || isCardapioMode) ? (
             <>
+              <button className={`bottom-item${location.pathname === "/cardapio-resumo" ? " active" : ""}`} onClick={() => navigate("/cardapio-resumo")}>
+                <ChartBar size={22} weight="duotone" />
+                <span className={`nav-label${location.pathname === "/cardapio-resumo" ? " nav-label-active" : ""}`}>Visão Geral</span>
+              </button>
               <button className={`bottom-item${location.pathname === "/cardapio-preview" ? " active" : ""}`} onClick={() => navigate("/cardapio-preview")}>
                 <Eye size={22} weight="duotone" />
                 <span className={`nav-label${location.pathname === "/cardapio-preview" ? " nav-label-active" : ""}`}>Prévia</span>
