@@ -6,10 +6,10 @@ export default function CardapioResumo() {
   const { profile } = useProfile()
   const [visitas, setVisitas] = useState(0)
   const [pedidos, setPedidos] = useState(0)
-  const [produtoTop, setProdutoTop] = useState<{ nome: string; qtd: number } | null>(null)
+  const [produtoTop, setProdutoTop] = useState<{ nome: string; qtd: number; imagem?: string } | null>(null)
   const [loading, setLoading] = useState(true)
   const [copiado, setCopiado] = useState(false)
-  const [periodo, setPeriodo] = useState<'7d' | '30d' | 'tudo'>('30d')
+  const [periodo, setPeriodo] = useState<'hoje' | '7d' | '30d' | 'tudo'>('hoje')
 
   const link = profile?.slug ? `${window.location.origin}/cardapio/${profile.slug}` : ''
 
@@ -22,7 +22,8 @@ export default function CardapioResumo() {
     setLoading(true)
     try {
       const dataLimite = new Date()
-      if (periodo === '7d') dataLimite.setDate(dataLimite.getDate() - 7)
+      if (periodo === 'hoje') dataLimite.setHours(0, 0, 0, 0)
+      else if (periodo === '7d') dataLimite.setDate(dataLimite.getDate() - 7)
       else if (periodo === '30d') dataLimite.setDate(dataLimite.getDate() - 30)
       else dataLimite.setFullYear(2000)
 
@@ -36,7 +37,7 @@ export default function CardapioResumo() {
       // Pedidos vindos do cardápio
       const { data: pedidosCardapio } = await supabase
         .from('pedidos')
-        .select('id, pedido_itens(nome_produto, quantidade)')
+        .select('id, pedido_itens(nome_produto, quantidade, produtos(imagem_url))')
         .eq('user_id', profile!.id)
         .eq('origem', 'cardapio')
         .gte('created_at', dataLimite.toISOString())
@@ -45,21 +46,23 @@ export default function CardapioResumo() {
       setPedidos(pedidosCardapio?.length || 0)
 
       // Produto mais pedido
-      const contagem: Record<string, number> = {}
+      const contagem: Record<string, { qtd: number; imagem?: string }> = {}
       pedidosCardapio?.forEach(p => {
         p.pedido_itens?.forEach((item: any) => {
-          contagem[item.nome_produto] = (contagem[item.nome_produto] || 0) + item.quantidade
+          if (!contagem[item.nome_produto]) contagem[item.nome_produto] = { qtd: 0, imagem: item.produtos?.imagem_url }
+          contagem[item.nome_produto].qtd += item.quantidade
         })
       })
-      const top = Object.entries(contagem).sort((a, b) => b[1] - a[1])[0]
-      setProdutoTop(top ? { nome: top[0], qtd: top[1] } : null)
+      const top = Object.entries(contagem).sort((a, b) => b[1].qtd - a[1].qtd)[0]
+      setProdutoTop(top ? { nome: top[0], qtd: top[1].qtd, imagem: top[1].imagem } : null)
     } catch (err) {
       console.error('Erro ao carregar resumo do cardápio:', err)
     }
     setLoading(false)
   }
 
-  const conversao = visitas > 0 ? ((pedidos / visitas) * 100).toFixed(1) : '0.0'
+  const conversaoRaw = visitas > 0 ? (pedidos / visitas) * 100 : 0
+  const conversao = Math.min(conversaoRaw, 100).toFixed(1)
 
   const copiarLink = () => {
     navigator.clipboard.writeText(link)
@@ -86,7 +89,7 @@ export default function CardapioResumo() {
 
       {/* Filtro de período */}
       <div style={{ display: 'flex', gap: 6, marginBottom: '1rem' }}>
-        {([['7d', '7 dias'], ['30d', '30 dias'], ['tudo', 'Tudo']] as const).map(([key, label]) => (
+        {([['hoje', 'Hoje'], ['7d', '7 dias'], ['30d', '30 dias'], ['tudo', 'Tudo']] as const).map(([key, label]) => (
           <button key={key} onClick={() => setPeriodo(key)}
             style={{ padding: '6px 14px', borderRadius: 20, border: '1.5px solid var(--border,#ECC2D0)', background: periodo === key ? 'var(--primary,#986274)' : '#fff', color: periodo === key ? '#fff' : 'var(--text-secondary,#6E3548)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
             {label}
@@ -120,15 +123,25 @@ export default function CardapioResumo() {
             <div style={{ marginTop: 8, height: 6, background: 'var(--bg-subtle,#F7EEF1)', borderRadius: 4, overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${Math.min(parseFloat(conversao), 100)}%`, background: 'var(--primary,#986274)', borderRadius: 4 }} />
             </div>
+            {visitas < pedidos && (
+              <p style={{ margin: '8px 0 0', fontSize: '0.7rem', color: 'var(--text-muted,#C39EAA)' }}>
+                O contador de visitas começou recentemente — os números vão ficar mais precisos com o tempo.
+              </p>
+            )}
           </div>
 
           {/* Produto mais pedido */}
           <div style={{ background: '#fff', border: '1.5px solid var(--border,#ECC2D0)', borderRadius: 14, padding: '1.1rem' }}>
-            <p style={{ margin: '0 0 6px', fontSize: '0.78rem', color: 'var(--text-muted,#C39EAA)', fontWeight: 600 }}>Produto mais pedido</p>
+            <p style={{ margin: '0 0 10px', fontSize: '0.78rem', color: 'var(--text-muted,#C39EAA)', fontWeight: 600 }}>Produto mais pedido</p>
             {produtoTop ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-title,#431524)' }}>{produtoTop.nome}</span>
-                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary,#986274)', background: 'var(--bg-subtle,#F7EEF1)', padding: '3px 10px', borderRadius: 20 }}>{produtoTop.qtd}x pedido{produtoTop.qtd > 1 ? 's' : ''}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ width: 52, height: 52, borderRadius: 10, background: 'var(--bg-subtle,#F7EEF1)', border: '1px solid var(--border,#ECC2D0)', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
+                  {produtoTop.imagem ? <img src={produtoTop.imagem} alt={produtoTop.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '🎂'}
+                </div>
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-title,#431524)' }}>{produtoTop.nome}</span>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary,#986274)', background: 'var(--bg-subtle,#F7EEF1)', padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap' }}>{produtoTop.qtd}x pedido{produtoTop.qtd > 1 ? 's' : ''}</span>
+                </div>
               </div>
             ) : (
               <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted,#C39EAA)' }}>Nenhum pedido no período selecionado</p>
