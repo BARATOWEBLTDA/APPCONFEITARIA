@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { Users, Package, ClipboardList, DollarSign, UtensilsCrossed, BookOpen } from "lucide-react";
-import { Bell, User } from "@phosphor-icons/react";
+import { Bell, User, Users, Package, ClipboardText, CurrencyDollar, ForkKnife, BookOpen, CalendarDots, Plus } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
@@ -214,12 +213,12 @@ export default function Inicio() {
   };
 
   const atalhos = [
-    { label: "Clientes", icon: <Users size={28} color="var(--primary, #FF6FA9)" />, path: "/clientes" },
-    { label: "Produtos", icon: <Package size={28} color="var(--primary, #FF6FA9)" />, path: "/produtos" },
-    { label: "Pedidos", icon: <ClipboardList size={28} color="var(--primary, #FF6FA9)" />, path: "/pedidos" },
-    { label: "Financeiro", icon: <DollarSign size={28} color="var(--primary, #FF6FA9)" />, path: "/financeiro" },
-    { label: "Cardápio", icon: <UtensilsCrossed size={28} color="var(--primary, #FF6FA9)" />, path: "/cardapio-config" },
-    { label: "Receitas", icon: <BookOpen size={28} color="var(--primary, #FF6FA9)" />, path: "/receitas" },
+    { label: "Clientes", icon: <Users size={28} weight="duotone" color="var(--primary, #FF6FA9)" />, path: "/clientes" },
+    { label: "Produtos", icon: <Package size={28} weight="duotone" color="var(--primary, #FF6FA9)" />, path: "/produtos" },
+    { label: "Pedidos", icon: <ClipboardText size={28} weight="duotone" color="var(--primary, #FF6FA9)" />, path: "/pedidos" },
+    { label: "Financeiro", icon: <CurrencyDollar size={28} weight="duotone" color="var(--primary, #FF6FA9)" />, path: "/financeiro" },
+    { label: "Cardápio", icon: <ForkKnife size={28} weight="duotone" color="var(--primary, #FF6FA9)" />, path: "/cardapio-config" },
+    { label: "Receitas", icon: <BookOpen size={28} weight="duotone" color="var(--primary, #FF6FA9)" />, path: "/receitas" },
   ];
 
 
@@ -261,7 +260,7 @@ export default function Inicio() {
             value={undefined}
             emptyText="Acessar"
             onClick={() => navigate("/cardapio-resumo")}
-            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>}
+            icon={<ForkKnife size={26} weight="duotone" color="white" />}
           />
           <MetricCard
             variant="customers"
@@ -269,7 +268,7 @@ export default function Inicio() {
             value={undefined}
             emptyText="Acessar"
             onClick={() => navigate("/agenda")}
-            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>}
+            icon={<CalendarDots size={26} weight="duotone" color="white" />}
           />
           <MetricCard
             variant="revenue"
@@ -277,7 +276,7 @@ export default function Inicio() {
             value={undefined}
             emptyText="Acessar"
             onClick={() => navigate("/financeiro")}
-            icon={<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>}
+            icon={<CurrencyDollar size={26} weight="duotone" color="white" />}
           />
         </div>
 
@@ -310,7 +309,7 @@ export default function Inicio() {
             onClick={() => navigate('/pedidos/novo')}
             style={{ background: 'var(--primary,#986274)', color: 'white', border: 'none', borderRadius: 10, padding: '0.65rem 1.25rem', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <Plus size={15} weight="bold" />
             Novo pedido
           </button>
         </div>
@@ -354,7 +353,7 @@ export default function Inicio() {
                 ) : ultimosPedidos.map((p: any) => (
                   <div key={p.id} onClick={() => navigate(`/pedidos/${p.id}`)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.75rem 0', borderBottom: '1px solid var(--border,#ECC2D0)', cursor: 'pointer' }}>
                     <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--bg-subtle,#F7EEF1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary,#986274)" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      <ClipboardText size={18} weight="duotone" color="var(--primary,#986274)" />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-title,#431524)' }}>{p.cliente_nome || 'Cliente'}</p>
