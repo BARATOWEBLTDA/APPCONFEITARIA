@@ -460,7 +460,12 @@ export default function Inicio() {
         @media (min-width: 768px) { .ini-mobile { display: none; } .ini-desktop { display: block; } }
 
         /* MOBILE styles preserved */
-        .mob-hero { background: var(--primary-gradient); border-radius: 0 0 28px 28px; padding: 2.5rem 1.25rem 4.5rem; margin: -0.75rem -0.75rem 0; }
+        .mob-hero { background: linear-gradient(135deg, #986274, #6E3548, #431524, #6E3548, #986274); background-size: 300% 300%; animation: heroGradientMove 10s ease infinite; border-radius: 0 0 28px 28px; padding: 2.5rem 1.25rem 4.5rem; margin: -0.75rem -0.75rem 0; }
+        @keyframes heroGradientMove {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
         .mob-hero-row { display: flex; align-items: center; gap: 0.7rem; }
         .mob-hero-profile { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; overflow: hidden; }
         .mob-hero-bell { background: none; border: none; padding: 0.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; }
