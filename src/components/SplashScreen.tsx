@@ -1,44 +1,61 @@
+import { useEffect, useRef } from "react";
+
 export function SplashScreen({ onDone }: { onDone?: () => void }) {
+  const bgRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number>(0);
+  const timeRef = useRef(0);
+
+  useEffect(() => {
+    const animate = () => {
+      timeRef.current += 0.003;
+      const t = timeRef.current;
+      const angle = 120 + 20 * Math.sin(t);
+      if (bgRef.current) {
+        bgRef.current.style.background = `linear-gradient(${angle}deg, #986274 0%, #6E3548 50%, #C39EAA 100%)`;
+      }
+      rafRef.current = requestAnimationFrame(animate);
+    };
+    animate();
+    return () => cancelAnimationFrame(rafRef.current);
+  }, []);
+
   return (
     <div className="splash-root">
-      <div className="splash-content">
-        <img src="/logoapp.png" alt="Doonly" className="splash-logo" />
-        <div className="splash-dots">
-          <span /><span /><span />
-        </div>
-      </div>
+      <div ref={bgRef} className="splash-bg" />
+      <div className="splash-glow" />
+      <img src="/logoapp.png" alt="Doonly" className="splash-logo" />
       <p className="splash-tag">Gestão para Confeitarias</p>
 
       <style>{`
         .splash-root {
           position: fixed; inset: 0; z-index: 9999;
-          background: linear-gradient(135deg, #f9007a 0%, #ff6eb4 60%, #ffb3d9 100%);
-          display: flex; flex-direction: column;
-          align-items: center; justify-content: center;
+          display: flex; align-items: center; justify-content: center;
+          overflow: hidden;
         }
-        .splash-content {
-          display: flex; flex-direction: column;
-          align-items: center; gap: 2.5rem;
+        .splash-bg {
+          position: absolute; inset: 0;
+          background: linear-gradient(135deg, #986274 0%, #6E3548 50%, #C39EAA 100%);
+        }
+        .splash-glow {
+          position: absolute;
+          width: 320px; height: 320px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.12) 45%, rgba(255,255,255,0) 70%);
+          animation: splashGlowPulse 2.2s ease-in-out infinite;
         }
         .splash-logo {
-          width: 220px; object-fit: contain;
-          animation: splashPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+          position: relative;
+          width: 150px; object-fit: contain;
+          filter: drop-shadow(0 8px 24px rgba(0,0,0,0.25));
+          animation: splashLogoPulse 1.6s ease-in-out infinite;
         }
-        @keyframes splashPop {
-          from { opacity: 0; transform: scale(0.75); }
-          to { opacity: 1; transform: scale(1); }
+        @keyframes splashLogoPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.08); }
         }
-        .splash-dots { display: flex; gap: 0.6rem; }
-        .splash-dots span {
-          width: 10px; height: 10px; border-radius: 50%;
-          background: rgba(255,255,255,0.9);
-          animation: dotPulse 1.2s ease-in-out infinite;
-        }
-        .splash-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .splash-dots span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes dotPulse {
-          0%, 80%, 100% { transform: scale(0.5); opacity: 0.3; }
-          40% { transform: scale(1); opacity: 1; }
+        @keyframes splashGlowPulse {
+          0%, 100% { opacity: 0.7; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.12); }
         }
         .splash-tag {
           position: absolute; bottom: 2.5rem;
