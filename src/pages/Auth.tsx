@@ -301,6 +301,7 @@ export default function Auth() {
           box-shadow: 0 0 0px 1000px var(--primary-light, #F7EEF1) inset;
           transition: background-color 5000s ease-in-out 0s;
         }
+        .cad-field:has(input:-webkit-autofill) { background: var(--primary-light, #F7EEF1); }
         .field input:-webkit-autofill,
         .field input:-webkit-autofill:hover,
         .field input:-webkit-autofill:focus {
@@ -309,6 +310,7 @@ export default function Auth() {
           box-shadow: 0 0 0px 1000px var(--primary-light, #F7EEF1) inset;
           transition: background-color 5000s ease-in-out 0s;
         }
+        .field:has(input:-webkit-autofill) { background: var(--primary-light, #F7EEF1); }
         .cad-icon { margin-right: 1rem; flex-shrink: 0; }
         .cad-eye { background: none; border: none; cursor: pointer; padding: 0 1rem 0 0; display: flex; align-items: center; color: var(--text-muted, #9CA3AF); }
         .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); border: none; border-radius: 50px; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
