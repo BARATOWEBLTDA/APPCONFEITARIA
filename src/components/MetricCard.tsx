@@ -59,9 +59,8 @@ export function MetricCard({ variant, icon, label, value, emptyText, onClick }: 
       <div
         className="dash-metric-icon"
         style={{
-          background: "rgba(255,255,255,0.98)",
+          background: "transparent",
           zIndex: 1,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
         }}
       >
         {icon}

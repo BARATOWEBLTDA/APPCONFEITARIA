@@ -260,7 +260,7 @@ export default function Inicio() {
             value={undefined}
             emptyText="Acessar"
             onClick={() => navigate("/cardapio-resumo")}
-            icon={<img src="/cardapio.png" alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} />}
+            icon={<img src="/cardapio.png" alt="" style={{ width: 38, height: 38, objectFit: 'contain' }} />}
           />
           <MetricCard
             variant="customers"
@@ -268,7 +268,7 @@ export default function Inicio() {
             value={undefined}
             emptyText="Acessar"
             onClick={() => navigate("/agenda")}
-            icon={<img src="/agenda.png" alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} />}
+            icon={<img src="/agenda.png" alt="" style={{ width: 38, height: 38, objectFit: 'contain' }} />}
           />
           <MetricCard
             variant="revenue"
@@ -276,7 +276,7 @@ export default function Inicio() {
             value={undefined}
             emptyText="Acessar"
             onClick={() => navigate("/financeiro")}
-            icon={<img src="/financeiro.png" alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} />}
+            icon={<img src="/financeiro.png" alt="" style={{ width: 38, height: 38, objectFit: 'contain' }} />}
           />
         </div>
 
