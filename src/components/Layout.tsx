@@ -204,46 +204,46 @@ export default function Layout() {
           {(cardapioNav || isCardapioMode) ? (
             <>
               <button className={`bottom-item${location.pathname === "/cardapio-resumo" ? " active" : ""}`} onClick={() => navigate("/cardapio-resumo")}>
-                <ChartBar size={22} weight="duotone" />
+                <ChartBar size={22} weight="fill" />
                 <span className={`nav-label${location.pathname === "/cardapio-resumo" ? " nav-label-active" : ""}`}>Visão Geral</span>
               </button>
               <button className={`bottom-item${location.pathname === "/cardapio-preview" ? " active" : ""}`} onClick={() => navigate("/cardapio-preview")}>
-                <Eye size={22} weight="duotone" />
+                <Eye size={22} weight="fill" />
                 <span className={`nav-label${location.pathname === "/cardapio-preview" ? " nav-label-active" : ""}`}>Prévia</span>
               </button>
               <button className={`bottom-item${location.pathname === "/produtos" ? " active" : ""}`} onClick={() => navigate("/produtos")}>
-                <Storefront size={22} weight="duotone" />
+                <Storefront size={22} weight="fill" />
                 <span className={`nav-label${location.pathname === "/produtos" ? " nav-label-active" : ""}`}>Produtos</span>
               </button>
               <button className={`bottom-item${location.pathname === "/cardapio-config" ? " active" : ""}`} onClick={() => navigate("/cardapio-config")}>
-                <Sliders size={22} weight="duotone" />
+                <Sliders size={22} weight="fill" />
                 <span className={`nav-label${location.pathname === "/cardapio-config" ? " nav-label-active" : ""}`}>Config</span>
               </button>
               <button className="bottom-item" onClick={() => { setCardapioNav(false); navigate("/inicio"); }}>
-                <ArrowLeft size={22} weight="duotone" />
+                <ArrowLeft size={22} weight="fill" />
                 <span className="nav-label">Voltar</span>
               </button>
             </>
           ) : (
             <>
               <NavLink to="/inicio" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-                <House size={22} weight="duotone" />
+                <House size={22} weight="fill" />
                 <span className={`nav-label${location.pathname === "/inicio" ? " nav-label-active" : ""}`}>Início</span>
               </NavLink>
               <button className={`bottom-item${cardapioNav ? " active" : ""}`} onClick={() => { setCardapioNav(true); navigate("/cardapio-config"); }}>
-                <ForkKnife size={22} weight="duotone" />
+                <ForkKnife size={22} weight="fill" />
                 <span className="nav-label">Cardápio</span>
               </button>
               <NavLink to="/clientes" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-                <Users size={22} weight="duotone" />
+                <Users size={22} weight="fill" />
                 <span className={`nav-label${location.pathname === "/clientes" ? " nav-label-active" : ""}`}>Clientes</span>
               </NavLink>
               <NavLink to="/receitas" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-                <BookOpen size={22} weight="duotone" />
+                <BookOpen size={22} weight="fill" />
                 <span className={`nav-label${location.pathname === "/receitas" ? " nav-label-active" : ""}`}>Receitas</span>
               </NavLink>
               <button className={`bottom-item ${gestaoOpen ? "active" : ""}`} onClick={() => setGestaoOpen(!gestaoOpen)}>
-                <List size={22} weight="duotone" />
+                <List size={22} weight="fill" />
                 <span className={`nav-label${gestaoOpen ? " nav-label-active" : ""}`}>Gestão</span>
               </button>
             </>
@@ -357,8 +357,7 @@ export default function Layout() {
             justify-content: space-around; align-items: center;
             box-shadow: var(--bottomnav-shadow);
           }
-          .bottom-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 0.2rem; padding: 0.35rem 0.1rem; color: var(--bottomnav-inactive); text-decoration: none; background: none; border: none; cursor: pointer; font-family: var(--font-base); transition: color 0.15s, opacity 0.15s; opacity: 0.75; }
-          .bottom-item.active { opacity: 1; }
+          .bottom-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 0.2rem; padding: 0.35rem 0.1rem; color: var(--bottomnav-inactive); text-decoration: none; background: none; border: none; cursor: pointer; font-family: var(--font-base); transition: color 0.15s; }
           .nav-label { font-size: 0.6rem; font-weight: 600; color: inherit; white-space: nowrap; }
           .nav-label-active { font-size: 0.6rem; font-weight: 800; color: var(--bottomnav-active); }
           .bottom-nav { animation: fadeInUp 0.2s ease; }

@@ -49,7 +49,7 @@
   /* ── Bottom Nav Mobile ── */
   --bottomnav-bg:         #6E3548;
   --bottomnav-shadow:     0 -4px 16px rgba(0,0,0,0.2);
-  --bottomnav-inactive:   rgba(255,255,255,0.6);
+  --bottomnav-inactive:   #ECC2D0;
   --bottomnav-active:     #FFFFFF;
 
   /* ── Gestão Drawer ── */
@@ -157,7 +157,7 @@
   /* ── Bottom Nav Mobile ── */
   --bottomnav-bg:         #431524;
   --bottomnav-shadow:     0 -2px 12px rgba(0,0,0,0.4);
-  --bottomnav-inactive:   rgba(255,255,255,0.55);
+  --bottomnav-inactive:   #C39EAA;
   --bottomnav-active:     #FFFFFF;
 
   /* ── Gestão Drawer ── */
