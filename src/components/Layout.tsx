@@ -358,12 +358,12 @@ export default function Layout() {
             box-shadow: var(--bottomnav-shadow);
           }
           .bottom-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 0.2rem; padding: 0.35rem 0.1rem; color: var(--bottomnav-inactive); text-decoration: none; background: none; border: none; cursor: pointer; font-family: var(--font-base); transition: color 0.15s; }
-          .nav-label { font-size: 0.6rem; font-weight: 600; color: inherit; white-space: nowrap; }
-          .nav-label-active { font-size: 0.6rem; font-weight: 800; color: var(--bottomnav-active); }
+          .nav-label { font-size: 0.65rem; font-weight: 500; color: inherit; white-space: nowrap; letter-spacing: 0.01em; }
+          .nav-label-active { font-size: 0.65rem; font-weight: 700; color: var(--bottomnav-active); letter-spacing: 0.01em; }
           .bottom-nav { animation: fadeInUp 0.2s ease; }
           @keyframes fadeInUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
           .bottom-item.active { color: var(--bottomnav-active); font-weight: 700; }
-          .bottom-item.active .nav-label { font-weight: 800 !important; }
+          .bottom-item.active .nav-label { font-weight: 700 !important; }
           .bottom-item:hover { color: var(--bottomnav-active); }
 
           /* ── Gestão Drawer ── */
