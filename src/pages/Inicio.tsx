@@ -260,7 +260,7 @@ export default function Inicio() {
             value={undefined}
             emptyText="Acessar"
             onClick={() => navigate("/cardapio-resumo")}
-            icon={<img src="/cardapio.png" alt="" style={{ width: 38, height: 38, objectFit: 'contain' }} />}
+            icon={<img src="/cardapio.png" alt="" style={{ width: 52, height: 52, objectFit: 'contain' }} />}
           />
           <MetricCard
             variant="customers"
@@ -268,7 +268,7 @@ export default function Inicio() {
             value={undefined}
             emptyText="Acessar"
             onClick={() => navigate("/agenda")}
-            icon={<img src="/agenda.png" alt="" style={{ width: 38, height: 38, objectFit: 'contain' }} />}
+            icon={<img src="/agenda.png" alt="" style={{ width: 52, height: 52, objectFit: 'contain' }} />}
           />
           <MetricCard
             variant="revenue"
@@ -276,7 +276,7 @@ export default function Inicio() {
             value={undefined}
             emptyText="Acessar"
             onClick={() => navigate("/financeiro")}
-            icon={<img src="/financeiro.png" alt="" style={{ width: 38, height: 38, objectFit: 'contain' }} />}
+            icon={<img src="/financeiro.png" alt="" style={{ width: 52, height: 52, objectFit: 'contain' }} />}
           />
         </div>
 
@@ -476,7 +476,7 @@ export default function Inicio() {
         .mob-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-top: -52px; padding: 0 0.25rem; }
         .mob-metrics .dash-metric-card { padding: 1.1rem 0.5rem 0.9rem; border-radius: 18px; flex-direction: column; align-items: center; justify-content: center; gap: 0.55rem; transition: transform 0.15s; }
         .mob-metrics .dash-metric-card:active { transform: scale(0.96); }
-        .mob-metrics .dash-metric-icon { width: 44px; height: 44px; border-radius: 13px; }
+        .mob-metrics .dash-metric-icon { width: 58px; height: 58px; border-radius: 15px; }
         .mob-section-title { font-size: 0.88rem; font-weight: 700; color: var(--text-title, #1F2937); }
         .mob-atalhos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
         .mob-atalho { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; background: var(--bg-card, #FFFFFF); border: 1.5px solid var(--border, #E9E9EE); border-radius: 12px; padding: 0.7rem 0.4rem; cursor: pointer; font-family: 'Geist', sans-serif; transition: border-color 0.15s; }
