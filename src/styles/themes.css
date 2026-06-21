@@ -47,10 +47,10 @@
   --topbar-shadow:        0 4px 12px rgba(0,0,0,0.08);
 
   /* ── Bottom Nav Mobile ── */
-  --bottomnav-bg:         #FFFFFF;
-  --bottomnav-shadow:     0 -2px 12px rgba(0,0,0,0.12);
-  --bottomnav-inactive:   #986274;
-  --bottomnav-active:     var(--primary);
+  --bottomnav-bg:         #6E3548;
+  --bottomnav-shadow:     0 -4px 16px rgba(0,0,0,0.2);
+  --bottomnav-inactive:   rgba(255,255,255,0.6);
+  --bottomnav-active:     #FFFFFF;
 
   /* ── Gestão Drawer ── */
   --drawer-bg:            #330716;
@@ -157,8 +157,8 @@
   /* ── Bottom Nav Mobile ── */
   --bottomnav-bg:         #431524;
   --bottomnav-shadow:     0 -2px 12px rgba(0,0,0,0.4);
-  --bottomnav-inactive:   #986274;
-  --bottomnav-active:     var(--primary);
+  --bottomnav-inactive:   rgba(255,255,255,0.55);
+  --bottomnav-active:     #FFFFFF;
 
   /* ── Gestão Drawer ── */
   --drawer-bg:            #330716;
