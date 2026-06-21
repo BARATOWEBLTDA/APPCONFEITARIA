@@ -187,9 +187,6 @@ export default function Auth() {
       </div>
       ) : (
       <div className="auth-card">
-        <button className="cadastro-back-inline" onClick={() => setShowCadastro(false)}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
         <form onSubmit={handleCadastro} className="cadastro-form">
           <div className="cad-field">
             <input type="text" placeholder="Nome" value={cadastroForm.nome} onChange={e => setCadastroForm({ ...cadastroForm, nome: e.target.value })} required />
@@ -291,11 +288,7 @@ export default function Auth() {
         .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border, #E9E9EE); }
         .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0.75rem; background: var(--bg-card, #FFFFFF); color: var(--text-primary, #374151); border: 1.5px solid var(--border, #E9E9EE); border-radius: 8px; font-family: inherit; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
         .google-btn:hover { border-color: var(--text-muted, #9CA3AF); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-        .cadastro-back-inline { position: relative; margin-bottom: 1.25rem; width: 36px; height: 36px; border-radius: 50%; background: var(--bg-body, #F7F7F8); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-primary, #374151); transition: background 0.15s; }
-        .cadastro-back-inline:hover { background: var(--border, #E9E9EE); }
-        .cadastro-logo-wrap { display: flex; justify-content: center; margin-bottom: 1.75rem; margin-top: 0.5rem; }
-        .cadastro-logo { height: 110px; object-fit: contain; }
-        .cadastro-form { display: flex; flex-direction: column; gap: 0.9rem; }
+        .cadastro-form { display: flex; flex-direction: column; gap: 0.9rem; padding-top: 0.5rem; }
         .cad-field { position: relative; display: flex; align-items: center; border: 1.5px solid var(--border, #E9E9EE); border-radius: 50px; overflow: hidden; background: var(--bg-card, #FFFFFF); transition: border-color 0.2s; }
         .cad-field:focus-within { border-color: var(--border-focus, #FF6FA9); }
         .cad-field input { flex: 1; padding: 0.8rem 1.25rem; border: none; outline: none; font-family: inherit; font-size: 0.95rem; color: var(--text-title, #1F2937); background: transparent; }
