@@ -291,7 +291,7 @@ export default function Auth() {
         .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0.75rem; background: var(--bg-card, #FFFFFF); color: var(--text-primary, #374151); border: 1.5px solid var(--border, #E9E9EE); border-radius: 8px; font-family: inherit; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
         .google-btn:hover { border-color: var(--text-muted, #9CA3AF); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
         .cadastro-form { display: flex; flex-direction: column; gap: 0.9rem; padding-top: 0.5rem; }
-        .cad-field { position: relative; display: flex; align-items: stretch; border: 1.5px solid var(--border, #E9E9EE); border-radius: 50px; overflow: hidden; background: var(--bg-card, #FFFFFF); transition: border-color 0.2s; }
+        .cad-field { position: relative; display: flex; align-items: stretch; min-height: 50px; border: 1.5px solid var(--border, #E9E9EE); border-radius: 50px; overflow: hidden; background: var(--bg-card, #FFFFFF); transition: border-color 0.2s; }
         .cad-field:focus-within { border-color: var(--border-focus, #986274); }
         .cad-field input { flex: 1; padding: 0.8rem 1.25rem; border: none; outline: none; font-family: inherit; font-size: 0.95rem; color: var(--text-title, #1F2937); background: transparent; }
         .cad-field input::placeholder { color: var(--text-muted, #9CA3AF); }
@@ -311,7 +311,7 @@ export default function Auth() {
           box-shadow: 0 0 0px 1000px var(--primary-light, #F7EEF1) inset;
           transition: background-color 5000s ease-in-out 0s;
         }
-        .cad-icon { flex-shrink: 0; width: 48px; display: flex; align-items: center; justify-content: center; background: var(--primary, #986274); align-self: stretch; }
+        .cad-icon { flex-shrink: 0; width: 48px; min-height: 50px; display: flex; align-items: center; justify-content: center; background: var(--primary, #986274); }
         .cad-eye { background: none; border: none; cursor: pointer; padding: 0 1rem 0 0; display: flex; align-items: center; color: var(--text-muted, #9CA3AF); }
         .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); border: none; border-radius: 50px; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
         .cad-btn:hover:not(:disabled) { opacity: 0.9; }
