@@ -49,7 +49,7 @@
   /* ── Bottom Nav Mobile ── */
   --bottomnav-bg:         #FFFFFF;
   --bottomnav-shadow:     0 -2px 12px rgba(0,0,0,0.12);
-  --bottomnav-inactive:   #C39EAA;
+  --bottomnav-inactive:   #986274;
   --bottomnav-active:     var(--primary);
 
   /* ── Gestão Drawer ── */

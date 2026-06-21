@@ -357,7 +357,8 @@ export default function Layout() {
             justify-content: space-around; align-items: center;
             box-shadow: var(--bottomnav-shadow);
           }
-          .bottom-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 0.2rem; padding: 0.35rem 0.1rem; color: var(--bottomnav-inactive); text-decoration: none; background: none; border: none; cursor: pointer; font-family: var(--font-base); transition: color 0.15s; }
+          .bottom-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 0.2rem; padding: 0.35rem 0.1rem; color: var(--bottomnav-inactive); text-decoration: none; background: none; border: none; cursor: pointer; font-family: var(--font-base); transition: color 0.15s, opacity 0.15s; opacity: 0.75; }
+          .bottom-item.active { opacity: 1; }
           .nav-label { font-size: 0.6rem; font-weight: 600; color: inherit; white-space: nowrap; }
           .nav-label-active { font-size: 0.6rem; font-weight: 800; color: var(--bottomnav-active); }
           .bottom-nav { animation: fadeInUp 0.2s ease; }
