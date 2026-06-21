@@ -260,7 +260,7 @@ export default function Inicio() {
             value={undefined}
             emptyText="Acessar"
             onClick={() => navigate("/cardapio-resumo")}
-            icon={<img src="/cardapio.png" alt="" style={{ width: 32, height: 32, objectFit: 'contain' }} />}
+            icon={<img src="/cardapio.png" alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} />}
           />
           <MetricCard
             variant="customers"
@@ -268,7 +268,7 @@ export default function Inicio() {
             value={undefined}
             emptyText="Acessar"
             onClick={() => navigate("/agenda")}
-            icon={<img src="/agenda.png" alt="" style={{ width: 32, height: 32, objectFit: 'contain' }} />}
+            icon={<img src="/agenda.png" alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} />}
           />
           <MetricCard
             variant="revenue"
@@ -276,7 +276,7 @@ export default function Inicio() {
             value={undefined}
             emptyText="Acessar"
             onClick={() => navigate("/financeiro")}
-            icon={<img src="/financeiro.png" alt="" style={{ width: 32, height: 32, objectFit: 'contain' }} />}
+            icon={<img src="/financeiro.png" alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} />}
           />
         </div>
 
@@ -473,9 +473,10 @@ export default function Inicio() {
         @keyframes bell-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); } 50% { box-shadow: 0 0 0 6px rgba(255,255,255,0); } }
         .mob-hero-title { font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0; line-height: 1.2; }
         .mob-hero-brand { font-family: 'Dancing Script', cursive; font-weight: 700; font-size: 1.6rem; color: #ffffff; text-shadow: 0 0 6px rgba(255,255,255,0.5); line-height: 1; }
-        .mob-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-top: -52px; padding: 0 0.25rem; }
-        .mob-metrics .dash-metric-card { padding: 0.65rem 0.5rem; border-radius: 14px; flex-direction: column; align-items: flex-start; gap: 0.4rem; }
-        .mob-metrics .dash-metric-icon { width: 30px; height: 30px; }
+        .mob-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-top: -52px; padding: 0 0.25rem; }
+        .mob-metrics .dash-metric-card { padding: 1.1rem 0.5rem 0.9rem; border-radius: 18px; flex-direction: column; align-items: center; justify-content: center; gap: 0.55rem; transition: transform 0.15s; }
+        .mob-metrics .dash-metric-card:active { transform: scale(0.96); }
+        .mob-metrics .dash-metric-icon { width: 44px; height: 44px; border-radius: 13px; }
         .mob-section-title { font-size: 0.88rem; font-weight: 700; color: var(--text-title, #1F2937); }
         .mob-atalhos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
         .mob-atalho { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; background: var(--bg-card, #FFFFFF); border: 1.5px solid var(--border, #E9E9EE); border-radius: 12px; padding: 0.7rem 0.4rem; cursor: pointer; font-family: 'Geist', sans-serif; transition: border-color 0.15s; }
@@ -518,9 +519,8 @@ export default function Inicio() {
         .dash-metric-num { font-size: 1.8rem; font-weight: 800; color: var(--text-title,#1F2937); margin: 0; line-height: 1; }
         .dash-metric-label { font-size: 0.75rem; color: var(--text-muted,#9CA3AF); margin: 0.25rem 0 0; font-weight: 500; }
         .dash-metric-empty { font-size: 0.78rem; font-weight: 700; margin: 0; line-height: 1.25; }
-        .mob-metrics .dash-metric-empty { font-size: 0.68rem; line-height: 1.2; }
         .mob-metrics .dash-metric-num { font-size: 1.3rem; }
-        .mob-metrics .dash-metric-label { font-size: 0.66rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mob-metrics .dash-metric-label { font-size: 0.74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       `}</style>
     </div>
   );

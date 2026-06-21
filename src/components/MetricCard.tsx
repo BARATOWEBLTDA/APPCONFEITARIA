@@ -34,7 +34,17 @@ export function MetricCard({ variant, icon, label, value, emptyText, onClick }: 
     <div
       className="dash-metric-card"
       onClick={onClick}
-      style={{ background: gradient, overflow: "hidden", position: "relative" }}
+      style={{
+        background: gradient,
+        overflow: "hidden",
+        position: "relative",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        textAlign: "center",
+        gap: "0.5rem",
+        boxShadow: "0 8px 24px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.12)",
+      }}
     >
       {/* Detalhe decorativo */}
       <svg
@@ -48,7 +58,11 @@ export function MetricCard({ variant, icon, label, value, emptyText, onClick }: 
       {/* Ícone */}
       <div
         className="dash-metric-icon"
-        style={{ background: "rgba(255,255,255,0.95)", zIndex: 1 }}
+        style={{
+          background: "rgba(255,255,255,0.98)",
+          zIndex: 1,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+        }}
       >
         {icon}
       </div>
@@ -57,11 +71,9 @@ export function MetricCard({ variant, icon, label, value, emptyText, onClick }: 
       <div style={{ zIndex: 1 }}>
         {value !== undefined && value !== null && value !== 0
           ? <p className="dash-metric-num" style={{ color: "white" }}>{value}</p>
-          : emptyText
-            ? <p className="dash-metric-empty" style={{ color: "rgba(255,255,255,0.9)" }}>{emptyText}</p>
-            : <p className="dash-metric-num" style={{ color: "white" }}>{value}</p>
+          : null
         }
-        <p className="dash-metric-label" style={{ color: "rgba(255,255,255,0.8)" }}>{label}</p>
+        <p className="dash-metric-label" style={{ color: "white", fontWeight: 700 }}>{label}</p>
       </div>
     </div>
   );
