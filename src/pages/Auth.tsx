@@ -132,7 +132,7 @@ export default function Auth() {
       {!showCadastro ? (
       <div className="auth-card">
         <div className="auth-logo-wrap">
-          <img src="/logoapp.png" alt="Doonly" className="auth-logo-img" />
+          <img src="/cadastro.png" alt="Doonly" className="auth-logo-img" />
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
