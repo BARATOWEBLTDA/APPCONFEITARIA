@@ -189,19 +189,19 @@ export default function Auth() {
       <div className="auth-card">
         <form onSubmit={handleCadastro} className="cadastro-form">
           <div className="cad-field">
-            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <svg className="cad-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             <input type="text" placeholder="Nome" value={cadastroForm.nome} onChange={e => setCadastroForm({ ...cadastroForm, nome: e.target.value })} required />
           </div>
           <div className="cad-field">
-            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.73a16 16 0 0 0 6.29 6.29l1.62-1.62a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <svg className="cad-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.73a16 16 0 0 0 6.29 6.29l1.62-1.62a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
             <input type="tel" placeholder="Telefone" value={cadastroForm.telefone} onChange={e => setCadastroForm({ ...cadastroForm, telefone: formatPhone(e.target.value) })} />
           </div>
           <div className="cad-field">
-            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <svg className="cad-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
             <input type="email" placeholder="E-mail" value={cadastroForm.email} onChange={e => setCadastroForm({ ...cadastroForm, email: e.target.value })} required />
           </div>
           <div className="cad-field">
-            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <svg className="cad-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             <input type={showCadastroSenha ? "text" : "password"} placeholder="Senha" value={cadastroForm.senha} onChange={e => setCadastroForm({ ...cadastroForm, senha: e.target.value })} required />
             <button type="button" className="cad-eye" onClick={() => setShowCadastroSenha(!showCadastroSenha)}>
               {showCadastroSenha
@@ -211,7 +211,7 @@ export default function Auth() {
             </button>
           </div>
           <div className="cad-field">
-            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <svg className="cad-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             <input type={showConfirmarSenha ? "text" : "password"} placeholder="Confirmar Senha" value={cadastroForm.confirmarSenha} onChange={e => setCadastroForm({ ...cadastroForm, confirmarSenha: e.target.value })} required />
             <button type="button" className="cad-eye" onClick={() => setShowConfirmarSenha(!showConfirmarSenha)}>
               {showConfirmarSenha
@@ -291,7 +291,7 @@ export default function Auth() {
         .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0.75rem; background: var(--bg-card, #FFFFFF); color: var(--text-primary, #374151); border: 1.5px solid var(--border, #E9E9EE); border-radius: 8px; font-family: inherit; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
         .google-btn:hover { border-color: var(--text-muted, #9CA3AF); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
         .cadastro-form { display: flex; flex-direction: column; gap: 0.9rem; padding-top: 0.5rem; }
-        .cad-field { position: relative; display: flex; align-items: stretch; min-height: 50px; border: 1.5px solid var(--border, #E9E9EE); border-radius: 50px; overflow: hidden; background: var(--bg-card, #FFFFFF); transition: border-color 0.2s; }
+        .cad-field { position: relative; display: flex; align-items: stretch; min-height: 46px; border: 1.5px solid var(--border, #E9E9EE); border-radius: 50px; overflow: hidden; background: var(--bg-card, #FFFFFF); transition: border-color 0.2s; }
         .cad-field:focus-within { border-color: var(--border-focus, #986274); }
         .cad-field input { flex: 1; padding: 0.8rem 1.25rem; border: none; outline: none; font-family: inherit; font-size: 0.95rem; color: var(--text-title, #1F2937); background: transparent; }
         .cad-field input::placeholder { color: var(--text-muted, #9CA3AF); }
@@ -311,7 +311,8 @@ export default function Auth() {
           box-shadow: 0 0 0px 1000px var(--primary-light, #F7EEF1) inset;
           transition: background-color 5000s ease-in-out 0s;
         }
-        .cad-icon { flex-shrink: 0; width: 48px; min-height: 50px; display: flex; align-items: center; justify-content: center; background: var(--primary, #986274); }
+        .cad-icon { flex-shrink: 0; width: 40px; min-height: 46px; display: flex; align-items: center; justify-content: center; background: var(--primary, #986274); }
+        .cad-icon svg { width: 14px; height: 14px; }
         .cad-eye { background: none; border: none; cursor: pointer; padding: 0 1rem 0 0; display: flex; align-items: center; color: var(--text-muted, #9CA3AF); }
         .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); border: none; border-radius: 50px; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
         .cad-btn:hover:not(:disabled) { opacity: 0.9; }
