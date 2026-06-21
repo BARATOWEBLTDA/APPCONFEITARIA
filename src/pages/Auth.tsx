@@ -190,9 +190,6 @@ export default function Auth() {
         <button className="cadastro-back-inline" onClick={() => setShowCadastro(false)}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <div className="cadastro-logo-wrap">
-          <img src="/logoapp.png" alt="Doonly" className="cadastro-logo" />
-        </div>
         <form onSubmit={handleCadastro} className="cadastro-form">
           <div className="cad-field">
             <input type="text" placeholder="Nome" value={cadastroForm.nome} onChange={e => setCadastroForm({ ...cadastroForm, nome: e.target.value })} required />

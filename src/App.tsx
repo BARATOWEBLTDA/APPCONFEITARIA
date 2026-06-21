@@ -59,15 +59,28 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(() => {
+    try {
+      return !sessionStorage.getItem('doonly_splash_shown');
+    } catch {
+      return true;
+    }
+  });
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowSplash(false), 3000);
+    if (!showSplash) return;
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+      try { sessionStorage.setItem('doonly_splash_shown', '1'); } catch {}
+    }, 3000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [showSplash]);
 
   if (showSplash) {
-    return <SplashScreen onDone={() => setShowSplash(false)} />;
+    return <SplashScreen onDone={() => {
+      setShowSplash(false);
+      try { sessionStorage.setItem('doonly_splash_shown', '1'); } catch {}
+    }} />;
   }
 
   return (
