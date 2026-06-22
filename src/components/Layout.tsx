@@ -389,10 +389,10 @@ export default function Layout() {
             align-items: center;
             justify-content: space-around;
             width: 100%;
-            background: #ffffff;
+            background: #3d1a24;
             border-radius: 999px;
             padding: 6px 6px;
-            box-shadow: 0 4px 24px rgba(61, 26, 36, 0.15), 0 1px 4px rgba(61, 26, 36, 0.08);
+            box-shadow: 0 4px 24px rgba(61, 26, 36, 0.35);
             pointer-events: all;
             margin-bottom: 4px;
           }
@@ -411,18 +411,18 @@ export default function Layout() {
             text-decoration: none;
             transition: background 0.15s, transform 0.1s;
             min-width: 56px;
-            color: #b08a96;
+            color: rgba(255, 255, 255, 0.5);
           }
           .bn-item:hover {
-            background: rgba(61, 26, 36, 0.07);
+            background: rgba(255, 255, 255, 0.08);
             border-radius: 14px;
           }
           .bn-item--active {
-            background: #3d1a24;
+            background: rgba(255, 255, 255, 0.15);
             color: #ffffff;
           }
           .bn-item--active:hover {
-            background: #3d1a24;
+            background: rgba(255, 255, 255, 0.15);
           }
           .bn-icon {
             display: flex;
