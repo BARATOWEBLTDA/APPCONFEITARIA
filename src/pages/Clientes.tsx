@@ -294,11 +294,11 @@ export default function Clientes() {
           {formMode === "rapido" && !editando && (
             <div className="form-fields">
               <div className="form-field">
-                <label>Nome <span className="req">*</span></label>
+                <label>Nome <span className="req">Obrigatório</span></label>
                 <input type="text" placeholder="Nome do cliente" value={rapido.nome} onChange={e => setRapido(f => ({...f, nome: e.target.value}))} autoComplete="off" />
               </div>
               <div className="form-field">
-                <label>Telefone / WhatsApp <span className="req">*</span></label>
+                <label>Telefone / WhatsApp <span className="req">Obrigatório</span></label>
                 <input type="tel" placeholder="(00) 9 0000-0000" value={rapido.whatsapp} onChange={e => setRapido(f => ({...f, whatsapp: e.target.value}))} autoComplete="off" />
               </div>
               <div className="form-field">
@@ -336,7 +336,7 @@ export default function Clientes() {
               <div className="form-section-title">Dados pessoais</div>
               <div className="form-fields">
                 <div className="form-field">
-                  <label>Nome completo <span className="req">*</span></label>
+                  <label>Nome completo <span className="req">Obrigatório</span></label>
                   <input type="text" placeholder="Nome completo" value={completo.nome} onChange={e => setCompleto(f => ({...f, nome: e.target.value}))} autoComplete="off" />
                 </div>
                 <div className="form-field">
@@ -787,8 +787,8 @@ export default function Clientes() {
         .form-field input, .form-field select, .form-field textarea { padding: 0.65rem 0.9rem; border: 1.5px solid var(--border,#E9E9EE); border-radius: 8px; font-family: inherit; font-size: 0.9rem; color: var(--text-title,#1F2937); outline: none; transition: border-color 0.2s; background: var(--bg-card,#FFF); resize: none; width: 100%; }
         .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: #3d1a24; }
 
-        .req { color: var(--error,#EF4444); font-size: 0.78rem; }
-        .opt { color: var(--text-muted,#9CA3AF); font-size: 0.72rem; font-weight: 400; }
+        .req { color: var(--text-muted,#9CA3AF); font-size: 0.72rem; font-weight: 400; font-style: italic; }
+        .opt { color: var(--text-muted,#9CA3AF); font-size: 0.72rem; font-weight: 400; font-style: italic; }
 
         .form-avatar-wrap    { display: flex; flex-direction: column; align-items: center; margin: 0.75rem 0 0.5rem; gap: 0.4rem; }
         .form-avatar         { width: 80px; height: 80px; border-radius: 50%; border: 2px dashed var(--border,#E9E9EE); background: var(--bg-body,#F7F7F8); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; }
