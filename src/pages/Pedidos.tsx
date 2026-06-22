@@ -7,6 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 type PedidoItem = {
   nome_produto: string; quantidade: number; valor_unitario: number
   observacoes?: string
+  imagem_url?: string | null
   personalizacoes?: { massa?: string | null; recheio?: string | null; cobertura?: string | null }
   produtos?: { imagem_url?: string | null; forma_venda?: string | null } | null
 }
@@ -206,8 +207,8 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
     primeiroItem && (
       <div className="ped-card-produto-row">
         <div className="ped-card-produto-img">
-          {primeiroItem.produtos?.imagem_url
-            ? <img src={primeiroItem.produtos.imagem_url} alt={primeiroItem.nome_produto} />
+          {(primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url)
+            ? <img src={primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url || ''} alt={primeiroItem.nome_produto} />
             : <span>🎂</span>}
         </div>
         <div className="ped-card-produto-info">
@@ -272,8 +273,8 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
           {primeiroItem && (
             <div className="mob-card-produto">
               <div className="mob-card-produto-img">
-                {primeiroItem.produtos?.imagem_url
-                  ? <img src={primeiroItem.produtos.imagem_url} alt={primeiroItem.nome_produto} />
+                {(primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url)
+                  ? <img src={primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url || ''} alt={primeiroItem.nome_produto} />
                   : <span>🎂</span>}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -327,8 +328,8 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
             {primeiroItem ? (
               <div className="ped-dt-produto-row">
                 <div className="ped-dt-produto-img">
-                  {primeiroItem.produtos?.imagem_url
-                    ? <img src={primeiroItem.produtos.imagem_url} alt={primeiroItem.nome_produto} />
+                  {(primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url)
+                    ? <img src={primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url || ''} alt={primeiroItem.nome_produto} />
                     : <span>🎂</span>}
                 </div>
                 <div>
@@ -476,7 +477,7 @@ function ModalPedido({ p, onClose, onEditar }: { p: Pedido; onClose: () => void;
                   {itens.map((item, i) => (
                     <div key={i} className="mp-item">
                       <div className="mp-item-img">
-                        {item.produtos?.imagem_url ? <img src={item.produtos.imagem_url} alt={item.nome_produto} /> : <span>🎂</span>}
+                        {(item.imagem_url || item.produtos?.imagem_url) ? <img src={item.imagem_url || item.produtos?.imagem_url!} alt={item.nome_produto} /> : <span>🎂</span>}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p className="mp-item-nome">{item.nome_produto}</p>
@@ -658,7 +659,7 @@ export default function Pedidos() {
     setLoading(true)
     const { data } = await supabase
       .from('pedidos')
-      .select('*, pedido_itens(nome_produto, quantidade, valor_unitario, observacoes, personalizacoes, produtos(imagem_url, forma_venda))')
+      .select('*, pedido_itens(nome_produto, quantidade, valor_unitario, observacoes, personalizacoes, imagem_url, produtos(imagem_url, forma_venda))')
       .eq('user_id', uid)
       .order('created_at', { ascending: false })
     setPedidos(data || [])

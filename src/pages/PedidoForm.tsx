@@ -200,6 +200,7 @@ export default function PedidoForm() {
             desconto: item.desconto || 0,
             observacoes: item.observacoes || null,
             personalizacoes: item.personalizacoes || {},
+            imagem_url: item.imagem_url || null,
           }))
         )
       }
