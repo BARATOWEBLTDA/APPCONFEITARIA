@@ -485,15 +485,18 @@ export default function Clientes() {
 
         {/* Header */}
         <div className="mob-header">
-          <div>
-            <h1 className="mob-title">Clientes</h1>
-            <p className="mob-subtitle">{clientes.length} cadastrado{clientes.length !== 1 ? "s" : ""}</p>
-          </div>
-          {aniversariantes.length > 0 && (
-            <button className="mob-niver-pill" onClick={() => setShowNiver(true)}>
-              🎂 {aniversariantes.length} aniversariante{aniversariantes.length !== 1 ? "s" : ""}
-            </button>
-          )}
+          <h1 className="mob-title">Clientes</h1>
+          <p className="mob-subtitle">{clientes.length} cadastrado{clientes.length !== 1 ? "s" : ""}</p>
+        </div>
+
+        {/* Botões de ação */}
+        <div className="mob-actions">
+          <button className="mob-btn-primary" onClick={() => openNew("rapido")}>
+            + Cadastrar cliente
+          </button>
+          <button className="mob-btn-secondary" onClick={() => setShowNiver(true)}>
+            🎂 Aniversariantes
+          </button>
         </div>
 
         {/* Busca */}
@@ -515,7 +518,7 @@ export default function Clientes() {
         ) : filtered.length === 0 ? (
           <div className="mob-empty">
             <p>{search ? "Nenhum cliente encontrado" : "Nenhum cliente cadastrado ainda"}</p>
-            {!search && <p style={{fontSize:"0.8rem",marginTop:"0.25rem"}}>Toque em + para cadastrar</p>}
+            {!search && <p style={{fontSize:"0.8rem",marginTop:"0.25rem"}}>Use o botão acima para cadastrar</p>}
           </div>
         ) : (
           <div className="mob-list">
@@ -542,12 +545,6 @@ export default function Clientes() {
             ))}
           </div>
         )}
-
-        {/* FAB */}
-        <button className="mob-fab" onClick={() => openNew("rapido")}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Novo cliente
-        </button>
 
         {/* Modal aniversariantes */}
         {showNiver && (
@@ -687,12 +684,15 @@ export default function Clientes() {
         @media (min-width: 768px) { .cli-mobile { display: none; } .cli-desktop { display: block; } }
 
         /* ── Mobile ────────────────────────── */
-        .mob-header { display: flex; align-items: center; justify-content: space-between; padding: 0.25rem 0 0.25rem; }
-        .mob-title  { font-size: 1.4rem; font-weight: 700; color: var(--text-title,#1F2937); margin: 0; }
-        .mob-subtitle { font-size: 0.78rem; color: var(--text-muted,#9CA3AF); margin: 0.1rem 0 0; }
+        .mob-header  { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.5rem 0.25rem 0.25rem; }
+        .mob-title   { font-size: 1.4rem; font-weight: 700; color: var(--text-title,#1F2937); margin: 0; }
+        .mob-subtitle { font-size: 0.78rem; color: var(--text-muted,#9CA3AF); margin: 0; }
 
-        .mob-niver-pill { display: flex; align-items: center; gap: 0.3rem; background: var(--primary-light,#FFF1F7); color: var(--primary,#FF6FA9); border: 1.5px solid var(--primary-light,#FEE2EE); border-radius: 999px; padding: 0.4rem 0.85rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; }
-        .mob-niver-pill:active { background: #FEE2EE; }
+        .mob-actions { display: flex; gap: 0.6rem; }
+        .mob-btn-primary   { flex: 1; padding: 0.7rem 0.5rem; background: #3d1a24; color: white; border: none; border-radius: 12px; font-family: inherit; font-size: 0.88rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: opacity 0.15s; }
+        .mob-btn-primary:active { opacity: 0.85; }
+        .mob-btn-secondary { flex: 1; padding: 0.7rem 0.5rem; background: var(--bg-card,#FFF); color: var(--text-title,#1F2937); border: 1.5px solid var(--border,#E9E9EE); border-radius: 12px; font-family: inherit; font-size: 0.88rem; font-weight: 600; cursor: pointer; white-space: nowrap; transition: border-color 0.15s; }
+        .mob-btn-secondary:active { border-color: #3d1a24; }
 
         .mob-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: var(--bg-card,#FFF); border: 1.5px solid var(--border,#E9E9EE); border-radius: 12px; padding: 0.7rem 1rem; }
         .mob-search  { border: none; outline: none; flex: 1; font-family: inherit; font-size: 0.9rem; color: var(--text-title,#1F2937); background: transparent; }
@@ -710,9 +710,6 @@ export default function Clientes() {
         .mob-whatsapp { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; color: #25D366; font-weight: 500; text-decoration: none; }
         .mob-email   { font-size: 0.78rem; color: var(--text-muted,#9CA3AF); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .mob-sem-tel { font-size: 0.78rem; color: var(--text-muted,#9CA3AF); margin: 0; }
-
-        .mob-fab { position: fixed; bottom: 5.5rem; right: 1.25rem; display: flex; align-items: center; gap: 0.5rem; background: #3d1a24; color: white; border: none; border-radius: 999px; padding: 0.75rem 1.25rem; font-family: inherit; font-size: 0.9rem; font-weight: 600; box-shadow: 0 4px 20px rgba(61,26,36,0.35); cursor: pointer; z-index: 40; transition: transform 0.15s; }
-        .mob-fab:active { transform: scale(0.96); }
 
         .mob-modal   { background: var(--bg-card,#FFF); border-radius: 24px 24px 0 0; width: 100%; max-height: 85vh; display: flex; flex-direction: column; position: fixed; bottom: 0; left: 0; right: 0; animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1); }
 
