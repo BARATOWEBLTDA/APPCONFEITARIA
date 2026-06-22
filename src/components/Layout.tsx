@@ -1,5 +1,5 @@
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 // deploy: fix topbar duplicado + sino e premium no Inicio
-
 import DooIA from "@/components/DooIA";
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import {
