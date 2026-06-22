@@ -395,7 +395,8 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
 }
 
 // ── Modal de detalhes do pedido ──────────────────────────────────────────────
-function ModalPedido({ p, onClose, onEditar }: { p: Pedido; onClose: () => void; onEditar: () => void }) {
+function ModalPedido({ p, onClose, onEditar, onExcluir }: { p: Pedido; onClose: () => void; onEditar: () => void; onExcluir: () => void }) {
+  const [confirmExcluir, setConfirmExcluir] = useState(false)
   const grupo = STATUS_GROUP_CONFIG[getStatusGroup(p.status)]
   const itens = p.pedido_itens || []
   const valorPendente = Math.max(0, (p.valor_total || 0) - (p.valor_recebido || 0))
@@ -514,6 +515,17 @@ function ModalPedido({ p, onClose, onEditar }: { p: Pedido; onClose: () => void;
             {/* Botões */}
             <div className="mp-btns">
               <button className="mp-btn-editar" onClick={onEditar}>Editar pedido</button>
+              {!confirmExcluir ? (
+                <button className="mp-btn-excluir" onClick={() => setConfirmExcluir(true)}>Excluir pedido</button>
+              ) : (
+                <div className="mp-confirm-excluir">
+                  <p>Tem certeza? Esta ação não pode ser desfeita.</p>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="mp-btn-fechar" style={{ flex: 1 }} onClick={() => setConfirmExcluir(false)}>Cancelar</button>
+                    <button className="mp-btn-confirmar-excluir" style={{ flex: 1 }} onClick={onExcluir}>Sim, excluir</button>
+                  </div>
+                </div>
+              )}
               <button className="mp-btn-fechar" onClick={onClose}>Fechar</button>
             </div>
           </div>
@@ -653,6 +665,13 @@ export default function Pedidos() {
   const updateStatus = async (id: string, status: string) => {
     await supabase.from('pedidos').update({ status }).eq('id', id)
     setPedidos(prev => prev.map(p => p.id === id ? { ...p, status } : p))
+  }
+
+  const excluirPedido = async (id: string) => {
+    await supabase.from('pedido_itens').delete().eq('pedido_id', id)
+    await supabase.from('pedidos').delete().eq('id', id)
+    setModalPedido(null)
+    setPedidos(prev => prev.filter(p => p.id !== id))
   }
 
   const fetchPedidos = async (uid: string) => {
@@ -819,7 +838,7 @@ export default function Pedidos() {
       )}
 
       {mapaAberto && <MapaModal endereco={mapaAberto} onClose={() => setMapaAberto(null)} />}
-      {modalPedido && <ModalPedido p={modalPedido} onClose={() => setModalPedido(null)} onEditar={() => { setModalPedido(null); navigate(`/pedidos/${modalPedido.id}`) }} />}
+      {modalPedido && <ModalPedido p={modalPedido} onClose={() => setModalPedido(null)} onEditar={() => { setModalPedido(null); navigate(`/pedidos/${modalPedido.id}`) }} onExcluir={() => excluirPedido(modalPedido.id)} />}
 
       <style>{`
         @keyframes pedSpin { to { transform: rotate(360deg); } }
@@ -901,7 +920,10 @@ export default function Pedidos() {
         .mp-item-extra { font-size: 0.68rem; color: var(--text-muted,#C39EAA); margin: 1px 0 0; }
         .mp-item-total { font-size: 0.84rem; font-weight: 700; color: var(--text-title,#431524); flex-shrink: 0; margin: 0; }
         .mp-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-        .mp-btn-editar { width: 100%; background: #3d1a24; border: none; color: white; border-radius: 12px; padding: 0.75rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .mp-btn-excluir { width: 100%; background: #fff1f2; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: 12px; padding: 0.75rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .mp-confirm-excluir { background: #fff1f2; border-radius: 12px; padding: 0.85rem 1rem; }
+        .mp-confirm-excluir p { font-size: 0.82rem; color: #dc2626; margin: 0 0 10px; font-weight: 500; }
+        .mp-btn-confirmar-excluir { background: #dc2626; border: none; color: white; border-radius: 10px; padding: 0.65rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; }
         .mp-btn-fechar { width: 100%; background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); color: var(--text-secondary,#6E3548); border-radius: 12px; padding: 0.75rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; }
 
         @media (min-width: 768px) {
