@@ -411,18 +411,18 @@ export default function Layout() {
             text-decoration: none;
             transition: background 0.15s, transform 0.1s;
             min-width: 56px;
-            color: rgba(255, 255, 255, 0.5);
+            color: #ffffff;
           }
           .bn-item:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.12);
             border-radius: 14px;
           }
           .bn-item--active {
-            background: rgba(255, 255, 255, 0.15);
-            color: #ffffff;
+            background: #ffffff;
+            color: #3d1a24;
           }
           .bn-item--active:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: #ffffff;
           }
           .bn-icon {
             display: flex;
