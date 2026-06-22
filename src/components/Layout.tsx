@@ -243,7 +243,7 @@ export default function Layout() {
                   { to: "/inicio",      icon: <House size={20} weight="fill" />,         label: "Início"     },
                   { to: "/pedidos",     icon: <ClipboardText size={20} weight="fill" />, label: "Pedidos"    },
                   { to: "/cardapio-config", icon: <ForkKnife size={20} weight="fill" />, label: "Cardápio", isCardapio: true },
-                  { to: "/financeiro",  icon: <CurrencyDollar size={20} weight="fill" />,label: "Financeiro" },
+                  { to: "/financeiro",  icon: <CurrencyDollar size={20} weight="fill" />,label: "Gestão" },
                 ].map((item) => {
                   const isActive = item.isCardapio
                     ? (cardapioNav || isCardapioMode)
@@ -267,7 +267,7 @@ export default function Layout() {
                   onClick={() => setGestaoOpen(!gestaoOpen)}
                 >
                   <span className="bn-icon"><List size={20} weight="fill" /></span>
-                  <span className="bn-label">Gestão</span>
+                  <span className="bn-label">Menu</span>
                 </button>
               </>
             )}
@@ -379,8 +379,8 @@ export default function Layout() {
             position: fixed;
             bottom: 0; left: 0; right: 0;
             z-index: 50;
-            padding: 0 1rem env(safe-area-inset-bottom, 12px);
-            padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+            padding: 0 1rem 0;
+            padding-bottom: max(env(safe-area-inset-bottom, 0px), 4px);
             background: transparent;
             pointer-events: none;
           }
@@ -394,7 +394,7 @@ export default function Layout() {
             padding: 6px 6px;
             box-shadow: 0 4px 24px rgba(61, 26, 36, 0.15), 0 1px 4px rgba(61, 26, 36, 0.08);
             pointer-events: all;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
           }
           .bn-item {
             display: flex;
@@ -409,13 +409,20 @@ export default function Layout() {
             border-radius: 14px;
             font-family: var(--font-base);
             text-decoration: none;
-            transition: background 0.15s;
+            transition: background 0.15s, transform 0.1s;
             min-width: 56px;
             color: #b08a96;
+          }
+          .bn-item:hover {
+            background: rgba(61, 26, 36, 0.07);
+            border-radius: 14px;
           }
           .bn-item--active {
             background: #3d1a24;
             color: #ffffff;
+          }
+          .bn-item--active:hover {
+            background: #3d1a24;
           }
           .bn-icon {
             display: flex;
