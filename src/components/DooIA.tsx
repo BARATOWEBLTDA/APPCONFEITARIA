@@ -479,7 +479,7 @@ export default function DooIA() {
             width: '51px', height: '51px', borderRadius: '50%', background: 'white',
             display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
           }}>
-            <img src="/doo.png" alt="Doo" style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center' }} />
+            <img src="/Sistema/doo.png" alt="Doo" style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center' }} />
           </div>
         </div>
         {pulse && <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: `2px solid ${VINHO}`, animation: 'dooPulse 1.5s ease-out infinite' }} />}
@@ -520,7 +520,7 @@ export default function DooIA() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               overflow: 'hidden', flexShrink: 0,
             }}>
-              <img src="/doo.png" alt="Doo" style={{ width: '48px', height: '48px', objectFit: 'cover', objectPosition: 'top center', borderRadius: '50%' }} />
+              <img src="/Sistema/doo.png" alt="Doo" style={{ width: '48px', height: '48px', objectFit: 'cover', objectPosition: 'top center', borderRadius: '50%' }} />
             </div>
             <div style={{ flex: 1 }}>
               <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'white', fontFamily: 'Geist, sans-serif' }}>
@@ -604,7 +604,7 @@ export default function DooIA() {
               }}>
                 {msg.role === 'assistant' && (
                   <div style={{ width: '26px', height: '26px', borderRadius: '50%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
-                    <img src="/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
+                    <img src="/Sistema/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
                   </div>
                 )}
                 <div style={{ maxWidth: '78%', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -654,7 +654,7 @@ export default function DooIA() {
             {loading && (
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
                 <div style={{ width: '26px', height: '26px', borderRadius: '50%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
-                  <img src="/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
+                  <img src="/Sistema/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
                 </div>
                 <div style={{
                   background: 'white', padding: '0.65rem 1rem', borderRadius: '16px 16px 16px 4px',
@@ -676,7 +676,7 @@ export default function DooIA() {
             {generatingImage && (
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
                 <div style={{ width: '26px', height: '26px', borderRadius: '50%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
-                  <img src="/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
+                  <img src="/Sistema/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
                 </div>
                 <div style={{
                   background: 'white', padding: '0.65rem 1rem', borderRadius: '16px 16px 16px 4px',
