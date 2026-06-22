@@ -105,8 +105,22 @@ export default function Clientes() {
 
   useEffect(() => {
     const isOpen = showForm || !!confirmDelete || showNiver;
-    document.body.style.overflow = isOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    if (isOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.left = "";
+        document.body.style.right = "";
+        document.body.style.overflow = "";
+        window.scrollTo(0, scrollY);
+      };
+    }
   }, [showForm, confirmDelete, showNiver]);
 
   // ── Data ──────────────────────────────────────────────────────────────────
@@ -743,7 +757,7 @@ export default function Clientes() {
         .cli-aniv-badge.soon { background: var(--primary-gradient,linear-gradient(135deg,#FF6FA9,#F85A9A)); color: #fff; }
 
         /* ── Formulário ─────────────────────── */
-        .modal-overlay  { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; touch-action: none; }
+        .modal-overlay  { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); display: flex; align-items: flex-end; justify-content: center; touch-action: none; }
         @media (min-width: 768px) { .modal-overlay { align-items: center; padding: 1rem; } }
 
         .form-drawer    { background: var(--bg-card,#FFF); border-radius: 24px 24px 0 0; width: 100%; max-height: 92vh; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1); }
