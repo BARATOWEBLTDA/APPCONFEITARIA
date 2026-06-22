@@ -1,3 +1,4 @@
+// v2: excluir pedido + modal 3 secoes + imagem_url
 import { useState, useEffect } from 'react'
 import PedidosKanban from '@/pages/PedidosKanban'
 import { useNavigate } from 'react-router-dom'
