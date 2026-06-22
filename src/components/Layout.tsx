@@ -275,7 +275,7 @@ export default function Layout() {
         </nav>
       )}
 
-      {!isPedidoForm && <DooIA />}
+      {location.pathname === "/inicio" && <DooIA />}
 
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -370,7 +370,7 @@ export default function Layout() {
             border: 2px solid var(--primary-dark); line-height: 1;
           }
 
-          .layout-main { margin-left: 0; padding: 0.75rem; padding-top: 0; padding-bottom: 6.5rem; background: var(--bg-body); min-height: 100vh; width: 100%; box-sizing: border-box; }
+          .layout-main { margin-left: 0; padding: 0.75rem; padding-top: 0.75rem; padding-bottom: 6.5rem; background: var(--bg-body); min-height: 100vh; width: 100%; box-sizing: border-box; }
           .layout-main--no-header { padding-top: 1rem; background: var(--bg-body); }
 
           /* ── Bottom Nav Mobile ── */

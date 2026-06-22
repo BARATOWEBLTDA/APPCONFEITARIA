@@ -673,7 +673,7 @@ export default function Clientes() {
         @media (min-width: 768px) { .cli-mobile { display: none; } .cli-desktop { display: block; } }
 
         /* ── Mobile ────────────────────────── */
-        .mob-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0 0.25rem; }
+        .mob-header { display: flex; align-items: center; justify-content: space-between; padding: 0.25rem 0 0.25rem; }
         .mob-title  { font-size: 1.4rem; font-weight: 700; color: var(--text-title,#1F2937); margin: 0; }
         .mob-subtitle { font-size: 0.78rem; color: var(--text-muted,#9CA3AF); margin: 0.1rem 0 0; }
 
@@ -685,7 +685,7 @@ export default function Clientes() {
         .mob-search::placeholder { color: var(--text-muted,#9CA3AF); }
 
         .mob-empty   { text-align: center; padding: 3rem 1rem; color: var(--text-muted,#9CA3AF); font-size: 0.9rem; }
-        .mob-list    { display: flex; flex-direction: column; gap: 0.5rem; padding-bottom: 5.5rem; }
+        .mob-list    { display: flex; flex-direction: column; gap: 0.5rem; padding-bottom: 7rem; }
 
         .mob-card    { display: flex; align-items: center; gap: 0.85rem; background: var(--bg-card,#FFF); border-radius: 14px; padding: 0.75rem 1rem; border: 1px solid var(--border,#E9E9EE); cursor: pointer; }
         .mob-card:active { background: var(--bg-body,#F7F7F8); }
