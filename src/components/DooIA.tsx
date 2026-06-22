@@ -461,7 +461,7 @@ export default function DooIA() {
         onClick={() => { setOpen(o => !o); setPulse(false) }}
         style={{
           position: 'fixed', bottom: 'var(--doo-btn-bottom, 7rem)', right: 'var(--doo-btn-right, 1.25rem)',
-          width: '62px', height: '62px', borderRadius: '50%',
+          width: '62px', height: '62px', borderRadius: '35%',
           border: 'none', background: 'transparent', cursor: 'pointer',
           zIndex: 200, padding: 0,
           display: open ? 'none' : 'flex',
@@ -470,19 +470,19 @@ export default function DooIA() {
         aria-label="Abrir assistente Doo"
       >
         <div style={{
-          width: '58px', height: '58px', borderRadius: '50%', background: VINHO,
+          width: '58px', height: '58px', borderRadius: '35%', background: VINHO,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           boxShadow: '0 4px 16px rgba(110,53,72,0.3)',
           transition: 'transform 0.2s, box-shadow 0.2s',
         }}>
           <div style={{
-            width: '51px', height: '51px', borderRadius: '50%', background: 'white',
+            width: '51px', height: '51px', borderRadius: '35%', background: 'white',
             display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
           }}>
-            <img src="/Sistema/doo.png" alt="Doo" style={{ width: '70px', height: '70px', borderRadius: '50%', objectFit: 'cover', objectPosition: 'top center' }} />
+            <img src="/Sistema/doo.png" alt="Doo" style={{ width: '70px', height: '70px', borderRadius: '35%', objectFit: 'cover', objectPosition: 'top center' }} />
           </div>
         </div>
-        {pulse && <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: `2px solid ${VINHO}`, animation: 'dooPulse 1.5s ease-out infinite' }} />}
+        {pulse && <span style={{ position: 'absolute', inset: 0, borderRadius: '35%', border: `2px solid ${VINHO}`, animation: 'dooPulse 1.5s ease-out infinite' }} />}
       </button>
 
       {/* ── Overlay blur ── */}
@@ -515,12 +515,12 @@ export default function DooIA() {
             display: 'flex', alignItems: 'center', gap: '0.65rem', flexShrink: 0,
           }}>
             <div style={{
-              width: '38px', height: '38px', borderRadius: '50%',
+              width: '38px', height: '38px', borderRadius: '35%',
               background: VINHO, border: '2px solid white',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               overflow: 'hidden', flexShrink: 0,
             }}>
-              <img src="/Sistema/doo.png" alt="Doo" style={{ width: '48px', height: '48px', objectFit: 'cover', objectPosition: 'top center', borderRadius: '50%' }} />
+              <img src="/Sistema/doo.png" alt="Doo" style={{ width: '48px', height: '48px', objectFit: 'cover', objectPosition: 'top center', borderRadius: '35%' }} />
             </div>
             <div style={{ flex: 1 }}>
               <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'white', fontFamily: 'Geist, sans-serif' }}>
@@ -548,7 +548,7 @@ export default function DooIA() {
               <button
                 onClick={() => setOpen(false)}
                 style={{
-                  background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '35%',
                   width: '28px', height: '28px', color: 'white', cursor: 'pointer',
                   fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
@@ -603,7 +603,7 @@ export default function DooIA() {
                 alignItems: 'flex-end', gap: '0.5rem',
               }}>
                 {msg.role === 'assistant' && (
-                  <div style={{ width: '26px', height: '26px', borderRadius: '50%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
+                  <div style={{ width: '26px', height: '26px', borderRadius: '35%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
                     <img src="/Sistema/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
                   </div>
                 )}
@@ -653,7 +653,7 @@ export default function DooIA() {
             {/* Loading text */}
             {loading && (
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
-                <div style={{ width: '26px', height: '26px', borderRadius: '50%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
+                <div style={{ width: '26px', height: '26px', borderRadius: '35%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
                   <img src="/Sistema/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
                 </div>
                 <div style={{
@@ -663,7 +663,7 @@ export default function DooIA() {
                 }}>
                   {[0, 1, 2].map(i => (
                     <span key={i} style={{
-                      width: '6px', height: '6px', borderRadius: '50%',
+                      width: '6px', height: '6px', borderRadius: '35%',
                       background: VINHO, opacity: 0.6,
                       animation: `dooTyping 1.2s ease-in-out ${i * 0.2}s infinite`,
                     }} />
@@ -675,7 +675,7 @@ export default function DooIA() {
             {/* Loading imagem — feedback diferenciado */}
             {generatingImage && (
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
-                <div style={{ width: '26px', height: '26px', borderRadius: '50%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
+                <div style={{ width: '26px', height: '26px', borderRadius: '35%', border: `2px solid ${VINHO}`, overflow: 'hidden', flexShrink: 0 }}>
                   <img src="/Sistema/doo.png" alt="Doo" style={{ width: '140%', height: '140%', objectFit: 'cover', objectPosition: 'top center' }} />
                 </div>
                 <div style={{
@@ -683,7 +683,7 @@ export default function DooIA() {
                   border: '1px solid #f0f0f0', boxShadow: '0 1px 4px rgba(0,0,0,0.07)',
                   display: 'flex', alignItems: 'center', gap: '0.5rem',
                 }}>
-                  <span style={{ width: '14px', height: '14px', borderRadius: '50%', border: `2px solid ${VINHO}`, borderTopColor: 'transparent', animation: 'dooSpin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 }} />
+                  <span style={{ width: '14px', height: '14px', borderRadius: '35%', border: `2px solid ${VINHO}`, borderTopColor: 'transparent', animation: 'dooSpin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 }} />
                   <span style={{ fontSize: '0.8rem', color: '#6B7280', fontFamily: 'Geist, sans-serif' }}>Gerando sua imagem...</span>
                 </div>
               </div>
@@ -703,7 +703,7 @@ export default function DooIA() {
                   style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover', border: `1.5px solid ${VINHO}` }} />
                 <button onClick={removePendingImage} style={{
                   position: 'absolute', top: '-6px', right: '-6px',
-                  width: '18px', height: '18px', borderRadius: '50%',
+                  width: '18px', height: '18px', borderRadius: '35%',
                   background: VINHO, border: '2px solid white',
                   color: 'white', fontSize: '0.6rem', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
