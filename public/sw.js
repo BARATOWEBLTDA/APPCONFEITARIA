@@ -1,4 +1,4 @@
-const CACHE_NAME = "pandamenu-v1";
+const CACHE_NAME = "doonly-v2";
 const STATIC_ASSETS = ["/", "/index.html"];
 
 self.addEventListener("install", (event) => {
@@ -19,6 +19,15 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+
+  // index.html sempre da rede — nunca servir do cache
+  if (event.request.url.endsWith("/") || event.request.url.endsWith("/index.html")) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((res) => {
