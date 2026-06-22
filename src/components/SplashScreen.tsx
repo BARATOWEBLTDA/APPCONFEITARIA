@@ -6,6 +6,10 @@ export function SplashScreen({ onDone }: { onDone?: () => void }) {
   const timeRef = useRef(0);
 
   useEffect(() => {
+    // Remove a splash HTML inline assim que o React assumir
+    const el = document.getElementById("html-splash");
+    if (el) el.remove();
+
     const animate = () => {
       timeRef.current += 0.003;
       const t = timeRef.current;
