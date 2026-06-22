@@ -368,18 +368,20 @@ export default function Layout() {
 
           /* ── Gestão Drawer ── */
           .gestao-overlay { position: fixed; inset: 0; z-index: 100; background: var(--drawer-overlay); backdrop-filter: blur(6px); }
-          .gestao-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--drawer-bg); border-radius: 24px 24px 0 0; padding: 0.75rem 1.25rem 2rem; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); border-top: 1px solid rgba(var(--primary-rgb), 0.2); max-height: 80vh; overflow-y: auto; z-index: 101; }
+          .gestao-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card, #FFFFFF); border-radius: 24px 24px 0 0; padding: 0.75rem 1.25rem 2rem; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); max-height: 80vh; overflow-y: auto; z-index: 101; box-shadow: 0 -8px 40px rgba(0,0,0,0.2); }
           @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-          .gestao-handle { width: 40px; height: 4px; background: var(--drawer-handle); border-radius: 2px; margin: 0 auto 1rem; }
+          .gestao-handle { width: 40px; height: 4px; background: var(--border, #ECC2D0); border-radius: 2px; margin: 0 auto 1rem; }
           .gestao-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
-          .gestao-title { font-size: 1rem; font-weight: 700; color: var(--text-inverse); margin: 0; font-family: var(--font-base); }
-          .gestao-close { background: var(--drawer-close-bg); border: none; color: var(--drawer-close-text); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; }
-          .gestao-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.65rem; }
-          .gestao-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.45rem; background: var(--drawer-item-bg); border-radius: 16px; padding: 0.9rem 0.5rem; text-decoration: none; transition: background 0.15s; border: 1px solid var(--drawer-item-border); }
-          .gestao-item:hover { background: var(--drawer-item-hover-bg); border-color: var(--drawer-item-hover-border); }
-          .gestao-item.active { background: var(--drawer-item-hover-bg); border-color: var(--drawer-item-hover-border); }
-          .gestao-icon { color: var(--primary); display: flex; align-items: center; }
-          .gestao-label { font-size: 0.72rem; font-weight: 600; color: var(--text-inverse); text-align: center; font-family: var(--font-base); line-height: 1.2; }
+          .gestao-title { font-size: 1.05rem; font-weight: 800; color: var(--text-title, #431524); margin: 0; font-family: var(--font-base); }
+          .gestao-close { background: var(--bg-subtle, #F7EEF1); border: none; color: var(--text-secondary, #6E3548); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; }
+          .gestao-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; }
+          .gestao-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; background: var(--bg-subtle, #F7EEF1); border-radius: 16px; padding: 1.1rem 0.4rem; text-decoration: none; transition: transform 0.15s, background 0.15s; border: 1.5px solid transparent; min-height: 88px; }
+          .gestao-item:active { transform: scale(0.95); }
+          .gestao-item.active { background: var(--primary, #986274); border-color: var(--primary, #986274); }
+          .gestao-icon { color: var(--primary, #986274); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: rgba(152,98,116,0.12); }
+          .gestao-item.active .gestao-icon { color: #FFFFFF; background: rgba(255,255,255,0.2); }
+          .gestao-label { font-size: 0.72rem; font-weight: 600; color: var(--text-title, #431524); text-align: center; font-family: var(--font-base); line-height: 1.25; white-space: normal; word-break: break-word; }
+          .gestao-item.active .gestao-label { color: #FFFFFF; }
         }
       `}</style>
     </div>
