@@ -235,7 +235,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
   )
 
   return (
-    <div onClick={() => navigate(`/pedidos/${p.id}`)} className="ped-card" style={{ border: `1.5px solid ${isUrgente ? '#fca5a5' : 'var(--border,#ECC2D0)'}` }}>
+    <div onClick={() => isMobile ? onVerPedido(p) : navigate(`/pedidos/${p.id}`)} className="ped-card" style={{ border: `1.5px solid ${isUrgente ? '#fca5a5' : 'var(--border,#ECC2D0)'}` }}>
       {isUrgente && (
         <div className="ped-card-banner">
           {atrasado ? 'Atrasado' : horas !== null && horas <= 3 ? `Entrega em ${horas}h` : 'Urgente'}
