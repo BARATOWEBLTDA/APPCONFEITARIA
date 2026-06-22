@@ -201,53 +201,77 @@ export default function Layout() {
       {/* ── Bottom nav Mobile ── */}
       {!isReceitas && !isPrevia && (
         <nav className="bottom-nav">
-          {(cardapioNav || isCardapioMode) ? (
-            <>
-              <button className={`bottom-item${location.pathname === "/cardapio-resumo" ? " active" : ""}`} onClick={() => navigate("/cardapio-resumo")}>
-                <ChartBar size={22} weight="fill" />
-                <span className={`nav-label${location.pathname === "/cardapio-resumo" ? " nav-label-active" : ""}`}>Visão Geral</span>
-              </button>
-              <button className={`bottom-item${location.pathname === "/cardapio-preview" ? " active" : ""}`} onClick={() => navigate("/cardapio-preview")}>
-                <Eye size={22} weight="fill" />
-                <span className={`nav-label${location.pathname === "/cardapio-preview" ? " nav-label-active" : ""}`}>Prévia</span>
-              </button>
-              <button className={`bottom-item${location.pathname === "/produtos" ? " active" : ""}`} onClick={() => navigate("/produtos")}>
-                <Storefront size={22} weight="fill" />
-                <span className={`nav-label${location.pathname === "/produtos" ? " nav-label-active" : ""}`}>Produtos</span>
-              </button>
-              <button className={`bottom-item${location.pathname === "/cardapio-config" ? " active" : ""}`} onClick={() => navigate("/cardapio-config")}>
-                <Sliders size={22} weight="fill" />
-                <span className={`nav-label${location.pathname === "/cardapio-config" ? " nav-label-active" : ""}`}>Config</span>
-              </button>
-              <button className="bottom-item" onClick={() => { setCardapioNav(false); navigate("/inicio"); }}>
-                <ArrowLeft size={22} weight="fill" />
-                <span className="nav-label">Voltar</span>
-              </button>
-            </>
-          ) : (
-            <>
-              <NavLink to="/inicio" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-                <House size={22} weight="fill" />
-                <span className={`nav-label${location.pathname === "/inicio" ? " nav-label-active" : ""}`}>Início</span>
-              </NavLink>
-              <button className={`bottom-item${cardapioNav ? " active" : ""}`} onClick={() => { setCardapioNav(true); navigate("/cardapio-config"); }}>
-                <ForkKnife size={22} weight="fill" />
-                <span className="nav-label">Cardápio</span>
-              </button>
-              <NavLink to="/clientes" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-                <Users size={22} weight="fill" />
-                <span className={`nav-label${location.pathname === "/clientes" ? " nav-label-active" : ""}`}>Clientes</span>
-              </NavLink>
-              <NavLink to="/receitas" className={({ isActive }) => `bottom-item ${isActive ? "active" : ""}`}>
-                <BookOpen size={22} weight="fill" />
-                <span className={`nav-label${location.pathname === "/receitas" ? " nav-label-active" : ""}`}>Receitas</span>
-              </NavLink>
-              <button className={`bottom-item ${gestaoOpen ? "active" : ""}`} onClick={() => setGestaoOpen(!gestaoOpen)}>
-                <List size={22} weight="fill" />
-                <span className={`nav-label${gestaoOpen ? " nav-label-active" : ""}`}>Gestão</span>
-              </button>
-            </>
-          )}
+          <div className="bottom-nav-pill">
+            {(cardapioNav || isCardapioMode) ? (
+              <>
+                {(() => {
+                  const cardapioNavItems = [
+                    { path: "/cardapio-resumo", icon: <ChartBar size={20} weight="fill" />, label: "Visão Geral" },
+                    { path: "/cardapio-preview", icon: <Eye size={20} weight="fill" />, label: "Prévia" },
+                    { path: "/produtos", icon: <Storefront size={20} weight="fill" />, label: "Produtos" },
+                    { path: "/cardapio-config", icon: <Sliders size={20} weight="fill" />, label: "Config" },
+                  ];
+                  return (
+                    <>
+                      {cardapioNavItems.map((item) => {
+                        const isActive = location.pathname === item.path;
+                        return (
+                          <button
+                            key={item.path}
+                            className={`bn-item${isActive ? " bn-item--active" : ""}`}
+                            onClick={() => navigate(item.path)}
+                          >
+                            <span className="bn-icon">{item.icon}</span>
+                            <span className="bn-label">{item.label}</span>
+                          </button>
+                        );
+                      })}
+                      <button
+                        className="bn-item"
+                        onClick={() => { setCardapioNav(false); navigate("/inicio"); }}
+                      >
+                        <span className="bn-icon"><ArrowLeft size={20} weight="fill" /></span>
+                        <span className="bn-label">Voltar</span>
+                      </button>
+                    </>
+                  );
+                })()}
+              </>
+            ) : (
+              <>
+                {[
+                  { to: "/inicio",      icon: <House size={20} weight="fill" />,         label: "Início"     },
+                  { to: "/pedidos",     icon: <ClipboardText size={20} weight="fill" />, label: "Pedidos"    },
+                  { to: "/cardapio-config", icon: <ForkKnife size={20} weight="fill" />, label: "Cardápio", isCardapio: true },
+                  { to: "/financeiro",  icon: <CurrencyDollar size={20} weight="fill" />,label: "Financeiro" },
+                ].map((item) => {
+                  const isActive = item.isCardapio
+                    ? (cardapioNav || isCardapioMode)
+                    : location.pathname === item.to || location.pathname.startsWith(item.to + "/");
+                  return (
+                    <button
+                      key={item.to}
+                      className={`bn-item${isActive ? " bn-item--active" : ""}`}
+                      onClick={() => {
+                        if (item.isCardapio) { setCardapioNav(true); }
+                        navigate(item.to);
+                      }}
+                    >
+                      <span className="bn-icon">{item.icon}</span>
+                      <span className="bn-label">{item.label}</span>
+                    </button>
+                  );
+                })}
+                <button
+                  className={`bn-item${gestaoOpen ? " bn-item--active" : ""}`}
+                  onClick={() => setGestaoOpen(!gestaoOpen)}
+                >
+                  <span className="bn-icon"><List size={20} weight="fill" /></span>
+                  <span className="bn-label">Gestão</span>
+                </button>
+              </>
+            )}
+          </div>
         </nav>
       )}
 
@@ -346,25 +370,75 @@ export default function Layout() {
             border: 2px solid var(--primary-dark); line-height: 1;
           }
 
-          .layout-main { margin-left: 0; padding: 0.75rem; padding-top: 0; padding-bottom: 5.5rem; background: var(--bg-body); min-height: 100vh; width: 100%; box-sizing: border-box; }
+          .layout-main { margin-left: 0; padding: 0.75rem; padding-top: 0; padding-bottom: 6.5rem; background: var(--bg-body); min-height: 100vh; width: 100%; box-sizing: border-box; }
           .layout-main--no-header { padding-top: 1rem; background: var(--bg-body); }
 
+          /* ── Bottom Nav Mobile ── */
           .bottom-nav {
             display: flex !important;
-            position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-            background: var(--bottomnav-bg);
-            padding: 0.5rem 0 1rem;
-            justify-content: space-around; align-items: center;
-            box-shadow: var(--bottomnav-shadow);
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 50;
+            padding: 0 1rem env(safe-area-inset-bottom, 12px);
+            padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px);
+            background: transparent;
+            pointer-events: none;
           }
-          .bottom-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; gap: 0.2rem; padding: 0.35rem 0.1rem; color: var(--bottomnav-inactive); text-decoration: none; background: none; border: none; cursor: pointer; font-family: var(--font-base); transition: color 0.15s; }
-          .nav-label { font-size: 0.65rem; font-weight: 400; color: inherit; white-space: nowrap; letter-spacing: 0.01em; }
-          .nav-label-active { font-size: 0.65rem; font-weight: 600; color: var(--bottomnav-active); letter-spacing: 0.01em; }
+          .bottom-nav-pill {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 999px;
+            padding: 6px 6px;
+            box-shadow: 0 4px 24px rgba(61, 26, 36, 0.15), 0 1px 4px rgba(61, 26, 36, 0.08);
+            pointer-events: all;
+            margin-bottom: 8px;
+          }
+          .bn-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 7px 10px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 14px;
+            font-family: var(--font-base);
+            text-decoration: none;
+            transition: background 0.15s;
+            min-width: 56px;
+            color: #b08a96;
+          }
+          .bn-item--active {
+            background: #3d1a24;
+            color: #ffffff;
+          }
+          .bn-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: inherit;
+          }
+          .bn-label {
+            font-size: 0.62rem;
+            font-weight: 400;
+            color: inherit;
+            white-space: nowrap;
+            letter-spacing: 0.01em;
+            line-height: 1;
+          }
+          .bn-item--active .bn-label {
+            font-weight: 600;
+          }
+          .bn-item:active {
+            transform: scale(0.94);
+          }
           .bottom-nav { animation: fadeInUp 0.2s ease; }
-          @keyframes fadeInUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-          .bottom-item.active { color: var(--bottomnav-active); font-weight: 700; }
-          .bottom-item.active .nav-label { font-weight: 600 !important; }
-          .bottom-item:hover { color: var(--bottomnav-active); }
+          @keyframes fadeInUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
           /* ── Gestão Drawer ── */
           .gestao-overlay { position: fixed; inset: 0; z-index: 100; background: var(--drawer-overlay); backdrop-filter: blur(6px); }
