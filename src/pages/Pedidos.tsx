@@ -313,15 +313,16 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
           {/* Pedido # + data criação */}
           <div className="ped-dt-col ped-dt-col--num">
             <span className="ped-dt-num">#{p.numero || '—'}</span>
-            {p.origem === 'cardapio' && <span className="ped-card-origem">Cardápio</span>}
             <span className="ped-dt-criado">
-              {p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' - ' + new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : ''}
+              {p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' · ' + new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : ''}
             </span>
+            {p.origem === 'cardapio' && <span className="ped-dt-origem-tag">Cardápio</span>}
           </div>
 
           {/* Cliente */}
           <div className="ped-dt-col ped-dt-col--cliente">
             <span className="ped-dt-cliente-nome">{p.cliente_nome || 'Não informado'}</span>
+            {p.cliente_telefone && <span className="ped-dt-cliente-tel">{p.cliente_telefone}</span>}
           </div>
 
           {/* Produto */}
@@ -376,10 +377,10 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
             <p className="ped-dt-pag" style={{ color: pagamentoCor }}>{pagamentoLabel}</p>
           </div>
 
-          {/* Ver Pedido */}
+          {/* Ações */}
           <div className="ped-dt-col ped-dt-col--ver">
             <button type="button" className="ped-dt-ver-btn" onClick={e => { e.stopPropagation(); onVerPedido(p) }}>
-              Ver pedido
+              Ver detalhes
             </button>
           </div>
         </div>
@@ -817,7 +818,7 @@ export default function Pedidos() {
                   <div className="ped-dt-col ped-dt-col--entrega">Entrega</div>
                   <div className="ped-dt-col ped-dt-col--status">Status</div>
                   <div className="ped-dt-col ped-dt-col--valor">Valor</div>
-                  <div className="ped-dt-col ped-dt-col--ver"></div>
+                  <div className="ped-dt-col ped-dt-col--ver">Ações</div>
                 </div>
               )}
               {pedidosFiltrados.map(p => (
@@ -934,10 +935,10 @@ export default function Pedidos() {
           /* Cabeçalho */
           .ped-dt-header {
             display: grid;
-            grid-template-columns: 145px 160px 1fr 160px 110px 130px 100px;
+            grid-template-columns: 120px 160px 1fr 140px 110px 120px 110px;
             align-items: center;
-            padding: 0.55rem 1.25rem;
-            background: #6E3548;
+            padding: 0.5rem 1.25rem;
+            background: #3d1a24;
             border-bottom: 1.5px solid var(--border,#ECC2D0);
             font-size: 0.65rem;
             font-weight: 700;
@@ -950,53 +951,40 @@ export default function Pedidos() {
           /* Cada linha de pedido no desktop */
           .ped-dt-row {
             display: grid;
-            grid-template-columns: 145px 160px 1fr 160px 110px 130px 100px;
+            grid-template-columns: 120px 160px 1fr 140px 110px 120px 110px;
             align-items: center;
-            padding: 0.8rem 1.25rem;
+            padding: 0.6rem 1.25rem;
             gap: 16px;
             cursor: pointer;
             transition: background 0.12s;
           }
           .ped-dt-row:last-child { border-bottom: none; }
-          .ped-dt-row:nth-child(odd) { background: #ffffff; }
-          .ped-dt-row:nth-child(even) { background: #ffffff; }
           .ped-dt-row:hover { background: var(--bg-subtle,#F7EEF1); }
-          .ped-dt-row > * { min-height: 54px; }
+          .ped-dt-row > * { min-height: 40px; }
 
           /* Colunas individuais */
           .ped-dt-col { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
           .ped-dt-col--num { gap: 2px; }
-          .ped-dt-col--cliente { flex-direction: row; align-items: center; gap: 10px; width: 100%; }
+          .ped-dt-col--cliente { gap: 2px; }
           .ped-dt-col--produto { flex-direction: row; align-items: center; gap: 0; }
           .ped-dt-col--entrega { gap: 2px; }
           .ped-dt-col--status { align-items: flex-start; }
           .ped-dt-cliente-info { flex: 1; min-width: 0; }
 
           /* Número do pedido */
-          .ped-dt-num { font-size: 0.9rem; font-weight: 700; color: var(--primary,#986274); }
-          .ped-dt-criado { font-size: 0.7rem; color: var(--text-muted,#C39EAA); margin-top: 1px; }
+          .ped-dt-num { font-size: 0.88rem; font-weight: 700; color: var(--primary,#986274); }
+          .ped-dt-criado { font-size: 0.68rem; color: var(--text-muted,#C39EAA); margin-top: 1px; }
+          .ped-dt-origem-tag { font-size: 0.62rem; font-weight: 600; color: #185FA5; background: #E6F1FB; padding: 1px 6px; border-radius: 4px; margin-top: 2px; width: fit-content; }
 
-          /* Avatar do cliente */
-          .ped-dt-avatar {
-            width: 34px; height: 34px; border-radius: 50%;
-            background: var(--primary-light,#F7EEF1);
-            border: 1.5px solid var(--border,#ECC2D0);
-            color: var(--primary,#986274);
-            font-size: 0.78rem; font-weight: 700;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-          }
-          .ped-dt-cliente-nome {
-            font-size: 0.95rem; font-weight: 400;
-            color: var(--text-title,#431524);
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-          }
+          /* Cliente */
+          .ped-dt-cliente-nome { font-size: 0.88rem; font-weight: 500; color: var(--text-title,#431524); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .ped-dt-cliente-tel { font-size: 0.72rem; color: var(--text-muted,#C39EAA); }
 
           .ped-dt-col--ver { align-items: flex-end; }
           .ped-dt-ver-btn {
             background: none; border: 1.5px solid var(--primary,#986274);
             color: var(--primary,#986274); border-radius: 8px;
-            padding: 0.35rem 0.75rem; font-size: 0.75rem; font-weight: 600;
+            padding: 0.3rem 0.7rem; font-size: 0.72rem; font-weight: 600;
             cursor: pointer; font-family: inherit; white-space: nowrap;
             transition: all 0.15s;
           }
