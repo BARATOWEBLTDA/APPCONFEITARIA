@@ -281,7 +281,7 @@ export default function DooIA() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [generatingImage, setGeneratingImage] = useState(false)
-  const [pulse, setPulse] = useState(true)
+  const [pulse] = useState(false)
   const [pendingImage, setPendingImage] = useState<{ base64: string; mediaType: string; preview: string } | null>(null)
   const [nomeConfeiteira, setNomeConfeiteira] = useState('')
   const [copiedId, setCopiedId] = useState<number | null>(null)
@@ -292,7 +292,7 @@ export default function DooIA() {
 
   // Pulso inicial
   useEffect(() => {
-    const t = setTimeout(() => setPulse(false), 4000)
+
     return () => clearTimeout(t)
   }, [])
 
@@ -320,7 +320,7 @@ export default function DooIA() {
   useEffect(() => {
     if (open) {
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
-      setTimeout(() => inputRef.current?.focus(), 200)
+      
     }
   }, [open, messages])
 
@@ -335,7 +335,7 @@ export default function DooIA() {
     setMessages([])
     setInput('')
     setPendingImage(null)
-    setTimeout(() => inputRef.current?.focus(), 100)
+    
   }
 
   const handleFileSelect = async (file: File) => {
@@ -458,7 +458,7 @@ export default function DooIA() {
 
       {/* ── Botão flutuante ── */}
       <button
-        onClick={() => { setOpen(o => !o); setPulse(false) }}
+        onClick={() => { setOpen(o => !o) }}
         style={{
           position: 'fixed', bottom: 'var(--doo-btn-bottom, 7rem)', right: 'var(--doo-btn-right, 1.25rem)',
           width: '62px', height: '62px', borderRadius: '35%',
@@ -743,6 +743,10 @@ export default function DooIA() {
               onKeyDown={handleKey}
               placeholder={PLACEHOLDERS[placeholderIdx]}
               disabled={loading || generatingImage}
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck={false}
               style={{
                 flex: 1, minWidth: 0, border: `1.5px solid ${input || pendingImage ? VINHO : '#E9E9EE'}`,
                 borderRadius: '12px', padding: '0.55rem 0.75rem',
