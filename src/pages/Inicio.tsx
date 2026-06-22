@@ -292,7 +292,7 @@ export default function Inicio() {
         </div>
 
         {/* Banner premium */}
-        {!isPro && <TrialCardMobileBanner />}
+        
       </div>
 
 
@@ -466,6 +466,7 @@ export default function Inicio() {
           100% { background-position: 0% 50%; }
         }
         .mob-hero-row { display: flex; align-items: center; gap: 0.7rem; }
+        body.gestao-drawer-open .mob-hero-row { visibility: hidden; }
         .mob-hero-profile { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; overflow: hidden; }
         .mob-hero-bell { background: none; border: none; padding: 0.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; }
         .mob-hero-bell.has-notif { background: rgba(255,255,255,0.15); animation: bell-pulse 1.8s ease-in-out infinite; }
