@@ -242,32 +242,33 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
         </div>
       )}
 
-      <div className="ped-card-head" style={!isMobile ? { display: 'none' } : {}}>
-        <span className="ped-card-numero">
-          Pedido #{p.numero || '—'}
-          {p.origem === 'cardapio' && <span className="ped-card-origem">via Cardápio</span>}
-        </span>
-        <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
-          <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
-          {grupo.label}
-        </span>
-      </div>
+      <div className="ped-card-head" style={!isMobile ? { display: 'none' } : { display: 'none' }} />
 
       {isMobile ? (
         <div className="mob-card-inner">
-          {/* Topo: cliente + data + número */}
+
+          {/* Linha 1: Pedido # + Status + Data/hora */}
           <div className="mob-card-topo">
-            <p className="mob-card-cliente">{p.cliente_nome || 'Não informado'}</p>
-            <div className="mob-card-meta">
-              <span>Pedido #{p.numero || '—'}</span>
-              {p.created_at && <span>{new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' })}</span>}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
+              <span className="ped-card-numero">Pedido #{p.numero || '—'}{p.origem === 'cardapio' && <span className="ped-card-origem"> · Cardápio</span>}</span>
+              <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
+                <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
+                {grupo.label}
+              </span>
             </div>
+            <p className="mob-card-cliente">{p.cliente_nome || 'Não informado'}</p>
+            {p.created_at && (
+              <span className="mob-card-datetime">
+                {new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' })}
+                {' · '}
+                {new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' })}
+              </span>
+            )}
           </div>
 
-          {/* Divisor */}
           <div className="mob-card-divider" />
 
-          {/* Produto */}
+          {/* Linha 2: Produto + subtotal */}
           {primeiroItem && (
             <div className="mob-card-produto">
               <div className="mob-card-produto-img">
@@ -275,48 +276,34 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
                   ? <img src={primeiroItem.produtos.imagem_url} alt={primeiroItem.nome_produto} />
                   : <span>🎂</span>}
               </div>
-              <div>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <p className="mob-card-produto-nome">
                   {primeiroItem.nome_produto}
                   {outrosItens > 0 && <span className="ped-card-mais-itens"> +{outrosItens}</span>}
                 </p>
                 <p className="mob-card-produto-qtd">{formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</p>
               </div>
+              <p className="mob-card-valor">{formatMoney(p.valor_total)}</p>
             </div>
           )}
 
-          {/* Infos finais */}
-          <div className="mob-card-infos">
-            <p className="mob-card-info-row">
-              <span className="mob-card-info-label">Pagamento</span>
-              <span style={{ color: pagamentoCor }}>{pagamentoLabel}</span>
-            </p>
-            <p className="mob-card-info-row">
-              <span className="mob-card-info-label">Entrega</span>
-              <span>{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</span>
-              {temEndereco && (
-                <button type="button" className="ped-card-mapa" onClick={e => { e.stopPropagation(); onAbrirMapa(enderecoCompletoPedido(p)) }}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  Ver no mapa
-                </button>
-              )}
-            </p>
-            {dataLabel && (
-              <p className="mob-card-info-row">
-                <span className="mob-card-info-label">Data entrega</span>
-                <span style={{ color: dataCor }}>{dataLabel}{p.horario_entrega ? ` · ${p.horario_entrega.slice(0,5)}` : ''}</span>
-              </p>
-            )}
+          <div className="mob-card-divider" />
+
+          {/* Linha 3: Pagamento + Entrega */}
+          <div className="mob-card-rodape">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span className="mob-card-info-label">Pgto:</span>
+              <span style={{ fontSize: '0.78rem', color: pagamentoCor, fontWeight: 600 }}>{PAG_CONFIG[p.forma_pagamento] || 'PIX'}</span>
+              <span className="ped-card-status" style={{ color: pagamentoCor, background: p.status_pagamento === 'pago' ? '#dcfce7' : p.status_pagamento === 'parcial' ? '#FAEEDA' : '#fee2e2', fontSize: '0.68rem', padding: '2px 7px' }}>
+                {p.status_pagamento === 'pago' ? 'Pago' : p.status_pagamento === 'parcial' ? 'Parcial' : 'Pendente'}
+              </span>
+            </div>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary,#6E3548)', display: 'flex', alignItems: 'center', gap: 4 }}>
+              {p.tipo_entrega === 'retirada' ? '📦 Retirada' : '🛵 Entrega'}
+              {dataLabel && <span style={{ color: dataCor, fontWeight: 600 }}>· {dataLabel}</span>}
+            </span>
           </div>
 
-          {/* Valor + status no rodapé */}
-          <div className="mob-card-rodape">
-            <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
-              <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
-              {grupo.label}
-            </span>
-            <p className="mob-card-valor">{formatMoney(p.valor_total)}</p>
-          </div>
         </div>
       ) : (
         /* ── Layout desktop: tabela limpa estilo design referência ── */
@@ -858,21 +845,22 @@ export default function Pedidos() {
         .ped-card-chip--etiqueta { background: var(--bg-body,#FAFAFA); color: var(--text-secondary,#6E3548); }
 
         /* ── Card mobile novo ── */
-        .mob-card-inner { display: flex; flex-direction: column; padding: 0.9rem 1rem; gap: 0.6rem; background: linear-gradient(135deg, #fff 60%, #F7EEF1 100%); }
+        .mob-card-inner { display: flex; flex-direction: column; padding: 0.65rem 0.9rem; gap: 0.45rem; }
         .mob-card-topo { display: flex; flex-direction: column; gap: 2px; }
-        .mob-card-cliente { font-size: 1rem; font-weight: 700; color: var(--text-title,#431524); margin: 0; }
+        .mob-card-cliente { font-size: 0.92rem; font-weight: 700; color: var(--text-title,#431524); margin: 2px 0 0; }
+        .mob-card-datetime { font-size: 0.7rem; color: var(--text-muted,#C39EAA); }
         .mob-card-meta { display: flex; gap: 10px; font-size: 0.72rem; color: var(--text-muted,#C39EAA); }
         .mob-card-divider { height: 1px; border-top: 1px dashed var(--border,#ECC2D0); margin: 0.1rem 0; }
-        .mob-card-produto { display: flex; align-items: center; gap: 10px; }
-        .mob-card-produto-img { width: 40px; height: 40px; border-radius: 8px; flex-shrink: 0; background: var(--bg-subtle,#F7EEF1); border: 1px solid var(--border,#ECC2D0); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+        .mob-card-produto { display: flex; align-items: center; gap: 8px; }
+        .mob-card-produto-img { width: 34px; height: 34px; border-radius: 7px; flex-shrink: 0; background: var(--bg-subtle,#F7EEF1); border: 1px solid var(--border,#ECC2D0); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
         .mob-card-produto-img img { width: 100%; height: 100%; object-fit: cover; }
-        .mob-card-produto-nome { font-size: 0.88rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
-        .mob-card-produto-qtd { font-size: 0.75rem; color: var(--text-secondary,#6E3548); margin: 2px 0 0; }
+        .mob-card-produto-nome { font-size: 0.82rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+        .mob-card-produto-qtd { font-size: 0.7rem; color: var(--text-secondary,#6E3548); margin: 1px 0 0; }
         .mob-card-infos { display: flex; flex-direction: column; gap: 3px; }
-        .mob-card-info-row { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.8rem; color: var(--text-secondary,#6E3548); }
-        .mob-card-info-label { font-weight: 600; color: var(--text-title,#431524); min-width: 80px; }
-        .mob-card-rodape { display: flex; align-items: center; justify-content: space-between; padding-top: 0.5rem; border-top: 1px dashed var(--border,#ECC2D0); }
-        .mob-card-valor { font-size: 1.1rem; font-weight: 800; color: var(--text-title,#431524); margin: 0; letter-spacing: -0.02em; }
+        .mob-card-info-row { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.78rem; color: var(--text-secondary,#6E3548); }
+        .mob-card-info-label { font-weight: 600; color: var(--text-title,#431524); font-size: 0.75rem; }
+        .mob-card-rodape { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+        .mob-card-valor { font-size: 1rem; font-weight: 800; color: var(--text-title,#431524); margin: 0; letter-spacing: -0.02em; white-space: nowrap; }
 
 
         .ped-card-rodape { display: flex; align-items: flex-end; justify-content: space-between; padding: 0.85rem 1.1rem; gap: 0.75rem; }
