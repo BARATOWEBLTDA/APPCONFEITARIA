@@ -405,10 +405,28 @@ function ModalPedido({ p, onClose, onEditar }: { p: Pedido; onClose: () => void;
 
   const enderecoCompleto = [p.endereco_rua && p.endereco_numero ? `${p.endereco_rua}, ${p.endereco_numero}` : p.endereco_rua, p.endereco_complemento, p.endereco_bairro, p.endereco_cidade].filter(Boolean).join(', ')
 
+  useEffect(() => {
+    const scrollY = window.scrollY
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.left = '0'
+    document.body.style.right = '0'
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.left = ''
+      document.body.style.right = ''
+      document.body.style.overflow = ''
+      window.scrollTo(0, scrollY)
+    }
+  }, [])
+
   return (
     <>
       <div className="mp-overlay" onClick={onClose} />
       <div className="mp-modal" onClick={e => e.stopPropagation()}>
+        <div className="mp-handle" />
         {/* Header */}
         <div className="mp-header">
           <div>
@@ -868,8 +886,11 @@ export default function Pedidos() {
         .ped-card-rodape-direita .ped-card-valor { margin: 4px 0 0; }
 
         /* ── Modal de pedido ── */
-        .mp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; animation: hsFadeIn 0.2s ease; }
-        .mp-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); background: var(--bg-card,#fff); border-radius: 16px; z-index: 201; width: 420px; max-width: 95vw; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: hsFadeIn 0.2s ease; font-family: inherit; }
+        .mp-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border,#ECC2D0); margin: 10px auto 0; flex-shrink: 0; }
+        @media (min-width: 768px) { .mp-handle { display: none; } }
+        .mp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; animation: hsFadeIn 0.2s ease; }
+        .mp-modal { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card,#fff); border-radius: 20px 20px 0 0; z-index: 9999; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 -4px 32px rgba(0,0,0,0.2); animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); font-family: inherit; }
+        @media (min-width: 768px) { .mp-modal { top: 50%; left: 50%; right: auto; bottom: auto; transform: translate(-50%,-50%); border-radius: 16px; width: 420px; max-width: 95vw; animation: hsFadeIn 0.2s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.2); } }
         .mp-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 1rem 1.25rem 0.75rem; border-bottom: 1.5px solid var(--border,#ECC2D0); flex-shrink: 0; }
         .mp-numero { font-size: 1rem; font-weight: 800; color: var(--text-title,#431524); }
         .mp-criado { font-size: 0.68rem; color: var(--text-muted,#C39EAA); margin: 2px 0 0; }
