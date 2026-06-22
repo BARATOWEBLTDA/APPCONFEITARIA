@@ -290,11 +290,8 @@ export default function DooIA() {
   const inputRef = useRef<HTMLInputElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
-  // Pulso inicial
-  useEffect(() => {
 
-    return () => clearTimeout(t)
-  }, [])
+
 
   // Busca nome da confeiteira
   useEffect(() => {
