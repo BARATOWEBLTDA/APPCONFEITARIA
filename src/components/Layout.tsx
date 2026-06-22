@@ -149,18 +149,7 @@ export default function Layout() {
           </div>
         </div>
 
-        {/* Topbar mobile */}
-        <div className="mob-topbar">
-          <button className="topbar-btn" onClick={() => navigate("/assinar")}>
-            <img src="/Sistema/premium.png" alt="Premium" style={{ width: "20px", height: "20px", objectFit: "contain" }} />
-          </button>
-          <div style={{ position: "relative" }} ref={notifRef}>
-            <button className="topbar-btn" onClick={toggleNotif}>
-              <img src="/Sistema/sino.png" alt="Notificações" style={{ width: "20px", height: "20px", objectFit: "contain" }} />
-              {notifCount > 0 && <span className="topbar-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
-            </button>
-          </div>
-        </div>
+
 
         {/* Dropdown de notificações — fixo, funciona em mobile e desktop */}
         {notifOpen && (
@@ -385,7 +374,6 @@ export default function Layout() {
             border: 2px solid var(--primary-dark); line-height: 1;
           }
 
-          .mob-topbar { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; padding: 0.5rem 0 0.25rem; }
           .layout-main { margin-left: 0; padding: 0.75rem; padding-top: 0; padding-bottom: 6.5rem; background: var(--bg-body); min-height: 100vh; width: 100%; box-sizing: border-box; }
           .layout-main--no-header { padding-top: 1rem; background: var(--bg-body); }
 

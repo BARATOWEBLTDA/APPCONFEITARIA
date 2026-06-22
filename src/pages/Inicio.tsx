@@ -240,8 +240,11 @@ export default function Inicio() {
               onClick={openNotif}
               style={{ position: "relative" }}
             >
-              <Bell size={26} weight="duotone" color="rgba(255,255,255,0.9)" />
+              <img src="/Sistema/sino.png" alt="Notificações" style={{ width: "26px", height: "26px", objectFit: "contain" }} />
               {notifCount > 0 && <span className="mob-hero-notif-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
+            </button>
+            <button className="mob-hero-bell" onClick={() => navigate("/assinar")}>
+              <img src="/Sistema/premium.png" alt="Premium" style={{ width: "26px", height: "26px", objectFit: "contain" }} />
             </button>
             <button className="mob-hero-profile" onClick={() => navigate("/configuracoes")}>
               {profile?.foto_url
