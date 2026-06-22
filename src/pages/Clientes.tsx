@@ -19,7 +19,6 @@ export default function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [showLista, setShowLista] = useState(false);
   const [showNiver, setShowNiver] = useState(false);
   const [editando, setEditando] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -41,10 +40,10 @@ export default function Clientes() {
   }, []);
 
   useEffect(() => {
-    const isOpen = showForm || !!confirmDelete || showLista || showNiver;
+    const isOpen = showForm || !!confirmDelete || showNiver;
     document.body.style.overflow = isOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [showForm, confirmDelete, showLista, showNiver]);
+  }, [showForm, confirmDelete, showNiver]);
 
   const fetchClientes = async (uid: string) => {
     setLoading(true);
@@ -176,40 +175,80 @@ export default function Clientes() {
       {/* ===== MOBILE ===== */}
       <div className="cli-mobile">
 
-        <button className="mob-banner" onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}>
-          <img src="/bannercadastro.png" alt="Cadastrar Cliente" className="mob-banner-img" />
-        </button>
-
-        <button className="mob-banner" onClick={() => setShowLista(true)}>
-          <img src="/bannercadastrados.png" alt="Ver Clientes" className="mob-banner-img" />
-        </button>
-
-        <button className="mob-banner" onClick={() => setShowNiver(true)}>
-          <img src="/bannerniver.png" alt="Aniversariantes" className="mob-banner-img" />
-        </button>
-
-        <div className="mob-log">
-          <h3 className="mob-log-title">Últimos Cadastros</h3>
-          {loading ? (
-            <div style={{textAlign:"center",padding:"2rem"}}><span className="spinner" /></div>
-          ) : ultimosAdicionados.length === 0 ? (
-            <p style={{color:"var(--text-muted, #9CA3AF)",fontSize:"0.85rem",textAlign:"center",padding:"1rem"}}>Nenhum cliente ainda</p>
-          ) : (
-            ultimosAdicionados.map(c => (
-              <div key={c.id} className="mob-log-item">
-                <div className="mob-log-avatar">
-                  {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
-                </div>
-                <div className="mob-log-info">
-                  <p className="mob-log-nome">{c.nome}</p>
-                  <p className="mob-log-data">
-                    {new Date(c.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "2-digit" })} · {new Date(c.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                  </p>
-                </div>
-              </div>
-            ))
+        {/* Header */}
+        <div className="mob-header">
+          <div>
+            <h1 className="mob-title">Clientes</h1>
+            <p className="mob-subtitle">{clientes.length} cadastrado{clientes.length !== 1 ? "s" : ""}</p>
+          </div>
+          {aniversariantes.length > 0 && (
+            <button className="mob-niver-pill" onClick={() => setShowNiver(true)}>
+              🎂 {aniversariantes.length} aniversariante{aniversariantes.length !== 1 ? "s" : ""}
+            </button>
           )}
         </div>
+
+        {/* Busca */}
+        <div className="mob-search-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input
+            type="text"
+            placeholder="Buscar por nome ou telefone..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="mob-search"
+            autoComplete="off"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} style={{background:"none",border:"none",cursor:"pointer",color:"var(--text-muted)",padding:"0",lineHeight:1}}>✕</button>
+          )}
+        </div>
+
+        {/* Lista */}
+        {loading ? (
+          <div style={{textAlign:"center",padding:"3rem"}}><span className="spinner" /></div>
+        ) : filtered.length === 0 ? (
+          <div className="mob-empty">
+            <p>{search ? "Nenhum cliente encontrado" : "Nenhum cliente cadastrado ainda"}</p>
+            {!search && <p style={{fontSize:"0.8rem",marginTop:"0.25rem"}}>Toque em + para cadastrar</p>}
+          </div>
+        ) : (
+          <div className="mob-list">
+            {filtered.map(c => (
+              <div key={c.id} className="mob-card" onClick={() => handleEdit(c)}>
+                <div className="mob-avatar">
+                  {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
+                </div>
+                <div className="mob-info">
+                  <p className="mob-nome">{c.nome}</p>
+                  {c.whatsapp ? (
+                    <a
+                      href={`https://wa.me/55${c.whatsapp.replace(/\D/g,"")}`}
+                      target="_blank" rel="noreferrer"
+                      className="mob-whatsapp"
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                      {formatPhone(c.whatsapp)}
+                    </a>
+                  ) : (
+                    <p className="mob-sem-tel">Sem telefone</p>
+                  )}
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted,#9CA3AF)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Botão fixo novo cliente */}
+        <button
+          className="mob-fab"
+          onClick={() => { setForm(emptyForm); setPreview(null); setEditando(null); setShowForm(true); }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Novo cliente
+        </button>
 
         {/* Modal Aniversariantes Mobile */}
         {showNiver && (
@@ -252,47 +291,6 @@ export default function Clientes() {
           </div>
         )}
 
-        {/* Modal Lista Mobile */}
-        {showLista && (
-          <div className="modal-overlay" onClick={() => setShowLista(false)}>
-            <div className="mob-modal" onClick={e => e.stopPropagation()}>
-              <div className="form-handle" />
-              <div className="form-header">
-                <h2>👥 Clientes</h2>
-                <button className="form-close" onClick={() => setShowLista(false)}>✕</button>
-              </div>
-              <div style={{padding:"0 1rem",overflowY:"auto",maxHeight:"65vh"}}>
-                <div className="cli-search-wrap" style={{margin:"0 0 1rem"}}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  <input type="text" placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
-                </div>
-                {filtered.length === 0 ? (
-                  <p style={{color:"var(--text-muted, #9CA3AF)",textAlign:"center",padding:"2rem"}}>Nenhum cliente encontrado</p>
-                ) : (
-                  <div className="cli-list" style={{paddingBottom:"1rem"}}>
-                    {filtered.map(c => (
-                      <div key={c.id} className="cli-card">
-                        <div className="cli-avatar">
-                          {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
-                        </div>
-                        <div className="cli-info">
-                          <p className="cli-nome">{c.nome}</p>
-                          {c.whatsapp && (
-                            <a href={`https://wa.me/55${c.whatsapp.replace(/\D/g,"")}`} target="_blank" rel="noreferrer" className="cli-whatsapp-link" onClick={e => e.stopPropagation()}>
-                              <svg width="13" height="13" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                              {formatPhone(c.whatsapp)}
-                            </a>
-                          )}
-                        </div>
-                        <button className="cli-act" onClick={() => { setShowLista(false); handleEdit(c); }}>✏️</button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ===== DESKTOP ===== */}
@@ -397,25 +395,79 @@ export default function Clientes() {
         }
 
         /* ===== MOBILE STYLES ===== */
-        .mob-banner {
-          width: 100%; border: none; cursor: pointer; border-radius: 16px;
-          overflow: hidden; padding: 0; position: relative;
-          box-shadow: var(--shadow-md, 0 4px 16px rgba(0,0,0,0.15));
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .mob-banner:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
-        .mob-banner-img { width: 100%; height: auto; display: block; }
+        .mob-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0 0.25rem; }
+        .mob-title { font-size: 1.4rem; font-weight: 700; color: var(--text-title, #1F2937); margin: 0; }
+        .mob-subtitle { font-size: 0.78rem; color: var(--text-muted, #9CA3AF); margin: 0.1rem 0 0; }
 
-        /* Log mobile */
-        .mob-log { background: var(--bg-card, #FFFFFF); border-radius: 16px; padding: 1rem; box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); }
-        .mob-log-title { font-size: 1.05rem; font-weight: 700; color: var(--text-title, #1F2937); margin: 0 0 0.75rem; text-align: center; letter-spacing: 0.12em; text-transform: uppercase; }
-        .mob-log-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0; border-bottom: 1px solid var(--border, #E9E9EE); }
-        .mob-log-item:last-child { border-bottom: none; }
-        .mob-log-avatar { width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0; background: var(--primary-light, #FFF1F7); display: flex; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; color: var(--primary, #FF6FA9); overflow: hidden; }
-        .mob-log-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .mob-log-info { flex: 1; min-width: 0; }
-        .mob-log-nome { font-size: 0.88rem; font-weight: 600; color: var(--text-title, #1F2937); margin: 0 0 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .mob-log-data { font-size: 0.75rem; color: var(--text-muted, #9CA3AF); margin: 0; }
+        .mob-niver-pill {
+          display: flex; align-items: center; gap: 0.3rem;
+          background: var(--primary-light, #FFF1F7);
+          color: var(--primary, #FF6FA9);
+          border: 1.5px solid var(--primary-light, #FEE2EE);
+          border-radius: 999px; padding: 0.4rem 0.85rem;
+          font-size: 0.75rem; font-weight: 600; cursor: pointer;
+          font-family: var(--font-base, 'Geist', sans-serif);
+          white-space: nowrap; flex-shrink: 0;
+          transition: background 0.15s;
+        }
+        .mob-niver-pill:active { background: #FEE2EE; }
+
+        .mob-search-wrap {
+          display: flex; align-items: center; gap: 0.5rem;
+          background: var(--bg-card, #FFFFFF);
+          border: 1.5px solid var(--border, #E9E9EE);
+          border-radius: 12px; padding: 0.7rem 1rem;
+          box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.05));
+        }
+        .mob-search {
+          border: none; outline: none; flex: 1;
+          font-family: var(--font-base, 'Geist', sans-serif);
+          font-size: 0.9rem; color: var(--text-title, #1F2937);
+          background: transparent;
+        }
+        .mob-search::placeholder { color: var(--text-muted, #9CA3AF); }
+
+        .mob-empty { text-align: center; padding: 3rem 1rem; color: var(--text-muted, #9CA3AF); font-size: 0.9rem; }
+
+        .mob-list { display: flex; flex-direction: column; gap: 0.5rem; padding-bottom: 5rem; }
+
+        .mob-card {
+          display: flex; align-items: center; gap: 0.85rem;
+          background: var(--bg-card, #FFFFFF);
+          border-radius: 14px; padding: 0.75rem 1rem;
+          border: 1px solid var(--border, #E9E9EE);
+          box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.04));
+          cursor: pointer; transition: background 0.15s;
+        }
+        .mob-card:active { background: var(--bg-body, #F7F7F8); }
+
+        .mob-avatar {
+          width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+          background: var(--primary-light, #FFF1F7);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 1.1rem; font-weight: 700; color: var(--primary, #FF6FA9);
+          overflow: hidden;
+        }
+        .mob-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .mob-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+        .mob-nome { font-size: 0.92rem; font-weight: 600; color: var(--text-title, #1F2937); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mob-whatsapp { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.78rem; color: #25D366; font-weight: 500; text-decoration: none; }
+        .mob-sem-tel { font-size: 0.78rem; color: var(--text-muted, #9CA3AF); margin: 0; }
+
+        .mob-fab {
+          position: fixed; bottom: 5.5rem; right: 1.25rem;
+          display: flex; align-items: center; gap: 0.5rem;
+          background: var(--primary, #3d1a24);
+          color: white; border: none; border-radius: 999px;
+          padding: 0.75rem 1.25rem;
+          font-family: var(--font-base, 'Geist', sans-serif);
+          font-size: 0.9rem; font-weight: 600;
+          box-shadow: 0 4px 20px rgba(61,26,36,0.35);
+          cursor: pointer; z-index: 40;
+          transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .mob-fab:active { transform: scale(0.96); }
 
         /* Modal mobile */
         .mob-modal {
