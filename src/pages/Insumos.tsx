@@ -1229,7 +1229,7 @@ function Styles() {
   return (
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-      .ins-root { font-family:'Geist', sans-serif; display:flex; flex-direction:column; gap:1rem; padding-bottom:2rem; }
+      .ins-root { font-family:'Geist', sans-serif; display:flex; flex-direction:column; gap:1rem; padding-top:1rem; padding-bottom:2rem; }
       .ins-desktop { max-width:100%; }
       .ins-header { display:flex; align-items:center; justify-content:space-between; }
       .ins-title { font-size:1.6rem; font-weight:800; color:var(--text-title, #1F2937); margin:0; }
