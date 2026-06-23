@@ -50,6 +50,8 @@ export default function CheckoutConfigPage() {
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
   const [autoSaved, setAutoSaved] = useState(false)
+  const [savingCupons, setSavingCupons] = useState(false)
+  const [cuponsSaved, setCuponsSaved] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [formasPagamento, setFormasPagamento] = useState<string[]>(['pix'])
@@ -118,6 +120,18 @@ export default function CheckoutConfigPage() {
   const removeBairro = (i: number) => setEntregaPorBairro(prev => prev.filter((_, idx) => idx !== i))
   const addCupom = () => setCupons(prev => [...prev, { codigo: '', tipo: 'percentual', valor: '', ativo: true }])
   const removeCupom = (i: number) => setCupons(prev => prev.filter((_, idx) => idx !== i))
+
+  const handleSalvarCupons = async () => {
+    if (!userId) return
+    if (timerRef.current) clearTimeout(timerRef.current)
+    setSavingCupons(true)
+    await supabase.from('profiles').update({
+      cupons_desconto: cupons.filter(c => c.codigo.trim()).map(c => ({ ...c, valor: parseFloat(c.valor) || 0 })),
+    }).eq('id', userId)
+    setSavingCupons(false)
+    setCuponsSaved(true)
+    setTimeout(() => setCuponsSaved(false), 2200)
+  }
 
   if (loading) return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'40vh'}}>
@@ -295,6 +309,23 @@ export default function CheckoutConfigPage() {
                   </div>
                 </div>
               ))}
+
+              {cupons.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleSalvarCupons}
+                  disabled={savingCupons}
+                  className={`chk-cupons-save${cuponsSaved ? ' chk-cupons-save--ok' : ''}`}
+                >
+                  {savingCupons ? (
+                    <><span className="chk-spinner-btn" /> Salvando...</>
+                  ) : cuponsSaved ? (
+                    <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Cupons salvos!</>
+                  ) : (
+                    <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar cupons</>
+                  )}
+                </button>
+              )}
             </div>
 
           </div>{/* fim chk-stack */}
@@ -535,6 +566,31 @@ export default function CheckoutConfigPage() {
           transition:background 0.15s;
         }
         .chk-cupom-remove:hover { background:#fee2e2; }
+
+        /* ── Botão Salvar cupons ── */
+        .chk-cupons-save {
+          margin-top:0.35rem;
+          display:inline-flex; align-items:center; justify-content:center; gap:6px;
+          padding:0.7rem 1rem;
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          color:#fff; border:none; border-radius:50px;
+          font-family:'Geist', sans-serif; font-size:0.85rem; font-weight:700;
+          cursor:pointer; box-shadow:0 3px 10px rgba(255,111,169,0.3);
+          transition:transform 0.15s, box-shadow 0.15s, background 0.2s;
+        }
+        .chk-cupons-save:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 6px 16px rgba(255,111,169,0.4); }
+        .chk-cupons-save:disabled { opacity:0.7; cursor:wait; transform:none; }
+        .chk-cupons-save--ok {
+          background:#22C55E; box-shadow:0 3px 10px rgba(34,197,94,0.3);
+          animation:chkFadeIn 0.25s ease;
+        }
+        .chk-cupons-save--ok:hover:not(:disabled) { box-shadow:0 6px 16px rgba(34,197,94,0.4); }
+        .chk-spinner-btn {
+          width:14px; height:14px;
+          border:2px solid rgba(255,255,255,0.4); border-top-color:#fff;
+          border-radius:50%; animation:chkspin 0.7s linear infinite;
+          display:inline-block;
+        }
 
         .chk-spinner { width:32px; height:32px; border:3px solid var(--primary-light, #FFF1F7); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:chkspin 0.7s linear infinite; display:inline-block; }
       `}</style>
