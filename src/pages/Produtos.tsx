@@ -43,6 +43,8 @@ type Produto = {
   desconto_percentual?: number;
 };
 
+const SYSTEM_ICONS = Array.from({ length: 42 }, (_, i) => `/categoriaicones/icone (${i + 1}).png`);
+
 const FORMAS_VENDA = [
   { value: "unidade", label: "Por Unidade" },
   { value: "fatia", label: "Por Fatia" },
@@ -83,7 +85,9 @@ export default function Produtos() {
   const [form, setForm] = useState<Produto>(EMPTY);
   const [filtroCategoria, setFiltroCategoria] = useState("todas");
   const [novaCategoria, setNovaCategoria] = useState("");
+  const [novaCategoriaIcone, setNovaCategoriaIcone] = useState("");
   const [showCatInput, setShowCatInput] = useState(false);
+  const [savingCat, setSavingCat] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [novaOpcao, setNovaOpcao] = useState<{ massa: string; recheio: string; cobertura: string }>({ massa: "", recheio: "", cobertura: "" });
   const [novoTamanho, setNovoTamanho] = useState({ label: "", preco: "" });
@@ -182,10 +186,18 @@ export default function Produtos() {
 
   const handleAdicionarCategoria = async () => {
     if (!novaCategoria.trim() || !userId) return;
-    await supabase.from("categorias").insert({ nome: novaCategoria.trim(), user_id: userId });
+    if (!novaCategoriaIcone) return alert("Selecione um ícone para a categoria");
+    setSavingCat(true);
+    await supabase.from("categorias").insert({
+      nome: novaCategoria.trim(),
+      imagem_url: novaCategoriaIcone,
+      ordem: categorias.length,
+      user_id: userId
+    });
     setCategorias(prev => [...prev, novaCategoria.trim()].sort());
     setForm(f => ({ ...f, categoria: novaCategoria.trim() }));
-    setNovaCategoria(""); setShowCatInput(false);
+    setNovaCategoria(""); setNovaCategoriaIcone(""); setShowCatInput(false);
+    setSavingCat(false);
   };
 
   const addOpcao = (campo: "massas_disponiveis" | "recheios_disponiveis" | "coberturas_disponiveis", key: "massa" | "recheio" | "cobertura") => {
@@ -432,7 +444,7 @@ export default function Produtos() {
                         {slot === 0 && <span style={{ fontSize: "0.65rem", color: "var(--text-muted, #9CA3AF)", display: "block", marginBottom: "3px", textAlign: "center" }}>Principal</span>}
                         <div
                           className="prod-img-upload"
-                          style={{ width: "100%", height: "90px", borderRadius: "12px", cursor: isLocked ? "default" : "pointer", position: "relative", overflow: "hidden", background: slot > 0 ? "#f0f4ff" : undefined, border: slot > 0 ? "2px dashed #c7d2fe" : undefined }}
+                          style={{ width: "100%", height: "90px", borderRadius: "12px", cursor: isLocked ? "default" : "pointer", position: "relative", overflow: "hidden", background: isLocked ? "var(--primary-light, #FFF1F7)" : (slot > 0 ? "#f0f4ff" : undefined), border: isLocked ? "2px dashed var(--primary, #FF6FA9)" : (slot > 0 ? "2px dashed #c7d2fe" : undefined) }}
                           onClick={() => !isLocked && !uploading && ref.current?.click()}
                         >
                           {imgUrl ? (
@@ -441,9 +453,14 @@ export default function Produtos() {
                               {!isLocked && <button className="prod-img-remove" onClick={e => { e.stopPropagation(); removeImage(slot); }}>✕</button>}
                             </>
                           ) : isLocked ? (
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: "4px" }}>
-                              <img src="/diamante.png" alt="PRO" style={{ width: "20px", height: "20px" }} />
-                              <span style={{ fontSize: "0.6rem", color: "var(--text-muted, #9CA3AF)", textAlign: "center" }}>PRO</span>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: "5px", padding: "4px" }}>
+                              <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 8px rgba(255,111,169,0.35)" }}>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                                  <rect x="4" y="11" width="16" height="10" rx="2.5"/>
+                                  <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                                </svg>
+                              </div>
+                              <span style={{ fontSize: "0.6rem", fontWeight: 800, color: "var(--primary, #FF6FA9)", textAlign: "center", letterSpacing: "0.05em" }}>PRO</span>
                             </div>
                           ) : (
                             <div className="prod-img-placeholder">
@@ -451,9 +468,6 @@ export default function Produtos() {
                                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                               )}
                             </div>
-                          )}
-                          {slot > 0 && (
-                            <div style={{ position: "absolute", top: "10px", right: "-16px", background: "var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A))", color: "var(--text-inverse, #FFFFFF)", fontSize: "0.55rem", fontWeight: 900, padding: "2px 20px", transform: "rotate(45deg)", zIndex: 10, width: "70px", textAlign: "center" }}>PRO</div>
                           )}
                         </div>
                         <input ref={ref} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleImageUpload(e, slot)} />
@@ -472,11 +486,70 @@ export default function Produtos() {
                   <input type="text" placeholder="Ex: Bolo de Morango" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
                 </div>
                 <div className="prod-field">
-                  <label>Categoria *</label>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+                    <label style={{ margin: 0 }}>Categoria *</label>
+                    {!showCatInput && (
+                      <button
+                        type="button"
+                        onClick={() => setShowCatInput(true)}
+                        style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: "var(--primary-light, #FFF1F7)", color: "var(--primary, #FF6FA9)", border: "none", borderRadius: "20px", fontFamily: "inherit", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Nova categoria
+                      </button>
+                    )}
+                  </div>
                   <select value={form.categoria} onChange={e => setForm(f => ({ ...f, categoria: e.target.value }))}>
                     <option value="">Selecione...</option>
                     {todasCategorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                   </select>
+
+                  {showCatInput && (
+                    <div style={{ marginTop: "10px", padding: "12px", background: "var(--primary-light, #FFF1F7)", borderRadius: "14px", border: "1.5px dashed var(--primary, #FF6FA9)" }}>
+                      <p style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--primary, #FF6FA9)", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>✨ Criar nova categoria</p>
+
+                      <input
+                        type="text"
+                        placeholder="Nome (ex: Bolos, Doces...)"
+                        value={novaCategoria}
+                        onChange={e => setNovaCategoria(e.target.value)}
+                        style={{ width: "100%", padding: "0.6rem 0.85rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "10px", fontFamily: "inherit", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", background: "var(--bg-card, #FFFFFF)", marginBottom: "10px" }}
+                      />
+
+                      <p style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-secondary, #6B7280)", margin: "0 0 6px" }}>Escolha um ícone:</p>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "6px", maxHeight: "160px", overflowY: "auto", padding: "2px", marginBottom: "10px" }}>
+                        {SYSTEM_ICONS.map((src, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => setNovaCategoriaIcone(src)}
+                            style={{ aspectRatio: "1", borderRadius: "8px", border: `2px solid ${novaCategoriaIcone === src ? "var(--primary, #FF6FA9)" : "transparent"}`, background: novaCategoriaIcone === src ? "var(--bg-card, #FFFFFF)" : "rgba(255,255,255,0.6)", padding: "3px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                          >
+                            <img src={src} alt={`ícone ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                              onError={e => { e.currentTarget.parentElement!.style.display = "none" }} />
+                          </button>
+                        ))}
+                      </div>
+
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          type="button"
+                          onClick={() => { setShowCatInput(false); setNovaCategoria(""); setNovaCategoriaIcone(""); }}
+                          style={{ flex: 1, padding: "0.55rem", background: "var(--bg-card, #FFFFFF)", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "50px", fontFamily: "inherit", fontSize: "0.8rem", fontWeight: 600, color: "var(--text-secondary, #6B7280)", cursor: "pointer" }}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleAdicionarCategoria}
+                          disabled={!novaCategoria.trim() || !novaCategoriaIcone || savingCat}
+                          style={{ flex: 2, padding: "0.55rem", background: "var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A))", color: "var(--text-inverse, #FFFFFF)", border: "none", borderRadius: "50px", fontFamily: "inherit", fontSize: "0.82rem", fontWeight: 700, cursor: (!novaCategoria.trim() || !novaCategoriaIcone) ? "not-allowed" : "pointer", opacity: (!novaCategoria.trim() || !novaCategoriaIcone || savingCat) ? 0.6 : 1 }}
+                        >
+                          {savingCat ? "Salvando..." : "Criar categoria"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="prod-field">
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
