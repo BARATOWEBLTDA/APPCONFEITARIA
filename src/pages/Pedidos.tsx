@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { ClipboardText, CurrencyDollar, CheckCircle, Cake } from '@phosphor-icons/react'
 
 type PedidoItem = {
   nome_produto: string; quantidade: number; valor_unitario: number
@@ -771,37 +772,13 @@ export default function Pedidos() {
           {!isMobile && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
               {[
-                {
-                  label: 'Total de pedidos',
-                  value: pedidos.length,
-                  sub: 'Todos os registros',
-                  icon: '📋',
-                  color: '#534AB7', bg: '#EEEDFE'
-                },
-                {
-                  label: 'Faturamento',
-                  value: pedidos.reduce((acc, p) => acc + (p.valor_total || 0), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-                  sub: 'Valor total dos pedidos',
-                  icon: '💰',
-                  color: '#0F6E56', bg: '#E1F5EE'
-                },
-                {
-                  label: 'Concluídos',
-                  value: pedidos.filter(p => ['concluido','entregue'].includes(p.status)).length,
-                  sub: 'Pedidos finalizados',
-                  icon: '✅',
-                  color: '#14532d', bg: '#dcfce7'
-                },
-                {
-                  label: 'Em produção',
-                  value: pedidos.filter(p => p.status === 'em_producao').length,
-                  sub: 'No momento',
-                  icon: '🎂',
-                  color: '#854F0B', bg: '#FAEEDA'
-                },
+                { label: 'Total de pedidos', value: pedidos.length, sub: 'Todos os registros', bg: '#EEEDFE', icon: <ClipboardText size={22} weight="duotone" color="#534AB7" /> },
+                { label: 'Faturamento', value: pedidos.reduce((acc, p) => acc + (p.valor_total || 0), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }), sub: 'Valor total', bg: '#E1F5EE', icon: <CurrencyDollar size={22} weight="duotone" color="#0F6E56" /> },
+                { label: 'Concluídos', value: pedidos.filter(p => ['concluido','entregue'].includes(p.status)).length, sub: 'Pedidos finalizados', bg: '#dcfce7', icon: <CheckCircle size={22} weight="duotone" color="#14532d" /> },
+                { label: 'Em produção', value: pedidos.filter(p => p.status === 'em_producao').length, sub: 'No momento', bg: '#FAEEDA', icon: <Cake size={22} weight="duotone" color="#854F0B" /> },
               ].map((card, i) => (
                 <div key={i} style={{ background: 'var(--bg-card,#fff)', border: '1.5px solid var(--border,#ECC2D0)', borderRadius: 14, padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {card.icon}
                   </div>
                   <div style={{ minWidth: 0 }}>
