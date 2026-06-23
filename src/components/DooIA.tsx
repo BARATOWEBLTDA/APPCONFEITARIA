@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { usePlano } from '@/hooks/usePlano'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -276,6 +278,8 @@ function formatText(text: string): string {
 }
 
 export default function DooIA() {
+  const navigate = useNavigate()
+  const { isPro, loading: planoLoading } = usePlano()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -455,7 +459,11 @@ export default function DooIA() {
 
       {/* ── Botão flutuante ── */}
       <button
-        onClick={() => { setOpen(o => !o) }}
+        onClick={() => {
+          if (planoLoading) return
+          if (!isPro) { setOpen(true); return }
+          setOpen(o => !o)
+        }}
         style={{
           position: 'fixed', bottom: 'var(--doo-btn-bottom, 7rem)', right: 'var(--doo-btn-right, 1.25rem)',
           width: '62px', height: '62px', borderRadius: '35%',
@@ -482,8 +490,102 @@ export default function DooIA() {
         {pulse && <span style={{ position: 'absolute', inset: 0, borderRadius: '35%', border: `2px solid ${VINHO}`, animation: 'dooPulse 1.5s ease-out infinite' }} />}
       </button>
 
+      {/* ── Modal de upgrade para FREE ── */}
+      {open && !isPro && (
+        <>
+          <div onClick={() => setOpen(false)} style={{
+            position: 'fixed', inset: 0,
+            backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+            background: 'rgba(0,0,0,0.45)', zIndex: 9998,
+            animation: 'dooFadeIn 0.2s ease',
+          }} />
+          <div style={{
+            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: 'min(380px, calc(100vw - 2rem))',
+            background: 'white', borderRadius: '20px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+            zIndex: 9999, padding: '1.75rem 1.5rem 1.5rem',
+            fontFamily: 'inherit', animation: 'dooFadeIn 0.25s ease',
+            textAlign: 'center',
+          }}>
+            <button onClick={() => setOpen(false)} style={{
+              position: 'absolute', top: 12, right: 12, width: 32, height: 32,
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              color: 'var(--text-muted,#C39EAA)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              borderRadius: 8,
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+
+            <div style={{
+              width: 80, height: 80, borderRadius: '28%', background: VINHO,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 1rem', boxShadow: '0 8px 24px rgba(110,53,72,0.25)',
+            }}>
+              <div style={{ width: 68, height: 68, borderRadius: '28%', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                <img src="/Sistema/doo.png" alt="Doo" style={{ width: 90, height: 90, objectFit: 'cover', objectPosition: 'top center' }} />
+              </div>
+            </div>
+
+            <h3 style={{
+              fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-title,#431524)',
+              margin: '0 0 6px', letterSpacing: '-0.02em',
+            }}>
+              Conheça a Doo
+            </h3>
+
+            <p style={{
+              fontSize: '0.88rem', color: 'var(--text-secondary,#6E3548)',
+              margin: '0 0 1.25rem', lineHeight: 1.5,
+            }}>
+              Sua consultora de confeitaria exclusiva. Calcule preços, crie receitas, planeje produção e muito mais — disponível apenas no <strong style={{ color: VINHO }}>plano PRO</strong>.
+            </p>
+
+            <div style={{
+              background: 'var(--bg-subtle,#F7EEF1)', borderRadius: 12, padding: '0.85rem 1rem',
+              marginBottom: '1.25rem', textAlign: 'left',
+            }}>
+              {[
+                'Receitas personalizadas e profissionais',
+                'Cálculo de preço com margem ideal',
+                'Legendas prontas para o Instagram',
+                'Planejamento de produção semanal',
+              ].map((feat, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.82rem', color: 'var(--text-title,#431524)', padding: '4px 0' }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={VINHO} strokeWidth="3" strokeLinecap="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
+                  {feat}
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => { setOpen(false); navigate('/assinar') }}
+              style={{
+                width: '100%', background: VINHO, color: 'white', border: 'none',
+                borderRadius: 12, padding: '0.85rem', fontSize: '0.95rem', fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit',
+                boxShadow: '0 4px 12px rgba(110,53,72,0.25)',
+                marginBottom: 8,
+              }}
+            >
+              Conhecer o plano PRO
+            </button>
+            <button
+              onClick={() => setOpen(false)}
+              style={{
+                width: '100%', background: 'transparent', color: 'var(--text-muted,#C39EAA)',
+                border: 'none', padding: '0.5rem', fontSize: '0.82rem', fontWeight: 500,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              Agora não
+            </button>
+          </div>
+        </>
+      )}
+
       {/* ── Overlay blur ── */}
-      {open && (
+      {open && isPro && (
         <div onClick={() => setOpen(false)} style={{
           position: 'fixed', inset: 0,
           backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
@@ -493,7 +595,7 @@ export default function DooIA() {
       )}
 
       {/* ── Janela do chat ── */}
-      {open && (
+      {open && isPro && (
         <div style={{
           position: 'fixed', bottom: '1.5rem', right: '1.25rem',
           width: 'min(380px, calc(100vw - 2.5rem))',
