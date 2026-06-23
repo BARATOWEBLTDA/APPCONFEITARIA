@@ -1,3 +1,4 @@
+// Checkout config — UI reestilizada no padrão Doonly (v2)
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 
