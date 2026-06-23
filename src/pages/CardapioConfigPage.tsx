@@ -4,7 +4,15 @@ import { supabase } from "@/lib/supabase";
 import CardapioDesign from "@/pages/CardapioDesign";
 import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 
-const SectionLabel = ({ children }: any) => <p className="ccc-section-label">{children}</p>;
+const SectionLabel = ({ children, icon, sub }: any) => (
+  <div className="ccc-section-header">
+    {icon && <div className="ccc-section-icon">{icon}</div>}
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <p className="ccc-section-label">{children}</p>
+      {sub && <p className="ccc-section-sub">{sub}</p>}
+    </div>
+  </div>
+);
 
 const Field = ({ icon, placeholder, value, onChange, type = "text" }: any) => (
   <div className="ccc-field">
@@ -257,7 +265,10 @@ export default function CardapioConfigPage() {
 
         {/* Card 1 — Identidade */}
         <div className="ccc-card">
-          <SectionLabel>Identidade da loja</SectionLabel>
+          <SectionLabel
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7h-7L9 3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>}
+            sub="Logo, nome e descrição da sua confeitaria"
+          >Identidade da loja</SectionLabel>
           <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleFileChange} />
 
           <div className="ccc-logo-row">
@@ -267,7 +278,7 @@ export default function CardapioConfigPage() {
                 : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary, #FF6FA9)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               }
               <div className="ccc-logo-cam">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               </div>
             </div>
             <div style={{flex:1,minWidth:0}}>
@@ -322,7 +333,10 @@ export default function CardapioConfigPage() {
 
         {/* Card 2 — Localização */}
         <div className="ccc-card">
-          <SectionLabel>Localização da loja</SectionLabel>
+          <SectionLabel
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
+            sub="Onde sua confeitaria está localizada"
+          >Localização da loja</SectionLabel>
 
           <div className="ccc-field">
             <span className="ccc-field-icon">
@@ -366,7 +380,10 @@ export default function CardapioConfigPage() {
 
         {/* Card 3 — Horários */}
         <div className="ccc-card">
-          <SectionLabel>Horários de funcionamento</SectionLabel>
+          <SectionLabel
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
+            sub="Quando você está disponível"
+          >Horários de funcionamento</SectionLabel>
           <div className="ccc-dias-grid">
             {["Segunda","Terça","Quarta","Quinta","Sexta"].map(dia => (
               <button key={dia} className={`ccc-dia-btn${horario.dias.includes(dia) ? " active" : ""}`} onClick={() => setHorario(h => ({...h, dias: h.dias.includes(dia) ? h.dias.filter(d => d !== dia) : [...h.dias, dia]}))}>
@@ -403,7 +420,10 @@ export default function CardapioConfigPage() {
 
         {/* Card 4 — Avaliações */}
         <div className="ccc-card">
-          <SectionLabel>Avaliações</SectionLabel>
+          <SectionLabel
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>}
+            sub="Como sua nota aparece para os clientes"
+          >Avaliações</SectionLabel>
           <div className="ccc-toggle-row">
             <div><p className="ccc-toggle-label">Exibir estrelas de avaliação</p><p className="ccc-toggle-sub">Mostra a avaliação média no cardápio</p></div>
             <label className="ccc-toggle"><input type="checkbox" checked={!form.hide_stars} onChange={e => setForm({...form, hide_stars: !e.target.checked})} /><span className="ccc-toggle-slider" /></label>
@@ -440,11 +460,12 @@ export default function CardapioConfigPage() {
         @keyframes ccspin { to { transform:rotate(360deg); } }
 
         /* ── Tabs ── */
-        .ccc-tabs { display:flex; gap:0.25rem; background:var(--border, #E9E9EE); border-radius:12px; padding:4px; width:fit-content; margin-bottom:0.5rem; }
-        .ccc-tab { display:flex; align-items:center; gap:0.4rem; padding:0.5rem 1.1rem; border-radius:9px; border:none; background:transparent; font-family:'Geist',sans-serif; font-size:0.86rem; font-weight:600; color:var(--text-secondary, #6B7280); cursor:pointer; transition:all 0.18s; white-space:nowrap; }
-        .ccc-tab:hover { color:var(--text-title, #1F2937); background:rgba(255,255,255,0.6); }
-        .ccc-tab--active { background:var(--bg-card, #FFFFFF); color:var(--primary, #FF6FA9); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
-        @media(max-width:640px) { .ccc-tabs { width:100%; } .ccc-tab { flex:1; justify-content:center; padding:0.5rem 0.25rem; font-size:0.78rem; } }
+        .ccc-tabs { display:flex; gap:0.3rem; background:var(--bg-card, #FFFFFF); border:1px solid var(--border, #E9E9EE); border-radius:14px; padding:5px; width:fit-content; margin-bottom:0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); }
+        .ccc-tab { display:flex; align-items:center; gap:0.4rem; padding:0.55rem 1.25rem; border-radius:10px; border:none; background:transparent; font-family:'Geist',sans-serif; font-size:0.86rem; font-weight:600; color:var(--text-secondary, #6B7280); cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+        .ccc-tab:hover { color:var(--primary, #FF6FA9); background:var(--primary-light, #FFF1F7); }
+        .ccc-tab--active { background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color:#ffffff; box-shadow:0 3px 10px rgba(255,111,169,0.32); }
+        .ccc-tab--active:hover { color:#ffffff; background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); }
+        @media(max-width:640px) { .ccc-tabs { width:100%; } .ccc-tab { flex:1; justify-content:center; padding:0.55rem 0.25rem; font-size:0.8rem; } }
         @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
         @keyframes toastIn { from{opacity:0;transform:translate(-50%,12px)} to{opacity:1;transform:translate(-50%,0)} }
 
@@ -497,48 +518,74 @@ export default function CardapioConfigPage() {
 
         /* ── Card base ── */
         .ccc-card {
-          background:var(--bg-card, #FFFFFF); border-radius:14px; padding:1.5rem;
-          box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06));
+          background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.5rem;
+          box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.05));
           border:1px solid var(--border, #E9E9EE);
-          display:flex; flex-direction:column; gap:0.85rem;
+          display:flex; flex-direction:column; gap:0.95rem;
           width:100%; box-sizing:border-box; height:100%;
-          transition:box-shadow 0.2s ease, border-color 0.2s ease;
+          transition:box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+          position:relative; overflow:hidden;
+        }
+        .ccc-card::before {
+          content:""; position:absolute; top:-60px; right:-60px;
+          width:140px; height:140px;
+          background:radial-gradient(circle, var(--primary-light, #FFF1F7) 0%, transparent 70%);
+          pointer-events:none; opacity:0.7;
         }
         .ccc-card:hover {
-          box-shadow:0 1px 2px rgba(16,24,40,0.05), 0 8px 24px rgba(16,24,40,0.06);
-          border-color:var(--border, #E9E9EE);
+          box-shadow:0 4px 24px rgba(255,111,169,0.08), 0 1px 2px rgba(16,24,40,0.04);
+          border-color:rgba(255,111,169,0.18);
         }
 
-        /* ── Section label ── */
-        .ccc-section-label {
-          font-size:0.7rem; font-weight:700; color:var(--text-muted, #9CA3AF);
-          text-transform:uppercase; letter-spacing:0.12em; margin:0;
-          padding-bottom:0.75rem; border-bottom: none;
-          display:flex; align-items:center; gap:0.4rem;
+        /* ── Section header (com ícone) ── */
+        .ccc-section-header {
+          display:flex; align-items:center; gap:0.7rem;
+          padding-bottom:1rem; margin-bottom:0.1rem;
+          border-bottom:1px solid var(--border, #E9E9EE);
+          position:relative; z-index:1;
         }
-        .ccc-section-label::before {
-          content:""; width:3px; height:12px; border-radius:2px;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+        .ccc-section-icon {
+          width:36px; height:36px; flex-shrink:0;
+          border-radius:11px;
+          background:var(--primary-light, #FFF1F7);
+          color:var(--primary, #FF6FA9);
+          display:flex; align-items:center; justify-content:center;
+        }
+        .ccc-section-label {
+          font-size:0.95rem; font-weight:700;
+          color:var(--text-title, #1F2937); margin:0;
+          letter-spacing:-0.01em;
+        }
+        .ccc-section-sub {
+          font-size:0.74rem; color:var(--text-muted, #9CA3AF);
+          margin:0.1rem 0 0; line-height:1.3;
         }
         .ccc-hint { font-size:0.76rem; color:var(--text-muted, #9CA3AF); margin:0; }
 
         /* ── Logo ── */
-        .ccc-logo-row { display:flex; align-items:center; gap:1rem; width:100%; }
+        .ccc-logo-row { display:flex; align-items:center; gap:1rem; width:100%; position:relative; z-index:1; }
         .ccc-logo-preview {
-          width:68px; height:68px; min-width:68px; border-radius:50%;
-          background:var(--primary-light, #FFF1F7); border:2px solid var(--primary-light, #FFF1F7);
+          width:78px; height:78px; min-width:78px; border-radius:50%;
+          background:var(--primary-light, #FFF1F7);
+          border:3px solid var(--bg-card, #FFFFFF);
+          box-shadow:0 0 0 2px var(--primary-light, #FFF1F7);
           display:flex; align-items:center; justify-content:center;
           cursor:pointer; position:relative; overflow:hidden; flex-shrink:0;
-          transition:border-color 0.2s, box-shadow 0.2s;
+          transition:box-shadow 0.2s, transform 0.2s;
         }
-        .ccc-logo-preview:hover { border-color:var(--primary, #FF6FA9); box-shadow:0 0 0 4px rgba(255,111,169,0.12); }
+        .ccc-logo-preview:hover {
+          box-shadow:0 0 0 2px var(--primary, #FF6FA9), 0 6px 18px rgba(255,111,169,0.25);
+          transform:scale(1.03);
+        }
         .ccc-logo-cam {
-          position:absolute; bottom:0; right:0;
-          background:rgba(0,0,0,0.45); width:20px; height:20px;
+          position:absolute; bottom:2px; right:2px;
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          width:24px; height:24px;
           display:flex; align-items:center; justify-content:center;
-          border-radius:50% 0 0 0;
+          border-radius:50%; border:2px solid var(--bg-card, #FFFFFF);
+          box-shadow:0 2px 6px rgba(255,111,169,0.4);
         }
-        .ccc-logo-label { font-size:0.9rem; font-weight:600; color:var(--text-title, #1F2937); margin:0; }
+        .ccc-logo-label { font-size:0.95rem; font-weight:700; color:var(--text-title, #1F2937); margin:0; }
         .ccc-logo-sub { font-size:0.75rem; color:var(--text-muted, #9CA3AF); margin:0.2rem 0 0; }
 
         /* ── Campos de input ── */
@@ -595,15 +642,25 @@ export default function CardapioConfigPage() {
         .ccc-toggle input:focus-visible + .ccc-toggle-slider { box-shadow:0 0 0 3px rgba(255,111,169,0.25); }
 
         /* ── Dias da semana ── */
-        .ccc-dias-grid { display:flex; flex-wrap:wrap; gap:0.45rem; }
+        .ccc-dias-grid { display:flex; flex-wrap:wrap; gap:0.5rem; }
         .ccc-dia-btn {
-          padding:0.35rem 0.7rem; border-radius:8px;
-          border:1px solid var(--border, #E9E9EE); background:var(--bg-card, #FFFFFF);
+          padding:0.5rem 0.95rem; border-radius:50px;
+          border:1.5px solid var(--border, #E9E9EE); background:var(--bg-card, #FFFFFF);
           font-family:'Geist', sans-serif; font-size:0.78rem;
-          font-weight:600; color:var(--text-secondary, #6B7280); cursor:pointer; transition:all 0.15s;
+          font-weight:600; color:var(--text-secondary, #6B7280); cursor:pointer;
+          transition:all 0.18s; min-width:54px;
         }
-        .ccc-dia-btn:hover { border-color:var(--primary, #FF6FA9); color:var(--primary-dark, #F85A9A); background:var(--bg-subtle, #FFF1F7); }
-        .ccc-dia-btn.active { background:var(--primary, #986274); border-color:var(--primary-dark, #6E3548); color:#ffffff; font-weight:700; }
+        .ccc-dia-btn:hover {
+          border-color:var(--primary, #FF6FA9);
+          color:var(--primary-dark, #F85A9A);
+          background:var(--primary-light, #FFF1F7);
+          transform:translateY(-1px);
+        }
+        .ccc-dia-btn.active {
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          border-color:transparent; color:#ffffff; font-weight:700;
+          box-shadow:0 3px 10px rgba(255,111,169,0.32);
+        }
 
         /* ── Time fields ── */
         .ccc-time-field { display:flex; flex-direction:column; gap:0.35rem; }
@@ -620,19 +677,26 @@ export default function CardapioConfigPage() {
         /* ── Notas de avaliação ── */
         .ccc-notas-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem; }
         .ccc-nota-btn {
-          padding:0.75rem 0.4rem; border:1px solid var(--border, #E9E9EE);
-          border-radius:12px; background:var(--bg-card, #FFFFFF);
-          font-family:'Geist', sans-serif; font-size:0.88rem;
-          font-weight:700; color:var(--text-primary, #374151); cursor:pointer;
-          transition:all 0.18s; display:flex; flex-direction:column;
-          align-items:center; gap:0.25rem;
+          padding:0.95rem 0.4rem; border:1.5px solid var(--border, #E9E9EE);
+          border-radius:14px; background:var(--bg-card, #FFFFFF);
+          font-family:'Geist', sans-serif; font-size:1.05rem;
+          font-weight:800; color:var(--text-primary, #374151); cursor:pointer;
+          transition:all 0.2s; display:flex; flex-direction:column;
+          align-items:center; gap:0.3rem; position:relative; overflow:hidden;
         }
-        .ccc-nota-btn:hover { border-color:var(--primary, #FF6FA9); transform:translateY(-1px); box-shadow:0 4px 12px rgba(16,24,40,0.06); }
+        .ccc-nota-btn span:first-child { font-size:1.35rem; filter:grayscale(0.4); transition:filter 0.2s; }
+        .ccc-nota-btn:hover {
+          border-color:var(--primary, #FF6FA9); transform:translateY(-2px);
+          box-shadow:0 6px 16px rgba(255,111,169,0.14);
+        }
+        .ccc-nota-btn:hover span:first-child { filter:grayscale(0); }
         .ccc-nota-btn.active {
-          border-color:var(--primary, #FF6FA9);
-          background:var(--primary-light, #FFF1F7);
-          color:var(--primary-dark, #F85A9A); box-shadow:0 3px 12px rgba(255,111,169,0.22);
+          border-color:transparent;
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          color:#ffffff;
+          box-shadow:0 6px 18px rgba(255,111,169,0.35);
         }
+        .ccc-nota-btn.active span:first-child { filter:grayscale(0) brightness(1.1); }
 
         /* ── Botão IA ── */
         .ccc-btn-ia {
