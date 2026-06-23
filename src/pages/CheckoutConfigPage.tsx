@@ -19,6 +19,32 @@ const ENTREGAS = [
   { key: 'combinar',        label: 'Combinar pelo WhatsApp' },
 ]
 
+const SectionLabel = ({ children, icon, sub }: any) => (
+  <div className="chk-section-header">
+    {icon && <div className="chk-section-icon">{icon}</div>}
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <p className="chk-section-label">{children}</p>
+      {sub && <p className="chk-section-sub">{sub}</p>}
+    </div>
+  </div>
+)
+
+const Check = ({ active, label, onClick }: any) => (
+  <div className={`chk-check${active ? ' chk-check--active' : ''}`} onClick={onClick}>
+    <span className="chk-check-label">{label}</span>
+    <div className="chk-checkbox">
+      {active && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+    </div>
+  </div>
+)
+
+const Toggle = ({ checked, onChange }: any) => (
+  <label className="chk-toggle">
+    <input type="checkbox" checked={checked} onChange={onChange} />
+    <span className="chk-toggle-slider" />
+  </label>
+)
+
 export default function CheckoutConfigPage() {
   const [loading, setLoading] = useState(true)
   const [userId, setUserId] = useState<string | null>(null)
@@ -94,136 +120,97 @@ export default function CheckoutConfigPage() {
 
   if (loading) return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'40vh'}}>
-      <div style={{width:'32px',height:'32px',border:'3px solid var(--primary-light, #FFF1F7)',borderTopColor:'var(--primary, #FF6FA9)',borderRadius:'50%',animation:'spin 0.7s linear infinite'}} />
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <div className="chk-spinner" />
+      <style>{`@keyframes chkspin{to{transform:rotate(360deg)}} .chk-spinner{width:32px;height:32px;border:3px solid var(--primary-light, #FFF1F7);border-top-color:var(--primary, #FF6FA9);border-radius:50%;animation:chkspin 0.7s linear infinite}`}</style>
     </div>
   )
 
-  const s = {
-    root: { fontFamily:'inherit',width:'100%',display:'flex',flexDirection:'column' as const,gap:'1.25rem' },
-    header: { display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:'2rem',paddingBottom:'0.75rem',borderBottom:'1px solid var(--border, #E9E9EE)',flexWrap:'wrap' as const,gap:'0.5rem' },
-    title: { fontSize:'1.45rem',fontWeight:800,color:'var(--text-title, #1F2937)',margin:'0 0 0.2rem' },
-    sub: { fontSize:'0.84rem',color:'var(--text-secondary, #6B7280)',margin:0,fontStyle:'italic' as const },
-    autosave: { fontSize:'0.77rem',fontWeight:600,color:'var(--success, #22C55E)',background:'#f0fdf4',padding:'0.3rem 0.75rem',borderRadius:'50px',border:'1px solid #bbf7d0' },
-    card: { background:'var(--bg-card, #FFFFFF)',borderRadius:'16px',padding:'1.25rem',boxShadow:'var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06))',border:'1px solid var(--border, #E9E9EE)',display:'flex',flexDirection:'column' as const,gap:'0.75rem' },
-    label: { fontSize:'0.68rem',fontWeight:800,color:'var(--primary, #FF6FA9)',textTransform:'uppercase' as const,letterSpacing:'0.15em',margin:0,paddingBottom:'0.6rem',borderBottom:'1px solid var(--primary-light, #FFF1F7)' },
-    hint: { fontSize:'0.75rem',color:'var(--text-muted, #9CA3AF)',margin:0 },
-    check: { display:'flex',alignItems:'center',gap:'0.75rem',padding:'0.65rem 0.85rem',borderRadius:'10px',border:'1.5px solid var(--border, #E9E9EE)',cursor:'pointer',transition:'all 0.15s' } as React.CSSProperties,
-    checkActive: { border:'1.5px solid var(--primary, #FF6FA9)',background:'var(--primary-light, #FFF1F7)' },
-    input: { width:'100%',padding:'0.6rem 1rem',border:'1.5px solid var(--border, #E9E9EE)',borderRadius:'10px',fontFamily:'inherit',fontSize:'0.88rem',color:'var(--text-title, #1F2937)',outline:'none',boxSizing:'border-box' as const,background:'var(--bg-input, #FFFFFF)' },
-    toggle: { position:'relative' as const,display:'inline-block',width:'44px',height:'24px',flexShrink:0 },
-    toggleRow: { display:'flex',justifyContent:'space-between',alignItems:'center',gap:'1rem' },
-    btnAdd: { padding:'0.5rem 1rem',background:'var(--primary-light, #FFF1F7)',border:'1.5px solid var(--primary-light, #FFF1F7)',borderRadius:'50px',fontFamily:'inherit',fontSize:'0.8rem',fontWeight:700,color:'var(--primary-dark, #F85A9A)',cursor:'pointer' },
-    btnRemove: { padding:'0.4rem',background:'#fff5f5',border:'1px solid #fee2e2',borderRadius:'8px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center' },
-  }
-
   return (
     <>
-      <style>{`
-        .chk-grid {
-          display: flex;
-          flex-direction: column;
-          gap: 1.25rem;
-        }
-        @media (min-width: 900px) {
-          .chk-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 1.25rem;
-            align-items: start;
-          }
-          .chk-stack { display: flex; flex-direction: column; gap: 1.25rem; }
-        }
-      `}</style>
-      <div style={s.root}>
-        <div style={s.header}>
+      <div className="chk-root">
+        <div className="chk-header">
           <div>
-            <h1 style={s.title}>Configurações do Checkout</h1>
-            <p style={s.sub}>Configure pagamento, entrega e cupons do seu cardápio</p>
+            <h1 className="chk-title">Configurações do Checkout</h1>
+            <p className="chk-sub">Configure pagamento, entrega e cupons do seu cardápio</p>
           </div>
-          {autoSaved && <span style={s.autosave}>✓ Salvo automaticamente</span>}
+          {autoSaved && <span className="chk-autosave">✓ Salvo automaticamente</span>}
         </div>
 
         <div className="chk-grid">
 
           {/* ── COLUNA 1: Formas de Pagamento ── */}
-          <div style={s.card}>
-            <p style={s.label}>Formas de pagamento</p>
-            <p style={s.hint}>Marque apenas as que você aceita</p>
-            <div style={{display:'flex',flexDirection:'column',gap:'0.45rem'}}>
+          <div className="chk-card">
+            <SectionLabel
+              icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="5" width="20" height="14" rx="3"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}
+              sub="Marque apenas as que você aceita"
+            >Formas de pagamento</SectionLabel>
+
+            <div className="chk-list">
               {PAGAMENTOS.map(p => (
-                <div key={p.key} onClick={() => togglePagamento(p.key)} style={{...s.check, ...(formasPagamento.includes(p.key) ? s.checkActive : {})}}>
-                  <span style={{flex:1,fontSize:'0.88rem',fontWeight:formasPagamento.includes(p.key)?700:500,color:formasPagamento.includes(p.key)?'var(--primary-dark, #F85A9A)':'var(--text-primary, #374151)'}}>{p.label}</span>
-                  <div style={{width:'20px',height:'20px',borderRadius:'6px',border:formasPagamento.includes(p.key)?'2px solid var(--primary, #FF6FA9)':'2px solid var(--border, #E9E9EE)',background:formasPagamento.includes(p.key)?'var(--primary, #FF6FA9)':'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    {formasPagamento.includes(p.key) && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
-                  </div>
-                </div>
+                <Check key={p.key} active={formasPagamento.includes(p.key)} label={p.label} onClick={() => togglePagamento(p.key)} />
               ))}
             </div>
+
             {formasPagamento.includes('dinheiro') && (
               <>
-                <hr style={{border:'none',borderTop:'1px solid var(--border, #E9E9EE)',margin:'0.25rem 0'}} />
-                <div style={s.toggleRow}>
+                <hr className="chk-divider" />
+                <div className="chk-toggle-row">
                   <div>
-                    <p style={{margin:0,fontSize:'0.85rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>Exibir campo "Troco para"</p>
-                    <p style={{margin:'0.1rem 0 0',fontSize:'0.72rem',color:'var(--text-muted, #9CA3AF)'}}>Quando o cliente pagar em dinheiro</p>
+                    <p className="chk-toggle-label">Exibir campo "Troco para"</p>
+                    <p className="chk-toggle-sub">Quando o cliente pagar em dinheiro</p>
                   </div>
-                  <label style={s.toggle}>
-                    <input type="checkbox" checked={exibirCampoTroco} onChange={e => setExibirCampoTroco(e.target.checked)} style={{opacity:0,width:0,height:0}} />
-                    <span style={{position:'absolute',cursor:'pointer',inset:0,background:exibirCampoTroco?'var(--primary, #FF6FA9)':'var(--border, #E9E9EE)',borderRadius:'24px',transition:'0.3s'}}>
-                      <span style={{position:'absolute',height:'18px',width:'18px',left:exibirCampoTroco?'23px':'3px',bottom:'3px',background:'var(--bg-card, #FFFFFF)',borderRadius:'50%',transition:'0.3s',boxShadow:'0 1px 4px rgba(0,0,0,0.18)'}} />
-                    </span>
-                  </label>
+                  <Toggle checked={exibirCampoTroco} onChange={(e: any) => setExibirCampoTroco(e.target.checked)} />
                 </div>
               </>
             )}
           </div>
 
           {/* ── COLUNA 2: Formas de Entrega ── */}
-          <div style={s.card}>
-            <p style={s.label}>Formas de entrega</p>
-            <p style={s.hint}>Marque as opções disponíveis</p>
-            <div style={{display:'flex',flexDirection:'column',gap:'0.45rem'}}>
+          <div className="chk-card">
+            <SectionLabel
+              icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="6" width="15" height="12" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>}
+              sub="Marque as opções disponíveis"
+            >Formas de entrega</SectionLabel>
+
+            <div className="chk-list">
               {ENTREGAS.map(e => (
-                <div key={e.key} onClick={() => toggleEntrega(e.key)} style={{...s.check, ...(formasEntrega.includes(e.key) ? s.checkActive : {})}}>
-                  <span style={{flex:1,fontSize:'0.88rem',fontWeight:formasEntrega.includes(e.key)?700:500,color:formasEntrega.includes(e.key)?'var(--primary-dark, #F85A9A)':'var(--text-primary, #374151)'}}>{e.label}</span>
-                  <div style={{width:'20px',height:'20px',borderRadius:'6px',border:formasEntrega.includes(e.key)?'2px solid var(--primary, #FF6FA9)':'2px solid var(--border, #E9E9EE)',background:formasEntrega.includes(e.key)?'var(--primary, #FF6FA9)':'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                    {formasEntrega.includes(e.key) && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>}
-                  </div>
-                </div>
+                <Check key={e.key} active={formasEntrega.includes(e.key)} label={e.label} onClick={() => toggleEntrega(e.key)} />
               ))}
             </div>
 
             {formasEntrega.includes('retirada') && (
               <>
-                <hr style={{border:'none',borderTop:'1px solid var(--border, #E9E9EE)',margin:'0.25rem 0'}} />
-                <p style={{margin:0,fontSize:'0.82rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>Endereço de retirada</p>
-                <input value={enderecoRetirada} onChange={e => setEnderecoRetirada(e.target.value)} placeholder="Rua, número, bairro..." style={s.input} />
-                <input value={horarioRetirada} onChange={e => setHorarioRetirada(e.target.value)} placeholder="Horário de retirada (ex: 08h às 18h)" style={s.input} />
+                <hr className="chk-divider" />
+                <p className="chk-sublabel">Endereço de retirada</p>
+                <input className="chk-input" value={enderecoRetirada} onChange={e => setEnderecoRetirada(e.target.value)} placeholder="Rua, número, bairro..." />
+                <input className="chk-input" value={horarioRetirada} onChange={e => setHorarioRetirada(e.target.value)} placeholder="Horário de retirada (ex: 08h às 18h)" />
               </>
             )}
 
             {formasEntrega.includes('entrega_propria') && (
               <>
-                <hr style={{border:'none',borderTop:'1px solid var(--border, #E9E9EE)',margin:'0.25rem 0'}} />
-                <p style={{margin:0,fontSize:'0.82rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>Valor da entrega própria</p>
-                <div style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
-                  <span style={{fontSize:'0.88rem',color:'var(--text-secondary, #6B7280)'}}>R$</span>
-                  <input value={valorEntregaPropria} onChange={e => setValorEntregaPropria(e.target.value.replace(/[^0-9.,]/g,''))} placeholder="0,00" style={{...s.input,width:'120px'}} />
+                <hr className="chk-divider" />
+                <p className="chk-sublabel">Valor da entrega própria</p>
+                <div className="chk-money-row">
+                  <span className="chk-prefix">R$</span>
+                  <input className="chk-input" style={{width:'120px'}} value={valorEntregaPropria} onChange={e => setValorEntregaPropria(e.target.value.replace(/[^0-9.,]/g,''))} placeholder="0,00" />
                 </div>
-                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                  <p style={{margin:0,fontSize:'0.82rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>Valor por bairro (opcional)</p>
-                  <button onClick={addBairro} style={s.btnAdd}>+ Bairro</button>
+                <div className="chk-row-between">
+                  <p className="chk-sublabel">Valor por bairro (opcional)</p>
+                  <button onClick={addBairro} className="chk-btn-add">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Bairro
+                  </button>
                 </div>
                 {entregaPorBairro.map((b, i) => (
-                  <div key={i} style={{display:'flex',gap:'0.5rem',alignItems:'center'}}>
-                    <input value={b.bairro} onChange={e => setEntregaPorBairro(prev => prev.map((x,j) => j===i ? {...x, bairro:e.target.value} : x))} placeholder="Nome do bairro" style={{...s.input,flex:1}} />
-                    <div style={{display:'flex',alignItems:'center',gap:'0.3rem'}}>
-                      <span style={{fontSize:'0.82rem',color:'var(--text-secondary, #6B7280)'}}>R$</span>
-                      <input value={b.valor} onChange={e => setEntregaPorBairro(prev => prev.map((x,j) => j===i ? {...x, valor:e.target.value.replace(/[^0-9.,]/g,'')} : x))} placeholder="0,00" style={{...s.input,width:'80px'}} />
+                  <div key={i} className="chk-bairro-row">
+                    <input className="chk-input" style={{flex:1}} value={b.bairro} onChange={e => setEntregaPorBairro(prev => prev.map((x,j) => j===i ? {...x, bairro:e.target.value} : x))} placeholder="Nome do bairro" />
+                    <div className="chk-money-row">
+                      <span className="chk-prefix">R$</span>
+                      <input className="chk-input" style={{width:'80px'}} value={b.valor} onChange={e => setEntregaPorBairro(prev => prev.map((x,j) => j===i ? {...x, valor:e.target.value.replace(/[^0-9.,]/g,'')} : x))} placeholder="0,00" />
                     </div>
-                    <button onClick={() => removeBairro(i)} style={s.btnRemove}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--error, #EF4444)" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <button onClick={() => removeBairro(i)} className="chk-btn-remove" aria-label="Remover bairro">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                     </button>
                   </div>
                 ))}
@@ -234,65 +221,322 @@ export default function CheckoutConfigPage() {
           {/* ── COLUNA 3: Agendamento + Cupons ── */}
           <div className="chk-stack">
 
-          {/* ── AGENDAMENTO ── */}
-          <div style={s.card}>
-            <p style={s.label}>Agendamento</p>
-            <div style={s.toggleRow}>
-              <div>
-                <p style={{margin:0,fontSize:'0.85rem',fontWeight:600,color:'var(--text-primary, #374151)'}}>Aceitar agendamento</p>
-                <p style={{margin:'0.1rem 0 0',fontSize:'0.72rem',color:'var(--text-muted, #9CA3AF)'}}>Cliente escolhe data e horário de entrega/retirada</p>
-              </div>
-              <label style={s.toggle}>
-                <input type="checkbox" checked={aceitaAgendamento} onChange={e => setAceitaAgendamento(e.target.checked)} style={{opacity:0,width:0,height:0}} />
-                <span style={{position:'absolute',cursor:'pointer',inset:0,background:aceitaAgendamento?'var(--primary, #FF6FA9)':'var(--border, #E9E9EE)',borderRadius:'24px',transition:'0.3s'}}>
-                  <span style={{position:'absolute',height:'18px',width:'18px',left:aceitaAgendamento?'23px':'3px',bottom:'3px',background:'var(--bg-card, #FFFFFF)',borderRadius:'50%',transition:'0.3s',boxShadow:'0 1px 4px rgba(0,0,0,0.18)'}} />
-                </span>
-              </label>
-            </div>
-            {aceitaAgendamento && (
-              <div style={{display:'flex',alignItems:'center',gap:'0.5rem'}}>
-                <span style={{fontSize:'0.82rem',color:'var(--text-primary, #374151)',fontWeight:500}}>Prazo mínimo de antecedência:</span>
-                <input value={prazoMinimo} onChange={e => setPrazoMinimo(e.target.value.replace(/\D/g,''))} style={{...s.input,width:'60px',textAlign:'center'}} />
-                <span style={{fontSize:'0.82rem',color:'var(--text-muted, #9CA3AF)'}}>horas</span>
-              </div>
-            )}
-          </div>
+            {/* ── AGENDAMENTO ── */}
+            <div className="chk-card">
+              <SectionLabel
+                icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>}
+                sub="Cliente escolhe data e horário de entrega/retirada"
+              >Agendamento</SectionLabel>
 
-          {/* ── CUPONS ── */}
-          <div style={s.card}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-              <p style={s.label}>Cupons de desconto</p>
-              <button onClick={addCupom} style={s.btnAdd}>+ Cupom</button>
+              <div className="chk-toggle-row">
+                <p className="chk-toggle-label">Aceitar agendamento</p>
+                <Toggle checked={aceitaAgendamento} onChange={(e: any) => setAceitaAgendamento(e.target.checked)} />
+              </div>
+
+              {aceitaAgendamento && (
+                <div className="chk-prazo-row">
+                  <span>Prazo mínimo de antecedência:</span>
+                  <input className="chk-input" style={{width:'64px',textAlign:'center'}} value={prazoMinimo} onChange={e => setPrazoMinimo(e.target.value.replace(/\D/g,''))} />
+                  <span className="chk-muted">horas</span>
+                </div>
+              )}
             </div>
-            {cupons.length === 0 && <p style={s.hint}>Nenhum cupom cadastrado. Clique em "+ Cupom" para criar.</p>}
-            {cupons.map((c, i) => (
-              <div key={i} style={{padding:'0.85rem',background:'var(--primary-light, #FFF1F7)',borderRadius:'12px',display:'flex',flexDirection:'column',gap:'0.5rem',border:'1px solid var(--primary-light, #FFF1F7)'}}>
-                <div style={{display:'flex',gap:'0.5rem',alignItems:'center'}}>
-                  <input value={c.codigo} onChange={e => setCupons(prev => prev.map((x,j) => j===i ? {...x, codigo:e.target.value.toUpperCase()} : x))} placeholder="CÓDIGO" style={{...s.input,flex:1,textTransform:'uppercase',fontWeight:700}} />
-                  <select value={c.tipo} onChange={e => setCupons(prev => prev.map((x,j) => j===i ? {...x, tipo:e.target.value} : x))} style={{...s.input,width:'auto'}}>
-                    <option value="percentual">% Percentual</option>
-                    <option value="fixo">R$ Fixo</option>
-                  </select>
-                  <div style={{display:'flex',alignItems:'center',gap:'0.3rem'}}>
-                    <span style={{fontSize:'0.82rem',color:'var(--text-secondary, #6B7280)'}}>{c.tipo === 'percentual' ? '%' : 'R$'}</span>
-                    <input value={c.valor} onChange={e => setCupons(prev => prev.map((x,j) => j===i ? {...x, valor:e.target.value.replace(/[^0-9.,]/g,'')} : x))} placeholder="0" style={{...s.input,width:'70px',textAlign:'center'}} />
+
+            {/* ── CUPONS ── */}
+            <div className="chk-card">
+              <div className="chk-row-between" style={{alignItems:'flex-start'}}>
+                <SectionLabel
+                  icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>}
+                  sub="Crie códigos promocionais"
+                >Cupons</SectionLabel>
+                <button onClick={addCupom} className="chk-btn-add" style={{marginTop:'4px'}}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Cupom
+                </button>
+              </div>
+
+              {cupons.length === 0 && (
+                <div className="chk-cupons-empty">
+                  <div className="chk-cupons-empty-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+                  </div>
+                  <p className="chk-cupons-empty-text">Nenhum cupom ainda. Toque em <strong>+ Cupom</strong> para criar.</p>
+                </div>
+              )}
+
+              {cupons.map((c, i) => (
+                <div key={i} className={`chk-cupom-card${c.ativo ? '' : ' chk-cupom-card--inactive'}`}>
+                  <div className="chk-cupom-top">
+                    <div className="chk-cupom-tag">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                    </div>
+                    <input className="chk-cupom-codigo" value={c.codigo} onChange={e => setCupons(prev => prev.map((x,j) => j===i ? {...x, codigo:e.target.value.toUpperCase()} : x))} placeholder="CÓDIGO" />
+                  </div>
+                  <div className="chk-cupom-row">
+                    <select className="chk-input chk-cupom-select" value={c.tipo} onChange={e => setCupons(prev => prev.map((x,j) => j===i ? {...x, tipo:e.target.value} : x))}>
+                      <option value="percentual">% Percentual</option>
+                      <option value="fixo">R$ Fixo</option>
+                    </select>
+                    <div className="chk-money-row" style={{flex:1}}>
+                      <span className="chk-prefix">{c.tipo === 'percentual' ? '%' : 'R$'}</span>
+                      <input className="chk-input" style={{textAlign:'center'}} value={c.valor} onChange={e => setCupons(prev => prev.map((x,j) => j===i ? {...x, valor:e.target.value.replace(/[^0-9.,]/g,'')} : x))} placeholder="0" />
+                    </div>
+                  </div>
+                  <div className="chk-cupom-footer">
+                    <label className="chk-cupom-ativo">
+                      <Toggle checked={c.ativo} onChange={(e: any) => setCupons(prev => prev.map((x,j) => j===i ? {...x, ativo:e.target.checked} : x))} />
+                      <span>{c.ativo ? 'Ativo' : 'Inativo'}</span>
+                    </label>
+                    <button onClick={() => removeCupom(i)} className="chk-cupom-remove">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                      Remover
+                    </button>
                   </div>
                 </div>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                  <label style={{display:'flex',alignItems:'center',gap:'0.4rem',fontSize:'0.8rem',color:'var(--text-primary, #374151)',cursor:'pointer'}}>
-                    <input type="checkbox" checked={c.ativo} onChange={e => setCupons(prev => prev.map((x,j) => j===i ? {...x, ativo:e.target.checked} : x))} />
-                    Ativo
-                  </label>
-                  <button onClick={() => removeCupom(i)} style={{background:'none',border:'none',fontSize:'0.78rem',color:'var(--error, #EF4444)',fontWeight:600,cursor:'pointer'}}>Remover</button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
           </div>{/* fim chk-stack */}
 
         </div>{/* fim chk-grid */}
       </div>
+
+      <style>{`
+        @keyframes chkspin { to { transform:rotate(360deg); } }
+        @keyframes chkFadeIn { from{opacity:0} to{opacity:1} }
+
+        .chk-root { font-family:'Geist', sans-serif; width:100%; display:flex; flex-direction:column; gap:1.25rem; }
+        .chk-header { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; padding:0.5rem 0; }
+        .chk-title { font-size:1.4rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.3rem; letter-spacing:-0.02em; }
+        .chk-sub { font-size:0.86rem; color:var(--text-secondary, #6B7280); margin:0; }
+        .chk-autosave { display:inline-flex; align-items:center; gap:0.35rem; font-size:0.76rem; font-weight:600; color:var(--success, #22C55E); background:#f0fdf4; padding:0.32rem 0.8rem; border-radius:50px; border:1px solid #dcfce7; animation:chkFadeIn 0.3s ease; }
+
+        /* ── Grid ── */
+        .chk-grid { display:flex; flex-direction:column; gap:1.25rem; }
+        @media (min-width:900px) {
+          .chk-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1.25rem; align-items:start; }
+          .chk-stack { display:flex; flex-direction:column; gap:1.25rem; }
+        }
+
+        /* ── Card ── */
+        .chk-card {
+          background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.4rem;
+          box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.05));
+          border:1px solid var(--border, #E9E9EE);
+          display:flex; flex-direction:column; gap:0.85rem;
+          width:100%; box-sizing:border-box;
+          position:relative; overflow:hidden;
+          transition:box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .chk-card::before {
+          content:""; position:absolute; top:-60px; right:-60px;
+          width:140px; height:140px;
+          background:radial-gradient(circle, var(--primary-light, #FFF1F7) 0%, transparent 70%);
+          pointer-events:none; opacity:0.7;
+        }
+        .chk-card:hover {
+          box-shadow:0 4px 24px rgba(255,111,169,0.08), 0 1px 2px rgba(16,24,40,0.04);
+          border-color:rgba(255,111,169,0.18);
+        }
+        .chk-card > * { position:relative; z-index:1; }
+
+        /* ── Section header ── */
+        .chk-section-header { display:flex; align-items:center; gap:0.7rem; padding-bottom:1rem; border-bottom:1px solid var(--border, #E9E9EE); }
+        .chk-section-icon {
+          width:36px; height:36px; flex-shrink:0; border-radius:11px;
+          background:var(--primary-light, #FFF1F7); color:var(--primary, #FF6FA9);
+          display:flex; align-items:center; justify-content:center;
+        }
+        .chk-section-label { font-size:0.95rem; font-weight:700; color:var(--text-title, #1F2937); margin:0; letter-spacing:-0.01em; }
+        .chk-section-sub { font-size:0.74rem; color:var(--text-muted, #9CA3AF); margin:0.1rem 0 0; line-height:1.3; }
+
+        .chk-sublabel { margin:0; font-size:0.82rem; font-weight:600; color:var(--text-primary, #374151); }
+        .chk-muted { font-size:0.82rem; color:var(--text-muted, #9CA3AF); }
+        .chk-divider { border:none; border-top:1px solid var(--border, #E9E9EE); margin:0.25rem 0; }
+        .chk-row-between { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; }
+
+        /* ── Checklist (Check component) ── */
+        .chk-list { display:flex; flex-direction:column; gap:0.45rem; }
+        .chk-check {
+          display:flex; align-items:center; gap:0.75rem;
+          padding:0.72rem 0.9rem; border-radius:12px;
+          border:1.5px solid var(--border, #E9E9EE);
+          background:var(--bg-card, #FFFFFF);
+          cursor:pointer; transition:all 0.18s;
+        }
+        .chk-check:hover {
+          border-color:rgba(255,111,169,0.45);
+          background:var(--primary-light, #FFF1F7);
+          transform:translateY(-1px);
+        }
+        .chk-check--active {
+          border-color:var(--primary, #FF6FA9);
+          background:var(--primary-light, #FFF1F7);
+          box-shadow:0 2px 8px rgba(255,111,169,0.12);
+        }
+        .chk-check-label {
+          flex:1; font-size:0.88rem; font-weight:500;
+          color:var(--text-primary, #374151);
+        }
+        .chk-check--active .chk-check-label {
+          font-weight:700; color:var(--primary-dark, #F85A9A);
+        }
+        .chk-checkbox {
+          width:22px; height:22px; border-radius:7px;
+          border:2px solid var(--border, #E9E9EE);
+          background:transparent;
+          display:flex; align-items:center; justify-content:center;
+          transition:all 0.18s; flex-shrink:0;
+        }
+        .chk-check--active .chk-checkbox {
+          border-color:transparent;
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          box-shadow:0 2px 6px rgba(255,111,169,0.32);
+        }
+
+        /* ── Input ── */
+        .chk-input {
+          width:100%; padding:0.65rem 0.95rem;
+          border:1.5px solid var(--border, #E9E9EE); border-radius:10px;
+          font-family:'Geist', sans-serif; font-size:0.88rem;
+          color:var(--text-title, #1F2937); outline:none;
+          box-sizing:border-box; background:var(--bg-input, #FFFFFF);
+          transition:border-color 0.15s, box-shadow 0.15s;
+        }
+        .chk-input:hover { border-color:var(--text-muted, #9CA3AF); }
+        .chk-input:focus { border-color:var(--primary, #FF6FA9); box-shadow:0 0 0 3px rgba(255,111,169,0.12); }
+
+        .chk-money-row { display:flex; align-items:center; gap:0.4rem; }
+        .chk-prefix { font-size:0.85rem; font-weight:600; color:var(--text-secondary, #6B7280); flex-shrink:0; }
+
+        /* ── Bairro row ── */
+        .chk-bairro-row { display:flex; gap:0.5rem; align-items:center; }
+        .chk-btn-remove {
+          padding:0.5rem; background:#fff5f5;
+          border:1.5px solid #fee2e2; border-radius:10px;
+          cursor:pointer; display:flex; align-items:center; justify-content:center;
+          color:var(--error, #EF4444); transition:all 0.15s; flex-shrink:0;
+        }
+        .chk-btn-remove:hover { background:#fee2e2; border-color:#fca5a5; }
+
+        /* ── Botão add ── */
+        .chk-btn-add {
+          display:inline-flex; align-items:center; gap:5px;
+          padding:0.45rem 0.95rem;
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          color:#fff; border:none; border-radius:50px;
+          font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:700;
+          cursor:pointer; white-space:nowrap;
+          box-shadow:0 2px 8px rgba(255,111,169,0.3);
+          transition:transform 0.15s, box-shadow 0.15s;
+        }
+        .chk-btn-add:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(255,111,169,0.4); }
+
+        /* ── Toggle ── */
+        .chk-toggle-row { display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+        .chk-toggle-label { margin:0; font-size:0.86rem; font-weight:600; color:var(--text-primary, #374151); }
+        .chk-toggle-sub { margin:0.1rem 0 0; font-size:0.72rem; color:var(--text-muted, #9CA3AF); }
+        .chk-toggle { position:relative; display:inline-block; width:44px; height:24px; flex-shrink:0; }
+        .chk-toggle input { opacity:0; width:0; height:0; }
+        .chk-toggle-slider {
+          position:absolute; cursor:pointer; inset:0;
+          background:var(--border, #E9E9EE); border-radius:24px; transition:0.25s;
+        }
+        .chk-toggle-slider:before {
+          content:""; position:absolute; height:18px; width:18px;
+          left:3px; bottom:3px; background:var(--bg-card, #FFFFFF);
+          border-radius:50%; transition:0.25s;
+          box-shadow:0 1px 3px rgba(0,0,0,0.2);
+        }
+        .chk-toggle input:checked + .chk-toggle-slider {
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+        }
+        .chk-toggle input:checked + .chk-toggle-slider:before { transform:translateX(20px); }
+
+        /* ── Prazo agendamento ── */
+        .chk-prazo-row {
+          display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;
+          font-size:0.84rem; font-weight:500; color:var(--text-primary, #374151);
+          padding:0.7rem 0.85rem; background:var(--primary-light, #FFF1F7);
+          border-radius:12px; border:1px dashed rgba(255,111,169,0.35);
+        }
+
+        /* ── Cupons empty ── */
+        .chk-cupons-empty {
+          display:flex; flex-direction:column; align-items:center; gap:0.6rem;
+          padding:1.5rem 1rem; text-align:center;
+          background:var(--bg-body, #F7F7F8);
+          border-radius:14px; border:1.5px dashed var(--border, #E9E9EE);
+        }
+        .chk-cupons-empty-icon {
+          width:46px; height:46px; border-radius:50%;
+          background:var(--primary-light, #FFF1F7);
+          color:var(--primary, #FF6FA9);
+          display:flex; align-items:center; justify-content:center;
+        }
+        .chk-cupons-empty-text {
+          margin:0; font-size:0.8rem; color:var(--text-secondary, #6B7280);
+          max-width:240px; line-height:1.4;
+        }
+        .chk-cupons-empty-text strong { color:var(--primary-dark, #F85A9A); font-weight:700; }
+
+        /* ── Cupom card ── */
+        .chk-cupom-card {
+          padding:0.9rem; background:var(--bg-card, #FFFFFF);
+          border:1.5px solid var(--border, #E9E9EE); border-radius:14px;
+          display:flex; flex-direction:column; gap:0.65rem;
+          transition:all 0.18s; position:relative; overflow:hidden;
+        }
+        .chk-cupom-card::before {
+          content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+        }
+        .chk-cupom-card--inactive { opacity:0.6; }
+        .chk-cupom-card--inactive::before { background:var(--text-muted, #9CA3AF); }
+
+        .chk-cupom-top { display:flex; align-items:center; gap:0.5rem; padding-left:0.35rem; }
+        .chk-cupom-tag {
+          width:28px; height:28px; border-radius:8px;
+          background:var(--primary-light, #FFF1F7);
+          color:var(--primary, #FF6FA9);
+          display:flex; align-items:center; justify-content:center;
+          flex-shrink:0;
+        }
+        .chk-cupom-codigo {
+          flex:1; padding:0.5rem 0.65rem; background:transparent;
+          border:1.5px dashed var(--border, #E9E9EE);
+          border-radius:8px; outline:none;
+          font-family:'Geist Mono', ui-monospace, monospace;
+          font-size:0.95rem; font-weight:800; letter-spacing:0.08em;
+          color:var(--primary-dark, #F85A9A); text-transform:uppercase;
+        }
+        .chk-cupom-codigo:focus { border-color:var(--primary, #FF6FA9); border-style:solid; background:var(--primary-light, #FFF1F7); }
+        .chk-cupom-codigo::placeholder { color:var(--text-muted, #9CA3AF); letter-spacing:0.05em; }
+
+        .chk-cupom-row { display:flex; gap:0.5rem; padding-left:0.35rem; }
+        .chk-cupom-select { width:auto; padding-right:1.8rem; cursor:pointer; }
+
+        .chk-cupom-footer {
+          display:flex; justify-content:space-between; align-items:center;
+          padding-top:0.55rem; padding-left:0.35rem;
+          border-top:1px dashed var(--border, #E9E9EE);
+        }
+        .chk-cupom-ativo {
+          display:flex; align-items:center; gap:0.5rem;
+          font-size:0.78rem; font-weight:600;
+          color:var(--text-primary, #374151); cursor:pointer;
+        }
+        .chk-cupom-remove {
+          display:inline-flex; align-items:center; gap:4px;
+          background:none; border:none; padding:4px 8px; border-radius:8px;
+          font-size:0.76rem; font-weight:600;
+          color:var(--error, #EF4444); cursor:pointer;
+          transition:background 0.15s;
+        }
+        .chk-cupom-remove:hover { background:#fee2e2; }
+
+        .chk-spinner { width:32px; height:32px; border:3px solid var(--primary-light, #FFF1F7); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:chkspin 0.7s linear infinite; display:inline-block; }
+      `}</style>
     </>
   )
 }
