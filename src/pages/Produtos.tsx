@@ -96,6 +96,15 @@ export default function Produtos() {
   const [cropSlot, setCropSlot] = useState(0);
   const [viewMode, setViewMode] = useState<"grid" | "lista">(() => (localStorage.getItem("prod_viewMode") as "grid" | "lista") || "grid");
   const [buscaTexto, setBuscaTexto] = useState("");
+
+  // Ficha técnica (CMV)
+  type Insumo = { id: string; nome: string; unidade: string; custo_unitario: number; imagem_url?: string };
+  type FichaItem = { insumo_id: string; quantidade: number; insumo?: Insumo };
+  const [insumosCadastrados, setInsumosCadastrados] = useState<Insumo[]>([]);
+  const [fichaTecnica, setFichaTecnica] = useState<FichaItem[]>([]);
+  const [showInsumoPicker, setShowInsumoPicker] = useState(false);
+  const [buscaInsumo, setBuscaInsumo] = useState("");
+
   const imgRef = useRef<HTMLInputElement>(null);
   const img2Ref = useRef<HTMLInputElement>(null);
   const img3Ref = useRef<HTMLInputElement>(null);
@@ -108,10 +117,16 @@ export default function Produtos() {
       setUserId(user.id);
       await loadProdutos(user.id);
       await loadCategorias(user.id);
+      await loadInsumos(user.id);
       setLoading(false);
     };
     load();
   }, []);
+
+  const loadInsumos = async (uid: string) => {
+    const { data } = await supabase.from("insumos").select("id, nome, unidade, custo_unitario, imagem_url").eq("user_id", uid).order("nome");
+    if (data) setInsumosCadastrados(data as Insumo[]);
+  };
 
   const loadProdutos = async (uid: string) => {
     const { data } = await supabase.from("produtos").select("*").eq("user_id", uid).order("created_at", { ascending: false });
@@ -123,9 +138,26 @@ export default function Produtos() {
     if (data) setCategorias(data.map((c: any) => c.nome));
   };
 
-  const openNovo = () => { setForm(EMPTY); setModal(true); };
-  const openEditar = (p: Produto) => { setForm({ ...EMPTY, ...p }); setModal(true); };
-  const fecharModal = () => { setModal(false); setForm(EMPTY); };
+  const openNovo = () => { setForm(EMPTY); setFichaTecnica([]); setModal(true); };
+  const openEditar = async (p: Produto) => {
+    setForm({ ...EMPTY, ...p });
+    setFichaTecnica([]);
+    setModal(true);
+    if (p.id && userId) {
+      const { data } = await supabase
+        .from("produto_insumos")
+        .select("insumo_id, quantidade, insumos(id, nome, unidade, custo_unitario, imagem_url)")
+        .eq("produto_id", p.id);
+      if (data) {
+        setFichaTecnica(data.map((d: any) => ({
+          insumo_id: d.insumo_id,
+          quantidade: Number(d.quantidade) || 0,
+          insumo: d.insumos as Insumo,
+        })));
+      }
+    }
+  };
+  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setShowInsumoPicker(false); setBuscaInsumo(""); };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: number = 0) => {
     const file = e.target.files?.[0];
@@ -168,11 +200,25 @@ export default function Produtos() {
     if (!form.preco_normal || form.preco_normal <= 0) return alert("Preço deve ser maior que zero");
     setSaving(true);
     const payload = { ...form, updated_at: new Date().toISOString() };
+    let produtoId = form.id;
     if (form.id) {
       await supabase.from("produtos").update(payload).eq("id", form.id);
     } else {
-      await supabase.from("produtos").insert({ ...payload, user_id: userId });
+      const { data: novo } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
+      produtoId = novo?.id;
     }
+
+    // Persistir ficha técnica
+    if (produtoId && userId) {
+      await supabase.from("produto_insumos").delete().eq("produto_id", produtoId);
+      const itens = fichaTecnica
+        .filter(f => f.insumo_id && f.quantidade > 0)
+        .map(f => ({ user_id: userId, produto_id: produtoId, insumo_id: f.insumo_id, quantidade: f.quantidade }));
+      if (itens.length > 0) {
+        await supabase.from("produto_insumos").insert(itens);
+      }
+    }
+
     await loadProdutos(userId);
     setSaving(false);
     fecharModal();
@@ -210,6 +256,31 @@ export default function Produtos() {
   const removeOpcao = (campo: "massas_disponiveis" | "recheios_disponiveis" | "coberturas_disponiveis", idx: number) => {
     setForm(f => ({ ...f, [campo]: (f[campo] || []).filter((_: string, i: number) => i !== idx) }));
   };
+
+  // ── Ficha técnica ─────────────────────────────────────────
+  const adicionarInsumoFicha = (ins: Insumo) => {
+    if (fichaTecnica.some(f => f.insumo_id === ins.id)) {
+      alert("Esse insumo já está na ficha técnica");
+      return;
+    }
+    setFichaTecnica(prev => [...prev, { insumo_id: ins.id, quantidade: 0, insumo: ins }]);
+    setShowInsumoPicker(false);
+    setBuscaInsumo("");
+  };
+  const removerInsumoFicha = (id: string) => {
+    setFichaTecnica(prev => prev.filter(f => f.insumo_id !== id));
+  };
+  const atualizarQtdFicha = (id: string, qtd: number) => {
+    setFichaTecnica(prev => prev.map(f => f.insumo_id === id ? { ...f, quantidade: qtd } : f));
+  };
+
+  const cmvProduto = fichaTecnica.reduce(
+    (s, f) => s + (f.quantidade * (f.insumo?.custo_unitario || 0)),
+    0
+  );
+  const margemProduto = form.preco_normal > 0
+    ? ((form.preco_normal - cmvProduto) / form.preco_normal) * 100
+    : 0;
 
   const addTamanho = () => {
     if (!novoTamanho.label.trim() || !novoTamanho.preco) return;
@@ -885,6 +956,125 @@ export default function Produtos() {
                 )}
               </div>
 
+              {/* Ficha técnica (CMV) */}
+              <div className="prod-section">
+                <p className="prod-section-label">🧪 Ficha técnica <span style={{ fontSize: "0.65rem", color: "var(--text-muted, #9CA3AF)", fontWeight: 500, marginLeft: 4 }}>· custo de produção</span></p>
+
+                {fichaTecnica.length === 0 && !showInsumoPicker && (
+                  <div className="ficha-empty">
+                    <div className="ficha-empty-icon">🧪</div>
+                    <p className="ficha-empty-text">
+                      Adicione os insumos usados pra fazer <strong>1 unidade</strong> deste produto.<br />
+                      Vamos calcular o custo e a margem sozinhos!
+                    </p>
+                  </div>
+                )}
+
+                {fichaTecnica.length > 0 && (
+                  <div className="ficha-list">
+                    {fichaTecnica.map(f => {
+                      const ins = f.insumo;
+                      if (!ins) return null;
+                      const custoLinha = f.quantidade * (ins.custo_unitario || 0);
+                      return (
+                        <div key={f.insumo_id} className="ficha-row">
+                          {ins.imagem_url
+                            ? <img src={ins.imagem_url} alt={ins.nome} className="ficha-row-img" />
+                            : <div className="ficha-row-img ficha-row-img--placeholder">🥣</div>}
+                          <div className="ficha-row-info">
+                            <p className="ficha-row-nome">{ins.nome}</p>
+                            <p className="ficha-row-sub">R$ {(ins.custo_unitario || 0).toFixed(4)} / {ins.unidade}</p>
+                          </div>
+                          <div className="ficha-row-qtd">
+                            <input
+                              type="number"
+                              value={f.quantidade || ""}
+                              onChange={e => atualizarQtdFicha(f.insumo_id, parseFloat(e.target.value) || 0)}
+                              step="any"
+                              min="0"
+                              placeholder="0"
+                            />
+                            <span>{ins.unidade}</span>
+                          </div>
+                          <div className="ficha-row-custo">R$ {custoLinha.toFixed(2)}</div>
+                          <button className="ficha-row-del" onClick={() => removerInsumoFicha(f.insumo_id)} aria-label="Remover">✕</button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {!showInsumoPicker ? (
+                  insumosCadastrados.length === 0 ? (
+                    <div className="ficha-no-insumos">
+                      <p>Você ainda não cadastrou insumos. <a href="/insumos" style={{ color: "var(--primary, #FF6FA9)", fontWeight: 700 }}>Cadastrar agora →</a></p>
+                    </div>
+                  ) : (
+                    <button type="button" className="ficha-btn-add" onClick={() => setShowInsumoPicker(true)}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                      Adicionar insumo
+                    </button>
+                  )
+                ) : (
+                  <div className="ficha-picker">
+                    <input
+                      type="text"
+                      className="ficha-picker-search"
+                      placeholder="Buscar insumo..."
+                      value={buscaInsumo}
+                      onChange={e => setBuscaInsumo(e.target.value)}
+                      autoFocus
+                    />
+                    <div className="ficha-picker-list">
+                      {insumosCadastrados
+                        .filter(i => !fichaTecnica.some(f => f.insumo_id === i.id))
+                        .filter(i => i.nome.toLowerCase().includes(buscaInsumo.toLowerCase()))
+                        .map(i => (
+                          <button key={i.id} type="button" className="ficha-picker-item" onClick={() => adicionarInsumoFicha(i)}>
+                            {i.imagem_url
+                              ? <img src={i.imagem_url} alt={i.nome} className="ficha-row-img" />
+                              : <div className="ficha-row-img ficha-row-img--placeholder">🥣</div>}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p className="ficha-row-nome">{i.nome}</p>
+                              <p className="ficha-row-sub">R$ {(i.custo_unitario || 0).toFixed(4)} / {i.unidade}</p>
+                            </div>
+                          </button>
+                        ))}
+                      {insumosCadastrados.filter(i => !fichaTecnica.some(f => f.insumo_id === i.id) && i.nome.toLowerCase().includes(buscaInsumo.toLowerCase())).length === 0 && (
+                        <p style={{ textAlign: "center", color: "var(--text-muted, #9CA3AF)", fontSize: "0.78rem", padding: "0.85rem 0", margin: 0 }}>
+                          Nenhum insumo encontrado
+                        </p>
+                      )}
+                    </div>
+                    <button type="button" className="ficha-picker-close" onClick={() => { setShowInsumoPicker(false); setBuscaInsumo(""); }}>
+                      Fechar
+                    </button>
+                  </div>
+                )}
+
+                {fichaTecnica.length > 0 && (
+                  <div className="ficha-resumo">
+                    <div className="ficha-resumo-row">
+                      <span>Custo de produção (CMV)</span>
+                      <strong>R$ {cmvProduto.toFixed(2)}</strong>
+                    </div>
+                    <div className="ficha-resumo-row">
+                      <span>Preço de venda</span>
+                      <strong>R$ {form.preco_normal.toFixed(2)}</strong>
+                    </div>
+                    <div className={`ficha-resumo-margem ficha-resumo-margem--${margemProduto >= 50 ? "alto" : margemProduto >= 25 ? "medio" : "baixo"}`}>
+                      <span>Margem de lucro</span>
+                      <strong>{margemProduto.toFixed(0)}%</strong>
+                    </div>
+                    {margemProduto < 25 && form.preco_normal > 0 && (
+                      <p className="ficha-alerta">
+                        ⚠️ Margem baixa. Considere reajustar o preço ou revisar a ficha.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Status */}
               <div className="prod-section">
                 <p className="prod-section-label">📋 Status</p>
@@ -1250,6 +1440,160 @@ export default function Produtos() {
           flex-direction: column;
           gap: 0.65rem;
         }
+        /* ── Ficha técnica (CMV) ── */
+        .ficha-empty {
+          display:flex; flex-direction:column; align-items:center; gap:0.5rem;
+          padding:1.1rem 0.95rem; background:var(--bg-body, #F7F7F8);
+          border-radius:12px; border:1.5px dashed var(--border, #E9E9EE);
+          text-align:center;
+        }
+        .ficha-empty-icon { font-size:1.6rem; }
+        .ficha-empty-text { margin:0; font-size:0.78rem; color:var(--text-secondary, #6B7280); line-height:1.45; max-width:300px; }
+        .ficha-empty-text strong { color:var(--primary, #FF6FA9); font-weight:700; }
+
+        .ficha-list { display:flex; flex-direction:column; gap:0.4rem; }
+        .ficha-row {
+          display:flex; align-items:center; gap:0.55rem;
+          padding:0.55rem 0.65rem; background:var(--bg-card, #FFFFFF);
+          border:1px solid var(--border, #E9E9EE); border-radius:12px;
+        }
+        .ficha-row-img {
+          width:34px; height:34px; border-radius:9px;
+          object-fit:cover; flex-shrink:0;
+          background:var(--bg-body, #F7F7F8);
+        }
+        .ficha-row-img--placeholder { display:flex; align-items:center; justify-content:center; font-size:1rem; }
+        .ficha-row-info { flex:1; min-width:0; }
+        .ficha-row-nome {
+          font-size:0.84rem; font-weight:600; color:var(--text-title, #1F2937);
+          margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        .ficha-row-sub { font-size:0.7rem; color:var(--text-muted, #9CA3AF); margin:1px 0 0; }
+        .ficha-row-qtd {
+          display:flex; align-items:center; gap:4px;
+          padding:5px 8px; background:var(--bg-body, #F7F7F8);
+          border-radius:8px; border:1.5px solid var(--border, #E9E9EE);
+          transition:border-color 0.15s;
+        }
+        .ficha-row-qtd:focus-within { border-color:var(--primary, #FF6FA9); }
+        .ficha-row-qtd input {
+          width:54px; border:none; outline:none; background:transparent;
+          font-family:inherit; font-size:0.85rem; font-weight:700;
+          color:var(--text-title, #1F2937); text-align:right;
+          -moz-appearance:textfield;
+        }
+        .ficha-row-qtd input::-webkit-outer-spin-button,
+        .ficha-row-qtd input::-webkit-inner-spin-button {
+          -webkit-appearance:none; margin:0;
+        }
+        .ficha-row-qtd span { font-size:0.72rem; color:var(--text-secondary, #6B7280); font-weight:600; }
+        .ficha-row-custo {
+          font-size:0.85rem; font-weight:800;
+          color:var(--primary-dark, #F85A9A);
+          min-width:64px; text-align:right;
+          font-variant-numeric:tabular-nums;
+        }
+        .ficha-row-del {
+          width:26px; height:26px; border-radius:50%;
+          background:var(--bg-body, #F7F7F8); border:none;
+          color:var(--text-muted, #9CA3AF);
+          cursor:pointer; font-size:0.7rem;
+          transition:all 0.15s; flex-shrink:0;
+        }
+        .ficha-row-del:hover { background:#fee2e2; color:var(--error, #EF4444); }
+
+        .ficha-no-insumos {
+          padding:0.85rem; background:var(--primary-light, #FFF1F7);
+          border-radius:12px; text-align:center;
+          font-size:0.8rem; color:var(--text-secondary, #6B7280);
+        }
+        .ficha-no-insumos p { margin:0; }
+
+        .ficha-btn-add {
+          display:inline-flex; align-items:center; gap:5px;
+          align-self:flex-start;
+          padding:0.55rem 1rem;
+          background:var(--primary-light, #FFF1F7);
+          color:var(--primary, #FF6FA9);
+          border:1.5px dashed var(--primary, #FF6FA9);
+          border-radius:50px;
+          font-family:inherit; font-size:0.8rem; font-weight:700;
+          cursor:pointer; transition:all 0.15s;
+        }
+        .ficha-btn-add:hover {
+          background:var(--primary, #FF6FA9); color:#fff; border-style:solid;
+          box-shadow:0 3px 10px rgba(255,111,169,0.3);
+        }
+
+        .ficha-picker {
+          display:flex; flex-direction:column; gap:0.55rem;
+          padding:0.85rem; background:var(--primary-light, #FFF1F7);
+          border:1.5px solid var(--primary, #FF6FA9); border-radius:14px;
+        }
+        .ficha-picker-search {
+          width:100%; padding:0.55rem 0.85rem;
+          border:1.5px solid var(--border, #E9E9EE); border-radius:10px;
+          font-family:inherit; font-size:0.85rem; outline:none;
+          background:var(--bg-card, #FFFFFF); box-sizing:border-box;
+        }
+        .ficha-picker-search:focus { border-color:var(--primary, #FF6FA9); }
+        .ficha-picker-list {
+          display:flex; flex-direction:column; gap:4px;
+          max-height:200px; overflow-y:auto;
+        }
+        .ficha-picker-item {
+          display:flex; align-items:center; gap:0.55rem;
+          padding:0.55rem 0.65rem;
+          background:var(--bg-card, #FFFFFF);
+          border:1.5px solid transparent; border-radius:10px;
+          cursor:pointer; text-align:left;
+          font-family:inherit; transition:all 0.15s;
+        }
+        .ficha-picker-item:hover {
+          border-color:var(--primary, #FF6FA9);
+          transform:translateY(-1px);
+          box-shadow:0 3px 10px rgba(255,111,169,0.15);
+        }
+        .ficha-picker-close {
+          align-self:flex-end;
+          padding:0.4rem 1rem;
+          background:var(--bg-card, #FFFFFF);
+          border:1px solid var(--border, #E9E9EE); border-radius:50px;
+          font-family:inherit; font-size:0.76rem; font-weight:600;
+          color:var(--text-secondary, #6B7280); cursor:pointer;
+        }
+
+        .ficha-resumo {
+          padding:0.85rem 1rem;
+          background:linear-gradient(135deg, #FFE4F0 0%, #FFF1F7 100%);
+          border:1px solid rgba(255,111,169,0.25);
+          border-radius:14px;
+          display:flex; flex-direction:column; gap:0.4rem;
+        }
+        .ficha-resumo-row {
+          display:flex; justify-content:space-between; align-items:center;
+          font-size:0.82rem; color:var(--text-primary, #374151);
+        }
+        .ficha-resumo-row strong {
+          color:var(--text-title, #1F2937); font-weight:800;
+          font-variant-numeric:tabular-nums;
+        }
+        .ficha-resumo-margem {
+          display:flex; justify-content:space-between; align-items:center;
+          padding:0.55rem 0.85rem; margin-top:0.25rem;
+          border-radius:10px;
+          font-size:0.9rem; font-weight:700;
+        }
+        .ficha-resumo-margem strong { font-size:1.05rem; font-weight:800; }
+        .ficha-resumo-margem--alto { background:#dcfce7; color:#15803d; }
+        .ficha-resumo-margem--medio { background:#fef3c7; color:#a16207; }
+        .ficha-resumo-margem--baixo { background:#fee2e2; color:#b91c1c; }
+        .ficha-alerta {
+          margin:0; padding:0.55rem 0.85rem;
+          background:#fef3c7; color:#92400e;
+          border-radius:10px; font-size:0.76rem; font-weight:600;
+        }
+
       `}</style>
     </div>
     </>

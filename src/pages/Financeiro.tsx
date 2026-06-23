@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase"
 import {
   CurrencyDollar, TrendUp, TrendDown, Wallet, ChartBar, Receipt, Plus,
   CaretLeft, CaretRight, X, ShoppingCartSimple, PencilSimple, Trash,
-  CalendarBlank, Tag, Target, DownloadSimple, FileCsv, FilePdf, Sparkle
+  CalendarBlank, Tag, Target, DownloadSimple, FileCsv, FilePdf, Sparkle, Package, Warning
 } from "@phosphor-icons/react"
 
 type Movimentacao = {
@@ -17,6 +17,9 @@ type Movimentacao = {
   categoria?: string
   pedido_numero?: number
   cliente_nome?: string
+  cmv?: number          // custo da mercadoria vendida
+  margem?: number       // % de margem
+  semFicha?: boolean    // pedido tem produtos sem ficha técnica
 }
 
 const CATEGORIAS_SAIDA = [
@@ -91,28 +94,65 @@ export default function Financeiro() {
     const fim = new Date(m.getFullYear(), m.getMonth() + 1, 0).toISOString().slice(0, 10)
 
     // 1) Pedidos PAGOS no mês (status_pagamento = 'pago' OU status = 'concluido')
+    //    Buscamos junto os itens pra calcular CMV
     const { data: pedidos } = await supabase
       .from("pedidos")
-      .select("id, numero, cliente_nome, valor_total, data_entrega, status, status_pagamento")
+      .select("id, numero, cliente_nome, valor_total, data_entrega, status, status_pagamento, pedido_itens(nome_produto, quantidade, produtos(id))")
       .eq("user_id", uid)
       .gte("data_entrega", ini)
       .lte("data_entrega", fim)
 
-    const pedidosPagos: Movimentacao[] = (pedidos || [])
-      .filter((p: any) =>
-        (p.status_pagamento === "pago") ||
-        (p.status === "concluido" && p.status_pagamento !== "estornado")
+    const pedidosPagosRaw = (pedidos || []).filter((p: any) =>
+      (p.status_pagamento === "pago") ||
+      (p.status === "concluido" && p.status_pagamento !== "estornado")
+    )
+
+    // 2) Pré-carrega ficha técnica de todos os produtos envolvidos
+    const produtoIds = Array.from(new Set(
+      pedidosPagosRaw.flatMap((p: any) =>
+        (p.pedido_itens || []).map((it: any) => it.produtos?.id).filter(Boolean)
       )
-      .map((p: any) => ({
+    )) as string[]
+
+    let fichaPorProduto: Record<string, number> = {} // produto_id -> custo unitário (CMV)
+    if (produtoIds.length > 0) {
+      const { data: fichas } = await supabase
+        .from("produto_insumos")
+        .select("produto_id, quantidade, insumos(custo_unitario)")
+        .in("produto_id", produtoIds)
+
+      ;(fichas || []).forEach((f: any) => {
+        const custo = (Number(f.quantidade) || 0) * (Number(f.insumos?.custo_unitario) || 0)
+        fichaPorProduto[f.produto_id] = (fichaPorProduto[f.produto_id] || 0) + custo
+      })
+    }
+
+    const pedidosPagos: Movimentacao[] = pedidosPagosRaw.map((p: any) => {
+      let cmv = 0
+      let semFicha = false
+      ;(p.pedido_itens || []).forEach((it: any) => {
+        const prodId = it.produtos?.id
+        if (!prodId) { semFicha = true; return }
+        const custoUnit = fichaPorProduto[prodId]
+        if (custoUnit == null || custoUnit === 0) { semFicha = true; return }
+        cmv += custoUnit * (Number(it.quantidade) || 0)
+      })
+      const valor = Number(p.valor_total) || 0
+      const margem = valor > 0 && cmv > 0 ? ((valor - cmv) / valor) * 100 : 0
+      return {
         id: `pedido_${p.id}`,
         origem: "pedido",
         tipo: "entrada",
         data: p.data_entrega,
-        valor: Number(p.valor_total) || 0,
+        valor,
         descricao: `Pedido #${p.numero} — ${p.cliente_nome || "Cliente"}`,
         pedido_numero: p.numero,
         cliente_nome: p.cliente_nome,
-      }))
+        cmv,
+        margem,
+        semFicha,
+      }
+    })
 
     // 2) Movimentações manuais no mês
     const { data: manuais } = await supabase
@@ -193,6 +233,11 @@ export default function Financeiro() {
     [todasMovs]
   )
   const lucro = entradas - saidas
+  const cmvTotal = useMemo(
+    () => movsPedidos.reduce((s, m) => s + (m.cmv || 0), 0),
+    [movsPedidos]
+  )
+  const lucroReal = entradas - saidas - cmvTotal
   const ticketMedio = useMemo(() => {
     const ped = movsPedidos.length
     return ped > 0 ? movsPedidos.reduce((s, m) => s + m.valor, 0) / ped : 0
@@ -513,13 +558,26 @@ export default function Financeiro() {
             </div>
           </div>
 
+          <div className="fin-summary-card fin-card--cmv">
+            <div className="fin-card-icon"><Package size={20} weight="bold" /></div>
+            <div>
+              <p className="fin-card-label">Custo (CMV)</p>
+              <p className="fin-card-value">{fmtMoney(cmvTotal)}</p>
+            </div>
+          </div>
+
           <div className="fin-summary-card fin-card--lucro">
             <div className="fin-card-icon"><Wallet size={20} weight="bold" /></div>
             <div>
-              <p className="fin-card-label">Lucro líquido</p>
-              <p className="fin-card-value" style={{ color: lucro >= 0 ? "var(--success, #22C55E)" : "var(--error, #EF4444)" }}>
-                {fmtMoney(lucro)}
+              <p className="fin-card-label">Lucro real</p>
+              <p className="fin-card-value" style={{ color: lucroReal >= 0 ? "var(--success, #22C55E)" : "var(--error, #EF4444)" }}>
+                {fmtMoney(lucroReal)}
               </p>
+              {cmvTotal > 0 && (
+                <p style={{ fontSize: "0.66rem", color: "var(--text-muted, #9CA3AF)", margin: "1px 0 0", fontWeight: 500 }}>
+                  bruto: {fmtMoney(lucro)}
+                </p>
+              )}
             </div>
           </div>
 
@@ -669,6 +727,16 @@ export default function Financeiro() {
                       <span className="fin-item-tag"><CalendarBlank size={10} weight="bold" /> {fmtData(m.data)}</span>
                       {m.categoria && <span className="fin-item-tag"><Tag size={10} weight="bold" /> {m.categoria}</span>}
                       {m.origem === "pedido" && <span className="fin-item-tag fin-item-tag--auto">automático</span>}
+                      {m.origem === "pedido" && m.cmv !== undefined && m.cmv > 0 && m.margem !== undefined && (
+                        <span className={`fin-item-tag fin-item-tag--margem fin-item-tag--margem-${m.margem >= 50 ? "alto" : m.margem >= 25 ? "medio" : "baixo"}`}>
+                          margem {m.margem.toFixed(0)}%
+                        </span>
+                      )}
+                      {m.origem === "pedido" && m.semFicha && (
+                        <span className="fin-item-tag fin-item-tag--alerta">
+                          <Warning size={10} weight="bold" /> ficha incompleta
+                        </span>
+                      )}
                     </div>
                   </div>
                   <p className="fin-item-valor">{fmtMoney(m.valor)}</p>
@@ -847,6 +915,7 @@ export default function Financeiro() {
         }
         .fin-card--receita::before { background:radial-gradient(circle, rgba(34,197,94,0.18), transparent 70%); }
         .fin-card--despesa::before { background:radial-gradient(circle, rgba(239,68,68,0.18), transparent 70%); }
+        .fin-card--cmv::before     { background:radial-gradient(circle, rgba(245,158,11,0.18), transparent 70%); }
         .fin-card--lucro::before   { background:radial-gradient(circle, rgba(255,111,169,0.22), transparent 70%); }
         .fin-card--ticket::before  { background:radial-gradient(circle, rgba(99,102,241,0.18), transparent 70%); }
 
@@ -859,6 +928,7 @@ export default function Financeiro() {
         }
         .fin-card--receita .fin-card-icon { background:linear-gradient(135deg,#22c55e,#16a34a); box-shadow:0 4px 12px rgba(34,197,94,0.3); }
         .fin-card--despesa .fin-card-icon { background:linear-gradient(135deg,#ef4444,#dc2626); box-shadow:0 4px 12px rgba(239,68,68,0.3); }
+        .fin-card--cmv .fin-card-icon     { background:linear-gradient(135deg,#f59e0b,#d97706); box-shadow:0 4px 12px rgba(245,158,11,0.3); }
         .fin-card--lucro .fin-card-icon   { background:linear-gradient(135deg,#FF6FA9,#F85A9A); box-shadow:0 4px 12px rgba(255,111,169,0.35); }
         .fin-card--ticket .fin-card-icon  { background:linear-gradient(135deg,#6366f1,#4f46e5); box-shadow:0 4px 12px rgba(99,102,241,0.3); }
 
@@ -1003,6 +1073,11 @@ export default function Financeiro() {
           color:var(--primary-dark, #F85A9A);
           border-color:rgba(255,111,169,0.3);
         }
+        .fin-item-tag--margem { font-weight:700; }
+        .fin-item-tag--margem-alto { background:#dcfce7; color:#15803d; border-color:#bbf7d0; }
+        .fin-item-tag--margem-medio { background:#fef3c7; color:#a16207; border-color:#fde68a; }
+        .fin-item-tag--margem-baixo { background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
+        .fin-item-tag--alerta { background:#fef3c7; color:#92400e; border-color:#fde68a; font-weight:600; }
         .fin-item-valor {
           font-size:1rem; font-weight:800; margin:0; white-space:nowrap;
           font-variant-numeric:tabular-nums;
