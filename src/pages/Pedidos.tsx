@@ -1,6 +1,5 @@
 // v2: excluir pedido + modal 3 secoes + imagem_url
 import { useState, useEffect } from 'react'
-import PedidosKanban from '@/pages/PedidosKanban'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -650,7 +649,7 @@ export default function Pedidos() {
   const isMobile = useIsMobile()
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [loading, setLoading] = useState(true)
-  const [view, setView] = useState<'lista' | 'kanban'>('lista')
+
   const [busca, setBusca] = useState('')
   const [showFiltro, setShowFiltro] = useState(false)
   const [statusSelecionados, setStatusSelecionados] = useState<string[]>(STATUS_PADRAO)
@@ -730,18 +729,6 @@ export default function Pedidos() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-          {/* Toggle lista/kanban — só desktop */}
-          {!isMobile && (
-            <div style={{ display: 'flex', background: 'var(--bg-card,#fff)', border: '1.5px solid var(--border,#ECC2D0)', borderRadius: 10, padding: 3, gap: 2 }}>
-              <button onClick={() => setView('lista')} title="Lista" style={{ padding: '0.35rem 0.6rem', borderRadius: 7, border: 'none', cursor: 'pointer', background: view === 'lista' ? 'var(--primary,#986274)' : 'transparent', color: view === 'lista' ? 'white' : 'var(--text-secondary,#6E3548)', transition: 'all 0.15s' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-              </button>
-              <button onClick={() => setView('kanban')} title="Kanban" style={{ padding: '0.35rem 0.6rem', borderRadius: 7, border: 'none', cursor: 'pointer', background: view === 'kanban' ? 'var(--primary,#986274)' : 'transparent', color: view === 'kanban' ? 'white' : 'var(--text-secondary,#6E3548)', transition: 'all 0.15s' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/></svg>
-              </button>
-            </div>
-          )}
-
           {/* Botão filtro */}
           <button
             onClick={() => setShowFiltro(true)}
@@ -762,12 +749,7 @@ export default function Pedidos() {
         </div>
       </div>
 
-      {/* Kanban — só desktop */}
-      {!isMobile && view === 'kanban' && (
-        <PedidosKanban pedidos={pedidos} onStatusChange={updateStatus} onNovo={() => navigate('/pedidos/novo')} />
-      )}
-
-      {(isMobile || view === 'lista') && (
+      {(
         <>
           {/* Busca */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-card,#fff)', border: '1.5px solid var(--border,#ECC2D0)', borderRadius: 12, padding: '0.6rem 0.9rem' }}>
