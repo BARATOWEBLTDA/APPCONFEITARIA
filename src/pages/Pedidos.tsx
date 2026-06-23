@@ -785,6 +785,53 @@ export default function Pedidos() {
             )}
           </div>
 
+          {/* Cards de métricas — só desktop */}
+          {!isMobile && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+              {[
+                {
+                  label: 'Total de pedidos',
+                  value: pedidos.length,
+                  sub: 'Todos os registros',
+                  icon: '📋',
+                  color: '#534AB7', bg: '#EEEDFE'
+                },
+                {
+                  label: 'Faturamento',
+                  value: pedidos.reduce((acc, p) => acc + (p.valor_total || 0), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+                  sub: 'Valor total dos pedidos',
+                  icon: '💰',
+                  color: '#0F6E56', bg: '#E1F5EE'
+                },
+                {
+                  label: 'Concluídos',
+                  value: pedidos.filter(p => ['concluido','entregue'].includes(p.status)).length,
+                  sub: 'Pedidos finalizados',
+                  icon: '✅',
+                  color: '#14532d', bg: '#dcfce7'
+                },
+                {
+                  label: 'Em produção',
+                  value: pedidos.filter(p => p.status === 'em_producao').length,
+                  sub: 'No momento',
+                  icon: '🎂',
+                  color: '#854F0B', bg: '#FAEEDA'
+                },
+              ].map((card, i) => (
+                <div key={i} style={{ background: 'var(--bg-card,#fff)', border: '1.5px solid var(--border,#ECC2D0)', borderRadius: 14, padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem', flexShrink: 0 }}>
+                    {card.icon}
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted,#C39EAA)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 2px' }}>{card.label}</p>
+                    <p style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-title,#431524)', margin: 0, letterSpacing: '-0.02em' }}>{card.value}</p>
+                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted,#C39EAA)', margin: '1px 0 0' }}>{card.sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Lista */}
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
