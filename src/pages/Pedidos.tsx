@@ -308,25 +308,18 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
 
         </div>
       ) : (
-        /* ── Layout desktop: tabela limpa estilo design referência ── */
-        <div className="ped-dt-row">
-          {/* Pedido # + data criação */}
-          <div className="ped-dt-col ped-dt-col--num">
+        /* ── Layout desktop: tabela HTML real ── */
+        <tr className="ped-dt-row" onClick={() => onVerPedido(p)}>
+          <td className="ped-td">
             <span className="ped-dt-num">#{p.numero || '—'}</span>
-            <span className="ped-dt-criado">
-              {p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' · ' + new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : ''}
-            </span>
+            <span className="ped-dt-criado">{p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' · ' + new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : ''}</span>
             {p.origem === 'cardapio' && <span className="ped-dt-origem-tag">Cardápio</span>}
-          </div>
-
-          {/* Cliente */}
-          <div className="ped-dt-col ped-dt-col--cliente">
+          </td>
+          <td className="ped-td">
             <span className="ped-dt-cliente-nome">{p.cliente_nome || 'Não informado'}</span>
             {p.cliente_telefone && <span className="ped-dt-cliente-tel">{p.cliente_telefone}</span>}
-          </div>
-
-          {/* Produto */}
-          <div className="ped-dt-col ped-dt-col--produto">
+          </td>
+          <td className="ped-td">
             {primeiroItem ? (
               <div className="ped-dt-produto-row">
                 <div className="ped-dt-produto-img">
@@ -335,55 +328,30 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
                     : <span>🎂</span>}
                 </div>
                 <div>
-                  <p className="ped-dt-produto-nome">
-                    {primeiroItem.nome_produto}
-                    {outrosItens > 0 && <span className="ped-card-mais-itens"> +{outrosItens}</span>}
-                  </p>
+                  <p className="ped-dt-produto-nome">{primeiroItem.nome_produto}{outrosItens > 0 && <span className="ped-card-mais-itens"> +{outrosItens}</span>}</p>
                   <p className="ped-dt-produto-qtd">{formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</p>
                 </div>
               </div>
             ) : <span className="ped-dt-vazio">—</span>}
-          </div>
-
-          {/* Entrega */}
-          <div className="ped-dt-col ped-dt-col--entrega">
-            {dataLabel && (
-              <p className="ped-dt-data" style={{ color: dataCor }}>
-                {dataLabel}{p.horario_entrega ? ` · ${p.horario_entrega.slice(0,5)}` : ''}
-              </p>
-            )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <p className="ped-dt-tipo">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</p>
-              {temEndereco && (
-                <button type="button" className="ped-card-mapa" onClick={e => { e.stopPropagation(); onAbrirMapa(enderecoCompletoPedido(p)) }}>
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  Ver no mapa
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Status */}
-          <div className="ped-dt-col ped-dt-col--status">
+          </td>
+          <td className="ped-td">
+            {dataLabel && <p className="ped-dt-data" style={{ color: dataCor }}>{dataLabel}{p.horario_entrega ? ` · ${p.horario_entrega.slice(0,5)}` : ''}</p>}
+            <p className="ped-dt-tipo">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</p>
+          </td>
+          <td className="ped-td">
             <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
               <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
               {grupo.label}
             </span>
-          </div>
-
-          {/* Valor + pagamento */}
-          <div className="ped-dt-col ped-dt-col--valor">
+          </td>
+          <td className="ped-td">
             <p className="ped-dt-valor">{formatMoney(p.valor_total)}</p>
             <p className="ped-dt-pag" style={{ color: pagamentoCor }}>{pagamentoLabel}</p>
-          </div>
-
-          {/* Ações */}
-          <div className="ped-dt-col ped-dt-col--ver">
-            <button type="button" className="ped-dt-ver-btn" onClick={e => { e.stopPropagation(); onVerPedido(p) }}>
-              Ver detalhes
-            </button>
-          </div>
-        </div>
+          </td>
+          <td className="ped-td">
+            <button type="button" className="ped-dt-ver-btn" onClick={e => { e.stopPropagation(); onVerPedido(p) }}>Ver detalhes</button>
+          </td>
+        </tr>
       )}
 
       {(extras.length > 0 || (p.etiquetas || []).length > 0) && isMobile && (
@@ -815,21 +783,30 @@ export default function Pedidos() {
             </div>
           ) : (
             <div className={!isMobile ? 'ped-dt-wrapper' : ''} style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '0.65rem' : 0 }}>
-              {/* Cabeçalho da tabela — só desktop */}
-              {!isMobile && (
-                <div className="ped-dt-header">
-                  <div className="ped-dt-col ped-dt-col--num">Pedido</div>
-                  <div className="ped-dt-col ped-dt-col--cliente">Cliente</div>
-                  <div className="ped-dt-col ped-dt-col--produto">Produto</div>
-                  <div className="ped-dt-col ped-dt-col--entrega">Entrega</div>
-                  <div className="ped-dt-col ped-dt-col--status">Status</div>
-                  <div className="ped-dt-col ped-dt-col--valor">Valor</div>
-                  <div className="ped-dt-col ped-dt-col--ver">Ações</div>
-                </div>
+              {!isMobile ? (
+                <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
+                  <thead>
+                    <tr style={{ background: '#3d1a24' }}>
+                      <th className="ped-th">Pedido</th>
+                      <th className="ped-th">Cliente</th>
+                      <th className="ped-th">Produto</th>
+                      <th className="ped-th">Entrega</th>
+                      <th className="ped-th">Status</th>
+                      <th className="ped-th">Valor</th>
+                      <th className="ped-th">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pedidosFiltrados.map(p => (
+                      <PedidoCard key={p.id} p={p} isMobile={false} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} />
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                pedidosFiltrados.map(p => (
+                  <PedidoCard key={p.id} p={p} isMobile={true} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} />
+                ))
               )}
-              {pedidosFiltrados.map(p => (
-                <PedidoCard key={p.id} p={p} isMobile={isMobile} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} />
-              ))}
             </div>
           )}
         </>
@@ -935,42 +912,15 @@ export default function Pedidos() {
         .mp-btn-fechar { width: 100%; background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); color: var(--text-secondary,#6E3548); border-radius: 12px; padding: 0.75rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; }
 
         @media (min-width: 768px) {
-          /* Wrapper da lista vira um bloco com borda e radius */
-          .ped-dt-wrapper { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); border-radius: 14px; overflow: hidden; width: 100%; display: flex; flex-direction: column; }
+          .ped-dt-wrapper { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); border-radius: 14px; overflow: hidden; width: 100%; }
 
-          /* Cabeçalho */
-          .ped-dt-header {
-            display: grid;
-            grid-template-columns: 130px 160px 1fr 150px 110px 120px 120px;
-            align-items: center;
-            padding: 0.5rem 1.25rem;
-            background: #3d1a24;
-            border-bottom: 1.5px solid var(--border,#ECC2D0);
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: rgba(236,194,208,0.8);
-            gap: 16px;
-            width: 100%;
-            box-sizing: border-box;
-          }
+          .ped-th { padding: 0.5rem 1rem; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(236,194,208,0.8); text-align: left; white-space: nowrap; }
 
-          /* Cada linha de pedido no desktop */
-          .ped-dt-row {
-            display: grid;
-            grid-template-columns: 130px 160px 1fr 150px 110px 120px 120px;
-            align-items: center;
-            padding: 0.6rem 1.25rem;
-            gap: 16px;
-            cursor: pointer;
-            transition: background 0.12s;
-            width: 100%;
-            box-sizing: border-box;
-          }
+          .ped-dt-row { cursor: pointer; transition: background 0.12s; border-bottom: 1px solid var(--border,#ECC2D0); }
           .ped-dt-row:last-child { border-bottom: none; }
           .ped-dt-row:hover { background: var(--bg-subtle,#F7EEF1); }
-          .ped-dt-row > * { min-height: 40px; }
+
+          .ped-td { padding: 0.65rem 1rem; vertical-align: middle; font-family: inherit; }
 
           /* Colunas individuais */
           .ped-dt-col { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
@@ -979,25 +929,17 @@ export default function Pedidos() {
           .ped-dt-col--produto { flex-direction: row; align-items: center; gap: 0; }
           .ped-dt-col--entrega { gap: 2px; }
           .ped-dt-col--status { align-items: flex-start; }
-          .ped-dt-cliente-info { flex: 1; min-width: 0; }
 
           /* Número do pedido */
-          .ped-dt-num { font-size: 0.88rem; font-weight: 700; color: var(--primary,#986274); }
-          .ped-dt-criado { font-size: 0.68rem; color: var(--text-muted,#C39EAA); margin-top: 1px; }
-          .ped-dt-origem-tag { font-size: 0.62rem; font-weight: 600; color: #185FA5; background: #E6F1FB; padding: 1px 6px; border-radius: 4px; margin-top: 2px; width: fit-content; }
+          .ped-dt-num { font-size: 0.88rem; font-weight: 700; color: var(--primary,#986274); display: block; }
+          .ped-dt-criado { font-size: 0.68rem; color: var(--text-muted,#C39EAA); display: block; margin-top: 1px; }
+          .ped-dt-origem-tag { font-size: 0.62rem; font-weight: 600; color: #185FA5; background: #E6F1FB; padding: 1px 6px; border-radius: 4px; margin-top: 2px; display: inline-block; }
 
           /* Cliente */
-          .ped-dt-cliente-nome { font-size: 0.88rem; font-weight: 500; color: var(--text-title,#431524); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-          .ped-dt-cliente-tel { font-size: 0.72rem; color: var(--text-muted,#C39EAA); }
+          .ped-dt-cliente-nome { font-size: 0.88rem; font-weight: 500; color: var(--text-title,#431524); display: block; white-space: nowrap; }
+          .ped-dt-cliente-tel { font-size: 0.72rem; color: var(--text-muted,#C39EAA); display: block; }
 
-          .ped-dt-col--ver { align-items: flex-end; }
-          .ped-dt-ver-btn {
-            background: none; border: 1.5px solid var(--primary,#986274);
-            color: var(--primary,#986274); border-radius: 8px;
-            padding: 0.3rem 0.7rem; font-size: 0.72rem; font-weight: 600;
-            cursor: pointer; font-family: inherit; white-space: nowrap;
-            transition: all 0.15s;
-          }
+          .ped-dt-ver-btn { background: none; border: 1.5px solid var(--primary,#986274); color: var(--primary,#986274); border-radius: 8px; padding: 0.3rem 0.7rem; font-size: 0.72rem; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 0.15s; }
           .ped-dt-ver-btn:hover { background: var(--primary,#986274); color: white; }
 
           /* Produto */
