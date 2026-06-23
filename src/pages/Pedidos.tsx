@@ -889,7 +889,7 @@ export default function Pedidos() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 overflow: 'hidden',
               }}>
-                <img src="/Sistema/doo.png" alt="Doo" style={{
+                <img src="/Sistema/pedidos.png" alt="Doo" style={{
                   width: 96, height: 96, objectFit: 'cover', objectPosition: 'top center',
                 }} />
               </div>

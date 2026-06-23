@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import EmptyDoo from "@/components/EmptyDoo";
 
 type Categoria = {
   id?: string;
@@ -118,17 +119,13 @@ export default function Categorias() {
       </div>
 
       {categorias.length === 0 ? (
-        <div className="cat-empty-novo">
-          <div className="cat-empty-doo">
-            <img src="/Sistema/doo.png" alt="Doo" />
-          </div>
-          <p className="cat-empty-title-novo">Vamos organizar seu cardápio?</p>
-          <p className="cat-empty-sub-novo">Crie categorias como "Bolos", "Doces" ou "Salgados" para que sua confeitaria fique linda e organizada para os clientes!</p>
-          <button onClick={openNova} className="cat-empty-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Criar primeira categoria
-          </button>
-        </div>
+        <EmptyDoo
+          image="categorias.png"
+          title="Vamos organizar seu cardápio?"
+          description='Crie categorias como "Bolos", "Doces" ou "Salgados" para que sua confeitaria fique linda e organizada para os clientes!'
+          actionLabel="Criar primeira categoria"
+          onAction={openNova}
+        />
       ) : (
         <div className="cat-list">
           {categorias.map((cat, idx) => {
@@ -268,14 +265,6 @@ export default function Categorias() {
         .cat-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; padding:3rem 1rem; text-align:center; }
         .cat-empty-title { font-size:1rem; font-weight:700; color:var(--text-title, #1F2937); margin:0; }
         .cat-empty-sub { font-size:0.82rem; color:var(--text-muted, #9CA3AF); margin:0; }
-        .cat-empty-novo { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.85rem; padding:2.2rem 1.25rem 2.5rem; text-align:center; background:var(--bg-card, #FFFFFF); border-radius:24px; box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.05)); margin-top:0.5rem; position:relative; overflow:hidden; }
-        .cat-empty-novo::before { content:""; position:absolute; top:-40px; right:-40px; width:140px; height:140px; background:radial-gradient(circle, var(--primary-light, #FFF1F7) 0%, transparent 70%); pointer-events:none; }
-        .cat-empty-doo { width:96px; height:96px; border-radius:50%; background:var(--primary-light, #FFF1F7); display:flex; align-items:center; justify-content:center; position:relative; z-index:1; box-shadow:0 6px 18px rgba(255,111,169,0.18); }
-        .cat-empty-doo img { width:78%; height:78%; object-fit:contain; }
-        .cat-empty-title-novo { font-size:1.05rem; font-weight:800; color:var(--text-title, #1F2937); margin:0; position:relative; z-index:1; }
-        .cat-empty-sub-novo { font-size:0.85rem; color:var(--text-muted, #9CA3AF); margin:0; max-width:340px; line-height:1.45; position:relative; z-index:1; }
-        .cat-empty-btn { display:inline-flex; align-items:center; gap:0.45rem; margin-top:0.4rem; padding:0.8rem 1.4rem; background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color:var(--text-inverse, #FFFFFF); border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(255,111,169,0.35); transition:transform 0.15s ease, box-shadow 0.15s ease; position:relative; z-index:1; }
-        .cat-empty-btn:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(255,111,169,0.45); }
         .cat-list { display:flex; flex-direction:column; gap:0.5rem; }
         .cat-item { background:var(--bg-card, #FFFFFF); border-radius:16px; padding:0.85rem 1rem; display:flex; align-items:center; gap:1rem; box-shadow:var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06)); }
         .cat-item-icon { width:52px; height:52px; border-radius:50%; background:var(--primary-light, #FFF1F7); border:3px solid var(--primary-light, #FFF1F7); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }

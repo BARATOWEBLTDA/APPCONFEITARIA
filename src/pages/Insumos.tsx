@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
+import EmptyDoo from "@/components/EmptyDoo";
 
 interface Insumo {
   id: string;
@@ -256,17 +257,13 @@ export default function Insumos() {
             </div>
           </div>
 
-          <div className="ins-empty-novo">
-            <div className="ins-empty-doo">
-              <img src="/Sistema/doo.png" alt="Doo" />
-            </div>
-            <p className="ins-empty-title-novo">Vamos cadastrar seu primeiro ingrediente?</p>
-            <p className="ins-empty-sub-novo">Controle estoque, valores e validade — e nunca mais seja pega de surpresa por um ingrediente em falta.</p>
-            <button onClick={openNovo} className="ins-empty-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              Cadastrar primeiro ingrediente
-            </button>
-          </div>
+          <EmptyDoo
+            image="ingredientes.png"
+            title="Vamos cadastrar seu primeiro ingrediente?"
+            description="Controle estoque, valores e validade — e nunca mais seja pega de surpresa por um ingrediente em falta."
+            actionLabel="Cadastrar primeiro ingrediente"
+            onAction={openNovo}
+          />
 
           <Styles />
         </div>
@@ -1434,62 +1431,6 @@ function Styles() {
 
       /* Empty (filtro vazio) */
       .ins-empty { display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:3rem 1rem; text-align:center; background:var(--bg-card, #FFFFFF); border-radius:16px; box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); }
-
-      /* Empty amigável (sem nenhum cadastro) — padrão Doonly */
-      .ins-empty-novo {
-        display:flex; flex-direction:column;
-        align-items:center; justify-content:center;
-        text-align:center;
-        padding:2.5rem 1.5rem;
-        background:var(--bg-card, #fff);
-        border:1.5px dashed var(--border, #ECC2D0);
-        border-radius:16px;
-        margin-top:0.5rem;
-      }
-      .ins-empty-doo {
-        width:96px; height:96px;
-        border-radius:28%;
-        background:#3d1a24;
-        display:flex; align-items:center; justify-content:center;
-        margin-bottom:1.25rem;
-        box-shadow:0 8px 24px rgba(61,26,36,0.2);
-        position:relative;
-      }
-      .ins-empty-doo::before {
-        content:""; position:absolute; inset:7px;
-        background:#fff; border-radius:24%;
-      }
-      .ins-empty-doo img {
-        width:110px; height:110px;
-        object-fit:cover; object-position:top center;
-        border-radius:24%;
-        position:relative; z-index:1;
-      }
-      .ins-empty-title-novo {
-        font-size:1.1rem; font-weight:800;
-        color:var(--text-title, #431524);
-        margin:0 0 8px;
-        letter-spacing:-0.02em;
-        max-width:280px;
-      }
-      .ins-empty-sub-novo {
-        font-size:0.88rem;
-        color:var(--text-secondary, #6E3548);
-        margin:0 0 1.5rem;
-        line-height:1.5;
-        max-width:320px;
-      }
-      .ins-empty-btn {
-        display:flex; align-items:center; gap:0.5rem;
-        background:#3d1a24; color:#fff;
-        border:none; border-radius:12px;
-        padding:0.8rem 1.5rem;
-        font-family:inherit; font-size:0.92rem; font-weight:700;
-        cursor:pointer;
-        box-shadow:0 4px 12px rgba(61,26,36,0.25);
-        transition:all 0.15s ease;
-      }
-      .ins-empty-btn:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(61,26,36,0.3); }
 
       /* ─── MOBILE ─── */
       @media (max-width:768px) {
