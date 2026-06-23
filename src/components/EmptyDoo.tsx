@@ -52,7 +52,9 @@ export default function EmptyDoo({
   return (
     <div className={`empty-doo-card ${className}`}>
       <div className="empty-doo-avatar">
-        <img src={`/Sistema/${image}`} alt={imageAlt} />
+        <div className="empty-doo-avatar-inner">
+          <img src={`/Sistema/${image}`} alt={imageAlt} />
+        </div>
       </div>
       <p className="empty-doo-title">{title}</p>
       <p className="empty-doo-desc">{description}</p>
@@ -84,24 +86,23 @@ export default function EmptyDoo({
           align-items: center;
           justify-content: center;
           margin-bottom: 1.25rem;
-          box-shadow: 0 8px 24px rgba(61, 26, 36, 0.2);
-          position: relative;
+          box-shadow: 0 8px 24px rgba(61, 26, 36, 0.25);
         }
-        .empty-doo-avatar::before {
-          content: "";
-          position: absolute;
-          inset: 7px;
+        .empty-doo-avatar-inner {
+          width: 82px;
+          height: 82px;
+          border-radius: 28%;
           background: #fff;
-          border-radius: 24%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
         }
-        .empty-doo-avatar img {
-          width: 110px;
-          height: 110px;
+        .empty-doo-avatar-inner img {
+          width: 104px;
+          height: 104px;
           object-fit: cover;
           object-position: top center;
-          border-radius: 24%;
-          position: relative;
-          z-index: 1;
         }
         .empty-doo-title {
           font-size: 1.1rem;
