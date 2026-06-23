@@ -61,6 +61,7 @@ export default function Insumos() {
   const [novaUnidade, setNovaUnidade] = useState("");
   const [showNovaCategoria, setShowNovaCategoria] = useState(false);
   const [showNovaUnidade, setShowNovaUnidade] = useState(false);
+  const [modoCompleto, setModoCompleto] = useState(false);
   const [ultimoCadastrado, setUltimoCadastrado] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [previewInsumo, setPreviewInsumo] = useState<Insumo | null>(null);
@@ -639,15 +640,42 @@ export default function Insumos() {
 
   // ─── DADOS ───
   if (step === "dados") return (
-    <div className="ins-root">
+    <div className="ins-root" data-modo={modoCompleto ? "completo" : "rapido"}>
       <div className="ins-form-header">
         <button className="ins-back" onClick={() => setStep("lista")}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div>
           <h2 className="ins-form-title">{editId ? "Editar Ingrediente" : "Novo Ingrediente"}</h2>
-          <p style={{margin:0,fontSize:"0.78rem",color:"var(--text-muted, #9CA3AF)"}}>Preencha os dados do ingrediente que deseja adicionar ao seu estoque.</p>
+          <p style={{margin:0,fontSize:"0.78rem",color:"var(--text-muted, #9CA3AF)"}}>
+            {modoCompleto
+              ? "Preencha todos os campos para um cadastro completo."
+              : "Preencha o essencial — você pode editar depois pra adicionar mais detalhes."
+            }
+          </p>
         </div>
+      </div>
+
+      {/* Toggle Rápido / Completo */}
+      <div className="ins-modo-toggle">
+        <button
+          className={`ins-modo-btn${!modoCompleto ? " ins-modo-btn--active" : ""}`}
+          onClick={() => setModoCompleto(false)}
+          type="button"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Modo Rápido
+          <span className="ins-modo-sub">apenas o essencial</span>
+        </button>
+        <button
+          className={`ins-modo-btn${modoCompleto ? " ins-modo-btn--active" : ""}`}
+          onClick={() => setModoCompleto(true)}
+          type="button"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+          Modo Completo
+          <span className="ins-modo-sub">todos os detalhes</span>
+        </button>
       </div>
 
       <div style={{display:"flex",flexDirection:"column",gap:"1rem"}}>
@@ -657,7 +685,7 @@ export default function Insumos() {
           <div className="ins-basicas-grid">
 
             {/* Imagem */}
-            <div className="ins-imagem-inline">
+            <div className="ins-imagem-inline ins-completo-only">
               <div className="ins-imagem-preview" style={{flex:1,borderRadius:0,border:"none",borderRight:"1px solid var(--border, #E9E9EE)",minHeight:"320px",aspectRatio:"1"}}>
                 {imagemSelecionada
                   ? <img src={imagemSelecionada} alt="imagem" style={{width:"100%",height:"100%",objectFit:"cover"}} />
@@ -720,7 +748,7 @@ export default function Insumos() {
                   <label>Nome do ingrediente <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(Obrigatório)</span></label>
                   <input placeholder="Ex: Leite Condensado" value={form.nome} onChange={e => setForm((f: any) => ({ ...f, nome: e.target.value }))} />
                 </div>
-                <div className="ins-field">
+                <div className="ins-field ins-completo-only">
                   <label>Marca <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(opcional)</span></label>
                   {marcas.length === 0 && !showNovaMarca ? (
                     <button onClick={() => setShowNovaMarca(true)}
@@ -759,7 +787,7 @@ export default function Insumos() {
                     </div>
                   )}
                 </div>
-                <div className="ins-field">
+                <div className="ins-field ins-completo-only">
                   <label>Subcategoria <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(opcional)</span></label>
                   <select value={form.subcategoria || ""} onChange={e => { if (e.target.value === "__nova_sub__") setForm((f: any) => ({...f, _showNovaSubcat: true})); else setForm((f: any) => ({...f, subcategoria: e.target.value, _showNovaSubcat: false})); }}>
                     <option value="">Selecione a subcategoria</option>
@@ -777,7 +805,7 @@ export default function Insumos() {
                 </div>
               </div>
 
-              <div className="ins-field" style={{flex:1,display:"flex",flexDirection:"column"}}>
+              <div className="ins-field ins-completo-only" style={{flex:1,display:"flex",flexDirection:"column"}}>
                 <label>Descrição <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(opcional)</span></label>
                 <textarea placeholder="Ex: Leite condensado tradicional, ideal para recheios e coberturas." value={form.descricao || ""} onChange={e => setForm((f: any) => ({...f, descricao: e.target.value}))} style={{flex:1,minHeight:"120px",padding:"0.65rem 0.9rem",border:"1.5px solid var(--border, #E9E9EE)",borderRadius:"10px",fontFamily:"inherit",fontSize:"0.88rem",color:"var(--text-title, #1F2937)",outline:"none",resize:"none",width:"100%",boxSizing:"border-box"}} onFocus={e => e.target.style.borderColor="var(--border-focus, #FF6FA9)"} onBlur={e => e.target.style.borderColor="var(--border, #E9E9EE)"} />
               </div>
@@ -808,7 +836,7 @@ export default function Insumos() {
                 )}
               </div>
 
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.75rem 1rem",background:"var(--bg-body, #F7F7F8)",borderRadius:"12px",border:"1px solid var(--border, #E9E9EE)"}}>
+              <div className="ins-completo-only" style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0.75rem 1rem",background:"var(--bg-body, #F7F7F8)",borderRadius:"12px",border:"1px solid var(--border, #E9E9EE)"}}>
                 <div>
                   <p style={{margin:0,fontSize:"0.88rem",fontWeight:600,color:"var(--text-title, #1F2937)"}}>Aviso de estoque mínimo</p>
                   <p style={{margin:0,fontSize:"0.72rem",color:"var(--text-muted, #9CA3AF)"}}>Alerta quando o estoque estiver baixo</p>
@@ -820,7 +848,7 @@ export default function Insumos() {
               </div>
 
               {form._avisoEstoque && (
-                <div className="ins-field">
+                <div className="ins-field ins-completo-only">
                   <label>Estoque mínimo para avisos <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(Obrigatório)</span></label>
                   <input type="number" placeholder="Ex: 2" min="0" value={form.estoque_minimo} onChange={e => setForm((f: any) => ({...f,estoque_minimo:e.target.value}))} />
                   <span className="ins-field-hint">Quantidade mínima para alerta de estoque</span>
@@ -852,7 +880,7 @@ export default function Insumos() {
                 <label>Valor de compra (R$) <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(Obrigatório)</span></label>
                 <input type="number" placeholder="0,00" min="0" step="0.01" value={form.valor_compra} onChange={e => setForm((f: any) => ({...f,valor_compra:e.target.value}))} />
               </div>
-              <div className="ins-field">
+              <div className="ins-field ins-completo-only">
                 <label>Fornecedor <span style={{color:"var(--text-muted, #9CA3AF)",fontWeight:400}}>(opcional)</span></label>
                 <input placeholder="Ex: Nestlé, Arosa..." style={{maxWidth:"320px"}} value={form.fornecedor} onChange={e => setForm((f: any) => ({...f,fornecedor:e.target.value}))} />
               </div>
@@ -868,7 +896,7 @@ export default function Insumos() {
       </div>
 
       {/* 4. Validade */}
-      <div className="ins-card">
+      <div className="ins-card ins-completo-only">
         <p className="ins-section-label">4. Validade</p>
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.85rem",marginBottom:"0.85rem"}}>
@@ -930,7 +958,7 @@ export default function Insumos() {
       </div>
 
       {/* Imagem (mobile only — em desktop fica no card lateral acima) */}
-      <div className="ins-imagem-mobile-card">
+      <div className="ins-imagem-mobile-card ins-completo-only">
         <div className="ins-imagem-mobile-header">
           <p className="ins-section-label" style={{margin:0,fontSize:"0.92rem"}}>Imagem do ingrediente</p>
           <span className="ins-optional-badge">opcional</span>
@@ -1274,6 +1302,43 @@ function Styles() {
 
       /* Grid informações básicas + imagem */
       .ins-basicas-grid { display:grid; grid-template-columns:320px 1fr; align-items:stretch; }
+
+      /* ── Modo Rápido / Completo toggle ── */
+      .ins-modo-toggle {
+        display:grid; grid-template-columns:1fr 1fr; gap:6px;
+        padding:5px; background:var(--bg-body, #F7F7F8);
+        border:1px solid var(--border, #E9E9EE);
+        border-radius:14px; margin-bottom:0.85rem;
+      }
+      .ins-modo-btn {
+        display:flex; align-items:center; justify-content:center; gap:6px;
+        padding:0.65rem 0.85rem;
+        background:transparent; border:none; border-radius:10px;
+        font-family:'Geist', sans-serif; font-size:0.85rem; font-weight:700;
+        color:var(--text-secondary, #6B7280); cursor:pointer;
+        transition:all 0.2s;
+      }
+      .ins-modo-btn:hover { color:var(--primary, #FF6FA9); }
+      .ins-modo-btn--active {
+        background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+        color:#fff; box-shadow:0 3px 10px rgba(255,111,169,0.32);
+      }
+      .ins-modo-btn--active:hover { color:#fff; }
+      .ins-modo-sub {
+        font-size:0.7rem; font-weight:500; opacity:0.85;
+        margin-left:4px; padding-left:6px;
+        border-left:1px solid currentColor;
+      }
+      @media (max-width:520px) {
+        .ins-modo-btn { flex-direction:column; gap:2px; padding:0.55rem; }
+        .ins-modo-sub { margin-left:0; padding-left:0; border-left:none; opacity:0.7; font-size:0.66rem; }
+      }
+
+      /* ── Modo Rápido: esconde elementos do modo completo ── */
+      .ins-root[data-modo="rapido"] .ins-completo-only { display:none !important; }
+      /* No modo rápido, colapsa o grid da imagem lateral pra ocupar tudo */
+      .ins-root[data-modo="rapido"] .ins-basicas-grid { grid-template-columns:1fr !important; }
+
       .ins-imagem-inline { display:flex; flex-direction:column; }
       .ins-imagem-mobile-card { display:none; }
       @media (max-width:768px) {
@@ -1297,6 +1362,8 @@ function Styles() {
         .ins-imagem-mobile-actions { display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center; }
         .ins-imagem-mobile-actions .ins-btn-buscar,
         .ins-imagem-mobile-actions .ins-btn-upload { flex:1; min-width:120px; }
+        /* No mobile + modo rápido, o card de imagem mobile também some (já tem display:none via .ins-completo-only) */
+        .ins-root[data-modo="rapido"] .ins-imagem-mobile-card { display:none !important; }
       }
       .ins-field-hint { font-size:0.72rem; color:var(--text-muted, #9CA3AF); margin:3px 0 0; }
       .ins-busca-modal { background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.5rem; width:100%; max-width:560px; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:qsmIn 0.25s cubic-bezier(0.16,1,0.3,1); }
