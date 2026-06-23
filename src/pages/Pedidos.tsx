@@ -784,16 +784,7 @@ export default function Pedidos() {
           ) : (
             <div className={!isMobile ? 'ped-dt-wrapper' : ''} style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '0.65rem' : 0 }}>
               {!isMobile ? (
-                <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
-                  <colgroup>
-                    <col style={{ width: '130px' }} />
-                    <col style={{ width: '160px' }} />
-                    <col style={{ width: '200px' }} />
-                    <col style={{ width: '150px' }} />
-                    <col style={{ width: '110px' }} />
-                    <col style={{ width: '120px' }} />
-                    <col style={{ width: '120px' }} />
-                  </colgroup>
+                <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
                   <thead>
                     <tr style={{ background: '#3d1a24' }}>
                       <th className="ped-th">Pedido</th>
@@ -924,6 +915,13 @@ export default function Pedidos() {
           .ped-dt-wrapper { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); border-radius: 14px; overflow: hidden; width: 100%; }
 
           .ped-th { padding: 0.5rem 1rem; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(236,194,208,0.8); text-align: left; white-space: nowrap; }
+          .ped-th:nth-child(1) { min-width: 130px; }
+          .ped-th:nth-child(2) { min-width: 150px; }
+          .ped-th:nth-child(3) { min-width: 160px; }
+          .ped-th:nth-child(4) { min-width: 140px; }
+          .ped-th:nth-child(5) { min-width: 100px; }
+          .ped-th:nth-child(6) { min-width: 110px; }
+          .ped-th:nth-child(7) { min-width: 110px; }
 
           .ped-dt-row { cursor: pointer; transition: background 0.12s; border-bottom: 1px solid var(--border,#ECC2D0); }
           .ped-dt-row:last-child { border-bottom: none; }
