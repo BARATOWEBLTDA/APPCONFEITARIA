@@ -638,9 +638,16 @@ export default function Pedidos() {
   const [dataFim, setDataFim] = useState('')
   const [mapaAberto, setMapaAberto] = useState<string | null>(null)
   const [modalPedido, setModalPedido] = useState<Pedido | null>(null)
+  const [totalProdutos, setTotalProdutos] = useState<number | null>(null)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => { if (user) fetchPedidos(user.id) })
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      fetchPedidos(user.id)
+      supabase.from('produtos').select('id', { count: 'exact', head: true }).eq('user_id', user.id).then(({ count }) => {
+        setTotalProdutos(count ?? 0)
+      })
+    })
   }, [])
 
   const updateStatus = async (id: string, status: string) => {
@@ -720,8 +727,19 @@ export default function Pedidos() {
 
           {/* Novo pedido */}
           <button
-            onClick={() => navigate('/pedidos/novo')}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--primary,#986274)', color: 'white', border: 'none', borderRadius: 10, padding: isMobile ? '0.6rem 0.75rem' : '0.6rem 1rem', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}
+            onClick={() => { if (totalProdutos !== null && totalProdutos > 0) navigate('/pedidos/novo') }}
+            disabled={totalProdutos === 0}
+            title={totalProdutos === 0 ? 'Cadastre ao menos 1 produto antes de criar pedidos' : ''}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              background: totalProdutos === 0 ? '#d1c4cb' : 'var(--primary,#986274)',
+              color: 'white', border: 'none', borderRadius: 10,
+              padding: isMobile ? '0.6rem 0.75rem' : '0.6rem 1rem',
+              fontSize: '0.85rem', fontWeight: 600,
+              cursor: totalProdutos === 0 ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0,
+              opacity: totalProdutos === 0 ? 0.7 : 1,
+            }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             {!isMobile && 'Registrar pedido'}
@@ -787,9 +805,15 @@ export default function Pedidos() {
                 {busca || filtrosAtivos ? 'Tente ajustar os filtros' : 'Registre seu primeiro pedido'}
               </p>
               {!filtrosAtivos && !busca && (
-                <button onClick={() => navigate('/pedidos/novo')} style={{ marginTop: '0.5rem', background: 'var(--primary,#986274)', color: 'white', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
-                  Registrar primeiro pedido
-                </button>
+                totalProdutos === 0 ? (
+                  <button onClick={() => navigate('/produtos')} style={{ marginTop: '0.5rem', background: 'var(--primary,#986274)', color: 'white', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+                    Cadastrar primeiro produto
+                  </button>
+                ) : (
+                  <button onClick={() => navigate('/pedidos/novo')} style={{ marginTop: '0.5rem', background: 'var(--primary,#986274)', color: 'white', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+                    Registrar primeiro pedido
+                  </button>
+                )
               )}
             </div>
           ) : (

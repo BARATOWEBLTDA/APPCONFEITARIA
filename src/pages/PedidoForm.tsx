@@ -61,6 +61,12 @@ export default function PedidoForm() {
     setClientes(cls || [])
     setProdutos(prds || [])
     setCupons([]) // tabela cupons não existe ainda
+
+    // Trava: bloqueia criação de pedido sem produtos cadastrados
+    if (!isEdicao && (!prds || prds.length === 0)) {
+      alert('Você precisa cadastrar ao menos 1 produto antes de criar pedidos.')
+      navigate('/produtos')
+    }
   }
 
   const carregarPedido = async (uid: string) => {
