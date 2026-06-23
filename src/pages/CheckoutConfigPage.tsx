@@ -61,7 +61,10 @@ export default function CheckoutConfigPage() {
   const [enderecoRetirada, setEnderecoRetirada] = useState('')
   const [horarioRetirada, setHorarioRetirada] = useState('')
   const [exibirCampoTroco, setExibirCampoTroco] = useState(true)
-  const [cupons, setCupons] = useState<{ codigo: string; tipo: string; valor: string; ativo: boolean }[]>([])
+  const [cupons, setCupons] = useState<{ codigo: string; tipo: string; valor: string; ativo: boolean; data_inicio?: string; data_fim?: string; limite_uso?: string; valor_minimo?: string; usos?: number }[]>([])
+  const [editandoIndex, setEditandoIndex] = useState<number | null>(null) // null = lista | -1 = novo | >=0 = editando
+  const cupomVazio = { codigo: '', tipo: 'percentual', valor: '', ativo: true, data_inicio: '', data_fim: '', limite_uso: '', valor_minimo: '' }
+  const [cupomForm, setCupomForm] = useState<typeof cupomVazio>(cupomVazio)
   const [aceitaAgendamento, setAceitaAgendamento] = useState(true)
   const [prazoMinimo, setPrazoMinimo] = useState('24')
 
@@ -79,7 +82,17 @@ export default function CheckoutConfigPage() {
         setEnderecoRetirada(data.endereco_retirada || '')
         setHorarioRetirada(data.horario_retirada || '')
         setExibirCampoTroco(data.exibir_campo_troco !== false)
-        setCupons((data.cupons_desconto || []).map((c: any) => ({ ...c, valor: c.valor?.toString() || '0' })))
+        setCupons((data.cupons_desconto || []).map((c: any) => ({
+          codigo: c.codigo || '',
+          tipo: c.tipo || 'percentual',
+          valor: c.valor?.toString() || '0',
+          ativo: c.ativo !== false,
+          data_inicio: c.data_inicio || '',
+          data_fim: c.data_fim || '',
+          limite_uso: c.limite_uso?.toString() || '',
+          valor_minimo: c.valor_minimo?.toString() || '',
+          usos: c.usos || 0,
+        })))
         setAceitaAgendamento(data.aceita_agendamento !== false)
         setPrazoMinimo(data.prazo_minimo_horas?.toString() || '24')
       }
@@ -100,7 +113,17 @@ export default function CheckoutConfigPage() {
         endereco_retirada: enderecoRetirada,
         horario_retirada: horarioRetirada,
         exibir_campo_troco: exibirCampoTroco,
-        cupons_desconto: cupons.filter(c => c.codigo.trim()).map(c => ({ ...c, valor: parseFloat(c.valor) || 0 })),
+        cupons_desconto: cupons.filter(c => c.codigo.trim()).map(c => ({
+          codigo: c.codigo,
+          tipo: c.tipo,
+          valor: parseFloat(c.valor) || 0,
+          ativo: c.ativo,
+          data_inicio: c.data_inicio || null,
+          data_fim: c.data_fim || null,
+          limite_uso: c.limite_uso ? parseInt(c.limite_uso) : null,
+          valor_minimo: c.valor_minimo ? parseFloat(c.valor_minimo) : null,
+          usos: c.usos || 0,
+        })),
         aceita_agendamento: aceitaAgendamento,
         prazo_minimo_horas: parseInt(prazoMinimo) || 24,
       }).eq('id', userId)
@@ -118,19 +141,74 @@ export default function CheckoutConfigPage() {
   }
   const addBairro = () => setEntregaPorBairro(prev => [...prev, { bairro: '', valor: '' }])
   const removeBairro = (i: number) => setEntregaPorBairro(prev => prev.filter((_, idx) => idx !== i))
-  const addCupom = () => setCupons(prev => [...prev, { codigo: '', tipo: 'percentual', valor: '', ativo: true }])
-  const removeCupom = (i: number) => setCupons(prev => prev.filter((_, idx) => idx !== i))
+  const abrirNovoCupom = () => {
+    setCupomForm(cupomVazio)
+    setEditandoIndex(-1)
+  }
+  const abrirEditarCupom = (i: number) => {
+    setCupomForm({
+      codigo: cupons[i].codigo,
+      tipo: cupons[i].tipo,
+      valor: cupons[i].valor,
+      ativo: cupons[i].ativo,
+      data_inicio: cupons[i].data_inicio || '',
+      data_fim: cupons[i].data_fim || '',
+      limite_uso: cupons[i].limite_uso || '',
+      valor_minimo: cupons[i].valor_minimo || '',
+    })
+    setEditandoIndex(i)
+  }
+  const cancelarEdicao = () => {
+    setEditandoIndex(null)
+    setCupomForm(cupomVazio)
+  }
+  const salvarCupomForm = () => {
+    if (!cupomForm.codigo.trim()) return alert('Informe o código do cupom')
+    if (!cupomForm.valor || parseFloat(cupomForm.valor) <= 0) return alert('Informe um valor de desconto válido')
+    if (cupomForm.data_inicio && cupomForm.data_fim && cupomForm.data_fim < cupomForm.data_inicio) {
+      return alert('A data final deve ser depois da data inicial')
+    }
+    setCupons(prev => {
+      if (editandoIndex === -1) return [...prev, { ...cupomForm, usos: 0 }]
+      return prev.map((c, idx) => idx === editandoIndex ? { ...cupomForm, usos: c.usos || 0 } : c)
+    })
+    setEditandoIndex(null)
+    setCupomForm(cupomVazio)
+  }
+  const excluirCupomEditando = () => {
+    if (editandoIndex === null || editandoIndex < 0) return
+    if (!confirm('Tem certeza que deseja excluir este cupom?')) return
+    setCupons(prev => prev.filter((_, idx) => idx !== editandoIndex))
+    setEditandoIndex(null)
+    setCupomForm(cupomVazio)
+  }
 
   const handleSalvarCupons = async () => {
     if (!userId) return
     if (timerRef.current) clearTimeout(timerRef.current)
     setSavingCupons(true)
     await supabase.from('profiles').update({
-      cupons_desconto: cupons.filter(c => c.codigo.trim()).map(c => ({ ...c, valor: parseFloat(c.valor) || 0 })),
+      cupons_desconto: cupons.filter(c => c.codigo.trim()).map(c => ({
+        codigo: c.codigo,
+        tipo: c.tipo,
+        valor: parseFloat(c.valor) || 0,
+        ativo: c.ativo,
+        data_inicio: c.data_inicio || null,
+        data_fim: c.data_fim || null,
+        limite_uso: c.limite_uso ? parseInt(c.limite_uso) : null,
+        valor_minimo: c.valor_minimo ? parseFloat(c.valor_minimo) : null,
+        usos: c.usos || 0,
+      })),
     }).eq('id', userId)
     setSavingCupons(false)
     setCuponsSaved(true)
     setTimeout(() => setCuponsSaved(false), 2200)
+  }
+
+  const formatDate = (iso: string) => {
+    if (!iso) return ''
+    const [y, m, d] = iso.split('-')
+    return `${d}/${m}/${y.slice(2)}`
   }
 
   if (loading) return (
@@ -262,69 +340,200 @@ export default function CheckoutConfigPage() {
               <div className="chk-row-between" style={{alignItems:'flex-start'}}>
                 <SectionLabel
                   icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>}
-                  sub="Crie códigos promocionais"
+                  sub={editandoIndex === null ? "Crie códigos promocionais" : (editandoIndex === -1 ? "Novo cupom" : "Editando cupom")}
                 >Cupons</SectionLabel>
-                <button onClick={addCupom} className="chk-btn-add" style={{marginTop:'4px'}}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Cupom
-                </button>
+                {editandoIndex === null && (
+                  <button onClick={abrirNovoCupom} className="chk-btn-add" style={{marginTop:'4px'}}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Novo cupom
+                  </button>
+                )}
               </div>
 
-              {cupons.length === 0 && (
-                <div className="chk-cupons-empty">
-                  <div className="chk-cupons-empty-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
-                  </div>
-                  <p className="chk-cupons-empty-text">Nenhum cupom ainda. Toque em <strong>+ Cupom</strong> para criar.</p>
-                </div>
+              {/* ─── MODO LISTA ─── */}
+              {editandoIndex === null && (
+                <>
+                  {cupons.length === 0 ? (
+                    <div className="chk-cupons-empty">
+                      <div className="chk-cupons-empty-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>
+                      </div>
+                      <p className="chk-cupons-empty-text">Nenhum cupom ainda. Toque em <strong>+ Novo cupom</strong> para criar.</p>
+                    </div>
+                  ) : (
+                    <>
+                      {cupons.map((c, i) => (
+                        <div key={i} className={`chk-cupom-item${c.ativo ? '' : ' chk-cupom-item--inactive'}`} onClick={() => abrirEditarCupom(i)}>
+                          <div className="chk-cupom-item-left">
+                            <div className="chk-cupom-item-codigo">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                              <span>{c.codigo}</span>
+                            </div>
+                            <div className="chk-cupom-item-meta">
+                              <span className="chk-cupom-item-desconto">
+                                {c.tipo === 'percentual' ? `${c.valor}% OFF` : `R$ ${c.valor} OFF`}
+                              </span>
+                              {(c.data_inicio || c.data_fim) && (
+                                <span className="chk-cupom-item-tag">
+                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                  {c.data_inicio && c.data_fim ? `${formatDate(c.data_inicio)} – ${formatDate(c.data_fim)}` : (c.data_fim ? `Até ${formatDate(c.data_fim)}` : `A partir de ${formatDate(c.data_inicio!)}`)}
+                                </span>
+                              )}
+                              {c.limite_uso && (
+                                <span className="chk-cupom-item-tag">
+                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/></svg>
+                                  {c.usos || 0}/{c.limite_uso} usos
+                                </span>
+                              )}
+                              {c.valor_minimo && (
+                                <span className="chk-cupom-item-tag">
+                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+                                  mín. R$ {c.valor_minimo}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className={`chk-cupom-item-status ${c.ativo ? 'chk-cupom-item-status--on' : 'chk-cupom-item-status--off'}`}>
+                            {c.ativo ? 'Ativo' : 'Inativo'}
+                          </div>
+                          <svg className="chk-cupom-item-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+                        </div>
+                      ))}
+
+                      <button
+                        type="button"
+                        onClick={handleSalvarCupons}
+                        disabled={savingCupons}
+                        className={`chk-cupons-save${cuponsSaved ? ' chk-cupons-save--ok' : ''}`}
+                      >
+                        {savingCupons ? (
+                          <><span className="chk-spinner-btn" /> Salvando...</>
+                        ) : cuponsSaved ? (
+                          <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Cupons salvos!</>
+                        ) : (
+                          <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar cupons</>
+                        )}
+                      </button>
+                    </>
+                  )}
+                </>
               )}
 
-              {cupons.map((c, i) => (
-                <div key={i} className={`chk-cupom-card${c.ativo ? '' : ' chk-cupom-card--inactive'}`}>
-                  <div className="chk-cupom-top">
-                    <div className="chk-cupom-tag">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                    </div>
-                    <input className="chk-cupom-codigo" value={c.codigo} onChange={e => setCupons(prev => prev.map((x,j) => j===i ? {...x, codigo:e.target.value.toUpperCase()} : x))} placeholder="CÓDIGO" />
+              {/* ─── MODO FORMULÁRIO ─── */}
+              {editandoIndex !== null && (
+                <div className="chk-cupom-form">
+
+                  <div className="chk-form-field">
+                    <label className="chk-form-label">Código do cupom *</label>
+                    <input
+                      className="chk-cupom-codigo"
+                      value={cupomForm.codigo}
+                      onChange={e => setCupomForm({ ...cupomForm, codigo: e.target.value.toUpperCase() })}
+                      placeholder="EX: PROMO10"
+                      autoFocus
+                    />
                   </div>
-                  <div className="chk-cupom-row">
-                    <select className="chk-input chk-cupom-select" value={c.tipo} onChange={e => setCupons(prev => prev.map((x,j) => j===i ? {...x, tipo:e.target.value} : x))}>
-                      <option value="percentual">% Percentual</option>
-                      <option value="fixo">R$ Fixo</option>
-                    </select>
-                    <div className="chk-money-row" style={{flex:1}}>
-                      <span className="chk-prefix">{c.tipo === 'percentual' ? '%' : 'R$'}</span>
-                      <input className="chk-input" style={{textAlign:'center'}} value={c.valor} onChange={e => setCupons(prev => prev.map((x,j) => j===i ? {...x, valor:e.target.value.replace(/[^0-9.,]/g,'')} : x))} placeholder="0" />
+
+                  <div className="chk-form-row">
+                    <div className="chk-form-field" style={{flex:1}}>
+                      <label className="chk-form-label">Tipo de desconto *</label>
+                      <select
+                        className="chk-input"
+                        value={cupomForm.tipo}
+                        onChange={e => setCupomForm({ ...cupomForm, tipo: e.target.value })}
+                      >
+                        <option value="percentual">% Percentual</option>
+                        <option value="fixo">R$ Fixo</option>
+                      </select>
+                    </div>
+                    <div className="chk-form-field" style={{flex:1}}>
+                      <label className="chk-form-label">Valor *</label>
+                      <div className="chk-money-row">
+                        <span className="chk-prefix">{cupomForm.tipo === 'percentual' ? '%' : 'R$'}</span>
+                        <input
+                          className="chk-input"
+                          style={{textAlign:'center'}}
+                          value={cupomForm.valor}
+                          onChange={e => setCupomForm({ ...cupomForm, valor: e.target.value.replace(/[^0-9.,]/g,'') })}
+                          placeholder="0"
+                        />
+                      </div>
                     </div>
                   </div>
-                  <div className="chk-cupom-footer">
-                    <label className="chk-cupom-ativo">
-                      <Toggle checked={c.ativo} onChange={(e: any) => setCupons(prev => prev.map((x,j) => j===i ? {...x, ativo:e.target.checked} : x))} />
-                      <span>{c.ativo ? 'Ativo' : 'Inativo'}</span>
-                    </label>
-                    <button onClick={() => removeCupom(i)} className="chk-cupom-remove">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-                      Remover
+
+                  <div className="chk-form-divider"><span>Opcional</span></div>
+
+                  <div className="chk-form-row">
+                    <div className="chk-form-field" style={{flex:1}}>
+                      <label className="chk-form-label">Válido de</label>
+                      <input
+                        type="date"
+                        className="chk-input"
+                        value={cupomForm.data_inicio}
+                        onChange={e => setCupomForm({ ...cupomForm, data_inicio: e.target.value })}
+                      />
+                    </div>
+                    <div className="chk-form-field" style={{flex:1}}>
+                      <label className="chk-form-label">Válido até</label>
+                      <input
+                        type="date"
+                        className="chk-input"
+                        value={cupomForm.data_fim}
+                        onChange={e => setCupomForm({ ...cupomForm, data_fim: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="chk-form-row">
+                    <div className="chk-form-field" style={{flex:1}}>
+                      <label className="chk-form-label">Limite de usos</label>
+                      <input
+                        className="chk-input"
+                        value={cupomForm.limite_uso}
+                        onChange={e => setCupomForm({ ...cupomForm, limite_uso: e.target.value.replace(/\D/g,'') })}
+                        placeholder="Sem limite"
+                      />
+                    </div>
+                    <div className="chk-form-field" style={{flex:1}}>
+                      <label className="chk-form-label">Valor mínimo do pedido</label>
+                      <div className="chk-money-row">
+                        <span className="chk-prefix">R$</span>
+                        <input
+                          className="chk-input"
+                          value={cupomForm.valor_minimo}
+                          onChange={e => setCupomForm({ ...cupomForm, valor_minimo: e.target.value.replace(/[^0-9.,]/g,'') })}
+                          placeholder="0,00"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="chk-toggle-row" style={{marginTop:'0.25rem'}}>
+                    <div>
+                      <p className="chk-toggle-label">Cupom ativo</p>
+                      <p className="chk-toggle-sub">Clientes podem usar este cupom no checkout</p>
+                    </div>
+                    <Toggle
+                      checked={cupomForm.ativo}
+                      onChange={(e: any) => setCupomForm({ ...cupomForm, ativo: e.target.checked })}
+                    />
+                  </div>
+
+                  <div className="chk-form-actions">
+                    {editandoIndex >= 0 && (
+                      <button type="button" onClick={excluirCupomEditando} className="chk-form-btn-delete">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                        Excluir
+                      </button>
+                    )}
+                    <div style={{flex:1}} />
+                    <button type="button" onClick={cancelarEdicao} className="chk-form-btn-cancel">Cancelar</button>
+                    <button type="button" onClick={salvarCupomForm} className="chk-form-btn-save">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      {editandoIndex === -1 ? 'Criar cupom' : 'Salvar alterações'}
                     </button>
                   </div>
                 </div>
-              ))}
-
-              {cupons.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleSalvarCupons}
-                  disabled={savingCupons}
-                  className={`chk-cupons-save${cuponsSaved ? ' chk-cupons-save--ok' : ''}`}
-                >
-                  {savingCupons ? (
-                    <><span className="chk-spinner-btn" /> Salvando...</>
-                  ) : cuponsSaved ? (
-                    <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Cupons salvos!</>
-                  ) : (
-                    <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar cupons</>
-                  )}
-                </button>
               )}
             </div>
 
@@ -566,6 +775,135 @@ export default function CheckoutConfigPage() {
           transition:background 0.15s;
         }
         .chk-cupom-remove:hover { background:#fee2e2; }
+
+        /* ── Item de cupom (lista) ── */
+        .chk-cupom-item {
+          display:flex; align-items:center; gap:0.85rem;
+          padding:0.85rem 0.95rem;
+          background:var(--bg-card, #FFFFFF);
+          border:1.5px solid var(--border, #E9E9EE);
+          border-radius:14px; cursor:pointer;
+          transition:all 0.18s; position:relative; overflow:hidden;
+        }
+        .chk-cupom-item::before {
+          content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+        }
+        .chk-cupom-item:hover {
+          border-color:var(--primary, #FF6FA9);
+          background:var(--primary-light, #FFF1F7);
+          transform:translateY(-1px);
+          box-shadow:0 4px 14px rgba(255,111,169,0.14);
+        }
+        .chk-cupom-item--inactive { opacity:0.65; }
+        .chk-cupom-item--inactive::before { background:var(--text-muted, #9CA3AF); }
+
+        .chk-cupom-item-left { flex:1; min-width:0; display:flex; flex-direction:column; gap:0.3rem; padding-left:0.4rem; }
+        .chk-cupom-item-codigo {
+          display:flex; align-items:center; gap:0.4rem;
+          color:var(--primary-dark, #F85A9A);
+          font-family:'Geist Mono', ui-monospace, monospace;
+          font-size:0.95rem; font-weight:800; letter-spacing:0.06em;
+        }
+        .chk-cupom-item-meta {
+          display:flex; flex-wrap:wrap; gap:0.35rem; align-items:center;
+        }
+        .chk-cupom-item-desconto {
+          font-size:0.75rem; font-weight:700;
+          color:var(--primary, #FF6FA9);
+          background:var(--primary-light, #FFF1F7);
+          padding:2px 8px; border-radius:50px;
+        }
+        .chk-cupom-item-tag {
+          display:inline-flex; align-items:center; gap:3px;
+          font-size:0.7rem; color:var(--text-secondary, #6B7280);
+          background:var(--bg-body, #F7F7F8);
+          padding:2px 7px; border-radius:50px;
+          border:1px solid var(--border, #E9E9EE);
+        }
+        .chk-cupom-item-status {
+          font-size:0.68rem; font-weight:700;
+          padding:3px 9px; border-radius:50px;
+          letter-spacing:0.04em; flex-shrink:0;
+        }
+        .chk-cupom-item-status--on {
+          color:var(--success, #22C55E); background:#f0fdf4; border:1px solid #bbf7d0;
+        }
+        .chk-cupom-item-status--off {
+          color:var(--text-muted, #9CA3AF); background:var(--bg-body, #F7F7F8); border:1px solid var(--border, #E9E9EE);
+        }
+        .chk-cupom-item-chevron {
+          color:var(--text-muted, #9CA3AF); flex-shrink:0;
+          transition:transform 0.15s;
+        }
+        .chk-cupom-item:hover .chk-cupom-item-chevron { color:var(--primary, #FF6FA9); transform:translateX(2px); }
+
+        /* ── Formulário de cupom ── */
+        .chk-cupom-form {
+          display:flex; flex-direction:column; gap:0.85rem;
+          padding:1rem;
+          background:var(--bg-body, #F7F7F8);
+          border-radius:14px;
+          border:1.5px solid var(--border, #E9E9EE);
+          animation:chkFadeIn 0.2s ease;
+        }
+        .chk-form-field { display:flex; flex-direction:column; gap:0.35rem; }
+        .chk-form-label {
+          font-size:0.74rem; font-weight:700;
+          color:var(--text-primary, #374151);
+          margin:0; letter-spacing:0.01em;
+        }
+        .chk-form-row { display:flex; gap:0.6rem; }
+        @media (max-width:520px) { .chk-form-row { flex-direction:column; } }
+
+        .chk-form-divider {
+          display:flex; align-items:center; gap:0.5rem;
+          margin:0.4rem 0 0;
+          font-size:0.7rem; font-weight:700;
+          color:var(--text-muted, #9CA3AF);
+          text-transform:uppercase; letter-spacing:0.1em;
+        }
+        .chk-form-divider::before, .chk-form-divider::after {
+          content:""; flex:1; height:1px;
+          background:var(--border, #E9E9EE);
+        }
+
+        .chk-form-actions {
+          display:flex; align-items:center; gap:0.5rem;
+          margin-top:0.4rem; padding-top:0.85rem;
+          border-top:1px dashed var(--border, #E9E9EE);
+          flex-wrap:wrap;
+        }
+        .chk-form-btn-cancel {
+          padding:0.55rem 1.1rem;
+          background:var(--bg-card, #FFFFFF);
+          border:1.5px solid var(--border, #E9E9EE);
+          border-radius:50px;
+          font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:600;
+          color:var(--text-secondary, #6B7280);
+          cursor:pointer; transition:all 0.15s;
+        }
+        .chk-form-btn-cancel:hover { border-color:var(--text-muted, #9CA3AF); color:var(--text-primary, #374151); }
+        .chk-form-btn-save {
+          display:inline-flex; align-items:center; gap:5px;
+          padding:0.6rem 1.2rem;
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          color:#fff; border:none; border-radius:50px;
+          font-family:'Geist', sans-serif; font-size:0.85rem; font-weight:700;
+          cursor:pointer;
+          box-shadow:0 3px 10px rgba(255,111,169,0.3);
+          transition:transform 0.15s, box-shadow 0.15s;
+        }
+        .chk-form-btn-save:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(255,111,169,0.4); }
+        .chk-form-btn-delete {
+          display:inline-flex; align-items:center; gap:5px;
+          padding:0.55rem 1rem;
+          background:#fff5f5; color:var(--error, #EF4444);
+          border:1.5px solid #fee2e2; border-radius:50px;
+          font-family:'Geist', sans-serif; font-size:0.8rem; font-weight:700;
+          cursor:pointer; transition:all 0.15s;
+        }
+        .chk-form-btn-delete:hover { background:#fee2e2; border-color:#fca5a5; }
 
         /* ── Botão Salvar cupons ── */
         .chk-cupons-save {
