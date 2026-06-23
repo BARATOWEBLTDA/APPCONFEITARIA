@@ -403,106 +403,114 @@ function ModalPedido({ p, onClose, onEditar, onExcluir }: { p: Pedido; onClose: 
       <div className="mp-modal" onClick={e => e.stopPropagation()}>
         <div className="mp-handle" />
 
+        {/* Header fixo */}
+        <div className="mp-header">
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span className="mp-numero">Pedido #{p.numero || '—'}</span>
+              <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
+                <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
+                {grupo.label}
+              </span>
+            </div>
+            <p className="mp-criado">
+              {p.created_at && (
+                <>
+                  {new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' })}
+                  {' · '}
+                  {new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' })}
+                </>
+              )}
+              {p.origem === 'cardapio' && <> · via Cardápio</>}
+            </p>
+          </div>
+          <button className="mp-fechar" onClick={onClose}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        {/* Body com scroll */}
         <div className="mp-body">
 
-          {/* ── Seção 1: Identificação ── */}
-          <div className="mp-secao">
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-              <div>
-                <span className="mp-numero">Pedido #{p.numero || '—'}</span>
-                {p.created_at && (
-                  <p className="mp-criado">
-                    {new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' })}
-                    {' · '}
-                    {new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' })}
-                  </p>
-                )}
-                {p.origem === 'cardapio' && <p className="mp-criado">via Cardápio</p>}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
-                  <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
-                  {grupo.label}
-                </span>
-                <button className="mp-fechar" onClick={onClose}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-              </div>
-            </div>
+          {/* Cliente */}
+          <div className="mp-grupo">
+            <p className="mp-grupo-titulo">Cliente</p>
+            <p className="mp-grupo-val">{p.cliente_nome || '—'}</p>
+            {p.cliente_telefone && <p className="mp-grupo-sub">{p.cliente_telefone}</p>}
           </div>
 
-          {/* ── Seção 2: Dados do cliente e entrega ── */}
-          <div className="mp-secao">
-            <p className="mp-secao-titulo">Cliente</p>
-            <p className="mp-secao-val">{p.cliente_nome || '—'}</p>
-            {p.cliente_telefone && <p className="mp-secao-sub">{p.cliente_telefone}</p>}
-            <div style={{ height: 10 }} />
-            <p className="mp-secao-titulo">Entrega</p>
-            <p className="mp-secao-val">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}{p.data_entrega ? ` · ${formatDate(p.data_entrega)}${p.horario_entrega ? ` às ${p.horario_entrega.slice(0,5)}` : ''}` : ''}</p>
-            {enderecoCompleto && <p className="mp-secao-sub">{enderecoCompleto}</p>}
+          {/* Entrega */}
+          <div className="mp-grupo">
+            <p className="mp-grupo-titulo">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</p>
+            {p.data_entrega && <p className="mp-grupo-val">{formatDate(p.data_entrega)}{p.horario_entrega ? ` às ${p.horario_entrega.slice(0,5)}` : ''}</p>}
+            {enderecoCompleto && <p className="mp-grupo-sub">{enderecoCompleto}</p>}
           </div>
 
-          {/* ── Seção 3: Produtos + pagamento + botões ── */}
-          <div className="mp-secao">
-            {itens.length > 0 && (
-              <>
-                <p className="mp-secao-titulo">Produtos</p>
-                <div className="mp-itens">
-                  {itens.map((item, i) => (
-                    <div key={i} className="mp-item">
-                      <div className="mp-item-img">
-                        {(item.imagem_url || item.produtos?.imagem_url) ? <img src={item.imagem_url || item.produtos?.imagem_url!} alt={item.nome_produto} /> : <span>🎂</span>}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p className="mp-item-nome">{item.nome_produto}</p>
-                        <p className="mp-item-qtd">{formatItemQuantidade(item.quantidade, item.produtos?.forma_venda)} · {formatMoney(item.valor_unitario)}</p>
-                        {item.personalizacoes?.massa && <p className="mp-item-extra">Massa: {item.personalizacoes.massa}</p>}
-                        {item.personalizacoes?.recheio && <p className="mp-item-extra">Recheio: {item.personalizacoes.recheio}</p>}
-                        {item.personalizacoes?.cobertura && <p className="mp-item-extra">Cobertura: {item.personalizacoes.cobertura}</p>}
-                        {item.observacoes && <p className="mp-item-extra">Obs: {item.observacoes}</p>}
-                      </div>
-                      <p className="mp-item-total">{formatMoney(item.quantidade * item.valor_unitario)}</p>
+          {/* Produtos */}
+          {itens.length > 0 && (
+            <div className="mp-grupo">
+              <p className="mp-grupo-titulo">Produtos ({itens.length})</p>
+              <div className="mp-itens">
+                {itens.map((item, i) => (
+                  <div key={i} className="mp-item">
+                    <div className="mp-item-img">
+                      {(item.imagem_url || item.produtos?.imagem_url) ? <img src={item.imagem_url || item.produtos?.imagem_url!} alt={item.nome_produto} /> : <span>🎂</span>}
                     </div>
-                  ))}
-                </div>
-                <div style={{ height: 10 }} />
-              </>
-            )}
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div>
-                <p className="mp-secao-titulo">Pagamento</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                  <span className="mp-secao-val">{PAG_CONFIG[p.forma_pagamento] || 'PIX'}</span>
-                  <span className="ped-card-status" style={{ color: pagamentoCor, background: p.status_pagamento === 'pago' ? '#dcfce7' : p.status_pagamento === 'parcial' ? '#FAEEDA' : '#fee2e2', fontSize: '0.68rem', padding: '2px 8px' }}>
-                    {p.status_pagamento === 'pago' ? 'Pago' : p.status_pagamento === 'parcial' ? 'Parcial' : 'Pendente'}
-                  </span>
-                </div>
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <p className="mp-secao-titulo">Total</p>
-                <p style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-title,#431524)', margin: 0 }}>{formatMoney(p.valor_total)}</p>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p className="mp-item-nome">{item.nome_produto}</p>
+                      <p className="mp-item-qtd">{formatItemQuantidade(item.quantidade, item.produtos?.forma_venda)} · {formatMoney(item.valor_unitario)}</p>
+                      {item.personalizacoes?.massa && <p className="mp-item-extra">Massa: {item.personalizacoes.massa}</p>}
+                      {item.personalizacoes?.recheio && <p className="mp-item-extra">Recheio: {item.personalizacoes.recheio}</p>}
+                      {item.personalizacoes?.cobertura && <p className="mp-item-extra">Cobertura: {item.personalizacoes.cobertura}</p>}
+                      {item.observacoes && <p className="mp-item-extra">Obs: {item.observacoes}</p>}
+                    </div>
+                    <p className="mp-item-total">{formatMoney(item.quantidade * item.valor_unitario)}</p>
+                  </div>
+                ))}
               </div>
             </div>
+          )}
 
-            {/* Botões */}
-            <div className="mp-btns">
-              <button className="mp-btn-editar" onClick={onEditar}>Editar pedido</button>
-              {!confirmExcluir ? (
-                <button className="mp-btn-excluir" onClick={() => setConfirmExcluir(true)}>Excluir pedido</button>
-              ) : (
-                <div className="mp-confirm-excluir">
-                  <p>Tem certeza? Esta ação não pode ser desfeita.</p>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="mp-btn-fechar" style={{ flex: 1 }} onClick={() => setConfirmExcluir(false)}>Cancelar</button>
-                    <button className="mp-btn-confirmar-excluir" style={{ flex: 1 }} onClick={onExcluir}>Sim, excluir</button>
-                  </div>
-                </div>
-              )}
-              <button className="mp-btn-fechar" onClick={onClose}>Fechar</button>
+          {/* Pagamento + Total */}
+          <div className="mp-resumo">
+            <div className="mp-resumo-row">
+              <span className="mp-resumo-label">Pagamento</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span className="mp-resumo-val">{PAG_CONFIG[p.forma_pagamento] || 'PIX'}</span>
+                <span className="ped-card-status" style={{ color: pagamentoCor, background: p.status_pagamento === 'pago' ? '#dcfce7' : p.status_pagamento === 'parcial' ? '#FAEEDA' : '#fee2e2', fontSize: '0.68rem', padding: '2px 8px' }}>
+                  {p.status_pagamento === 'pago' ? 'Pago' : p.status_pagamento === 'parcial' ? 'Parcial' : 'Pendente'}
+                </span>
+              </div>
+            </div>
+            <div className="mp-resumo-row mp-resumo-total">
+              <span className="mp-resumo-label-total">Total</span>
+              <span className="mp-resumo-val-total">{formatMoney(p.valor_total)}</span>
             </div>
           </div>
 
+        </div>
+
+        {/* Footer fixo com botões */}
+        <div className="mp-footer">
+          {!confirmExcluir ? (
+            <>
+              <button className="mp-btn-editar" onClick={onEditar}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Editar pedido
+              </button>
+              <button className="mp-btn-excluir" onClick={() => setConfirmExcluir(true)} title="Excluir pedido">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+              </button>
+            </>
+          ) : (
+            <div className="mp-confirm-excluir">
+              <p>Excluir este pedido? Esta ação não pode ser desfeita.</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="mp-btn-cancel" onClick={() => setConfirmExcluir(false)}>Cancelar</button>
+                <button className="mp-btn-confirmar-excluir" onClick={onExcluir}>Sim, excluir</button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>
@@ -888,31 +896,51 @@ export default function Pedidos() {
         @media (min-width: 768px) { .mp-handle { display: none; } }
         .mp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; animation: hsFadeIn 0.2s ease; }
         .mp-modal { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card,#fff); border-radius: 20px 20px 0 0; z-index: 9999; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 -4px 32px rgba(0,0,0,0.2); animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); font-family: inherit; }
-        @media (min-width: 768px) { .mp-modal { top: 50%; left: 50%; right: auto; bottom: auto; transform: translate(-50%,-50%); border-radius: 16px; width: 420px; max-width: 95vw; animation: hsFadeIn 0.2s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.2); } }
-        .mp-numero { font-size: 1rem; font-weight: 800; color: var(--text-title,#431524); }
-        .mp-criado { font-size: 0.68rem; color: var(--text-muted,#C39EAA); margin: 2px 0 0; }
-        .mp-fechar { background: none; border: none; cursor: pointer; color: var(--text-muted,#C39EAA); display: flex; padding: 4px; border-radius: 6px; flex-shrink: 0; }
+        @media (min-width: 768px) { .mp-modal { top: 50%; left: 50%; right: auto; bottom: auto; transform: translate(-50%,-50%); border-radius: 16px; width: 460px; max-width: 95vw; max-height: 85vh; animation: hsFadeIn 0.2s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.2); } }
+
+        /* Header */
+        .mp-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 1rem 1.25rem 0.85rem; border-bottom: 1px solid var(--border,#ECC2D0); flex-shrink: 0; }
+        .mp-numero { font-size: 1.05rem; font-weight: 800; color: var(--text-title,#431524); }
+        .mp-criado { font-size: 0.72rem; color: var(--text-muted,#C39EAA); margin: 4px 0 0; }
+        .mp-fechar { background: none; border: none; cursor: pointer; color: var(--text-muted,#C39EAA); display: flex; padding: 6px; border-radius: 8px; flex-shrink: 0; transition: all 0.15s; }
         .mp-fechar:hover { background: var(--bg-subtle,#F7EEF1); color: var(--text-title,#431524); }
-        .mp-body { overflow-y: auto; flex: 1; padding: 0 1rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
-        .mp-secao { background: var(--bg-subtle,#F7EEF1); border-radius: 14px; padding: 0.85rem 1rem; }
-        .mp-secao-titulo { font-size: 0.7rem; font-weight: 700; color: var(--text-muted,#C39EAA); text-transform: uppercase; letter-spacing: 0.06em; margin: 0 0 2px; }
-        .mp-secao-val { font-size: 0.9rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
-        .mp-secao-sub { font-size: 0.78rem; color: var(--text-secondary,#6E3548); margin: 2px 0 0; }
-        .mp-itens { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-        .mp-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--border,#ECC2D0); }
-        .mp-item:last-child { border-bottom: none; padding-bottom: 0; }
-        .mp-item-img { width: 34px; height: 34px; border-radius: 7px; background: var(--bg-card,#fff); border: 1px solid var(--border,#ECC2D0); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+
+        /* Body */
+        .mp-body { overflow-y: auto; flex: 1; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+        .mp-grupo { display: flex; flex-direction: column; }
+        .mp-grupo-titulo { font-size: 0.68rem; font-weight: 700; color: var(--text-muted,#C39EAA); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 4px; }
+        .mp-grupo-val { font-size: 0.95rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
+        .mp-grupo-sub { font-size: 0.8rem; color: var(--text-secondary,#6E3548); margin: 3px 0 0; line-height: 1.4; }
+
+        /* Itens */
+        .mp-itens { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+        .mp-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg-subtle,#F7EEF1); border-radius: 10px; }
+        .mp-item-img { width: 40px; height: 40px; border-radius: 8px; background: var(--bg-card,#fff); border: 1px solid var(--border,#ECC2D0); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
         .mp-item-img img { width: 100%; height: 100%; object-fit: cover; }
-        .mp-item-nome { font-size: 0.84rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
-        .mp-item-qtd { font-size: 0.72rem; color: var(--text-secondary,#6E3548); margin: 1px 0 0; }
-        .mp-item-extra { font-size: 0.68rem; color: var(--text-muted,#C39EAA); margin: 1px 0 0; }
-        .mp-item-total { font-size: 0.84rem; font-weight: 700; color: var(--text-title,#431524); flex-shrink: 0; margin: 0; }
-        .mp-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-        .mp-btn-excluir { width: 100%; background: #fff1f2; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: 12px; padding: 0.75rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; }
-        .mp-confirm-excluir { background: #fff1f2; border-radius: 12px; padding: 0.85rem 1rem; }
-        .mp-confirm-excluir p { font-size: 0.82rem; color: #dc2626; margin: 0 0 10px; font-weight: 500; }
-        .mp-btn-confirmar-excluir { background: #dc2626; border: none; color: white; border-radius: 10px; padding: 0.65rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; }
-        .mp-btn-fechar { width: 100%; background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); color: var(--text-secondary,#6E3548); border-radius: 12px; padding: 0.75rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .mp-item-nome { font-size: 0.88rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
+        .mp-item-qtd { font-size: 0.74rem; color: var(--text-secondary,#6E3548); margin: 2px 0 0; }
+        .mp-item-extra { font-size: 0.7rem; color: var(--text-muted,#C39EAA); margin: 2px 0 0; }
+        .mp-item-total { font-size: 0.9rem; font-weight: 700; color: var(--text-title,#431524); flex-shrink: 0; margin: 0; }
+
+        /* Resumo pagamento + total */
+        .mp-resumo { background: var(--bg-subtle,#F7EEF1); border-radius: 12px; padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 8px; }
+        .mp-resumo-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .mp-resumo-label { font-size: 0.8rem; color: var(--text-secondary,#6E3548); font-weight: 500; }
+        .mp-resumo-val { font-size: 0.88rem; font-weight: 600; color: var(--text-title,#431524); }
+        .mp-resumo-total { padding-top: 8px; border-top: 1px dashed var(--border,#ECC2D0); }
+        .mp-resumo-label-total { font-size: 0.85rem; font-weight: 700; color: var(--text-title,#431524); }
+        .mp-resumo-val-total { font-size: 1.25rem; font-weight: 800; color: var(--text-title,#431524); letter-spacing: -0.02em; }
+
+        /* Footer */
+        .mp-footer { padding: 0.85rem 1.25rem 1.25rem; border-top: 1px solid var(--border,#ECC2D0); flex-shrink: 0; display: flex; gap: 8px; }
+        .mp-btn-editar { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: #3d1a24; border: none; color: white; border-radius: 10px; padding: 0.8rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
+        .mp-btn-editar:hover { opacity: 0.92; }
+        .mp-btn-excluir { width: 44px; height: 44px; background: #fff1f2; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: 10px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+        .mp-btn-excluir:hover { background: #fee2e2; }
+        .mp-confirm-excluir { width: 100%; background: #fff1f2; border: 1.5px solid #fca5a5; border-radius: 10px; padding: 0.85rem 1rem; }
+        .mp-confirm-excluir p { font-size: 0.85rem; color: #991b1b; margin: 0 0 10px; font-weight: 500; }
+        .mp-btn-cancel { flex: 1; background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); color: var(--text-secondary,#6E3548); border-radius: 8px; padding: 0.55rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .mp-btn-confirmar-excluir { flex: 1; background: #dc2626; border: none; color: white; border-radius: 8px; padding: 0.55rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; }
 
         @media (min-width: 768px) {
           .ped-dt-wrapper { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); border-radius: 14px; overflow: hidden; width: 100%; }
