@@ -139,8 +139,6 @@ export default function CheckoutConfigPage() {
   const toggleEntrega = (key: string) => {
     setFormasEntrega(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key])
   }
-  const addBairro = () => setEntregaPorBairro(prev => [...prev, { bairro: '', valor: '' }])
-  const removeBairro = (i: number) => setEntregaPorBairro(prev => prev.filter((_, idx) => idx !== i))
   const abrirNovoCupom = () => {
     setCupomForm(cupomVazio)
     setEditandoIndex(-1)
@@ -292,48 +290,13 @@ export default function CheckoutConfigPage() {
               >Taxa de entrega</SectionLabel>
 
               <div className="chk-form-field">
-                <label className="chk-form-label">Valor padrão da entrega</label>
+                <label className="chk-form-label">Valor fixo da entrega</label>
                 <div className="chk-money-row">
                   <span className="chk-prefix">R$</span>
                   <input className="chk-input" style={{width:'140px'}} value={valorEntregaPropria} onChange={e => setValorEntregaPropria(e.target.value.replace(/[^0-9.,]/g,''))} placeholder="0,00" />
                 </div>
-                <p className="chk-toggle-sub" style={{marginTop:'2px'}}>Cobrado quando o bairro do cliente não estiver na lista abaixo</p>
+                <p className="chk-toggle-sub" style={{marginTop:'2px'}}>Cobrado em todo pedido com entrega própria</p>
               </div>
-
-              <hr className="chk-divider" />
-
-              <div className="chk-row-between">
-                <div>
-                  <p className="chk-sublabel">Valor por bairro</p>
-                  <p className="chk-toggle-sub" style={{marginTop:'2px'}}>Opcional — cobra um valor diferente por região</p>
-                </div>
-                <button onClick={addBairro} className="chk-btn-add">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Bairro
-                </button>
-              </div>
-
-              {entregaPorBairro.length === 0 ? (
-                <div className="chk-cupons-empty" style={{padding:'1.1rem 0.85rem'}}>
-                  <div className="chk-cupons-empty-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  </div>
-                  <p className="chk-cupons-empty-text">Nenhum bairro cadastrado. Use o botão <strong>+ Bairro</strong> para adicionar.</p>
-                </div>
-              ) : (
-                entregaPorBairro.map((b, i) => (
-                  <div key={i} className="chk-bairro-row">
-                    <input className="chk-input" style={{flex:1}} value={b.bairro} onChange={e => setEntregaPorBairro(prev => prev.map((x,j) => j===i ? {...x, bairro:e.target.value} : x))} placeholder="Nome do bairro" />
-                    <div className="chk-money-row">
-                      <span className="chk-prefix">R$</span>
-                      <input className="chk-input" style={{width:'80px'}} value={b.valor} onChange={e => setEntregaPorBairro(prev => prev.map((x,j) => j===i ? {...x, valor:e.target.value.replace(/[^0-9.,]/g,'')} : x))} placeholder="0,00" />
-                    </div>
-                    <button onClick={() => removeBairro(i)} className="chk-btn-remove" aria-label="Remover bairro">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-                  </div>
-                ))
-              )}
             </div>
           )}
 
