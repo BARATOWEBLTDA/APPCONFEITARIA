@@ -917,7 +917,7 @@ export default function Pedidos() {
         @media (min-width: 768px) {
           .ped-dt-wrapper { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); border-radius: 14px; overflow: hidden; width: 100%; }
 
-          .ped-th { padding: 0.85rem 1rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(236,194,208,0.8); text-align: left; white-space: nowrap; }
+          .ped-th { padding: 0.85rem 1rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #ffffff; text-align: left; white-space: nowrap; }
           .ped-th:nth-child(1) { min-width: 130px; }
           .ped-th:nth-child(2) { min-width: 150px; }
           .ped-th:nth-child(3) { min-width: 160px; }
