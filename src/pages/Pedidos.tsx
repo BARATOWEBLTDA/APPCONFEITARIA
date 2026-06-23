@@ -784,7 +784,16 @@ export default function Pedidos() {
           ) : (
             <div className={!isMobile ? 'ped-dt-wrapper' : ''} style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '0.65rem' : 0 }}>
               {!isMobile ? (
-                <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+                  <colgroup>
+                    <col style={{ width: '130px' }} />
+                    <col style={{ width: '160px' }} />
+                    <col style={{ width: '200px' }} />
+                    <col style={{ width: '150px' }} />
+                    <col style={{ width: '110px' }} />
+                    <col style={{ width: '120px' }} />
+                    <col style={{ width: '120px' }} />
+                  </colgroup>
                   <thead>
                     <tr style={{ background: '#3d1a24' }}>
                       <th className="ped-th">Pedido</th>
