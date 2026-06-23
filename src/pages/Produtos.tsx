@@ -261,14 +261,14 @@ export default function Produtos() {
     )}
     <div className="prod-root">
 
-      {/* ── Tabs ── */}
-      <div className="prod-tabs">
-        <button className={`prod-tab${activeTab==="produtos"?" prod-tab--active":""}`} onClick={()=>setActiveTab("produtos")}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+      {/* ── Tabs estilo Doonly ── */}
+      <div className="prod-tabs-novo">
+        <button className={`prod-tab-novo${activeTab==="produtos"?" active":""}`} onClick={()=>setActiveTab("produtos")}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           Produtos
         </button>
-        <button className={`prod-tab${activeTab==="categorias"?" prod-tab--active":""}`} onClick={()=>setActiveTab("categorias")}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <button className={`prod-tab-novo${activeTab==="categorias"?" active":""}`} onClick={()=>setActiveTab("categorias")}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
           Categorias
         </button>
       </div>
@@ -277,36 +277,35 @@ export default function Produtos() {
 
       {activeTab === "produtos" && <>
 
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "1.5rem" }}>
-        <button className="prod-btn-novo" onClick={openNovo}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Novo
+      {/* Header novo: título à esquerda, botão Novo grande à direita */}
+      <div className="prod-header-novo">
+        <div>
+          <h1 className="prod-title-novo">Produtos</h1>
+          <p className="prod-sub-novo">{produtos.length} cadastrado{produtos.length !== 1 ? "s" : ""}</p>
+        </div>
+        <button className="prod-btn-novo-novo" onClick={openNovo}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Novo produto
         </button>
-        <div style={{ textAlign: "center" }}>
-          <h1 className="prod-title">Produtos</h1>
-          <p className="prod-sub">{produtos.length} cadastrado{produtos.length !== 1 ? "s" : ""}</p>
-        </div>
-        <div style={{ display: "flex", background: "var(--bg-subtle, #FFF1F7)", borderRadius: "10px", padding: "3px", gap: "2px" }}>
-          <button onClick={() => { setViewMode("grid"); localStorage.setItem("prod_viewMode", "grid"); }} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "grid" ? "var(--bg-card, #FFFFFF)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "grid" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "grid" ? "var(--primary, #FF6FA9)" : "var(--text-muted, #9CA3AF)"} strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          </button>
-          <button onClick={() => { setViewMode("lista"); localStorage.setItem("prod_viewMode", "lista"); }} style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", background: viewMode === "lista" ? "var(--bg-card, #FFFFFF)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: viewMode === "lista" ? "0 1px 3px rgba(0,0,0,0.1)" : "none", transition: "all 0.2s" }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === "lista" ? "var(--primary, #FF6FA9)" : "var(--text-muted, #9CA3AF)"} strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          </button>
-        </div>
       </div>
 
       {/* Barra de pesquisa */}
-      <div style={{ position: "relative" }}>
-        <svg style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <div className="prod-busca-novo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input
           type="text"
           placeholder="Buscar produto..."
           value={buscaTexto}
           onChange={e => { setBuscaTexto(e.target.value); setFiltroCategoria("todas"); }}
-          style={{ width: "100%", padding: "0.65rem 1rem 0.65rem 2.5rem", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "12px", fontFamily: "inherit", fontSize: "0.88rem", outline: "none", boxSizing: "border-box", background: "var(--bg-card, #FFFFFF)" }}
         />
+        <div style={{ display: "flex", background: "white", borderRadius: 8, padding: 2, gap: 2, border: "1.5px solid var(--border,#ECC2D0)", flexShrink: 0 }}>
+          <button onClick={() => { setViewMode("grid"); localStorage.setItem("prod_viewMode", "grid"); }} style={{ width: 28, height: 28, borderRadius: 6, border: "none", cursor: "pointer", background: viewMode === "grid" ? "#3d1a24" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }} title="Grade">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={viewMode === "grid" ? "white" : "var(--text-muted,#C39EAA)"} strokeWidth="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button onClick={() => { setViewMode("lista"); localStorage.setItem("prod_viewMode", "lista"); }} style={{ width: 28, height: 28, borderRadius: 6, border: "none", cursor: "pointer", background: viewMode === "lista" ? "#3d1a24" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }} title="Lista">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={viewMode === "lista" ? "white" : "var(--text-muted,#C39EAA)"} strokeWidth="2.2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+        </div>
       </div>
 
       {/* Aviso de produtos sem categoria válida */}
@@ -324,7 +323,7 @@ export default function Produtos() {
                 Esses produtos aparecem apenas em "Todos" no cardápio. Edite-os e selecione uma categoria válida.
               </p>
             </div>
-            <button onClick={() => setFiltroCategoria("__orfaos__")} style={{ padding: "5px 12px", background: "var(--warning, #F59E0B)", color: "var(--text-inverse, #FFFFFF)", border: "none", borderRadius: "8px", fontFamily: "inherit", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+            <button onClick={() => setFiltroCategoria("__orfaos__")} style={{ padding: "5px 12px", background: "var(--warning, #F59E0B)", color: "white", border: "none", borderRadius: "8px", fontFamily: "inherit", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
               Ver {orfaos.length}
             </button>
           </div>
@@ -343,10 +342,16 @@ export default function Produtos() {
       )}
 
       {produtosFiltrados.length === 0 ? (
-        <div className="prod-empty">
-          <span style={{ fontSize: "3rem" }}>🎂</span>
-          <p className="prod-empty-title">Nenhum produto ainda</p>
-          <p className="prod-empty-sub">Cadastre seu primeiro produto para aparecer no cardápio</p>
+        <div className="prod-empty-novo">
+          <div className="prod-empty-doo">
+            <img src="/Sistema/doo.png" alt="Doo" />
+          </div>
+          <p className="prod-empty-title-novo">Vamos cadastrar seu primeiro produto?</p>
+          <p className="prod-empty-sub-novo">Quanto mais completo seu catálogo, mais profissional sua confeitaria fica para os clientes!</p>
+          <button onClick={openNovo} className="prod-empty-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Cadastrar primeiro produto
+          </button>
         </div>
       ) : (
         <div className={viewMode === "grid" ? "prod-grid" : "prod-list"}>
@@ -926,6 +931,252 @@ export default function Produtos() {
         .prod-confirm-sub { font-size:0.82rem; color:var(--text-muted, #9CA3AF); margin:0 0 1.25rem; }
         .prod-confirm-btns { display:flex; gap:0.75rem; }
         .prod-confirm-btns button { flex:1; padding:0.75rem; border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; background:var(--bg-body, #F7F7F8); color:var(--text-secondary, #6B7280); }
+
+        /* ════════════════════════════════════════════════════════════════ */
+        /* IDENTIDADE DOONLY - PRODUTOS MOBILE                              */
+        /* ════════════════════════════════════════════════════════════════ */
+
+        .prod-root {
+          display: flex;
+          flex-direction: column;
+          gap: 0.85rem;
+          padding-top: 1.25rem;
+          padding-bottom: 6rem;
+          font-family: 'Geist', sans-serif;
+        }
+
+        /* ── Tabs Produtos / Categorias ── */
+        .prod-tabs-novo {
+          display: flex;
+          gap: 0.5rem;
+          background: var(--bg-subtle, #F7EEF1);
+          padding: 4px;
+          border-radius: 12px;
+        }
+        .prod-tab-novo {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          padding: 0.6rem 0.75rem;
+          background: transparent;
+          border: none;
+          border-radius: 9px;
+          font-family: inherit;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: var(--text-secondary, #6E3548);
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .prod-tab-novo.active {
+          background: #fff;
+          color: #3d1a24;
+          box-shadow: 0 2px 6px rgba(61, 26, 36, 0.08);
+        }
+
+        /* ── Header título + botão ── */
+        .prod-header-novo {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.75rem;
+        }
+        .prod-title-novo {
+          font-size: 1.4rem;
+          font-weight: 700;
+          color: var(--text-title, #431524);
+          margin: 0;
+          letter-spacing: -0.02em;
+        }
+        .prod-sub-novo {
+          font-size: 0.78rem;
+          color: var(--text-muted, #C39EAA);
+          margin: 0.1rem 0 0;
+        }
+        .prod-btn-novo-novo {
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          background: #3d1a24;
+          color: white;
+          border: none;
+          border-radius: 10px;
+          padding: 0.65rem 1rem;
+          font-family: inherit;
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          white-space: nowrap;
+          flex-shrink: 0;
+          box-shadow: 0 4px 12px rgba(61, 26, 36, 0.18);
+          transition: all 0.15s ease;
+        }
+        .prod-btn-novo-novo:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(61, 26, 36, 0.25);
+        }
+
+        /* ── Barra de busca ── */
+        .prod-busca-novo {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: var(--bg-card, #fff);
+          border: 1.5px solid var(--border, #ECC2D0);
+          border-radius: 12px;
+          padding: 0.6rem 0.9rem;
+          transition: border-color 0.15s ease;
+        }
+        .prod-busca-novo:focus-within {
+          border-color: #3d1a24;
+        }
+        .prod-busca-novo > svg:first-child {
+          color: var(--text-muted, #C39EAA);
+          flex-shrink: 0;
+        }
+        .prod-busca-novo input {
+          flex: 1;
+          background: transparent;
+          border: none;
+          outline: none;
+          font-family: inherit;
+          font-size: 0.9rem;
+          color: var(--text-title, #431524);
+          min-width: 0;
+        }
+        .prod-busca-novo input::placeholder {
+          color: var(--text-muted, #C39EAA);
+        }
+
+        /* ── Filtros categoria ── */
+        .prod-filtros {
+          display: flex;
+          gap: 0.5rem;
+          overflow-x: auto;
+          padding-bottom: 4px;
+          margin: 0 -1rem;
+          padding-left: 1rem;
+          padding-right: 1rem;
+          scrollbar-width: none;
+        }
+        .prod-filtros::-webkit-scrollbar { display: none; }
+        .prod-filtro-btn {
+          background: var(--bg-card, #fff);
+          border: 1.5px solid var(--border, #ECC2D0);
+          border-radius: 999px;
+          padding: 0.45rem 0.95rem;
+          font-family: inherit;
+          font-size: 0.78rem;
+          font-weight: 600;
+          color: var(--text-secondary, #6E3548);
+          cursor: pointer;
+          white-space: nowrap;
+          flex-shrink: 0;
+          transition: all 0.15s ease;
+        }
+        .prod-filtro-btn:hover {
+          border-color: #3d1a24;
+          color: #3d1a24;
+        }
+        .prod-filtro-btn.active {
+          background: #3d1a24;
+          border-color: #3d1a24;
+          color: white;
+        }
+
+        /* ── Estado vazio (Doo) ── */
+        .prod-empty-novo {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+          padding: 2.5rem 1.5rem;
+          background: var(--bg-card, #fff);
+          border: 1.5px dashed var(--border, #ECC2D0);
+          border-radius: 16px;
+          margin-top: 0.5rem;
+        }
+        .prod-empty-doo {
+          width: 96px;
+          height: 96px;
+          border-radius: 28%;
+          background: #3d1a24;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 1.25rem;
+          box-shadow: 0 8px 24px rgba(61, 26, 36, 0.2);
+        }
+        .prod-empty-doo > div,
+        .prod-empty-doo {
+          position: relative;
+        }
+        .prod-empty-doo::before {
+          content: "";
+          position: absolute;
+          inset: 7px;
+          background: #fff;
+          border-radius: 24%;
+        }
+        .prod-empty-doo img {
+          width: 110px;
+          height: 110px;
+          object-fit: cover;
+          object-position: top center;
+          border-radius: 24%;
+          position: relative;
+          z-index: 1;
+        }
+        .prod-empty-title-novo {
+          font-size: 1.1rem;
+          font-weight: 800;
+          color: var(--text-title, #431524);
+          margin: 0 0 8px;
+          letter-spacing: -0.02em;
+          max-width: 280px;
+        }
+        .prod-empty-sub-novo {
+          font-size: 0.88rem;
+          color: var(--text-secondary, #6E3548);
+          margin: 0 0 1.5rem;
+          line-height: 1.5;
+          max-width: 300px;
+        }
+        .prod-empty-btn {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: #3d1a24;
+          color: white;
+          border: none;
+          border-radius: 12px;
+          padding: 0.8rem 1.5rem;
+          font-family: inherit;
+          font-size: 0.92rem;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(61, 26, 36, 0.25);
+          transition: all 0.15s ease;
+        }
+        .prod-empty-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 16px rgba(61, 26, 36, 0.3);
+        }
+
+        /* ── Lista / Grid de produtos ── */
+        .prod-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+        }
+        .prod-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.65rem;
+        }
       `}</style>
     </div>
     </>
