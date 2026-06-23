@@ -582,9 +582,9 @@ export default function CheckoutConfigPage() {
 
         /* ── Grid ── */
         .chk-grid { display:flex; flex-direction:column; gap:1.25rem; }
+        .chk-stack { display:flex; flex-direction:column; gap:1.25rem; }
         @media (min-width:900px) {
           .chk-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:1.25rem; align-items:start; }
-          .chk-stack { display:flex; flex-direction:column; gap:1.25rem; }
         }
 
         /* ── Card ── */
