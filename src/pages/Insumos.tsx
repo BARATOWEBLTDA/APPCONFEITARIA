@@ -929,6 +929,66 @@ export default function Insumos() {
         )}
       </div>
 
+      {/* Imagem (mobile only — em desktop fica no card lateral acima) */}
+      <div className="ins-imagem-mobile-card">
+        <div className="ins-imagem-mobile-header">
+          <p className="ins-section-label" style={{margin:0,fontSize:"0.92rem"}}>Imagem do ingrediente</p>
+          <span className="ins-optional-badge">opcional</span>
+        </div>
+
+        <div className="ins-imagem-mobile-preview">
+          {imagemSelecionada
+            ? <img src={imagemSelecionada} alt="imagem" />
+            : <div className="ins-imagem-empty" style={{padding:"1.4rem 1rem"}}>
+                <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="var(--border, #E9E9EE)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <p style={{margin:"6px 0 0",fontSize:"0.8rem",color:"var(--text-muted, #9CA3AF)"}}>Sem imagem</p>
+              </div>
+          }
+        </div>
+
+        <div className="ins-imagem-mobile-actions">
+          {isPro ? (
+            <button className="ins-btn-buscar" style={{justifyContent:"center"}}
+              onClick={() => {
+                if (!form.nome.trim() || !form.marca?.trim()) {
+                  alert("Preencha o Nome e a Marca antes de buscar!");
+                  return;
+                }
+                setTermoBuscaImg(`${form.nome} ${form.marca}`);
+                setShowBuscarModal(true);
+                buscarImagens();
+              }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Buscar imagem
+            </button>
+          ) : (
+            <div style={{background:"var(--primary-light, #FFF1F7)",borderRadius:"10px",padding:"0.55rem 0.75rem",textAlign:"center",flex:1}}>
+              <p style={{fontSize:"0.7rem",color:"var(--primary, #FF6FA9)",fontWeight:700,margin:0}}>✨ Busca de imagem é PRO</p>
+            </div>
+          )}
+          <button className="ins-btn-upload" onClick={() => document.getElementById("ins-file-input-mob")?.click()}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload
+          </button>
+          {imagemSelecionada && (
+            <button onClick={() => setImagemSelecionada(null)} style={{background:"none",border:"none",color:"var(--error, #EF4444)",fontSize:"0.78rem",cursor:"pointer",fontFamily:"inherit",padding:"0.5rem"}}>
+              Remover
+            </button>
+          )}
+          <input id="ins-file-input-mob" type="file" accept="image/*" style={{display:"none"}} onChange={async e => {
+            const file = e.target.files?.[0];
+            if (!file || !userId) return;
+            const ext = file.name.split(".").pop() || "jpg";
+            const path = `insumos/${userId}/${Date.now()}.${ext}`;
+            const { error } = await supabase.storage.from("profiles").upload(path, file, {upsert:true});
+            if (!error) {
+              const { data } = supabase.storage.from("profiles").getPublicUrl(path);
+              setImagemSelecionada(`${data.publicUrl}?t=${Date.now()}`);
+            }
+          }} />
+        </div>
+      </div>
+
       {/* Footer */}
       <div className="ins-footer">
         <button className="ins-btn-cancel" onClick={() => setStep("lista")}>Cancelar</button>
@@ -1215,9 +1275,28 @@ function Styles() {
       /* Grid informações básicas + imagem */
       .ins-basicas-grid { display:grid; grid-template-columns:320px 1fr; align-items:stretch; }
       .ins-imagem-inline { display:flex; flex-direction:column; }
+      .ins-imagem-mobile-card { display:none; }
       @media (max-width:768px) {
         .ins-basicas-grid { grid-template-columns:1fr; }
         .ins-imagem-inline { display:none; }
+        .ins-imagem-mobile-card {
+          display:flex; flex-direction:column; gap:0.7rem;
+          background:var(--bg-card, #FFFFFF);
+          border:1px solid var(--border, #E9E9EE);
+          border-radius:14px; padding:1rem;
+          margin-top:0.5rem;
+        }
+        .ins-imagem-mobile-header { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; }
+        .ins-imagem-mobile-preview {
+          width:100%; min-height:160px; aspect-ratio:16/10;
+          background:var(--bg-body, #F7F7F8);
+          border-radius:12px; overflow:hidden;
+          display:flex; align-items:center; justify-content:center;
+        }
+        .ins-imagem-mobile-preview img { width:100%; height:100%; object-fit:cover; }
+        .ins-imagem-mobile-actions { display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center; }
+        .ins-imagem-mobile-actions .ins-btn-buscar,
+        .ins-imagem-mobile-actions .ins-btn-upload { flex:1; min-width:120px; }
       }
       .ins-field-hint { font-size:0.72rem; color:var(--text-muted, #9CA3AF); margin:3px 0 0; }
       .ins-busca-modal { background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.5rem; width:100%; max-width:560px; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:qsmIn 0.25s cubic-bezier(0.16,1,0.3,1); }
