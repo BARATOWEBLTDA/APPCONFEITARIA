@@ -427,7 +427,7 @@ export default function Produtos() {
       {produtosFiltrados.length === 0 ? (
         <div className="prod-empty-novo">
           <div className="prod-empty-doo">
-            <img src="/Sistema/doo.png" alt="Doo" />
+            <img src="/Sistema/produtos.png" alt="Doo" />
           </div>
           <p className="prod-empty-title-novo">Vamos cadastrar seu primeiro produto?</p>
           <p className="prod-empty-sub-novo">Quanto mais completo seu catálogo, mais profissional sua confeitaria fica para os clientes!</p>
