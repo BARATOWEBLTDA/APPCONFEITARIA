@@ -757,10 +757,10 @@ export default function Configuracoes() {
         .cfg-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.68rem; font-weight: 600; }
 
         /* ── Mobile ── */
-        .cfg-mobile { display: flex; flex-direction: column; gap: 0.85rem; }
+        .cfg-mobile { display: flex; flex-direction: column; gap: 0.85rem; padding-top: 1rem; }
         .cfg-desktop { display: none; }
 
-        .cfg-hero { background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); border-radius: 20px; padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        .cfg-hero { background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); border-radius: 20px; padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 6px 20px rgba(255,111,169,0.25); }
         .cfg-hero-left { display: flex; flex-direction: column; gap: 0; flex: 1; min-width: 0; }
         .cfg-hero-saudacao { font-size: 1rem; color: var(--text-inverse, #FFFFFF); margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cfg-badge-pro { background: rgba(255,255,255,0.25); color: var(--text-inverse, #FFFFFF); }
