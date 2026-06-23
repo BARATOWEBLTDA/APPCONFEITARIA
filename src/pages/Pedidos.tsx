@@ -236,18 +236,67 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
     </div>
   )
 
+  // ── Desktop: retorna <tr> direto, sem wrapper div ──
+  if (!isMobile) {
+    return (
+      <tr className="ped-dt-row" onClick={() => onVerPedido(p)}>
+        <td className="ped-td">
+          <span className="ped-dt-num">#{p.numero || '—'}</span>
+          <span className="ped-dt-criado">{p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' · ' + new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : ''}</span>
+          {p.origem === 'cardapio' && <span className="ped-dt-origem-tag">Cardápio</span>}
+        </td>
+        <td className="ped-td">
+          <span className="ped-dt-cliente-nome">{p.cliente_nome || 'Não informado'}</span>
+          {p.cliente_telefone && <span className="ped-dt-cliente-tel">{p.cliente_telefone}</span>}
+        </td>
+        <td className="ped-td">
+          {primeiroItem ? (
+            <div className="ped-dt-produto-row">
+              <div className="ped-dt-produto-img">
+                {(primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url)
+                  ? <img src={primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url || ''} alt={primeiroItem.nome_produto} />
+                  : <span>🎂</span>}
+              </div>
+              <div>
+                <p className="ped-dt-produto-nome">{primeiroItem.nome_produto}{outrosItens > 0 && <span className="ped-card-mais-itens"> +{outrosItens}</span>}</p>
+                <p className="ped-dt-produto-qtd">{formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</p>
+              </div>
+            </div>
+          ) : <span className="ped-dt-vazio">—</span>}
+        </td>
+        <td className="ped-td">
+          {dataLabel && <p className="ped-dt-data" style={{ color: dataCor }}>{dataLabel}{p.horario_entrega ? ` · ${p.horario_entrega.slice(0,5)}` : ''}</p>}
+          <p className="ped-dt-tipo">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</p>
+        </td>
+        <td className="ped-td">
+          <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
+            <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
+            {grupo.label}
+          </span>
+        </td>
+        <td className="ped-td">
+          <p className="ped-dt-valor">{formatMoney(p.valor_total)}</p>
+          <p className="ped-dt-pag" style={{ color: pagamentoCor }}>{pagamentoLabel}</p>
+        </td>
+        <td className="ped-td">
+          <button type="button" className="ped-dt-ver-btn" onClick={e => { e.stopPropagation(); onVerPedido(p) }}>Ver detalhes</button>
+        </td>
+      </tr>
+    )
+  }
+
+  // ── Mobile: card com div wrapper ──
   return (
-    <div onClick={() => isMobile ? onVerPedido(p) : navigate(`/pedidos/${p.id}`)} className="ped-card" style={{ border: `1.5px solid ${isUrgente ? '#fca5a5' : 'var(--border,#ECC2D0)'}` }}>
+    <div onClick={() => onVerPedido(p)} className="ped-card" style={{ border: `1.5px solid ${isUrgente ? '#fca5a5' : 'var(--border,#ECC2D0)'}` }}>
       {isUrgente && (
         <div className="ped-card-banner">
           {atrasado ? 'Atrasado' : horas !== null && horas <= 3 ? `Entrega em ${horas}h` : 'Urgente'}
         </div>
       )}
 
-      <div className="ped-card-head" style={!isMobile ? { display: 'none' } : { display: 'none' }} />
+      <div className="ped-card-head" style={{ display: 'none' }} />
 
-      {isMobile ? (
-        <div className="mob-card-inner">
+      <div className="mob-card-inner">
 
           {/* Linha 1: Pedido # + Status + Data/hora */}
           <div className="mob-card-topo">
@@ -307,54 +356,8 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
           </div>
 
         </div>
-      ) : (
-        /* ── Layout desktop: tabela HTML real ── */
-        <tr className="ped-dt-row" onClick={() => onVerPedido(p)}>
-          <td className="ped-td">
-            <span className="ped-dt-num">#{p.numero || '—'}</span>
-            <span className="ped-dt-criado">{p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' · ' + new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : ''}</span>
-            {p.origem === 'cardapio' && <span className="ped-dt-origem-tag">Cardápio</span>}
-          </td>
-          <td className="ped-td">
-            <span className="ped-dt-cliente-nome">{p.cliente_nome || 'Não informado'}</span>
-            {p.cliente_telefone && <span className="ped-dt-cliente-tel">{p.cliente_telefone}</span>}
-          </td>
-          <td className="ped-td">
-            {primeiroItem ? (
-              <div className="ped-dt-produto-row">
-                <div className="ped-dt-produto-img">
-                  {(primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url)
-                    ? <img src={primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url || ''} alt={primeiroItem.nome_produto} />
-                    : <span>🎂</span>}
-                </div>
-                <div>
-                  <p className="ped-dt-produto-nome">{primeiroItem.nome_produto}{outrosItens > 0 && <span className="ped-card-mais-itens"> +{outrosItens}</span>}</p>
-                  <p className="ped-dt-produto-qtd">{formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</p>
-                </div>
-              </div>
-            ) : <span className="ped-dt-vazio">—</span>}
-          </td>
-          <td className="ped-td">
-            {dataLabel && <p className="ped-dt-data" style={{ color: dataCor }}>{dataLabel}{p.horario_entrega ? ` · ${p.horario_entrega.slice(0,5)}` : ''}</p>}
-            <p className="ped-dt-tipo">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</p>
-          </td>
-          <td className="ped-td">
-            <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
-              <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
-              {grupo.label}
-            </span>
-          </td>
-          <td className="ped-td">
-            <p className="ped-dt-valor">{formatMoney(p.valor_total)}</p>
-            <p className="ped-dt-pag" style={{ color: pagamentoCor }}>{pagamentoLabel}</p>
-          </td>
-          <td className="ped-td">
-            <button type="button" className="ped-dt-ver-btn" onClick={e => { e.stopPropagation(); onVerPedido(p) }}>Ver detalhes</button>
-          </td>
-        </tr>
-      )}
 
-      {(extras.length > 0 || (p.etiquetas || []).length > 0) && isMobile && (
+      {(extras.length > 0 || (p.etiquetas || []).length > 0) && (
         <div className="ped-card-extras">
           {extras.map((e, i) => <span key={i} className="ped-card-chip">{e}</span>)}
           {(p.etiquetas || []).slice(0, 4).map(e => <span key={e} className="ped-card-chip ped-card-chip--etiqueta">{e}</span>)}
