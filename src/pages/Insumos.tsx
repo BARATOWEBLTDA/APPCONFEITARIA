@@ -46,6 +46,7 @@ export default function Insumos() {
   const [loading, setLoading] = useState(true);
   const [busca, setBusca] = useState("");
   const [filtroCategoria, setFiltroCategoria] = useState("Todas");
+  const [filtroStatus, setFiltroStatus] = useState<"todos" | "baixo" | "vazio">("todos");
   const [ordenacao, setOrdenacao] = useState<Ordenacao>("nome");
   const [step, setStep] = useState<Step>("lista");
   const [form, setForm] = useState<any>(emptyForm);
@@ -118,7 +119,11 @@ export default function Insumos() {
     .filter(i => {
       const matchBusca = i.nome.toLowerCase().includes(busca.toLowerCase());
       const matchCat = filtroCategoria === "Todas" || i.categoria === filtroCategoria;
-      return matchBusca && matchCat;
+      const matchStatus =
+        filtroStatus === "todos" ||
+        (filtroStatus === "baixo" && i.quantidade_estoque > 0 && i.quantidade_estoque <= i.estoque_minimo) ||
+        (filtroStatus === "vazio" && i.quantidade_estoque <= 0);
+      return matchBusca && matchCat && matchStatus;
     })
     .sort((a, b) => {
       if (ordenacao === "nome") return a.nome.localeCompare(b.nome);
@@ -239,102 +244,149 @@ export default function Insumos() {
   const totalPaginas = Math.ceil(insumosFiltrados.length / itensPorPagina);
   const insumosPagina = insumosFiltrados.slice((paginaAtual - 1) * itensPorPagina, paginaAtual * itensPorPagina);
 
-  if (step === "lista") return (
+  if (step === "lista") {
+    // Empty state amigável quando NÃO HÁ ingredientes cadastrados
+    if (!loading && insumos.length === 0) {
+      return (
+        <div className="ins-root ins-desktop">
+          <div className="ins-header">
+            <div>
+              <h1 className="ins-title">Ingredientes</h1>
+              <p className="ins-sub">Gerencie seus ingredientes, estoques e validade.</p>
+            </div>
+          </div>
+
+          <div className="ins-empty-novo">
+            <div className="ins-empty-doo">
+              <img src="/Sistema/doo.png" alt="Doo" />
+            </div>
+            <p className="ins-empty-title-novo">Vamos cadastrar seu primeiro ingrediente?</p>
+            <p className="ins-empty-sub-novo">Controle estoque, valores e validade — e nunca mais seja pega de surpresa por um ingrediente em falta.</p>
+            <button onClick={openNovo} className="ins-empty-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Cadastrar primeiro ingrediente
+            </button>
+          </div>
+
+          <Styles />
+        </div>
+      );
+    }
+
+    return (
     <div className="ins-root ins-desktop">
 
       {/* Header */}
       <div className="ins-header">
-        <div>
+        <div className="ins-header-text">
           <h1 className="ins-title">Ingredientes</h1>
-          <p className="ins-sub">Gerencie seus ingredientes, estoques e validade.</p>
+          <p className="ins-sub">{insumos.length} {insumos.length === 1 ? "ingrediente cadastrado" : "ingredientes cadastrados"}</p>
         </div>
-        <button className="ins-btn-novo" onClick={openNovo}>
+        <button className="ins-btn-novo" onClick={openNovo} aria-label="Novo ingrediente">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Novo ingrediente
+          <span className="ins-btn-novo-label">Novo ingrediente</span>
         </button>
       </div>
 
-      {/* 4 Cards stats */}
+      {/* Métricas: 1 herói + 2 compactos clicáveis (mobile) / 4 em linha (desktop) */}
       <div className="ins-stats">
-        <div className="ins-stat-card" style={{background:"var(--primary-gradient, linear-gradient(135deg,#FF6FA9,#F85A9A))",overflow:"hidden",position:"relative",alignItems:"center"}}>
-          <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
-          <div className="ins-stat-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        {/* Herói: Total em estoque */}
+        <div className="ins-stat-hero">
+          <div className="ins-stat-hero-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
           </div>
-          <div style={{zIndex:1}}>
-            <p className="ins-stat-label" style={{color:"rgba(255,255,255,0.8)"}}>Total em estoque</p>
-            <p className="ins-stat-val" style={{color:"white"}}>{formatCurrency(totalEstoque)}</p>
-            <p className="ins-stat-sub" style={{color:"rgba(255,255,255,0.7)"}}>Valor total</p>
-          </div>
-        </div>
-
-        <div className="ins-stat-card" style={{background:"linear-gradient(135deg,#10b981,#059669)",overflow:"hidden",position:"relative",alignItems:"center"}}>
-          <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
-          <div className="ins-stat-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-          </div>
-          <div style={{zIndex:1}}>
-            <p className="ins-stat-label" style={{color:"rgba(255,255,255,0.8)"}}>Itens cadastrados</p>
-            <p className="ins-stat-val" style={{color:"white"}}>{insumos.length}</p>
-            <p className="ins-stat-sub" style={{color:"rgba(255,255,255,0.7)"}}>Ingredientes no total</p>
+          <div className="ins-stat-hero-body">
+            <p className="ins-stat-hero-label">Total em estoque</p>
+            <p className="ins-stat-hero-val">{formatCurrency(totalEstoque)}</p>
           </div>
         </div>
 
-        <div className="ins-stat-card" style={{background:"linear-gradient(135deg,#f59e0b,#d97706)",overflow:"hidden",position:"relative",alignItems:"center"}}>
-          <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
-          <div className="ins-stat-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        {/* Itens cadastrados (visível só no desktop) */}
+        <button
+          type="button"
+          className={"ins-stat-mini ins-stat-mini--neutral ins-stat-only-desktop" + (filtroStatus === "todos" && filtroCategoria === "Todas" ? " is-active" : "")}
+          onClick={() => { setFiltroStatus("todos"); setFiltroCategoria("Todas"); setPaginaAtual(1); }}
+        >
+          <div className="ins-stat-mini-icon ins-stat-mini-icon--neutral">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
           </div>
-          <div style={{zIndex:1}}>
-            <p className="ins-stat-label" style={{color:"rgba(255,255,255,0.8)"}}>Estoque baixo</p>
-            <p className="ins-stat-val" style={{color:"white"}}>{alertas.length}</p>
-            <p className="ins-stat-sub" style={{color:"rgba(255,255,255,0.7)"}}>Itens abaixo do mínimo</p>
+          <div className="ins-stat-mini-body">
+            <p className="ins-stat-mini-val">{insumos.length}</p>
+            <p className="ins-stat-mini-label">Cadastrados</p>
           </div>
-        </div>
+        </button>
 
-        <div className="ins-stat-card" style={{background:"linear-gradient(135deg,#ef4444,#dc2626)",overflow:"hidden",position:"relative",alignItems:"center"}}>
-          <svg style={{position:"absolute",right:"-10px",bottom:"-10px",opacity:0.15}} width="100" height="100" viewBox="0 0 100 100"><circle cx="80" cy="80" r="60" fill="white"/><circle cx="80" cy="80" r="40" fill="white"/></svg>
-          <div className="ins-stat-icon" style={{background:"rgba(255,255,255,0.2)",zIndex:1}}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        {/* Estoque baixo (clicável - filtra) */}
+        <button
+          type="button"
+          className={"ins-stat-mini ins-stat-mini--warn" + (filtroStatus === "baixo" ? " is-active" : "")}
+          onClick={() => { setFiltroStatus(filtroStatus === "baixo" ? "todos" : "baixo"); setPaginaAtual(1); }}
+          aria-pressed={filtroStatus === "baixo"}
+        >
+          <div className="ins-stat-mini-icon ins-stat-mini-icon--warn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           </div>
-          <div style={{zIndex:1}}>
-            <p className="ins-stat-label" style={{color:"rgba(255,255,255,0.8)"}}>Sem estoque</p>
-            <p className="ins-stat-val" style={{color:"white"}}>{semEstoque.length}</p>
-            <p className="ins-stat-sub" style={{color:"rgba(255,255,255,0.7)"}}>Itens para repor</p>
+          <div className="ins-stat-mini-body">
+            <p className="ins-stat-mini-val">{alertas.length}</p>
+            <p className="ins-stat-mini-label">Estoque baixo</p>
           </div>
-        </div>
+        </button>
+
+        {/* Sem estoque (clicável - filtra) */}
+        <button
+          type="button"
+          className={"ins-stat-mini ins-stat-mini--danger" + (filtroStatus === "vazio" ? " is-active" : "")}
+          onClick={() => { setFiltroStatus(filtroStatus === "vazio" ? "todos" : "vazio"); setPaginaAtual(1); }}
+          aria-pressed={filtroStatus === "vazio"}
+        >
+          <div className="ins-stat-mini-icon ins-stat-mini-icon--danger">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div className="ins-stat-mini-body">
+            <p className="ins-stat-mini-val">{semEstoque.length}</p>
+            <p className="ins-stat-mini-label">Sem estoque</p>
+          </div>
+        </button>
       </div>
 
-      {/* Busca + filtros */}
+      {/* Busca + ordenação */}
       <div className="ins-toolbar">
         <div className="ins-search-wrap" style={{flex:1}}>
           <svg className="ins-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input className="ins-search" placeholder="Buscar ingrediente..." value={busca} onChange={e => { setBusca(e.target.value); setPaginaAtual(1); }} />
         </div>
-        <select className="ins-select" value={filtroCategoria} onChange={e => { setFiltroCategoria(e.target.value); setPaginaAtual(1); }}>
-          {["Todas", ...categorias].map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        <select className="ins-select" value={ordenacao} onChange={e => setOrdenacao(e.target.value as Ordenacao)}>
+        <select className="ins-select" value={ordenacao} onChange={e => setOrdenacao(e.target.value as Ordenacao)} aria-label="Ordenar por">
           <option value="nome">Nome</option>
           <option value="estoque">Estoque</option>
           <option value="valor">Valor</option>
         </select>
       </div>
 
-      {/* Filtros categoria chips */}
+      {/* Chips de categoria (rolagem horizontal no mobile) */}
       <div className="ins-filtros">
         {["Todas", ...categorias].map(cat => (
           <button key={cat} className={"ins-filtro-btn" + (filtroCategoria === cat ? " active" : "")} onClick={() => { setFiltroCategoria(cat); setPaginaAtual(1); }}>{cat}</button>
         ))}
       </div>
 
-      {/* Tabela */}
+      {/* Indicador de filtro de status ativo */}
+      {filtroStatus !== "todos" && (
+        <div className="ins-filter-pill">
+          <span>
+            Filtrando: <strong>{filtroStatus === "baixo" ? "Estoque baixo" : "Sem estoque"}</strong>
+          </span>
+          <button type="button" onClick={() => setFiltroStatus("todos")} aria-label="Limpar filtro">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      )}
+
+      {/* Tabela / lista */}
       {insumosFiltrados.length === 0 ? (
         <div className="ins-empty">
-          <span style={{fontSize:"3rem"}}>🧂</span>
-          <p style={{fontWeight:700,color:"var(--text-title, #1F2937)",margin:0}}>Nenhum ingrediente ainda</p>
-          <p style={{color:"var(--text-muted, #9CA3AF)",fontSize:"0.85rem",margin:0}}>Cadastre seus ingredientes e embalagens</p>
-          <button className="ins-btn-novo" onClick={openNovo}>+ Novo Ingrediente</button>
+          <span style={{fontSize:"3rem"}}>🔍</span>
+          <p style={{fontWeight:700,color:"var(--text-title, #1F2937)",margin:0}}>Nenhum ingrediente encontrado</p>
+          <p style={{color:"var(--text-muted, #9CA3AF)",fontSize:"0.85rem",margin:0}}>Tente ajustar a busca ou os filtros.</p>
         </div>
       ) : (
         <div className="ins-table-wrap">
@@ -364,6 +416,7 @@ export default function Insumos() {
                         </div>
                         <div>
                           <p className="ins-item-nome">{insumo.nome}</p>
+                          <p className="ins-item-cat-mobile">{insumo.categoria}</p>
                         </div>
                       </div>
                     </td>
@@ -385,13 +438,13 @@ export default function Insumos() {
                     </td>
                     <td onClick={e => e.stopPropagation()}>
                       <div style={{display:"flex",gap:"6px",alignItems:"center"}}>
-                        <button className="ins-act-btn ins-act-edit" onClick={() => openEditar(insumo)}>
+                        <button className="ins-act-btn ins-act-edit" onClick={() => openEditar(insumo)} aria-label="Editar">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
-                        <button className="ins-act-btn ins-act-view" onClick={() => setPreviewInsumo(insumo)}>
+                        <button className="ins-act-btn ins-act-view" onClick={() => setPreviewInsumo(insumo)} aria-label="Visualizar">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         </button>
-                        <button className="ins-act-btn ins-act-del" onClick={() => setDeleteId(insumo.id)}>
+                        <button className="ins-act-btn ins-act-del" onClick={() => setDeleteId(insumo.id)} aria-label="Excluir">
                           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
                         </button>
                       </div>
@@ -542,6 +595,7 @@ export default function Insumos() {
       <Styles />
     </div>
   );
+  }
 
   // ─── DETALHE ───
   if (step === "detalhe" && insumoDetalhe) {
@@ -1236,13 +1290,76 @@ function Styles() {
       .ins-sub { font-size:0.82rem; color:var(--text-muted, #9CA3AF); margin:0.15rem 0 0; }
       .ins-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.65rem 1.25rem; background:var(--primary-gradient, linear-gradient(135deg,#FF6FA9,#F85A9A)); color:var(--text-inverse, #FFFFFF); border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(255,111,169,0.35); }
 
-      /* Stats */
-      .ins-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
-      .ins-stat-card { background:var(--bg-card, #FFFFFF); border-radius:16px; padding:1.1rem 1.25rem; display:flex; align-items:center; gap:1rem; box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); }
-      .ins-stat-icon { width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-      .ins-stat-label { font-size:0.68rem; font-weight:700; color:var(--text-muted, #9CA3AF); text-transform:uppercase; letter-spacing:0.05em; margin:0 0 2px; }
-      .ins-stat-val { font-size:1.5rem; font-weight:800; color:var(--text-title, #1F2937); margin:0; line-height:1; }
-      .ins-stat-sub { font-size:0.7rem; color:var(--text-muted, #9CA3AF); margin:2px 0 0; }
+      /* Header */
+      .ins-header-text { min-width:0; flex:1; }
+
+      /* ─── Métricas: Herói + Mini cards ─── */
+      .ins-stats { display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr; gap:0.75rem; }
+
+      .ins-stat-hero {
+        display:flex; align-items:center; gap:0.9rem;
+        padding:1.1rem 1.25rem;
+        background:var(--primary-gradient, linear-gradient(135deg,#FF6FA9,#F85A9A));
+        border-radius:16px;
+        box-shadow:0 6px 18px rgba(255,111,169,0.28);
+        color:#fff;
+      }
+      .ins-stat-hero-icon {
+        width:44px; height:44px; border-radius:12px;
+        background:rgba(255,255,255,0.2);
+        display:flex; align-items:center; justify-content:center;
+        flex-shrink:0;
+      }
+      .ins-stat-hero-body { min-width:0; }
+      .ins-stat-hero-label {
+        font-size:0.7rem; font-weight:700;
+        color:rgba(255,255,255,0.85);
+        text-transform:uppercase; letter-spacing:0.05em;
+        margin:0 0 3px;
+      }
+      .ins-stat-hero-val {
+        font-size:1.5rem; font-weight:800; color:#fff;
+        margin:0; line-height:1;
+        white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      }
+
+      .ins-stat-mini {
+        display:flex; align-items:center; gap:0.65rem;
+        padding:0.85rem 1rem;
+        background:var(--bg-card, #FFFFFF);
+        border:1.5px solid var(--border, #E9E9EE);
+        border-radius:14px;
+        cursor:pointer;
+        font-family:'Geist', sans-serif;
+        text-align:left;
+        transition:all 0.15s;
+        box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.04));
+      }
+      .ins-stat-mini:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,0.08); }
+      .ins-stat-mini:focus-visible { outline:2px solid var(--primary, #FF6FA9); outline-offset:2px; }
+      .ins-stat-mini-icon {
+        width:36px; height:36px; border-radius:10px;
+        display:flex; align-items:center; justify-content:center;
+        flex-shrink:0;
+      }
+      .ins-stat-mini-icon--neutral { background:#e0e7ff; color:#4f46e5; }
+      .ins-stat-mini-icon--warn    { background:#fef3c7; color:#d97706; }
+      .ins-stat-mini-icon--danger  { background:#fee2e2; color:#dc2626; }
+      .ins-stat-mini-body { min-width:0; }
+      .ins-stat-mini-val {
+        font-size:1.25rem; font-weight:800;
+        color:var(--text-title, #1F2937);
+        margin:0; line-height:1;
+      }
+      .ins-stat-mini-label {
+        font-size:0.72rem; font-weight:600;
+        color:var(--text-muted, #6B7280);
+        margin:3px 0 0;
+        white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      }
+      .ins-stat-mini--warn.is-active   { border-color:#f59e0b; background:#fffbeb; }
+      .ins-stat-mini--danger.is-active { border-color:#ef4444; background:#fef2f2; }
+      .ins-stat-mini--neutral.is-active{ border-color:var(--primary, #FF6FA9); background:var(--primary-light, #FFF1F7); }
 
       /* Toolbar */
       .ins-toolbar { display:flex; gap:0.75rem; align-items:center; }
@@ -1253,10 +1370,27 @@ function Styles() {
       .ins-select { padding:0.62rem 0.9rem; border:1.5px solid var(--border, #E9E9EE); border-radius:12px; font-family:'Geist', sans-serif; font-size:0.85rem; color:var(--text-primary, #374151); outline:none; background:var(--bg-card, #FFFFFF); cursor:pointer; }
       .ins-select:focus { border-color:var(--border-focus, #FF6FA9); }
 
-      /* Filtros */
+      /* Filtros (chips com scroll horizontal no mobile) */
       .ins-filtros { display:flex; gap:0.4rem; flex-wrap:wrap; }
-      .ins-filtro-btn { padding:0.35rem 0.9rem; border:1.5px solid var(--border, #E9E9EE); border-radius:8px; background:var(--bg-card, #FFFFFF); font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:500; color:var(--text-secondary, #6B7280); cursor:pointer; white-space:nowrap; transition:all 0.15s; }
+      .ins-filtro-btn { padding:0.4rem 0.95rem; border:1.5px solid var(--border, #E9E9EE); border-radius:999px; background:var(--bg-card, #FFFFFF); font-family:'Geist', sans-serif; font-size:0.8rem; font-weight:500; color:var(--text-secondary, #6B7280); cursor:pointer; white-space:nowrap; transition:all 0.15s; }
       .ins-filtro-btn.active { border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); background:var(--primary-light, #FFF1F7); font-weight:700; }
+
+      /* Pill de filtro de status ativo */
+      .ins-filter-pill {
+        display:inline-flex; align-items:center; gap:0.5rem;
+        padding:0.45rem 0.75rem 0.45rem 0.9rem;
+        background:var(--primary-light, #FFF1F7);
+        border:1px solid var(--primary, #FF6FA9);
+        border-radius:999px;
+        font-size:0.82rem; color:var(--text-primary, #374151);
+        align-self:flex-start;
+      }
+      .ins-filter-pill button {
+        width:22px; height:22px; border-radius:50%;
+        background:var(--primary, #FF6FA9); color:#fff;
+        border:none; cursor:pointer;
+        display:flex; align-items:center; justify-content:center;
+      }
 
       /* Tabela */
       .ins-table-wrap { background:var(--bg-card, #FFFFFF); border-radius:16px; box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); overflow:hidden; }
@@ -1271,6 +1405,7 @@ function Styles() {
       .ins-table-img { width:44px; height:44px; border-radius:10px; overflow:hidden; background:var(--bg-body, #F7F7F8); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.3rem; }
       .ins-table-img img { width:100%; height:100%; object-fit:cover; }
       .ins-item-nome { font-size:0.88rem; font-weight:700; color:var(--text-title, #1F2937); margin:0; }
+      .ins-item-cat-mobile { display:none; font-size:0.72rem; color:var(--text-muted, #9CA3AF); margin:2px 0 0; }
       .ins-cat-badge { padding:3px 10px; border-radius:6px; font-size:0.72rem; font-weight:600; background:var(--bg-body, #F7F7F8); color:var(--text-primary, #374151); }
       .ins-status-badge { padding:4px 10px; border-radius:8px; font-size:0.72rem; font-weight:700; white-space:nowrap; }
       .ins-status-ok { background:#dcfce7; color:var(--success, #22C55E); }
@@ -1286,7 +1421,7 @@ function Styles() {
       .ins-peek-modal { background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.5rem; width:100%; max-width:380px; box-shadow:0 24px 64px rgba(0,0,0,0.18); animation:peekIn 0.22s cubic-bezier(0.16,1,0.3,1); max-height:90vh; overflow-y:auto; } @keyframes peekIn { from { opacity:0; transform:scale(0.94) translateY(12px); } to { opacity:1; transform:scale(1) translateY(0); } }
 
       /* Paginação */
-      .ins-pagination { display:flex; align-items:center; justify-content:space-between; padding:0.85rem 1.25rem; border-top:1px solid var(--border, #E9E9EE); }
+      .ins-pagination { display:flex; align-items:center; justify-content:space-between; padding:0.85rem 1.25rem; border-top:1px solid var(--border, #E9E9EE); flex-wrap:wrap; gap:0.5rem; }
       .ins-pag-info { font-size:0.78rem; color:var(--text-muted, #9CA3AF); }
       .ins-pag-btns { display:flex; align-items:center; gap:4px; }
       .ins-pag-btn { width:32px; height:32px; border-radius:8px; border:1.5px solid var(--border, #E9E9EE); background:var(--bg-card, #FFFFFF); font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:600; color:var(--text-primary, #374151); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
@@ -1297,8 +1432,138 @@ function Styles() {
       /* Rodapé dica */
       .ins-footer-dica { background:#fffbeb; border:1px solid #fde68a; border-radius:14px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; }
 
-      /* Empty */
+      /* Empty (filtro vazio) */
       .ins-empty { display:flex; flex-direction:column; align-items:center; gap:0.75rem; padding:3rem 1rem; text-align:center; background:var(--bg-card, #FFFFFF); border-radius:16px; box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); }
+
+      /* Empty amigável (sem nenhum cadastro) — padrão Doonly */
+      .ins-empty-novo {
+        display:flex; flex-direction:column;
+        align-items:center; justify-content:center;
+        text-align:center;
+        padding:2.5rem 1.5rem;
+        background:var(--bg-card, #fff);
+        border:1.5px dashed var(--border, #ECC2D0);
+        border-radius:16px;
+        margin-top:0.5rem;
+      }
+      .ins-empty-doo {
+        width:96px; height:96px;
+        border-radius:28%;
+        background:#3d1a24;
+        display:flex; align-items:center; justify-content:center;
+        margin-bottom:1.25rem;
+        box-shadow:0 8px 24px rgba(61,26,36,0.2);
+        position:relative;
+      }
+      .ins-empty-doo::before {
+        content:""; position:absolute; inset:7px;
+        background:#fff; border-radius:24%;
+      }
+      .ins-empty-doo img {
+        width:110px; height:110px;
+        object-fit:cover; object-position:top center;
+        border-radius:24%;
+        position:relative; z-index:1;
+      }
+      .ins-empty-title-novo {
+        font-size:1.1rem; font-weight:800;
+        color:var(--text-title, #431524);
+        margin:0 0 8px;
+        letter-spacing:-0.02em;
+        max-width:280px;
+      }
+      .ins-empty-sub-novo {
+        font-size:0.88rem;
+        color:var(--text-secondary, #6E3548);
+        margin:0 0 1.5rem;
+        line-height:1.5;
+        max-width:320px;
+      }
+      .ins-empty-btn {
+        display:flex; align-items:center; gap:0.5rem;
+        background:#3d1a24; color:#fff;
+        border:none; border-radius:12px;
+        padding:0.8rem 1.5rem;
+        font-family:inherit; font-size:0.92rem; font-weight:700;
+        cursor:pointer;
+        box-shadow:0 4px 12px rgba(61,26,36,0.25);
+        transition:all 0.15s ease;
+      }
+      .ins-empty-btn:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(61,26,36,0.3); }
+
+      /* ─── MOBILE ─── */
+      @media (max-width:768px) {
+        .ins-root { padding-bottom:6rem; gap:0.85rem; }
+        .ins-title { font-size:1.35rem; }
+        .ins-sub { font-size:0.78rem; }
+
+        /* Header: botão vira só "+" no mobile */
+        .ins-btn-novo { padding:0.6rem 0.8rem; box-shadow:0 3px 10px rgba(255,111,169,0.3); }
+        .ins-btn-novo-label { display:none; }
+
+        /* Métricas: 1 herói full + 2 minis lado a lado */
+        .ins-stats {
+          grid-template-columns:1fr 1fr;
+          grid-template-areas: "hero hero" "warn danger";
+          gap:0.6rem;
+        }
+        .ins-stat-hero { grid-area:hero; padding:0.95rem 1.1rem; }
+        .ins-stat-hero-val { font-size:1.4rem; }
+        .ins-stat-mini--warn   { grid-area:warn; }
+        .ins-stat-mini--danger { grid-area:danger; }
+        .ins-stat-only-desktop { display:none; }
+        .ins-stat-mini { padding:0.75rem 0.85rem; }
+        .ins-stat-mini-val { font-size:1.1rem; }
+        .ins-stat-mini-icon { width:32px; height:32px; }
+
+        /* Toolbar mais compacta */
+        .ins-toolbar { gap:0.5rem; }
+        .ins-select { padding:0.62rem 0.7rem; font-size:0.82rem; }
+
+        /* Filtros viram scroll horizontal */
+        .ins-filtros {
+          flex-wrap:nowrap;
+          overflow-x:auto;
+          margin:0 -1rem;
+          padding:0.15rem 1rem;
+          scrollbar-width:none;
+        }
+        .ins-filtros::-webkit-scrollbar { display:none; }
+
+        /* Tabela vira cards no mobile */
+        .ins-table-wrap { background:transparent; box-shadow:none; border-radius:0; }
+        .ins-table thead { display:none; }
+        .ins-table, .ins-table tbody, .ins-table tr, .ins-table td { display:block; width:100%; }
+        .ins-table-row {
+          background:var(--bg-card, #FFFFFF);
+          border:1px solid var(--border, #E9E9EE);
+          border-radius:14px;
+          margin-bottom:0.6rem;
+          padding:0.7rem 0.85rem;
+          display:grid;
+          grid-template-columns:auto 1fr auto;
+          grid-template-areas:
+            "img nome status"
+            "img cat   actions";
+          gap:0.5rem 0.75rem;
+          align-items:center;
+        }
+        .ins-table-row td { padding:0; border:none; }
+        .ins-table-row td:nth-child(1) { grid-area:nome; }
+        .ins-table-row td:nth-child(2),
+        .ins-table-row td:nth-child(3),
+        .ins-table-row td:nth-child(4),
+        .ins-table-row td:nth-child(5),
+        .ins-table-row td:nth-child(6) { display:none; }
+        .ins-table-row td:nth-child(7) { grid-area:status; justify-self:end; }
+        .ins-table-row td:nth-child(8) { grid-area:actions; }
+        .ins-table-nome { gap:0.7rem; }
+        .ins-table-img { grid-area:img; width:48px; height:48px; }
+        .ins-item-cat-mobile { display:block; }
+
+        .ins-pagination { padding:0.85rem 0.5rem; justify-content:center; }
+        .ins-pag-info { font-size:0.72rem; width:100%; text-align:center; }
+      }
 
       /* Grid informações básicas + imagem */
       .ins-basicas-grid { display:grid; grid-template-columns:320px 1fr; align-items:stretch; }
