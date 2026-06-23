@@ -855,6 +855,116 @@ export default function Configuracoes() {
         .cfg-desk-inline-section { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem; background: var(--bg-subtle, #FFF1F7); border-radius: 12px; border: 1px solid var(--border, #E9E9EE); }
         .cfg-desk-inline-section--danger { background: #fff8f8; border-color: #fecdd3; }
         .cfg-desk-inline-label { font-size: 0.88rem; font-weight: 700; color: var(--text-title, #1F2937); margin: 0; }
+
+        /* ── Configure seu Doonly (mobile) ── */
+        .mob-config-card {
+          background: var(--bg-card, #fff);
+          border: 1.5px solid var(--border, #ECC2D0);
+          border-radius: 14px;
+          padding: 1rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          margin-bottom: 0.85rem;
+        }
+        .mob-config-card--done {
+          background: linear-gradient(135deg, #fff 60%, #F7EEF1 100%);
+          border-color: #3d1a24;
+        }
+        .mob-config-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.5rem;
+        }
+        .mob-config-title {
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: var(--text-title, #431524);
+          margin: 0;
+        }
+        .mob-config-sub {
+          font-size: 0.78rem;
+          color: var(--text-secondary, #6E3548);
+          margin: 2px 0 0;
+          line-height: 1.35;
+        }
+        .mob-config-circle {
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          background: #3d1a24;
+          color: white;
+          font-size: 0.82rem;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          letter-spacing: -0.02em;
+        }
+        .mob-config-bar-bg {
+          width: 100%;
+          height: 6px;
+          background: var(--bg-subtle, #F7EEF1);
+          border-radius: 4px;
+          overflow: hidden;
+        }
+        .mob-config-bar-fill {
+          height: 100%;
+          background: #3d1a24;
+          border-radius: 4px;
+          transition: width 0.3s ease;
+        }
+        .mob-config-next {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.5rem;
+          background: var(--bg-subtle, #F7EEF1);
+          border-radius: 10px;
+          padding: 0.65rem 0.85rem;
+        }
+        .mob-config-next-label {
+          font-size: 0.65rem;
+          font-weight: 700;
+          color: var(--text-muted, #C39EAA);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          margin: 0 0 2px;
+        }
+        .mob-config-next-text {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: var(--text-title, #431524);
+          margin: 0;
+        }
+        .mob-config-next-btn {
+          background: #3d1a24;
+          border: none;
+          color: white;
+          border-radius: 8px;
+          padding: 0.5rem 0.85rem;
+          font-size: 0.78rem;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: inherit;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .mob-resgatar-btn {
+          background: #3d1a24;
+          border: none;
+          color: white;
+          border-radius: 10px;
+          padding: 0.75rem;
+          font-size: 0.9rem;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: inherit;
+          width: 100%;
+        }
+        .mob-resgatar-btn:disabled { opacity: 0.6; cursor: not-allowed; }
       `}</style>
     </div>
   );
