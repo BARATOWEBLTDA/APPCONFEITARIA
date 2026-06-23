@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase"
 import {
   CurrencyDollar, TrendUp, TrendDown, Wallet, ChartBar, Receipt, Plus,
   CaretLeft, CaretRight, X, ShoppingCartSimple, PencilSimple, Trash,
-  CalendarBlank, Tag
+  CalendarBlank, Tag, Target, DownloadSimple, FileCsv, FilePdf, Sparkle
 } from "@phosphor-icons/react"
 
 type Movimentacao = {
@@ -59,11 +59,22 @@ export default function Financeiro() {
   })
   const [saving, setSaving] = useState(false)
 
+  // Meta mensal
+  const [metaMensal, setMetaMensal] = useState<number | null>(null)
+  const [showMetaForm, setShowMetaForm] = useState(false)
+  const [metaInput, setMetaInput] = useState("")
+  const [savingMeta, setSavingMeta] = useState(false)
+
+  // Exportar
+  const [showExport, setShowExport] = useState(false)
+
   useEffect(() => {
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoading(false); return }
       setUserId(user.id)
+      const { data: prof } = await supabase.from("profiles").select("meta_mensal").eq("id", user.id).single()
+      if (prof?.meta_mensal != null) setMetaMensal(Number(prof.meta_mensal))
     }
     init()
   }, [])
@@ -254,6 +265,185 @@ export default function Financeiro() {
     setMes(new Date(mes.getFullYear(), mes.getMonth() + dir, 1))
   }
 
+  // ── Meta mensal ─────────────────────────────────────────────
+  const abrirMeta = () => {
+    setMetaInput(metaMensal != null ? metaMensal.toString().replace(".", ",") : "")
+    setShowMetaForm(true)
+  }
+  const salvarMeta = async () => {
+    if (!userId) return
+    const v = metaInput.replace(/\./g, "").replace(",", ".")
+    const valor = v.trim() === "" ? null : parseFloat(v)
+    if (valor !== null && (isNaN(valor) || valor < 0)) return alert("Valor inválido")
+    setSavingMeta(true)
+    await supabase.from("profiles").update({ meta_mensal: valor }).eq("id", userId)
+    setMetaMensal(valor)
+    setSavingMeta(false)
+    setShowMetaForm(false)
+  }
+  const removerMeta = async () => {
+    if (!userId) return
+    if (!confirm("Remover a meta mensal?")) return
+    await supabase.from("profiles").update({ meta_mensal: null }).eq("id", userId)
+    setMetaMensal(null)
+    setShowMetaForm(false)
+  }
+
+  const metaProgresso = metaMensal && metaMensal > 0 ? Math.min(100, (entradas / metaMensal) * 100) : 0
+  const metaFaltam = metaMensal ? Math.max(0, metaMensal - entradas) : 0
+  const metaMsg = useMemo(() => {
+    if (!metaMensal) return ""
+    if (metaProgresso >= 100) return "🎉 Parabéns! Você bateu a meta deste mês!"
+    if (metaProgresso >= 75) return "🔥 Quase lá! Você está muito perto da meta!"
+    if (metaProgresso >= 50) return "💪 Você já passou da metade — continue assim!"
+    if (metaProgresso >= 25) return "✨ Bom começo! Continue firme rumo à meta."
+    return "🚀 Vamos juntas! Cada venda te aproxima da meta."
+  }, [metaProgresso, metaMensal])
+
+  // ── Exportar ────────────────────────────────────────────────
+  const downloadFile = (content: string, filename: string, mime: string) => {
+    const blob = new Blob([content], { type: mime })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url; a.download = filename
+    document.body.appendChild(a); a.click(); a.remove()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportarCSV = () => {
+    const linhas = [
+      `Relatório Financeiro — ${monthLabel(mes)}`,
+      "",
+      `Receita;${entradas.toFixed(2).replace(".", ",")}`,
+      `Despesas;${saidas.toFixed(2).replace(".", ",")}`,
+      `Lucro líquido;${lucro.toFixed(2).replace(".", ",")}`,
+      `Ticket médio;${ticketMedio.toFixed(2).replace(".", ",")}`,
+      ...(metaMensal ? [`Meta;${metaMensal.toFixed(2).replace(".", ",")}`, `Progresso da meta;${metaProgresso.toFixed(0)}%`] : []),
+      "",
+      "Data;Tipo;Categoria;Descrição;Valor;Origem",
+      ...todasMovs
+        .sort((a, b) => b.data.localeCompare(a.data))
+        .map(m => [
+          fmtData(m.data),
+          m.tipo === "entrada" ? "Entrada" : "Saída",
+          m.categoria || "",
+          `"${m.descricao.replace(/"/g, '""')}"`,
+          m.valor.toFixed(2).replace(".", ","),
+          m.origem === "pedido" ? "Pedido (automático)" : "Manual",
+        ].join(";")),
+    ].join("\n")
+    const bom = "\uFEFF" // BOM pra Excel reconhecer UTF-8
+    downloadFile(bom + linhas, `financeiro_${monthKey(mes)}.csv`, "text/csv;charset=utf-8")
+    setShowExport(false)
+  }
+
+  const exportarPDF = () => {
+    const win = window.open("", "_blank")
+    if (!win) { alert("Permita pop-ups para exportar PDF"); return }
+    const linhasHTML = todasMovs
+      .sort((a, b) => b.data.localeCompare(a.data))
+      .map(m => `
+        <tr>
+          <td>${fmtData(m.data)}</td>
+          <td><span class="tag tag-${m.tipo}">${m.tipo === "entrada" ? "Entrada" : "Saída"}</span></td>
+          <td>${m.categoria || "—"}</td>
+          <td>${m.descricao}</td>
+          <td class="val ${m.tipo}">${m.tipo === "entrada" ? "+" : "−"} ${fmtMoney(m.valor)}</td>
+        </tr>
+      `).join("")
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Financeiro — ${monthLabel(mes)}</title>
+<style>
+  * { box-sizing:border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color:#1F2937; padding:32px; margin:0; }
+  .header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #FF6FA9; padding-bottom:14px; margin-bottom:24px; }
+  .header h1 { margin:0 0 4px; color:#FF6FA9; font-size:24px; }
+  .header p { margin:0; color:#6B7280; font-size:13px; }
+  .period { text-align:right; font-size:13px; color:#6B7280; }
+  .cards { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
+  .card { border:1px solid #E5E7EB; border-radius:12px; padding:14px; }
+  .card .label { font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#6B7280; font-weight:600; margin:0 0 4px; }
+  .card .value { font-size:18px; font-weight:800; margin:0; }
+  .card.in .value { color:#16a34a; }
+  .card.out .value { color:#dc2626; }
+  .card.profit .value { color:${lucro >= 0 ? "#16a34a" : "#dc2626"}; }
+  .meta-box { border:1px solid #E5E7EB; border-radius:12px; padding:14px; margin-bottom:24px; background:#FFF1F7; }
+  .meta-box .label { font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#FF6FA9; font-weight:700; margin:0 0 4px; }
+  .meta-bar { width:100%; height:14px; background:#fff; border-radius:50px; overflow:hidden; margin-top:8px; }
+  .meta-bar > div { height:100%; background:linear-gradient(90deg, #FF6FA9, #F85A9A); border-radius:50px; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  thead th { text-align:left; padding:10px 8px; background:#F7F7F8; border-bottom:2px solid #E5E7EB; font-size:11px; text-transform:uppercase; color:#6B7280; letter-spacing:0.05em; }
+  tbody td { padding:10px 8px; border-bottom:1px solid #F3F4F6; }
+  .val { text-align:right; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .val.entrada { color:#16a34a; }
+  .val.saida { color:#dc2626; }
+  .tag { padding:2px 8px; border-radius:50px; font-size:10px; font-weight:700; }
+  .tag-entrada { background:#dcfce7; color:#15803d; }
+  .tag-saida { background:#fee2e2; color:#b91c1c; }
+  .footer { margin-top:32px; padding-top:14px; border-top:1px solid #E5E7EB; font-size:11px; color:#9CA3AF; text-align:center; }
+  @media print {
+    body { padding:18px; }
+    .no-print { display:none; }
+  }
+  .print-btn { position:fixed; top:18px; right:18px; background:linear-gradient(135deg,#FF6FA9,#F85A9A); color:#fff; border:none; padding:10px 20px; border-radius:50px; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(255,111,169,0.4); font-family:inherit; }
+</style>
+</head>
+<body>
+  <button class="print-btn no-print" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+
+  <div class="header">
+    <div>
+      <h1>Relatório Financeiro</h1>
+      <p>Doonly · Gestão da sua confeitaria</p>
+    </div>
+    <div class="period">
+      <strong>${monthLabel(mes)}</strong><br>
+      Gerado em ${new Date().toLocaleDateString("pt-BR")}
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card in"><p class="label">Receita</p><p class="value">${fmtMoney(entradas)}</p></div>
+    <div class="card out"><p class="label">Despesas</p><p class="value">${fmtMoney(saidas)}</p></div>
+    <div class="card profit"><p class="label">Lucro líquido</p><p class="value">${fmtMoney(lucro)}</p></div>
+    <div class="card"><p class="label">Ticket médio</p><p class="value">${fmtMoney(ticketMedio)}</p></div>
+  </div>
+
+  ${metaMensal ? `
+  <div class="meta-box">
+    <p class="label">Meta mensal</p>
+    <strong>${fmtMoney(entradas)}</strong> de <strong>${fmtMoney(metaMensal)}</strong> · ${metaProgresso.toFixed(0)}%
+    ${metaProgresso >= 100 ? " · 🎉 META BATIDA!" : ` · faltam ${fmtMoney(metaFaltam)}`}
+    <div class="meta-bar"><div style="width:${metaProgresso}%"></div></div>
+  </div>` : ""}
+
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th style="text-align:right">Valor</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${linhasHTML || '<tr><td colspan="5" style="text-align:center;padding:24px;color:#9CA3AF">Nenhuma movimentação neste mês</td></tr>'}
+    </tbody>
+  </table>
+
+  <div class="footer">
+    Relatório gerado por Doonly · ${todasMovs.length} movimentação(ões)
+  </div>
+</body>
+</html>`
+    win.document.write(html)
+    win.document.close()
+    setShowExport(false)
+    // Dispara o print depois que renderiza
+    setTimeout(() => { try { win.focus(); win.print(); } catch {} }, 300)
+  }
+
   // ── Gráfico ─────────────────────────────────────────────────
   const maxBarra = Math.max(
     ...movsHistorico.flatMap(h => [h.entrada, h.saida]),
@@ -270,10 +460,38 @@ export default function Financeiro() {
             <h1 className="fin-title">Financeiro</h1>
             <p className="fin-sub">Acompanhe receitas, despesas e lucro da sua confeitaria</p>
           </div>
-          <div className="fin-month-nav">
-            <button onClick={() => navegarMes(-1)} aria-label="Mês anterior"><CaretLeft size={18} weight="bold" /></button>
-            <span className="fin-month-label">{monthLabel(mes)}</span>
-            <button onClick={() => navegarMes(1)} aria-label="Próximo mês"><CaretRight size={18} weight="bold" /></button>
+          <div className="fin-header-actions">
+            <div className="fin-export-wrap">
+              <button className="fin-btn-export" onClick={() => setShowExport(v => !v)}>
+                <DownloadSimple size={15} weight="bold" /> Exportar
+              </button>
+              {showExport && (
+                <>
+                  <div className="fin-export-backdrop" onClick={() => setShowExport(false)} />
+                  <div className="fin-export-menu">
+                    <button onClick={exportarCSV}>
+                      <FileCsv size={18} weight="duotone" />
+                      <div>
+                        <p className="fin-export-title">Exportar CSV</p>
+                        <p className="fin-export-sub">Para Excel ou Google Sheets</p>
+                      </div>
+                    </button>
+                    <button onClick={exportarPDF}>
+                      <FilePdf size={18} weight="duotone" />
+                      <div>
+                        <p className="fin-export-title">Exportar PDF</p>
+                        <p className="fin-export-sub">Relatório completo para imprimir</p>
+                      </div>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="fin-month-nav">
+              <button onClick={() => navegarMes(-1)} aria-label="Mês anterior"><CaretLeft size={18} weight="bold" /></button>
+              <span className="fin-month-label">{monthLabel(mes)}</span>
+              <button onClick={() => navegarMes(1)} aria-label="Próximo mês"><CaretRight size={18} weight="bold" /></button>
+            </div>
           </div>
         </div>
 
@@ -313,6 +531,51 @@ export default function Financeiro() {
             </div>
           </div>
         </div>
+
+        {/* Card Meta Mensal */}
+        {metaMensal ? (
+          <div className="fin-meta-card">
+            <div className="fin-meta-decor" />
+            <div className="fin-meta-top">
+              <div className="fin-meta-title">
+                <div className="fin-meta-icon"><Target size={20} weight="duotone" /></div>
+                <div>
+                  <p className="fin-meta-label">Meta mensal</p>
+                  <p className="fin-meta-msg">{metaMsg}</p>
+                </div>
+              </div>
+              <button className="fin-meta-edit" onClick={abrirMeta}>
+                <PencilSimple size={13} weight="bold" /> Editar
+              </button>
+            </div>
+
+            <div className="fin-meta-values">
+              <span className="fin-meta-current">{fmtMoney(entradas)}</span>
+              <span className="fin-meta-sep">de</span>
+              <span className="fin-meta-target">{fmtMoney(metaMensal)}</span>
+              <span className="fin-meta-pct">{metaProgresso.toFixed(0)}%</span>
+            </div>
+
+            <div className="fin-thermo">
+              <div className="fin-thermo-fill" style={{ width: `${metaProgresso}%` }}>
+                {metaProgresso >= 100 && <Sparkle size={12} weight="fill" className="fin-thermo-spark" />}
+              </div>
+            </div>
+
+            {metaProgresso < 100 && (
+              <p className="fin-meta-faltam">Faltam <strong>{fmtMoney(metaFaltam)}</strong> pra bater a meta</p>
+            )}
+          </div>
+        ) : (
+          <button className="fin-meta-empty" onClick={abrirMeta}>
+            <div className="fin-meta-empty-icon"><Target size={22} weight="duotone" /></div>
+            <div style={{ flex: 1, textAlign: "left" }}>
+              <p className="fin-meta-empty-title">Defina sua meta mensal</p>
+              <p className="fin-meta-empty-sub">Acompanhe seu progresso com um termômetro motivacional</p>
+            </div>
+            <span className="fin-meta-empty-cta">+ Definir meta</span>
+          </button>
+        )}
 
         {/* Gráfico de 6 meses */}
         <div className="fin-card">
@@ -422,6 +685,52 @@ export default function Financeiro() {
         </div>
 
       </div>
+
+      {/* Modal de definir/editar meta */}
+      {showMetaForm && (
+        <div className="fin-modal-overlay" onClick={() => setShowMetaForm(false)}>
+          <div className="fin-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
+            <div className="fin-modal-header">
+              <h3>{metaMensal ? "Editar meta mensal" : "Definir meta mensal"}</h3>
+              <button onClick={() => setShowMetaForm(false)}><X size={18} weight="bold" /></button>
+            </div>
+
+            <div className="fin-modal-body">
+              <div className="fin-meta-help">
+                <Target size={26} weight="duotone" />
+                <p>Quanto você quer faturar todo mês? Vamos te lembrar do progresso aqui no Financeiro.</p>
+              </div>
+
+              <div className="fin-form-field">
+                <label>Meta de faturamento</label>
+                <div className="fin-money-row">
+                  <span className="fin-prefix">R$</span>
+                  <input
+                    className="fin-input"
+                    style={{ textAlign: "right", fontSize: "1.1rem", fontWeight: 700 }}
+                    value={metaInput}
+                    onChange={e => setMetaInput(e.target.value.replace(/[^0-9.,]/g, ""))}
+                    placeholder="5.000,00"
+                    autoFocus
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="fin-modal-footer">
+              {metaMensal && (
+                <button className="fin-btn-cancel" onClick={removerMeta} style={{ color: "var(--error, #EF4444)", borderColor: "#fee2e2" }}>
+                  Remover
+                </button>
+              )}
+              <button className="fin-btn-cancel" onClick={() => setShowMetaForm(false)}>Cancelar</button>
+              <button className="fin-btn-save" onClick={salvarMeta} disabled={savingMeta}>
+                {savingMeta ? "Salvando..." : "Salvar meta"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de lançamento */}
       {showForm && (
@@ -809,10 +1118,187 @@ export default function Financeiro() {
         .fin-btn-save:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 6px 16px rgba(255,111,169,0.4); }
         .fin-btn-save:disabled { opacity:0.6; cursor:wait; }
 
+        /* ── Header actions ── */
+        .fin-header-actions { display:flex; gap:0.6rem; align-items:center; flex-wrap:wrap; }
+
+        /* ── Botão Exportar ── */
+        .fin-export-wrap { position:relative; }
+        .fin-btn-export {
+          display:inline-flex; align-items:center; gap:6px;
+          padding:0.55rem 1rem;
+          background:var(--bg-card, #FFFFFF);
+          border:1.5px solid var(--border, #E9E9EE);
+          border-radius:50px;
+          font-family:inherit; font-size:0.82rem; font-weight:700;
+          color:var(--text-primary, #374151); cursor:pointer;
+          transition:all 0.15s;
+        }
+        .fin-btn-export:hover {
+          border-color:var(--primary, #FF6FA9);
+          color:var(--primary, #FF6FA9);
+          background:var(--primary-light, #FFF1F7);
+        }
+        .fin-export-backdrop { position:fixed; inset:0; z-index:50; }
+        .fin-export-menu {
+          position:absolute; top:calc(100% + 6px); right:0; z-index:51;
+          background:var(--bg-card, #FFFFFF);
+          border:1px solid var(--border, #E9E9EE);
+          border-radius:14px; padding:6px;
+          min-width:240px;
+          box-shadow:0 12px 32px rgba(16,24,40,0.12);
+          animation:finFadeIn 0.18s ease;
+          display:flex; flex-direction:column; gap:2px;
+        }
+        .fin-export-menu button {
+          display:flex; align-items:center; gap:0.7rem;
+          padding:0.7rem 0.85rem; background:transparent; border:none;
+          border-radius:10px; cursor:pointer; text-align:left;
+          color:var(--text-primary, #374151); transition:background 0.15s;
+          font-family:inherit;
+        }
+        .fin-export-menu button:hover { background:var(--primary-light, #FFF1F7); color:var(--primary, #FF6FA9); }
+        .fin-export-title { font-size:0.85rem; font-weight:700; margin:0; }
+        .fin-export-sub { font-size:0.72rem; color:var(--text-muted, #9CA3AF); margin:1px 0 0; }
+
+        /* ── Meta card (com meta definida) ── */
+        .fin-meta-card {
+          background:linear-gradient(135deg, #FFE4F0 0%, #FFF1F7 100%);
+          border:1px solid rgba(255,111,169,0.25);
+          border-radius:20px; padding:1.4rem;
+          position:relative; overflow:hidden;
+          display:flex; flex-direction:column; gap:0.85rem;
+        }
+        .fin-meta-decor {
+          position:absolute; top:-80px; right:-80px;
+          width:240px; height:240px; border-radius:50%;
+          background:radial-gradient(circle, rgba(255,111,169,0.18) 0%, transparent 70%);
+          pointer-events:none;
+        }
+        .fin-meta-top { display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; position:relative; z-index:1; }
+        .fin-meta-title { display:flex; gap:0.7rem; align-items:flex-start; flex:1; min-width:0; }
+        .fin-meta-icon {
+          width:42px; height:42px; flex-shrink:0; border-radius:12px;
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          color:#fff; display:flex; align-items:center; justify-content:center;
+          box-shadow:0 4px 12px rgba(255,111,169,0.35);
+        }
+        .fin-meta-label {
+          font-size:0.7rem; font-weight:700; color:var(--primary-dark, #F85A9A);
+          margin:0 0 2px; text-transform:uppercase; letter-spacing:0.08em;
+        }
+        .fin-meta-msg { font-size:0.85rem; font-weight:600; color:var(--text-title, #1F2937); margin:0; line-height:1.3; }
+
+        .fin-meta-edit {
+          display:inline-flex; align-items:center; gap:4px;
+          padding:5px 12px; background:rgba(255,255,255,0.7);
+          border:1px solid rgba(255,111,169,0.3); border-radius:50px;
+          font-family:inherit; font-size:0.72rem; font-weight:700;
+          color:var(--primary, #FF6FA9); cursor:pointer;
+          transition:background 0.15s;
+        }
+        .fin-meta-edit:hover { background:#fff; }
+
+        .fin-meta-values {
+          display:flex; align-items:baseline; gap:0.5rem; flex-wrap:wrap;
+          position:relative; z-index:1;
+        }
+        .fin-meta-current {
+          font-size:1.8rem; font-weight:800;
+          color:var(--primary-dark, #F85A9A);
+          letter-spacing:-0.02em;
+          font-variant-numeric:tabular-nums;
+        }
+        .fin-meta-sep { font-size:0.85rem; color:var(--text-secondary, #6B7280); font-weight:500; }
+        .fin-meta-target {
+          font-size:1.05rem; font-weight:700;
+          color:var(--text-primary, #374151);
+          font-variant-numeric:tabular-nums;
+        }
+        .fin-meta-pct {
+          margin-left:auto; padding:4px 11px;
+          background:#fff; border-radius:50px;
+          font-size:0.85rem; font-weight:800;
+          color:var(--primary, #FF6FA9);
+          box-shadow:0 2px 6px rgba(255,111,169,0.18);
+        }
+
+        /* Termômetro */
+        .fin-thermo {
+          position:relative; z-index:1;
+          width:100%; height:16px;
+          background:rgba(255,255,255,0.7);
+          border-radius:50px; overflow:hidden;
+          box-shadow:inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .fin-thermo-fill {
+          height:100%;
+          background:var(--primary-gradient, linear-gradient(90deg, #FF6FA9, #F85A9A));
+          border-radius:50px;
+          transition:width 0.6s cubic-bezier(.32,.72,.32,1);
+          display:flex; align-items:center; justify-content:flex-end;
+          padding-right:6px; color:#fff;
+          box-shadow:0 2px 8px rgba(255,111,169,0.35);
+          position:relative;
+          background-size:200% 100%;
+          animation:thermoShine 3s linear infinite;
+        }
+        .fin-thermo-spark { animation:sparkPulse 1.4s ease-in-out infinite; }
+        @keyframes thermoShine { 0%{background-position:200% 0} 100%{background-position:0 0} }
+        @keyframes sparkPulse { 0%,100%{transform:scale(1); opacity:0.85} 50%{transform:scale(1.3); opacity:1} }
+
+        .fin-meta-faltam {
+          font-size:0.78rem; color:var(--text-secondary, #6B7280);
+          margin:0; position:relative; z-index:1;
+        }
+        .fin-meta-faltam strong { color:var(--primary-dark, #F85A9A); font-weight:700; }
+
+        /* ── Meta empty (sem meta definida) ── */
+        .fin-meta-empty {
+          display:flex; align-items:center; gap:0.85rem; padding:1.1rem 1.4rem;
+          background:var(--bg-card, #FFFFFF);
+          border:1.5px dashed rgba(255,111,169,0.4);
+          border-radius:20px; cursor:pointer;
+          font-family:inherit; transition:all 0.18s; width:100%;
+          color:inherit;
+        }
+        .fin-meta-empty:hover {
+          background:var(--primary-light, #FFF1F7);
+          border-color:var(--primary, #FF6FA9);
+          transform:translateY(-1px);
+        }
+        .fin-meta-empty-icon {
+          width:44px; height:44px; flex-shrink:0; border-radius:50%;
+          background:var(--primary-light, #FFF1F7); color:var(--primary, #FF6FA9);
+          display:flex; align-items:center; justify-content:center;
+        }
+        .fin-meta-empty-title { font-size:0.95rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 2px; }
+        .fin-meta-empty-sub { font-size:0.78rem; color:var(--text-secondary, #6B7280); margin:0; }
+        .fin-meta-empty-cta {
+          padding:0.5rem 1rem;
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          color:#fff; border-radius:50px;
+          font-size:0.8rem; font-weight:700; white-space:nowrap;
+          box-shadow:0 2px 8px rgba(255,111,169,0.3);
+        }
+
+        /* Modal meta - bloco explicativo */
+        .fin-meta-help {
+          display:flex; gap:0.85rem; align-items:flex-start;
+          padding:0.95rem;
+          background:var(--primary-light, #FFF1F7);
+          border-radius:14px;
+          color:var(--primary-dark, #F85A9A);
+        }
+        .fin-meta-help p { margin:0; font-size:0.82rem; line-height:1.45; color:var(--text-primary, #374151); }
+
         /* Mobile */
         @media (max-width:640px) {
           .fin-root { padding-top:0.25rem; }
           .fin-header { flex-direction:column; align-items:stretch; }
+          .fin-header-actions { flex-direction:column-reverse; gap:0.5rem; }
+          .fin-export-wrap, .fin-btn-export { width:100%; }
+          .fin-btn-export { justify-content:center; }
+          .fin-export-menu { width:100%; right:auto; left:0; }
           .fin-month-nav { align-self:stretch; justify-content:space-between; }
           .fin-month-label { flex:1; }
           .fin-cards { grid-template-columns:1fr 1fr; }
@@ -822,6 +1308,10 @@ export default function Financeiro() {
           .fin-bar-sub { display:none; }
           .fin-legend { width:100%; margin-left:0; justify-content:flex-start; }
           .fin-item-meta { display:none; }
+          .fin-meta-current { font-size:1.5rem; }
+          .fin-meta-pct { margin-left:0; }
+          .fin-meta-empty { flex-direction:column; text-align:center; }
+          .fin-meta-empty-cta { width:100%; text-align:center; padding:0.65rem; }
         }
       `}</style>
     </>
