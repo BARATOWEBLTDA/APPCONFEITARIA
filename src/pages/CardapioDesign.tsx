@@ -5,7 +5,15 @@ import { HexColorPicker } from "react-colorful";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const SectionLabel = ({ children }: any) => <p className="cd-section-label">{children}</p>;
+const SectionLabel = ({ children, icon, sub }: any) => (
+  <div className="cd-section-header">
+    {icon && <div className="cd-section-icon">{icon}</div>}
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <p className="cd-section-label">{children}</p>
+      {sub && <p className="cd-section-sub">{sub}</p>}
+    </div>
+  </div>
+);
 
 export default function CardapioDesign() {
   const [loading, setLoading] = useState(true);
@@ -162,8 +170,10 @@ export default function CardapioDesign() {
 
       {/* Logo */}
       <div className="cd-card">
-        <SectionLabel>Logotipo</SectionLabel>
-        <p className="cd-hint">Aparece no topo do cardápio em formato circular</p>
+        <SectionLabel
+          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>}
+          sub="Aparece no topo do cardápio em formato circular"
+        >Logotipo</SectionLabel>
         <div className="cd-logo-area">
           {logoUrl ? (
             <div className="cd-logo-preview">
@@ -188,12 +198,10 @@ export default function CardapioDesign() {
 
       {/* Banners */}
       <div className="cd-card">
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <SectionLabel>Banners</SectionLabel>
-        </div>
-        <p className="cd-hint">
-          {isPro ? "Até 4 banners — aparecem em carrossel no cardápio" : "1 banner disponível. Assine o PRO para até 4 banners em carrossel"}
-        </p>
+        <SectionLabel
+          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 12h20"/></svg>}
+          sub={isPro ? "Até 4 banners — aparecem em carrossel no cardápio" : "1 banner disponível. Assine o PRO para até 4 em carrossel"}
+        >Banners</SectionLabel>
 
         <div className="cd-banners-grid">
           {(isPro ? [0, 1, 2, 3] : [0]).map(i => (
@@ -201,13 +209,13 @@ export default function CardapioDesign() {
               <span className="cd-banner-slot-label">{bannerLabels[i]}</span>
               {bannerValues[i] ? (
                 <div className="cd-banner-thumb" style={{ position: 'relative', overflow: 'hidden' }}>
-                  {i > 0 && <div className="cd-pro-ribbon">PRO</div>}
+                  {i > 0 && <div className="cd-pro-corner"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>PRO</div>}
                   <img src={bannerValues[i]} alt={bannerLabels[i]} />
                   <button className="cd-remove-btn" onClick={() => handleRemoveBanner(i)}>✕</button>
                 </div>
               ) : (
                 <div className="cd-upload-box cd-upload-slot" style={{ position: 'relative', overflow: 'hidden' }} onClick={() => !uploading && bannerRefs[i].current?.click()}>
-                  {i > 0 && <div className="cd-pro-ribbon">PRO</div>}
+                  {i > 0 && <div className="cd-pro-corner"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>PRO</div>}
                   {uploading === `banner${i}` ? <span className="cd-spinner-sm" /> : (
                     <>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary, #FF6FA9)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -225,7 +233,7 @@ export default function CardapioDesign() {
 
           {!isPro && (
             <div className="cd-banner-slot cd-slot-locked">
-              <img src="/diamante.png" alt="PRO" style={{ width: "24px", height: "24px", marginBottom: "4px" }} />
+              <div className="cd-lock-icon" style={{ marginBottom: "6px" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
               <span className="cd-upload-hint" style={{ textAlign: "center", fontSize: "0.7rem" }}>Banners 2, 3 e 4<br/>disponíveis no PRO</span>
             </div>
           )}
@@ -234,8 +242,10 @@ export default function CardapioDesign() {
 
       {/* Cores */}
       <div className="cd-card" style={isMobile ? {} : { gridColumn:'2', gridRow:'2/4' }}>
-        <SectionLabel>Cores</SectionLabel>
-        <p className="cd-hint">Toque para personalizar e veja em tempo real</p>
+        <SectionLabel
+          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 0 0 0 20 2 2 0 0 0 0-4 2 2 0 0 1 0-4h2.5a4.5 4.5 0 0 0 4.5-4.5A10 10 0 0 0 12 2z"/></svg>}
+          sub="Toque para personalizar e veja em tempo real"
+        >Cores</SectionLabel>
         <div className="cd-colors-list">
 
           {/* Cor da borda */}
@@ -298,7 +308,7 @@ export default function CardapioDesign() {
                 <div className="cd-color-info">
                   <div className="cd-color-label-row">
                     <span className="cd-color-label">Botão "Adicionar ao carrinho"</span>
-                    <span className="cd-pro-badge">✦ PRO</span>
+                    <span className="cd-pro-badge">PRO</span>
                   </div>
                   <span className="cd-color-value">{corBotao}</span>
                 </div>
@@ -322,7 +332,7 @@ export default function CardapioDesign() {
             </div>
           ) : (
             <div className="cd-upgrade-box" style={{ marginTop: '4px' }}>
-              <img src="/diamante.png" alt="PRO" style={{ width: '24px', height: '24px' }} />
+              <div className="cd-lock-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
               <div>
                 <p className="cd-upgrade-title">Cor do botão de compra</p>
                 <p className="cd-upgrade-sub">Personalize a cor do botão "Adicionar ao carrinho" com o plano PRO</p>
@@ -337,7 +347,7 @@ export default function CardapioDesign() {
                 <div className="cd-color-info">
                   <div className="cd-color-label-row">
                     <span className="cd-color-label">Fundo da barra de navegação</span>
-                    <span className="cd-pro-badge">✦ PRO</span>
+                    <span className="cd-pro-badge">PRO</span>
                   </div>
                   <span className="cd-color-value">{corNavbar}</span>
                 </div>
@@ -359,7 +369,7 @@ export default function CardapioDesign() {
             </div>
           ) : (
             <div className="cd-upgrade-box" style={{ marginTop: '4px' }}>
-              <img src="/diamante.png" alt="PRO" style={{ width: '24px', height: '24px' }} />
+              <div className="cd-lock-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
               <div>
                 <p className="cd-upgrade-title">Cor da barra de navegação</p>
                 <p className="cd-upgrade-sub">Personalize o fundo da barra de navegação com o plano PRO</p>
@@ -374,7 +384,7 @@ export default function CardapioDesign() {
                 <div className="cd-color-info">
                   <div className="cd-color-label-row">
                     <span className="cd-color-label">Rodapé do cardápio</span>
-                    <span className="cd-pro-badge">✦ PRO</span>
+                    <span className="cd-pro-badge">PRO</span>
                   </div>
                   <span className="cd-color-value">{corRodape}</span>
                 </div>
@@ -396,7 +406,7 @@ export default function CardapioDesign() {
             </div>
           ) : (
             <div className="cd-upgrade-box" style={{ marginTop: '4px' }}>
-              <img src="/diamante.png" alt="PRO" style={{ width: '24px', height: '24px' }} />
+              <div className="cd-lock-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
               <div>
                 <p className="cd-upgrade-title">Cor do rodapé</p>
                 <p className="cd-upgrade-sub">Personalize a cor do rodapé do seu cardápio com o plano PRO</p>
@@ -410,58 +420,186 @@ export default function CardapioDesign() {
       <style>{`
         @keyframes cdspin { to { transform:rotate(360deg); } }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-        .cd-root { font-family:'Geist', sans-serif; max-width:960px; width:100%; box-sizing:border-box; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto auto 1fr; gap:0.85rem; align-items:start; }
-        .cd-page-header { grid-column:1/-1; padding-top:1.5rem; text-align:center; margin-bottom:0.15rem; }
+
+        .cd-root { font-family:'Geist', sans-serif; max-width:960px; width:100%; box-sizing:border-box; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto auto 1fr; gap:1rem; align-items:start; }
+        .cd-page-header { grid-column:1/-1; padding-top:0.5rem; padding-bottom:0.5rem; }
         @media (max-width: 768px) {
           .cd-root { display:flex; flex-direction:column; max-width:100%; }
           .cd-page-header { grid-column:unset; }
         }
-        .cd-page-title { font-size:1.25rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.3rem; }
-        .cd-page-sub { font-size:0.84rem; color:var(--text-secondary, #6B7280); margin:0; font-style:italic; }
-        .cd-autosave { font-size:0.75rem; font-weight:600; color:var(--success, #22C55E); display:flex; align-items:center; justify-content:center; gap:0.25rem; animation:fadeIn 0.3s ease; margin-top:0.3rem; }
-        .cd-section-label { font-size:0.75rem; font-weight:800; color:var(--primary, #FF6FA9); text-transform:uppercase; letter-spacing:0.12em; margin:0; }
+        .cd-page-title { font-size:1.4rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.3rem; letter-spacing:-0.02em; }
+        .cd-page-sub { font-size:0.86rem; color:var(--text-secondary, #6B7280); margin:0; }
+        .cd-autosave { display:inline-flex; align-items:center; gap:0.35rem; font-size:0.76rem; font-weight:600; color:var(--success, #22C55E); background:#f0fdf4; padding:0.32rem 0.8rem; border-radius:50px; border:1px solid #dcfce7; margin-top:0.5rem; animation:fadeIn 0.3s ease; }
+
+        /* ── Card base ── */
+        .cd-card {
+          background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.4rem;
+          box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.05));
+          border:1px solid var(--border, #E9E9EE);
+          display:flex; flex-direction:column; gap:0.85rem;
+          width:100%; box-sizing:border-box;
+          position:relative; overflow:hidden;
+          transition:box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .cd-card::before {
+          content:""; position:absolute; top:-60px; right:-60px;
+          width:140px; height:140px;
+          background:radial-gradient(circle, var(--primary-light, #FFF1F7) 0%, transparent 70%);
+          pointer-events:none; opacity:0.7;
+        }
+        .cd-card:hover {
+          box-shadow:0 4px 24px rgba(255,111,169,0.08), 0 1px 2px rgba(16,24,40,0.04);
+          border-color:rgba(255,111,169,0.18);
+        }
+        .cd-card > * { position:relative; z-index:1; }
+
+        /* ── Section header ── */
+        .cd-section-header {
+          display:flex; align-items:center; gap:0.7rem;
+          padding-bottom:1rem;
+          border-bottom:1px solid var(--border, #E9E9EE);
+        }
+        .cd-section-icon {
+          width:36px; height:36px; flex-shrink:0; border-radius:11px;
+          background:var(--primary-light, #FFF1F7);
+          color:var(--primary, #FF6FA9);
+          display:flex; align-items:center; justify-content:center;
+        }
+        .cd-section-label {
+          font-size:0.95rem; font-weight:700;
+          color:var(--text-title, #1F2937); margin:0;
+          letter-spacing:-0.01em;
+        }
+        .cd-section-sub {
+          font-size:0.74rem; color:var(--text-muted, #9CA3AF);
+          margin:0.1rem 0 0; line-height:1.3;
+        }
         .cd-hint { font-size:0.78rem; color:var(--text-muted, #9CA3AF); margin:0; }
-        .cd-card { background:var(--bg-card, #FFFFFF); border-radius:18px; padding:1.15rem; box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); display:flex; flex-direction:column; gap:0.75rem; width:100%; box-sizing:border-box; }
-        .cd-upload-box { border:2px dashed var(--primary-light, #FFF1F7); border-radius:12px; background:var(--primary-light, #FFF1F7); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:border-color 0.2s; gap:0.3rem; }
-        .cd-upload-box:hover { border-color:var(--primary, #FF6FA9); }
-        .cd-upload-logo { width:130px; height:130px; border-radius:50%; }
+
+        /* ── Upload boxes ── */
+        .cd-upload-box {
+          border:2px dashed rgba(255,111,169,0.35); border-radius:14px;
+          background:var(--primary-light, #FFF1F7);
+          display:flex; flex-direction:column; align-items:center; justify-content:center;
+          cursor:pointer; transition:all 0.2s; gap:0.35rem;
+        }
+        .cd-upload-box:hover { border-color:var(--primary, #FF6FA9); background:#FFE4F0; transform:translateY(-1px); }
+        .cd-upload-logo { width:140px; height:140px; border-radius:50%; }
         .cd-upload-slot { width:100%; aspect-ratio:16/9; }
-        .cd-upload-label { font-size:0.88rem; font-weight:700; color:var(--text-primary, #374151); margin:0; }
-        .cd-upload-hint { font-size:0.72rem; color:var(--text-muted, #9CA3AF); margin:0; }
-        .cd-logo-area { display:flex; flex-direction:column; align-items:center; gap:0.75rem; }
-        .cd-logo-preview { position:relative; width:130px; height:130px; border-radius:50%; overflow:hidden; border:3px solid var(--primary-light, #FFF1F7); flex-shrink:0; }
+        .cd-upload-label { font-size:0.88rem; font-weight:700; color:var(--primary-dark, #F85A9A); margin:0; }
+        .cd-upload-hint { font-size:0.72rem; color:var(--primary, #FF6FA9); margin:0; font-weight:600; }
+
+        /* ── Logo area ── */
+        .cd-logo-area { display:flex; flex-direction:column; align-items:center; gap:0.85rem; }
+        .cd-logo-preview {
+          position:relative; width:140px; height:140px; border-radius:50%;
+          overflow:hidden;
+          border:4px solid var(--bg-card, #FFFFFF);
+          box-shadow:0 0 0 3px var(--primary-light, #FFF1F7), 0 8px 24px rgba(255,111,169,0.18);
+          flex-shrink:0;
+        }
         .cd-logo-preview img { width:100%; height:100%; object-fit:cover; }
+
+        /* ── Banners ── */
         .cd-banners-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
-        .cd-banner-slot { display:flex; flex-direction:column; gap:0.3rem; }
+        .cd-banner-slot { display:flex; flex-direction:column; gap:0.35rem; }
         .cd-banner-slot-label { font-size:0.7rem; font-weight:700; color:var(--text-muted, #9CA3AF); text-transform:uppercase; letter-spacing:0.08em; }
-        .cd-banner-thumb { position:relative; width:100%; aspect-ratio:16/9; border-radius:10px; overflow:hidden; }
+        .cd-banner-thumb { position:relative; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
         .cd-banner-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
-        .cd-slot-locked { align-items:center; justify-content:center; background:var(--primary-light, #FFF1F7); border:2px dashed var(--primary-light, #FFF1F7); border-radius:12px; aspect-ratio:16/9; padding:0.5rem; }
-        .cd-remove-btn { position:absolute; top:0.3rem; right:0.3rem; background:rgba(0,0,0,0.5); border:none; border-radius:50%; width:22px; height:22px; color:white; font-size:0.65rem; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-        .cd-change-btn { align-self:center; padding:0.45rem 1.25rem; background:var(--bg-body, #F7F7F8); border:1.5px solid var(--border, #E9E9EE); border-radius:50px; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:700; color:var(--text-primary, #374151); cursor:pointer; }
-        .cd-change-btn:hover { border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); }
-        .cd-change-btn-sm { font-size:0.7rem; font-weight:700; color:var(--primary, #FF6FA9); background:none; border:none; cursor:pointer; padding:0; text-align:center; }
+        .cd-slot-locked {
+          align-items:center; justify-content:center;
+          background:var(--primary-light, #FFF1F7);
+          border:2px dashed rgba(255,111,169,0.4);
+          border-radius:14px; aspect-ratio:16/9; padding:0.5rem;
+        }
+        .cd-remove-btn { position:absolute; top:0.4rem; right:0.4rem; background:rgba(0,0,0,0.55); border:none; border-radius:50%; width:24px; height:24px; color:white; font-size:0.7rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s; }
+        .cd-remove-btn:hover { background:rgba(0,0,0,0.75); }
+
+        /* ── Botões ── */
+        .cd-change-btn { align-self:center; padding:0.5rem 1.4rem; background:var(--bg-card, #FFFFFF); border:1.5px solid var(--border, #E9E9EE); border-radius:50px; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:700; color:var(--text-primary, #374151); cursor:pointer; transition:all 0.15s; }
+        .cd-change-btn:hover { border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); background:var(--primary-light, #FFF1F7); }
+        .cd-change-btn-sm { font-size:0.72rem; font-weight:700; color:var(--primary, #FF6FA9); background:none; border:none; cursor:pointer; padding:0; text-align:center; }
         .cd-change-btn-sm:hover { text-decoration:underline; }
-        @keyframes proShine { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
-        .cd-pro-badge { background:linear-gradient(90deg,#f59e0b,#d97706,#fbbf24,#d97706,#f59e0b); background-size:300% 300%; animation:proShine 2.5s ease infinite; color:white; font-size:0.68rem; font-weight:800; padding:3px 10px; border-radius:6px; letter-spacing:0.08em; white-space:nowrap; flex-shrink:0; }
-        .cd-pro-ribbon { position:absolute; top:12px; right:-16px; background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color:var(--text-inverse, #FFFFFF); font-size:0.58rem; font-weight:900; letter-spacing:0.1em; padding:3px 24px; transform:rotate(45deg); z-index:10; box-shadow:0 2px 6px rgba(255,111,169,0.4); width:80px; text-align:center; }
-        .cd-colors-list { display:flex; flex-direction:column; gap:0.5rem; }
-        .cd-color-row { display:flex; align-items:center; justify-content:space-between; padding:0.65rem 0.75rem; background:var(--bg-body, #F7F7F8); border-radius:12px; border:1px solid var(--border, #E9E9EE); cursor:pointer; transition:border-color 0.2s; }
-        .cd-color-row:hover { border-color:var(--primary, #FF6FA9); }
+
+        /* ── Lock icon (substitui diamante) ── */
+        .cd-lock-icon {
+          width:36px; height:36px; flex-shrink:0; border-radius:50%;
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          display:flex; align-items:center; justify-content:center;
+          box-shadow:0 3px 10px rgba(255,111,169,0.35);
+        }
+
+        /* ── Badge PRO (rosa, não amarelo) ── */
+        .cd-pro-badge {
+          display:inline-flex; align-items:center; gap:3px;
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          color:white; font-size:0.66rem; font-weight:800;
+          padding:3px 9px; border-radius:50px; letter-spacing:0.06em;
+          white-space:nowrap; flex-shrink:0;
+          box-shadow:0 2px 6px rgba(255,111,169,0.32);
+        }
+
+        /* ── Cantinho PRO no banner (substitui ribbon diagonal) ── */
+        .cd-pro-corner {
+          position:absolute; top:8px; left:8px; z-index:10;
+          display:inline-flex; align-items:center; gap:3px;
+          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          color:#fff; font-size:0.6rem; font-weight:800; letter-spacing:0.08em;
+          padding:3px 8px 3px 6px; border-radius:50px;
+          box-shadow:0 2px 8px rgba(255,111,169,0.45);
+        }
+
+        /* ── Cores ── */
+        .cd-colors-list { display:flex; flex-direction:column; gap:0.55rem; }
+        .cd-color-row {
+          display:flex; align-items:center; justify-content:space-between;
+          padding:0.7rem 0.85rem;
+          background:var(--bg-body, #F7F7F8);
+          border-radius:14px; border:1.5px solid var(--border, #E9E9EE);
+          cursor:pointer; transition:all 0.2s;
+        }
+        .cd-color-row:hover {
+          border-color:var(--primary, #FF6FA9);
+          background:var(--primary-light, #FFF1F7);
+          transform:translateY(-1px);
+        }
         .cd-color-info { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
-        .cd-color-label-row { display:flex; align-items:center; gap:6px; }
-        .cd-color-label { font-size:0.82rem; font-weight:600; color:var(--text-primary, #374151); }
-        .cd-color-value { font-size:0.7rem; color:var(--text-muted, #9CA3AF); font-family:inherit; }
-        .cd-color-swatch { width:38px; height:38px; border-radius:10px; border:2px solid rgba(0,0,0,0.08); flex-shrink:0; box-shadow:0 2px 6px rgba(0,0,0,0.12); }
-        .cd-picker-wrap { padding:0.75rem; background:var(--bg-body, #F7F7F8); border-radius:12px; border:1px solid var(--border, #E9E9EE); margin-top:4px; }
-        .cd-hex-input { flex:1; min-width:0; padding:6px 8px; border:1.5px solid var(--border, #E9E9EE); border-radius:8px; font-size:0.78rem; font-family:inherit; color:var(--text-primary, #374151); outline:none; }
-        .cd-hex-input:focus { border-color:var(--border-focus, #FF6FA9); }
-        .cd-picker-close { padding:6px 10px; background:var(--primary, #FF6FA9); color:var(--text-inverse, #FFFFFF); border:none; border-radius:8px; font-size:0.75rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; }
-        .cd-restore-btn { padding:6px 8px; background:var(--bg-body, #F7F7F8); color:var(--text-secondary, #6B7280); border:1.5px solid var(--border, #E9E9EE); border-radius:8px; font-size:0.82rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; }
-        .cd-restore-btn:hover { border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); }
-        .cd-upgrade-box { background:var(--primary-light, #FFF1F7); border:1.5px dashed var(--primary-light, #FFF1F7); border-radius:16px; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; }
-        .cd-upgrade-title { font-size:0.88rem; font-weight:700; color:var(--text-primary, #374151); margin:0 0 2px; }
-        .cd-upgrade-sub { font-size:0.76rem; color:var(--text-muted, #9CA3AF); margin:0; }
+        .cd-color-label-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+        .cd-color-label { font-size:0.84rem; font-weight:600; color:var(--text-primary, #374151); }
+        .cd-color-value { font-size:0.7rem; color:var(--text-muted, #9CA3AF); font-family:'Geist Mono', ui-monospace, monospace; }
+        .cd-color-swatch {
+          width:42px; height:42px; border-radius:12px;
+          border:3px solid var(--bg-card, #FFFFFF);
+          flex-shrink:0;
+          box-shadow:0 0 0 1.5px rgba(0,0,0,0.08), 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        /* ── Color picker wrap ── */
+        .cd-picker-wrap {
+          padding:0.85rem;
+          background:var(--bg-card, #FFFFFF);
+          border-radius:14px;
+          border:1.5px solid var(--primary, #FF6FA9);
+          margin-top:6px;
+          box-shadow:0 6px 18px rgba(255,111,169,0.12);
+        }
+        .cd-hex-input { flex:1; min-width:0; padding:8px 10px; border:1.5px solid var(--border, #E9E9EE); border-radius:10px; font-size:0.82rem; font-family:'Geist Mono', ui-monospace, monospace; color:var(--text-primary, #374151); outline:none; transition:border-color 0.15s; }
+        .cd-hex-input:focus { border-color:var(--primary, #FF6FA9); box-shadow:0 0 0 3px rgba(255,111,169,0.12); }
+        .cd-picker-close { padding:8px 14px; background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color:#fff; border:none; border-radius:10px; font-size:0.78rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; box-shadow:0 2px 8px rgba(255,111,169,0.32); transition:transform 0.15s; }
+        .cd-picker-close:hover { transform:translateY(-1px); }
+        .cd-restore-btn { padding:8px 11px; background:var(--bg-body, #F7F7F8); color:var(--text-secondary, #6B7280); border:1.5px solid var(--border, #E9E9EE); border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; transition:all 0.15s; }
+        .cd-restore-btn:hover { border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); background:var(--primary-light, #FFF1F7); }
+
+        /* ── Upgrade box ── */
+        .cd-upgrade-box {
+          background:var(--primary-light, #FFF1F7);
+          border:1.5px dashed var(--primary, #FF6FA9);
+          border-radius:14px; padding:0.95rem 1.1rem;
+          display:flex; align-items:center; gap:0.85rem;
+        }
+        .cd-upgrade-title { font-size:0.86rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 2px; }
+        .cd-upgrade-sub { font-size:0.74rem; color:var(--text-secondary, #6B7280); margin:0; line-height:1.35; }
+
         .cd-spinner { width:32px; height:32px; border:3px solid var(--primary-light, #FFF1F7); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
         .cd-spinner-sm { width:16px; height:16px; border:2px solid rgba(255,111,169,0.3); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
       `}</style>
