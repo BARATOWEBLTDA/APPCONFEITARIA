@@ -936,12 +936,12 @@ export default function Pedidos() {
 
         @media (min-width: 768px) {
           /* Wrapper da lista vira um bloco com borda e radius */
-          .ped-dt-wrapper { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); border-radius: 14px; overflow: hidden; width: 100%; }
+          .ped-dt-wrapper { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); border-radius: 14px; overflow: hidden; width: 100%; display: flex; flex-direction: column; }
 
           /* Cabeçalho */
           .ped-dt-header {
             display: grid;
-            grid-template-columns: auto auto 1fr auto auto auto auto;
+            grid-template-columns: 130px 160px 1fr 150px 110px 120px 120px;
             align-items: center;
             padding: 0.5rem 1.25rem;
             background: #3d1a24;
@@ -952,17 +952,21 @@ export default function Pedidos() {
             letter-spacing: 0.06em;
             color: rgba(236,194,208,0.8);
             gap: 16px;
+            width: 100%;
+            box-sizing: border-box;
           }
 
           /* Cada linha de pedido no desktop */
           .ped-dt-row {
             display: grid;
-            grid-template-columns: auto auto 1fr auto auto auto auto;
+            grid-template-columns: 130px 160px 1fr 150px 110px 120px 120px;
             align-items: center;
             padding: 0.6rem 1.25rem;
             gap: 16px;
             cursor: pointer;
             transition: background 0.12s;
+            width: 100%;
+            box-sizing: border-box;
           }
           .ped-dt-row:last-child { border-bottom: none; }
           .ped-dt-row:hover { background: var(--bg-subtle,#F7EEF1); }
