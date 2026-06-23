@@ -39,9 +39,9 @@ import CardapioConfigPage from "@/pages/CardapioConfigPage";
 import CardapioDesign from "@/pages/CardapioDesign";
 import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 import CardapioPublico from "@/pages/CardapioPublico";
+import Financeiro from "@/pages/Financeiro";
 
 
-const Financeiro = () => <div style={{padding:"2rem"}}><h2>💰 Financeiro</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
 const Promocoes = () => <div style={{padding:"2rem"}}><h2>🏷️ Promoções</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
 const Estoque = () => <div style={{padding:"2rem"}}><h2>📦 Estoque</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
 const Arquivos = () => <div style={{padding:"2rem"}}><h2>🗂️ Arquivos</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
