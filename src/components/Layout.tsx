@@ -55,6 +55,7 @@ export default function Layout() {
     { label: "Dashboard", path: "/dashboard",     icon: <ChartBar    size={22} weight="duotone" /> },
     { label: "Pedidos",   path: "/pedidos",        icon: <ClipboardText size={22} weight="duotone" /> },
     { label: "Produtos",  path: "/produtos",       icon: <Storefront  size={22} weight="duotone" /> },
+    { label: "Ingredientes", path: "/insumos",     icon: <ForkKnife   size={22} weight="duotone" /> },
     { label: "Estoque",   path: "/estoque",        icon: <Package     size={22} weight="duotone" /> },
     { label: "Financeiro",path: "/financeiro",     icon: <CurrencyDollar size={22} weight="duotone" /> },
     { label: "Promoções", path: "/promocoes",      icon: <Percent     size={22} weight="duotone" /> },
