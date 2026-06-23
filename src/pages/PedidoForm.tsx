@@ -62,10 +62,9 @@ export default function PedidoForm() {
     setProdutos(prds || [])
     setCupons([]) // tabela cupons não existe ainda
 
-    // Trava: bloqueia criação de pedido sem produtos cadastrados
+    // Trava: bloqueia criação de pedido sem produtos cadastrados — volta para Pedidos que mostra o modal
     if (!isEdicao && (!prds || prds.length === 0)) {
-      alert('Você precisa cadastrar ao menos 1 produto antes de criar pedidos.')
-      navigate('/produtos')
+      navigate('/pedidos')
     }
   }
 

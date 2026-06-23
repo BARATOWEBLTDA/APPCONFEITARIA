@@ -639,6 +639,15 @@ export default function Pedidos() {
   const [mapaAberto, setMapaAberto] = useState<string | null>(null)
   const [modalPedido, setModalPedido] = useState<Pedido | null>(null)
   const [totalProdutos, setTotalProdutos] = useState<number | null>(null)
+  const [modalSemProdutos, setModalSemProdutos] = useState(false)
+
+  const handleNovoPedido = () => {
+    if (totalProdutos === 0) {
+      setModalSemProdutos(true)
+      return
+    }
+    navigate('/pedidos/novo')
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -727,19 +736,8 @@ export default function Pedidos() {
 
           {/* Novo pedido */}
           <button
-            onClick={() => { if (totalProdutos !== null && totalProdutos > 0) navigate('/pedidos/novo') }}
-            disabled={totalProdutos === 0}
-            title={totalProdutos === 0 ? 'Cadastre ao menos 1 produto antes de criar pedidos' : ''}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '0.4rem',
-              background: totalProdutos === 0 ? '#d1c4cb' : 'var(--primary,#986274)',
-              color: 'white', border: 'none', borderRadius: 10,
-              padding: isMobile ? '0.6rem 0.75rem' : '0.6rem 1rem',
-              fontSize: '0.85rem', fontWeight: 600,
-              cursor: totalProdutos === 0 ? 'not-allowed' : 'pointer',
-              fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0,
-              opacity: totalProdutos === 0 ? 0.7 : 1,
-            }}
+            onClick={handleNovoPedido}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--primary,#986274)', color: 'white', border: 'none', borderRadius: 10, padding: isMobile ? '0.6rem 0.75rem' : '0.6rem 1rem', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             {!isMobile && 'Registrar pedido'}
@@ -805,15 +803,9 @@ export default function Pedidos() {
                 {busca || filtrosAtivos ? 'Tente ajustar os filtros' : 'Registre seu primeiro pedido'}
               </p>
               {!filtrosAtivos && !busca && (
-                totalProdutos === 0 ? (
-                  <button onClick={() => navigate('/produtos')} style={{ marginTop: '0.5rem', background: 'var(--primary,#986274)', color: 'white', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
-                    Cadastrar primeiro produto
-                  </button>
-                ) : (
-                  <button onClick={() => navigate('/pedidos/novo')} style={{ marginTop: '0.5rem', background: 'var(--primary,#986274)', color: 'white', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
-                    Registrar primeiro pedido
-                  </button>
-                )
+                <button onClick={handleNovoPedido} style={{ marginTop: '0.5rem', background: 'var(--primary,#986274)', color: 'white', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+                  Registrar primeiro pedido
+                </button>
               )}
             </div>
           ) : (
@@ -859,6 +851,89 @@ export default function Pedidos() {
 
       {mapaAberto && <MapaModal endereco={mapaAberto} onClose={() => setMapaAberto(null)} />}
       {modalPedido && <ModalPedido p={modalPedido} onClose={() => setModalPedido(null)} onEditar={() => { setModalPedido(null); navigate(`/pedidos/${modalPedido.id}`) }} onExcluir={() => excluirPedido(modalPedido.id)} />}
+
+      {/* ── Modal: precisa cadastrar produtos primeiro ── */}
+      {modalSemProdutos && (
+        <>
+          <div onClick={() => setModalSemProdutos(false)} style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+            backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+            zIndex: 9998, animation: 'hsFadeIn 0.2s ease',
+          }} />
+          <div style={{
+            position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: 'min(380px, calc(100vw - 2rem))',
+            background: 'white', borderRadius: 20,
+            boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+            zIndex: 9999, padding: '1.75rem 1.5rem 1.5rem',
+            fontFamily: 'inherit', textAlign: 'center',
+            animation: 'hsFadeIn 0.25s ease',
+          }}>
+            <button onClick={() => setModalSemProdutos(false)} style={{
+              position: 'absolute', top: 12, right: 12, width: 32, height: 32,
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              color: 'var(--text-muted,#C39EAA)', display: 'flex',
+              alignItems: 'center', justifyContent: 'center', borderRadius: 8,
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+
+            {/* Ícone Doo */}
+            <div style={{
+              width: 88, height: 88, borderRadius: '28%', background: '#3d1a24',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 1rem', boxShadow: '0 8px 24px rgba(61,26,36,0.25)',
+            }}>
+              <div style={{
+                width: 74, height: 74, borderRadius: '28%', background: 'white',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                overflow: 'hidden',
+              }}>
+                <img src="/Sistema/doo.png" alt="Doo" style={{
+                  width: 96, height: 96, objectFit: 'cover', objectPosition: 'top center',
+                }} />
+              </div>
+            </div>
+
+            <h3 style={{
+              fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-title,#431524)',
+              margin: '0 0 8px', letterSpacing: '-0.02em',
+            }}>
+              Ainda não temos produtos!
+            </h3>
+
+            <p style={{
+              fontSize: '0.9rem', color: 'var(--text-secondary,#6E3548)',
+              margin: '0 0 1.5rem', lineHeight: 1.5,
+            }}>
+              Para registrar um pedido, primeiro precisamos cadastrar o que você vende. Vamos lá?
+            </p>
+
+            <button
+              onClick={() => { setModalSemProdutos(false); navigate('/produtos') }}
+              style={{
+                width: '100%', background: '#3d1a24', color: 'white', border: 'none',
+                borderRadius: 12, padding: '0.85rem', fontSize: '0.95rem', fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit',
+                boxShadow: '0 4px 12px rgba(61,26,36,0.25)',
+                marginBottom: 8,
+              }}
+            >
+              Cadastrar meu primeiro produto
+            </button>
+            <button
+              onClick={() => setModalSemProdutos(false)}
+              style={{
+                width: '100%', background: 'transparent', color: 'var(--text-muted,#C39EAA)',
+                border: 'none', padding: '0.5rem', fontSize: '0.82rem', fontWeight: 500,
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              Agora não
+            </button>
+          </div>
+        </>
+      )}
 
       <style>{`
         @keyframes pedSpin { to { transform: rotate(360deg); } }
