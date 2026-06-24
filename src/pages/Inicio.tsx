@@ -499,11 +499,12 @@ export default function Inicio() {
           background: var(--bg-card, #fff);
           border: none;
           border-radius: 20px;
-          padding: 0.55rem 0.9rem 0.85rem 0.9rem;
-          min-height: 100px;
+          padding: 0.6rem 0.9rem 0.9rem 0.9rem;
+          min-height: 125px;
           display: flex; flex-direction: column;
           justify-content: space-between;
           align-items: flex-start;
+          gap: 0.5rem;
           box-shadow: 0 8px 22px rgba(0,0,0,0.10);
           cursor: pointer;
           font-family: inherit;
