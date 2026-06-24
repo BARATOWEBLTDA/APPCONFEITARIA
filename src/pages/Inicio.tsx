@@ -482,9 +482,15 @@ export default function Inicio() {
           background-size: 300% 300%;
           animation: heroGradientMove 10s ease infinite;
           border-radius: 0 0 28px 28px;
-          padding: 2.5rem 1.25rem 4.5rem;
-          margin: -0.75rem -0.75rem 0;
+          padding: 2.5rem 1.25rem 5.5rem;
+          /* Full-bleed: estende até a borda da viewport ignorando padding dos pais */
+          width: 100vw;
+          margin-left: calc(50% - 50vw);
+          margin-right: calc(50% - 50vw);
+          margin-top: -0.75rem;
           display: flex; flex-direction: column; gap: 1.4rem;
+          position: relative;
+          z-index: 0;
         }
         @keyframes heroGradientMove {
           0% { background-position: 0% 50%; }
@@ -540,7 +546,10 @@ export default function Inicio() {
         /* ── 3 indicadores flutuando ── */
         .ini-indicadores {
           display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem;
-          margin-top: -52px; padding: 0 0.25rem;
+          margin-top: -80px;
+          padding: 0 0.25rem;
+          position: relative;
+          z-index: 2;
         }
         .ini-ind-card {
           background: var(--bg-card, #fff);
@@ -702,7 +711,11 @@ export default function Inicio() {
         @media (min-width: 768px) {
           .ini-root { padding: 0 1.5rem 2rem; }
           .ini-hero {
-            margin: -0.75rem -1.5rem 0;
+            /* Desktop: respeita o layout (não usa full-bleed que iria sob a sidebar) */
+            width: auto;
+            margin-left: -1.5rem;
+            margin-right: -1.5rem;
+            margin-top: -0.75rem;
             padding: 3rem 2rem 5rem;
             border-radius: 0 0 32px 32px;
           }
@@ -711,7 +724,7 @@ export default function Inicio() {
           .ini-indicadores {
             grid-template-columns: repeat(3, 1fr);
             max-width: 720px;
-            margin-top: -60px;
+            margin-top: -90px;
             margin-left: auto;
             margin-right: auto;
             gap: 1rem;
