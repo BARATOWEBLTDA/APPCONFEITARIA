@@ -1,530 +1,729 @@
 import { useState, useEffect } from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { Bell, User, Users, Package, ClipboardText, CurrencyDollar, ForkKnife, BookOpen, CalendarDots, Plus } from "@phosphor-icons/react";
 import { useNavigate } from "react-router-dom";
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+} from "recharts";
+import {
+  User, Share, Plus, ClipboardText, CalendarDots, Package,
+  Warning, Cake, TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
+} from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
-import { usePlano } from "@/hooks/usePlano";
+import { useProfile } from "@/hooks/useProfile";
 import { useNotifications } from "@/context/NotificationContext";
-import { MetricCard } from "@/components/MetricCard";
-import { TrialCardMobileBanner } from "@/components/billing/TrialCard";
 
-const STATUS_CONFIG: Record<string, {label: string; color: string; bg: string}> = {
-  confirmado:          { label: 'Confirmado',          color: '#5b21b6', bg: '#ede9fe' },
-  em_producao:         { label: 'Em produção',         color: '#9a3412', bg: '#ffedd5' },
-  pronto:              { label: 'Pronto',              color: '#14532d', bg: '#dcfce7' },
-  aguardando_retirada: { label: 'Aguard. retirada',   color: '#0369a1', bg: '#e0f2fe' },
-  aguardando_entrega:  { label: 'Aguard. entrega',    color: '#3730a3', bg: '#eef2ff' },
-  entregue:            { label: 'Entregue',            color: '#374151', bg: '#f3f4f6' },
-  cancelado:           { label: 'Cancelado',           color: '#991b1b', bg: '#fee2e2' },
-  novo:                { label: 'Novo',                color: '#1d4ed8', bg: '#dbeafe' },
-};
+interface AlertaCard {
+  tipo: "pedido" | "entrega" | "estoque" | "aniversario";
+  count: number;
+  texto: string;
+  detalhe?: string;
+  cta: string;
+  onClick: () => void;
+}
 
+interface ChartPoint { dia: string; valor: number; }
 
-// ── Gráfico de faturamento (dados mock — substituir pelos reais futuramente) ──
-const FaturamentoChart = () => {
-  const hoje = new Date();
-  const mockData = Array.from({ length: 30 }, (_, i) => {
-    const d = new Date(hoje);
-    d.setDate(hoje.getDate() - (29 - i));
-    return {
-      dia: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-      valor: Math.floor(Math.random() * 800 + 100),
-    };
-  });
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={mockData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="var(--border,#ECC2D0)" vertical={false} />
-        <XAxis dataKey="dia" tick={{ fontSize: 10, fill: 'var(--text-muted,#C39EAA)' }} tickLine={false} axisLine={false} interval={4} />
-        <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted,#C39EAA)' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `R$${v}`} />
-        <Tooltip
-          contentStyle={{ background: 'var(--bg-card,#fff)', border: '1px solid var(--border,#ECC2D0)', borderRadius: 10, fontSize: 12, fontFamily: 'Geist,sans-serif' }}
-          formatter={(v: any) => [`R$ ${v}`, 'Faturamento']}
-        />
-        <Line type="monotone" dataKey="valor" stroke="var(--primary,#986274)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: 'var(--primary,#986274)' }} />
-      </LineChart>
-    </ResponsiveContainer>
-  );
-};
+const STATUS_PENDENTES = ["pendente", "novo"];
+const STATUS_ATIVOS = ["pendente", "novo", "confirmado", "em_producao", "pronto", "aguardando_retirada", "aguardando_entrega"];
 
-
+/**
+ * Página Início — Central de comando do dia (Entrega 3 da Proposta D).
+ *
+ * Substitui a antiga dashboard com gráfico mock + calendário, por uma tela
+ * focada em "o que eu preciso fazer agora?":
+ *  - Hero com degradê (preservado) + indicadores principais flutuando
+ *  - Ações rápidas (compartilhar cardápio, novo pedido)
+ *  - Atenção hoje (4 alertas acionáveis)
+ *  - Resumo da semana (vendas, pedidos, variação %)
+ *  - Gráfico de faturamento real dos últimos 30 dias
+ */
 export default function Inicio() {
   const navigate = useNavigate();
-  const { isPro } = usePlano();
+  const { profile } = useProfile();
   const { notifCount, openNotif } = useNotifications();
 
-  const [profile, setProfile] = useState<any>(null);
-  const [produtos, setProdutos] = useState(0);
-  const [clientes, setClientes] = useState(0);
-  const [insumos, setInsumos] = useState(0);
-  const [receitas, setReceitas] = useState(0);
-  const [categorias, setCategorias] = useState(0);
-  const [pedidos, setPedidos] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [openGroup, setOpenGroup] = useState<number | null>(0);
-  const [profileUserId, setProfileUserId] = useState<string>("");
-  const [ultimosClientes, setUltimosClientes] = useState<any[]>([]);
-  const [calMes, setCalMes] = useState(new Date());
-  const [calDiaSelecionado, setCalDiaSelecionado] = useState<string | null>(null);
-  const [pedidosDia, setPedidosDia] = useState<any[]>([]);
-  const [pedidosFiltro, setPedidosFiltro] = useState<string>("todos");
-  const [loadingPedidos, setLoadingPedidos] = useState(false);
-  const [pedidosMes, setPedidosMes] = useState<Record<string, number>>({});
-  const [ultimosPedidos, setUltimosPedidos] = useState<any[]>([]);
-  const [produtosMaisPedidos, setProdutosMaisPedidos] = useState<any[]>([]);
+  const [counts, setCounts] = useState({
+    pedidosPendentes: 0,
+    entregasHoje: 0,
+    estoqueBaixo: 0,
+    aniversariantes: 0,
+  });
+  const [aniversariantesDetalhe, setAniversariantesDetalhe] = useState<{ nome: string; dias: number } | null>(null);
+  const [resumoSemana, setResumoSemana] = useState({ vendas: 0, pedidos: 0 });
+  const [resumoAnterior, setResumoAnterior] = useState({ vendas: 0, pedidos: 0 });
+  const [chartData, setChartData] = useState<ChartPoint[]>([]);
+  const [copiado, setCopiado] = useState(false);
 
-  const calCells = () => {
-    const ano = calMes.getFullYear();
-    const mes = calMes.getMonth();
-    const primeiroDia = new Date(ano, mes, 1).getDay();
-    const totalDias = new Date(ano, mes + 1, 0).getDate();
-    const hoje = new Date().toISOString().split("T")[0];
-    const cells = [];
-    for (let i = 0; i < primeiroDia; i++) cells.push(<div key={`e${i}`} />);
-    for (let d = 1; d <= totalDias; d++) {
-      const iso = `${ano}-${String(mes + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      const temPedido = pedidosMes[iso] || 0;
-      const isHoje = iso === hoje;
-      const isSelecionado = iso === calDiaSelecionado;
-      cells.push(
-        <button
-          key={d}
-          onClick={() => handleDiaClick(iso)}
-          className={"cal-day" + (isHoje ? " hoje" : "") + (isSelecionado ? " selecionado" : "") + (temPedido ? " tem-pedido" : "")}
-        >
-          {d}
-          {temPedido > 0 && <span className="cal-dot">{temPedido}</span>}
-        </button>
-      );
-    }
-    return cells;
-  };
-
-  const buscarPedidosDia = async (dia: string) => {
-    if (!profileUserId) return;
-    setLoadingPedidos(true);
-    const { data } = await supabase
-      .from("pedidos")
-      .select("*")
-      .eq("user_id", profileUserId)
-      .eq("data_entrega", dia)
-      .order("created_at", { ascending: false });
-    setPedidosDia(data || []);
-    setLoadingPedidos(false);
-  };
-
-  const handleDiaClick = (dia: string) => {
-    setCalDiaSelecionado(dia);
-    setPedidosFiltro("todos");
-    buscarPedidosDia(dia);
-  };
-
-  useEffect(() => {
-    const load = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      setProfileUserId(user.id);
-
-      const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-      const fimMes = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString();
-
-      // Todas as queries independentes em paralelo — de ~800ms para ~200ms
-      const [
-        { data: prof },
-        { count: pc },
-        { count: cc },
-        { count: ic },
-        { count: rc },
-        { count: catc },
-        { data: uc },
-        { data: pedMes },
-        { data: ultPedidos },
-        { data: pedItens },
-      ] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", user.id).single(),
-        supabase.from("produtos").select("*", { count: "exact", head: true }).eq("user_id", user.id),
-        supabase.from("clientes").select("*", { count: "exact", head: true }).eq("user_id", user.id),
-        supabase.from("insumos").select("*", { count: "exact", head: true }).eq("user_id", user.id),
-        supabase.from("receitas_minhas").select("*", { count: "exact", head: true }).eq("user_id", user.id),
-        supabase.from("categorias").select("*", { count: "exact", head: true }).eq("user_id", user.id),
-        supabase
-          .from("clientes")
-          .select("id,nome,foto_url,created_at")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(5),
-        supabase
-          .from("pedidos")
-          .select("data_entrega,status")
-          .eq("user_id", user.id)
-          .gte("data_entrega", inicioMes)
-          .lte("data_entrega", fimMes),
-        supabase
-          .from("pedidos")
-          .select("id,numero,cliente_nome,status,valor_total,created_at")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(5),
-        supabase
-          .from("pedido_itens")
-          .select("nome_produto")
-          .eq("user_id", user.id)
-          .limit(200),
-      ]);
-
-      setProfile(prof);
-      setProdutos(pc || 0);
-      setClientes(cc || 0);
-      setInsumos(ic || 0);
-      setReceitas(rc || 0);
-      setCategorias(catc || 0);
-      if (uc) setUltimosClientes(uc);
-
-      if (ultPedidos) setUltimosPedidos(ultPedidos);
-      if (pedItens) {
-        const count: Record<string, number> = {};
-        pedItens.forEach((i: any) => { if (i.nome_produto) count[i.nome_produto] = (count[i.nome_produto] || 0) + 1; });
-        const sorted = Object.entries(count).sort((a,b) => b[1]-a[1]).slice(0,5).map(([nome,total]) => ({ nome, total }));
-        setProdutosMaisPedidos(sorted);
-      }
-      if (pedMes) {
-        const map: Record<string, number> = {};
-        pedMes.forEach((p: any) => {
-          if (p.data_entrega) map[p.data_entrega] = (map[p.data_entrega] || 0) + 1;
-        });
-        setPedidosMes(map);
-      }
-
-      setLoading(false);
-    };
-    load();
-  }, []);
-
-  const nome = profile?.nome?.split(" ")[0] || "";
+  const nome = profile?.nome || "";
+  const slug = profile?.slug || "";
+  const linkCardapio = slug ? `${window.location.origin}/cardapio/${slug}` : "";
+  const publicado = !!slug;
 
   const getGreeting = () => {
     const h = new Date().getHours();
-    if (h >= 5 && h < 12) return "Bom dia";
-    if (h >= 12 && h < 18) return "Boa tarde";
+    if (h < 12) return "Bom dia";
+    if (h < 18) return "Boa tarde";
     return "Boa noite";
   };
 
-  const atalhos = [
-    { label: "Clientes", icon: <Users size={28} weight="duotone" color="var(--primary, #FF6FA9)" />, path: "/clientes" },
-    { label: "Produtos", icon: <Package size={28} weight="duotone" color="var(--primary, #FF6FA9)" />, path: "/produtos" },
-    { label: "Pedidos", icon: <ClipboardText size={28} weight="duotone" color="var(--primary, #FF6FA9)" />, path: "/pedidos" },
-    { label: "Financeiro", icon: <CurrencyDollar size={28} weight="duotone" color="var(--primary, #FF6FA9)" />, path: "/financeiro" },
-    { label: "Cardápio", icon: <ForkKnife size={28} weight="duotone" color="var(--primary, #FF6FA9)" />, path: "/cardapio-config" },
-    { label: "Receitas", icon: <BookOpen size={28} weight="duotone" color="var(--primary, #FF6FA9)" />, path: "/receitas" },
+  const hojeFormatado = () => {
+    const d = new Date();
+    const s = d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  };
+
+  // ─── Carregar dados ───
+  useEffect(() => {
+    if (!profile?.id) return;
+    carregarTudo();
+  }, [profile?.id]);
+
+  const carregarTudo = async () => {
+    setLoading(true);
+    try {
+      const userId = profile!.id;
+      const hoje = new Date();
+      const hojeISO = hoje.toISOString().slice(0, 10);
+
+      const inicio7d = new Date(hoje); inicio7d.setDate(hoje.getDate() - 7);
+      const inicio14d = new Date(hoje); inicio14d.setDate(hoje.getDate() - 14);
+      const inicio30d = new Date(hoje); inicio30d.setDate(hoje.getDate() - 30);
+
+      const [
+        pedidosPendentesRes,
+        entregasHojeRes,
+        insumosBaixoRes,
+        clientesRes,
+        pedidosSemanaRes,
+        pedidosSemanaAntRes,
+        pedidos30dRes,
+      ] = await Promise.all([
+        // Pedidos pendentes (aguardando confirmação)
+        supabase
+          .from("pedidos")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .in("status", STATUS_PENDENTES),
+        // Entregas de hoje (qualquer status ativo)
+        supabase
+          .from("pedidos")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("data_entrega", hojeISO)
+          .in("status", STATUS_ATIVOS),
+        // Insumos com estoque baixo (cliente-side filter porque Postgres não compara colunas via .lte direto)
+        supabase
+          .from("insumos")
+          .select("quantidade_estoque, estoque_minimo")
+          .eq("user_id", userId),
+        // Clientes com data de nascimento — pra calcular aniversariantes
+        supabase
+          .from("clientes")
+          .select("nome, data_nascimento")
+          .eq("user_id", userId)
+          .not("data_nascimento", "is", null),
+        // Vendas dos últimos 7 dias
+        supabase
+          .from("pedidos")
+          .select("id, valor_total")
+          .eq("user_id", userId)
+          .gte("created_at", inicio7d.toISOString())
+          .neq("status", "cancelado"),
+        // Vendas dos 7 dias anteriores (pra variação)
+        supabase
+          .from("pedidos")
+          .select("id, valor_total")
+          .eq("user_id", userId)
+          .gte("created_at", inicio14d.toISOString())
+          .lt("created_at", inicio7d.toISOString())
+          .neq("status", "cancelado"),
+        // Pedidos dos últimos 30 dias — pro gráfico
+        supabase
+          .from("pedidos")
+          .select("created_at, valor_total")
+          .eq("user_id", userId)
+          .gte("created_at", inicio30d.toISOString())
+          .neq("status", "cancelado"),
+      ]);
+
+      // Estoque baixo (comparação client-side)
+      const estoqueBaixo = (insumosBaixoRes.data || [])
+        .filter((i: any) =>
+          Number(i.quantidade_estoque) <= Number(i.estoque_minimo) && Number(i.estoque_minimo) > 0
+        ).length;
+
+      // Aniversariantes nos próximos 7 dias
+      const aniversariantes = calcularAniversariantes(clientesRes.data || []);
+      const proxAniv = aniversariantes[0] || null;
+
+      // Resumo semana
+      const vendasSemana = (pedidosSemanaRes.data || [])
+        .reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0);
+      const vendasAnt = (pedidosSemanaAntRes.data || [])
+        .reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0);
+
+      // Gráfico 30 dias — agrupado por dia
+      const chart = construirChart30d(pedidos30dRes.data || []);
+
+      setCounts({
+        pedidosPendentes: pedidosPendentesRes.count || 0,
+        entregasHoje: entregasHojeRes.count || 0,
+        estoqueBaixo,
+        aniversariantes: aniversariantes.length,
+      });
+      setAniversariantesDetalhe(proxAniv);
+      setResumoSemana({ vendas: vendasSemana, pedidos: pedidosSemanaRes.data?.length || 0 });
+      setResumoAnterior({ vendas: vendasAnt, pedidos: pedidosSemanaAntRes.data?.length || 0 });
+      setChartData(chart);
+    } catch (err) {
+      console.error("Erro ao carregar dados do início:", err);
+    }
+    setLoading(false);
+  };
+
+  /** Calcula aniversariantes nos próximos 7 dias (ignora ano). */
+  const calcularAniversariantes = (clientes: any[]): Array<{ nome: string; dias: number }> => {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    return clientes
+      .map((c: any) => {
+        if (!c.data_nascimento) return null;
+        const [, mes, dia] = c.data_nascimento.split("-").map(Number);
+        const proximoAniv = new Date(hoje.getFullYear(), mes - 1, dia);
+        if (proximoAniv < hoje) proximoAniv.setFullYear(hoje.getFullYear() + 1);
+        const dias = Math.ceil((proximoAniv.getTime() - hoje.getTime()) / 86400000);
+        return { nome: c.nome, dias };
+      })
+      .filter((c): c is { nome: string; dias: number } => c !== null && c.dias >= 0 && c.dias <= 7)
+      .sort((a, b) => a.dias - b.dias);
+  };
+
+  /** Constrói série diária dos últimos 30 dias somando valor_total dos pedidos. */
+  const construirChart30d = (pedidos: any[]): ChartPoint[] => {
+    const hoje = new Date();
+    const mapa: Record<string, number> = {};
+    pedidos.forEach((p: any) => {
+      if (!p.created_at) return;
+      const dia = p.created_at.slice(0, 10);
+      mapa[dia] = (mapa[dia] || 0) + (Number(p.valor_total) || 0);
+    });
+    const result: ChartPoint[] = [];
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(hoje);
+      d.setDate(hoje.getDate() - i);
+      const iso = d.toISOString().slice(0, 10);
+      result.push({
+        dia: d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+        valor: mapa[iso] || 0,
+      });
+    }
+    return result;
+  };
+
+  // ─── Ações ───
+  const handleCompartilhar = async () => {
+    if (!publicado) {
+      navigate("/cardapio");
+      return;
+    }
+    const texto = `Confira o cardápio da minha confeitaria: ${linkCardapio}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Meu Cardápio", text: texto, url: linkCardapio });
+      } catch { /* cancelado */ }
+    } else {
+      navigator.clipboard.writeText(linkCardapio);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    }
+  };
+
+  // ─── Helpers de render ───
+  const formatCurrency = (v: number) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
+
+  const variacao = (atual: number, ant: number): { pct: number; tipo: "up" | "down" | "flat" } => {
+    if (ant === 0 && atual === 0) return { pct: 0, tipo: "flat" };
+    if (ant === 0) return { pct: 100, tipo: "up" };
+    const pct = ((atual - ant) / ant) * 100;
+    return { pct: Math.abs(pct), tipo: pct > 0 ? "up" : pct < 0 ? "down" : "flat" };
+  };
+
+  // ─── Cards de alerta (bloco Atenção) ───
+  const alertCards: AlertaCard[] = [
+    {
+      tipo: "pedido",
+      count: counts.pedidosPendentes,
+      texto: counts.pedidosPendentes === 1 ? "pedido aguardando confirmação" : "pedidos aguardando confirmação",
+      cta: "Ver pedidos",
+      onClick: () => navigate("/pedidos"),
+    },
+    {
+      tipo: "entrega",
+      count: counts.entregasHoje,
+      texto: counts.entregasHoje === 1 ? "entrega para hoje" : "entregas para hoje",
+      cta: "Ver agenda",
+      onClick: () => navigate("/agenda"),
+    },
+    {
+      tipo: "estoque",
+      count: counts.estoqueBaixo,
+      texto: counts.estoqueBaixo === 1 ? "ingrediente em falta" : "ingredientes em falta",
+      cta: "Ver ingredientes",
+      onClick: () => navigate("/insumos"),
+    },
+    {
+      tipo: "aniversario",
+      count: counts.aniversariantes,
+      texto: aniversariantesDetalhe
+        ? `${aniversariantesDetalhe.nome} faz aniversário ${aniversariantesDetalhe.dias === 0 ? "hoje" : aniversariantesDetalhe.dias === 1 ? "amanhã" : `em ${aniversariantesDetalhe.dias} dias`}`
+        : counts.aniversariantes === 1 ? "aniversariante na próxima semana" : "aniversariantes na próxima semana",
+      cta: "Ver clientes",
+      onClick: () => navigate("/clientes"),
+    },
   ];
 
-
-  if (loading) return <div style={{ padding: "2rem", fontFamily: "inherit", color: "var(--text-muted, #9CA3AF)" }}>Carregando...</div>;
+  const alertasVisiveis = alertCards.filter((a) => a.count > 0);
+  const varVendas = variacao(resumoSemana.vendas, resumoAnterior.vendas);
+  const varPedidos = variacao(resumoSemana.pedidos, resumoAnterior.pedidos);
 
   return (
     <div className="ini-root">
-
-      {/* ===== MOBILE ===== */}
-      <div className="ini-mobile">
-
-        {/* Hero */}
-        <div className="mob-hero">
-          <div className="mob-hero-row">
-            <span className="mob-hero-brand">Doonly</span>
-            <div style={{ flex: 1 }} />
-            <button
-              className={`mob-hero-bell${notifCount > 0 ? " has-notif" : ""}`}
-              onClick={openNotif}
-              style={{ position: "relative" }}
-            >
-              <img src="/Sistema/sino.png" alt="Notificações" style={{ width: "28px", height: "28px", objectFit: "contain" }} />
-              {notifCount > 0 && <span className="mob-hero-notif-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
-            </button>
-            <button className="mob-hero-bell" onClick={() => navigate("/assinar")}>
-              <img src="/Sistema/premium.png" alt="Premium" style={{ width: "28px", height: "28px", objectFit: "contain" }} />
-            </button>
-            <button className="mob-hero-profile" onClick={() => navigate("/configuracoes")}>
-              {profile?.foto_url
-                ? <img src={profile.foto_url} alt="perfil" style={{ width: "26px", height: "26px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(255,255,255,0.7)" }} />
-                : <User size={26} weight="duotone" color="rgba(255,255,255,0.9)" />
-              }
-            </button>
-          </div>
-        </div>
-
-        {/* MetricCards flutuando sobre o hero */}
-        <div className="mob-metrics">
-          <MetricCard
-            variant="cardapio"
-            label="Cardápio"
-            value={undefined}
-            emptyText="Acessar"
-            onClick={() => navigate("/cardapio-resumo")}
-            icon={<img src="/cardapio.png" alt="" style={{ width: 52, height: 52, objectFit: 'contain' }} />}
-          />
-          <MetricCard
-            variant="customers"
-            label="Agenda"
-            value={undefined}
-            emptyText="Acessar"
-            onClick={() => navigate("/agenda")}
-            icon={<img src="/agenda.png" alt="" style={{ width: 52, height: 52, objectFit: 'contain' }} />}
-          />
-          <MetricCard
-            variant="revenue"
-            label="Financeiro"
-            value={undefined}
-            emptyText="Acessar"
-            onClick={() => navigate("/financeiro")}
-            icon={<img src="/financeiro.png" alt="" style={{ width: 52, height: 52, objectFit: 'contain' }} />}
-          />
-        </div>
-
-        {/* Acesso rápido */}
-        <p className="mob-section-title">Acesso rápido</p>
-        <div className="mob-atalhos">
-          {atalhos.map(a => (
-            <button key={a.path} className="mob-atalho" onClick={() => navigate(a.path)}>
-              <div className="mob-atalho-icon">{a.icon}</div>
-              <span className="mob-atalho-label">{a.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Banner premium */}
-        
-      </div>
-
-
-      {/* ===== DESKTOP ===== */}
-      <div className="ini-desktop">
-
-        {/* Header */}
-        <div className="dash-header">
-          <div>
-            <h1 className="dash-title">Dashboard</h1>
-            <p className="dash-subtitle">{getGreeting()}, {nome || 'bem-vinda'} 👋</p>
-          </div>
+      {/* ── Hero degradê animado ── */}
+      <div className="ini-hero">
+        <div className="ini-hero-row">
+          <span className="ini-hero-brand">Doonly</span>
+          <div style={{ flex: 1 }} />
           <button
-            onClick={() => navigate('/pedidos/novo')}
-            style={{ background: 'var(--primary,#986274)', color: 'white', border: 'none', borderRadius: 10, padding: '0.65rem 1.25rem', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+            className={`ini-hero-bell${notifCount > 0 ? " has-notif" : ""}`}
+            onClick={openNotif}
+            aria-label="Notificações"
           >
-                        <Plus size={15} weight="bold" />
-            Novo pedido
+            <img src="/Sistema/sino.png" alt="" style={{ width: 28, height: 28, objectFit: "contain" }} />
+            {notifCount > 0 && <span className="ini-hero-notif-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
+          </button>
+          <button className="ini-hero-bell" onClick={() => navigate("/assinar")} aria-label="Premium">
+            <img src="/Sistema/premium.png" alt="" style={{ width: 28, height: 28, objectFit: "contain" }} />
+          </button>
+          <button className="ini-hero-profile" onClick={() => navigate("/configuracoes")} aria-label="Perfil">
+            {profile?.foto_url
+              ? <img src={profile.foto_url} alt="" />
+              : <User size={22} weight="duotone" color="rgba(255,255,255,0.9)" />
+            }
           </button>
         </div>
 
-        {/* 4 Métricas */}
-        <div className="dash-metrics-4">
-          {[
-            { label: 'Pedidos hoje', value: pedidosDia.length, icon: '📋', color: '#986274', bg: '#F7EEF1', path: '/pedidos' },
-            { label: 'Faturamento', value: 'R$ 0,00', icon: '💰', color: '#16a34a', bg: '#f0fdf4', path: '/financeiro' },
-            { label: 'Pedidos em aberto', value: pedidos, icon: '⏳', color: '#d97706', bg: '#fef3c7', path: '/pedidos' },
-            { label: 'Entregas hoje', value: pedidosDia.filter((p: any) => p.tipo_entrega === 'entrega').length, icon: '🚚', color: '#3b82f6', bg: '#eff6ff', path: '/pedidos' },
-          ].map((m, i) => (
-            <div key={i} className="dash-metric-4" onClick={() => navigate(m.path)} style={{ cursor: 'pointer' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary,#6E3548)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{m.label}</span>
-                <div style={{ width: 36, height: 36, borderRadius: 8, background: m.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>{m.icon}</div>
-              </div>
-              <p style={{ margin: 0, fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-title,#431524)', lineHeight: 1 }}>{m.value}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Grid principal */}
-        <div className="dash-main-grid">
-
-          {/* Coluna esquerda */}
-          <div className="dash-col-main">
-
-            {/* Pedidos recentes */}
-            <div className="dash-card-d">
-              <div className="dash-card-hdr">
-                <h3 className="dash-card-ttl">Pedidos recentes</h3>
-                <button className="dash-ver-td" onClick={() => navigate('/pedidos')}>Ver todos →</button>
-              </div>
-              <div style={{ marginTop: '0.75rem' }}>
-                {ultimosPedidos.length === 0 ? (
-                  <div style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--text-muted,#C39EAA)', fontSize: '0.85rem' }}>
-                    Nenhum pedido ainda —{' '}
-                    <button onClick={() => navigate('/pedidos/novo')} style={{ background: 'none', border: 'none', color: 'var(--primary,#986274)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.85rem' }}>criar primeiro</button>
-                  </div>
-                ) : ultimosPedidos.map((p: any) => (
-                  <div key={p.id} onClick={() => navigate(`/pedidos/${p.id}`)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.75rem 0', borderBottom: '1px solid var(--border,#ECC2D0)', cursor: 'pointer' }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--bg-subtle,#F7EEF1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <ClipboardText size={18} weight="duotone" color="var(--primary,#986274)" />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-title,#431524)' }}>{p.cliente_nome || 'Cliente'}</p>
-                      <p style={{ margin: '1px 0 0', fontSize: '0.75rem', color: 'var(--text-muted,#C39EAA)' }}>Pedido #{p.numero}</p>
-                    </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <span style={{ display: 'inline-block', fontSize: '0.72rem', fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: STATUS_CONFIG[p.status]?.bg || '#f3f4f6', color: STATUS_CONFIG[p.status]?.color || '#374151' }}>
-                        {STATUS_CONFIG[p.status]?.label || p.status}
-                      </span>
-                      <p style={{ margin: '3px 0 0', fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-title,#431524)' }}>{(p.valor_total || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Gráfico de faturamento */}
-            <div className="dash-card-d">
-              <div className="dash-card-hdr">
-                <h3 className="dash-card-ttl">Faturamento</h3>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted,#C39EAA)', fontWeight: 500 }}>Últimos 30 dias · dados reais em breve</span>
-              </div>
-              <div style={{ marginTop: '1rem', height: 180 }}>
-                <FaturamentoChart />
-              </div>
-            </div>
-
-          </div>
-
-          {/* Coluna direita */}
-          <div className="dash-col-side">
-
-            {/* Calendário */}
-            <div className="dash-card-d">
-              <div className="dash-card-hdr" style={{ marginBottom: '0.75rem' }}>
-                <h3 className="dash-card-ttl">Calendário</h3>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <button className="cal-nav-btn" onClick={() => setCalMes(m => new Date(m.getFullYear(), m.getMonth() - 1, 1))}>‹</button>
-                <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text-title,#431524)' }}>
-                  {calMes.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-                </span>
-                <button className="cal-nav-btn" onClick={() => setCalMes(m => new Date(m.getFullYear(), m.getMonth() + 1, 1))}>›</button>
-              </div>
-              <div className="cal-grid-header">
-                {['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map(d => <div key={d} className="cal-dow">{d}</div>)}
-              </div>
-              <div className="cal-grid">{calCells()}</div>
-              {calDiaSelecionado && (
-                <div style={{ marginTop: '0.75rem', borderTop: '1px solid var(--border,#ECC2D0)', paddingTop: '0.75rem' }}>
-                  <p style={{ margin: '0 0 0.5rem', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary,#6E3548)' }}>
-                    {new Date(calDiaSelecionado + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
-                  </p>
-                  {loadingPedidos ? (
-                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted,#C39EAA)' }}>Carregando...</p>
-                  ) : pedidosDia.length === 0 ? (
-                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted,#C39EAA)' }}>Nenhum pedido neste dia</p>
-                  ) : pedidosDia.map((p: any) => (
-                    <div key={p.id} onClick={() => navigate(`/pedidos/${p.id}`)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.4rem 0', borderBottom: '1px solid var(--border,#ECC2D0)', cursor: 'pointer' }}>
-                      <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-title,#431524)' }}>{p.cliente_nome}</span>
-                      <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--primary,#986274)' }}>{p.horario_entrega?.slice(0,5) || '—'}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Produtos mais pedidos */}
-            <div className="dash-card-d">
-              <div className="dash-card-hdr">
-                <h3 className="dash-card-ttl">Produtos mais pedidos</h3>
-              </div>
-              <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                {produtosMaisPedidos.length === 0 ? (
-                  <p style={{ fontSize: '0.82rem', color: 'var(--text-muted,#C39EAA)', textAlign: 'center', padding: '1rem 0' }}>Nenhum dado ainda</p>
-                ) : produtosMaisPedidos.map((p: any, i: number) => (
-                  <div key={i}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--text-title,#431524)' }}>{p.nome}</span>
-                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-secondary,#6E3548)' }}>{p.total}</span>
-                    </div>
-                    <div style={{ height: 6, background: 'var(--bg-subtle,#F7EEF1)', borderRadius: 99, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `${(p.total / produtosMaisPedidos[0].total) * 100}%`, background: 'var(--primary,#986274)', borderRadius: 99, transition: 'width 0.5s' }} />
-                    </div>
-                  </div>
-                ))}
-                {produtosMaisPedidos.length === 0 && (
-                  <p style={{ fontSize: '0.72rem', color: 'var(--text-muted,#C39EAA)', textAlign: 'center' }}>Aparecerá conforme pedidos forem registrados</p>
-                )}
-              </div>
-            </div>
-
-          </div>
+        <div className="ini-hero-greeting">
+          <h1>{getGreeting()}, {nome || "bem-vinda"} 👋</h1>
+          <p>{hojeFormatado()}</p>
         </div>
       </div>
 
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
-        .ini-root { font-family: 'Geist', sans-serif; }
-        .ini-mobile { display: flex; flex-direction: column; gap: 0.85rem; }
-        .ini-desktop { display: none; }
-        @media (min-width: 768px) { .ini-mobile { display: none; } .ini-desktop { display: block; } }
+      {/* ── 3 indicadores flutuando sobre o hero ── */}
+      <div className="ini-indicadores">
+        <button className="ini-ind-card" onClick={() => navigate("/pedidos")}>
+          <div className="ini-ind-icon" style={{ background: "#FEE2E2", color: "#B91C1C" }}>
+            <ClipboardText size={22} weight="duotone" />
+          </div>
+          <div className="ini-ind-body">
+            <span className="ini-ind-val">{counts.pedidosPendentes}</span>
+            <span className="ini-ind-label">{counts.pedidosPendentes === 1 ? "Pendente" : "Pendentes"}</span>
+          </div>
+        </button>
 
-        /* MOBILE styles preserved */
-        .mob-hero { background: linear-gradient(135deg, #986274, #6E3548, #431524, #6E3548, #986274); background-size: 300% 300%; animation: heroGradientMove 10s ease infinite; border-radius: 0 0 28px 28px; padding: 2.5rem 1.25rem 4.5rem; margin: -0.75rem -0.75rem 0; }
+        <button className="ini-ind-card" onClick={() => navigate("/agenda")}>
+          <div className="ini-ind-icon" style={{ background: "#DBEAFE", color: "#1D4ED8" }}>
+            <CalendarDots size={22} weight="duotone" />
+          </div>
+          <div className="ini-ind-body">
+            <span className="ini-ind-val">{counts.entregasHoje}</span>
+            <span className="ini-ind-label">Hoje</span>
+          </div>
+        </button>
+
+        <button className="ini-ind-card" onClick={() => navigate("/insumos")}>
+          <div className="ini-ind-icon" style={{ background: "#FEF3C7", color: "#A16207" }}>
+            <Package size={22} weight="duotone" />
+          </div>
+          <div className="ini-ind-body">
+            <span className="ini-ind-val">{counts.estoqueBaixo}</span>
+            <span className="ini-ind-label">Estoque</span>
+          </div>
+        </button>
+      </div>
+
+      {/* ── Ações rápidas ── */}
+      <section className="ini-section">
+        <h2 className="ini-section-title">Ações rápidas</h2>
+        <div className="ini-actions">
+          <button className="ini-action ini-action--primary" onClick={handleCompartilhar}>
+            <Share size={18} weight="bold" />
+            <span>{copiado ? "Link copiado!" : "Compartilhar cardápio"}</span>
+          </button>
+          <button className="ini-action" onClick={() => navigate("/pedidos/novo")}>
+            <Plus size={18} weight="bold" />
+            <span>Novo pedido</span>
+          </button>
+        </div>
+      </section>
+
+      {/* ── Atenção hoje ── */}
+      {alertasVisiveis.length > 0 && (
+        <section className="ini-section">
+          <h2 className="ini-section-title">Atenção hoje</h2>
+          <div className="ini-alertas">
+            {alertasVisiveis.map((a) => (
+              <button key={a.tipo} className={`ini-alerta ini-alerta--${a.tipo}`} onClick={a.onClick}>
+                <span className="ini-alerta-icon">
+                  {a.tipo === "pedido"     && <ClipboardText size={18} weight="fill" />}
+                  {a.tipo === "entrega"    && <CalendarDots  size={18} weight="fill" />}
+                  {a.tipo === "estoque"    && <Warning       size={18} weight="fill" />}
+                  {a.tipo === "aniversario"&& <Cake          size={18} weight="fill" />}
+                </span>
+                <div className="ini-alerta-body">
+                  <span className="ini-alerta-texto">
+                    {a.tipo === "aniversario" && aniversariantesDetalhe
+                      ? a.texto
+                      : <><strong>{a.count}</strong> {a.texto}</>
+                    }
+                  </span>
+                </div>
+                <span className="ini-alerta-cta">{a.cta} ›</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {alertasVisiveis.length === 0 && !loading && (
+        <section className="ini-section">
+          <div className="ini-tudo-ok">
+            <span style={{ fontSize: "1.5rem" }}>✨</span>
+            <div>
+              <p style={{ margin: 0, fontWeight: 700, color: "var(--text-title, #431524)" }}>Tudo em ordem!</p>
+              <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "var(--text-muted, #C39EAA)" }}>Sem alertas hoje. Bom trabalho!</p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── Resumo da semana ── */}
+      <section className="ini-section">
+        <h2 className="ini-section-title">Resumo da semana</h2>
+        <div className="ini-resumo">
+          <div className="ini-resumo-card">
+            <div className="ini-resumo-icon" style={{ background: "#DCFCE7", color: "#15803D" }}>
+              <CurrencyDollar size={20} weight="duotone" />
+            </div>
+            <div>
+              <p className="ini-resumo-val">{formatCurrency(resumoSemana.vendas)}</p>
+              <p className="ini-resumo-label">em vendas</p>
+              {varVendas.tipo !== "flat" && (
+                <p className={`ini-resumo-var ${varVendas.tipo}`}>
+                  {varVendas.tipo === "up" ? <TrendUp size={11} weight="bold" /> : <TrendDown size={11} weight="bold" />}
+                  {varVendas.pct.toFixed(0)}% vs anterior
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="ini-resumo-card">
+            <div className="ini-resumo-icon" style={{ background: "#FFF1F7", color: "#3d1a24" }}>
+              <ShoppingBag size={20} weight="duotone" />
+            </div>
+            <div>
+              <p className="ini-resumo-val">{resumoSemana.pedidos}</p>
+              <p className="ini-resumo-label">{resumoSemana.pedidos === 1 ? "pedido" : "pedidos"}</p>
+              {varPedidos.tipo !== "flat" && (
+                <p className={`ini-resumo-var ${varPedidos.tipo}`}>
+                  {varPedidos.tipo === "up" ? <TrendUp size={11} weight="bold" /> : <TrendDown size={11} weight="bold" />}
+                  {varPedidos.pct.toFixed(0)}% vs anterior
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Faturamento 30 dias (dados REAIS) ── */}
+      <section className="ini-section">
+        <div className="ini-chart-header">
+          <h2 className="ini-section-title">Faturamento (30 dias)</h2>
+        </div>
+        <div className="ini-chart-card">
+          <div style={{ width: "100%", height: 180 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData} margin={{ top: 8, right: 10, bottom: 0, left: -10 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border,#ECC2D0)" vertical={false} />
+                <XAxis dataKey="dia" tick={{ fontSize: 10, fill: "var(--text-muted,#C39EAA)" }} tickLine={false} axisLine={false} interval={4} />
+                <YAxis tick={{ fontSize: 10, fill: "var(--text-muted,#C39EAA)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `R$${v}`} />
+                <Tooltip
+                  contentStyle={{ background: "var(--bg-card,#fff)", border: "1px solid var(--border,#ECC2D0)", borderRadius: 10, fontSize: 12, fontFamily: "Geist,sans-serif" }}
+                  formatter={(v: any) => [formatCurrency(Number(v)), "Faturamento"]}
+                />
+                <Line type="monotone" dataKey="valor" stroke="#3d1a24" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: "#3d1a24" }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </section>
+
+      <style>{`
+        .ini-root {
+          font-family: 'Geist', sans-serif;
+          padding: 0 0.75rem 6rem;
+          display: flex; flex-direction: column;
+          max-width: 980px; margin: 0 auto;
+        }
+
+        /* ── Hero degradê animado (preservado) ── */
+        .ini-hero {
+          background: linear-gradient(135deg, #986274, #6E3548, #431524, #6E3548, #986274);
+          background-size: 300% 300%;
+          animation: heroGradientMove 10s ease infinite;
+          border-radius: 0 0 28px 28px;
+          padding: 2.5rem 1.25rem 4.5rem;
+          margin: -0.75rem -0.75rem 0;
+          display: flex; flex-direction: column; gap: 1.4rem;
+        }
         @keyframes heroGradientMove {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-        .mob-hero-row { display: flex; align-items: center; gap: 0.7rem; }
-        body.gestao-drawer-open .mob-hero-row { visibility: hidden; }
-        .mob-hero-profile { background: rgba(255,255,255,0.15); border: none; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; overflow: hidden; }
-        .mob-hero-bell { background: none; border: none; padding: 0.3rem; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; }
-        .mob-hero-bell.has-notif { background: rgba(255,255,255,0.15); animation: bell-pulse 1.8s ease-in-out infinite; }
-        .mob-hero-notif-badge { position: absolute; top: -2px; right: -2px; width: 16px; height: 16px; border-radius: 50%; background: var(--error); color: #fff; font-size: 0.6rem; font-weight: 700; display: flex; align-items: center; justify-content: center; border: 2px solid transparent; }
-        @keyframes bell-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); } 50% { box-shadow: 0 0 0 6px rgba(255,255,255,0); } }
-        .mob-hero-title { font-size: 0.95rem; font-weight: 700; color: #fff; margin: 0; line-height: 1.2; }
-        .mob-hero-brand { font-family: 'Dancing Script', cursive; font-weight: 700; font-size: 1.6rem; color: #ffffff; text-shadow: 0 0 6px rgba(255,255,255,0.5); line-height: 1; }
-        .mob-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-top: -52px; padding: 0 0.25rem; }
-        .mob-metrics .dash-metric-card { padding: 1.1rem 0.5rem 0.9rem; border-radius: 18px; flex-direction: column; align-items: center; justify-content: center; gap: 0.55rem; transition: transform 0.15s; }
-        .mob-metrics .dash-metric-card:active { transform: scale(0.96); }
-        .mob-metrics .dash-metric-icon { width: 58px; height: 58px; border-radius: 15px; }
-        .mob-section-title { font-size: 0.88rem; font-weight: 700; color: var(--text-title, #1F2937); margin-top: 1.5rem; }
-        .mob-atalhos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-        .mob-atalho { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; background: var(--bg-card, #FFFFFF); border: 1.5px solid var(--border, #E9E9EE); border-radius: 12px; padding: 0.7rem 0.4rem; cursor: pointer; font-family: 'Geist', sans-serif; transition: border-color 0.15s; }
-        .mob-atalho:hover { border-color: var(--primary, #FF6FA9); }
-        .mob-atalho-icon { display: flex; align-items: center; justify-content: center; }
-        .mob-atalho-label { font-size: 0.68rem; font-weight: 500; color: var(--text-primary, #374151); }
+        .ini-hero-row { display: flex; align-items: center; gap: 0.7rem; }
+        .ini-hero-brand {
+          font-family: 'Dancing Script', cursive;
+          font-weight: 700; font-size: 1.6rem; color: #fff;
+          text-shadow: 0 0 6px rgba(255,255,255,0.5); line-height: 1;
+        }
+        .ini-hero-bell {
+          background: none; border: none; padding: 0.3rem;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer; border-radius: 50%; position: relative;
+        }
+        .ini-hero-bell.has-notif {
+          background: rgba(255,255,255,0.15);
+          animation: bell-pulse 1.8s ease-in-out infinite;
+        }
+        .ini-hero-notif-badge {
+          position: absolute; top: -2px; right: -2px;
+          width: 16px; height: 16px; border-radius: 50%;
+          background: var(--error, #EF4444); color: #fff;
+          font-size: 0.6rem; font-weight: 700;
+          display: flex; align-items: center; justify-content: center;
+        }
+        @keyframes bell-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+          50% { box-shadow: 0 0 0 6px rgba(255,255,255,0); }
+        }
+        .ini-hero-profile {
+          background: rgba(255,255,255,0.15); border: none; border-radius: 50%;
+          width: 34px; height: 34px;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer; flex-shrink: 0; padding: 0; overflow: hidden;
+        }
+        .ini-hero-profile img {
+          width: 26px; height: 26px; border-radius: 50%;
+          object-fit: cover; border: 2px solid rgba(255,255,255,0.7);
+        }
+        .ini-hero-greeting h1 {
+          font-size: 1.25rem; font-weight: 800; color: #fff;
+          margin: 0; line-height: 1.2;
+          letter-spacing: -0.01em;
+        }
+        .ini-hero-greeting p {
+          font-size: 0.82rem; color: rgba(255,255,255,0.8);
+          margin: 4px 0 0;
+        }
 
-        /* DESKTOP */
-        .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
-        .dash-title { font-size: 1.5rem; font-weight: 800; color: var(--text-title,#431524); margin: 0 0 0.2rem; }
-        .dash-subtitle { font-size: 0.85rem; color: var(--text-muted,#C39EAA); margin: 0; }
-        .dash-metrics-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 1.25rem; }
-        .dash-metric-4 { background: var(--bg-card,#fff); border-radius: 14px; padding: 1.1rem 1.25rem; border: 1px solid var(--border,#ECC2D0); transition: box-shadow 0.2s, transform 0.2s; }
-        .dash-metric-4:hover { box-shadow: 0 6px 20px rgba(152,98,116,0.12); transform: translateY(-2px); }
-        .dash-main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 1.25rem; align-items: start; }
-        .dash-col-main { display: flex; flex-direction: column; gap: 1.25rem; }
-        .dash-col-side { display: flex; flex-direction: column; gap: 1.25rem; }
-        .dash-card-d { background: var(--bg-card,#fff); border-radius: 14px; padding: 1.25rem; border: 1px solid var(--border,#ECC2D0); }
-        .dash-card-hdr { display: flex; justify-content: space-between; align-items: center; }
-        .dash-card-ttl { font-size: 0.95rem; font-weight: 700; color: var(--text-title,#431524); margin: 0; }
-        .dash-ver-td { background: none; border: none; color: var(--primary,#986274); font-size: 0.8rem; font-weight: 600; cursor: pointer; font-family: 'Geist',sans-serif; }
+        /* ── 3 indicadores flutuando ── */
+        .ini-indicadores {
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem;
+          margin-top: -52px; padding: 0 0.25rem;
+        }
+        .ini-ind-card {
+          background: var(--bg-card, #fff);
+          border: none; border-radius: 18px;
+          padding: 0.95rem 0.75rem;
+          display: flex; flex-direction: column; align-items: center; gap: 0.55rem;
+          box-shadow: 0 4px 16px rgba(61,26,36,0.12);
+          cursor: pointer;
+          font-family: inherit;
+          transition: transform 0.15s ease;
+        }
+        .ini-ind-card:active { transform: scale(0.96); }
+        .ini-ind-icon {
+          width: 46px; height: 46px; border-radius: 13px;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .ini-ind-body { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+        .ini-ind-val {
+          font-size: 1.5rem; font-weight: 800;
+          color: var(--text-title, #1F2937); line-height: 1;
+        }
+        .ini-ind-label {
+          font-size: 0.7rem; font-weight: 600;
+          color: var(--text-muted, #9CA3AF);
+        }
 
-        /* Calendário */
-        .cal-nav-btn { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--border,#ECC2D0); background: var(--bg-card,#fff); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; color: var(--text-secondary,#6E3548); transition: background 0.15s; }
-        .cal-nav-btn:hover { background: var(--primary-light,#F7EEF1); color: var(--primary,#986274); border-color: var(--primary,#986274); }
-        .cal-grid-header { display: grid; grid-template-columns: repeat(7,1fr); margin-bottom: 0.35rem; }
-        .cal-dow { text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--text-muted,#C39EAA); text-transform: uppercase; padding: 0.3rem 0; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
-        .cal-day { position: relative; aspect-ratio: 1; border-radius: 8px; border: none; background: transparent; cursor: pointer; font-size: 0.82rem; font-weight: 500; color: var(--text-primary,#431524); font-family: 'Geist',sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background 0.15s; gap: 2px; }
-        .cal-day:hover { background: var(--primary-light,#F7EEF1); color: var(--primary,#986274); }
-        .cal-day.hoje { background: var(--primary-light,#F7EEF1); color: var(--primary,#986274); font-weight: 800; }
-        .cal-day.selecionado { background: var(--primary,#986274) !important; color: white !important; font-weight: 800; }
-        .cal-day.tem-pedido { font-weight: 700; }
-        .cal-dot { font-size: 0.55rem; background: var(--primary,#986274); color: white; border-radius: 10px; padding: 0 4px; line-height: 1.4; }
-        .cal-day.selecionado .cal-dot { background: rgba(255,255,255,0.4); }
+        /* ── Sections ── */
+        .ini-section {
+          margin-top: 1.5rem;
+          display: flex; flex-direction: column; gap: 0.65rem;
+        }
+        .ini-section-title {
+          font-size: 0.88rem; font-weight: 700;
+          color: var(--text-title, #431524);
+          margin: 0;
+        }
 
-        /* MetricCard mobile compat */
-        .dash-metric-card { background: var(--bg-card,#FFFFFF); border-radius: 16px; padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 4px 16px rgba(0,0,0,0.1); cursor: pointer; transition: box-shadow 0.2s, transform 0.2s; }
-        .dash-metric-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .dash-metric-num { font-size: 1.8rem; font-weight: 800; color: var(--text-title,#1F2937); margin: 0; line-height: 1; }
-        .dash-metric-label { font-size: 0.75rem; color: var(--text-muted,#9CA3AF); margin: 0.25rem 0 0; font-weight: 500; }
-        .dash-metric-empty { font-size: 0.78rem; font-weight: 700; margin: 0; line-height: 1.25; }
-        .mob-metrics .dash-metric-num { font-size: 1.3rem; }
-        .mob-metrics .dash-metric-label { font-size: 0.74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* ── Ações rápidas ── */
+        .ini-actions {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem;
+        }
+        .ini-action {
+          display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+          padding: 0.85rem 0.9rem;
+          background: var(--bg-card, #fff);
+          border: 1.5px solid var(--border, #E9E9EE);
+          border-radius: 13px;
+          font-family: inherit;
+          font-size: 0.86rem; font-weight: 700;
+          color: var(--text-title, #1F2937);
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .ini-action:hover { border-color: #3d1a24; transform: translateY(-1px); }
+        .ini-action--primary {
+          background: #3d1a24; color: #fff;
+          border-color: #3d1a24;
+          box-shadow: 0 4px 12px rgba(61,26,36,0.2);
+        }
+        .ini-action--primary:hover { background: #6E3548; }
+
+        /* ── Alertas ── */
+        .ini-alertas {
+          display: flex; flex-direction: column; gap: 0.45rem;
+        }
+        .ini-alerta {
+          display: flex; align-items: center; gap: 0.7rem;
+          padding: 0.8rem 0.95rem;
+          background: var(--bg-card, #fff);
+          border: 1px solid var(--border, #E9E9EE);
+          border-left-width: 4px;
+          border-radius: 12px;
+          cursor: pointer;
+          font-family: inherit;
+          text-align: left;
+          transition: transform 0.12s ease;
+        }
+        .ini-alerta:hover { transform: translateX(2px); }
+        .ini-alerta--pedido      { border-left-color: #B91C1C; }
+        .ini-alerta--entrega     { border-left-color: #1D4ED8; }
+        .ini-alerta--estoque     { border-left-color: #A16207; }
+        .ini-alerta--aniversario { border-left-color: #EC4899; }
+
+        .ini-alerta-icon {
+          width: 32px; height: 32px; border-radius: 9px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .ini-alerta--pedido      .ini-alerta-icon { background: #FEE2E2; color: #B91C1C; }
+        .ini-alerta--entrega     .ini-alerta-icon { background: #DBEAFE; color: #1D4ED8; }
+        .ini-alerta--estoque     .ini-alerta-icon { background: #FEF3C7; color: #A16207; }
+        .ini-alerta--aniversario .ini-alerta-icon { background: #FCE7F3; color: #EC4899; }
+
+        .ini-alerta-body { flex: 1; min-width: 0; }
+        .ini-alerta-texto {
+          font-size: 0.85rem; font-weight: 500;
+          color: var(--text-primary, #374151);
+          line-height: 1.3;
+        }
+        .ini-alerta-texto strong { color: var(--text-title, #1F2937); font-weight: 800; }
+        .ini-alerta-cta {
+          font-size: 0.74rem; font-weight: 700;
+          color: var(--text-muted, #9CA3AF);
+          flex-shrink: 0;
+        }
+
+        .ini-tudo-ok {
+          display: flex; align-items: center; gap: 0.8rem;
+          padding: 1rem 1.1rem;
+          background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
+          border-radius: 13px;
+        }
+
+        /* ── Resumo da semana ── */
+        .ini-resumo {
+          display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem;
+        }
+        .ini-resumo-card {
+          display: flex; align-items: flex-start; gap: 0.7rem;
+          padding: 0.95rem;
+          background: var(--bg-card, #fff);
+          border: 1px solid var(--border, #E9E9EE);
+          border-radius: 13px;
+        }
+        .ini-resumo-icon {
+          width: 38px; height: 38px; border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .ini-resumo-val {
+          font-size: 1.2rem; font-weight: 800;
+          color: var(--text-title, #1F2937);
+          margin: 0; line-height: 1;
+          word-break: break-word;
+        }
+        .ini-resumo-label {
+          font-size: 0.74rem; font-weight: 600;
+          color: var(--text-muted, #9CA3AF);
+          margin: 4px 0 0;
+        }
+        .ini-resumo-var {
+          display: inline-flex; align-items: center; gap: 3px;
+          margin: 6px 0 0;
+          font-size: 0.7rem; font-weight: 700;
+        }
+        .ini-resumo-var.up   { color: #15803D; }
+        .ini-resumo-var.down { color: #B91C1C; }
+
+        /* ── Gráfico ── */
+        .ini-chart-header { display: flex; justify-content: space-between; align-items: center; }
+        .ini-chart-card {
+          background: var(--bg-card, #fff);
+          border: 1px solid var(--border, #E9E9EE);
+          border-radius: 13px;
+          padding: 0.8rem 0.5rem 0.5rem;
+        }
+
+        /* ── Desktop ajustes ── */
+        @media (min-width: 768px) {
+          .ini-root { padding: 0 1.5rem 2rem; }
+          .ini-hero {
+            margin: -0.75rem -1.5rem 0;
+            padding: 3rem 2rem 5rem;
+            border-radius: 0 0 32px 32px;
+          }
+          .ini-hero-greeting h1 { font-size: 1.6rem; }
+          .ini-hero-greeting p { font-size: 0.95rem; }
+          .ini-indicadores {
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 720px;
+            margin-top: -60px;
+            margin-left: auto;
+            margin-right: auto;
+            gap: 1rem;
+          }
+          .ini-ind-card { padding: 1.25rem 1rem; }
+          .ini-ind-val { font-size: 1.8rem; }
+          .ini-ind-label { font-size: 0.78rem; }
+          .ini-actions { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
+          .ini-resumo { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
+          .ini-alertas, .ini-tudo-ok, .ini-chart-card { max-width: 720px; margin-left: auto; margin-right: auto; }
+          .ini-section { width: 100%; }
+        }
       `}</style>
     </div>
   );
