@@ -104,8 +104,17 @@ export default function Produtos() {
   type FichaItem = { insumo_id: string; quantidade: number; insumo?: Insumo };
   const [insumosCadastrados, setInsumosCadastrados] = useState<Insumo[]>([]);
   const [fichaTecnica, setFichaTecnica] = useState<FichaItem[]>([]);
-  const [showInsumoPicker, setShowInsumoPicker] = useState(false);
   const [buscaInsumo, setBuscaInsumo] = useState("");
+  // Modal dedicado da ficha técnica
+  const [fichaModalOpen, setFichaModalOpen] = useState(false);
+  // Cadastro rápido de insumo dentro do modal da ficha
+  type QuickInsumoForm = { nome: string; unidade: string; valor_compra: string; qtd_embalagem: string; imagem_url: string };
+  const EMPTY_QUICK: QuickInsumoForm = { nome: "", unidade: "g", valor_compra: "", qtd_embalagem: "1", imagem_url: "" };
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [quickInsumo, setQuickInsumo] = useState<QuickInsumoForm>(EMPTY_QUICK);
+  const [quickImagens, setQuickImagens] = useState<string[]>([]);
+  const [quickBuscandoImg, setQuickBuscandoImg] = useState(false);
+  const [quickSaving, setQuickSaving] = useState(false);
 
   const imgRef = useRef<HTMLInputElement>(null);
   const img2Ref = useRef<HTMLInputElement>(null);
@@ -190,7 +199,7 @@ export default function Produtos() {
       }
     }
   };
-  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setShowInsumoPicker(false); setBuscaInsumo(""); };
+  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setQuickInsumo(EMPTY_QUICK); setQuickImagens([]); setBuscaInsumo(""); };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: number = 0) => {
     const file = e.target.files?.[0];
@@ -297,7 +306,6 @@ export default function Produtos() {
       return;
     }
     setFichaTecnica(prev => [...prev, { insumo_id: ins.id, quantidade: 0, insumo: ins }]);
-    setShowInsumoPicker(false);
     setBuscaInsumo("");
   };
   const removerInsumoFicha = (id: string) => {
@@ -305,6 +313,64 @@ export default function Produtos() {
   };
   const atualizarQtdFicha = (id: string, qtd: number) => {
     setFichaTecnica(prev => prev.map(f => f.insumo_id === id ? { ...f, quantidade: qtd } : f));
+  };
+
+  // Cadastro rápido de insumo (dentro do modal da ficha)
+  const abrirQuickAdd = (nomeInicial?: string) => {
+    setQuickInsumo({ ...EMPTY_QUICK, nome: nomeInicial || "" });
+    setQuickImagens([]);
+    setShowQuickAdd(true);
+  };
+  const fecharQuickAdd = () => {
+    setShowQuickAdd(false);
+    setQuickInsumo(EMPTY_QUICK);
+    setQuickImagens([]);
+  };
+
+  // Auto-busca de imagem com debounce (800ms) quando nome tem 3+ chars
+  useEffect(() => {
+    if (!showQuickAdd) return;
+    const termo = quickInsumo.nome.trim();
+    if (termo.length < 3) { setQuickImagens([]); return; }
+    const t = setTimeout(async () => {
+      setQuickBuscandoImg(true);
+      try {
+        const res = await fetch(`/api/buscar-imagem?q=${encodeURIComponent(termo)}`);
+        const data = await res.json();
+        if (data.images) setQuickImagens(data.images.slice(0, 6));
+      } catch (e) { console.error(e); }
+      setQuickBuscandoImg(false);
+    }, 800);
+    return () => clearTimeout(t);
+  }, [quickInsumo.nome, showQuickAdd]);
+
+  const salvarInsumoRapido = async () => {
+    if (!userId || !quickInsumo.nome.trim()) { alert("Informe o nome do insumo"); return; }
+    const valor = parseFloat(quickInsumo.valor_compra.replace(",", ".")) || 0;
+    const qtdEmb = parseFloat(quickInsumo.qtd_embalagem.replace(",", ".")) || 1;
+    if (valor <= 0) { alert("Informe o valor da compra"); return; }
+    const custoUnit = valor / qtdEmb;
+    setQuickSaving(true);
+    const payload: any = {
+      user_id: userId,
+      nome: quickInsumo.nome.trim(),
+      categoria: "Ingredientes",
+      unidade: quickInsumo.unidade,
+      quantidade_estoque: 0,
+      estoque_minimo: 0,
+      valor_compra: valor,
+      qtd_embalagem: qtdEmb,
+      custo_unitario: custoUnit,
+      imagem_url: quickInsumo.imagem_url || "",
+      updated_at: new Date().toISOString(),
+    };
+    const { data, error } = await supabase.from("insumos").insert(payload).select().single();
+    setQuickSaving(false);
+    if (error || !data) { alert("Erro ao salvar insumo"); return; }
+    const novoInsumo: Insumo = { id: data.id, nome: data.nome, unidade: data.unidade, custo_unitario: data.custo_unitario, imagem_url: data.imagem_url };
+    setInsumosCadastrados(prev => [...prev, novoInsumo]);
+    setFichaTecnica(prev => [...prev, { insumo_id: novoInsumo.id, quantidade: 0, insumo: novoInsumo }]);
+    fecharQuickAdd();
   };
 
   const cmvProduto = fichaTecnica.reduce(
@@ -1025,123 +1091,32 @@ export default function Produtos() {
                 )}
               </div>
 
-              {/* Ficha técnica (CMV) */}
+              {/* Ficha técnica (CMV) — botão compacto que abre modal dedicado */}
               <div className="prod-section">
                 <p className="prod-section-label">🧪 Ficha técnica <span style={{ fontSize: "0.65rem", color: "var(--text-muted, #9CA3AF)", fontWeight: 500, marginLeft: 4 }}>· custo de produção</span></p>
-
-                {fichaTecnica.length === 0 && !showInsumoPicker && (
-                  <div className="ficha-empty">
-                    <div className="ficha-empty-icon">🧪</div>
-                    <p className="ficha-empty-text">
-                      Adicione os insumos usados pra fazer <strong>1 unidade</strong> deste produto.<br />
-                      Vamos calcular o custo e a margem sozinhos!
-                    </p>
-                  </div>
-                )}
-
-                {fichaTecnica.length > 0 && (
-                  <div className="ficha-list">
-                    {fichaTecnica.map(f => {
-                      const ins = f.insumo;
-                      if (!ins) return null;
-                      const custoLinha = f.quantidade * (ins.custo_unitario || 0);
-                      return (
-                        <div key={f.insumo_id} className="ficha-row">
-                          {ins.imagem_url
-                            ? <img src={ins.imagem_url} alt={ins.nome} className="ficha-row-img" />
-                            : <div className="ficha-row-img ficha-row-img--placeholder">🥣</div>}
-                          <div className="ficha-row-info">
-                            <p className="ficha-row-nome">{ins.nome}</p>
-                            <p className="ficha-row-sub">R$ {(ins.custo_unitario || 0).toFixed(4)} / {ins.unidade}</p>
-                          </div>
-                          <div className="ficha-row-qtd">
-                            <input
-                              type="number"
-                              value={f.quantidade || ""}
-                              onChange={e => atualizarQtdFicha(f.insumo_id, parseFloat(e.target.value) || 0)}
-                              step="any"
-                              min="0"
-                              placeholder="0"
-                            />
-                            <span>{ins.unidade}</span>
-                          </div>
-                          <div className="ficha-row-custo">R$ {custoLinha.toFixed(2)}</div>
-                          <button className="ficha-row-del" onClick={() => removerInsumoFicha(f.insumo_id)} aria-label="Remover">✕</button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {!showInsumoPicker ? (
-                  insumosCadastrados.length === 0 ? (
-                    <div className="ficha-no-insumos">
-                      <p>Você ainda não cadastrou insumos. <a href="/insumos" style={{ color: "var(--primary, #FF6FA9)", fontWeight: 700 }}>Cadastrar agora →</a></p>
-                    </div>
+                <button type="button" className="ficha-trigger" onClick={() => setFichaModalOpen(true)}>
+                  {fichaTecnica.length === 0 ? (
+                    <>
+                      <div className="ficha-trigger-icon">🧪</div>
+                      <div className="ficha-trigger-info">
+                        <p className="ficha-trigger-title">Configurar ficha técnica</p>
+                        <p className="ficha-trigger-sub">Calcule o custo e a margem deste produto</p>
+                      </div>
+                      <div className="ficha-trigger-arrow">›</div>
+                    </>
                   ) : (
-                    <button type="button" className="ficha-btn-add" onClick={() => setShowInsumoPicker(true)}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                      Adicionar insumo
-                    </button>
-                  )
-                ) : (
-                  <div className="ficha-picker">
-                    <input
-                      type="text"
-                      className="ficha-picker-search"
-                      placeholder="Buscar insumo..."
-                      value={buscaInsumo}
-                      onChange={e => setBuscaInsumo(e.target.value)}
-                      autoFocus
-                    />
-                    <div className="ficha-picker-list">
-                      {insumosCadastrados
-                        .filter(i => !fichaTecnica.some(f => f.insumo_id === i.id))
-                        .filter(i => i.nome.toLowerCase().includes(buscaInsumo.toLowerCase()))
-                        .map(i => (
-                          <button key={i.id} type="button" className="ficha-picker-item" onClick={() => adicionarInsumoFicha(i)}>
-                            {i.imagem_url
-                              ? <img src={i.imagem_url} alt={i.nome} className="ficha-row-img" />
-                              : <div className="ficha-row-img ficha-row-img--placeholder">🥣</div>}
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <p className="ficha-row-nome">{i.nome}</p>
-                              <p className="ficha-row-sub">R$ {(i.custo_unitario || 0).toFixed(4)} / {i.unidade}</p>
-                            </div>
-                          </button>
-                        ))}
-                      {insumosCadastrados.filter(i => !fichaTecnica.some(f => f.insumo_id === i.id) && i.nome.toLowerCase().includes(buscaInsumo.toLowerCase())).length === 0 && (
-                        <p style={{ textAlign: "center", color: "var(--text-muted, #9CA3AF)", fontSize: "0.78rem", padding: "0.85rem 0", margin: 0 }}>
-                          Nenhum insumo encontrado
-                        </p>
-                      )}
-                    </div>
-                    <button type="button" className="ficha-picker-close" onClick={() => { setShowInsumoPicker(false); setBuscaInsumo(""); }}>
-                      Fechar
-                    </button>
-                  </div>
-                )}
-
-                {fichaTecnica.length > 0 && (
-                  <div className="ficha-resumo">
-                    <div className="ficha-resumo-row">
-                      <span>Custo de produção (CMV)</span>
-                      <strong>R$ {cmvProduto.toFixed(2)}</strong>
-                    </div>
-                    <div className="ficha-resumo-row">
-                      <span>Preço de venda</span>
-                      <strong>R$ {form.preco_normal.toFixed(2)}</strong>
-                    </div>
-                    <div className={`ficha-resumo-margem ficha-resumo-margem--${margemProduto >= 50 ? "alto" : margemProduto >= 25 ? "medio" : "baixo"}`}>
-                      <span>Margem de lucro</span>
-                      <strong>{margemProduto.toFixed(0)}%</strong>
-                    </div>
-                    {margemProduto < 25 && form.preco_normal > 0 && (
-                      <p className="ficha-alerta">
-                        ⚠️ Margem baixa. Considere reajustar o preço ou revisar a ficha.
-                      </p>
-                    )}
-                  </div>
-                )}
+                    <>
+                      <div className="ficha-trigger-icon">🧪</div>
+                      <div className="ficha-trigger-info">
+                        <p className="ficha-trigger-title">{fichaTecnica.length} {fichaTecnica.length === 1 ? "ingrediente" : "ingredientes"}</p>
+                        <p className="ficha-trigger-sub">CMV R$ {cmvProduto.toFixed(2)} · Margem {margemProduto.toFixed(0)}%</p>
+                      </div>
+                      <div className={`ficha-trigger-badge ficha-trigger-badge--${margemProduto >= 50 ? "alto" : margemProduto >= 25 ? "medio" : "baixo"}`}>
+                        {margemProduto.toFixed(0)}%
+                      </div>
+                    </>
+                  )}
+                </button>
               </div>
 
               {/* Status */}
@@ -1160,6 +1135,208 @@ export default function Produtos() {
               <button className="prod-btn-salvar" onClick={handleSalvar} disabled={saving}>
                 {saving ? <span className="prod-spinner-sm" /> : (form.id ? "Salvar alterações" : "Publicar produto")}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal dedicado da Ficha Técnica (overlay duplo, fica por cima do modal do produto) ── */}
+      {modal && fichaModalOpen && (
+        <div className="ficha-modal-overlay" onClick={() => { if (!showQuickAdd) setFichaModalOpen(false); }}>
+          <div className="ficha-modal" onClick={e => e.stopPropagation()}>
+            {/* Header com imagem do produto + métricas */}
+            <div className="ficha-modal-header">
+              <div className="ficha-modal-hero">
+                {form.imagem_url
+                  ? <img src={form.imagem_url} alt={form.nome} className="ficha-modal-hero-img" />
+                  : <div className="ficha-modal-hero-img ficha-modal-hero-img--placeholder">🧁</div>}
+                <div className="ficha-modal-hero-info">
+                  <p className="ficha-modal-hero-label">Ficha técnica de</p>
+                  <h2 className="ficha-modal-hero-nome">{form.nome || "Novo produto"}</h2>
+                  <div className="ficha-modal-hero-metricas">
+                    <div className="ficha-modal-metric">
+                      <span>CMV</span>
+                      <strong>R$ {cmvProduto.toFixed(2)}</strong>
+                    </div>
+                    <div className="ficha-modal-metric">
+                      <span>Lucro</span>
+                      <strong>R$ {(form.preco_normal - cmvProduto).toFixed(2)}</strong>
+                    </div>
+                    <div className={`ficha-modal-metric ficha-modal-metric--margem ficha-modal-metric--${margemProduto >= 50 ? "alto" : margemProduto >= 25 ? "medio" : "baixo"}`}>
+                      <span>Margem</span>
+                      <strong>{margemProduto.toFixed(0)}%</strong>
+                    </div>
+                  </div>
+                </div>
+                <button className="ficha-modal-close" onClick={() => setFichaModalOpen(false)} aria-label="Fechar">✕</button>
+              </div>
+              {margemProduto < 25 && form.preco_normal > 0 && fichaTecnica.length > 0 && (
+                <p className="ficha-modal-alerta">⚠️ Margem baixa. Considere reajustar o preço ou revisar a ficha.</p>
+              )}
+            </div>
+
+            {/* Corpo: lista de ingredientes + adicionar */}
+            <div className="ficha-modal-body">
+              {fichaTecnica.length === 0 ? (
+                <div className="ficha-modal-empty">
+                  <div className="ficha-modal-empty-icon">🥣</div>
+                  <p className="ficha-modal-empty-title">Nenhum ingrediente ainda</p>
+                  <p className="ficha-modal-empty-sub">Adicione abaixo os insumos usados pra fazer <strong>1 unidade</strong> deste produto.</p>
+                </div>
+              ) : (
+                <div className="ficha-modal-list">
+                  {fichaTecnica.map(f => {
+                    const ins = f.insumo;
+                    if (!ins) return null;
+                    const custoLinha = f.quantidade * (ins.custo_unitario || 0);
+                    return (
+                      <div key={f.insumo_id} className="ficha-modal-item">
+                        {ins.imagem_url
+                          ? <img src={ins.imagem_url} alt={ins.nome} className="ficha-modal-item-img" />
+                          : <div className="ficha-modal-item-img ficha-modal-item-img--placeholder">🥣</div>}
+                        <div className="ficha-modal-item-info">
+                          <p className="ficha-modal-item-nome">{ins.nome}</p>
+                          <p className="ficha-modal-item-sub">R$ {(ins.custo_unitario || 0).toFixed(4)} / {ins.unidade}</p>
+                          <div className="ficha-modal-item-bottom">
+                            <div className="ficha-modal-item-qtd">
+                              <input
+                                type="number"
+                                value={f.quantidade || ""}
+                                onChange={e => atualizarQtdFicha(f.insumo_id, parseFloat(e.target.value) || 0)}
+                                step="any" min="0" placeholder="0"
+                              />
+                              <span>{ins.unidade}</span>
+                            </div>
+                            <div className="ficha-modal-item-custo">R$ {custoLinha.toFixed(2)}</div>
+                          </div>
+                        </div>
+                        <button className="ficha-modal-item-del" onClick={() => removerInsumoFicha(f.insumo_id)} aria-label="Remover">✕</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Adicionar ingrediente (combobox + quick-add) */}
+              {!showQuickAdd ? (
+                <div className="ficha-modal-add">
+                  <div className="ficha-modal-add-label">Adicionar ingrediente</div>
+                  <input
+                    type="text"
+                    className="ficha-modal-add-input"
+                    placeholder="🔍 Buscar insumo cadastrado..."
+                    value={buscaInsumo}
+                    onChange={e => setBuscaInsumo(e.target.value)}
+                  />
+                  {buscaInsumo.trim() && (
+                    <div className="ficha-modal-add-results">
+                      {insumosCadastrados
+                        .filter(i => !fichaTecnica.some(f => f.insumo_id === i.id))
+                        .filter(i => i.nome.toLowerCase().includes(buscaInsumo.toLowerCase()))
+                        .slice(0, 6)
+                        .map(i => (
+                          <button key={i.id} type="button" className="ficha-modal-add-result" onClick={() => adicionarInsumoFicha(i)}>
+                            {i.imagem_url
+                              ? <img src={i.imagem_url} alt={i.nome} className="ficha-modal-add-result-img" />
+                              : <div className="ficha-modal-add-result-img ficha-modal-add-result-img--placeholder">🥣</div>}
+                            <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
+                              <p className="ficha-modal-item-nome">{i.nome}</p>
+                              <p className="ficha-modal-item-sub">R$ {(i.custo_unitario || 0).toFixed(4)} / {i.unidade}</p>
+                            </div>
+                          </button>
+                        ))}
+                      <button type="button" className="ficha-modal-add-novo" onClick={() => abrirQuickAdd(buscaInsumo)}>
+                        ➕ Cadastrar <strong>"{buscaInsumo}"</strong> como novo insumo
+                      </button>
+                    </div>
+                  )}
+                  {!buscaInsumo.trim() && (
+                    <button type="button" className="ficha-modal-add-novo ficha-modal-add-novo--solo" onClick={() => abrirQuickAdd("")}>
+                      ➕ Cadastrar novo insumo
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="ficha-modal-quick">
+                  <div className="ficha-modal-quick-head">
+                    <span>⚡ Cadastro rápido de insumo</span>
+                    <button type="button" className="ficha-modal-quick-cancel" onClick={fecharQuickAdd}>Cancelar</button>
+                  </div>
+                  <input
+                    type="text"
+                    className="ficha-modal-quick-input"
+                    placeholder="Nome do insumo (ex: Leite condensado Moça)"
+                    value={quickInsumo.nome}
+                    onChange={e => setQuickInsumo(q => ({ ...q, nome: e.target.value }))}
+                    autoFocus
+                  />
+
+                  {/* Auto-busca de imagem */}
+                  {quickInsumo.nome.trim().length >= 3 && (
+                    <div className="ficha-modal-quick-imgs">
+                      <div className="ficha-modal-quick-imgs-label">
+                        {quickBuscandoImg ? "🔄 Buscando imagens..." : quickImagens.length > 0 ? "Escolha uma imagem (opcional):" : "Nenhuma imagem encontrada"}
+                      </div>
+                      {quickImagens.length > 0 && (
+                        <div className="ficha-modal-quick-imgs-grid">
+                          {quickImagens.map((url, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              className={`ficha-modal-quick-img ${quickInsumo.imagem_url === url ? "ficha-modal-quick-img--selected" : ""}`}
+                              onClick={() => setQuickInsumo(q => ({ ...q, imagem_url: q.imagem_url === url ? "" : url }))}
+                            >
+                              <img src={url} alt="" />
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="ficha-modal-quick-grid">
+                    <div className="ficha-modal-quick-field">
+                      <label>Unidade</label>
+                      <select value={quickInsumo.unidade} onChange={e => setQuickInsumo(q => ({ ...q, unidade: e.target.value }))}>
+                        <option value="g">g</option>
+                        <option value="kg">kg</option>
+                        <option value="ml">ml</option>
+                        <option value="L">L</option>
+                        <option value="un">un</option>
+                        <option value="dz">dz</option>
+                      </select>
+                    </div>
+                    <div className="ficha-modal-quick-field">
+                      <label>Valor da compra (R$)</label>
+                      <input type="text" inputMode="decimal" placeholder="0,00" value={quickInsumo.valor_compra} onChange={e => setQuickInsumo(q => ({ ...q, valor_compra: e.target.value }))} />
+                    </div>
+                    <div className="ficha-modal-quick-field">
+                      <label>Qtd da embalagem</label>
+                      <input type="text" inputMode="decimal" placeholder="1" value={quickInsumo.qtd_embalagem} onChange={e => setQuickInsumo(q => ({ ...q, qtd_embalagem: e.target.value }))} />
+                    </div>
+                  </div>
+
+                  {(() => {
+                    const v = parseFloat(quickInsumo.valor_compra.replace(",", ".")) || 0;
+                    const q = parseFloat(quickInsumo.qtd_embalagem.replace(",", ".")) || 1;
+                    const cu = v > 0 ? v / q : 0;
+                    return cu > 0 ? (
+                      <div className="ficha-modal-quick-preview">
+                        Custo unitário: <strong>R$ {cu.toFixed(4)} / {quickInsumo.unidade}</strong>
+                      </div>
+                    ) : null;
+                  })()}
+
+                  <button type="button" className="ficha-modal-quick-save" onClick={salvarInsumoRapido} disabled={quickSaving}>
+                    {quickSaving ? "Salvando..." : "Salvar e adicionar à ficha"}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Rodapé */}
+            <div className="ficha-modal-footer">
+              <button className="ficha-modal-concluir" onClick={() => setFichaModalOpen(false)}>Concluir</button>
             </div>
           </div>
         </div>
@@ -1612,6 +1789,342 @@ export default function Produtos() {
           background:#fef3c7; color:#92400e;
           border-radius:10px; font-size:0.76rem; font-weight:600;
         }
+
+        /* ── Botão-resumo (trigger do modal da ficha) ── */
+        .ficha-trigger {
+          width:100%; display:flex; align-items:center; gap:0.75rem;
+          padding:0.85rem 1rem;
+          background:var(--surface-2, #FAFAFA);
+          border:1.5px solid var(--border, #E5E7EB); border-radius:14px;
+          cursor:pointer; transition:all 0.18s ease; text-align:left;
+        }
+        .ficha-trigger:hover {
+          border-color:var(--primary, #FF6FA9);
+          background:#FFF5F9;
+          transform:translateY(-1px);
+        }
+        .ficha-trigger-icon {
+          font-size:1.5rem; flex-shrink:0;
+          width:42px; height:42px; display:flex; align-items:center; justify-content:center;
+          background:#fff; border-radius:10px;
+        }
+        .ficha-trigger-info { flex:1; min-width:0; }
+        .ficha-trigger-title {
+          margin:0; font-size:0.88rem; font-weight:700;
+          color:var(--text-primary, #111827);
+        }
+        .ficha-trigger-sub {
+          margin:2px 0 0; font-size:0.72rem;
+          color:var(--text-secondary, #6B7280); font-weight:500;
+        }
+        .ficha-trigger-arrow {
+          font-size:1.4rem; color:var(--text-muted, #9CA3AF); font-weight:300;
+        }
+        .ficha-trigger-badge {
+          padding:0.3rem 0.65rem; border-radius:999px;
+          font-size:0.78rem; font-weight:800;
+        }
+        .ficha-trigger-badge--alto { background:#dcfce7; color:#15803d; }
+        .ficha-trigger-badge--medio { background:#fef3c7; color:#a16207; }
+        .ficha-trigger-badge--baixo { background:#fee2e2; color:#b91c1c; }
+
+        /* ── Modal dedicado da ficha técnica (overlay duplo) ── */
+        .ficha-modal-overlay {
+          position:fixed; inset:0; z-index:1100;
+          background:rgba(17, 24, 39, 0.55); backdrop-filter:blur(4px);
+          display:flex; align-items:flex-end; justify-content:center;
+          animation:fichaFadeIn 0.18s ease;
+        }
+        @keyframes fichaFadeIn { from { opacity:0; } to { opacity:1; } }
+        .ficha-modal {
+          width:100%; max-width:560px; max-height:92vh;
+          background:#fff; border-radius:20px 20px 0 0;
+          display:flex; flex-direction:column;
+          box-shadow:0 -8px 40px rgba(0,0,0,0.18);
+          animation:fichaSlideUp 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes fichaSlideUp { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+        @media (min-width:640px) {
+          .ficha-modal-overlay { align-items:center; }
+          .ficha-modal { border-radius:20px; max-height:88vh; }
+        }
+
+        /* Header com imagem grande do produto */
+        .ficha-modal-header {
+          padding:1.1rem 1.1rem 0.85rem;
+          background:linear-gradient(180deg, #FFF5F9 0%, #fff 100%);
+          border-radius:20px 20px 0 0;
+          border-bottom:1px solid var(--border, #E5E7EB);
+        }
+        .ficha-modal-hero { display:flex; gap:0.9rem; align-items:flex-start; position:relative; }
+        .ficha-modal-hero-img {
+          width:88px; height:88px; border-radius:14px;
+          object-fit:cover; flex-shrink:0;
+          box-shadow:0 4px 12px rgba(0,0,0,0.08);
+        }
+        .ficha-modal-hero-img--placeholder {
+          background:#fff; display:flex; align-items:center; justify-content:center;
+          font-size:2.4rem;
+        }
+        .ficha-modal-hero-info { flex:1; min-width:0; padding-right:2rem; }
+        .ficha-modal-hero-label {
+          margin:0; font-size:0.68rem; text-transform:uppercase;
+          letter-spacing:0.5px; color:var(--text-muted, #9CA3AF); font-weight:700;
+        }
+        .ficha-modal-hero-nome {
+          margin:2px 0 0.55rem; font-size:1.08rem; font-weight:800;
+          color:var(--text-primary, #111827); line-height:1.2;
+          white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        .ficha-modal-hero-metricas { display:flex; gap:0.4rem; }
+        .ficha-modal-metric {
+          flex:1; padding:0.4rem 0.5rem;
+          background:#fff; border:1px solid var(--border, #E5E7EB);
+          border-radius:9px; min-width:0;
+        }
+        .ficha-modal-metric span {
+          display:block; font-size:0.6rem; text-transform:uppercase;
+          letter-spacing:0.3px; color:var(--text-muted, #9CA3AF); font-weight:700;
+        }
+        .ficha-modal-metric strong {
+          display:block; font-size:0.82rem; font-weight:800;
+          color:var(--text-primary, #111827); margin-top:1px;
+        }
+        .ficha-modal-metric--margem strong { font-size:0.9rem; }
+        .ficha-modal-metric--alto { background:#dcfce7; border-color:#bbf7d0; }
+        .ficha-modal-metric--alto strong { color:#15803d; }
+        .ficha-modal-metric--medio { background:#fef3c7; border-color:#fde68a; }
+        .ficha-modal-metric--medio strong { color:#a16207; }
+        .ficha-modal-metric--baixo { background:#fee2e2; border-color:#fecaca; }
+        .ficha-modal-metric--baixo strong { color:#b91c1c; }
+        .ficha-modal-close {
+          position:absolute; top:-4px; right:-4px;
+          width:32px; height:32px; border-radius:50%;
+          background:#fff; border:1px solid var(--border, #E5E7EB);
+          color:var(--text-secondary, #6B7280);
+          font-size:0.9rem; cursor:pointer;
+          display:flex; align-items:center; justify-content:center;
+          transition:all 0.15s ease;
+        }
+        .ficha-modal-close:hover { background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
+        .ficha-modal-alerta {
+          margin:0.7rem 0 0; padding:0.5rem 0.8rem;
+          background:#fef3c7; color:#92400e;
+          border-radius:10px; font-size:0.74rem; font-weight:600;
+        }
+
+        /* Body */
+        .ficha-modal-body {
+          flex:1; overflow-y:auto; padding:1rem 1.1rem;
+          display:flex; flex-direction:column; gap:0.85rem;
+        }
+        .ficha-modal-empty {
+          padding:1.6rem 1rem; text-align:center;
+          background:var(--surface-2, #FAFAFA); border-radius:14px;
+          border:1.5px dashed var(--border, #E5E7EB);
+        }
+        .ficha-modal-empty-icon { font-size:2.2rem; }
+        .ficha-modal-empty-title {
+          margin:0.4rem 0 0.2rem; font-size:0.92rem; font-weight:700;
+          color:var(--text-primary, #111827);
+        }
+        .ficha-modal-empty-sub {
+          margin:0; font-size:0.78rem; color:var(--text-secondary, #6B7280);
+          line-height:1.45;
+        }
+        .ficha-modal-empty-sub strong { color:var(--primary, #FF6FA9); }
+
+        .ficha-modal-list { display:flex; flex-direction:column; gap:0.55rem; }
+        .ficha-modal-item {
+          display:flex; gap:0.7rem; padding:0.7rem;
+          background:#fff; border:1.5px solid var(--border, #E5E7EB);
+          border-radius:12px; position:relative;
+        }
+        .ficha-modal-item-img {
+          width:54px; height:54px; border-radius:10px;
+          object-fit:cover; flex-shrink:0; background:#F3F4F6;
+        }
+        .ficha-modal-item-img--placeholder {
+          display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+        }
+        .ficha-modal-item-info { flex:1; min-width:0; padding-right:1.4rem; }
+        .ficha-modal-item-nome {
+          margin:0; font-size:0.85rem; font-weight:700;
+          color:var(--text-primary, #111827);
+          white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        .ficha-modal-item-sub {
+          margin:2px 0 0.5rem; font-size:0.7rem;
+          color:var(--text-muted, #9CA3AF); font-weight:500;
+        }
+        .ficha-modal-item-bottom {
+          display:flex; align-items:center; justify-content:space-between; gap:0.6rem;
+        }
+        .ficha-modal-item-qtd {
+          display:flex; align-items:center; gap:4px;
+          background:#F3F4F6; border:1.5px solid transparent;
+          border-radius:9px; padding:0.32rem 0.55rem; max-width:130px;
+          transition:border-color 0.15s ease;
+        }
+        .ficha-modal-item-qtd:focus-within { border-color:var(--primary, #FF6FA9); background:#fff; }
+        .ficha-modal-item-qtd input {
+          width:60px; border:none; background:transparent; outline:none;
+          font-size:0.82rem; font-weight:700; color:var(--text-primary, #111827);
+        }
+        .ficha-modal-item-qtd input::-webkit-outer-spin-button,
+        .ficha-modal-item-qtd input::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+        .ficha-modal-item-qtd span {
+          font-size:0.74rem; font-weight:600; color:var(--text-secondary, #6B7280);
+        }
+        .ficha-modal-item-custo {
+          font-size:0.85rem; font-weight:800; color:var(--primary, #FF6FA9);
+        }
+        .ficha-modal-item-del {
+          position:absolute; top:8px; right:8px;
+          width:24px; height:24px; border-radius:6px;
+          background:transparent; border:none;
+          color:var(--text-muted, #9CA3AF); cursor:pointer;
+          font-size:0.8rem;
+          display:flex; align-items:center; justify-content:center;
+          transition:all 0.15s ease;
+        }
+        .ficha-modal-item-del:hover { background:#fee2e2; color:#b91c1c; }
+
+        /* Adicionar ingrediente */
+        .ficha-modal-add {
+          background:var(--surface-2, #FAFAFA);
+          border:1.5px solid var(--border, #E5E7EB);
+          border-radius:14px; padding:0.85rem;
+        }
+        .ficha-modal-add-label {
+          font-size:0.72rem; font-weight:700;
+          color:var(--text-secondary, #6B7280);
+          text-transform:uppercase; letter-spacing:0.4px;
+          margin-bottom:0.55rem;
+        }
+        .ficha-modal-add-input {
+          width:100%; padding:0.65rem 0.85rem;
+          background:#fff; border:1.5px solid var(--border, #E5E7EB);
+          border-radius:10px; font-size:0.86rem; outline:none;
+          transition:border-color 0.15s ease;
+        }
+        .ficha-modal-add-input:focus { border-color:var(--primary, #FF6FA9); }
+        .ficha-modal-add-results {
+          margin-top:0.55rem; display:flex; flex-direction:column; gap:4px;
+          max-height:260px; overflow-y:auto;
+        }
+        .ficha-modal-add-result {
+          display:flex; gap:0.6rem; align-items:center;
+          padding:0.5rem; background:#fff; border:1px solid var(--border, #E5E7EB);
+          border-radius:10px; cursor:pointer; transition:all 0.15s ease; text-align:left;
+        }
+        .ficha-modal-add-result:hover { border-color:var(--primary, #FF6FA9); background:#FFF5F9; }
+        .ficha-modal-add-result-img {
+          width:38px; height:38px; border-radius:8px;
+          object-fit:cover; flex-shrink:0; background:#F3F4F6;
+        }
+        .ficha-modal-add-result-img--placeholder {
+          display:flex; align-items:center; justify-content:center; font-size:1rem;
+        }
+        .ficha-modal-add-novo {
+          margin-top:6px; padding:0.6rem 0.85rem;
+          background:#fff; border:1.5px dashed var(--primary, #FF6FA9);
+          border-radius:10px; cursor:pointer;
+          font-size:0.8rem; color:var(--primary, #FF6FA9); font-weight:600;
+          transition:all 0.15s ease; text-align:left;
+        }
+        .ficha-modal-add-novo:hover { background:#FFF5F9; }
+        .ficha-modal-add-novo strong { font-weight:800; }
+        .ficha-modal-add-novo--solo { margin-top:0.55rem; width:100%; text-align:center; }
+
+        /* Quick add form */
+        .ficha-modal-quick {
+          background:#fff;
+          border:1.5px solid var(--primary, #FF6FA9);
+          border-radius:14px; padding:0.9rem;
+          display:flex; flex-direction:column; gap:0.7rem;
+        }
+        .ficha-modal-quick-head {
+          display:flex; justify-content:space-between; align-items:center;
+          font-size:0.82rem; font-weight:700; color:var(--primary, #FF6FA9);
+        }
+        .ficha-modal-quick-cancel {
+          background:transparent; border:none; cursor:pointer;
+          font-size:0.76rem; color:var(--text-muted, #9CA3AF); font-weight:600;
+        }
+        .ficha-modal-quick-cancel:hover { color:var(--text-secondary, #6B7280); }
+        .ficha-modal-quick-input {
+          width:100%; padding:0.65rem 0.85rem;
+          border:1.5px solid var(--border, #E5E7EB);
+          border-radius:10px; font-size:0.88rem; outline:none;
+        }
+        .ficha-modal-quick-input:focus { border-color:var(--primary, #FF6FA9); }
+        .ficha-modal-quick-imgs { display:flex; flex-direction:column; gap:0.45rem; }
+        .ficha-modal-quick-imgs-label {
+          font-size:0.72rem; font-weight:600;
+          color:var(--text-secondary, #6B7280);
+        }
+        .ficha-modal-quick-imgs-grid {
+          display:grid; grid-template-columns:repeat(6, 1fr); gap:0.4rem;
+        }
+        .ficha-modal-quick-img {
+          aspect-ratio:1; border:2px solid var(--border, #E5E7EB);
+          border-radius:8px; padding:0; overflow:hidden;
+          background:#fff; cursor:pointer; transition:all 0.15s ease;
+        }
+        .ficha-modal-quick-img img { width:100%; height:100%; object-fit:cover; display:block; }
+        .ficha-modal-quick-img:hover { border-color:var(--primary, #FF6FA9); }
+        .ficha-modal-quick-img--selected {
+          border-color:var(--primary, #FF6FA9);
+          box-shadow:0 0 0 2px rgba(255, 111, 169, 0.2);
+        }
+        .ficha-modal-quick-grid {
+          display:grid; grid-template-columns:0.7fr 1fr 1fr; gap:0.5rem;
+        }
+        .ficha-modal-quick-field { display:flex; flex-direction:column; gap:3px; }
+        .ficha-modal-quick-field label {
+          font-size:0.66rem; font-weight:700;
+          color:var(--text-muted, #9CA3AF);
+          text-transform:uppercase; letter-spacing:0.3px;
+        }
+        .ficha-modal-quick-field input,
+        .ficha-modal-quick-field select {
+          padding:0.5rem 0.6rem;
+          border:1.5px solid var(--border, #E5E7EB);
+          border-radius:9px; font-size:0.82rem; outline:none;
+          background:#fff;
+        }
+        .ficha-modal-quick-field input:focus,
+        .ficha-modal-quick-field select:focus { border-color:var(--primary, #FF6FA9); }
+        .ficha-modal-quick-preview {
+          padding:0.5rem 0.75rem; background:#FFF5F9;
+          border-radius:9px; font-size:0.78rem;
+          color:var(--text-secondary, #6B7280);
+        }
+        .ficha-modal-quick-preview strong { color:var(--primary, #FF6FA9); font-weight:800; }
+        .ficha-modal-quick-save {
+          padding:0.75rem; background:var(--primary, #FF6FA9);
+          color:#fff; border:none; border-radius:10px;
+          font-size:0.88rem; font-weight:700; cursor:pointer;
+          transition:opacity 0.15s ease;
+        }
+        .ficha-modal-quick-save:hover:not(:disabled) { opacity:0.9; }
+        .ficha-modal-quick-save:disabled { opacity:0.6; cursor:not-allowed; }
+
+        /* Footer */
+        .ficha-modal-footer {
+          padding:0.85rem 1.1rem;
+          border-top:1px solid var(--border, #E5E7EB);
+          background:#fff; border-radius:0 0 20px 20px;
+        }
+        .ficha-modal-concluir {
+          width:100%; padding:0.8rem;
+          background:var(--text-primary, #111827); color:#fff;
+          border:none; border-radius:12px;
+          font-size:0.92rem; font-weight:700; cursor:pointer;
+          transition:opacity 0.15s ease;
+        }
+        .ficha-modal-concluir:hover { opacity:0.88; }
 
       `}</style>
     </div>
