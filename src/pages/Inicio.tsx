@@ -504,9 +504,9 @@ export default function Inicio() {
           position: relative;
           background: var(--bg-card, #fff);
           border: none;
-          border-radius: 22px;
-          padding: 1rem 1rem 0.95rem;
-          min-height: 96px;
+          border-radius: 20px;
+          padding: 0.85rem 0.9rem;
+          min-height: 86px;
           display: flex; align-items: flex-end;
           box-shadow: 0 8px 22px rgba(0,0,0,0.10);
           cursor: pointer;
@@ -531,14 +531,15 @@ export default function Inicio() {
 
         .ini-ind-content {
           display: flex; flex-direction: column;
-          gap: 4px;
+          gap: 3px;
           width: 100%;
+          padding-right: 42px;
           z-index: 1;
         }
         .ini-ind-label {
-          font-size: 0.72rem; font-weight: 600;
+          font-size: 0.7rem; font-weight: 600;
           color: rgba(255,255,255,0.92);
-          line-height: 1.2;
+          line-height: 1.15;
           letter-spacing: 0.01em;
         }
         .ini-ind-val {
@@ -547,16 +548,16 @@ export default function Inicio() {
           letter-spacing: -0.02em;
         }
         .ini-ind-val--currency {
-          font-size: 1.15rem;
+          font-size: 1.1rem;
         }
 
         /* Mini-card branco com ícone (canto superior direito) */
         .ini-ind-sticker {
           position: absolute;
           top: 8px; right: 8px;
-          width: 38px; height: 38px;
+          width: 34px; height: 34px;
           background: #fff;
-          border-radius: 11px;
+          border-radius: 10px;
           display: flex; align-items: center; justify-content: center;
           box-shadow: 0 3px 8px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.08);
           transform: rotate(4deg);
