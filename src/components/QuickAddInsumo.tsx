@@ -34,12 +34,20 @@ type Form = {
 
 const CATEGORIAS_DEFAULT = ["Ingredientes", "Embalagens", "Decorações", "Bebidas", "Limpeza", "Descartáveis", "Outros"];
 const UNIDADES = [
-  { sigla: "g", nome: "Grama" },
-  { sigla: "kg", nome: "Quilo" },
-  { sigla: "ml", nome: "Mililitro" },
-  { sigla: "L", nome: "Litro" },
   { sigla: "un", nome: "Unidade" },
-  { sigla: "dz", nome: "Dúzia" },
+  { sigla: "kg", nome: "Quilograma" },
+  { sigla: "g", nome: "Grama" },
+  { sigla: "L", nome: "Litro" },
+  { sigla: "ml", nome: "Mililitro" },
+  { sigla: "pct", nome: "Pacote" },
+  { sigla: "cx", nome: "Caixa" },
+  { sigla: "Lata", nome: "Lata" },
+  { sigla: "Garrafa", nome: "Garrafa" },
+  { sigla: "Pote", nome: "Pote" },
+  { sigla: "Bandeja", nome: "Bandeja" },
+  { sigla: "Saco", nome: "Saco" },
+  { sigla: "Bisnaga", nome: "Bisnaga" },
+  { sigla: "Rolo", nome: "Rolo" },
 ];
 
 /**
@@ -316,7 +324,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
             value={form.unidade}
             onChange={e => setForm(f => ({ ...f, unidade: e.target.value }))}
           >
-            {UNIDADES.map(u => <option key={u.sigla} value={u.sigla}>{u.sigla}</option>)}
+            {UNIDADES.map(u => <option key={u.sigla} value={u.sigla}>{u.nome}</option>)}
           </select>
         </div>
       </div>
