@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { ClipboardText, CurrencyDollar, CheckCircle, Cake } from '@phosphor-icons/react'
+import BtnNovo from '@/components/BtnNovo'
 
 type PedidoItem = {
   nome_produto: string; quantidade: number; valor_unitario: number
@@ -735,13 +736,7 @@ export default function Pedidos() {
           </button>
 
           {/* Novo pedido */}
-          <button
-            onClick={handleNovoPedido}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', background: 'var(--primary,#986274)', color: 'white', border: 'none', borderRadius: 10, padding: isMobile ? '0.6rem 0.75rem' : '0.6rem 1rem', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            {!isMobile && 'Registrar pedido'}
-          </button>
+          <BtnNovo label="Registrar pedido" onClick={handleNovoPedido} />
         </div>
       </div>
 

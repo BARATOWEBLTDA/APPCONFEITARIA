@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import EmptyDoo from "@/components/EmptyDoo";
+import BtnNovo from "@/components/BtnNovo";
 import Categorias from "@/pages/Categorias";
 
 type Tamanho = { label: string; preco: number };
@@ -367,10 +368,7 @@ export default function Produtos() {
           <h1 className="prod-title-novo">Produtos</h1>
           <p className="prod-sub-novo">{produtos.length} cadastrado{produtos.length !== 1 ? "s" : ""}</p>
         </div>
-        <button className="prod-btn-novo-novo" onClick={openNovo}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Novo produto
-        </button>
+        <BtnNovo label="Novo produto" onClick={openNovo} />
       </div>
 
       {/* Barra de pesquisa */}
@@ -1254,28 +1252,6 @@ export default function Produtos() {
           font-size: 0.78rem;
           color: var(--text-muted, #C39EAA);
           margin: 0.1rem 0 0;
-        }
-        .prod-btn-novo-novo {
-          display: flex;
-          align-items: center;
-          gap: 0.4rem;
-          background: #3d1a24;
-          color: white;
-          border: none;
-          border-radius: 10px;
-          padding: 0.65rem 1rem;
-          font-family: inherit;
-          font-size: 0.85rem;
-          font-weight: 600;
-          cursor: pointer;
-          white-space: nowrap;
-          flex-shrink: 0;
-          box-shadow: 0 4px 12px rgba(61, 26, 36, 0.18);
-          transition: all 0.15s ease;
-        }
-        .prod-btn-novo-novo:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(61, 26, 36, 0.25);
         }
 
         /* ── Barra de busca ── */

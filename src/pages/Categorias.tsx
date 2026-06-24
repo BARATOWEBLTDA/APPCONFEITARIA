@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import EmptyDoo from "@/components/EmptyDoo";
+import BtnNovo from "@/components/BtnNovo";
 
 type Categoria = {
   id?: string;
@@ -112,10 +113,7 @@ export default function Categorias() {
           <h1 className="cat-title">Categorias</h1>
           <p className="cat-sub">{categorias.length} categoria{categorias.length !== 1 ? "s" : ""}</p>
         </div>
-        <button className="cat-btn-novo" onClick={openNova}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nova categoria
-        </button>
+        <BtnNovo label="Nova categoria" onClick={openNova} />
       </div>
 
       {categorias.length === 0 ? (
@@ -261,7 +259,7 @@ export default function Categorias() {
         .cat-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; padding-top:1.5rem; }
         .cat-title { font-size:1.3rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.15rem; }
         .cat-sub { font-size:0.82rem; color:var(--text-muted, #9CA3AF); margin:0; }
-        .cat-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.7rem 1.2rem; background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color:var(--text-inverse, #FFFFFF); border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; }
+        .cat-btn-novo { display:none; /* legacy, substituído por BtnNovo */ }
         .cat-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; padding:3rem 1rem; text-align:center; }
         .cat-empty-title { font-size:1rem; font-weight:700; color:var(--text-title, #1F2937); margin:0; }
         .cat-empty-sub { font-size:0.82rem; color:var(--text-muted, #9CA3AF); margin:0; }

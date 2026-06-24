@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import EmptyDoo from "@/components/EmptyDoo";
+import BtnNovo from "@/components/BtnNovo";
 
 interface Insumo {
   id: string;
@@ -279,10 +280,7 @@ export default function Insumos() {
           <h1 className="ins-title">Ingredientes</h1>
           <p className="ins-sub">{insumos.length} {insumos.length === 1 ? "ingrediente cadastrado" : "ingredientes cadastrados"}</p>
         </div>
-        <button className="ins-btn-novo" onClick={openNovo} aria-label="Novo ingrediente">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span className="ins-btn-novo-label">Novo ingrediente</span>
-        </button>
+        <BtnNovo label="Novo ingrediente" onClick={openNovo} />
       </div>
 
       {/* Métricas: 1 herói + 2 compactos clicáveis (mobile) / 4 em linha (desktop) */}
@@ -1285,7 +1283,7 @@ function Styles() {
       .ins-header { display:flex; align-items:center; justify-content:space-between; }
       .ins-title { font-size:1.6rem; font-weight:800; color:var(--text-title, #1F2937); margin:0; }
       .ins-sub { font-size:0.82rem; color:var(--text-muted, #9CA3AF); margin:0.15rem 0 0; }
-      .ins-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.65rem 1.25rem; background:var(--primary-gradient, linear-gradient(135deg,#FF6FA9,#F85A9A)); color:var(--text-inverse, #FFFFFF); border:none; border-radius:50px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 4px 12px rgba(255,111,169,0.35); }
+      .ins-btn-novo { display:none; /* legacy, substituído por BtnNovo */ }
 
       /* Header */
       .ins-header-text { min-width:0; flex:1; }
@@ -1438,9 +1436,7 @@ function Styles() {
         .ins-title { font-size:1.35rem; }
         .ins-sub { font-size:0.78rem; }
 
-        /* Header: botão vira só "+" no mobile */
-        .ins-btn-novo { padding:0.6rem 0.8rem; box-shadow:0 3px 10px rgba(255,111,169,0.3); }
-        .ins-btn-novo-label { display:none; }
+        /* Header: botão "novo" agora é o componente BtnNovo (auto-responsivo) */
 
         /* Métricas: 1 herói full + 2 minis lado a lado */
         .ins-stats {
