@@ -302,7 +302,7 @@ export default function Inicio() {
           className="ini-ind-card ini-ind-card--pedidos"
           onClick={() => navigate("/agenda")}
         >
-          <div className="ini-ind-sticker">🗓️</div>
+          <div className="ini-ind-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=400&q=80')` }} />
           <div className="ini-ind-content">
             <span className="ini-ind-label">{counts.entregasHoje === 1 ? "Pedido hoje" : "Pedidos hoje"}</span>
             <span className="ini-ind-val">{counts.entregasHoje}</span>
@@ -313,7 +313,7 @@ export default function Inicio() {
           className="ini-ind-card ini-ind-card--faturamento"
           onClick={() => navigate("/financeiro")}
         >
-          <div className="ini-ind-sticker">💰</div>
+          <div className="ini-ind-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&q=80')` }} />
           <div className="ini-ind-content">
             <span className="ini-ind-label">Faturamento</span>
             <span className="ini-ind-val ini-ind-val--currency">{formatCurrencyCompact(counts.faturamentoMes)}</span>
@@ -324,7 +324,7 @@ export default function Inicio() {
           className="ini-ind-card ini-ind-card--aniversarios"
           onClick={() => navigate("/clientes")}
         >
-          <div className="ini-ind-sticker">🎂</div>
+          <div className="ini-ind-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=400&q=80')` }} />
           <div className="ini-ind-content">
             <span className="ini-ind-label">{counts.aniversariantes === 1 ? "Aniversário" : "Aniversários"}</span>
             <span className="ini-ind-val">{counts.aniversariantes}</span>
@@ -502,9 +502,8 @@ export default function Inicio() {
           padding: 0.6rem 0.9rem 0.9rem 0.9rem;
           min-height: 125px;
           display: flex; flex-direction: column;
-          justify-content: space-between;
+          justify-content: flex-end;
           align-items: flex-start;
-          gap: 0.5rem;
           box-shadow: 0 8px 22px rgba(0,0,0,0.10);
           cursor: pointer;
           font-family: inherit;
@@ -512,10 +511,31 @@ export default function Inicio() {
           overflow: hidden;
           transition: transform 0.18s ease, box-shadow 0.18s ease;
         }
+
+        /* Camada de imagem de fundo (wallpaper) */
+        .ini-ind-bg {
+          position: absolute;
+          inset: 0;
+          background-size: cover;
+          background-position: center;
+          opacity: 0.55;
+          z-index: 0;
+          pointer-events: none;
+        }
+        /* Overlay escurecido pra garantir legibilidade do texto branco */
+        .ini-ind-card::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 100%);
+          z-index: 1;
+          pointer-events: none;
+        }
+        .ini-ind-content { position: relative; z-index: 2; }
         .ini-ind-card:active { transform: scale(0.97); }
         .ini-ind-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,0.14); }
 
-        /* Variantes coloridas (gradient sutil) */
+        /* Variantes coloridas (cor base — imagem aparece por cima) */
         .ini-ind-card--pedidos {
           background: linear-gradient(135deg, #60A5FA 0%, #2563EB 100%);
         }
@@ -525,22 +545,6 @@ export default function Inicio() {
         .ini-ind-card--aniversarios {
           background: linear-gradient(135deg, #F472B6 0%, #BE185D 100%);
         }
-
-        /* Sticker emoji (canto superior direito, dentro do fluxo flex) */
-        .ini-ind-sticker {
-          align-self: flex-end;
-          width: 36px; height: 36px;
-          background: #fff;
-          border-radius: 10px;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 20px;
-          line-height: 1;
-          box-shadow: 0 3px 8px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.08);
-          transform: rotate(4deg);
-          transition: transform 0.2s ease;
-          flex-shrink: 0;
-        }
-        .ini-ind-card:hover .ini-ind-sticker { transform: rotate(-2deg) scale(1.05); }
 
         .ini-ind-content {
           display: flex; flex-direction: column;
