@@ -396,7 +396,7 @@ export default function Layout() {
             justify-content: space-around;
             width: 100%;
             background: #3d1a24;
-            border-radius: 999px;
+            border-radius: 20px;
             padding: 6px 6px;
             box-shadow: 0 4px 24px rgba(61, 26, 36, 0.35);
             pointer-events: all;
