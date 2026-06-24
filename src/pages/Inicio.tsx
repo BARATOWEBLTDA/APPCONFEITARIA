@@ -44,6 +44,7 @@ export default function Inicio() {
     pedidosPendentes: 0,
     entregasHoje: 0,
     aniversariantes: 0,
+    faturamentoMes: 0,
   });
   const [aniversariantesDetalhe, setAniversariantesDetalhe] = useState<{ nome: string; dias: number } | null>(null);
   const [resumoSemana, setResumoSemana] = useState({ vendas: 0, pedidos: 0 });
@@ -85,6 +86,7 @@ export default function Inicio() {
       const inicio7d = new Date(hoje); inicio7d.setDate(hoje.getDate() - 7);
       const inicio14d = new Date(hoje); inicio14d.setDate(hoje.getDate() - 14);
       const inicio30d = new Date(hoje); inicio30d.setDate(hoje.getDate() - 30);
+      const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
       const [
         pedidosPendentesRes,
@@ -93,6 +95,7 @@ export default function Inicio() {
         pedidosSemanaRes,
         pedidosSemanaAntRes,
         pedidos30dRes,
+        pedidosMesRes,
       ] = await Promise.all([
         // Pedidos pendentes (aguardando confirmação)
         supabase
@@ -135,6 +138,13 @@ export default function Inicio() {
           .eq("user_id", userId)
           .gte("created_at", inicio30d.toISOString())
           .neq("status", "cancelado"),
+        // Faturamento do mês atual
+        supabase
+          .from("pedidos")
+          .select("valor_total")
+          .eq("user_id", userId)
+          .gte("created_at", inicioMes.toISOString())
+          .neq("status", "cancelado"),
       ]);
 
       // Aniversariantes nos próximos 7 dias
@@ -150,10 +160,15 @@ export default function Inicio() {
       // Gráfico 30 dias — agrupado por dia
       const chart = construirChart30d(pedidos30dRes.data || []);
 
+      // Faturamento do mês atual
+      const faturamentoMes = (pedidosMesRes.data || [])
+        .reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0);
+
       setCounts({
         pedidosPendentes: pedidosPendentesRes.count || 0,
         entregasHoje: entregasHojeRes.count || 0,
         aniversariantes: aniversariantes.length,
+        faturamentoMes,
       });
       setAniversariantesDetalhe(proxAniv);
       setResumoSemana({ vendas: vendasSemana, pedidos: pedidosSemanaRes.data?.length || 0 });
@@ -226,6 +241,13 @@ export default function Inicio() {
   const formatCurrency = (v: number) =>
     new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
+  /** Formato compacto pra cards pequenos: R$ 1,2K | R$ 12,5K | R$ 1,3M */
+  const formatCurrencyCompact = (v: number): string => {
+    if (v < 1000) return formatCurrency(v);
+    if (v < 1_000_000) return `R$ ${(v / 1000).toFixed(v < 10_000 ? 1 : 0).replace(".", ",")}K`;
+    return `R$ ${(v / 1_000_000).toFixed(1).replace(".", ",")}M`;
+  };
+
   const variacao = (atual: number, ant: number): { pct: number; tipo: "up" | "down" | "flat" } => {
     if (ant === 0 && atual === 0) return { pct: 0, tipo: "flat" };
     if (ant === 0) return { pct: 100, tipo: "up" };
@@ -276,23 +298,23 @@ export default function Inicio() {
 
       {/* ── 3 indicadores flutuando sobre o hero ── */}
       <div className="ini-indicadores">
-        <button className="ini-ind-card" onClick={() => navigate("/pedidos")}>
-          <div className="ini-ind-icon" style={{ background: "#FEE2E2", color: "#B91C1C" }}>
-            <ClipboardText size={22} weight="duotone" />
-          </div>
-          <div className="ini-ind-body">
-            <span className="ini-ind-val">{counts.pedidosPendentes}</span>
-            <span className="ini-ind-label">{counts.pedidosPendentes === 1 ? "Pendente" : "Pendentes"}</span>
-          </div>
-        </button>
-
         <button className="ini-ind-card" onClick={() => navigate("/agenda")}>
           <div className="ini-ind-icon" style={{ background: "#DBEAFE", color: "#1D4ED8" }}>
             <CalendarDots size={22} weight="duotone" />
           </div>
           <div className="ini-ind-body">
             <span className="ini-ind-val">{counts.entregasHoje}</span>
-            <span className="ini-ind-label">Hoje</span>
+            <span className="ini-ind-label">{counts.entregasHoje === 1 ? "Pedido hoje" : "Pedidos hoje"}</span>
+          </div>
+        </button>
+
+        <button className="ini-ind-card" onClick={() => navigate("/financeiro")}>
+          <div className="ini-ind-icon" style={{ background: "#DCFCE7", color: "#15803D" }}>
+            <CurrencyDollar size={22} weight="duotone" />
+          </div>
+          <div className="ini-ind-body">
+            <span className="ini-ind-val ini-ind-val--currency">{formatCurrencyCompact(counts.faturamentoMes)}</span>
+            <span className="ini-ind-label">Faturamento</span>
           </div>
         </button>
 
@@ -302,7 +324,7 @@ export default function Inicio() {
           </div>
           <div className="ini-ind-body">
             <span className="ini-ind-val">{counts.aniversariantes}</span>
-            <span className="ini-ind-label">Aniversários</span>
+            <span className="ini-ind-label">{counts.aniversariantes === 1 ? "Aniversário" : "Aniversários"}</span>
           </div>
         </button>
       </div>
@@ -488,6 +510,10 @@ export default function Inicio() {
         .ini-ind-val {
           font-size: 1.5rem; font-weight: 800;
           color: var(--text-title, #1F2937); line-height: 1;
+        }
+        .ini-ind-val--currency {
+          font-size: 1.15rem;
+          letter-spacing: -0.02em;
         }
         .ini-ind-label {
           font-size: 0.7rem; font-weight: 600;
