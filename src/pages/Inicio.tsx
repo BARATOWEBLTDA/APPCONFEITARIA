@@ -302,12 +302,10 @@ export default function Inicio() {
           className="ini-ind-card ini-ind-card--pedidos"
           onClick={() => navigate("/agenda")}
         >
+          <div className="ini-ind-sticker">🗓️</div>
           <div className="ini-ind-content">
             <span className="ini-ind-label">{counts.entregasHoje === 1 ? "Pedido hoje" : "Pedidos hoje"}</span>
             <span className="ini-ind-val">{counts.entregasHoje}</span>
-          </div>
-          <div className="ini-ind-sticker">
-            <CalendarDots size={22} weight="fill" color="#1D4ED8" />
           </div>
         </button>
 
@@ -315,12 +313,10 @@ export default function Inicio() {
           className="ini-ind-card ini-ind-card--faturamento"
           onClick={() => navigate("/financeiro")}
         >
+          <div className="ini-ind-sticker">💰</div>
           <div className="ini-ind-content">
             <span className="ini-ind-label">Faturamento</span>
             <span className="ini-ind-val ini-ind-val--currency">{formatCurrencyCompact(counts.faturamentoMes)}</span>
-          </div>
-          <div className="ini-ind-sticker">
-            <CurrencyDollar size={22} weight="fill" color="#15803D" />
           </div>
         </button>
 
@@ -328,12 +324,10 @@ export default function Inicio() {
           className="ini-ind-card ini-ind-card--aniversarios"
           onClick={() => navigate("/clientes")}
         >
+          <div className="ini-ind-sticker">🎂</div>
           <div className="ini-ind-content">
             <span className="ini-ind-label">{counts.aniversariantes === 1 ? "Aniversário" : "Aniversários"}</span>
             <span className="ini-ind-val">{counts.aniversariantes}</span>
-          </div>
-          <div className="ini-ind-sticker">
-            <Cake size={22} weight="fill" color="#BE185D" />
           </div>
         </button>
       </div>
@@ -505,9 +499,11 @@ export default function Inicio() {
           background: var(--bg-card, #fff);
           border: none;
           border-radius: 20px;
-          padding: 0.85rem 0.9rem;
-          min-height: 86px;
-          display: flex; align-items: flex-end;
+          padding: 0.55rem 0.9rem 0.85rem 0.9rem;
+          min-height: 100px;
+          display: flex; flex-direction: column;
+          justify-content: space-between;
+          align-items: flex-start;
           box-shadow: 0 8px 22px rgba(0,0,0,0.10);
           cursor: pointer;
           font-family: inherit;
@@ -529,12 +525,26 @@ export default function Inicio() {
           background: linear-gradient(135deg, #F472B6 0%, #BE185D 100%);
         }
 
+        /* Sticker emoji (canto superior direito, dentro do fluxo flex) */
+        .ini-ind-sticker {
+          align-self: flex-end;
+          width: 36px; height: 36px;
+          background: #fff;
+          border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 20px;
+          line-height: 1;
+          box-shadow: 0 3px 8px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.08);
+          transform: rotate(4deg);
+          transition: transform 0.2s ease;
+          flex-shrink: 0;
+        }
+        .ini-ind-card:hover .ini-ind-sticker { transform: rotate(-2deg) scale(1.05); }
+
         .ini-ind-content {
           display: flex; flex-direction: column;
           gap: 3px;
           width: 100%;
-          padding-right: 42px;
-          z-index: 1;
         }
         .ini-ind-label {
           font-size: 0.7rem; font-weight: 600;
@@ -550,20 +560,6 @@ export default function Inicio() {
         .ini-ind-val--currency {
           font-size: 1.1rem;
         }
-
-        /* Mini-card branco com ícone (canto superior direito) */
-        .ini-ind-sticker {
-          position: absolute;
-          top: 8px; right: 8px;
-          width: 34px; height: 34px;
-          background: #fff;
-          border-radius: 10px;
-          display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 3px 8px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.08);
-          transform: rotate(4deg);
-          transition: transform 0.2s ease;
-        }
-        .ini-ind-card:hover .ini-ind-sticker { transform: rotate(-2deg) scale(1.05); }
 
         /* ── Sections ── */
         .ini-section {
