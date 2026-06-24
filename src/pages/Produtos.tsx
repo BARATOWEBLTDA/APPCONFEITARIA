@@ -5,6 +5,7 @@ import { ImageCropper } from "@/components/ui/ImageCropper";
 import EmptyDoo from "@/components/EmptyDoo";
 import BtnNovo from "@/components/BtnNovo";
 import Categorias from "@/pages/Categorias";
+import QuickAddInsumo from "@/components/QuickAddInsumo";
 
 type Tamanho = { label: string; preco: number };
 
@@ -107,14 +108,8 @@ export default function Produtos() {
   const [buscaInsumo, setBuscaInsumo] = useState("");
   // Modal dedicado da ficha técnica
   const [fichaModalOpen, setFichaModalOpen] = useState(false);
-  // Cadastro rápido de insumo dentro do modal da ficha
-  type QuickInsumoForm = { nome: string; unidade: string; valor_compra: string; qtd_embalagem: string; imagem_url: string };
-  const EMPTY_QUICK: QuickInsumoForm = { nome: "", unidade: "g", valor_compra: "", qtd_embalagem: "1", imagem_url: "" };
   const [showQuickAdd, setShowQuickAdd] = useState(false);
-  const [quickInsumo, setQuickInsumo] = useState<QuickInsumoForm>(EMPTY_QUICK);
-  const [quickImagens, setQuickImagens] = useState<string[]>([]);
-  const [quickBuscandoImg, setQuickBuscandoImg] = useState(false);
-  const [quickSaving, setQuickSaving] = useState(false);
+  const [quickAddInitialName, setQuickAddInitialName] = useState("");
 
   const imgRef = useRef<HTMLInputElement>(null);
   const img2Ref = useRef<HTMLInputElement>(null);
@@ -199,7 +194,7 @@ export default function Produtos() {
       }
     }
   };
-  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setQuickInsumo(EMPTY_QUICK); setQuickImagens([]); setBuscaInsumo(""); };
+  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: number = 0) => {
     const file = e.target.files?.[0];
@@ -315,59 +310,16 @@ export default function Produtos() {
     setFichaTecnica(prev => prev.map(f => f.insumo_id === id ? { ...f, quantidade: qtd } : f));
   };
 
-  // Cadastro rápido de insumo (dentro do modal da ficha)
+  // Cadastro rápido de insumo (delega ao componente QuickAddInsumo)
   const abrirQuickAdd = (nomeInicial?: string) => {
-    setQuickInsumo({ ...EMPTY_QUICK, nome: nomeInicial || "" });
-    setQuickImagens([]);
+    setQuickAddInitialName(nomeInicial || "");
     setShowQuickAdd(true);
   };
   const fecharQuickAdd = () => {
     setShowQuickAdd(false);
-    setQuickInsumo(EMPTY_QUICK);
-    setQuickImagens([]);
+    setQuickAddInitialName("");
   };
-
-  // Auto-busca de imagem com debounce (800ms) quando nome tem 3+ chars
-  useEffect(() => {
-    if (!showQuickAdd) return;
-    const termo = quickInsumo.nome.trim();
-    if (termo.length < 3) { setQuickImagens([]); return; }
-    const t = setTimeout(async () => {
-      setQuickBuscandoImg(true);
-      try {
-        const res = await fetch(`/api/buscar-imagem?q=${encodeURIComponent(termo)}`);
-        const data = await res.json();
-        if (data.images) setQuickImagens(data.images.slice(0, 6));
-      } catch (e) { console.error(e); }
-      setQuickBuscandoImg(false);
-    }, 800);
-    return () => clearTimeout(t);
-  }, [quickInsumo.nome, showQuickAdd]);
-
-  const salvarInsumoRapido = async () => {
-    if (!userId || !quickInsumo.nome.trim()) { alert("Informe o nome do insumo"); return; }
-    const valor = parseFloat(quickInsumo.valor_compra.replace(",", ".")) || 0;
-    const qtdEmb = parseFloat(quickInsumo.qtd_embalagem.replace(",", ".")) || 1;
-    if (valor <= 0) { alert("Informe o valor da compra"); return; }
-    const custoUnit = valor / qtdEmb;
-    setQuickSaving(true);
-    const payload: any = {
-      user_id: userId,
-      nome: quickInsumo.nome.trim(),
-      categoria: "Ingredientes",
-      unidade: quickInsumo.unidade,
-      quantidade_estoque: 0,
-      estoque_minimo: 0,
-      valor_compra: valor,
-      qtd_embalagem: qtdEmb,
-      custo_unitario: custoUnit,
-      imagem_url: quickInsumo.imagem_url || "",
-      updated_at: new Date().toISOString(),
-    };
-    const { data, error } = await supabase.from("insumos").insert(payload).select().single();
-    setQuickSaving(false);
-    if (error || !data) { alert("Erro ao salvar insumo"); return; }
-    const novoInsumo: Insumo = { id: data.id, nome: data.nome, unidade: data.unidade, custo_unitario: data.custo_unitario, imagem_url: data.imagem_url };
+  const handleInsumoSalvoRapido = (novoInsumo: Insumo) => {
     setInsumosCadastrados(prev => [...prev, novoInsumo]);
     setFichaTecnica(prev => [...prev, { insumo_id: novoInsumo.id, quantidade: 0, insumo: novoInsumo }]);
     fecharQuickAdd();
@@ -1262,80 +1214,12 @@ export default function Produtos() {
                   )}
                 </div>
               ) : (
-                <div className="ficha-modal-quick">
-                  <div className="ficha-modal-quick-head">
-                    <span>⚡ Cadastro rápido de insumo</span>
-                    <button type="button" className="ficha-modal-quick-cancel" onClick={fecharQuickAdd}>Cancelar</button>
-                  </div>
-                  <input
-                    type="text"
-                    className="ficha-modal-quick-input"
-                    placeholder="Nome do insumo (ex: Leite condensado Moça)"
-                    value={quickInsumo.nome}
-                    onChange={e => setQuickInsumo(q => ({ ...q, nome: e.target.value }))}
-                    autoFocus
-                  />
-
-                  {/* Auto-busca de imagem */}
-                  {quickInsumo.nome.trim().length >= 3 && (
-                    <div className="ficha-modal-quick-imgs">
-                      <div className="ficha-modal-quick-imgs-label">
-                        {quickBuscandoImg ? "🔄 Buscando imagens..." : quickImagens.length > 0 ? "Escolha uma imagem (opcional):" : "Nenhuma imagem encontrada"}
-                      </div>
-                      {quickImagens.length > 0 && (
-                        <div className="ficha-modal-quick-imgs-grid">
-                          {quickImagens.map((url, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              className={`ficha-modal-quick-img ${quickInsumo.imagem_url === url ? "ficha-modal-quick-img--selected" : ""}`}
-                              onClick={() => setQuickInsumo(q => ({ ...q, imagem_url: q.imagem_url === url ? "" : url }))}
-                            >
-                              <img src={url} alt="" />
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="ficha-modal-quick-grid">
-                    <div className="ficha-modal-quick-field">
-                      <label>Unidade</label>
-                      <select value={quickInsumo.unidade} onChange={e => setQuickInsumo(q => ({ ...q, unidade: e.target.value }))}>
-                        <option value="g">g</option>
-                        <option value="kg">kg</option>
-                        <option value="ml">ml</option>
-                        <option value="L">L</option>
-                        <option value="un">un</option>
-                        <option value="dz">dz</option>
-                      </select>
-                    </div>
-                    <div className="ficha-modal-quick-field">
-                      <label>Valor da compra (R$)</label>
-                      <input type="text" inputMode="decimal" placeholder="0,00" value={quickInsumo.valor_compra} onChange={e => setQuickInsumo(q => ({ ...q, valor_compra: e.target.value }))} />
-                    </div>
-                    <div className="ficha-modal-quick-field">
-                      <label>Qtd da embalagem</label>
-                      <input type="text" inputMode="decimal" placeholder="1" value={quickInsumo.qtd_embalagem} onChange={e => setQuickInsumo(q => ({ ...q, qtd_embalagem: e.target.value }))} />
-                    </div>
-                  </div>
-
-                  {(() => {
-                    const v = parseFloat(quickInsumo.valor_compra.replace(",", ".")) || 0;
-                    const q = parseFloat(quickInsumo.qtd_embalagem.replace(",", ".")) || 1;
-                    const cu = v > 0 ? v / q : 0;
-                    return cu > 0 ? (
-                      <div className="ficha-modal-quick-preview">
-                        Custo unitário: <strong>R$ {cu.toFixed(4)} / {quickInsumo.unidade}</strong>
-                      </div>
-                    ) : null;
-                  })()}
-
-                  <button type="button" className="ficha-modal-quick-save" onClick={salvarInsumoRapido} disabled={quickSaving}>
-                    {quickSaving ? "Salvando..." : "Salvar e adicionar à ficha"}
-                  </button>
-                </div>
+                <QuickAddInsumo
+                  userId={userId}
+                  initialName={quickAddInitialName}
+                  onSaved={handleInsumoSalvoRapido}
+                  onCancel={fecharQuickAdd}
+                />
               )}
             </div>
 
@@ -2049,80 +1933,6 @@ export default function Produtos() {
         .ficha-modal-add-novo:hover { background:#FFF5F9; }
         .ficha-modal-add-novo strong { font-weight:800; }
         .ficha-modal-add-novo--solo { margin-top:0.55rem; width:100%; text-align:center; }
-
-        /* Quick add form */
-        .ficha-modal-quick {
-          background:#fff;
-          border:1.5px solid var(--primary, #FF6FA9);
-          border-radius:14px; padding:0.9rem;
-          display:flex; flex-direction:column; gap:0.7rem;
-        }
-        .ficha-modal-quick-head {
-          display:flex; justify-content:space-between; align-items:center;
-          font-size:0.82rem; font-weight:700; color:var(--primary, #FF6FA9);
-        }
-        .ficha-modal-quick-cancel {
-          background:transparent; border:none; cursor:pointer;
-          font-size:0.76rem; color:var(--text-muted, #9CA3AF); font-weight:600;
-        }
-        .ficha-modal-quick-cancel:hover { color:var(--text-secondary, #6B7280); }
-        .ficha-modal-quick-input {
-          width:100%; padding:0.65rem 0.85rem;
-          border:1.5px solid var(--border, #E5E7EB);
-          border-radius:10px; font-size:0.88rem; outline:none;
-        }
-        .ficha-modal-quick-input:focus { border-color:var(--primary, #FF6FA9); }
-        .ficha-modal-quick-imgs { display:flex; flex-direction:column; gap:0.45rem; }
-        .ficha-modal-quick-imgs-label {
-          font-size:0.72rem; font-weight:600;
-          color:var(--text-secondary, #6B7280);
-        }
-        .ficha-modal-quick-imgs-grid {
-          display:grid; grid-template-columns:repeat(6, 1fr); gap:0.4rem;
-        }
-        .ficha-modal-quick-img {
-          aspect-ratio:1; border:2px solid var(--border, #E5E7EB);
-          border-radius:8px; padding:0; overflow:hidden;
-          background:#fff; cursor:pointer; transition:all 0.15s ease;
-        }
-        .ficha-modal-quick-img img { width:100%; height:100%; object-fit:cover; display:block; }
-        .ficha-modal-quick-img:hover { border-color:var(--primary, #FF6FA9); }
-        .ficha-modal-quick-img--selected {
-          border-color:var(--primary, #FF6FA9);
-          box-shadow:0 0 0 2px rgba(255, 111, 169, 0.2);
-        }
-        .ficha-modal-quick-grid {
-          display:grid; grid-template-columns:0.7fr 1fr 1fr; gap:0.5rem;
-        }
-        .ficha-modal-quick-field { display:flex; flex-direction:column; gap:3px; }
-        .ficha-modal-quick-field label {
-          font-size:0.66rem; font-weight:700;
-          color:var(--text-muted, #9CA3AF);
-          text-transform:uppercase; letter-spacing:0.3px;
-        }
-        .ficha-modal-quick-field input,
-        .ficha-modal-quick-field select {
-          padding:0.5rem 0.6rem;
-          border:1.5px solid var(--border, #E5E7EB);
-          border-radius:9px; font-size:0.82rem; outline:none;
-          background:#fff;
-        }
-        .ficha-modal-quick-field input:focus,
-        .ficha-modal-quick-field select:focus { border-color:var(--primary, #FF6FA9); }
-        .ficha-modal-quick-preview {
-          padding:0.5rem 0.75rem; background:#FFF5F9;
-          border-radius:9px; font-size:0.78rem;
-          color:var(--text-secondary, #6B7280);
-        }
-        .ficha-modal-quick-preview strong { color:var(--primary, #FF6FA9); font-weight:800; }
-        .ficha-modal-quick-save {
-          padding:0.75rem; background:var(--primary, #FF6FA9);
-          color:#fff; border:none; border-radius:10px;
-          font-size:0.88rem; font-weight:700; cursor:pointer;
-          transition:opacity 0.15s ease;
-        }
-        .ficha-modal-quick-save:hover:not(:disabled) { opacity:0.9; }
-        .ficha-modal-quick-save:disabled { opacity:0.6; cursor:not-allowed; }
 
         /* Footer */
         .ficha-modal-footer {
