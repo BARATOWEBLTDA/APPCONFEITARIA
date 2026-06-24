@@ -4,14 +4,14 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
 import {
-  Share, Plus, ClipboardText, CalendarDots, Package,
-  Warning, Cake, TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
+  Share, Plus, ClipboardText, CalendarDots,
+  Cake, TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
 
 interface AlertaCard {
-  tipo: "pedido" | "entrega" | "estoque" | "aniversario";
+  tipo: "pedido" | "entrega" | "aniversario";
   count: number;
   texto: string;
   detalhe?: string;
@@ -43,7 +43,6 @@ export default function Inicio() {
   const [counts, setCounts] = useState({
     pedidosPendentes: 0,
     entregasHoje: 0,
-    estoqueBaixo: 0,
     aniversariantes: 0,
   });
   const [aniversariantesDetalhe, setAniversariantesDetalhe] = useState<{ nome: string; dias: number } | null>(null);
@@ -90,7 +89,6 @@ export default function Inicio() {
       const [
         pedidosPendentesRes,
         entregasHojeRes,
-        insumosBaixoRes,
         clientesRes,
         pedidosSemanaRes,
         pedidosSemanaAntRes,
@@ -109,11 +107,6 @@ export default function Inicio() {
           .eq("user_id", userId)
           .eq("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS),
-        // Insumos com estoque baixo (cliente-side filter porque Postgres não compara colunas via .lte direto)
-        supabase
-          .from("insumos")
-          .select("quantidade_estoque, estoque_minimo")
-          .eq("user_id", userId),
         // Clientes com data de nascimento — pra calcular aniversariantes
         supabase
           .from("clientes")
@@ -144,12 +137,6 @@ export default function Inicio() {
           .neq("status", "cancelado"),
       ]);
 
-      // Estoque baixo (comparação client-side)
-      const estoqueBaixo = (insumosBaixoRes.data || [])
-        .filter((i: any) =>
-          Number(i.quantidade_estoque) <= Number(i.estoque_minimo) && Number(i.estoque_minimo) > 0
-        ).length;
-
       // Aniversariantes nos próximos 7 dias
       const aniversariantes = calcularAniversariantes(clientesRes.data || []);
       const proxAniv = aniversariantes[0] || null;
@@ -166,7 +153,6 @@ export default function Inicio() {
       setCounts({
         pedidosPendentes: pedidosPendentesRes.count || 0,
         entregasHoje: entregasHojeRes.count || 0,
-        estoqueBaixo,
         aniversariantes: aniversariantes.length,
       });
       setAniversariantesDetalhe(proxAniv);
@@ -264,13 +250,6 @@ export default function Inicio() {
       onClick: () => navigate("/agenda"),
     },
     {
-      tipo: "estoque",
-      count: counts.estoqueBaixo,
-      texto: counts.estoqueBaixo === 1 ? "ingrediente em falta" : "ingredientes em falta",
-      cta: "Ver ingredientes",
-      onClick: () => navigate("/insumos"),
-    },
-    {
       tipo: "aniversario",
       count: counts.aniversariantes,
       texto: aniversariantesDetalhe
@@ -317,13 +296,13 @@ export default function Inicio() {
           </div>
         </button>
 
-        <button className="ini-ind-card" onClick={() => navigate("/insumos")}>
-          <div className="ini-ind-icon" style={{ background: "#FEF3C7", color: "#A16207" }}>
-            <Package size={22} weight="duotone" />
+        <button className="ini-ind-card" onClick={() => navigate("/clientes")}>
+          <div className="ini-ind-icon" style={{ background: "#FCE7F3", color: "#BE185D" }}>
+            <Cake size={22} weight="duotone" />
           </div>
           <div className="ini-ind-body">
-            <span className="ini-ind-val">{counts.estoqueBaixo}</span>
-            <span className="ini-ind-label">Estoque</span>
+            <span className="ini-ind-val">{counts.aniversariantes}</span>
+            <span className="ini-ind-label">Aniversários</span>
           </div>
         </button>
       </div>
@@ -353,7 +332,6 @@ export default function Inicio() {
                 <span className="ini-alerta-icon">
                   {a.tipo === "pedido"     && <ClipboardText size={18} weight="fill" />}
                   {a.tipo === "entrega"    && <CalendarDots  size={18} weight="fill" />}
-                  {a.tipo === "estoque"    && <Warning       size={18} weight="fill" />}
                   {a.tipo === "aniversario"&& <Cake          size={18} weight="fill" />}
                 </span>
                 <div className="ini-alerta-body">
@@ -570,7 +548,6 @@ export default function Inicio() {
         .ini-alerta:hover { transform: translateX(2px); }
         .ini-alerta--pedido      { border-left-color: #B91C1C; }
         .ini-alerta--entrega     { border-left-color: #1D4ED8; }
-        .ini-alerta--estoque     { border-left-color: #A16207; }
         .ini-alerta--aniversario { border-left-color: #EC4899; }
 
         .ini-alerta-icon {
@@ -580,7 +557,6 @@ export default function Inicio() {
         }
         .ini-alerta--pedido      .ini-alerta-icon { background: #FEE2E2; color: #B91C1C; }
         .ini-alerta--entrega     .ini-alerta-icon { background: #DBEAFE; color: #1D4ED8; }
-        .ini-alerta--estoque     .ini-alerta-icon { background: #FEF3C7; color: #A16207; }
         .ini-alerta--aniversario .ini-alerta-icon { background: #FCE7F3; color: #EC4899; }
 
         .ini-alerta-body { flex: 1; min-width: 0; }
