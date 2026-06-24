@@ -104,6 +104,54 @@
 
   /* Fonte */
   --font-base: 'Geist', sans-serif;
+
+  /* ─────────────────────────────────────────────
+     TIPOGRAFIA — SISTEMA
+     Tokens compartilhados entre temas claro/escuro.
+     Tamanhos, pesos, line-heights e letter-spacings
+     não mudam por tema, então ficam só aqui.
+     ───────────────────────────────────────────── */
+
+  /* ── Primitivos: tamanhos (base 16px) ── */
+  --text-xs:   0.75rem;    /* 12px */
+  --text-sm:   0.875rem;   /* 14px */
+  --text-md:   1rem;       /* 16px */
+  --text-lg:   1.125rem;   /* 18px */
+  --text-xl:   1.25rem;    /* 20px */
+  --text-2xl:  1.5rem;     /* 24px */
+  --text-3xl:  1.75rem;    /* 28px */
+
+  /* ── Primitivos: pesos ── */
+  --fw-regular:  400;
+  --fw-medium:   500;
+  --fw-semibold: 600;
+  --fw-bold:     700;
+  --fw-black:    800;
+
+  /* ── Primitivos: altura de linha ── */
+  --lh-tight:    1.2;   /* títulos */
+  --lh-normal:   1.4;   /* labels, botões, textos curtos */
+  --lh-relaxed:  1.6;   /* parágrafos longos */
+
+  /* ── Primitivos: espaçamento entre letras ── */
+  --ls-tight:    -0.01em;
+  --ls-normal:   0;
+  --ls-wide:     0.04em;   /* labels uppercase */
+
+  /* ── Semânticos: papéis na interface ── */
+  --font-page-title:     var(--text-2xl);   /* h1 das páginas */
+  --font-page-subtitle:  var(--text-sm);    /* "X insumos cadastrados" */
+  --font-modal-title:    var(--text-lg);    /* h2 dentro de modais */
+  --font-section-label:  var(--text-xs);    /* "DADOS BÁSICOS" uppercase */
+  --font-card-title:     var(--text-md);    /* título de card */
+  --font-field-label:    var(--text-sm);    /* label acima do input */
+  --font-input:          var(--text-md);    /* valor digitado (16px = sem zoom iOS) */
+  --font-body:           var(--text-md);    /* parágrafos */
+  --font-helper:         var(--text-xs);    /* texto auxiliar embaixo do input */
+  --font-button:         var(--text-sm);    /* texto de botão */
+  --font-caption:        var(--text-xs);    /* legendas, metadados */
+  --font-stat-value:     var(--text-2xl);   /* números grandes de dashboard */
+  --font-stat-label:     var(--text-xs);    /* legenda dos números */
 }
 
 /* ── Tema Escuro ── */
