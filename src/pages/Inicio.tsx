@@ -277,14 +277,15 @@ export default function Inicio() {
       count: counts.aniversariantes,
       texto: (() => {
         if (!aniversariantesDetalhe) {
-          return counts.aniversariantes === 1 ? "aniversariante na próxima semana" : "aniversariantes na próxima semana";
+          return counts.aniversariantes === 1 ? "aniversariante em 7 dias" : "aniversariantes em 7 dias";
         }
+        const primeiroNome = aniversariantesDetalhe.nome.split(" ")[0];
         const quando = aniversariantesDetalhe.dias === 0 ? "hoje" : aniversariantesDetalhe.dias === 1 ? "amanhã" : `em ${aniversariantesDetalhe.dias} dias`;
         if (counts.aniversariantes === 1) {
-          return `${aniversariantesDetalhe.nome} faz aniversário ${quando}`;
+          return `${primeiroNome} faz aniversário ${quando}`;
         }
         const restantes = counts.aniversariantes - 1;
-        return `${aniversariantesDetalhe.nome} e +${restantes} fazem aniversário nos próximos 7 dias`;
+        return `${primeiroNome} e +${restantes} fazem aniversário em 7 dias`;
       })(),
       cta: "Ver clientes",
       onClick: () => navigate("/clientes"),
