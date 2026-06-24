@@ -338,7 +338,7 @@ export default function Inicio() {
         <div className="ini-actions">
           <button className="ini-action ini-action--primary" onClick={handleCompartilhar}>
             <Share size={18} weight="bold" />
-            <span>{copiado ? "Link copiado!" : "Compartilhar cardápio"}</span>
+            <span>{copiado ? "Link copiado!" : "Compartilhar Cardápio"}</span>
           </button>
           <button className="ini-action" onClick={() => navigate("/pedidos/novo")}>
             <Plus size={18} weight="bold" />
@@ -595,11 +595,11 @@ export default function Inicio() {
         }
         .ini-action:hover { border-color: #3d1a24; transform: translateY(-1px); }
         .ini-action--primary {
-          background: #3d1a24; color: #fff;
-          border-color: #3d1a24;
-          box-shadow: 0 4px 12px rgba(61,26,36,0.2);
+          background: var(--primary, #FF6FA9); color: #fff;
+          border-color: var(--primary, #FF6FA9);
+          box-shadow: 0 4px 12px rgba(255, 111, 169, 0.25);
         }
-        .ini-action--primary:hover { background: #6E3548; }
+        .ini-action--primary:hover { background: #FF5499; border-color: #FF5499; }
 
         /* ── Alertas ── */
         .ini-alertas {
