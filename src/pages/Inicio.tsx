@@ -274,9 +274,17 @@ export default function Inicio() {
     {
       tipo: "aniversario",
       count: counts.aniversariantes,
-      texto: aniversariantesDetalhe
-        ? `${aniversariantesDetalhe.nome} faz aniversário ${aniversariantesDetalhe.dias === 0 ? "hoje" : aniversariantesDetalhe.dias === 1 ? "amanhã" : `em ${aniversariantesDetalhe.dias} dias`}`
-        : counts.aniversariantes === 1 ? "aniversariante na próxima semana" : "aniversariantes na próxima semana",
+      texto: (() => {
+        if (!aniversariantesDetalhe) {
+          return counts.aniversariantes === 1 ? "aniversariante na próxima semana" : "aniversariantes na próxima semana";
+        }
+        const quando = aniversariantesDetalhe.dias === 0 ? "hoje" : aniversariantesDetalhe.dias === 1 ? "amanhã" : `em ${aniversariantesDetalhe.dias} dias`;
+        if (counts.aniversariantes === 1) {
+          return `${aniversariantesDetalhe.nome} faz aniversário ${quando}`;
+        }
+        const restantes = counts.aniversariantes - 1;
+        return `${aniversariantesDetalhe.nome} e +${restantes} fazem aniversário nos próximos 7 dias`;
+      })(),
       cta: "Ver clientes",
       onClick: () => navigate("/clientes"),
     },
@@ -357,7 +365,7 @@ export default function Inicio() {
                 <span className="ini-alerta-icon">
                   {a.tipo === "pedido"     && <ClipboardText size={18} weight="fill" />}
                   {a.tipo === "entrega"    && <CalendarDots  size={18} weight="fill" />}
-                  {a.tipo === "aniversario"&& <img src="/Sistema/aniversario.png" alt="" width={22} height={22} style={{ objectFit: "contain" }} />}
+                  {a.tipo === "aniversario"&& <img src="/Sistema/aniversario.png" alt="" width={28} height={28} style={{ objectFit: "contain" }} />}
                 </span>
                 <div className="ini-alerta-body">
                   <span className="ini-alerta-texto">
