@@ -265,15 +265,9 @@ export default function Insumos() {
             image="ingredientes.png"
             title="Vamos cadastrar seu primeiro ingrediente?"
             description="Controle estoque, valores e validade — e nunca mais seja pega de surpresa por um ingrediente em falta."
-            actionLabel="Cadastrar primeiro ingrediente"
-            onAction={openNovo}
+            actionLabel="Cadastrar insumo"
+            onAction={() => setShowQuickAdd(true)}
           />
-
-          <div className="ins-empty-rapido">
-            <button onClick={() => setShowQuickAdd(true)}>
-              ⚡ Ou cadastre rapidinho (só nome, valor e qtd)
-            </button>
-          </div>
 
           {showQuickAdd && userId && (
             <div className="ins-overlay" onClick={() => setShowQuickAdd(false)}>
@@ -301,12 +295,7 @@ export default function Insumos() {
           <h1 className="ins-title">Ingredientes</h1>
           <p className="ins-sub">{insumos.length} {insumos.length === 1 ? "ingrediente cadastrado" : "ingredientes cadastrados"}</p>
         </div>
-        <div className="ins-header-actions">
-          <button className="ins-btn-rapido" onClick={() => setShowQuickAdd(true)} title="Cadastro rápido (só o essencial)">
-            ⚡ Rápido
-          </button>
-          <BtnNovo label="Novo ingrediente" onClick={openNovo} />
-        </div>
+        <BtnNovo label="Cadastrar insumo" onClick={() => setShowQuickAdd(true)} />
       </div>
 
       {/* Métricas: 1 herói + 2 compactos clicáveis (mobile) / 4 em linha (desktop) */}
@@ -1358,7 +1347,7 @@ function Styles() {
   return (
     <style>{`
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-      .ins-root { font-family:'Geist', sans-serif; display:flex; flex-direction:column; gap:1rem; padding-top:1rem; padding-bottom:2rem; }
+      .ins-root { font-family:'Geist', sans-serif; display:flex; flex-direction:column; gap:1.25rem; padding-top:2rem; padding-bottom:2rem; }
       .ins-desktop { max-width:100%; }
       .ins-header { display:flex; align-items:center; justify-content:space-between; }
       .ins-title { font-size:1.6rem; font-weight:800; color:var(--text-title, #1F2937); margin:0; }
@@ -1558,7 +1547,7 @@ function Styles() {
 
       /* ─── MOBILE ─── */
       @media (max-width:768px) {
-        .ins-root { padding-bottom:6rem; gap:0.85rem; }
+        .ins-root { padding-top:1.5rem; padding-bottom:6rem; gap:1rem; }
         .ins-title { font-size:1.35rem; }
         .ins-sub { font-size:0.78rem; }
 
@@ -1756,33 +1745,6 @@ function Styles() {
       .ins-overlay { position:fixed; inset:0; z-index:200; background:var(--bg-overlay); display:flex; align-items:center; justify-content:center; padding:1rem; }
       .ins-modal { background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.5rem; width:100%; max-width:360px; }
       .ins-quick-modal { background:var(--bg-card, #FFFFFF); border-radius:18px; padding:1rem; width:100%; max-width:480px; max-height:90vh; overflow-y:auto; }
-      .ins-header-actions { display:flex; align-items:center; gap:0.5rem; flex-shrink:0; }
-      .ins-btn-rapido {
-        padding:0.6rem 0.9rem;
-        background:#FFF5F9;
-        border:1.5px solid var(--primary, #FF6FA9);
-        border-radius:10px;
-        color:var(--primary, #FF6FA9);
-        font-family:'Geist', sans-serif;
-        font-size:0.82rem; font-weight:700;
-        cursor:pointer;
-        white-space:nowrap;
-        transition:all 0.15s ease;
-      }
-      .ins-btn-rapido:hover { background:var(--primary, #FF6FA9); color:#fff; }
-      @media (max-width:520px) {
-        .ins-btn-rapido { padding:0.5rem 0.7rem; font-size:0.76rem; }
-      }
-      .ins-empty-rapido { display:flex; justify-content:center; margin-top:0.5rem; }
-      .ins-empty-rapido button {
-        background:transparent; border:none; cursor:pointer;
-        color:var(--primary, #FF6FA9);
-        font-family:'Geist', sans-serif;
-        font-size:0.85rem; font-weight:600;
-        padding:0.5rem 0.85rem; border-radius:8px;
-        transition:background 0.15s ease;
-      }
-      .ins-empty-rapido button:hover { background:#FFF5F9; }
       .ins-btn-del-confirm { flex:1; padding:0.75rem; background:var(--error, #EF4444); color:var(--text-inverse, #FFFFFF); border:none; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.9rem; font-weight:700; cursor:pointer; }
       .ins-spinner { width:20px; height:20px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:insSpin 0.7s linear infinite; display:inline-block; }
       @keyframes insSpin { to { transform:rotate(360deg); } }
