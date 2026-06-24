@@ -1142,37 +1142,42 @@ export default function Produtos() {
 
       {/* ── Modal dedicado da Ficha Técnica (overlay duplo, fica por cima do modal do produto) ── */}
       {modal && fichaModalOpen && (
-        <div className="ficha-modal-overlay" onClick={() => { if (!showQuickAdd) setFichaModalOpen(false); }}>
+        <div className="ficha-modal-overlay">
           <div className="ficha-modal" onClick={e => e.stopPropagation()}>
             {/* Header com imagem do produto + métricas */}
             <div className="ficha-modal-header">
-              <div className="ficha-modal-hero">
-                {form.imagem_url
-                  ? <img src={form.imagem_url} alt={form.nome} className="ficha-modal-hero-img" />
-                  : <div className="ficha-modal-hero-img ficha-modal-hero-img--placeholder">🧁</div>}
-                <div className="ficha-modal-hero-info">
-                  <p className="ficha-modal-hero-label">Ficha técnica de</p>
-                  <h2 className="ficha-modal-hero-nome">{form.nome || "Novo produto"}</h2>
-                  <div className="ficha-modal-hero-metricas">
-                    <div className="ficha-modal-metric">
-                      <span>CMV</span>
-                      <strong>R$ {cmvProduto.toFixed(2)}</strong>
-                    </div>
-                    <div className="ficha-modal-metric">
-                      <span>Lucro</span>
-                      <strong>R$ {(form.preco_normal - cmvProduto).toFixed(2)}</strong>
-                    </div>
-                    <div className={`ficha-modal-metric ficha-modal-metric--margem ficha-modal-metric--${margemProduto >= 50 ? "alto" : margemProduto >= 25 ? "medio" : "baixo"}`}>
-                      <span>Margem</span>
-                      <strong>{margemProduto.toFixed(0)}%</strong>
+              <div className="ficha-modal-header-inner">
+                <button className="ficha-modal-back" onClick={() => setFichaModalOpen(false)} aria-label="Voltar">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                  <span>Voltar</span>
+                </button>
+                <div className="ficha-modal-hero">
+                  {form.imagem_url
+                    ? <img src={form.imagem_url} alt={form.nome} className="ficha-modal-hero-img" />
+                    : <div className="ficha-modal-hero-img ficha-modal-hero-img--placeholder">🧁</div>}
+                  <div className="ficha-modal-hero-info">
+                    <p className="ficha-modal-hero-label">Ficha técnica de</p>
+                    <h2 className="ficha-modal-hero-nome">{form.nome || "Novo produto"}</h2>
+                    <div className="ficha-modal-hero-metricas">
+                      <div className="ficha-modal-metric">
+                        <span>CMV</span>
+                        <strong>R$ {cmvProduto.toFixed(2)}</strong>
+                      </div>
+                      <div className="ficha-modal-metric">
+                        <span>Lucro</span>
+                        <strong>R$ {(form.preco_normal - cmvProduto).toFixed(2)}</strong>
+                      </div>
+                      <div className={`ficha-modal-metric ficha-modal-metric--margem ficha-modal-metric--${margemProduto >= 50 ? "alto" : margemProduto >= 25 ? "medio" : "baixo"}`}>
+                        <span>Margem</span>
+                        <strong>{margemProduto.toFixed(0)}%</strong>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <button className="ficha-modal-close" onClick={() => setFichaModalOpen(false)} aria-label="Fechar">✕</button>
+                {margemProduto < 25 && form.preco_normal > 0 && fichaTecnica.length > 0 && (
+                  <p className="ficha-modal-alerta">⚠️ Margem baixa. Considere reajustar o preço ou revisar a ficha.</p>
+                )}
               </div>
-              {margemProduto < 25 && form.preco_normal > 0 && fichaTecnica.length > 0 && (
-                <p className="ficha-modal-alerta">⚠️ Margem baixa. Considere reajustar o preço ou revisar a ficha.</p>
-              )}
             </div>
 
             {/* Corpo: lista de ingredientes + adicionar */}
@@ -1828,45 +1833,60 @@ export default function Produtos() {
         .ficha-trigger-badge--medio { background:#fef3c7; color:#a16207; }
         .ficha-trigger-badge--baixo { background:#fee2e2; color:#b91c1c; }
 
-        /* ── Modal dedicado da ficha técnica (overlay duplo) ── */
+        /* ── Ficha técnica em TELA CHEIA (substitui visualmente a tela) ── */
         .ficha-modal-overlay {
           position:fixed; inset:0; z-index:1100;
-          background:rgba(17, 24, 39, 0.55); backdrop-filter:blur(4px);
-          display:flex; align-items:flex-end; justify-content:center;
-          animation:fichaFadeIn 0.18s ease;
+          background:#fff;
+          display:flex; flex-direction:column;
+          animation:fichaFadeIn 0.2s ease;
         }
         @keyframes fichaFadeIn { from { opacity:0; } to { opacity:1; } }
         .ficha-modal {
-          width:100%; max-width:560px; max-height:92vh;
-          background:#fff; border-radius:20px 20px 0 0;
+          width:100%; height:100%;
+          background:#fff;
           display:flex; flex-direction:column;
-          box-shadow:0 -8px 40px rgba(0,0,0,0.18);
-          animation:fichaSlideUp 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+          animation:fichaSlideIn 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @keyframes fichaSlideUp { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
-        @media (min-width:640px) {
-          .ficha-modal-overlay { align-items:center; }
-          .ficha-modal { border-radius:20px; max-height:88vh; }
-        }
+        @keyframes fichaSlideIn { from { transform:translateX(20px); opacity:0; } to { transform:translateX(0); opacity:1; } }
 
         /* Header com imagem grande do produto */
         .ficha-modal-header {
-          padding:1.1rem 1.1rem 0.85rem;
+          padding:1.1rem 1.1rem 0.95rem;
           background:linear-gradient(180deg, #FFF5F9 0%, #fff 100%);
-          border-radius:20px 20px 0 0;
           border-bottom:1px solid var(--border, #E5E7EB);
+          flex-shrink:0;
         }
-        .ficha-modal-hero { display:flex; gap:0.9rem; align-items:flex-start; position:relative; }
+        @media (min-width:640px) {
+          .ficha-modal-header { padding:1.4rem 2rem 1.1rem; }
+        }
+        .ficha-modal-header-inner {
+          max-width:720px; margin:0 auto; width:100%;
+        }
+        .ficha-modal-back {
+          display:inline-flex; align-items:center; gap:6px;
+          background:transparent; border:none; cursor:pointer;
+          padding:0.4rem 0.55rem 0.4rem 0;
+          margin-bottom:0.75rem;
+          color:var(--text-secondary, #6B7280);
+          font-size:0.85rem; font-weight:600;
+          border-radius:8px;
+          transition:color 0.15s ease;
+        }
+        .ficha-modal-back:hover { color:var(--primary, #FF6FA9); }
+        .ficha-modal-hero { display:flex; gap:0.9rem; align-items:flex-start; }
         .ficha-modal-hero-img {
           width:88px; height:88px; border-radius:14px;
           object-fit:cover; flex-shrink:0;
           box-shadow:0 4px 12px rgba(0,0,0,0.08);
         }
+        @media (min-width:640px) {
+          .ficha-modal-hero-img { width:104px; height:104px; }
+        }
         .ficha-modal-hero-img--placeholder {
           background:#fff; display:flex; align-items:center; justify-content:center;
           font-size:2.4rem;
         }
-        .ficha-modal-hero-info { flex:1; min-width:0; padding-right:2rem; }
+        .ficha-modal-hero-info { flex:1; min-width:0; }
         .ficha-modal-hero-label {
           margin:0; font-size:0.68rem; text-transform:uppercase;
           letter-spacing:0.5px; color:var(--text-muted, #9CA3AF); font-weight:700;
@@ -1897,16 +1917,6 @@ export default function Produtos() {
         .ficha-modal-metric--medio strong { color:#a16207; }
         .ficha-modal-metric--baixo { background:#fee2e2; border-color:#fecaca; }
         .ficha-modal-metric--baixo strong { color:#b91c1c; }
-        .ficha-modal-close {
-          position:absolute; top:-4px; right:-4px;
-          width:32px; height:32px; border-radius:50%;
-          background:#fff; border:1px solid var(--border, #E5E7EB);
-          color:var(--text-secondary, #6B7280);
-          font-size:0.9rem; cursor:pointer;
-          display:flex; align-items:center; justify-content:center;
-          transition:all 0.15s ease;
-        }
-        .ficha-modal-close:hover { background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
         .ficha-modal-alerta {
           margin:0.7rem 0 0; padding:0.5rem 0.8rem;
           background:#fef3c7; color:#92400e;
@@ -1917,6 +1927,9 @@ export default function Produtos() {
         .ficha-modal-body {
           flex:1; overflow-y:auto; padding:1rem 1.1rem;
           display:flex; flex-direction:column; gap:0.85rem;
+        }
+        @media (min-width:640px) {
+          .ficha-modal-body { padding:1.5rem 2rem; max-width:720px; width:100%; margin:0 auto; }
         }
         .ficha-modal-empty {
           padding:1.6rem 1rem; text-align:center;
@@ -2115,7 +2128,11 @@ export default function Produtos() {
         .ficha-modal-footer {
           padding:0.85rem 1.1rem;
           border-top:1px solid var(--border, #E5E7EB);
-          background:#fff; border-radius:0 0 20px 20px;
+          background:#fff; flex-shrink:0;
+        }
+        @media (min-width:640px) {
+          .ficha-modal-footer { padding:1rem 2rem; }
+          .ficha-modal-footer > * { max-width:720px; margin:0 auto; display:block; }
         }
         .ficha-modal-concluir {
           width:100%; padding:0.8rem;
