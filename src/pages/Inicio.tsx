@@ -498,13 +498,13 @@ export default function Inicio() {
           position: relative;
           background: var(--bg-card, #fff);
           border: none;
-          border-radius: 20px;
-          padding: 0.6rem 0.9rem 0.9rem 0.9rem;
-          min-height: 125px;
+          border-radius: 16px;
+          padding: 0.55rem 0.7rem 0.65rem 0.7rem;
+          min-height: 92px;
           display: flex; flex-direction: column;
           justify-content: flex-end;
           align-items: flex-start;
-          box-shadow: 0 8px 22px rgba(0,0,0,0.10);
+          box-shadow: 0 6px 16px rgba(0,0,0,0.10);
           cursor: pointer;
           font-family: inherit;
           text-align: left;
@@ -552,18 +552,18 @@ export default function Inicio() {
           width: 100%;
         }
         .ini-ind-label {
-          font-size: 0.7rem; font-weight: 600;
+          font-size: 0.66rem; font-weight: 600;
           color: rgba(255,255,255,0.92);
           line-height: 1.15;
           letter-spacing: 0.01em;
         }
         .ini-ind-val {
-          font-size: 1.5rem; font-weight: 800;
+          font-size: 1.25rem; font-weight: 800;
           color: #fff; line-height: 1;
           letter-spacing: -0.02em;
         }
         .ini-ind-val--currency {
-          font-size: 1.1rem;
+          font-size: 0.95rem;
         }
 
         /* ── Sections ── */
@@ -717,9 +717,9 @@ export default function Inicio() {
             margin-right: auto;
             gap: 1rem;
           }
-          .ini-ind-card { padding: 1.25rem 1rem; }
-          .ini-ind-val { font-size: 1.8rem; }
-          .ini-ind-label { font-size: 0.78rem; }
+          .ini-ind-card { padding: 0.85rem 1rem; min-height: 100px; }
+          .ini-ind-val { font-size: 1.55rem; }
+          .ini-ind-label { font-size: 0.74rem; }
           .ini-actions { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-resumo { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-alertas, .ini-tudo-ok, .ini-chart-card { max-width: 720px; margin-left: auto; margin-right: auto; }
