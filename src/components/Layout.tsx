@@ -1,12 +1,12 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
-// deploy: fix topbar duplicado + sino e premium no Inicio
+// deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
 import DooIA from "@/components/DooIA";
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import MaisDrawer from "@/components/MaisDrawer";
+import { useState, type ReactNode } from "react";
 import {
   House, CalendarDots, ShoppingBag, ClipboardText, Users, BookOpen,
   Package, CurrencyDollar, Gear, SignOut, CaretDown, ForkKnife, List,
-  Eye, Storefront, Rows, PaintBrush, Sliders, Tag, QrCode,
-  ChartBar, Files, Percent, User, ArrowLeft, Bell
+  User,
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
@@ -33,35 +33,11 @@ export default function Layout() {
   const { profile } = useProfile();
   const { isPro } = usePlano();
   const { notifCount, notifOpen, notificacoes, notifRef, toggleNotif, closeNotif } = useNotifications();
-  const [now, setNow] = useState(new Date());
-  const [gestaoOpen, setGestaoOpen] = useState(false);
+  const [maisOpen, setMaisOpen] = useState(false);
   const location = useLocation();
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
   const isPrevia = location.pathname === "/cardapio-preview";
-  const isPedidoForm = location.pathname.startsWith("/pedidos/") || location.pathname === "/pedidos/novo";
-  const isCardapioMode = ["/cardapio-config", "/produtos"].includes(location.pathname);
-  const [cardapioNav, setCardapioNav] = useState(false);
-
-  useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatDate = (d: Date) => d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "short" });
-  const formatTime = (d: Date) => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-
-  const gestaoItems = [
-    { label: "Dashboard", path: "/dashboard",     icon: <ChartBar    size={22} weight="duotone" /> },
-    { label: "Pedidos",   path: "/pedidos",        icon: <ClipboardText size={22} weight="duotone" /> },
-    { label: "Produtos",  path: "/produtos",       icon: <Storefront  size={22} weight="duotone" /> },
-    { label: "Ingredientes", path: "/insumos",     icon: <ForkKnife   size={22} weight="duotone" /> },
-    { label: "Estoque",   path: "/estoque",        icon: <Package     size={22} weight="duotone" /> },
-    { label: "Financeiro",path: "/financeiro",     icon: <CurrencyDollar size={22} weight="duotone" /> },
-    { label: "Promoções", path: "/promocoes",      icon: <Percent     size={22} weight="duotone" /> },
-    { label: "Arquivos",  path: "/arquivos",       icon: <Files       size={22} weight="duotone" /> },
-    { label: "Config.",   path: "/configuracoes",  icon: <Gear        size={22} weight="duotone" /> },
-  ];
 
   return (
     <div className="layout-root">
@@ -183,100 +159,42 @@ export default function Layout() {
         <Outlet />
       </main>
 
-      {/* ── Gestão Drawer ── */}
-      {gestaoOpen && (
-        <div className="gestao-overlay" onClick={() => setGestaoOpen(false)}>
-          <div className="gestao-drawer" onClick={e => e.stopPropagation()}>
-            <div className="gestao-handle" />
-            <div className="gestao-header">
-              <h3 className="gestao-title">Gestão</h3>
-              <button className="gestao-close" onClick={() => setGestaoOpen(false)}>✕</button>
-            </div>
-            <div className="gestao-grid">
-              {gestaoItems.map((item) => (
-                <NavLink key={item.path} to={item.path} className="gestao-item" onClick={() => setGestaoOpen(false)}>
-                  <span className="gestao-icon">{item.icon}</span>
-                  <span className="gestao-label">{item.label}</span>
-                </NavLink>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ── Drawer "Mais" (Proposta D) ── */}
+      <MaisDrawer open={maisOpen} onClose={() => setMaisOpen(false)} />
 
       {/* ── Bottom nav Mobile ── */}
       {!isReceitas && !isPrevia && (
         <nav className="bottom-nav">
           <div className="bottom-nav-pill">
-            {(cardapioNav || isCardapioMode) ? (
-              <>
-                {(() => {
-                  const cardapioNavItems = [
-                    { path: "/cardapio-resumo", icon: <ChartBar size={20} weight="fill" />, label: "Visão Geral" },
-                    { path: "/cardapio-preview", icon: <Eye size={20} weight="fill" />, label: "Prévia" },
-                    { path: "/produtos", icon: <Storefront size={20} weight="fill" />, label: "Produtos" },
-                    { path: "/cardapio-config", icon: <Sliders size={20} weight="fill" />, label: "Config" },
-                  ];
-                  return (
-                    <>
-                      {cardapioNavItems.map((item) => {
-                        const isActive = location.pathname === item.path;
-                        return (
-                          <button
-                            key={item.path}
-                            className={`bn-item${isActive ? " bn-item--active" : ""}`}
-                            onClick={() => navigate(item.path)}
-                          >
-                            <span className="bn-icon">{item.icon}</span>
-                            <span className="bn-label">{item.label}</span>
-                          </button>
-                        );
-                      })}
-                      <button
-                        className="bn-item"
-                        onClick={() => { setCardapioNav(false); navigate("/inicio"); }}
-                      >
-                        <span className="bn-icon"><ArrowLeft size={20} weight="fill" /></span>
-                        <span className="bn-label">Voltar</span>
-                      </button>
-                    </>
-                  );
-                })()}
-              </>
-            ) : (
-              <>
-                {[
-                  { to: "/inicio",      icon: <House size={20} weight="fill" />,         label: "Início"     },
-                  { to: "/pedidos",     icon: <ClipboardText size={20} weight="fill" />, label: "Pedidos"    },
-                  { to: "/cardapio-config", icon: <ForkKnife size={20} weight="fill" />, label: "Cardápio", isCardapio: true },
-                  { to: "/financeiro",  icon: <CurrencyDollar size={20} weight="fill" />,label: "Gestão" },
-                ].map((item) => {
-                  const isActive = item.isCardapio
-                    ? (cardapioNav || isCardapioMode)
-                    : location.pathname === item.to || location.pathname.startsWith(item.to + "/");
-                  return (
-                    <button
-                      key={item.to}
-                      className={`bn-item${isActive ? " bn-item--active" : ""}`}
-                      onClick={() => {
-                        if (item.isCardapio) { setCardapioNav(true); }
-                        navigate(item.to);
-                      }}
-                    >
-                      <span className="bn-icon">{item.icon}</span>
-                      <span className="bn-label">{item.label}</span>
-                    </button>
-                  );
-                })}
+            {[
+              { to: "/inicio",   icon: <House          size={20} weight="fill" />, label: "Início"   },
+              { to: "/pedidos",  icon: <ClipboardText  size={20} weight="fill" />, label: "Pedidos"  },
+              { to: "/cardapio", icon: <ForkKnife      size={20} weight="fill" />, label: "Cardápio" },
+              { to: "/agenda",   icon: <CalendarDots   size={20} weight="fill" />, label: "Agenda"   },
+            ].map((item) => {
+              const isActive =
+                location.pathname === item.to ||
+                location.pathname.startsWith(item.to + "/");
+              return (
                 <button
-                  className={`bn-item${gestaoOpen ? " bn-item--active" : ""}`}
-                  onClick={() => setGestaoOpen(!gestaoOpen)}
+                  key={item.to}
+                  className={`bn-item${isActive ? " bn-item--active" : ""}`}
+                  onClick={() => navigate(item.to)}
                 >
-                  <span className="bn-icon"><List size={20} weight="fill" /></span>
-                  <span className="bn-label">Menu</span>
+                  <span className="bn-icon">{item.icon}</span>
+                  <span className="bn-label">{item.label}</span>
                 </button>
-              </>
-            )}
+              );
+            })}
+            <button
+              className={`bn-item${maisOpen ? " bn-item--active" : ""}`}
+              onClick={() => setMaisOpen(!maisOpen)}
+              aria-label="Mais opções"
+              aria-expanded={maisOpen}
+            >
+              <span className="bn-icon"><List size={20} weight="fill" /></span>
+              <span className="bn-label">Mais</span>
+            </button>
           </div>
         </nav>
       )}
@@ -396,7 +314,7 @@ export default function Layout() {
             justify-content: space-around;
             width: 100%;
             background: #3d1a24;
-            border-radius: 20px;
+            border-radius: 999px;
             padding: 6px 6px;
             box-shadow: 0 4px 24px rgba(61, 26, 36, 0.35);
             pointer-events: all;

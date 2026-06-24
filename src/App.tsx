@@ -39,6 +39,7 @@ import CardapioConfigPage from "@/pages/CardapioConfigPage";
 import CardapioDesign from "@/pages/CardapioDesign";
 import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 import CardapioPublico from "@/pages/CardapioPublico";
+import Cardapio from "@/pages/Cardapio";
 import Financeiro from "@/pages/Financeiro";
 
 
@@ -110,6 +111,7 @@ export default function App() {
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/financeiro" element={<Financeiro />} />
           <Route path="/promocoes" element={<Promocoes />} />
+          <Route path="/cardapio" element={<Cardapio />} />
           <Route path="/cardapio-config" element={<CardapioConfigPage />} />
           <Route path="/cardapio-resumo" element={<CardapioResumo />} />
           <Route path="/cardapio-preview" element={<CardapioPrevia />} />
