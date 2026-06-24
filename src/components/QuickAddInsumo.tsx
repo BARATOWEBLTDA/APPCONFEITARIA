@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 
 export type InsumoQuick = {
@@ -74,8 +74,12 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
 
   const [imagens, setImagens] = useState<string[]>([]);
   const [buscandoImg, setBuscandoImg] = useState(false);
+  const [uploadingImg, setUploadingImg] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categorias, setCategorias] = useState<string[]>(CATEGORIAS_DEFAULT);
+
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
 
   // Carrega categorias customizadas do usuário
   useEffect(() => {
@@ -89,23 +93,37 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     return () => { cancel = true; };
   }, [userId]);
 
-  // Auto-busca de imagem com debounce (800ms) quando nome tem 3+ chars
-  useEffect(() => {
+  const handleBuscarImagem = async () => {
     const termo = `${form.nome} ${form.marca}`.trim();
-    if (form.nome.trim().length < 3) { setImagens([]); return; }
-    // Em modo edição, só busca se o usuário mudou o nome
-    if (isEditing && form.imagem_url && editing?.nome === form.nome) return;
-    const t = setTimeout(async () => {
-      setBuscandoImg(true);
-      try {
-        const res = await fetch(`/api/buscar-imagem?q=${encodeURIComponent(termo)}`);
-        const data = await res.json();
-        if (data.images) setImagens(data.images.slice(0, 6));
-      } catch (e) { console.error(e); }
-      setBuscandoImg(false);
-    }, 800);
-    return () => clearTimeout(t);
-  }, [form.nome, form.marca, isEditing, editing?.nome, form.imagem_url]);
+    if (form.nome.trim().length < 3) { alert("Digite o nome do insumo primeiro"); return; }
+    setBuscandoImg(true);
+    setImagens([]);
+    try {
+      const res = await fetch(`/api/buscar-imagem?q=${encodeURIComponent(termo)}`);
+      const data = await res.json();
+      if (data.images) setImagens(data.images.slice(0, 3));
+    } catch (e) { console.error(e); }
+    setBuscandoImg(false);
+  };
+
+  const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+    setUploadingImg(true);
+    const ext = file.name.split(".").pop() || "jpg";
+    const path = `insumos/${userId}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
+    if (error) {
+      alert("Erro ao enviar imagem");
+      console.error(error);
+    } else {
+      const { data } = supabase.storage.from("profiles").getPublicUrl(path);
+      setForm(f => ({ ...f, imagem_url: data.publicUrl }));
+      setImagens([]); // limpa resultados de busca se havia
+    }
+    setUploadingImg(false);
+    e.target.value = ""; // reseta input pra permitir mesmo arquivo de novo
+  };
 
   const handleSalvar = async () => {
     if (!userId || !form.nome.trim()) { alert("Informe o nome do insumo"); return; }
@@ -201,41 +219,69 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       </div>
 
       <div className="qai-imgs">
-        <div className="qai-imgs-label">
-          {form.nome.trim().length < 3
-            ? "Imagem (digite o nome para buscar automaticamente)"
-            : buscandoImg
-            ? "🔄 Buscando imagens..."
-            : imagens.length > 0
-            ? "Escolha uma imagem (opcional):"
-            : form.imagem_url
-            ? "Imagem atual:"
-            : "Nenhuma imagem encontrada — pode salvar sem imagem"}
+        <div className="qai-imgs-label">Imagem do produto</div>
+
+        <div className="qai-imgs-actions">
+          <button type="button" className="qai-img-action" onClick={() => cameraRef.current?.click()} disabled={uploadingImg}>
+            <span className="qai-img-action-icon">📷</span>
+            <span>Câmera</span>
+          </button>
+          <button type="button" className="qai-img-action" onClick={() => galleryRef.current?.click()} disabled={uploadingImg}>
+            <span className="qai-img-action-icon">🖼️</span>
+            <span>Galeria</span>
+          </button>
+          <button type="button" className="qai-img-action" onClick={handleBuscarImagem} disabled={buscandoImg || form.nome.trim().length < 3}>
+            <span className="qai-img-action-icon">🔍</span>
+            <span>Buscar</span>
+          </button>
         </div>
-        {form.imagem_url && imagens.length === 0 && (
-          <div className="qai-imgs-grid">
-            <div className="qai-img qai-img--selected"><img src={form.imagem_url} alt="" /></div>
+
+        <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={handleUploadFile} />
+        <input ref={galleryRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleUploadFile} />
+
+        {/* Estado: enviando imagem */}
+        {uploadingImg && (
+          <div className="qai-imgs-status">📤 Enviando imagem...</div>
+        )}
+
+        {/* Estado: buscando */}
+        {buscandoImg && (
+          <div className="qai-imgs-status">🔄 Buscando imagens da internet...</div>
+        )}
+
+        {/* Imagem selecionada (upload ou pós-seleção da busca, sem mais resultados) */}
+        {!uploadingImg && !buscandoImg && form.imagem_url && imagens.length === 0 && (
+          <div className="qai-imgs-selected">
+            <img src={form.imagem_url} alt="Imagem selecionada" />
+            <button type="button" className="qai-img-remove" onClick={() => setForm(f => ({ ...f, imagem_url: "" }))}>
+              ✕ Remover
+            </button>
           </div>
         )}
-        {imagens.length > 0 && (
+
+        {/* Resultados da busca (3 grandes) */}
+        {!uploadingImg && imagens.length > 0 && (
           <div className="qai-imgs-grid">
             {imagens.map((url, idx) => (
               <button
                 key={idx}
                 type="button"
-                className={`qai-img ${form.imagem_url === url ? "qai-img--selected" : ""}`}
+                className={`qai-img-big ${form.imagem_url === url ? "qai-img-big--selected" : ""}`}
                 onClick={() => setForm(f => ({ ...f, imagem_url: f.imagem_url === url ? "" : url }))}
               >
                 <img src={url} alt="" />
+                {form.imagem_url === url && <span className="qai-img-check">✓</span>}
               </button>
             ))}
           </div>
         )}
-        {form.nome.trim().length < 3 && !form.imagem_url && (
+
+        {/* Estado vazio: 3 slots placeholder */}
+        {!uploadingImg && !buscandoImg && !form.imagem_url && imagens.length === 0 && (
           <div className="qai-imgs-grid">
-            {[0, 1, 2, 3, 4, 5].map(i => (
-              <div key={i} className="qai-img qai-img--placeholder" />
-            ))}
+            <div className="qai-img-big qai-img-big--placeholder"><span>📷</span></div>
+            <div className="qai-img-big qai-img-big--placeholder"><span>🖼️</span></div>
+            <div className="qai-img-big qai-img-big--placeholder"><span>🔍</span></div>
           </div>
         )}
       </div>
@@ -323,29 +369,100 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         .qai-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:0.55rem; }
         .qai-row-3 { display:grid; grid-template-columns:1.1fr 1fr 0.7fr; gap:0.5rem; }
 
-        .qai-imgs { display:flex; flex-direction:column; gap:0.4rem; }
+        .qai-imgs { display:flex; flex-direction:column; gap:0.55rem; }
         .qai-imgs-label {
-          font-size:0.72rem; font-weight:600;
+          font-size:0.7rem; font-weight:700;
           color:var(--text-secondary, #6B7280);
+          letter-spacing:0.2px;
         }
-        .qai-imgs-grid { display:grid; grid-template-columns:repeat(6, 1fr); gap:0.4rem; }
-        .qai-img {
-          aspect-ratio:1; border:2px solid var(--border, #E5E7EB);
-          border-radius:8px; padding:0; overflow:hidden;
-          background:#fff; cursor:pointer; transition:all 0.15s ease;
+        .qai-imgs-actions {
+          display:grid; grid-template-columns:repeat(3, 1fr); gap:0.4rem;
         }
-        .qai-img img { width:100%; height:100%; object-fit:cover; display:block; }
-        .qai-img:hover { border-color:var(--primary, #FF6FA9); }
-        .qai-img--selected {
-          border-color:var(--primary, #FF6FA9);
-          box-shadow:0 0 0 2px rgba(255, 111, 169, 0.2);
-        }
-        .qai-img--placeholder {
-          border-style:dashed;
+        .qai-img-action {
+          display:flex; flex-direction:column; align-items:center; gap:3px;
+          padding:0.55rem 0.4rem;
           background:var(--bg-body, #F7F7F8);
-          cursor:default;
+          border:1.5px solid var(--border, #E5E7EB);
+          border-radius:10px;
+          font-family:inherit;
+          font-size:0.72rem; font-weight:600;
+          color:var(--text-title, #1F2937);
+          cursor:pointer;
+          transition:all 0.15s ease;
         }
-        .qai-img--placeholder:hover { border-color:var(--border, #E5E7EB); }
+        .qai-img-action:hover:not(:disabled) {
+          border-color:var(--primary, #FF6FA9);
+          background:#FFF5F9;
+          color:var(--primary, #FF6FA9);
+        }
+        .qai-img-action:disabled { opacity:0.45; cursor:not-allowed; }
+        .qai-img-action-icon { font-size:1.25rem; line-height:1; }
+
+        .qai-imgs-status {
+          padding:0.75rem 0.85rem; text-align:center;
+          background:#FFF5F9; border:1.5px dashed var(--primary, #FF6FA9);
+          border-radius:10px;
+          font-size:0.82rem; font-weight:600;
+          color:var(--primary, #FF6FA9);
+        }
+
+        .qai-imgs-grid {
+          display:grid; grid-template-columns:repeat(3, 1fr); gap:0.5rem;
+        }
+        .qai-img-big {
+          position:relative;
+          aspect-ratio:1;
+          border:2px solid var(--border, #E5E7EB);
+          border-radius:12px;
+          padding:0; overflow:hidden;
+          background:#fff; cursor:pointer;
+          transition:all 0.15s ease;
+        }
+        .qai-img-big img { width:100%; height:100%; object-fit:cover; display:block; }
+        .qai-img-big:hover { border-color:var(--primary, #FF6FA9); }
+        .qai-img-big--selected {
+          border-color:var(--primary, #FF6FA9);
+          box-shadow:0 0 0 3px rgba(255, 111, 169, 0.25);
+        }
+        .qai-img-check {
+          position:absolute; top:6px; right:6px;
+          width:24px; height:24px;
+          background:var(--primary, #FF6FA9); color:#fff;
+          border-radius:50%;
+          display:flex; align-items:center; justify-content:center;
+          font-size:0.85rem; font-weight:800;
+          box-shadow:0 2px 6px rgba(0,0,0,0.2);
+        }
+        .qai-img-big--placeholder {
+          border-style:dashed; cursor:default;
+          background:var(--bg-body, #F7F7F8);
+          display:flex; align-items:center; justify-content:center;
+        }
+        .qai-img-big--placeholder span {
+          font-size:1.8rem; opacity:0.35;
+        }
+        .qai-img-big--placeholder:hover { border-color:var(--border, #E5E7EB); }
+
+        .qai-imgs-selected {
+          position:relative;
+          width:100%; max-width:240px;
+          margin:0 auto;
+          aspect-ratio:1;
+          border:2px solid var(--primary, #FF6FA9);
+          border-radius:14px;
+          overflow:hidden;
+          box-shadow:0 0 0 3px rgba(255, 111, 169, 0.2);
+        }
+        .qai-imgs-selected img { width:100%; height:100%; object-fit:cover; display:block; }
+        .qai-img-remove {
+          position:absolute; bottom:8px; right:8px;
+          padding:5px 10px;
+          background:rgba(0,0,0,0.7); color:#fff;
+          border:none; border-radius:8px;
+          font-family:inherit; font-size:0.72rem; font-weight:600;
+          cursor:pointer;
+        }
+        .qai-img-remove:hover { background:rgba(0,0,0,0.85); }
 
         .qai-preview {
           padding:0.55rem 0.8rem; background:#FFF5F9;
