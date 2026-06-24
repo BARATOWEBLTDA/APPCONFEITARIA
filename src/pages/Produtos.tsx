@@ -131,8 +131,39 @@ export default function Produtos() {
   };
 
   const loadProdutos = async (uid: string) => {
-    const { data } = await supabase.from("produtos").select("*").eq("user_id", uid).order("created_at", { ascending: false });
-    if (data) setProdutos(data);
+    const { data } = await supabase
+      .from("produtos")
+      .select("*, produto_insumos(quantidade, insumos(custo_unitario))")
+      .eq("user_id", uid)
+      .order("created_at", { ascending: false });
+    if (data) setProdutos(data as Produto[]);
+  };
+
+  /**
+   * Calcula CMV (custo), lucro absoluto e margem % de um produto a partir
+   * da ficha técnica embutida (produto_insumos).
+   * Considera preço promocional quando o produto está em promoção,
+   * para refletir o lucro REAL que a confeiteira terá na venda.
+   */
+  const calcularLucro = (p: any): {
+    cmv: number;
+    lucro: number;
+    margem: number;
+    temFicha: boolean;
+    precoEfetivo: number;
+  } => {
+    const itens: any[] = p.produto_insumos || [];
+    const cmv = itens.reduce((sum, pi) => {
+      const qtd = Number(pi.quantidade) || 0;
+      const custo = Number(pi.insumos?.custo_unitario) || 0;
+      return sum + qtd * custo;
+    }, 0);
+    const precoEfetivo = (p.promocao && p.preco_promocional && p.preco_promocional > 0)
+      ? Number(p.preco_promocional)
+      : Number(p.preco_normal) || 0;
+    const lucro = precoEfetivo - cmv;
+    const margem = precoEfetivo > 0 ? (lucro / precoEfetivo) * 100 : 0;
+    return { cmv, lucro, margem, temFicha: itens.length > 0, precoEfetivo };
   };
 
   const loadCategorias = async (uid: string) => {
@@ -446,10 +477,31 @@ export default function Produtos() {
                 </div>
                 <div className="prod-list-info">
                   <p className="prod-card-nome">{p.nome}</p>
-                  <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "5px", flexWrap: "wrap" }}>
                     <p className="prod-card-preco" style={{ margin: 0 }}>R$ {formatPreco(p.preco_normal)}</p>
                     {p.promocao && <span style={{ background: "var(--primary, #FF6FA9)", color: "var(--text-inverse, #FFFFFF)", fontSize: "0.55rem", fontWeight: 700, padding: "2px 5px", borderRadius: "6px" }}>Promoção</span>}
                   </div>
+                  {(() => {
+                    const { lucro, margem, temFicha } = calcularLucro(p);
+                    if (!temFicha) {
+                      return (
+                        <button
+                          type="button"
+                          className="prod-card-sem-ficha"
+                          onClick={(e) => { e.stopPropagation(); openEditar(p); }}
+                        >
+                          💡 Configure a ficha técnica
+                        </button>
+                      );
+                    }
+                    const tier = margem >= 50 ? "alto" : margem >= 25 ? "medio" : "baixo";
+                    return (
+                      <div className={`prod-card-lucro prod-card-lucro--${tier}`}>
+                        <span className="prod-card-lucro-label">Lucro/venda</span>
+                        <strong>R$ {formatPreco(lucro)} <span className="prod-card-lucro-pct">({margem.toFixed(0)}%)</span></strong>
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexShrink: 0 }}>
                   <button className="prod-card-btn-edit" onClick={() => openEditar(p)}>Editar</button>
@@ -472,6 +524,28 @@ export default function Produtos() {
                 <p className="prod-card-cat" style={{ color: catInvalida ? "var(--warning, #F59E0B)" : undefined }}>{catInvalida ? `⚠️ ${p.categoria}` : p.categoria}</p>
                 <p className="prod-card-nome">{p.nome}</p>
                 <p className="prod-card-preco">R$ {formatPreco(p.preco_normal)}</p>
+                {(() => {
+                  const { lucro, margem, temFicha } = calcularLucro(p);
+                  if (!temFicha) {
+                    return (
+                      <button
+                        type="button"
+                        className="prod-card-sem-ficha"
+                        onClick={(e) => { e.stopPropagation(); openEditar(p); }}
+                        title="Adicione insumos para ver o lucro por venda"
+                      >
+                        💡 Configure a ficha técnica
+                      </button>
+                    );
+                  }
+                  const tier = margem >= 50 ? "alto" : margem >= 25 ? "medio" : "baixo";
+                  return (
+                    <div className={`prod-card-lucro prod-card-lucro--${tier}`}>
+                      <span className="prod-card-lucro-label">Lucro/venda</span>
+                      <strong>R$ {formatPreco(lucro)} <span className="prod-card-lucro-pct">({margem.toFixed(0)}%)</span></strong>
+                    </div>
+                  );
+                })()}
               </div>
               <div className="prod-card-actions">
                 <button className="prod-card-btn-edit" onClick={() => openEditar(p)}>Editar</button>
@@ -1144,6 +1218,58 @@ export default function Produtos() {
         .prod-card-cat { font-size:0.68rem; color:var(--primary, #FF6FA9); font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 0.15rem; }
         .prod-card-nome { font-size:0.85rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.25rem; line-height:1.3; }
         .prod-card-preco { font-size:0.88rem; font-weight:600; color:var(--success, #22C55E); margin:0; }
+
+        /* ── Badge de lucro/margem por venda ── */
+        .prod-card-lucro {
+          display: flex;
+          flex-direction: column;
+          gap: 1px;
+          margin-top: 6px;
+          padding: 5px 8px;
+          border-radius: 8px;
+          font-family: 'Geist', sans-serif;
+          line-height: 1.2;
+        }
+        .prod-card-lucro-label {
+          font-size: 0.6rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          opacity: 0.75;
+        }
+        .prod-card-lucro strong {
+          font-size: 0.82rem;
+          font-weight: 800;
+        }
+        .prod-card-lucro-pct {
+          font-size: 0.72rem;
+          font-weight: 700;
+          opacity: 0.8;
+        }
+        .prod-card-lucro--alto  { background:#dcfce7; color:#15803d; }
+        .prod-card-lucro--medio { background:#fef3c7; color:#a16207; }
+        .prod-card-lucro--baixo { background:#fee2e2; color:#b91c1c; }
+
+        .prod-card-sem-ficha {
+          margin-top: 6px;
+          padding: 5px 8px;
+          background: var(--bg-subtle, #FFF1F7);
+          border: 1px dashed var(--primary, #FF6FA9);
+          border-radius: 8px;
+          color: var(--primary, #FF6FA9);
+          font-family: 'Geist', sans-serif;
+          font-size: 0.7rem;
+          font-weight: 600;
+          cursor: pointer;
+          text-align: left;
+          width: 100%;
+          line-height: 1.2;
+          transition: background 0.15s ease;
+        }
+        .prod-card-sem-ficha:hover {
+          background: var(--primary, #FF6FA9);
+          color: #fff;
+        }
         .prod-card-actions { display:flex; gap:0.4rem; padding:0.5rem 0.75rem; border-top:1px solid var(--border, #E9E9EE); }
         .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle, #FFF1F7); border:none; border-radius:8px; font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:600; color:var(--text-primary, #374151); cursor:pointer; }
         .prod-card-btn-del { padding:0.4rem 0.6rem; background:#fff1f2; border:none; border-radius:8px; color:var(--error, #EF4444); cursor:pointer; display:flex; align-items:center; }
