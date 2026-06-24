@@ -4,12 +4,11 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
 import {
-  User, Share, Plus, ClipboardText, CalendarDots, Package,
+  Share, Plus, ClipboardText, CalendarDots, Package,
   Warning, Cake, TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
-import { useNotifications } from "@/context/NotificationContext";
 
 interface AlertaCard {
   tipo: "pedido" | "entrega" | "estoque" | "aniversario";
@@ -39,7 +38,6 @@ const STATUS_ATIVOS = ["pendente", "novo", "confirmado", "em_producao", "pronto"
 export default function Inicio() {
   const navigate = useNavigate();
   const { profile } = useProfile();
-  const { notifCount, openNotif } = useNotifications();
 
   const [loading, setLoading] = useState(true);
   const [counts, setCounts] = useState({
@@ -291,28 +289,6 @@ export default function Inicio() {
     <div className="ini-root">
       {/* ── Hero degradê animado ── */}
       <div className="ini-hero">
-        <div className="ini-hero-row">
-          <span className="ini-hero-brand">Doonly</span>
-          <div style={{ flex: 1 }} />
-          <button
-            className={`ini-hero-bell${notifCount > 0 ? " has-notif" : ""}`}
-            onClick={openNotif}
-            aria-label="Notificações"
-          >
-            <img src="/Sistema/sino.png" alt="" style={{ width: 28, height: 28, objectFit: "contain" }} />
-            {notifCount > 0 && <span className="ini-hero-notif-badge">{notifCount > 9 ? "9+" : notifCount}</span>}
-          </button>
-          <button className="ini-hero-bell" onClick={() => navigate("/assinar")} aria-label="Premium">
-            <img src="/Sistema/premium.png" alt="" style={{ width: 28, height: 28, objectFit: "contain" }} />
-          </button>
-          <button className="ini-hero-profile" onClick={() => navigate("/configuracoes")} aria-label="Perfil">
-            {profile?.foto_url
-              ? <img src={profile.foto_url} alt="" />
-              : <User size={22} weight="duotone" color="rgba(255,255,255,0.9)" />
-            }
-          </button>
-        </div>
-
         <div className="ini-hero-greeting">
           <h1>{getGreeting()}, {nome || "bem-vinda"} 👋</h1>
           <p>{hojeFormatado()}</p>
@@ -482,13 +458,13 @@ export default function Inicio() {
           background-size: 300% 300%;
           animation: heroGradientMove 10s ease infinite;
           border-radius: 0 0 28px 28px;
-          padding: 2.5rem 1.25rem 5.5rem;
+          padding: 2.2rem 1.25rem 5.5rem;
           /* Full-bleed: estende até a borda da viewport ignorando padding dos pais */
           width: 100vw;
           margin-left: calc(50% - 50vw);
           margin-right: calc(50% - 50vw);
           margin-top: -0.75rem;
-          display: flex; flex-direction: column; gap: 1.4rem;
+          display: flex; flex-direction: column;
           position: relative;
           z-index: 0;
         }
@@ -496,42 +472,6 @@ export default function Inicio() {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
-        }
-        .ini-hero-row { display: flex; align-items: center; gap: 0.7rem; }
-        .ini-hero-brand {
-          font-family: 'Dancing Script', cursive;
-          font-weight: 700; font-size: 1.6rem; color: #fff;
-          text-shadow: 0 0 6px rgba(255,255,255,0.5); line-height: 1;
-        }
-        .ini-hero-bell {
-          background: none; border: none; padding: 0.3rem;
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer; border-radius: 50%; position: relative;
-        }
-        .ini-hero-bell.has-notif {
-          background: rgba(255,255,255,0.15);
-          animation: bell-pulse 1.8s ease-in-out infinite;
-        }
-        .ini-hero-notif-badge {
-          position: absolute; top: -2px; right: -2px;
-          width: 16px; height: 16px; border-radius: 50%;
-          background: var(--error, #EF4444); color: #fff;
-          font-size: 0.6rem; font-weight: 700;
-          display: flex; align-items: center; justify-content: center;
-        }
-        @keyframes bell-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
-          50% { box-shadow: 0 0 0 6px rgba(255,255,255,0); }
-        }
-        .ini-hero-profile {
-          background: rgba(255,255,255,0.15); border: none; border-radius: 50%;
-          width: 34px; height: 34px;
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer; flex-shrink: 0; padding: 0; overflow: hidden;
-        }
-        .ini-hero-profile img {
-          width: 26px; height: 26px; border-radius: 50%;
-          object-fit: cover; border: 2px solid rgba(255,255,255,0.7);
         }
         .ini-hero-greeting h1 {
           font-size: 1.25rem; font-weight: 800; color: #fff;
