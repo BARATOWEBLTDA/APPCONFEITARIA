@@ -291,7 +291,7 @@ export default function Inicio() {
       {/* ── Hero degradê animado ── */}
       <div className="ini-hero">
         <div className="ini-hero-greeting">
-          <h1>{getGreeting()}, {nome || "bem-vinda"} 👋</h1>
+          <h1>{getGreeting()}, {nome || "bem-vinda"}</h1>
           <p>{hojeFormatado()}</p>
         </div>
       </div>
@@ -467,7 +467,7 @@ export default function Inicio() {
           background-size: 300% 300%;
           animation: heroGradientMove 10s ease infinite;
           border-radius: 0 0 28px 28px;
-          padding: 2.2rem 1.25rem 5.5rem;
+          padding: 2rem 1.25rem 6.5rem;
           /* Full-bleed: estende até a borda da viewport ignorando padding dos pais */
           width: 100vw;
           margin-left: calc(50% - 50vw);
@@ -483,13 +483,13 @@ export default function Inicio() {
           100% { background-position: 0% 50%; }
         }
         .ini-hero-greeting h1 {
-          font-size: 1.25rem; font-weight: 800; color: #fff;
-          margin: 0; line-height: 1.2;
-          letter-spacing: -0.01em;
+          font-size: 1rem; font-weight: 600; color: rgba(255,255,255,0.95);
+          margin: 0; line-height: 1.3;
+          letter-spacing: 0;
         }
         .ini-hero-greeting p {
-          font-size: 0.82rem; color: rgba(255,255,255,0.8);
-          margin: 4px 0 0;
+          font-size: 0.78rem; color: rgba(255,255,255,0.7);
+          margin: 2px 0 0;
         }
 
         /* ── 3 indicadores estilo "sticker card" ── */
