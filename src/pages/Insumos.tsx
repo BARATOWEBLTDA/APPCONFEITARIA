@@ -136,7 +136,7 @@ export default function Insumos() {
           <h1 className="ins-title">Insumos</h1>
           <p className="ins-sub">{insumos.length} {insumos.length === 1 ? "insumo cadastrado" : "insumos cadastrados"}</p>
         </div>
-        <BtnNovo label="Cadastrar insumo" onClick={abrirNovo} />
+        <BtnNovo label="Cadastrar insumo" onClick={abrirNovo} responsive={false} />
       </div>
 
       {/* Busca */}

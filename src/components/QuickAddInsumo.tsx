@@ -174,7 +174,6 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           placeholder="ex: Leite condensado"
           value={form.nome}
           onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-          autoFocus={!isEditing}
         />
       </div>
 
@@ -201,32 +200,45 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         </div>
       </div>
 
-      {form.nome.trim().length >= 3 && (
-        <div className="qai-imgs">
-          <div className="qai-imgs-label">
-            {buscandoImg ? "🔄 Buscando imagens..." : imagens.length > 0 ? "Escolha uma imagem (opcional):" : form.imagem_url ? "Imagem atual:" : "Nenhuma imagem encontrada"}
-          </div>
-          {form.imagem_url && imagens.length === 0 && (
-            <div className="qai-imgs-grid">
-              <div className="qai-img qai-img--selected"><img src={form.imagem_url} alt="" /></div>
-            </div>
-          )}
-          {imagens.length > 0 && (
-            <div className="qai-imgs-grid">
-              {imagens.map((url, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  className={`qai-img ${form.imagem_url === url ? "qai-img--selected" : ""}`}
-                  onClick={() => setForm(f => ({ ...f, imagem_url: f.imagem_url === url ? "" : url }))}
-                >
-                  <img src={url} alt="" />
-                </button>
-              ))}
-            </div>
-          )}
+      <div className="qai-imgs">
+        <div className="qai-imgs-label">
+          {form.nome.trim().length < 3
+            ? "Imagem (digite o nome para buscar automaticamente)"
+            : buscandoImg
+            ? "🔄 Buscando imagens..."
+            : imagens.length > 0
+            ? "Escolha uma imagem (opcional):"
+            : form.imagem_url
+            ? "Imagem atual:"
+            : "Nenhuma imagem encontrada — pode salvar sem imagem"}
         </div>
-      )}
+        {form.imagem_url && imagens.length === 0 && (
+          <div className="qai-imgs-grid">
+            <div className="qai-img qai-img--selected"><img src={form.imagem_url} alt="" /></div>
+          </div>
+        )}
+        {imagens.length > 0 && (
+          <div className="qai-imgs-grid">
+            {imagens.map((url, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className={`qai-img ${form.imagem_url === url ? "qai-img--selected" : ""}`}
+                onClick={() => setForm(f => ({ ...f, imagem_url: f.imagem_url === url ? "" : url }))}
+              >
+                <img src={url} alt="" />
+              </button>
+            ))}
+          </div>
+        )}
+        {form.nome.trim().length < 3 && !form.imagem_url && (
+          <div className="qai-imgs-grid">
+            {[0, 1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="qai-img qai-img--placeholder" />
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="qai-row-3">
         <div className="qai-field">
@@ -328,6 +340,12 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           border-color:var(--primary, #FF6FA9);
           box-shadow:0 0 0 2px rgba(255, 111, 169, 0.2);
         }
+        .qai-img--placeholder {
+          border-style:dashed;
+          background:var(--bg-body, #F7F7F8);
+          cursor:default;
+        }
+        .qai-img--placeholder:hover { border-color:var(--border, #E5E7EB); }
 
         .qai-preview {
           padding:0.55rem 0.8rem; background:#FFF5F9;
