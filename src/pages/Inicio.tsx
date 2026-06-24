@@ -248,11 +248,12 @@ export default function Inicio() {
     return `R$ ${(v / 1_000_000).toFixed(1).replace(".", ",")}M`;
   };
 
-  const variacao = (atual: number, ant: number): { pct: number; tipo: "up" | "down" | "flat" } => {
-    if (ant === 0 && atual === 0) return { pct: 0, tipo: "flat" };
-    if (ant === 0) return { pct: 100, tipo: "up" };
+  const variacao = (atual: number, ant: number): { pct: number; tipo: "up" | "down" } | null => {
+    // Sem baseline (conta nova / período anterior sem dados) → não mostra variação
+    if (ant === 0) return null;
     const pct = ((atual - ant) / ant) * 100;
-    return { pct: Math.abs(pct), tipo: pct > 0 ? "up" : pct < 0 ? "down" : "flat" };
+    if (pct === 0) return null;
+    return { pct: Math.abs(pct), tipo: pct > 0 ? "up" : "down" };
   };
 
   // ─── Cards de alerta (bloco Atenção) ───
@@ -405,10 +406,10 @@ export default function Inicio() {
             <div>
               <p className="ini-resumo-val">{formatCurrency(resumoSemana.vendas)}</p>
               <p className="ini-resumo-label">em vendas</p>
-              {varVendas.tipo !== "flat" && (
+              {varVendas && (
                 <p className={`ini-resumo-var ${varVendas.tipo}`}>
                   {varVendas.tipo === "up" ? <TrendUp size={11} weight="bold" /> : <TrendDown size={11} weight="bold" />}
-                  {varVendas.pct.toFixed(0)}% vs anterior
+                  {varVendas.pct.toFixed(0)}%
                 </p>
               )}
             </div>
@@ -421,10 +422,10 @@ export default function Inicio() {
             <div>
               <p className="ini-resumo-val">{resumoSemana.pedidos}</p>
               <p className="ini-resumo-label">{resumoSemana.pedidos === 1 ? "pedido" : "pedidos"}</p>
-              {varPedidos.tipo !== "flat" && (
+              {varPedidos && (
                 <p className={`ini-resumo-var ${varPedidos.tipo}`}>
                   {varPedidos.tipo === "up" ? <TrendUp size={11} weight="bold" /> : <TrendDown size={11} weight="bold" />}
-                  {varPedidos.pct.toFixed(0)}% vs anterior
+                  {varPedidos.pct.toFixed(0)}%
                 </p>
               )}
             </div>
@@ -676,23 +677,27 @@ export default function Inicio() {
           flex-shrink: 0;
         }
         .ini-resumo-val {
-          font-size: 1.2rem; font-weight: 800;
+          font-size: 1.15rem; font-weight: 700;
           color: var(--text-title, #1F2937);
-          margin: 0; line-height: 1;
+          margin: 0; line-height: 1.1;
           word-break: break-word;
+          letter-spacing: -0.01em;
         }
         .ini-resumo-label {
-          font-size: 0.74rem; font-weight: 600;
+          font-size: 0.72rem; font-weight: 500;
           color: var(--text-muted, #9CA3AF);
-          margin: 4px 0 0;
+          margin: 3px 0 0;
         }
         .ini-resumo-var {
           display: inline-flex; align-items: center; gap: 3px;
-          margin: 6px 0 0;
-          font-size: 0.7rem; font-weight: 700;
+          margin: 8px 0 0;
+          padding: 2px 7px;
+          border-radius: 6px;
+          font-size: 0.7rem; font-weight: 600;
+          line-height: 1.4;
         }
-        .ini-resumo-var.up   { color: #15803D; }
-        .ini-resumo-var.down { color: #B91C1C; }
+        .ini-resumo-var.up   { color: #15803D; background: #DCFCE7; }
+        .ini-resumo-var.down { color: #B91C1C; background: #FEE2E2; }
 
         /* ── Gráfico ── */
         .ini-chart-header { display: flex; justify-content: space-between; align-items: center; }
