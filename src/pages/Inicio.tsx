@@ -298,33 +298,42 @@ export default function Inicio() {
 
       {/* ── 3 indicadores flutuando sobre o hero ── */}
       <div className="ini-indicadores">
-        <button className="ini-ind-card" onClick={() => navigate("/agenda")}>
-          <div className="ini-ind-icon" style={{ background: "#DBEAFE", color: "#1D4ED8" }}>
-            <CalendarDots size={22} weight="duotone" />
-          </div>
-          <div className="ini-ind-body">
-            <span className="ini-ind-val">{counts.entregasHoje}</span>
+        <button
+          className="ini-ind-card ini-ind-card--pedidos"
+          onClick={() => navigate("/agenda")}
+        >
+          <div className="ini-ind-content">
             <span className="ini-ind-label">{counts.entregasHoje === 1 ? "Pedido hoje" : "Pedidos hoje"}</span>
+            <span className="ini-ind-val">{counts.entregasHoje}</span>
+          </div>
+          <div className="ini-ind-sticker">
+            <CalendarDots size={22} weight="fill" color="#1D4ED8" />
           </div>
         </button>
 
-        <button className="ini-ind-card" onClick={() => navigate("/financeiro")}>
-          <div className="ini-ind-icon" style={{ background: "#DCFCE7", color: "#15803D" }}>
-            <CurrencyDollar size={22} weight="duotone" />
-          </div>
-          <div className="ini-ind-body">
-            <span className="ini-ind-val ini-ind-val--currency">{formatCurrencyCompact(counts.faturamentoMes)}</span>
+        <button
+          className="ini-ind-card ini-ind-card--faturamento"
+          onClick={() => navigate("/financeiro")}
+        >
+          <div className="ini-ind-content">
             <span className="ini-ind-label">Faturamento</span>
+            <span className="ini-ind-val ini-ind-val--currency">{formatCurrencyCompact(counts.faturamentoMes)}</span>
+          </div>
+          <div className="ini-ind-sticker">
+            <CurrencyDollar size={22} weight="fill" color="#15803D" />
           </div>
         </button>
 
-        <button className="ini-ind-card" onClick={() => navigate("/clientes")}>
-          <div className="ini-ind-icon" style={{ background: "#FCE7F3", color: "#BE185D" }}>
-            <Cake size={22} weight="duotone" />
-          </div>
-          <div className="ini-ind-body">
-            <span className="ini-ind-val">{counts.aniversariantes}</span>
+        <button
+          className="ini-ind-card ini-ind-card--aniversarios"
+          onClick={() => navigate("/clientes")}
+        >
+          <div className="ini-ind-content">
             <span className="ini-ind-label">{counts.aniversariantes === 1 ? "Aniversário" : "Aniversários"}</span>
+            <span className="ini-ind-val">{counts.aniversariantes}</span>
+          </div>
+          <div className="ini-ind-sticker">
+            <Cake size={22} weight="fill" color="#BE185D" />
           </div>
         </button>
       </div>
@@ -483,42 +492,77 @@ export default function Inicio() {
           margin: 4px 0 0;
         }
 
-        /* ── 3 indicadores flutuando ── */
+        /* ── 3 indicadores estilo "sticker card" ── */
         .ini-indicadores {
-          display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem;
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.55rem;
           margin-top: -80px;
           padding: 0 0.25rem;
           position: relative;
           z-index: 2;
         }
         .ini-ind-card {
+          position: relative;
           background: var(--bg-card, #fff);
-          border: none; border-radius: 18px;
-          padding: 0.95rem 0.75rem;
-          display: flex; flex-direction: column; align-items: center; gap: 0.55rem;
-          box-shadow: 0 4px 16px rgba(61,26,36,0.12);
+          border: none;
+          border-radius: 22px;
+          padding: 1rem 1rem 0.95rem;
+          min-height: 96px;
+          display: flex; align-items: flex-end;
+          box-shadow: 0 8px 22px rgba(0,0,0,0.10);
           cursor: pointer;
           font-family: inherit;
-          transition: transform 0.15s ease;
+          text-align: left;
+          overflow: hidden;
+          transition: transform 0.18s ease, box-shadow 0.18s ease;
         }
-        .ini-ind-card:active { transform: scale(0.96); }
-        .ini-ind-icon {
-          width: 46px; height: 46px; border-radius: 13px;
-          display: flex; align-items: center; justify-content: center;
+        .ini-ind-card:active { transform: scale(0.97); }
+        .ini-ind-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,0.14); }
+
+        /* Variantes coloridas (gradient sutil) */
+        .ini-ind-card--pedidos {
+          background: linear-gradient(135deg, #60A5FA 0%, #2563EB 100%);
         }
-        .ini-ind-body { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+        .ini-ind-card--faturamento {
+          background: linear-gradient(135deg, #4ADE80 0%, #16A34A 100%);
+        }
+        .ini-ind-card--aniversarios {
+          background: linear-gradient(135deg, #F472B6 0%, #BE185D 100%);
+        }
+
+        .ini-ind-content {
+          display: flex; flex-direction: column;
+          gap: 4px;
+          width: 100%;
+          z-index: 1;
+        }
+        .ini-ind-label {
+          font-size: 0.72rem; font-weight: 600;
+          color: rgba(255,255,255,0.92);
+          line-height: 1.2;
+          letter-spacing: 0.01em;
+        }
         .ini-ind-val {
           font-size: 1.5rem; font-weight: 800;
-          color: var(--text-title, #1F2937); line-height: 1;
+          color: #fff; line-height: 1;
+          letter-spacing: -0.02em;
         }
         .ini-ind-val--currency {
           font-size: 1.15rem;
-          letter-spacing: -0.02em;
         }
-        .ini-ind-label {
-          font-size: 0.7rem; font-weight: 600;
-          color: var(--text-muted, #9CA3AF);
+
+        /* Mini-card branco com ícone (canto superior direito) */
+        .ini-ind-sticker {
+          position: absolute;
+          top: 8px; right: 8px;
+          width: 38px; height: 38px;
+          background: #fff;
+          border-radius: 11px;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 3px 8px rgba(0,0,0,0.18), 0 1px 2px rgba(0,0,0,0.08);
+          transform: rotate(4deg);
+          transition: transform 0.2s ease;
         }
+        .ini-ind-card:hover .ini-ind-sticker { transform: rotate(-2deg) scale(1.05); }
 
         /* ── Sections ── */
         .ini-section {
