@@ -357,7 +357,7 @@ export default function Inicio() {
                 <span className="ini-alerta-icon">
                   {a.tipo === "pedido"     && <ClipboardText size={18} weight="fill" />}
                   {a.tipo === "entrega"    && <CalendarDots  size={18} weight="fill" />}
-                  {a.tipo === "aniversario"&& <Cake          size={18} weight="fill" />}
+                  {a.tipo === "aniversario"&& <img src="/Sistema/aniversario.png" alt="" width={22} height={22} style={{ objectFit: "contain" }} />}
                 </span>
                 <div className="ini-alerta-body">
                   <span className="ini-alerta-texto">
