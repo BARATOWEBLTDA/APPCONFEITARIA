@@ -629,7 +629,7 @@ export default function Inicio() {
         }
         .ini-alerta--pedido      .ini-alerta-icon { background: #FEE2E2; color: #B91C1C; }
         .ini-alerta--entrega     .ini-alerta-icon { background: #DBEAFE; color: #1D4ED8; }
-        .ini-alerta--aniversario .ini-alerta-icon { background: #FCE7F3; color: #EC4899; }
+        .ini-alerta--aniversario .ini-alerta-icon { background: transparent; color: #EC4899; }
 
         .ini-alerta-body { flex: 1; min-width: 0; }
         .ini-alerta-texto {
