@@ -73,6 +73,7 @@ export default function Insumos() {
   const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([]);
   const [showMovModal, setShowMovModal] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [showCatDropdown, setShowCatDropdown] = useState(false);
   const [movTipo, setMovTipo] = useState<"entrada" | "saida">("entrada");
   const [movQtd, setMovQtd] = useState("");
   const [movMotivo, setMovMotivo] = useState("");
@@ -382,11 +383,52 @@ export default function Insumos() {
         </select>
       </div>
 
-      {/* Chips de categoria (rolagem horizontal no mobile) */}
-      <div className="ins-filtros">
+      {/* Filtros por categoria — chips no desktop, dropdown no mobile */}
+      <div className="ins-filtros ins-filtros--desktop">
         {["Todas", ...categorias].map(cat => (
           <button key={cat} className={"ins-filtro-btn" + (filtroCategoria === cat ? " active" : "")} onClick={() => { setFiltroCategoria(cat); setPaginaAtual(1); }}>{cat}</button>
         ))}
+      </div>
+
+      <div className="ins-cat-dropdown">
+        <button
+          className="ins-cat-dropdown-trigger"
+          onClick={() => setShowCatDropdown(s => !s)}
+          aria-expanded={showCatDropdown}
+        >
+          <span className="ins-cat-dropdown-label">
+            <span className="ins-cat-dropdown-tag">Categoria</span>
+            <span className="ins-cat-dropdown-value">{filtroCategoria}</span>
+          </span>
+          <svg
+            width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+            style={{ transform: showCatDropdown ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}
+          >
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+        {showCatDropdown && (
+          <>
+            <div className="ins-cat-dropdown-backdrop" onClick={() => setShowCatDropdown(false)} />
+            <div className="ins-cat-dropdown-list" role="listbox">
+              {["Todas", ...categorias].map(cat => (
+                <button
+                  key={cat}
+                  className={"ins-cat-dropdown-item" + (filtroCategoria === cat ? " is-active" : "")}
+                  onClick={() => { setFiltroCategoria(cat); setPaginaAtual(1); setShowCatDropdown(false); }}
+                  role="option"
+                  aria-selected={filtroCategoria === cat}
+                >
+                  {cat}
+                  {filtroCategoria === cat && (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  )}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Indicador de filtro de status ativo */}
@@ -1408,6 +1450,52 @@ function Styles() {
       .ins-filtro-btn { padding:0.4rem 0.95rem; border:1.5px solid var(--border, #E9E9EE); border-radius:999px; background:var(--bg-card, #FFFFFF); font-family:'Geist', sans-serif; font-size:0.8rem; font-weight:500; color:var(--text-secondary, #6B7280); cursor:pointer; white-space:nowrap; transition:all 0.15s; }
       .ins-filtro-btn.active { border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); background:var(--primary-light, #FFF1F7); font-weight:700; }
 
+      /* Dropdown de categoria — mobile only por padrão */
+      .ins-cat-dropdown { display:none; position:relative; }
+      .ins-cat-dropdown-trigger {
+        width:100%; display:flex; align-items:center; justify-content:space-between; gap:0.6rem;
+        padding:0.7rem 0.9rem;
+        background:var(--bg-card, #FFFFFF);
+        border:1.5px solid var(--border, #E9E9EE);
+        border-radius:12px;
+        font-family:'Geist', sans-serif; cursor:pointer;
+        color:var(--text-title, #1F2937);
+      }
+      .ins-cat-dropdown-trigger:hover { border-color:var(--primary, #FF6FA9); }
+      .ins-cat-dropdown-label { display:flex; align-items:center; gap:0.55rem; min-width:0; }
+      .ins-cat-dropdown-tag {
+        font-size:0.62rem; font-weight:700; text-transform:uppercase; letter-spacing:0.4px;
+        color:var(--text-muted, #9CA3AF);
+        background:var(--bg-body, #F7F7F8); padding:3px 7px; border-radius:6px;
+      }
+      .ins-cat-dropdown-value { font-size:0.9rem; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .ins-cat-dropdown-backdrop { position:fixed; inset:0; z-index:90; background:transparent; }
+      .ins-cat-dropdown-list {
+        position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:91;
+        background:var(--bg-card, #FFFFFF);
+        border:1.5px solid var(--border, #E9E9EE);
+        border-radius:12px;
+        box-shadow:0 8px 24px rgba(0,0,0,0.08);
+        max-height:300px; overflow-y:auto;
+        padding:4px;
+        animation:catDropFade 0.15s ease;
+      }
+      @keyframes catDropFade { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+      .ins-cat-dropdown-item {
+        width:100%; display:flex; align-items:center; justify-content:space-between;
+        padding:0.65rem 0.8rem;
+        background:transparent; border:none; cursor:pointer;
+        font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:500;
+        color:var(--text-title, #1F2937);
+        border-radius:8px; text-align:left;
+        transition:background 0.12s ease;
+      }
+      .ins-cat-dropdown-item:hover { background:var(--bg-body, #F7F7F8); }
+      .ins-cat-dropdown-item.is-active {
+        background:var(--primary-light, #FFF1F7);
+        color:var(--primary, #FF6FA9); font-weight:700;
+      }
+
       /* Pill de filtro de status ativo */
       .ins-filter-pill {
         display:inline-flex; align-items:center; gap:0.5rem;
@@ -1495,15 +1583,9 @@ function Styles() {
         .ins-toolbar { gap:0.5rem; }
         .ins-select { padding:0.62rem 0.7rem; font-size:0.82rem; }
 
-        /* Filtros viram scroll horizontal */
-        .ins-filtros {
-          flex-wrap:nowrap;
-          overflow-x:auto;
-          margin:0 -1rem;
-          padding:0.15rem 1rem;
-          scrollbar-width:none;
-        }
-        .ins-filtros::-webkit-scrollbar { display:none; }
+        /* Filtros: chips somem, dropdown aparece */
+        .ins-filtros--desktop { display:none; }
+        .ins-cat-dropdown { display:block; }
 
         /* Tabela vira cards no mobile */
         .ins-table-wrap { background:transparent; box-shadow:none; border-radius:0; }
