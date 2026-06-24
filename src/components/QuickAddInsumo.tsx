@@ -86,7 +86,6 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   const [saving, setSaving] = useState(false);
   const [categorias, setCategorias] = useState<string[]>(CATEGORIAS_DEFAULT);
 
-  const cameraRef = useRef<HTMLInputElement>(null);
   const galleryRef = useRef<HTMLInputElement>(null);
 
   // Carrega categorias customizadas do usuário
@@ -229,69 +228,70 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       <div className="qai-imgs">
         <div className="qai-imgs-label">Imagem do produto</div>
 
-        <div className="qai-imgs-actions">
-          <button type="button" className="qai-img-action" onClick={() => cameraRef.current?.click()} disabled={uploadingImg}>
-            <span className="qai-img-action-icon">📷</span>
-            <span>Câmera</span>
-          </button>
-          <button type="button" className="qai-img-action" onClick={() => galleryRef.current?.click()} disabled={uploadingImg}>
-            <span className="qai-img-action-icon">🖼️</span>
-            <span>Galeria</span>
-          </button>
-          <button type="button" className="qai-img-action" onClick={handleBuscarImagem} disabled={buscandoImg || form.nome.trim().length < 3}>
-            <span className="qai-img-action-icon">🔍</span>
-            <span>Buscar</span>
-          </button>
-        </div>
-
-        <input ref={cameraRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={handleUploadFile} />
         <input ref={galleryRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleUploadFile} />
 
-        {/* Estado: enviando imagem */}
-        {uploadingImg && (
-          <div className="qai-imgs-status">📤 Enviando imagem...</div>
-        )}
+        {/* Área da imagem (3 slots, resultado da busca, upload, ou mensagem do Doo) */}
+        <div className="qai-imgs-area">
+          {buscandoImg && (
+            <div className="qai-imgs-doo">
+              <div className="qai-imgs-doo-spinner" />
+              <p>🔍 <strong>Doo</strong> está procurando<span className="qai-dots"><span>.</span><span>.</span><span>.</span></span></p>
+            </div>
+          )}
 
-        {/* Estado: buscando */}
-        {buscandoImg && (
-          <div className="qai-imgs-status">🔄 Buscando imagens da internet...</div>
-        )}
+          {uploadingImg && (
+            <div className="qai-imgs-doo">
+              <div className="qai-imgs-doo-spinner" />
+              <p>📤 <strong>Doo</strong> está enviando<span className="qai-dots"><span>.</span><span>.</span><span>.</span></span></p>
+            </div>
+          )}
 
-        {/* Imagem selecionada (upload ou pós-seleção da busca, sem mais resultados) */}
-        {!uploadingImg && !buscandoImg && form.imagem_url && imagens.length === 0 && (
-          <div className="qai-imgs-selected">
-            <img src={form.imagem_url} alt="Imagem selecionada" />
-            <button type="button" className="qai-img-remove" onClick={() => setForm(f => ({ ...f, imagem_url: "" }))}>
-              ✕ Remover
-            </button>
-          </div>
-        )}
-
-        {/* Resultados da busca (3 grandes) */}
-        {!uploadingImg && imagens.length > 0 && (
-          <div className="qai-imgs-grid">
-            {imagens.map((url, idx) => (
-              <button
-                key={idx}
-                type="button"
-                className={`qai-img-big ${form.imagem_url === url ? "qai-img-big--selected" : ""}`}
-                onClick={() => setForm(f => ({ ...f, imagem_url: f.imagem_url === url ? "" : url }))}
-              >
-                <img src={url} alt="" />
-                {form.imagem_url === url && <span className="qai-img-check">✓</span>}
+          {/* Imagem única do upload */}
+          {!buscandoImg && !uploadingImg && form.imagem_url && imagens.length === 0 && (
+            <div className="qai-imgs-selected">
+              <img src={form.imagem_url} alt="Imagem selecionada" />
+              <button type="button" className="qai-img-remove" onClick={() => setForm(f => ({ ...f, imagem_url: "" }))}>
+                ✕ Remover
               </button>
-            ))}
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* Estado vazio: 3 slots placeholder */}
-        {!uploadingImg && !buscandoImg && !form.imagem_url && imagens.length === 0 && (
-          <div className="qai-imgs-grid">
-            <div className="qai-img-big qai-img-big--placeholder"><span>📷</span></div>
-            <div className="qai-img-big qai-img-big--placeholder"><span>🖼️</span></div>
-            <div className="qai-img-big qai-img-big--placeholder"><span>🔍</span></div>
-          </div>
-        )}
+          {/* 3 resultados da busca */}
+          {!buscandoImg && !uploadingImg && imagens.length > 0 && (
+            <div className="qai-imgs-grid">
+              {imagens.map((url, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`qai-img-big ${form.imagem_url === url ? "qai-img-big--selected" : ""}`}
+                  onClick={() => setForm(f => ({ ...f, imagem_url: f.imagem_url === url ? "" : url }))}
+                >
+                  <img src={url} alt="" />
+                  {form.imagem_url === url && <span className="qai-img-check">✓</span>}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Estado inicial: 3 placeholders */}
+          {!buscandoImg && !uploadingImg && !form.imagem_url && imagens.length === 0 && (
+            <div className="qai-imgs-grid">
+              <div className="qai-img-big qai-img-big--placeholder"><span>🖼️</span></div>
+              <div className="qai-img-big qai-img-big--placeholder"><span>🖼️</span></div>
+              <div className="qai-img-big qai-img-big--placeholder"><span>🖼️</span></div>
+            </div>
+          )}
+        </div>
+
+        {/* 2 botões embaixo */}
+        <div className="qai-imgs-actions">
+          <button type="button" className="qai-img-action" onClick={handleBuscarImagem} disabled={buscandoImg || uploadingImg || form.nome.trim().length < 3}>
+            🔍 Buscar Automaticamente
+          </button>
+          <button type="button" className="qai-img-action" onClick={() => galleryRef.current?.click()} disabled={uploadingImg || buscandoImg}>
+            📤 Upload manual
+          </button>
+        </div>
       </div>
 
       <div className="qai-row-3">
@@ -383,39 +383,52 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           color:var(--text-secondary, #6B7280);
           letter-spacing:0.2px;
         }
-        .qai-imgs-actions {
-          display:grid; grid-template-columns:repeat(3, 1fr); gap:0.4rem;
-        }
-        .qai-img-action {
-          display:flex; flex-direction:column; align-items:center; gap:3px;
-          padding:0.55rem 0.4rem;
-          background:var(--bg-body, #F7F7F8);
-          border:1.5px solid var(--border, #E5E7EB);
-          border-radius:10px;
-          font-family:inherit;
-          font-size:0.72rem; font-weight:600;
-          color:var(--text-title, #1F2937);
-          cursor:pointer;
-          transition:all 0.15s ease;
-        }
-        .qai-img-action:hover:not(:disabled) {
-          border-color:var(--primary, #FF6FA9);
-          background:#FFF5F9;
-          color:var(--primary, #FF6FA9);
-        }
-        .qai-img-action:disabled { opacity:0.45; cursor:not-allowed; }
-        .qai-img-action-icon { font-size:1.25rem; line-height:1; }
 
-        .qai-imgs-status {
-          padding:0.75rem 0.85rem; text-align:center;
-          background:#FFF5F9; border:1.5px dashed var(--primary, #FF6FA9);
-          border-radius:10px;
-          font-size:0.82rem; font-weight:600;
+        /* Container que reserva a altura dos 3 slots, mesmo quando vazio/buscando */
+        .qai-imgs-area {
+          min-height: 110px;
+          display:flex; flex-direction:column;
+        }
+
+        /* Mensagem do Doo (procurando / enviando) */
+        .qai-imgs-doo {
+          flex:1; min-height:110px;
+          display:flex; flex-direction:column; align-items:center; justify-content:center;
+          gap:10px;
+          background:#FFF5F9;
+          border:1.5px dashed var(--primary, #FF6FA9);
+          border-radius:12px;
+          padding:1rem;
+        }
+        .qai-imgs-doo p {
+          margin:0;
+          font-size:0.92rem; font-weight:600;
           color:var(--primary, #FF6FA9);
+        }
+        .qai-imgs-doo strong { font-weight:800; }
+        .qai-imgs-doo-spinner {
+          width:28px; height:28px;
+          border:3px solid rgba(255, 111, 169, 0.25);
+          border-top-color:var(--primary, #FF6FA9);
+          border-radius:50%;
+          animation:qaiSpin 0.7s linear infinite;
+        }
+        @keyframes qaiSpin { to { transform:rotate(360deg); } }
+        .qai-dots span {
+          display:inline-block; opacity:0;
+          animation:qaiDots 1.2s infinite;
+        }
+        .qai-dots span:nth-child(1) { animation-delay:0s; }
+        .qai-dots span:nth-child(2) { animation-delay:0.2s; }
+        .qai-dots span:nth-child(3) { animation-delay:0.4s; }
+        @keyframes qaiDots {
+          0%, 60%, 100% { opacity:0; }
+          30% { opacity:1; }
         }
 
         .qai-imgs-grid {
           display:grid; grid-template-columns:repeat(3, 1fr); gap:0.5rem;
+          flex:1;
         }
         .qai-img-big {
           position:relative;
@@ -471,6 +484,30 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           cursor:pointer;
         }
         .qai-img-remove:hover { background:rgba(0,0,0,0.85); }
+
+        /* Botões de ação embaixo da imagem */
+        .qai-imgs-actions {
+          display:grid; grid-template-columns:1fr 1fr; gap:0.45rem;
+        }
+        .qai-img-action {
+          padding:0.7rem 0.6rem;
+          background:var(--bg-body, #F7F7F8);
+          border:1.5px solid var(--border, #E5E7EB);
+          border-radius:10px;
+          font-family:inherit;
+          font-size:0.8rem; font-weight:700;
+          color:var(--text-title, #1F2937);
+          cursor:pointer;
+          transition:all 0.15s ease;
+          white-space:nowrap;
+          overflow:hidden; text-overflow:ellipsis;
+        }
+        .qai-img-action:hover:not(:disabled) {
+          border-color:var(--primary, #FF6FA9);
+          background:#FFF5F9;
+          color:var(--primary, #FF6FA9);
+        }
+        .qai-img-action:disabled { opacity:0.45; cursor:not-allowed; }
 
         .qai-preview {
           padding:0.55rem 0.8rem; background:#FFF5F9;
