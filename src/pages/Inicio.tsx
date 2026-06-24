@@ -461,7 +461,7 @@ export default function Inicio() {
           background-size: 300% 300%;
           animation: heroGradientMove 10s ease infinite;
           border-radius: 0 0 28px 28px;
-          padding: 2rem 1.25rem 6.5rem;
+          padding: 2rem 1.25rem 4rem;
           /* Full-bleed: estende até a borda da viewport ignorando padding dos pais */
           width: 100vw;
           margin-left: calc(50% - 50vw);
@@ -489,7 +489,7 @@ export default function Inicio() {
         /* ── 3 indicadores estilo "sticker card" ── */
         .ini-indicadores {
           display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.55rem;
-          margin-top: -80px;
+          margin-top: -50px;
           padding: 0 0.25rem;
           position: relative;
           z-index: 2;
@@ -704,7 +704,7 @@ export default function Inicio() {
             margin-left: -1.5rem;
             margin-right: -1.5rem;
             margin-top: -0.75rem;
-            padding: 3rem 2rem 5rem;
+            padding: 3rem 2rem 3.5rem;
             border-radius: 0 0 32px 32px;
           }
           .ini-hero-greeting h1 { font-size: 1.6rem; }
@@ -712,7 +712,7 @@ export default function Inicio() {
           .ini-indicadores {
             grid-template-columns: repeat(3, 1fr);
             max-width: 720px;
-            margin-top: -90px;
+            margin-top: -55px;
             margin-left: auto;
             margin-right: auto;
             gap: 1rem;
