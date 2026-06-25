@@ -89,6 +89,9 @@ export default function Produtos() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [modal, setModal] = useState(false);
+  const [wizardStep, setWizardStep] = useState(1);
+  const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes">("simples");
+  const [wizardOpts, setWizardOpts] = useState({ complementos: false, personalizacao: false, promocao: false });
   const [form, setForm] = useState<Produto>(EMPTY);
   const [filtroCategoria, setFiltroCategoria] = useState("todas");
   const [novaCategoria, setNovaCategoria] = useState("");
@@ -199,10 +202,11 @@ export default function Produtos() {
     if (data) setCategorias(data.map((c: any) => c.nome));
   };
 
-  const openNovo = () => { setForm(EMPTY); setFichaTecnica([]); setModal(true); };
+  const openNovo = () => { setForm(EMPTY); setFichaTecnica([]); setWizardStep(1); setWizardTipo("simples"); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setModal(true); };
   const openEditar = async (p: Produto) => {
     setForm({ ...EMPTY, ...p });
     setFichaTecnica([]);
+    setWizardStep(2);
     setModal(true);
     if (p.id && userId) {
       const { data } = await supabase
@@ -218,7 +222,7 @@ export default function Produtos() {
       }
     }
   };
-  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); };
+  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(1); setWizardTipo("simples"); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: number = 0) => {
     const file = e.target.files?.[0];
@@ -605,11 +609,116 @@ export default function Produtos() {
         <div className="prod-modal-overlay" onClick={fecharModal}>
           <div className="prod-modal" onClick={e => e.stopPropagation()}>
             <div className="prod-modal-header">
-              <h2 className="prod-modal-title">{form.id ? "Editar Produto" : "Novo Produto"}</h2>
+              {wizardStep === 2 && !form.id && (
+                <button className="prod-modal-back" onClick={() => setWizardStep(1)}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+              )}
+              <h2 className="prod-modal-title">{form.id ? "Editar Produto" : wizardStep === 1 ? "Criar Novo Produto" : "Novo Produto"}</h2>
               <button className="prod-modal-close" onClick={fecharModal}>✕</button>
             </div>
 
+            {/* ══════ WIZARD STEP 1 ══════ */}
+            {wizardStep === 1 && (
+              <div className="prod-modal-body">
+                <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", margin: 0 }}>Preencha os detalhes para cadastrar um novo produto no sistema.</p>
+
+                {/* Barra de progresso */}
+                <div style={{ display: "flex", gap: "6px" }}>
+                  <div style={{ flex: 1, height: "4px", borderRadius: "2px", background: "var(--primary)" }} />
+                  <div style={{ flex: 1, height: "4px", borderRadius: "2px", background: "var(--border)" }} />
+                </div>
+
+                {/* Nome do produto */}
+                <div className="prod-field">
+                  <label>Nome do Produto</label>
+                  <input type="text" placeholder="Ex: Bolo de Morango" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} style={{ fontSize: "1rem", padding: "0.85rem 1rem" }} />
+                </div>
+
+                {/* Tipo */}
+                <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-primary)", margin: "0.5rem 0 0" }}>Que tipo de produto você quer cadastrar?</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {[
+                    { tipo: "simples" as const, icon: "📦", title: "Produto simples", desc: "Um único item no cardápio, sem sabores nem tamanhos." },
+                    { tipo: "variacoes" as const, icon: "✨", title: "Com variações", desc: "Sabores e/ou tamanhos (ex: bolo 30cm, 40cm ou chocolate, morango)." },
+                  ].map(({ tipo, icon, title, desc }) => (
+                    <button key={tipo} onClick={() => setWizardTipo(tipo)} style={{
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: "8px",
+                      padding: "1.25rem 1rem", borderRadius: "16px", cursor: "pointer",
+                      border: wizardTipo === tipo ? "2px solid var(--primary)" : "2px solid var(--border)",
+                      background: wizardTipo === tipo ? "var(--primary-light)" : "var(--bg-card)",
+                      fontFamily: "inherit", textAlign: "center", transition: "all 0.15s",
+                    }}>
+                      <span style={{ fontSize: "2rem" }}>{icon}</span>
+                      <p style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--text-title)", margin: 0 }}>{title}</p>
+                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.4 }}>{desc}</p>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Recursos opcionais */}
+                <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-primary)", margin: "0.5rem 0 0" }}>Recursos opcionais</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {[
+                    { key: "complementos" as const, icon: "🎁", title: "Complementos", desc: "Velas, topo de bolo, papel de arroz, embalagem especial e mais." },
+                    { key: "personalizacao" as const, icon: "🎨", title: "Personalização", desc: "Massas, recheios e coberturas que o cliente pode escolher." },
+                    { key: "promocao" as const, icon: "🏷️", title: "Promoção", desc: "Preço promocional fixo ou desconto percentual." },
+                  ].map(({ key, icon, title, desc }) => (
+                    <button key={key} onClick={() => setWizardOpts(o => ({ ...o, [key]: !o[key] }))} style={{
+                      display: "flex", alignItems: "flex-start", gap: "12px",
+                      padding: "14px 16px", borderRadius: "14px", cursor: "pointer",
+                      border: wizardOpts[key] ? "2px solid var(--primary)" : "2px solid var(--border)",
+                      background: wizardOpts[key] ? "var(--primary-light)" : "var(--bg-card)",
+                      fontFamily: "inherit", textAlign: "left", transition: "all 0.15s", width: "100%",
+                    }}>
+                      <div style={{
+                        width: "22px", height: "22px", borderRadius: "6px", flexShrink: 0,
+                        border: wizardOpts[key] ? "2px solid var(--primary)" : "2px solid var(--border)",
+                        background: wizardOpts[key] ? "var(--primary)" : "transparent",
+                        display: "flex", alignItems: "center", justifyContent: "center", marginTop: "2px",
+                      }}>
+                        {wizardOpts[key] && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                      </div>
+                      <div>
+                        <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 2px", display: "flex", alignItems: "center", gap: "6px" }}>
+                          <span>{icon}</span> {title}
+                        </p>
+                        <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.4 }}>{desc}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Footer step 1 */}
+                <div style={{ display: "flex", gap: "10px", paddingTop: "0.5rem" }}>
+                  <button className="prod-btn-cancelar" onClick={fecharModal}>Cancelar</button>
+                  <button className="prod-btn-salvar" disabled={!form.nome.trim()} onClick={() => {
+                    setForm(f => ({
+                      ...f,
+                      forma_venda: wizardTipo === "simples" ? "unidade" : f.forma_venda,
+                      permite_personalizacao: wizardOpts.personalizacao,
+                      tem_adicionais: wizardOpts.complementos,
+                      promocao: wizardOpts.promocao,
+                    }));
+                    setWizardStep(2);
+                  }}>
+                    Avançar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ══════ WIZARD STEP 2 (FORMULÁRIO) ══════ */}
+            {wizardStep === 2 && (
             <div className="prod-modal-body">
+
+              {/* Barra de progresso */}
+              {!form.id && (
+                <div style={{ display: "flex", gap: "6px" }}>
+                  <div style={{ flex: 1, height: "4px", borderRadius: "2px", background: "var(--primary)" }} />
+                  <div style={{ flex: 1, height: "4px", borderRadius: "2px", background: "var(--primary)" }} />
+                </div>
+              )}
 
               {/* Foto */}
               <div className="prod-section">
@@ -890,6 +999,7 @@ export default function Produtos() {
               )}
 
               {/* Personalização */}
+              {(form.id || wizardOpts.personalizacao) && (
               <div className="prod-section">
                 <p className="prod-section-label">Personalização</p>
                 <Toggle label="Permitir personalização" value={form.permite_personalizacao || false} onChange={(v: boolean) => setForm(f => ({ ...f, permite_personalizacao: v }))} colorClass="active-pink" />
@@ -931,8 +1041,10 @@ export default function Produtos() {
                   </>
                 )}
               </div>
+              )}
 
               {/* Adicionais */}
+              {(form.id || wizardOpts.complementos) && (
               <div className="prod-section">
                 <p className="prod-section-label">Adicionais</p>
                 <Toggle label="Oferecer adicionais" value={form.tem_adicionais || false} onChange={(v: boolean) => setForm(f => ({ ...f, tem_adicionais: v }))} colorClass="active-pink" />
@@ -999,8 +1111,10 @@ export default function Produtos() {
                   </>
                 )}
               </div>
+              )}
 
               {/* Promoção */}
+              {(form.id || wizardOpts.promocao) && (
               <div className="prod-section">
                 <p className="prod-section-label">Promoção</p>
                 <Toggle label="Produto em promoção" value={form.promocao} onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v }))} colorClass="active-pink" />
@@ -1072,6 +1186,7 @@ export default function Produtos() {
                   </>
                 )}
               </div>
+              )}
 
               {/* Status */}
               <div className="prod-section">
@@ -1083,13 +1198,16 @@ export default function Produtos() {
               </div>
 
             </div>
+            )}
 
+            {wizardStep === 2 && (
             <div className="prod-modal-footer">
               <button className="prod-btn-cancelar" onClick={fecharModal}>Cancelar</button>
               <button className="prod-btn-salvar" onClick={handleSalvar} disabled={saving}>
                 {saving ? <span className="prod-spinner-sm" /> : (form.id ? "Salvar alterações" : "Publicar produto")}
               </button>
             </div>
+            )}
           </div>
         </div>
       )}
@@ -1348,6 +1466,8 @@ export default function Produtos() {
         .prod-modal-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5) var(--space-3); border-bottom: 1px solid var(--border); flex-shrink: 0; }
         .prod-modal-title { font-size: var(--font-modal-title); font-weight: var(--fw-bold); line-height: var(--lh-tight); color: var(--text-title); margin: 0; }
         .prod-modal-close { background: var(--bg-subtle); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); font-size: var(--font-caption); transition: background var(--dur-fast) var(--ease-out); }
+        .prod-modal-back { background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; padding: 0; margin-right: -4px; transition: color 0.15s; }
+        .prod-modal-back:hover { color: var(--text-title); }
         .prod-modal-body { flex: 1; overflow-y: auto; padding: var(--pad-modal); display: flex; flex-direction: column; gap: var(--gap-section); overscroll-behavior: contain; }
         .prod-modal-footer { padding: var(--pad-modal); border-top: 1px solid var(--border); display: flex; gap: var(--gap-stack); flex-shrink: 0; }
         .prod-section { display: flex; flex-direction: column; gap: var(--gap-stack); }
