@@ -172,32 +172,32 @@ export function TimePickerField({
 
         .tpf-trigger {
           display: flex; align-items: center; gap: 0.5rem;
-          border: 1.5px solid var(--border, #E9E9EE);
-          border-radius: 8px; padding: 0.55rem 0.75rem;
-          background: var(--bg-body, #FAFAFA);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-sm); padding: 0.55rem 0.75rem;
+          background: var(--bg-body);
           cursor: pointer; font-family: 'Geist', sans-serif;
-          font-size: 0.85rem; text-align: left;
-          transition: border-color 0.15s;
-          color: var(--text-muted, #9CA3AF);
+          font-size: var(--font-button); text-align: left;
+          transition: border-color var(--dur-fast);
+          color: var(--text-muted);
           width: 100%;
         }
-        .tpf-trigger.has-value { color: var(--text-primary, #1F2937); font-weight: 500; }
-        .tpf-trigger:hover, .tpf-trigger.open { border-color: var(--primary, #FF6FA9); }
-        .tpf-trigger svg:first-child { color: var(--primary, #FF6FA9); flex-shrink: 0; }
+        .tpf-trigger.has-value { color: var(--text-primary); font-weight: var(--fw-medium); }
+        .tpf-trigger:hover, .tpf-trigger.open { border-color: var(--primary); }
+        .tpf-trigger svg:first-child { color: var(--primary); flex-shrink: 0; }
         .tpf-trigger-text { flex: 1; }
 
         .tpf-clear {
           background: none; border: none; cursor: pointer; padding: 2px;
           display: flex; align-items: center; justify-content: center;
-          border-radius: 4px; color: var(--text-muted, #9CA3AF);
-          transition: color 0.15s; flex-shrink: 0;
+          border-radius: var(--radius-sm); color: var(--text-muted);
+          transition: color var(--dur-fast); flex-shrink: 0;
         }
         .tpf-clear:hover { color: #ef4444; }
 
         .tpf-popover {
           position: absolute; top: calc(100% + 6px); left: 0; z-index: 100;
-          background: white; border-radius: 14px;
-          border: 1.5px solid var(--border, #E9E9EE);
+          background: white; border-radius: var(--radius-lg);
+          border: 1.5px solid var(--border);
           box-shadow: 0 8px 32px rgba(0,0,0,0.12);
           animation: tpfFadeIn 0.15s ease;
           min-width: 200px; overflow: hidden;
@@ -210,14 +210,14 @@ export function TimePickerField({
         .tpf-header {
           display: flex; align-items: center; justify-content: space-around;
           padding: 0.65rem 1rem 0.5rem;
-          border-bottom: 1px solid var(--border, #E9E9EE);
+          border-bottom: 1px solid var(--border);
         }
         .tpf-header-label {
-          font-size: 0.72rem; font-weight: 700; color: var(--text-muted, #9CA3AF);
+          font-size: var(--font-caption); font-weight: var(--fw-bold); color: var(--text-muted);
           text-transform: uppercase; letter-spacing: 0.06em; flex: 1; text-align: center;
         }
         .tpf-separator {
-          font-size: 1rem; font-weight: 700; color: var(--text-muted, #9CA3AF);
+          font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-muted);
           padding: 0 0.25rem;
         }
 
@@ -229,49 +229,49 @@ export function TimePickerField({
         .tpf-col {
           flex: 1; overflow-y: auto; padding: 0.35rem 0.4rem;
           display: flex; flex-direction: column; gap: 2px;
-          scrollbar-width: thin; scrollbar-color: var(--border, #E9E9EE) transparent;
+          scrollbar-width: thin; scrollbar-color: var(--border) transparent;
         }
         .tpf-col::-webkit-scrollbar { width: 4px; }
-        .tpf-col::-webkit-scrollbar-thumb { background: var(--border, #E9E9EE); border-radius: 4px; }
+        .tpf-col::-webkit-scrollbar-thumb { background: var(--border); border-radius: var(--radius-sm); }
 
         .tpf-col-min { flex: 0.8; }
 
         .tpf-divider {
-          width: 1px; background: var(--border, #E9E9EE); flex-shrink: 0; margin: 0.35rem 0;
+          width: 1px; background: var(--border); flex-shrink: 0; margin: 0.35rem 0;
         }
 
         .tpf-item {
           width: 100%; padding: 0.45rem 0.5rem;
-          border: none; border-radius: 8px; background: none;
+          border: none; border-radius: var(--radius-sm); background: none;
           cursor: pointer; font-family: 'Geist', sans-serif;
-          font-size: 0.9rem; font-weight: 500;
-          color: var(--text-primary, #374151);
+          font-size: var(--font-button); font-weight: var(--fw-medium);
+          color: var(--text-primary);
           transition: background 0.1s, color 0.1s;
           text-align: center;
         }
-        .tpf-item:hover { background: var(--primary-light, #FFF1F7); color: var(--primary, #FF6FA9); }
+        .tpf-item:hover { background: var(--primary-light); color: var(--primary); }
         .tpf-item.selected {
-          background: var(--primary, #FF6FA9) !important;
-          color: white !important; font-weight: 700;
+          background: var(--primary) !important;
+          color: white !important; font-weight: var(--fw-bold);
         }
 
         .tpf-footer {
           display: flex; align-items: center; justify-content: space-between;
           padding: 0.6rem 0.85rem;
-          border-top: 1px solid var(--border, #E9E9EE);
-          background: var(--bg-body, #FAFAFA);
+          border-top: 1px solid var(--border);
+          background: var(--bg-body);
         }
         .tpf-preview {
-          font-size: 1.1rem; font-weight: 700;
-          color: var(--text-title, #1F2937);
+          font-size: var(--font-modal-title); font-weight: var(--fw-bold);
+          color: var(--text-title);
           font-family: 'Geist Mono', monospace;
           letter-spacing: 0.05em;
         }
         .tpf-confirm {
-          background: var(--primary, #FF6FA9); color: white;
-          border: none; border-radius: 8px; padding: 0.4rem 0.9rem;
-          font-size: 0.8rem; font-weight: 600; cursor: pointer;
-          font-family: 'Geist', sans-serif; transition: opacity 0.15s;
+          background: var(--primary); color: white;
+          border: none; border-radius: var(--radius-sm); padding: 0.4rem 0.9rem;
+          font-size: var(--font-helper); font-weight: var(--fw-semibold); cursor: pointer;
+          font-family: 'Geist', sans-serif; transition: opacity var(--dur-fast);
         }
         .tpf-confirm:hover { opacity: 0.88; }
       `}</style>

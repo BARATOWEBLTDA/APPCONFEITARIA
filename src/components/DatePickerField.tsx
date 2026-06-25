@@ -106,41 +106,41 @@ export function DatePickerField({
         .dpf-wrap { position: relative; display: flex; flex-direction: column; gap: 0.3rem; }
 
         .pf-required-badge {
-          margin-left: 0.4rem; font-size: 0.68rem; font-weight: 700;
+          margin-left: 0.4rem; font-size: var(--font-caption); font-weight: var(--fw-bold);
           color: #dc2626; background: #fee2e2;
-          padding: 1px 7px; border-radius: 8px; vertical-align: middle;
+          padding: 1px 7px; border-radius: var(--radius-sm); vertical-align: middle;
         }
 
         .dpf-trigger {
           display: flex; align-items: center; gap: 0.5rem;
-          border: 1.5px solid var(--border, #E9E9EE);
-          border-radius: 8px; padding: 0.55rem 0.75rem;
-          background: var(--bg-body, #FAFAFA);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-sm); padding: 0.55rem 0.75rem;
+          background: var(--bg-body);
           cursor: pointer; font-family: 'Geist', sans-serif;
-          font-size: 0.85rem; text-align: left;
-          transition: border-color 0.15s;
-          color: var(--text-muted, #9CA3AF);
+          font-size: var(--font-button); text-align: left;
+          transition: border-color var(--dur-fast);
+          color: var(--text-muted);
           width: 100%;
         }
-        .dpf-trigger.has-value { color: var(--text-primary, #1F2937); }
-        .dpf-trigger:hover, .dpf-trigger.open { border-color: var(--primary, #FF6FA9); }
-        .dpf-trigger svg:first-child { color: var(--primary, #FF6FA9); flex-shrink: 0; }
+        .dpf-trigger.has-value { color: var(--text-primary); }
+        .dpf-trigger:hover, .dpf-trigger.open { border-color: var(--primary); }
+        .dpf-trigger svg:first-child { color: var(--primary); flex-shrink: 0; }
 
         .dpf-trigger-text { flex: 1; }
 
         .dpf-clear {
           background: none; border: none; cursor: pointer; padding: 2px;
           display: flex; align-items: center; justify-content: center;
-          border-radius: 4px; color: var(--text-muted, #9CA3AF);
-          transition: color 0.15s;
+          border-radius: var(--radius-sm); color: var(--text-muted);
+          transition: color var(--dur-fast);
           flex-shrink: 0;
         }
         .dpf-clear:hover { color: #ef4444; }
 
         .dpf-popover {
           position: absolute; top: calc(100% + 6px); left: 0; z-index: 100;
-          background: white; border-radius: 14px;
-          border: 1.5px solid var(--border, #E9E9EE);
+          background: white; border-radius: var(--radius-lg);
+          border: 1.5px solid var(--border);
           box-shadow: 0 8px 32px rgba(0,0,0,0.12);
           animation: dpfFadeIn 0.15s ease;
           min-width: 300px;
@@ -157,8 +157,8 @@ export function DatePickerField({
         }
         .dpf-calendar .rdp-month_caption {
           display: flex; align-items: center; justify-content: center;
-          font-size: 0.92rem; font-weight: 700;
-          color: var(--text-title, #1F2937);
+          font-size: var(--font-button); font-weight: var(--fw-bold);
+          color: var(--text-title);
           margin-bottom: 0.75rem; text-transform: capitalize;
         }
         .dpf-calendar .rdp-nav {
@@ -166,25 +166,25 @@ export function DatePickerField({
         }
         .dpf-calendar .rdp-button_previous,
         .dpf-calendar .rdp-button_next {
-          width: 28px; height: 28px; border-radius: 8px;
-          border: 1.5px solid var(--border, #E9E9EE);
+          width: 28px; height: 28px; border-radius: var(--radius-sm);
+          border: 1.5px solid var(--border);
           background: white; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          transition: all 0.15s; color: var(--text-secondary, #6B7280);
+          transition: all var(--dur-fast); color: var(--text-secondary);
         }
         .dpf-calendar .rdp-button_previous:hover,
         .dpf-calendar .rdp-button_next:hover {
-          border-color: var(--primary, #FF6FA9);
-          color: var(--primary, #FF6FA9);
-          background: var(--primary-light, #FFF1F7);
+          border-color: var(--primary);
+          color: var(--primary);
+          background: var(--primary-light);
         }
         .dpf-calendar .rdp-weekdays {
           display: grid; grid-template-columns: repeat(7, 1fr);
           margin-bottom: 0.25rem;
         }
         .dpf-calendar .rdp-weekday {
-          text-align: center; font-size: 0.72rem; font-weight: 700;
-          color: var(--text-muted, #9CA3AF); padding: 0.25rem 0;
+          text-align: center; font-size: var(--font-caption); font-weight: var(--fw-bold);
+          color: var(--text-muted); padding: 0.25rem 0;
           text-transform: uppercase;
         }
         .dpf-calendar .rdp-month_grid {
@@ -197,10 +197,10 @@ export function DatePickerField({
           text-align: center; padding: 0;
         }
         .dpf-calendar .rdp-day_button {
-          width: 34px; height: 34px; border-radius: 8px;
+          width: 34px; height: 34px; border-radius: var(--radius-sm);
           border: none; background: none; cursor: pointer;
-          font-size: 0.83rem; font-weight: 500;
-          color: var(--text-primary, #374151);
+          font-size: var(--font-helper); font-weight: var(--fw-medium);
+          color: var(--text-primary);
           font-family: 'Geist', sans-serif;
           transition: background 0.12s, color 0.12s;
           margin: 1px auto; display: flex;
@@ -208,35 +208,35 @@ export function DatePickerField({
           width: 100%;
         }
         .dpf-calendar .rdp-day_button:hover {
-          background: var(--primary-light, #FFF1F7);
-          color: var(--primary, #FF6FA9);
+          background: var(--primary-light);
+          color: var(--primary);
         }
         .dpf-calendar .rdp-selected .rdp-day_button {
-          background: var(--primary, #FF6FA9) !important;
+          background: var(--primary) !important;
           color: white !important;
-          font-weight: 700;
+          font-weight: var(--fw-bold);
         }
         .dpf-calendar .rdp-today .rdp-day_button {
-          border: 1.5px solid var(--primary, #FF6FA9);
-          color: var(--primary, #FF6FA9);
-          font-weight: 700;
+          border: 1.5px solid var(--primary);
+          color: var(--primary);
+          font-weight: var(--fw-bold);
         }
         .dpf-calendar .rdp-selected.rdp-today .rdp-day_button {
           border: none;
           color: white !important;
         }
         .dpf-calendar .rdp-outside .rdp-day_button {
-          color: var(--text-muted, #9CA3AF);
+          color: var(--text-muted);
           opacity: 0.4;
         }
         .dpf-calendar .rdp-disabled .rdp-day_button {
-          color: var(--text-muted, #9CA3AF);
+          color: var(--text-muted);
           opacity: 0.3;
           cursor: not-allowed;
         }
         .dpf-calendar .rdp-disabled .rdp-day_button:hover {
           background: none;
-          color: var(--text-muted, #9CA3AF);
+          color: var(--text-muted);
         }
       `}</style>
     </div>

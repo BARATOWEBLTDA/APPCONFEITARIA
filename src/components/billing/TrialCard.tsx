@@ -43,15 +43,15 @@ export function TrialCardMobileExpiring({ diasRestantes, loading }: MobileExpiri
       <style>{`
         .tc-pro-mini-card {
           background: linear-gradient(135deg, #1a0a12, #2d0f1e);
-          border-radius: 14px;
+          border-radius: var(--radius-lg);
           padding: 1rem;
           border: 1px solid rgba(255,111,169,0.2);
           display: flex;
           flex-direction: column;
         }
         .tc-pro-mini-title {
-          font-size: 0.82rem;
-          font-weight: 700;
+          font-size: var(--font-helper);
+          font-weight: var(--fw-bold);
           color: white;
           margin: 0;
           white-space: nowrap;
@@ -59,7 +59,7 @@ export function TrialCardMobileExpiring({ diasRestantes, loading }: MobileExpiri
           text-overflow: ellipsis;
         }
         .tc-pro-mini-sub {
-          font-size: 0.72rem;
+          font-size: var(--font-caption);
           color: rgba(255,255,255,0.65);
           margin: 0.2rem 0 0;
           line-height: 1.4;
@@ -69,13 +69,13 @@ export function TrialCardMobileExpiring({ diasRestantes, loading }: MobileExpiri
           background: linear-gradient(135deg, #f9c74f, #f8961e);
           color: #1a1a2e;
           border: none;
-          border-radius: 10px;
+          border-radius: var(--radius-md);
           font-family: 'Geist', sans-serif;
-          font-size: 0.88rem;
-          font-weight: 800;
+          font-size: var(--font-button);
+          font-weight: var(--fw-black);
           cursor: pointer;
           box-shadow: 0 4px 16px rgba(248,150,30,0.3);
-          transition: opacity 0.2s;
+          transition: opacity var(--dur-normal);
         }
         .tc-assinar-btn:hover { opacity: 0.92; }
         .tc-assinar-btn:active { transform: scale(0.97); }
@@ -106,7 +106,7 @@ export function TrialCardMobileBanner() {
       <style>{`
         .tc-mob-trial {
           background: linear-gradient(135deg, #1a1a2e, #16213e);
-          border-radius: 14px;
+          border-radius: var(--radius-lg);
           padding: 1rem;
           display: flex;
           align-items: center;
@@ -119,16 +119,16 @@ export function TrialCardMobileBanner() {
         .tc-mob-trial-left { display: flex; align-items: center; gap: 0.75rem; }
         .tc-mob-trial-icon {
           width: 44px; height: 44px;
-          background: var(--bg-card, #FFFFFF);
-          border-radius: 10px; padding: 4px;
+          background: var(--bg-card);
+          border-radius: var(--radius-md); padding: 4px;
           flex-shrink: 0; overflow: hidden;
         }
-        .tc-mob-trial-title { font-size: 0.78rem; font-weight: 800; color: white; margin: 0 0 0.15rem; }
-        .tc-mob-trial-sub { font-size: 0.7rem; color: rgba(255,255,255,0.65); margin: 0; }
+        .tc-mob-trial-title { font-size: var(--font-helper); font-weight: var(--fw-black); color: white; margin: 0 0 0.15rem; }
+        .tc-mob-trial-sub { font-size: var(--font-caption); color: rgba(255,255,255,0.65); margin: 0; }
         .tc-mob-trial-badge {
           position: absolute; top: 0; right: 0;
-          background: var(--primary, #FF6FA9);
-          color: white; font-size: 0.6rem; font-weight: 700;
+          background: var(--primary);
+          color: white; font-size: var(--font-caption); font-weight: var(--fw-bold);
           padding: 0.2rem 0.6rem;
           border-radius: 0 14px 0 8px;
         }
@@ -151,7 +151,7 @@ export function TrialCardDesktopReward({ resgatando, onResgatar }: DesktopReward
       <div style={{ textAlign: "center", padding: "0.5rem 0" }}>
         <img src="/assine.png" alt="" style={{ width: "64px", height: "64px", objectFit: "contain", marginBottom: "0.5rem" }} />
         <h3 style={{ fontWeight: 800, color: "#15803d", margin: "0 0 0.25rem" }}>Configuração completa!</h3>
-        <p style={{ fontSize: "0.85rem", color: "var(--success, #22C55E)", margin: "0 0 1rem" }}>
+        <p style={{ fontSize: "0.85rem", color: "var(--success)", margin: "0 0 1rem" }}>
           Resgate agora 3 dias de acesso PRO como recompensa.
         </p>
         <button
@@ -168,7 +168,7 @@ export function TrialCardDesktopReward({ resgatando, onResgatar }: DesktopReward
         .tc-reward-card {
           background: linear-gradient(135deg, #f0fdf4, #dcfce7);
           border: 1px solid #bbf7d0;
-          border-radius: var(--radius-card, 18px);
+          border-radius: var(--radius-card);
           padding: 1rem 1.25rem;
           margin-bottom: 1rem;
         }
@@ -177,12 +177,12 @@ export function TrialCardDesktopReward({ resgatando, onResgatar }: DesktopReward
           background: linear-gradient(135deg, #22c55e, #16a34a);
           color: white;
           border: none;
-          border-radius: 10px;
+          border-radius: var(--radius-md);
           font-family: 'Geist', sans-serif;
-          font-size: 0.88rem;
-          font-weight: 800;
+          font-size: var(--font-button);
+          font-weight: var(--fw-black);
           cursor: pointer;
-          transition: opacity 0.2s;
+          transition: opacity var(--dur-normal);
         }
         .tc-resgatar-btn:hover { opacity: 0.92; }
         .tc-resgatar-btn:disabled { opacity: 0.6; cursor: not-allowed; }

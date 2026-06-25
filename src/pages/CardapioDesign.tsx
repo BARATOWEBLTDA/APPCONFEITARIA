@@ -146,7 +146,7 @@ export default function CardapioDesign() {
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "40vh" }}>
       <span className="cd-spinner" />
-      <style>{`@keyframes cdspin{to{transform:rotate(360deg)}} .cd-spinner{width:32px;height:32px;border:3px solid var(--primary-light,#FFF1F7);border-top-color:var(--primary,#FF6FA9);border-radius:50%;animation:cdspin 0.7s linear infinite;display:inline-block;}`}</style>
+      <style>{`@keyframes cdspin{to{transform:rotate(360deg)}} .cd-spinner{width:32px;height:32px;border:3px solid var(--primary-light);border-top-color:var(--primary);border-radius:50%;animation:cdspin 0.7s linear infinite;display:inline-block;}`}</style>
     </div>
   );
 
@@ -184,7 +184,7 @@ export default function CardapioDesign() {
             <div className="cd-upload-box cd-upload-logo" onClick={() => uploading !== "logo" && logoRef.current?.click()}>
               {uploading === "logo" ? <span className="cd-spinner" /> : (
                 <>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary, #FF6FA9)" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   <p className="cd-upload-label">Enviar logo</p>
                   <span className="cd-upload-hint">PNG ou JPG</span>
                 </>
@@ -218,7 +218,7 @@ export default function CardapioDesign() {
                   {i > 0 && <div className="cd-pro-corner"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>PRO</div>}
                   {uploading === `banner${i}` ? <span className="cd-spinner-sm" /> : (
                     <>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary, #FF6FA9)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                       <span className="cd-upload-hint">Adicionar</span>
                     </>
                   )}
@@ -260,7 +260,7 @@ export default function CardapioDesign() {
             {activePicker === 'cor_borda' && (
               <div className="cd-picker-wrap">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', padding: '10px', background: corBackground, borderRadius: '10px' }}>
-                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', border: `4px solid ${corBorda}`, overflow: 'hidden', flexShrink: 0, background: 'var(--bg-card, #FFFFFF)' }}>
+                  <div style={{ width: '56px', height: '56px', borderRadius: '50%', border: `4px solid ${corBorda}`, overflow: 'hidden', flexShrink: 0, background: 'var(--bg-card)' }}>
                     {logoUrl ? <img src={logoUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: corBorda, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🧁</div>}
                   </div>
                   <div style={{ height: '20px', width: '80px', borderRadius: '4px', background: corBorda, opacity: 0.8 }} />
@@ -316,7 +316,7 @@ export default function CardapioDesign() {
               </div>
               {activePicker === 'cor_botao' && (
                 <div className="cd-picker-wrap">
-                  <div style={{ padding: '12px', borderRadius: '10px', background: 'var(--bg-body, #F7F7F8)', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ padding: '12px', borderRadius: '10px', background: 'var(--bg-body)', marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
                     <button style={{ padding: '10px 24px', background: corBotao, color: 'white', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '14px', fontFamily: 'inherit' }}>
                       Adicionar · R$ 50,00
                     </button>
@@ -351,12 +351,12 @@ export default function CardapioDesign() {
                   </div>
                   <span className="cd-color-value">{corNavbar}</span>
                 </div>
-                <div className="cd-color-swatch" style={{ background: corNavbar, border: '1px solid var(--border, #E9E9EE)' }} />
+                <div className="cd-color-swatch" style={{ background: corNavbar, border: '1px solid var(--border)' }} />
               </div>
               {activePicker === 'cor_navbar' && (
                 <div className="cd-picker-wrap">
-                  <div style={{ padding: '12px', borderRadius: '10px', background: corNavbar, marginBottom: '12px', height: '40px', border: '1px solid var(--border, #E9E9EE)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted, #9CA3AF)', fontWeight: 600 }}>Prévia da barra</span>
+                  <div style={{ padding: '12px', borderRadius: '10px', background: corNavbar, marginBottom: '12px', height: '40px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>Prévia da barra</span>
                   </div>
                   <HexColorPicker color={corNavbar} onChange={v => handleColorChange('cor_navbar', v, setCorNavbar)} style={{ width: '100%', height: '160px' }} />
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
@@ -427,24 +427,24 @@ export default function CardapioDesign() {
           .cd-root { display:flex; flex-direction:column; max-width:100%; }
           .cd-page-header { grid-column:unset; }
         }
-        .cd-page-title { font-size:1.4rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.3rem; letter-spacing:-0.02em; }
-        .cd-page-sub { font-size:0.86rem; color:var(--text-secondary, #6B7280); margin:0; }
-        .cd-autosave { display:inline-flex; align-items:center; gap:0.35rem; font-size:0.76rem; font-weight:600; color:var(--success, #22C55E); background:#f0fdf4; padding:0.32rem 0.8rem; border-radius:50px; border:1px solid #dcfce7; margin-top:0.5rem; animation:fadeIn 0.3s ease; }
+        .cd-page-title { font-size: var(--font-page-title); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.3rem; letter-spacing:-0.02em; }
+        .cd-page-sub { font-size: var(--font-button); color:var(--text-secondary); margin:0; }
+        .cd-autosave { display:inline-flex; align-items:center; gap:0.35rem; font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--success); background:#f0fdf4; padding:0.32rem 0.8rem; border-radius: var(--radius-full); border:1px solid #dcfce7; margin-top:0.5rem; animation:fadeIn 0.3s ease; }
 
         /* ── Card base ── */
         .cd-card {
-          background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.4rem;
+          background:var(--bg-card); border-radius: var(--radius-xl); padding:1.4rem;
           box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.05));
-          border:1px solid var(--border, #E9E9EE);
+          border:1px solid var(--border);
           display:flex; flex-direction:column; gap:0.85rem;
           width:100%; box-sizing:border-box;
           position:relative; overflow:hidden;
-          transition:box-shadow 0.2s ease, border-color 0.2s ease;
+          transition: box-shadow var(--dur-normal) var(--ease-out), border-color 0.2s ease;
         }
         .cd-card::before {
           content:""; position:absolute; top:-60px; right:-60px;
           width:140px; height:140px;
-          background:radial-gradient(circle, var(--primary-light, #FFF1F7) 0%, transparent 70%);
+          background:radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
           pointer-events:none; opacity:0.7;
         }
         .cd-card:hover {
@@ -457,45 +457,45 @@ export default function CardapioDesign() {
         .cd-section-header {
           display:flex; align-items:center; gap:0.7rem;
           padding-bottom:1rem;
-          border-bottom:1px solid var(--border, #E9E9EE);
+          border-bottom:1px solid var(--border);
         }
         .cd-section-icon {
-          width:36px; height:36px; flex-shrink:0; border-radius:11px;
-          background:var(--primary-light, #FFF1F7);
-          color:var(--primary, #FF6FA9);
+          width:36px; height:36px; flex-shrink:0; border-radius: var(--radius-md);
+          background:var(--primary-light);
+          color:var(--primary);
           display:flex; align-items:center; justify-content:center;
         }
         .cd-section-label {
-          font-size:0.95rem; font-weight:700;
-          color:var(--text-title, #1F2937); margin:0;
+          font-size: var(--font-input); font-weight: var(--fw-bold);
+          color:var(--text-title); margin:0;
           letter-spacing:-0.01em;
         }
         .cd-section-sub {
-          font-size:0.74rem; color:var(--text-muted, #9CA3AF);
+          font-size: var(--font-helper); color:var(--text-muted);
           margin:0.1rem 0 0; line-height:1.3;
         }
-        .cd-hint { font-size:0.78rem; color:var(--text-muted, #9CA3AF); margin:0; }
+        .cd-hint { font-size: var(--font-helper); color:var(--text-muted); margin:0; }
 
         /* ── Upload boxes ── */
         .cd-upload-box {
-          border:2px dashed rgba(255,111,169,0.35); border-radius:14px;
-          background:var(--primary-light, #FFF1F7);
+          border:2px dashed rgba(255,111,169,0.35); border-radius: var(--radius-lg);
+          background:var(--primary-light);
           display:flex; flex-direction:column; align-items:center; justify-content:center;
-          cursor:pointer; transition:all 0.2s; gap:0.35rem;
+          cursor:pointer; transition: all var(--dur-normal); gap:0.35rem;
         }
-        .cd-upload-box:hover { border-color:var(--primary, #FF6FA9); background:#FFE4F0; transform:translateY(-1px); }
+        .cd-upload-box:hover { border-color:var(--primary); background:#FFE4F0; transform:translateY(-1px); }
         .cd-upload-logo { width:140px; height:140px; border-radius:50%; }
         .cd-upload-slot { width:100%; aspect-ratio:16/9; }
-        .cd-upload-label { font-size:0.88rem; font-weight:700; color:var(--primary-dark, #F85A9A); margin:0; }
-        .cd-upload-hint { font-size:0.72rem; color:var(--primary, #FF6FA9); margin:0; font-weight:600; }
+        .cd-upload-label { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--primary-dark); margin:0; }
+        .cd-upload-hint { font-size: var(--font-caption); color:var(--primary); margin:0; font-weight: var(--fw-semibold); }
 
         /* ── Logo area ── */
         .cd-logo-area { display:flex; flex-direction:column; align-items:center; gap:0.85rem; }
         .cd-logo-preview {
           position:relative; width:140px; height:140px; border-radius:50%;
           overflow:hidden;
-          border:4px solid var(--bg-card, #FFFFFF);
-          box-shadow:0 0 0 3px var(--primary-light, #FFF1F7), 0 8px 24px rgba(255,111,169,0.18);
+          border:4px solid var(--bg-card);
+          box-shadow:0 0 0 3px var(--primary-light), 0 8px 24px rgba(255,111,169,0.18);
           flex-shrink:0;
         }
         .cd-logo-preview img { width:100%; height:100%; object-fit:cover; }
@@ -503,28 +503,28 @@ export default function CardapioDesign() {
         /* ── Banners ── */
         .cd-banners-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
         .cd-banner-slot { display:flex; flex-direction:column; gap:0.35rem; }
-        .cd-banner-slot-label { font-size:0.7rem; font-weight:700; color:var(--text-muted, #9CA3AF); text-transform:uppercase; letter-spacing:0.08em; }
-        .cd-banner-thumb { position:relative; width:100%; aspect-ratio:16/9; border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+        .cd-banner-slot-label { font-size: var(--font-caption); font-weight: var(--fw-bold); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; }
+        .cd-banner-thumb { position:relative; width:100%; aspect-ratio:16/9; border-radius: var(--radius-md); overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
         .cd-banner-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
         .cd-slot-locked {
           align-items:center; justify-content:center;
-          background:var(--primary-light, #FFF1F7);
+          background:var(--primary-light);
           border:2px dashed rgba(255,111,169,0.4);
-          border-radius:14px; aspect-ratio:16/9; padding:0.5rem;
+          border-radius: var(--radius-lg); aspect-ratio:16/9; padding:0.5rem;
         }
-        .cd-remove-btn { position:absolute; top:0.4rem; right:0.4rem; background:rgba(0,0,0,0.55); border:none; border-radius:50%; width:24px; height:24px; color:white; font-size:0.7rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s; }
+        .cd-remove-btn { position:absolute; top:0.4rem; right:0.4rem; background:rgba(0,0,0,0.55); border:none; border-radius:50%; width:24px; height:24px; color:white; font-size: var(--font-caption); cursor:pointer; display:flex; align-items:center; justify-content:center; transition: background var(--dur-fast); }
         .cd-remove-btn:hover { background:rgba(0,0,0,0.75); }
 
         /* ── Botões ── */
-        .cd-change-btn { align-self:center; padding:0.5rem 1.4rem; background:var(--bg-card, #FFFFFF); border:1.5px solid var(--border, #E9E9EE); border-radius:50px; font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:700; color:var(--text-primary, #374151); cursor:pointer; transition:all 0.15s; }
-        .cd-change-btn:hover { border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); background:var(--primary-light, #FFF1F7); }
-        .cd-change-btn-sm { font-size:0.72rem; font-weight:700; color:var(--primary, #FF6FA9); background:none; border:none; cursor:pointer; padding:0; text-align:center; }
+        .cd-change-btn { align-self:center; padding:0.5rem 1.4rem; background:var(--bg-card); border:1.5px solid var(--border); border-radius: var(--radius-full); font-family:'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-bold); color:var(--text-primary); cursor:pointer; transition: all var(--dur-fast); }
+        .cd-change-btn:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-light); }
+        .cd-change-btn-sm { font-size: var(--font-caption); font-weight: var(--fw-bold); color:var(--primary); background:none; border:none; cursor:pointer; padding:0; text-align:center; }
         .cd-change-btn-sm:hover { text-decoration:underline; }
 
         /* ── Lock icon (substitui diamante) ── */
         .cd-lock-icon {
           width:36px; height:36px; flex-shrink:0; border-radius:50%;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          background:var(--primary-gradient);
           display:flex; align-items:center; justify-content:center;
           box-shadow:0 3px 10px rgba(255,111,169,0.35);
         }
@@ -532,9 +532,9 @@ export default function CardapioDesign() {
         /* ── Badge PRO (rosa, não amarelo) ── */
         .cd-pro-badge {
           display:inline-flex; align-items:center; gap:3px;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
-          color:white; font-size:0.66rem; font-weight:800;
-          padding:3px 9px; border-radius:50px; letter-spacing:0.06em;
+          background:var(--primary-gradient);
+          color:white; font-size: var(--font-caption); font-weight: var(--fw-black);
+          padding:3px 9px; border-radius: var(--radius-full); letter-spacing:0.06em;
           white-space:nowrap; flex-shrink:0;
           box-shadow:0 2px 6px rgba(255,111,169,0.32);
         }
@@ -543,9 +543,9 @@ export default function CardapioDesign() {
         .cd-pro-corner {
           position:absolute; top:8px; left:8px; z-index:10;
           display:inline-flex; align-items:center; gap:3px;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
-          color:#fff; font-size:0.6rem; font-weight:800; letter-spacing:0.08em;
-          padding:3px 8px 3px 6px; border-radius:50px;
+          background:var(--primary-gradient);
+          color:#fff; font-size: var(--font-caption); font-weight: var(--fw-black); letter-spacing:0.08em;
+          padding:3px 8px 3px 6px; border-radius: var(--radius-full);
           box-shadow:0 2px 8px rgba(255,111,169,0.45);
         }
 
@@ -554,22 +554,22 @@ export default function CardapioDesign() {
         .cd-color-row {
           display:flex; align-items:center; justify-content:space-between;
           padding:0.7rem 0.85rem;
-          background:var(--bg-body, #F7F7F8);
-          border-radius:14px; border:1.5px solid var(--border, #E9E9EE);
-          cursor:pointer; transition:all 0.2s;
+          background:var(--bg-body);
+          border-radius: var(--radius-lg); border:1.5px solid var(--border);
+          cursor:pointer; transition: all var(--dur-normal);
         }
         .cd-color-row:hover {
-          border-color:var(--primary, #FF6FA9);
-          background:var(--primary-light, #FFF1F7);
+          border-color:var(--primary);
+          background:var(--primary-light);
           transform:translateY(-1px);
         }
         .cd-color-info { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
         .cd-color-label-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-        .cd-color-label { font-size:0.84rem; font-weight:600; color:var(--text-primary, #374151); }
-        .cd-color-value { font-size:0.7rem; color:var(--text-muted, #9CA3AF); font-family:'Geist Mono', ui-monospace, monospace; }
+        .cd-color-label { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-primary); }
+        .cd-color-value { font-size: var(--font-caption); color:var(--text-muted); font-family:'Geist Mono', ui-monospace, monospace; }
         .cd-color-swatch {
-          width:42px; height:42px; border-radius:12px;
-          border:3px solid var(--bg-card, #FFFFFF);
+          width:42px; height:42px; border-radius: var(--radius-md);
+          border:3px solid var(--bg-card);
           flex-shrink:0;
           box-shadow:0 0 0 1.5px rgba(0,0,0,0.08), 0 3px 10px rgba(0,0,0,0.1);
         }
@@ -577,31 +577,31 @@ export default function CardapioDesign() {
         /* ── Color picker wrap ── */
         .cd-picker-wrap {
           padding:0.85rem;
-          background:var(--bg-card, #FFFFFF);
-          border-radius:14px;
-          border:1.5px solid var(--primary, #FF6FA9);
+          background:var(--bg-card);
+          border-radius: var(--radius-lg);
+          border:1.5px solid var(--primary);
           margin-top:6px;
           box-shadow:0 6px 18px rgba(255,111,169,0.12);
         }
-        .cd-hex-input { flex:1; min-width:0; padding:8px 10px; border:1.5px solid var(--border, #E9E9EE); border-radius:10px; font-size:0.82rem; font-family:'Geist Mono', ui-monospace, monospace; color:var(--text-primary, #374151); outline:none; transition:border-color 0.15s; }
-        .cd-hex-input:focus { border-color:var(--primary, #FF6FA9); box-shadow:0 0 0 3px rgba(255,111,169,0.12); }
-        .cd-picker-close { padding:8px 14px; background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color:#fff; border:none; border-radius:10px; font-size:0.78rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; box-shadow:0 2px 8px rgba(255,111,169,0.32); transition:transform 0.15s; }
+        .cd-hex-input { flex:1; min-width:0; padding:8px 10px; border:1.5px solid var(--border); border-radius: var(--radius-md); font-size: var(--font-helper); font-family:'Geist Mono', ui-monospace, monospace; color:var(--text-primary); outline:none; transition: border-color var(--dur-fast); }
+        .cd-hex-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(255,111,169,0.12); }
+        .cd-picker-close { padding:8px 14px; background:var(--primary-gradient); color:#fff; border:none; border-radius: var(--radius-md); font-size: var(--font-helper); font-weight: var(--fw-bold); cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; box-shadow:0 2px 8px rgba(255,111,169,0.32); transition: transform var(--dur-fast); }
         .cd-picker-close:hover { transform:translateY(-1px); }
-        .cd-restore-btn { padding:8px 11px; background:var(--bg-body, #F7F7F8); color:var(--text-secondary, #6B7280); border:1.5px solid var(--border, #E9E9EE); border-radius:10px; font-size:0.95rem; font-weight:700; cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; transition:all 0.15s; }
-        .cd-restore-btn:hover { border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); background:var(--primary-light, #FFF1F7); }
+        .cd-restore-btn { padding:8px 11px; background:var(--bg-body); color:var(--text-secondary); border:1.5px solid var(--border); border-radius: var(--radius-md); font-size: var(--font-input); font-weight: var(--fw-bold); cursor:pointer; white-space:nowrap; font-family:'Geist', sans-serif; flex-shrink:0; transition: all var(--dur-fast); }
+        .cd-restore-btn:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-light); }
 
         /* ── Upgrade box ── */
         .cd-upgrade-box {
-          background:var(--primary-light, #FFF1F7);
-          border:1.5px dashed var(--primary, #FF6FA9);
-          border-radius:14px; padding:0.95rem 1.1rem;
+          background:var(--primary-light);
+          border:1.5px dashed var(--primary);
+          border-radius: var(--radius-lg); padding:0.95rem 1.1rem;
           display:flex; align-items:center; gap:0.85rem;
         }
-        .cd-upgrade-title { font-size:0.86rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 2px; }
-        .cd-upgrade-sub { font-size:0.74rem; color:var(--text-secondary, #6B7280); margin:0; line-height:1.35; }
+        .cd-upgrade-title { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 2px; }
+        .cd-upgrade-sub { font-size: var(--font-helper); color:var(--text-secondary); margin:0; line-height:1.35; }
 
-        .cd-spinner { width:32px; height:32px; border:3px solid var(--primary-light, #FFF1F7); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
-        .cd-spinner-sm { width:16px; height:16px; border:2px solid rgba(255,111,169,0.3); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
+        .cd-spinner { width:32px; height:32px; border:3px solid var(--primary-light); border-top-color:var(--primary); border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
+        .cd-spinner-sm { width:16px; height:16px; border:2px solid rgba(255,111,169,0.3); border-top-color:var(--primary); border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
       `}</style>
     </div>
     </>

@@ -71,9 +71,9 @@ export default function EmptyDoo({
           justify-content: center;
           text-align: center;
           padding: 2.5rem 1.5rem;
-          background: var(--bg-card, #fff);
-          border: 1.5px dashed var(--border, #ECC2D0);
-          border-radius: 16px;
+          background: var(--bg-card);
+          border: 1.5px dashed var(--border);
+          border-radius: var(--radius-lg);
           margin-top: 0.5rem;
           font-family: 'Geist', sans-serif;
         }
@@ -105,17 +105,17 @@ export default function EmptyDoo({
           object-position: top center;
         }
         .empty-doo-title {
-          font-size: 1.1rem;
-          font-weight: 800;
-          color: var(--text-title, #431524);
+          font-size: var(--font-modal-title);
+          font-weight: var(--fw-black);
+          color: var(--text-title);
           margin: 0 0 8px;
           letter-spacing: -0.02em;
           max-width: 320px;
           line-height: 1.3;
         }
         .empty-doo-desc {
-          font-size: 0.88rem;
-          color: var(--text-secondary, #6E3548);
+          font-size: var(--font-button);
+          color: var(--text-secondary);
           margin: 0 0 1.5rem;
           line-height: 1.5;
           max-width: 360px;
@@ -127,14 +127,14 @@ export default function EmptyDoo({
           background: #3d1a24;
           color: #fff;
           border: none;
-          border-radius: 12px;
+          border-radius: var(--radius-md);
           padding: 0.8rem 1.5rem;
           font-family: inherit;
-          font-size: 0.92rem;
-          font-weight: 700;
+          font-size: var(--font-button);
+          font-weight: var(--fw-bold);
           cursor: pointer;
           box-shadow: 0 4px 12px rgba(61, 26, 36, 0.25);
-          transition: all 0.15s ease;
+          transition: all var(--dur-fast) var(--ease-out);
         }
         .empty-doo-btn:hover {
           transform: translateY(-1px);
@@ -144,7 +144,7 @@ export default function EmptyDoo({
           transform: translateY(0);
         }
         .empty-doo-btn:focus-visible {
-          outline: 2px solid var(--primary, #FF6FA9);
+          outline: 2px solid var(--primary);
           outline-offset: 2px;
         }
       `}</style>

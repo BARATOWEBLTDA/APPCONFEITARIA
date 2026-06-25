@@ -52,16 +52,16 @@ export default function BtnNovo({
           background: #3d1a24;
           color: #fff;
           border: none;
-          border-radius: 10px;
+          border-radius: var(--radius-md);
           padding: 0.65rem 1rem;
           font-family: inherit;
-          font-size: 0.85rem;
-          font-weight: 600;
+          font-size: var(--font-button);
+          font-weight: var(--fw-semibold);
           cursor: pointer;
           white-space: nowrap;
           flex-shrink: 0;
           box-shadow: 0 4px 12px rgba(61, 26, 36, 0.18);
-          transition: transform 0.15s ease, box-shadow 0.15s ease;
+          transition: transform var(--dur-fast) var(--ease-out), box-shadow 0.15s ease;
         }
         .btn-novo-doonly:hover:not(:disabled) {
           transform: translateY(-1px);
@@ -75,7 +75,7 @@ export default function BtnNovo({
           cursor: not-allowed;
         }
         .btn-novo-doonly:focus-visible {
-          outline: 2px solid var(--primary, #FF6FA9);
+          outline: 2px solid var(--primary);
           outline-offset: 2px;
         }
         .btn-novo-doonly-label {
