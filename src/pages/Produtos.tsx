@@ -46,6 +46,7 @@ type Produto = {
   tem_adicionais?: boolean;
   tipo_promocao?: 'fixo' | 'percentual';
   desconto_percentual?: number;
+  created_at?: string;
 };
 
 const SYSTEM_ICONS = Array.from({ length: 42 }, (_, i) => `/categoriaicones/icone (${i + 1}).png`);
@@ -93,7 +94,9 @@ export default function Produtos() {
   const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes">("simples");
   const [wizardOpts, setWizardOpts] = useState({ complementos: false, personalizacao: false, promocao: false });
   const [form, setForm] = useState<Produto>(EMPTY);
-  const [filtroCategoria, setFiltroCategoria] = useState("todas");
+  const [ordenarPor, setOrdenarPor] = useState<"recentes"|"alfabetica"|"categoria"|"preco">("recentes");
+  const [showOrdenar, setShowOrdenar] = useState(false);
+  const [filtroOrfaos, setFiltroOrfaos] = useState(false);
   const [novaCategoria, setNovaCategoria] = useState("");
   const [novaCategoriaIcone, setNovaCategoriaIcone] = useState("");
   const [showCatInput, setShowCatInput] = useState(false);
@@ -377,12 +380,25 @@ export default function Produtos() {
   const parsePreco = (s: string) => (parseInt(s.replace(/\D/g, "")) || 0) / 100;
 
   const produtosFiltrados = (() => {
-    let lista = produtos;
+    let lista = [...produtos];
     if (buscaTexto.trim()) {
       const t = buscaTexto.toLowerCase();
       lista = lista.filter(p => p.nome.toLowerCase().includes(t) || p.descricao?.toLowerCase().includes(t));
-    } else if (filtroCategoria !== "todas" && filtroCategoria !== "__orfaos__") {
-      lista = lista.filter(p => p.categoria === filtroCategoria);
+    }
+    switch (ordenarPor) {
+      case "alfabetica":
+        lista.sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+        break;
+      case "categoria":
+        lista.sort((a, b) => (a.categoria || "").localeCompare(b.categoria || "", "pt-BR") || a.nome.localeCompare(b.nome, "pt-BR"));
+        break;
+      case "preco":
+        lista.sort((a, b) => a.preco_normal - b.preco_normal);
+        break;
+      case "recentes":
+      default:
+        lista.sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
+        break;
     }
     return lista;
   })();
@@ -455,7 +471,7 @@ export default function Produtos() {
           type="text"
           placeholder="Buscar produto..."
           value={buscaTexto}
-          onChange={e => { setBuscaTexto(e.target.value); setFiltroCategoria("todas"); }}
+          onChange={e => setBuscaTexto(e.target.value)}
         />
         <div style={{ display: "flex", background: "white", borderRadius: 8, padding: 2, gap: 2, border: "1.5px solid var(--border)", flexShrink: 0 }}>
           <button onClick={() => { setViewMode("grid"); localStorage.setItem("prod_viewMode", "grid"); }} style={{ width: 28, height: 28, borderRadius: 6, border: "none", cursor: "pointer", background: viewMode === "grid" ? "#3d1a24" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }} title="Grade">
@@ -482,23 +498,52 @@ export default function Produtos() {
                 Esses produtos aparecem apenas em "Todos" no cardápio. Edite-os e selecione uma categoria válida.
               </p>
             </div>
-            <button onClick={() => setFiltroCategoria("__orfaos__")} style={{ padding: "5px 12px", background: "var(--warning)", color: "white", border: "none", borderRadius: "8px", fontFamily: "inherit", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+            <button onClick={() => setFiltroOrfaos(true)} style={{ padding: "5px 12px", background: "var(--warning)", color: "white", border: "none", borderRadius: "8px", fontFamily: "inherit", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
               Ver {orfaos.length}
             </button>
           </div>
         );
       })()}
 
-      {todasCategorias.length > 0 && (
-        <div className="prod-filtros">
-          <button className={`prod-filtro-btn${filtroCategoria === "todas" ? " active" : ""}`} onClick={() => setFiltroCategoria("todas")}>Todos ({produtos.length})</button>
-          {todasCategorias.map(cat => (
-            <button key={cat} className={`prod-filtro-btn${filtroCategoria === cat ? " active" : ""}`} onClick={() => setFiltroCategoria(cat)}>
-              {cat} ({produtos.filter(p => p.categoria === cat).length})
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Ordenar por */}
+      <div style={{ position: "relative" }}>
+        <button
+          onClick={() => setShowOrdenar(!showOrdenar)}
+          style={{ display: "flex", alignItems: "center", gap: "6px", padding: "0.4rem 0.75rem", border: "1.5px solid var(--border)", borderRadius: "var(--radius-sm)", background: "var(--bg-card)", fontFamily: "var(--font-base)", fontSize: "var(--font-helper)", fontWeight: "var(--fw-medium)", color: "var(--text-secondary)", cursor: "pointer" }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 6h18M6 12h12M9 18h6"/></svg>
+          {{ recentes: "Mais recentes", alfabetica: "Alfabética", categoria: "Categoria", preco: "Preço" }[ordenarPor]}
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        {showOrdenar && (
+          <>
+            <div onClick={() => setShowOrdenar(false)} style={{ position: "fixed", inset: 0, zIndex: 99 }} />
+            <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, background: "var(--bg-card)", border: "1.5px solid var(--border)", borderRadius: "var(--radius-md)", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 100, minWidth: "180px", overflow: "hidden" }}>
+              {([
+                { value: "recentes", label: "Mais recentes", icon: "🕐" },
+                { value: "alfabetica", label: "Alfabética", icon: "🔤" },
+                { value: "categoria", label: "Categoria", icon: "📁" },
+                { value: "preco", label: "Preço", icon: "💰" },
+              ] as const).map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => { setOrdenarPor(opt.value); setShowOrdenar(false); setFiltroOrfaos(false); }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: "8px", width: "100%", padding: "0.6rem 0.85rem",
+                    border: "none", background: ordenarPor === opt.value ? "var(--primary-light)" : "transparent",
+                    fontFamily: "var(--font-base)", fontSize: "0.85rem", fontWeight: ordenarPor === opt.value ? 700 : 500,
+                    color: ordenarPor === opt.value ? "var(--primary)" : "var(--text-primary)", cursor: "pointer", textAlign: "left",
+                  }}
+                >
+                  <span style={{ fontSize: "0.95rem" }}>{opt.icon}</span>
+                  {opt.label}
+                  {ordenarPor === opt.value && <svg style={{ marginLeft: "auto" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
 
       {produtosFiltrados.length === 0 ? (
         <EmptyDoo
@@ -510,7 +555,7 @@ export default function Produtos() {
         />
       ) : (
         <div className={viewMode === "grid" ? "prod-grid" : "prod-list"}>
-          {(filtroCategoria === "__orfaos__"
+          {(filtroOrfaos
             ? produtos.filter(p => p.categoria && !categorias.includes(p.categoria))
             : produtosFiltrados
           ).map(p => {
