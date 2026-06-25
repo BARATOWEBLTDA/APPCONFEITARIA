@@ -662,7 +662,6 @@ export default function Produtos() {
                   {[
                     { key: "complementos" as const, icon: "🎁", title: "Complementos", desc: "Velas, topo de bolo, papel de arroz, embalagem especial e mais." },
                     { key: "personalizacao" as const, icon: "🎨", title: "Personalização", desc: "Massas, recheios e coberturas que o cliente pode escolher." },
-                    { key: "promocao" as const, icon: "🏷️", title: "Promoção", desc: "Preço promocional fixo ou desconto percentual." },
                   ].map(({ key, icon, title, desc }) => (
                     <button key={key} onClick={() => setWizardOpts(o => ({ ...o, [key]: !o[key] }))} style={{
                       display: "flex", alignItems: "flex-start", gap: "12px",
@@ -1114,7 +1113,6 @@ export default function Produtos() {
               )}
 
               {/* Promoção */}
-              {(form.id || wizardOpts.promocao) && (
               <div className="prod-section">
                 <p className="prod-section-label">Promoção</p>
                 <Toggle label="Produto em promoção" value={form.promocao} onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v }))} colorClass="active-pink" />
@@ -1186,7 +1184,6 @@ export default function Produtos() {
                   </>
                 )}
               </div>
-              )}
 
               {/* Status */}
               <div className="prod-section">
