@@ -621,36 +621,45 @@ export default function Produtos() {
             {/* ══════ WIZARD STEP 1 ══════ */}
             {wizardStep === 1 && (
               <div className="prod-modal-body">
-                <p className="wiz-subtitle">Preencha os detalhes para cadastrar um novo produto no sistema.</p>
+                <div>
+                  <p className="wiz-subtitle">Vamos configurar seu produto para aparecer no seu catálogo.</p>
+                  <p className="wiz-reassurance">Você poderá editar essas configurações quando quiser.</p>
+                </div>
 
                 {/* Barra de progresso */}
-                <div className="wiz-progress">
-                  <div className="wiz-progress-bar wiz-progress-bar--active" />
-                  <div className="wiz-progress-bar" />
+                <div>
+                  <p className="wiz-step-label">Passo 1 de 2</p>
+                  <div className="wiz-progress">
+                    <div className="wiz-progress-bar wiz-progress-bar--active" />
+                    <div className="wiz-progress-bar" />
+                  </div>
                 </div>
 
                 {/* Tipo */}
-                <p className="wiz-section-title">Que tipo de produto você quer cadastrar?</p>
+                <p className="wiz-section-title">Como é o seu produto?</p>
                 <div className="wiz-tipo-list">
                   {[
-                    { tipo: "simples" as const, icon: "📦", title: "Produto simples", desc: "Um único item no cardápio, sem sabores nem tamanhos." },
-                    { tipo: "variacoes" as const, icon: "✨", title: "Com variações", desc: "Sabores e/ou tamanhos (ex: bolo 30cm, 40cm ou chocolate, morango)." },
-                  ].map(({ tipo, icon, title, desc }) => (
+                    { tipo: "simples" as const, icon: "📦", title: "Produto simples", desc: "Uma única versão.", example: "Ex.: Pudim Tradicional" },
+                    { tipo: "variacoes" as const, icon: "🎂", title: "Com variações", desc: "Possui tamanhos, sabores ou versões diferentes.", example: "Ex.: Bolo de Chocolate — 15cm, 20cm, 25cm" },
+                  ].map(({ tipo, icon, title, desc, example }) => (
                     <button key={tipo} className={`wiz-tipo-card${wizardTipo === tipo ? " wiz-tipo-card--active" : ""}`} onClick={() => setWizardTipo(tipo)}>
+                      {wizardTipo === tipo && <div className="wiz-card-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-inverse)" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>}
                       <span className="wiz-tipo-icon">{icon}</span>
                       <p className="wiz-tipo-title">{title}</p>
                       <p className="wiz-tipo-desc">{desc}</p>
+                      <p className="wiz-tipo-example">{example}</p>
                     </button>
                   ))}
                 </div>
 
-                {/* Recursos opcionais */}
-                <p className="wiz-section-title">Recursos opcionais</p>
+                {/* Recursos extras */}
+                <p className="wiz-section-title">Recursos extras</p>
+                <p className="wiz-micro">Escolha apenas o necessário. Você poderá adicionar mais opções depois.</p>
                 <div className="wiz-opts-list">
                   {[
-                    { key: "complementos" as const, icon: "🎁", title: "Complementos", desc: "Velas, topo de bolo, papel de arroz, embalagem especial e mais." },
-                    { key: "personalizacao" as const, icon: "🎨", title: "Personalização", desc: "Massas, recheios e coberturas que o cliente pode escolher." },
-                  ].map(({ key, icon, title, desc }) => (
+                    { key: "personalizacao" as const, icon: "🎨", title: "Personalização", desc: "Permita que o cliente escolha opções do produto.", example: "Ex.: massa, recheio e cobertura." },
+                    { key: "complementos" as const, icon: "🎁", title: "Complementos", desc: "Itens que podem ser adicionados ao pedido.", example: "Ex.: vela, topo de bolo e embalagem especial." },
+                  ].map(({ key, icon, title, desc, example }) => (
                     <button key={key} className={`wiz-opt-card${wizardOpts[key] ? " wiz-opt-card--active" : ""}`} onClick={() => setWizardOpts(o => ({ ...o, [key]: !o[key] }))}>
                       <div className={`wiz-opt-check${wizardOpts[key] ? " wiz-opt-check--active" : ""}`}>
                         {wizardOpts[key] && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-inverse)" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -658,6 +667,7 @@ export default function Produtos() {
                       <div>
                         <p className="wiz-opt-title"><span>{icon}</span> {title}</p>
                         <p className="wiz-opt-desc">{desc}</p>
+                        <p className="wiz-opt-example">{example}</p>
                       </div>
                     </button>
                   ))}
@@ -676,7 +686,7 @@ export default function Produtos() {
                     }));
                     setWizardStep(2);
                   }}>
-                    Avançar
+                    Continuar
                   </button>
                 </div>
               </div>
@@ -688,9 +698,12 @@ export default function Produtos() {
 
               {/* Barra de progresso */}
               {!form.id && (
-                <div className="wiz-progress">
-                  <div className="wiz-progress-bar wiz-progress-bar--active" />
-                  <div className="wiz-progress-bar wiz-progress-bar--active" />
+                <div>
+                  <p className="wiz-step-label">Passo 2 de 2</p>
+                  <div className="wiz-progress">
+                    <div className="wiz-progress-bar wiz-progress-bar--active" />
+                    <div className="wiz-progress-bar wiz-progress-bar--active" />
+                  </div>
                 </div>
               )}
 
@@ -1474,21 +1487,31 @@ export default function Produtos() {
 
         /* ── Wizard ── */
         .wiz-subtitle { font-size: var(--font-button); color: var(--text-secondary); margin: 0; line-height: var(--lh-relaxed); }
+        .wiz-reassurance { font-size: var(--font-helper); color: var(--text-muted); margin: var(--space-1) 0 0; font-style: italic; }
+        .wiz-step-label { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-muted); margin: 0 0 var(--space-1); text-transform: uppercase; letter-spacing: var(--ls-wide); }
         .wiz-progress { display: flex; gap: var(--space-2); }
         .wiz-progress-bar { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
         .wiz-progress-bar--active { background: var(--primary); }
-        .wiz-section-title { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-primary); margin: var(--space-2) 0 0; }
+        .wiz-section-title { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--text-title); margin: var(--space-2) 0 0; }
+        .wiz-micro { font-size: var(--font-helper); color: var(--text-muted); margin: 0; line-height: var(--lh-normal); }
         .wiz-tipo-list { display: flex; flex-direction: column; gap: var(--gap-stack); }
         .wiz-tipo-card {
           display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
           padding: var(--space-5) var(--space-4); border-radius: var(--radius-xl); cursor: pointer;
           border: 2px solid var(--border); background: var(--bg-card);
           font-family: var(--font-base); text-align: center; transition: all var(--dur-fast) var(--ease-out);
+          position: relative;
         }
-        .wiz-tipo-card--active { border-color: var(--primary); background: var(--primary-light); }
+        .wiz-tipo-card--active { border-color: var(--primary); border-width: 2.5px; background: var(--primary-light); }
+        .wiz-card-check {
+          position: absolute; top: var(--space-3); right: var(--space-3);
+          width: 24px; height: 24px; border-radius: 50%;
+          background: var(--primary); display: flex; align-items: center; justify-content: center;
+        }
         .wiz-tipo-icon { font-size: var(--text-2xl); }
         .wiz-tipo-title { font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title); margin: 0; }
-        .wiz-tipo-desc { font-size: var(--font-helper); color: var(--text-muted); margin: 0; line-height: var(--lh-normal); }
+        .wiz-tipo-desc { font-size: var(--font-helper); color: var(--text-secondary); margin: 0; line-height: var(--lh-normal); }
+        .wiz-tipo-example { font-size: var(--font-caption); color: var(--text-muted); margin: var(--space-1) 0 0; font-style: italic; }
         .wiz-opts-list { display: flex; flex-direction: column; gap: var(--space-2); }
         .wiz-opt-card {
           display: flex; align-items: flex-start; gap: var(--gap-stack); width: 100%;
@@ -1496,7 +1519,7 @@ export default function Produtos() {
           border: 2px solid var(--border); background: var(--bg-card);
           font-family: var(--font-base); text-align: left; transition: all var(--dur-fast) var(--ease-out);
         }
-        .wiz-opt-card--active { border-color: var(--primary); background: var(--primary-light); }
+        .wiz-opt-card--active { border-color: var(--primary); border-width: 2.5px; background: var(--primary-light); }
         .wiz-opt-check {
           width: 22px; height: 22px; border-radius: var(--radius-sm); flex-shrink: 0;
           border: 2px solid var(--border); background: transparent;
@@ -1505,7 +1528,8 @@ export default function Produtos() {
         }
         .wiz-opt-check--active { border-color: var(--primary); background: var(--primary); }
         .wiz-opt-title { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--text-primary); margin: 0 0 2px; display: flex; align-items: center; gap: var(--space-2); }
-        .wiz-opt-desc { font-size: var(--font-helper); color: var(--text-muted); margin: 0; line-height: var(--lh-normal); }
+        .wiz-opt-desc { font-size: var(--font-helper); color: var(--text-secondary); margin: 0; line-height: var(--lh-normal); }
+        .wiz-opt-example { font-size: var(--font-caption); color: var(--text-muted); margin: 2px 0 0; font-style: italic; }
         .wiz-footer { display: flex; gap: var(--gap-stack); padding-top: var(--space-2); }
 
         /* ── Confirmação de exclusão de produto ── */
