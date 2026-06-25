@@ -629,12 +629,6 @@ export default function Produtos() {
                   <div style={{ flex: 1, height: "4px", borderRadius: "2px", background: "var(--border)" }} />
                 </div>
 
-                {/* Nome do produto */}
-                <div className="prod-field">
-                  <label>Nome do Produto</label>
-                  <input type="text" placeholder="Ex: Bolo de Morango" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} style={{ fontSize: "1rem", padding: "0.85rem 1rem" }} />
-                </div>
-
                 {/* Tipo */}
                 <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-primary)", margin: "0.5rem 0 0" }}>Que tipo de produto você quer cadastrar?</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -691,7 +685,7 @@ export default function Produtos() {
                 {/* Footer step 1 */}
                 <div style={{ display: "flex", gap: "10px", paddingTop: "0.5rem" }}>
                   <button className="prod-btn-cancelar" onClick={fecharModal}>Cancelar</button>
-                  <button className="prod-btn-salvar" disabled={!form.nome.trim()} onClick={() => {
+                  <button className="prod-btn-salvar" onClick={() => {
                     setForm(f => ({
                       ...f,
                       forma_venda: wizardTipo === "simples" ? "unidade" : f.forma_venda,
