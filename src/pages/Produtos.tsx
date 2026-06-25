@@ -1362,8 +1362,8 @@ export default function Produtos() {
         .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle); border:none; border-radius: var(--radius-sm); font-family:'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-primary); cursor:pointer; }
         .prod-card-btn-del { padding:0.4rem 0.6rem; background:#fff1f2; border:none; border-radius: var(--radius-sm); color:var(--error); cursor:pointer; display:flex; align-items:center; }
         /* ── Modal de Produto (100% via design tokens) ── */
-        .prod-modal-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.6); display: flex; align-items: flex-end; justify-content: center; padding: 0 12px; overscroll-behavior: contain; }
-        .prod-modal { background: var(--bg-card); border-radius: var(--radius-xl) 24px 16px 16px; width: 100%; max-width: 520px; max-height: 88vh; display: flex; flex-direction: column; animation: slideUp var(--dur-slow) var(--ease-out); margin-bottom: 12px; }
+        .prod-modal-overlay { position: fixed; inset: 0; z-index: 500; background: var(--bg-card); display: flex; flex-direction: column; }
+        .prod-modal { background: var(--bg-card); width: 100%; height: 100%; max-width: none; max-height: none; display: flex; flex-direction: column; border-radius: 0; animation: none; margin: 0; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .prod-modal-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5) var(--space-3); border-bottom: 1px solid var(--border); flex-shrink: 0; }
         .prod-modal-title { font-size: var(--font-modal-title); font-weight: var(--fw-bold); line-height: var(--lh-tight); color: var(--text-title); margin: 0; }
