@@ -260,49 +260,6 @@ export default function Configuracoes() {
 
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
 
-        {/* Configure seu Doonly */}
-        {cfgProgress < 100 ? (
-          <div className="mob-config-card">
-            <div className="mob-config-header">
-              <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
-                <img src="/configureapp.png" alt="" style={{width:"46px",height:"46px",objectFit:"contain",flexShrink:0}} />
-                <div>
-                  <p className="mob-config-title">Configure seu Doonly</p>
-                  <p className="mob-config-sub">{`${cfgRemaining === 1 ? "Resta apenas" : "Faltam apenas"} ${cfgRemaining} etapa${cfgRemaining !== 1 ? "s" : ""} para sua confeitaria decolar!`}</p>
-                </div>
-              </div>
-              <div className="mob-config-circle">{cfgProgress}%</div>
-            </div>
-            <div className="mob-config-bar-bg">
-              <div className="mob-config-bar-fill" style={{ width: `${cfgProgress}%` }} />
-            </div>
-            {cfgNextStep && (
-              <div className="mob-config-next">
-                <div>
-                  <p className="mob-config-next-label">Próximo passo</p>
-                  <p className="mob-config-next-text">{cfgNextStep.label}</p>
-                </div>
-                <button className="mob-config-next-btn" onClick={() => navigate(cfgNextStep.path)}>Configurar →</button>
-              </div>
-            )}
-          </div>
-        ) : !proResgatado ? (
-          <div className="mob-config-card mob-config-card--done">
-            <div className="mob-config-header">
-              <div style={{display:"flex",alignItems:"center",gap:"0.6rem",flex:1}}>
-                <span style={{fontSize:"2rem"}}>🎉</span>
-                <div>
-                  <p className="mob-config-title">Configuração completa!</p>
-                  <p className="mob-config-sub">Resgate agora mesmo 3 dias de acesso completo sem limitações.</p>
-                </div>
-              </div>
-            </div>
-            <button className="mob-resgatar-btn" onClick={handleResgatarPro} disabled={resgatando}>
-              {resgatando ? "Ativando..." : "✨ Ativar PRO por 3 dias"}
-            </button>
-          </div>
-        ) : null}
-
         {/* Minha Conta */}
         <div className="cfg-accordion">
           <button className="cfg-accordion-header" onClick={() => toggleSection("dados")}>
@@ -324,64 +281,83 @@ export default function Configuracoes() {
           )}
         </div>
 
-        {/* Alterar Senha — mobile */}
-        <div className="cfg-accordion">
-          <button className="cfg-accordion-header" onClick={() => setShowAlterarSenha(v => !v)}>
-            <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
-            <span className="cfg-accordion-title">Alterar Senha</span>
-            <svg className={`cfg-accordion-chevron${showAlterarSenha ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          {showAlterarSenha && (
-            <div className="cfg-accordion-body">
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Nova senha" value={novaSenha} onChange={(e: any) => setNovaSenha(e.target.value)} type="password" />
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Confirmar nova senha" value={confirmSenha} onChange={(e: any) => setConfirmSenha(e.target.value)} type="password" />
-              {senhaMsg && <p style={{ fontSize: "0.82rem", color: senhaMsg.startsWith("✓") ? "var(--success)" : "var(--error)", margin: 0 }}>{senhaMsg}</p>}
-              <button className="cfg-btn-save" onClick={handleAlterarSenha} disabled={savingSenha}>
-                {savingSenha ? <span className="cfg-spinner" /> : "Alterar senha"}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Tema — apenas mobile */}
+        {/* Tema — apenas PRO */}
         <div className="cfg-accordion">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.85rem 1rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>
               <div>
                 <p className="cfg-accordion-title" style={{ margin: 0, textTransform: "none", letterSpacing: 0, fontSize: "0.88rem" }}>Tema {darkMode ? "Escuro" : "Claro"}</p>
-                <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: 0 }}>Alterar aparência do app</p>
+                {plano !== "pro" && <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: 0 }}>Exclusivo PRO</p>}
               </div>
             </div>
-            <button onClick={toggleDark} style={{ width: "48px", height: "26px", borderRadius: "13px", border: "none", cursor: "pointer", background: darkMode ? "var(--primary)" : "var(--border)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
-              <div style={{ width: "20px", height: "20px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: darkMode ? "25px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
-            </button>
+            {plano === "pro" ? (
+              <button onClick={toggleDark} style={{ width: "48px", height: "26px", borderRadius: "13px", border: "none", cursor: "pointer", background: darkMode ? "var(--primary)" : "var(--border)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+                <div style={{ width: "20px", height: "20px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: darkMode ? "25px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+              </button>
+            ) : (
+              <span style={{ fontSize: "0.72rem", color: "var(--primary)", fontWeight: 600, cursor: "pointer" }} onClick={() => navigate("/assinar")}>🔒 Upgrade</span>
+            )}
           </div>
         </div>
 
-        {/* Excluir Conta — mobile */}
+        {/* Avançado */}
         <div className="cfg-accordion">
-          <button className="cfg-accordion-header" onClick={() => setShowExcluir(v => !v)}>
-            <span className="cfg-accordion-icon" style={{ color: "var(--error)" }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
-            <span className="cfg-accordion-title" style={{ color: "var(--error)" }}>Excluir conta</span>
-            <svg className={`cfg-accordion-chevron${showExcluir ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
+          <button className="cfg-accordion-header" onClick={() => toggleSection("avancado")}>
+            <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+            <span className="cfg-accordion-title">Avançado</span>
+            <svg className={`cfg-accordion-chevron${openSection === "avancado" ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
-          {showExcluir && (
-            <div className="cfg-accordion-body">
-              <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", margin: 0 }}>Esta ação é irreversível. Todos os seus dados serão removidos permanentemente.</p>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-primary)", margin: 0 }}>Digite <strong>EXCLUIR</strong> para confirmar:</p>
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>} placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={(e: any) => setExcluirConfirm(e.target.value)} />
-              <button onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"} style={{ padding: "0.75rem", background: excluirConfirm === "EXCLUIR" ? "var(--error)" : "var(--bg-body)", color: excluirConfirm === "EXCLUIR" ? "var(--text-inverse)" : "var(--text-muted)", border: "none", borderRadius: "12px", fontFamily: "Geist, sans-serif", fontSize: "0.88rem", fontWeight: 700, cursor: excluirConfirm === "EXCLUIR" ? "pointer" : "not-allowed" }}>
-                Excluir minha conta
+          {openSection === "avancado" && (
+            <div className="cfg-accordion-body" style={{ gap: "0.5rem" }}>
+              {/* Alterar Senha */}
+              <button className="cfg-adv-item" onClick={() => setShowAlterarSenha(v => !v)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Alterar senha
               </button>
-              <button onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }} style={{ padding: "0.75rem", background: "none", border: "1.5px solid var(--border)", borderRadius: "12px", fontFamily: "Geist, sans-serif", fontSize: "0.88rem", fontWeight: 600, color: "var(--text-secondary)", cursor: "pointer" }}>
-                Cancelar
+              {showAlterarSenha && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", padding: "0.5rem 0" }}>
+                  <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Nova senha" value={novaSenha} onChange={(e: any) => setNovaSenha(e.target.value)} type="password" />
+                  <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Confirmar nova senha" value={confirmSenha} onChange={(e: any) => setConfirmSenha(e.target.value)} type="password" />
+                  {senhaMsg && <p style={{ fontSize: "0.82rem", color: senhaMsg.startsWith("✓") ? "var(--success)" : "var(--error)", margin: 0 }}>{senhaMsg}</p>}
+                  <button className="cfg-btn-save" onClick={handleAlterarSenha} disabled={savingSenha}>
+                    {savingSenha ? <span className="cfg-spinner" /> : "Alterar senha"}
+                  </button>
+                </div>
+              )}
+
+              {/* Links */}
+              <button className="cfg-adv-item" onClick={() => navigate("/privacidade")}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Política de privacidade
               </button>
+              <button className="cfg-adv-item" onClick={() => navigate("/termos")}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Termos de uso
+              </button>
+
+              {/* Excluir Conta */}
+              <div style={{ borderTop: "1px solid var(--border)", marginTop: "0.5rem", paddingTop: "0.75rem" }}>
+                <button className="cfg-adv-item cfg-adv-item--danger" onClick={() => setShowExcluir(v => !v)}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                  Excluir conta
+                </button>
+                {showExcluir && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", padding: "0.5rem 0" }}>
+                    <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", margin: 0 }}>Esta ação é irreversível. Todos os seus dados serão removidos.</p>
+                    <p style={{ fontSize: "0.82rem", color: "var(--text-primary)", margin: 0 }}>Digite <strong>EXCLUIR</strong> para confirmar:</p>
+                    <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>} placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={(e: any) => setExcluirConfirm(e.target.value)} />
+                    <button onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"} style={{ padding: "0.75rem", background: excluirConfirm === "EXCLUIR" ? "var(--error)" : "var(--bg-body)", color: excluirConfirm === "EXCLUIR" ? "var(--text-inverse)" : "var(--text-muted)", border: "none", borderRadius: "12px", fontFamily: "Geist, sans-serif", fontSize: "0.88rem", fontWeight: 700, cursor: excluirConfirm === "EXCLUIR" ? "pointer" : "not-allowed" }}>
+                      Excluir minha conta
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
 
-        <button className="cfg-btn-logout" onClick={handleLogout}>Sair da conta</button>
+        <button className="cfg-btn-logout" onClick={handleLogout}>Sair</button>
       </div>
 
       {/* ─────────────── DESKTOP ─────────────── */}
@@ -749,19 +725,31 @@ export default function Configuracoes() {
         .cfg-btn-save:disabled { opacity: 0.65; cursor: not-allowed; }
         .cfg-btn-save--sm { width: auto; padding: 0.6rem 1.5rem; min-height: 40px; font-size: var(--font-button); border-radius: var(--radius-full); }
 
-        .cfg-btn-logout { width: 100%; padding: 0.8rem; background: none; border: 1.5px solid var(--border); border-radius: var(--radius-full); font-family: 'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-secondary); cursor: pointer; transition: border-color 0.2s, color 0.2s; }
-        .cfg-btn-logout:hover { border-color: var(--error); color: var(--error); }
+        .cfg-btn-logout { width: auto; padding: 0.5rem 0; background: none; border: none; font-family: 'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-medium); color: var(--text-muted); cursor: pointer; transition: color 0.2s; margin-top: 0.5rem; }
+        .cfg-btn-logout:hover { color: var(--error); }
+
+        .cfg-adv-item {
+          display: flex; align-items: center; gap: 0.65rem;
+          width: 100%; padding: 0.7rem 0.25rem;
+          background: none; border: none; cursor: pointer;
+          font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-medium);
+          color: var(--text-primary); text-align: left;
+          transition: color 0.15s;
+        }
+        .cfg-adv-item:hover { color: var(--primary); }
+        .cfg-adv-item--danger { color: var(--error); }
+        .cfg-adv-item--danger:hover { color: var(--error); opacity: 0.8; }
 
         .cfg-btn-ghost { padding: 0.6rem 1rem; background: var(--bg-body); color: var(--text-secondary); border: none; border-radius: var(--radius-md); font-family: 'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-medium); cursor: pointer; }
 
-        .cfg-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: var(--radius-sm); font-size: var(--font-caption); font-weight: var(--fw-semibold); }
+        .cfg-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: var(--radius-sm); font-size: var(--font-caption); font-weight: var(--fw-semibold); width: fit-content; }
 
         /* ── Mobile ── */
         .cfg-mobile { display: flex; flex-direction: column; gap: 0.85rem; }
         .cfg-desktop { display: none; }
 
         .cfg-hero { background: var(--primary-gradient); border-radius: var(--radius-xl); padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 6px 20px rgba(255,111,169,0.25); }
-        .cfg-hero-left { display: flex; flex-direction: column; gap: 0; flex: 1; min-width: 0; }
+        .cfg-hero-left { display: flex; flex-direction: column; align-items: flex-start; gap: 0; flex: 1; min-width: 0; }
         .cfg-hero-saudacao { font-size: var(--font-input); color: var(--text-inverse); margin: 0; font-weight: var(--fw-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cfg-badge-pro { background: rgba(255,255,255,0.25); color: var(--text-inverse); }
         .cfg-badge-trial { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
