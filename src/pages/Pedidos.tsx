@@ -905,7 +905,7 @@ export default function Pedidos() {
             </p>
 
             <button
-              onClick={() => { setModalSemProdutos(false); navigate('/produtos') }}
+              onClick={() => { setModalSemProdutos(false); navigate('/produtos', { state: { abrirCadastro: true } }) }}
               style={{
                 width: '100%', background: '#3d1a24', color: 'white', border: 'none',
                 borderRadius: 12, padding: '0.85rem', fontSize: '0.95rem', fontWeight: 700,

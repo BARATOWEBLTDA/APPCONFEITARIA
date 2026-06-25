@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { ImageCropper } from "@/components/ui/ImageCropper";
@@ -77,6 +78,7 @@ const EMPTY: Produto = {
 };
 
 export default function Produtos() {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<"produtos"|"categorias">("produtos");
   const [userId, setUserId] = useState("");
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -115,6 +117,14 @@ export default function Produtos() {
   const img2Ref = useRef<HTMLInputElement>(null);
   const img3Ref = useRef<HTMLInputElement>(null);
   const { isPro } = usePlano();
+
+  // Auto-abre cadastro quando vem de Pedidos
+  useEffect(() => {
+    if (!loading && (location.state as any)?.abrirCadastro) {
+      setModal(true);
+      window.history.replaceState({}, "");
+    }
+  }, [loading, location.state]);
 
   useEffect(() => {
     const load = async () => {
