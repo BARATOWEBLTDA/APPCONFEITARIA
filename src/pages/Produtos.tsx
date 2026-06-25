@@ -1502,16 +1502,19 @@ export default function Produtos() {
           font-family: var(--font-base); text-align: center; transition: all var(--dur-fast) var(--ease-out);
           position: relative;
         }
-        .wiz-tipo-card--active { border-color: var(--primary); border-width: 2.5px; background: var(--primary-light); }
+        .wiz-tipo-card--active { border-color: var(--primary-dark); border-width: 2.5px; background: var(--primary-dark); }
         .wiz-card-check {
           position: absolute; top: var(--space-3); right: var(--space-3);
           width: 24px; height: 24px; border-radius: 50%;
-          background: var(--primary); display: flex; align-items: center; justify-content: center;
+          background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center;
         }
         .wiz-tipo-icon { font-size: var(--text-2xl); }
         .wiz-tipo-title { font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title); margin: 0; }
         .wiz-tipo-desc { font-size: var(--font-helper); color: var(--text-secondary); margin: 0; line-height: var(--lh-normal); }
         .wiz-tipo-example { font-size: var(--font-caption); color: var(--text-muted); margin: var(--space-1) 0 0; font-style: italic; }
+        .wiz-tipo-card--active .wiz-tipo-title { color: var(--text-inverse); }
+        .wiz-tipo-card--active .wiz-tipo-desc { color: rgba(255,255,255,0.8); }
+        .wiz-tipo-card--active .wiz-tipo-example { color: rgba(255,255,255,0.6); }
         .wiz-opts-list { display: flex; flex-direction: column; gap: var(--space-2); }
         .wiz-opt-card {
           display: flex; align-items: flex-start; gap: var(--gap-stack); width: 100%;
