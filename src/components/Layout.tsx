@@ -318,8 +318,8 @@ export default function Layout() {
             position: fixed;
             bottom: 0; left: 0; right: 0;
             z-index: 50;
-            padding: 0 1rem 0;
-            padding-bottom: max(env(safe-area-inset-bottom, 0px), 4px);
+            padding: 0;
+            padding-bottom: env(safe-area-inset-bottom, 0px);
             background: transparent;
             pointer-events: none;
           }
@@ -329,12 +329,12 @@ export default function Layout() {
             justify-content: space-between;
             width: 100%;
             background: #3d1a24;
-            border-radius: var(--radius-lg);
+            border-radius: 0;
             padding: 6px 6px;
             height: 56px;
-            box-shadow: 0 4px 24px rgba(61, 26, 36, 0.35);
+            box-shadow: 0 -2px 16px rgba(61, 26, 36, 0.25);
             pointer-events: all;
-            margin-bottom: 4px;
+            margin-bottom: 0;
           }
           .bn-item {
             display: flex;
@@ -394,7 +394,7 @@ export default function Layout() {
             border: none;
             background: transparent;
             cursor: pointer;
-            border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+            border-radius: 0;
             align-self: stretch;
             min-width: 52px;
             margin: -6px -6px -6px 0;
