@@ -715,7 +715,7 @@ export default function Pedidos() {
     periodoFiltro !== 'todos'
 
   return (
-    <div style={{ fontFamily: "'Geist', sans-serif", display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+    <div style={{ fontFamily: "'Geist', sans-serif", display: 'flex', flexDirection: 'column', gap: '0.85rem', padding: '1.25rem 1rem 6rem' }}>
 
       {/* ── Header com padding mobile ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', paddingTop: isMobile ? '1.25rem' : 0 }}>
