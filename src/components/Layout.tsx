@@ -195,14 +195,11 @@ export default function Layout() {
               <span className="bn-label">Gestão</span>
             </button>
             <button
-              className={`bn-item${dooOpen ? " bn-item--active" : ""}`}
+              className={`bn-item bn-doo${dooOpen ? " bn-doo--active" : ""}`}
               onClick={() => setDooOpen(true)}
               aria-label="Abrir Doo IA"
             >
-              <span className="bn-icon">
-                <img src="/Sistema/doo.png" alt="Doo" style={{ width: 24, height: 24, borderRadius: "35%", objectFit: "cover" }} />
-              </span>
-              <span className="bn-label">Doo</span>
+              <img src="/Sistema/doo.png" alt="Doo" className="bn-doo-img" />
             </button>
           </div>
         </nav>
@@ -328,7 +325,7 @@ export default function Layout() {
           }
           .bottom-nav-pill {
             display: flex;
-            align-items: center;
+            align-items: stretch;
             justify-content: space-around;
             width: 100%;
             background: #3d1a24;
@@ -385,6 +382,31 @@ export default function Layout() {
           }
           .bn-item:active {
             transform: scale(0.94);
+          }
+
+          /* ── Doo highlight button ── */
+          .bn-doo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border: none;
+            background: #fff;
+            cursor: pointer;
+            border-radius: var(--radius-lg);
+            align-self: stretch;
+            min-width: 52px;
+            transition: transform 0.15s, box-shadow 0.15s;
+          }
+          .bn-doo:hover { transform: scale(1.05); box-shadow: 0 2px 12px rgba(255,255,255,0.3); }
+          .bn-doo:active { transform: scale(0.95); }
+          .bn-doo--active { box-shadow: 0 0 0 2px rgba(255,255,255,0.5); }
+          .bn-doo-img {
+            height: 100%;
+            max-height: 42px;
+            width: auto;
+            object-fit: contain;
+            border-radius: 35%;
           }
           .bottom-nav { animation: fadeInUp 0.2s ease; }
           @keyframes fadeInUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
