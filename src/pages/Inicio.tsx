@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -6,6 +6,7 @@ import {
 import {
   Share, Plus, ClipboardText, CalendarDots,
   Cake, TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
+  Bell, UserCircle, Storefront, SignOut,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
@@ -58,6 +59,34 @@ export default function Inicio() {
   const iniciais = nome
     ? nome.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("")
     : "";
+
+  // ── Menu de perfil (dropdown ao clicar no avatar) ──
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const APP_VERSION = "1.5.8";
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUserEmail(data.user?.email || "");
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [menuOpen]);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  };
   const linkCardapio = slug ? `${window.location.origin}/cardapio/${slug}` : "";
   const publicado = !!slug;
 
@@ -308,17 +337,47 @@ export default function Inicio() {
           <h1>{getGreeting()}, {nome ? nome.split(" ")[0] : "bem-vinda"}</h1>
           <p>{hojeFormatado()}</p>
         </div>
-        <button
-          className="ini-hero-avatar"
-          onClick={() => navigate("/configuracoes")}
-          aria-label="Abrir configurações"
-        >
-          {fotoUrl ? (
-            <img src={fotoUrl} alt="Foto de perfil" />
-          ) : (
-            <span>{iniciais || "?"}</span>
+        <div className="ini-hero-avatar-wrap" ref={menuRef}>
+          <button
+            className="ini-hero-avatar"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Abrir menu de perfil"
+          >
+            {fotoUrl ? (
+              <img src={fotoUrl} alt="Foto de perfil" />
+            ) : (
+              <span>{iniciais || "?"}</span>
+            )}
+          </button>
+
+          {menuOpen && (
+            <div className="ini-profile-menu">
+              <div className="ini-profile-menu-header">
+                <p className="ini-pm-name">{nome || "—"}</p>
+                {userEmail && <p className="ini-pm-email">{userEmail}</p>}
+                <p className="ini-pm-version">Versão {APP_VERSION}</p>
+              </div>
+              <div className="ini-profile-menu-items">
+                <button onClick={() => { setMenuOpen(false); navigate("/notificacoes"); }}>
+                  <Bell size={18} weight="duotone" />
+                  <span>Notificações</span>
+                </button>
+                <button onClick={() => { setMenuOpen(false); navigate("/configuracoes"); }}>
+                  <UserCircle size={18} weight="duotone" />
+                  <span>Minha Conta</span>
+                </button>
+                <button onClick={() => { setMenuOpen(false); navigate("/cardapio-config"); }}>
+                  <Storefront size={18} weight="duotone" />
+                  <span>Minha Loja</span>
+                </button>
+                <button className="ini-pm-logout" onClick={handleLogout}>
+                  <SignOut size={18} weight="duotone" />
+                  <span>Sair</span>
+                </button>
+              </div>
+            </div>
           )}
-        </button>
+        </div>
       </div>
 
       {/* ── 3 indicadores flutuando sobre o hero ── */}
@@ -500,6 +559,10 @@ export default function Inicio() {
           z-index: 0;
         }
         .ini-hero-greeting { flex: 1; min-width: 0; }
+        .ini-hero-avatar-wrap {
+          position: relative;
+          flex-shrink: 0;
+        }
         .ini-hero-avatar {
           flex-shrink: 0;
           width: 44px; height: 44px;
@@ -521,6 +584,72 @@ export default function Inicio() {
         .ini-hero-avatar:active { transform: scale(0.95); }
         .ini-hero-avatar img {
           width: 100%; height: 100%; object-fit: cover; display: block;
+        }
+
+        /* ── Dropdown de perfil ── */
+        .ini-profile-menu {
+          position: absolute;
+          top: calc(100% + 10px);
+          right: 0;
+          width: 240px;
+          background: var(--bg-card, #fff);
+          border: 1px solid var(--border, #ECC2D0);
+          border-radius: 14px;
+          box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+          z-index: 50;
+          overflow: hidden;
+          animation: iniMenuFade 0.15s ease-out;
+        }
+        @keyframes iniMenuFade {
+          from { opacity: 0; transform: translateY(-4px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .ini-profile-menu-header {
+          padding: 0.9rem 1rem 0.75rem;
+          border-bottom: 1px solid var(--border, #ECC2D0);
+        }
+        .ini-pm-name {
+          margin: 0;
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: var(--text, #333);
+          line-height: 1.25;
+        }
+        .ini-pm-email {
+          margin: 2px 0 0;
+          font-size: 0.72rem;
+          color: var(--text-muted, #888);
+          line-height: 1.3;
+          word-break: break-all;
+        }
+        .ini-pm-version {
+          margin: 6px 0 0;
+          font-size: 0.68rem;
+          color: var(--text-muted, #aaa);
+        }
+        .ini-profile-menu-items {
+          display: flex; flex-direction: column;
+          padding: 0.35rem 0;
+        }
+        .ini-profile-menu-items button {
+          display: flex; align-items: center; gap: 0.65rem;
+          background: transparent;
+          border: none;
+          padding: 0.6rem 1rem;
+          font-family: inherit;
+          font-size: 0.85rem;
+          color: var(--text, #333);
+          cursor: pointer;
+          text-align: left;
+          transition: background 0.12s ease;
+        }
+        .ini-profile-menu-items button:hover {
+          background: var(--primary-light, #FFF1F7);
+        }
+        .ini-profile-menu-items .ini-pm-logout {
+          color: var(--primary, #BE185D);
+          border-top: 1px solid var(--border, #ECC2D0);
+          margin-top: 0.2rem;
         }
         @keyframes heroGradientMove {
           0% { background-position: 0% 50%; }
