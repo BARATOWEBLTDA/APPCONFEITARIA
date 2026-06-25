@@ -129,11 +129,13 @@ export default function Produtos() {
   // Bloqueia scroll quando modal aberto
   useEffect(() => {
     if (modal) {
+      document.documentElement.style.overflow = "hidden";
       document.body.style.overflow = "hidden";
     } else {
+      document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => { document.documentElement.style.overflow = ""; document.body.style.overflow = ""; };
   }, [modal]);
 
   useEffect(() => {
@@ -1360,13 +1362,13 @@ export default function Produtos() {
         .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle); border:none; border-radius: var(--radius-sm); font-family:'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-primary); cursor:pointer; }
         .prod-card-btn-del { padding:0.4rem 0.6rem; background:#fff1f2; border:none; border-radius: var(--radius-sm); color:var(--error); cursor:pointer; display:flex; align-items:center; }
         /* ── Modal de Produto (100% via design tokens) ── */
-        .prod-modal-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.6); display: flex; align-items: flex-end; justify-content: center; padding: 0 12px; }
+        .prod-modal-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.6); display: flex; align-items: flex-end; justify-content: center; padding: 0 12px; overscroll-behavior: contain; }
         .prod-modal { background: var(--bg-card); border-radius: var(--radius-xl) 24px 16px 16px; width: 100%; max-width: 520px; max-height: 88vh; display: flex; flex-direction: column; animation: slideUp var(--dur-slow) var(--ease-out); margin-bottom: 12px; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .prod-modal-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5) var(--space-3); border-bottom: 1px solid var(--border); flex-shrink: 0; }
         .prod-modal-title { font-size: var(--font-modal-title); font-weight: var(--fw-bold); line-height: var(--lh-tight); color: var(--text-title); margin: 0; }
         .prod-modal-close { background: var(--bg-subtle); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); font-size: var(--font-caption); transition: background var(--dur-fast) var(--ease-out); }
-        .prod-modal-body { flex: 1; overflow-y: auto; padding: var(--pad-modal); display: flex; flex-direction: column; gap: var(--gap-section); }
+        .prod-modal-body { flex: 1; overflow-y: auto; padding: var(--pad-modal); display: flex; flex-direction: column; gap: var(--gap-section); overscroll-behavior: contain; }
         .prod-modal-footer { padding: var(--pad-modal); border-top: 1px solid var(--border); display: flex; gap: var(--gap-stack); flex-shrink: 0; }
         .prod-section { display: flex; flex-direction: column; gap: var(--gap-stack); }
         .prod-section-label { font-size: var(--font-section-label); font-weight: var(--fw-bold); line-height: var(--lh-normal); letter-spacing: var(--ls-wide); text-transform: uppercase; color: var(--primary); margin: 0; }
