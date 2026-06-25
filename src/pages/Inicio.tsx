@@ -54,6 +54,10 @@ export default function Inicio() {
 
   const nome = profile?.nome || "";
   const slug = profile?.slug || "";
+  const fotoUrl = profile?.foto_url || "";
+  const iniciais = nome
+    ? nome.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("")
+    : "";
   const linkCardapio = slug ? `${window.location.origin}/cardapio/${slug}` : "";
   const publicado = !!slug;
 
@@ -304,6 +308,17 @@ export default function Inicio() {
           <h1>{getGreeting()}, {nome ? nome.split(" ")[0] : "bem-vinda"}</h1>
           <p>{hojeFormatado()}</p>
         </div>
+        <button
+          className="ini-hero-avatar"
+          onClick={() => navigate("/configuracoes")}
+          aria-label="Abrir configurações"
+        >
+          {fotoUrl ? (
+            <img src={fotoUrl} alt="Foto de perfil" />
+          ) : (
+            <span>{iniciais || "?"}</span>
+          )}
+        </button>
       </div>
 
       {/* ── 3 indicadores flutuando sobre o hero ── */}
@@ -477,9 +492,35 @@ export default function Inicio() {
           margin-left: calc(50% - 50vw);
           margin-right: calc(50% - 50vw);
           margin-top: -0.75rem;
-          display: flex; flex-direction: column;
+          display: flex; flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
           position: relative;
           z-index: 0;
+        }
+        .ini-hero-greeting { flex: 1; min-width: 0; }
+        .ini-hero-avatar {
+          flex-shrink: 0;
+          width: 44px; height: 44px;
+          border-radius: 50%;
+          border: 2px solid rgba(255,255,255,0.35);
+          background: rgba(255,255,255,0.1);
+          padding: 0;
+          overflow: hidden;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          color: rgba(255,255,255,0.95);
+          font-family: inherit;
+          font-size: 0.85rem;
+          font-weight: 600;
+          letter-spacing: 0.02em;
+          transition: transform 0.18s ease, border-color 0.18s ease;
+        }
+        .ini-hero-avatar:hover { transform: scale(1.05); border-color: rgba(255,255,255,0.6); }
+        .ini-hero-avatar:active { transform: scale(0.95); }
+        .ini-hero-avatar img {
+          width: 100%; height: 100%; object-fit: cover; display: block;
         }
         @keyframes heroGradientMove {
           0% { background-position: 0% 50%; }
