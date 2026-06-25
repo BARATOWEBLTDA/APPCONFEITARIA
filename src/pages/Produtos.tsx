@@ -43,6 +43,7 @@ type Produto = {
   tem_outro?: boolean;
   titulo_outro?: string;
   valor_outro?: number;
+  tem_adicionais?: boolean;
   tipo_promocao?: 'fixo' | 'percentual';
   desconto_percentual?: number;
 };
@@ -74,6 +75,7 @@ const EMPTY: Produto = {
   tem_topo: false, valor_topo: 0,
   tem_papel_arroz: false, valor_papel_arroz: 0,
   tem_outro: false, titulo_outro: "", valor_outro: 0,
+  tem_adicionais: false,
   tipo_promocao: 'fixo' as const, desconto_percentual: 0,
 };
 
@@ -611,7 +613,7 @@ export default function Produtos() {
 
               {/* Foto */}
               <div className="prod-section">
-                <p className="prod-section-label">📸 Fotos do Produto</p>
+                <p className="prod-section-label">Fotos do Produto</p>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
                   {[0, 1, 2].map(slot => {
                     const imgs = (form.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
@@ -660,14 +662,14 @@ export default function Produtos() {
 
               {/* Informações */}
               <div className="prod-section">
-                <p className="prod-section-label">✏️ Informações</p>
+                <p className="prod-section-label">Informações</p>
                 <div className="prod-field">
-                  <label>Nome do Produto *</label>
+                  <label>Nome do Produto <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
                   <input type="text" placeholder="Ex: Bolo de Morango" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
                 </div>
                 <div className="prod-field">
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
-                    <label style={{ margin: 0 }}>Categoria *</label>
+                    <label style={{ margin: 0 }}>Categoria <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
                     {!showCatInput && (
                       <button
                         type="button"
@@ -765,10 +767,10 @@ export default function Produtos() {
 
               {/* Preço e Venda */}
               <div className="prod-section">
-                <p className="prod-section-label">💰 Preço e Venda</p>
+                <p className="prod-section-label">Preço e Venda</p>
                 <div className="prod-row-2">
                   <div className="prod-field">
-                    <label>Preço base *</label>
+                    <label>Preço base <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
                     <div className="prod-preco-input">
                       <span>R$</span>
                       <input type="text" placeholder="0,00" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => setForm(f => ({ ...f, preco_normal: parsePreco(e.target.value) }))} />
@@ -847,7 +849,7 @@ export default function Produtos() {
               {/* Kit Festa */}
               {form.forma_venda === "kit-festa" && (
                 <div className="prod-section">
-                  <p className="prod-section-label">🎉 Itens do Kit</p>
+                  <p className="prod-section-label">Itens do Kit</p>
                   <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", margin: "0" }}>Adicione cada item que estará incluso no kit festa</p>
 
                   {(form.kit_itens || []).map((item, i) => (
@@ -889,7 +891,7 @@ export default function Produtos() {
 
               {/* Personalização */}
               <div className="prod-section">
-                <p className="prod-section-label">🎨 Personalização</p>
+                <p className="prod-section-label">Personalização</p>
                 <Toggle label="Permitir personalização" value={form.permite_personalizacao || false} onChange={(v: boolean) => setForm(f => ({ ...f, permite_personalizacao: v }))} colorClass="active-pink" />
 
                 {form.permite_personalizacao && (
@@ -932,8 +934,12 @@ export default function Produtos() {
 
               {/* Adicionais */}
               <div className="prod-section">
-                <p className="prod-section-label">✨ Adicionais</p>
-                <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: "0" }}>Itens extras que o cliente pode solicitar</p>
+                <p className="prod-section-label">Adicionais</p>
+                <Toggle label="Oferecer adicionais" value={form.tem_adicionais || false} onChange={(v: boolean) => setForm(f => ({ ...f, tem_adicionais: v }))} colorClass="active-pink" />
+
+                {form.tem_adicionais && (
+                  <>
+                    <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: "0" }}>Itens extras que o cliente pode solicitar</p>
 
                 {[
                   { label: "Velas", sub: "Cliente escolhe se quer velas", campo: "tem_vela" as const, valor: "valor_vela" as const },
@@ -990,11 +996,13 @@ export default function Produtos() {
                     </div>
                   )}
                 </div>
+                  </>
+                )}
               </div>
 
               {/* Promoção */}
               <div className="prod-section">
-                <p className="prod-section-label">🏷️ Promoção</p>
+                <p className="prod-section-label">Promoção</p>
                 <Toggle label="Produto em promoção" value={form.promocao} onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v }))} colorClass="active-pink" />
 
                 {form.promocao && (
@@ -1065,37 +1073,9 @@ export default function Produtos() {
                 )}
               </div>
 
-              {/* Ficha técnica (CMV) — botão compacto que abre modal dedicado */}
-              <div className="prod-section">
-                <p className="prod-section-label">🧪 Ficha técnica <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 500, marginLeft: 4 }}>· custo de produção</span></p>
-                <button type="button" className="ficha-trigger" onClick={() => setFichaModalOpen(true)}>
-                  {fichaTecnica.length === 0 ? (
-                    <>
-                      <div className="ficha-trigger-icon">🧪</div>
-                      <div className="ficha-trigger-info">
-                        <p className="ficha-trigger-title">Configurar ficha técnica</p>
-                        <p className="ficha-trigger-sub">Calcule o custo e a margem deste produto</p>
-                      </div>
-                      <div className="ficha-trigger-arrow">›</div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="ficha-trigger-icon">🧪</div>
-                      <div className="ficha-trigger-info">
-                        <p className="ficha-trigger-title">{fichaTecnica.length} {fichaTecnica.length === 1 ? "ingrediente" : "ingredientes"}</p>
-                        <p className="ficha-trigger-sub">CMV R$ {cmvProduto.toFixed(2)} · Margem {margemProduto.toFixed(0)}%</p>
-                      </div>
-                      <div className={`ficha-trigger-badge ficha-trigger-badge--${margemProduto >= 50 ? "alto" : margemProduto >= 25 ? "medio" : "baixo"}`}>
-                        {margemProduto.toFixed(0)}%
-                      </div>
-                    </>
-                  )}
-                </button>
-              </div>
-
               {/* Status */}
               <div className="prod-section">
-                <p className="prod-section-label">📋 Status</p>
+                <p className="prod-section-label">Status</p>
                 <div className="prod-toggles" style={{ gap: "0.5rem" }}>
                   <Toggle label="Disponível" value={form.disponivel} onChange={(v: boolean) => setForm(f => ({ ...f, disponivel: v }))} colorClass="active-green" />
                   <Toggle label="Pronta entrega" value={form.pronta_entrega !== false} onChange={(v: boolean) => setForm(f => ({ ...f, pronta_entrega: v }))} colorClass="active-green" />
