@@ -277,7 +277,7 @@ function formatText(text: string): string {
     .replace(/\n/g, '<br/>')
 }
 
-export default function DooIA() {
+export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onClose?: () => void }) {
   const navigate = useNavigate()
   const { isPro, loading: planoLoading } = usePlano()
   const [open, setOpen] = useState(false)
@@ -296,6 +296,16 @@ export default function DooIA() {
 
 
 
+
+  // Sync com forceOpen externo
+  useEffect(() => {
+    if (forceOpen) setOpen(true)
+  }, [forceOpen])
+
+  const handleClose = () => {
+    setOpen(false)
+    onClose?.()
+  }
 
   // Busca nome da confeiteira
   useEffect(() => {
@@ -469,7 +479,7 @@ export default function DooIA() {
           width: '62px', height: '62px', borderRadius: '35%',
           border: 'none', background: 'transparent', cursor: 'pointer',
           zIndex: 200, padding: 0,
-          display: open ? 'none' : 'flex',
+          display: 'none',
           alignItems: 'center', justifyContent: 'center',
         }}
         aria-label="Abrir assistente Doo"
@@ -493,7 +503,7 @@ export default function DooIA() {
       {/* ── Modal de upgrade para FREE ── */}
       {open && !isPro && (
         <>
-          <div onClick={() => setOpen(false)} style={{
+          <div onClick={handleClose} style={{
             position: 'fixed', inset: 0,
             backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
             background: 'rgba(0,0,0,0.45)', zIndex: 9998,
@@ -508,7 +518,7 @@ export default function DooIA() {
             fontFamily: 'inherit', animation: 'dooFadeIn 0.25s ease',
             textAlign: 'center',
           }}>
-            <button onClick={() => setOpen(false)} style={{
+            <button onClick={handleClose} style={{
               position: 'absolute', top: 12, right: 12, width: 32, height: 32,
               background: 'transparent', border: 'none', cursor: 'pointer',
               color: 'var(--text-muted,#C39EAA)', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -559,7 +569,7 @@ export default function DooIA() {
             </div>
 
             <button
-              onClick={() => { setOpen(false); navigate('/assinar') }}
+              onClick={() => { handleClose(); navigate('/assinar') }}
               style={{
                 width: '100%', background: VINHO, color: 'white', border: 'none',
                 borderRadius: 12, padding: '0.85rem', fontSize: '0.95rem', fontWeight: 700,
@@ -571,7 +581,7 @@ export default function DooIA() {
               Conhecer o plano PRO
             </button>
             <button
-              onClick={() => setOpen(false)}
+              onClick={handleClose}
               style={{
                 width: '100%', background: 'transparent', color: 'var(--text-muted,#C39EAA)',
                 border: 'none', padding: '0.5rem', fontSize: '0.82rem', fontWeight: 500,
@@ -586,7 +596,7 @@ export default function DooIA() {
 
       {/* ── Overlay blur ── */}
       {open && isPro && (
-        <div onClick={() => setOpen(false)} style={{
+        <div onClick={handleClose} style={{
           position: 'fixed', inset: 0,
           backdropFilter: 'blur(3px)', WebkitBackdropFilter: 'blur(3px)',
           background: 'rgba(0,0,0,0.15)', zIndex: 198,
@@ -645,7 +655,7 @@ export default function DooIA() {
                 </button>
               )}
               <button
-                onClick={() => setOpen(false)}
+                onClick={handleClose}
                 style={{
                   background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '35%',
                   width: '28px', height: '28px', color: 'white', cursor: 'pointer',

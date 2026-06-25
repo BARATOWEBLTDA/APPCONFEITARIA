@@ -6,7 +6,7 @@ import { useState, type ReactNode } from "react";
 import {
   House, CalendarDots, ShoppingBag, ClipboardText, Users, BookOpen,
   Package, CurrencyDollar, Gear, SignOut, CaretDown, ForkKnife, List,
-  User,
+  User, SquaresFour,
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
@@ -34,6 +34,7 @@ export default function Layout() {
   const { isPro } = usePlano();
   const { notifCount, notifOpen, notificacoes, notifRef, toggleNotif, closeNotif } = useNotifications();
   const [maisOpen, setMaisOpen] = useState(false);
+  const [dooOpen, setDooOpen] = useState(false);
   const location = useLocation();
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
@@ -170,7 +171,6 @@ export default function Layout() {
               { to: "/inicio",   icon: <House          size={20} weight="fill" />, label: "Início"   },
               { to: "/pedidos",  icon: <ClipboardText  size={20} weight="fill" />, label: "Pedidos"  },
               { to: "/cardapio", icon: <ForkKnife      size={20} weight="fill" />, label: "Cardápio" },
-              { to: "/agenda",   icon: <CalendarDots   size={20} weight="fill" />, label: "Agenda"   },
             ].map((item) => {
               const isActive =
                 location.pathname === item.to ||
@@ -189,17 +189,26 @@ export default function Layout() {
             <button
               className={`bn-item${maisOpen ? " bn-item--active" : ""}`}
               onClick={() => setMaisOpen(!maisOpen)}
-              aria-label="Mais opções"
-              aria-expanded={maisOpen}
+              aria-label="Gestão"
             >
-              <span className="bn-icon"><List size={20} weight="fill" /></span>
-              <span className="bn-label">Mais</span>
+              <span className="bn-icon"><SquaresFour size={20} weight="fill" /></span>
+              <span className="bn-label">Gestão</span>
+            </button>
+            <button
+              className={`bn-item${dooOpen ? " bn-item--active" : ""}`}
+              onClick={() => setDooOpen(true)}
+              aria-label="Abrir Doo IA"
+            >
+              <span className="bn-icon">
+                <img src="/Sistema/doo.png" alt="Doo" style={{ width: 24, height: 24, borderRadius: "35%", objectFit: "cover" }} />
+              </span>
+              <span className="bn-label">Doo</span>
             </button>
           </div>
         </nav>
       )}
 
-      {location.pathname === "/inicio" && <DooIA />}
+      <DooIA forceOpen={dooOpen} onClose={() => setDooOpen(false)} />
 
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
