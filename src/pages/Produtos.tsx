@@ -621,69 +621,50 @@ export default function Produtos() {
             {/* ══════ WIZARD STEP 1 ══════ */}
             {wizardStep === 1 && (
               <div className="prod-modal-body">
-                <p style={{ fontSize: "0.85rem", color: "var(--text-secondary)", margin: 0 }}>Preencha os detalhes para cadastrar um novo produto no sistema.</p>
+                <p className="wiz-subtitle">Preencha os detalhes para cadastrar um novo produto no sistema.</p>
 
                 {/* Barra de progresso */}
-                <div style={{ display: "flex", gap: "6px" }}>
-                  <div style={{ flex: 1, height: "4px", borderRadius: "2px", background: "var(--primary)" }} />
-                  <div style={{ flex: 1, height: "4px", borderRadius: "2px", background: "var(--border)" }} />
+                <div className="wiz-progress">
+                  <div className="wiz-progress-bar wiz-progress-bar--active" />
+                  <div className="wiz-progress-bar" />
                 </div>
 
                 {/* Tipo */}
-                <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-primary)", margin: "0.5rem 0 0" }}>Que tipo de produto você quer cadastrar?</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <p className="wiz-section-title">Que tipo de produto você quer cadastrar?</p>
+                <div className="wiz-tipo-list">
                   {[
                     { tipo: "simples" as const, icon: "📦", title: "Produto simples", desc: "Um único item no cardápio, sem sabores nem tamanhos." },
                     { tipo: "variacoes" as const, icon: "✨", title: "Com variações", desc: "Sabores e/ou tamanhos (ex: bolo 30cm, 40cm ou chocolate, morango)." },
                   ].map(({ tipo, icon, title, desc }) => (
-                    <button key={tipo} onClick={() => setWizardTipo(tipo)} style={{
-                      display: "flex", flexDirection: "column", alignItems: "center", gap: "8px",
-                      padding: "1.25rem 1rem", borderRadius: "16px", cursor: "pointer",
-                      border: wizardTipo === tipo ? "2px solid var(--primary)" : "2px solid var(--border)",
-                      background: wizardTipo === tipo ? "var(--primary-light)" : "var(--bg-card)",
-                      fontFamily: "inherit", textAlign: "center", transition: "all 0.15s",
-                    }}>
-                      <span style={{ fontSize: "2rem" }}>{icon}</span>
-                      <p style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--text-title)", margin: 0 }}>{title}</p>
-                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.4 }}>{desc}</p>
+                    <button key={tipo} className={`wiz-tipo-card${wizardTipo === tipo ? " wiz-tipo-card--active" : ""}`} onClick={() => setWizardTipo(tipo)}>
+                      <span className="wiz-tipo-icon">{icon}</span>
+                      <p className="wiz-tipo-title">{title}</p>
+                      <p className="wiz-tipo-desc">{desc}</p>
                     </button>
                   ))}
                 </div>
 
                 {/* Recursos opcionais */}
-                <p style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text-primary)", margin: "0.5rem 0 0" }}>Recursos opcionais</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <p className="wiz-section-title">Recursos opcionais</p>
+                <div className="wiz-opts-list">
                   {[
                     { key: "complementos" as const, icon: "🎁", title: "Complementos", desc: "Velas, topo de bolo, papel de arroz, embalagem especial e mais." },
                     { key: "personalizacao" as const, icon: "🎨", title: "Personalização", desc: "Massas, recheios e coberturas que o cliente pode escolher." },
                   ].map(({ key, icon, title, desc }) => (
-                    <button key={key} onClick={() => setWizardOpts(o => ({ ...o, [key]: !o[key] }))} style={{
-                      display: "flex", alignItems: "flex-start", gap: "12px",
-                      padding: "14px 16px", borderRadius: "14px", cursor: "pointer",
-                      border: wizardOpts[key] ? "2px solid var(--primary)" : "2px solid var(--border)",
-                      background: wizardOpts[key] ? "var(--primary-light)" : "var(--bg-card)",
-                      fontFamily: "inherit", textAlign: "left", transition: "all 0.15s", width: "100%",
-                    }}>
-                      <div style={{
-                        width: "22px", height: "22px", borderRadius: "6px", flexShrink: 0,
-                        border: wizardOpts[key] ? "2px solid var(--primary)" : "2px solid var(--border)",
-                        background: wizardOpts[key] ? "var(--primary)" : "transparent",
-                        display: "flex", alignItems: "center", justifyContent: "center", marginTop: "2px",
-                      }}>
-                        {wizardOpts[key] && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                    <button key={key} className={`wiz-opt-card${wizardOpts[key] ? " wiz-opt-card--active" : ""}`} onClick={() => setWizardOpts(o => ({ ...o, [key]: !o[key] }))}>
+                      <div className={`wiz-opt-check${wizardOpts[key] ? " wiz-opt-check--active" : ""}`}>
+                        {wizardOpts[key] && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-inverse)" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                       </div>
                       <div>
-                        <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 2px", display: "flex", alignItems: "center", gap: "6px" }}>
-                          <span>{icon}</span> {title}
-                        </p>
-                        <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.4 }}>{desc}</p>
+                        <p className="wiz-opt-title"><span>{icon}</span> {title}</p>
+                        <p className="wiz-opt-desc">{desc}</p>
                       </div>
                     </button>
                   ))}
                 </div>
 
                 {/* Footer step 1 */}
-                <div style={{ display: "flex", gap: "10px", paddingTop: "0.5rem" }}>
+                <div className="wiz-footer">
                   <button className="prod-btn-cancelar" onClick={fecharModal}>Cancelar</button>
                   <button className="prod-btn-salvar" onClick={() => {
                     setForm(f => ({
@@ -707,9 +688,9 @@ export default function Produtos() {
 
               {/* Barra de progresso */}
               {!form.id && (
-                <div style={{ display: "flex", gap: "6px" }}>
-                  <div style={{ flex: 1, height: "4px", borderRadius: "2px", background: "var(--primary)" }} />
-                  <div style={{ flex: 1, height: "4px", borderRadius: "2px", background: "var(--primary)" }} />
+                <div className="wiz-progress">
+                  <div className="wiz-progress-bar wiz-progress-bar--active" />
+                  <div className="wiz-progress-bar wiz-progress-bar--active" />
                 </div>
               )}
 
@@ -1490,6 +1471,42 @@ export default function Produtos() {
         .prod-btn-cancelar { flex: 1; padding: var(--space-3); background: var(--bg-body); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-secondary); cursor: pointer; transition: opacity var(--dur-fast) var(--ease-out); }
         .prod-btn-salvar { flex: 2; padding: var(--space-3); background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold); line-height: var(--lh-normal); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity var(--dur-fast) var(--ease-out); }
         .prod-btn-salvar:disabled { opacity: 0.65; cursor: not-allowed; }
+
+        /* ── Wizard ── */
+        .wiz-subtitle { font-size: var(--font-button); color: var(--text-secondary); margin: 0; line-height: var(--lh-relaxed); }
+        .wiz-progress { display: flex; gap: var(--space-2); }
+        .wiz-progress-bar { flex: 1; height: 4px; border-radius: 2px; background: var(--border); }
+        .wiz-progress-bar--active { background: var(--primary); }
+        .wiz-section-title { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-primary); margin: var(--space-2) 0 0; }
+        .wiz-tipo-list { display: flex; flex-direction: column; gap: var(--gap-stack); }
+        .wiz-tipo-card {
+          display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+          padding: var(--space-5) var(--space-4); border-radius: var(--radius-xl); cursor: pointer;
+          border: 2px solid var(--border); background: var(--bg-card);
+          font-family: var(--font-base); text-align: center; transition: all var(--dur-fast) var(--ease-out);
+        }
+        .wiz-tipo-card--active { border-color: var(--primary); background: var(--primary-light); }
+        .wiz-tipo-icon { font-size: var(--text-2xl); }
+        .wiz-tipo-title { font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title); margin: 0; }
+        .wiz-tipo-desc { font-size: var(--font-helper); color: var(--text-muted); margin: 0; line-height: var(--lh-normal); }
+        .wiz-opts-list { display: flex; flex-direction: column; gap: var(--space-2); }
+        .wiz-opt-card {
+          display: flex; align-items: flex-start; gap: var(--gap-stack); width: 100%;
+          padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); cursor: pointer;
+          border: 2px solid var(--border); background: var(--bg-card);
+          font-family: var(--font-base); text-align: left; transition: all var(--dur-fast) var(--ease-out);
+        }
+        .wiz-opt-card--active { border-color: var(--primary); background: var(--primary-light); }
+        .wiz-opt-check {
+          width: 22px; height: 22px; border-radius: var(--radius-sm); flex-shrink: 0;
+          border: 2px solid var(--border); background: transparent;
+          display: flex; align-items: center; justify-content: center; margin-top: 2px;
+          transition: all var(--dur-fast) var(--ease-out);
+        }
+        .wiz-opt-check--active { border-color: var(--primary); background: var(--primary); }
+        .wiz-opt-title { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--text-primary); margin: 0 0 2px; display: flex; align-items: center; gap: var(--space-2); }
+        .wiz-opt-desc { font-size: var(--font-helper); color: var(--text-muted); margin: 0; line-height: var(--lh-normal); }
+        .wiz-footer { display: flex; gap: var(--gap-stack); padding-top: var(--space-2); }
 
         /* ── Confirmação de exclusão de produto ── */
         .prod-confirm { background: var(--bg-card); border-radius: var(--radius-lg); padding: var(--space-6); width: 90%; max-width: 320px; margin: auto; }
