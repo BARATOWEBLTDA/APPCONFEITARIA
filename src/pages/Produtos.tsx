@@ -1366,15 +1366,15 @@ export default function Produtos() {
         .prod-tab--active { background:var(--bg-card); color:var(--primary); box-shadow:0 1px 4px rgba(0,0,0,0.08); }
         @media(max-width:640px) { .prod-tabs { width:100%; } .prod-tab { flex:1; justify-content:center; padding:0.5rem 0.25rem; font-size: var(--font-helper); } }
 
-        .prod-root { font-family:'Geist', sans-serif; max-width:800px; display:flex; flex-direction:column; gap:1rem; }
+        .prod-root { font-family: var(--font-base); max-width:800px; display:flex; flex-direction:column; gap:1rem; }
         .prod-spinner { width:32px; height:32px; border:3px solid var(--primary-light); border-top-color:var(--primary); border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
         .prod-spinner-sm { width:18px; height:18px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
         @keyframes pspin { to { transform:rotate(360deg); } }
         .prod-title { font-size: var(--font-page-title); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.15rem; }
         .prod-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0; }
-        .prod-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.7rem 1.2rem; background:var(--primary-gradient); color:var(--text-inverse); border:none; border-radius: var(--radius-full); font-family:'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-bold); cursor:pointer; white-space:nowrap; }
+        .prod-btn-novo { display:flex; align-items:center; gap:0.4rem; padding:0.7rem 1.2rem; background:var(--primary-gradient); color:var(--text-inverse); border:none; border-radius: var(--radius-full); font-family: var(--font-base); font-size: var(--font-button); font-weight: var(--fw-bold); cursor:pointer; white-space:nowrap; }
         .prod-filtros { display:flex; gap:0.4rem; flex-wrap:wrap; }
-        .prod-filtro-btn { padding:0.35rem 0.7rem; border:1.5px solid var(--border); border-radius: var(--radius-sm); background:var(--bg-card); font-family:'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-medium); color:var(--text-secondary); cursor:pointer; }
+        .prod-filtro-btn { padding:0.35rem 0.7rem; border:1.5px solid var(--border); border-radius: var(--radius-sm); background:var(--bg-card); font-family: var(--font-base); font-size: var(--font-helper); font-weight: var(--fw-medium); color:var(--text-secondary); cursor:pointer; }
         .prod-filtro-btn.active { border-color:var(--primary); color:var(--primary); background:var(--primary-light); font-weight: var(--fw-bold); }
         .prod-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; padding:3rem 1rem; text-align:center; }
         .prod-empty-title { font-size: var(--font-input); font-weight: var(--fw-bold); color:var(--text-title); margin:0; }
@@ -1404,7 +1404,7 @@ export default function Produtos() {
           margin-top: 6px;
           padding: 5px 8px;
           border-radius: var(--radius-sm);
-          font-family: 'Geist', sans-serif;
+          font-family: var(--font-base);
           line-height: 1.2;
         }
         .prod-card-lucro-label {
@@ -1434,7 +1434,7 @@ export default function Produtos() {
           border: 1px dashed var(--primary);
           border-radius: var(--radius-sm);
           color: var(--primary);
-          font-family: 'Geist', sans-serif;
+          font-family: var(--font-base);
           font-size: var(--font-caption);
           font-weight: var(--fw-semibold);
           cursor: pointer;
@@ -1445,10 +1445,10 @@ export default function Produtos() {
         }
         .prod-card-sem-ficha:hover {
           background: var(--primary);
-          color: #fff;
+          color: var(--text-inverse);
         }
         .prod-card-actions { display:flex; gap:0.4rem; padding:0.5rem 0.75rem; border-top:1px solid var(--border); }
-        .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle); border:none; border-radius: var(--radius-sm); font-family:'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-primary); cursor:pointer; }
+        .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle); border:none; border-radius: var(--radius-sm); font-family: var(--font-base); font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-primary); cursor:pointer; }
         .prod-card-btn-del { padding:0.4rem 0.6rem; background:#fff1f2; border:none; border-radius: var(--radius-sm); color:var(--error); cursor:pointer; display:flex; align-items:center; }
         /* ── Modal de Produto (100% via design tokens) ── */
         .prod-modal-overlay { position: fixed; inset: 0; z-index: 500; background: var(--bg-card); display: flex; flex-direction: column; }
@@ -1467,7 +1467,7 @@ export default function Produtos() {
         .prod-img-placeholder { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); padding: var(--space-3); text-align: center; }
         .prod-img-placeholder p { font-size: var(--font-helper); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-primary); margin: 0; }
         .prod-img-placeholder span { font-size: var(--font-caption); font-weight: var(--fw-regular); color: var(--text-muted); }
-        .prod-img-remove { position: absolute; top: var(--space-1); right: var(--space-1); background: rgba(0,0,0,0.5); border: none; border-radius: 50%; width: 22px; height: 22px; color: #fff; font-size: var(--font-caption); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .prod-img-remove { position: absolute; top: var(--space-1); right: var(--space-1); background: rgba(0,0,0,0.5); border: none; border-radius: 50%; width: 22px; height: 22px; color: var(--text-inverse); font-size: var(--font-caption); cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .prod-field { display: flex; flex-direction: column; gap: var(--space-1); }
         .prod-field label { font-size: var(--font-field-label); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-secondary); }
         .prod-field input, .prod-field select, .prod-field textarea { padding: var(--pad-input); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-medium); line-height: var(--lh-normal); color: var(--text-title); background: var(--bg-input); outline: none; transition: border-color var(--dur-fast) var(--ease-out); width: 100%; box-sizing: border-box; }
@@ -1486,7 +1486,7 @@ export default function Produtos() {
         .prod-toggle-item.active-green { background: #dcfce7; color: #15803d; }
         .prod-toggle-item.active-pink { background: var(--primary-light); color: var(--primary-dark); }
         .prod-toggle-slider { width: 40px; height: 22px; border-radius: var(--radius-md); background: var(--border); position: relative; flex-shrink: 0; transition: background var(--dur-normal) var(--ease-out); }
-        .prod-toggle-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; position: absolute; top: 2px; left: 2px; transition: transform var(--dur-normal) var(--ease-out); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .prod-toggle-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--bg-card); position: absolute; top: 2px; left: 2px; transition: transform var(--dur-normal) var(--ease-out); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
         .prod-btn-cancelar { flex: 1; padding: var(--space-3); background: var(--bg-body); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-secondary); cursor: pointer; transition: opacity var(--dur-fast) var(--ease-out); }
         .prod-btn-salvar { flex: 2; padding: var(--space-3); background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold); line-height: var(--lh-normal); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity var(--dur-fast) var(--ease-out); }
         .prod-btn-salvar:disabled { opacity: 0.65; cursor: not-allowed; }
@@ -1505,9 +1505,9 @@ export default function Produtos() {
         .prod-root {
           display: flex;
           flex-direction: column;
-          gap: 0.85rem;
-                  padding-bottom: 6rem;
-          font-family: 'Geist', sans-serif;
+          gap: var(--gap-stack);
+          padding: var(--space-5) var(--space-4) 6rem;
+          font-family: var(--font-base);
         }
 
         /* ── Tabs Produtos / Categorias ── */
@@ -1536,8 +1536,8 @@ export default function Produtos() {
           transition: all var(--dur-fast) var(--ease-out);
         }
         .prod-tab-novo.active {
-          background: #fff;
-          color: #3d1a24;
+          background: var(--bg-card);
+          color: var(--text-title);
           box-shadow: 0 2px 6px rgba(61, 26, 36, 0.08);
         }
 
@@ -1549,8 +1549,8 @@ export default function Produtos() {
           gap: 0.75rem;
         }
         .prod-title-novo {
-          font-size: var(--font-page-title);
-          font-weight: var(--fw-bold);
+          font-size: var(--text-2xl);
+          font-weight: var(--fw-black);
           color: var(--text-title);
           margin: 0;
           letter-spacing: -0.02em;
@@ -1573,7 +1573,7 @@ export default function Produtos() {
           transition: border-color var(--dur-fast) var(--ease-out);
         }
         .prod-busca-novo:focus-within {
-          border-color: #3d1a24;
+          border-color: var(--text-title);
         }
         .prod-busca-novo > svg:first-child {
           color: var(--text-muted);
@@ -1620,13 +1620,13 @@ export default function Produtos() {
           transition: all var(--dur-fast) var(--ease-out);
         }
         .prod-filtro-btn:hover {
-          border-color: #3d1a24;
-          color: #3d1a24;
+          border-color: var(--text-title);
+          color: var(--text-title);
         }
         .prod-filtro-btn.active {
-          background: #3d1a24;
-          border-color: #3d1a24;
-          color: white;
+          background: var(--text-title);
+          border-color: var(--text-title);
+          color: var(--text-inverse);
         }
 
         /* ── Lista / Grid de produtos ── */
