@@ -1390,7 +1390,6 @@ export default function Produtos() {
           display: flex;
           flex-direction: column;
           gap: 0.85rem;
-          padding-top: 1.25rem;
           padding-bottom: 6rem;
           font-family: 'Geist', sans-serif;
         }

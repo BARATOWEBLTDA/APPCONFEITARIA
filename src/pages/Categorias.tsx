@@ -256,7 +256,7 @@ export default function Categorias() {
         .cat-root { font-family:'Geist', sans-serif; max-width:600px; display:flex; flex-direction:column; gap:1rem; }
         .cat-spinner { width:32px; height:32px; border:3px solid var(--primary-light, #FFF1F7); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:catspin 0.7s linear infinite; display:inline-block; }
         .cat-spinner-sm { width:18px; height:18px; border:2px solid rgba(255,111,169,0.3); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:catspin 0.7s linear infinite; display:inline-block; }
-        .cat-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; padding-top:1.5rem; }
+        .cat-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
         .cat-title { font-size:1.3rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.15rem; }
         .cat-sub { font-size:0.82rem; color:var(--text-muted, #9CA3AF); margin:0; }
         .cat-btn-novo { display:none; /* legacy, substituído por BtnNovo */ }

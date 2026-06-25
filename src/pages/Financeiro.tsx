@@ -874,7 +874,7 @@ export default function Financeiro() {
         @keyframes finspin { to { transform:rotate(360deg); } }
         @keyframes finFadeIn { from{opacity:0; transform:translateY(-4px)} to{opacity:1; transform:translateY(0)} }
 
-        .fin-root { font-family:'Geist', sans-serif; display:flex; flex-direction:column; gap:1.25rem; max-width:1400px; width:100%; box-sizing:border-box; padding-top:0.5rem; }
+        .fin-root { font-family:'Geist', sans-serif; display:flex; flex-direction:column; gap:1.25rem; max-width:1400px; width:100%; box-sizing:border-box; }
 
         /* Header */
         .fin-header { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; }
@@ -1368,7 +1368,6 @@ export default function Financeiro() {
 
         /* Mobile */
         @media (max-width:640px) {
-          .fin-root { padding-top:0.25rem; }
           .fin-header { flex-direction:column; align-items:stretch; }
           .fin-header-actions { flex-direction:column-reverse; gap:0.5rem; }
           .fin-export-wrap, .fin-btn-export { width:100%; }

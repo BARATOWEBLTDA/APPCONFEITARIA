@@ -522,7 +522,7 @@ function Styles() {
       }
 
       @media (max-width: 640px) {
-        .ins-root { padding-top: 1.5rem; padding-bottom: 6rem; gap: 1rem; }
+        .ins-root { padding-bottom: 6rem; gap: 1rem; }
         .ins-title { font-size: 1.35rem; }
         .ins-filtros--desktop { display: none; }
         .ins-cat-dropdown { display: block; }

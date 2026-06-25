@@ -757,7 +757,7 @@ export default function Configuracoes() {
         .cfg-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.68rem; font-weight: 600; }
 
         /* ── Mobile ── */
-        .cfg-mobile { display: flex; flex-direction: column; gap: 0.85rem; padding-top: 1rem; }
+        .cfg-mobile { display: flex; flex-direction: column; gap: 0.85rem; }
         .cfg-desktop { display: none; }
 
         .cfg-hero { background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); border-radius: 20px; padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 6px 20px rgba(255,111,169,0.25); }

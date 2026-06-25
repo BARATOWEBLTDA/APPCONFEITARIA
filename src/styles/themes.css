@@ -184,6 +184,9 @@
   /* Margens entre blocos */
   --margin-header: var(--space-5);   /* 20px — depois do header da página */
 
+  /* Topo das páginas (mobile-first, soma com safe-area no Layout) */
+  --pad-page-top:  var(--space-6);   /* 24px — respiro entre topo do viewport e o título */
+
   /* ─────────────────────────────────────────────
      RAIOS — SISTEMA
      Compartilhado entre temas.
