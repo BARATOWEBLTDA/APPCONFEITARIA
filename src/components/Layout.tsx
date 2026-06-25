@@ -391,22 +391,22 @@ export default function Layout() {
             justify-content: center;
             padding: 0;
             border: none;
-            background: #fff;
+            background: transparent;
             cursor: pointer;
-            border-radius: var(--radius-lg);
+            border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
             align-self: stretch;
             min-width: 52px;
-            transition: transform 0.15s, box-shadow 0.15s;
+            margin: -6px -6px -6px 0;
+            overflow: hidden;
+            transition: transform 0.15s;
           }
-          .bn-doo:hover { transform: scale(1.05); box-shadow: 0 2px 12px rgba(255,255,255,0.3); }
+          .bn-doo:hover { opacity: 0.9; }
           .bn-doo:active { transform: scale(0.95); }
-          .bn-doo--active { box-shadow: 0 0 0 2px rgba(255,255,255,0.5); }
           .bn-doo-img {
             height: 100%;
-            max-height: 42px;
-            width: auto;
-            object-fit: contain;
-            border-radius: 35%;
+            width: 100%;
+            object-fit: cover;
+            object-position: top center;
           }
           .bottom-nav { animation: fadeInUp 0.2s ease; }
           @keyframes fadeInUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
