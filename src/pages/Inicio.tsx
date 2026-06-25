@@ -66,6 +66,112 @@ export default function Inicio() {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const APP_VERSION = "1.5.8";
 
+  // ── Notificações push ──
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission | "unsupported">(
+    typeof Notification !== "undefined" ? Notification.permission : "unsupported"
+  );
+  const [notifLoading, setNotifLoading] = useState(false);
+
+  const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
+
+  function urlBase64ToUint8Array(base64String: string): Uint8Array {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const raw = atob(base64);
+    const output = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) output[i] = raw.charCodeAt(i);
+    return output;
+  }
+
+  async function ativarNotificacoes() {
+    if (notifPermission === "unsupported") {
+      alert("Seu navegador não suporta notificações.");
+      return;
+    }
+    if (notifPermission === "denied") {
+      alert(
+        "As notificações estão bloqueadas. Para ativar, abra as configurações do navegador para este site e libere as notificações."
+      );
+      return;
+    }
+    setNotifLoading(true);
+    try {
+      // 1) Pede permissão (popup do navegador/celular)
+      let permission = notifPermission;
+      if (permission !== "granted") {
+        permission = await Notification.requestPermission();
+        setNotifPermission(permission);
+      }
+      if (permission !== "granted") {
+        setNotifLoading(false);
+        return;
+      }
+
+      // 2) Registra o service worker
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+        alert("Seu navegador não suporta push notifications.");
+        setNotifLoading(false);
+        return;
+      }
+      const reg = await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.ready;
+
+      // 3) Cria/recupera a subscription
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) {
+        if (!VAPID_PUBLIC_KEY) {
+          console.warn("VITE_VAPID_PUBLIC_KEY não definida — push só funcionará após adicionar a chave.");
+          alert("Notificações ativadas no navegador, mas o servidor ainda não está configurado.");
+          setNotifLoading(false);
+          return;
+        }
+        sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        });
+      }
+
+      // 4) Salva no Supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const subJson = sub.toJSON();
+        await supabase.from("push_subscriptions").upsert(
+          {
+            user_id: user.id,
+            endpoint: sub.endpoint,
+            p256dh: subJson.keys?.p256dh,
+            auth: subJson.keys?.auth,
+            user_agent: navigator.userAgent,
+          },
+          { onConflict: "endpoint" }
+        );
+      }
+    } catch (err) {
+      console.error("Erro ao ativar notificações:", err);
+      alert("Não foi possível ativar as notificações. Tente novamente.");
+    } finally {
+      setNotifLoading(false);
+    }
+  }
+
+  async function desativarNotificacoes() {
+    setNotifLoading(true);
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      const sub = await reg?.pushManager.getSubscription();
+      if (sub) {
+        await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
+        await sub.unsubscribe();
+      }
+    } catch (err) {
+      console.error("Erro ao desativar notificações:", err);
+    } finally {
+      setNotifLoading(false);
+    }
+  }
+
+  const notifAtivo = notifPermission === "granted";
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUserEmail(data.user?.email || "");
@@ -358,10 +464,28 @@ export default function Inicio() {
                 <p className="ini-pm-version">Versão {APP_VERSION}</p>
               </div>
               <div className="ini-profile-menu-items">
-                <button onClick={() => { setMenuOpen(false); navigate("/notificacoes"); }}>
+                <div className="ini-pm-toggle-row">
                   <Bell size={18} weight="duotone" />
-                  <span>Notificações</span>
-                </button>
+                  <div className="ini-pm-toggle-text">
+                    <span>Notificações</span>
+                    {notifPermission === "denied" && (
+                      <small>Bloqueado no navegador</small>
+                    )}
+                    {notifPermission === "unsupported" && (
+                      <small>Não suportado</small>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={notifAtivo}
+                    disabled={notifLoading || notifPermission === "denied" || notifPermission === "unsupported"}
+                    className={`ini-switch ${notifAtivo ? "is-on" : ""}`}
+                    onClick={() => (notifAtivo ? desativarNotificacoes() : ativarNotificacoes())}
+                  >
+                    <span className="ini-switch-thumb" />
+                  </button>
+                </div>
                 <button onClick={() => { setMenuOpen(false); navigate("/configuracoes"); }}>
                   <UserCircle size={18} weight="duotone" />
                   <span>Minha Conta</span>
@@ -592,7 +716,7 @@ export default function Inicio() {
           position: absolute;
           top: calc(100% + 10px);
           right: 0;
-          width: 240px;
+          width: 280px;
           background: var(--bg-card, #fff);
           border: 1px solid var(--border, #ECC2D0);
           border-radius: 14px;
@@ -606,52 +730,89 @@ export default function Inicio() {
           to   { opacity: 1; transform: translateY(0); }
         }
         .ini-profile-menu-header {
-          padding: 0.9rem 1rem 0.75rem;
+          padding: 1rem 1.1rem 0.85rem;
           border-bottom: 1px solid var(--border, #ECC2D0);
         }
         .ini-pm-name {
           margin: 0;
-          font-size: 0.9rem;
+          font-size: 0.95rem;
           font-weight: 700;
           color: var(--text, #333);
           line-height: 1.25;
         }
         .ini-pm-email {
-          margin: 2px 0 0;
-          font-size: 0.72rem;
+          margin: 3px 0 0;
+          font-size: 0.75rem;
           color: var(--text-muted, #888);
           line-height: 1.3;
           word-break: break-all;
         }
         .ini-pm-version {
-          margin: 6px 0 0;
-          font-size: 0.68rem;
+          margin: 8px 0 0;
+          font-size: 0.7rem;
           color: var(--text-muted, #aaa);
         }
         .ini-profile-menu-items {
           display: flex; flex-direction: column;
-          padding: 0.35rem 0;
+          padding: 0.4rem 0;
         }
-        .ini-profile-menu-items button {
-          display: flex; align-items: center; gap: 0.65rem;
+        .ini-profile-menu-items > button {
+          display: flex; align-items: center; gap: 0.7rem;
           background: transparent;
           border: none;
-          padding: 0.6rem 1rem;
+          padding: 0.7rem 1.1rem;
           font-family: inherit;
-          font-size: 0.85rem;
+          font-size: 0.9rem;
           color: var(--text, #333);
           cursor: pointer;
           text-align: left;
           transition: background 0.12s ease;
         }
-        .ini-profile-menu-items button:hover {
+        .ini-profile-menu-items > button:hover {
           background: var(--primary-light, #FFF1F7);
         }
         .ini-profile-menu-items .ini-pm-logout {
           color: var(--primary, #BE185D);
           border-top: 1px solid var(--border, #ECC2D0);
-          margin-top: 0.2rem;
+          margin-top: 0.25rem;
         }
+
+        /* ── Linha de toggle (Notificações) ── */
+        .ini-pm-toggle-row {
+          display: flex; align-items: center; gap: 0.7rem;
+          padding: 0.7rem 1.1rem;
+          font-size: 0.9rem;
+          color: var(--text, #333);
+        }
+        .ini-pm-toggle-text {
+          flex: 1; display: flex; flex-direction: column; line-height: 1.2;
+        }
+        .ini-pm-toggle-text small {
+          font-size: 0.68rem; color: var(--text-muted, #999); margin-top: 2px;
+        }
+        .ini-switch {
+          width: 38px; height: 22px;
+          border-radius: 999px;
+          background: #d4d4d8;
+          border: none;
+          padding: 0;
+          position: relative;
+          cursor: pointer;
+          transition: background 0.2s ease;
+          flex-shrink: 0;
+        }
+        .ini-switch:disabled { opacity: 0.5; cursor: not-allowed; }
+        .ini-switch.is-on { background: var(--primary, #BE185D); }
+        .ini-switch-thumb {
+          position: absolute;
+          top: 2px; left: 2px;
+          width: 18px; height: 18px;
+          background: #fff;
+          border-radius: 50%;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+          transition: transform 0.2s ease;
+        }
+        .ini-switch.is-on .ini-switch-thumb { transform: translateX(16px); }
         @keyframes heroGradientMove {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
