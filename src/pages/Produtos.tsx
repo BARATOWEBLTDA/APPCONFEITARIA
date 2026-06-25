@@ -503,8 +503,8 @@ export default function Produtos() {
       {produtosFiltrados.length === 0 ? (
         <EmptyDoo
           image="produtos.png"
-          title="Vamos cadastrar seu primeiro produto?"
-          description="Quanto mais completo seu catálogo, mais profissional sua confeitaria fica para os clientes!"
+          title={<>Vamos cadastrar seu<br/>primeiro produto?</>}
+          description="Seu catálogo é a vitrine da sua confeitaria. Quanto mais completo, mais profissional ele será."
           actionLabel="Cadastrar primeiro produto"
           onAction={openNovo}
         />

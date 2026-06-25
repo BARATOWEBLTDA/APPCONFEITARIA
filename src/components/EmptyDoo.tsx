@@ -6,7 +6,7 @@ interface EmptyDooProps {
   /** Texto alternativo da imagem (acessibilidade) */
   imageAlt?: string;
   /** Título principal, ex: "Vamos cadastrar seu primeiro produto?" */
-  title: string;
+  title: ReactNode;
   /** Texto de apoio, abaixo do título */
   description: ReactNode;
   /** Texto do botão CTA */
@@ -119,6 +119,7 @@ export default function EmptyDoo({
           margin: 0 0 1.5rem;
           line-height: 1.5;
           max-width: 360px;
+          text-wrap: balance;
         }
         .empty-doo-btn {
           display: flex;
