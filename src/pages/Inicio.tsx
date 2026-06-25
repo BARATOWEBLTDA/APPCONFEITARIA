@@ -97,7 +97,7 @@ export default function Inicio() {
     setNotifLoading(true);
     try {
       // 1) Pede permissão (popup do navegador/celular)
-      let permission: NotificationPermission = notifPermission === "unsupported" ? "default" : notifPermission;
+      let permission: NotificationPermission = notifPermission;
       if (permission !== "granted") {
         permission = await Notification.requestPermission();
         setNotifPermission(permission);
