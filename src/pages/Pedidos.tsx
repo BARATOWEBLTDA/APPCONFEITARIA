@@ -138,8 +138,8 @@ function MapaModal({ endereco, onClose }: { endereco: string; onClose: () => voi
         />
         <div style={{ padding: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '1rem' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary,#986274)" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <p style={{ fontFamily: 'inherit', fontSize: '0.9rem', color: 'var(--text-primary,#431524)', lineHeight: 1.5, margin: 0 }}>{endereco}</p>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <p style={{ fontFamily: 'inherit', fontSize: '0.9rem', color: 'var(--text-primary)', lineHeight: 1.5, margin: 0 }}>{endereco}</p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
             <a href={`https://waze.com/ul?q=${encodeURIComponent(endereco)}`} target="_blank" rel="noopener noreferrer" className="map-btn map-btn--waze">
@@ -198,7 +198,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
     : dias === 0 ? 'Hoje'
     : dias === 1 ? 'Amanhã'
     : formatDate(p.data_entrega)
-  const dataCor = atrasado ? '#dc2626' : dias === 0 ? '#d97706' : 'var(--text-secondary,#6E3548)'
+  const dataCor = atrasado ? '#dc2626' : dias === 0 ? '#d97706' : 'var(--text-secondary)'
 
   const pagamentoLabel = p.status_pagamento === 'pago'
     ? `${PAG_CONFIG[p.forma_pagamento] || 'PIX'} · Pago`
@@ -288,7 +288,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
 
   // ── Mobile: card com div wrapper ──
   return (
-    <div onClick={() => onVerPedido(p)} className="ped-card" style={{ border: `1.5px solid ${isUrgente ? '#fca5a5' : 'var(--border,#ECC2D0)'}` }}>
+    <div onClick={() => onVerPedido(p)} className="ped-card" style={{ border: `1.5px solid ${isUrgente ? '#fca5a5' : 'var(--border)'}` }}>
       {isUrgente && (
         <div className="ped-card-banner">
           {atrasado ? 'Atrasado' : horas !== null && horas <= 3 ? `Entrega em ${horas}h` : 'Urgente'}
@@ -350,7 +350,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
                 {p.status_pagamento === 'pago' ? 'Pago' : p.status_pagamento === 'parcial' ? 'Parcial' : 'Pendente'}
               </span>
             </div>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary,#6E3548)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
               {p.tipo_entrega === 'retirada' ? '📦 Retirada' : '🛵 Entrega'}
               {dataLabel && <span style={{ color: dataCor, fontWeight: 600 }}>· {dataLabel}</span>}
             </span>
@@ -720,8 +720,8 @@ export default function Pedidos() {
       {/* ── Header com padding mobile ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', paddingTop: isMobile ? '1.25rem' : 0 }}>
         <div>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-title,#431524)', margin: 0 }}>Pedidos</h1>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted,#C39EAA)', margin: '0.1rem 0 0' }}>
+          <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-title)', margin: 0 }}>Pedidos</h1>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0.1rem 0 0' }}>
             {pedidosFiltrados.length} pedido{pedidosFiltrados.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -729,10 +729,10 @@ export default function Pedidos() {
           {/* Botão filtro */}
           <button
             onClick={() => setShowFiltro(true)}
-            style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, borderRadius: 10, border: `1.5px solid ${filtrosAtivos ? 'var(--primary,#986274)' : 'var(--border,#ECC2D0)'}`, background: filtrosAtivos ? 'var(--primary-light,#F7EEF1)' : 'var(--bg-card,#fff)', cursor: 'pointer', color: filtrosAtivos ? 'var(--primary,#986274)' : 'var(--text-secondary,#6E3548)', flexShrink: 0 }}
+            style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, borderRadius: 10, border: `1.5px solid ${filtrosAtivos ? 'var(--primary)' : 'var(--border)'}`, background: filtrosAtivos ? 'var(--primary-light)' : 'var(--bg-card)', cursor: 'pointer', color: filtrosAtivos ? 'var(--primary)' : 'var(--text-secondary)', flexShrink: 0 }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-            {filtrosAtivos && <span style={{ position: 'absolute', top: -4, right: -4, width: 10, height: 10, borderRadius: '50%', background: 'var(--primary,#986274)', border: '2px solid white' }} />}
+            {filtrosAtivos && <span style={{ position: 'absolute', top: -4, right: -4, width: 10, height: 10, borderRadius: '50%', background: 'var(--primary)', border: '2px solid white' }} />}
           </button>
 
           {/* Novo pedido */}
@@ -743,16 +743,16 @@ export default function Pedidos() {
       {(
         <>
           {/* Busca */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-card,#fff)', border: '1.5px solid var(--border,#ECC2D0)', borderRadius: 12, padding: '0.6rem 0.9rem' }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted,#C39EAA)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '0.6rem 0.9rem' }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <input
-              style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.85rem', fontFamily: 'inherit', color: 'var(--text-primary,#431524)', background: 'transparent' }}
+              style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.85rem', fontFamily: 'inherit', color: 'var(--text-primary)', background: 'transparent' }}
               placeholder="Buscar por cliente ou número..."
               value={busca}
               onChange={e => setBusca(e.target.value)}
             />
             {busca && (
-              <button onClick={() => setBusca('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted,#C39EAA)', display: 'flex', padding: 0 }}>
+              <button onClick={() => setBusca('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 0 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             )}
@@ -767,14 +767,14 @@ export default function Pedidos() {
                 { label: 'Concluídos', value: pedidos.filter(p => ['concluido','entregue'].includes(p.status)).length, sub: 'Pedidos finalizados', bg: '#dcfce7', icon: <CheckCircle size={22} weight="duotone" color="#14532d" /> },
                 { label: 'Em produção', value: pedidos.filter(p => p.status === 'em_producao').length, sub: 'No momento', bg: '#FAEEDA', icon: <Cake size={22} weight="duotone" color="#854F0B" /> },
               ].map((card, i) => (
-                <div key={i} style={{ background: 'var(--bg-card,#fff)', border: '1.5px solid var(--border,#ECC2D0)', borderRadius: 14, padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                <div key={i} style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 14, padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
                   <div style={{ width: 44, height: 44, borderRadius: 12, background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {card.icon}
                   </div>
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted,#C39EAA)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 2px' }}>{card.label}</p>
-                    <p style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-title,#431524)', margin: 0, letterSpacing: '-0.02em' }}>{card.value}</p>
-                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted,#C39EAA)', margin: '1px 0 0' }}>{card.sub}</p>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 2px' }}>{card.label}</p>
+                    <p style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-title)', margin: 0, letterSpacing: '-0.02em' }}>{card.value}</p>
+                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', margin: '1px 0 0' }}>{card.sub}</p>
                   </div>
                 </div>
               ))}
@@ -784,21 +784,21 @@ export default function Pedidos() {
           {/* Lista */}
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
-              <div style={{ width: 32, height: 32, border: '3px solid var(--primary-light,#F7EEF1)', borderTopColor: 'var(--primary,#986274)', borderRadius: '50%', animation: 'pedSpin 0.7s linear infinite' }} />
+              <div style={{ width: 32, height: 32, border: '3px solid var(--primary-light)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'pedSpin 0.7s linear infinite' }} />
             </div>
           ) : pedidosFiltrados.length === 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '4rem 1rem', gap: '0.5rem' }}>
-              <div style={{ width: 64, height: 64, background: 'var(--primary-light,#F7EEF1)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem' }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary,#986274)" strokeWidth="1.5" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <div style={{ width: 64, height: 64, background: 'var(--primary-light)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '0.5rem' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               </div>
-              <p style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-title,#431524)', margin: 0 }}>
+              <p style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-title)', margin: 0 }}>
                 {busca || filtrosAtivos ? 'Nenhum pedido encontrado' : 'Nenhum pedido ainda'}
               </p>
-              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted,#C39EAA)', margin: 0 }}>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: 0 }}>
                 {busca || filtrosAtivos ? 'Tente ajustar os filtros' : 'Registre seu primeiro pedido'}
               </p>
               {!filtrosAtivos && !busca && (
-                <button onClick={handleNovoPedido} style={{ marginTop: '0.5rem', background: 'var(--primary,#986274)', color: 'white', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+                <button onClick={handleNovoPedido} style={{ marginTop: '0.5rem', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontFamily: 'inherit', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
                   Registrar primeiro pedido
                 </button>
               )}
@@ -867,7 +867,7 @@ export default function Pedidos() {
             <button onClick={() => setModalSemProdutos(false)} style={{
               position: 'absolute', top: 12, right: 12, width: 32, height: 32,
               background: 'transparent', border: 'none', cursor: 'pointer',
-              color: 'var(--text-muted,#C39EAA)', display: 'flex',
+              color: 'var(--text-muted)', display: 'flex',
               alignItems: 'center', justifyContent: 'center', borderRadius: 8,
             }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -891,14 +891,14 @@ export default function Pedidos() {
             </div>
 
             <h3 style={{
-              fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-title,#431524)',
+              fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-title)',
               margin: '0 0 8px', letterSpacing: '-0.02em',
             }}>
               Ainda não temos produtos!
             </h3>
 
             <p style={{
-              fontSize: '0.9rem', color: 'var(--text-secondary,#6E3548)',
+              fontSize: '0.9rem', color: 'var(--text-secondary)',
               margin: '0 0 1.5rem', lineHeight: 1.5,
             }}>
               Para registrar um pedido, primeiro precisamos cadastrar o que você vende. Vamos lá?
@@ -919,7 +919,7 @@ export default function Pedidos() {
             <button
               onClick={() => setModalSemProdutos(false)}
               style={{
-                width: '100%', background: 'transparent', color: 'var(--text-muted,#C39EAA)',
+                width: '100%', background: 'transparent', color: 'var(--text-muted)',
                 border: 'none', padding: '0.5rem', fontSize: '0.82rem', fontWeight: 500,
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
@@ -936,49 +936,49 @@ export default function Pedidos() {
         @keyframes hsSlideUp { from { transform: translateY(100%) } to { transform: translateY(0) } }
 
         /* ── Card de pedido ── */
-        .ped-card { background: var(--bg-card,#fff); border-radius: 14px; cursor: pointer; font-family: inherit; position: relative; overflow: hidden; }
-        .ped-card-banner { background: #fee2e2; padding: 4px 1.1rem; font-size: 0.72rem; font-weight: 700; color: #dc2626; }
+        .ped-card { background: var(--bg-card); border-radius: var(--radius-lg); cursor: pointer; font-family: inherit; position: relative; overflow: hidden; }
+        .ped-card-banner { background: #fee2e2; padding: 4px 1.1rem; font-size: var(--font-caption); font-weight: var(--fw-bold); color: #dc2626; }
         .ped-card-head { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.1rem 0; gap: 0.5rem; }
-        .ped-card-numero { font-size: 0.72rem; font-weight: 600; color: var(--text-muted,#C39EAA); }
-        .ped-card-origem { margin-left: 6px; background: #ede9fe; color: #5b21b6; border-radius: 4px; padding: 1px 6px; font-size: 0.62rem; font-weight: 700; }
-        .ped-card-status { display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 8px; flex-shrink: 0; }
+        .ped-card-numero { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-muted); }
+        .ped-card-origem { margin-left: 6px; background: #ede9fe; color: #5b21b6; border-radius: var(--radius-sm); padding: 1px 6px; font-size: var(--font-caption); font-weight: var(--fw-bold); }
+        .ped-card-status { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-caption); font-weight: var(--fw-bold); padding: 3px 10px; border-radius: var(--radius-sm); flex-shrink: 0; }
         .ped-card-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
         .ped-card-body { padding: 0.65rem 1.1rem 0; }
-        .ped-card-cliente { margin: 0 0 0.5rem; font-size: 1.02rem; font-weight: 700; color: var(--text-title,#431524); line-height: 1.25; }
+        .ped-card-cliente { margin: 0 0 0.5rem; font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title); line-height: 1.25; }
         .ped-card-produto-row { display: flex; align-items: center; gap: 0.65rem; min-width: 0; }
-        .ped-card-produto-img { width: 42px; height: 42px; border-radius: 8px; flex-shrink: 0; background: var(--bg-subtle,#F7EEF1); border: 1px solid var(--border,#ECC2D0); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+        .ped-card-produto-img { width: 42px; height: 42px; border-radius: var(--radius-sm); flex-shrink: 0; background: var(--bg-subtle); border: 1px solid var(--border); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: var(--font-modal-title); }
         .ped-card-produto-img img { width: 100%; height: 100%; object-fit: cover; }
         .ped-card-produto-info { flex: 1; min-width: 0; }
-        .ped-card-produto-nome { margin: 0; font-size: 0.85rem; font-weight: 600; color: var(--text-title,#431524); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .ped-card-mais-itens { font-weight: 500; color: var(--text-muted,#C39EAA); }
-        .ped-card-produto-qtd { margin: 2px 0 0; font-size: 0.75rem; color: var(--text-secondary,#6E3548); }
-        .ped-card-data { margin: 0; font-size: 0.82rem; font-weight: 600; line-height: 1.3; }
-        .ped-card-tipo-entrega { margin: 1px 0 0; font-size: 0.75rem; color: var(--text-secondary,#6E3548); }
-        .ped-card-mapa { display: inline-flex; align-items: center; gap: 4px; background: none; border: none; padding: 0; margin-top: 3px; font-size: 0.72rem; font-weight: 600; color: var(--primary,#986274); cursor: pointer; font-family: inherit; }
+        .ped-card-produto-nome { margin: 0; font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ped-card-mais-itens { font-weight: var(--fw-medium); color: var(--text-muted); }
+        .ped-card-produto-qtd { margin: 2px 0 0; font-size: var(--font-helper); color: var(--text-secondary); }
+        .ped-card-data { margin: 0; font-size: var(--font-helper); font-weight: var(--fw-semibold); line-height: 1.3; }
+        .ped-card-tipo-entrega { margin: 1px 0 0; font-size: var(--font-helper); color: var(--text-secondary); }
+        .ped-card-mapa { display: inline-flex; align-items: center; gap: 4px; background: none; border: none; padding: 0; margin-top: 3px; font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--primary); cursor: pointer; font-family: inherit; }
         .ped-card-mapa:hover { text-decoration: underline; }
-        .ped-card-pagamento { font-size: 0.82rem; font-weight: 600; }
-        .ped-card-valor { font-size: 1.15rem; font-weight: 800; color: var(--text-title,#431524); letter-spacing: -0.02em; }
-        .ped-card-extras { border-top: 1px solid var(--border,#ECC2D0); padding: 0.65rem 1.1rem; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.85rem; }
-        .ped-card-chip { font-size: 0.7rem; font-weight: 500; background: var(--bg-subtle,#F7EEF1); color: var(--primary,#986274); border: 1px solid var(--border,#ECC2D0); border-radius: 6px; padding: 3px 8px; }
-        .ped-card-chip--etiqueta { background: var(--bg-body,#FAFAFA); color: var(--text-secondary,#6E3548); }
+        .ped-card-pagamento { font-size: var(--font-helper); font-weight: var(--fw-semibold); }
+        .ped-card-valor { font-size: var(--font-modal-title); font-weight: var(--fw-black); color: var(--text-title); letter-spacing: -0.02em; }
+        .ped-card-extras { border-top: 1px solid var(--border); padding: 0.65rem 1.1rem; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.85rem; }
+        .ped-card-chip { font-size: var(--font-caption); font-weight: var(--fw-medium); background: var(--bg-subtle); color: var(--primary); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 3px 8px; }
+        .ped-card-chip--etiqueta { background: var(--bg-body); color: var(--text-secondary); }
 
         /* ── Card mobile novo ── */
         .mob-card-inner { display: flex; flex-direction: column; padding: 0.65rem 0.9rem; gap: 0.45rem; }
         .mob-card-topo { display: flex; flex-direction: column; gap: 2px; }
-        .mob-card-cliente { font-size: 0.92rem; font-weight: 700; color: var(--text-title,#431524); margin: 2px 0 0; }
-        .mob-card-datetime { font-size: 0.7rem; color: var(--text-muted,#C39EAA); }
-        .mob-card-meta { display: flex; gap: 10px; font-size: 0.72rem; color: var(--text-muted,#C39EAA); }
-        .mob-card-divider { height: 1px; border-top: 1px dashed var(--border,#ECC2D0); margin: 0.1rem 0; }
+        .mob-card-cliente { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--text-title); margin: 2px 0 0; }
+        .mob-card-datetime { font-size: var(--font-caption); color: var(--text-muted); }
+        .mob-card-meta { display: flex; gap: 10px; font-size: var(--font-caption); color: var(--text-muted); }
+        .mob-card-divider { height: 1px; border-top: 1px dashed var(--border); margin: 0.1rem 0; }
         .mob-card-produto { display: flex; align-items: center; gap: 8px; }
-        .mob-card-produto-img { width: 34px; height: 34px; border-radius: 7px; flex-shrink: 0; background: var(--bg-subtle,#F7EEF1); border: 1px solid var(--border,#ECC2D0); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .mob-card-produto-img { width: 34px; height: 34px; border-radius: var(--radius-sm); flex-shrink: 0; background: var(--bg-subtle); border: 1px solid var(--border); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: var(--font-input); }
         .mob-card-produto-img img { width: 100%; height: 100%; object-fit: cover; }
-        .mob-card-produto-nome { font-size: 0.82rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
-        .mob-card-produto-qtd { font-size: 0.7rem; color: var(--text-secondary,#6E3548); margin: 1px 0 0; }
+        .mob-card-produto-nome { font-size: var(--font-helper); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+        .mob-card-produto-qtd { font-size: var(--font-caption); color: var(--text-secondary); margin: 1px 0 0; }
         .mob-card-infos { display: flex; flex-direction: column; gap: 3px; }
-        .mob-card-info-row { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 0.78rem; color: var(--text-secondary,#6E3548); }
-        .mob-card-info-label { font-weight: 600; color: var(--text-title,#431524); font-size: 0.75rem; }
+        .mob-card-info-row { display: flex; align-items: center; gap: 6px; margin: 0; font-size: var(--font-helper); color: var(--text-secondary); }
+        .mob-card-info-label { font-weight: var(--fw-semibold); color: var(--text-title); font-size: var(--font-helper); }
         .mob-card-rodape { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-        .mob-card-valor { font-size: 1rem; font-weight: 800; color: var(--text-title,#431524); margin: 0; letter-spacing: -0.02em; white-space: nowrap; }
+        .mob-card-valor { font-size: var(--font-input); font-weight: var(--fw-black); color: var(--text-title); margin: 0; letter-spacing: -0.02em; white-space: nowrap; }
 
 
         .ped-card-rodape { display: flex; align-items: flex-end; justify-content: space-between; padding: 0.85rem 1.1rem; gap: 0.75rem; }
@@ -986,60 +986,60 @@ export default function Pedidos() {
         .ped-card-rodape-direita .ped-card-valor { margin: 4px 0 0; }
 
         /* ── Modal de pedido ── */
-        .mp-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border,#ECC2D0); margin: 10px auto 0; flex-shrink: 0; }
+        .mp-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 10px auto 0; flex-shrink: 0; }
         @media (min-width: 768px) { .mp-handle { display: none; } }
         .mp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; animation: hsFadeIn 0.2s ease; }
-        .mp-modal { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card,#fff); border-radius: 20px 20px 0 0; z-index: 9999; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 -4px 32px rgba(0,0,0,0.2); animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); font-family: inherit; }
-        @media (min-width: 768px) { .mp-modal { top: 50%; left: 50%; right: auto; bottom: auto; transform: translate(-50%,-50%); border-radius: 16px; width: 460px; max-width: 95vw; max-height: 85vh; animation: hsFadeIn 0.2s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.2); } }
+        .mp-modal { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-radius: var(--radius-xl) 20px 0 0; z-index: 9999; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 -4px 32px rgba(0,0,0,0.2); animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); font-family: inherit; }
+        @media (min-width: 768px) { .mp-modal { top: 50%; left: 50%; right: auto; bottom: auto; transform: translate(-50%,-50%); border-radius: var(--radius-lg); width: 460px; max-width: 95vw; max-height: 85vh; animation: hsFadeIn 0.2s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.2); } }
 
         /* Header */
-        .mp-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 1rem 1.25rem 0.85rem; border-bottom: 1px solid var(--border,#ECC2D0); flex-shrink: 0; }
-        .mp-numero { font-size: 1.05rem; font-weight: 800; color: var(--text-title,#431524); }
-        .mp-criado { font-size: 0.72rem; color: var(--text-muted,#C39EAA); margin: 4px 0 0; }
-        .mp-fechar { background: none; border: none; cursor: pointer; color: var(--text-muted,#C39EAA); display: flex; padding: 6px; border-radius: 8px; flex-shrink: 0; transition: all 0.15s; }
-        .mp-fechar:hover { background: var(--bg-subtle,#F7EEF1); color: var(--text-title,#431524); }
+        .mp-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 1rem 1.25rem 0.85rem; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .mp-numero { font-size: var(--font-modal-title); font-weight: var(--fw-black); color: var(--text-title); }
+        .mp-criado { font-size: var(--font-caption); color: var(--text-muted); margin: 4px 0 0; }
+        .mp-fechar { background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; padding: 6px; border-radius: var(--radius-sm); flex-shrink: 0; transition: all 0.15s; }
+        .mp-fechar:hover { background: var(--bg-subtle); color: var(--text-title); }
 
         /* Body */
         .mp-body { overflow-y: auto; flex: 1; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
         .mp-grupo { display: flex; flex-direction: column; }
-        .mp-grupo-titulo { font-size: 0.68rem; font-weight: 700; color: var(--text-muted,#C39EAA); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 4px; }
-        .mp-grupo-val { font-size: 0.95rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
-        .mp-grupo-sub { font-size: 0.8rem; color: var(--text-secondary,#6E3548); margin: 3px 0 0; line-height: 1.4; }
+        .mp-grupo-titulo { font-size: var(--font-caption); font-weight: var(--fw-bold); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 4px; }
+        .mp-grupo-val { font-size: var(--font-input); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; }
+        .mp-grupo-sub { font-size: var(--font-helper); color: var(--text-secondary); margin: 3px 0 0; line-height: 1.4; }
 
         /* Itens */
         .mp-itens { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
-        .mp-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg-subtle,#F7EEF1); border-radius: 10px; }
-        .mp-item-img { width: 40px; height: 40px; border-radius: 8px; background: var(--bg-card,#fff); border: 1px solid var(--border,#ECC2D0); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+        .mp-item { display: flex; align-items: center; gap: 10px; padding: 10px; background: var(--bg-subtle); border-radius: var(--radius-md); }
+        .mp-item-img { width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border); overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: var(--font-modal-title); flex-shrink: 0; }
         .mp-item-img img { width: 100%; height: 100%; object-fit: cover; }
-        .mp-item-nome { font-size: 0.88rem; font-weight: 600; color: var(--text-title,#431524); margin: 0; }
-        .mp-item-qtd { font-size: 0.74rem; color: var(--text-secondary,#6E3548); margin: 2px 0 0; }
-        .mp-item-extra { font-size: 0.7rem; color: var(--text-muted,#C39EAA); margin: 2px 0 0; }
-        .mp-item-total { font-size: 0.9rem; font-weight: 700; color: var(--text-title,#431524); flex-shrink: 0; margin: 0; }
+        .mp-item-nome { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; }
+        .mp-item-qtd { font-size: var(--font-helper); color: var(--text-secondary); margin: 2px 0 0; }
+        .mp-item-extra { font-size: var(--font-caption); color: var(--text-muted); margin: 2px 0 0; }
+        .mp-item-total { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--text-title); flex-shrink: 0; margin: 0; }
 
         /* Resumo pagamento + total */
-        .mp-resumo { background: var(--bg-subtle,#F7EEF1); border-radius: 12px; padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 8px; }
+        .mp-resumo { background: var(--bg-subtle); border-radius: var(--radius-md); padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 8px; }
         .mp-resumo-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-        .mp-resumo-label { font-size: 0.8rem; color: var(--text-secondary,#6E3548); font-weight: 500; }
-        .mp-resumo-val { font-size: 0.88rem; font-weight: 600; color: var(--text-title,#431524); }
-        .mp-resumo-total { padding-top: 8px; border-top: 1px dashed var(--border,#ECC2D0); }
-        .mp-resumo-label-total { font-size: 0.85rem; font-weight: 700; color: var(--text-title,#431524); }
-        .mp-resumo-val-total { font-size: 1.25rem; font-weight: 800; color: var(--text-title,#431524); letter-spacing: -0.02em; }
+        .mp-resumo-label { font-size: var(--font-helper); color: var(--text-secondary); font-weight: var(--fw-medium); }
+        .mp-resumo-val { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title); }
+        .mp-resumo-total { padding-top: 8px; border-top: 1px dashed var(--border); }
+        .mp-resumo-label-total { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--text-title); }
+        .mp-resumo-val-total { font-size: var(--font-modal-title); font-weight: var(--fw-black); color: var(--text-title); letter-spacing: -0.02em; }
 
         /* Footer */
-        .mp-footer { padding: 0.85rem 1.25rem 1.25rem; border-top: 1px solid var(--border,#ECC2D0); flex-shrink: 0; display: flex; gap: 8px; }
-        .mp-btn-editar { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: #3d1a24; border: none; color: white; border-radius: 10px; padding: 0.8rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
+        .mp-footer { padding: 0.85rem 1.25rem 1.25rem; border-top: 1px solid var(--border); flex-shrink: 0; display: flex; gap: 8px; }
+        .mp-btn-editar { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: #3d1a24; border: none; color: white; border-radius: var(--radius-md); padding: 0.8rem; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
         .mp-btn-editar:hover { opacity: 0.92; }
-        .mp-btn-excluir { width: 44px; height: 44px; background: #fff1f2; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: 10px; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+        .mp-btn-excluir { width: 44px; height: 44px; background: #fff1f2; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
         .mp-btn-excluir:hover { background: #fee2e2; }
-        .mp-confirm-excluir { width: 100%; background: #fff1f2; border: 1.5px solid #fca5a5; border-radius: 10px; padding: 0.85rem 1rem; }
-        .mp-confirm-excluir p { font-size: 0.85rem; color: #991b1b; margin: 0 0 10px; font-weight: 500; }
-        .mp-btn-cancel { flex: 1; background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); color: var(--text-secondary,#6E3548); border-radius: 8px; padding: 0.55rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; }
-        .mp-btn-confirmar-excluir { flex: 1; background: #dc2626; border: none; color: white; border-radius: 8px; padding: 0.55rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; font-family: inherit; }
+        .mp-confirm-excluir { width: 100%; background: #fff1f2; border: 1.5px solid #fca5a5; border-radius: var(--radius-md); padding: 0.85rem 1rem; }
+        .mp-confirm-excluir p { font-size: var(--font-button); color: #991b1b; margin: 0 0 10px; font-weight: var(--fw-medium); }
+        .mp-btn-cancel { flex: 1; background: var(--bg-card); border: 1.5px solid var(--border); color: var(--text-secondary); border-radius: var(--radius-sm); padding: 0.55rem; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; }
+        .mp-btn-confirmar-excluir { flex: 1; background: #dc2626; border: none; color: white; border-radius: var(--radius-sm); padding: 0.55rem; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; }
 
         @media (min-width: 768px) {
-          .ped-dt-wrapper { background: var(--bg-card,#fff); border: 1.5px solid var(--border,#ECC2D0); border-radius: 14px; overflow: hidden; width: 100%; }
+          .ped-dt-wrapper { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; width: 100%; }
 
-          .ped-th { padding: 0.85rem 1rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: #ffffff; text-align: left; white-space: nowrap; }
+          .ped-th { padding: 0.85rem 1rem; font-size: var(--font-caption); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.12em; color: #ffffff; text-align: left; white-space: nowrap; }
           .ped-th:nth-child(1) { min-width: 130px; }
           .ped-th:nth-child(2) { min-width: 150px; }
           .ped-th:nth-child(3) { min-width: 160px; }
@@ -1048,9 +1048,9 @@ export default function Pedidos() {
           .ped-th:nth-child(6) { min-width: 110px; }
           .ped-th:nth-child(7) { min-width: 110px; }
 
-          .ped-dt-row { cursor: pointer; transition: background 0.12s; border-bottom: 1px solid var(--border,#ECC2D0); }
+          .ped-dt-row { cursor: pointer; transition: background 0.12s; border-bottom: 1px solid var(--border); }
           .ped-dt-row:last-child { border-bottom: none; }
-          .ped-dt-row:hover { background: var(--bg-subtle,#F7EEF1); }
+          .ped-dt-row:hover { background: var(--bg-subtle); }
 
           .ped-td { padding: 0.65rem 1rem; vertical-align: middle; font-family: inherit; }
 
@@ -1063,41 +1063,41 @@ export default function Pedidos() {
           .ped-dt-col--status { align-items: flex-start; }
 
           /* Número do pedido */
-          .ped-dt-num { font-size: 0.88rem; font-weight: 700; color: var(--primary,#986274); display: block; }
-          .ped-dt-criado { font-size: 0.68rem; color: var(--text-muted,#C39EAA); display: block; margin-top: 1px; }
-          .ped-dt-origem-tag { font-size: 0.62rem; font-weight: 600; color: #185FA5; background: #E6F1FB; padding: 1px 6px; border-radius: 4px; margin-top: 2px; display: inline-block; }
+          .ped-dt-num { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--primary); display: block; }
+          .ped-dt-criado { font-size: var(--font-caption); color: var(--text-muted); display: block; margin-top: 1px; }
+          .ped-dt-origem-tag { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: #185FA5; background: #E6F1FB; padding: 1px 6px; border-radius: var(--radius-sm); margin-top: 2px; display: inline-block; }
 
           /* Cliente */
-          .ped-dt-cliente-nome { font-size: 0.88rem; font-weight: 500; color: var(--text-title,#431524); display: block; white-space: nowrap; }
-          .ped-dt-cliente-tel { font-size: 0.72rem; color: var(--text-muted,#C39EAA); display: block; }
+          .ped-dt-cliente-nome { font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--text-title); display: block; white-space: nowrap; }
+          .ped-dt-cliente-tel { font-size: var(--font-caption); color: var(--text-muted); display: block; }
 
-          .ped-dt-ver-btn { background: none; border: 1.5px solid var(--primary,#986274); color: var(--primary,#986274); border-radius: 8px; padding: 0.3rem 0.7rem; font-size: 0.72rem; font-weight: 600; cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 0.15s; }
-          .ped-dt-ver-btn:hover { background: var(--primary,#986274); color: white; }
+          .ped-dt-ver-btn { background: none; border: 1.5px solid var(--primary); color: var(--primary); border-radius: var(--radius-sm); padding: 0.3rem 0.7rem; font-size: var(--font-caption); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 0.15s; }
+          .ped-dt-ver-btn:hover { background: var(--primary); color: white; }
 
           /* Produto */
           .ped-dt-produto-row { display: flex; align-items: center; gap: 10px; min-width: 0; width: 100%; }
           .ped-dt-produto-img {
-            width: 36px; height: 36px; border-radius: 7px; flex-shrink: 0;
-            background: var(--bg-subtle,#F7EEF1); border: 1px solid var(--border,#ECC2D0);
-            overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1;
+            width: 36px; height: 36px; border-radius: var(--radius-sm); flex-shrink: 0;
+            background: var(--bg-subtle); border: 1px solid var(--border);
+            overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: var(--font-input); line-height: 1;
           }
           .ped-dt-produto-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
           .ped-dt-produto-info { flex: 1; min-width: 0; }
           .ped-dt-produto-nome {
-            font-size: 0.84rem; font-weight: 600; color: var(--text-title,#431524);
+            font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; margin: 0; max-width: 280px;
           }
-          .ped-dt-produto-qtd { font-size: 0.72rem; color: var(--text-secondary,#6E3548); margin: 2px 0 0; }
+          .ped-dt-produto-qtd { font-size: var(--font-caption); color: var(--text-secondary); margin: 2px 0 0; }
 
           /* Entrega */
-          .ped-dt-data { font-size: 0.84rem; font-weight: 600; margin: 0; }
-          .ped-dt-tipo { font-size: 0.75rem; color: var(--text-secondary,#6E3548); margin: 2px 0 0; }
+          .ped-dt-data { font-size: var(--font-button); font-weight: var(--fw-semibold); margin: 0; }
+          .ped-dt-tipo { font-size: var(--font-helper); color: var(--text-secondary); margin: 2px 0 0; }
 
           /* Valor */
-          .ped-dt-valor { font-size: 1rem; font-weight: 800; color: var(--text-title,#431524); letter-spacing: -0.02em; margin: 0; }
-          .ped-dt-pag { font-size: 0.72rem; font-weight: 600; margin: 3px 0 0; }
+          .ped-dt-valor { font-size: var(--font-input); font-weight: var(--fw-black); color: var(--text-title); letter-spacing: -0.02em; margin: 0; }
+          .ped-dt-pag { font-size: var(--font-caption); font-weight: var(--fw-semibold); margin: 3px 0 0; }
 
-          .ped-dt-vazio { color: var(--text-muted,#C39EAA); font-size: 0.85rem; }
+          .ped-dt-vazio { color: var(--text-muted); font-size: var(--font-button); }
 
           /* No desktop, o card vira uma linha flat — sem borda/radius próprios */
           .ped-card { border: none !important; border-radius: 0 !important; background: transparent !important; border-bottom: 1.5px solid #D4A0B0 !important; }
@@ -1109,14 +1109,14 @@ export default function Pedidos() {
 
         /* ── Modal de mapa ── */
         .map-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; animation: hsFadeIn 0.2s ease; }
-        .map-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card,#fff); border-radius: 20px 20px 0 0; z-index: 201; max-width: 480px; margin: 0 auto; max-height: 80vh; overflow-y: auto; animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
-        .map-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem; border-radius: 12px; font-family: inherit; font-size: 0.88rem; font-weight: 700; text-decoration: none; }
+        .map-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-radius: var(--radius-xl) 20px 0 0; z-index: 201; max-width: 480px; margin: 0 auto; max-height: 80vh; overflow-y: auto; animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
+        .map-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem; border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold); text-decoration: none; }
         .map-btn--waze { background: #33CCFF; color: white; }
         .map-btn--maps { background: #ecf3ff; color: #4285f4; }
-        .map-btn-close { width: 100%; padding: 0.85rem; background: var(--bg-subtle,#F7EEF1); color: var(--text-primary,#431524); border: none; border-radius: 50px; font-family: inherit; font-size: 0.95rem; font-weight: 700; cursor: pointer; }
+        .map-btn-close { width: 100%; padding: 0.85rem; background: var(--bg-subtle); color: var(--text-primary); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-bold); cursor: pointer; }
 
         .fd-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; animation: hsFadeIn 0.2s ease; }
-        .fd-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card,#fff); border-radius: 20px 20px 0 0; z-index: 301; max-height: 85vh; display: flex; flex-direction: column; animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
+        .fd-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-radius: var(--radius-xl) 20px 0 0; z-index: 301; max-height: 85vh; display: flex; flex-direction: column; animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
         @media (min-width: 768px) {
           .fd-drawer { top: 0; bottom: 0; left: auto; right: 0; width: 320px; border-radius: 0; max-height: 100vh; animation: hsSlideRight 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: -4px 0 32px rgba(0,0,0,0.15); }
           .fd-handle { display: none; }
@@ -1125,25 +1125,25 @@ export default function Pedidos() {
           .fd-data-input { width: 100%; box-sizing: border-box; }
         }
         @keyframes hsSlideRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        .fd-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border,#ECC2D0); margin: 10px auto 0; flex-shrink: 0; }
-        .fd-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 10px; border-bottom: 1px solid var(--border,#ECC2D0); flex-shrink: 0; }
-        .fd-title { font-size: 1rem; font-weight: 700; color: var(--text-title,#431524); font-family: 'Geist',sans-serif; }
-        .fd-limpar { background: none; border: none; font-size: 0.85rem; color: var(--primary,#986274); font-weight: 600; cursor: pointer; font-family: 'Geist',sans-serif; }
+        .fd-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 10px auto 0; flex-shrink: 0; }
+        .fd-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .fd-title { font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title); font-family: 'Geist',sans-serif; }
+        .fd-limpar { background: none; border: none; font-size: var(--font-button); color: var(--primary); font-weight: var(--fw-semibold); cursor: pointer; font-family: 'Geist',sans-serif; }
         .fd-body { overflow-y: auto; flex: 1; padding: 16px; }
-        .fd-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted,#C39EAA); margin: 0 0 10px; font-family: 'Geist',sans-serif; }
+        .fd-label { font-size: var(--font-caption); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0 0 10px; font-family: 'Geist',sans-serif; }
         .fd-status-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-        .fd-status-btn { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; border: 1.5px solid var(--border,#ECC2D0); background: var(--bg-body,#FAFAFA); font-size: 0.82rem; font-weight: 500; color: var(--text-secondary,#6E3548); cursor: pointer; font-family: 'Geist',sans-serif; transition: all 0.15s; }
+        .fd-status-btn { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--bg-body); font-size: var(--font-helper); font-weight: var(--fw-medium); color: var(--text-secondary); cursor: pointer; font-family: 'Geist',sans-serif; transition: all 0.15s; }
         .fd-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
         .fd-periodo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .fd-periodo-btn { padding: 10px; border-radius: 8px; border: 1.5px solid var(--border,#ECC2D0); background: var(--bg-body,#FAFAFA); font-size: 0.85rem; font-weight: 500; color: var(--text-secondary,#6E3548); cursor: pointer; font-family: 'Geist',sans-serif; transition: all 0.15s; text-align: center; }
-        .fd-periodo-btn--on { border-color: var(--primary,#986274); background: var(--primary-light,#F7EEF1); color: var(--primary,#986274); font-weight: 700; }
+        .fd-periodo-btn { padding: 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--bg-body); font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--text-secondary); cursor: pointer; font-family: 'Geist',sans-serif; transition: all 0.15s; text-align: center; }
+        .fd-periodo-btn--on { border-color: var(--primary); background: var(--primary-light); color: var(--primary); font-weight: var(--fw-bold); }
         .fd-datas { display: flex; gap: 10px; margin-top: 12px; }
         .fd-data-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-        .fd-data-label { font-size: 0.72rem; font-weight: 600; color: var(--text-secondary,#6E3548); font-family: 'Geist',sans-serif; }
-        .fd-data-input { border: 1.5px solid var(--border,#ECC2D0); border-radius: 8px; padding: 0.55rem 0.75rem; font-size: 0.85rem; font-family: 'Geist',sans-serif; color: var(--text-primary,#431524); background: var(--bg-input,#fff); outline: none; width: 100%; box-sizing: border-box; }
-        .fd-data-input:focus { border-color: var(--primary,#986274); }
-        .fd-footer { padding: 12px 16px 28px; flex-shrink: 0; border-top: 1px solid var(--border,#ECC2D0); }
-        .fd-aplicar { width: 100%; padding: 14px; background: var(--primary,#986274); color: white; border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 600; font-family: 'Geist',sans-serif; cursor: pointer; }
+        .fd-data-label { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-secondary); font-family: 'Geist',sans-serif; }
+        .fd-data-input { border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 0.55rem 0.75rem; font-size: var(--font-button); font-family: 'Geist',sans-serif; color: var(--text-primary); background: var(--bg-input); outline: none; width: 100%; box-sizing: border-box; }
+        .fd-data-input:focus { border-color: var(--primary); }
+        .fd-footer { padding: 12px 16px 28px; flex-shrink: 0; border-top: 1px solid var(--border); }
+        .fd-aplicar { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: var(--radius-md); font-size: var(--font-input); font-weight: var(--fw-semibold); font-family: 'Geist',sans-serif; cursor: pointer; }
       `}</style>
     </div>
   )

@@ -88,8 +88,8 @@ export default function EsqueciSenha() {
                   onChange={(e) => { setEmail(e.target.value); setError(""); }}
                   required
                   style={{
-                    backgroundColor: email ? "var(--primary-light, #FFF1F7)" : "var(--bg-card, #FFFFFF)",
-                    borderColor: email ? "var(--primary-light, #FFF1F7)" : "var(--border, #E9E9EE)",
+                    backgroundColor: email ? "var(--primary-light)" : "var(--bg-card)",
+                    borderColor: email ? "var(--primary-light)" : "var(--border)",
                   }}
                 />
               </div>
@@ -123,29 +123,29 @@ export default function EsqueciSenha() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body, #root { height: 100%; overflow: hidden; }
         .auth-root { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; font-family: 'Geist', sans-serif; padding: 1.5rem; }
-        .auth-bg { position: fixed; inset: 0; z-index: 0; background: var(--primary-gradient, linear-gradient(135deg, #986274, #6E3548)); }
+        .auth-bg { position: fixed; inset: 0; z-index: 0; background: var(--primary-gradient); }
         .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; }
-        .auth-card { position: relative; z-index: 2; background: var(--bg-card, #FFFFFF); border-radius: 16px; padding: 2.5rem 2.2rem 2rem; width: calc(100% - 2.5rem); max-width: 440px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .auth-card { position: relative; z-index: 2; background: var(--bg-card); border-radius: var(--radius-lg); padding: 2.5rem 2.2rem 2rem; width: calc(100% - 2.5rem); max-width: 440px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         .auth-text { text-align: center; margin-bottom: 1.5rem; }
-        .auth-text h2 { font-size: 1.2rem; font-weight: 600; color: var(--text-title, #1F2937); margin-bottom: 0.5rem; }
-        .auth-text p { font-size: 0.88rem; color: var(--text-secondary, #6B7280); line-height: 1.5; }
+        .auth-text h2 { font-size: var(--font-modal-title); font-weight: var(--fw-semibold); color: var(--text-title); margin-bottom: 0.5rem; }
+        .auth-text p { font-size: var(--font-button); color: var(--text-secondary); line-height: 1.5; }
         .auth-form { display: flex; flex-direction: column; gap: 1rem; }
         .field { display: flex; flex-direction: column; gap: 0.35rem; }
-        .field label { font-size: 0.88rem; font-weight: 500; color: var(--text-primary, #374151); }
-        .field input { padding: 0.72rem 1rem; border: 1.5px solid var(--border, #E9E9EE); border-radius: 8px; font-family: 'Geist', sans-serif; font-size: 0.95rem; color: var(--text-title, #1F2937); outline: none; transition: background-color 0.2s, border-color 0.2s; width: 100%; }
-        .field input::placeholder { color: var(--text-muted, #9CA3AF); }
-        .auth-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error, #EF4444); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; }
-        .auth-btn { padding: 0.85rem; background: var(--primary-gradient, linear-gradient(135deg, #986274, #6E3548)); color: var(--text-inverse, #FFFFFF); border: none; border-radius: 8px; font-family: 'Geist', sans-serif; font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; min-height: 48px; }
+        .field label { font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--text-primary); }
+        .field input { padding: 0.72rem 1rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: 'Geist', sans-serif; font-size: var(--font-input); color: var(--text-title); outline: none; transition: background-color 0.2s, border-color 0.2s; width: 100%; }
+        .field input::placeholder { color: var(--text-muted); }
+        .auth-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error); border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; font-size: var(--font-button); }
+        .auth-btn { padding: 0.85rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-sm); font-family: 'Geist', sans-serif; font-size: var(--font-input); font-weight: var(--fw-semibold); cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; min-height: 48px; }
         .auth-btn:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
         .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-        .back-btn { background: none; border: none; color: var(--text-muted, #9CA3AF); font-family: 'Geist', sans-serif; font-size: 0.88rem; cursor: pointer; text-align: center; padding: 0.25rem; transition: color 0.2s; }
-        .back-btn:hover { color: var(--primary, #986274); }
+        .back-btn { background: none; border: none; color: var(--text-muted); font-family: 'Geist', sans-serif; font-size: var(--font-button); cursor: pointer; text-align: center; padding: 0.25rem; transition: color 0.2s; }
+        .back-btn:hover { color: var(--primary); }
         .sent-wrap { text-align: center; display: flex; flex-direction: column; gap: 0.75rem; }
         .sent-icon { font-size: 3rem; }
-        .sent-wrap h2 { font-size: 1.2rem; font-weight: 600; color: var(--text-title, #1F2937); }
-        .sent-wrap p { font-size: 0.88rem; color: var(--text-secondary, #6B7280); line-height: 1.5; }
-        .sent-tip { font-size: 0.8rem; color: var(--text-muted, #9CA3AF); }
+        .sent-wrap h2 { font-size: var(--font-modal-title); font-weight: var(--fw-semibold); color: var(--text-title); }
+        .sent-wrap p { font-size: var(--font-button); color: var(--text-secondary); line-height: 1.5; }
+        .sent-tip { font-size: var(--font-helper); color: var(--text-muted); }
         .sent-wrap .auth-btn { margin-top: 0.5rem; }
         .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }

@@ -222,7 +222,7 @@ export default function CardapioPrevia() {
               border: "none",
               borderRadius: "8px",
               padding: "0.45rem 0.9rem",
-              color: copied ? "var(--success, #22C55E)" : "rgba(255,255,255,0.85)",
+              color: copied ? "var(--success)" : "rgba(255,255,255,0.85)",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -307,7 +307,7 @@ export default function CardapioPrevia() {
                   height: "780px",
                   borderRadius: "30px",
                   overflow: "hidden",
-                  background: "var(--bg-card, #FFFFFF)",
+                  background: "var(--bg-card)",
                   position: "relative",
                 }}
               >
@@ -326,7 +326,7 @@ export default function CardapioPrevia() {
           ) : (
             <iframe
               src={url}
-              style={{ width: "100%", height: "100%", border: "none", background: "var(--bg-card, #FFFFFF)" }}
+              style={{ width: "100%", height: "100%", border: "none", background: "var(--bg-card)" }}
               title="Prévia desktop"
             />
           )}

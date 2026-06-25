@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -6,7 +6,6 @@ import {
 import {
   Share, Plus, ClipboardText, CalendarDots,
   Cake, TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
-  Bell, UserCircle, Storefront, SignOut,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
@@ -55,144 +54,6 @@ export default function Inicio() {
 
   const nome = profile?.nome || "";
   const slug = profile?.slug || "";
-  const fotoUrl = profile?.foto_url || "";
-  const iniciais = nome
-    ? nome.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join("")
-    : "";
-
-  // ── Menu de perfil (dropdown ao clicar no avatar) ──
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState("");
-  const menuRef = useRef<HTMLDivElement | null>(null);
-  const APP_VERSION = "1.5.8";
-
-  // ── Notificações push ──
-  const [notifPermission, setNotifPermission] = useState<NotificationPermission | "unsupported">(
-    typeof Notification !== "undefined" ? Notification.permission : "unsupported"
-  );
-  const [notifLoading, setNotifLoading] = useState(false);
-
-  const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined;
-
-  function urlBase64ToUint8Array(base64String: string): Uint8Array {
-    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-    const raw = atob(base64);
-    const output = new Uint8Array(raw.length);
-    for (let i = 0; i < raw.length; i++) output[i] = raw.charCodeAt(i);
-    return output;
-  }
-
-  async function ativarNotificacoes() {
-    if (notifPermission === "unsupported") {
-      alert("Seu navegador não suporta notificações.");
-      return;
-    }
-    if (notifPermission === "denied") {
-      alert(
-        "As notificações estão bloqueadas. Para ativar, abra as configurações do navegador para este site e libere as notificações."
-      );
-      return;
-    }
-    setNotifLoading(true);
-    try {
-      // 1) Pede permissão (popup do navegador/celular)
-      let permission: NotificationPermission = notifPermission;
-      if (permission !== "granted") {
-        permission = await Notification.requestPermission();
-        setNotifPermission(permission);
-      }
-      if (permission !== "granted") {
-        setNotifLoading(false);
-        return;
-      }
-
-      // 2) Registra o service worker
-      if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-        alert("Seu navegador não suporta push notifications.");
-        setNotifLoading(false);
-        return;
-      }
-      const reg = await navigator.serviceWorker.register("/sw.js");
-      await navigator.serviceWorker.ready;
-
-      // 3) Cria/recupera a subscription
-      let sub = await reg.pushManager.getSubscription();
-      if (!sub) {
-        if (!VAPID_PUBLIC_KEY) {
-          console.warn("VITE_VAPID_PUBLIC_KEY não definida — push só funcionará após adicionar a chave.");
-          alert("Notificações ativadas no navegador, mas o servidor ainda não está configurado.");
-          setNotifLoading(false);
-          return;
-        }
-        sub = await reg.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
-        });
-      }
-
-      // 4) Salva no Supabase
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const subJson = sub.toJSON();
-        await supabase.from("push_subscriptions").upsert(
-          {
-            user_id: user.id,
-            endpoint: sub.endpoint,
-            p256dh: subJson.keys?.p256dh,
-            auth: subJson.keys?.auth,
-            user_agent: navigator.userAgent,
-          },
-          { onConflict: "endpoint" }
-        );
-      }
-    } catch (err) {
-      console.error("Erro ao ativar notificações:", err);
-      alert("Não foi possível ativar as notificações. Tente novamente.");
-    } finally {
-      setNotifLoading(false);
-    }
-  }
-
-  async function desativarNotificacoes() {
-    setNotifLoading(true);
-    try {
-      const reg = await navigator.serviceWorker.getRegistration();
-      const sub = await reg?.pushManager.getSubscription();
-      if (sub) {
-        await supabase.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
-        await sub.unsubscribe();
-      }
-    } catch (err) {
-      console.error("Erro ao desativar notificações:", err);
-    } finally {
-      setNotifLoading(false);
-    }
-  }
-
-  const notifAtivo = notifPermission === "granted";
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUserEmail(data.user?.email || "");
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [menuOpen]);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = "/login";
-  };
   const linkCardapio = slug ? `${window.location.origin}/cardapio/${slug}` : "";
   const publicado = !!slug;
 
@@ -440,67 +301,8 @@ export default function Inicio() {
       {/* ── Hero degradê animado ── */}
       <div className="ini-hero">
         <div className="ini-hero-greeting">
-          <h1>{getGreeting()}, {nome ? nome.split(" ")[0] : "bem-vinda"}</h1>
+          <h1>{getGreeting()}, {nome || "bem-vinda"}</h1>
           <p>{hojeFormatado()}</p>
-        </div>
-        <div className="ini-hero-avatar-wrap" ref={menuRef}>
-          <button
-            className="ini-hero-avatar"
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-label="Abrir menu de perfil"
-          >
-            {fotoUrl ? (
-              <img src={fotoUrl} alt="Foto de perfil" />
-            ) : (
-              <span>{iniciais || "?"}</span>
-            )}
-          </button>
-
-          {menuOpen && (
-            <div className="ini-profile-menu">
-              <div className="ini-profile-menu-header">
-                <p className="ini-pm-name">{nome || "—"}</p>
-                {userEmail && <p className="ini-pm-email">{userEmail}</p>}
-                <p className="ini-pm-version">Versão {APP_VERSION}</p>
-              </div>
-              <div className="ini-profile-menu-items">
-                <div className="ini-pm-toggle-row">
-                  <Bell size={18} weight="duotone" />
-                  <div className="ini-pm-toggle-text">
-                    <span>Notificações</span>
-                    {notifPermission === "denied" && (
-                      <small>Bloqueado no navegador</small>
-                    )}
-                    {notifPermission === "unsupported" && (
-                      <small>Não suportado</small>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    role="switch"
-                    aria-checked={notifAtivo}
-                    disabled={notifLoading || notifPermission === "denied" || notifPermission === "unsupported"}
-                    className={`ini-switch ${notifAtivo ? "is-on" : ""}`}
-                    onClick={() => (notifAtivo ? desativarNotificacoes() : ativarNotificacoes())}
-                  >
-                    <span className="ini-switch-thumb" />
-                  </button>
-                </div>
-                <button onClick={() => { setMenuOpen(false); navigate("/configuracoes"); }}>
-                  <UserCircle size={18} weight="duotone" />
-                  <span>Minha Conta</span>
-                </button>
-                <button onClick={() => { setMenuOpen(false); navigate("/cardapio-config"); }}>
-                  <Storefront size={18} weight="duotone" />
-                  <span>Minha Loja</span>
-                </button>
-                <button className="ini-pm-logout" onClick={handleLogout}>
-                  <SignOut size={18} weight="duotone" />
-                  <span>Sair</span>
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -587,8 +389,8 @@ export default function Inicio() {
           <div className="ini-tudo-ok">
             <span style={{ fontSize: "1.5rem" }}>✨</span>
             <div>
-              <p style={{ margin: 0, fontWeight: 700, color: "var(--text-title, #431524)" }}>Tudo em ordem!</p>
-              <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "var(--text-muted, #C39EAA)" }}>Sem alertas hoje. Bom trabalho!</p>
+              <p style={{ margin: 0, fontWeight: 700, color: "var(--text-title)" }}>Tudo em ordem!</p>
+              <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "var(--text-muted)" }}>Sem alertas hoje. Bom trabalho!</p>
             </div>
           </div>
         </section>
@@ -641,11 +443,11 @@ export default function Inicio() {
           <div style={{ width: "100%", height: 180 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 8, right: 10, bottom: 0, left: -10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border,#ECC2D0)" vertical={false} />
-                <XAxis dataKey="dia" tick={{ fontSize: 10, fill: "var(--text-muted,#C39EAA)" }} tickLine={false} axisLine={false} interval={4} />
-                <YAxis tick={{ fontSize: 10, fill: "var(--text-muted,#C39EAA)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `R$${v}`} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis dataKey="dia" tick={{ fontSize: 10, fill: "var(--text-muted)" }} tickLine={false} axisLine={false} interval={4} />
+                <YAxis tick={{ fontSize: 10, fill: "var(--text-muted)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `R$${v}`} />
                 <Tooltip
-                  contentStyle={{ background: "var(--bg-card,#fff)", border: "1px solid var(--border,#ECC2D0)", borderRadius: 10, fontSize: 12, fontFamily: "Geist,sans-serif" }}
+                  contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12, fontFamily: "Geist,sans-serif" }}
                   formatter={(v: any) => [formatCurrency(Number(v)), "Faturamento"]}
                 />
                 <Line type="monotone" dataKey="valor" stroke="#3d1a24" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: "#3d1a24" }} />
@@ -665,182 +467,48 @@ export default function Inicio() {
 
         /* ── Hero degradê animado (preservado) ── */
         .ini-hero {
-          background: linear-gradient(135deg, #3D0F20, #1F0610, #330716, #1F0610, #3D0F20);
+          background: linear-gradient(135deg, #986274, #6E3548, #431524, #6E3548, #986274);
           background-size: 300% 300%;
           animation: heroGradientMove 10s ease infinite;
-          border-radius: 0;
-          padding: 1.25rem 1.25rem 1.5rem;
+          border-radius: 0 0 28px 28px;
+          padding: 2rem 1.25rem 4rem;
           /* Full-bleed: estende até a borda da viewport ignorando padding dos pais */
           width: 100vw;
           margin-left: calc(50% - 50vw);
           margin-right: calc(50% - 50vw);
           margin-top: -0.75rem;
-          display: flex; flex-direction: row;
-          align-items: center;
-          justify-content: space-between;
-          gap: 1rem;
-          position: relative;
-          z-index: 10;
-        }
-        .ini-hero-greeting { flex: 1; min-width: 0; }
-        .ini-hero-avatar-wrap {
-          position: relative;
-          flex-shrink: 0;
-          z-index: 100;
-        }
-        .ini-hero-avatar {
-          flex-shrink: 0;
-          width: 44px; height: 44px;
-          border-radius: 50%;
-          border: 2px solid rgba(255,255,255,0.35);
-          background: rgba(255,255,255,0.1);
-          padding: 0;
-          overflow: hidden;
-          cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          color: rgba(255,255,255,0.95);
-          font-family: inherit;
-          font-size: 0.85rem;
-          font-weight: 600;
-          letter-spacing: 0.02em;
-          transition: transform 0.18s ease, border-color 0.18s ease;
-        }
-        .ini-hero-avatar:hover { transform: scale(1.05); border-color: rgba(255,255,255,0.6); }
-        .ini-hero-avatar:active { transform: scale(0.95); }
-        .ini-hero-avatar img {
-          width: 100%; height: 100%; object-fit: cover; display: block;
-        }
-
-        /* ── Dropdown de perfil ── */
-        .ini-profile-menu {
-          position: absolute;
-          top: calc(100% + 10px);
-          right: 0;
-          width: 280px;
-          background: var(--bg-card, #fff);
-          border: 1px solid var(--border, #ECC2D0);
-          border-radius: 14px;
-          box-shadow: 0 12px 32px rgba(0,0,0,0.18);
-          z-index: 50;
-          overflow: hidden;
-          animation: iniMenuFade 0.15s ease-out;
-        }
-        @keyframes iniMenuFade {
-          from { opacity: 0; transform: translateY(-4px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .ini-profile-menu-header {
-          padding: 1rem 1.1rem 0.85rem;
-          border-bottom: 1px solid var(--border, #ECC2D0);
-        }
-        .ini-pm-name {
-          margin: 0;
-          font-size: 0.95rem;
-          font-weight: 700;
-          color: var(--text, #333);
-          line-height: 1.25;
-        }
-        .ini-pm-email {
-          margin: 3px 0 0;
-          font-size: 0.75rem;
-          color: var(--text-muted, #888);
-          line-height: 1.3;
-          word-break: break-all;
-        }
-        .ini-pm-version {
-          margin: 8px 0 0;
-          font-size: 0.7rem;
-          color: var(--text-muted, #aaa);
-        }
-        .ini-profile-menu-items {
           display: flex; flex-direction: column;
-          padding: 0.4rem 0;
-        }
-        .ini-profile-menu-items > button {
-          display: flex; align-items: center; gap: 0.7rem;
-          background: transparent;
-          border: none;
-          padding: 0.7rem 1.1rem;
-          font-family: inherit;
-          font-size: 0.9rem;
-          color: var(--text, #333);
-          cursor: pointer;
-          text-align: left;
-          transition: background 0.12s ease;
-        }
-        .ini-profile-menu-items > button:hover {
-          background: var(--primary-light, #FFF1F7);
-        }
-        .ini-profile-menu-items .ini-pm-logout {
-          color: var(--primary, #BE185D);
-          border-top: 1px solid var(--border, #ECC2D0);
-          margin-top: 0.25rem;
-        }
-
-        /* ── Linha de toggle (Notificações) ── */
-        .ini-pm-toggle-row {
-          display: flex; align-items: center; gap: 0.7rem;
-          padding: 0.7rem 1.1rem;
-          font-size: 0.9rem;
-          color: var(--text, #333);
-        }
-        .ini-pm-toggle-text {
-          flex: 1; display: flex; flex-direction: column; line-height: 1.2;
-        }
-        .ini-pm-toggle-text small {
-          font-size: 0.68rem; color: var(--text-muted, #999); margin-top: 2px;
-        }
-        .ini-switch {
-          width: 38px; height: 22px;
-          border-radius: 999px;
-          background: #d4d4d8;
-          border: none;
-          padding: 0;
           position: relative;
-          cursor: pointer;
-          transition: background 0.2s ease;
-          flex-shrink: 0;
+          z-index: 0;
         }
-        .ini-switch:disabled { opacity: 0.5; cursor: not-allowed; }
-        .ini-switch.is-on { background: var(--primary, #BE185D); }
-        .ini-switch-thumb {
-          position: absolute;
-          top: 2px; left: 2px;
-          width: 18px; height: 18px;
-          background: #fff;
-          border-radius: 50%;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-          transition: transform 0.2s ease;
-        }
-        .ini-switch.is-on .ini-switch-thumb { transform: translateX(16px); }
         @keyframes heroGradientMove {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
         .ini-hero-greeting h1 {
-          font-size: 1rem; font-weight: 600; color: rgba(255,255,255,0.95);
+          font-size: var(--font-input); font-weight: var(--fw-semibold); color: rgba(255,255,255,0.95);
           margin: 0; line-height: 1.3;
           letter-spacing: 0;
         }
         .ini-hero-greeting p {
-          font-size: 0.78rem; color: rgba(255,255,255,0.7);
+          font-size: var(--font-helper); color: rgba(255,255,255,0.7);
           margin: 2px 0 0;
         }
 
         /* ── 3 indicadores estilo "sticker card" ── */
         .ini-indicadores {
           display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.55rem;
-          margin-top: 0.85rem;
+          margin-top: -50px;
           padding: 0 0.25rem;
           position: relative;
           z-index: 2;
         }
         .ini-ind-card {
           position: relative;
-          background: var(--bg-card, #fff);
+          background: var(--bg-card);
           border: none;
-          border-radius: 16px;
+          border-radius: var(--radius-lg);
           padding: 0.55rem 0.7rem 0.65rem 0.7rem;
           min-height: 92px;
           display: flex; flex-direction: column;
@@ -851,7 +519,7 @@ export default function Inicio() {
           font-family: inherit;
           text-align: left;
           overflow: hidden;
-          transition: transform 0.18s ease, box-shadow 0.18s ease;
+          transition: transform var(--dur-normal) var(--ease-out), box-shadow 0.18s ease;
         }
 
         /* Camada de imagem de fundo (wallpaper) */
@@ -894,18 +562,18 @@ export default function Inicio() {
           width: 100%;
         }
         .ini-ind-label {
-          font-size: 0.66rem; font-weight: 600;
+          font-size: var(--font-caption); font-weight: var(--fw-semibold);
           color: rgba(255,255,255,0.92);
           line-height: 1.15;
           letter-spacing: 0.01em;
         }
         .ini-ind-val {
-          font-size: 1.25rem; font-weight: 800;
+          font-size: var(--font-modal-title); font-weight: var(--fw-black);
           color: #fff; line-height: 1;
           letter-spacing: -0.02em;
         }
         .ini-ind-val--currency {
-          font-size: 0.95rem;
+          font-size: var(--font-input);
         }
 
         /* ── Sections ── */
@@ -914,8 +582,8 @@ export default function Inicio() {
           display: flex; flex-direction: column; gap: 0.65rem;
         }
         .ini-section-title {
-          font-size: 0.88rem; font-weight: 700;
-          color: var(--text-title, #431524);
+          font-size: var(--font-button); font-weight: var(--fw-bold);
+          color: var(--text-title);
           margin: 0;
         }
 
@@ -926,19 +594,19 @@ export default function Inicio() {
         .ini-action {
           display: flex; align-items: center; justify-content: center; gap: 0.5rem;
           padding: 0.85rem 0.9rem;
-          background: var(--bg-card, #fff);
-          border: 1.5px solid var(--border, #E9E9EE);
-          border-radius: 13px;
+          background: var(--bg-card);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-lg);
           font-family: inherit;
-          font-size: 0.86rem; font-weight: 700;
-          color: var(--text-title, #1F2937);
+          font-size: var(--font-button); font-weight: var(--fw-bold);
+          color: var(--text-title);
           cursor: pointer;
-          transition: all 0.15s ease;
+          transition: all var(--dur-fast) var(--ease-out);
         }
         .ini-action:hover { border-color: #3d1a24; transform: translateY(-1px); }
         .ini-action--primary {
-          background: var(--primary, #FF6FA9); color: #fff;
-          border-color: var(--primary, #FF6FA9);
+          background: var(--primary); color: #fff;
+          border-color: var(--primary);
           box-shadow: 0 4px 12px rgba(255, 111, 169, 0.25);
         }
         .ini-action--primary:hover { background: #FF5499; border-color: #FF5499; }
@@ -950,14 +618,14 @@ export default function Inicio() {
         .ini-alerta {
           display: flex; align-items: center; gap: 0.7rem;
           padding: 0.8rem 0.95rem;
-          background: var(--bg-card, #fff);
-          border: 1px solid var(--border, #E9E9EE);
+          background: var(--bg-card);
+          border: 1px solid var(--border);
           border-left-width: 4px;
-          border-radius: 12px;
+          border-radius: var(--radius-md);
           cursor: pointer;
           font-family: inherit;
           text-align: left;
-          transition: transform 0.12s ease;
+          transition: transform var(--dur-fast) var(--ease-out);
         }
         .ini-alerta:hover { transform: translateX(2px); }
         .ini-alerta--pedido      { border-left-color: #B91C1C; }
@@ -965,7 +633,7 @@ export default function Inicio() {
         .ini-alerta--aniversario { border-left-color: #EC4899; }
 
         .ini-alerta-icon {
-          width: 32px; height: 32px; border-radius: 9px;
+          width: 32px; height: 32px; border-radius: var(--radius-md);
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
@@ -975,14 +643,14 @@ export default function Inicio() {
 
         .ini-alerta-body { flex: 1; min-width: 0; }
         .ini-alerta-texto {
-          font-size: 0.85rem; font-weight: 500;
-          color: var(--text-primary, #374151);
+          font-size: var(--font-button); font-weight: var(--fw-medium);
+          color: var(--text-primary);
           line-height: 1.3;
         }
-        .ini-alerta-texto strong { color: var(--text-title, #1F2937); font-weight: 800; }
+        .ini-alerta-texto strong { color: var(--text-title); font-weight: var(--fw-black); }
         .ini-alerta-cta {
-          font-size: 0.74rem; font-weight: 700;
-          color: var(--text-muted, #9CA3AF);
+          font-size: var(--font-helper); font-weight: var(--fw-bold);
+          color: var(--text-muted);
           flex-shrink: 0;
         }
 
@@ -990,7 +658,7 @@ export default function Inicio() {
           display: flex; align-items: center; gap: 0.8rem;
           padding: 1rem 1.1rem;
           background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
-          border-radius: 13px;
+          border-radius: var(--radius-lg);
         }
 
         /* ── Resumo da semana ── */
@@ -1000,33 +668,33 @@ export default function Inicio() {
         .ini-resumo-card {
           display: flex; align-items: flex-start; gap: 0.7rem;
           padding: 0.95rem;
-          background: var(--bg-card, #fff);
-          border: 1px solid var(--border, #E9E9EE);
-          border-radius: 13px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
         }
         .ini-resumo-icon {
-          width: 38px; height: 38px; border-radius: 10px;
+          width: 38px; height: 38px; border-radius: var(--radius-md);
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
         .ini-resumo-val {
-          font-size: 1.15rem; font-weight: 700;
-          color: var(--text-title, #1F2937);
+          font-size: var(--font-modal-title); font-weight: var(--fw-bold);
+          color: var(--text-title);
           margin: 0; line-height: 1.1;
           word-break: break-word;
           letter-spacing: -0.01em;
         }
         .ini-resumo-label {
-          font-size: 0.72rem; font-weight: 500;
-          color: var(--text-muted, #9CA3AF);
+          font-size: var(--font-caption); font-weight: var(--fw-medium);
+          color: var(--text-muted);
           margin: 3px 0 0;
         }
         .ini-resumo-var {
           display: inline-flex; align-items: center; gap: 3px;
           margin: 8px 0 0;
           padding: 2px 7px;
-          border-radius: 6px;
-          font-size: 0.7rem; font-weight: 600;
+          border-radius: var(--radius-sm);
+          font-size: var(--font-caption); font-weight: var(--fw-semibold);
           line-height: 1.4;
         }
         .ini-resumo-var.up   { color: #15803D; background: #DCFCE7; }
@@ -1035,9 +703,9 @@ export default function Inicio() {
         /* ── Gráfico ── */
         .ini-chart-header { display: flex; justify-content: space-between; align-items: center; }
         .ini-chart-card {
-          background: var(--bg-card, #fff);
-          border: 1px solid var(--border, #E9E9EE);
-          border-radius: 13px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
           padding: 0.8rem 0.5rem 0.5rem;
         }
 
@@ -1053,8 +721,8 @@ export default function Inicio() {
             padding: 3rem 2rem 3.5rem;
             border-radius: 0 0 32px 32px;
           }
-          .ini-hero-greeting h1 { font-size: 1.6rem; }
-          .ini-hero-greeting p { font-size: 0.95rem; }
+          .ini-hero-greeting h1 { font-size: var(--text-2xl); }
+          .ini-hero-greeting p { font-size: var(--font-input); }
           .ini-indicadores {
             grid-template-columns: repeat(3, 1fr);
             max-width: 720px;
@@ -1064,8 +732,8 @@ export default function Inicio() {
             gap: 1rem;
           }
           .ini-ind-card { padding: 0.85rem 1rem; min-height: 100px; }
-          .ini-ind-val { font-size: 1.55rem; }
-          .ini-ind-label { font-size: 0.74rem; }
+          .ini-ind-val { font-size: var(--text-xl); }
+          .ini-ind-label { font-size: var(--font-helper); }
           .ini-actions { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-resumo { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-alertas, .ini-tudo-ok, .ini-chart-card { max-width: 720px; margin-left: auto; margin-right: auto; }

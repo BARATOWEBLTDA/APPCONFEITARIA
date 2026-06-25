@@ -60,7 +60,7 @@ export default function Notificacoes() {
               <div className="ntf-item-footer">
                 {n.tag && <span className="ntf-tag">{n.tag}</span>}
                 <span className="ntf-time">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                   {formatData(n.created_at)}
                 </span>
               </div>
@@ -71,37 +71,37 @@ export default function Notificacoes() {
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        .ntf-root { font-family: 'Geist', sans-serif; min-height: 100vh; background: var(--bg-body, #F7F7F8); }
+        .ntf-root { font-family: 'Geist', sans-serif; min-height: 100vh; background: var(--bg-body); }
         .ntf-list { display: flex; flex-direction: column; gap: 0.75rem; padding: 0.75rem; }
         .ntf-item {
           display: flex; gap: 0.9rem; align-items: flex-start;
           padding: 1rem;
-          background: var(--bg-card, #FFFFFF);
-          border-radius: 14px;
+          background: var(--bg-card);
+          border-radius: var(--radius-lg);
           box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06));
           transition: transform 0.15s, box-shadow 0.15s;
         }
         .ntf-item:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
         .ntf-img {
-          width: 68px; height: 68px; border-radius: 10px;
-          background: var(--bg-body, #F7F7F8); flex-shrink: 0;
+          width: 68px; height: 68px; border-radius: var(--radius-md);
+          background: var(--bg-body); flex-shrink: 0;
           overflow: hidden; display: flex; align-items: center;
-          justify-content: center; font-size: 1.8rem;
+          justify-content: center; font-size: var(--text-2xl);
         }
         .ntf-img img { width: 100%; height: 100%; object-fit: cover; }
         .ntf-content { flex: 1; min-width: 0; }
-        .ntf-item-title { font-size: 0.88rem; font-weight: 700; color: var(--text-title, #1F2937); margin: 0 0 0.2rem; line-height: 1.4; }
-        .ntf-item-msg { font-size: 0.8rem; color: var(--text-secondary, #6B7280); margin: 0 0 0.3rem; line-height: 1.4; }
+        .ntf-item-title { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--text-title); margin: 0 0 0.2rem; line-height: 1.4; }
+        .ntf-item-msg { font-size: var(--font-helper); color: var(--text-secondary); margin: 0 0 0.3rem; line-height: 1.4; }
         .ntf-item-footer { display: flex; align-items: center; gap: 0.5rem; }
-        .ntf-tag { font-size: 0.75rem; font-weight: 600; color: var(--primary, #FF6FA9); }
-        .ntf-time { font-size: 0.72rem; color: var(--text-muted, #9CA3AF); display: flex; align-items: center; gap: 0.2rem; }
+        .ntf-tag { font-size: var(--font-helper); font-weight: var(--fw-semibold); color: var(--primary); }
+        .ntf-time { font-size: var(--font-caption); color: var(--text-muted); display: flex; align-items: center; gap: 0.2rem; }
         .ntf-loading { display: flex; justify-content: center; padding: 4rem; }
-        .ntf-spinner { width: 28px; height: 28px; border: 3px solid var(--primary-light, #FFF1F7); border-top-color: var(--primary, #FF6FA9); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+        .ntf-spinner { width: 28px; height: 28px; border: 3px solid var(--primary-light); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .ntf-empty { text-align: center; padding: 4rem 2rem; }
         .ntf-empty-icon { font-size: 3rem; margin-bottom: 1rem; }
-        .ntf-empty p { font-size: 1rem; font-weight: 600; color: var(--text-title, #1F2937); margin: 0 0 0.4rem; }
-        .ntf-empty span { font-size: 0.85rem; color: var(--text-muted, #9CA3AF); }
+        .ntf-empty p { font-size: var(--font-input); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0 0 0.4rem; }
+        .ntf-empty span { font-size: var(--font-button); color: var(--text-muted); }
       `}</style>
     </div>
   );

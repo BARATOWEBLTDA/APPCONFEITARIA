@@ -61,33 +61,33 @@ function ProdutoModal({ produtos, onSelect, onClose }: {
         transform: 'translate(-50%, -50%)',
         width: 520, maxWidth: '90vw',
         height: 520,
-        background: 'var(--bg-card,#fff)',
+        background: 'var(--bg-card)',
         borderRadius: 18,
-        border: '1.5px solid var(--border,#ECC2D0)',
+        border: '1.5px solid var(--border)',
         boxShadow: '0 24px 64px rgba(67,21,36,0.18)',
         zIndex: 1001,
         overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem 0.85rem', borderBottom: '1px solid var(--border,#ECC2D0)' }}>
-          <p style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--text-title,#431524)', fontFamily: "'Geist',sans-serif" }}>Adicionar produto</p>
-          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '50%', border: '1.5px solid var(--border,#ECC2D0)', background: 'var(--bg-subtle,#F7EEF1)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary,#6E3548)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 1.25rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
+          <p style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--text-title)', fontFamily: "'Geist',sans-serif" }}>Adicionar produto</p>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: '50%', border: '1.5px solid var(--border)', background: 'var(--bg-subtle)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
         {/* Search */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0.75rem 1.25rem', borderBottom: '1px solid var(--border,#ECC2D0)', background: 'var(--bg-subtle,#F7EEF1)' }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted,#C39EAA)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0.75rem 1.25rem', borderBottom: '1px solid var(--border)', background: 'var(--bg-subtle)' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input
             autoFocus
             value={busca}
             onChange={e => setBusca(e.target.value)}
             placeholder="Buscar produto..."
-            style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.9rem', fontFamily: "'Geist',sans-serif", color: 'var(--text-primary,#431524)', background: 'transparent' }}
+            style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.9rem', fontFamily: "'Geist',sans-serif", color: 'var(--text-primary)', background: 'transparent' }}
           />
           {busca && (
-            <button onClick={() => setBusca('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted,#C39EAA)', display: 'flex', padding: 0 }}>
+            <button onClick={() => setBusca('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 0 }}>
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           )}
@@ -95,7 +95,7 @@ function ProdutoModal({ produtos, onSelect, onClose }: {
         {/* Lista */}
         <div style={{ overflowY: 'auto', flex: 1 }}>
           {filtrados.length === 0 ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted,#C39EAA)', fontSize: '0.85rem' }}>Nenhum produto encontrado</div>
+            <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Nenhum produto encontrado</div>
           ) : filtrados.map(p => (
             <button
               key={p.id}
@@ -103,24 +103,24 @@ function ProdutoModal({ produtos, onSelect, onClose }: {
               style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: '0.85rem',
                 padding: '0.85rem 1.25rem',
-                border: 'none', borderBottom: '1px solid var(--border,#ECC2D0)',
-                background: selecionado?.id === p.id ? 'var(--primary-light,#F7EEF1)' : 'var(--bg-card,#fff)',
+                border: 'none', borderBottom: '1px solid var(--border)',
+                background: selecionado?.id === p.id ? 'var(--primary-light)' : 'var(--bg-card)',
                 cursor: 'pointer', transition: 'background 0.1s',
                 textAlign: 'left', fontFamily: "'Geist',sans-serif",
               }}
             >
               {p.imagem_url
-                ? <img src={p.imagem_url} alt={p.nome} style={{ width: 48, height: 48, borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: '1px solid var(--border,#ECC2D0)' }} />
-                : <div style={{ width: 48, height: 48, borderRadius: 10, background: 'var(--bg-subtle,#F7EEF1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0 }}>🎂</div>
+                ? <img src={p.imagem_url} alt={p.nome} style={{ width: 48, height: 48, borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: '1px solid var(--border)' }} />
+                : <div style={{ width: 48, height: 48, borderRadius: 10, background: 'var(--bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0 }}>🎂</div>
               }
               <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-title,#431524)' }}>{p.nome}</p>
-                <p style={{ margin: '2px 0 0', fontSize: '0.82rem', color: 'var(--primary,#986274)', fontWeight: 600 }}>{(p.preco_normal || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 600, color: 'var(--text-title)' }}>{p.nome}</p>
+                <p style={{ margin: '2px 0 0', fontSize: '0.82rem', color: 'var(--primary)', fontWeight: 600 }}>{(p.preco_normal || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
               </div>
               <div style={{
                 width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                border: `2px solid ${selecionado?.id === p.id ? 'var(--primary,#986274)' : 'var(--border,#ECC2D0)'}`,
-                background: selecionado?.id === p.id ? 'var(--primary,#986274)' : 'transparent',
+                border: `2px solid ${selecionado?.id === p.id ? 'var(--primary)' : 'var(--border)'}`,
+                background: selecionado?.id === p.id ? 'var(--primary)' : 'transparent',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {selecionado?.id === p.id && (
@@ -131,10 +131,10 @@ function ProdutoModal({ produtos, onSelect, onClose }: {
           ))}
         </div>
         {/* Footer */}
-        <div style={{ padding: '0.85rem 1.25rem', borderTop: '1px solid var(--border,#ECC2D0)', background: 'var(--bg-subtle,#F7EEF1)', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+        <div style={{ padding: '0.85rem 1.25rem', borderTop: '1px solid var(--border)', background: 'var(--bg-subtle)', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary,#6E3548)', fontFamily: "'Geist',sans-serif", minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {selecionado ? <><strong style={{ color: 'var(--text-title,#431524)' }}>{selecionado.nome}</strong> selecionado</> : 'Selecione um produto'}
+            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)', fontFamily: "'Geist',sans-serif", minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {selecionado ? <><strong style={{ color: 'var(--text-title)' }}>{selecionado.nome}</strong> selecionado</> : 'Selecione um produto'}
             </p>
             {selecionado && (
               <div className="pf2-stepper" style={{ flexShrink: 0 }}>
@@ -163,7 +163,7 @@ function ProdutoModal({ produtos, onSelect, onClose }: {
             onClick={() => selecionado && onSelect(selecionado, quantidade)}
             style={{
               width: '100%',
-              background: selecionado ? 'var(--primary,#986274)' : 'var(--border,#ECC2D0)',
+              background: selecionado ? 'var(--primary)' : 'var(--border)',
               color: 'white', border: 'none', borderRadius: 10,
               padding: '0.65rem 1.25rem',
               fontSize: '0.88rem', fontWeight: 600,
@@ -309,11 +309,11 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
                       >
                         {p.imagem_url
                           ? <img src={p.imagem_url} alt={p.nome} style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
-                          : <div style={{ width: 36, height: 36, borderRadius: 6, background: 'var(--bg-subtle,#F7EEF1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>🎂</div>
+                          : <div style={{ width: 36, height: 36, borderRadius: 6, background: 'var(--bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>🎂</div>
                         }
                         <div style={{ flex: 1 }}>
                           <div className="pf2-drop-name">{p.nome}</div>
-                          <div className="pf2-drop-sub" style={{ color: 'var(--primary,#986274)', fontWeight: 600 }}>{formatMoney(p.preco_normal)}</div>
+                          <div className="pf2-drop-sub" style={{ color: 'var(--primary)', fontWeight: 600 }}>{formatMoney(p.preco_normal)}</div>
                         </div>
                       </button>
                     )) : (
@@ -328,11 +328,11 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
                 <div className="pf2-add-produto-selecionado">
                   {novoItem.imagem_url
                     ? <img src={novoItem.imagem_url} alt={novoItem.nome_produto} style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-                    : <div style={{ width: 44, height: 44, borderRadius: 8, background: 'var(--bg-subtle,#F7EEF1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>🎂</div>
+                    : <div style={{ width: 44, height: 44, borderRadius: 8, background: 'var(--bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>🎂</div>
                   }
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-title,#431524)' }}>{novoItem.nome_produto}</p>
-                    <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--primary,#986274)', fontWeight: 600 }}>{formatMoney(novoItem.valor_unitario)} / un.</p>
+                    <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-title)' }}>{novoItem.nome_produto}</p>
+                    <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 600 }}>{formatMoney(novoItem.valor_unitario)} / un.</p>
                   </div>
                   <button className="pf2-item-remove" onClick={() => { setNovoItem({ ...EMPTY_ITEM }); setBuscaProduto('') }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -503,63 +503,63 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
         .pf2-add-produto-selecionado {
           display: flex; align-items: center; gap: 10px;
           padding: 10px 12px;
-          background: var(--bg-card,#fff);
-          border: 1.5px solid var(--border,#ECC2D0);
-          border-radius: 12px;
+          background: var(--bg-card);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md);
         }
         .pf2-stepper {
           display: flex; align-items: center;
-          border: 1.5px solid var(--border,#ECC2D0);
-          border-radius: 12px; overflow: hidden;
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md); overflow: hidden;
           width: fit-content;
         }
         .pf2-stepper-btn {
           width: 44px; height: 44px;
-          background: var(--bg-subtle,#F7EEF1);
+          background: var(--bg-subtle);
           border: none; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          color: var(--primary,#986274); transition: background 0.15s;
+          color: var(--primary); transition: background var(--dur-fast);
         }
         .pf2-stepper-btn:hover { background: #ECC2D0; }
         .pf2-stepper-val {
           min-width: 52px; text-align: center;
-          font-size: 1rem; font-weight: 700;
-          color: var(--text-title,#431524);
+          font-size: var(--font-input); font-weight: var(--fw-bold);
+          color: var(--text-title);
           font-family: 'Geist',sans-serif;
-          border-left: 1px solid var(--border,#ECC2D0);
-          border-right: 1px solid var(--border,#ECC2D0);
+          border-left: 1px solid var(--border);
+          border-right: 1px solid var(--border);
           padding: 0 8px; line-height: 44px;
         }
 
         /* ── Mini-stepper inline (editar item já lançado) ── */
-        .pf2-item-qty-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 3px; }
+        .pf2-item-qty-row { display: flex; align-items: center; gap: var(--gap-tight); margin-top: 3px; }
         .pf2-item-qty-row .pf2-item-meta { margin: 0; }
         .pf2-item-stepper {
           display: flex; align-items: center;
-          border: 1.5px solid var(--border,#ECC2D0);
-          border-radius: 7px; overflow: hidden; flex-shrink: 0;
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-sm); overflow: hidden; flex-shrink: 0;
         }
         .pf2-item-stepper button {
           width: 20px; height: 20px;
           display: flex; align-items: center; justify-content: center;
-          background: var(--bg-subtle,#F7EEF1);
+          background: var(--bg-subtle);
           border: none; cursor: pointer; padding: 0;
-          color: var(--primary,#986274); transition: background 0.15s;
+          color: var(--primary); transition: background var(--dur-fast);
         }
         .pf2-item-stepper button:hover { background: #ECC2D0; }
         .pf2-item-stepper span {
           min-width: 22px; text-align: center;
-          font-size: 0.72rem; font-weight: 700;
-          color: var(--text-title,#431524);
+          font-size: var(--font-caption); font-weight: var(--fw-bold);
+          color: var(--text-title);
           font-family: 'Geist',sans-serif;
-          border-left: 1px solid var(--border,#ECC2D0);
-          border-right: 1px solid var(--border,#ECC2D0);
+          border-left: 1px solid var(--border);
+          border-right: 1px solid var(--border);
           padding: 0 2px;
         }
         @media (min-width: 768px) {
           .pf2-add-form { overflow: visible; }
           .step-root .pf2-card { overflow: visible; }
-          .pf2-dropdown { z-index: 9999; max-height: 160px !important; overflow-y: auto !important; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+          .pf2-dropdown { z-index: 9999; max-height: 160px !important; overflow-y: auto !important; border-radius: var(--radius-md); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
         }
       `}</style>
     </div>

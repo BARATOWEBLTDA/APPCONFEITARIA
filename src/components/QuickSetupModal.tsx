@@ -193,25 +193,25 @@ export function QuickSetupModal({ step, userId, onClose, onSaved }: Props) {
       </div>
 
       <style>{`
-        .qsm-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
-        .qsm-modal { background: white; border-radius: 20px; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); animation: qsmIn 0.25s cubic-bezier(0.16,1,0.3,1); }
+        .qsm-overlay { position: fixed; inset: 0; z-index: 200; background: var(--bg-overlay); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: var(--space-4); }
+        .qsm-modal { background: var(--bg-card); border-radius: var(--radius-xl); width: 100%; max-width: 420px; box-shadow: var(--shadow-lg); animation: qsmIn var(--dur-slow) cubic-bezier(0.16,1,0.3,1); }
         @keyframes qsmIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        .qsm-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.25rem 0; }
-        .qsm-title { font-size: 1rem; font-weight: 700; color: #1f2937; margin: 0; font-family: 'Geist', sans-serif; }
-        .qsm-close { background: #f3f4f6; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; color: #6b7280; }
-        .qsm-body { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.85rem; }
-        .qsm-avatar { border-radius: 50%; border: 2px dashed #fbcfe8; background: #fff0f6; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; transition: border-color 0.2s; }
-        .qsm-avatar:hover { border-color: #f9007a; }
-        .qsm-field { display: flex; flex-direction: column; gap: 0.3rem; }
-        .qsm-field label { font-size: 0.82rem; font-weight: 600; color: #374151; font-family: 'Geist', sans-serif; }
-        .qsm-field input { padding: 0.7rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: #1f2937; outline: none; transition: border-color 0.2s; }
-        .qsm-field input:focus { border-color: #f9007a; }
-        .qsm-hint { font-size: 0.75rem; color: #9ca3af; margin: 0; font-family: 'Geist', sans-serif; }
-        .qsm-footer { display: flex; gap: 0.75rem; padding: 0 1.25rem 1.25rem; }
-        .qsm-btn-cancel { flex: 1; padding: 0.75rem; background: #f3f4f6; color: #6b7280; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
-        .qsm-btn-save { flex: 1; padding: 0.75rem; background: linear-gradient(135deg, #f9007a, #d4006a); color: white; border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .qsm-header { display: flex; justify-content: space-between; align-items: center; padding: var(--space-5) var(--space-5) 0; }
+        .qsm-title { font-size: var(--font-modal-title); font-weight: var(--fw-bold); line-height: var(--lh-tight); color: var(--text-title); margin: 0; font-family: inherit; }
+        .qsm-close { background: var(--bg-body); border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: var(--font-caption); display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: background var(--dur-fast) var(--ease-out); }
+        .qsm-body { padding: var(--space-4) var(--space-5); display: flex; flex-direction: column; gap: var(--gap-stack); }
+        .qsm-avatar { border-radius: 50%; border: 2px dashed var(--primary-light); background: var(--primary-light); display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; transition: border-color var(--dur-fast) var(--ease-out); }
+        .qsm-avatar:hover { border-color: var(--primary); }
+        .qsm-field { display: flex; flex-direction: column; gap: var(--space-1); }
+        .qsm-field label { font-size: var(--font-field-label); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-secondary); font-family: inherit; }
+        .qsm-field input { padding: var(--pad-input); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-medium); line-height: var(--lh-normal); color: var(--text-title); background: var(--bg-input); outline: none; transition: border-color var(--dur-fast) var(--ease-out); }
+        .qsm-field input:focus { border-color: var(--primary); }
+        .qsm-hint { font-size: var(--font-helper); font-weight: var(--fw-regular); line-height: var(--lh-normal); color: var(--text-muted); margin: 0; font-family: inherit; }
+        .qsm-footer { display: flex; gap: var(--gap-stack); padding: 0 var(--space-5) var(--space-5); }
+        .qsm-btn-cancel { flex: 1; padding: var(--space-3); background: var(--bg-body); color: var(--text-secondary); border: none; border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); line-height: var(--lh-normal); cursor: pointer; transition: opacity var(--dur-fast) var(--ease-out); }
+        .qsm-btn-save { flex: 1; padding: var(--space-3); background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold); line-height: var(--lh-normal); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity var(--dur-fast) var(--ease-out); }
         .qsm-btn-save:disabled { opacity: 0.7; cursor: not-allowed; }
-        .qsm-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+        .qsm-spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>

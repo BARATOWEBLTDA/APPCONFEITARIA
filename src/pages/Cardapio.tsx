@@ -457,14 +457,14 @@ export default function Cardapio() {
           max-width: 980px; margin: 0 auto;
         }
         .ch-header { display: flex; flex-direction: column; gap: 4px; }
-        .ch-title { font-size: 1.6rem; font-weight: 800; color: var(--text-title, #431524); margin: 0; letter-spacing: -0.02em; }
-        .ch-sub { font-size: 0.88rem; color: var(--text-secondary, #6E3548); margin: 0; }
+        .ch-title { font-size: var(--text-2xl); font-weight: var(--fw-black); color: var(--text-title); margin: 0; letter-spacing: -0.02em; }
+        .ch-sub { font-size: var(--font-button); color: var(--text-secondary); margin: 0; }
 
         /* ── Status card ── */
         .ch-status-card {
           padding: 1.1rem 1.15rem;
           background: linear-gradient(135deg, #3d1a24 0%, #6E3548 100%);
-          border-radius: 16px;
+          border-radius: var(--radius-lg);
           box-shadow: 0 8px 24px rgba(61,26,36,0.25);
           color: #fff;
           display: flex; flex-direction: column; gap: 0.7rem;
@@ -472,14 +472,14 @@ export default function Cardapio() {
         .ch-status-row { display: flex; align-items: center; gap: 0.5rem; }
         .ch-status-badge {
           display: inline-flex; align-items: center; gap: 5px;
-          padding: 4px 10px; border-radius: 999px;
-          font-size: 0.7rem; font-weight: 700;
+          padding: 4px 10px; border-radius: var(--radius-full);
+          font-size: var(--font-caption); font-weight: var(--fw-bold);
           letter-spacing: 0.02em;
         }
         .ch-status-badge.publicado { background: rgba(34,197,94,0.25); color: #BBF7D0; }
         .ch-status-badge.rascunho  { background: rgba(245,158,11,0.25); color: #FDE68A; }
         .ch-link-url {
-          font-size: 0.96rem; font-weight: 700;
+          font-size: var(--font-input); font-weight: var(--fw-bold);
           margin: 0;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           opacity: 0.95;
@@ -489,12 +489,12 @@ export default function Cardapio() {
           display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
           flex: 1;
           background: #fff; color: #3d1a24;
-          border: none; border-radius: 10px;
+          border: none; border-radius: var(--radius-md);
           padding: 0.7rem 1rem;
-          font-family: inherit; font-size: 0.88rem; font-weight: 700;
+          font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold);
           cursor: pointer;
           box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-          transition: transform 0.12s ease;
+          transition: transform var(--dur-fast) var(--ease-out);
         }
         .ch-btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
         .ch-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -502,9 +502,9 @@ export default function Cardapio() {
           width: 42px; height: 42px;
           display: inline-flex; align-items: center; justify-content: center;
           background: rgba(255,255,255,0.15); color: #fff;
-          border: none; border-radius: 10px;
+          border: none; border-radius: var(--radius-md);
           cursor: pointer;
-          transition: background 0.12s ease;
+          transition: background var(--dur-fast) var(--ease-out);
         }
         .ch-btn-ghost:hover:not(:disabled) { background: rgba(255,255,255,0.25); }
         .ch-btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -513,17 +513,17 @@ export default function Cardapio() {
         .ch-periodo-tabs {
           display: flex; gap: 4px;
           padding: 4px;
-          background: var(--bg-subtle, #F4F4F6);
-          border-radius: 11px;
+          background: var(--bg-subtle);
+          border-radius: var(--radius-md);
           width: fit-content;
         }
         .ch-periodo-tab {
           padding: 0.45rem 0.85rem;
-          border: none; border-radius: 8px;
-          background: transparent; color: var(--text-secondary, #6B7280);
-          font-family: inherit; font-size: 0.8rem; font-weight: 600;
+          border: none; border-radius: var(--radius-sm);
+          background: transparent; color: var(--text-secondary);
+          font-family: inherit; font-size: var(--font-helper); font-weight: var(--fw-semibold);
           cursor: pointer;
-          transition: all 0.12s ease;
+          transition: all var(--dur-fast) var(--ease-out);
         }
         .ch-periodo-tab.active {
           background: #fff;
@@ -543,26 +543,26 @@ export default function Cardapio() {
         .ch-metric-card {
           display: flex; align-items: flex-start; gap: 0.6rem;
           padding: 0.9rem;
-          background: var(--bg-card, #fff);
-          border: 1px solid var(--border, #E9E9EE);
-          border-radius: 13px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
         }
         .ch-metric-icon {
           width: 36px; height: 36px;
-          border-radius: 10px;
+          border-radius: var(--radius-md);
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
         .ch-metric-body { min-width: 0; flex: 1; }
         .ch-metric-label {
-          font-size: 0.7rem; font-weight: 600;
-          color: var(--text-muted, #9CA3AF);
+          font-size: var(--font-caption); font-weight: var(--fw-semibold);
+          color: var(--text-muted);
           text-transform: uppercase; letter-spacing: 0.04em;
           margin: 0 0 4px;
         }
         .ch-metric-value {
-          font-size: 1.2rem; font-weight: 800;
-          color: var(--text-title, #1F2937);
+          font-size: var(--font-modal-title); font-weight: var(--fw-black);
+          color: var(--text-title);
           margin: 0;
           line-height: 1;
           word-break: break-word;
@@ -570,7 +570,7 @@ export default function Cardapio() {
         .ch-metric-var {
           display: inline-flex; align-items: center; gap: 2px;
           margin: 5px 0 0;
-          font-size: 0.7rem; font-weight: 700;
+          font-size: var(--font-caption); font-weight: var(--fw-bold);
         }
         .ch-metric-var.up   { color: #15803D; }
         .ch-metric-var.down { color: #B91C1C; }
@@ -580,8 +580,8 @@ export default function Cardapio() {
           display: flex; flex-direction: column; gap: 0.6rem;
         }
         .ch-block-title {
-          font-size: 0.85rem; font-weight: 700;
-          color: var(--text-title, #431524);
+          font-size: var(--font-button); font-weight: var(--fw-bold);
+          color: var(--text-title);
           margin: 0;
           letter-spacing: -0.01em;
         }
@@ -593,35 +593,35 @@ export default function Cardapio() {
         .ch-top-item {
           display: flex; align-items: center; gap: 0.75rem;
           padding: 0.65rem 0.85rem;
-          background: var(--bg-card, #fff);
-          border: 1px solid var(--border, #E9E9EE);
-          border-radius: 12px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
         }
         .ch-top-rank {
-          font-size: 0.85rem; font-weight: 800;
+          font-size: var(--font-button); font-weight: var(--fw-black);
           color: #3d1a24;
           width: 22px;
         }
         .ch-top-img {
           width: 38px; height: 38px;
-          border-radius: 9px;
-          background: var(--bg-subtle, #F4F4F6);
+          border-radius: var(--radius-md);
+          background: var(--bg-subtle);
           display: flex; align-items: center; justify-content: center;
           overflow: hidden;
           flex-shrink: 0;
-          font-size: 1.1rem;
+          font-size: var(--font-modal-title);
         }
         .ch-top-img img { width: 100%; height: 100%; object-fit: cover; }
         .ch-top-info { min-width: 0; flex: 1; }
         .ch-top-nome {
-          font-size: 0.88rem; font-weight: 700;
-          color: var(--text-title, #1F2937);
+          font-size: var(--font-button); font-weight: var(--fw-bold);
+          color: var(--text-title);
           margin: 0;
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
         .ch-top-qtd {
-          font-size: 0.74rem;
-          color: var(--text-muted, #9CA3AF);
+          font-size: var(--font-helper);
+          color: var(--text-muted);
           margin: 2px 0 0;
         }
 
@@ -630,12 +630,12 @@ export default function Cardapio() {
         .ch-alerta {
           display: flex; align-items: center; gap: 0.6rem;
           padding: 0.7rem 0.85rem;
-          border-radius: 12px;
+          border-radius: var(--radius-md);
           border: 1px solid transparent;
           font-family: inherit;
           cursor: pointer;
           text-align: left;
-          transition: transform 0.12s ease;
+          transition: transform var(--dur-fast) var(--ease-out);
         }
         .ch-alerta:hover { transform: translateX(2px); }
         .ch-alerta--warning {
@@ -651,10 +651,10 @@ export default function Cardapio() {
         .ch-alerta-icon { display: inline-flex; flex-shrink: 0; }
         .ch-alerta-texto {
           flex: 1; min-width: 0;
-          font-size: 0.84rem; font-weight: 600;
+          font-size: var(--font-button); font-weight: var(--fw-semibold);
         }
         .ch-alerta-cta {
-          font-size: 0.78rem; font-weight: 700;
+          font-size: var(--font-helper); font-weight: var(--fw-bold);
           opacity: 0.85;
           flex-shrink: 0;
         }
@@ -674,13 +674,13 @@ export default function Cardapio() {
         .ch-tile-compact {
           display: flex; align-items: center; gap: 0.5rem;
           padding: 0.7rem 0.8rem;
-          background: var(--bg-card, #fff);
-          border: 1px solid var(--border, #E9E9EE);
-          border-radius: 11px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
           font-family: inherit;
           cursor: pointer;
           text-align: left;
-          transition: all 0.12s ease;
+          transition: all var(--dur-fast) var(--ease-out);
         }
         .ch-tile-compact:hover {
           border-color: #3d1a24;
@@ -688,15 +688,15 @@ export default function Cardapio() {
         }
         .ch-tile-icon {
           width: 30px; height: 30px;
-          border-radius: 8px;
-          background: var(--primary-light, #FFF1F7);
+          border-radius: var(--radius-sm);
+          background: var(--primary-light);
           color: #3d1a24;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
         .ch-tile-label {
-          font-size: 0.81rem; font-weight: 600;
-          color: var(--text-primary, #374151);
+          font-size: var(--font-helper); font-weight: var(--fw-semibold);
+          color: var(--text-primary);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -705,8 +705,8 @@ export default function Cardapio() {
         .ch-loading {
           text-align: center;
           padding: 1rem;
-          color: var(--text-muted, #9CA3AF);
-          font-size: 0.85rem;
+          color: var(--text-muted);
+          font-size: var(--font-button);
         }
       `}</style>
     </div>

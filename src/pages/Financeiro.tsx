@@ -410,23 +410,23 @@ export default function Financeiro() {
   .header p { margin:0; color:#6B7280; font-size:13px; }
   .period { text-align:right; font-size:13px; color:#6B7280; }
   .cards { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
-  .card { border:1px solid #E5E7EB; border-radius:12px; padding:14px; }
-  .card .label { font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#6B7280; font-weight:600; margin:0 0 4px; }
-  .card .value { font-size:18px; font-weight:800; margin:0; }
+  .card { border:1px solid #E5E7EB; border-radius: var(--radius-md); padding:14px; }
+  .card .label { font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#6B7280; font-weight: var(--fw-semibold); margin:0 0 4px; }
+  .card .value { font-size:18px; font-weight: var(--fw-black); margin:0; }
   .card.in .value { color:#16a34a; }
   .card.out .value { color:#dc2626; }
   .card.profit .value { color:${lucro >= 0 ? "#16a34a" : "#dc2626"}; }
-  .meta-box { border:1px solid #E5E7EB; border-radius:12px; padding:14px; margin-bottom:24px; background:#FFF1F7; }
-  .meta-box .label { font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#FF6FA9; font-weight:700; margin:0 0 4px; }
-  .meta-bar { width:100%; height:14px; background:#fff; border-radius:50px; overflow:hidden; margin-top:8px; }
-  .meta-bar > div { height:100%; background:linear-gradient(90deg, #FF6FA9, #F85A9A); border-radius:50px; }
+  .meta-box { border:1px solid #E5E7EB; border-radius: var(--radius-md); padding:14px; margin-bottom:24px; background:#FFF1F7; }
+  .meta-box .label { font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#FF6FA9; font-weight: var(--fw-bold); margin:0 0 4px; }
+  .meta-bar { width:100%; height:14px; background:#fff; border-radius: var(--radius-full); overflow:hidden; margin-top:8px; }
+  .meta-bar > div { height:100%; background:linear-gradient(90deg, #FF6FA9, #F85A9A); border-radius: var(--radius-full); }
   table { width:100%; border-collapse:collapse; font-size:12px; }
   thead th { text-align:left; padding:10px 8px; background:#F7F7F8; border-bottom:2px solid #E5E7EB; font-size:11px; text-transform:uppercase; color:#6B7280; letter-spacing:0.05em; }
   tbody td { padding:10px 8px; border-bottom:1px solid #F3F4F6; }
-  .val { text-align:right; font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .val { text-align:right; font-weight: var(--fw-bold); font-variant-numeric:tabular-nums; white-space:nowrap; }
   .val.entrada { color:#16a34a; }
   .val.saida { color:#dc2626; }
-  .tag { padding:2px 8px; border-radius:50px; font-size:10px; font-weight:700; }
+  .tag { padding:2px 8px; border-radius: var(--radius-full); font-size:10px; font-weight: var(--fw-bold); }
   .tag-entrada { background:#dcfce7; color:#15803d; }
   .tag-saida { background:#fee2e2; color:#b91c1c; }
   .footer { margin-top:32px; padding-top:14px; border-top:1px solid #E5E7EB; font-size:11px; color:#9CA3AF; text-align:center; }
@@ -434,7 +434,7 @@ export default function Financeiro() {
     body { padding:18px; }
     .no-print { display:none; }
   }
-  .print-btn { position:fixed; top:18px; right:18px; background:linear-gradient(135deg,#FF6FA9,#F85A9A); color:#fff; border:none; padding:10px 20px; border-radius:50px; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(255,111,169,0.4); font-family:inherit; }
+  .print-btn { position:fixed; top:18px; right:18px; background:linear-gradient(135deg,#FF6FA9,#F85A9A); color:#fff; border:none; padding:10px 20px; border-radius: var(--radius-full); font-weight: var(--fw-bold); cursor:pointer; box-shadow:0 4px 14px rgba(255,111,169,0.4); font-family:inherit; }
 </style>
 </head>
 <body>
@@ -570,11 +570,11 @@ export default function Financeiro() {
             <div className="fin-card-icon"><Wallet size={20} weight="bold" /></div>
             <div>
               <p className="fin-card-label">Lucro real</p>
-              <p className="fin-card-value" style={{ color: lucroReal >= 0 ? "var(--success, #22C55E)" : "var(--error, #EF4444)" }}>
+              <p className="fin-card-value" style={{ color: lucroReal >= 0 ? "var(--success)" : "var(--error)" }}>
                 {fmtMoney(lucroReal)}
               </p>
               {cmvTotal > 0 && (
-                <p style={{ fontSize: "0.66rem", color: "var(--text-muted, #9CA3AF)", margin: "1px 0 0", fontWeight: 500 }}>
+                <p style={{ fontSize: "0.66rem", color: "var(--text-muted)", margin: "1px 0 0", fontWeight: 500 }}>
                   bruto: {fmtMoney(lucro)}
                 </p>
               )}
@@ -665,7 +665,7 @@ export default function Financeiro() {
                     <div className="fin-bar fin-bar--out" style={{ height: `${hOut}%` }} />
                   </div>
                   <p className="fin-bar-label">{label}</p>
-                  <p className="fin-bar-sub" style={{ color: lucroMes >= 0 ? "var(--success, #22C55E)" : "var(--error, #EF4444)" }}>
+                  <p className="fin-bar-sub" style={{ color: lucroMes >= 0 ? "var(--success)" : "var(--error)" }}>
                     {lucroMes >= 0 ? "+" : ""}{fmtMoney(lucroMes).replace("R$", "").trim()}
                   </p>
                 </div>
@@ -787,7 +787,7 @@ export default function Financeiro() {
 
             <div className="fin-modal-footer">
               {metaMensal && (
-                <button className="fin-btn-cancel" onClick={removerMeta} style={{ color: "var(--error, #EF4444)", borderColor: "#fee2e2" }}>
+                <button className="fin-btn-cancel" onClick={removerMeta} style={{ color: "var(--error)", borderColor: "#fee2e2" }}>
                   Remover
                 </button>
               )}
@@ -878,22 +878,22 @@ export default function Financeiro() {
 
         /* Header */
         .fin-header { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; }
-        .fin-title { font-size:1.4rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.3rem; letter-spacing:-0.02em; }
-        .fin-sub { font-size:0.86rem; color:var(--text-secondary, #6B7280); margin:0; }
+        .fin-title { font-size: var(--font-page-title); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.3rem; letter-spacing:-0.02em; }
+        .fin-sub { font-size: var(--font-button); color:var(--text-secondary); margin:0; }
 
         .fin-month-nav {
           display:flex; align-items:center; gap:0.5rem;
-          background:var(--bg-card, #FFFFFF); border:1px solid var(--border, #E9E9EE);
-          border-radius:50px; padding:4px 6px;
+          background:var(--bg-card); border:1px solid var(--border);
+          border-radius: var(--radius-full); padding:4px 6px;
         }
         .fin-month-nav button {
           width:32px; height:32px; border-radius:50%;
           background:transparent; border:none; cursor:pointer;
           display:flex; align-items:center; justify-content:center;
-          color:var(--text-secondary, #6B7280); transition:all 0.15s;
+          color:var(--text-secondary); transition:all 0.15s;
         }
-        .fin-month-nav button:hover { background:var(--primary-light, #FFF1F7); color:var(--primary, #FF6FA9); }
-        .fin-month-label { font-size:0.85rem; font-weight:700; color:var(--text-title, #1F2937); padding:0 0.5rem; min-width:140px; text-align:center; }
+        .fin-month-nav button:hover { background:var(--primary-light); color:var(--primary); }
+        .fin-month-label { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--text-title); padding:0 0.5rem; min-width:140px; text-align:center; }
 
         /* Cards de resumo */
         .fin-cards {
@@ -901,9 +901,9 @@ export default function Financeiro() {
           grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
         }
         .fin-summary-card {
-          background:var(--bg-card, #FFFFFF);
-          border:1px solid var(--border, #E9E9EE);
-          border-radius:18px; padding:1.1rem 1.25rem;
+          background:var(--bg-card);
+          border:1px solid var(--border);
+          border-radius: var(--radius-lg); padding:1.1rem 1.25rem;
           display:flex; align-items:center; gap:0.9rem;
           position:relative; overflow:hidden;
           transition:transform 0.18s, box-shadow 0.18s, border-color 0.18s;
@@ -922,7 +922,7 @@ export default function Financeiro() {
         .fin-summary-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(16,24,40,0.06); }
 
         .fin-card-icon {
-          width:42px; height:42px; flex-shrink:0; border-radius:12px;
+          width:42px; height:42px; flex-shrink:0; border-radius: var(--radius-md);
           display:flex; align-items:center; justify-content:center;
           color:#fff; position:relative; z-index:1;
         }
@@ -932,21 +932,21 @@ export default function Financeiro() {
         .fin-card--lucro .fin-card-icon   { background:linear-gradient(135deg,#FF6FA9,#F85A9A); box-shadow:0 4px 12px rgba(255,111,169,0.35); }
         .fin-card--ticket .fin-card-icon  { background:linear-gradient(135deg,#6366f1,#4f46e5); box-shadow:0 4px 12px rgba(99,102,241,0.3); }
 
-        .fin-card-label { font-size:0.74rem; font-weight:600; color:var(--text-secondary, #6B7280); margin:0 0 2px; text-transform:uppercase; letter-spacing:0.06em; }
-        .fin-card-value { font-size:1.2rem; font-weight:800; color:var(--text-title, #1F2937); margin:0; letter-spacing:-0.02em; }
+        .fin-card-label { font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-secondary); margin:0 0 2px; text-transform:uppercase; letter-spacing:0.06em; }
+        .fin-card-value { font-size: var(--font-modal-title); font-weight: var(--fw-black); color:var(--text-title); margin:0; letter-spacing:-0.02em; }
 
         /* Card base */
         .fin-card {
-          background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.4rem;
+          background:var(--bg-card); border-radius: var(--radius-xl); padding:1.4rem;
           box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.05));
-          border:1px solid var(--border, #E9E9EE);
+          border:1px solid var(--border);
           display:flex; flex-direction:column; gap:0.95rem;
           position:relative; overflow:hidden;
         }
         .fin-card::before {
           content:""; position:absolute; top:-60px; right:-60px;
           width:140px; height:140px;
-          background:radial-gradient(circle, var(--primary-light, #FFF1F7) 0%, transparent 70%);
+          background:radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
           pointer-events:none; opacity:0.55;
         }
         .fin-card > * { position:relative; z-index:1; }
@@ -954,17 +954,17 @@ export default function Financeiro() {
         /* Section header */
         .fin-section-header {
           display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap;
-          padding-bottom:1rem; border-bottom:1px solid var(--border, #E9E9EE);
+          padding-bottom:1rem; border-bottom:1px solid var(--border);
         }
         .fin-section-icon {
-          width:36px; height:36px; flex-shrink:0; border-radius:11px;
-          background:var(--primary-light, #FFF1F7); color:var(--primary, #FF6FA9);
+          width:36px; height:36px; flex-shrink:0; border-radius: var(--radius-md);
+          background:var(--primary-light); color:var(--primary);
           display:flex; align-items:center; justify-content:center;
         }
-        .fin-section-label { font-size:0.95rem; font-weight:700; color:var(--text-title, #1F2937); margin:0; letter-spacing:-0.01em; }
-        .fin-section-sub { font-size:0.74rem; color:var(--text-muted, #9CA3AF); margin:0.1rem 0 0; line-height:1.3; }
+        .fin-section-label { font-size: var(--font-input); font-weight: var(--fw-bold); color:var(--text-title); margin:0; letter-spacing:-0.01em; }
+        .fin-section-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0.1rem 0 0; line-height:1.3; }
 
-        .fin-legend { display:flex; gap:0.85rem; margin-left:auto; font-size:0.74rem; color:var(--text-secondary, #6B7280); font-weight:600; }
+        .fin-legend { display:flex; gap:0.85rem; margin-left:auto; font-size: var(--font-helper); color:var(--text-secondary); font-weight: var(--fw-semibold); }
         .fin-legend span { display:inline-flex; align-items:center; gap:5px; }
         .fin-dot { width:10px; height:10px; border-radius:3px; display:inline-block; }
         .fin-dot--in { background:linear-gradient(180deg,#22c55e,#16a34a); }
@@ -981,25 +981,25 @@ export default function Financeiro() {
           width:100%; height:140px;
         }
         .fin-bar {
-          flex:1; border-radius:6px 6px 0 0; min-height:4px;
+          flex:1; border-radius: var(--radius-sm) 6px 0 0; min-height:4px;
           transition:height 0.4s cubic-bezier(.32,.72,.32,1);
         }
         .fin-bar--in { background:linear-gradient(180deg,#22c55e,#16a34a); box-shadow:0 2px 6px rgba(34,197,94,0.25); }
         .fin-bar--out { background:linear-gradient(180deg,#ef4444,#dc2626); box-shadow:0 2px 6px rgba(239,68,68,0.25); }
         .fin-bar-label {
-          font-size:0.72rem; font-weight:700;
-          color:var(--text-secondary, #6B7280); margin:0;
+          font-size: var(--font-caption); font-weight: var(--fw-bold);
+          color:var(--text-secondary); margin:0;
           text-transform:capitalize;
         }
-        .fin-bar-sub { font-size:0.7rem; font-weight:700; margin:0; }
+        .fin-bar-sub { font-size: var(--font-caption); font-weight: var(--fw-bold); margin:0; }
 
         /* Botão + */
         .fin-btn-add {
           display:inline-flex; align-items:center; gap:5px;
           padding:0.5rem 1rem;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
-          color:#fff; border:none; border-radius:50px;
-          font-family:inherit; font-size:0.78rem; font-weight:700;
+          background:var(--primary-gradient);
+          color:#fff; border:none; border-radius: var(--radius-full);
+          font-family:inherit; font-size: var(--font-helper); font-weight: var(--fw-bold);
           cursor:pointer; white-space:nowrap;
           box-shadow:0 2px 8px rgba(255,111,169,0.3);
           transition:transform 0.15s, box-shadow 0.15s;
@@ -1009,36 +1009,36 @@ export default function Financeiro() {
         /* Tabs */
         .fin-tabs {
           display:flex; gap:4px; padding:4px;
-          background:var(--bg-body, #F7F7F8); border-radius:14px;
-          border:1px solid var(--border, #E9E9EE);
+          background:var(--bg-body); border-radius: var(--radius-lg);
+          border:1px solid var(--border);
         }
         .fin-tab {
           flex:1; display:inline-flex; align-items:center; justify-content:center; gap:6px;
           padding:0.55rem 0.85rem; border:none; background:transparent;
-          font-family:inherit; font-size:0.82rem; font-weight:600;
-          color:var(--text-secondary, #6B7280); cursor:pointer; border-radius:10px;
+          font-family:inherit; font-size: var(--font-helper); font-weight: var(--fw-semibold);
+          color:var(--text-secondary); cursor:pointer; border-radius: var(--radius-md);
           transition:all 0.2s;
         }
-        .fin-tab:hover { color:var(--primary, #FF6FA9); }
+        .fin-tab:hover { color:var(--primary); }
         .fin-tab--active {
-          background:var(--bg-card, #FFFFFF); color:var(--primary, #FF6FA9);
-          box-shadow:0 1px 4px rgba(0,0,0,0.08); font-weight:700;
+          background:var(--bg-card); color:var(--primary);
+          box-shadow:0 1px 4px rgba(0,0,0,0.08); font-weight: var(--fw-bold);
         }
         .fin-tab-pill {
-          margin-left:auto; padding:2px 8px; border-radius:50px;
-          background:var(--bg-body, #F7F7F8); color:var(--text-secondary, #6B7280);
-          font-size:0.7rem; font-weight:700;
+          margin-left:auto; padding:2px 8px; border-radius: var(--radius-full);
+          background:var(--bg-body); color:var(--text-secondary);
+          font-size: var(--font-caption); font-weight: var(--fw-bold);
         }
-        .fin-tab--active .fin-tab-pill { background:var(--primary-light, #FFF1F7); color:var(--primary, #FF6FA9); }
+        .fin-tab--active .fin-tab-pill { background:var(--primary-light); color:var(--primary); }
 
         /* Lista */
         .fin-list { display:flex; flex-direction:column; gap:0.5rem; }
         .fin-item {
           display:flex; align-items:center; gap:0.85rem;
           padding:0.85rem 1rem;
-          background:var(--bg-card, #FFFFFF);
-          border:1px solid var(--border, #E9E9EE);
-          border-radius:14px; transition:all 0.18s;
+          background:var(--bg-card);
+          border:1px solid var(--border);
+          border-radius: var(--radius-lg); transition:all 0.18s;
           position:relative; overflow:hidden;
         }
         .fin-item::before {
@@ -1058,28 +1058,28 @@ export default function Financeiro() {
 
         .fin-item-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:0.3rem; }
         .fin-item-desc {
-          font-size:0.88rem; font-weight:600; color:var(--text-title, #1F2937);
+          font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-title);
           margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
         }
         .fin-item-meta { display:flex; flex-wrap:wrap; gap:5px; }
         .fin-item-tag {
           display:inline-flex; align-items:center; gap:3px;
-          font-size:0.68rem; padding:2px 7px; border-radius:50px;
-          background:var(--bg-body, #F7F7F8); color:var(--text-secondary, #6B7280);
-          border:1px solid var(--border, #E9E9EE); font-weight:600;
+          font-size: var(--font-caption); padding:2px 7px; border-radius: var(--radius-full);
+          background:var(--bg-body); color:var(--text-secondary);
+          border:1px solid var(--border); font-weight: var(--fw-semibold);
         }
         .fin-item-tag--auto {
-          background:var(--primary-light, #FFF1F7);
-          color:var(--primary-dark, #F85A9A);
+          background:var(--primary-light);
+          color:var(--primary-dark);
           border-color:rgba(255,111,169,0.3);
         }
-        .fin-item-tag--margem { font-weight:700; }
+        .fin-item-tag--margem { font-weight: var(--fw-bold); }
         .fin-item-tag--margem-alto { background:#dcfce7; color:#15803d; border-color:#bbf7d0; }
         .fin-item-tag--margem-medio { background:#fef3c7; color:#a16207; border-color:#fde68a; }
         .fin-item-tag--margem-baixo { background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
-        .fin-item-tag--alerta { background:#fef3c7; color:#92400e; border-color:#fde68a; font-weight:600; }
+        .fin-item-tag--alerta { background:#fef3c7; color:#92400e; border-color:#fde68a; font-weight: var(--fw-semibold); }
         .fin-item-valor {
-          font-size:1rem; font-weight:800; margin:0; white-space:nowrap;
+          font-size: var(--font-input); font-weight: var(--fw-black); margin:0; white-space:nowrap;
           font-variant-numeric:tabular-nums;
         }
         .fin-item--entrada .fin-item-valor { color:#16a34a; }
@@ -1087,33 +1087,33 @@ export default function Financeiro() {
 
         .fin-item-actions { display:flex; gap:4px; }
         .fin-item-actions button {
-          width:30px; height:30px; border-radius:8px;
-          background:var(--bg-body, #F7F7F8); border:1px solid var(--border, #E9E9EE);
-          color:var(--text-secondary, #6B7280); cursor:pointer;
+          width:30px; height:30px; border-radius: var(--radius-sm);
+          background:var(--bg-body); border:1px solid var(--border);
+          color:var(--text-secondary); cursor:pointer;
           display:flex; align-items:center; justify-content:center; transition:all 0.15s;
         }
-        .fin-item-actions button:hover { background:var(--primary-light, #FFF1F7); border-color:var(--primary, #FF6FA9); color:var(--primary, #FF6FA9); }
-        .fin-item-actions .fin-item-del:hover { background:#fee2e2; border-color:#fca5a5; color:var(--error, #EF4444); }
+        .fin-item-actions button:hover { background:var(--primary-light); border-color:var(--primary); color:var(--primary); }
+        .fin-item-actions .fin-item-del:hover { background:#fee2e2; border-color:#fca5a5; color:var(--error); }
 
         /* Empty */
         .fin-empty {
           display:flex; flex-direction:column; align-items:center; gap:0.65rem;
           padding:2rem 1rem; text-align:center;
-          background:var(--bg-body, #F7F7F8); border-radius:14px;
-          border:1.5px dashed var(--border, #E9E9EE);
+          background:var(--bg-body); border-radius: var(--radius-lg);
+          border:1.5px dashed var(--border);
         }
         .fin-empty-icon {
           width:50px; height:50px; border-radius:50%;
-          background:var(--primary-light, #FFF1F7); color:var(--primary, #FF6FA9);
+          background:var(--primary-light); color:var(--primary);
           display:flex; align-items:center; justify-content:center;
         }
-        .fin-empty-text { font-size:0.83rem; color:var(--text-secondary, #6B7280); margin:0; max-width:340px; line-height:1.45; }
+        .fin-empty-text { font-size: var(--font-helper); color:var(--text-secondary); margin:0; max-width:340px; line-height:1.45; }
 
         /* Loading */
         .fin-loading { display:flex; justify-content:center; padding:2rem; }
         .fin-spinner {
           width:28px; height:28px;
-          border:3px solid var(--primary-light, #FFF1F7); border-top-color:var(--primary, #FF6FA9);
+          border:3px solid var(--primary-light); border-top-color:var(--primary);
           border-radius:50%; animation:finspin 0.7s linear infinite;
         }
 
@@ -1124,7 +1124,7 @@ export default function Financeiro() {
           z-index:9999; padding:1rem; animation:finFadeIn 0.2s ease;
         }
         .fin-modal {
-          background:var(--bg-card, #FFFFFF); border-radius:20px;
+          background:var(--bg-card); border-radius: var(--radius-xl);
           width:100%; max-width:480px;
           display:flex; flex-direction:column;
           box-shadow:0 20px 60px rgba(0,0,0,0.25);
@@ -1132,61 +1132,61 @@ export default function Financeiro() {
         }
         .fin-modal-header {
           display:flex; align-items:center; justify-content:space-between;
-          padding:1.1rem 1.4rem; border-bottom:1px solid var(--border, #E9E9EE);
+          padding:1.1rem 1.4rem; border-bottom:1px solid var(--border);
         }
         .fin-modal-header h3 {
-          font-size:1.05rem; font-weight:700; color:var(--text-title, #1F2937);
+          font-size: var(--font-modal-title); font-weight: var(--fw-bold); color:var(--text-title);
           margin:0; letter-spacing:-0.01em;
         }
         .fin-modal-header button {
           width:32px; height:32px; border-radius:50%;
-          background:var(--bg-body, #F7F7F8); border:none; cursor:pointer;
-          color:var(--text-secondary, #6B7280);
+          background:var(--bg-body); border:none; cursor:pointer;
+          color:var(--text-secondary);
           display:flex; align-items:center; justify-content:center; transition:all 0.15s;
         }
-        .fin-modal-header button:hover { background:var(--primary-light, #FFF1F7); color:var(--primary, #FF6FA9); }
+        .fin-modal-header button:hover { background:var(--primary-light); color:var(--primary); }
 
         .fin-modal-body { padding:1.25rem 1.4rem; display:flex; flex-direction:column; gap:0.9rem; overflow-y:auto; }
         .fin-form-field { display:flex; flex-direction:column; gap:0.35rem; }
-        .fin-form-field label { font-size:0.76rem; font-weight:700; color:var(--text-primary, #374151); margin:0; }
+        .fin-form-field label { font-size: var(--font-helper); font-weight: var(--fw-bold); color:var(--text-primary); margin:0; }
         .fin-form-row { display:flex; gap:0.6rem; }
         @media (max-width:520px) { .fin-form-row { flex-direction:column; } }
 
         .fin-input {
           width:100%; padding:0.7rem 0.95rem;
-          border:1.5px solid var(--border, #E9E9EE); border-radius:10px;
-          font-family:'Geist', sans-serif; font-size:0.88rem;
-          color:var(--text-title, #1F2937); outline:none;
-          box-sizing:border-box; background:var(--bg-input, #FFFFFF);
+          border:1.5px solid var(--border); border-radius: var(--radius-md);
+          font-family:'Geist', sans-serif; font-size: var(--font-button);
+          color:var(--text-title); outline:none;
+          box-sizing:border-box; background:var(--bg-input);
           transition:border-color 0.15s, box-shadow 0.15s;
         }
-        .fin-input:hover { border-color:var(--text-muted, #9CA3AF); }
-        .fin-input:focus { border-color:var(--primary, #FF6FA9); box-shadow:0 0 0 3px rgba(255,111,169,0.12); }
+        .fin-input:hover { border-color:var(--text-muted); }
+        .fin-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(255,111,169,0.12); }
 
         .fin-money-row { display:flex; align-items:center; gap:0.4rem; }
-        .fin-prefix { font-size:0.85rem; font-weight:600; color:var(--text-secondary, #6B7280); flex-shrink:0; }
+        .fin-prefix { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-secondary); flex-shrink:0; }
 
         .fin-modal-footer {
           display:flex; gap:0.5rem; padding:1rem 1.4rem;
-          border-top:1px solid var(--border, #E9E9EE);
-          background:var(--bg-body, #F7F7F8);
+          border-top:1px solid var(--border);
+          background:var(--bg-body);
           border-radius:0 0 20px 20px;
         }
         .fin-btn-cancel {
           flex:1; padding:0.7rem 1rem;
-          background:var(--bg-card, #FFFFFF);
-          border:1.5px solid var(--border, #E9E9EE);
-          border-radius:50px; font-family:inherit;
-          font-size:0.85rem; font-weight:600;
-          color:var(--text-secondary, #6B7280); cursor:pointer;
+          background:var(--bg-card);
+          border:1.5px solid var(--border);
+          border-radius: var(--radius-full); font-family:inherit;
+          font-size: var(--font-button); font-weight: var(--fw-semibold);
+          color:var(--text-secondary); cursor:pointer;
           transition:all 0.15s;
         }
-        .fin-btn-cancel:hover { border-color:var(--text-muted, #9CA3AF); }
+        .fin-btn-cancel:hover { border-color:var(--text-muted); }
         .fin-btn-save {
           flex:2; padding:0.7rem 1rem;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
-          color:#fff; border:none; border-radius:50px;
-          font-family:inherit; font-size:0.85rem; font-weight:700;
+          background:var(--primary-gradient);
+          color:#fff; border:none; border-radius: var(--radius-full);
+          font-family:inherit; font-size: var(--font-button); font-weight: var(--fw-bold);
           cursor:pointer; box-shadow:0 3px 10px rgba(255,111,169,0.3);
           transition:transform 0.15s, box-shadow 0.15s;
         }
@@ -1201,24 +1201,24 @@ export default function Financeiro() {
         .fin-btn-export {
           display:inline-flex; align-items:center; gap:6px;
           padding:0.55rem 1rem;
-          background:var(--bg-card, #FFFFFF);
-          border:1.5px solid var(--border, #E9E9EE);
-          border-radius:50px;
-          font-family:inherit; font-size:0.82rem; font-weight:700;
-          color:var(--text-primary, #374151); cursor:pointer;
+          background:var(--bg-card);
+          border:1.5px solid var(--border);
+          border-radius: var(--radius-full);
+          font-family:inherit; font-size: var(--font-helper); font-weight: var(--fw-bold);
+          color:var(--text-primary); cursor:pointer;
           transition:all 0.15s;
         }
         .fin-btn-export:hover {
-          border-color:var(--primary, #FF6FA9);
-          color:var(--primary, #FF6FA9);
-          background:var(--primary-light, #FFF1F7);
+          border-color:var(--primary);
+          color:var(--primary);
+          background:var(--primary-light);
         }
         .fin-export-backdrop { position:fixed; inset:0; z-index:50; }
         .fin-export-menu {
           position:absolute; top:calc(100% + 6px); right:0; z-index:51;
-          background:var(--bg-card, #FFFFFF);
-          border:1px solid var(--border, #E9E9EE);
-          border-radius:14px; padding:6px;
+          background:var(--bg-card);
+          border:1px solid var(--border);
+          border-radius: var(--radius-lg); padding:6px;
           min-width:240px;
           box-shadow:0 12px 32px rgba(16,24,40,0.12);
           animation:finFadeIn 0.18s ease;
@@ -1227,19 +1227,19 @@ export default function Financeiro() {
         .fin-export-menu button {
           display:flex; align-items:center; gap:0.7rem;
           padding:0.7rem 0.85rem; background:transparent; border:none;
-          border-radius:10px; cursor:pointer; text-align:left;
-          color:var(--text-primary, #374151); transition:background 0.15s;
+          border-radius: var(--radius-md); cursor:pointer; text-align:left;
+          color:var(--text-primary); transition:background 0.15s;
           font-family:inherit;
         }
-        .fin-export-menu button:hover { background:var(--primary-light, #FFF1F7); color:var(--primary, #FF6FA9); }
-        .fin-export-title { font-size:0.85rem; font-weight:700; margin:0; }
-        .fin-export-sub { font-size:0.72rem; color:var(--text-muted, #9CA3AF); margin:1px 0 0; }
+        .fin-export-menu button:hover { background:var(--primary-light); color:var(--primary); }
+        .fin-export-title { font-size: var(--font-button); font-weight: var(--fw-bold); margin:0; }
+        .fin-export-sub { font-size: var(--font-caption); color:var(--text-muted); margin:1px 0 0; }
 
         /* ── Meta card (com meta definida) ── */
         .fin-meta-card {
           background:linear-gradient(135deg, #FFE4F0 0%, #FFF1F7 100%);
           border:1px solid rgba(255,111,169,0.25);
-          border-radius:20px; padding:1.4rem;
+          border-radius: var(--radius-xl); padding:1.4rem;
           position:relative; overflow:hidden;
           display:flex; flex-direction:column; gap:0.85rem;
         }
@@ -1252,23 +1252,23 @@ export default function Financeiro() {
         .fin-meta-top { display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; position:relative; z-index:1; }
         .fin-meta-title { display:flex; gap:0.7rem; align-items:flex-start; flex:1; min-width:0; }
         .fin-meta-icon {
-          width:42px; height:42px; flex-shrink:0; border-radius:12px;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          width:42px; height:42px; flex-shrink:0; border-radius: var(--radius-md);
+          background:var(--primary-gradient);
           color:#fff; display:flex; align-items:center; justify-content:center;
           box-shadow:0 4px 12px rgba(255,111,169,0.35);
         }
         .fin-meta-label {
-          font-size:0.7rem; font-weight:700; color:var(--primary-dark, #F85A9A);
+          font-size: var(--font-caption); font-weight: var(--fw-bold); color:var(--primary-dark);
           margin:0 0 2px; text-transform:uppercase; letter-spacing:0.08em;
         }
-        .fin-meta-msg { font-size:0.85rem; font-weight:600; color:var(--text-title, #1F2937); margin:0; line-height:1.3; }
+        .fin-meta-msg { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-title); margin:0; line-height:1.3; }
 
         .fin-meta-edit {
           display:inline-flex; align-items:center; gap:4px;
           padding:5px 12px; background:rgba(255,255,255,0.7);
-          border:1px solid rgba(255,111,169,0.3); border-radius:50px;
-          font-family:inherit; font-size:0.72rem; font-weight:700;
-          color:var(--primary, #FF6FA9); cursor:pointer;
+          border:1px solid rgba(255,111,169,0.3); border-radius: var(--radius-full);
+          font-family:inherit; font-size: var(--font-caption); font-weight: var(--fw-bold);
+          color:var(--primary); cursor:pointer;
           transition:background 0.15s;
         }
         .fin-meta-edit:hover { background:#fff; }
@@ -1278,22 +1278,22 @@ export default function Financeiro() {
           position:relative; z-index:1;
         }
         .fin-meta-current {
-          font-size:1.8rem; font-weight:800;
-          color:var(--primary-dark, #F85A9A);
+          font-size: var(--text-2xl); font-weight: var(--fw-black);
+          color:var(--primary-dark);
           letter-spacing:-0.02em;
           font-variant-numeric:tabular-nums;
         }
-        .fin-meta-sep { font-size:0.85rem; color:var(--text-secondary, #6B7280); font-weight:500; }
+        .fin-meta-sep { font-size: var(--font-button); color:var(--text-secondary); font-weight: var(--fw-medium); }
         .fin-meta-target {
-          font-size:1.05rem; font-weight:700;
-          color:var(--text-primary, #374151);
+          font-size: var(--font-modal-title); font-weight: var(--fw-bold);
+          color:var(--text-primary);
           font-variant-numeric:tabular-nums;
         }
         .fin-meta-pct {
           margin-left:auto; padding:4px 11px;
-          background:#fff; border-radius:50px;
-          font-size:0.85rem; font-weight:800;
-          color:var(--primary, #FF6FA9);
+          background:#fff; border-radius: var(--radius-full);
+          font-size: var(--font-button); font-weight: var(--fw-black);
+          color:var(--primary);
           box-shadow:0 2px 6px rgba(255,111,169,0.18);
         }
 
@@ -1302,13 +1302,13 @@ export default function Financeiro() {
           position:relative; z-index:1;
           width:100%; height:16px;
           background:rgba(255,255,255,0.7);
-          border-radius:50px; overflow:hidden;
+          border-radius: var(--radius-full); overflow:hidden;
           box-shadow:inset 0 1px 3px rgba(0,0,0,0.05);
         }
         .fin-thermo-fill {
           height:100%;
-          background:var(--primary-gradient, linear-gradient(90deg, #FF6FA9, #F85A9A));
-          border-radius:50px;
+          background:var(--primary-gradient);
+          border-radius: var(--radius-full);
           transition:width 0.6s cubic-bezier(.32,.72,.32,1);
           display:flex; align-items:center; justify-content:flex-end;
           padding-right:6px; color:#fff;
@@ -1322,37 +1322,37 @@ export default function Financeiro() {
         @keyframes sparkPulse { 0%,100%{transform:scale(1); opacity:0.85} 50%{transform:scale(1.3); opacity:1} }
 
         .fin-meta-faltam {
-          font-size:0.78rem; color:var(--text-secondary, #6B7280);
+          font-size: var(--font-helper); color:var(--text-secondary);
           margin:0; position:relative; z-index:1;
         }
-        .fin-meta-faltam strong { color:var(--primary-dark, #F85A9A); font-weight:700; }
+        .fin-meta-faltam strong { color:var(--primary-dark); font-weight: var(--fw-bold); }
 
         /* ── Meta empty (sem meta definida) ── */
         .fin-meta-empty {
           display:flex; align-items:center; gap:0.85rem; padding:1.1rem 1.4rem;
-          background:var(--bg-card, #FFFFFF);
+          background:var(--bg-card);
           border:1.5px dashed rgba(255,111,169,0.4);
-          border-radius:20px; cursor:pointer;
+          border-radius: var(--radius-xl); cursor:pointer;
           font-family:inherit; transition:all 0.18s; width:100%;
           color:inherit;
         }
         .fin-meta-empty:hover {
-          background:var(--primary-light, #FFF1F7);
-          border-color:var(--primary, #FF6FA9);
+          background:var(--primary-light);
+          border-color:var(--primary);
           transform:translateY(-1px);
         }
         .fin-meta-empty-icon {
           width:44px; height:44px; flex-shrink:0; border-radius:50%;
-          background:var(--primary-light, #FFF1F7); color:var(--primary, #FF6FA9);
+          background:var(--primary-light); color:var(--primary);
           display:flex; align-items:center; justify-content:center;
         }
-        .fin-meta-empty-title { font-size:0.95rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 2px; }
-        .fin-meta-empty-sub { font-size:0.78rem; color:var(--text-secondary, #6B7280); margin:0; }
+        .fin-meta-empty-title { font-size: var(--font-input); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 2px; }
+        .fin-meta-empty-sub { font-size: var(--font-helper); color:var(--text-secondary); margin:0; }
         .fin-meta-empty-cta {
           padding:0.5rem 1rem;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
-          color:#fff; border-radius:50px;
-          font-size:0.8rem; font-weight:700; white-space:nowrap;
+          background:var(--primary-gradient);
+          color:#fff; border-radius: var(--radius-full);
+          font-size: var(--font-helper); font-weight: var(--fw-bold); white-space:nowrap;
           box-shadow:0 2px 8px rgba(255,111,169,0.3);
         }
 
@@ -1360,11 +1360,11 @@ export default function Financeiro() {
         .fin-meta-help {
           display:flex; gap:0.85rem; align-items:flex-start;
           padding:0.95rem;
-          background:var(--primary-light, #FFF1F7);
-          border-radius:14px;
-          color:var(--primary-dark, #F85A9A);
+          background:var(--primary-light);
+          border-radius: var(--radius-lg);
+          color:var(--primary-dark);
         }
-        .fin-meta-help p { margin:0; font-size:0.82rem; line-height:1.45; color:var(--text-primary, #374151); }
+        .fin-meta-help p { margin:0; font-size: var(--font-helper); line-height:1.45; color:var(--text-primary); }
 
         /* Mobile */
         @media (max-width:640px) {
@@ -1376,13 +1376,13 @@ export default function Financeiro() {
           .fin-month-nav { align-self:stretch; justify-content:space-between; }
           .fin-month-label { flex:1; }
           .fin-cards { grid-template-columns:1fr 1fr; }
-          .fin-card-value { font-size:1.05rem; }
+          .fin-card-value { font-size: var(--font-modal-title); }
           .fin-chart { gap:0.4rem; height:180px; }
           .fin-bars { height:120px; }
           .fin-bar-sub { display:none; }
           .fin-legend { width:100%; margin-left:0; justify-content:flex-start; }
           .fin-item-meta { display:none; }
-          .fin-meta-current { font-size:1.5rem; }
+          .fin-meta-current { font-size: var(--text-xl); }
           .fin-meta-pct { margin-left:0; }
           .fin-meta-empty { flex-direction:column; text-align:center; }
           .fin-meta-empty-cta { width:100%; text-align:center; padding:0.65rem; }

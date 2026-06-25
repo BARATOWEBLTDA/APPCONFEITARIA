@@ -212,7 +212,7 @@ export default function CheckoutConfigPage() {
   if (loading) return (
     <div style={{display:'flex',alignItems:'center',justifyContent:'center',minHeight:'40vh'}}>
       <div className="chk-spinner" />
-      <style>{`@keyframes chkspin{to{transform:rotate(360deg)}} .chk-spinner{width:32px;height:32px;border:3px solid var(--primary-light, #FFF1F7);border-top-color:var(--primary, #FF6FA9);border-radius:50%;animation:chkspin 0.7s linear infinite}`}</style>
+      <style>{`@keyframes chkspin{to{transform:rotate(360deg)}} .chk-spinner{width:32px;height:32px;border:3px solid var(--primary-light);border-top-color:var(--primary);border-radius:50%;animation:chkspin 0.7s linear infinite}`}</style>
     </div>
   )
 
@@ -539,9 +539,9 @@ export default function CheckoutConfigPage() {
 
         .chk-root { font-family:'Geist', sans-serif; width:100%; display:flex; flex-direction:column; gap:1.25rem; }
         .chk-header { display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; padding:0.5rem 0; }
-        .chk-title { font-size:1.4rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.3rem; letter-spacing:-0.02em; }
-        .chk-sub { font-size:0.86rem; color:var(--text-secondary, #6B7280); margin:0; }
-        .chk-autosave { display:inline-flex; align-items:center; gap:0.35rem; font-size:0.76rem; font-weight:600; color:var(--success, #22C55E); background:#f0fdf4; padding:0.32rem 0.8rem; border-radius:50px; border:1px solid #dcfce7; animation:chkFadeIn 0.3s ease; }
+        .chk-title { font-size: var(--font-page-title); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.3rem; letter-spacing:-0.02em; }
+        .chk-sub { font-size: var(--font-button); color:var(--text-secondary); margin:0; }
+        .chk-autosave { display:inline-flex; align-items:center; gap:0.35rem; font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--success); background:#f0fdf4; padding:0.32rem 0.8rem; border-radius: var(--radius-full); border:1px solid #dcfce7; animation:chkFadeIn 0.3s ease; }
 
         /* ── Grid ── */
         .chk-grid { display:flex; flex-direction:column; gap:1.25rem; }
@@ -552,18 +552,18 @@ export default function CheckoutConfigPage() {
 
         /* ── Card ── */
         .chk-card {
-          background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.4rem;
+          background:var(--bg-card); border-radius: var(--radius-xl); padding:1.4rem;
           box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.05));
-          border:1px solid var(--border, #E9E9EE);
+          border:1px solid var(--border);
           display:flex; flex-direction:column; gap:0.85rem;
           width:100%; box-sizing:border-box;
           position:relative; overflow:hidden;
-          transition:box-shadow 0.2s ease, border-color 0.2s ease;
+          transition: box-shadow var(--dur-normal) var(--ease-out), border-color 0.2s ease;
         }
         .chk-card::before {
           content:""; position:absolute; top:-60px; right:-60px;
           width:140px; height:140px;
-          background:radial-gradient(circle, var(--primary-light, #FFF1F7) 0%, transparent 70%);
+          background:radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
           pointer-events:none; opacity:0.7;
         }
         .chk-card:hover {
@@ -573,81 +573,81 @@ export default function CheckoutConfigPage() {
         .chk-card > * { position:relative; z-index:1; }
 
         /* ── Section header ── */
-        .chk-section-header { display:flex; align-items:center; gap:0.7rem; padding-bottom:1rem; border-bottom:1px solid var(--border, #E9E9EE); }
+        .chk-section-header { display:flex; align-items:center; gap:0.7rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
         .chk-section-icon {
-          width:36px; height:36px; flex-shrink:0; border-radius:11px;
-          background:var(--primary-light, #FFF1F7); color:var(--primary, #FF6FA9);
+          width:36px; height:36px; flex-shrink:0; border-radius: var(--radius-md);
+          background:var(--primary-light); color:var(--primary);
           display:flex; align-items:center; justify-content:center;
         }
-        .chk-section-label { font-size:0.95rem; font-weight:700; color:var(--text-title, #1F2937); margin:0; letter-spacing:-0.01em; }
-        .chk-section-sub { font-size:0.74rem; color:var(--text-muted, #9CA3AF); margin:0.1rem 0 0; line-height:1.3; }
+        .chk-section-label { font-size: var(--font-input); font-weight: var(--fw-bold); color:var(--text-title); margin:0; letter-spacing:-0.01em; }
+        .chk-section-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0.1rem 0 0; line-height:1.3; }
 
-        .chk-sublabel { margin:0; font-size:0.82rem; font-weight:600; color:var(--text-primary, #374151); }
-        .chk-muted { font-size:0.82rem; color:var(--text-muted, #9CA3AF); }
-        .chk-divider { border:none; border-top:1px solid var(--border, #E9E9EE); margin:0.25rem 0; }
+        .chk-sublabel { margin:0; font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-primary); }
+        .chk-muted { font-size: var(--font-helper); color:var(--text-muted); }
+        .chk-divider { border:none; border-top:1px solid var(--border); margin:0.25rem 0; }
         .chk-row-between { display:flex; align-items:center; justify-content:space-between; gap:0.5rem; }
 
         /* ── Checklist (Check component) ── */
         .chk-list { display:flex; flex-direction:column; gap:0.45rem; }
         .chk-check {
           display:flex; align-items:center; gap:0.75rem;
-          padding:0.72rem 0.9rem; border-radius:12px;
-          border:1.5px solid var(--border, #E9E9EE);
-          background:var(--bg-card, #FFFFFF);
+          padding:0.72rem 0.9rem; border-radius: var(--radius-md);
+          border:1.5px solid var(--border);
+          background:var(--bg-card);
           cursor:pointer; transition:all 0.18s;
         }
         .chk-check:hover {
           border-color:rgba(255,111,169,0.45);
-          background:var(--primary-light, #FFF1F7);
+          background:var(--primary-light);
           transform:translateY(-1px);
         }
         .chk-check--active {
-          border-color:var(--primary, #FF6FA9);
-          background:var(--primary-light, #FFF1F7);
+          border-color:var(--primary);
+          background:var(--primary-light);
           box-shadow:0 2px 8px rgba(255,111,169,0.12);
         }
         .chk-check-label {
-          flex:1; font-size:0.88rem; font-weight:500;
-          color:var(--text-primary, #374151);
+          flex:1; font-size: var(--font-button); font-weight: var(--fw-medium);
+          color:var(--text-primary);
         }
         .chk-check--active .chk-check-label {
-          font-weight:700; color:var(--primary-dark, #F85A9A);
+          font-weight: var(--fw-bold); color:var(--primary-dark);
         }
         .chk-checkbox {
-          width:22px; height:22px; border-radius:7px;
-          border:2px solid var(--border, #E9E9EE);
+          width:22px; height:22px; border-radius: var(--radius-sm);
+          border:2px solid var(--border);
           background:transparent;
           display:flex; align-items:center; justify-content:center;
           transition:all 0.18s; flex-shrink:0;
         }
         .chk-check--active .chk-checkbox {
           border-color:transparent;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          background:var(--primary-gradient);
           box-shadow:0 2px 6px rgba(255,111,169,0.32);
         }
 
         /* ── Input ── */
         .chk-input {
           width:100%; padding:0.65rem 0.95rem;
-          border:1.5px solid var(--border, #E9E9EE); border-radius:10px;
-          font-family:'Geist', sans-serif; font-size:0.88rem;
-          color:var(--text-title, #1F2937); outline:none;
-          box-sizing:border-box; background:var(--bg-input, #FFFFFF);
+          border:1.5px solid var(--border); border-radius: var(--radius-md);
+          font-family:'Geist', sans-serif; font-size: var(--font-button);
+          color:var(--text-title); outline:none;
+          box-sizing:border-box; background:var(--bg-input);
           transition:border-color 0.15s, box-shadow 0.15s;
         }
-        .chk-input:hover { border-color:var(--text-muted, #9CA3AF); }
-        .chk-input:focus { border-color:var(--primary, #FF6FA9); box-shadow:0 0 0 3px rgba(255,111,169,0.12); }
+        .chk-input:hover { border-color:var(--text-muted); }
+        .chk-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(255,111,169,0.12); }
 
         .chk-money-row { display:flex; align-items:center; gap:0.4rem; }
-        .chk-prefix { font-size:0.85rem; font-weight:600; color:var(--text-secondary, #6B7280); flex-shrink:0; }
+        .chk-prefix { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-secondary); flex-shrink:0; }
 
         /* ── Bairro row ── */
         .chk-bairro-row { display:flex; gap:0.5rem; align-items:center; }
         .chk-btn-remove {
           padding:0.5rem; background:#fff5f5;
-          border:1.5px solid #fee2e2; border-radius:10px;
+          border:1.5px solid #fee2e2; border-radius: var(--radius-md);
           cursor:pointer; display:flex; align-items:center; justify-content:center;
-          color:var(--error, #EF4444); transition:all 0.15s; flex-shrink:0;
+          color:var(--error); transition:all 0.15s; flex-shrink:0;
         }
         .chk-btn-remove:hover { background:#fee2e2; border-color:#fca5a5; }
 
@@ -655,9 +655,9 @@ export default function CheckoutConfigPage() {
         .chk-btn-add {
           display:inline-flex; align-items:center; gap:5px;
           padding:0.45rem 0.95rem;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
-          color:#fff; border:none; border-radius:50px;
-          font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:700;
+          background:var(--primary-gradient);
+          color:#fff; border:none; border-radius: var(--radius-full);
+          font-family:'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-bold);
           cursor:pointer; white-space:nowrap;
           box-shadow:0 2px 8px rgba(255,111,169,0.3);
           transition:transform 0.15s, box-shadow 0.15s;
@@ -666,84 +666,84 @@ export default function CheckoutConfigPage() {
 
         /* ── Toggle ── */
         .chk-toggle-row { display:flex; justify-content:space-between; align-items:center; gap:1rem; }
-        .chk-toggle-label { margin:0; font-size:0.86rem; font-weight:600; color:var(--text-primary, #374151); }
-        .chk-toggle-sub { margin:0.1rem 0 0; font-size:0.72rem; color:var(--text-muted, #9CA3AF); }
+        .chk-toggle-label { margin:0; font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-primary); }
+        .chk-toggle-sub { margin:0.1rem 0 0; font-size: var(--font-caption); color:var(--text-muted); }
         .chk-toggle { position:relative; display:inline-block; width:44px; height:24px; flex-shrink:0; }
         .chk-toggle input { opacity:0; width:0; height:0; }
         .chk-toggle-slider {
           position:absolute; cursor:pointer; inset:0;
-          background:var(--border, #E9E9EE); border-radius:24px; transition:0.25s;
+          background:var(--border); border-radius: var(--radius-xl); transition:0.25s;
         }
         .chk-toggle-slider:before {
           content:""; position:absolute; height:18px; width:18px;
-          left:3px; bottom:3px; background:var(--bg-card, #FFFFFF);
+          left:3px; bottom:3px; background:var(--bg-card);
           border-radius:50%; transition:0.25s;
           box-shadow:0 1px 3px rgba(0,0,0,0.2);
         }
         .chk-toggle input:checked + .chk-toggle-slider {
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          background:var(--primary-gradient);
         }
         .chk-toggle input:checked + .chk-toggle-slider:before { transform:translateX(20px); }
 
         /* ── Prazo agendamento ── */
         .chk-prazo-row {
           display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;
-          font-size:0.84rem; font-weight:500; color:var(--text-primary, #374151);
-          padding:0.7rem 0.85rem; background:var(--primary-light, #FFF1F7);
-          border-radius:12px; border:1px dashed rgba(255,111,169,0.35);
+          font-size: var(--font-button); font-weight: var(--fw-medium); color:var(--text-primary);
+          padding:0.7rem 0.85rem; background:var(--primary-light);
+          border-radius: var(--radius-md); border:1px dashed rgba(255,111,169,0.35);
         }
 
         /* ── Cupons empty ── */
         .chk-cupons-empty {
           display:flex; flex-direction:column; align-items:center; gap:0.6rem;
           padding:1.5rem 1rem; text-align:center;
-          background:var(--bg-body, #F7F7F8);
-          border-radius:14px; border:1.5px dashed var(--border, #E9E9EE);
+          background:var(--bg-body);
+          border-radius: var(--radius-lg); border:1.5px dashed var(--border);
         }
         .chk-cupons-empty-icon {
           width:46px; height:46px; border-radius:50%;
-          background:var(--primary-light, #FFF1F7);
-          color:var(--primary, #FF6FA9);
+          background:var(--primary-light);
+          color:var(--primary);
           display:flex; align-items:center; justify-content:center;
         }
         .chk-cupons-empty-text {
-          margin:0; font-size:0.8rem; color:var(--text-secondary, #6B7280);
+          margin:0; font-size: var(--font-helper); color:var(--text-secondary);
           max-width:240px; line-height:1.4;
         }
-        .chk-cupons-empty-text strong { color:var(--primary-dark, #F85A9A); font-weight:700; }
+        .chk-cupons-empty-text strong { color:var(--primary-dark); font-weight: var(--fw-bold); }
 
         /* ── Cupom card ── */
         .chk-cupom-card {
-          padding:0.9rem; background:var(--bg-card, #FFFFFF);
-          border:1.5px solid var(--border, #E9E9EE); border-radius:14px;
+          padding:0.9rem; background:var(--bg-card);
+          border:1.5px solid var(--border); border-radius: var(--radius-lg);
           display:flex; flex-direction:column; gap:0.65rem;
           transition:all 0.18s; position:relative; overflow:hidden;
         }
         .chk-cupom-card::before {
           content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          background:var(--primary-gradient);
         }
         .chk-cupom-card--inactive { opacity:0.6; }
-        .chk-cupom-card--inactive::before { background:var(--text-muted, #9CA3AF); }
+        .chk-cupom-card--inactive::before { background:var(--text-muted); }
 
         .chk-cupom-top { display:flex; align-items:center; gap:0.5rem; padding-left:0.35rem; }
         .chk-cupom-tag {
-          width:28px; height:28px; border-radius:8px;
-          background:var(--primary-light, #FFF1F7);
-          color:var(--primary, #FF6FA9);
+          width:28px; height:28px; border-radius: var(--radius-sm);
+          background:var(--primary-light);
+          color:var(--primary);
           display:flex; align-items:center; justify-content:center;
           flex-shrink:0;
         }
         .chk-cupom-codigo {
           flex:1; padding:0.5rem 0.65rem; background:transparent;
-          border:1.5px dashed var(--border, #E9E9EE);
-          border-radius:8px; outline:none;
+          border:1.5px dashed var(--border);
+          border-radius: var(--radius-sm); outline:none;
           font-family:'Geist Mono', ui-monospace, monospace;
-          font-size:0.95rem; font-weight:800; letter-spacing:0.08em;
-          color:var(--primary-dark, #F85A9A); text-transform:uppercase;
+          font-size: var(--font-input); font-weight: var(--fw-black); letter-spacing:0.08em;
+          color:var(--primary-dark); text-transform:uppercase;
         }
-        .chk-cupom-codigo:focus { border-color:var(--primary, #FF6FA9); border-style:solid; background:var(--primary-light, #FFF1F7); }
-        .chk-cupom-codigo::placeholder { color:var(--text-muted, #9CA3AF); letter-spacing:0.05em; }
+        .chk-cupom-codigo:focus { border-color:var(--primary); border-style:solid; background:var(--primary-light); }
+        .chk-cupom-codigo::placeholder { color:var(--text-muted); letter-spacing:0.05em; }
 
         .chk-cupom-row { display:flex; gap:0.5rem; padding-left:0.35rem; }
         .chk-cupom-select { width:auto; padding-right:1.8rem; cursor:pointer; }
@@ -751,18 +751,18 @@ export default function CheckoutConfigPage() {
         .chk-cupom-footer {
           display:flex; justify-content:space-between; align-items:center;
           padding-top:0.55rem; padding-left:0.35rem;
-          border-top:1px dashed var(--border, #E9E9EE);
+          border-top:1px dashed var(--border);
         }
         .chk-cupom-ativo {
           display:flex; align-items:center; gap:0.5rem;
-          font-size:0.78rem; font-weight:600;
-          color:var(--text-primary, #374151); cursor:pointer;
+          font-size: var(--font-helper); font-weight: var(--fw-semibold);
+          color:var(--text-primary); cursor:pointer;
         }
         .chk-cupom-remove {
           display:inline-flex; align-items:center; gap:4px;
-          background:none; border:none; padding:4px 8px; border-radius:8px;
-          font-size:0.76rem; font-weight:600;
-          color:var(--error, #EF4444); cursor:pointer;
+          background:none; border:none; padding:4px 8px; border-radius: var(--radius-sm);
+          font-size: var(--font-helper); font-weight: var(--fw-semibold);
+          color:var(--error); cursor:pointer;
           transition:background 0.15s;
         }
         .chk-cupom-remove:hover { background:#fee2e2; }
@@ -771,77 +771,77 @@ export default function CheckoutConfigPage() {
         .chk-cupom-item {
           display:flex; align-items:center; gap:0.85rem;
           padding:0.85rem 0.95rem;
-          background:var(--bg-card, #FFFFFF);
-          border:1.5px solid var(--border, #E9E9EE);
-          border-radius:14px; cursor:pointer;
+          background:var(--bg-card);
+          border:1.5px solid var(--border);
+          border-radius: var(--radius-lg); cursor:pointer;
           transition:all 0.18s; position:relative; overflow:hidden;
         }
         .chk-cupom-item::before {
           content:""; position:absolute; left:0; top:0; bottom:0; width:4px;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          background:var(--primary-gradient);
         }
         .chk-cupom-item:hover {
-          border-color:var(--primary, #FF6FA9);
-          background:var(--primary-light, #FFF1F7);
+          border-color:var(--primary);
+          background:var(--primary-light);
           transform:translateY(-1px);
           box-shadow:0 4px 14px rgba(255,111,169,0.14);
         }
         .chk-cupom-item--inactive { opacity:0.65; }
-        .chk-cupom-item--inactive::before { background:var(--text-muted, #9CA3AF); }
+        .chk-cupom-item--inactive::before { background:var(--text-muted); }
 
         .chk-cupom-item-left { flex:1; min-width:0; display:flex; flex-direction:column; gap:0.3rem; padding-left:0.4rem; }
         .chk-cupom-item-codigo {
           display:flex; align-items:center; gap:0.4rem;
-          color:var(--primary-dark, #F85A9A);
+          color:var(--primary-dark);
           font-family:'Geist Mono', ui-monospace, monospace;
-          font-size:0.95rem; font-weight:800; letter-spacing:0.06em;
+          font-size: var(--font-input); font-weight: var(--fw-black); letter-spacing:0.06em;
         }
         .chk-cupom-item-meta {
           display:flex; flex-wrap:wrap; gap:0.35rem; align-items:center;
         }
         .chk-cupom-item-desconto {
-          font-size:0.75rem; font-weight:700;
-          color:var(--primary, #FF6FA9);
-          background:var(--primary-light, #FFF1F7);
-          padding:2px 8px; border-radius:50px;
+          font-size: var(--font-helper); font-weight: var(--fw-bold);
+          color:var(--primary);
+          background:var(--primary-light);
+          padding:2px 8px; border-radius: var(--radius-full);
         }
         .chk-cupom-item-tag {
           display:inline-flex; align-items:center; gap:3px;
-          font-size:0.7rem; color:var(--text-secondary, #6B7280);
-          background:var(--bg-body, #F7F7F8);
-          padding:2px 7px; border-radius:50px;
-          border:1px solid var(--border, #E9E9EE);
+          font-size: var(--font-caption); color:var(--text-secondary);
+          background:var(--bg-body);
+          padding:2px 7px; border-radius: var(--radius-full);
+          border:1px solid var(--border);
         }
         .chk-cupom-item-status {
-          font-size:0.68rem; font-weight:700;
-          padding:3px 9px; border-radius:50px;
+          font-size: var(--font-caption); font-weight: var(--fw-bold);
+          padding:3px 9px; border-radius: var(--radius-full);
           letter-spacing:0.04em; flex-shrink:0;
         }
         .chk-cupom-item-status--on {
-          color:var(--success, #22C55E); background:#f0fdf4; border:1px solid #bbf7d0;
+          color:var(--success); background:#f0fdf4; border:1px solid #bbf7d0;
         }
         .chk-cupom-item-status--off {
-          color:var(--text-muted, #9CA3AF); background:var(--bg-body, #F7F7F8); border:1px solid var(--border, #E9E9EE);
+          color:var(--text-muted); background:var(--bg-body); border:1px solid var(--border);
         }
         .chk-cupom-item-chevron {
-          color:var(--text-muted, #9CA3AF); flex-shrink:0;
+          color:var(--text-muted); flex-shrink:0;
           transition:transform 0.15s;
         }
-        .chk-cupom-item:hover .chk-cupom-item-chevron { color:var(--primary, #FF6FA9); transform:translateX(2px); }
+        .chk-cupom-item:hover .chk-cupom-item-chevron { color:var(--primary); transform:translateX(2px); }
 
         /* ── Formulário de cupom ── */
         .chk-cupom-form {
           display:flex; flex-direction:column; gap:0.85rem;
           padding:1rem;
-          background:var(--bg-body, #F7F7F8);
-          border-radius:14px;
-          border:1.5px solid var(--border, #E9E9EE);
+          background:var(--bg-body);
+          border-radius: var(--radius-lg);
+          border:1.5px solid var(--border);
           animation:chkFadeIn 0.2s ease;
         }
         .chk-form-field { display:flex; flex-direction:column; gap:0.35rem; }
         .chk-form-label {
-          font-size:0.74rem; font-weight:700;
-          color:var(--text-primary, #374151);
+          font-size: var(--font-helper); font-weight: var(--fw-bold);
+          color:var(--text-primary);
           margin:0; letter-spacing:0.01em;
         }
         .chk-form-row { display:flex; gap:0.6rem; }
@@ -850,37 +850,37 @@ export default function CheckoutConfigPage() {
         .chk-form-divider {
           display:flex; align-items:center; gap:0.5rem;
           margin:0.4rem 0 0;
-          font-size:0.7rem; font-weight:700;
-          color:var(--text-muted, #9CA3AF);
+          font-size: var(--font-caption); font-weight: var(--fw-bold);
+          color:var(--text-muted);
           text-transform:uppercase; letter-spacing:0.1em;
         }
         .chk-form-divider::before, .chk-form-divider::after {
           content:""; flex:1; height:1px;
-          background:var(--border, #E9E9EE);
+          background:var(--border);
         }
 
         .chk-form-actions {
           display:flex; align-items:center; gap:0.5rem;
           margin-top:0.4rem; padding-top:0.85rem;
-          border-top:1px dashed var(--border, #E9E9EE);
+          border-top:1px dashed var(--border);
           flex-wrap:wrap;
         }
         .chk-form-btn-cancel {
           padding:0.55rem 1.1rem;
-          background:var(--bg-card, #FFFFFF);
-          border:1.5px solid var(--border, #E9E9EE);
-          border-radius:50px;
-          font-family:'Geist', sans-serif; font-size:0.82rem; font-weight:600;
-          color:var(--text-secondary, #6B7280);
+          background:var(--bg-card);
+          border:1.5px solid var(--border);
+          border-radius: var(--radius-full);
+          font-family:'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-semibold);
+          color:var(--text-secondary);
           cursor:pointer; transition:all 0.15s;
         }
-        .chk-form-btn-cancel:hover { border-color:var(--text-muted, #9CA3AF); color:var(--text-primary, #374151); }
+        .chk-form-btn-cancel:hover { border-color:var(--text-muted); color:var(--text-primary); }
         .chk-form-btn-save {
           display:inline-flex; align-items:center; gap:5px;
           padding:0.6rem 1.2rem;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
-          color:#fff; border:none; border-radius:50px;
-          font-family:'Geist', sans-serif; font-size:0.85rem; font-weight:700;
+          background:var(--primary-gradient);
+          color:#fff; border:none; border-radius: var(--radius-full);
+          font-family:'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-bold);
           cursor:pointer;
           box-shadow:0 3px 10px rgba(255,111,169,0.3);
           transition:transform 0.15s, box-shadow 0.15s;
@@ -889,9 +889,9 @@ export default function CheckoutConfigPage() {
         .chk-form-btn-delete {
           display:inline-flex; align-items:center; gap:5px;
           padding:0.55rem 1rem;
-          background:#fff5f5; color:var(--error, #EF4444);
-          border:1.5px solid #fee2e2; border-radius:50px;
-          font-family:'Geist', sans-serif; font-size:0.8rem; font-weight:700;
+          background:#fff5f5; color:var(--error);
+          border:1.5px solid #fee2e2; border-radius: var(--radius-full);
+          font-family:'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-bold);
           cursor:pointer; transition:all 0.15s;
         }
         .chk-form-btn-delete:hover { background:#fee2e2; border-color:#fca5a5; }
@@ -901,9 +901,9 @@ export default function CheckoutConfigPage() {
           margin-top:0.35rem;
           display:inline-flex; align-items:center; justify-content:center; gap:6px;
           padding:0.7rem 1rem;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
-          color:#fff; border:none; border-radius:50px;
-          font-family:'Geist', sans-serif; font-size:0.85rem; font-weight:700;
+          background:var(--primary-gradient);
+          color:#fff; border:none; border-radius: var(--radius-full);
+          font-family:'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-bold);
           cursor:pointer; box-shadow:0 3px 10px rgba(255,111,169,0.3);
           transition:transform 0.15s, box-shadow 0.15s, background 0.2s;
         }
@@ -921,7 +921,7 @@ export default function CheckoutConfigPage() {
           display:inline-block;
         }
 
-        .chk-spinner { width:32px; height:32px; border:3px solid var(--primary-light, #FFF1F7); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:chkspin 0.7s linear infinite; display:inline-block; }
+        .chk-spinner { width:32px; height:32px; border:3px solid var(--primary-light); border-top-color:var(--primary); border-radius:50%; animation:chkspin 0.7s linear infinite; display:inline-block; }
       `}</style>
     </>
   )

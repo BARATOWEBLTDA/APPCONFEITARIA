@@ -18,14 +18,14 @@ export default function AdminRelatorios() {
       </div>
 
       <style>{`
-        .adm-page-title { font-size:1.5rem; font-weight:700; color:#1f2937; margin:0 0 0.25rem; }
-        .adm-page-sub { font-size:0.88rem; color:#9ca3af; margin:0 0 1.5rem; }
-        .adm-coming-soon { background:white; border-radius:16px; padding:3rem 2rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06); max-width:500px; }
+        .adm-page-title { font-size: var(--text-xl); font-weight: var(--fw-bold); color:#1f2937; margin:0 0 0.25rem; }
+        .adm-page-sub { font-size: var(--font-button); color:#9ca3af; margin:0 0 1.5rem; }
+        .adm-coming-soon { background:white; border-radius: var(--radius-lg); padding:3rem 2rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.06); max-width:500px; }
         .adm-cs-icon { font-size:3rem; margin-bottom:1rem; }
-        .adm-coming-soon h2 { font-size:1.25rem; font-weight:700; color:#1f2937; margin:0 0 0.5rem; }
-        .adm-coming-soon p { font-size:0.88rem; color:#6b7280; margin:0 0 1.5rem; line-height:1.6; }
+        .adm-coming-soon h2 { font-size: var(--font-modal-title); font-weight: var(--fw-bold); color:#1f2937; margin:0 0 0.5rem; }
+        .adm-coming-soon p { font-size: var(--font-button); color:#6b7280; margin:0 0 1.5rem; line-height:1.6; }
         .adm-cs-features { display:flex; flex-direction:column; gap:0.5rem; text-align:left; }
-        .adm-cs-item { background:#f9fafb; border-radius:8px; padding:0.65rem 1rem; font-size:0.85rem; color:#374151; font-family:'Geist', sans-serif; }
+        .adm-cs-item { background:#f9fafb; border-radius: var(--radius-sm); padding:0.65rem 1rem; font-size: var(--font-button); color:#374151; font-family:'Geist', sans-serif; }
       `}</style>
     </div>
   );

@@ -345,90 +345,90 @@ export default function PedidoForm() {
 
       <style>{`
         /* ── Reset base ── */
-        .pf2-root { font-family: 'Geist', sans-serif; display: flex; flex-direction: column; min-height: 100dvh; background: var(--bg-body, #FAFAFA); }
+        .pf2-root { font-family: 'Geist', sans-serif; display: flex; flex-direction: column; min-height: 100dvh; background: var(--bg-body); }
 
         /* ── Header ── */
         .pf2-header {
           display: flex; align-items: center; justify-content: space-between;
           padding: 1.25rem 1rem 0.85rem;
-          background: var(--bg-card, #fff);
-          border-bottom: 1px solid var(--border, #ECC2D0);
+          background: var(--bg-card);
+          border-bottom: 1px solid var(--border);
           position: sticky; top: 0; z-index: 40;
         }
         .pf2-back {
           display: flex; align-items: center; gap: 0.3rem;
           background: none; border: none; cursor: pointer;
-          font-size: 0.85rem; font-weight: 500;
-          color: var(--text-secondary, #6E3548);
+          font-size: var(--font-button); font-weight: var(--fw-medium);
+          color: var(--text-secondary);
           font-family: 'Geist', sans-serif; padding: 0;
         }
-        .pf2-back:hover { color: var(--primary, #986274); }
+        .pf2-back:hover { color: var(--primary); }
         .pf2-title {
-          font-size: 1.05rem; font-weight: 700;
-          color: var(--text-title, #431524); margin: 0;
+          font-size: var(--font-modal-title); font-weight: var(--fw-bold);
+          color: var(--text-title); margin: 0;
         }
 
         /* ── Barra de progresso ── */
         .pf2-steps {
           display: flex; align-items: center; justify-content: center;
           gap: 0; padding: 1rem 1.25rem;
-          background: var(--bg-card, #fff);
-          border-bottom: 1px solid var(--border, #ECC2D0);
+          background: var(--bg-card);
+          border-bottom: 1px solid var(--border);
         }
         .pf2-step-item { display: flex; align-items: center; gap: 0; }
         .pf2-step-dot {
           width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
           display: flex; align-items: center; justify-content: center;
-          font-size: 0.72rem; font-weight: 700;
-          border: 2px solid var(--border, #ECC2D0);
-          background: var(--bg-body, #FAFAFA);
-          color: var(--text-muted, #C39EAA);
-          transition: all 0.2s;
+          font-size: var(--font-caption); font-weight: var(--fw-bold);
+          border: 2px solid var(--border);
+          background: var(--bg-body);
+          color: var(--text-muted);
+          transition: all var(--dur-normal);
         }
         .pf2-step-dot--done {
-          background: var(--success, #22C55E);
-          border-color: var(--success, #22C55E); color: white;
+          background: var(--success);
+          border-color: var(--success); color: white;
         }
         .pf2-step-dot--active {
-          background: var(--primary, #986274);
-          border-color: var(--primary, #986274); color: white;
-          box-shadow: 0 0 0 4px var(--primary-light, #F7EEF1);
+          background: var(--primary);
+          border-color: var(--primary); color: white;
+          box-shadow: 0 0 0 4px var(--primary-light);
           animation: pf2Pulse 2s ease-in-out infinite;
         }
         @keyframes pf2Pulse {
-          0%, 100% { box-shadow: 0 0 0 4px var(--primary-light, #F7EEF1); }
-          50% { box-shadow: 0 0 0 7px var(--primary-light, #F7EEF1); }
+          0%, 100% { box-shadow: 0 0 0 4px var(--primary-light); }
+          50% { box-shadow: 0 0 0 7px var(--primary-light); }
         }
         .pf2-step-line {
           width: 40px; height: 2px;
-          background: var(--border, #ECC2D0);
+          background: var(--border);
           flex-shrink: 0; margin: 0 4px;
-          transition: background 0.2s;
+          transition: background var(--dur-normal);
         }
-        .pf2-step-line--done { background: var(--success, #22C55E); }
+        .pf2-step-line--done { background: var(--success); }
         .pf2-step-label {
-          font-size: 0.72rem; font-weight: 500;
-          color: var(--text-muted, #C39EAA);
+          font-size: var(--font-caption); font-weight: var(--fw-medium);
+          color: var(--text-muted);
           margin-left: 6px; white-space: nowrap;
-          transition: color 0.2s;
+          transition: color var(--dur-normal);
         }
-        .pf2-step-label--active { color: var(--primary, #986274); font-weight: 700; }
-        .pf2-step-label--done   { color: var(--success, #22C55E); }
+        .pf2-step-label--active { color: var(--primary); font-weight: var(--fw-bold); }
+        .pf2-step-label--done   { color: var(--success); }
 
         /* ── Conteúdo ── */
         .pf2-content { flex: 1; padding: 1rem; padding-bottom: 5rem; }
-        .step-root { display: flex; flex-direction: column; gap: 0.85rem; }
+        .step-root { display: flex; flex-direction: column; gap: var(--gap-stack); }
 
         /* ── Cards ── */
         .pf2-card {
-          background: var(--bg-card, #fff);
-          border: 1.5px solid var(--border, #ECC2D0);
+          background: var(--bg-card);
+          border: 1.5px solid var(--border);
           border-radius: var(--radius-card, 18px);
           overflow: hidden;
         }
         .pf2-card-eyebrow {
-          font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-          letter-spacing: 0.06em; color: var(--text-muted, #C39EAA);
+          font-size: var(--font-caption); font-weight: var(--fw-bold); text-transform: uppercase;
+          letter-spacing: 0.06em; color: var(--text-muted);
           padding: 0.85rem 1rem 0;
           margin: 0 0 0.75rem;
         }
@@ -439,12 +439,12 @@ export default function PedidoForm() {
 
         /* ── Campos ── */
         .pf2-field { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
-        .pf2-row   { display: flex; gap: 0.65rem; padding: 0 1rem 0.75rem; }
+        .pf2-row   { display: flex; gap: var(--gap-stack); padding: 0 1rem 0.75rem; }
         .pf2-field:first-child:not(:only-child) .pf2-label,
         .pf2-field:first-child:not(:only-child) .pf2-input { }
         .pf2-label {
-          font-size: 0.72rem; font-weight: 600;
-          color: var(--text-secondary, #6E3548);
+          font-size: var(--font-caption); font-weight: var(--fw-semibold);
+          color: var(--text-secondary);
           padding: 0 1rem;
         }
         .pf2-label ~ .pf2-input,
@@ -455,53 +455,53 @@ export default function PedidoForm() {
         .pf2-row .pf2-error-msg { padding: 0; }
 
         .pf2-input {
-          border: 1.5px solid var(--border, #ECC2D0);
-          border-radius: 12px;
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md);
           padding: 0.6rem 0.9rem;
-          font-size: 0.88rem; font-family: 'Geist', sans-serif;
-          color: var(--text-primary, #431524);
-          background: var(--bg-input, #fff);
+          font-size: var(--font-button); font-family: 'Geist', sans-serif;
+          color: var(--text-primary);
+          background: var(--bg-input);
           outline: none; width: 100%;
-          transition: border-color 0.15s, box-shadow 0.15s;
+          transition: border-color 0.15s, box-shadow var(--dur-fast);
           box-sizing: border-box;
         }
         .pf2-input:focus {
-          border-color: var(--primary, #986274);
+          border-color: var(--primary);
           box-shadow: var(--focus-ring);
         }
-        .pf2-input--error  { border-color: var(--error, #EF4444) !important; background: #fff8f8 !important; }
+        .pf2-input--error  { border-color: var(--error) !important; background: #fff8f8 !important; }
         .pf2-input--readonly {
-          background: var(--bg-subtle, #F7EEF1); cursor: default;
+          background: var(--bg-subtle); cursor: default;
           display: flex; align-items: center;
-          border-radius: 12px;
+          border-radius: var(--radius-md);
           padding: 0.6rem 0.9rem;
-          font-size: 0.88rem; font-family: 'Geist', sans-serif;
-          border: 1.5px solid var(--border, #ECC2D0);
+          font-size: var(--font-button); font-family: 'Geist', sans-serif;
+          border: 1.5px solid var(--border);
           box-sizing: border-box; width: 100%;
         }
         .pf2-textarea {
-          border: 1.5px solid var(--border, #ECC2D0);
-          border-radius: 12px;
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md);
           padding: 0.6rem 0.9rem;
-          font-size: 0.88rem; font-family: 'Geist', sans-serif;
-          color: var(--text-primary, #431524);
-          background: var(--bg-input, #fff);
+          font-size: var(--font-button); font-family: 'Geist', sans-serif;
+          color: var(--text-primary);
+          background: var(--bg-input);
           outline: none; width: 100%; resize: vertical;
-          transition: border-color 0.15s;
+          transition: border-color var(--dur-fast);
           box-sizing: border-box;
         }
-        .pf2-textarea:focus { border-color: var(--primary, #986274); box-shadow: var(--focus-ring); }
-        .pf2-error-msg { font-size: 0.72rem; color: var(--error, #EF4444); font-weight: 500; padding: 0 1rem; }
+        .pf2-textarea:focus { border-color: var(--primary); box-shadow: var(--focus-ring); }
+        .pf2-error-msg { font-size: var(--font-caption); color: var(--error); font-weight: var(--fw-medium); padding: 0 1rem; }
 
         /* Campo standalone (dentro do card, sem .pf2-row) */
         .pf2-card > .pf2-field { padding: 0 1rem 0.75rem; }
         .pf2-card > .pf2-field .pf2-label { padding: 0; }
 
         /* ── Badges ── */
-        .pf2-required { color: var(--error, #EF4444); margin-left: 2px; }
+        .pf2-required { color: var(--error); margin-left: 2px; }
         .pf2-badge {
-          margin-left: 0.4rem; font-size: 0.68rem; font-weight: 700;
-          padding: 1px 8px; border-radius: 999px; vertical-align: middle;
+          margin-left: 0.4rem; font-size: var(--font-caption); font-weight: var(--fw-bold);
+          padding: 1px 8px; border-radius: var(--radius-full); vertical-align: middle;
         }
         .pf2-badge--ok  { color: #16a34a; background: #dcfce7; border: 1px solid #bbf7d0; }
         .pf2-badge--new { color: #d97706; background: #fef9c3; border: 1px solid #fde68a; }
@@ -509,9 +509,9 @@ export default function PedidoForm() {
         /* ── Dropdown ── */
         .pf2-dropdown {
           position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-          background: var(--bg-card, #fff);
-          border: 1.5px solid var(--border, #ECC2D0);
-          border-radius: 14px; z-index: 9999;
+          background: var(--bg-card);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-lg); z-index: 9999;
           box-shadow: var(--shadow-lg);
           overflow: hidden;
           max-height: 240px;
@@ -522,135 +522,135 @@ export default function PedidoForm() {
         .pf2-drop-item {
           width: 100%; display: flex; flex-direction: column; align-items: flex-start;
           padding: 0.6rem 0.9rem; background: none; border: none;
-          border-bottom: 1px solid var(--border, #ECC2D0);
+          border-bottom: 1px solid var(--border);
           cursor: pointer; font-family: 'Geist', sans-serif;
           transition: background 0.1s; text-align: left;
         }
         .pf2-drop-item:last-child { border-bottom: none; }
-        .pf2-drop-item:hover { background: var(--bg-subtle, #F7EEF1); }
-        .pf2-drop-item--produto { flex-direction: row; align-items: center; gap: 0.6rem; }
-        .pf2-drop-name { font-size: 0.88rem; font-weight: 600; color: var(--text-title, #431524); }
-        .pf2-drop-sub  { font-size: 0.75rem; color: var(--text-muted, #C39EAA); margin-top: 1px; }
-        .pf2-drop-empty { padding: 0.65rem 0.9rem; font-size: 0.8rem; color: var(--text-muted, #C39EAA); }
+        .pf2-drop-item:hover { background: var(--bg-subtle); }
+        .pf2-drop-item--produto { flex-direction: row; align-items: center; gap: var(--gap-tight); }
+        .pf2-drop-name { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title); }
+        .pf2-drop-sub  { font-size: var(--font-helper); color: var(--text-muted); margin-top: 1px; }
+        .pf2-drop-empty { padding: 0.65rem 0.9rem; font-size: var(--font-helper); color: var(--text-muted); }
         .pf2-drop-new {
-          width: 100%; display: flex; align-items: center; gap: 0.5rem;
+          width: 100%; display: flex; align-items: center; gap: var(--gap-tight);
           padding: 0.65rem 0.9rem;
-          background: var(--bg-subtle, #F7EEF1);
-          border: none; border-top: 1px solid var(--border, #ECC2D0);
+          background: var(--bg-subtle);
+          border: none; border-top: 1px solid var(--border);
           border-radius: 0 0 14px 14px;
           cursor: pointer; font-family: 'Geist', sans-serif;
-          font-size: 0.8rem; color: var(--primary, #986274);
+          font-size: var(--font-helper); color: var(--primary);
           transition: background 0.1s;
         }
         .pf2-drop-new:hover { background: #ECC2D0; }
-        .pf2-drop-new strong { font-weight: 700; }
+        .pf2-drop-new strong { font-weight: var(--fw-bold); }
 
         /* ── Itens de produto ── */
         .pf2-item {
-          display: flex; align-items: center; gap: 0.75rem;
+          display: flex; align-items: center; gap: var(--gap-stack);
           padding: 0.65rem 1rem;
-          border-bottom: 1px solid var(--border, #ECC2D0);
+          border-bottom: 1px solid var(--border);
         }
         .pf2-item:last-of-type { border-bottom: none; }
         .pf2-item-img {
-          width: 44px; height: 44px; border-radius: 10px;
+          width: 44px; height: 44px; border-radius: var(--radius-md);
           object-fit: cover; flex-shrink: 0;
-          border: 1.5px solid var(--border, #ECC2D0);
+          border: 1.5px solid var(--border);
         }
         .pf2-item-img--placeholder {
-          background: var(--bg-subtle, #F7EEF1);
+          background: var(--bg-subtle);
           display: flex; align-items: center; justify-content: center;
-          font-size: 1.2rem;
+          font-size: var(--font-modal-title);
         }
         .pf2-item-info { flex: 1; min-width: 0; }
         .pf2-item-name {
-          font-size: 0.88rem; font-weight: 600;
-          color: var(--text-title, #431524);
+          font-size: var(--font-button); font-weight: var(--fw-semibold);
+          color: var(--text-title);
           white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           margin: 0;
         }
-        .pf2-item-meta { font-size: 0.75rem; color: var(--text-muted, #C39EAA); margin: 2px 0 0; }
-        .pf2-item-total { font-size: 0.9rem; font-weight: 700; color: var(--text-title, #431524); flex-shrink: 0; }
+        .pf2-item-meta { font-size: var(--font-helper); color: var(--text-muted); margin: 2px 0 0; }
+        .pf2-item-total { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--text-title); flex-shrink: 0; }
         .pf2-item-remove {
           background: none; border: none; cursor: pointer;
-          color: var(--text-muted, #C39EAA); padding: 4px; border-radius: 6px;
-          transition: color 0.15s; flex-shrink: 0;
+          color: var(--text-muted); padding: 4px; border-radius: var(--radius-sm);
+          transition: color var(--dur-fast); flex-shrink: 0;
           display: flex; align-items: center;
         }
-        .pf2-item-remove:hover { color: var(--error, #EF4444); }
+        .pf2-item-remove:hover { color: var(--error); }
         .pf2-subtotal {
           display: flex; justify-content: space-between;
           padding: 0.6rem 1rem;
-          font-size: 0.82rem; color: var(--text-secondary, #6E3548); font-weight: 600;
-          border-top: 1px solid var(--border, #ECC2D0);
-          background: var(--bg-subtle, #F7EEF1);
+          font-size: var(--font-helper); color: var(--text-secondary); font-weight: var(--fw-semibold);
+          border-top: 1px solid var(--border);
+          background: var(--bg-subtle);
         }
 
         /* Formulário de adicionar item */
         .pf2-add-form {
           padding: 0.85rem 1rem;
-          background: var(--bg-subtle, #F7EEF1);
-          border-top: 1px solid var(--border, #ECC2D0);
+          background: var(--bg-subtle);
+          border-top: 1px solid var(--border);
           position: relative;
         }
         .pf2-add-form .pf2-field { padding: 0; }
-        .pf2-add-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+        .pf2-add-actions { display: flex; gap: var(--gap-tight); margin-top: 0.75rem; }
 
         /* Empty state */
         .pf2-empty {
           display: flex; flex-direction: column; align-items: center;
           gap: 0.4rem; padding: 1.75rem 1rem;
         }
-        .pf2-empty-icon { font-size: 1.75rem; }
-        .pf2-empty-text { font-size: 0.85rem; color: var(--text-muted, #C39EAA); margin: 0; }
+        .pf2-empty-icon { font-size: var(--text-2xl); }
+        .pf2-empty-text { font-size: var(--font-button); color: var(--text-muted); margin: 0; }
 
         /* Botão adicionar produto */
         .pf2-btn-add {
           display: flex; align-items: center; justify-content: center; gap: 0.4rem;
           width: calc(100% - 2rem); margin: 0.65rem 1rem;
           padding: 0.55rem;
-          border: 1.5px dashed var(--primary, #986274);
-          border-radius: 12px;
-          background: none; color: var(--primary, #986274);
-          font-size: 0.82rem; font-weight: 600;
+          border: 1.5px dashed var(--primary);
+          border-radius: var(--radius-md);
+          background: none; color: var(--primary);
+          font-size: var(--font-helper); font-weight: var(--fw-semibold);
           font-family: 'Geist', sans-serif; cursor: pointer;
-          transition: background 0.15s;
+          transition: background var(--dur-fast);
         }
-        .pf2-btn-add:hover { background: var(--primary-light, #F7EEF1); }
+        .pf2-btn-add:hover { background: var(--primary-light); }
 
         /* ── Opcionais (checkbox toggle) ── */
         .pf2-optional-toggle {
-          display: flex; align-items: center; gap: 0.65rem;
+          display: flex; align-items: center; gap: var(--gap-stack);
           padding: 0.7rem 1rem;
-          border-top: 1px solid var(--border, #ECC2D0);
+          border-top: 1px solid var(--border);
           cursor: pointer;
           transition: background 0.12s;
           user-select: none;
         }
-        .pf2-optional-toggle:hover { background: var(--bg-subtle, #F7EEF1); }
-        .pf2-optional-toggle--on { background: var(--bg-subtle, #F7EEF1); }
+        .pf2-optional-toggle:hover { background: var(--bg-subtle); }
+        .pf2-optional-toggle--on { background: var(--bg-subtle); }
         .pf2-check {
-          width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0;
-          border: 1.5px solid var(--border, #ECC2D0);
-          background: var(--bg-card, #fff);
+          width: 18px; height: 18px; border-radius: var(--radius-sm); flex-shrink: 0;
+          border: 1.5px solid var(--border);
+          background: var(--bg-card);
           display: flex; align-items: center; justify-content: center;
-          transition: all 0.15s;
+          transition: all var(--dur-fast);
         }
-        .pf2-check--on { background: var(--primary, #986274); border-color: var(--primary, #986274); }
-        .pf2-opt-label { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary, #6E3548); flex: 1; }
+        .pf2-check--on { background: var(--primary); border-color: var(--primary); }
+        .pf2-opt-label { font-size: var(--font-helper); font-weight: var(--fw-medium); color: var(--text-secondary); flex: 1; }
         .pf2-opt-badge {
-          font-size: 0.7rem; font-weight: 600;
-          background: var(--primary-light, #F7EEF1);
-          color: var(--primary, #986274);
-          padding: 2px 8px; border-radius: 999px;
+          font-size: var(--font-caption); font-weight: var(--fw-semibold);
+          background: var(--primary-light);
+          color: var(--primary);
+          padding: 2px 8px; border-radius: var(--radius-full);
           white-space: nowrap; max-width: 120px;
           overflow: hidden; text-overflow: ellipsis;
         }
         .pf2-optional-body {
           padding: 0.85rem 1rem;
-          background: var(--bg-subtle, #F7EEF1);
-          border-top: 1px solid var(--border, #ECC2D0);
-          display: flex; flex-direction: column; gap: 0.65rem;
+          background: var(--bg-subtle);
+          border-top: 1px solid var(--border);
+          display: flex; flex-direction: column; gap: var(--gap-stack);
           animation: pf2Expand 0.18s ease;
         }
         .pf2-optional-body .pf2-field  { padding: 0; }
@@ -662,21 +662,21 @@ export default function PedidoForm() {
         }
 
         /* ── Toggle tipo de entrega ── */
-        .pf2-toggle-group { display: flex; gap: 0.5rem; padding: 0 1rem 0.85rem; }
+        .pf2-toggle-group { display: flex; gap: var(--gap-tight); padding: 0 1rem 0.85rem; }
         .pf2-toggle-btn {
           flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.3rem;
           padding: 0.55rem 0.75rem;
-          border: 1.5px solid var(--border, #ECC2D0);
-          border-radius: 50px;
-          background: var(--bg-body, #FAFAFA);
-          font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 500;
-          color: var(--text-secondary, #6E3548); cursor: pointer;
-          transition: all 0.15s;
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-full);
+          background: var(--bg-body);
+          font-family: 'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-medium);
+          color: var(--text-secondary); cursor: pointer;
+          transition: all var(--dur-fast);
         }
         .pf2-toggle-btn--on {
-          border-color: var(--primary, #986274);
-          background: var(--primary-light, #F7EEF1);
-          color: var(--primary, #986274); font-weight: 700;
+          border-color: var(--primary);
+          background: var(--primary-light);
+          color: var(--primary); font-weight: var(--fw-bold);
         }
 
         /* ── Pagamento ── */
@@ -687,65 +687,65 @@ export default function PedidoForm() {
         .pf2-pay-btn {
           display: flex; flex-direction: column; align-items: center; gap: 0.25rem;
           padding: 0.5rem 0.2rem;
-          border: 1.5px solid var(--border, #ECC2D0);
-          border-radius: 10px;
-          background: var(--bg-body, #FAFAFA);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md);
+          background: var(--bg-body);
           font-family: 'Geist', sans-serif;
-          font-size: 0.68rem; font-weight: 500; color: var(--text-secondary, #6E3548);
-          cursor: pointer; transition: all 0.15s;
+          font-size: var(--font-caption); font-weight: var(--fw-medium); color: var(--text-secondary);
+          cursor: pointer; transition: all var(--dur-fast);
         }
-        .pf2-pay-btn:hover { border-color: var(--primary, #986274); color: var(--primary, #986274); }
+        .pf2-pay-btn:hover { border-color: var(--primary); color: var(--primary); }
         .pf2-pay-btn--on {
-          border-color: var(--primary, #986274);
-          background: var(--primary-light, #F7EEF1);
-          color: var(--primary, #986274); font-weight: 700;
+          border-color: var(--primary);
+          background: var(--primary-light);
+          color: var(--primary); font-weight: var(--fw-bold);
         }
         .pf2-pag-badge {
           display: flex; align-items: center; gap: 5px;
-          font-size: 0.72rem; font-weight: 700;
-          padding: 3px 10px; border-radius: 999px;
+          font-size: var(--font-caption); font-weight: var(--fw-bold);
+          padding: 3px 10px; border-radius: var(--radius-full);
         }
         .pf2-pag-dot { width: 7px; height: 7px; border-radius: 50%; }
 
         /* ── Total bar ── */
         .pf2-total-bar {
           display: flex; align-items: center; justify-content: space-between;
-          background: var(--primary-dark, #6E3548);
+          background: var(--primary-dark);
           border-radius: var(--radius-card, 18px);
           padding: 1rem 1.25rem;
         }
         .pf2-total-label {
-          font-size: 0.72rem; font-weight: 600; text-transform: uppercase;
+          font-size: var(--font-caption); font-weight: var(--fw-semibold); text-transform: uppercase;
           letter-spacing: 0.06em; color: rgba(255,255,255,0.65); margin: 0;
         }
         .pf2-total-original {
-          font-size: 0.75rem; color: rgba(255,255,255,0.4);
+          font-size: var(--font-helper); color: rgba(255,255,255,0.4);
           text-decoration: line-through; margin: 2px 0 0;
         }
         .pf2-total-value {
-          font-size: 1.6rem; font-weight: 800; color: #fff;
+          font-size: var(--text-2xl); font-weight: var(--fw-black); color: #fff;
           letter-spacing: -0.02em; margin: 0;
         }
 
         /* ── Resumo financeiro ── */
         .pf2-resumo {
-          border: 1.5px solid var(--border, #ECC2D0);
+          border: 1.5px solid var(--border);
           border-radius: var(--radius-card, 18px); overflow: hidden;
         }
         .pf2-resumo-row {
           display: flex; justify-content: space-between;
           padding: 0.55rem 1rem;
-          font-size: 0.82rem; color: var(--text-secondary, #6E3548);
-          background: var(--bg-card, #fff);
-          border-bottom: 1px solid var(--border, #ECC2D0);
+          font-size: var(--font-helper); color: var(--text-secondary);
+          background: var(--bg-card);
+          border-bottom: 1px solid var(--border);
         }
-        .pf2-resumo-row--desconto { color: var(--success, #22C55E); background: #f0fdf4; font-weight: 600; }
+        .pf2-resumo-row--desconto { color: var(--success); background: #f0fdf4; font-weight: var(--fw-semibold); }
         .pf2-resumo-total {
           display: flex; justify-content: space-between;
           padding: 0.75rem 1rem;
-          font-size: 0.9rem; font-weight: 700;
-          background: var(--bg-subtle, #F7EEF1);
-          color: var(--text-title, #431524);
+          font-size: var(--font-button); font-weight: var(--fw-bold);
+          background: var(--bg-subtle);
+          color: var(--text-title);
         }
 
         /* ── Botões ── */
@@ -753,47 +753,47 @@ export default function PedidoForm() {
           display: flex; align-items: center; justify-content: center; gap: 0.4rem;
           background: var(--btn-primary-bg, #986274);
           color: var(--btn-primary-text, #fff);
-          border: none; border-radius: 12px;
+          border: none; border-radius: var(--radius-md);
           padding: 0.75rem 1.25rem;
-          font-size: 0.88rem; font-weight: 600;
+          font-size: var(--font-button); font-weight: var(--fw-semibold);
           font-family: 'Geist', sans-serif; cursor: pointer;
-          transition: opacity 0.15s; white-space: nowrap;
+          transition: opacity var(--dur-fast); white-space: nowrap;
         }
         .pf2-btn-primary:hover:not(:disabled) { opacity: 0.88; }
         .pf2-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .pf2-btn-salvar {
           display: flex; align-items: center; justify-content: center;
-          background: var(--success, #22C55E); color: #fff;
-          border: none; border-radius: 12px;
+          background: var(--success); color: #fff;
+          border: none; border-radius: var(--radius-md);
           padding: 0.75rem 1.25rem;
-          font-size: 0.88rem; font-weight: 600;
+          font-size: var(--font-button); font-weight: var(--fw-semibold);
           font-family: 'Geist', sans-serif; cursor: pointer;
-          transition: opacity 0.15s;
+          transition: opacity var(--dur-fast);
         }
         .pf2-btn-salvar:hover:not(:disabled) { opacity: 0.88; }
         .pf2-btn-salvar:disabled { opacity: 0.5; cursor: not-allowed; }
         .pf2-btn-ghost {
           display: flex; align-items: center; justify-content: center; gap: 0.3rem;
-          background: var(--bg-card, #fff);
-          border: 1.5px solid var(--border, #ECC2D0);
-          border-radius: 12px;
+          background: var(--bg-card);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md);
           padding: 0.75rem 1rem;
-          font-size: 0.85rem; font-weight: 600; color: var(--text-secondary, #6E3548);
+          font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-secondary);
           font-family: 'Geist', sans-serif; cursor: pointer;
-          transition: background 0.15s;
+          transition: background var(--dur-fast);
           white-space: nowrap;
         }
-        .pf2-btn-ghost:hover:not(:disabled) { background: var(--bg-subtle, #F7EEF1); }
+        .pf2-btn-ghost:hover:not(:disabled) { background: var(--bg-subtle); }
         .pf2-btn-ghost:disabled { opacity: 0.5; cursor: not-allowed; }
 
         /* ── Rodapé fixo ── */
         .pf2-footer {
-          display: flex; align-items: center; gap: 0.5rem;
+          display: flex; align-items: center; gap: var(--gap-tight);
           padding: 0.85rem 0 0;
         }
         .pf2-btn-back { flex-shrink: 0; }
         .pf2-footer-hint {
-          font-size: 0.72rem; color: var(--text-muted, #C39EAA);
+          font-size: var(--font-caption); color: var(--text-muted);
           margin: 0; text-align: center;
         }
 
@@ -808,10 +808,10 @@ export default function PedidoForm() {
           .pf2-desktop-form {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+            gap: var(--space-4);
             align-items: start;
           }
-          .pf2-desktop-col { display: flex; flex-direction: column; gap: 1rem; }
+          .pf2-desktop-col { display: flex; flex-direction: column; gap: var(--space-4); }
 
           /* Steps bar mais compacta no desktop */
           .pf2-steps { justify-content: flex-start; gap: 0; }
@@ -834,8 +834,8 @@ export default function PedidoForm() {
         .pf2-loader { display: flex; align-items: center; justify-content: center; height: 60vh; }
         .pf2-spinner {
           width: 32px; height: 32px;
-          border: 3px solid var(--primary-light, #F7EEF1);
-          border-top-color: var(--primary, #986274);
+          border: 3px solid var(--primary-light);
+          border-top-color: var(--primary);
           border-radius: 50%;
           animation: pf2Spin 0.7s linear infinite;
         }
@@ -844,9 +844,9 @@ export default function PedidoForm() {
         /* ── Toast ── */
         .pf2-toast {
           position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%);
-          background: var(--text-title, #431524); color: #fff;
-          padding: 0.65rem 1.25rem; border-radius: 50px;
-          font-size: 0.82rem; font-family: 'Geist', sans-serif;
+          background: var(--text-title); color: #fff;
+          padding: 0.65rem 1.25rem; border-radius: var(--radius-full);
+          font-size: var(--font-helper); font-family: 'Geist', sans-serif;
           z-index: 300; white-space: nowrap;
           box-shadow: var(--shadow-lg);
           animation: pf2ToastIn 0.2s ease;

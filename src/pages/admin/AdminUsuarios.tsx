@@ -215,40 +215,40 @@ export default function AdminUsuarios() {
       )}
 
       <style>{`
-        .adm-page-title { font-size:1.5rem; font-weight:700; color:#1f2937; margin:0 0 0.25rem; }
-        .adm-page-sub { font-size:0.88rem; color:#9ca3af; margin:0; }
+        .adm-page-title { font-size: var(--text-xl); font-weight: var(--fw-bold); color:#1f2937; margin:0 0 0.25rem; }
+        .adm-page-sub { font-size: var(--font-button); color:#9ca3af; margin:0; }
         .adm-loading { color:#9ca3af; padding:2rem; }
-        .adm-btn-primary { padding:0.7rem 1.25rem; background:linear-gradient(135deg,#f9007a,#d4006a); color:white; border:none; border-radius:10px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:600; cursor:pointer; white-space:nowrap; }
-        .adm-search-wrap { display:flex; align-items:center; gap:0.5rem; background:white; border:1.5px solid #e5e7eb; border-radius:10px; padding:0.75rem 1rem; margin-bottom:1rem; max-width:400px; }
-        .adm-search { border:none; outline:none; flex:1; font-family:'Geist', sans-serif; font-size:0.9rem; color:#1f2937; }
-        .adm-table-wrap { background:white; border-radius:14px; box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:auto; }
+        .adm-btn-primary { padding:0.7rem 1.25rem; background:linear-gradient(135deg,#f9007a,#d4006a); color:white; border:none; border-radius: var(--radius-md); font-family:'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor:pointer; white-space:nowrap; }
+        .adm-search-wrap { display:flex; align-items:center; gap:0.5rem; background:white; border:1.5px solid #e5e7eb; border-radius: var(--radius-md); padding:0.75rem 1rem; margin-bottom:1rem; max-width:400px; }
+        .adm-search { border:none; outline:none; flex:1; font-family:'Geist', sans-serif; font-size: var(--font-button); color:#1f2937; }
+        .adm-table-wrap { background:white; border-radius: var(--radius-lg); box-shadow:0 2px 8px rgba(0,0,0,0.06); overflow:auto; }
         .adm-table { width:100%; border-collapse:collapse; font-family:'Geist', sans-serif; }
-        .adm-table th { padding:0.9rem 1rem; font-size:0.75rem; font-weight:600; color:#9ca3af; text-align:left; border-bottom:1px solid #f3f4f6; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap; }
+        .adm-table th { padding:0.9rem 1rem; font-size: var(--font-helper); font-weight: var(--fw-semibold); color:#9ca3af; text-align:left; border-bottom:1px solid #f3f4f6; text-transform:uppercase; letter-spacing:0.05em; white-space:nowrap; }
         .adm-table td { padding:0.85rem 1rem; border-bottom:1px solid #f9fafb; vertical-align:middle; }
         .adm-table tr:last-child td { border-bottom:none; }
         .adm-user-cell { display:flex; align-items:center; gap:0.75rem; }
-        .adm-user-avatar { width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,#fce7f3,#fbcfe8); display:flex; align-items:center; justify-content:center; font-weight:700; color:#f9007a; font-size:0.95rem; overflow:hidden; flex-shrink:0; }
+        .adm-user-avatar { width:38px; height:38px; border-radius: var(--radius-md); background:linear-gradient(135deg,#fce7f3,#fbcfe8); display:flex; align-items:center; justify-content:center; font-weight: var(--fw-bold); color:#f9007a; font-size: var(--font-input); overflow:hidden; flex-shrink:0; }
         .adm-user-avatar img { width:100%; height:100%; object-fit:cover; }
-        .adm-user-name { font-size:0.88rem; font-weight:600; color:#1f2937; margin:0; }
-        .adm-td-gray { font-size:0.83rem; color:#6b7280; }
-        .adm-badge { font-size:0.72rem; font-weight:600; padding:0.25rem 0.65rem; border-radius:20px; }
+        .adm-user-name { font-size: var(--font-button); font-weight: var(--fw-semibold); color:#1f2937; margin:0; }
+        .adm-td-gray { font-size: var(--font-helper); color:#6b7280; }
+        .adm-badge { font-size: var(--font-caption); font-weight: var(--fw-semibold); padding:0.25rem 0.65rem; border-radius: var(--radius-xl); }
         .adm-badge.active { background:#dcfce7; color:#16a34a; }
         .adm-badge.blocked { background:#fff1f2; color:#ef4444; }
         .adm-actions { display:flex; gap:0.35rem; }
-        .adm-act-btn { width:32px; height:32px; border-radius:8px; border:none; cursor:pointer; font-size:0.85rem; display:flex; align-items:center; justify-content:center; }
+        .adm-act-btn { width:32px; height:32px; border-radius: var(--radius-sm); border:none; cursor:pointer; font-size: var(--font-button); display:flex; align-items:center; justify-content:center; }
         .adm-act-btn.warn { background:#fff7ed; }
         .adm-act-btn.danger { background:#fff1f2; }
         .adm-modal-overlay { position:fixed; inset:0; z-index:100; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; padding:1rem; }
-        .adm-modal { background:white; border-radius:16px; padding:1.5rem; width:90%; max-width:360px; text-align:center; }
-        .adm-modal h3 { font-size:1rem; font-weight:600; color:#1f2937; margin:0 0 0.4rem; }
-        .adm-modal p { font-size:0.85rem; color:#9ca3af; margin:0 0 1.25rem; }
+        .adm-modal { background:white; border-radius: var(--radius-lg); padding:1.5rem; width:90%; max-width:360px; text-align:center; }
+        .adm-modal h3 { font-size: var(--font-input); font-weight: var(--fw-semibold); color:#1f2937; margin:0 0 0.4rem; }
+        .adm-modal p { font-size: var(--font-button); color:#9ca3af; margin:0 0 1.25rem; }
         .adm-modal-actions { display:flex; gap:0.75rem; }
-        .adm-btn-cancel { flex:1; padding:0.7rem; background:#f3f4f6; color:#6b7280; border:none; border-radius:8px; font-family:'Geist', sans-serif; font-weight:600; cursor:pointer; }
-        .adm-btn-warn { flex:1; padding:0.7rem; background:#f59e0b; color:white; border:none; border-radius:8px; font-family:'Geist', sans-serif; font-weight:600; cursor:pointer; }
-        .adm-btn-danger { flex:1; padding:0.7rem; background:#ef4444; color:white; border:none; border-radius:8px; font-family:'Geist', sans-serif; font-weight:600; cursor:pointer; }
+        .adm-btn-cancel { flex:1; padding:0.7rem; background:#f3f4f6; color:#6b7280; border:none; border-radius: var(--radius-sm); font-family:'Geist', sans-serif; font-weight: var(--fw-semibold); cursor:pointer; }
+        .adm-btn-warn { flex:1; padding:0.7rem; background:#f59e0b; color:white; border:none; border-radius: var(--radius-sm); font-family:'Geist', sans-serif; font-weight: var(--fw-semibold); cursor:pointer; }
+        .adm-btn-danger { flex:1; padding:0.7rem; background:#ef4444; color:white; border:none; border-radius: var(--radius-sm); font-family:'Geist', sans-serif; font-weight: var(--fw-semibold); cursor:pointer; }
         .adm-form-field { display:flex; flex-direction:column; gap:0.3rem; }
-        .adm-form-field label { font-size:0.82rem; font-weight:600; color:#374151; font-family:'Geist', sans-serif; }
-        .adm-form-field input { padding:0.65rem 0.9rem; border:1.5px solid #e5e7eb; border-radius:8px; font-family:'Geist', sans-serif; font-size:0.88rem; color:#1f2937; outline:none; }
+        .adm-form-field label { font-size: var(--font-helper); font-weight: var(--fw-semibold); color:#374151; font-family:'Geist', sans-serif; }
+        .adm-form-field input { padding:0.65rem 0.9rem; border:1.5px solid #e5e7eb; border-radius: var(--radius-sm); font-family:'Geist', sans-serif; font-size: var(--font-button); color:#1f2937; outline:none; }
         .adm-form-field input:focus { border-color:#f9007a; }
       `}</style>
     </div>

@@ -211,7 +211,7 @@ export default function CardapioConfigPage() {
   if (loading) return (
     <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"40vh"}}>
       <span className="ccc-spinner-lg" />
-      <style>{`@keyframes ccspin{to{transform:rotate(360deg)}} .ccc-spinner-lg{width:32px;height:32px;border:3px solid var(--primary-light, #FFF1F7);border-top-color:var(--primary, #FF6FA9);border-radius:50%;animation:ccspin 0.7s linear infinite;display:inline-block;}`}</style>
+      <style>{`@keyframes ccspin{to{transform:rotate(360deg)}} .ccc-spinner-lg{width:32px;height:32px;border:3px solid var(--primary-light);border-top-color:var(--primary);border-radius:50%;animation:ccspin 0.7s linear infinite;display:inline-block;}`}</style>
     </div>
   );
 
@@ -275,7 +275,7 @@ export default function CardapioConfigPage() {
             <div className="ccc-logo-preview" onClick={() => fileRef.current?.click()}>
               {preview || form.foto_url
                 ? <img src={preview || form.foto_url} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}} />
-                : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary, #FF6FA9)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               }
               <div className="ccc-logo-cam">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -285,7 +285,7 @@ export default function CardapioConfigPage() {
               <p className="ccc-logo-label">Logo da loja</p>
               <p className="ccc-logo-sub">Aparece no topo do cardápio</p>
               <button
-                style={{marginTop:"0.5rem",padding:"0.3rem 0.85rem",background:"var(--primary-light, #FFF1F7)",border:"1.5px solid var(--primary-light, #FFF1F7)",borderRadius:"50px",fontFamily:"Geist,sans-serif",fontSize:"0.75rem",fontWeight:700,color:"var(--primary-dark, #F85A9A)",cursor:"pointer"}}
+                style={{marginTop:"0.5rem",padding:"0.3rem 0.85rem",background:"var(--primary-light)",border:"1.5px solid var(--primary-light)",borderRadius:"50px",fontFamily:"Geist,sans-serif",fontSize:"0.75rem",fontWeight:700,color:"var(--primary-dark)",cursor:"pointer"}}
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
               >
@@ -310,7 +310,7 @@ export default function CardapioConfigPage() {
             </span>
             <div style={{flex:1,display:"flex",flexDirection:"column",gap:"0.4rem"}}>
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                <span style={{fontSize:"0.75rem",color:"var(--text-muted, #9CA3AF)"}}>Descrição</span>
+                <span style={{fontSize:"0.75rem",color:"var(--text-muted)"}}>Descrição</span>
                 <button type="button" className="ccc-btn-ia" onClick={gerarDescricaoLoja} disabled={gerandoDescricao || !form.nome_loja.trim()}>
                   {gerandoDescricao
                     ? <><span className="ccc-spinner-ia" /> Gerando...</>
@@ -341,7 +341,7 @@ export default function CardapioConfigPage() {
           <div className="ccc-field">
             <span className="ccc-field-icon">
               {buscandoCep
-                ? <span className="ccc-spinner-xs" style={{borderColor:"var(--primary-light, #FFF1F7)",borderTopColor:"var(--primary, #FF6FA9)"}} />
+                ? <span className="ccc-spinner-xs" style={{borderColor:"var(--primary-light)",borderTopColor:"var(--primary)"}} />
                 : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
             </span>
             <input className="ccc-field-input" placeholder="CEP (opcional)" value={form.cep}
@@ -366,7 +366,7 @@ export default function CardapioConfigPage() {
               placeholder="Cidade" value={form.cidade} onChange={(e: any) => setForm({...form, cidade: e.target.value})} />
             <div className="ccc-field"><input className="ccc-field-input" placeholder="UF" value={form.estado} onChange={(e: any) => setForm({...form, estado: e.target.value.toUpperCase()})} maxLength={2} /></div>
           </div>
-          {cepPreenchido && <p className="ccc-cep-hint">Preenchido automaticamente. <span onClick={() => setCepPreenchido(false)} style={{color:"var(--primary, #FF6FA9)",cursor:"pointer",fontWeight:600}}>Editar manual</span></p>}
+          {cepPreenchido && <p className="ccc-cep-hint">Preenchido automaticamente. <span onClick={() => setCepPreenchido(false)} style={{color:"var(--primary)",cursor:"pointer",fontWeight:600}}>Editar manual</span></p>}
           <div className="ccc-divider" />
           <div className="ccc-toggle-row">
             <div><p className="ccc-toggle-label">Mostrar localização completa</p><p className="ccc-toggle-sub">Exibe rua, bairro e cidade no cardápio</p></div>
@@ -460,12 +460,12 @@ export default function CardapioConfigPage() {
         @keyframes ccspin { to { transform:rotate(360deg); } }
 
         /* ── Tabs ── */
-        .ccc-tabs { display:flex; gap:0.3rem; background:var(--bg-card, #FFFFFF); border:1px solid var(--border, #E9E9EE); border-radius:14px; padding:5px; width:fit-content; margin-bottom:0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); }
-        .ccc-tab { display:flex; align-items:center; gap:0.4rem; padding:0.55rem 1.25rem; border-radius:10px; border:none; background:transparent; font-family:'Geist',sans-serif; font-size:0.86rem; font-weight:600; color:var(--text-secondary, #6B7280); cursor:pointer; transition:all 0.2s; white-space:nowrap; }
-        .ccc-tab:hover { color:var(--primary, #FF6FA9); background:var(--primary-light, #FFF1F7); }
-        .ccc-tab--active { background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color:#ffffff; box-shadow:0 3px 10px rgba(255,111,169,0.32); }
-        .ccc-tab--active:hover { color:#ffffff; background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); }
-        @media(max-width:640px) { .ccc-tabs { width:100%; } .ccc-tab { flex:1; justify-content:center; padding:0.55rem 0.25rem; font-size:0.8rem; } }
+        .ccc-tabs { display:flex; gap:0.3rem; background:var(--bg-card); border:1px solid var(--border); border-radius: var(--radius-lg); padding:5px; width:fit-content; margin-bottom:0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); }
+        .ccc-tab { display:flex; align-items:center; gap:0.4rem; padding:0.55rem 1.25rem; border-radius: var(--radius-md); border:none; background:transparent; font-family:'Geist',sans-serif; font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-secondary); cursor:pointer; transition:all 0.2s; white-space:nowrap; }
+        .ccc-tab:hover { color:var(--primary); background:var(--primary-light); }
+        .ccc-tab--active { background:var(--primary-gradient); color:#ffffff; box-shadow:0 3px 10px rgba(255,111,169,0.32); }
+        .ccc-tab--active:hover { color:#ffffff; background:var(--primary-gradient); }
+        @media(max-width:640px) { .ccc-tabs { width:100%; } .ccc-tab { flex:1; justify-content:center; padding:0.55rem 0.25rem; font-size: var(--font-helper); } }
         @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
         @keyframes toastIn { from{opacity:0;transform:translate(-50%,12px)} to{opacity:1;transform:translate(-50%,0)} }
 
@@ -476,7 +476,7 @@ export default function CardapioConfigPage() {
         .ccc-outer {
           width:calc(100% + 4rem); display:flex; justify-content:center;
           margin: -2rem -2rem 0;
-          padding-top:1.25rem; padding-bottom:3rem; background:var(--bg-body, #F7F7F8);
+          padding-top:1.25rem; padding-bottom:3rem; background:var(--bg-body);
           overflow-x:hidden;
         }
         .ccc-root {
@@ -492,13 +492,13 @@ export default function CardapioConfigPage() {
           flex-wrap:wrap; gap:0.75rem; padding-top:1rem; padding-bottom:1.25rem;
           border-bottom: none;
         }
-        .ccc-page-title { font-size:1.5rem; font-weight:700; color:var(--text-title, #1F2937); margin:0 0 0.3rem; letter-spacing:-0.02em; }
-        .ccc-page-sub { font-size:0.86rem; color:var(--text-secondary, #6B7280); margin:0; }
+        .ccc-page-title { font-size: var(--text-xl); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.3rem; letter-spacing:-0.02em; }
+        .ccc-page-sub { font-size: var(--font-button); color:var(--text-secondary); margin:0; }
         .ccc-autosave {
-          font-size:0.76rem; font-weight:600; color:var(--success, #22C55E);
+          font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--success);
           display:inline-flex; align-items:center; gap:0.35rem;
           background:#f0fdf4; padding:0.32rem 0.8rem;
-          border-radius:50px; border:1px solid #dcfce7;
+          border-radius: var(--radius-full); border:1px solid #dcfce7;
           animation:fadeIn 0.25s ease;
         }
 
@@ -518,18 +518,18 @@ export default function CardapioConfigPage() {
 
         /* ── Card base ── */
         .ccc-card {
-          background:var(--bg-card, #FFFFFF); border-radius:20px; padding:1.5rem;
+          background:var(--bg-card); border-radius: var(--radius-xl); padding:1.5rem;
           box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.05));
-          border:1px solid var(--border, #E9E9EE);
+          border:1px solid var(--border);
           display:flex; flex-direction:column; gap:0.95rem;
           width:100%; box-sizing:border-box; height:100%;
-          transition:box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+          transition: box-shadow var(--dur-normal) var(--ease-out), border-color 0.2s ease, transform 0.2s ease;
           position:relative; overflow:hidden;
         }
         .ccc-card::before {
           content:""; position:absolute; top:-60px; right:-60px;
           width:140px; height:140px;
-          background:radial-gradient(circle, var(--primary-light, #FFF1F7) 0%, transparent 70%);
+          background:radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
           pointer-events:none; opacity:0.7;
         }
         .ccc-card:hover {
@@ -541,158 +541,158 @@ export default function CardapioConfigPage() {
         .ccc-section-header {
           display:flex; align-items:center; gap:0.7rem;
           padding-bottom:1rem; margin-bottom:0.1rem;
-          border-bottom:1px solid var(--border, #E9E9EE);
+          border-bottom:1px solid var(--border);
           position:relative; z-index:1;
         }
         .ccc-section-icon {
           width:36px; height:36px; flex-shrink:0;
-          border-radius:11px;
-          background:var(--primary-light, #FFF1F7);
-          color:var(--primary, #FF6FA9);
+          border-radius: var(--radius-md);
+          background:var(--primary-light);
+          color:var(--primary);
           display:flex; align-items:center; justify-content:center;
         }
         .ccc-section-label {
-          font-size:0.95rem; font-weight:700;
-          color:var(--text-title, #1F2937); margin:0;
+          font-size: var(--font-input); font-weight: var(--fw-bold);
+          color:var(--text-title); margin:0;
           letter-spacing:-0.01em;
         }
         .ccc-section-sub {
-          font-size:0.74rem; color:var(--text-muted, #9CA3AF);
+          font-size: var(--font-helper); color:var(--text-muted);
           margin:0.1rem 0 0; line-height:1.3;
         }
-        .ccc-hint { font-size:0.76rem; color:var(--text-muted, #9CA3AF); margin:0; }
+        .ccc-hint { font-size: var(--font-helper); color:var(--text-muted); margin:0; }
 
         /* ── Logo ── */
         .ccc-logo-row { display:flex; align-items:center; gap:1rem; width:100%; position:relative; z-index:1; }
         .ccc-logo-preview {
           width:78px; height:78px; min-width:78px; border-radius:50%;
-          background:var(--primary-light, #FFF1F7);
-          border:3px solid var(--bg-card, #FFFFFF);
-          box-shadow:0 0 0 2px var(--primary-light, #FFF1F7);
+          background:var(--primary-light);
+          border:3px solid var(--bg-card);
+          box-shadow:0 0 0 2px var(--primary-light);
           display:flex; align-items:center; justify-content:center;
           cursor:pointer; position:relative; overflow:hidden; flex-shrink:0;
           transition:box-shadow 0.2s, transform 0.2s;
         }
         .ccc-logo-preview:hover {
-          box-shadow:0 0 0 2px var(--primary, #FF6FA9), 0 6px 18px rgba(255,111,169,0.25);
+          box-shadow:0 0 0 2px var(--primary), 0 6px 18px rgba(255,111,169,0.25);
           transform:scale(1.03);
         }
         .ccc-logo-cam {
           position:absolute; bottom:2px; right:2px;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          background:var(--primary-gradient);
           width:24px; height:24px;
           display:flex; align-items:center; justify-content:center;
-          border-radius:50%; border:2px solid var(--bg-card, #FFFFFF);
+          border-radius:50%; border:2px solid var(--bg-card);
           box-shadow:0 2px 6px rgba(255,111,169,0.4);
         }
-        .ccc-logo-label { font-size:0.95rem; font-weight:700; color:var(--text-title, #1F2937); margin:0; }
-        .ccc-logo-sub { font-size:0.75rem; color:var(--text-muted, #9CA3AF); margin:0.2rem 0 0; }
+        .ccc-logo-label { font-size: var(--font-input); font-weight: var(--fw-bold); color:var(--text-title); margin:0; }
+        .ccc-logo-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0.2rem 0 0; }
 
         /* ── Campos de input ── */
         .ccc-field {
           display:flex; align-items:center; gap:0.65rem;
-          border:1px solid var(--border, #E9E9EE); border-radius:10px;
-          padding:0.65rem 1rem; background:var(--bg-input, #FFFFFF);
+          border:1px solid var(--border); border-radius: var(--radius-md);
+          padding:0.65rem 1rem; background:var(--bg-input);
           transition:border-color 0.15s, box-shadow 0.15s;
           width:100%; box-sizing:border-box;
         }
-        .ccc-field:hover { border-color:var(--text-muted, #9CA3AF); }
+        .ccc-field:hover { border-color:var(--text-muted); }
         .ccc-field:focus-within {
-          border-color:var(--border-focus, #FF6FA9);
+          border-color:var(--border-focus);
           box-shadow:0 0 0 3px rgba(255,111,169,0.12);
         }
-        .ccc-field-icon { display:flex; align-items:center; flex-shrink:0; color:var(--text-muted, #9CA3AF); }
+        .ccc-field-icon { display:flex; align-items:center; flex-shrink:0; color:var(--text-muted); }
         .ccc-field-input {
           flex:1; border:none; outline:none;
-          font-family:'Geist', sans-serif; font-size:0.88rem;
-          color:var(--text-title, #1F2937); background:transparent; min-width:0;
+          font-family:'Geist', sans-serif; font-size: var(--font-button);
+          color:var(--text-title); background:transparent; min-width:0;
         }
-        .ccc-field-input::placeholder { color:var(--text-muted, #9CA3AF); }
+        .ccc-field-input::placeholder { color:var(--text-muted); }
         .ccc-field-input:-webkit-autofill,
         .ccc-field-input:-webkit-autofill:hover,
         .ccc-field-input:-webkit-autofill:focus {
-          -webkit-box-shadow:0 0 0px 1000px var(--bg-input, #FFFFFF) inset;
-          -webkit-text-fill-color:var(--text-title, #1F2937);
+          -webkit-box-shadow:0 0 0px 1000px var(--bg-input) inset;
+          -webkit-text-fill-color:var(--text-title);
           transition:background-color 5000s;
         }
 
         /* ── Textarea / extras ── */
-        .ccc-char-count { font-size:0.72rem; color:var(--text-muted, #9CA3AF); text-align:right; margin:0; }
-        .ccc-cep-hint { font-size:0.74rem; color:var(--text-secondary, #6B7280); margin:0; }
+        .ccc-char-count { font-size: var(--font-caption); color:var(--text-muted); text-align:right; margin:0; }
+        .ccc-cep-hint { font-size: var(--font-helper); color:var(--text-secondary); margin:0; }
         .ccc-row-2 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0.6rem; }
         .ccc-divider { border:none; margin:0.25rem 0; }
 
         /* ── Toggle ── */
         .ccc-toggle-row { display:flex; justify-content:space-between; align-items:center; gap:1rem; }
-        .ccc-toggle-label { font-size:0.86rem; font-weight:600; color:var(--text-primary, #374151); margin:0; }
-        .ccc-toggle-sub { font-size:0.74rem; color:var(--text-muted, #9CA3AF); margin:0.15rem 0 0; }
+        .ccc-toggle-label { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-primary); margin:0; }
+        .ccc-toggle-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0.15rem 0 0; }
         .ccc-toggle { position:relative; display:inline-block; width:42px; height:24px; flex-shrink:0; }
         .ccc-toggle input { opacity:0; width:0; height:0; }
         .ccc-toggle-slider {
           position:absolute; cursor:pointer; inset:0;
-          background:var(--border, #E9E9EE); border-radius:24px; transition:0.25s;
+          background:var(--border); border-radius: var(--radius-xl); transition:0.25s;
         }
         .ccc-toggle-slider:before {
           content:""; position:absolute; height:18px; width:18px;
-          left:3px; bottom:3px; background:var(--bg-card, #FFFFFF); border-radius:50%;
+          left:3px; bottom:3px; background:var(--bg-card); border-radius:50%;
           transition:0.25s; box-shadow:0 1px 3px rgba(0,0,0,0.2);
         }
-        .ccc-toggle input:checked + .ccc-toggle-slider { background:var(--primary, #FF6FA9); }
+        .ccc-toggle input:checked + .ccc-toggle-slider { background:var(--primary); }
         .ccc-toggle input:checked + .ccc-toggle-slider:before { transform:translateX(18px); }
         .ccc-toggle input:focus-visible + .ccc-toggle-slider { box-shadow:0 0 0 3px rgba(255,111,169,0.25); }
 
         /* ── Dias da semana ── */
         .ccc-dias-grid { display:flex; flex-wrap:wrap; gap:0.5rem; }
         .ccc-dia-btn {
-          padding:0.5rem 0.95rem; border-radius:50px;
-          border:1.5px solid var(--border, #E9E9EE); background:var(--bg-card, #FFFFFF);
-          font-family:'Geist', sans-serif; font-size:0.78rem;
-          font-weight:600; color:var(--text-secondary, #6B7280); cursor:pointer;
+          padding:0.5rem 0.95rem; border-radius: var(--radius-full);
+          border:1.5px solid var(--border); background:var(--bg-card);
+          font-family:'Geist', sans-serif; font-size: var(--font-helper);
+          font-weight: var(--fw-semibold); color:var(--text-secondary); cursor:pointer;
           transition:all 0.18s; min-width:54px;
         }
         .ccc-dia-btn:hover {
-          border-color:var(--primary, #FF6FA9);
-          color:var(--primary-dark, #F85A9A);
-          background:var(--primary-light, #FFF1F7);
+          border-color:var(--primary);
+          color:var(--primary-dark);
+          background:var(--primary-light);
           transform:translateY(-1px);
         }
         .ccc-dia-btn.active {
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
-          border-color:transparent; color:#ffffff; font-weight:700;
+          background:var(--primary-gradient);
+          border-color:transparent; color:#ffffff; font-weight: var(--fw-bold);
           box-shadow:0 3px 10px rgba(255,111,169,0.32);
         }
 
         /* ── Time fields ── */
         .ccc-time-field { display:flex; flex-direction:column; gap:0.35rem; }
-        .ccc-time-field label { font-size:0.74rem; font-weight:600; color:var(--text-primary, #374151); }
+        .ccc-time-field label { font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-primary); }
         .ccc-time-field input {
-          padding:0.6rem 0.85rem; border:1px solid var(--border, #E9E9EE);
-          border-radius:10px; font-family:'Geist', sans-serif;
-          font-size:0.86rem; color:var(--text-title, #1F2937); outline:none;
-          transition:border-color 0.15s, box-shadow 0.15s; width:100%; background:var(--bg-input, #FFFFFF);
+          padding:0.6rem 0.85rem; border:1px solid var(--border);
+          border-radius: var(--radius-md); font-family:'Geist', sans-serif;
+          font-size: var(--font-button); color:var(--text-title); outline:none;
+          transition:border-color 0.15s, box-shadow 0.15s; width:100%; background:var(--bg-input);
         }
-        .ccc-time-field input:hover { border-color:var(--text-muted, #9CA3AF); }
-        .ccc-time-field input:focus { border-color:var(--border-focus, #FF6FA9); box-shadow:0 0 0 3px rgba(255,111,169,0.12); }
+        .ccc-time-field input:hover { border-color:var(--text-muted); }
+        .ccc-time-field input:focus { border-color:var(--border-focus); box-shadow:0 0 0 3px rgba(255,111,169,0.12); }
 
         /* ── Notas de avaliação ── */
         .ccc-notas-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.6rem; }
         .ccc-nota-btn {
-          padding:0.95rem 0.4rem; border:1.5px solid var(--border, #E9E9EE);
-          border-radius:14px; background:var(--bg-card, #FFFFFF);
-          font-family:'Geist', sans-serif; font-size:1.05rem;
-          font-weight:800; color:var(--text-primary, #374151); cursor:pointer;
+          padding:0.95rem 0.4rem; border:1.5px solid var(--border);
+          border-radius: var(--radius-lg); background:var(--bg-card);
+          font-family:'Geist', sans-serif; font-size: var(--font-modal-title);
+          font-weight: var(--fw-black); color:var(--text-primary); cursor:pointer;
           transition:all 0.2s; display:flex; flex-direction:column;
           align-items:center; gap:0.3rem; position:relative; overflow:hidden;
         }
-        .ccc-nota-btn span:first-child { font-size:1.35rem; filter:grayscale(0.4); transition:filter 0.2s; }
+        .ccc-nota-btn span:first-child { font-size: var(--font-page-title); filter:grayscale(0.4); transition:filter 0.2s; }
         .ccc-nota-btn:hover {
-          border-color:var(--primary, #FF6FA9); transform:translateY(-2px);
+          border-color:var(--primary); transform:translateY(-2px);
           box-shadow:0 6px 16px rgba(255,111,169,0.14);
         }
         .ccc-nota-btn:hover span:first-child { filter:grayscale(0); }
         .ccc-nota-btn.active {
           border-color:transparent;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
+          background:var(--primary-gradient);
           color:#ffffff;
           box-shadow:0 6px 18px rgba(255,111,169,0.35);
         }
@@ -702,10 +702,10 @@ export default function CardapioConfigPage() {
         .ccc-btn-ia {
           display:inline-flex; align-items:center; gap:0.3rem;
           padding:0.25rem 0.7rem;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
-          color:var(--text-inverse, #FFFFFF); border:none; border-radius:20px;
-          font-family:'Geist', sans-serif; font-size:0.7rem;
-          font-weight:700; cursor:pointer; transition:opacity 0.2s, transform 0.15s;
+          background:var(--primary-gradient);
+          color:var(--text-inverse); border:none; border-radius: var(--radius-xl);
+          font-family:'Geist', sans-serif; font-size: var(--font-caption);
+          font-weight: var(--fw-bold); cursor:pointer; transition:opacity 0.2s, transform 0.15s;
           white-space:nowrap; flex-shrink:0;
           box-shadow:0 2px 8px rgba(255,111,169,0.3);
         }
@@ -721,10 +721,10 @@ export default function CardapioConfigPage() {
         .ccc-btn-save {
           align-self:flex-end;
           padding:0.75rem 2.25rem;
-          background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A));
-          color:var(--text-inverse, #FFFFFF); border:none; border-radius:10px;
-          font-family:'Geist', sans-serif; font-size:0.9rem;
-          font-weight:700; cursor:pointer; letter-spacing:0.01em;
+          background:var(--primary-gradient);
+          color:var(--text-inverse); border:none; border-radius: var(--radius-md);
+          font-family:'Geist', sans-serif; font-size: var(--font-button);
+          font-weight: var(--fw-bold); cursor:pointer; letter-spacing:0.01em;
           display:flex; align-items:center; justify-content:center;
           min-height:44px; min-width:180px;
           transition:opacity 0.2s, transform 0.15s, box-shadow 0.2s;
@@ -738,17 +738,17 @@ export default function CardapioConfigPage() {
         .ccc-toast {
           position:fixed; bottom:2rem; left:50%;
           transform:translateX(-50%);
-          background:#f0fdf4; border:1px solid #bbf7d0; color:var(--success, #22C55E);
-          border-radius:12px; padding:0.75rem 1.5rem; font-size:0.86rem;
-          font-weight:600; text-align:center; z-index:90;
+          background:#f0fdf4; border:1px solid #bbf7d0; color:var(--success);
+          border-radius: var(--radius-md); padding:0.75rem 1.5rem; font-size: var(--font-button);
+          font-weight: var(--fw-semibold); text-align:center; z-index:90;
           box-shadow:0 8px 24px rgba(16,24,40,0.12);
           animation:toastIn 0.3s ease;
         }
 
         /* ── Spinners ── */
-        .ccc-spinner-lg { width:32px; height:32px; border:3px solid var(--primary-light, #FFF1F7); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
+        .ccc-spinner-lg { width:32px; height:32px; border:3px solid var(--primary-light); border-top-color:var(--primary); border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
         .ccc-spinner-sm { width:18px; height:18px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
-        .ccc-spinner-xs { width:13px; height:13px; border:2px solid var(--primary-light, #FFF1F7); border-top-color:var(--primary, #FF6FA9); border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
+        .ccc-spinner-xs { width:13px; height:13px; border:2px solid var(--primary-light); border-top-color:var(--primary); border-radius:50%; animation:ccspin 0.7s linear infinite; display:inline-block; }
 
         /* ── Responsivo ── */
         @media (max-width:640px) {
@@ -756,14 +756,14 @@ export default function CardapioConfigPage() {
           .ccc-outer {
             width: calc(100% + 1.5rem);
             margin: -0.75rem -0.75rem 0;
-            background: var(--bg-body, #F7F7F8);
+            background: var(--bg-body);
           }
           .ccc-root { padding:0 0.75rem; gap:1rem; }
           .ccc-row-top { grid-template-columns:1fr; }
-          .ccc-page-title { font-size:1.2rem; }
+          .ccc-page-title { font-size: var(--font-modal-title); }
           .ccc-page-header { padding-top:1.25rem; }
           .ccc-card { padding:1.15rem; }
-          .ccc-btn-save { align-self:stretch; width:100%; border-radius:50px; min-height:50px; }
+          .ccc-btn-save { align-self:stretch; width:100%; border-radius: var(--radius-full); min-height:50px; }
           .ccc-toast { width:calc(100% - 2rem); bottom:1rem; }
         }
       `}</style>

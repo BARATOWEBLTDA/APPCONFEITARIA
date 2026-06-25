@@ -143,7 +143,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
           background: rgba(0,0,0,0);
           z-index: 1000;
           pointer-events: none;
-          transition: background 0.25s ease;
+          transition: background var(--dur-normal) var(--ease-out);
         }
         .mais-overlay.open {
           background: rgba(0,0,0,0.45);
@@ -155,7 +155,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
           left: 0; right: 0; bottom: 0;
           z-index: 1001;
           background: #fff;
-          border-radius: 24px 24px 0 0;
+          border-radius: var(--radius-xl) 24px 0 0;
           padding: 0.5rem 0 1rem;
           max-height: 88vh;
           display: flex; flex-direction: column;
@@ -171,7 +171,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
         .mais-handle {
           width: 36px; height: 4px;
           background: #E9E9EE;
-          border-radius: 999px;
+          border-radius: var(--radius-full);
           margin: 0.5rem auto 0.25rem;
         }
 
@@ -180,14 +180,14 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
           padding: 0.6rem 1.25rem 0.4rem;
         }
         .mais-title {
-          font-size: 1.1rem; font-weight: 800;
-          color: var(--text-title, #1F2937);
+          font-size: var(--font-modal-title); font-weight: var(--fw-black);
+          color: var(--text-title);
           margin: 0;
           letter-spacing: -0.01em;
         }
         .mais-close {
           width: 34px; height: 34px;
-          border: none; border-radius: 10px;
+          border: none; border-radius: var(--radius-md);
           background: #F4F4F6; color: #6B7280;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
@@ -203,8 +203,8 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
 
         .mais-group { display: flex; flex-direction: column; gap: 0.5rem; }
         .mais-group-label {
-          font-size: 0.68rem;
-          font-weight: 700;
+          font-size: var(--font-caption);
+          font-weight: var(--fw-bold);
           text-transform: uppercase;
           letter-spacing: 0.07em;
           color: #9CA3AF;
@@ -220,11 +220,11 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
           padding: 0.7rem 0.85rem;
           background: #F7F7F8;
           border: 1px solid transparent;
-          border-radius: 12px;
+          border-radius: var(--radius-md);
           cursor: pointer;
           font-family: inherit;
           text-align: left;
-          transition: all 0.12s ease;
+          transition: all var(--dur-fast) var(--ease-out);
         }
         .mais-item:hover {
           background: #FFF1F7;
@@ -237,8 +237,8 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
           flex-shrink: 0;
         }
         .mais-item-label {
-          font-size: 0.86rem; font-weight: 600;
-          color: var(--text-primary, #374151);
+          font-size: var(--font-button); font-weight: var(--fw-semibold);
+          color: var(--text-primary);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;

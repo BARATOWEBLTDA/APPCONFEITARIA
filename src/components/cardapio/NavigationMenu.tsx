@@ -850,7 +850,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
         @keyframes checkPop { 0%{transform:scale(0)} 70%{transform:scale(1.15)} 100%{transform:scale(1)} }
         .ck-progress-bar { transition: width 0.4s cubic-bezier(0.4,0,0.2,1); animation: progressPulse 2s ease-in-out infinite; }
         .ck-scroll::-webkit-scrollbar { width:4px; }
-        .ck-scroll::-webkit-scrollbar-thumb { background:#e5e7eb; border-radius:4px; }
+        .ck-scroll::-webkit-scrollbar-thumb { background:#e5e7eb; border-radius: var(--radius-sm); }
       `}</style>
 
       {/* ═══ MOBILE: tab bar + cart vindo de baixo ═══ */}
@@ -999,7 +999,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
             display:'flex',flexDirection:'column',
             boxShadow:'0 24px 64px rgba(0,0,0,0.2)',
             borderRadius:'20px',overflow:'hidden',
-            animation:'fadeScaleIn 0.2s ease',
+            animation:'fadeScaleIn var(--dur-normal) var(--ease-out)',
           }}>
             {/* Header */}
             <div style={{padding:'16px 20px',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:'1px solid #f0f0f0',flexShrink:0}}>

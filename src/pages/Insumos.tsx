@@ -302,12 +302,12 @@ function Styles() {
       }
       .ins-header-text { min-width: 0; flex: 1; }
       .ins-title {
-        font-size: 1.6rem; font-weight: 800;
-        color: var(--text-title, #1F2937);
+        font-size: var(--text-2xl); font-weight: var(--fw-black);
+        color: var(--text-title);
         margin: 0;
       }
       .ins-sub {
-        font-size: 0.82rem; color: var(--text-muted, #9CA3AF);
+        font-size: var(--font-helper); color: var(--text-muted);
         margin: 4px 0 0;
       }
 
@@ -316,62 +316,62 @@ function Styles() {
         flex: 1; position: relative;
         display: flex; align-items: center; gap: 0.55rem;
         padding: 0 0.85rem;
-        background: var(--bg-card, #fff);
-        border: 1.5px solid var(--border, #E9E9EE);
-        border-radius: 12px;
-        color: var(--text-muted, #9CA3AF);
+        background: var(--bg-card);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-md);
+        color: var(--text-muted);
       }
       .ins-search input {
         flex: 1; padding: 0.7rem 0;
         border: none; background: transparent; outline: none;
-        font-family: inherit; font-size: 0.88rem;
-        color: var(--text-title, #1F2937);
+        font-family: inherit; font-size: var(--font-button);
+        color: var(--text-title);
       }
-      .ins-search:focus-within { border-color: var(--primary, #FF6FA9); }
+      .ins-search:focus-within { border-color: var(--primary); }
 
       .ins-filtros { display: flex; gap: 0.4rem; flex-wrap: wrap; }
       .ins-filtro-btn {
         padding: 0.4rem 0.95rem;
-        border: 1.5px solid var(--border, #E9E9EE);
-        border-radius: 999px;
-        background: var(--bg-card, #fff);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-full);
+        background: var(--bg-card);
         font-family: 'Geist', sans-serif;
-        font-size: 0.8rem; font-weight: 500;
-        color: var(--text-secondary, #6B7280);
+        font-size: var(--font-helper); font-weight: var(--fw-medium);
+        color: var(--text-secondary);
         cursor: pointer; white-space: nowrap;
         transition: all 0.15s;
       }
       .ins-filtro-btn.active {
-        border-color: var(--primary, #FF6FA9);
-        color: var(--primary, #FF6FA9);
-        background: var(--primary-light, #FFF1F7);
-        font-weight: 700;
+        border-color: var(--primary);
+        color: var(--primary);
+        background: var(--primary-light);
+        font-weight: var(--fw-bold);
       }
 
       .ins-cat-dropdown { display: none; position: relative; }
       .ins-cat-dropdown-trigger {
         width: 100%; display: flex; align-items: center; justify-content: space-between;
         gap: 0.6rem; padding: 0.7rem 0.9rem;
-        background: var(--bg-card, #fff);
-        border: 1.5px solid var(--border, #E9E9EE);
-        border-radius: 12px;
+        background: var(--bg-card);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-md);
         font-family: 'Geist', sans-serif; cursor: pointer;
-        color: var(--text-title, #1F2937);
+        color: var(--text-title);
       }
-      .ins-cat-dropdown-trigger:hover { border-color: var(--primary, #FF6FA9); }
+      .ins-cat-dropdown-trigger:hover { border-color: var(--primary); }
       .ins-cat-dropdown-label { display: flex; align-items: center; gap: 0.55rem; min-width: 0; }
       .ins-cat-dropdown-tag {
-        font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
-        color: var(--text-muted, #9CA3AF);
-        background: var(--bg-body, #F7F7F8); padding: 3px 7px; border-radius: 6px;
+        font-size: var(--font-caption); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.4px;
+        color: var(--text-muted);
+        background: var(--bg-body); padding: 3px 7px; border-radius: var(--radius-sm);
       }
-      .ins-cat-dropdown-value { font-size: 0.9rem; font-weight: 700; }
+      .ins-cat-dropdown-value { font-size: var(--font-button); font-weight: var(--fw-bold); }
       .ins-cat-dropdown-backdrop { position: fixed; inset: 0; z-index: 90; background: transparent; }
       .ins-cat-dropdown-list {
         position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 91;
-        background: var(--bg-card, #fff);
-        border: 1.5px solid var(--border, #E9E9EE);
-        border-radius: 12px;
+        background: var(--bg-card);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-md);
         box-shadow: 0 8px 24px rgba(0,0,0,0.08);
         max-height: 300px; overflow-y: auto;
         padding: 4px;
@@ -380,14 +380,14 @@ function Styles() {
         width: 100%; display: flex; align-items: center; justify-content: space-between;
         padding: 0.65rem 0.8rem;
         background: transparent; border: none; cursor: pointer;
-        font-family: 'Geist', sans-serif; font-size: 0.88rem; font-weight: 500;
-        color: var(--text-title, #1F2937);
-        border-radius: 8px; text-align: left;
+        font-family: 'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-medium);
+        color: var(--text-title);
+        border-radius: var(--radius-sm); text-align: left;
       }
-      .ins-cat-dropdown-item:hover { background: var(--bg-body, #F7F7F8); }
+      .ins-cat-dropdown-item:hover { background: var(--bg-body); }
       .ins-cat-dropdown-item.is-active {
-        background: var(--primary-light, #FFF1F7);
-        color: var(--primary, #FF6FA9); font-weight: 700;
+        background: var(--primary-light);
+        color: var(--primary); font-weight: var(--fw-bold);
       }
 
       /* Lista */
@@ -395,58 +395,58 @@ function Styles() {
       .ins-item {
         display: flex; gap: 0.85rem; align-items: center;
         padding: 0.75rem;
-        background: var(--bg-card, #fff);
-        border: 1px solid var(--border, #E9E9EE);
-        border-radius: 12px;
-        transition: border-color 0.15s ease;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        transition: border-color var(--dur-fast) var(--ease-out);
       }
-      .ins-item:hover { border-color: var(--primary, #FF6FA9); }
+      .ins-item:hover { border-color: var(--primary); }
       .ins-item-img {
         width: 56px; height: 56px;
-        border-radius: 10px; object-fit: cover;
+        border-radius: var(--radius-md); object-fit: cover;
         flex-shrink: 0; background: #F3F4F6;
       }
       .ins-item-img--placeholder {
-        display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+        display: flex; align-items: center; justify-content: center; font-size: var(--text-xl);
       }
       .ins-item-info { flex: 1; min-width: 0; }
       .ins-item-nome {
-        margin: 0; font-size: 0.92rem; font-weight: 700;
-        color: var(--text-title, #1F2937);
+        margin: 0; font-size: var(--font-button); font-weight: var(--fw-bold);
+        color: var(--text-title);
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
       .ins-item-marca {
-        font-weight: 500; color: var(--text-muted, #9CA3AF);
+        font-weight: var(--fw-medium); color: var(--text-muted);
       }
       .ins-item-meta {
         margin: 3px 0 0;
-        font-size: 0.72rem; color: var(--text-muted, #9CA3AF);
+        font-size: var(--font-caption); color: var(--text-muted);
         display: flex; align-items: center; gap: 6px;
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
       .ins-item-cat {
-        background: var(--bg-body, #F7F7F8);
-        padding: 1px 7px; border-radius: 5px;
-        font-weight: 600;
+        background: var(--bg-body);
+        padding: 1px 7px; border-radius: var(--radius-sm);
+        font-weight: var(--fw-semibold);
       }
-      .ins-item-dot { color: var(--border, #E9E9EE); }
+      .ins-item-dot { color: var(--border); }
       .ins-item-custo {
         margin: 4px 0 0;
-        font-size: 0.78rem; font-weight: 700;
-        color: var(--primary, #FF6FA9);
+        font-size: var(--font-helper); font-weight: var(--fw-bold);
+        color: var(--primary);
       }
       .ins-item-actions {
         display: flex; gap: 4px; flex-shrink: 0;
       }
       .ins-act-btn {
         width: 32px; height: 32px;
-        background: transparent; border: 1px solid var(--border, #E9E9EE);
-        border-radius: 8px;
+        background: transparent; border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
         display: flex; align-items: center; justify-content: center;
-        color: var(--text-secondary, #6B7280);
-        cursor: pointer; transition: all 0.15s ease;
+        color: var(--text-secondary);
+        cursor: pointer; transition: all var(--dur-fast) var(--ease-out);
       }
-      .ins-act-btn:hover { background: var(--bg-body, #F7F7F8); color: var(--text-title, #1F2937); }
+      .ins-act-btn:hover { background: var(--bg-body); color: var(--text-title); }
       .ins-act-del:hover { background: #FEE2E2; color: #B91C1C; border-color: #FECACA; }
 
       .ins-loading {
@@ -454,8 +454,8 @@ function Styles() {
       }
       .ins-spinner {
         width: 32px; height: 32px;
-        border: 3px solid var(--border, #E9E9EE);
-        border-top-color: var(--primary, #FF6FA9);
+        border: 3px solid var(--border);
+        border-top-color: var(--primary);
         border-radius: 50%;
         animation: insSpin 0.7s linear infinite;
       }
@@ -463,13 +463,13 @@ function Styles() {
 
       .ins-no-results {
         text-align: center; padding: 2rem 1rem;
-        color: var(--text-muted, #9CA3AF);
+        color: var(--text-muted);
       }
-      .ins-no-results p { margin: 0 0 0.8rem; font-size: 0.88rem; }
+      .ins-no-results p { margin: 0 0 0.8rem; font-size: var(--font-button); }
       .ins-no-results button {
-        background: var(--primary, #FF6FA9); color: #fff;
-        border: none; border-radius: 8px;
-        padding: 0.5rem 1rem; font-size: 0.82rem; font-weight: 600;
+        background: var(--primary); color: #fff;
+        border: none; border-radius: var(--radius-sm);
+        padding: 0.5rem 1rem; font-size: var(--font-helper); font-weight: var(--fw-semibold);
         cursor: pointer; font-family: inherit;
       }
 
@@ -483,39 +483,39 @@ function Styles() {
       }
       .ins-form-modal {
         background: #fff;
-        border-radius: 18px; padding: 1.25rem;
+        border-radius: var(--radius-lg); padding: 1.25rem;
         width: 100%; max-width: 520px;
         max-height: 92vh; overflow-y: auto;
         box-shadow: 0 20px 60px rgba(0,0,0,0.25);
       }
       .ins-confirm {
         background: #fff;
-        border-radius: 18px; padding: 1.5rem;
+        border-radius: var(--radius-lg); padding: 1.5rem;
         width: 100%; max-width: 360px;
         text-align: center;
         box-shadow: 0 20px 60px rgba(0,0,0,0.25);
       }
       .ins-confirm-title {
         margin: 0 0 0.5rem;
-        font-size: 1.05rem; font-weight: 800;
-        color: var(--text-title, #1F2937);
+        font-size: var(--font-modal-title); font-weight: var(--fw-black);
+        color: var(--text-title);
       }
       .ins-confirm-sub {
         margin: 0 0 1.25rem;
-        font-size: 0.85rem;
-        color: var(--text-secondary, #6B7280);
+        font-size: var(--font-button);
+        color: var(--text-secondary);
         line-height: 1.45;
       }
       .ins-confirm-btns { display: flex; gap: 0.5rem; }
       .ins-btn-cancel, .ins-btn-del-confirm {
         flex: 1; padding: 0.75rem;
-        border-radius: 10px; font-size: 0.88rem; font-weight: 700;
+        border-radius: var(--radius-md); font-size: var(--font-button); font-weight: var(--fw-bold);
         cursor: pointer; font-family: inherit;
         border: none;
       }
       .ins-btn-cancel {
-        background: var(--bg-body, #F7F7F8);
-        color: var(--text-title, #1F2937);
+        background: var(--bg-body);
+        color: var(--text-title);
       }
       .ins-btn-del-confirm {
         background: #DC2626; color: #fff;
@@ -523,11 +523,11 @@ function Styles() {
 
       @media (max-width: 640px) {
         .ins-root { padding-bottom: 6rem; gap: 1rem; }
-        .ins-title { font-size: 1.35rem; }
+        .ins-title { font-size: var(--font-page-title); }
         .ins-filtros--desktop { display: none; }
         .ins-cat-dropdown { display: block; }
         .ins-item-img { width: 48px; height: 48px; }
-        .ins-item-nome { font-size: 0.88rem; }
+        .ins-item-nome { font-size: var(--font-button); }
       }
     `}</style>
   );

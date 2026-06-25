@@ -136,30 +136,30 @@ export default function ResetPassword() {
         * { box-sizing:border-box; margin:0; padding:0; }
         html, body, #root { height:100%; overflow:hidden; }
         .rp-root { height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden; font-family:'Geist', sans-serif; padding:1.5rem; }
-        .rp-bg { position:fixed; inset:0; z-index:0; background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); }
+        .rp-bg { position:fixed; inset:0; z-index:0; background:var(--primary-gradient); }
         .rp-glow { position:fixed; z-index:1; width:350px; height:350px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,rgba(255,255,255,0) 70%); transform:translate(-50%,-50%); pointer-events:none; }
-        .rp-card { position:relative; z-index:2; background:var(--bg-card, #FFFFFF); border-radius:16px; padding:2.5rem 2.2rem 2rem; width:calc(100% - 2.5rem); max-width:440px; box-shadow:0 8px 40px rgba(0,0,0,0.12); animation:rpSlide 0.5s cubic-bezier(0.16,1,0.3,1) both; }
+        .rp-card { position:relative; z-index:2; background:var(--bg-card); border-radius: var(--radius-lg); padding:2.5rem 2.2rem 2rem; width:calc(100% - 2.5rem); max-width:440px; box-shadow:0 8px 40px rgba(0,0,0,0.12); animation:rpSlide 0.5s cubic-bezier(0.16,1,0.3,1) both; }
         @keyframes rpSlide { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
         .rp-logo-wrap { display:flex; justify-content:center; margin-bottom:1.5rem; }
         .rp-logo { height:90px; object-fit:contain; }
         .rp-text { text-align:center; margin-bottom:1.5rem; }
-        .rp-text h2 { font-size:1.2rem; font-weight:600; color:var(--text-title, #1F2937); margin-bottom:0.5rem; }
-        .rp-text p { font-size:0.88rem; color:var(--text-secondary, #6B7280); line-height:1.5; }
+        .rp-text h2 { font-size: var(--font-modal-title); font-weight: var(--fw-semibold); color:var(--text-title); margin-bottom:0.5rem; }
+        .rp-text p { font-size: var(--font-button); color:var(--text-secondary); line-height:1.5; }
         .rp-form { display:flex; flex-direction:column; gap:1rem; }
         .rp-field { display:flex; flex-direction:column; gap:0.35rem; }
-        .rp-field label { font-size:0.88rem; font-weight:500; color:var(--text-primary, #374151); }
-        .rp-field input { padding:0.72rem 1rem; border:1.5px solid var(--border, #E9E9EE); border-radius:8px; font-family:'Geist', sans-serif; font-size:0.95rem; color:var(--text-title, #1F2937); outline:none; transition:border-color 0.2s; width:100%; }
-        .rp-field input:focus { border-color:var(--border-focus, #FF6FA9); }
-        .rp-field input::placeholder { color:var(--text-muted, #9CA3AF); }
-        .rp-error { background:#fff1f2; border:1px solid #fecdd3; color:var(--error, #EF4444); border-radius:8px; padding:0.6rem 0.9rem; font-size:0.85rem; }
-        .rp-btn { padding:0.85rem; background:var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color:var(--text-inverse, #FFFFFF); border:none; border-radius:8px; font-family:'Geist', sans-serif; font-size:1rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; min-height:48px; transition:opacity 0.2s; }
+        .rp-field label { font-size: var(--font-button); font-weight: var(--fw-medium); color:var(--text-primary); }
+        .rp-field input { padding:0.72rem 1rem; border:1.5px solid var(--border); border-radius: var(--radius-sm); font-family:'Geist', sans-serif; font-size: var(--font-input); color:var(--text-title); outline:none; transition:border-color 0.2s; width:100%; }
+        .rp-field input:focus { border-color:var(--border-focus); }
+        .rp-field input::placeholder { color:var(--text-muted); }
+        .rp-error { background:#fff1f2; border:1px solid #fecdd3; color:var(--error); border-radius: var(--radius-sm); padding:0.6rem 0.9rem; font-size: var(--font-button); }
+        .rp-btn { padding:0.85rem; background:var(--primary-gradient); color:var(--text-inverse); border:none; border-radius: var(--radius-sm); font-family:'Geist', sans-serif; font-size: var(--font-input); font-weight: var(--fw-semibold); cursor:pointer; display:flex; align-items:center; justify-content:center; min-height:48px; transition:opacity 0.2s; }
         .rp-btn:hover:not(:disabled) { opacity:0.9; }
         .rp-btn:disabled { opacity:0.6; cursor:not-allowed; }
-        .rp-back { background:none; border:none; color:var(--text-muted, #9CA3AF); font-family:'Geist', sans-serif; font-size:0.88rem; cursor:pointer; text-align:center; padding:0.25rem; }
-        .rp-back:hover { color:var(--primary, #FF6FA9); }
+        .rp-back { background:none; border:none; color:var(--text-muted); font-family:'Geist', sans-serif; font-size: var(--font-button); cursor:pointer; text-align:center; padding:0.25rem; }
+        .rp-back:hover { color:var(--primary); }
         .rp-success { text-align:center; display:flex; flex-direction:column; gap:0.75rem; }
-        .rp-success h2 { font-size:1.2rem; font-weight:600; color:var(--text-title, #1F2937); }
-        .rp-success p { font-size:0.88rem; color:var(--text-secondary, #6B7280); line-height:1.5; }
+        .rp-success h2 { font-size: var(--font-modal-title); font-weight: var(--fw-semibold); color:var(--text-title); }
+        .rp-success p { font-size: var(--font-button); color:var(--text-secondary); line-height:1.5; }
         .rp-spinner { width:20px; height:20px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:rpspin 0.7s linear infinite; display:inline-block; }
         @keyframes rpspin { to { transform:rotate(360deg); } }
       `}</style>

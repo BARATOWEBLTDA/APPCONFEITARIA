@@ -59,14 +59,14 @@ export default function AdminDashboard() {
       )}
 
       <style>{`
-        .adm-page-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin: 0 0 0.25rem; }
-        .adm-page-sub { font-size: 0.88rem; color: #9ca3af; margin: 0 0 1.5rem; }
+        .adm-page-title { font-size: var(--text-xl); font-weight: var(--fw-bold); color: #1f2937; margin: 0 0 0.25rem; }
+        .adm-page-sub { font-size: var(--font-button); color: #9ca3af; margin: 0 0 1.5rem; }
         .adm-loading { color: #9ca3af; padding: 2rem; }
         .adm-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
-        .adm-stat-card { background: white; border-radius: 14px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .adm-stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
-        .adm-stat-num { font-size: 1.6rem; font-weight: 800; margin: 0; }
-        .adm-stat-label { font-size: 0.78rem; color: #6b7280; margin: 0; font-weight: 500; }
+        .adm-stat-card { background: white; border-radius: var(--radius-lg); padding: 1.25rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .adm-stat-icon { width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: var(--font-page-title); flex-shrink: 0; }
+        .adm-stat-num { font-size: var(--text-2xl); font-weight: var(--fw-black); margin: 0; }
+        .adm-stat-label { font-size: var(--font-helper); color: #6b7280; margin: 0; font-weight: var(--fw-medium); }
       `}</style>
     </div>
   );

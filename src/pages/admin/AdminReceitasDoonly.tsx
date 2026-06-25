@@ -119,32 +119,32 @@ export default function AdminReceitasDoonly() {
       )}
 
       <style>{`
-        .adm-page-title { font-size: 1.5rem; font-weight: 700; color: #1f2937; margin: 0 0 0.25rem; }
-        .adm-page-sub { font-size: 0.88rem; color: #9ca3af; margin: 0; }
+        .adm-page-title { font-size: var(--text-xl); font-weight: var(--fw-bold); color: #1f2937; margin: 0 0 0.25rem; }
+        .adm-page-sub { font-size: var(--font-button); color: #9ca3af; margin: 0; }
         .adm-loading { color: #9ca3af; padding: 2rem; }
-        .adm-btn-primary { padding: 0.7rem 1.25rem; background: linear-gradient(135deg,#f9007a,#d4006a); color: white; border: none; border-radius: 10px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+        .adm-btn-primary { padding: 0.7rem 1.25rem; background: linear-gradient(135deg,#f9007a,#d4006a); color: white; border: none; border-radius: var(--radius-md); font-family:'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor:pointer; white-space:nowrap; }
         .adm-receitas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
-        .adm-receita-card { background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; }
+        .adm-receita-card { background: white; border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); position: relative; }
         .adm-receita-img { height: 140px; background: #f9fafb; display: flex; align-items: center; justify-content: center; font-size: 3rem; overflow: hidden; }
         .adm-receita-img img { width: 100%; height: 100%; object-fit: cover; }
-        .adm-verified-badge { position: absolute; top: 0.6rem; left: 0.6rem; background: linear-gradient(135deg,#f9c74f,#f8961e); color: #1a1a2e; font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 20px; }
+        .adm-verified-badge { position: absolute; top: 0.6rem; left: 0.6rem; background: linear-gradient(135deg,#f9c74f,#f8961e); color: #1a1a2e; font-size: var(--font-caption); font-weight: var(--fw-bold); padding: 0.2rem 0.6rem; border-radius: var(--radius-xl); }
         .adm-receita-body { padding: 0.9rem 0.9rem 0.5rem; }
-        .adm-receita-nome { font-size: 0.9rem; font-weight: 600; color: #1f2937; margin: 0 0 0.2rem; }
-        .adm-receita-autor { font-size: 0.78rem; color: #9ca3af; margin: 0; }
-        .adm-act-sm { padding: 0.4rem 0.75rem; border: none; border-radius: 8px; font-family:'Geist', sans-serif; font-size:0.78rem; font-weight:600; cursor:pointer; }
+        .adm-receita-nome { font-size: var(--font-button); font-weight: var(--fw-semibold); color: #1f2937; margin: 0 0 0.2rem; }
+        .adm-receita-autor { font-size: var(--font-helper); color: #9ca3af; margin: 0; }
+        .adm-act-sm { padding: 0.4rem 0.75rem; border: none; border-radius: var(--radius-sm); font-family:'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-semibold); cursor:pointer; }
         .adm-act-sm.edit { background: #eff6ff; color: #3b82f6; flex:1; }
         .adm-act-sm.delete { background: #fff1f2; color: #ef4444; }
         .adm-modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1rem; }
-        .adm-form-modal { background: white; border-radius: 20px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; position: relative; }
-        .adm-modal-close { background: #f3f4f6; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; }
-        .adm-form-avatar { width: 100%; height: 140px; background: #f9fafb; border: 2px dashed #e5e7eb; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 1rem; overflow: hidden; font-size: 0.88rem; color: #9ca3af; font-family:'Geist', sans-serif; }
+        .adm-form-modal { background: white; border-radius: var(--radius-xl); width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; position: relative; }
+        .adm-modal-close { background: #f3f4f6; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: var(--font-helper); }
+        .adm-form-avatar { width: 100%; height: 140px; background: #f9fafb; border: 2px dashed #e5e7eb; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; cursor: pointer; margin-bottom: 1rem; overflow: hidden; font-size: var(--font-button); color: #9ca3af; font-family:'Geist', sans-serif; }
         .adm-form-avatar img { width:100%; height:100%; object-fit:cover; }
         .adm-form-fields { display: flex; flex-direction: column; gap: 0.75rem; }
         .adm-form-field { display: flex; flex-direction: column; gap: 0.3rem; }
-        .adm-form-field label { font-size: 0.82rem; font-weight: 600; color: #374151; font-family:'Geist', sans-serif; }
-        .adm-form-field input, .adm-form-field textarea { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: 8px; font-family:'Geist', sans-serif; font-size:0.88rem; color:#1f2937; outline:none; resize:none; }
+        .adm-form-field label { font-size: var(--font-helper); font-weight: var(--fw-semibold); color: #374151; font-family:'Geist', sans-serif; }
+        .adm-form-field input, .adm-form-field textarea { padding: 0.65rem 0.9rem; border: 1.5px solid #e5e7eb; border-radius: var(--radius-sm); font-family:'Geist', sans-serif; font-size: var(--font-button); color:#1f2937; outline:none; resize:none; }
         .adm-form-field input:focus, .adm-form-field textarea:focus { border-color: #f9007a; }
-        .adm-btn-cancel { padding: 0.7rem 1.25rem; background: #f3f4f6; color: #6b7280; border: none; border-radius: 10px; font-family:'Geist', sans-serif; font-size:0.88rem; font-weight:600; cursor:pointer; }
+        .adm-btn-cancel { padding: 0.7rem 1.25rem; background: #f3f4f6; color: #6b7280; border: none; border-radius: var(--radius-md); font-family:'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor:pointer; }
       `}</style>
     </div>
   );

@@ -109,7 +109,7 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
     {showConta && (
       <>
         <div onClick={() => setShowConta(false)} style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:200}} />
-        <div style={{position:'fixed',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:'600px',maxWidth:'95vw',height:'75vh',background:'#fff',zIndex:201,display:'flex',flexDirection:'column',boxShadow:'0 24px 64px rgba(0,0,0,0.2)',borderRadius:'20px',overflow:'hidden',animation:'fadeScaleIn 0.2s ease'}}>
+        <div style={{position:'fixed',top:'50%',left:'50%',transform:'translate(-50%,-50%)',width:'600px',maxWidth:'95vw',height:'75vh',background:'#fff',zIndex:201,display:'flex',flexDirection:'column',boxShadow:'0 24px 64px rgba(0,0,0,0.2)',borderRadius:'20px',overflow:'hidden',animation:'fadeScaleIn var(--dur-normal) var(--ease-out)'}}>
           {/* Header */}
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'20px 24px',borderBottom:'1px solid #f0f0f0',flexShrink:0,background:'#fafafa'}}>
             <div style={{display:'flex',gap:'8px'}}>
@@ -162,13 +162,13 @@ function DeskTrustBar() {
   ]
   return (
     <div style={{ width:'100%', padding:'0 24px', boxSizing:'border-box' }}>
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0', background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', overflow:'hidden', width:'100%' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'0', background:'var(--bg-card)', borderRadius:'12px', border:'1px solid var(--border)', overflow:'hidden', width:'100%' }}>
         {items.map((item, i) => (
-          <div key={i} style={{ padding:'24px 28px', display:'flex', alignItems:'center', gap:'14px', borderRight: i < 3 ? '1px solid var(--border, #E9E9EE)' : 'none' }}>
+          <div key={i} style={{ padding:'24px 28px', display:'flex', alignItems:'center', gap:'14px', borderRight: i < 3 ? '1px solid var(--border)' : 'none' }}>
             <span style={{ fontSize:'32px', flexShrink:0 }}>{item.icon}</span>
             <div>
-              <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title, #1F2937)' }}>{item.title}</p>
-              <p style={{ margin:'3px 0 0', fontSize:'12px', color:'var(--text-muted, #9CA3AF)' }}>{item.sub}</p>
+              <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title)' }}>{item.title}</p>
+              <p style={{ margin:'3px 0 0', fontSize:'12px', color:'var(--text-muted)' }}>{item.sub}</p>
             </div>
           </div>
         ))}
@@ -210,18 +210,18 @@ function DeskInfoRow({ design, config }: any) {
         <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
 
           {/* Sacola */}
-          <div style={{ background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', padding:'24px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ background:'var(--bg-card)', borderRadius:'12px', border:'1px solid var(--border)', padding:'24px', textAlign:'center', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
             {count === 0 ? (
               <>
                 <ShoppingBag size={28} color="#d4d4d4" style={{ marginBottom:'6px' }}/>
-                <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'var(--text-title, #1F2937)' }}>Sacola vazia</p>
-                <p style={{ margin:'2px 0 0', fontSize:'11px', color:'var(--text-muted, #9CA3AF)' }}>Adicione itens do cardápio e monte seu pedido.</p>
+                <p style={{ margin:0, fontWeight:700, fontSize:'13px', color:'var(--text-title)' }}>Sacola vazia</p>
+                <p style={{ margin:'2px 0 0', fontSize:'11px', color:'var(--text-muted)' }}>Adicione itens do cardápio e monte seu pedido.</p>
               </>
             ) : (
               <>
                 <ShoppingBag size={24} color={design.cor_borda||'#ec4899'} style={{ marginBottom:'4px' }}/>
-                <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title, #1F2937)' }}>{count} {count===1?'item':'itens'}</p>
-                <p style={{ margin:'2px 0 6px', fontWeight:800, fontSize:'16px', color:'var(--success, #22C55E)' }}>{formatCurrency(totalPrice)}</p>
+                <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title)' }}>{count} {count===1?'item':'itens'}</p>
+                <p style={{ margin:'2px 0 6px', fontWeight:800, fontSize:'16px', color:'var(--success)' }}>{formatCurrency(totalPrice)}</p>
                 <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
                   padding:'8px 20px', borderRadius:'8px', border:'none', background:design.cor_botao||'#ec4899',
                   color:'#fff', fontSize:'12px', fontWeight:700, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
@@ -242,9 +242,9 @@ function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, 
   const activeBg = navBg || corBotao || '#ec4899'
 
   return (
-    <div style={{ background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', overflow:'hidden' }}>
-      <div style={{ padding:'12px 14px', borderBottom:'1px solid var(--border, #E9E9EE)' }}>
-        <span style={{ fontSize:'12px', fontWeight:700, color:'var(--text-muted, #9CA3AF)', textTransform:'uppercase', letterSpacing:'0.05em' }}>Categorias</span>
+    <div style={{ background:'var(--bg-card)', borderRadius:'12px', border:'1px solid var(--border)', overflow:'hidden' }}>
+      <div style={{ padding:'12px 14px', borderBottom:'1px solid var(--border)' }}>
+        <span style={{ fontSize:'12px', fontWeight:700, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.05em' }}>Categorias</span>
       </div>
 
       {/* Todos */}
@@ -257,11 +257,11 @@ function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, 
           fontSize:'13px', fontWeight: !selectedCategory ? 700 : 500,
           cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
           display:'flex', alignItems:'center',
-          borderBottom:'1px solid var(--border, #E9E9EE)',
+          borderBottom:'1px solid var(--border)',
           transition:'background 0.15s, color 0.15s',
         }}
-        onMouseOver={e => { if (selectedCategory) { (e.currentTarget as HTMLElement).style.background='var(--bg-body, #F7F7F8)' } }}
-        onMouseOut={e => { if (selectedCategory) { (e.currentTarget as HTMLElement).style.background='var(--bg-card, #FFFFFF)' } }}
+        onMouseOver={e => { if (selectedCategory) { (e.currentTarget as HTMLElement).style.background='var(--bg-body)' } }}
+        onMouseOut={e => { if (selectedCategory) { (e.currentTarget as HTMLElement).style.background='var(--bg-card)' } }}
       >
         Todos os produtos
       </button>
@@ -277,11 +277,11 @@ function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, 
             fontSize:'13px', fontWeight: selectedCategory === c.name ? 700 : 500,
             cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
             display:'flex', alignItems:'center',
-            borderBottom:'1px solid var(--border, #E9E9EE)',
+            borderBottom:'1px solid var(--border)',
             transition:'background 0.15s, color 0.15s',
           }}
-          onMouseOver={e => { if (selectedCategory !== c.name) { (e.currentTarget as HTMLElement).style.background='var(--bg-body, #F7F7F8)' } }}
-          onMouseOut={e => { if (selectedCategory !== c.name) { (e.currentTarget as HTMLElement).style.background='var(--bg-card, #FFFFFF)' } }}
+          onMouseOver={e => { if (selectedCategory !== c.name) { (e.currentTarget as HTMLElement).style.background='var(--bg-body)' } }}
+          onMouseOut={e => { if (selectedCategory !== c.name) { (e.currentTarget as HTMLElement).style.background='var(--bg-card)' } }}
         >
           {c.name}
         </button>
@@ -306,9 +306,9 @@ function DeskProducts({ produtos, favorites, onToggleFavorite, design }: any) {
       </div>
 
       {produtos.length === 0 && (
-        <div style={{ textAlign:'center', padding:'48px', color:'var(--text-muted, #9CA3AF)' }}>
+        <div style={{ textAlign:'center', padding:'48px', color:'var(--text-muted)' }}>
           <MagnifyingGlass size={40} style={{ margin:'0 auto 12px', display:'block', opacity:0.3 }}/>
-          <p style={{ fontWeight:700, fontSize:'16px', color:'var(--text-secondary, #6B7280)' }}>Nenhum produto encontrado</p>
+          <p style={{ fontWeight:700, fontSize:'16px', color:'var(--text-secondary)' }}>Nenhum produto encontrado</p>
         </div>
       )}
     </div>
@@ -322,15 +322,15 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
   const cor = design.cor_botao || design.cor_borda || '#ec4899'
 
   return (
-    <div style={{ background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', overflow:'hidden' }}>
+    <div style={{ background:'var(--bg-card)', borderRadius:'12px', border:'1px solid var(--border)', overflow:'hidden' }}>
 
       {/* Calcular taxa */}
-      <div style={{ padding:'14px 16px', borderBottom:'1px solid var(--border, #E9E9EE)', display:'flex', alignItems:'center', gap:'10px', cursor:'pointer' }}
+      <div style={{ padding:'14px 16px', borderBottom:'1px solid var(--border)', display:'flex', alignItems:'center', gap:'10px', cursor:'pointer' }}
         onMouseOver={e => (e.currentTarget as HTMLElement).style.background='#fafafa'}
-        onMouseOut={e => (e.currentTarget as HTMLElement).style.background='var(--bg-card, #FFFFFF)'}
+        onMouseOut={e => (e.currentTarget as HTMLElement).style.background='var(--bg-card)'}
       >
         <MapPin size={18} color="#6E3548" weight="duotone" style={{ flexShrink:0 }}/>
-        <span style={{ flex:1, fontSize:'13px', fontWeight:600, color:'var(--text-title, #1F2937)' }}>Calcular taxa de entrega</span>
+        <span style={{ flex:1, fontSize:'13px', fontWeight:600, color:'var(--text-title)' }}>Calcular taxa de entrega</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={cor} strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
 
@@ -343,14 +343,14 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
               <path d="M16 10a4 4 0 0 1-8 0"/>
             </svg>
           </div>
-          <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title, #1F2937)' }}>Sacola vazia</p>
-          <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted, #9CA3AF)', textAlign:'center', lineHeight:1.5 }}>Adicione itens do cardápio<br/>e monte seu pedido</p>
+          <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title)' }}>Sacola vazia</p>
+          <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted)', textAlign:'center', lineHeight:1.5 }}>Adicione itens do cardápio<br/>e monte seu pedido</p>
         </div>
       ) : (
         <div style={{ padding:'14px 16px' }}>
           {/* Header sacola */}
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'12px' }}>
-            <span style={{ fontWeight:700, fontSize:'14px', color:'var(--text-title, #1F2937)' }}>Sua sacola</span>
+            <span style={{ fontWeight:700, fontSize:'14px', color:'var(--text-title)' }}>Sua sacola</span>
             <button
               onClick={() => window.dispatchEvent(new Event('open-cart'))}
               style={{ background:'none', border:'none', fontSize:'12px', fontWeight:600, color:cor, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif' }}
@@ -367,32 +367,32 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
                     {img ? <img src={img} alt={item.name} style={{ width:'100%', height:'100%', objectFit:'cover' }}/> : <div style={{ width:'100%', height:'100%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'20px' }}>🧁</div>}
                   </div>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'var(--text-title, #1F2937)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                    <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'var(--text-title)', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                       {item.saleType === 'kg' ? `${item.quantity}kg` : `${Math.floor(item.quantity)}x`} {item.name}
                     </p>
-                    <p style={{ margin:'2px 0 0', fontSize:'12px', color:'var(--text-muted, #9CA3AF)' }}>{formatCurrency(item.price * item.quantity)}</p>
+                    <p style={{ margin:'2px 0 0', fontSize:'12px', color:'var(--text-muted)' }}>{formatCurrency(item.price * item.quantity)}</p>
                   </div>
                 </div>
               )
             })}
             {items.length > 4 && (
-              <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted, #9CA3AF)' }}>+{items.length - 4} item(ns) a mais</p>
+              <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted)' }}>+{items.length - 4} item(ns) a mais</p>
             )}
           </div>
 
           {/* Subtotal / Total */}
           <div style={{ borderTop:'1px solid var(--border)', paddingTop:'12px', display:'flex', flexDirection:'column', gap:'4px', marginBottom:'14px' }}>
             <div style={{ display:'flex', justifyContent:'space-between' }}>
-              <span style={{ fontSize:'13px', color:'var(--text-muted, #9CA3AF)' }}>Subtotal</span>
-              <span style={{ fontSize:'13px', color:'var(--text-muted, #9CA3AF)' }}>{formatCurrency(cartTotal)}</span>
+              <span style={{ fontSize:'13px', color:'var(--text-muted)' }}>Subtotal</span>
+              <span style={{ fontSize:'13px', color:'var(--text-muted)' }}>{formatCurrency(cartTotal)}</span>
             </div>
             <div style={{ display:'flex', justifyContent:'space-between' }}>
-              <span style={{ fontSize:'13px', color:'var(--text-muted, #9CA3AF)' }}>Taxa de entrega</span>
-              <span style={{ fontSize:'13px', color:'var(--text-muted, #9CA3AF)' }}>A definir</span>
+              <span style={{ fontSize:'13px', color:'var(--text-muted)' }}>Taxa de entrega</span>
+              <span style={{ fontSize:'13px', color:'var(--text-muted)' }}>A definir</span>
             </div>
             <div style={{ display:'flex', justifyContent:'space-between', marginTop:'4px' }}>
-              <span style={{ fontSize:'15px', fontWeight:800, color:'var(--text-title, #1F2937)' }}>Total</span>
-              <span style={{ fontSize:'15px', fontWeight:800, color:'var(--text-title, #1F2937)' }}>{formatCurrency(cartTotal)}</span>
+              <span style={{ fontSize:'15px', fontWeight:800, color:'var(--text-title)' }}>Total</span>
+              <span style={{ fontSize:'15px', fontWeight:800, color:'var(--text-title)' }}>{formatCurrency(cartTotal)}</span>
             </div>
           </div>
 
@@ -412,14 +412,14 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
           onClick={() => setCupomAberto(o => !o)}
           style={{ padding:'14px 16px', display:'flex', alignItems:'center', gap:'10px', cursor:'pointer' }}
           onMouseOver={e => (e.currentTarget as HTMLElement).style.background='#fafafa'}
-          onMouseOut={e => (e.currentTarget as HTMLElement).style.background='var(--bg-card, #FFFFFF)'}
+          onMouseOut={e => (e.currentTarget as HTMLElement).style.background='var(--bg-card)'}
         >
           <div style={{ width:'32px', height:'32px', borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
             <img src="/desconto.png" alt="" style={{ width:'20px', height:'20px', objectFit:'contain' }} />
           </div>
           <div style={{ flex:1 }}>
-            <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'var(--text-title, #1F2937)' }}>Tem um cupom de desconto?</p>
-            <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted, #9CA3AF)' }}>Clique e insira o código</p>
+            <p style={{ margin:0, fontSize:'13px', fontWeight:600, color:'var(--text-title)' }}>Tem um cupom de desconto?</p>
+            <p style={{ margin:0, fontSize:'12px', color:'var(--text-muted)' }}>Clique e insira o código</p>
           </div>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2.5"
             style={{ transform: cupomAberto ? 'rotate(90deg)' : 'rotate(0deg)', transition:'transform 0.2s' }}>
@@ -433,7 +433,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
               value={cupomDigitado}
               onChange={e => setCupomDigitado(e.target.value.toUpperCase())}
               placeholder="Digite o código"
-              style={{ flex:1, padding:'10px 12px', border:'1.5px solid var(--border, #E9E9EE)', borderRadius:'8px', fontSize:'13px', color:'var(--text-title, #1F2937)', outline:'none', fontFamily:'Geist, system-ui, sans-serif', textTransform:'uppercase' }}
+              style={{ flex:1, padding:'10px 12px', border:'1.5px solid var(--border)', borderRadius:'8px', fontSize:'13px', color:'var(--text-title)', outline:'none', fontFamily:'Geist, system-ui, sans-serif', textTransform:'uppercase' }}
               onFocus={e => (e.target.style.borderColor = cor)}
               onBlur={e => (e.target.style.borderColor = 'var(--border)')}
             />
@@ -582,8 +582,8 @@ function CardapioContent() {
   if (loading) return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center' }}>
       <div style={{ textAlign:'center' }}>
-        <div style={{ width:'40px', height:'40px', border:'3px solid #fce7f3', borderTopColor:'var(--primary, #FF6FA9)', borderRadius:'50%', animation:'spin 0.7s linear infinite', margin:'0 auto 12px' }}/>
-        <p style={{ color:'var(--text-secondary, #6B7280)', fontSize:'14px' }}>Carregando cardápio...</p>
+        <div style={{ width:'40px', height:'40px', border:'3px solid #fce7f3', borderTopColor:'var(--primary)', borderRadius:'50%', animation:'spin 0.7s linear infinite', margin:'0 auto 12px' }}/>
+        <p style={{ color:'var(--text-secondary)', fontSize:'14px' }}>Carregando cardápio...</p>
         <style>{`
           @keyframes spin{to{transform:rotate(360deg)}}
           @keyframes slideRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
@@ -599,10 +599,10 @@ function CardapioContent() {
   )
 
   if (error || !design) return (
-    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg-body, #F7F7F8)' }}>
+    <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg-body)' }}>
       <div style={{ textAlign:'center' }}>
-        <h1 style={{ fontSize:'24px', fontWeight:800, color:'var(--text-title, #1F2937)' }}>Cardápio não encontrado</h1>
-        <p style={{ color:'var(--text-secondary, #6B7280)' }}>{error || 'Verifique o link e tente novamente.'}</p>
+        <h1 style={{ fontSize:'24px', fontWeight:800, color:'var(--text-title)' }}>Cardápio não encontrado</h1>
+        <p style={{ color:'var(--text-secondary)' }}>{error || 'Verifique o link e tente novamente.'}</p>
       </div>
     </div>
   )
@@ -634,7 +634,7 @@ function CardapioContent() {
 
   /* ═══ DESKTOP ═══ */
   return (
-    <div style={{ minHeight:'100vh', background:'var(--bg-body, #F7F7F8)', fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
+    <div style={{ minHeight:'100vh', background:'var(--bg-body)', fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
       <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
       <DeskNav design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
@@ -657,7 +657,7 @@ function CardapioContent() {
           {/* CENTRO — Busca + Título + Produtos */}
           <div>
             {/* Busca */}
-            <div style={{ position:'relative', marginBottom:'16px', display:'flex', alignItems:'stretch', borderRadius:'10px', overflow:'hidden', border:'1.5px solid var(--border, #E9E9EE)', background:'var(--bg-card, #FFFFFF)', transition:'border-color 0.2s' }}
+            <div style={{ position:'relative', marginBottom:'16px', display:'flex', alignItems:'stretch', borderRadius:'10px', overflow:'hidden', border:'1.5px solid var(--border)', background:'var(--bg-card)', transition:'border-color 0.2s' }}
               onFocusCapture={e => (e.currentTarget.style.borderColor = design.cor_navbar || design.cor_borda || '#ec4899')}
               onBlurCapture={e => (e.currentTarget.style.borderColor = 'var(--border)')}
             >
@@ -671,18 +671,18 @@ function CardapioContent() {
                 placeholder="Busque por um produto..."
                 style={{
                   flex:1, padding:'13px 14px', border:'none', outline:'none',
-                  fontSize:'14px', color:'var(--text-primary, #374151)',
-                  fontFamily:'inherit', background:'var(--bg-card, #FFFFFF)',
+                  fontSize:'14px', color:'var(--text-primary)',
+                  fontFamily:'inherit', background:'var(--bg-card)',
                 }}
               />
               {searchTerm && (
-                <button onClick={() => setSearchTerm('')} style={{ padding:'0 14px', background:'none', border:'none', cursor:'pointer', color:'var(--text-muted, #9CA3AF)', fontSize:'16px', lineHeight:1 }}>✕</button>
+                <button onClick={() => setSearchTerm('')} style={{ padding:'0 14px', background:'none', border:'none', cursor:'pointer', color:'var(--text-muted)', fontSize:'16px', lineHeight:1 }}>✕</button>
               )}
             </div>
 
             {/* Título */}
             <div style={{ display:'flex', alignItems:'center', marginBottom:'16px', marginTop:'24px' }}>
-              <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'var(--text-title, #1F2937)' }}>Nosso Cardápio</h2>
+              <h2 style={{ margin:0, fontSize:'20px', fontWeight:800, color:'var(--text-title)' }}>Nosso Cardápio</h2>
             </div>
 
             {/* Produtos */}
@@ -696,14 +696,14 @@ function CardapioContent() {
           <div style={{ position:'sticky', top:'100px', display:'flex', flexDirection:'column', gap:'12px' }}>
             <DeskSacola cartCount={cartCount} cartTotal={cartTotal} design={design} items={cartItems} />
             {(config as any).programa_fidelidade_ativo !== false && (
-              <div style={{ background:'var(--bg-card, #FFFFFF)', borderRadius:'12px', border:'1px solid var(--border, #E9E9EE)', padding:'16px' }}>
+              <div style={{ background:'var(--bg-card)', borderRadius:'12px', border:'1px solid var(--border)', padding:'16px' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'8px' }}>
                   <div style={{ width:'28px', height:'28px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                     <img src="/cashback.svg" alt="" style={{ width:'24px', height:'24px', objectFit:'contain' }} />
                   </div>
-                  <span style={{ fontWeight:600, fontSize:'13px', color:'var(--text-title, #1F2937)' }}>Programa de Fidelidade</span>
+                  <span style={{ fontWeight:600, fontSize:'13px', color:'var(--text-title)' }}>Programa de Fidelidade</span>
                 </div>
-                <p style={{ margin:0, fontSize:'11px', color:'var(--text-secondary, #6B7280)', lineHeight:1.5 }}>A cada <strong>R$ 50,00</strong> em compras, você acumula <strong>5% de cashback</strong> para descontar no seu próximo pedido.</p>
+                <p style={{ margin:0, fontSize:'11px', color:'var(--text-secondary)', lineHeight:1.5 }}>A cada <strong>R$ 50,00</strong> em compras, você acumula <strong>5% de cashback</strong> para descontar no seu próximo pedido.</p>
               </div>
             )}
           </div>

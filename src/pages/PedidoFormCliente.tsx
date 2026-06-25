@@ -227,7 +227,7 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
             </div>
             <div style={{ flex: 1 }}>
               <span className="pf2-opt-label" style={{ display: 'block' }}>Salvar como novo cliente</span>
-              {salvarComoNovo && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted,#C39EAA)' }}>Será cadastrado ao salvar o pedido</span>}
+              {salvarComoNovo && <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Será cadastrado ao salvar o pedido</span>}
             </div>
           </div>
         )}
@@ -377,35 +377,35 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
           display: flex; align-items: center; gap: 5px;
           margin-top: 6px; padding: 6px 10px;
           background: #f0fdf4; border: 1px solid #bbf7d0;
-          border-radius: 8px; font-size: 0.78rem; color: #16a34a;
+          border-radius: var(--radius-sm); font-size: var(--font-helper); color: #16a34a;
           font-family: 'Geist', sans-serif;
         }
-        .pf2-hora-btn { display: flex; align-items: center; gap: 8px; color: var(--text-muted,#C39EAA); cursor: pointer; text-align: left; width: 100%; }
-        .pf2-hora-btn--filled { color: var(--text-primary,#431524); }
-        .pf2-native-display { position: relative; display: flex; align-items: center; gap: 8px; border-radius: 12px; color: var(--text-muted,#C39EAA); cursor: pointer; user-select: none; white-space: nowrap; overflow: hidden; min-width: 0; }
-        .pf2-native-display--filled { color: var(--text-primary,#431524); }
+        .pf2-hora-btn { display: flex; align-items: center; gap: 8px; color: var(--text-muted); cursor: pointer; text-align: left; width: 100%; }
+        .pf2-hora-btn--filled { color: var(--text-primary); }
+        .pf2-native-display { position: relative; display: flex; align-items: center; gap: 8px; border-radius: var(--radius-md); color: var(--text-muted); cursor: pointer; user-select: none; white-space: nowrap; overflow: hidden; min-width: 0; }
+        .pf2-native-display--filled { color: var(--text-primary); }
         .pf2-native-display input[type="date"] { position: absolute; opacity: 0; inset: 0; width: 100%; height: 100%; cursor: pointer; font-size: 16px; }
         .hs-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; animation: hsFadeIn 0.2s ease; }
-        .hs-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card,#fff); border-radius: 20px 20px 0 0; z-index: 101; max-height: 72vh; display: flex; flex-direction: column; animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
-        .hs-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border,#ECC2D0); margin: 10px auto 0; flex-shrink: 0; }
-        .hs-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 8px; flex-shrink: 0; border-bottom: 1px solid var(--border,#ECC2D0); }
-        .hs-title { font-size: 0.95rem; font-weight: 700; color: var(--text-title,#431524); font-family: 'Geist',sans-serif; }
-        .hs-close { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-subtle,#F7EEF1); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary,#6E3548); }
+        .hs-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-radius: var(--radius-xl) 20px 0 0; z-index: 101; max-height: 72vh; display: flex; flex-direction: column; animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
+        .hs-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 10px auto 0; flex-shrink: 0; }
+        .hs-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 8px; flex-shrink: 0; border-bottom: 1px solid var(--border); }
+        .hs-title { font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title); font-family: 'Geist',sans-serif; }
+        .hs-close { width: 28px; height: 28px; border-radius: 50%; background: var(--bg-subtle); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
         .hs-list { overflow-y: auto; flex: 1; padding: 8px 0; }
         .hs-list::-webkit-scrollbar { display: none; }
-        .hs-item { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: none; border: none; font-size: 1rem; font-family: 'Geist',sans-serif; font-weight: 500; color: var(--text-primary,#431524); cursor: pointer; transition: background 0.1s; border-bottom: 0.5px solid var(--border,#ECC2D0); }
+        .hs-item { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; background: none; border: none; font-size: var(--font-input); font-family: 'Geist',sans-serif; font-weight: var(--fw-medium); color: var(--text-primary); cursor: pointer; transition: background 0.1s; border-bottom: 0.5px solid var(--border); }
         .hs-item:last-child { border-bottom: none; }
-        .hs-item:hover { background: var(--bg-subtle,#F7EEF1); }
-        .hs-item--on { color: var(--primary,#986274); font-weight: 700; background: var(--primary-light,#F7EEF1); }
-        .hs-footer { padding: 10px 16px 24px; flex-shrink: 0; border-top: 1px solid var(--border,#ECC2D0); }
-        .hs-custom-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 12px; border: 1.5px dashed var(--primary,#986274); background: none; color: var(--primary,#986274); font-size: 0.88rem; font-weight: 600; font-family: 'Geist',sans-serif; cursor: pointer; }
+        .hs-item:hover { background: var(--bg-subtle); }
+        .hs-item--on { color: var(--primary); font-weight: var(--fw-bold); background: var(--primary-light); }
+        .hs-footer { padding: 10px 16px 24px; flex-shrink: 0; border-top: 1px solid var(--border); }
+        .hs-custom-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: var(--radius-md); border: 1.5px dashed var(--primary); background: none; color: var(--primary); font-size: var(--font-button); font-weight: var(--fw-semibold); font-family: 'Geist',sans-serif; cursor: pointer; }
         .hs-custom-form { padding: 20px 16px 32px; display: flex; flex-direction: column; gap: 16px; }
-        .hs-custom-label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary,#6E3548); margin: 0; font-family: 'Geist',sans-serif; }
-        .hs-custom-input { border: 1.5px solid var(--border,#ECC2D0); border-radius: 12px; padding: 0.75rem 1rem; font-size: 1.5rem; font-family: 'Geist',sans-serif; color: var(--text-primary,#431524); text-align: center; letter-spacing: 0.1em; background: var(--bg-input,#fff); outline: none; width: 100%; box-sizing: border-box; }
-        .hs-custom-input:focus { border-color: var(--primary,#986274); }
+        .hs-custom-label { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-secondary); margin: 0; font-family: 'Geist',sans-serif; }
+        .hs-custom-input { border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem 1rem; font-size: var(--text-xl); font-family: 'Geist',sans-serif; color: var(--text-primary); text-align: center; letter-spacing: 0.1em; background: var(--bg-input); outline: none; width: 100%; box-sizing: border-box; }
+        .hs-custom-input:focus { border-color: var(--primary); }
         .hs-custom-actions { display: flex; gap: 10px; }
-        .hs-btn-ghost { flex: 1; padding: 12px; border: 1.5px solid var(--border,#ECC2D0); border-radius: 12px; background: none; font-size: 0.88rem; font-weight: 600; color: var(--text-secondary,#6E3548); font-family: 'Geist',sans-serif; cursor: pointer; }
-        .hs-btn-primary { flex: 2; padding: 12px; background: var(--primary,#986274); color: white; border: none; border-radius: 12px; font-size: 0.88rem; font-weight: 600; font-family: 'Geist',sans-serif; cursor: pointer; }
+        .hs-btn-ghost { flex: 1; padding: 12px; border: 1.5px solid var(--border); border-radius: var(--radius-md); background: none; font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-secondary); font-family: 'Geist',sans-serif; cursor: pointer; }
+        .hs-btn-primary { flex: 2; padding: 12px; background: var(--primary); color: white; border: none; border-radius: var(--radius-md); font-size: var(--font-button); font-weight: var(--fw-semibold); font-family: 'Geist',sans-serif; cursor: pointer; }
         @keyframes hsFadeIn { from { opacity: 0 } to { opacity: 1 } }
         @keyframes hsSlideUp { from { transform: translateY(100%) } to { transform: translateY(0) } }
       `}</style>

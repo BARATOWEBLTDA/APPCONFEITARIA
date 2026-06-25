@@ -228,7 +228,7 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
 
         {/* Detalhe: Sinal */}
         {modo === 'sinal' && (
-          <div className="pf2-optional-body" style={{ borderTop: '1px solid var(--border,#ECC2D0)' }}>
+          <div className="pf2-optional-body" style={{ borderTop: '1px solid var(--border)' }}>
             <div className="pf2-row">
               <div className="pf2-field">
                 <label className="pf2-label">Valor do sinal</label>
@@ -292,43 +292,43 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
         .pf2-receb-opcoes {
           display: flex; flex-direction: column;
           padding: 0.5rem 1rem 0.75rem;
-          gap: 0.5rem;
+          gap: var(--gap-tight);
         }
         .pf2-receb-opcao {
-          display: flex; align-items: center; gap: 0.75rem;
+          display: flex; align-items: center; gap: var(--gap-stack);
           padding: 0.75rem 1rem;
-          border: 1.5px solid var(--border,#ECC2D0);
-          border-radius: 12px;
-          background: var(--bg-body,#FAFAFA);
-          font-size: 0.88rem; font-weight: 500;
-          color: var(--text-secondary,#6E3548);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md);
+          background: var(--bg-body);
+          font-size: var(--font-button); font-weight: var(--fw-medium);
+          color: var(--text-secondary);
           font-family: 'Geist',sans-serif;
-          cursor: pointer; transition: all 0.15s;
+          cursor: pointer; transition: all var(--dur-fast);
           text-align: left; width: 100%;
         }
-        .pf2-receb-opcao:hover { border-color: var(--primary,#986274); }
+        .pf2-receb-opcao:hover { border-color: var(--primary); }
         .pf2-receb-opcao--on {
-          border-color: var(--primary,#986274);
-          background: var(--primary-light,#F7EEF1);
-          color: var(--text-title,#431524);
-          font-weight: 600;
+          border-color: var(--primary);
+          background: var(--primary-light);
+          color: var(--text-title);
+          font-weight: var(--fw-semibold);
         }
         .pf2-radio {
           width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
-          border: 2px solid var(--border,#ECC2D0);
+          border: 2px solid var(--border);
           display: flex; align-items: center; justify-content: center;
-          transition: all 0.15s;
+          transition: all var(--dur-fast);
         }
-        .pf2-radio--on { border-color: var(--primary,#986274); }
+        .pf2-radio--on { border-color: var(--primary); }
         .pf2-radio-dot {
           width: 8px; height: 8px; border-radius: 50%;
-          background: var(--primary,#986274);
+          background: var(--primary);
         }
         .pf2-receb-restante {
           display: flex; justify-content: space-between;
           padding: 0.5rem 0; margin-top: 0.25rem;
-          font-size: 0.85rem; color: var(--text-secondary,#6E3548);
-          border-top: 1px dashed var(--border,#ECC2D0);
+          font-size: var(--font-button); color: var(--text-secondary);
+          border-top: 1px dashed var(--border);
         }
         .pf2-card-head-row {
           display: flex; align-items: center; justify-content: space-between;
@@ -336,8 +336,8 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
         }
         .pf2-status-pill {
           display: inline-flex; align-items: center; gap: 5px;
-          font-size: 0.72rem; font-weight: 600;
-          padding: 4px 10px; border-radius: 999px;
+          font-size: var(--font-caption); font-weight: var(--fw-semibold);
+          padding: 4px 10px; border-radius: var(--radius-full);
         }
         .pf2-status-grid {
           display: flex; flex-direction: column; gap: 0.4rem;
@@ -346,21 +346,21 @@ export default function StepPagamento({ pedido, set, cupons, saving, onSalvar, o
         .pf2-status-btn {
           display: flex; align-items: center;
           padding: 0.6rem 1rem;
-          border: 1.5px solid var(--border,#ECC2D0);
-          border-radius: 10px;
-          background: var(--bg-body,#FAFAFA);
-          font-size: 0.88rem; font-weight: 500;
-          color: var(--text-secondary,#6E3548);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md);
+          background: var(--bg-body);
+          font-size: var(--font-button); font-weight: var(--fw-medium);
+          color: var(--text-secondary);
           font-family: 'Geist',sans-serif;
-          cursor: pointer; transition: all 0.15s;
+          cursor: pointer; transition: all var(--dur-fast);
           text-align: left; width: 100%;
         }
-        .pf2-status-btn:hover { border-color: var(--primary,#986274); }
+        .pf2-status-btn:hover { border-color: var(--primary); }
         .pf2-status-btn--on {
-          border-color: var(--primary,#986274);
-          background: var(--primary-light,#F7EEF1);
-          color: var(--text-title,#431524);
-          font-weight: 700;
+          border-color: var(--primary);
+          background: var(--primary-light);
+          color: var(--text-title);
+          font-weight: var(--fw-bold);
         }
         .pf2-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
       `}</style>

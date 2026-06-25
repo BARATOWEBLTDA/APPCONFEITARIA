@@ -70,7 +70,7 @@ export function BannerAd({ bannerUrl, banner1Url, banner2Url, banner3Url, isPro 
                 border: 'none',
                 cursor: 'pointer',
                 padding: 0,
-                transition: 'all 0.3s ease',
+                transition: 'all var(--dur-slow) var(--ease-out)',
               }}
             />
           ))}

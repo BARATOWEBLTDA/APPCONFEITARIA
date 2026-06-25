@@ -335,7 +335,7 @@ export default function Configuracoes() {
             <div className="cfg-accordion-body">
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Nova senha" value={novaSenha} onChange={(e: any) => setNovaSenha(e.target.value)} type="password" />
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Confirmar nova senha" value={confirmSenha} onChange={(e: any) => setConfirmSenha(e.target.value)} type="password" />
-              {senhaMsg && <p style={{ fontSize: "0.82rem", color: senhaMsg.startsWith("✓") ? "var(--success, #22C55E)" : "var(--error, #EF4444)", margin: 0 }}>{senhaMsg}</p>}
+              {senhaMsg && <p style={{ fontSize: "0.82rem", color: senhaMsg.startsWith("✓") ? "var(--success)" : "var(--error)", margin: 0 }}>{senhaMsg}</p>}
               <button className="cfg-btn-save" onClick={handleAlterarSenha} disabled={savingSenha}>
                 {savingSenha ? <span className="cfg-spinner" /> : "Alterar senha"}
               </button>
@@ -350,10 +350,10 @@ export default function Configuracoes() {
               <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>
               <div>
                 <p className="cfg-accordion-title" style={{ margin: 0, textTransform: "none", letterSpacing: 0, fontSize: "0.88rem" }}>Tema {darkMode ? "Escuro" : "Claro"}</p>
-                <p style={{ fontSize: "0.72rem", color: "var(--text-muted, #9CA3AF)", margin: 0 }}>Alterar aparência do app</p>
+                <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: 0 }}>Alterar aparência do app</p>
               </div>
             </div>
-            <button onClick={toggleDark} style={{ width: "48px", height: "26px", borderRadius: "13px", border: "none", cursor: "pointer", background: darkMode ? "var(--primary, #FF6FA9)" : "var(--border, #E9E9EE)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
+            <button onClick={toggleDark} style={{ width: "48px", height: "26px", borderRadius: "13px", border: "none", cursor: "pointer", background: darkMode ? "var(--primary)" : "var(--border)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
               <div style={{ width: "20px", height: "20px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: darkMode ? "25px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
             </button>
           </div>
@@ -362,19 +362,19 @@ export default function Configuracoes() {
         {/* Excluir Conta — mobile */}
         <div className="cfg-accordion">
           <button className="cfg-accordion-header" onClick={() => setShowExcluir(v => !v)}>
-            <span className="cfg-accordion-icon" style={{ color: "var(--error, #EF4444)" }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
-            <span className="cfg-accordion-title" style={{ color: "var(--error, #EF4444)" }}>Excluir conta</span>
+            <span className="cfg-accordion-icon" style={{ color: "var(--error)" }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></span>
+            <span className="cfg-accordion-title" style={{ color: "var(--error)" }}>Excluir conta</span>
             <svg className={`cfg-accordion-chevron${showExcluir ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           {showExcluir && (
             <div className="cfg-accordion-body">
-              <p style={{ fontSize: "0.82rem", color: "var(--text-secondary, #6B7280)", margin: 0 }}>Esta ação é irreversível. Todos os seus dados serão removidos permanentemente.</p>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-primary, #374151)", margin: 0 }}>Digite <strong>EXCLUIR</strong> para confirmar:</p>
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error, #EF4444)" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>} placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={(e: any) => setExcluirConfirm(e.target.value)} />
-              <button onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"} style={{ padding: "0.75rem", background: excluirConfirm === "EXCLUIR" ? "var(--error, #EF4444)" : "var(--bg-body, #F7F7F8)", color: excluirConfirm === "EXCLUIR" ? "var(--text-inverse, #FFFFFF)" : "var(--text-muted, #9CA3AF)", border: "none", borderRadius: "12px", fontFamily: "Geist, sans-serif", fontSize: "0.88rem", fontWeight: 700, cursor: excluirConfirm === "EXCLUIR" ? "pointer" : "not-allowed" }}>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", margin: 0 }}>Esta ação é irreversível. Todos os seus dados serão removidos permanentemente.</p>
+              <p style={{ fontSize: "0.82rem", color: "var(--text-primary)", margin: 0 }}>Digite <strong>EXCLUIR</strong> para confirmar:</p>
+              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>} placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={(e: any) => setExcluirConfirm(e.target.value)} />
+              <button onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"} style={{ padding: "0.75rem", background: excluirConfirm === "EXCLUIR" ? "var(--error)" : "var(--bg-body)", color: excluirConfirm === "EXCLUIR" ? "var(--text-inverse)" : "var(--text-muted)", border: "none", borderRadius: "12px", fontFamily: "Geist, sans-serif", fontSize: "0.88rem", fontWeight: 700, cursor: excluirConfirm === "EXCLUIR" ? "pointer" : "not-allowed" }}>
                 Excluir minha conta
               </button>
-              <button onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }} style={{ padding: "0.75rem", background: "none", border: "1.5px solid var(--border, #E9E9EE)", borderRadius: "12px", fontFamily: "Geist, sans-serif", fontSize: "0.88rem", fontWeight: 600, color: "var(--text-secondary, #6B7280)", cursor: "pointer" }}>
+              <button onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }} style={{ padding: "0.75rem", background: "none", border: "1.5px solid var(--border)", borderRadius: "12px", fontFamily: "Geist, sans-serif", fontSize: "0.88rem", fontWeight: 600, color: "var(--text-secondary)", cursor: "pointer" }}>
                 Cancelar
               </button>
             </div>
@@ -481,7 +481,7 @@ export default function Configuracoes() {
                     <input type="password" placeholder="Repita a senha" value={confirmSenha} onChange={e => setConfirmSenha(e.target.value)} />
                   </div>
                 </div>
-                {senhaMsg && <p style={{fontSize:"0.82rem",color:senhaMsg.startsWith("✓")?"var(--success, #22C55E)":"var(--error, #EF4444)",margin:0}}>{senhaMsg}</p>}
+                {senhaMsg && <p style={{fontSize:"0.82rem",color:senhaMsg.startsWith("✓")?"var(--success)":"var(--error)",margin:0}}>{senhaMsg}</p>}
                 <div style={{display:"flex",gap:"8px"}}>
                   <button onClick={() => {setShowAlterarSenha(false);setNovaSenha("");setConfirmSenha("");setSenhaMsg("");}} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
                   <button onClick={handleAlterarSenha} disabled={savingSenha} className="cfg-btn-save" style={{flex:2,minHeight:"38px",fontSize:"0.85rem",borderRadius:"10px"}}>
@@ -494,15 +494,15 @@ export default function Configuracoes() {
             {/* Painel Excluir Conta */}
             {showExcluir && (
               <div className="cfg-desk-inline-section cfg-desk-inline-section--danger">
-                <p className="cfg-desk-inline-label" style={{color:"var(--error, #EF4444)"}}>🗑️ Excluir conta</p>
-                <p style={{fontSize:"0.82rem",color:"var(--text-secondary, #6B7280)",margin:0}}>Esta ação é <strong>irreversível</strong>. Todos os seus dados serão removidos permanentemente.</p>
+                <p className="cfg-desk-inline-label" style={{color:"var(--error)"}}>🗑️ Excluir conta</p>
+                <p style={{fontSize:"0.82rem",color:"var(--text-secondary)",margin:0}}>Esta ação é <strong>irreversível</strong>. Todos os seus dados serão removidos permanentemente.</p>
                 <div className="cfg-desk-field">
                   <label>Digite <strong>EXCLUIR</strong> para confirmar</label>
-                  <input type="text" placeholder="EXCLUIR" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} style={{borderColor:excluirConfirm==="EXCLUIR"?"var(--error, #EF4444)":undefined}} />
+                  <input type="text" placeholder="EXCLUIR" value={excluirConfirm} onChange={e => setExcluirConfirm(e.target.value)} style={{borderColor:excluirConfirm==="EXCLUIR"?"var(--error)":undefined}} />
                 </div>
                 <div style={{display:"flex",gap:"8px"}}>
                   <button onClick={() => {setShowExcluir(false);setExcluirConfirm("");}} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
-                  <button onClick={handleExcluirConta} disabled={excluirConfirm!=="EXCLUIR"} style={{flex:2,padding:"0.6rem",background:excluirConfirm==="EXCLUIR"?"var(--error, #EF4444)":"var(--bg-body, #F7F7F8)",color:excluirConfirm==="EXCLUIR"?"var(--text-inverse, #FFFFFF)":"var(--text-muted, #9CA3AF)",border:"none",borderRadius:"10px",fontFamily:"Geist,sans-serif",fontSize:"0.85rem",fontWeight:600,cursor:excluirConfirm==="EXCLUIR"?"pointer":"not-allowed"}}>
+                  <button onClick={handleExcluirConta} disabled={excluirConfirm!=="EXCLUIR"} style={{flex:2,padding:"0.6rem",background:excluirConfirm==="EXCLUIR"?"var(--error)":"var(--bg-body)",color:excluirConfirm==="EXCLUIR"?"var(--text-inverse)":"var(--text-muted)",border:"none",borderRadius:"10px",fontFamily:"Geist,sans-serif",fontSize:"0.85rem",fontWeight:600,cursor:excluirConfirm==="EXCLUIR"?"pointer":"not-allowed"}}>
                     Confirmar exclusão
                   </button>
                 </div>
@@ -622,7 +622,7 @@ export default function Configuracoes() {
                   { key:"atualizacoes", label:"Atualizações do app" },
                 ] as { key: keyof typeof notifs; label: string }[]).map(item => (
                   <div key={item.key} className="cfg-notif-row">
-                    <p className="cfg-notif-label" style={{color: notifDesativar ? "var(--border, #E9E9EE)" : undefined}}>{item.label}</p>
+                    <p className="cfg-notif-label" style={{color: notifDesativar ? "var(--border)" : undefined}}>{item.label}</p>
                     <label className="toggle">
                       <input
                         type="checkbox"
@@ -634,8 +634,8 @@ export default function Configuracoes() {
                     </label>
                   </div>
                 ))}
-                <div className="cfg-notif-row" style={{paddingTop:"0.5rem",borderTop:"1px solid var(--border, #E9E9EE)"}}>
-                  <p className="cfg-notif-label" style={{color:"var(--text-muted, #9CA3AF)",fontSize:"0.82rem"}}>Não quero receber notificações</p>
+                <div className="cfg-notif-row" style={{paddingTop:"0.5rem",borderTop:"1px solid var(--border)"}}>
+                  <p className="cfg-notif-label" style={{color:"var(--text-muted)",fontSize:"0.82rem"}}>Não quero receber notificações</p>
                   <label className="toggle">
                     <input type="checkbox" checked={notifDesativar} onChange={e => toggleNotifDesativar(e.target.checked)} />
                     <span className="toggle-slider" />
@@ -694,9 +694,9 @@ export default function Configuracoes() {
                 {ogPreview
                   ? <img src={ogPreview} alt="og" className="cfg-og-img" />
                   : <div className="cfg-og-placeholder">
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--border, #E9E9EE)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                      <p style={{fontSize:"0.78rem",color:"var(--text-muted, #9CA3AF)",margin:"0.4rem 0 0"}}>Clique para adicionar imagem</p>
-                      <p style={{fontSize:"0.7rem",color:"var(--border, #E9E9EE)",margin:"0.15rem 0 0"}}>Recomendado: 1200 × 630px</p>
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--border)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      <p style={{fontSize:"0.78rem",color:"var(--text-muted)",margin:"0.4rem 0 0"}}>Clique para adicionar imagem</p>
+                      <p style={{fontSize:"0.7rem",color:"var(--border)",margin:"0.15rem 0 0"}}>Recomendado: 1200 × 630px</p>
                     </div>
                 }
                 {ogUploading && (
@@ -709,7 +709,7 @@ export default function Configuracoes() {
               {ogPreview && (
                 <button
                   onClick={() => { setOgPreview(null); setForm(f => ({...f, og_image_url: ""})); }}
-                  style={{fontSize:"0.75rem",color:"var(--text-muted, #9CA3AF)",background:"none",border:"none",cursor:"pointer",textAlign:"left",padding:0}}
+                  style={{fontSize:"0.75rem",color:"var(--text-muted)",background:"none",border:"none",cursor:"pointer",textAlign:"left",padding:0}}
                 >
                   Remover imagem
                 </button>
@@ -724,69 +724,69 @@ export default function Configuracoes() {
         *, *::before, *::after { box-sizing: border-box; }
 
         .cfg-loading { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
-        .cfg-spinner-lg { width: 36px; height: 36px; border: 3px solid var(--primary-light, #FFF1F7); border-top-color: var(--primary, #FF6FA9); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+        .cfg-spinner-lg { width: 36px; height: 36px; border: 3px solid var(--primary-light); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         .cfg-spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.35); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         .cfg-spinner-sm { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.35); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .cfg-hero-avatar { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; flex-shrink: 0; }
-        .cfg-hero-avatar--md { width: 64px; height: 64px; background: var(--bg-body, #F7F7F8); border: 2px solid var(--border, #E9E9EE); }
+        .cfg-hero-avatar--md { width: 64px; height: 64px; background: var(--bg-body); border: 2px solid var(--border); }
         .cfg-hero-img { width: 100%; height: 100%; object-fit: cover; }
         .cfg-hero-cam { position: absolute; bottom: 0; right: 0; background: rgba(0,0,0,0.45); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border-radius: 50% 0 0 0; }
 
-        .cfg-field { display: flex; align-items: center; gap: 0.7rem; border: 1.5px solid var(--border, #E9E9EE); border-radius: 50px; padding: 0.65rem 1.1rem; background: var(--bg-input, #FFFFFF); transition: border-color 0.2s; min-width: 0; }
-        .cfg-field:focus-within { border-color: var(--border-focus, #FF6FA9); }
-        .cfg-field-icon { display: flex; align-items: center; flex-shrink: 0; color: var(--text-muted, #9CA3AF); }
-        .cfg-field-input { flex: 1; border: none; outline: none; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: var(--text-primary, #374151); background: transparent; min-width: 0; }
+        .cfg-field { display: flex; align-items: center; gap: 0.7rem; border: 1.5px solid var(--border); border-radius: var(--radius-full); padding: 0.65rem 1.1rem; background: var(--bg-input); transition: border-color 0.2s; min-width: 0; }
+        .cfg-field:focus-within { border-color: var(--border-focus); }
+        .cfg-field-icon { display: flex; align-items: center; flex-shrink: 0; color: var(--text-muted); }
+        .cfg-field-input { flex: 1; border: none; outline: none; font-family: 'Geist', sans-serif; font-size: var(--font-button); color: var(--text-primary); background: transparent; min-width: 0; }
 
-        .cfg-toast { width: 100%; border-radius: 12px; padding: 0.7rem 1rem; font-size: 0.85rem; font-weight: 500; }
-        .cfg-toast-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error, #EF4444); }
-        .cfg-toast-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: var(--success, #22C55E); }
+        .cfg-toast { width: 100%; border-radius: var(--radius-md); padding: 0.7rem 1rem; font-size: var(--font-button); font-weight: var(--fw-medium); }
+        .cfg-toast-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error); }
+        .cfg-toast-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: var(--success); }
 
-        .cfg-btn-save { width: 100%; padding: 0.9rem; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); border: none; border-radius: 50px; font-family: 'Geist', sans-serif; font-size: 0.95rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: opacity 0.2s, transform 0.1s; }
+        .cfg-btn-save { width: 100%; padding: 0.9rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-full); font-family: 'Geist', sans-serif; font-size: var(--font-input); font-weight: var(--fw-bold); cursor: pointer; display: flex; align-items: center; justify-content: center; min-height: 50px; transition: opacity 0.2s, transform 0.1s; }
         .cfg-btn-save:hover { opacity: 0.92; }
         .cfg-btn-save:active { transform: scale(0.98); }
         .cfg-btn-save:disabled { opacity: 0.65; cursor: not-allowed; }
-        .cfg-btn-save--sm { width: auto; padding: 0.6rem 1.5rem; min-height: 40px; font-size: 0.88rem; border-radius: 50px; }
+        .cfg-btn-save--sm { width: auto; padding: 0.6rem 1.5rem; min-height: 40px; font-size: var(--font-button); border-radius: var(--radius-full); }
 
-        .cfg-btn-logout { width: 100%; padding: 0.8rem; background: none; border: 1.5px solid var(--border, #E9E9EE); border-radius: 50px; font-family: 'Geist', sans-serif; font-size: 0.9rem; font-weight: 600; color: var(--text-secondary, #6B7280); cursor: pointer; transition: border-color 0.2s, color 0.2s; }
-        .cfg-btn-logout:hover { border-color: var(--error, #EF4444); color: var(--error, #EF4444); }
+        .cfg-btn-logout { width: 100%; padding: 0.8rem; background: none; border: 1.5px solid var(--border); border-radius: var(--radius-full); font-family: 'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-secondary); cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+        .cfg-btn-logout:hover { border-color: var(--error); color: var(--error); }
 
-        .cfg-btn-ghost { padding: 0.6rem 1rem; background: var(--bg-body, #F7F7F8); color: var(--text-secondary, #6B7280); border: none; border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; }
+        .cfg-btn-ghost { padding: 0.6rem 1rem; background: var(--bg-body); color: var(--text-secondary); border: none; border-radius: var(--radius-md); font-family: 'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-medium); cursor: pointer; }
 
-        .cfg-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 6px; font-size: 0.68rem; font-weight: 600; }
+        .cfg-badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: var(--radius-sm); font-size: var(--font-caption); font-weight: var(--fw-semibold); }
 
         /* ── Mobile ── */
         .cfg-mobile { display: flex; flex-direction: column; gap: 0.85rem; }
         .cfg-desktop { display: none; }
 
-        .cfg-hero { background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); border-radius: 20px; padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 6px 20px rgba(255,111,169,0.25); }
+        .cfg-hero { background: var(--primary-gradient); border-radius: var(--radius-xl); padding: 1.25rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; box-shadow: 0 6px 20px rgba(255,111,169,0.25); }
         .cfg-hero-left { display: flex; flex-direction: column; gap: 0; flex: 1; min-width: 0; }
-        .cfg-hero-saudacao { font-size: 1rem; color: var(--text-inverse, #FFFFFF); margin: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .cfg-badge-pro { background: rgba(255,255,255,0.25); color: var(--text-inverse, #FFFFFF); }
+        .cfg-hero-saudacao { font-size: var(--font-input); color: var(--text-inverse); margin: 0; font-weight: var(--fw-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cfg-badge-pro { background: rgba(255,255,255,0.25); color: var(--text-inverse); }
         .cfg-badge-trial { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
-        .cfg-badge-expirado { background: rgba(239,68,68,0.3); color: var(--text-inverse, #FFFFFF); }
+        .cfg-badge-expirado { background: rgba(239,68,68,0.3); color: var(--text-inverse); }
 
-        .cfg-accordion { background: var(--bg-card, #FFFFFF); border-radius: 18px; box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); overflow: hidden; }
+        .cfg-accordion { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); overflow: hidden; }
         .cfg-accordion-header { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 1rem 1.15rem; background: none; border: none; cursor: pointer; font-family: 'Geist', sans-serif; text-align: left; }
-        .cfg-accordion-icon { color: var(--text-muted, #9CA3AF); display: flex; align-items: center; }
-        .cfg-accordion-title { flex: 1; font-size: 0.88rem; font-weight: 700; color: var(--primary, #FF6FA9); text-transform: uppercase; letter-spacing: 0.07em; }
-        .cfg-accordion-chevron { color: var(--text-muted, #9CA3AF); transition: transform 0.2s; flex-shrink: 0; }
+        .cfg-accordion-icon { color: var(--text-muted); display: flex; align-items: center; }
+        .cfg-accordion-title { flex: 1; font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--primary); text-transform: uppercase; letter-spacing: 0.07em; }
+        .cfg-accordion-chevron { color: var(--text-muted); transition: transform 0.2s; flex-shrink: 0; }
         .cfg-accordion-chevron.open { transform: rotate(180deg); }
-        .cfg-accordion-body { padding: 0 1.15rem 1.15rem; display: flex; flex-direction: column; gap: 0.7rem; border-top: 1px solid var(--border, #E9E9EE); padding-top: 1rem; }
+        .cfg-accordion-body { padding: 0 1.15rem 1.15rem; display: flex; flex-direction: column; gap: 0.7rem; border-top: 1px solid var(--border); padding-top: 1rem; }
 
-        :root.dark .cfg-accordion { background: transparent; border-radius: 0; box-shadow: none; border-bottom: 1px solid var(--border, #2a2a2a); }
-        :root.dark .cfg-accordion:first-of-type { border-top: 1px solid var(--border, #2a2a2a); }
+        :root.dark .cfg-accordion { background: transparent; border-radius: 0; box-shadow: none; border-bottom: 1px solid var(--border); }
+        :root.dark .cfg-accordion:first-of-type { border-top: 1px solid var(--border); }
         :root.dark .cfg-accordion-header { padding: 1rem 0; }
-        :root.dark .cfg-accordion-body { padding: 0 0 1.25rem; border-top: 1px solid var(--border, #2a2a2a); padding-top: 1rem; }
+        :root.dark .cfg-accordion-body { padding: 0 0 1.25rem; border-top: 1px solid var(--border); padding-top: 1rem; }
 
         .cfg-toggle-row { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-        .cfg-toggle-label { font-size: 0.88rem; font-weight: 600; color: var(--text-primary, #374151); margin: 0; }
+        .cfg-toggle-label { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-primary); margin: 0; }
         .toggle { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
         .toggle input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--border, #E9E9EE); border-radius: 26px; transition: 0.3s; }
-        .toggle-slider:before { content: ""; position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: var(--bg-card, #FFFFFF); border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
-        .toggle input:checked + .toggle-slider { background: var(--primary, #FF6FA9); }
+        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 26px; transition: 0.3s; }
+        .toggle-slider:before { content: ""; position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: var(--bg-card); border-radius: 50%; transition: 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+        .toggle input:checked + .toggle-slider { background: var(--primary); }
         .toggle input:checked + .toggle-slider:before { transform: translateX(20px); }
 
         /* ── Desktop ── */
@@ -796,71 +796,71 @@ export default function Configuracoes() {
         }
 
         .cfg-desk-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.75rem; gap: 1rem; flex-wrap: wrap; }
-        .cfg-desk-h1 { font-size: 1.6rem; font-weight: 700; color: var(--text-title, #1F2937); margin: 0 0 0.2rem; }
-        .cfg-desk-sub { font-size: 0.88rem; color: var(--text-muted, #9CA3AF); margin: 0; }
+        .cfg-desk-h1 { font-size: var(--text-2xl); font-weight: var(--fw-bold); color: var(--text-title); margin: 0 0 0.2rem; }
+        .cfg-desk-sub { font-size: var(--font-button); color: var(--text-muted); margin: 0; }
         .cfg-desk-header-actions { display: flex; align-items: center; gap: 0.75rem; }
 
-        .cfg-desk-profile-banner { background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); border-radius: 20px; padding: 1.5rem 1.75rem; box-shadow: 0 4px 20px rgba(255,111,169,0.35); display: flex; align-items: center; margin-bottom: 1.5rem; gap: 1.25rem; }
+        .cfg-desk-profile-banner { background: var(--primary-gradient); border-radius: var(--radius-xl); padding: 1.5rem 1.75rem; box-shadow: 0 4px 20px rgba(255,111,169,0.35); display: flex; align-items: center; margin-bottom: 1.5rem; gap: 1.25rem; }
         .cfg-desk-profile-left { display: flex; align-items: center; gap: 1.25rem; }
-        .cfg-desk-profile-name { font-size: 1.15rem; font-weight: 700; color: var(--text-inverse, #FFFFFF); margin: 0; }
-        .cfg-desk-profile-loja { font-size: 0.88rem; color: rgba(255,255,255,0.8); margin: 0.1rem 0 0; font-weight: 500; }
-        .cfg-desk-profile-email { font-size: 0.78rem; color: rgba(255,255,255,0.65); margin: 0.2rem 0 0.35rem; }
-        .cfg-badge--pro-desk   { background: rgba(255,255,255,0.25); color: var(--text-inverse, #FFFFFF); border: 1px solid rgba(255,255,255,0.3); }
+        .cfg-desk-profile-name { font-size: var(--font-modal-title); font-weight: var(--fw-bold); color: var(--text-inverse); margin: 0; }
+        .cfg-desk-profile-loja { font-size: var(--font-button); color: rgba(255,255,255,0.8); margin: 0.1rem 0 0; font-weight: var(--fw-medium); }
+        .cfg-desk-profile-email { font-size: var(--font-helper); color: rgba(255,255,255,0.65); margin: 0.2rem 0 0.35rem; }
+        .cfg-badge--pro-desk   { background: rgba(255,255,255,0.25); color: var(--text-inverse); border: 1px solid rgba(255,255,255,0.3); }
         .cfg-badge--trial-desk { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
-        .cfg-badge--exp-desk   { background: rgba(239,68,68,0.35); color: var(--text-inverse, #FFFFFF); }
+        .cfg-badge--exp-desk   { background: rgba(239,68,68,0.35); color: var(--text-inverse); }
         .cfg-hero-avatar--desk { width: 72px; height: 72px; background: rgba(255,255,255,0.2); border: 2.5px solid rgba(255,255,255,0.5); }
 
         .cfg-desk-grid2 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1.25rem; align-items: start; }
 
-        .cfg-plan-info { border-radius: 12px; padding: 0.85rem 1rem; }
+        .cfg-plan-info { border-radius: var(--radius-md); padding: 0.85rem 1rem; }
         .cfg-plan-info--pro   { background: #f0fdf4; border: 1px solid #bbf7d0; }
-        .cfg-plan-info--trial { background: var(--primary-light, #FFF1F7); border: 1px solid var(--primary-light, #FFF1F7); }
+        .cfg-plan-info--trial { background: var(--primary-light); border: 1px solid var(--primary-light); }
         .cfg-plan-info--exp   { background: #fff1f2; border: 1px solid #fecdd3; }
-        .cfg-plan-title { font-size: 0.9rem; font-weight: 700; color: var(--text-title, #1F2937); margin: 0 0 0.25rem; }
-        .cfg-plan-sub   { font-size: 0.82rem; color: var(--text-secondary, #6B7280); margin: 0; line-height: 1.5; }
+        .cfg-plan-title { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--text-title); margin: 0 0 0.25rem; }
+        .cfg-plan-sub   { font-size: var(--font-helper); color: var(--text-secondary); margin: 0; line-height: 1.5; }
 
         .cfg-notif-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-        .cfg-notif-label { font-size: 0.88rem; font-weight: 500; color: var(--text-primary, #374151); margin: 0; }
+        .cfg-notif-label { font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--text-primary); margin: 0; }
 
-        .cfg-link-box { background: var(--bg-subtle, #FFF1F7); border: 1px solid var(--border, #E9E9EE); border-radius: 12px; padding: 0.85rem 1rem; }
-        .cfg-link-url { font-size: 0.78rem; color: var(--text-secondary, #6B7280); margin: 0; word-break: break-all; font-family: inherit; }
+        .cfg-link-box { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.85rem 1rem; }
+        .cfg-link-url { font-size: var(--font-helper); color: var(--text-secondary); margin: 0; word-break: break-all; font-family: inherit; }
 
-        .cfg-og-label { font-size: 0.82rem; font-weight: 600; color: var(--text-primary, #374151); margin: 0; }
-        .cfg-og-hint  { font-size: 0.75rem; color: var(--text-muted, #9CA3AF); margin: 0; line-height: 1.5; }
-        .cfg-og-upload { border: 2px dashed var(--border, #E9E9EE); border-radius: 12px; min-height: 120px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; transition: border-color 0.2s; background: var(--bg-subtle, #FFF1F7); }
-        .cfg-og-upload:hover { border-color: var(--primary, #FF6FA9); }
-        .cfg-og-upload--has-img { border-style: solid; border-color: var(--border, #E9E9EE); }
+        .cfg-og-label { font-size: var(--font-helper); font-weight: var(--fw-semibold); color: var(--text-primary); margin: 0; }
+        .cfg-og-hint  { font-size: var(--font-helper); color: var(--text-muted); margin: 0; line-height: 1.5; }
+        .cfg-og-upload { border: 2px dashed var(--border); border-radius: var(--radius-md); min-height: 120px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; transition: border-color 0.2s; background: var(--bg-subtle); }
+        .cfg-og-upload:hover { border-color: var(--primary); }
+        .cfg-og-upload--has-img { border-style: solid; border-color: var(--border); }
         .cfg-og-placeholder { display: flex; flex-direction: column; align-items: center; padding: 1.5rem; }
         .cfg-og-img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .cfg-og-uploading { position: absolute; inset: 0; background: rgba(255,255,255,0.8); display: flex; align-items: center; justify-content: center; }
 
-        .cfg-desk-card { background: var(--bg-card, #FFFFFF); border-radius: 16px; padding: 1.5rem; box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); display: flex; flex-direction: column; gap: 1rem; border: 1px solid var(--border, #E9E9EE); }
+        .cfg-desk-card { background: var(--bg-card); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); display: flex; flex-direction: column; gap: 1rem; border: 1px solid var(--border); }
 
-        .cfg-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: 0.95rem; font-weight: 700; color: var(--text-title, #1F2937); }
-        .cfg-card-icon { font-size: 1rem; }
+        .cfg-card-header { display: flex; align-items: center; gap: 0.5rem; font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title); }
+        .cfg-card-icon { font-size: var(--font-input); }
 
         .cfg-desk-fields { display: flex; flex-direction: column; gap: 0.75rem; }
         .cfg-desk-field { display: flex; flex-direction: column; gap: 0.28rem; }
-        .cfg-desk-field label { font-size: 0.78rem; font-weight: 600; color: var(--text-primary, #374151); }
-        .cfg-desk-field input { padding: 0.65rem 0.9rem; border: 1.5px solid var(--border, #E9E9EE); border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.9rem; color: var(--text-title, #1F2937); background: var(--bg-input, #FFFFFF); outline: none; transition: border-color 0.2s; width: 100%; }
-        .cfg-desk-field input:focus { border-color: var(--border-focus, #FF6FA9); }
+        .cfg-desk-field label { font-size: var(--font-helper); font-weight: var(--fw-semibold); color: var(--text-primary); }
+        .cfg-desk-field input { padding: 0.65rem 0.9rem; border: 1.5px solid var(--border); border-radius: var(--radius-md); font-family: 'Geist', sans-serif; font-size: var(--font-button); color: var(--text-title); background: var(--bg-input); outline: none; transition: border-color 0.2s; width: 100%; }
+        .cfg-desk-field input:focus { border-color: var(--border-focus); }
 
-        .cfg-desk-divider { border: none; border-top: 1px solid var(--border, #E9E9EE); margin: 0; }
+        .cfg-desk-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
 
-        .cfg-desk-inline-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; background: var(--primary-light, #FFF1F7); color: var(--primary, #FF6FA9); border: 1px solid var(--primary-light, #FFF1F7); border-radius: 10px; font-family: 'Geist', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; width: fit-content; transition: background 0.2s; }
-        .cfg-desk-inline-btn:hover { background: var(--bg-subtle, #FFF1F7); }
-        .cfg-desk-inline-btn--danger { background: #fff1f2; color: var(--error, #EF4444); border-color: #fecdd3; }
+        .cfg-desk-inline-btn { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1rem; background: var(--primary-light); color: var(--primary); border: 1px solid var(--primary-light); border-radius: var(--radius-md); font-family: 'Geist', sans-serif; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; width: fit-content; transition: background 0.2s; }
+        .cfg-desk-inline-btn:hover { background: var(--bg-subtle); }
+        .cfg-desk-inline-btn--danger { background: #fff1f2; color: var(--error); border-color: #fecdd3; }
         .cfg-desk-inline-btn--danger:hover { background: #fee2e2; }
 
-        .cfg-desk-inline-section { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem; background: var(--bg-subtle, #FFF1F7); border-radius: 12px; border: 1px solid var(--border, #E9E9EE); }
+        .cfg-desk-inline-section { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem; background: var(--bg-subtle); border-radius: var(--radius-md); border: 1px solid var(--border); }
         .cfg-desk-inline-section--danger { background: #fff8f8; border-color: #fecdd3; }
-        .cfg-desk-inline-label { font-size: 0.88rem; font-weight: 700; color: var(--text-title, #1F2937); margin: 0; }
+        .cfg-desk-inline-label { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--text-title); margin: 0; }
 
         /* ── Configure seu Doonly (mobile) ── */
         .mob-config-card {
-          background: var(--bg-card, #fff);
-          border: 1.5px solid var(--border, #ECC2D0);
-          border-radius: 14px;
+          background: var(--bg-card);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-lg);
           padding: 1rem;
           display: flex;
           flex-direction: column;
@@ -878,14 +878,14 @@ export default function Configuracoes() {
           gap: 0.5rem;
         }
         .mob-config-title {
-          font-size: 0.95rem;
-          font-weight: 700;
-          color: var(--text-title, #431524);
+          font-size: var(--font-input);
+          font-weight: var(--fw-bold);
+          color: var(--text-title);
           margin: 0;
         }
         .mob-config-sub {
-          font-size: 0.78rem;
-          color: var(--text-secondary, #6E3548);
+          font-size: var(--font-helper);
+          color: var(--text-secondary);
           margin: 2px 0 0;
           line-height: 1.35;
         }
@@ -895,8 +895,8 @@ export default function Configuracoes() {
           border-radius: 50%;
           background: #3d1a24;
           color: white;
-          font-size: 0.82rem;
-          font-weight: 800;
+          font-size: var(--font-helper);
+          font-weight: var(--fw-black);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -906,47 +906,47 @@ export default function Configuracoes() {
         .mob-config-bar-bg {
           width: 100%;
           height: 6px;
-          background: var(--bg-subtle, #F7EEF1);
-          border-radius: 4px;
+          background: var(--bg-subtle);
+          border-radius: var(--radius-sm);
           overflow: hidden;
         }
         .mob-config-bar-fill {
           height: 100%;
           background: #3d1a24;
-          border-radius: 4px;
-          transition: width 0.3s ease;
+          border-radius: var(--radius-sm);
+          transition: width var(--dur-slow) var(--ease-out);
         }
         .mob-config-next {
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 0.5rem;
-          background: var(--bg-subtle, #F7EEF1);
-          border-radius: 10px;
+          background: var(--bg-subtle);
+          border-radius: var(--radius-md);
           padding: 0.65rem 0.85rem;
         }
         .mob-config-next-label {
-          font-size: 0.65rem;
-          font-weight: 700;
-          color: var(--text-muted, #C39EAA);
+          font-size: var(--font-caption);
+          font-weight: var(--fw-bold);
+          color: var(--text-muted);
           text-transform: uppercase;
           letter-spacing: 0.06em;
           margin: 0 0 2px;
         }
         .mob-config-next-text {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: var(--text-title, #431524);
+          font-size: var(--font-button);
+          font-weight: var(--fw-semibold);
+          color: var(--text-title);
           margin: 0;
         }
         .mob-config-next-btn {
           background: #3d1a24;
           border: none;
           color: white;
-          border-radius: 8px;
+          border-radius: var(--radius-sm);
           padding: 0.5rem 0.85rem;
-          font-size: 0.78rem;
-          font-weight: 600;
+          font-size: var(--font-helper);
+          font-weight: var(--fw-semibold);
           cursor: pointer;
           font-family: inherit;
           white-space: nowrap;
@@ -956,10 +956,10 @@ export default function Configuracoes() {
           background: #3d1a24;
           border: none;
           color: white;
-          border-radius: 10px;
+          border-radius: var(--radius-md);
           padding: 0.75rem;
-          font-size: 0.9rem;
-          font-weight: 700;
+          font-size: var(--font-button);
+          font-weight: var(--fw-bold);
           cursor: pointer;
           font-family: inherit;
           width: 100%;

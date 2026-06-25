@@ -139,13 +139,13 @@ export default function Auth() {
           <div className="field">
             <label>E-mail</label>
             <input type="email" name="email" placeholder="Digite seu e-mail" value={form.email} onChange={handleChange} required
-              style={{ backgroundColor: form.email ? "var(--primary-light, #FFF1F7)" : "var(--bg-card, #FFFFFF)", borderColor: form.email ? "var(--primary-light, #FFF1F7)" : "var(--border, #E9E9EE)" }} />
+              style={{ backgroundColor: form.email ? "var(--primary-light)" : "var(--bg-card)", borderColor: form.email ? "var(--primary-light)" : "var(--border)" }} />
           </div>
           <div className="field">
             <label>Senha</label>
             <div className="password-wrap">
               <input type={showPassword ? "text" : "password"} name="senha" placeholder="Digite sua senha" value={form.senha} onChange={handleChange} required
-                style={{ backgroundColor: form.senha ? "var(--primary-light, #FFF1F7)" : "var(--bg-card, #FFFFFF)", borderColor: form.senha ? "var(--primary-light, #FFF1F7)" : "var(--border, #E9E9EE)" }} />
+                style={{ backgroundColor: form.senha ? "var(--primary-light)" : "var(--bg-card)", borderColor: form.senha ? "var(--primary-light)" : "var(--border)" }} />
               <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
                 {showPassword
                   ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
@@ -190,22 +190,22 @@ export default function Auth() {
         <form onSubmit={handleCadastro} className="cadastro-form">
           <div className="cad-field">
             <input type="text" placeholder="Nome" value={cadastroForm.nome} onChange={e => setCadastroForm({ ...cadastroForm, nome: e.target.value })} required />
-            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </div>
           <div className="cad-field">
             <input type="tel" placeholder="Telefone" value={cadastroForm.telefone} onChange={e => setCadastroForm({ ...cadastroForm, telefone: formatPhone(e.target.value) })} />
-            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.73a16 16 0 0 0 6.29 6.29l1.62-1.62a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.73a16 16 0 0 0 6.29 6.29l1.62-1.62a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
           </div>
           <div className="cad-field">
             <input type="email" placeholder="E-mail" value={cadastroForm.email} onChange={e => setCadastroForm({ ...cadastroForm, email: e.target.value })} required />
-            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           </div>
           <div className="cad-field">
             <input type={showCadastroSenha ? "text" : "password"} placeholder="Senha" value={cadastroForm.senha} onChange={e => setCadastroForm({ ...cadastroForm, senha: e.target.value })} required />
             <button type="button" className="cad-eye" onClick={() => setShowCadastroSenha(!showCadastroSenha)}>
               {showCadastroSenha
-                ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               }
             </button>
           </div>
@@ -213,8 +213,8 @@ export default function Auth() {
             <input type={showConfirmarSenha ? "text" : "password"} placeholder="Confirmar Senha" value={cadastroForm.confirmarSenha} onChange={e => setCadastroForm({ ...cadastroForm, confirmarSenha: e.target.value })} required />
             <button type="button" className="cad-eye" onClick={() => setShowConfirmarSenha(!showConfirmarSenha)}>
               {showConfirmarSenha
-                ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #9CA3AF)" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               }
             </button>
           </div>
@@ -232,11 +232,11 @@ export default function Auth() {
             <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
             Cadastrar com Google
           </button>
-          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted, #9CA3AF)', textAlign: 'center', lineHeight: '1.5', margin: '0' }}>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', lineHeight: '1.5', margin: '0' }}>
             Ao criar sua conta, você concorda com nossos{' '}
-            <a href="/termos" target="_blank" style={{ color: 'var(--primary, #FF6FA9)', fontWeight: 600 }}>Termos de Uso</a>
+            <a href="/termos" target="_blank" style={{ color: 'var(--primary)', fontWeight: 600 }}>Termos de Uso</a>
             {' '}e{' '}
-            <a href="/privacidade" target="_blank" style={{ color: 'var(--primary, #FF6FA9)', fontWeight: 600 }}>Política de Privacidade</a>
+            <a href="/privacidade" target="_blank" style={{ color: 'var(--primary)', fontWeight: 600 }}>Política de Privacidade</a>
           </p>
           <div className="cadastro-link-wrap">
             <span>Já tem conta? </span>
@@ -252,67 +252,67 @@ export default function Auth() {
         html, body { height: 100%; overflow: hidden; }
         #root { height: 100%; overflow-y: auto; }
         .auth-root { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-family: inherit; padding: 1.5rem; }
-        .fade-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-card, #FFFFFF); opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
+        .fade-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-card); opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
-        .auth-bg { position: fixed; inset: 0; z-index: 0; background: var(--primary-gradient, linear-gradient(135deg, #986274, #6E3548)); }
+        .auth-bg { position: fixed; inset: 0; z-index: 0; background: var(--primary-gradient); }
         .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; }
-        .auth-card { position: relative; z-index: 2; background: var(--bg-card, #FFFFFF); border-radius: 16px; padding: 2rem 1.75rem; width: 100%; max-width: 440px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 1rem auto; overflow-y: auto; max-height: calc(100vh - 2rem); }
+        .auth-card { position: relative; z-index: 2; background: var(--bg-card); border-radius: var(--radius-lg); padding: 2rem 1.75rem; width: 100%; max-width: 440px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 1rem auto; overflow-y: auto; max-height: calc(100vh - 2rem); }
         @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         .auth-logo-wrap { display: flex; justify-content: center; margin-bottom: 1.8rem; }
         .auth-logo-img { height: 110px; object-fit: contain; }
         .auth-form { display: flex; flex-direction: column; gap: 1rem; }
         .field { display: flex; flex-direction: column; gap: 0.35rem; }
-        .field label { font-size: 0.88rem; font-weight: 500; color: var(--text-primary, #374151); }
-        .field input { padding: 0.72rem 1rem; border: 1.5px solid var(--border, #E9E9EE); border-radius: 8px; font-family: inherit; font-size: 0.95rem; color: var(--text-title, #1F2937); outline: none; transition: background-color 0.2s, border-color 0.2s; width: 100%; }
-        .field input:focus { border-color: var(--border-focus, #FF6FA9); }
-        .field input::placeholder { color: var(--text-muted, #9CA3AF); }
+        .field label { font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--text-primary); }
+        .field input { padding: 0.72rem 1rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: var(--font-input); color: var(--text-title); outline: none; transition: background-color 0.2s, border-color 0.2s; width: 100%; }
+        .field input:focus { border-color: var(--border-focus); }
+        .field input::placeholder { color: var(--text-muted); }
         .password-wrap { position: relative; }
         .password-wrap input { padding-right: 2.8rem; }
-        .eye-btn { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted, #9CA3AF); display: flex; align-items: center; padding: 0; }
-        .eye-btn:hover { color: var(--primary, #FF6FA9); }
+        .eye-btn { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; padding: 0; }
+        .eye-btn:hover { color: var(--primary); }
         .login-bottom-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 0.5rem; }
         .keep-connected { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
-        .keep-connected input[type="checkbox"] { accent-color: var(--primary, #FF6FA9); width: 15px; height: 15px; cursor: pointer; }
-        .keep-connected label { font-size: 0.82rem; color: var(--text-primary, #374151); cursor: pointer; white-space: nowrap; }
-        .forgot-link { font-size: 0.82rem; color: var(--primary, #FF6FA9); text-decoration: none; white-space: nowrap; font-weight: 500; }
+        .keep-connected input[type="checkbox"] { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
+        .keep-connected label { font-size: var(--font-helper); color: var(--text-primary); cursor: pointer; white-space: nowrap; }
+        .forgot-link { font-size: var(--font-helper); color: var(--primary); text-decoration: none; white-space: nowrap; font-weight: var(--fw-medium); }
         .forgot-link:hover { text-decoration: underline; }
-        .auth-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error, #EF4444); border-radius: 8px; padding: 0.6rem 0.9rem; font-size: 0.85rem; }
-        .auth-btn { padding: 0.85rem; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); border: none; border-radius: 8px; font-family: inherit; font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; min-height: 48px; }
+        .auth-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error); border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; font-size: var(--font-button); }
+        .auth-btn { padding: 0.85rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-semibold); cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; min-height: 48px; }
         .auth-btn:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
         .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-        .cadastro-link-wrap { text-align: center; font-size: 0.85rem; color: var(--text-secondary, #6B7280); }
-        .cadastro-link { background: none; border: none; color: var(--primary, #FF6FA9); font-weight: 600; cursor: pointer; font-family: inherit; font-size: 0.85rem; text-decoration: underline; }
+        .cadastro-link-wrap { text-align: center; font-size: var(--font-button); color: var(--text-secondary); }
+        .cadastro-link { background: none; border: none; color: var(--primary); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; font-size: var(--font-button); text-decoration: underline; }
         .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .auth-divider { display: flex; align-items: center; gap: 0.75rem; color: var(--border, #E9E9EE); font-size: 0.82rem; }
-        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border, #E9E9EE); }
-        .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0.75rem; background: var(--bg-card, #FFFFFF); color: var(--text-primary, #374151); border: 1.5px solid var(--border, #E9E9EE); border-radius: 8px; font-family: inherit; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
-        .google-btn:hover { border-color: var(--text-muted, #9CA3AF); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .auth-divider { display: flex; align-items: center; gap: 0.75rem; color: var(--border); font-size: var(--font-helper); }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0.75rem; background: var(--bg-card); color: var(--text-primary); border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-medium); cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
+        .google-btn:hover { border-color: var(--text-muted); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
         .cadastro-form { display: flex; flex-direction: column; gap: 0.9rem; padding-top: 0.5rem; }
-        .cad-field { position: relative; display: flex; align-items: center; border: 1.5px solid var(--border, #E9E9EE); border-radius: 50px; overflow: hidden; background: var(--bg-card, #FFFFFF); transition: border-color 0.2s; }
-        .cad-field:focus-within { border-color: var(--border-focus, #986274); }
-        .cad-field input { flex: 1; padding: 0.8rem 1.25rem; border: none; outline: none; font-family: inherit; font-size: 0.95rem; color: var(--text-title, #1F2937); background: transparent; }
-        .cad-field input::placeholder { color: var(--text-muted, #9CA3AF); }
+        .cad-field { position: relative; display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--radius-full); overflow: hidden; background: var(--bg-card); transition: border-color 0.2s; }
+        .cad-field:focus-within { border-color: var(--border-focus); }
+        .cad-field input { flex: 1; padding: 0.8rem 1.25rem; border: none; outline: none; font-family: inherit; font-size: var(--font-input); color: var(--text-title); background: transparent; }
+        .cad-field input::placeholder { color: var(--text-muted); }
         .cad-field input:-webkit-autofill,
         .cad-field input:-webkit-autofill:hover,
         .cad-field input:-webkit-autofill:focus {
-          -webkit-text-fill-color: var(--text-title, #1F2937);
-          -webkit-box-shadow: 0 0 0px 1000px var(--primary-light, #F7EEF1) inset;
-          box-shadow: 0 0 0px 1000px var(--primary-light, #F7EEF1) inset;
+          -webkit-text-fill-color: var(--text-title);
+          -webkit-box-shadow: 0 0 0px 1000px var(--primary-light) inset;
+          box-shadow: 0 0 0px 1000px var(--primary-light) inset;
           transition: background-color 5000s ease-in-out 0s;
         }
-        .cad-field:has(input:-webkit-autofill) { background: var(--primary-light, #F7EEF1); }
+        .cad-field:has(input:-webkit-autofill) { background: var(--primary-light); }
         .field input:-webkit-autofill,
         .field input:-webkit-autofill:hover,
         .field input:-webkit-autofill:focus {
-          -webkit-text-fill-color: var(--text-title, #1F2937);
-          -webkit-box-shadow: 0 0 0px 1000px var(--primary-light, #F7EEF1) inset;
-          box-shadow: 0 0 0px 1000px var(--primary-light, #F7EEF1) inset;
+          -webkit-text-fill-color: var(--text-title);
+          -webkit-box-shadow: 0 0 0px 1000px var(--primary-light) inset;
+          box-shadow: 0 0 0px 1000px var(--primary-light) inset;
           transition: background-color 5000s ease-in-out 0s;
         }
         .cad-icon { margin-right: 1rem; flex-shrink: 0; }
-        .cad-eye { background: none; border: none; cursor: pointer; padding: 0 1rem 0 0; display: flex; align-items: center; color: var(--text-muted, #9CA3AF); }
-        .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient, linear-gradient(135deg, #FF6FA9, #F85A9A)); color: var(--text-inverse, #FFFFFF); border: none; border-radius: 50px; font-family: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
+        .cad-eye { background: none; border: none; cursor: pointer; padding: 0 1rem 0 0; display: flex; align-items: center; color: var(--text-muted); }
+        .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-bold); cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
         .cad-btn:hover:not(:disabled) { opacity: 0.9; }
         .cad-btn:disabled { opacity: 0.7; cursor: not-allowed; }
       `}</style>
