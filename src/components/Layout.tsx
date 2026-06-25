@@ -326,7 +326,7 @@ export default function Layout() {
           .bottom-nav-pill {
             display: flex;
             align-items: stretch;
-            justify-content: space-around;
+            justify-content: space-between;
             width: 100%;
             background: #3d1a24;
             border-radius: var(--radius-lg);
