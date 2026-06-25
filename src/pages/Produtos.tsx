@@ -126,6 +126,16 @@ export default function Produtos() {
     }
   }, [loading, location.state]);
 
+  // Bloqueia scroll quando modal aberto
+  useEffect(() => {
+    if (modal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [modal]);
+
   useEffect(() => {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -1350,7 +1360,7 @@ export default function Produtos() {
         .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle); border:none; border-radius: var(--radius-sm); font-family:'Geist', sans-serif; font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-primary); cursor:pointer; }
         .prod-card-btn-del { padding:0.4rem 0.6rem; background:#fff1f2; border:none; border-radius: var(--radius-sm); color:var(--error); cursor:pointer; display:flex; align-items:center; }
         /* ── Modal de Produto (100% via design tokens) ── */
-        .prod-modal-overlay { position: fixed; inset: 0; z-index: 500; background: var(--bg-overlay); display: flex; align-items: flex-end; justify-content: center; padding: 0 12px; }
+        .prod-modal-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.6); display: flex; align-items: flex-end; justify-content: center; padding: 0 12px; }
         .prod-modal { background: var(--bg-card); border-radius: var(--radius-xl) 24px 16px 16px; width: 100%; max-width: 520px; max-height: 88vh; display: flex; flex-direction: column; animation: slideUp var(--dur-slow) var(--ease-out); margin-bottom: 12px; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         .prod-modal-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5) var(--space-3); border-bottom: 1px solid var(--border); flex-shrink: 0; }
