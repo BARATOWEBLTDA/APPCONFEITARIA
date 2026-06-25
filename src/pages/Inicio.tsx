@@ -556,12 +556,13 @@ export default function Inicio() {
           justify-content: space-between;
           gap: 1rem;
           position: relative;
-          z-index: 0;
+          z-index: 10;
         }
         .ini-hero-greeting { flex: 1; min-width: 0; }
         .ini-hero-avatar-wrap {
           position: relative;
           flex-shrink: 0;
+          z-index: 100;
         }
         .ini-hero-avatar {
           flex-shrink: 0;
