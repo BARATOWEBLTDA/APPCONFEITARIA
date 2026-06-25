@@ -720,7 +720,7 @@ export default function Pedidos() {
       {/* ── Header com padding mobile ── */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', paddingTop: isMobile ? '1.25rem' : 0 }}>
         <div>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--text-title)', margin: 0 }}>Pedidos</h1>
+          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--fw-black)', color: 'var(--text-title)', margin: 0, letterSpacing: '-0.02em' }}>Pedidos</h1>
           <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0.1rem 0 0' }}>
             {pedidosFiltrados.length} pedido{pedidosFiltrados.length !== 1 ? 's' : ''}
           </p>
