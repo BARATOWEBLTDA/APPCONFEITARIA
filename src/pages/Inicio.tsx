@@ -322,8 +322,8 @@ export default function Inicio() {
       {/* ── Hero degradê animado ── */}
       <div className="ini-hero">
         <div className="ini-hero-greeting">
-          <h1>{getGreeting()}, {nome || "bem-vinda"}</h1>
           <p>{hojeFormatado()}</p>
+          <h1>{getGreeting()}, {(nome || "bem-vinda").split(" ")[0]}</h1>
         </div>
 
         {/* Foto de perfil no canto superior direito */}
@@ -486,7 +486,7 @@ export default function Inicio() {
 
         /* ── Hero degradê animado (preservado) ── */
         .ini-hero {
-          background: linear-gradient(135deg, #986274, #6E3548, #431524, #6E3548, #986274);
+          background: linear-gradient(135deg, var(--primary-dark), var(--text-title), #1f0a12, var(--text-title), var(--primary-dark));
           background-size: 300% 300%;
           animation: heroGradientMove 10s ease infinite;
           border-radius: 0;
@@ -508,14 +508,14 @@ export default function Inicio() {
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
+        .ini-hero-greeting p {
+          font-size: var(--font-helper); color: rgba(255,255,255,0.6);
+          margin: 0; line-height: 1.3;
+        }
         .ini-hero-greeting h1 {
           font-size: var(--font-input); font-weight: var(--fw-semibold); color: rgba(255,255,255,0.95);
-          margin: 0; line-height: 1.3;
+          margin: 3px 0 0; line-height: 1.3;
           letter-spacing: 0;
-        }
-        .ini-hero-greeting p {
-          font-size: var(--font-helper); color: rgba(255,255,255,0.7);
-          margin: 2px 0 0;
         }
 
         /* ── Profile button + dropdown menu ── */
