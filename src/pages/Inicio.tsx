@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
 import {
   Share, Plus, ClipboardText, CalendarDots,
-  Cake, TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
+  TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
+  Bell, User, Storefront, SignOut,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
@@ -51,6 +52,26 @@ export default function Inicio() {
   const [resumoAnterior, setResumoAnterior] = useState({ vendas: 0, pedidos: 0 });
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
   const [copiado, setCopiado] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [email, setEmail] = useState("");
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Pega email do auth
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) setEmail(data.user.email);
+    });
+  }, []);
+
+  // Click outside fecha o menu
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
 
   const nome = profile?.nome || "";
   const slug = profile?.slug || "";
@@ -304,42 +325,40 @@ export default function Inicio() {
           <h1>{getGreeting()}, {nome || "bem-vinda"}</h1>
           <p>{hojeFormatado()}</p>
         </div>
-      </div>
 
-      {/* ── 3 indicadores flutuando sobre o hero ── */}
-      <div className="ini-indicadores">
-        <button
-          className="ini-ind-card ini-ind-card--pedidos"
-          onClick={() => navigate("/agenda")}
-        >
-          <div className="ini-ind-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=400&q=80')` }} />
-          <div className="ini-ind-content">
-            <span className="ini-ind-label">{counts.entregasHoje === 1 ? "Pedido hoje" : "Pedidos hoje"}</span>
-            <span className="ini-ind-val">{counts.entregasHoje}</span>
-          </div>
-        </button>
+        {/* Foto de perfil no canto superior direito */}
+        <div className="ini-profile-wrapper" ref={menuRef}>
+          <button className="ini-profile-btn" onClick={() => setMenuOpen(o => !o)}>
+            {profile?.foto_url
+              ? <img src={profile.foto_url} alt="Perfil" className="ini-profile-img" />
+              : <div className="ini-profile-placeholder"><User size={22} weight="bold" color="#fff" /></div>
+            }
+          </button>
 
-        <button
-          className="ini-ind-card ini-ind-card--faturamento"
-          onClick={() => navigate("/financeiro")}
-        >
-          <div className="ini-ind-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&q=80')` }} />
-          <div className="ini-ind-content">
-            <span className="ini-ind-label">Faturamento</span>
-            <span className="ini-ind-val ini-ind-val--currency">{formatCurrencyCompact(counts.faturamentoMes)}</span>
-          </div>
-        </button>
-
-        <button
-          className="ini-ind-card ini-ind-card--aniversarios"
-          onClick={() => navigate("/clientes")}
-        >
-          <div className="ini-ind-bg" style={{ backgroundImage: `url('https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=400&q=80')` }} />
-          <div className="ini-ind-content">
-            <span className="ini-ind-label">{counts.aniversariantes === 1 ? "Aniversário" : "Aniversários"}</span>
-            <span className="ini-ind-val">{counts.aniversariantes}</span>
-          </div>
-        </button>
+          {menuOpen && (
+            <div className="ini-profile-menu">
+              <div className="ini-pm-header">
+                <p className="ini-pm-name">{profile?.nome_loja || nome}</p>
+                <p className="ini-pm-email">{email}</p>
+                <p className="ini-pm-version">Versão 1.5.8</p>
+              </div>
+              <div className="ini-pm-divider" />
+              <button className="ini-pm-item" onClick={() => { setMenuOpen(false); navigate("/notificacoes"); }}>
+                <Bell size={18} weight="regular" /> Notificações
+              </button>
+              <button className="ini-pm-item" onClick={() => { setMenuOpen(false); navigate("/configuracoes"); }}>
+                <User size={18} weight="regular" /> Minha Conta
+              </button>
+              <button className="ini-pm-item" onClick={() => { setMenuOpen(false); navigate("/cardapio-config"); }}>
+                <Storefront size={18} weight="regular" /> Minha Loja
+              </button>
+              <div className="ini-pm-divider" />
+              <button className="ini-pm-item ini-pm-item--sair" onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}>
+                <SignOut size={18} weight="regular" /> Sair
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── Ações rápidas ── */}
@@ -470,14 +489,17 @@ export default function Inicio() {
           background: linear-gradient(135deg, #986274, #6E3548, #431524, #6E3548, #986274);
           background-size: 300% 300%;
           animation: heroGradientMove 10s ease infinite;
-          border-radius: 0 0 28px 28px;
-          padding: 2rem 1.25rem 4rem;
+          border-radius: 0;
+          padding: 2rem 1.25rem 2rem;
           /* Full-bleed: estende até a borda da viewport ignorando padding dos pais */
           width: 100vw;
           margin-left: calc(50% - 50vw);
           margin-right: calc(50% - 50vw);
-          margin-top: -0.75rem;
-          display: flex; flex-direction: column;
+          margin-top: calc(-1 * (var(--pad-page-top) + env(safe-area-inset-top, 0px)));
+          padding-top: calc(1.25rem + env(safe-area-inset-top, 0px));
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
           position: relative;
           z-index: 0;
         }
@@ -496,85 +518,48 @@ export default function Inicio() {
           margin: 2px 0 0;
         }
 
-        /* ── 3 indicadores estilo "sticker card" ── */
-        .ini-indicadores {
-          display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.55rem;
-          margin-top: -50px;
-          padding: 0 0.25rem;
-          position: relative;
-          z-index: 2;
+        /* ── Profile button + dropdown menu ── */
+        .ini-profile-wrapper { position: relative; }
+        .ini-profile-btn {
+          width: 42px; height: 42px; border-radius: 50%;
+          border: 2.5px solid rgba(255,255,255,0.6);
+          background: rgba(255,255,255,0.15);
+          cursor: pointer; padding: 0; overflow: hidden;
+          display: flex; align-items: center; justify-content: center;
+          transition: border-color 0.2s, transform 0.15s;
         }
-        .ini-ind-card {
-          position: relative;
+        .ini-profile-btn:hover { border-color: #fff; transform: scale(1.05); }
+        .ini-profile-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .ini-profile-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+
+        .ini-profile-menu {
+          position: absolute; top: calc(100% + 10px); right: 0;
+          width: 260px;
           background: var(--bg-card);
-          border: none;
           border-radius: var(--radius-lg);
-          padding: 0.55rem 0.7rem 0.65rem 0.7rem;
-          min-height: 92px;
-          display: flex; flex-direction: column;
-          justify-content: flex-end;
-          align-items: flex-start;
-          box-shadow: 0 6px 16px rgba(0,0,0,0.10);
-          cursor: pointer;
-          font-family: inherit;
-          text-align: left;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+          border: 1px solid var(--border);
+          z-index: 100;
           overflow: hidden;
-          transition: transform var(--dur-normal) var(--ease-out), box-shadow 0.18s ease;
+          animation: iniMenuIn 0.18s ease;
         }
+        @keyframes iniMenuIn { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-        /* Camada de imagem de fundo (wallpaper) */
-        .ini-ind-bg {
-          position: absolute;
-          inset: 0;
-          background-size: cover;
-          background-position: center;
-          opacity: 0.55;
-          z-index: 0;
-          pointer-events: none;
+        .ini-pm-header { padding: 1rem 1.1rem 0.7rem; }
+        .ini-pm-name { margin: 0; font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title); }
+        .ini-pm-email { margin: 2px 0 0; font-size: var(--font-helper); color: var(--text-muted); }
+        .ini-pm-version { margin: 4px 0 0; font-size: var(--font-caption); color: var(--text-disabled); font-style: italic; }
+        .ini-pm-divider { height: 1px; background: var(--border); margin: 0; }
+        .ini-pm-item {
+          display: flex; align-items: center; gap: 0.7rem;
+          width: 100%; padding: 0.75rem 1.1rem;
+          background: none; border: none; cursor: pointer;
+          font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-medium);
+          color: var(--text-primary); text-align: left;
+          transition: background 0.15s;
         }
-        /* Overlay escurecido pra garantir legibilidade do texto branco */
-        .ini-ind-card::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 100%);
-          z-index: 1;
-          pointer-events: none;
-        }
-        .ini-ind-content { position: relative; z-index: 2; }
-        .ini-ind-card:active { transform: scale(0.97); }
-        .ini-ind-card:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,0.14); }
-
-        /* Variantes coloridas (cor base — imagem aparece por cima) */
-        .ini-ind-card--pedidos {
-          background: linear-gradient(135deg, #60A5FA 0%, #2563EB 100%);
-        }
-        .ini-ind-card--faturamento {
-          background: linear-gradient(135deg, #4ADE80 0%, #16A34A 100%);
-        }
-        .ini-ind-card--aniversarios {
-          background: linear-gradient(135deg, #F472B6 0%, #BE185D 100%);
-        }
-
-        .ini-ind-content {
-          display: flex; flex-direction: column;
-          gap: 3px;
-          width: 100%;
-        }
-        .ini-ind-label {
-          font-size: var(--font-caption); font-weight: var(--fw-semibold);
-          color: rgba(255,255,255,0.92);
-          line-height: 1.15;
-          letter-spacing: 0.01em;
-        }
-        .ini-ind-val {
-          font-size: var(--font-modal-title); font-weight: var(--fw-black);
-          color: #fff; line-height: 1;
-          letter-spacing: -0.02em;
-        }
-        .ini-ind-val--currency {
-          font-size: var(--font-input);
-        }
+        .ini-pm-item:hover { background: var(--bg-subtle); }
+        .ini-pm-item--sair { color: var(--primary); }
 
         /* ── Sections ── */
         .ini-section {
@@ -713,31 +698,20 @@ export default function Inicio() {
         @media (min-width: 768px) {
           .ini-root { padding: 0 1.5rem 2rem; }
           .ini-hero {
-            /* Desktop: respeita o layout (não usa full-bleed que iria sob a sidebar) */
             width: auto;
             margin-left: -1.5rem;
             margin-right: -1.5rem;
-            margin-top: -0.75rem;
-            padding: 3rem 2rem 3.5rem;
-            border-radius: 0 0 32px 32px;
+            margin-top: -2rem;
+            padding: 2rem 2rem;
+            border-radius: 0;
           }
           .ini-hero-greeting h1 { font-size: var(--text-2xl); }
           .ini-hero-greeting p { font-size: var(--font-input); }
-          .ini-indicadores {
-            grid-template-columns: repeat(3, 1fr);
-            max-width: 720px;
-            margin-top: -55px;
-            margin-left: auto;
-            margin-right: auto;
-            gap: 1rem;
-          }
-          .ini-ind-card { padding: 0.85rem 1rem; min-height: 100px; }
-          .ini-ind-val { font-size: var(--text-xl); }
-          .ini-ind-label { font-size: var(--font-helper); }
           .ini-actions { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-resumo { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-alertas, .ini-tudo-ok, .ini-chart-card { max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-section { width: 100%; }
+          .ini-profile-btn { width: 48px; height: 48px; }
         }
       `}</style>
     </div>
