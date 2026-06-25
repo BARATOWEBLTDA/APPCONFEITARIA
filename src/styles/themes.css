@@ -97,10 +97,10 @@
   --shadow-md:        0 4px 16px rgba(0,0,0,0.08);
   --shadow-lg:        0 10px 30px rgba(0,0,0,0.12);
 
-  /* Raios */
-  --radius-card:      18px;
-  --radius-btn:       50px;
-  --radius-input:     50px;
+  /* Raios — semânticos (apontam pros primitivos no bloco RADIUS abaixo) */
+  --radius-card:      14px;   /* var(--radius-lg) */
+  --radius-btn:       999px;  /* var(--radius-full) */
+  --radius-input:     999px;  /* var(--radius-full) */
 
   /* Fonte */
   --font-base: 'Geist', sans-serif;
@@ -152,6 +152,68 @@
   --font-caption:        var(--text-xs);    /* legendas, metadados */
   --font-stat-value:     var(--text-2xl);   /* números grandes de dashboard */
   --font-stat-label:     var(--text-xs);    /* legenda dos números */
+
+  /* ─────────────────────────────────────────────
+     ESPAÇAMENTO — SISTEMA
+     Compartilhado entre temas (não muda por modo).
+     ───────────────────────────────────────────── */
+
+  /* ── Primitivos: escala 4px ── */
+  --space-1:  0.25rem;   /*  4px */
+  --space-2:  0.5rem;    /*  8px */
+  --space-3:  0.75rem;   /* 12px */
+  --space-4:  1rem;      /* 16px */
+  --space-5:  1.25rem;   /* 20px */
+  --space-6:  1.5rem;    /* 24px */
+  --space-7:  2rem;      /* 32px */
+  --space-8:  2.5rem;    /* 40px */
+  --space-9:  3rem;      /* 48px */
+
+  /* ── Semânticos: papéis de espaçamento ── */
+  /* Gaps (espaço entre filhos em flex/grid) */
+  --gap-tight:     var(--space-2);   /*  8px — chips, badges, botões em linha */
+  --gap-stack:     var(--space-3);   /* 12px — campos empilhados em form */
+  --gap-section:   var(--space-6);   /* 24px — entre seções de modal/página */
+
+  /* Padding interno de containers */
+  --pad-input:     var(--space-3) var(--space-4);  /* 12px 16px */
+  --pad-card:      var(--space-4);                  /* 16px */
+  --pad-modal:     var(--space-5);                  /* 20px */
+  --pad-page:      var(--space-4);                  /* 16px (mobile) */
+
+  /* Margens entre blocos */
+  --margin-header: var(--space-5);   /* 20px — depois do header da página */
+
+  /* ─────────────────────────────────────────────
+     RAIOS — SISTEMA
+     Compartilhado entre temas.
+     ───────────────────────────────────────────── */
+
+  /* ── Primitivos ── */
+  --radius-sm:    6px;
+  --radius-md:    10px;
+  --radius-lg:    14px;
+  --radius-xl:    20px;
+  --radius-full:  999px;
+
+  /* Os semânticos --radius-card, --radius-btn, --radius-input
+     já estão definidos acima (no bloco original de raios). */
+
+  /* ─────────────────────────────────────────────
+     MOTION — SISTEMA
+     Durations + easings para animações e transições.
+     Compartilhado entre temas.
+     ───────────────────────────────────────────── */
+
+  /* ── Durações ── */
+  --dur-fast:    120ms;   /* hover, micro-interações */
+  --dur-normal:  200ms;   /* abertura de dropdown, troca de aba */
+  --dur-slow:    300ms;   /* abertura de modal, drawer */
+
+  /* ── Easings ── */
+  --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);   /* padrão (entrada) */
+  --ease-in:     cubic-bezier(0.4, 0, 1, 1);       /* saída */
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);     /* transições contínuas */
 }
 
 /* ── Tema Escuro ── */
@@ -255,10 +317,7 @@
   --shadow-md:        0 4px 16px rgba(0,0,0,0.5);
   --shadow-lg:        0 10px 30px rgba(0,0,0,0.6);
 
-  /* Raios */
-  --radius-card:      18px;
-  --radius-btn:       50px;
-  --radius-input:     50px;
+  /* Raios: herdados do tema claro (não variam entre temas) */
 
   /* Fonte */
   --font-base: 'Geist', sans-serif;

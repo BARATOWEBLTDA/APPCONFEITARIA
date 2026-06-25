@@ -342,15 +342,16 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       <style>{`
         /* ─────────────────────────────────────────
            QuickAddInsumo — Modal de cadastro/edição
-           Tipografia: 100% via tokens do design system
-           (themes.css). Esse componente NÃO define
-           tamanhos/pesos próprios.
+           100% via design tokens (themes.css):
+           Tipografia · Spacing · Radius · Motion
+           Esse componente NÃO define valores próprios.
            ───────────────────────────────────────── */
 
         .qai-root {
           background: var(--bg-card, #fff);
-          border-radius: 14px;
-          display: flex; flex-direction: column; gap: 0.7rem;
+          border-radius: var(--radius-lg);
+          display: flex; flex-direction: column;
+          gap: var(--gap-stack);
         }
 
         /* Header do modal */
@@ -360,7 +361,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           font-weight: var(--fw-bold);
           line-height: var(--lh-tight);
           color: var(--primary);
-          padding-bottom: 0.25rem;
+          padding-bottom: var(--space-1);
           border-bottom: 1px solid var(--border);
         }
         .qai-cancel {
@@ -369,11 +370,12 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           font-weight: var(--fw-semibold);
           line-height: var(--lh-normal);
           color: var(--text-muted);
+          transition: color var(--dur-fast) var(--ease-out);
         }
         .qai-cancel:hover { color: var(--text-secondary); }
 
         /* Campos */
-        .qai-field { display: flex; flex-direction: column; gap: 6px; }
+        .qai-field { display: flex; flex-direction: column; gap: var(--space-2); }
         .qai-field label {
           font-size: var(--font-field-label);
           font-weight: var(--fw-semibold);
@@ -381,9 +383,10 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           color: var(--text-secondary);
         }
         .qai-input {
-          width: 100%; padding: 0.65rem 0.85rem;
+          width: 100%;
+          padding: var(--pad-input);
           border: 1.5px solid var(--border);
-          border-radius: 10px;
+          border-radius: var(--radius-md);
           font-size: var(--font-input);
           font-weight: var(--fw-medium);
           line-height: var(--lh-normal);
@@ -392,15 +395,25 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           background: var(--bg-input);
           font-family: inherit;
           box-sizing: border-box;
+          transition: border-color var(--dur-fast) var(--ease-out);
         }
         .qai-input:focus { border-color: var(--primary); }
         select.qai-input { cursor: pointer; }
 
-        .qai-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
-        .qai-row-3 { display: grid; grid-template-columns: 1.1fr 1fr 0.7fr; gap: 0.5rem; }
+        .qai-row-2 {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: var(--gap-tight);
+        }
+        .qai-row-3 {
+          display: grid; grid-template-columns: 1.1fr 1fr 0.7fr;
+          gap: var(--gap-tight);
+        }
 
         /* Bloco de imagens */
-        .qai-imgs { display: flex; flex-direction: column; gap: 0.55rem; }
+        .qai-imgs {
+          display: flex; flex-direction: column;
+          gap: var(--gap-tight);
+        }
         .qai-imgs-label {
           font-size: var(--font-field-label);
           font-weight: var(--fw-semibold);
@@ -417,11 +430,11 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         .qai-imgs-doo {
           flex: 1; min-height: 110px;
           display: flex; flex-direction: column; align-items: center; justify-content: center;
-          gap: 10px;
+          gap: var(--space-2);
           background: var(--primary-light);
           border: 1.5px dashed var(--primary);
-          border-radius: 12px;
-          padding: 1rem;
+          border-radius: var(--radius-md);
+          padding: var(--space-4);
         }
         .qai-imgs-doo p {
           margin: 0;
@@ -452,18 +465,19 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         }
 
         .qai-imgs-grid {
-          display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;
+          display: grid; grid-template-columns: repeat(3, 1fr);
+          gap: var(--gap-tight);
           flex: 1;
         }
         .qai-img-big {
           position: relative;
           aspect-ratio: 1;
           border: 2px solid var(--border);
-          border-radius: 12px;
+          border-radius: var(--radius-md);
           padding: 0; overflow: hidden;
           background: var(--bg-card);
           cursor: pointer;
-          transition: all 0.15s ease;
+          transition: all var(--dur-fast) var(--ease-out);
         }
         .qai-img-big img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .qai-img-big:hover { border-color: var(--primary); }
@@ -497,40 +511,43 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           margin: 0 auto;
           aspect-ratio: 1;
           border: 2px solid var(--primary);
-          border-radius: 14px;
+          border-radius: var(--radius-lg);
           overflow: hidden;
           box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
         }
         .qai-imgs-selected img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .qai-img-remove {
           position: absolute; bottom: 8px; right: 8px;
-          padding: 5px 10px;
+          padding: var(--space-1) var(--space-2);
           background: rgba(0,0,0,0.7); color: #fff;
-          border: none; border-radius: 8px;
+          border: none;
+          border-radius: var(--radius-sm);
           font-family: inherit;
           font-size: var(--font-caption);
           font-weight: var(--fw-semibold);
           line-height: var(--lh-normal);
           cursor: pointer;
+          transition: background var(--dur-fast) var(--ease-out);
         }
         .qai-img-remove:hover { background: rgba(0,0,0,0.85); }
 
         /* Botões de ação embaixo da imagem (Buscar / Upload) */
         .qai-imgs-actions {
-          display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem;
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: var(--gap-tight);
         }
         .qai-img-action {
-          padding: 0.7rem 0.6rem;
+          padding: var(--space-3);
           background: var(--bg-body);
           border: 1.5px solid var(--border);
-          border-radius: 10px;
+          border-radius: var(--radius-md);
           font-family: inherit;
           font-size: var(--font-button);
           font-weight: var(--fw-bold);
           line-height: var(--lh-normal);
           color: var(--text-title);
           cursor: pointer;
-          transition: all 0.15s ease;
+          transition: all var(--dur-fast) var(--ease-out);
           white-space: nowrap;
           overflow: hidden; text-overflow: ellipsis;
         }
@@ -543,9 +560,9 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
 
         /* Preview de custo unitário */
         .qai-preview {
-          padding: 0.6rem 0.85rem;
+          padding: var(--pad-input);
           background: var(--primary-light);
-          border-radius: 9px;
+          border-radius: var(--radius-md);
           font-size: var(--font-helper);
           font-weight: var(--fw-regular);
           line-height: var(--lh-normal);
@@ -558,16 +575,17 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
 
         /* Botão salvar (CTA principal) */
         .qai-save {
-          padding: 0.85rem;
+          padding: var(--space-3);
           background: var(--primary);
           color: var(--text-inverse);
-          border: none; border-radius: 10px;
+          border: none;
+          border-radius: var(--radius-md);
           font-family: inherit;
           font-size: var(--font-button);
           font-weight: var(--fw-bold);
           line-height: var(--lh-normal);
           cursor: pointer;
-          transition: opacity 0.15s ease;
+          transition: opacity var(--dur-fast) var(--ease-out);
         }
         .qai-save:hover:not(:disabled) { opacity: 0.9; }
         .qai-save:disabled { opacity: 0.6; cursor: not-allowed; }
