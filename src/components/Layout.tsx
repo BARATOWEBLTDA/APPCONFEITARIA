@@ -331,6 +331,7 @@ export default function Layout() {
             background: #3d1a24;
             border-radius: var(--radius-lg);
             padding: 6px 6px;
+            height: 56px;
             box-shadow: 0 4px 24px rgba(61, 26, 36, 0.35);
             pointer-events: all;
             margin-bottom: 4px;
