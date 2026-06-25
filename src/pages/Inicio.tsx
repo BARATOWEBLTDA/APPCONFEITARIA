@@ -301,7 +301,7 @@ export default function Inicio() {
       {/* ── Hero degradê animado ── */}
       <div className="ini-hero">
         <div className="ini-hero-greeting">
-          <h1>{getGreeting()}, {nome || "bem-vinda"}</h1>
+          <h1>{getGreeting()}, {nome ? nome.split(" ")[0] : "bem-vinda"}</h1>
           <p>{hojeFormatado()}</p>
         </div>
       </div>
@@ -467,7 +467,7 @@ export default function Inicio() {
 
         /* ── Hero degradê animado (preservado) ── */
         .ini-hero {
-          background: linear-gradient(135deg, #986274, #6E3548, #431524, #6E3548, #986274);
+          background: linear-gradient(135deg, #3D0F20, #1F0610, #330716, #1F0610, #3D0F20);
           background-size: 300% 300%;
           animation: heroGradientMove 10s ease infinite;
           border-radius: 0;
