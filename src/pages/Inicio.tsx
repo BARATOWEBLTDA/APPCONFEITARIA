@@ -97,7 +97,7 @@ export default function Inicio() {
     setNotifLoading(true);
     try {
       // 1) Pede permissão (popup do navegador/celular)
-      let permission = notifPermission;
+      let permission: NotificationPermission = notifPermission === "unsupported" ? "default" : notifPermission;
       if (permission !== "granted") {
         permission = await Notification.requestPermission();
         setNotifPermission(permission);
@@ -127,7 +127,7 @@ export default function Inicio() {
         }
         sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
         });
       }
 
