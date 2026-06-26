@@ -190,6 +190,7 @@ export default function FichaTecnica() {
       document.body.style.left = "0";
       document.body.style.right = "0";
       document.body.style.overflow = "hidden";
+      document.body.classList.add("modal-open");
     } else {
       const top = document.body.style.top;
       document.body.style.position = "";
@@ -197,6 +198,7 @@ export default function FichaTecnica() {
       document.body.style.left = "";
       document.body.style.right = "";
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open");
       if (top) window.scrollTo(0, parseInt(top || "0") * -1);
     }
     return () => {
@@ -206,6 +208,7 @@ export default function FichaTecnica() {
       document.body.style.left = "";
       document.body.style.right = "";
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open");
       if (top) window.scrollTo(0, parseInt(top || "0") * -1);
     };
   }, [showQuickAdd]);
@@ -663,7 +666,7 @@ export default function FichaTecnica() {
 
         {savedToast && <div className="ft-toast">Ficha técnica salva!</div>}
 
-        <style>{detailStyles}</style>
+        <style>{detailStylesFull}</style>
       </div>
     );
   }
@@ -1099,6 +1102,11 @@ const detailStyles = `
   }
   @keyframes ftFadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes ftSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+`;
+
+const globalModalStyle = `body.modal-open .bottom-nav { display: none !important; }`;
+
+const detailStylesFull = detailStyles + `\n${globalModalStyle}`;
 
   .ft-toast {
     position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
