@@ -48,6 +48,14 @@ type FichaItem = { insumo_id: string; quantidade: number; insumo: Insumo };
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (v: number) => v.toFixed(1).replace(".", ",");
 
+// Custo unitário: 2 casas para valores >= 1, até 4 casas (sem zeros à direita) para valores pequenos
+const fmtCusto = (v: number) => {
+  const n = Number(v) || 0;
+  if (n >= 1) return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const s = n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+  return s;
+};
+
 function calcular(p: Produto) {
   const itens = p.produto_insumos || [];
   const cmv = itens.reduce((s, pi) => s + (Number(pi.quantidade) || 0) * (Number(pi.insumos?.custo_unitario) || 0), 0);
@@ -294,7 +302,7 @@ export default function FichaTecnica() {
                       : <div className="ft-edit-item-img ft-edit-item-img--ph">{ins.nome.charAt(0).toUpperCase()}</div>}
                     <div className="ft-edit-item-info">
                       <p className="ft-edit-item-nome">{ins.nome}</p>
-                      <p className="ft-edit-item-sub">R$ {(ins.custo_unitario || 0).toFixed(4)} / {ins.unidade}</p>
+                      <p className="ft-edit-item-sub">R$ {fmtCusto(ins.custo_unitario || 0)} / {ins.unidade}</p>
                     </div>
                     <div className="ft-edit-item-qtd">
                       <input
@@ -334,7 +342,7 @@ export default function FichaTecnica() {
                           : <div className="ft-add-result-img ft-add-result-img--ph">{i.nome.charAt(0).toUpperCase()}</div>}
                         <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
                           <p className="ft-edit-item-nome">{i.nome}</p>
-                          <p className="ft-edit-item-sub">R$ {(i.custo_unitario || 0).toFixed(4)} / {i.unidade}</p>
+                          <p className="ft-edit-item-sub">R$ {fmtCusto(i.custo_unitario || 0)} / {i.unidade}</p>
                         </div>
                       </button>
                     ))}
@@ -702,12 +710,13 @@ const detailStyles = `
   .ft-extras-edit {
     background: var(--bg-card); border-radius: var(--radius-md); padding: 0.85rem;
     box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06));
-    display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.65rem;
   }
-  .ft-field { display: flex; flex-direction: column; gap: 0.25rem; grid-column: 1 / -1; }
+  .ft-field { display: flex; flex-direction: column; gap: 0.25rem; grid-column: 1 / -1; min-width: 0; }
   .ft-field--half { grid-column: span 1; }
   .ft-field label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: var(--fw-semibold); }
   .ft-field input, .ft-field select, .ft-field textarea {
+    width: 100%; box-sizing: border-box; min-width: 0; max-width: 100%;
     padding: 0.5rem 0.6rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
     font-family: var(--font-base); font-size: var(--font-caption); background: var(--bg-card);
     color: var(--text-primary); outline: none; resize: none;
