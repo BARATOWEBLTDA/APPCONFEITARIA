@@ -864,10 +864,10 @@ const detailStyles = `
     box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06));
   }
   .ft-tree-foto {
-    width: 170px; height: 170px; border-radius: 50%; overflow: hidden;
+    width: 170px; height: 170px; border-radius: var(--radius-lg); overflow: hidden;
     background: var(--bg-subtle); flex-shrink: 0;
-    border: 4px solid var(--primary);
-    box-shadow: 0 0 0 4px var(--primary-light);
+    border: 3px solid var(--bg-card);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16), 0 4px 10px rgba(0, 0, 0, 0.08);
   }
   .ft-tree-foto img { width: 100%; height: 100%; object-fit: cover; }
   .ft-tree-foto-placeholder {
