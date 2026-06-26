@@ -95,49 +95,77 @@ export default function FichaTecnica() {
           Voltar
         </button>
 
-        {/* Hero */}
-        <div className="ft-hero">
-          <div className="ft-hero-img">
+        {/* Árvore: foto → linhas → CMV/Lucro → linha → Preço */}
+        <div className="ft-tree">
+          {/* Foto do produto */}
+          <div className="ft-tree-foto">
             {selected.imagem_url
               ? <img src={selected.imagem_url.split(",")[0]} alt={selected.nome} />
-              : <div className="ft-hero-placeholder">Sem imagem</div>
+              : <div className="ft-tree-foto-placeholder">Sem imagem</div>
             }
           </div>
-          <div className="ft-hero-info">
-            {selected.categoria && <span className="ft-hero-cat">{selected.categoria}</span>}
-            <h1 className="ft-hero-nome">{selected.nome}</h1>
-            {selected.descricao && <p className="ft-hero-desc">{selected.descricao}</p>}
+          <div className="ft-tree-titulo">
+            {selected.categoria && <span className="ft-tree-cat">{selected.categoria}</span>}
+            <h1 className="ft-tree-nome">{selected.nome}</h1>
           </div>
+
+          {temFicha ? (
+            <>
+              {/* Conector: foto → 2 cards */}
+              <svg className="ft-conector ft-conector--top" viewBox="0 0 300 48" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M150 0 L150 14 Q150 24 140 24 L85 24 Q75 24 75 34 L75 48 M150 14 Q150 24 160 24 L215 24 Q225 24 225 34 L225 48"
+                  fill="none" stroke="var(--ft-line)" strokeWidth="2" />
+              </svg>
+
+              {/* CMV + Lucro */}
+              <div className="ft-tree-duo">
+                <div className="ft-node ft-node--cmv">
+                  <div className="ft-node-icon ft-node-icon--cmv">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                  </div>
+                  <span className="ft-node-label">CMV</span>
+                  <strong className="ft-node-valor">R$ {fmt(cmv)}</strong>
+                  <span className="ft-node-sub">{fmtPct(margemCmv)}% do preço de venda</span>
+                </div>
+                <div className="ft-node ft-node--lucro">
+                  <div className="ft-node-icon ft-node-icon--lucro">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                  </div>
+                  <span className="ft-node-label">Lucro</span>
+                  <strong className="ft-node-valor">R$ {fmt(lucro)}</strong>
+                  <span className="ft-node-sub">{fmtPct(margemLucro)}% do preço de venda</span>
+                </div>
+              </div>
+
+              {/* Conector: 2 cards → preço central */}
+              <svg className="ft-conector ft-conector--bottom" viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M75 0 L75 10 Q75 20 85 20 L140 20 Q150 20 150 30 L150 40 M225 0 L225 10 Q225 20 215 20 L160 20 Q150 20 150 30 L150 40"
+                  fill="none" stroke="var(--ft-line)" strokeWidth="2" />
+              </svg>
+
+              {/* Preço de venda sugerido */}
+              <div className="ft-node ft-node--preco">
+                <div className="ft-node-icon ft-node-icon--preco">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                </div>
+                <div className="ft-node-preco-text">
+                  <span className="ft-node-label">Preço de venda sugerido</span>
+                  <strong className="ft-node-valor ft-node-valor--lg">R$ {fmt(preco)}</strong>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="ft-sem-ficha-aviso">
+              <p className="ft-sem-ficha-title">Nenhum ingrediente cadastrado</p>
+              <p className="ft-sem-ficha-sub">Adicione ingredientes na ficha técnica deste produto para ver o CMV, lucro e margem.</p>
+              <button className="ft-btn-editar" onClick={() => navigate("/produtos", { state: { editarId: selected.id } })}>
+                Cadastrar ingredientes
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Métricas */}
-        {temFicha ? (
-          <div className="ft-metricas">
-            <div className="ft-metrica ft-metrica--cmv">
-              <span className="ft-metrica-label">CMV</span>
-              <strong className="ft-metrica-valor">R$ {fmt(cmv)}</strong>
-              <span className="ft-metrica-sub">{fmtPct(margemCmv)}% do preço de venda</span>
-            </div>
-            <div className="ft-metrica ft-metrica--lucro">
-              <span className="ft-metrica-label">Lucro</span>
-              <strong className="ft-metrica-valor">R$ {fmt(lucro)}</strong>
-              <span className="ft-metrica-sub">{fmtPct(margemLucro)}% do preço de venda</span>
-            </div>
-            <div className="ft-metrica ft-metrica--preco">
-              <span className="ft-metrica-label">Preço de venda</span>
-              <strong className="ft-metrica-valor">R$ {fmt(preco)}</strong>
-              <span className="ft-metrica-sub">Preço {selected.promocao ? "promocional" : "normal"}</span>
-            </div>
-          </div>
-        ) : (
-          <div className="ft-sem-ficha-aviso">
-            <p className="ft-sem-ficha-title">Nenhum ingrediente cadastrado</p>
-            <p className="ft-sem-ficha-sub">Adicione ingredientes na ficha técnica deste produto para ver o CMV, lucro e margem.</p>
-            <button className="ft-btn-editar" onClick={() => navigate("/produtos", { state: { editarId: selected.id } })}>
-              Cadastrar ingredientes
-            </button>
-          </div>
-        )}
+        {selected.descricao && temFicha && <p className="ft-tree-desc">{selected.descricao}</p>}
 
         {/* Composição */}
         {temFicha && (
@@ -399,7 +427,11 @@ const listStyles = `
 `;
 
 const detailStyles = `
-  .ft-root { font-family: var(--font-base); max-width: 600px; display: flex; flex-direction: column; gap: 1rem; }
+  .ft-root {
+    font-family: var(--font-base); max-width: 600px;
+    display: flex; flex-direction: column; gap: 1rem;
+    --ft-line: var(--border);
+  }
 
   .ft-back {
     display: inline-flex; align-items: center; gap: 6px; padding: 0;
@@ -408,49 +440,93 @@ const detailStyles = `
     color: var(--text-secondary); cursor: pointer;
   }
 
-  .ft-hero {
-    background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden;
+  /* ═══ Árvore conectada ═══ */
+  .ft-tree {
+    display: flex; flex-direction: column; align-items: center;
+    background: var(--bg-card); border-radius: var(--radius-lg);
+    padding: 1.25rem 1rem 1.5rem;
     box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06));
   }
-  .ft-hero-img {
-    width: 100%; aspect-ratio: 16/10; overflow: hidden; background: var(--bg-subtle);
+
+  .ft-tree-foto {
+    width: 190px; height: 190px; border-radius: 50%; overflow: hidden;
+    background: var(--bg-subtle); box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    flex-shrink: 0;
   }
-  .ft-hero-img img { width: 100%; height: 100%; object-fit: cover; }
-  .ft-hero-placeholder {
-    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-    font-size: var(--font-body); color: var(--text-muted);
-  }
-  .ft-hero-info { padding: 1rem 1.1rem; }
-  .ft-hero-cat {
-    font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase;
-    letter-spacing: 0.04em; font-weight: var(--fw-medium);
-  }
-  .ft-hero-nome {
-    font-size: var(--font-section-title); font-weight: var(--fw-bold);
-    color: var(--text-title); margin: 2px 0 0;
-  }
-  .ft-hero-desc {
-    font-size: var(--font-body); color: var(--text-secondary);
-    margin: 6px 0 0; line-height: 1.45;
+  .ft-tree-foto img { width: 100%; height: 100%; object-fit: cover; }
+  .ft-tree-foto-placeholder {
+    width: 100%; height: 100%; display: flex; align-items: center;
+    justify-content: center; font-size: var(--font-caption); color: var(--text-muted);
   }
 
-  /* Métricas */
-  .ft-metricas { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-  .ft-metrica {
-    background: var(--bg-card); border-radius: var(--radius-md);
-    padding: 0.75rem 0.85rem; display: flex; flex-direction: column; gap: 2px;
-    border-left: 3px solid transparent;
+  .ft-tree-titulo { text-align: center; margin-top: 0.85rem; }
+  .ft-tree-cat {
+    display: block; font-size: 0.65rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.06em; font-weight: var(--fw-medium);
   }
-  .ft-metrica--cmv { border-left-color: var(--error); }
-  .ft-metrica--lucro { border-left-color: var(--success); }
-  .ft-metrica--preco { grid-column: 1 / -1; border-left-color: var(--primary); }
-  .ft-metrica-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: var(--fw-semibold); }
-  .ft-metrica-valor { font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title); }
-  .ft-metrica-sub { font-size: var(--font-caption); color: var(--text-muted); }
+  .ft-tree-nome {
+    font-size: var(--font-section-title); font-weight: var(--fw-bold);
+    color: var(--text-title); margin: 2px 0 0; line-height: 1.2;
+  }
+
+  /* Conectores SVG */
+  .ft-conector { width: 100%; max-width: 340px; display: block; }
+  .ft-conector--top { height: 44px; margin-top: 0.5rem; }
+  .ft-conector--bottom { height: 36px; }
+
+  /* Duo CMV + Lucro */
+  .ft-tree-duo {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+    width: 100%; max-width: 340px;
+  }
+
+  /* Node base */
+  .ft-node {
+    position: relative; background: var(--bg-card);
+    border: 1.5px solid var(--ft-line); border-radius: var(--radius-md);
+    padding: 0.85rem 0.75rem; display: flex; flex-direction: column;
+    align-items: center; text-align: center; gap: 2px;
+  }
+  .ft-node-icon {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 4px; flex-shrink: 0;
+  }
+  .ft-node-icon--cmv { background: #8a5a2b; }
+  .ft-node-icon--lucro { background: var(--success); }
+  .ft-node-icon--preco { background: var(--primary); }
+  .ft-node-label {
+    font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--text-muted); font-weight: var(--fw-bold);
+  }
+  .ft-node-valor { font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title); }
+  .ft-node-valor--lg { font-size: var(--font-section-title); }
+  .ft-node-sub { font-size: 0.65rem; color: var(--text-muted); line-height: 1.3; }
+
+  .ft-node--cmv { border-color: #d9b78e; }
+  .ft-node--lucro { border-color: #b6d6b8; }
+
+  /* Preço sugerido — horizontal, destaque */
+  .ft-node--preco {
+    flex-direction: row; align-items: center; gap: 0.75rem;
+    width: 100%; max-width: 300px; border-color: var(--primary);
+    background: var(--primary-light);
+  }
+  .ft-node--preco .ft-node-icon { margin-bottom: 0; }
+  .ft-node-preco-text { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+  .ft-node--preco .ft-node-label { color: var(--primary); }
+  .ft-node--preco .ft-node-valor { color: var(--primary); }
+
+  .ft-tree-desc {
+    font-size: var(--font-body); color: var(--text-secondary);
+    margin: 0; line-height: 1.5; text-align: center;
+    padding: 0 0.5rem;
+  }
 
   .ft-sem-ficha-aviso {
     background: var(--bg-card); border-radius: var(--radius-md);
     padding: 1.25rem; text-align: center; border: 1px dashed var(--border);
+    margin-top: 1rem; width: 100%;
   }
   .ft-sem-ficha-title { font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text-title); margin: 0 0 4px; }
   .ft-sem-ficha-sub { font-size: var(--font-caption); color: var(--text-muted); margin: 0 0 0.75rem; line-height: 1.4; }
