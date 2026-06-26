@@ -322,14 +322,16 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       <div className="qai-row-2">
         <div className="qai-field">
           <label>Quanto pagou *</label>
-          <input
-            type="text"
-            inputMode="decimal"
-            className="qai-input"
-            placeholder="R$ 0,00"
-            value={form.valor_compra}
-            onChange={e => setForm(f => ({ ...f, valor_compra: e.target.value }))}
-          />
+          <div className="qai-input-prefix">
+            <span>R$</span>
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="0,00"
+              value={form.valor_compra}
+              onChange={e => setForm(f => ({ ...f, valor_compra: e.target.value }))}
+            />
+          </div>
         </div>
         <div className="qai-field">
           <label>Embalagem</label>
@@ -369,7 +371,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
 
       {previewCusto > 0 && (
         <div className="qai-preview">
-          Custo unitário: <strong>R$ {previewCusto.toFixed(4)} / {form.unidade}</strong>
+          Custo unitário: <strong>R$ {previewCusto.toFixed(2).replace(".", ",")} / {form.unidade}</strong>
           {form.embalagem_tipo !== "Avulso" && (
             <span style={{ display: "block", marginTop: 2, fontSize: "0.75rem", opacity: 0.75 }}>
               Comprado em {form.embalagem_tipo.toLowerCase()} com {form.qtd_embalagem} {form.unidade}
@@ -441,6 +443,24 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           transition: border-color var(--dur-fast) var(--ease-out);
         }
         .qai-input:focus { border-color: var(--primary); }
+        .qai-input-prefix {
+          display: flex; align-items: center;
+          border: 1.5px solid var(--border); border-radius: var(--radius-md);
+          background: var(--bg-input); overflow: hidden;
+          transition: border-color var(--dur-fast) var(--ease-out);
+        }
+        .qai-input-prefix:focus-within { border-color: var(--primary); }
+        .qai-input-prefix span {
+          padding: 0 0 0 0.6rem;
+          font-size: var(--font-input); font-weight: var(--fw-semibold);
+          color: var(--text-muted); white-space: nowrap; user-select: none;
+        }
+        .qai-input-prefix input {
+          flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+          padding: var(--pad-input); padding-left: 0.3rem;
+          font-size: var(--font-input); font-weight: var(--fw-medium);
+          color: var(--text-title); font-family: inherit; box-sizing: border-box;
+        }
         select.qai-input { cursor: pointer; }
 
         .qai-row-2 {

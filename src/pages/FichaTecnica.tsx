@@ -115,9 +115,7 @@ const fmtPct = (v: number) => v.toFixed(1).replace(".", ",");
 
 const fmtCusto = (v: number) => {
   const n = Number(v) || 0;
-  if (n >= 1) return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const s = n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
-  return s;
+  return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 function calcular(p: Produto) {

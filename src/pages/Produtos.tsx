@@ -1367,7 +1367,7 @@ export default function Produtos() {
                           : <div className="ficha-modal-item-img ficha-modal-item-img--placeholder">🥣</div>}
                         <div className="ficha-modal-item-info">
                           <p className="ficha-modal-item-nome">{ins.nome}</p>
-                          <p className="ficha-modal-item-sub">R$ {(ins.custo_unitario || 0).toFixed(4)} / {ins.unidade}</p>
+                          <p className="ficha-modal-item-sub">R$ {(ins.custo_unitario || 0).toFixed(2)} / {ins.unidade}</p>
                           <div className="ficha-modal-item-bottom">
                             <div className="ficha-modal-item-qtd">
                               <input
@@ -1422,7 +1422,7 @@ export default function Produtos() {
                               : <div className="ficha-modal-add-result-img ficha-modal-add-result-img--placeholder">🥣</div>}
                             <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
                               <p className="ficha-modal-item-nome">{i.nome}</p>
-                              <p className="ficha-modal-item-sub">R$ {(i.custo_unitario || 0).toFixed(4)} / {i.unidade}</p>
+                              <p className="ficha-modal-item-sub">R$ {(i.custo_unitario || 0).toFixed(2)} / {i.unidade}</p>
                             </div>
                           </button>
                         ))}
