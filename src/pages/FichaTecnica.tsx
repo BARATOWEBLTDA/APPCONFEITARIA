@@ -378,6 +378,13 @@ export default function FichaTecnica() {
           </div>
         </div>
 
+        {/* Lucro em destaque */}
+        <div className="ft-lucro-hero">
+          <span className="ft-lucro-hero-label">Seu lucro</span>
+          <strong className={`ft-lucro-hero-value ${lucroLive >= 0 ? "" : "ft-lucro-hero-value--neg"}`}>R$ {fmt(lucroLive)}</strong>
+          <span className={`ft-lucro-hero-margin ${margemLucroLive >= 30 ? "ft-lucro-hero-margin--ok" : margemLucroLive >= 0 ? "ft-lucro-hero-margin--warn" : "ft-lucro-hero-margin--neg"}`}>{fmtPct(margemLucroLive)}% de margem</span>
+        </div>
+
         {/* Breakdown de precificação */}
         <div className="ft-pricing-card">
           <div className="ft-pricing-row">
@@ -397,27 +404,16 @@ export default function FichaTecnica() {
             <span className="ft-pricing-label">Custo total</span>
             <span className="ft-pricing-value">R$ {fmt(custoTotalLive)}</span>
           </div>
-
-          <div className="ft-pricing-spacer" />
-
           <div className="ft-pricing-row">
             <span className="ft-pricing-label">Preço de venda</span>
             <strong className="ft-pricing-value ft-pricing-value--preco">R$ {fmt(precoLive)}</strong>
-          </div>
-          <div className="ft-pricing-row">
-            <span className="ft-pricing-label">Lucro</span>
-            <strong className={`ft-pricing-value ${lucroLive >= 0 ? "ft-pricing-value--lucro" : "ft-pricing-value--neg"}`}>R$ {fmt(lucroLive)}</strong>
-          </div>
-          <div className="ft-pricing-row">
-            <span className="ft-pricing-label">Margem de lucro</span>
-            <strong className={`ft-pricing-value ${margemLucroLive >= 30 ? "ft-pricing-value--lucro" : margemLucroLive >= 0 ? "ft-pricing-value--warn" : "ft-pricing-value--neg"}`}>{fmtPct(margemLucroLive)}%</strong>
           </div>
         </div>
 
         {/* Editor da Composicao */}
         <div className="ft-section-header">
-          <h2 className="ft-section-title">Consumo da receita</h2>
-          {temFicha && <span className="ft-section-cmv">CMV R$ {fmt(cmvLive)}</span>}
+          <h2 className="ft-section-title">🧾 Ingredientes e custos</h2>
+          {temFicha && <span className="ft-section-cmv">Total ingredientes R$ {fmt(cmvLive)}</span>}
         </div>
 
         <div className="ft-edit-card">
@@ -452,7 +448,7 @@ export default function FichaTecnica() {
 
                     {/* Rodapé: qtd usada + custo calculado */}
                     <div className="ft-edit-item-bottom">
-                      <label className="ft-edit-item-label">Qtd usada na receita</label>
+                      <label className="ft-edit-item-label">Quantidade utilizada</label>
                       <div className="ft-edit-item-row">
                         <div className="ft-edit-item-input-group">
                           <input
@@ -532,7 +528,7 @@ export default function FichaTecnica() {
 
         {/* Custos invisíveis */}
         <div className="ft-section-header">
-          <h2 className="ft-section-title">Custos invisíveis (CV)</h2>
+          <h2 className="ft-section-title">💡 Custos invisíveis</h2>
         </div>
         <div className="ft-edit-card">
           <p className="ft-edit-empty-sub" style={{ margin: 0 }}>Água, luz, gás, corantes, plástico filme e outros itens difíceis de mensurar individualmente.</p>
@@ -553,26 +549,26 @@ export default function FichaTecnica() {
 
         {/* Mão de obra */}
         <div className="ft-section-header">
-          <h2 className="ft-section-title">Mão de obra (MO)</h2>
+          <h2 className="ft-section-title">👩‍🍳 Mão de obra</h2>
         </div>
         <div className="ft-edit-card">
           <div className="ft-extras-edit" style={{ boxShadow: "none", padding: 0 }}>
             <div className="ft-field ft-field--half">
-              <label>Salário desejado (mensal)</label>
+              <label>Quanto deseja ganhar por mês?</label>
               <div className="ft-input-prefix">
                 <span>R$</span>
                 <input type="text" inputMode="decimal" placeholder="3.000" value={extras.salario_desejado} onChange={e => setExtras(s => ({ ...s, salario_desejado: e.target.value }))} />
               </div>
             </div>
             <div className="ft-field ft-field--half">
-              <label>Horas por semana</label>
+              <label>Horas trabalhadas/semana</label>
               <div className="ft-input-suffix">
                 <input type="number" min="1" max="80" placeholder="40" value={extras.horas_semanais} onChange={e => setExtras(s => ({ ...s, horas_semanais: e.target.value }))} />
                 <span>h</span>
               </div>
             </div>
             <div className="ft-field ft-field--half">
-              <label>Tempo desta receita</label>
+              <label>Tempo de preparo</label>
               <div className="ft-input-suffix">
                 <input type="number" min="0" placeholder="0" value={extras.tempo_preparo_min} onChange={e => setExtras(s => ({ ...s, tempo_preparo_min: e.target.value }))} />
                 <span>min</span>
@@ -592,20 +588,20 @@ export default function FichaTecnica() {
 
         {/* Detalhes extras */}
         <div className="ft-section-header">
-          <h2 className="ft-section-title">Detalhes</h2>
+          <h2 className="ft-section-title">📦 Informações do produto</h2>
         </div>
         <div className="ft-extras-edit">
           <div className="ft-field ft-field--half">
-            <label>Rendimento (qtd)</label>
-            <input type="text" placeholder="Ex: 1 unidade" value={extras.rendimento_qtd} onChange={e => setExtras(s => ({ ...s, rendimento_qtd: e.target.value }))} />
+            <label>Rende (unidades)</label>
+            <input type="text" placeholder="Ex: 20 brigadeiros" value={extras.rendimento_qtd} onChange={e => setExtras(s => ({ ...s, rendimento_qtd: e.target.value }))} />
           </div>
           <div className="ft-field ft-field--half">
-            <label>Rendimento (peso)</label>
+            <label>Peso total produzido</label>
             <input type="text" placeholder="Ex: 1,2 kg" value={extras.rendimento_peso} onChange={e => setExtras(s => ({ ...s, rendimento_peso: e.target.value }))} />
           </div>
           <div className="ft-field ft-field--half">
-            <label>Validade (dias)</label>
-            <input type="number" min="0" placeholder="Ex: 5" value={extras.validade_dias} onChange={e => setExtras(s => ({ ...s, validade_dias: e.target.value }))} />
+            <label>Validade após produção</label>
+            <input type="number" min="0" placeholder="Ex: 5 dias" value={extras.validade_dias} onChange={e => setExtras(s => ({ ...s, validade_dias: e.target.value }))} />
           </div>
           <div className="ft-field ft-field--half">
             <label>Conservação</label>
@@ -617,15 +613,15 @@ export default function FichaTecnica() {
           </div>
           <div className="ft-field">
             <label>Embalagem</label>
-            <input type="text" placeholder="Ex: Caixa plástica redonda" value={extras.embalagem} onChange={e => setExtras(s => ({ ...s, embalagem: e.target.value }))} />
+            <input type="text" placeholder="Ex: Caixa kraft 20x20" value={extras.embalagem} onChange={e => setExtras(s => ({ ...s, embalagem: e.target.value }))} />
           </div>
           <div className="ft-field">
             <label>Observações</label>
-            <textarea rows={2} placeholder="Ex: Manter refrigerado. Produto artesanal." value={extras.observacoes_ficha} onChange={e => setExtras(s => ({ ...s, observacoes_ficha: e.target.value }))} />
+            <textarea rows={2} placeholder="Informações sobre produção, armazenamento ou venda" value={extras.observacoes_ficha} onChange={e => setExtras(s => ({ ...s, observacoes_ficha: e.target.value }))} />
           </div>
         </div>
 
-        <p className="ft-disclaimer">Os custos unitários podem variar conforme fornecedor e região.</p>
+        
 
         <button className="ft-btn-salvar" onClick={salvarFicha} disabled={saving}>
           {saving ? "Salvando..." : "Salvar precificação"}
@@ -808,7 +804,7 @@ const detailStyles = `
     box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06));
   }
   .ft-tree-foto {
-    width: 140px; height: 140px; border-radius: 50%; overflow: hidden;
+    width: 170px; height: 170px; border-radius: 50%; overflow: hidden;
     background: var(--bg-subtle); flex-shrink: 0;
     border: 4px solid var(--primary);
     box-shadow: 0 0 0 4px var(--primary-light);
@@ -823,6 +819,23 @@ const detailStyles = `
     font-size: var(--font-section-title); font-weight: var(--fw-bold);
     color: var(--text-title); margin: 0; line-height: 1.2;
   }
+  .ft-tree-sub {
+    font-size: var(--font-caption); color: var(--text-muted); margin: 4px 0 0;
+  }
+
+  /* Lucro hero */
+  .ft-lucro-hero {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    background: var(--bg-card); border-radius: var(--radius-lg);
+    padding: 1.25rem 1rem; box-shadow: var(--shadow-card);
+  }
+  .ft-lucro-hero-label { font-size: var(--font-caption); color: var(--text-muted); text-transform: uppercase; letter-spacing: var(--ls-wide); font-weight: var(--fw-semibold); }
+  .ft-lucro-hero-value { font-size: var(--font-stat-value); font-weight: var(--fw-bold); color: var(--success); line-height: 1.2; }
+  .ft-lucro-hero-value--neg { color: var(--error); }
+  .ft-lucro-hero-margin { font-size: var(--font-button); font-weight: var(--fw-semibold); margin-top: 2px; }
+  .ft-lucro-hero-margin--ok { color: var(--success); }
+  .ft-lucro-hero-margin--warn { color: var(--warning); }
+  .ft-lucro-hero-margin--neg { color: var(--error); }
 
   /* Pricing breakdown card */
   .ft-pricing-card {
@@ -900,7 +913,10 @@ const detailStyles = `
     color: var(--text-title); margin: 0;
     text-transform: uppercase; letter-spacing: var(--ls-wide);
   }
-  .ft-section-cmv { font-size: var(--font-caption); color: var(--text-muted); font-weight: var(--fw-semibold); }
+  .ft-section-cmv {
+    font-size: var(--font-caption); color: var(--primary); font-weight: var(--fw-bold);
+    background: var(--primary-light); padding: 3px 10px; border-radius: var(--radius-full);
+  }
 
   .ft-edit-card {
     background: var(--bg-card); border-radius: var(--radius-lg);
@@ -930,10 +946,12 @@ const detailStyles = `
   .ft-edit-item-nome { font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ft-edit-item-sub { font-size: var(--font-caption); color: var(--text-muted); margin: 2px 0 0; }
   .ft-edit-item-del {
-    width: 28px; height: 28px; flex-shrink: 0; background: #fff1f2; border: none;
-    border-radius: var(--radius-md); color: var(--error); cursor: pointer;
+    width: 24px; height: 24px; flex-shrink: 0; background: transparent; border: none;
+    border-radius: var(--radius-md); color: var(--text-muted); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
+    opacity: 0.4; transition: all var(--dur-fast) var(--ease-out);
   }
+  .ft-edit-item-del:active { opacity: 1; color: var(--error); }
 
   .ft-edit-item-bottom { display: flex; flex-direction: column; gap: 5px; }
   .ft-edit-item-label {
