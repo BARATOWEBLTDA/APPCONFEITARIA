@@ -91,6 +91,10 @@ type Produto = {
   validade_tipo?: string;
   embalagem?: string;
   observacoes_ficha?: string;
+  cv_percentual?: number;
+  tempo_preparo_min?: number;
+  salario_desejado?: number;
+  horas_semanais?: number;
   produto_insumos: InsumoJoin[];
 };
 
@@ -147,7 +151,7 @@ export default function FichaTecnica() {
   const [buscaInsumo, setBuscaInsumo] = useState("");
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState("");
-  const [extras, setExtras] = useState({ rendimento_qtd: "", rendimento_peso: "", validade_dias: "", validade_tipo: "refrigerado", embalagem: "", observacoes_ficha: "" });
+  const [extras, setExtras] = useState({ rendimento_qtd: "", rendimento_peso: "", validade_dias: "", validade_tipo: "refrigerado", embalagem: "", observacoes_ficha: "", cv_percentual: "25", tempo_preparo_min: "", salario_desejado: "", horas_semanais: "40" });
   const [saving, setSaving] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
 
@@ -200,6 +204,10 @@ export default function FichaTecnica() {
       validade_tipo: p.validade_tipo || "refrigerado",
       embalagem: p.embalagem || "",
       observacoes_ficha: p.observacoes_ficha || "",
+      cv_percentual: p.cv_percentual != null ? String(p.cv_percentual) : "25",
+      tempo_preparo_min: p.tempo_preparo_min ? String(p.tempo_preparo_min) : "",
+      salario_desejado: p.salario_desejado ? String(p.salario_desejado) : "",
+      horas_semanais: p.horas_semanais ? String(p.horas_semanais) : "40",
     });
     setBuscaInsumo("");
     setShowQuickAdd(false);
@@ -268,6 +276,10 @@ export default function FichaTecnica() {
       validade_tipo: extras.validade_tipo,
       embalagem: extras.embalagem,
       observacoes_ficha: extras.observacoes_ficha,
+      cv_percentual: parseFloat(extras.cv_percentual) || 0,
+      tempo_preparo_min: parseInt(extras.tempo_preparo_min) || 0,
+      salario_desejado: parseFloat(extras.salario_desejado) || 0,
+      horas_semanais: parseFloat(extras.horas_semanais) || 40,
       updated_at: new Date().toISOString(),
     }).eq("id", selected.id);
 
@@ -299,8 +311,21 @@ export default function FichaTecnica() {
   if (selected) {
     const cmvLive = ficha.reduce((s, f) => s + calcCusto(f.quantidade, f.unidade_utilizada, f.insumo), 0);
     const precoLive = (selected.promocao && selected.preco_promocional && selected.preco_promocional > 0) ? Number(selected.preco_promocional) : Number(selected.preco_normal) || 0;
-    const lucroLive = precoLive - cmvLive;
-    const margemCmvLive = precoLive > 0 ? (cmvLive / precoLive) * 100 : 0;
+
+    // Custos invisíveis
+    const cvPct = parseFloat(extras.cv_percentual) || 0;
+    const cvLive = cmvLive * (cvPct / 100);
+
+    // Mão de obra
+    const salario = parseFloat(extras.salario_desejado) || 0;
+    const horasSem = parseFloat(extras.horas_semanais) || 40;
+    const tempoMin = parseInt(extras.tempo_preparo_min) || 0;
+    const custoHora = horasSem > 0 ? salario / (horasSem * 4.33) : 0;
+    const moLive = custoHora * (tempoMin / 60);
+
+    // Totais
+    const custoTotalLive = cmvLive + cvLive + moLive;
+    const lucroLive = precoLive - custoTotalLive;
     const margemLucroLive = precoLive > 0 ? (lucroLive / precoLive) * 100 : 0;
     const temFicha = ficha.length > 0;
 
@@ -311,7 +336,7 @@ export default function FichaTecnica() {
           Voltar
         </button>
 
-        {/* Arvore */}
+        {/* Cabeçalho do produto */}
         <div className="ft-tree">
           <div className="ft-tree-foto">
             {selected.imagem_url
@@ -322,44 +347,41 @@ export default function FichaTecnica() {
           <div className="ft-tree-titulo">
             <h1 className="ft-tree-nome">{selected.nome}</h1>
           </div>
+        </div>
 
-          <svg className="ft-conector ft-conector--top" viewBox="0 0 300 48" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M150 0 L150 14 Q150 24 140 24 L85 24 Q75 24 75 34 L75 48 M150 14 Q150 24 160 24 L215 24 Q225 24 225 34 L225 48"
-              fill="none" stroke="var(--ft-line)" strokeWidth="2" />
-          </svg>
-
-          <div className="ft-tree-duo">
-            <div className="ft-node ft-node--cmv">
-              <div className="ft-node-icon ft-node-icon--cmv">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-              </div>
-              <span className="ft-node-label">CMV</span>
-              <strong className="ft-node-valor">R$ {fmt(cmvLive)}</strong>
-              <span className="ft-node-sub">{temFicha ? `${fmtPct(margemCmvLive)}% do preço de venda` : "Sem ingredientes"}</span>
-            </div>
-            <div className="ft-node ft-node--lucro">
-              <div className="ft-node-icon ft-node-icon--lucro">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-              </div>
-              <span className="ft-node-label">Lucro</span>
-              <strong className="ft-node-valor">R$ {fmt(lucroLive)}</strong>
-              <span className="ft-node-sub">{temFicha ? `${fmtPct(margemLucroLive)}% do preço de venda` : "Estimado sem custos"}</span>
-            </div>
+        {/* Breakdown de precificação */}
+        <div className="ft-pricing-card">
+          <div className="ft-pricing-row">
+            <span className="ft-pricing-label">CMV (ingredientes)</span>
+            <span className="ft-pricing-value">R$ {fmt(cmvLive)}</span>
+          </div>
+          <div className="ft-pricing-row">
+            <span className="ft-pricing-label">+ Custos invisíveis ({fmtPct(cvPct)}%)</span>
+            <span className="ft-pricing-value">R$ {fmt(cvLive)}</span>
+          </div>
+          <div className="ft-pricing-row">
+            <span className="ft-pricing-label">+ Mão de obra {tempoMin > 0 ? `(${tempoMin} min)` : ""}</span>
+            <span className="ft-pricing-value">R$ {fmt(moLive)}</span>
+          </div>
+          <div className="ft-pricing-divider" />
+          <div className="ft-pricing-row ft-pricing-row--total">
+            <span className="ft-pricing-label">Custo total</span>
+            <span className="ft-pricing-value">R$ {fmt(custoTotalLive)}</span>
           </div>
 
-          <svg className="ft-conector ft-conector--bottom" viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M75 0 L75 10 Q75 20 85 20 L140 20 Q150 20 150 30 L150 40 M225 0 L225 10 Q225 20 215 20 L160 20 Q150 20 150 30 L150 40"
-              fill="none" stroke="var(--ft-line)" strokeWidth="2" />
-          </svg>
+          <div className="ft-pricing-spacer" />
 
-          <div className="ft-node ft-node--preco">
-            <div className="ft-node-icon ft-node-icon--preco">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-            </div>
-            <div className="ft-node-preco-text">
-              <span className="ft-node-label">Preço de venda sugerido</span>
-              <strong className="ft-node-valor ft-node-valor--lg">R$ {fmt(precoLive)}</strong>
-            </div>
+          <div className="ft-pricing-row">
+            <span className="ft-pricing-label">Preço de venda</span>
+            <strong className="ft-pricing-value ft-pricing-value--preco">R$ {fmt(precoLive)}</strong>
+          </div>
+          <div className="ft-pricing-row">
+            <span className="ft-pricing-label">Lucro</span>
+            <strong className={`ft-pricing-value ${lucroLive >= 0 ? "ft-pricing-value--lucro" : "ft-pricing-value--neg"}`}>R$ {fmt(lucroLive)}</strong>
+          </div>
+          <div className="ft-pricing-row">
+            <span className="ft-pricing-label">Margem de lucro</span>
+            <strong className={`ft-pricing-value ${margemLucroLive >= 30 ? "ft-pricing-value--lucro" : margemLucroLive >= 0 ? "ft-pricing-value--warn" : "ft-pricing-value--neg"}`}>{fmtPct(margemLucroLive)}%</strong>
           </div>
         </div>
 
@@ -479,6 +501,66 @@ export default function FichaTecnica() {
           )}
         </div>
 
+        {/* Custos invisíveis */}
+        <div className="ft-section-header">
+          <h2 className="ft-section-title">Custos invisíveis (CV)</h2>
+        </div>
+        <div className="ft-edit-card">
+          <p className="ft-edit-empty-sub" style={{ margin: 0 }}>Água, luz, gás, corantes, plástico filme e outros itens difíceis de mensurar individualmente.</p>
+          <div className="ft-cv-row">
+            <div className="ft-field" style={{ flex: 1 }}>
+              <label>Percentual sobre o CMV</label>
+              <div className="ft-input-suffix">
+                <input type="number" min="0" max="100" step="1" placeholder="25" value={extras.cv_percentual} onChange={e => setExtras(s => ({ ...s, cv_percentual: e.target.value }))} />
+                <span>%</span>
+              </div>
+            </div>
+            <div className="ft-cv-result">
+              <span className="ft-cv-result-label">= R$ {fmt(cvLive)}</span>
+            </div>
+          </div>
+          <p className="ft-cv-hint">Ideal: 25% — cobre gastos indiretos de produção</p>
+        </div>
+
+        {/* Mão de obra */}
+        <div className="ft-section-header">
+          <h2 className="ft-section-title">Mão de obra (MO)</h2>
+        </div>
+        <div className="ft-edit-card">
+          <div className="ft-extras-edit" style={{ boxShadow: "none", padding: 0 }}>
+            <div className="ft-field ft-field--half">
+              <label>Salário desejado (mensal)</label>
+              <div className="ft-input-prefix">
+                <span>R$</span>
+                <input type="text" inputMode="decimal" placeholder="3.000" value={extras.salario_desejado} onChange={e => setExtras(s => ({ ...s, salario_desejado: e.target.value }))} />
+              </div>
+            </div>
+            <div className="ft-field ft-field--half">
+              <label>Horas por semana</label>
+              <div className="ft-input-suffix">
+                <input type="number" min="1" max="80" placeholder="40" value={extras.horas_semanais} onChange={e => setExtras(s => ({ ...s, horas_semanais: e.target.value }))} />
+                <span>h</span>
+              </div>
+            </div>
+            <div className="ft-field ft-field--half">
+              <label>Tempo desta receita</label>
+              <div className="ft-input-suffix">
+                <input type="number" min="0" placeholder="0" value={extras.tempo_preparo_min} onChange={e => setExtras(s => ({ ...s, tempo_preparo_min: e.target.value }))} />
+                <span>min</span>
+              </div>
+            </div>
+            <div className="ft-field ft-field--half">
+              <label>Custo/hora</label>
+              <div className="ft-mo-result">R$ {fmt(custoHora)}/h</div>
+            </div>
+          </div>
+          {moLive > 0 && (
+            <div className="ft-cv-result" style={{ alignSelf: "flex-start" }}>
+              <span className="ft-cv-result-label">Mão de obra nesta receita: R$ {fmt(moLive)}</span>
+            </div>
+          )}
+        </div>
+
         {/* Detalhes extras */}
         <div className="ft-section-header">
           <h2 className="ft-section-title">Detalhes</h2>
@@ -517,7 +599,7 @@ export default function FichaTecnica() {
         <p className="ft-disclaimer">Os custos unitários podem variar conforme fornecedor e região.</p>
 
         <button className="ft-btn-salvar" onClick={salvarFicha} disabled={saving}>
-          {saving ? "Salvando..." : "Salvar ficha técnica"}
+          {saving ? "Salvando..." : "Salvar precificação"}
         </button>
 
         {savedToast && <div className="ft-toast">Ficha técnica salva!</div>}
@@ -532,8 +614,8 @@ export default function FichaTecnica() {
     <div className="ft-root">
       <div className="ft-list-header">
         <div>
-          <h1 className="ft-list-title">Fichas Técnicas</h1>
-          <p className="ft-list-sub">{totalComFicha} de {produtos.length} produto{produtos.length !== 1 ? "s" : ""} com ficha</p>
+          <h1 className="ft-list-title">Precificação Inteligente</h1>
+          <p className="ft-list-sub">{totalComFicha} de {produtos.length} produto{produtos.length !== 1 ? "s" : ""} precificado{totalComFicha !== 1 ? "s" : ""}</p>
         </div>
       </div>
 
@@ -545,7 +627,7 @@ export default function FichaTecnica() {
         <div className="ft-list-filtros">
           {(["todos", "com", "sem"] as const).map(f => (
             <button key={f} className={`ft-filtro-btn${filtro === f ? " active" : ""}`} onClick={() => setFiltro(f)}>
-              {{ todos: "Todos", com: "Com ficha", sem: "Sem ficha" }[f]}
+              {{ todos: "Todos", com: "Precificados", sem: "Sem preço" }[f]}
             </button>
           ))}
         </div>
@@ -556,7 +638,7 @@ export default function FichaTecnica() {
           <div className="ft-progress-bar">
             <div className="ft-progress-fill" style={{ width: `${produtos.length > 0 ? (totalComFicha / produtos.length) * 100 : 0}%` }} />
           </div>
-          <span className="ft-progress-label">{totalComFicha}/{produtos.length} fichas completas</span>
+          <span className="ft-progress-label">{totalComFicha}/{produtos.length} precificados</span>
         </div>
       )}
 
@@ -564,7 +646,7 @@ export default function FichaTecnica() {
         <EmptyDoo
           image="produtos.png"
           title="Nenhum produto encontrado"
-          description={filtro === "sem" ? "Todos os produtos já possuem ficha técnica." : "Cadastre produtos para criar fichas técnicas."}
+          description={filtro === "sem" ? "Todos os produtos já foram precificados." : "Cadastre produtos para precificar."}
           actionLabel={filtro !== "todos" ? "Ver todos" : undefined}
           onAction={filtro !== "todos" ? () => { setFiltro("todos"); setBusca(""); } : undefined}
         />
@@ -594,7 +676,7 @@ export default function FichaTecnica() {
                       <span className="ft-list-card-lucro-val">Lucro R$ {fmt(lucro)}</span>
                     </div>
                   ) : (
-                    <span className="ft-list-card-sem">Sem ficha técnica</span>
+                    <span className="ft-list-card-sem">Sem preço técnica</span>
                   )}
                 </div>
               </div>
@@ -697,7 +779,7 @@ const detailStyles = `
     box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06));
   }
   .ft-tree-foto {
-    width: 190px; height: 190px; border-radius: 50%; overflow: hidden;
+    width: 140px; height: 140px; border-radius: 50%; overflow: hidden;
     background: var(--bg-subtle); flex-shrink: 0;
     border: 4px solid var(--primary);
     box-shadow: 0 0 0 4px var(--primary-light);
@@ -713,42 +795,72 @@ const detailStyles = `
     color: var(--text-title); margin: 0; line-height: 1.2;
   }
 
-  .ft-conector { width: 100%; max-width: 340px; display: block; }
-  .ft-conector--top { height: 44px; margin-top: 0.85rem; }
-  .ft-conector--bottom { height: 36px; }
-
-  .ft-tree-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; width: 100%; max-width: 340px; }
-
-  .ft-node {
-    position: relative; background: var(--bg-card);
-    border: 1.5px solid var(--ft-line); border-radius: var(--radius-md);
-    padding: 0.85rem 0.75rem; display: flex; flex-direction: column;
-    align-items: center; text-align: center; gap: 2px;
+  /* Pricing breakdown card */
+  .ft-pricing-card {
+    background: var(--bg-card); border-radius: var(--radius-lg);
+    padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.45rem;
+    box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06));
   }
-  .ft-node-icon {
-    width: 38px; height: 38px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 4px; flex-shrink: 0;
-  }
-  .ft-node-icon--cmv { background: #8a5a2b; }
-  .ft-node-icon--lucro { background: var(--success); }
-  .ft-node-icon--preco { background: var(--primary); }
-  .ft-node-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: var(--fw-bold); }
-  .ft-node-valor { font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title); }
-  .ft-node-valor--lg { font-size: var(--font-section-title); }
-  .ft-node-sub { font-size: 0.65rem; color: var(--text-muted); line-height: 1.3; }
-  .ft-node--cmv { border-color: #d9b78e; }
-  .ft-node--lucro { border-color: #b6d6b8; }
+  .ft-pricing-row { display: flex; justify-content: space-between; align-items: center; }
+  .ft-pricing-label { font-size: var(--font-caption); color: var(--text-muted); }
+  .ft-pricing-value { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-title); }
+  .ft-pricing-row--total .ft-pricing-label { font-weight: var(--fw-bold); color: var(--text-title); font-size: var(--font-body); }
+  .ft-pricing-row--total .ft-pricing-value { font-weight: var(--fw-bold); font-size: var(--font-body); }
+  .ft-pricing-divider { height: 1px; background: var(--border); margin: 0.2rem 0; }
+  .ft-pricing-spacer { height: 0.35rem; }
+  .ft-pricing-value--preco { color: var(--primary); }
+  .ft-pricing-value--lucro { color: var(--success); }
+  .ft-pricing-value--warn { color: var(--warning); }
+  .ft-pricing-value--neg { color: var(--error); }
 
-  .ft-node--preco {
-    flex-direction: row; align-items: center; gap: 0.75rem;
-    width: 100%; max-width: 300px; border-color: var(--primary);
-    background: var(--primary-light);
+  /* CV / MO helpers */
+  .ft-cv-row { display: flex; align-items: flex-end; gap: 0.75rem; }
+  .ft-cv-result {
+    padding: 0.45rem 0.7rem; background: var(--primary-light);
+    border-radius: var(--radius-sm); white-space: nowrap;
   }
-  .ft-node--preco .ft-node-icon { margin-bottom: 0; }
-  .ft-node-preco-text { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
-  .ft-node--preco .ft-node-label { color: var(--primary); }
-  .ft-node--preco .ft-node-valor { color: var(--primary); }
+  .ft-cv-result-label { font-size: var(--font-caption); font-weight: var(--fw-bold); color: var(--primary); }
+  .ft-cv-hint { font-size: 0.65rem; color: var(--text-muted); font-style: italic; margin: 0; }
+
+  .ft-input-suffix {
+    display: flex; align-items: center;
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    overflow: hidden; background: var(--bg-card);
+  }
+  .ft-input-suffix:focus-within { border-color: var(--primary); }
+  .ft-input-suffix input {
+    flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+    padding: 0.5rem 0.6rem; font-family: var(--font-base);
+    font-size: var(--font-caption); color: var(--text-primary);
+  }
+  .ft-input-suffix input::-webkit-outer-spin-button,
+  .ft-input-suffix input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .ft-input-suffix input[type=number] { -moz-appearance: textfield; }
+  .ft-input-suffix span {
+    padding: 0.5rem 0.6rem; font-size: var(--font-caption); font-weight: var(--fw-semibold);
+    color: var(--text-muted); border-left: 1.5px solid var(--border); background: var(--bg-subtle);
+  }
+
+  .ft-input-prefix {
+    display: flex; align-items: center;
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    overflow: hidden; background: var(--bg-card);
+  }
+  .ft-input-prefix:focus-within { border-color: var(--primary); }
+  .ft-input-prefix span {
+    padding: 0.5rem 0 0.5rem 0.6rem; font-size: var(--font-caption); font-weight: var(--fw-semibold);
+    color: var(--text-muted);
+  }
+  .ft-input-prefix input {
+    flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+    padding: 0.5rem 0.6rem 0.5rem 0.3rem; font-family: var(--font-base);
+    font-size: var(--font-caption); color: var(--text-primary);
+  }
+
+  .ft-mo-result {
+    padding: 0.5rem 0.6rem; background: var(--bg-subtle); border-radius: var(--radius-sm);
+    font-size: var(--font-caption); font-weight: var(--fw-bold); color: var(--text-title);
+  }
 
   .ft-section-header { display: flex; align-items: center; justify-content: space-between; }
   .ft-section-title {

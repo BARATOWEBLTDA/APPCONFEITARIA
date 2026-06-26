@@ -45,7 +45,7 @@ const GROUPS: DrawerGroup[] = [
     label: "Operação",
     items: [
       { label: "Ingredientes",    path: "/insumos",        icon: <Package        size={20} weight="duotone" /> },
-      { label: "Fichas Técnicas", path: "/ficha-tecnica",  icon: <ClipboardText  size={20} weight="duotone" /> },
+      { label: "Precificação", path: "/ficha-tecnica",  icon: <ClipboardText  size={20} weight="duotone" /> },
       { label: "Estoque",      path: "/estoque",       icon: <Package  size={20} weight="duotone" /> },
       { label: "Receitas",     path: "/receitas",      icon: <BookOpen size={20} weight="duotone" /> },
       { label: "Arquivos",     path: "/arquivos",      icon: <Files    size={20} weight="duotone" /> },
