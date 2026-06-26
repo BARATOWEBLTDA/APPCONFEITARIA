@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import EmptyDoo from "@/components/EmptyDoo";
@@ -552,9 +553,28 @@ export default function FichaTecnica() {
         </div>
 
         {/* Modal de cadastro de insumo */}
-        {showQuickAdd && (
-          <div className="ft-modal-overlay" onClick={() => { setShowQuickAdd(false); setQuickAddName(""); }}>
-            <div className="ft-modal-card" onClick={e => e.stopPropagation()}>
+        {showQuickAdd && createPortal(
+          <div
+            className="ft-modal-overlay"
+            onClick={() => { setShowQuickAdd(false); setQuickAddName(""); }}
+            style={{
+              position: "fixed", inset: 0, zIndex: 9999,
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "1rem",
+            }}
+          >
+            <div
+              className="ft-modal-card"
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: "var(--bg-card)", borderRadius: "var(--radius-lg)",
+                padding: "1.25rem", width: "100%", maxWidth: "420px",
+                maxHeight: "88vh", overflowY: "auto",
+                boxShadow: "0 12px 48px rgba(0,0,0,0.3)",
+              }}
+            >
               <QuickAddInsumo
                 userId={userId}
                 initialName={quickAddName}
@@ -562,7 +582,8 @@ export default function FichaTecnica() {
                 onCancel={() => { setShowQuickAdd(false); setQuickAddName(""); }}
               />
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
         {/* Custos invisíveis */}
