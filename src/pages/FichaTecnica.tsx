@@ -481,7 +481,6 @@ export default function FichaTecnica() {
           )}
 
           {/* Adicionar ingrediente */}
-          {!showQuickAdd ? (
             <div className="ft-add">
               <div className="ft-add-label">Adicionar ingrediente</div>
               <input
@@ -516,15 +515,21 @@ export default function FichaTecnica() {
                 </button>
               )}
             </div>
-          ) : (
-            <QuickAddInsumo
-              userId={userId}
-              initialName={quickAddName}
-              onSaved={handleInsumoSalvo}
-              onCancel={() => { setShowQuickAdd(false); setQuickAddName(""); }}
-            />
-          )}
         </div>
+
+        {/* Modal de cadastro de insumo */}
+        {showQuickAdd && (
+          <div className="ft-modal-overlay" onClick={() => { setShowQuickAdd(false); setQuickAddName(""); }}>
+            <div className="ft-modal-card" onClick={e => e.stopPropagation()}>
+              <QuickAddInsumo
+                userId={userId}
+                initialName={quickAddName}
+                onSaved={handleInsumoSalvo}
+                onCancel={() => { setShowQuickAdd(false); setQuickAddName(""); }}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Custos invisíveis */}
         <div className="ft-section-header">
@@ -1048,6 +1053,23 @@ const detailStyles = `
     font-weight: var(--fw-bold); cursor: pointer;
   }
   .ft-btn-salvar:disabled { opacity: 0.6; cursor: default; }
+
+  .ft-modal-overlay {
+    position: fixed; inset: 0; z-index: 900;
+    background: var(--bg-overlay); display: flex;
+    align-items: center; justify-content: center;
+    padding: var(--pad-page);
+    animation: ftFadeIn var(--dur-slow) var(--ease-out);
+  }
+  .ft-modal-card {
+    background: var(--bg-card); border-radius: var(--radius-lg);
+    padding: var(--pad-modal); width: 100%; max-width: 420px;
+    max-height: 85vh; overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    animation: ftSlideUp var(--dur-slow) var(--ease-out);
+  }
+  @keyframes ftFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes ftSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
   .ft-toast {
     position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
