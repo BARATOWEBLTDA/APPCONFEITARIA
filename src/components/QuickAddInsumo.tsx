@@ -7,11 +7,20 @@ export type InsumoQuick = {
   marca?: string;
   categoria?: string;
   unidade: string;
+  unidade_base?: string;
   custo_unitario: number;
   imagem_url?: string;
   valor_compra?: number;
   qtd_embalagem?: number;
 };
+
+/** Deriva a unidade base a partir da unidade de compra */
+function deriveUnidadeBase(unidade: string): string {
+  if (unidade === "kg" || unidade === "g") return "kg";
+  if (unidade === "L" || unidade === "ml") return "L";
+  if (unidade === "un") return "un";
+  return unidade; // pct, cx, Lata, etc.
+}
 
 interface Props {
   userId: string;
@@ -146,6 +155,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       marca: form.marca.trim(),
       categoria: form.categoria,
       unidade: form.unidade,
+      unidade_base: deriveUnidadeBase(form.unidade),
       valor_compra: valor,
       qtd_embalagem: qtdEmb,
       custo_unitario: custoUnit,
@@ -171,6 +181,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       marca: data.marca,
       categoria: data.categoria,
       unidade: data.unidade,
+      unidade_base: data.unidade_base,
       custo_unitario: data.custo_unitario,
       imagem_url: data.imagem_url,
       valor_compra: data.valor_compra,

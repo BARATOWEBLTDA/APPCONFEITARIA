@@ -4,12 +4,71 @@ import { supabase } from "@/lib/supabase";
 import EmptyDoo from "@/components/EmptyDoo";
 import QuickAddInsumo, { InsumoQuick } from "@/components/QuickAddInsumo";
 
+// ── Famílias de unidades e conversão ──
+
+type UnitFamily = "massa" | "volume" | "unidade" | "discrete";
+
+const UNIT_FAMILIES: Record<string, { family: UnitFamily; base: string; toBase: number }> = {
+  kg:  { family: "massa",   base: "kg", toBase: 1 },
+  g:   { family: "massa",   base: "kg", toBase: 0.001 },
+  L:   { family: "volume",  base: "L",  toBase: 1 },
+  ml:  { family: "volume",  base: "L",  toBase: 0.001 },
+  un:  { family: "unidade", base: "un", toBase: 1 },
+};
+
+/** Retorna as unidades compatíveis para seleção na ficha técnica */
+function getCompatibleUnits(unidadeInsumo: string): string[] {
+  const info = UNIT_FAMILIES[unidadeInsumo];
+  if (!info) return [unidadeInsumo]; // pct, cx, Lata → só ela mesma
+  return Object.entries(UNIT_FAMILIES)
+    .filter(([, v]) => v.family === info.family)
+    .map(([k]) => k);
+}
+
+/** Retorna a unidade padrão mais prática para a ficha (g em vez de kg, ml em vez de L) */
+function getDefaultRecipeUnit(unidadeInsumo: string): string {
+  const info = UNIT_FAMILIES[unidadeInsumo];
+  if (!info) return unidadeInsumo;
+  if (info.family === "massa") return "g";
+  if (info.family === "volume") return "ml";
+  return unidadeInsumo;
+}
+
+/** Converte quantidade para a unidade base (kg, L, un) */
+function toBase(qtd: number, unidade: string): number {
+  const info = UNIT_FAMILIES[unidade];
+  if (!info) return qtd;
+  return qtd * info.toBase;
+}
+
+/** Calcula o custo dado qtd, unidade utilizada e custo_unitário do insumo */
+function calcCusto(qtd: number, unidadeUtilizada: string, insumo: Insumo): number {
+  // Converte a quantidade digitada para a unidade do insumo
+  const infoUtilizada = UNIT_FAMILIES[unidadeUtilizada];
+  const infoInsumo = UNIT_FAMILIES[insumo.unidade];
+
+  if (!infoUtilizada || !infoInsumo || infoUtilizada.family !== infoInsumo.family) {
+    // Unidades incompatíveis ou discretas — multiplicação direta
+    return qtd * (insumo.custo_unitario || 0);
+  }
+
+  // Converte para base e depois para a unidade do insumo
+  const qtdBase = qtd * infoUtilizada.toBase;
+  const qtdNaUnidadeInsumo = qtdBase / infoInsumo.toBase;
+  return qtdNaUnidadeInsumo * (insumo.custo_unitario || 0);
+}
+
+// ── Types ──
+
 type InsumoJoin = {
   quantidade: number;
+  unidade_utilizada?: string;
+  quantidade_base?: number;
   insumos: {
     id: string;
     nome: string;
     unidade: string;
+    unidade_base?: string;
     custo_unitario: number;
     imagem_url?: string;
   };
@@ -39,16 +98,21 @@ type Insumo = {
   id: string;
   nome: string;
   unidade: string;
+  unidade_base?: string;
   custo_unitario: number;
   imagem_url?: string;
 };
 
-type FichaItem = { insumo_id: string; quantidade: number; insumo: Insumo };
+type FichaItem = {
+  insumo_id: string;
+  quantidade: number;
+  unidade_utilizada: string;
+  insumo: Insumo;
+};
 
 const fmt = (v: number) => v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (v: number) => v.toFixed(1).replace(".", ",");
 
-// Custo unitário: 2 casas para valores >= 1, até 4 casas (sem zeros à direita) para valores pequenos
 const fmtCusto = (v: number) => {
   const n = Number(v) || 0;
   if (n >= 1) return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -58,7 +122,11 @@ const fmtCusto = (v: number) => {
 
 function calcular(p: Produto) {
   const itens = p.produto_insumos || [];
-  const cmv = itens.reduce((s, pi) => s + (Number(pi.quantidade) || 0) * (Number(pi.insumos?.custo_unitario) || 0), 0);
+  const cmv = itens.reduce((s, pi) => {
+    const qtd = Number(pi.quantidade) || 0;
+    const unidadeUtilizada = pi.unidade_utilizada || pi.insumos?.unidade || "";
+    return s + calcCusto(qtd, unidadeUtilizada, pi.insumos as Insumo);
+  }, 0);
   const preco = (p.promocao && p.preco_promocional && p.preco_promocional > 0) ? Number(p.preco_promocional) : Number(p.preco_normal) || 0;
   const lucro = preco - cmv;
   const margemCmv = preco > 0 ? (cmv / preco) * 100 : 0;
@@ -88,14 +156,14 @@ export default function FichaTecnica() {
   const loadProdutos = async (uid: string) => {
     const { data } = await supabase
       .from("produtos")
-      .select("*, produto_insumos(quantidade, insumos(id, nome, unidade, custo_unitario, imagem_url))")
+      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, unidade_base, custo_unitario, imagem_url))")
       .eq("user_id", uid)
       .order("nome");
     if (data) setProdutos(data as Produto[]);
   };
 
   const loadInsumos = async (uid: string) => {
-    const { data } = await supabase.from("insumos").select("id, nome, unidade, custo_unitario, imagem_url").eq("user_id", uid).order("nome");
+    const { data } = await supabase.from("insumos").select("id, nome, unidade, unidade_base, custo_unitario, imagem_url").eq("user_id", uid).order("nome");
     if (data) setInsumosCadastrados(data as Insumo[]);
   };
 
@@ -124,6 +192,7 @@ export default function FichaTecnica() {
     setFicha((p.produto_insumos || []).map(pi => ({
       insumo_id: pi.insumos.id,
       quantidade: Number(pi.quantidade) || 0,
+      unidade_utilizada: pi.unidade_utilizada || pi.insumos.unidade,
       insumo: pi.insumos,
     })));
     setExtras({
@@ -148,16 +217,27 @@ export default function FichaTecnica() {
   // -- Manipulacao da ficha --
   const addInsumo = (ins: Insumo) => {
     if (ficha.some(f => f.insumo_id === ins.id)) return;
-    setFicha(prev => [...prev, { insumo_id: ins.id, quantidade: 0, insumo: ins }]);
+    setFicha(prev => [...prev, {
+      insumo_id: ins.id,
+      quantidade: 0,
+      unidade_utilizada: getDefaultRecipeUnit(ins.unidade),
+      insumo: ins,
+    }]);
     setBuscaInsumo("");
   };
   const removeInsumo = (id: string) => setFicha(prev => prev.filter(f => f.insumo_id !== id));
   const setQtd = (id: string, qtd: number) => setFicha(prev => prev.map(f => f.insumo_id === id ? { ...f, quantidade: qtd } : f));
+  const setUnidade = (id: string, unidade: string) => setFicha(prev => prev.map(f => f.insumo_id === id ? { ...f, unidade_utilizada: unidade } : f));
 
   const handleInsumoSalvo = (novo: InsumoQuick) => {
-    const ins: Insumo = { id: novo.id, nome: novo.nome, unidade: novo.unidade, custo_unitario: novo.custo_unitario, imagem_url: novo.imagem_url };
+    const ins: Insumo = { id: novo.id, nome: novo.nome, unidade: novo.unidade, unidade_base: novo.unidade_base, custo_unitario: novo.custo_unitario, imagem_url: novo.imagem_url };
     setInsumosCadastrados(prev => [...prev, ins]);
-    setFicha(prev => [...prev, { insumo_id: ins.id, quantidade: 0, insumo: ins }]);
+    setFicha(prev => [...prev, {
+      insumo_id: ins.id,
+      quantidade: 0,
+      unidade_utilizada: getDefaultRecipeUnit(ins.unidade),
+      insumo: ins,
+    }]);
     setShowQuickAdd(false);
     setQuickAddName("");
   };
@@ -170,7 +250,14 @@ export default function FichaTecnica() {
     await supabase.from("produto_insumos").delete().eq("produto_id", selected.id);
     const itens = ficha
       .filter(f => f.insumo_id && f.quantidade > 0)
-      .map(f => ({ user_id: userId, produto_id: selected.id, insumo_id: f.insumo_id, quantidade: f.quantidade }));
+      .map(f => ({
+        user_id: userId,
+        produto_id: selected.id,
+        insumo_id: f.insumo_id,
+        quantidade: f.quantidade,
+        unidade_utilizada: f.unidade_utilizada,
+        quantidade_base: toBase(f.quantidade, f.unidade_utilizada),
+      }));
     if (itens.length > 0) {
       await supabase.from("produto_insumos").insert(itens);
     }
@@ -190,7 +277,7 @@ export default function FichaTecnica() {
     await loadProdutos(userId);
     const { data } = await supabase
       .from("produtos")
-      .select("*, produto_insumos(quantidade, insumos(id, nome, unidade, custo_unitario, imagem_url))")
+      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, unidade_base, custo_unitario, imagem_url))")
       .eq("id", selected.id)
       .single();
     if (data) setSelected(data as Produto);
@@ -212,7 +299,7 @@ export default function FichaTecnica() {
 
   /* DETAIL / EDIT VIEW */
   if (selected) {
-    const cmvLive = ficha.reduce((s, f) => s + f.quantidade * (f.insumo?.custo_unitario || 0), 0);
+    const cmvLive = ficha.reduce((s, f) => s + calcCusto(f.quantidade, f.unidade_utilizada, f.insumo), 0);
     const precoLive = (selected.promocao && selected.preco_promocional && selected.preco_promocional > 0) ? Number(selected.preco_promocional) : Number(selected.preco_normal) || 0;
     const lucroLive = precoLive - cmvLive;
     const margemCmvLive = precoLive > 0 ? (cmvLive / precoLive) * 100 : 0;
@@ -280,7 +367,7 @@ export default function FichaTecnica() {
 
         {/* Editor da Composicao */}
         <div className="ft-section-header">
-          <h2 className="ft-section-title">Composição do produto</h2>
+          <h2 className="ft-section-title">Consumo da receita</h2>
           {temFicha && <span className="ft-section-cmv">CMV R$ {fmt(cmvLive)}</span>}
         </div>
 
@@ -294,7 +381,10 @@ export default function FichaTecnica() {
             <div className="ft-edit-list">
               {ficha.map(f => {
                 const ins = f.insumo;
-                const custoLinha = f.quantidade * (ins.custo_unitario || 0);
+                const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
+                const compatibleUnits = getCompatibleUnits(ins.unidade);
+                const hasUnitChoice = compatibleUnits.length > 1;
+
                 return (
                   <div key={f.insumo_id} className="ft-edit-item">
                     {ins.imagem_url
@@ -309,9 +399,21 @@ export default function FichaTecnica() {
                         type="number" value={f.quantidade || ""} step="any" min="0" placeholder="0"
                         onChange={e => setQtd(f.insumo_id, parseFloat(e.target.value) || 0)}
                       />
-                      <span>{ins.unidade}</span>
+                      {hasUnitChoice ? (
+                        <select
+                          className="ft-edit-item-unit-select"
+                          value={f.unidade_utilizada}
+                          onChange={e => setUnidade(f.insumo_id, e.target.value)}
+                        >
+                          {compatibleUnits.map(u => (
+                            <option key={u} value={u}>{u}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <span>{f.unidade_utilizada}</span>
+                      )}
                     </div>
-                    <div className="ft-edit-item-custo">R$ {custoLinha.toFixed(2)}</div>
+                    <div className="ft-edit-item-custo">R$ {fmt(custoLinha)}</div>
                     <button className="ft-edit-item-del" onClick={() => removeInsumo(f.insumo_id)} aria-label="Remover">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                     </button>
@@ -676,6 +778,12 @@ const detailStyles = `
     font-family: var(--font-base); font-size: var(--font-caption); text-align: right; background: var(--bg-card); color: var(--text-primary);
   }
   .ft-edit-item-qtd span { font-size: 0.65rem; color: var(--text-muted); }
+  .ft-edit-item-unit-select {
+    padding: 0.25rem 0.3rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    font-family: var(--font-base); font-size: 0.65rem; background: var(--bg-card); color: var(--text-primary);
+    cursor: pointer; outline: none; min-width: 38px;
+  }
+  .ft-edit-item-unit-select:focus { border-color: var(--primary); }
   .ft-edit-item-custo { font-size: var(--font-caption); font-weight: var(--fw-bold); color: var(--text-title); min-width: 56px; text-align: right; }
   .ft-edit-item-del {
     width: 26px; height: 26px; flex-shrink: 0; background: #fff1f2; border: none;

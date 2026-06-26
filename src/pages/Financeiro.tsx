@@ -118,11 +118,29 @@ export default function Financeiro() {
     if (produtoIds.length > 0) {
       const { data: fichas } = await supabase
         .from("produto_insumos")
-        .select("produto_id, quantidade, insumos(custo_unitario)")
+        .select("produto_id, quantidade, unidade_utilizada, insumos(custo_unitario, unidade)")
         .in("produto_id", produtoIds)
 
+      // Mapa de conversão para unidade base
+      const toBaseFactor: Record<string, number> = { kg: 1, g: 0.001, L: 1, ml: 0.001, un: 1 };
+
       ;(fichas || []).forEach((f: any) => {
-        const custo = (Number(f.quantidade) || 0) * (Number(f.insumos?.custo_unitario) || 0)
+        const qtd = Number(f.quantidade) || 0;
+        const custoUnit = Number(f.insumos?.custo_unitario) || 0;
+        const unidadeUtilizada = f.unidade_utilizada || f.insumos?.unidade || "";
+        const unidadeInsumo = f.insumos?.unidade || "";
+
+        let custo: number;
+        const factorUtilizada = toBaseFactor[unidadeUtilizada];
+        const factorInsumo = toBaseFactor[unidadeInsumo];
+
+        if (factorUtilizada != null && factorInsumo != null && factorInsumo > 0) {
+          // Converte qtd para a unidade do insumo e multiplica pelo custo
+          const qtdNaUnidadeInsumo = (qtd * factorUtilizada) / factorInsumo;
+          custo = qtdNaUnidadeInsumo * custoUnit;
+        } else {
+          custo = qtd * custoUnit;
+        }
         fichaPorProduto[f.produto_id] = (fichaPorProduto[f.produto_id] || 0) + custo
       })
     }

@@ -8,6 +8,43 @@ import BtnNovo from "@/components/BtnNovo";
 import Categorias from "@/pages/Categorias";
 import QuickAddInsumo from "@/components/QuickAddInsumo";
 
+// ── Helpers de conversão de unidades (ficha técnica) ──
+const UNIT_FAMILIES_MAP: Record<string, { family: string; base: string; toBase: number }> = {
+  kg: { family: "massa", base: "kg", toBase: 1 },
+  g:  { family: "massa", base: "kg", toBase: 0.001 },
+  L:  { family: "volume", base: "L", toBase: 1 },
+  ml: { family: "volume", base: "L", toBase: 0.001 },
+  un: { family: "unidade", base: "un", toBase: 1 },
+};
+
+function getCompatibleUnitsProd(unidadeInsumo: string): string[] {
+  const info = UNIT_FAMILIES_MAP[unidadeInsumo];
+  if (!info) return [unidadeInsumo];
+  return Object.entries(UNIT_FAMILIES_MAP).filter(([, v]) => v.family === info.family).map(([k]) => k);
+}
+
+function getDefaultRecipeUnitProd(unidadeInsumo: string): string {
+  const info = UNIT_FAMILIES_MAP[unidadeInsumo];
+  if (!info) return unidadeInsumo;
+  if (info.family === "massa") return "g";
+  if (info.family === "volume") return "ml";
+  return unidadeInsumo;
+}
+
+function calcCustoProd(qtd: number, unidadeUtilizada: string, unidadeInsumo: string, custoUnitario: number): number {
+  const fU = UNIT_FAMILIES_MAP[unidadeUtilizada];
+  const fI = UNIT_FAMILIES_MAP[unidadeInsumo];
+  if (fU && fI && fU.family === fI.family && fI.toBase > 0) {
+    return (qtd * fU.toBase / fI.toBase) * custoUnitario;
+  }
+  return qtd * custoUnitario;
+}
+
+function toBaseProd(qtd: number, unidade: string): number {
+  const info = UNIT_FAMILIES_MAP[unidade];
+  return info ? qtd * info.toBase : qtd;
+}
+
 type Tamanho = { label: string; preco: number };
 
 type KitItem = { nome: string; quantidade: string };
@@ -114,7 +151,7 @@ export default function Produtos() {
 
   // Ficha técnica (CMV)
   type Insumo = { id: string; nome: string; unidade: string; custo_unitario: number; imagem_url?: string };
-  type FichaItem = { insumo_id: string; quantidade: number; insumo?: Insumo };
+  type FichaItem = { insumo_id: string; quantidade: number; unidade_utilizada: string; insumo?: Insumo };
   const [insumosCadastrados, setInsumosCadastrados] = useState<Insumo[]>([]);
   const [fichaTecnica, setFichaTecnica] = useState<FichaItem[]>([]);
   const [buscaInsumo, setBuscaInsumo] = useState("");
@@ -169,7 +206,7 @@ export default function Produtos() {
   const loadProdutos = async (uid: string) => {
     const { data } = await supabase
       .from("produtos")
-      .select("*, produto_insumos(quantidade, insumos(custo_unitario))")
+      .select("*, produto_insumos(quantidade, unidade_utilizada, insumos(custo_unitario, unidade))")
       .eq("user_id", uid)
       .order("created_at", { ascending: false });
     if (data) setProdutos(data as Produto[]);
@@ -189,9 +226,18 @@ export default function Produtos() {
     precoEfetivo: number;
   } => {
     const itens: any[] = p.produto_insumos || [];
+    // Mapa de conversão para unidade base
+    const toBaseFactor: Record<string, number> = { kg: 1, g: 0.001, L: 1, ml: 0.001, un: 1 };
     const cmv = itens.reduce((sum, pi) => {
       const qtd = Number(pi.quantidade) || 0;
       const custo = Number(pi.insumos?.custo_unitario) || 0;
+      const unidadeUtilizada = pi.unidade_utilizada || pi.insumos?.unidade || "";
+      const unidadeInsumo = pi.insumos?.unidade || "";
+      const fU = toBaseFactor[unidadeUtilizada];
+      const fI = toBaseFactor[unidadeInsumo];
+      if (fU != null && fI != null && fI > 0) {
+        return sum + (qtd * fU / fI) * custo;
+      }
       return sum + qtd * custo;
     }, 0);
     const precoEfetivo = (p.promocao && p.preco_promocional && p.preco_promocional > 0)
@@ -216,12 +262,13 @@ export default function Produtos() {
     if (p.id && userId) {
       const { data } = await supabase
         .from("produto_insumos")
-        .select("insumo_id, quantidade, insumos(id, nome, unidade, custo_unitario, imagem_url)")
+        .select("insumo_id, quantidade, unidade_utilizada, insumos(id, nome, unidade, custo_unitario, imagem_url)")
         .eq("produto_id", p.id);
       if (data) {
         setFichaTecnica(data.map((d: any) => ({
           insumo_id: d.insumo_id,
           quantidade: Number(d.quantidade) || 0,
+          unidade_utilizada: d.unidade_utilizada || (d.insumos as any)?.unidade || "",
           insumo: d.insumos as Insumo,
         })));
       }
@@ -283,7 +330,14 @@ export default function Produtos() {
       await supabase.from("produto_insumos").delete().eq("produto_id", produtoId);
       const itens = fichaTecnica
         .filter(f => f.insumo_id && f.quantidade > 0)
-        .map(f => ({ user_id: userId, produto_id: produtoId, insumo_id: f.insumo_id, quantidade: f.quantidade }));
+        .map(f => ({
+          user_id: userId,
+          produto_id: produtoId,
+          insumo_id: f.insumo_id,
+          quantidade: f.quantidade,
+          unidade_utilizada: f.unidade_utilizada,
+          quantidade_base: toBaseProd(f.quantidade, f.unidade_utilizada),
+        }));
       if (itens.length > 0) {
         await supabase.from("produto_insumos").insert(itens);
       }
@@ -333,7 +387,7 @@ export default function Produtos() {
       alert("Esse insumo já está na ficha técnica");
       return;
     }
-    setFichaTecnica(prev => [...prev, { insumo_id: ins.id, quantidade: 0, insumo: ins }]);
+    setFichaTecnica(prev => [...prev, { insumo_id: ins.id, quantidade: 0, unidade_utilizada: getDefaultRecipeUnitProd(ins.unidade), insumo: ins }]);
     setBuscaInsumo("");
   };
   const removerInsumoFicha = (id: string) => {
@@ -341,6 +395,9 @@ export default function Produtos() {
   };
   const atualizarQtdFicha = (id: string, qtd: number) => {
     setFichaTecnica(prev => prev.map(f => f.insumo_id === id ? { ...f, quantidade: qtd } : f));
+  };
+  const atualizarUnidadeFicha = (id: string, unidade: string) => {
+    setFichaTecnica(prev => prev.map(f => f.insumo_id === id ? { ...f, unidade_utilizada: unidade } : f));
   };
 
   // Cadastro rápido de insumo (delega ao componente QuickAddInsumo)
@@ -354,12 +411,12 @@ export default function Produtos() {
   };
   const handleInsumoSalvoRapido = (novoInsumo: Insumo) => {
     setInsumosCadastrados(prev => [...prev, novoInsumo]);
-    setFichaTecnica(prev => [...prev, { insumo_id: novoInsumo.id, quantidade: 0, insumo: novoInsumo }]);
+    setFichaTecnica(prev => [...prev, { insumo_id: novoInsumo.id, quantidade: 0, unidade_utilizada: getDefaultRecipeUnitProd(novoInsumo.unidade), insumo: novoInsumo }]);
     fecharQuickAdd();
   };
 
   const cmvProduto = fichaTecnica.reduce(
-    (s, f) => s + (f.quantidade * (f.insumo?.custo_unitario || 0)),
+    (s, f) => s + calcCustoProd(f.quantidade, f.unidade_utilizada, f.insumo?.unidade || "", f.insumo?.custo_unitario || 0),
     0
   );
   const margemProduto = form.preco_normal > 0
@@ -1300,7 +1357,9 @@ export default function Produtos() {
                   {fichaTecnica.map(f => {
                     const ins = f.insumo;
                     if (!ins) return null;
-                    const custoLinha = f.quantidade * (ins.custo_unitario || 0);
+                    const custoLinha = calcCustoProd(f.quantidade, f.unidade_utilizada, ins.unidade, ins.custo_unitario || 0);
+                    const compatibleUnits = getCompatibleUnitsProd(ins.unidade);
+                    const hasUnitChoice = compatibleUnits.length > 1;
                     return (
                       <div key={f.insumo_id} className="ficha-modal-item">
                         {ins.imagem_url
@@ -1317,7 +1376,17 @@ export default function Produtos() {
                                 onChange={e => atualizarQtdFicha(f.insumo_id, parseFloat(e.target.value) || 0)}
                                 step="any" min="0" placeholder="0"
                               />
-                              <span>{ins.unidade}</span>
+                              {hasUnitChoice ? (
+                                <select
+                                  className="ficha-modal-unit-select"
+                                  value={f.unidade_utilizada}
+                                  onChange={e => atualizarUnidadeFicha(f.insumo_id, e.target.value)}
+                                >
+                                  {compatibleUnits.map(u => <option key={u} value={u}>{u}</option>)}
+                                </select>
+                              ) : (
+                                <span>{f.unidade_utilizada}</span>
+                              )}
                             </div>
                             <div className="ficha-modal-item-custo">R$ {custoLinha.toFixed(2)}</div>
                           </div>
@@ -2163,6 +2232,13 @@ export default function Produtos() {
         .ficha-modal-item-qtd span {
           font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-secondary);
         }
+        .ficha-modal-unit-select {
+          border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+          background: var(--bg-card); color: var(--text-primary);
+          font-family: inherit; font-size: var(--font-caption); font-weight: var(--fw-semibold);
+          padding: 2px 4px; cursor: pointer; outline: none; min-width: 38px;
+        }
+        .ficha-modal-unit-select:focus { border-color: var(--primary); }
         .ficha-modal-item-custo {
           font-size: var(--font-button); font-weight: var(--fw-black); color: var(--primary);
         }
