@@ -412,7 +412,7 @@ export default function FichaTecnica() {
 
         {/* Editor da Composicao */}
         <div className="ft-section-header">
-          <h2 className="ft-section-title">🧾 Ingredientes e custos</h2>
+          <h2 className="ft-section-title">Ingredientes e custos</h2>
           {temFicha && <span className="ft-section-cmv">Total ingredientes R$ {fmt(cmvLive)}</span>}
         </div>
 
@@ -528,7 +528,7 @@ export default function FichaTecnica() {
 
         {/* Custos invisíveis */}
         <div className="ft-section-header">
-          <h2 className="ft-section-title">💡 Custos invisíveis</h2>
+          <h2 className="ft-section-title">Custos invisíveis</h2>
         </div>
         <div className="ft-edit-card">
           <p className="ft-edit-empty-sub" style={{ margin: 0 }}>Água, luz, gás, corantes, plástico filme e outros itens difíceis de mensurar individualmente.</p>
@@ -549,7 +549,7 @@ export default function FichaTecnica() {
 
         {/* Mão de obra */}
         <div className="ft-section-header">
-          <h2 className="ft-section-title">👩‍🍳 Mão de obra</h2>
+          <h2 className="ft-section-title">Mão de obra</h2>
         </div>
         <div className="ft-edit-card">
           <div className="ft-extras-edit" style={{ boxShadow: "none", padding: 0 }}>
@@ -588,7 +588,7 @@ export default function FichaTecnica() {
 
         {/* Detalhes extras */}
         <div className="ft-section-header">
-          <h2 className="ft-section-title">📦 Informações do produto</h2>
+          <h2 className="ft-section-title">Informações do produto</h2>
         </div>
         <div className="ft-extras-edit">
           <div className="ft-field ft-field--half">
