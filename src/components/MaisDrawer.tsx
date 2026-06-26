@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   ChartBar, CurrencyDollar, ChartLineUp, Percent,
   Users, Kanban,
-  Package, BookOpen, Files, Bell,
+  Package, BookOpen, Files, Bell, ClipboardText,
   Gear, PaintBrush, Crown,
   X,
 } from "@phosphor-icons/react";
@@ -44,7 +44,8 @@ const GROUPS: DrawerGroup[] = [
   {
     label: "Operação",
     items: [
-      { label: "Ingredientes", path: "/insumos",       icon: <Package  size={20} weight="duotone" /> },
+      { label: "Ingredientes",    path: "/insumos",        icon: <Package        size={20} weight="duotone" /> },
+      { label: "Fichas Técnicas", path: "/ficha-tecnica",  icon: <ClipboardText  size={20} weight="duotone" /> },
       { label: "Estoque",      path: "/estoque",       icon: <Package  size={20} weight="duotone" /> },
       { label: "Receitas",     path: "/receitas",      icon: <BookOpen size={20} weight="duotone" /> },
       { label: "Arquivos",     path: "/arquivos",      icon: <Files    size={20} weight="duotone" /> },

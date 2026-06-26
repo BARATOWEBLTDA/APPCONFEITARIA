@@ -41,6 +41,7 @@ import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 import CardapioPublico from "@/pages/CardapioPublico";
 import Cardapio from "@/pages/Cardapio";
 import Financeiro from "@/pages/Financeiro";
+import FichaTecnica from "@/pages/FichaTecnica";
 
 
 const Promocoes = () => <div style={{padding:"2rem"}}><h2>🏷️ Promoções</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
@@ -108,6 +109,7 @@ export default function App() {
           <Route path="/pedidos/:id" element={<PedidoForm />} />
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/insumos" element={<Insumos />} />
+          <Route path="/ficha-tecnica" element={<FichaTecnica />} />
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/financeiro" element={<Financeiro />} />
           <Route path="/promocoes" element={<Promocoes />} />
