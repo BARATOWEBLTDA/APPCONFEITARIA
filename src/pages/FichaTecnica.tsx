@@ -943,11 +943,11 @@ const detailStyles = `
   .ft-edit-item-row { display: flex; align-items: center; gap: 8px; }
   .ft-edit-item-input-group {
     flex: 1; display: flex; align-items: stretch;
-    border: 1.5px solid var(--border); border-radius: var(--radius-md);
+    border: 1.5px solid var(--primary-dark); border-radius: var(--radius-md);
     overflow: hidden; background: var(--bg-card);
     transition: border-color 0.15s ease;
   }
-  .ft-edit-item-input-group:focus-within { border-color: var(--primary); }
+  .ft-edit-item-input-group:focus-within { border-color: var(--primary-dark); }
   .ft-edit-item-input-group input {
     flex: 1; min-width: 0; border: none; outline: none; background: transparent;
     padding: 0.5rem 0.6rem; font-family: var(--font-base);
@@ -972,9 +972,9 @@ const detailStyles = `
     color: var(--text-inverse); background: var(--primary-dark);
     white-space: nowrap; display: flex; align-items: center;
   }
-  .ft-edit-item-custo { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .ft-edit-item-custo { display: flex; align-items: center; gap: 4px; flex-shrink: 0; min-width: 90px; justify-content: flex-end; }
   .ft-edit-item-custo-eq { font-size: var(--font-caption); color: var(--text-muted); }
-  .ft-edit-item-custo-val { font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text-title); white-space: nowrap; }
+  .ft-edit-item-custo-val { font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text-title); white-space: nowrap; text-align: right; }
 
   .ft-add { display: flex; flex-direction: column; gap: 0.4rem; }
   .ft-add-label { font-size: var(--font-field-label); color: var(--text-secondary); font-weight: var(--fw-semibold); }
