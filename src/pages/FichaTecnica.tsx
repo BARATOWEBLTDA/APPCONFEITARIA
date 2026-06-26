@@ -180,6 +180,16 @@ export default function FichaTecnica() {
   const [buscaInsumo, setBuscaInsumo] = useState("");
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState("");
+
+  // Bloqueia scroll do body quando modal está aberto
+  useEffect(() => {
+    if (showQuickAdd) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [showQuickAdd]);
   const [extras, setExtras] = useState({ rendimento_qtd: "", rendimento_peso: "", validade_dias: "", validade_tipo: "refrigerado", embalagem: "", observacoes_ficha: "", cv_percentual: "25", tempo_preparo_min: "", salario_desejado: "", horas_semanais: "40" });
   const [saving, setSaving] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
@@ -1055,7 +1065,7 @@ const detailStyles = `
   .ft-btn-salvar:disabled { opacity: 0.6; cursor: default; }
 
   .ft-modal-overlay {
-    position: fixed; inset: 0; z-index: 900;
+    position: fixed; inset: 0; z-index: 9999;
     background: var(--bg-overlay); display: flex;
     align-items: center; justify-content: center;
     padding: var(--pad-page);
