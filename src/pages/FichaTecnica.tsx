@@ -981,6 +981,11 @@ const detailStyles = `
     color: var(--text-primary); outline: none; resize: none;
   }
   .ft-field input:focus, .ft-field select:focus, .ft-field textarea:focus { border-color: var(--primary); }
+  .ft-field .ft-input-suffix input,
+  .ft-field .ft-input-prefix input {
+    border: none; border-radius: 0; padding: var(--pad-input);
+    width: auto;
+  }
 
   .ft-disclaimer { font-size: var(--font-helper); color: var(--text-muted); text-align: center; margin: 0; font-style: italic; }
 
