@@ -484,24 +484,28 @@ export default function FichaTecnica() {
                 const hasUnitChoice = compatibleUnits.length > 1;
                 return (
                   <div key={f.insumo_id} className="ft-list-row">
-                    <span className="ft-list-row-nome">{ins.nome}</span>
-                    <div className="ft-list-row-input">
-                      <input
-                        type="number" value={f.quantidade || ""} step="any" min="0" placeholder="0"
-                        onChange={e => setQtd(f.insumo_id, parseFloat(e.target.value) || 0)}
-                      />
-                      {hasUnitChoice ? (
-                        <select value={f.unidade_utilizada} onChange={e => setUnidade(f.insumo_id, e.target.value)}>
-                          {compatibleUnits.map(u => <option key={u} value={u}>{u}</option>)}
-                        </select>
-                      ) : (
-                        <span className="ft-list-row-unit">{f.unidade_utilizada}</span>
-                      )}
-                    </div>
-                    <span className="ft-list-row-custo">R$ {fmt(custoLinha)}</span>
                     <button className="ft-list-row-del" onClick={() => removeInsumo(f.insumo_id)} aria-label="Remover">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                     </button>
+                    <div className="ft-list-row-main">
+                      <div className="ft-list-row-top">
+                        <span className="ft-list-row-nome">{ins.nome}</span>
+                        <div className="ft-list-row-input">
+                          <input
+                            type="number" value={f.quantidade || ""} step="any" min="0" placeholder="0"
+                            onChange={e => setQtd(f.insumo_id, parseFloat(e.target.value) || 0)}
+                          />
+                          {hasUnitChoice ? (
+                            <select value={f.unidade_utilizada} onChange={e => setUnidade(f.insumo_id, e.target.value)}>
+                              {compatibleUnits.map(u => <option key={u} value={u}>{u}</option>)}
+                            </select>
+                          ) : (
+                            <span className="ft-list-row-unit">{f.unidade_utilizada}</span>
+                          )}
+                        </div>
+                      </div>
+                      <span className="ft-list-row-custo">R$ {fmt(custoLinha)}</span>
+                    </div>
                   </div>
                 );
               })}
@@ -1047,6 +1051,8 @@ const detailStyles = `
     padding: 0.6rem 0; border-bottom: 1px solid var(--border);
   }
   .ft-list-row:last-child { border-bottom: none; }
+  .ft-list-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .ft-list-row-top { display: flex; align-items: center; gap: 0.5rem; }
   .ft-list-row-nome {
     flex: 1; min-width: 0; font-size: var(--font-body); font-weight: var(--fw-semibold);
     color: var(--text-title); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -1074,7 +1080,7 @@ const detailStyles = `
   }
   .ft-list-row-custo {
     font-size: var(--font-caption); font-weight: var(--fw-bold);
-    color: var(--text-title); min-width: 68px; text-align: right; flex-shrink: 0;
+    color: var(--text-title);
   }
   .ft-list-row-del {
     width: 22px; height: 22px; flex-shrink: 0; background: transparent; border: none;
