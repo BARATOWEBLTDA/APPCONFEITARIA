@@ -568,8 +568,15 @@ export default function Produtos() {
                 </div>
                 <div className="prod-list-info">
                   <p className="prod-card-nome">{p.nome}</p>
-                  <div style={{ display: "flex", alignItems: "center", gap: "5px", flexWrap: "wrap" }}>
-                    <p className="prod-card-preco" style={{ margin: 0 }}>R$ {formatPreco(p.preco_normal)}</p>
+                  <div style={{ display: "flex", alignItems: "center", gap: "5px", flexWrap: "nowrap" }}>
+                    {p.promocao && p.preco_promocional && p.preco_promocional > 0 ? (
+                      <>
+                        <span style={{ textDecoration: "line-through", color: "var(--text-muted)", fontSize: "0.75rem" }}>R$ {formatPreco(p.preco_normal)}</span>
+                        <p className="prod-card-preco" style={{ margin: 0 }}>R$ {formatPreco(p.preco_promocional)}</p>
+                      </>
+                    ) : (
+                      <p className="prod-card-preco" style={{ margin: 0 }}>R$ {formatPreco(p.preco_normal)}</p>
+                    )}
                     {p.promocao && <span style={{ background: "var(--primary)", color: "var(--text-inverse)", fontSize: "0.55rem", fontWeight: 700, padding: "2px 5px", borderRadius: "6px" }}>Promoção</span>}
                   </div>
                   {(() => {
@@ -581,7 +588,7 @@ export default function Produtos() {
                           className="prod-card-sem-ficha"
                           onClick={(e) => { e.stopPropagation(); openEditar(p); }}
                         >
-                          Configure a ficha técnica
+                          Configure a<br/>Ficha Técnica
                         </button>
                       );
                     }
@@ -608,7 +615,15 @@ export default function Produtos() {
               <div className="prod-card-info">
                 <p className="prod-card-cat" style={{ color: catInvalida ? "var(--warning)" : undefined }}>{catInvalida ? p.categoria : p.categoria}</p>
                 <p className="prod-card-nome">{p.nome}</p>
-                <p className="prod-card-preco">R$ {formatPreco(p.preco_normal)}</p>
+                {p.promocao && p.preco_promocional && p.preco_promocional > 0 ? (
+                  <p className="prod-card-preco" style={{ display: "flex", alignItems: "center", gap: "4px", flexWrap: "nowrap" }}>
+                    <span style={{ textDecoration: "line-through", color: "var(--text-muted)", fontWeight: "var(--fw-medium)" as any, fontSize: "0.75rem" }}>R$ {formatPreco(p.preco_normal)}</span>
+                    <span>R$ {formatPreco(p.preco_promocional)}</span>
+                  </p>
+                ) : (
+                  <p className="prod-card-preco">R$ {formatPreco(p.preco_normal)}</p>
+                )}
+                <div className="prod-card-bottom">
                 {(() => {
                   const { lucro, margem, temFicha } = calcularLucro(p);
                   if (!temFicha) {
@@ -619,7 +634,7 @@ export default function Produtos() {
                         onClick={(e) => { e.stopPropagation(); openEditar(p); }}
                         title="Adicione insumos para ver o lucro por venda"
                       >
-                        Configure a ficha técnica
+                        Configure a<br/>Ficha Técnica
                       </button>
                     );
                   }
@@ -631,6 +646,7 @@ export default function Produtos() {
                     </div>
                   );
                 })()}
+                </div>
               </div>
             </div>
             );
@@ -1388,7 +1404,16 @@ export default function Produtos() {
                   {previewProduto.categoria && <p style={{ fontSize: "var(--font-caption)", color: "var(--text-muted)", margin: "0 0 2px", fontWeight: "var(--fw-medium)" as any }}>{previewProduto.categoria}</p>}
                   <h3 style={{ margin: 0, fontSize: "var(--font-section-title)", fontWeight: "var(--fw-bold)" as any, color: "var(--text-title)" }}>{previewProduto.nome}</h3>
                 </div>
-                <p style={{ margin: 0, fontSize: "var(--font-input)", fontWeight: "var(--fw-bold)" as any, color: "var(--primary)", whiteSpace: "nowrap" }}>R$ {formatPreco(previewProduto.preco_normal)}</p>
+                <div style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                  {previewProduto.promocao && previewProduto.preco_promocional && previewProduto.preco_promocional > 0 ? (
+                    <>
+                      <p style={{ margin: 0, fontSize: "0.75rem", color: "var(--text-muted)", textDecoration: "line-through" }}>R$ {formatPreco(previewProduto.preco_normal)}</p>
+                      <p style={{ margin: 0, fontSize: "var(--font-input)", fontWeight: "var(--fw-bold)" as any, color: "var(--primary)" }}>R$ {formatPreco(previewProduto.preco_promocional)}</p>
+                    </>
+                  ) : (
+                    <p style={{ margin: 0, fontSize: "var(--font-input)", fontWeight: "var(--fw-bold)" as any, color: "var(--primary)" }}>R$ {formatPreco(previewProduto.preco_normal)}</p>
+                  )}
+                </div>
               </div>
 
               {previewProduto.descricao && (
@@ -1486,8 +1511,9 @@ export default function Produtos() {
         .prod-card-indisponivel { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; color:white; font-size: var(--font-caption); font-weight: var(--fw-bold); }
         .prod-card-promo { position:absolute; top:0.4rem; left:0.4rem; background:var(--primary); color:var(--text-inverse); font-size: var(--font-caption); font-weight: var(--fw-bold); padding:0.15rem 0.45rem; border-radius: var(--radius-xl); }
         .prod-card-encomenda { position:absolute; top:0.4rem; right:0.4rem; background:var(--warning); color:var(--text-inverse); font-size: var(--font-caption); font-weight: var(--fw-bold); padding:0.15rem 0.45rem; border-radius: var(--radius-xl); }
-        .prod-card-info { padding:0.65rem 0.75rem; flex:1; }
-        .prod-card-cat { font-size: var(--font-caption); color:var(--primary); font-weight: var(--fw-bold); text-transform:uppercase; letter-spacing:0.05em; margin:0 0 0.15rem; }
+        .prod-card-info { padding:0.65rem 0.75rem; flex:1; display:flex; flex-direction:column; }
+        .prod-card-bottom { margin-top:auto; }
+        .prod-card-cat { font-size: 0.6rem; color:var(--text-muted); font-weight: var(--fw-medium); text-transform:uppercase; letter-spacing:0.04em; margin:0 0 0.15rem; }
         .prod-card-nome { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.25rem; line-height:1.3; }
         .prod-card-preco { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--success); margin:0; }
 
@@ -1524,18 +1550,18 @@ export default function Produtos() {
 
         .prod-card-sem-ficha {
           margin-top: 6px;
-          padding: 5px 8px;
+          padding: 6px 8px;
           background: var(--bg-subtle);
-          border: none;
+          border: 1px dashed var(--border);
           border-radius: var(--radius-sm);
           color: var(--text-muted);
           font-family: var(--font-base);
           font-size: var(--font-caption);
           font-weight: var(--fw-medium);
           cursor: pointer;
-          text-align: left;
+          text-align: center;
           width: 100%;
-          line-height: 1.2;
+          line-height: 1.3;
           transition: background var(--dur-fast) var(--ease-out);
         }
         .prod-card-sem-ficha:hover {
