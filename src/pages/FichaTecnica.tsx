@@ -181,6 +181,7 @@ export default function FichaTecnica() {
   const [buscaInsumo, setBuscaInsumo] = useState("");
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState("");
+  const [fichaView, setFichaView] = useState<"grid" | "lista">("grid");
 
   // Bloqueia scroll e oculta menu quando modal está aberto
   useEffect(() => {
@@ -446,7 +447,26 @@ export default function FichaTecnica() {
         {/* Editor da Composicao */}
         <div className="ft-section-header">
           <h2 className="ft-section-title">Ingredientes e custos</h2>
-          {temFicha && <span className="ft-section-cmv">Total ingredientes R$ {fmt(cmvLive)}</span>}
+          {temFicha && (
+            <div className="ft-view-toggle" role="group" aria-label="Visualização">
+              <button
+                type="button"
+                className={`ft-view-btn${fichaView === "grid" ? " active" : ""}`}
+                onClick={() => setFichaView("grid")}
+                aria-label="Visualização com imagens"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              </button>
+              <button
+                type="button"
+                className={`ft-view-btn${fichaView === "lista" ? " active" : ""}`}
+                onClick={() => setFichaView("lista")}
+                aria-label="Visualização em lista"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="ft-edit-card">
@@ -454,6 +474,37 @@ export default function FichaTecnica() {
             <div className="ft-edit-empty">
               <p className="ft-edit-empty-title">Nenhum ingrediente ainda</p>
               <p className="ft-edit-empty-sub">Adicione abaixo os insumos usados para fazer 1 unidade deste produto.</p>
+            </div>
+          ) : fichaView === "lista" ? (
+            <div className="ft-list-mode">
+              {ficha.map(f => {
+                const ins = f.insumo;
+                const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
+                const compatibleUnits = getCompatibleUnits(ins);
+                const hasUnitChoice = compatibleUnits.length > 1;
+                return (
+                  <div key={f.insumo_id} className="ft-list-row">
+                    <span className="ft-list-row-nome">{ins.nome}</span>
+                    <div className="ft-list-row-input">
+                      <input
+                        type="number" value={f.quantidade || ""} step="any" min="0" placeholder="0"
+                        onChange={e => setQtd(f.insumo_id, parseFloat(e.target.value) || 0)}
+                      />
+                      {hasUnitChoice ? (
+                        <select value={f.unidade_utilizada} onChange={e => setUnidade(f.insumo_id, e.target.value)}>
+                          {compatibleUnits.map(u => <option key={u} value={u}>{u}</option>)}
+                        </select>
+                      ) : (
+                        <span className="ft-list-row-unit">{f.unidade_utilizada}</span>
+                      )}
+                    </div>
+                    <span className="ft-list-row-custo">R$ {fmt(custoLinha)}</span>
+                    <button className="ft-list-row-del" onClick={() => removeInsumo(f.insumo_id)} aria-label="Remover">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="ft-edit-list">
@@ -973,10 +1024,65 @@ const detailStyles = `
     color: var(--text-title); margin: 0;
     text-transform: uppercase; letter-spacing: var(--ls-wide);
   }
-  .ft-section-cmv {
-    font-size: var(--font-caption); color: var(--primary); font-weight: var(--fw-bold);
-    background: var(--primary-light); padding: 3px 10px; border-radius: var(--radius-full);
+  /* Toggle de visualização (grid / lista) */
+  .ft-view-toggle {
+    display: flex; gap: 2px; padding: 2px;
+    background: var(--bg-subtle); border-radius: var(--radius-md);
   }
+  .ft-view-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 28px; border: none; background: transparent;
+    border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer;
+    transition: background var(--dur-fast, 0.15s) var(--ease-out, ease), color var(--dur-fast, 0.15s) var(--ease-out, ease);
+  }
+  .ft-view-btn.active {
+    background: var(--bg-card); color: var(--primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  /* Modo lista (compacto, sem imagem) */
+  .ft-list-mode { display: flex; flex-direction: column; }
+  .ft-list-row {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.6rem 0; border-bottom: 1px solid var(--border);
+  }
+  .ft-list-row:last-child { border-bottom: none; }
+  .ft-list-row-nome {
+    flex: 1; min-width: 0; font-size: var(--font-body); font-weight: var(--fw-semibold);
+    color: var(--text-title); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .ft-list-row-input {
+    display: flex; align-items: stretch; flex-shrink: 0;
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    overflow: hidden; background: var(--bg-card);
+  }
+  .ft-list-row-input:focus-within { border-color: var(--primary); }
+  .ft-list-row-input input {
+    width: 52px; border: none; outline: none; background: transparent;
+    padding: 0.3rem 0.4rem; font-family: var(--font-base); font-size: var(--font-caption);
+    font-weight: var(--fw-semibold); color: var(--text-primary); text-align: right;
+  }
+  .ft-list-row-input input::-webkit-outer-spin-button,
+  .ft-list-row-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .ft-list-row-input input[type=number] { -moz-appearance: textfield; }
+  .ft-list-row-input select,
+  .ft-list-row-unit {
+    display: flex; align-items: center; border: none; outline: none;
+    padding: 0 0.45rem; font-family: var(--font-base); font-size: 0.7rem;
+    font-weight: var(--fw-bold); color: var(--text-inverse); background: var(--primary-dark);
+    cursor: pointer; -webkit-appearance: none; appearance: none;
+  }
+  .ft-list-row-custo {
+    font-size: var(--font-caption); font-weight: var(--fw-bold);
+    color: var(--text-title); min-width: 68px; text-align: right; flex-shrink: 0;
+  }
+  .ft-list-row-del {
+    width: 22px; height: 22px; flex-shrink: 0; background: transparent; border: none;
+    border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0.4; transition: all var(--dur-fast) var(--ease-out);
+  }
+  .ft-list-row-del:active { opacity: 1; color: var(--error); }
 
   .ft-edit-card {
     background: var(--bg-card); border-radius: var(--radius-lg);
