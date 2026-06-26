@@ -826,34 +826,36 @@ const detailStyles = `
     display: flex; align-items: center;
     border: 1.5px solid var(--border); border-radius: var(--radius-md);
     overflow: hidden; background: var(--bg-card);
+    transition: border-color var(--dur-fast) var(--ease-out);
   }
   .ft-input-suffix:focus-within { border-color: var(--primary); }
   .ft-input-suffix input {
     flex: 1; min-width: 0; border: none; outline: none; background: transparent;
-    padding: 0.5rem 0.6rem; font-family: var(--font-base);
+    padding: var(--pad-input); font-family: var(--font-base);
     font-size: var(--font-input); color: var(--text-primary);
   }
   .ft-input-suffix input::-webkit-outer-spin-button,
   .ft-input-suffix input::-webkit-inner-spin-button { -webkit-appearance: none; }
   .ft-input-suffix input[type=number] { -moz-appearance: textfield; }
   .ft-input-suffix span {
-    padding: 0.5rem 0.6rem; font-size: var(--font-caption); font-weight: var(--fw-semibold);
-    color: var(--text-muted); border-left: 1.5px solid var(--border); background: var(--bg-subtle);
+    padding: 0.75rem 0.85rem; font-size: var(--font-button); font-weight: var(--fw-semibold);
+    color: var(--text-muted);
   }
 
   .ft-input-prefix {
     display: flex; align-items: center;
     border: 1.5px solid var(--border); border-radius: var(--radius-md);
     overflow: hidden; background: var(--bg-card);
+    transition: border-color var(--dur-fast) var(--ease-out);
   }
   .ft-input-prefix:focus-within { border-color: var(--primary); }
   .ft-input-prefix span {
-    padding: 0.5rem 0 0.5rem 0.6rem; font-size: var(--font-caption); font-weight: var(--fw-semibold);
+    padding: 0.75rem 0 0.75rem 0.85rem; font-size: var(--font-button); font-weight: var(--fw-semibold);
     color: var(--text-muted);
   }
   .ft-input-prefix input {
     flex: 1; min-width: 0; border: none; outline: none; background: transparent;
-    padding: 0.5rem 0.6rem 0.5rem 0.3rem; font-family: var(--font-base);
+    padding: var(--pad-input); padding-left: var(--space-2); font-family: var(--font-base);
     font-size: var(--font-input); color: var(--text-primary);
   }
 
