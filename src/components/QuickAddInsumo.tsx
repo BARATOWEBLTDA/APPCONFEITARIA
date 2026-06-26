@@ -213,7 +213,9 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
     <div className="qai-root">
       <div className="qai-head">
         <span>{isEditing ? "Editar insumo" : "Cadastrar insumo"}</span>
-        <button type="button" className="qai-cancel" onClick={onCancel}>Cancelar</button>
+        <button type="button" className="qai-cancel" onClick={onCancel} aria-label="Fechar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
       </div>
 
       <div className="qai-field">
@@ -404,18 +406,15 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           font-weight: var(--fw-bold);
           line-height: var(--lh-tight);
           color: var(--primary);
-          padding-bottom: var(--space-1);
-          border-bottom: 1px solid var(--border);
         }
         .qai-cancel {
-          background: transparent; border: none; cursor: pointer;
-          font-size: var(--font-caption);
-          font-weight: var(--fw-semibold);
-          line-height: var(--lh-normal);
-          color: var(--text-muted);
-          transition: color var(--dur-fast) var(--ease-out);
+          display: flex; align-items: center; justify-content: center;
+          width: 32px; height: 32px; flex-shrink: 0;
+          background: var(--bg-subtle); border: none; border-radius: var(--radius-full);
+          cursor: pointer; color: var(--text-muted);
+          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
         }
-        .qai-cancel:hover { color: var(--text-secondary); }
+        .qai-cancel:hover { background: var(--border); color: var(--text-secondary); }
 
         /* Campos */
         .qai-field { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
@@ -612,6 +611,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         .qai-imgs-actions {
           display: grid; grid-template-columns: 1fr 1fr;
           gap: var(--gap-tight);
+          margin-top: var(--space-2);
         }
         .qai-img-action {
           display: flex; align-items: center; justify-content: center; gap: 6px;

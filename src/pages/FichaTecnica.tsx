@@ -1063,9 +1063,11 @@ const detailStyles = `
   .ft-add-input:focus { border-color: var(--primary); }
   .ft-add-results { display: flex; flex-direction: column; gap: 0.3rem; }
   .ft-add-result {
-    display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem;
-    background: var(--bg-subtle); border: none; border-radius: var(--radius-md); cursor: pointer;
+    display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem;
+    background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-md); cursor: pointer;
+    transition: border-color var(--dur-fast, 0.15s) var(--ease-out, ease);
   }
+  .ft-add-result:hover { border-color: var(--primary); }
   .ft-add-result-img { width: 32px; height: 32px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0; }
   .ft-add-result-img--ph {
     display: flex; align-items: center; justify-content: center;
@@ -1073,15 +1075,15 @@ const detailStyles = `
   }
   .ft-add-novo {
     display: flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 0.85rem 0.75rem; background: var(--primary-light); border: 1.5px dashed var(--primary);
-    border-radius: var(--radius-md); color: var(--primary); font-family: var(--font-base);
+    padding: 0.85rem 0.75rem; background: var(--primary); border: none;
+    border-radius: var(--radius-md); color: var(--text-inverse); font-family: var(--font-base);
     font-size: var(--font-body); font-weight: var(--fw-bold); cursor: pointer; text-align: center;
-    transition: background var(--dur-fast, 0.15s) var(--ease-out, ease);
+    box-shadow: 0 2px 8px rgba(var(--primary-rgb, 61, 26, 36), 0.25);
+    transition: filter var(--dur-fast, 0.15s) var(--ease-out, ease);
   }
-  .ft-add-novo:hover { background: var(--primary); color: var(--text-inverse); }
-  .ft-add-novo:hover svg { stroke: var(--text-inverse); }
-  .ft-add-novo svg { stroke: var(--primary); flex-shrink: 0; }
-  .ft-add-novo--solo { background: var(--primary-light); }
+  .ft-add-novo:hover { filter: brightness(1.08); }
+  .ft-add-novo svg { stroke: var(--text-inverse); flex-shrink: 0; }
+  .ft-add-novo--solo { background: var(--primary); }
 
   .ft-extras-edit {
     background: var(--bg-card); border-radius: var(--radius-md); padding: 0.85rem;
