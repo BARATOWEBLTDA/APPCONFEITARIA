@@ -959,13 +959,19 @@ const detailStyles = `
   .ft-edit-item-input-group input[type=number] { -moz-appearance: textfield; }
   .ft-edit-item-input-group select {
     border: none; outline: none;
-    padding: 0.5rem 0.5rem; font-family: var(--font-base);
+    padding: 0.5rem 0.7rem; font-family: var(--font-base);
     font-size: var(--font-caption); font-weight: var(--fw-bold);
-    color: var(--text-secondary); background: transparent; cursor: pointer;
+    color: var(--text-inverse); background: var(--primary-dark);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    cursor: pointer; -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
+    padding-right: 1.6rem;
   }
   .ft-edit-item-unit-fixed {
-    padding: 0.5rem 0.6rem; font-size: var(--font-caption); font-weight: var(--fw-bold);
-    color: var(--text-secondary); background: transparent;
+    padding: 0.5rem 0.7rem; font-size: var(--font-caption); font-weight: var(--fw-bold);
+    color: var(--text-inverse); background: var(--primary-dark);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
     white-space: nowrap;
   }
   .ft-edit-item-custo { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
