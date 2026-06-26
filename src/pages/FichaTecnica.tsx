@@ -16,46 +16,71 @@ const UNIT_FAMILIES: Record<string, { family: UnitFamily; base: string; toBase: 
   un:  { family: "unidade", base: "un", toBase: 1 },
 };
 
-/** Retorna as unidades compatíveis para seleção na ficha técnica */
-function getCompatibleUnits(unidadeInsumo: string): string[] {
-  const info = UNIT_FAMILIES[unidadeInsumo];
-  if (!info) return [unidadeInsumo]; // pct, cx, Lata → só ela mesma
-  return Object.entries(UNIT_FAMILIES)
-    .filter(([, v]) => v.family === info.family)
-    .map(([k]) => k);
+/** Unidades que são embalagem (não são medida real) */
+const PACKAGING_UNITS = ["pct", "cx", "Lata", "Garrafa", "Pote", "Bandeja", "Saco", "Bisnaga", "Rolo"];
+
+/** Retorna as unidades disponíveis para seleção na ficha técnica */
+function getCompatibleUnits(insumo: Insumo): string[] {
+  const unidade = insumo.unidade;
+  const isPkg = PACKAGING_UNITS.includes(unidade);
+  const effective = isPkg ? "un" : unidade;
+
+  const info = UNIT_FAMILIES[effective];
+  const units = info
+    ? Object.entries(UNIT_FAMILIES).filter(([, v]) => v.family === info.family).map(([k]) => k)
+    : [effective];
+
+  // Adiciona a embalagem como opção (ex: "Bandeja" além de "un")
+  if (isPkg && !units.includes(unidade)) {
+    units.push(unidade);
+  }
+  if (insumo.embalagem_tipo && insumo.embalagem_tipo !== "Avulso" && !units.includes(insumo.embalagem_tipo)) {
+    units.push(insumo.embalagem_tipo);
+  }
+
+  return units;
 }
 
-/** Retorna a unidade padrão mais prática para a ficha (g em vez de kg, ml em vez de L) */
-function getDefaultRecipeUnit(unidadeInsumo: string): string {
-  const info = UNIT_FAMILIES[unidadeInsumo];
-  if (!info) return unidadeInsumo;
+/** Retorna a unidade padrão mais prática para a ficha */
+function getDefaultRecipeUnit(insumo: Insumo): string {
+  const isPkg = PACKAGING_UNITS.includes(insumo.unidade);
+  const effective = isPkg ? "un" : insumo.unidade;
+  const info = UNIT_FAMILIES[effective];
+  if (!info) return effective;
   if (info.family === "massa") return "g";
   if (info.family === "volume") return "ml";
-  return unidadeInsumo;
+  return effective;
 }
 
 /** Converte quantidade para a unidade base (kg, L, un) */
 function toBase(qtd: number, unidade: string): number {
+  if (PACKAGING_UNITS.includes(unidade)) return qtd;
   const info = UNIT_FAMILIES[unidade];
-  if (!info) return qtd;
-  return qtd * info.toBase;
+  return info ? qtd * info.toBase : qtd;
 }
 
-/** Calcula o custo dado qtd, unidade utilizada e custo_unitário do insumo */
+/** Calcula o custo dado qtd, unidade utilizada e o insumo completo */
 function calcCusto(qtd: number, unidadeUtilizada: string, insumo: Insumo): number {
-  // Converte a quantidade digitada para a unidade do insumo
-  const infoUtilizada = UNIT_FAMILIES[unidadeUtilizada];
-  const infoInsumo = UNIT_FAMILIES[insumo.unidade];
+  const custoUnit = insumo.custo_unitario || 0;
 
-  if (!infoUtilizada || !infoInsumo || infoUtilizada.family !== infoInsumo.family) {
-    // Unidades incompatíveis ou discretas — multiplicação direta
-    return qtd * (insumo.custo_unitario || 0);
+  // Se a unidade utilizada é uma embalagem (Bandeja, Caixa, etc.)
+  // 1 embalagem = qtd_embalagem unidades → custo = qty × qtd_embalagem × custo_unitario
+  if (PACKAGING_UNITS.includes(unidadeUtilizada)) {
+    const qtdEmb = insumo.qtd_embalagem || 1;
+    return qtd * qtdEmb * custoUnit;
   }
 
-  // Converte para base e depois para a unidade do insumo
-  const qtdBase = qtd * infoUtilizada.toBase;
-  const qtdNaUnidadeInsumo = qtdBase / infoInsumo.toBase;
-  return qtdNaUnidadeInsumo * (insumo.custo_unitario || 0);
+  // Conversão normal entre unidades de medida (g↔kg, ml↔L)
+  const effectiveInsumo = PACKAGING_UNITS.includes(insumo.unidade) ? "un" : insumo.unidade;
+  const infoUtilizada = UNIT_FAMILIES[unidadeUtilizada];
+  const infoInsumo = UNIT_FAMILIES[effectiveInsumo];
+
+  if (infoUtilizada && infoInsumo && infoUtilizada.family === infoInsumo.family && infoInsumo.toBase > 0) {
+    const qtdNaUnidadeInsumo = (qtd * infoUtilizada.toBase) / infoInsumo.toBase;
+    return qtdNaUnidadeInsumo * custoUnit;
+  }
+
+  return qtd * custoUnit;
 }
 
 // ── Types ──
@@ -69,6 +94,8 @@ type InsumoJoin = {
     nome: string;
     unidade: string;
     unidade_base?: string;
+    embalagem_tipo?: string;
+    qtd_embalagem?: number;
     custo_unitario: number;
     imagem_url?: string;
   };
@@ -103,6 +130,8 @@ type Insumo = {
   nome: string;
   unidade: string;
   unidade_base?: string;
+  embalagem_tipo?: string;
+  qtd_embalagem?: number;
   custo_unitario: number;
   imagem_url?: string;
 };
@@ -158,14 +187,14 @@ export default function FichaTecnica() {
   const loadProdutos = async (uid: string) => {
     const { data } = await supabase
       .from("produtos")
-      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, unidade_base, custo_unitario, imagem_url))")
+      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, unidade_base, embalagem_tipo, qtd_embalagem, custo_unitario, imagem_url))")
       .eq("user_id", uid)
       .order("nome");
     if (data) setProdutos(data as Produto[]);
   };
 
   const loadInsumos = async (uid: string) => {
-    const { data } = await supabase.from("insumos").select("id, nome, unidade, unidade_base, custo_unitario, imagem_url").eq("user_id", uid).order("nome");
+    const { data } = await supabase.from("insumos").select("id, nome, unidade, unidade_base, embalagem_tipo, qtd_embalagem, custo_unitario, imagem_url").eq("user_id", uid).order("nome");
     if (data) setInsumosCadastrados(data as Insumo[]);
   };
 
@@ -226,7 +255,7 @@ export default function FichaTecnica() {
     setFicha(prev => [...prev, {
       insumo_id: ins.id,
       quantidade: 0,
-      unidade_utilizada: getDefaultRecipeUnit(ins.unidade),
+      unidade_utilizada: getDefaultRecipeUnit(ins),
       insumo: ins,
     }]);
     setBuscaInsumo("");
@@ -241,7 +270,7 @@ export default function FichaTecnica() {
     setFicha(prev => [...prev, {
       insumo_id: ins.id,
       quantidade: 0,
-      unidade_utilizada: getDefaultRecipeUnit(ins.unidade),
+      unidade_utilizada: getDefaultRecipeUnit(ins),
       insumo: ins,
     }]);
     setShowQuickAdd(false);
@@ -287,7 +316,7 @@ export default function FichaTecnica() {
     await loadProdutos(userId);
     const { data } = await supabase
       .from("produtos")
-      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, unidade_base, custo_unitario, imagem_url))")
+      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, unidade_base, embalagem_tipo, qtd_embalagem, custo_unitario, imagem_url))")
       .eq("id", selected.id)
       .single();
     if (data) setSelected(data as Produto);
@@ -402,7 +431,7 @@ export default function FichaTecnica() {
               {ficha.map(f => {
                 const ins = f.insumo;
                 const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
-                const compatibleUnits = getCompatibleUnits(ins.unidade);
+                const compatibleUnits = getCompatibleUnits(ins);
                 const hasUnitChoice = compatibleUnits.length > 1;
 
                 return (
@@ -860,9 +889,9 @@ const detailStyles = `
   }
 
   .ft-mo-result {
-    padding: var(--pad-input); background: var(--bg-subtle);
-    border: 1.5px solid var(--border); border-radius: var(--radius-md);
-    font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title);
+    padding: var(--pad-input); background: var(--primary-dark);
+    border: none; border-radius: var(--radius-md);
+    font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-inverse);
   }
 
   .ft-section-header { display: flex; align-items: center; justify-content: space-between; }
@@ -929,14 +958,14 @@ const detailStyles = `
   .ft-edit-item-input-group input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .ft-edit-item-input-group input[type=number] { -moz-appearance: textfield; }
   .ft-edit-item-input-group select {
-    border: none; border-left: 1.5px solid var(--border); outline: none;
+    border: none; outline: none;
     padding: 0.5rem 0.5rem; font-family: var(--font-base);
-    font-size: var(--font-caption); font-weight: var(--fw-semibold);
-    color: var(--text-muted); background: var(--bg-subtle); cursor: pointer;
+    font-size: var(--font-caption); font-weight: var(--fw-bold);
+    color: var(--text-secondary); background: transparent; cursor: pointer;
   }
   .ft-edit-item-unit-fixed {
-    padding: 0.5rem 0.6rem; font-size: var(--font-caption); font-weight: var(--fw-semibold);
-    color: var(--text-muted); border-left: 1.5px solid var(--border); background: var(--bg-subtle);
+    padding: 0.5rem 0.6rem; font-size: var(--font-caption); font-weight: var(--fw-bold);
+    color: var(--text-secondary); background: transparent;
     white-space: nowrap;
   }
   .ft-edit-item-custo { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
@@ -972,7 +1001,7 @@ const detailStyles = `
     box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06));
     display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.65rem;
   }
-  .ft-field { display: flex; flex-direction: column; gap: 0.25rem; grid-column: 1 / -1; min-width: 0; }
+  .ft-field { display: flex; flex-direction: column; gap: var(--space-1); grid-column: 1 / -1; min-width: 0; justify-content: flex-end; }
   .ft-field--half { grid-column: span 1; }
   .ft-field label { font-size: var(--font-field-label); color: var(--text-secondary); font-weight: var(--fw-semibold); }
   .ft-field input, .ft-field select, .ft-field textarea {
