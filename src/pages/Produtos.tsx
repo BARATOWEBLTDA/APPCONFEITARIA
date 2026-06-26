@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { ImageCropper } from "@/components/ui/ImageCropper";
@@ -82,6 +82,7 @@ const EMPTY: Produto = {
 
 export default function Produtos() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"produtos"|"categorias">("produtos");
   const [userId, setUserId] = useState("");
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -586,7 +587,7 @@ export default function Produtos() {
                         <button
                           type="button"
                           className="prod-card-sem-ficha"
-                          onClick={(e) => { e.stopPropagation(); openEditar(p); }}
+                          onClick={(e) => { e.stopPropagation(); navigate("/ficha-tecnica", { state: { produtoId: p.id } }); }}
                         >
                           Configure a<br/>Ficha Técnica
                         </button>
@@ -631,7 +632,7 @@ export default function Produtos() {
                       <button
                         type="button"
                         className="prod-card-sem-ficha"
-                        onClick={(e) => { e.stopPropagation(); openEditar(p); }}
+                        onClick={(e) => { e.stopPropagation(); navigate("/ficha-tecnica", { state: { produtoId: p.id } }); }}
                         title="Adicione insumos para ver o lucro por venda"
                       >
                         Configure a<br/>Ficha Técnica
