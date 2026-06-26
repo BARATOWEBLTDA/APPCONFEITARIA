@@ -537,12 +537,14 @@ export default function FichaTecnica() {
                       </button>
                     ))}
                   <button type="button" className="ft-add-novo" onClick={() => { setQuickAddName(buscaInsumo); setShowQuickAdd(true); }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
                     Cadastrar "{buscaInsumo}" como novo insumo
                   </button>
                 </div>
               )}
               {!buscaInsumo.trim() && (
                 <button type="button" className="ft-add-novo ft-add-novo--solo" onClick={() => { setQuickAddName(""); setShowQuickAdd(true); }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
                   Cadastrar novo insumo
                 </button>
               )}
@@ -1049,11 +1051,16 @@ const detailStyles = `
     background: var(--primary-light); color: var(--primary); font-weight: var(--fw-bold); font-size: var(--font-caption);
   }
   .ft-add-novo {
-    padding: 0.5rem; background: var(--primary-light); border: 1px dashed var(--primary);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 0.85rem 0.75rem; background: var(--primary-light); border: 1.5px dashed var(--primary);
     border-radius: var(--radius-md); color: var(--primary); font-family: var(--font-base);
-    font-size: var(--font-caption); font-weight: var(--fw-semibold); cursor: pointer; text-align: center;
+    font-size: var(--font-body); font-weight: var(--fw-bold); cursor: pointer; text-align: center;
+    transition: background var(--dur-fast, 0.15s) var(--ease-out, ease);
   }
-  .ft-add-novo--solo { background: transparent; }
+  .ft-add-novo:hover { background: var(--primary); color: var(--text-inverse); }
+  .ft-add-novo:hover svg { stroke: var(--text-inverse); }
+  .ft-add-novo svg { stroke: var(--primary); flex-shrink: 0; }
+  .ft-add-novo--solo { background: var(--primary-light); }
 
   .ft-extras-edit {
     background: var(--bg-card); border-radius: var(--radius-md); padding: 0.85rem;
