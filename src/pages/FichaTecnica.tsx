@@ -109,63 +109,62 @@ export default function FichaTecnica() {
             <h1 className="ft-tree-nome">{selected.nome}</h1>
           </div>
 
-          {temFicha ? (
-            <>
-              {/* Conector: foto → 2 cards */}
-              <svg className="ft-conector ft-conector--top" viewBox="0 0 300 48" preserveAspectRatio="none" aria-hidden="true">
-                <path d="M150 0 L150 14 Q150 24 140 24 L85 24 Q75 24 75 34 L75 48 M150 14 Q150 24 160 24 L215 24 Q225 24 225 34 L225 48"
-                  fill="none" stroke="var(--ft-line)" strokeWidth="2" />
-              </svg>
+          {/* Conector: foto → 2 cards */}
+          <svg className="ft-conector ft-conector--top" viewBox="0 0 300 48" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M150 0 L150 14 Q150 24 140 24 L85 24 Q75 24 75 34 L75 48 M150 14 Q150 24 160 24 L215 24 Q225 24 225 34 L225 48"
+              fill="none" stroke="var(--ft-line)" strokeWidth="2" />
+          </svg>
 
-              {/* CMV + Lucro */}
-              <div className="ft-tree-duo">
-                <div className="ft-node ft-node--cmv">
-                  <div className="ft-node-icon ft-node-icon--cmv">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                  </div>
-                  <span className="ft-node-label">CMV</span>
-                  <strong className="ft-node-valor">R$ {fmt(cmv)}</strong>
-                  <span className="ft-node-sub">{fmtPct(margemCmv)}% do preço de venda</span>
-                </div>
-                <div className="ft-node ft-node--lucro">
-                  <div className="ft-node-icon ft-node-icon--lucro">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-                  </div>
-                  <span className="ft-node-label">Lucro</span>
-                  <strong className="ft-node-valor">R$ {fmt(lucro)}</strong>
-                  <span className="ft-node-sub">{fmtPct(margemLucro)}% do preço de venda</span>
-                </div>
+          {/* CMV + Lucro */}
+          <div className="ft-tree-duo">
+            <div className="ft-node ft-node--cmv">
+              <div className="ft-node-icon ft-node-icon--cmv">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
               </div>
-
-              {/* Conector: 2 cards → preço central */}
-              <svg className="ft-conector ft-conector--bottom" viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true">
-                <path d="M75 0 L75 10 Q75 20 85 20 L140 20 Q150 20 150 30 L150 40 M225 0 L225 10 Q225 20 215 20 L160 20 Q150 20 150 30 L150 40"
-                  fill="none" stroke="var(--ft-line)" strokeWidth="2" />
-              </svg>
-
-              {/* Preço de venda sugerido */}
-              <div className="ft-node ft-node--preco">
-                <div className="ft-node-icon ft-node-icon--preco">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                </div>
-                <div className="ft-node-preco-text">
-                  <span className="ft-node-label">Preço de venda sugerido</span>
-                  <strong className="ft-node-valor ft-node-valor--lg">R$ {fmt(preco)}</strong>
-                </div>
+              <span className="ft-node-label">CMV</span>
+              <strong className="ft-node-valor">R$ {fmt(cmv)}</strong>
+              <span className="ft-node-sub">{temFicha ? `${fmtPct(margemCmv)}% do preço de venda` : "Sem ingredientes"}</span>
+            </div>
+            <div className="ft-node ft-node--lucro">
+              <div className="ft-node-icon ft-node-icon--lucro">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
               </div>
-            </>
-          ) : (
+              <span className="ft-node-label">Lucro</span>
+              <strong className="ft-node-valor">R$ {fmt(lucro)}</strong>
+              <span className="ft-node-sub">{temFicha ? `${fmtPct(margemLucro)}% do preço de venda` : "Estimado sem custos"}</span>
+            </div>
+          </div>
+
+          {/* Conector: 2 cards → preço central */}
+          <svg className="ft-conector ft-conector--bottom" viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M75 0 L75 10 Q75 20 85 20 L140 20 Q150 20 150 30 L150 40 M225 0 L225 10 Q225 20 215 20 L160 20 Q150 20 150 30 L150 40"
+              fill="none" stroke="var(--ft-line)" strokeWidth="2" />
+          </svg>
+
+          {/* Preço de venda sugerido */}
+          <div className="ft-node ft-node--preco">
+            <div className="ft-node-icon ft-node-icon--preco">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+            </div>
+            <div className="ft-node-preco-text">
+              <span className="ft-node-label">Preço de venda sugerido</span>
+              <strong className="ft-node-valor ft-node-valor--lg">R$ {fmt(preco)}</strong>
+            </div>
+          </div>
+
+          {/* Banner quando ainda não há ingredientes */}
+          {!temFicha && (
             <div className="ft-sem-ficha-aviso">
-              <p className="ft-sem-ficha-title">Nenhum ingrediente cadastrado</p>
-              <p className="ft-sem-ficha-sub">Adicione ingredientes na ficha técnica deste produto para ver o CMV, lucro e margem.</p>
-              <button className="ft-btn-editar" onClick={() => navigate("/produtos", { state: { editarId: selected.id } })}>
+              <p className="ft-sem-ficha-title">Ficha técnica vazia</p>
+              <p className="ft-sem-ficha-sub">Cadastre os ingredientes para calcular o CMV real e o lucro deste produto.</p>
+              <button className="ft-btn-cadastrar" onClick={() => navigate("/produtos", { state: { editarId: selected.id } })}>
                 Cadastrar ingredientes
               </button>
             </div>
           )}
         </div>
 
-        {selected.descricao && temFicha && <p className="ft-tree-desc">{selected.descricao}</p>}
+        {selected.descricao && <p className="ft-tree-desc">{selected.descricao}</p>}
 
         {/* Composição */}
         {temFicha && (
@@ -524,12 +523,18 @@ const detailStyles = `
   }
 
   .ft-sem-ficha-aviso {
-    background: var(--bg-card); border-radius: var(--radius-md);
-    padding: 1.25rem; text-align: center; border: 1px dashed var(--border);
-    margin-top: 1rem; width: 100%;
+    background: var(--bg-subtle); border-radius: var(--radius-md);
+    padding: 1rem; text-align: center; border: 1px dashed var(--border);
+    margin-top: 1.25rem; width: 100%; max-width: 340px;
   }
   .ft-sem-ficha-title { font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text-title); margin: 0 0 4px; }
   .ft-sem-ficha-sub { font-size: var(--font-caption); color: var(--text-muted); margin: 0 0 0.75rem; line-height: 1.4; }
+  .ft-btn-cadastrar {
+    width: 100%; padding: 0.6rem; background: var(--primary);
+    color: var(--text-inverse); border: none; border-radius: var(--radius-md);
+    font-family: var(--font-base); font-size: var(--font-button);
+    font-weight: var(--fw-bold); cursor: pointer;
+  }
 
   /* Composição */
   .ft-section-header { display: flex; align-items: center; justify-content: space-between; }
