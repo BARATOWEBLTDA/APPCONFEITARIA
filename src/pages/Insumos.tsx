@@ -10,6 +10,7 @@ interface Insumo {
   marca: string;
   categoria: string;
   unidade: string;
+  embalagem_tipo: string;
   valor_compra: number;
   qtd_embalagem: number;
   custo_unitario: number;
@@ -226,7 +227,7 @@ export default function Insumos() {
                 <p className="ins-item-meta">
                   <span className="ins-item-cat">{i.categoria}</span>
                   <span className="ins-item-dot">•</span>
-                  <span>{formatCurrency(i.valor_compra || 0)} / {i.qtd_embalagem || 1} {i.unidade}</span>
+                  <span>{formatCurrency(i.valor_compra || 0)} / {i.qtd_embalagem || 1} {i.unidade}{i.embalagem_tipo && i.embalagem_tipo !== "Avulso" ? ` (${i.embalagem_tipo})` : ""}</span>
                 </p>
                 <p className="ins-item-custo">{formatCustoUnit(i.custo_unitario || 0)} / {i.unidade}</p>
               </div>
@@ -256,6 +257,7 @@ export default function Insumos() {
                 marca: editingInsumo.marca,
                 categoria: editingInsumo.categoria,
                 unidade: editingInsumo.unidade,
+                embalagem_tipo: editingInsumo.embalagem_tipo,
                 custo_unitario: editingInsumo.custo_unitario,
                 imagem_url: editingInsumo.imagem_url,
                 valor_compra: editingInsumo.valor_compra,

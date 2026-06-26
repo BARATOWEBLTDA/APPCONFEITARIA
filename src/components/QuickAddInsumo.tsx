@@ -8,6 +8,7 @@ export type InsumoQuick = {
   categoria?: string;
   unidade: string;
   unidade_base?: string;
+  embalagem_tipo?: string;
   custo_unitario: number;
   imagem_url?: string;
   valor_compra?: number;
@@ -36,25 +37,31 @@ type Form = {
   marca: string;
   categoria: string;
   unidade: string;
+  embalagem_tipo: string;
   valor_compra: string;
   qtd_embalagem: string;
   imagem_url: string;
 };
 
 const CATEGORIAS_DEFAULT = ["Ingredientes", "Embalagens", "Decorações", "Bebidas", "Limpeza", "Descartáveis", "Outros"];
-const UNIDADES = [
+
+const UNIDADES_MEDIDA = [
   { sigla: "un", nome: "Unidade" },
   { sigla: "kg", nome: "Quilograma" },
   { sigla: "g", nome: "Grama" },
   { sigla: "L", nome: "Litro" },
   { sigla: "ml", nome: "Mililitro" },
-  { sigla: "pct", nome: "Pacote" },
-  { sigla: "cx", nome: "Caixa" },
+];
+
+const EMBALAGENS = [
+  { sigla: "Avulso", nome: "Avulso (sem embalagem)" },
+  { sigla: "Bandeja", nome: "Bandeja" },
+  { sigla: "Caixa", nome: "Caixa" },
+  { sigla: "Pacote", nome: "Pacote" },
+  { sigla: "Saco", nome: "Saco" },
   { sigla: "Lata", nome: "Lata" },
   { sigla: "Garrafa", nome: "Garrafa" },
   { sigla: "Pote", nome: "Pote" },
-  { sigla: "Bandeja", nome: "Bandeja" },
-  { sigla: "Saco", nome: "Saco" },
   { sigla: "Bisnaga", nome: "Bisnaga" },
   { sigla: "Rolo", nome: "Rolo" },
 ];
@@ -68,11 +75,15 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
 
   const [form, setForm] = useState<Form>(() => {
     if (editing) {
+      // Detecta se a unidade antiga era uma embalagem (dados pré-migração)
+      const oldPkgUnits = ["pct", "cx", "Lata", "Garrafa", "Pote", "Bandeja", "Saco", "Bisnaga", "Rolo"];
+      const isOldPkg = oldPkgUnits.includes(editing.unidade);
       return {
         nome: editing.nome || "",
         marca: editing.marca || "",
         categoria: editing.categoria || "Ingredientes",
-        unidade: editing.unidade || "g",
+        unidade: isOldPkg ? "un" : (editing.unidade || "g"),
+        embalagem_tipo: isOldPkg ? editing.unidade : (editing.embalagem_tipo || "Avulso"),
         valor_compra: editing.valor_compra ? String(editing.valor_compra).replace(".", ",") : "",
         qtd_embalagem: editing.qtd_embalagem ? String(editing.qtd_embalagem).replace(".", ",") : "1",
         imagem_url: editing.imagem_url || "",
@@ -83,6 +94,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       marca: "",
       categoria: "Ingredientes",
       unidade: "g",
+      embalagem_tipo: "Avulso",
       valor_compra: "",
       qtd_embalagem: "1",
       imagem_url: "",
@@ -156,6 +168,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       categoria: form.categoria,
       unidade: form.unidade,
       unidade_base: deriveUnidadeBase(form.unidade),
+      embalagem_tipo: form.embalagem_tipo,
       valor_compra: valor,
       qtd_embalagem: qtdEmb,
       custo_unitario: custoUnit,
@@ -182,6 +195,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       categoria: data.categoria,
       unidade: data.unidade,
       unidade_base: data.unidade_base,
+      embalagem_tipo: data.embalagem_tipo,
       custo_unitario: data.custo_unitario,
       imagem_url: data.imagem_url,
       valor_compra: data.valor_compra,
@@ -305,7 +319,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         </div>
       </div>
 
-      <div className="qai-row-3">
+      <div className="qai-row-2">
         <div className="qai-field">
           <label>Quanto pagou *</label>
           <input
@@ -318,24 +332,37 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           />
         </div>
         <div className="qai-field">
-          <label>Quanto veio *</label>
+          <label>Embalagem</label>
+          <select
+            className="qai-input"
+            value={form.embalagem_tipo}
+            onChange={e => setForm(f => ({ ...f, embalagem_tipo: e.target.value }))}
+          >
+            {EMBALAGENS.map(e => <option key={e.sigla} value={e.sigla}>{e.nome}</option>)}
+          </select>
+        </div>
+      </div>
+
+      <div className="qai-row-3">
+        <div className="qai-field">
+          <label>Quantidade *</label>
           <input
             type="text"
             inputMode="decimal"
             className="qai-input"
-            placeholder="1"
+            placeholder="12"
             value={form.qtd_embalagem}
             onChange={e => setForm(f => ({ ...f, qtd_embalagem: e.target.value }))}
           />
         </div>
         <div className="qai-field">
-          <label>Unidade *</label>
+          <label>Medida *</label>
           <select
             className="qai-input"
             value={form.unidade}
             onChange={e => setForm(f => ({ ...f, unidade: e.target.value }))}
           >
-            {UNIDADES.map(u => <option key={u.sigla} value={u.sigla}>{u.nome}</option>)}
+            {UNIDADES_MEDIDA.map(u => <option key={u.sigla} value={u.sigla}>{u.nome}</option>)}
           </select>
         </div>
       </div>
@@ -343,6 +370,11 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       {previewCusto > 0 && (
         <div className="qai-preview">
           Custo unitário: <strong>R$ {previewCusto.toFixed(4)} / {form.unidade}</strong>
+          {form.embalagem_tipo !== "Avulso" && (
+            <span style={{ display: "block", marginTop: 2, fontSize: "0.75rem", opacity: 0.75 }}>
+              Comprado em {form.embalagem_tipo.toLowerCase()} com {form.qtd_embalagem} {form.unidade}
+            </span>
+          )}
         </div>
       )}
 
@@ -416,7 +448,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           gap: var(--gap-tight);
         }
         .qai-row-3 {
-          display: grid; grid-template-columns: 1.1fr 1fr 0.7fr;
+          display: grid; grid-template-columns: 1fr 1fr;
           gap: var(--gap-tight);
         }
 
@@ -603,7 +635,6 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
 
         @media (max-width: 480px) {
           .qai-row-3 { grid-template-columns: 1fr 1fr; }
-          .qai-row-3 .qai-field:last-child { grid-column: 1 / -1; }
         }
       `}</style>
     </div>
