@@ -181,14 +181,33 @@ export default function FichaTecnica() {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState("");
 
-  // Bloqueia scroll do body quando modal está aberto
+  // Bloqueia scroll e oculta menu quando modal está aberto
   useEffect(() => {
     if (showQuickAdd) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
       document.body.style.overflow = "hidden";
     } else {
+      const top = document.body.style.top;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
       document.body.style.overflow = "";
+      if (top) window.scrollTo(0, parseInt(top || "0") * -1);
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      const top = document.body.style.top;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.overflow = "";
+      if (top) window.scrollTo(0, parseInt(top || "0") * -1);
+    };
   }, [showQuickAdd]);
   const [extras, setExtras] = useState({ rendimento_qtd: "", rendimento_peso: "", validade_dias: "", validade_tipo: "refrigerado", embalagem: "", observacoes_ficha: "", cv_percentual: "25", tempo_preparo_min: "", salario_desejado: "", horas_semanais: "40" });
   const [saving, setSaving] = useState(false);
