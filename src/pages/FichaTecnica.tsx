@@ -399,7 +399,7 @@ export default function FichaTecnica() {
           Voltar
         </button>
 
-        {/* Cabeçalho do produto */}
+        {/* Cabeçalho do produto: foto à esquerda, título + lucro à direita */}
         <div className="ft-tree">
           <div className="ft-tree-foto">
             {selected.imagem_url
@@ -407,16 +407,14 @@ export default function FichaTecnica() {
               : <div className="ft-tree-foto-placeholder">Sem imagem</div>
             }
           </div>
-          <div className="ft-tree-titulo">
+          <div className="ft-tree-info">
             <h1 className="ft-tree-nome">{selected.nome}</h1>
+            <div className="ft-tree-lucro">
+              <span className="ft-lucro-hero-label">Seu lucro</span>
+              <strong className={`ft-lucro-hero-value ${lucroLive >= 0 ? "" : "ft-lucro-hero-value--neg"}`}>R$ {fmt(lucroLive)}</strong>
+              <span className={`ft-lucro-hero-margin ${margemLucroLive >= 30 ? "ft-lucro-hero-margin--ok" : margemLucroLive >= 0 ? "ft-lucro-hero-margin--warn" : "ft-lucro-hero-margin--neg"}`}>{fmtPct(margemLucroLive)}% de margem</span>
+            </div>
           </div>
-        </div>
-
-        {/* Lucro em destaque */}
-        <div className="ft-lucro-hero">
-          <span className="ft-lucro-hero-label">Seu lucro</span>
-          <strong className={`ft-lucro-hero-value ${lucroLive >= 0 ? "" : "ft-lucro-hero-value--neg"}`}>R$ {fmt(lucroLive)}</strong>
-          <span className={`ft-lucro-hero-margin ${margemLucroLive >= 30 ? "ft-lucro-hero-margin--ok" : margemLucroLive >= 0 ? "ft-lucro-hero-margin--warn" : "ft-lucro-hero-margin--neg"}`}>{fmtPct(margemLucroLive)}% de margem</span>
         </div>
 
         {/* Breakdown de precificação */}
@@ -913,13 +911,13 @@ const detailStyles = `
   }
 
   .ft-tree {
-    display: flex; flex-direction: column; align-items: center;
+    display: flex; flex-direction: row; align-items: center; gap: 1rem;
     background: var(--bg-card); border-radius: var(--radius-lg);
-    padding: 1.25rem 1rem 1.5rem;
+    padding: 1rem;
     box-shadow: var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06));
   }
   .ft-tree-foto {
-    width: 170px; height: 170px; border-radius: var(--radius-lg); overflow: hidden;
+    width: 110px; height: 110px; border-radius: var(--radius-lg); overflow: hidden;
     background: var(--bg-subtle); flex-shrink: 0;
     border: 3px solid var(--bg-card);
     box-shadow: 0 10px 28px rgba(0, 0, 0, 0.16), 0 4px 10px rgba(0, 0, 0, 0.08);
@@ -928,24 +926,25 @@ const detailStyles = `
   .ft-tree-foto-placeholder {
     width: 100%; height: 100%; display: flex; align-items: center;
     justify-content: center; font-size: var(--font-caption); color: var(--text-muted);
+    text-align: center;
   }
-  .ft-tree-titulo { text-align: center; margin-top: 0.85rem; }
+  .ft-tree-info {
+    flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.5rem;
+  }
   .ft-tree-nome {
     font-size: var(--font-section-title); font-weight: var(--fw-bold);
-    color: var(--text-title); margin: 0; line-height: 1.2;
+    color: var(--text-title); margin: 0; line-height: 1.25;
+  }
+  .ft-tree-lucro {
+    display: flex; flex-direction: column; gap: 1px;
   }
   .ft-tree-sub {
     font-size: var(--font-caption); color: var(--text-muted); margin: 4px 0 0;
   }
 
-  /* Lucro hero */
-  .ft-lucro-hero {
-    display: flex; flex-direction: column; align-items: center; gap: 2px;
-    background: var(--bg-card); border-radius: var(--radius-lg);
-    padding: 1.25rem 1rem; box-shadow: var(--shadow-card);
-  }
+  /* Lucro (dentro do cabeçalho) */
   .ft-lucro-hero-label { font-size: var(--font-caption); color: var(--text-muted); text-transform: uppercase; letter-spacing: var(--ls-wide); font-weight: var(--fw-semibold); }
-  .ft-lucro-hero-value { font-size: var(--font-stat-value); font-weight: var(--fw-bold); color: var(--success); line-height: 1.2; }
+  .ft-lucro-hero-value { font-size: var(--font-stat-value); font-weight: var(--fw-bold); color: var(--success); line-height: 1.15; }
   .ft-lucro-hero-value--neg { color: var(--error); }
   .ft-lucro-hero-margin { font-size: var(--font-button); font-weight: var(--fw-semibold); margin-top: 2px; }
   .ft-lucro-hero-margin--ok { color: var(--success); }
