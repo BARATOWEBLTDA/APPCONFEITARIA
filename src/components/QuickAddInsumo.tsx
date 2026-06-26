@@ -212,7 +212,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
   return (
     <div className="qai-root">
       <div className="qai-head">
-        <span>{isEditing ? "✏️ Editar insumo" : "⚡ Cadastrar insumo"}</span>
+        <span>{isEditing ? "Editar insumo" : "Cadastrar insumo"}</span>
         <button type="button" className="qai-cancel" onClick={onCancel}>Cancelar</button>
       </div>
 
@@ -260,14 +260,14 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           {buscandoImg && (
             <div className="qai-imgs-doo">
               <div className="qai-imgs-doo-spinner" />
-              <p>🔍 <strong>Doo</strong> está procurando<span className="qai-dots"><span>.</span><span>.</span><span>.</span></span></p>
+              <p><strong>Doo</strong> está procurando<span className="qai-dots"><span>.</span><span>.</span><span>.</span></span></p>
             </div>
           )}
 
           {uploadingImg && (
             <div className="qai-imgs-doo">
               <div className="qai-imgs-doo-spinner" />
-              <p>📤 <strong>Doo</strong> está enviando<span className="qai-dots"><span>.</span><span>.</span><span>.</span></span></p>
+              <p><strong>Doo</strong> está enviando<span className="qai-dots"><span>.</span><span>.</span><span>.</span></span></p>
             </div>
           )}
 
@@ -276,7 +276,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
             <div className="qai-imgs-selected">
               <img src={form.imagem_url} alt="Imagem selecionada" />
               <button type="button" className="qai-img-remove" onClick={() => setForm(f => ({ ...f, imagem_url: "" }))}>
-                ✕ Remover
+                Remover
               </button>
             </div>
           )}
@@ -292,29 +292,27 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
                   onClick={() => setForm(f => ({ ...f, imagem_url: f.imagem_url === url ? "" : url }))}
                 >
                   <img src={url} alt="" />
-                  {form.imagem_url === url && <span className="qai-img-check">✓</span>}
+                  {form.imagem_url === url && <span className="qai-img-check" />}
                 </button>
               ))}
             </div>
           )}
 
-          {/* Estado inicial: 3 placeholders */}
+          {/* Estado inicial: 1 placeholder grande */}
           {!buscandoImg && !uploadingImg && !form.imagem_url && imagens.length === 0 && (
-            <div className="qai-imgs-grid">
-              <div className="qai-img-big qai-img-big--placeholder"><span>🖼️</span></div>
-              <div className="qai-img-big qai-img-big--placeholder"><span>🖼️</span></div>
-              <div className="qai-img-big qai-img-big--placeholder"><span>🖼️</span></div>
+            <div className="qai-imgs-selected qai-imgs-selected--empty">
+              <span className="qai-placeholder-text">Sem imagem</span>
             </div>
           )}
         </div>
 
         {/* 2 botões embaixo */}
         <div className="qai-imgs-actions">
-          <button type="button" className="qai-img-action" onClick={handleBuscarImagem} disabled={buscandoImg || uploadingImg || form.nome.trim().length < 3}>
-            🔍 Buscar Automaticamente
+          <button type="button" className="qai-img-action qai-img-action--primary" onClick={handleBuscarImagem} disabled={buscandoImg || uploadingImg || form.nome.trim().length < 3}>
+            Buscar imagem
           </button>
           <button type="button" className="qai-img-action" onClick={() => galleryRef.current?.click()} disabled={uploadingImg || buscandoImg}>
-            📤 Upload manual
+            Upload manual
           </button>
         </div>
       </div>
@@ -420,7 +418,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         .qai-cancel:hover { color: var(--text-secondary); }
 
         /* Campos */
-        .qai-field { display: flex; flex-direction: column; gap: var(--space-2); }
+        .qai-field { display: flex; flex-direction: column; gap: var(--space-2); min-width: 0; }
         .qai-field label {
           font-size: var(--font-field-label);
           font-weight: var(--fw-semibold);
@@ -445,6 +443,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         .qai-input:focus { border-color: var(--primary); }
         .qai-input-prefix {
           display: flex; align-items: center;
+          width: 100%; min-width: 0; box-sizing: border-box;
           border: 1.5px solid var(--border); border-radius: var(--radius-md);
           background: var(--bg-input); overflow: hidden;
           transition: border-color var(--dur-fast) var(--ease-out);
@@ -456,7 +455,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           color: var(--text-muted); white-space: nowrap; user-select: none;
         }
         .qai-input-prefix input {
-          flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+          flex: 1; min-width: 0; width: 100%; border: none; outline: none; background: transparent;
           padding: var(--pad-input); padding-left: 0.3rem;
           font-size: var(--font-input); font-weight: var(--fw-medium);
           color: var(--text-title); font-family: inherit; box-sizing: border-box;
@@ -464,13 +463,14 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         select.qai-input { cursor: pointer; }
 
         .qai-row-2 {
-          display: grid; grid-template-columns: 1fr 1fr;
+          display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
           gap: var(--gap-tight);
         }
         .qai-row-3 {
-          display: grid; grid-template-columns: 1fr 1fr;
+          display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
           gap: var(--gap-tight);
         }
+
 
         /* Bloco de imagens */
         .qai-imgs {
@@ -553,10 +553,15 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           width: 24px; height: 24px;
           background: var(--primary); color: var(--text-inverse);
           border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          font-size: var(--font-button);
-          font-weight: var(--fw-black);
           box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        .qai-img-check::after {
+          content: ""; position: absolute;
+          left: 8px; top: 4px;
+          width: 5px; height: 10px;
+          border: solid var(--text-inverse);
+          border-width: 0 2.5px 2.5px 0;
+          transform: rotate(45deg);
         }
         .qai-img-big--placeholder {
           border-style: dashed; cursor: default;
@@ -579,6 +584,15 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
         }
         .qai-imgs-selected img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .qai-imgs-selected--empty {
+          border-style: dashed; border-color: var(--border);
+          box-shadow: none; background: var(--bg-body);
+          display: flex; align-items: center; justify-content: center;
+        }
+        .qai-placeholder-text {
+          font-size: var(--font-caption); color: var(--text-muted);
+          font-weight: var(--fw-medium);
+        }
         .qai-img-remove {
           position: absolute; bottom: 8px; right: 8px;
           padding: var(--space-1) var(--space-2);
@@ -600,6 +614,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           gap: var(--gap-tight);
         }
         .qai-img-action {
+          display: flex; align-items: center; justify-content: center; gap: 6px;
           padding: var(--space-3);
           background: var(--bg-body);
           border: 1.5px solid var(--border);
@@ -611,15 +626,28 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           color: var(--text-title);
           cursor: pointer;
           transition: all var(--dur-fast) var(--ease-out);
-          white-space: nowrap;
-          overflow: hidden; text-overflow: ellipsis;
+          white-space: normal; text-align: center;
         }
+        .qai-img-action svg { flex-shrink: 0; }
         .qai-img-action:hover:not(:disabled) {
           border-color: var(--primary);
           background: var(--primary-light);
           color: var(--primary);
         }
         .qai-img-action:disabled { opacity: 0.45; cursor: not-allowed; }
+        /* Busca automática em destaque (ação primária) */
+        .qai-img-action--primary {
+          background: var(--primary);
+          border-color: var(--primary);
+          color: var(--text-inverse);
+        }
+        .qai-img-action--primary:hover:not(:disabled) {
+          background: var(--primary-hover, var(--primary));
+          border-color: var(--primary-hover, var(--primary));
+          color: var(--text-inverse);
+          filter: brightness(0.95);
+        }
+        .qai-img-action--primary:disabled { opacity: 0.45; }
 
         /* Preview de custo unitário */
         .qai-preview {
