@@ -666,7 +666,7 @@ export default function FichaTecnica() {
 
         {savedToast && <div className="ft-toast">Ficha técnica salva!</div>}
 
-        <style>{detailStylesFull}</style>
+        <style>{detailStyles}</style>
       </div>
     );
   }
@@ -1102,11 +1102,6 @@ const detailStyles = `
   }
   @keyframes ftFadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes ftSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-`;
-
-const globalModalStyle = `body.modal-open .bottom-nav { display: none !important; }`;
-
-const detailStylesFull = detailStyles + `\n${globalModalStyle}`;
 
   .ft-toast {
     position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
@@ -1114,4 +1109,6 @@ const detailStylesFull = detailStyles + `\n${globalModalStyle}`;
     border-radius: var(--radius-full); font-size: var(--font-caption); font-weight: var(--fw-bold);
     box-shadow: 0 4px 16px rgba(0,0,0,0.2); z-index: 999;
   }
+
+  body.modal-open .bottom-nav { display: none !important; }
 `;
