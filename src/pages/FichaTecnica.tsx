@@ -387,36 +387,48 @@ export default function FichaTecnica() {
 
                 return (
                   <div key={f.insumo_id} className="ft-edit-item">
-                    {ins.imagem_url
-                      ? <img src={ins.imagem_url} alt={ins.nome} className="ft-edit-item-img" />
-                      : <div className="ft-edit-item-img ft-edit-item-img--ph">{ins.nome.charAt(0).toUpperCase()}</div>}
-                    <div className="ft-edit-item-info">
-                      <p className="ft-edit-item-nome">{ins.nome}</p>
-                      <p className="ft-edit-item-sub">R$ {fmtCusto(ins.custo_unitario || 0)} / {ins.unidade}</p>
+                    {/* Topo: imagem + nome + botão remover */}
+                    <div className="ft-edit-item-top">
+                      {ins.imagem_url
+                        ? <img src={ins.imagem_url} alt={ins.nome} className="ft-edit-item-img" />
+                        : <div className="ft-edit-item-img ft-edit-item-img--ph">{ins.nome.charAt(0).toUpperCase()}</div>}
+                      <div className="ft-edit-item-info">
+                        <p className="ft-edit-item-nome">{ins.nome}</p>
+                        <p className="ft-edit-item-sub">R$ {fmtCusto(ins.custo_unitario || 0)} / {ins.unidade}</p>
+                      </div>
+                      <button className="ft-edit-item-del" onClick={() => removeInsumo(f.insumo_id)} aria-label="Remover">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                      </button>
                     </div>
-                    <div className="ft-edit-item-qtd">
-                      <input
-                        type="number" value={f.quantidade || ""} step="any" min="0" placeholder="0"
-                        onChange={e => setQtd(f.insumo_id, parseFloat(e.target.value) || 0)}
-                      />
-                      {hasUnitChoice ? (
-                        <select
-                          className="ft-edit-item-unit-select"
-                          value={f.unidade_utilizada}
-                          onChange={e => setUnidade(f.insumo_id, e.target.value)}
-                        >
-                          {compatibleUnits.map(u => (
-                            <option key={u} value={u}>{u}</option>
-                          ))}
-                        </select>
-                      ) : (
-                        <span>{f.unidade_utilizada}</span>
-                      )}
+
+                    {/* Rodapé: qtd usada + custo calculado */}
+                    <div className="ft-edit-item-bottom">
+                      <label className="ft-edit-item-label">Qtd usada na receita</label>
+                      <div className="ft-edit-item-row">
+                        <div className="ft-edit-item-input-group">
+                          <input
+                            type="number" value={f.quantidade || ""} step="any" min="0" placeholder="0"
+                            onChange={e => setQtd(f.insumo_id, parseFloat(e.target.value) || 0)}
+                          />
+                          {hasUnitChoice ? (
+                            <select
+                              value={f.unidade_utilizada}
+                              onChange={e => setUnidade(f.insumo_id, e.target.value)}
+                            >
+                              {compatibleUnits.map(u => (
+                                <option key={u} value={u}>{u}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span className="ft-edit-item-unit-fixed">{f.unidade_utilizada}</span>
+                          )}
+                        </div>
+                        <div className="ft-edit-item-custo">
+                          <span className="ft-edit-item-custo-eq">=</span>
+                          <span className="ft-edit-item-custo-val">R$ {fmt(custoLinha)}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="ft-edit-item-custo">R$ {fmt(custoLinha)}</div>
-                    <button className="ft-edit-item-del" onClick={() => removeInsumo(f.insumo_id)} aria-label="Remover">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                    </button>
                   </div>
                 );
               })}
@@ -756,13 +768,15 @@ const detailStyles = `
   .ft-edit-empty-title { font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text-title); margin: 0 0 2px; }
   .ft-edit-empty-sub { font-size: var(--font-caption); color: var(--text-muted); margin: 0; line-height: 1.4; }
 
-  .ft-edit-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .ft-edit-list { display: flex; flex-direction: column; gap: 0.6rem; }
   .ft-edit-item {
-    display: flex; align-items: center; gap: 0.6rem;
-    padding: 0.5rem; background: var(--bg-subtle); border-radius: var(--radius-sm);
+    display: flex; flex-direction: column; gap: 0.6rem;
+    padding: 0.85rem; background: var(--bg-subtle); border-radius: var(--radius-lg);
   }
+
+  .ft-edit-item-top { display: flex; align-items: center; gap: 0.6rem; }
   .ft-edit-item-img {
-    width: 38px; height: 38px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0;
+    width: 44px; height: 44px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0;
   }
   .ft-edit-item-img--ph {
     display: flex; align-items: center; justify-content: center;
@@ -770,26 +784,50 @@ const detailStyles = `
     font-weight: var(--fw-bold); font-size: var(--font-body);
   }
   .ft-edit-item-info { flex: 1; min-width: 0; }
-  .ft-edit-item-nome { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ft-edit-item-sub { font-size: 0.65rem; color: var(--text-muted); margin: 0; }
-  .ft-edit-item-qtd { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
-  .ft-edit-item-qtd input {
-    width: 52px; padding: 0.3rem 0.4rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-    font-family: var(--font-base); font-size: var(--font-caption); text-align: right; background: var(--bg-card); color: var(--text-primary);
-  }
-  .ft-edit-item-qtd span { font-size: 0.65rem; color: var(--text-muted); }
-  .ft-edit-item-unit-select {
-    padding: 0.25rem 0.3rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-    font-family: var(--font-base); font-size: 0.65rem; background: var(--bg-card); color: var(--text-primary);
-    cursor: pointer; outline: none; min-width: 38px;
-  }
-  .ft-edit-item-unit-select:focus { border-color: var(--primary); }
-  .ft-edit-item-custo { font-size: var(--font-caption); font-weight: var(--fw-bold); color: var(--text-title); min-width: 56px; text-align: right; }
+  .ft-edit-item-nome { font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ft-edit-item-sub { font-size: var(--font-caption); color: var(--text-muted); margin: 2px 0 0; }
   .ft-edit-item-del {
-    width: 26px; height: 26px; flex-shrink: 0; background: #fff1f2; border: none;
+    width: 28px; height: 28px; flex-shrink: 0; background: #fff1f2; border: none;
     border-radius: var(--radius-sm); color: var(--error); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
   }
+
+  .ft-edit-item-bottom { display: flex; flex-direction: column; gap: 5px; }
+  .ft-edit-item-label {
+    font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.03em;
+    color: var(--text-muted); font-weight: var(--fw-semibold); margin: 0;
+  }
+  .ft-edit-item-row { display: flex; align-items: center; gap: 8px; }
+  .ft-edit-item-input-group {
+    flex: 1; display: flex; align-items: center;
+    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+    overflow: hidden; background: var(--bg-card);
+    transition: border-color 0.15s ease;
+  }
+  .ft-edit-item-input-group:focus-within { border-color: var(--primary); }
+  .ft-edit-item-input-group input {
+    flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+    padding: 0.5rem 0.6rem; font-family: var(--font-base);
+    font-size: var(--font-body); font-weight: var(--fw-semibold);
+    color: var(--text-primary); text-align: left;
+  }
+  .ft-edit-item-input-group input::-webkit-outer-spin-button,
+  .ft-edit-item-input-group input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .ft-edit-item-input-group input[type=number] { -moz-appearance: textfield; }
+  .ft-edit-item-input-group select {
+    border: none; border-left: 1.5px solid var(--border); outline: none;
+    padding: 0.5rem 0.5rem; font-family: var(--font-base);
+    font-size: var(--font-caption); font-weight: var(--fw-semibold);
+    color: var(--text-muted); background: var(--bg-subtle); cursor: pointer;
+  }
+  .ft-edit-item-unit-fixed {
+    padding: 0.5rem 0.6rem; font-size: var(--font-caption); font-weight: var(--fw-semibold);
+    color: var(--text-muted); border-left: 1.5px solid var(--border); background: var(--bg-subtle);
+    white-space: nowrap;
+  }
+  .ft-edit-item-custo { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .ft-edit-item-custo-eq { font-size: var(--font-caption); color: var(--text-muted); }
+  .ft-edit-item-custo-val { font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text-title); white-space: nowrap; }
 
   .ft-add { display: flex; flex-direction: column; gap: 0.4rem; }
   .ft-add-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); font-weight: var(--fw-semibold); }
