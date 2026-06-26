@@ -860,8 +860,9 @@ const detailStyles = `
   }
 
   .ft-mo-result {
-    padding: 0.5rem 0.6rem; background: var(--bg-subtle); border-radius: var(--radius-md);
-    font-size: var(--font-caption); font-weight: var(--fw-bold); color: var(--text-title);
+    padding: var(--pad-input); background: var(--bg-subtle);
+    border: 1.5px solid var(--border); border-radius: var(--radius-md);
+    font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title);
   }
 
   .ft-section-header { display: flex; align-items: center; justify-content: space-between; }
