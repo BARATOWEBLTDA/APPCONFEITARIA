@@ -102,6 +102,7 @@ export default function Produtos() {
   const [showCatInput, setShowCatInput] = useState(false);
   const [savingCat, setSavingCat] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [previewProduto, setPreviewProduto] = useState<Produto | null>(null);
   const [novaOpcao, setNovaOpcao] = useState<{ massa: string; recheio: string; cobertura: string }>({ massa: "", recheio: "", cobertura: "" });
   const [novoTamanho, setNovoTamanho] = useState({ label: "", preco: "" });
   const [novoKitItem, setNovoKitItem] = useState({ nome: "", quantidade: "" });
@@ -520,10 +521,10 @@ export default function Produtos() {
             <div onClick={() => setShowOrdenar(false)} style={{ position: "fixed", inset: 0, zIndex: 99 }} />
             <div style={{ position: "absolute", top: "calc(100% + 4px)", left: 0, background: "var(--bg-card)", border: "1.5px solid var(--border)", borderRadius: "var(--radius-md)", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 100, minWidth: "180px", overflow: "hidden" }}>
               {([
-                { value: "recentes", label: "Mais recentes", icon: "🕐" },
-                { value: "alfabetica", label: "Alfabética", icon: "🔤" },
-                { value: "categoria", label: "Categoria", icon: "📁" },
-                { value: "preco", label: "Preço", icon: "💰" },
+                { value: "recentes", label: "Mais recentes" },
+                { value: "alfabetica", label: "Alfabética" },
+                { value: "categoria", label: "Categoria" },
+                { value: "preco", label: "Preço" },
               ] as const).map(opt => (
                 <button
                   key={opt.value}
@@ -535,7 +536,6 @@ export default function Produtos() {
                     color: ordenarPor === opt.value ? "var(--primary)" : "var(--text-primary)", cursor: "pointer", textAlign: "left",
                   }}
                 >
-                  <span style={{ fontSize: "0.95rem" }}>{opt.icon}</span>
                   {opt.label}
                   {ordenarPor === opt.value && <svg style={{ marginLeft: "auto" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                 </button>
@@ -561,8 +561,8 @@ export default function Produtos() {
           ).map(p => {
             const catInvalida = p.categoria && !categorias.includes(p.categoria);
             if (viewMode === "lista") return (
-              <div key={p.id} className="prod-list-item" style={{ outline: catInvalida ? "2px solid #fcd34d" : "none" }}>
-                <div className="prod-list-img" onClick={() => openEditar(p)}>
+              <div key={p.id} className="prod-list-item" style={{ outline: catInvalida ? "2px solid #fcd34d" : "none", cursor: "pointer" }} onClick={() => setPreviewProduto(p)}>
+                <div className="prod-list-img">
                   {p.imagem_url ? <img src={p.imagem_url.split(",")[0]} alt={p.nome} /> : <span style={{ fontSize: "1.5rem" }}>🎂</span>}
                   {!p.disponivel && <div className="prod-card-indisponivel">Indisponível</div>}
                 </div>
@@ -581,7 +581,7 @@ export default function Produtos() {
                           className="prod-card-sem-ficha"
                           onClick={(e) => { e.stopPropagation(); openEditar(p); }}
                         >
-                          💡 Configure a ficha técnica
+                          Configure a ficha técnica
                         </button>
                       );
                     }
@@ -594,25 +594,19 @@ export default function Produtos() {
                     );
                   })()}
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexShrink: 0 }}>
-                  <button className="prod-card-btn-edit" onClick={() => openEditar(p)}>Editar</button>
-                  <button onClick={() => setDeleteConfirm(p.id!)} style={{ width: "30px", height: "30px", background: "#fff1f2", border: "none", borderRadius: "8px", color: "var(--error)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                  </button>
-                </div>
               </div>
             );
             return (
-            <div key={p.id} className="prod-card" style={{ outline: catInvalida ? "2px solid #fcd34d" : "none" }}>
-              <div className="prod-card-img" onClick={() => openEditar(p)}>
+            <div key={p.id} className="prod-card" style={{ outline: catInvalida ? "2px solid #fcd34d" : "none", cursor: "pointer" }} onClick={() => setPreviewProduto(p)}>
+              <div className="prod-card-img">
                 {p.imagem_url ? <img src={p.imagem_url.split(",")[0]} alt={p.nome} /> : <span style={{ fontSize: "2rem" }}>🎂</span>}
                 {!p.disponivel && <div className="prod-card-indisponivel">Indisponível</div>}
                 {p.promocao && <div className="prod-card-promo">Promoção</div>}
                 {p.pronta_entrega === false && <div className="prod-card-encomenda">Encomenda</div>}
-                {catInvalida && <div style={{ position: "absolute", top: "0.4rem", left: "0.4rem", background: "var(--warning)", color: "var(--text-inverse)", fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "6px" }}>⚠️ Sem categoria</div>}
+                {catInvalida && <div style={{ position: "absolute", top: "0.4rem", left: "0.4rem", background: "var(--warning)", color: "var(--text-inverse)", fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "6px" }}>Sem categoria</div>}
               </div>
               <div className="prod-card-info">
-                <p className="prod-card-cat" style={{ color: catInvalida ? "var(--warning)" : undefined }}>{catInvalida ? `⚠️ ${p.categoria}` : p.categoria}</p>
+                <p className="prod-card-cat" style={{ color: catInvalida ? "var(--warning)" : undefined }}>{catInvalida ? p.categoria : p.categoria}</p>
                 <p className="prod-card-nome">{p.nome}</p>
                 <p className="prod-card-preco">R$ {formatPreco(p.preco_normal)}</p>
                 {(() => {
@@ -625,7 +619,7 @@ export default function Produtos() {
                         onClick={(e) => { e.stopPropagation(); openEditar(p); }}
                         title="Adicione insumos para ver o lucro por venda"
                       >
-                        💡 Configure a ficha técnica
+                        Configure a ficha técnica
                       </button>
                     );
                   }
@@ -637,12 +631,6 @@ export default function Produtos() {
                     </div>
                   );
                 })()}
-              </div>
-              <div className="prod-card-actions">
-                <button className="prod-card-btn-edit" onClick={() => openEditar(p)}>Editar</button>
-                <button className="prod-card-btn-del" onClick={() => setDeleteConfirm(p.id!)}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                </button>
               </div>
             </div>
             );
@@ -1381,6 +1369,74 @@ export default function Produtos() {
         </div>
       )}
 
+      {/* Preview Modal */}
+      {previewProduto && (
+        <div className="prod-modal-overlay" onClick={() => setPreviewProduto(null)} style={{ background: "rgba(0,0,0,0.5)", alignItems: "flex-end", justifyContent: "center" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "var(--bg-card)", borderRadius: "var(--radius-lg) var(--radius-lg) 0 0", width: "100%", maxWidth: "480px", maxHeight: "85vh", overflow: "auto", animation: "slideUp 0.25s ease-out" }}>
+            {previewProduto.imagem_url ? (
+              <div style={{ width: "100%", aspectRatio: "16/10", overflow: "hidden", borderRadius: "var(--radius-lg) var(--radius-lg) 0 0" }}>
+                <img src={previewProduto.imagem_url.split(",")[0]} alt={previewProduto.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </div>
+            ) : (
+              <div style={{ width: "100%", aspectRatio: "16/10", background: "var(--bg-subtle)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "var(--radius-lg) var(--radius-lg) 0 0", color: "var(--text-muted)", fontSize: "0.85rem" }}>
+                Sem imagem
+              </div>
+            )}
+            <div style={{ padding: "1.25rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
+                <div>
+                  {previewProduto.categoria && <p style={{ fontSize: "var(--font-caption)", color: "var(--text-muted)", margin: "0 0 2px", fontWeight: "var(--fw-medium)" as any }}>{previewProduto.categoria}</p>}
+                  <h3 style={{ margin: 0, fontSize: "var(--font-section-title)", fontWeight: "var(--fw-bold)" as any, color: "var(--text-title)" }}>{previewProduto.nome}</h3>
+                </div>
+                <p style={{ margin: 0, fontSize: "var(--font-input)", fontWeight: "var(--fw-bold)" as any, color: "var(--primary)", whiteSpace: "nowrap" }}>R$ {formatPreco(previewProduto.preco_normal)}</p>
+              </div>
+
+              {previewProduto.descricao && (
+                <p style={{ margin: "0.75rem 0 0", fontSize: "var(--font-body)", color: "var(--text-secondary)", lineHeight: 1.5 }}>{previewProduto.descricao}</p>
+              )}
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.75rem" }}>
+                {previewProduto.forma_venda && (
+                  <span style={{ fontSize: "var(--font-caption)", color: "var(--text-muted)", background: "var(--bg-subtle)", padding: "3px 8px", borderRadius: "var(--radius-sm)" }}>
+                    {FORMAS_VENDA.find(f => f.value === previewProduto.forma_venda)?.label || previewProduto.forma_venda}
+                  </span>
+                )}
+                {!previewProduto.disponivel && (
+                  <span style={{ fontSize: "var(--font-caption)", color: "var(--error)", background: "#fff1f2", padding: "3px 8px", borderRadius: "var(--radius-sm)", fontWeight: 600 }}>Indisponível</span>
+                )}
+                {previewProduto.promocao && (
+                  <span style={{ fontSize: "var(--font-caption)", color: "var(--primary)", background: "var(--primary-light)", padding: "3px 8px", borderRadius: "var(--radius-sm)", fontWeight: 600 }}>Promoção</span>
+                )}
+                {previewProduto.zero_acucar && (
+                  <span style={{ fontSize: "var(--font-caption)", color: "var(--text-muted)", background: "var(--bg-subtle)", padding: "3px 8px", borderRadius: "var(--radius-sm)" }}>Zero açúcar</span>
+                )}
+              </div>
+
+              {previewProduto.created_at && (
+                <p style={{ margin: "0.75rem 0 0", fontSize: "var(--font-caption)", color: "var(--text-muted)" }}>
+                  Cadastrado em {new Date(previewProduto.created_at).toLocaleDateString("pt-BR")}
+                </p>
+              )}
+
+              <div style={{ display: "flex", gap: "0.5rem", marginTop: "1.25rem" }}>
+                <button
+                  onClick={() => { setPreviewProduto(null); openEditar(previewProduto); }}
+                  style={{ flex: 1, padding: "0.7rem", background: "var(--primary)", color: "var(--text-inverse)", border: "none", borderRadius: "var(--radius-md)", fontFamily: "var(--font-base)", fontSize: "var(--font-button)", fontWeight: "var(--fw-bold)" as any, cursor: "pointer" }}
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => { setPreviewProduto(null); setDeleteConfirm(previewProduto.id!); }}
+                  style={{ padding: "0.7rem 1rem", background: "#fff1f2", color: "var(--error)", border: "none", borderRadius: "var(--radius-md)", fontFamily: "var(--font-base)", fontSize: "var(--font-button)", fontWeight: "var(--fw-semibold)" as any, cursor: "pointer" }}
+                >
+                  Excluir
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {deleteConfirm && (
         <div className="prod-modal-overlay" onClick={() => setDeleteConfirm(null)}>
           <div className="prod-confirm" onClick={e => e.stopPropagation()}>
@@ -1470,12 +1526,12 @@ export default function Produtos() {
           margin-top: 6px;
           padding: 5px 8px;
           background: var(--bg-subtle);
-          border: 1px dashed var(--primary);
+          border: none;
           border-radius: var(--radius-sm);
-          color: var(--primary);
+          color: var(--text-muted);
           font-family: var(--font-base);
           font-size: var(--font-caption);
-          font-weight: var(--fw-semibold);
+          font-weight: var(--fw-medium);
           cursor: pointer;
           text-align: left;
           width: 100%;
@@ -1483,8 +1539,8 @@ export default function Produtos() {
           transition: background var(--dur-fast) var(--ease-out);
         }
         .prod-card-sem-ficha:hover {
-          background: var(--primary);
-          color: var(--text-inverse);
+          background: var(--border);
+          color: var(--text-secondary);
         }
         .prod-card-actions { display:flex; gap:0.4rem; padding:0.5rem 0.75rem; border-top:1px solid var(--border); }
         .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle); border:none; border-radius: var(--radius-sm); font-family: var(--font-base); font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-primary); cursor:pointer; }
