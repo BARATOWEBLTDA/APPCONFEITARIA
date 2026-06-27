@@ -91,7 +91,12 @@ export default function Insumos() {
   };
 
   const formatCurrency = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
-  const formatCustoUnit = (v: number) => `R$ ${v.toFixed(4).replace(".", ",")}`;
+  const formatCustoUnit = (v: number) => {
+    // 2 casas no caso comum; mais precisão só quando o valor é muito pequeno
+    // (insumos a granel onde custo/unidade fica abaixo de 1 centavo)
+    const casas = v >= 0.1 ? 2 : v >= 0.01 ? 3 : 4;
+    return `R$ ${v.toFixed(casas).replace(".", ",")}`;
+  };
 
   // ── Empty state ──
   if (!loading && insumos.length === 0) {
