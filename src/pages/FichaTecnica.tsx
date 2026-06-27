@@ -187,6 +187,7 @@ export default function FichaTecnica() {
   const [showPicker, setShowPicker] = useState(false);
   const [pickerBusca, setPickerBusca] = useState("");
   const [pickerSel, setPickerSel] = useState<string[]>([]);
+  const [infoCustoAberto, setInfoCustoAberto] = useState<string | null>(null);
 
   // Bloqueia scroll e oculta menu quando modal está aberto
   useEffect(() => {
@@ -524,11 +525,29 @@ export default function FichaTecnica() {
                       <p className="ft-edit-item-nome">{ins.nome}</p>
 
                       <p className="ft-edit-item-sub">
-                        <span className="ft-edit-item-sub-label">Valor pago:</span> R$ {fmtCusto(ins.custo_unitario || 0)} / {ins.unidade}
-                      </p>
-                      <p className="ft-edit-item-sub">
                         <span className="ft-edit-item-sub-label">Custo na receita:</span> R$ {fmt(custoLinha)}
+                        <button
+                          type="button"
+                          className="ft-edit-item-info"
+                          onClick={() => setInfoCustoAberto(prev => prev === f.insumo_id ? null : f.insumo_id)}
+                          aria-label="Como esse valor é calculado"
+                          title="Como esse valor é calculado"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                          </svg>
+                        </button>
                       </p>
+                      {infoCustoAberto === f.insumo_id && (
+                        <div className="ft-edit-item-info-pop">
+                          <span className="ft-edit-item-info-pop-title">Como calculamos</span>
+                          <span className="ft-edit-item-info-pop-line">Valor pago: R$ {fmtCusto(ins.custo_unitario || 0)} / {ins.unidade}</span>
+                          <span className="ft-edit-item-info-pop-line">Quantidade usada: {f.quantidade || 0} {f.unidade_utilizada}</span>
+                          <span className="ft-edit-item-info-pop-result">= R$ {fmt(custoLinha)}</span>
+                        </div>
+                      )}
 
                       <div className="ft-edit-item-row">
                         <div className="ft-edit-item-input-group">
@@ -1206,6 +1225,38 @@ const detailStyles = `
     line-height: 1.4;
   }
   .ft-edit-item-sub-label { color: var(--text-muted); font-weight: var(--fw-medium); }
+
+  .ft-edit-item-info {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px;
+    margin-left: 4px;
+    padding: 0; background: transparent; border: none;
+    color: var(--text-muted); cursor: pointer; vertical-align: -3px;
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+  .ft-edit-item-info:hover { color: var(--primary); }
+
+  .ft-edit-item-info-pop {
+    display: flex; flex-direction: column; gap: 2px;
+    margin-top: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  .ft-edit-item-info-pop-title {
+    font-size: var(--font-caption); font-weight: var(--fw-bold);
+    color: var(--text-title); margin-bottom: 2px;
+  }
+  .ft-edit-item-info-pop-line {
+    font-size: var(--font-caption); color: var(--text-muted);
+    font-weight: var(--fw-medium);
+  }
+  .ft-edit-item-info-pop-result {
+    font-size: var(--font-caption); font-weight: var(--fw-bold);
+    color: var(--primary); margin-top: 4px;
+    padding-top: 4px; border-top: 1px solid var(--border);
+  }
 
   .ft-edit-item-row { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
   .ft-edit-item-input-group {
