@@ -7,8 +7,9 @@ import { supabase } from "@/lib/supabase";
 // TODO: trocar PLAY_STORE_URL quando o app for publicado.
 // Enquanto for "#", o QR aponta pra landing como fallback.
 // ───────────────────────────────────────────────────────────────
-const PLAY_STORE_URL = "#";
-const QR_TARGET = PLAY_STORE_URL !== "#" ? PLAY_STORE_URL : "https://doonly.com.br";
+const PLAY_STORE_URL = "https://google.com";
+const APP_STORE_URL = "https://google.com";
+const QR_TARGET = "https://google.com";
 const QR_IMG_SRC = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=0&bgcolor=ffffff&color=3d1a24&data=${encodeURIComponent(QR_TARGET)}`;
 
 export default function Auth() {
@@ -272,23 +273,42 @@ export default function Auth() {
           Gerencie pedidos, agenda, receitas e precificação onde você estiver.
         </p>
 
-        <a
-          href={PLAY_STORE_URL}
-          className="auth-promo-store"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
-            <path fill="#00D4FF"  d="M3.6 1.3C3.2 1.6 3 2.1 3 2.7v18.6c0 .6.2 1.1.6 1.4l10.7-10.7L3.6 1.3z" />
-            <path fill="#FFD500" d="M17.9 8.9l-3.6 3.1 3.6 3.1 4-2.3c1.2-.7 1.2-2.5 0-3.2l-4-2.7z" />
-            <path fill="#FF3D00" d="M14.3 12L3.6 1.3c.2-.1.4-.2.6-.2.3 0 .6.1.9.3l13.3 7.5L14.3 12z" />
-            <path fill="#00C853" d="M14.3 12l4.1 4.1L5.1 23.6c-.3.2-.6.3-.9.3-.2 0-.4-.1-.6-.2L14.3 12z" />
-          </svg>
-          <span className="auth-promo-store-labels">
-            <span className="auth-promo-store-small">DISPONÍVEL EM BREVE NO</span>
-            <span className="auth-promo-store-big">Google Play</span>
-          </span>
-        </a>
+        <p className="auth-promo-cta">Baixe agora gratuitamente</p>
+
+        <div className="auth-promo-stores">
+          <a
+            href={APP_STORE_URL}
+            className="auth-promo-store"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg width="20" height="24" viewBox="0 0 20 24" aria-hidden="true">
+              <path fill="white" d="M16.52 12.46c-.03-2.85 2.33-4.22 2.44-4.29-1.33-1.94-3.4-2.21-4.14-2.24-1.76-.18-3.43 1.04-4.33 1.04-.89 0-2.27-1.01-3.73-.99-1.92.03-3.69 1.12-4.68 2.84-2 3.46-.51 8.59 1.43 11.4.95 1.38 2.09 2.92 3.58 2.87 1.43-.06 1.98-.93 3.71-.93 1.74 0 2.23.93 3.75.9 1.55-.03 2.53-1.4 3.47-2.78 1.1-1.6 1.55-3.14 1.57-3.22-.03-.01-3.02-1.16-3.07-4.6zM13.67 3.88C14.45 2.94 14.97 1.64 14.82.32c-1.13.05-2.5.75-3.31 1.7-.73.84-1.37 2.18-1.19 3.47 1.26.1 2.54-.64 3.35-1.61z"/>
+            </svg>
+            <span className="auth-promo-store-labels">
+              <span className="auth-promo-store-small">DISPONÍVEL NA</span>
+              <span className="auth-promo-store-big">App Store</span>
+            </span>
+          </a>
+
+          <a
+            href={PLAY_STORE_URL}
+            className="auth-promo-store"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#00D4FF"  d="M3.6 1.3C3.2 1.6 3 2.1 3 2.7v18.6c0 .6.2 1.1.6 1.4l10.7-10.7L3.6 1.3z" />
+              <path fill="#FFD500" d="M17.9 8.9l-3.6 3.1 3.6 3.1 4-2.3c1.2-.7 1.2-2.5 0-3.2l-4-2.7z" />
+              <path fill="#FF3D00" d="M14.3 12L3.6 1.3c.2-.1.4-.2.6-.2.3 0 .6.1.9.3l13.3 7.5L14.3 12z" />
+              <path fill="#00C853" d="M14.3 12l4.1 4.1L5.1 23.6c-.3.2-.6.3-.9.3-.2 0-.4-.1-.6-.2L14.3 12z" />
+            </svg>
+            <span className="auth-promo-store-labels">
+              <span className="auth-promo-store-small">DISPONÍVEL NO</span>
+              <span className="auth-promo-store-big">Google Play</span>
+            </span>
+          </a>
+        </div>
 
         <div className="auth-promo-divider">
           <span>ou aponte a câmera</span>
@@ -431,6 +451,21 @@ export default function Auth() {
             line-height: 1.5;
             color: rgba(255, 255, 255, 0.85);
             margin: 0;
+          }
+
+          .auth-promo-cta {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0;
+          }
+
+          .auth-promo-stores {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
           }
 
           .auth-promo-store {
