@@ -138,6 +138,7 @@ export default function Auth() {
       <div ref={bgRef} className="auth-bg" />
       <div ref={glowRef} className="mouse-glow" />
 
+      <div className="auth-layout">
       {!showCadastro ? (
       <div className="auth-card">
         <div className="auth-logo-wrap">
@@ -297,6 +298,7 @@ export default function Auth() {
           <img src={QR_IMG_SRC} alt="QR Code para baixar o Doonly" loading="lazy" />
         </div>
       </aside>
+      </div>
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
@@ -304,6 +306,7 @@ export default function Auth() {
         html, body { height: 100%; overflow: hidden; }
         #root { height: 100%; overflow-y: auto; }
         .auth-root { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-family: inherit; padding: 1.5rem; overflow: visible; }
+        .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; }
         .fade-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-card); opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
         .auth-bg { position: fixed; inset: 0; z-index: 0; background: var(--primary-gradient); }
@@ -382,7 +385,7 @@ export default function Auth() {
             position: absolute;
             z-index: 2;
             top: 50%;
-            left: calc(50% + 252px);
+            left: calc(100% + 2rem);
             transform: translateY(-50%);
             width: 320px;
             padding: 1.75rem 1.5rem;
