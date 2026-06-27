@@ -97,6 +97,17 @@ export default function Insumos() {
     const casas = v >= 0.1 ? 2 : v >= 0.01 ? 3 : 4;
     return `R$ ${v.toFixed(casas).replace(".", ",")}`;
   };
+  /**
+   * Converte o custo unitário para a menor unidade prática usada em receitas.
+   *  - kg → g  (÷ 1000)
+   *  - L  → ml (÷ 1000)
+   *  - g, ml, un e demais → mantém
+   */
+  const custoMenorUnidade = (custo: number, unidade: string): { valor: number; unidade: string } => {
+    if (unidade === "kg") return { valor: custo / 1000, unidade: "g" };
+    if (unidade === "L")  return { valor: custo / 1000, unidade: "ml" };
+    return { valor: custo, unidade };
+  };
 
   // ── Empty state ──
   if (!loading && insumos.length === 0) {
@@ -218,7 +229,9 @@ export default function Insumos() {
         </div>
       ) : (
         <div className="ins-list">
-          {filtrados.map(i => (
+          {filtrados.map(i => {
+            const custoMenor = custoMenorUnidade(i.custo_unitario || 0, i.unidade);
+            return (
             <div key={i.id} className="ins-item">
               {i.imagem_url
                 ? <img src={i.imagem_url} alt={i.nome} className="ins-item-img" />
@@ -228,9 +241,9 @@ export default function Insumos() {
                 <p className="ins-item-nome">{i.nome}</p>
                 {i.marca && <p className="ins-item-line">Marca: {i.marca}</p>}
                 <p className="ins-item-line">
-                  {formatCurrency(i.valor_compra || 0)} / {i.qtd_embalagem || 1} {i.unidade}{i.embalagem_tipo && i.embalagem_tipo !== "Avulso" ? ` (${i.embalagem_tipo})` : ""}
+                  Preço médio: {formatCurrency(i.valor_compra || 0)} / {i.qtd_embalagem || 1} {i.unidade}{i.embalagem_tipo && i.embalagem_tipo !== "Avulso" ? ` (${i.embalagem_tipo})` : ""}
                 </p>
-                <p className="ins-item-custo">{formatCustoUnit(i.custo_unitario || 0)} / {i.unidade}</p>
+                <p className="ins-item-custo">Valor por {custoMenor.unidade}: {formatCustoUnit(custoMenor.valor)}</p>
               </div>
 
               <div className="ins-item-actions">
@@ -242,7 +255,8 @@ export default function Insumos() {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
