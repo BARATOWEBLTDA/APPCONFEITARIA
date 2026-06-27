@@ -490,12 +490,12 @@ function Styles() {
         flex: 1; min-width: 0;
         display: flex; flex-direction: column; gap: 2px;
         padding-top: var(--space-1);
-        padding-right: calc(32px + var(--space-2));
       }
       .ins-item-nome {
         margin: 0; font-size: var(--font-body); font-weight: var(--fw-bold);
         color: var(--text-title);
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        padding-right: calc(32px + var(--space-2));
       }
       .ins-item-line {
         margin: 0;
@@ -503,6 +503,10 @@ function Styles() {
         font-family: var(--font-base);
         color: var(--text-muted);
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      /* Marca (1ª linha) também fica na altura do botão editar */
+      .ins-item-line:first-of-type {
+        padding-right: calc(32px + var(--space-2));
       }
       .ins-item-custo {
         margin: var(--space-1) 0 0;
