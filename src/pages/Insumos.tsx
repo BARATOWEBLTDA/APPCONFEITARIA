@@ -267,10 +267,6 @@ export default function Insumos() {
                 {i.imagem_url
                   ? <img src={i.imagem_url} alt={i.nome} className="ins-item-img" />
                   : <div className="ins-item-img ins-item-img--placeholder">🥣</div>}
-                <button className="ins-item-edit" onClick={() => abrirEditar(i)} aria-label="Editar" title="Editar">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                  Editar
-                </button>
               </div>
 
               <div className="ins-item-info">
@@ -281,6 +277,10 @@ export default function Insumos() {
                 </p>
                 <p className="ins-item-custo">Valor por {labelQtd}: {formatCustoUnit(exib.valor)}</p>
               </div>
+
+              <button className="ins-item-edit" onClick={() => abrirEditar(i)} aria-label="Editar" title="Editar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
             </div>
             );
           })}
@@ -445,6 +445,7 @@ function Styles() {
       /* Lista */
       .ins-list { display: flex; flex-direction: column; gap: var(--space-2); }
       .ins-item {
+        position: relative;
         display: flex; gap: var(--space-4); align-items: stretch;
         padding: var(--pad-card);
         background: var(--bg-card);
@@ -454,8 +455,6 @@ function Styles() {
       }
       .ins-item:hover { border-color: var(--primary); }
       .ins-item-media {
-        display: flex; flex-direction: column; align-items: center;
-        gap: var(--space-2);
         flex-shrink: 0;
       }
       .ins-item-img {
@@ -471,15 +470,14 @@ function Styles() {
         mix-blend-mode: normal;
       }
       .ins-item-edit {
+        position: absolute;
+        top: var(--space-2); right: var(--space-2);
+        width: 32px; height: 32px;
         display: inline-flex; align-items: center; justify-content: center;
-        gap: 4px;
-        padding: var(--space-1) var(--space-2);
         background: transparent;
         border: 1.5px solid var(--border);
         border-radius: var(--radius-sm);
         color: var(--text-secondary);
-        font-family: var(--font-base);
-        font-size: var(--font-caption); font-weight: var(--fw-semibold);
         cursor: pointer;
         transition: all var(--dur-fast) var(--ease-out);
       }
@@ -490,6 +488,7 @@ function Styles() {
         flex: 1; min-width: 0;
         display: flex; flex-direction: column; gap: 2px;
         padding-top: var(--space-1);
+        padding-right: calc(32px + var(--space-2));
       }
       .ins-item-nome {
         margin: 0; font-size: var(--font-body); font-weight: var(--fw-bold);
