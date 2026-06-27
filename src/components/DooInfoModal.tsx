@@ -198,7 +198,7 @@ export default function DooInfoModal({
             fontSize: "1.15rem",
             fontWeight: 600,
             color: "var(--text-title)",
-            margin: "0 0 12px",
+            margin: "0 0 20px",
             letterSpacing: "-0.01em",
             lineHeight: 1.4,
             // Balanceia as quebras de linha entre todas as linhas em vez de
@@ -218,6 +218,11 @@ export default function DooInfoModal({
             margin: "0 0 1.5rem",
             lineHeight: 1.55,
             textAlign: "left",
+            // Evita palavras órfãs (1-2 palavras sozinhas no fim do parágrafo).
+            // `pretty` é otimizado pra texto corrido — diferente de `balance`
+            // que serve melhor pra títulos. Herda pra todos os <p> filhos.
+            // Chrome 117+, Safari 17.5+, Firefox 138+.
+            textWrap: "pretty",
           }}
         >
           {children}
