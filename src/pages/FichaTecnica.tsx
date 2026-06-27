@@ -889,14 +889,24 @@ export default function FichaTecnica() {
           // "lata", "pacote", "caixa"... — minúsculo pra fluir no texto
           const tipoEmbBaixo = temEmbalagem ? tipoEmb.toLowerCase() : "embalagem";
 
-          // Gênero gramatical do tipo de embalagem (PT-BR) para contrações "na/no", "da/do"
+          // Gênero gramatical do tipo de embalagem (PT-BR) para contrações "na/no", "da/do", "uma/um"
           const FEMININOS = new Set(["lata", "caixa", "bandeja", "garrafa", "bisnaga", "embalagem"]);
           const ehFem = FEMININOS.has(tipoEmbBaixo);
           const naNo = ehFem ? "na" : "no";
           const daDo = ehFem ? "da" : "do";
+          const umaUm = ehFem ? "uma" : "um";
 
           // Custo por unidade derivado (pra item contável em embalagem)
           const custoPorUnidade = qtdEmb > 0 ? valorPago / qtdEmb : 0;
+
+          // Detecta se a quantidade usada é fração, exata ou múltipla da embalagem
+          // (convertendo ambas para a unidade base do insumo)
+          const qtdUsadaBase = toBase(qtdUsada, f.unidade_utilizada);
+          const qtdEmbBase = toBase(qtdEmb, ins.unidade);
+          const eps = 0.0001;
+          const ratioUsoEmbalagem = qtdEmbBase > 0 ? qtdUsadaBase / qtdEmbBase : 1;
+          const ehFracao = ratioUsoEmbalagem < 1 - eps;
+          const ehExato = Math.abs(ratioUsoEmbalagem - 1) < eps;
 
           return (
             <DooInfoModal
@@ -973,19 +983,38 @@ export default function FichaTecnica() {
                   </p>
                 </>
               ) : temEmbalagem && temValorCompra ? (
-                /* Caso 3: item contínuo (g, kg, ml, L) em embalagem fracionada */
+                /* Caso 3: item contínuo (g, kg, ml, L) em embalagem.
+                 * Tem 3 sub-cenários conforme a relação entre quantidade usada
+                 * e tamanho da embalagem, pra a linguagem fluir natural. */
                 <>
-                  <p style={{ margin: "0 0 10px" }}>
-                    Você paga <strong>R$ {fmt(valorPago)}</strong> {naNo} {tipoEmbBaixo} de{" "}
+                  <p style={{ margin: "0 0 12px" }}>
+                    Você pagou <strong>R$ {fmt(valorPago)}</strong> por {umaUm} {tipoEmbBaixo} de{" "}
                     <strong>{fmtQty(qtdEmb)} {fmtUnidade(ins.unidade, qtdEmb)}</strong> de {ins.nome} (cadastrado em <strong>Insumos</strong>).
                   </p>
-                  <p style={{ margin: "0 0 10px" }}>
-                    Essa receita usa <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong> de {ins.nome}.
-                  </p>
+
+                  {ehFracao ? (
+                    <p style={{ margin: "0 0 12px" }}>
+                      Nesta receita, você utiliza apenas{" "}
+                      <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong> desse ingrediente.
+                      Em vez de considerar o valor da embalagem inteira, calculamos apenas o custo da quantidade realmente utilizada.
+                    </p>
+                  ) : ehExato ? (
+                    <p style={{ margin: "0 0 12px" }}>
+                      Nesta receita, você utiliza {umaUm} {tipoEmbBaixo} inteir{ehFem ? "a" : "o"} de {ins.nome} — ou seja, exatamente o que vem na embalagem.
+                    </p>
+                  ) : (
+                    <p style={{ margin: "0 0 12px" }}>
+                      Nesta receita, você utiliza{" "}
+                      <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong> de {ins.nome} — mais do que cabe em {umaUm} {tipoEmbBaixo}.
+                      Calculamos o custo proporcional ao que sua receita realmente consome.
+                    </p>
+                  )}
+
                   <p style={{ margin: "0 0 14px" }}>
-                    Como é uma fração {daDo} {tipoEmbBaixo}, calculamos a proporção:{" "}
-                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong> é o quanto sai {daDo} {tipoEmbBaixo} pra fazer essa receita.
+                    Assim, o custo desse ingrediente na receita é de{" "}
+                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong>.
                   </p>
+
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
                     <strong>CMV</strong> (Custo de Mercadoria Vendida) é quanto cada ingrediente pesa no custo total da receita. Quanto menor o CMV, maior seu lucro.
                   </p>
@@ -1426,7 +1455,7 @@ const detailStyles = `
     font-weight: var(--fw-semibold);
     line-height: 1.4;
   }
-  .ft-edit-item-sub-label { color: var(--text-secondary); font-weight: var(--fw-medium); font-size: var(--font-caption); }
+  .ft-edit-item-sub-label { color: var(--text-secondary); font-weight: var(--fw-medium); }
   .ft-edit-item-sub-value { white-space: nowrap; font-weight: var(--fw-bold); color: var(--text-title); }
 
   .ft-edit-item-info {
@@ -1434,7 +1463,7 @@ const detailStyles = `
     width: 16px; height: 16px;
     margin-left: 4px;
     padding: 0; background: transparent; border: none;
-    color: var(--text-muted); cursor: pointer; vertical-align: -3px;
+    color: var(--primary-dark); cursor: pointer; vertical-align: -3px;
     transition: color var(--dur-fast) var(--ease-out);
   }
   .ft-edit-item-info:hover { color: var(--primary); }
