@@ -220,14 +220,10 @@ export default function Insumos() {
                 : <div className="ins-item-img ins-item-img--placeholder">🥣</div>}
 
               <div className="ins-item-info">
-                <p className="ins-item-nome">
-                  {i.nome}
-                  {i.marca && <span className="ins-item-marca"> · {i.marca}</span>}
-                </p>
-                <p className="ins-item-meta">
-                  <span className="ins-item-cat">{i.categoria}</span>
-                  <span className="ins-item-dot">•</span>
-                  <span>{formatCurrency(i.valor_compra || 0)} / {i.qtd_embalagem || 1} {i.unidade}{i.embalagem_tipo && i.embalagem_tipo !== "Avulso" ? ` (${i.embalagem_tipo})` : ""}</span>
+                <p className="ins-item-nome">{i.nome}</p>
+                {i.marca && <p className="ins-item-line">Marca: {i.marca}</p>}
+                <p className="ins-item-line">
+                  {formatCurrency(i.valor_compra || 0)} / {i.qtd_embalagem || 1} {i.unidade}{i.embalagem_tipo && i.embalagem_tipo !== "Avulso" ? ` (${i.embalagem_tipo})` : ""}
                 </p>
                 <p className="ins-item-custo">{formatCustoUnit(i.custo_unitario || 0)} / {i.unidade}</p>
               </div>
@@ -395,7 +391,7 @@ function Styles() {
       /* Lista */
       .ins-list { display: flex; flex-direction: column; gap: 0.55rem; }
       .ins-item {
-        display: flex; gap: 0.85rem; align-items: center;
+        display: flex; gap: 0.85rem; align-items: flex-start;
         padding: 0.75rem;
         background: var(--bg-card);
         border: 1px solid var(--border);
@@ -411,27 +407,19 @@ function Styles() {
       .ins-item-img--placeholder {
         display: flex; align-items: center; justify-content: center; font-size: var(--text-xl);
       }
-      .ins-item-info { flex: 1; min-width: 0; }
+      .ins-item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
       .ins-item-nome {
         margin: 0; font-size: var(--font-button); font-weight: var(--fw-bold);
         color: var(--text-title);
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
-      .ins-item-marca {
-        font-weight: var(--fw-medium); color: var(--text-muted);
-      }
-      .ins-item-meta {
-        margin: 3px 0 0;
-        font-size: var(--font-caption); color: var(--text-muted);
-        display: flex; align-items: center; gap: 6px;
+      .ins-item-line {
+        margin: 0;
+        font-size: var(--font-caption); font-weight: var(--fw-medium);
+        font-family: var(--font-base);
+        color: var(--text-muted);
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
-      .ins-item-cat {
-        background: var(--bg-body);
-        padding: 1px 7px; border-radius: var(--radius-sm);
-        font-weight: var(--fw-semibold);
-      }
-      .ins-item-dot { color: var(--border); }
       .ins-item-custo {
         margin: 4px 0 0;
         font-size: var(--font-helper); font-weight: var(--fw-bold);
