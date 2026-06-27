@@ -9,80 +9,56 @@ import DooInfoModal from "@/components/DooInfoModal";
 
 // ── Famílias de unidades e conversão ──
 
-type UnitFamily = "massa" | "volume" | "unidade" | "discrete";
+type UnitFamily = "massa" | "volume" | "unidade";
 
-const UNIT_FAMILIES: Record<string, { family: UnitFamily; base: string; toBase: number }> = {
-  kg:  { family: "massa",   base: "kg", toBase: 1 },
-  g:   { family: "massa",   base: "kg", toBase: 0.001 },
-  L:   { family: "volume",  base: "L",  toBase: 1 },
-  ml:  { family: "volume",  base: "L",  toBase: 0.001 },
-  un:  { family: "unidade", base: "un", toBase: 1 },
+const UNIT_FAMILIES: Record<string, { family: UnitFamily; toBase: number }> = {
+  kg:  { family: "massa",   toBase: 1     },
+  g:   { family: "massa",   toBase: 0.001 },
+  L:   { family: "volume",  toBase: 1     },
+  ml:  { family: "volume",  toBase: 0.001 },
+  un:  { family: "unidade", toBase: 1     },
 };
 
-/** Unidades que são embalagem (não são medida real) */
-const PACKAGING_UNITS = ["pct", "cx", "Lata", "Garrafa", "Pote", "Bandeja", "Saco", "Bisnaga", "Rolo"];
-
-/** Retorna as unidades disponíveis para seleção na ficha técnica */
+/** Retorna as unidades disponíveis para seleção na ficha técnica.
+ *  Sempre dentro da mesma família do insumo — confeiteira que cadastrou
+ *  em kg pode usar g na receita, mas nunca un. */
 function getCompatibleUnits(insumo: Insumo): string[] {
-  const unidade = insumo.unidade;
-  const isPkg = PACKAGING_UNITS.includes(unidade);
-  const effective = isPkg ? "un" : unidade;
-
-  const info = UNIT_FAMILIES[effective];
-  const units = info
-    ? Object.entries(UNIT_FAMILIES).filter(([, v]) => v.family === info.family).map(([k]) => k)
-    : [effective];
-
-  // Adiciona a embalagem como opção (ex: "Bandeja" além de "un")
-  if (isPkg && !units.includes(unidade)) {
-    units.push(unidade);
-  }
-  if (insumo.embalagem_tipo && insumo.embalagem_tipo !== "Avulso" && !units.includes(insumo.embalagem_tipo)) {
-    units.push(insumo.embalagem_tipo);
-  }
-
-  return units;
+  const info = UNIT_FAMILIES[insumo.unidade];
+  if (!info) return [insumo.unidade];
+  return Object.entries(UNIT_FAMILIES)
+    .filter(([, v]) => v.family === info.family)
+    .map(([k]) => k);
 }
 
-/** Retorna a unidade padrão mais prática para a ficha */
+/** Unidade padrão pra usar na receita, dada a unidade do insumo */
 function getDefaultRecipeUnit(insumo: Insumo): string {
-  const isPkg = PACKAGING_UNITS.includes(insumo.unidade);
-  const effective = isPkg ? "un" : insumo.unidade;
-  const info = UNIT_FAMILIES[effective];
-  if (!info) return effective;
-  if (info.family === "massa") return "g";
+  const info = UNIT_FAMILIES[insumo.unidade];
+  if (!info) return insumo.unidade;
+  if (info.family === "massa")  return "g";
   if (info.family === "volume") return "ml";
-  return effective;
+  return "un";
 }
 
-/** Converte quantidade para a unidade base (kg, L, un) */
+/** Converte quantidade para a unidade base da família (kg, L, un) */
 function toBase(qtd: number, unidade: string): number {
-  if (PACKAGING_UNITS.includes(unidade)) return qtd;
   const info = UNIT_FAMILIES[unidade];
   return info ? qtd * info.toBase : qtd;
 }
 
-/** Calcula o custo dado qtd, unidade utilizada e o insumo completo */
+/** Calcula o custo de uma linha da ficha técnica.
+ *  Confia que `unidade_utilizada` está na mesma família de `insumo.unidade`
+ *  (garantido pelo getCompatibleUnits no UI). */
 function calcCusto(qtd: number, unidadeUtilizada: string, insumo: Insumo): number {
   const custoUnit = insumo.custo_unitario || 0;
-
-  // Se a unidade utilizada é uma embalagem (Bandeja, Caixa, etc.)
-  // 1 embalagem = qtd_embalagem unidades → custo = qty × qtd_embalagem × custo_unitario
-  if (PACKAGING_UNITS.includes(unidadeUtilizada)) {
-    const qtdEmb = insumo.qtd_embalagem || 1;
-    return qtd * qtdEmb * custoUnit;
-  }
-
-  // Conversão normal entre unidades de medida (g↔kg, ml↔L)
-  const effectiveInsumo = PACKAGING_UNITS.includes(insumo.unidade) ? "un" : insumo.unidade;
   const infoUtilizada = UNIT_FAMILIES[unidadeUtilizada];
-  const infoInsumo = UNIT_FAMILIES[effectiveInsumo];
+  const infoInsumo = UNIT_FAMILIES[insumo.unidade];
 
   if (infoUtilizada && infoInsumo && infoUtilizada.family === infoInsumo.family && infoInsumo.toBase > 0) {
     const qtdNaUnidadeInsumo = (qtd * infoUtilizada.toBase) / infoInsumo.toBase;
     return qtdNaUnidadeInsumo * custoUnit;
   }
 
+  // Fallback defensivo: famílias incompatíveis não deveriam acontecer
   return qtd * custoUnit;
 }
 
@@ -96,7 +72,6 @@ type InsumoJoin = {
     id: string;
     nome: string;
     unidade: string;
-    unidade_base?: string;
     embalagem_tipo?: string;
     qtd_embalagem?: number;
     valor_compra?: number;
@@ -133,7 +108,6 @@ type Insumo = {
   id: string;
   nome: string;
   unidade: string;
-  unidade_base?: string;
   embalagem_tipo?: string;
   qtd_embalagem?: number;
   valor_compra?: number;
@@ -281,14 +255,14 @@ export default function FichaTecnica() {
   const loadProdutos = async (uid: string) => {
     const { data } = await supabase
       .from("produtos")
-      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, unidade_base, embalagem_tipo, qtd_embalagem, valor_compra, custo_unitario, imagem_url))")
+      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, embalagem_tipo, qtd_embalagem, valor_compra, custo_unitario, imagem_url))")
       .eq("user_id", uid)
       .order("nome");
     if (data) setProdutos(data as Produto[]);
   };
 
   const loadInsumos = async (uid: string) => {
-    const { data } = await supabase.from("insumos").select("id, nome, unidade, unidade_base, embalagem_tipo, qtd_embalagem, valor_compra, custo_unitario, imagem_url").eq("user_id", uid).order("nome");
+    const { data } = await supabase.from("insumos").select("id, nome, unidade, embalagem_tipo, qtd_embalagem, valor_compra, custo_unitario, imagem_url").eq("user_id", uid).order("nome");
     if (data) setInsumosCadastrados(data as Insumo[]);
   };
 
@@ -316,20 +290,10 @@ export default function FichaTecnica() {
     setSelected(p);
     setFicha((p.produto_insumos || []).map(pi => {
       const insumo = pi.insumos as Insumo;
-      const savedUnit = pi.unidade_utilizada || insumo.unidade;
-      // Auto-cura: se a unidade salva no banco não está entre as unidades
-      // compatíveis atuais do insumo (dados legados ou cadastro do insumo
-      // alterado depois), volta pra unidade padrão. Sem isso, o <select>
-      // mostra a primeira opção visualmente mas o estado fica dessincronizado,
-      // causando cálculo errado de custo.
-      const compatibleUnits = getCompatibleUnits(insumo);
-      const unidade_utilizada = compatibleUnits.includes(savedUnit)
-        ? savedUnit
-        : getDefaultRecipeUnit(insumo);
       return {
         insumo_id: insumo.id,
         quantidade: Number(pi.quantidade) || 0,
-        unidade_utilizada,
+        unidade_utilizada: pi.unidade_utilizada || insumo.unidade,
         insumo,
       };
     }));
@@ -384,7 +348,7 @@ export default function FichaTecnica() {
   };
 
   const handleInsumoSalvo = (novo: InsumoQuick) => {
-    const ins: Insumo = { id: novo.id, nome: novo.nome, unidade: novo.unidade, unidade_base: novo.unidade_base, custo_unitario: novo.custo_unitario, imagem_url: novo.imagem_url };
+    const ins: Insumo = { id: novo.id, nome: novo.nome, unidade: novo.unidade, custo_unitario: novo.custo_unitario, imagem_url: novo.imagem_url };
     setInsumosCadastrados(prev => [...prev, ins]);
     setFicha(prev => [...prev, {
       insumo_id: ins.id,
@@ -435,7 +399,7 @@ export default function FichaTecnica() {
     await loadProdutos(userId);
     const { data } = await supabase
       .from("produtos")
-      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, unidade_base, embalagem_tipo, qtd_embalagem, valor_compra, custo_unitario, imagem_url))")
+      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, embalagem_tipo, qtd_embalagem, valor_compra, custo_unitario, imagem_url))")
       .eq("id", selected.id)
       .single();
     if (data) setSelected(data as Produto);
@@ -889,7 +853,9 @@ export default function FichaTecnica() {
           // "lata", "pacote", "caixa"... — minúsculo pra fluir no texto
           const tipoEmbBaixo = temEmbalagem ? tipoEmb.toLowerCase() : "embalagem";
 
-          // Gênero gramatical do tipo de embalagem (PT-BR) para contrações "na/no", "da/do", "uma/um"
+          // Gênero gramatical do tipo de embalagem (PT-BR) para contrações "na/no", "da/do", "uma/um".
+          // Das 12 embalagens disponíveis em QuickAddInsumo, as femininas são:
+          // Caixa, Lata, Garrafa, Bandeja, Bisnaga. "embalagem" (genérico) também é feminino.
           const FEMININOS = new Set(["lata", "caixa", "bandeja", "garrafa", "bisnaga", "embalagem"]);
           const ehFem = FEMININOS.has(tipoEmbBaixo);
           const naNo = ehFem ? "na" : "no";
@@ -1020,17 +986,21 @@ export default function FichaTecnica() {
                   </p>
                 </>
               ) : (
-                /* Caso 4: fallback — valor_compra não cadastrado (insumo antigo) */
+                /* Caso 4: defensivo. Com `valor_compra` NOT NULL no banco e a
+                 * sugestão automática no QuickAddInsumo, esse ramo só deveria
+                 * ser alcançado por bug ou dado corrompido. Mensagem honesta
+                 * sem fingir que está tudo bem. */
                 <>
                   <p style={{ margin: "0 0 10px" }}>
-                    Esse insumo ainda não tem o <strong>valor total da compra</strong> cadastrado em Insumos. Mesmo assim, conseguimos calcular o custo na receita pela quantidade que você usa.
+                    Algo está incompleto no cadastro de <strong>{ins.nome}</strong>: o sistema não conseguiu identificar o valor total da compra ou a quantidade da embalagem.
                   </p>
                   <p style={{ margin: "0 0 14px" }}>
-                    Essa receita usa <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong> de {ins.nome} →{" "}
+                    Mesmo assim, calculamos o custo proporcional pela quantidade usada na receita:{" "}
+                    <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong> →{" "}
                     <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong>.
                   </p>
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
-                    <strong>Dica:</strong> atualize o valor da compra em <strong>Insumos</strong> pra ter cálculos mais precisos e uma explicação mais clara aqui.
+                    <strong>Dica:</strong> abra esse insumo em <strong>Insumos</strong> e refaça o cadastro pra que a explicação aqui fique completa.
                   </p>
                 </>
               )}

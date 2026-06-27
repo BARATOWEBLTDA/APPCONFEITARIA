@@ -7,21 +7,12 @@ export type InsumoQuick = {
   marca?: string;
   categoria?: string;
   unidade: string;
-  unidade_base?: string;
-  embalagem_tipo?: string;
+  embalagem_tipo: string;
   custo_unitario: number;
   imagem_url?: string;
-  valor_compra?: number;
-  qtd_embalagem?: number;
+  valor_compra: number;
+  qtd_embalagem: number;
 };
-
-/** Deriva a unidade base a partir da unidade de compra */
-function deriveUnidadeBase(unidade: string): string {
-  if (unidade === "kg" || unidade === "g") return "kg";
-  if (unidade === "L" || unidade === "ml") return "L";
-  if (unidade === "un") return "un";
-  return unidade; // pct, cx, Lata, etc.
-}
 
 interface Props {
   userId: string;
@@ -55,24 +46,87 @@ const UNIDADES_MEDIDA = [
   { sigla: "ml", nome: "Mililitro" },
 ];
 
+/** Lista enxuta — só embalagens realmente usadas no dia a dia da confeitaria.
+ *  Ordem: Avulso primeiro, depois por frequência de uso. */
 const EMBALAGENS = [
-  { sigla: "Avulso", nome: "Avulso (sem embalagem)" },
-  { sigla: "Pacote", nome: "Pacote" },
-  { sigla: "Caixa", nome: "Caixa" },
-  { sigla: "Saco", nome: "Saco" },
-  { sigla: "Pote", nome: "Pote" },
-  { sigla: "Garrafa", nome: "Garrafa" },
-  { sigla: "Frasco", nome: "Frasco" },
-  { sigla: "Lata", nome: "Lata" },
-  { sigla: "Bandeja", nome: "Bandeja" },
-  { sigla: "Bisnaga", nome: "Bisnaga" },
-  { sigla: "Sachê", nome: "Sachê" },
+  { sigla: "Avulso",   nome: "Avulso (sem embalagem)" },
+  { sigla: "Pacote",   nome: "Pacote" },
+  { sigla: "Caixa",    nome: "Caixa" },
+  { sigla: "Lata",     nome: "Lata" },
+  { sigla: "Pote",     nome: "Pote" },
+  { sigla: "Garrafa",  nome: "Garrafa" },
+  { sigla: "Frasco",   nome: "Frasco" },
+  { sigla: "Bandeja",  nome: "Bandeja" },
+  { sigla: "Bisnaga",  nome: "Bisnaga" },
+  { sigla: "Sachê",    nome: "Sachê" },
   { sigla: "Envelope", nome: "Envelope" },
-  { sigla: "Balde", nome: "Balde" },
-  { sigla: "Bombona", nome: "Bombona" },
-  { sigla: "Rolo", nome: "Rolo" },
-  { sigla: "Tubo", nome: "Tubo" },
+  { sigla: "Balde",    nome: "Balde" },
+  { sigla: "Rolo",     nome: "Rolo" },
 ];
+
+/** Heurística pra sugerir unidade de medida com base no nome + embalagem.
+ *  Nível 2 (nome) tem prioridade sobre Nível 1 (embalagem) porque o nome
+ *  é informação mais específica. */
+function sugerirUnidade(nome: string, embalagem: string): string {
+  const n = nome.toLowerCase();
+
+  // ─── Nível 2 — palavras-chave no nome ───
+  // Itens contáveis
+  if (/\b(ovos?|morangos?|limões?|limao|laranjas?|bananas?|maçãs?|macas?|abacaxis?|kiwis?|peras?|coco|cocos)\b/.test(n)) return "un";
+  if (/\b(bombons?|biscoitos?|wafers?|paçocas?|pacocas?|amendoim japon[eê]s)\b/.test(n)) return "un";
+
+  // Sólidos pesáveis (kg)
+  if (/\b(farinhas?|açúcares?|acucar(es)?|sal|sais|polvilhos?|amidos?)\b/.test(n)) return "kg";
+
+  // Sólidos em quantidade menor (g)
+  if (/\b(leite condensado|creme de leite|doce de leite|nutella|cacau|chocolates?|cobertura|gotas? de chocolate|granulados?|confeitos?|corante)\b/.test(n)) return "g";
+  if (/\b(manteiga|margarina|cream cheese|queijos?|requeij[aã]o|fermento|essências?|essencia)\b/.test(n)) return "g";
+
+  // Líquidos (ml)
+  if (/\b(leites?|sucos?|águas?|aguas?|óleos?|oleos?|leite de coco|leite vegetal|aroma|álcool|alcool)\b/.test(n)) return "ml";
+
+  // ─── Nível 1 — pela embalagem ───
+  switch (embalagem) {
+    case "Pacote":   return "kg";
+    case "Caixa":    return "kg";
+    case "Lata":     return "g";
+    case "Pote":     return "g";
+    case "Garrafa":  return "ml";
+    case "Frasco":   return "ml";
+    case "Bandeja":  return "un";
+    case "Bisnaga":  return "g";
+    case "Sachê":    return "g";
+    case "Envelope": return "g";
+    case "Balde":    return "kg";
+    case "Rolo":     return "un";
+    default:         return "g";
+  }
+}
+
+/** Detecta se a combinação nome × unidade parece um cadastro incoerente.
+ *  Retorna mensagem de alerta (string) ou null se estiver tudo certo. */
+function detectarInconsistencia(nome: string, unidade: string): string | null {
+  if (!nome || nome.trim().length < 3) return null;
+  const n = nome.toLowerCase();
+
+  // Produto sólido pesável cadastrado como "un"
+  if (unidade === "un") {
+    if (/\b(farinhas?|açúcares?|acucar(es)?|sal|sais|polvilhos?|amidos?|cacau)\b/.test(n))
+      return `${nome.trim()} geralmente é medido em quilos (kg) ou gramas (g), não em unidades. Quer trocar?`;
+    if (/\b(leites?(?! em p[oó])|sucos?|águas?|aguas?|óleos?|oleos?|essências?|essencia)\b/.test(n))
+      return `${nome.trim()} geralmente é medido em mililitros (ml) ou litros (L), não em unidades. Quer trocar?`;
+    if (/\b(manteiga|margarina|cream cheese|chocolates? em barra|cobertura|leite condensado|creme de leite)\b/.test(n))
+      return `${nome.trim()} geralmente é medido em gramas (g), não em unidades. Quer trocar?`;
+  }
+
+  // Produto contável cadastrado como medida de peso/volume
+  if (unidade === "kg" || unidade === "g" || unidade === "ml" || unidade === "L") {
+    if (/\b(ovos?)\b/.test(n))
+      return `Ovo geralmente é medido em unidades, não em ${unidade}. Quer trocar?`;
+  }
+
+  return null;
+}
 
 /**
  * Cadastro rápido e edição de insumo.
@@ -83,15 +137,12 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
 
   const [form, setForm] = useState<Form>(() => {
     if (editing) {
-      // Detecta se a unidade antiga era uma embalagem (dados pré-migração)
-      const oldPkgUnits = ["pct", "cx", "Lata", "Garrafa", "Pote", "Bandeja", "Saco", "Bisnaga", "Rolo"];
-      const isOldPkg = oldPkgUnits.includes(editing.unidade);
       return {
         nome: editing.nome || "",
         marca: editing.marca || "",
         categoria: editing.categoria || "Ingredientes",
-        unidade: isOldPkg ? "un" : (editing.unidade || "g"),
-        embalagem_tipo: isOldPkg ? editing.unidade : (editing.embalagem_tipo || "Avulso"),
+        unidade: editing.unidade || "g",
+        embalagem_tipo: editing.embalagem_tipo || "Avulso",
         valor_compra: editing.valor_compra ? String(editing.valor_compra).replace(".", ",") : "",
         qtd_embalagem: editing.qtd_embalagem ? String(editing.qtd_embalagem).replace(".", ",") : "1",
         imagem_url: editing.imagem_url || "",
@@ -108,6 +159,24 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       imagem_url: "",
     };
   });
+
+  // Marca se o usuário já tocou manualmente na unidade — quando true,
+  // paramos de sobrescrever a escolha dele com sugestões automáticas.
+  const [unidadeTocadaManualmente, setUnidadeTocadaManualmente] = useState(isEditing);
+
+  // Re-sugere a unidade quando nome ou embalagem mudam, mas só enquanto
+  // o usuário não escolheu manualmente. Em modo edição, nunca sobrescreve.
+  useEffect(() => {
+    if (unidadeTocadaManualmente) return;
+    const sugestao = sugerirUnidade(form.nome, form.embalagem_tipo);
+    if (sugestao !== form.unidade) {
+      setForm(f => ({ ...f, unidade: sugestao }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.nome, form.embalagem_tipo, unidadeTocadaManualmente]);
+
+  // Mensagem de alerta caso a combinação esteja incoerente
+  const alertaIncoerencia = detectarInconsistencia(form.nome, form.unidade);
 
   const [imagens, setImagens] = useState<string[]>([]);
   const [buscandoImg, setBuscandoImg] = useState(false);
@@ -175,7 +244,6 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       marca: form.marca.trim(),
       categoria: form.categoria,
       unidade: form.unidade,
-      unidade_base: deriveUnidadeBase(form.unidade),
       embalagem_tipo: form.embalagem_tipo,
       valor_compra: valor,
       qtd_embalagem: qtdEmb,
@@ -202,7 +270,6 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       marca: data.marca,
       categoria: data.categoria,
       unidade: data.unidade,
-      unidade_base: data.unidade_base,
       embalagem_tipo: data.embalagem_tipo,
       custo_unitario: data.custo_unitario,
       imagem_url: data.imagem_url,
@@ -327,7 +394,85 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         </div>
       </div>
 
+      <div className="qai-section-label">Como você compra esse produto</div>
+
+      <div className="qai-field">
+        <label>Tipo de embalagem *</label>
+        <select
+          className="qai-input"
+          value={form.embalagem_tipo}
+          onChange={e => setForm(f => ({ ...f, embalagem_tipo: e.target.value }))}
+        >
+          {EMBALAGENS.map(e => <option key={e.sigla} value={e.sigla}>{e.nome}</option>)}
+        </select>
+      </div>
+
+      <div className="qai-section-label">Como você usa na receita</div>
+
+      <div className="qai-field">
+        <label>
+          Unidade de medida *
+          {!unidadeTocadaManualmente && form.nome.trim().length >= 3 && (
+            <span className="qai-suggest-badge">sugerido</span>
+          )}
+        </label>
+        <select
+          className="qai-input"
+          value={form.unidade}
+          onChange={e => {
+            setUnidadeTocadaManualmente(true);
+            setForm(f => ({ ...f, unidade: e.target.value }));
+          }}
+        >
+          {UNIDADES_MEDIDA.map(u => <option key={u.sigla} value={u.sigla}>{u.nome} ({u.sigla})</option>)}
+        </select>
+      </div>
+
+      {alertaIncoerencia && (
+        <div className="qai-alert">
+          <div className="qai-alert-icon">!</div>
+          <div className="qai-alert-body">
+            <p>{alertaIncoerencia}</p>
+            <div className="qai-alert-actions">
+              <button
+                type="button"
+                className="qai-alert-btn qai-alert-btn--primary"
+                onClick={() => {
+                  setUnidadeTocadaManualmente(false);
+                  const sugestao = sugerirUnidade(form.nome, form.embalagem_tipo);
+                  setForm(f => ({ ...f, unidade: sugestao }));
+                }}
+              >
+                Trocar para o sugerido
+              </button>
+              <button
+                type="button"
+                className="qai-alert-btn"
+                onClick={() => setUnidadeTocadaManualmente(true)}
+              >
+                Manter como está
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="qai-row-2">
+        <div className="qai-field">
+          <label>
+            Quanto vem {form.embalagem_tipo === "Avulso" ? "" : `em 1 ${form.embalagem_tipo.toLowerCase()}`} *
+          </label>
+          <div className="qai-input-suffix">
+            <input
+              type="text"
+              inputMode="decimal"
+              placeholder="1"
+              value={form.qtd_embalagem}
+              onChange={e => setForm(f => ({ ...f, qtd_embalagem: e.target.value }))}
+            />
+            <span>{form.unidade}</span>
+          </div>
+        </div>
         <div className="qai-field">
           <label>Quanto pagou *</label>
           <div className="qai-input-prefix">
@@ -340,40 +485,6 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
               onChange={e => setForm(f => ({ ...f, valor_compra: e.target.value }))}
             />
           </div>
-        </div>
-        <div className="qai-field">
-          <label>Tipo de embalagem</label>
-          <select
-            className="qai-input"
-            value={form.embalagem_tipo}
-            onChange={e => setForm(f => ({ ...f, embalagem_tipo: e.target.value }))}
-          >
-            {EMBALAGENS.map(e => <option key={e.sigla} value={e.sigla}>{e.nome}</option>)}
-          </select>
-        </div>
-      </div>
-
-      <div className="qai-row-3">
-        <div className="qai-field">
-          <label>Quantidade *</label>
-          <input
-            type="text"
-            inputMode="decimal"
-            className="qai-input"
-            placeholder="12"
-            value={form.qtd_embalagem}
-            onChange={e => setForm(f => ({ ...f, qtd_embalagem: e.target.value }))}
-          />
-        </div>
-        <div className="qai-field">
-          <label>Medida *</label>
-          <select
-            className="qai-input"
-            value={form.unidade}
-            onChange={e => setForm(f => ({ ...f, unidade: e.target.value }))}
-          >
-            {UNIDADES_MEDIDA.map(u => <option key={u.sigla} value={u.sigla}>{u.nome}</option>)}
-          </select>
         </div>
       </div>
 
@@ -474,6 +585,104 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           color: var(--text-title); font-family: inherit; box-sizing: border-box;
         }
         select.qai-input { cursor: pointer; }
+
+        /* Suffix input (espelho do prefix) — usado pra mostrar a unidade
+           ao lado do campo "Quanto vem em 1 X" */
+        .qai-input-suffix {
+          display: flex; align-items: center;
+          width: 100%; min-width: 0; box-sizing: border-box;
+          border: 1.5px solid var(--border); border-radius: var(--radius-md);
+          background: var(--bg-input); overflow: hidden;
+          transition: border-color var(--dur-fast) var(--ease-out);
+        }
+        .qai-input-suffix:focus-within { border-color: var(--primary); }
+        .qai-input-suffix input {
+          flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+          padding: var(--pad-input);
+          font-size: var(--font-input); font-weight: var(--fw-medium);
+          color: var(--text-title); font-family: inherit; box-sizing: border-box;
+        }
+        .qai-input-suffix span {
+          padding: 0 0.6rem;
+          font-size: var(--font-input); font-weight: var(--fw-semibold);
+          color: var(--text-muted); white-space: nowrap; user-select: none;
+        }
+
+        /* Section labels — agrupa visualmente "como compra" vs "como usa" */
+        .qai-section-label {
+          font-size: var(--font-caption);
+          font-weight: var(--fw-bold);
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          margin-top: 0.4rem;
+          margin-bottom: -0.2rem;
+        }
+
+        /* Badge "sugerido" no rótulo da unidade */
+        .qai-suggest-badge {
+          display: inline-block;
+          margin-left: 0.5rem;
+          padding: 1px 8px;
+          background: rgba(61, 26, 36, 0.08);
+          color: var(--primary-dark);
+          border-radius: 999px;
+          font-size: 0.7rem;
+          font-weight: var(--fw-semibold);
+          text-transform: lowercase;
+          letter-spacing: 0;
+          vertical-align: middle;
+        }
+
+        /* Alerta de inconsistência (ex: farinha cadastrada como unidade) */
+        .qai-alert {
+          display: flex;
+          gap: 0.6rem;
+          padding: 0.8rem 0.9rem;
+          background: #FFF8E1;
+          border: 1px solid #FFE082;
+          border-radius: var(--radius-md);
+          align-items: flex-start;
+        }
+        .qai-alert-icon {
+          flex-shrink: 0;
+          width: 22px; height: 22px;
+          border-radius: 50%;
+          background: #F59E0B;
+          color: white;
+          font-weight: 800;
+          font-size: 0.85rem;
+          display: flex; align-items: center; justify-content: center;
+          margin-top: 1px;
+        }
+        .qai-alert-body { flex: 1; min-width: 0; }
+        .qai-alert-body p {
+          margin: 0 0 0.6rem 0;
+          font-size: 0.85rem;
+          line-height: 1.4;
+          color: #7C5410;
+        }
+        .qai-alert-actions {
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+        }
+        .qai-alert-btn {
+          padding: 0.4rem 0.8rem;
+          background: transparent;
+          border: 1.5px solid #FFB74D;
+          border-radius: var(--radius-sm);
+          font-size: 0.8rem;
+          font-weight: var(--fw-semibold);
+          color: #7C5410;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        .qai-alert-btn--primary {
+          background: var(--primary-dark);
+          border-color: var(--primary-dark);
+          color: white;
+        }
 
         .qai-row-2 {
           display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
