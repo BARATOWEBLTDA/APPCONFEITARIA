@@ -852,11 +852,23 @@ export default function FichaTecnica() {
           const valorPago = ins.valor_compra || 0;
           const qtdEmb = ins.qtd_embalagem || 0;
           const tipoEmb = (ins.embalagem_tipo || "").trim();
-          const isAvulso = !tipoEmb || tipoEmb.toLowerCase() === "avulso" || qtdEmb <= 1;
-          const temValorCompra = valorPago > 0 && qtdEmb > 0;
 
-          // "lata", "pacote", "caixa" → minúsculo para fluir no texto
-          const tipoEmbBaixo = tipoEmb && tipoEmb.toLowerCase() !== "avulso" ? tipoEmb.toLowerCase() : "embalagem";
+          // Item contável (un) usa multiplicação; contínuo (g, kg, ml, L) usa fração da embalagem
+          const isContavel = ins.unidade === "un";
+          const temEmbalagem = qtdEmb > 1 && tipoEmb && tipoEmb.toLowerCase() !== "avulso";
+          const temValorCompra = valorPago > 0;
+
+          // "lata", "pacote", "caixa"... — minúsculo pra fluir no texto
+          const tipoEmbBaixo = temEmbalagem ? tipoEmb.toLowerCase() : "embalagem";
+
+          // Gênero gramatical do tipo de embalagem (PT-BR) para contrações "na/no", "da/do"
+          const FEMININOS = new Set(["lata", "caixa", "bandeja", "garrafa", "bisnaga", "embalagem"]);
+          const ehFem = FEMININOS.has(tipoEmbBaixo);
+          const naNo = ehFem ? "na" : "no";
+          const daDo = ehFem ? "da" : "do";
+
+          // Custo por unidade derivado (pra item contável em embalagem)
+          const custoPorUnidade = qtdEmb > 0 ? valorPago / qtdEmb : 0;
 
           return (
             <DooInfoModal
@@ -876,13 +888,16 @@ export default function FichaTecnica() {
               {qtdUsada <= 0 ? (
                 /* Caso 1: quantidade ainda não informada */
                 <>
-                  {temValorCompra ? (
+                  {temValorCompra && temEmbalagem ? (
                     <p style={{ margin: "0 0 12px" }}>
                       Você cadastrou em <strong>Insumos</strong> que paga{" "}
-                      <strong>R$ {fmt(valorPago)}</strong>{" "}
-                      {isAvulso
-                        ? <>por unidade de {ins.nome}.</>
-                        : <>{tipoEmbBaixo === "embalagem" ? "na" : `${tipoEmbBaixo === "lata" || tipoEmbBaixo === "caixa" ? "na" : "no"}`} {tipoEmbBaixo} de <strong>{fmtQty(qtdEmb)} {fmtUnidade(ins.unidade, qtdEmb)}</strong> de {ins.nome}.</>}
+                      <strong>R$ {fmt(valorPago)}</strong> {naNo} {tipoEmbBaixo} de{" "}
+                      <strong>{fmtQty(qtdEmb)} {fmtUnidade(ins.unidade, qtdEmb)}</strong> de {ins.nome}.
+                    </p>
+                  ) : temValorCompra ? (
+                    <p style={{ margin: "0 0 12px" }}>
+                      Você cadastrou em <strong>Insumos</strong> que paga{" "}
+                      <strong>R$ {fmt(valorPago)}</strong> por {fmtUnidade(ins.unidade, 1)} de {ins.nome}.
                     </p>
                   ) : (
                     <p style={{ margin: "0 0 12px" }}>
@@ -897,14 +912,34 @@ export default function FichaTecnica() {
                     Esse cálculo compõe o <strong>CMV</strong> (Custo de Mercadoria Vendida) da receita — quanto os ingredientes pesam no custo total do seu produto.
                   </p>
                 </>
-              ) : isAvulso && temValorCompra ? (
-                /* Caso 2: avulso (multiplicação simples) */
+              ) : isContavel && temEmbalagem && temValorCompra ? (
+                /* Caso 2A: item contável vendido em embalagem (ex: ovo em bandeja) */
                 <>
                   <p style={{ margin: "0 0 10px" }}>
-                    Você paga <strong>R$ {fmt(valorPago)}</strong> por unidade de {ins.nome} (cadastrado em <strong>Insumos</strong>).
+                    Você paga <strong>R$ {fmt(valorPago)}</strong> {naNo} {tipoEmbBaixo} de{" "}
+                    <strong>{fmtQty(qtdEmb)} {fmtUnidade(ins.unidade, qtdEmb)}</strong> de {ins.nome} (cadastrado em <strong>Insumos</strong>).
                   </p>
                   <p style={{ margin: "0 0 10px" }}>
-                    Essa receita usa <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong>.
+                    Cada {ins.nome} sai por cerca de{" "}
+                    <strong>R$ {fmt(custoPorUnidade)}</strong>{" "}
+                    (R$ {fmt(valorPago)} ÷ {fmtQty(qtdEmb)}).
+                  </p>
+                  <p style={{ margin: "0 0 14px" }}>
+                    Sua receita usa <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong> →{" "}
+                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong>.
+                  </p>
+                  <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
+                    <strong>CMV</strong> (Custo de Mercadoria Vendida) é quanto cada ingrediente pesa no custo total da receita. Quanto menor o CMV, maior seu lucro.
+                  </p>
+                </>
+              ) : isContavel && temValorCompra ? (
+                /* Caso 2B: item contável avulso (sem embalagem) */
+                <>
+                  <p style={{ margin: "0 0 10px" }}>
+                    Você paga <strong>R$ {fmt(valorPago)}</strong> por {fmtUnidade(ins.unidade, 1)} de {ins.nome} (cadastrado em <strong>Insumos</strong>).
+                  </p>
+                  <p style={{ margin: "0 0 10px" }}>
+                    Sua receita usa <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong>.
                   </p>
                   <p style={{ margin: "0 0 14px" }}>
                     Total:{" "}
@@ -915,20 +950,19 @@ export default function FichaTecnica() {
                     <strong>CMV</strong> (Custo de Mercadoria Vendida) é quanto cada ingrediente pesa no custo total da receita. Quanto menor o CMV, maior seu lucro.
                   </p>
                 </>
-              ) : temValorCompra ? (
-                /* Caso 3: embalagem fracionada (lata, pacote, caixa...) */
+              ) : temEmbalagem && temValorCompra ? (
+                /* Caso 3: item contínuo (g, kg, ml, L) em embalagem fracionada */
                 <>
                   <p style={{ margin: "0 0 10px" }}>
-                    Você paga <strong>R$ {fmt(valorPago)}</strong>{" "}
-                    {tipoEmbBaixo === "lata" || tipoEmbBaixo === "caixa" || tipoEmbBaixo === "embalagem" ? "na" : "no"}{" "}
-                    {tipoEmbBaixo} de <strong>{fmtQty(qtdEmb)} {fmtUnidade(ins.unidade, qtdEmb)}</strong> de {ins.nome} (cadastrado em <strong>Insumos</strong>).
+                    Você paga <strong>R$ {fmt(valorPago)}</strong> {naNo} {tipoEmbBaixo} de{" "}
+                    <strong>{fmtQty(qtdEmb)} {fmtUnidade(ins.unidade, qtdEmb)}</strong> de {ins.nome} (cadastrado em <strong>Insumos</strong>).
                   </p>
                   <p style={{ margin: "0 0 10px" }}>
                     Essa receita usa <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong> de {ins.nome}.
                   </p>
                   <p style={{ margin: "0 0 14px" }}>
-                    Como é uma fração {tipoEmbBaixo === "lata" || tipoEmbBaixo === "caixa" || tipoEmbBaixo === "embalagem" ? "da" : "do"} {tipoEmbBaixo}, calculamos a proporção:{" "}
-                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong> é o quanto sai {tipoEmbBaixo === "lata" || tipoEmbBaixo === "caixa" || tipoEmbBaixo === "embalagem" ? "da" : "do"} {tipoEmbBaixo} pra fazer essa receita.
+                    Como é uma fração {daDo} {tipoEmbBaixo}, calculamos a proporção:{" "}
+                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong> é o quanto sai {daDo} {tipoEmbBaixo} pra fazer essa receita.
                   </p>
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
                     <strong>CMV</strong> (Custo de Mercadoria Vendida) é quanto cada ingrediente pesa no custo total da receita. Quanto menor o CMV, maior seu lucro.
