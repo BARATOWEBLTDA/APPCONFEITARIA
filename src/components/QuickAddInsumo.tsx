@@ -30,6 +30,8 @@ interface Props {
   editing?: InsumoQuick;
   onSaved: (insumo: InsumoQuick) => void;
   onCancel: () => void;
+  /** Quando passado e em modo edição, exibe botão de excluir. */
+  onDelete?: () => void;
 }
 
 type Form = {
@@ -76,7 +78,7 @@ const EMBALAGENS = [
  * Cadastro rápido e edição de insumo.
  * Reutilizado em /insumos e na ficha técnica.
  */
-export default function QuickAddInsumo({ userId, initialName, editing, onSaved, onCancel }: Props) {
+export default function QuickAddInsumo({ userId, initialName, editing, onSaved, onCancel, onDelete }: Props) {
   const isEditing = !!editing;
 
   const [form, setForm] = useState<Form>(() => {
@@ -390,6 +392,12 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         {saving ? "Salvando..." : isEditing ? "Salvar alterações" : "Cadastrar insumo"}
       </button>
 
+      {isEditing && onDelete && (
+        <button type="button" className="qai-delete" onClick={onDelete} disabled={saving}>
+          Excluir insumo
+        </button>
+      )}
+
       <style>{`
         /* ─────────────────────────────────────────
            QuickAddInsumo — Modal de cadastro/edição
@@ -686,6 +694,23 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
         }
         .qai-save:hover:not(:disabled) { opacity: 0.9; }
         .qai-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* Botão excluir (ação destrutiva, secundária visualmente) */
+        .qai-delete {
+          padding: var(--space-2) var(--space-3);
+          background: transparent;
+          color: var(--error);
+          border: none;
+          border-radius: var(--radius-md);
+          font-family: inherit;
+          font-size: var(--font-button);
+          font-weight: var(--fw-semibold);
+          line-height: var(--lh-normal);
+          cursor: pointer;
+          transition: background var(--dur-fast) var(--ease-out);
+        }
+        .qai-delete:hover:not(:disabled) { background: var(--primary-light); }
+        .qai-delete:disabled { opacity: 0.6; cursor: not-allowed; }
 
         @media (max-width: 480px) {
           .qai-row-3 { grid-template-columns: 1fr 1fr; }

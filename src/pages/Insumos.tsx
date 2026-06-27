@@ -307,6 +307,10 @@ export default function Insumos() {
               } : undefined}
               onSaved={onInsumoSalvo}
               onCancel={fecharForm}
+              onDelete={editingInsumo ? () => {
+                fecharForm();
+                setDeleteConfirm(editingInsumo);
+              } : undefined}
             />
           </div>
         </div>
