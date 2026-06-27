@@ -7,8 +7,16 @@ interface DooInfoModalProps {
   /** Caminho da imagem do mascote/sticker (ex: "/Sistema/precifique.png") */
   image: string;
   imageAlt?: string;
-  /** Título principal — geralmente personalizado com o nome da confeiteira */
-  title: string;
+  /**
+   * Título principal — geralmente personalizado com o nome da confeiteira.
+   * Aceita JSX para destacar tokens com <strong> (nome, produto, etc.)
+   */
+  title: ReactNode;
+  /**
+   * Rótulo acessível para leitores de tela. Use quando `title` for JSX
+   * (para evitar que o aria-label vire "[object Object]"). Padrão: "Informação".
+   */
+  ariaLabel?: string;
   /** Corpo explicativo. Pode ser texto simples ou JSX (para destacar valores, etc.) */
   children: ReactNode;
   /** Rótulo do botão primário. Padrão: "Entendi" */
@@ -33,6 +41,7 @@ export default function DooInfoModal({
   image,
   imageAlt = "",
   title,
+  ariaLabel = "Informação",
   children,
   ctaLabel = "Entendi",
   onCta,
@@ -79,7 +88,7 @@ export default function DooInfoModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-label={ariaLabel}
         style={{
           position: "fixed",
           top: "50%",
@@ -168,11 +177,11 @@ export default function DooInfoModal({
         <h3
           style={{
             fontSize: "1.15rem",
-            fontWeight: 800,
+            fontWeight: 500,
             color: "var(--text-title)",
             margin: "0 0 12px",
-            letterSpacing: "-0.02em",
-            lineHeight: 1.3,
+            letterSpacing: "-0.01em",
+            lineHeight: 1.4,
           }}
         >
           {title}

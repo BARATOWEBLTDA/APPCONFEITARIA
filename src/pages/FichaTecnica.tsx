@@ -99,6 +99,7 @@ type InsumoJoin = {
     unidade_base?: string;
     embalagem_tipo?: string;
     qtd_embalagem?: number;
+    valor_compra?: number;
     custo_unitario: number;
     imagem_url?: string;
   };
@@ -135,6 +136,7 @@ type Insumo = {
   unidade_base?: string;
   embalagem_tipo?: string;
   qtd_embalagem?: number;
+  valor_compra?: number;
   custo_unitario: number;
   imagem_url?: string;
 };
@@ -231,14 +233,14 @@ export default function FichaTecnica() {
   const loadProdutos = async (uid: string) => {
     const { data } = await supabase
       .from("produtos")
-      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, unidade_base, embalagem_tipo, qtd_embalagem, custo_unitario, imagem_url))")
+      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, unidade_base, embalagem_tipo, qtd_embalagem, valor_compra, custo_unitario, imagem_url))")
       .eq("user_id", uid)
       .order("nome");
     if (data) setProdutos(data as Produto[]);
   };
 
   const loadInsumos = async (uid: string) => {
-    const { data } = await supabase.from("insumos").select("id, nome, unidade, unidade_base, embalagem_tipo, qtd_embalagem, custo_unitario, imagem_url").eq("user_id", uid).order("nome");
+    const { data } = await supabase.from("insumos").select("id, nome, unidade, unidade_base, embalagem_tipo, qtd_embalagem, valor_compra, custo_unitario, imagem_url").eq("user_id", uid).order("nome");
     if (data) setInsumosCadastrados(data as Insumo[]);
   };
 
@@ -372,7 +374,7 @@ export default function FichaTecnica() {
     await loadProdutos(userId);
     const { data } = await supabase
       .from("produtos")
-      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, unidade_base, embalagem_tipo, qtd_embalagem, custo_unitario, imagem_url))")
+      .select("*, produto_insumos(quantidade, unidade_utilizada, quantidade_base, insumos(id, nome, unidade, unidade_base, embalagem_tipo, qtd_embalagem, valor_compra, custo_unitario, imagem_url))")
       .eq("id", selected.id)
       .single();
     if (data) setSelected(data as Produto);
@@ -814,7 +816,14 @@ export default function FichaTecnica() {
           const ins = f.insumo;
           const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
           const qtdUsada = f.quantidade || 0;
-          const custoUn = ins.custo_unitario || 0;
+          const valorPago = ins.valor_compra || 0;
+          const qtdEmb = ins.qtd_embalagem || 0;
+          const tipoEmb = (ins.embalagem_tipo || "").trim();
+          const isAvulso = !tipoEmb || tipoEmb.toLowerCase() === "avulso" || qtdEmb <= 1;
+          const temValorCompra = valorPago > 0 && qtdEmb > 0;
+
+          // "lata", "pacote", "caixa" → minúsculo para fluir no texto
+          const tipoEmbBaixo = tipoEmb && tipoEmb.toLowerCase() !== "avulso" ? tipoEmb.toLowerCase() : "embalagem";
 
           return (
             <DooInfoModal
@@ -822,36 +831,88 @@ export default function FichaTecnica() {
               onClose={() => setInfoCustoAberto(null)}
               image="/Sistema/precifique.png"
               imageAlt="Precificação"
-              title={`${primeiroNome}, é assim que calculamos o custo de ${ins.nome} na receita:`}
-            >
-              {qtdUsada > 0 ? (
+              ariaLabel={`Como calculamos o custo de ${ins.nome}`}
+              title={
                 <>
-                  <p style={{ margin: "0 0 10px" }}>
-                    Você cadastrou em <strong>Insumos</strong> que paga{" "}
-                    <strong>R$ {fmtCusto(custoUn)}</strong> por <strong>{ins.unidade}</strong> de {ins.nome}.
-                  </p>
-                  <p style={{ margin: "0 0 10px" }}>
-                    Nessa receita você usa <strong>{qtdUsada} {f.unidade_utilizada}</strong> de {ins.nome}.
-                  </p>
+                  <strong style={{ fontWeight: 800 }}>{primeiroNome}</strong>
+                  , é assim que calculamos o custo de{" "}
+                  <strong style={{ fontWeight: 800 }}>{ins.nome}</strong> na receita
+                </>
+              }
+            >
+              {qtdUsada <= 0 ? (
+                /* Caso 1: quantidade ainda não informada */
+                <>
+                  {temValorCompra ? (
+                    <p style={{ margin: "0 0 12px" }}>
+                      Você cadastrou em <strong>Insumos</strong> que paga{" "}
+                      <strong>R$ {fmt(valorPago)}</strong>{" "}
+                      {isAvulso
+                        ? <>por unidade de {ins.nome}.</>
+                        : <>{tipoEmbBaixo === "embalagem" ? "na" : `${tipoEmbBaixo === "lata" || tipoEmbBaixo === "caixa" ? "na" : "no"}`} {tipoEmbBaixo} de <strong>{fmt(qtdEmb)} {ins.unidade}</strong> de {ins.nome}.</>}
+                    </p>
+                  ) : (
+                    <p style={{ margin: "0 0 12px" }}>
+                      Você cadastrou {ins.nome} em <strong>Insumos</strong>.
+                    </p>
+                  )}
                   <p style={{ margin: "0 0 14px" }}>
-                    Calculamos a proporção do que você paga e chegamos a{" "}
-                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong> — esse é o custo desse ingrediente especificamente nessa receita.
+                    Assim que você informar <strong>quanto de {ins.nome}</strong> essa receita usa,
+                    calculamos automaticamente o custo proporcional.
                   </p>
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
-                    <strong>CMV</strong> (Custo de Mercadoria Vendida) é quanto o ingrediente pesa no custo total da sua receita. Quanto menor o CMV, maior seu lucro.
+                    Esse cálculo compõe o <strong>CMV</strong> (Custo de Mercadoria Vendida) da receita — quanto os ingredientes pesam no custo total do seu produto.
+                  </p>
+                </>
+              ) : isAvulso && temValorCompra ? (
+                /* Caso 2: avulso (multiplicação simples) */
+                <>
+                  <p style={{ margin: "0 0 10px" }}>
+                    Você paga <strong>R$ {fmt(valorPago)}</strong> por unidade de {ins.nome} (cadastrado em <strong>Insumos</strong>).
+                  </p>
+                  <p style={{ margin: "0 0 10px" }}>
+                    Essa receita usa <strong>{fmt(qtdUsada)} {f.unidade_utilizada}</strong>.
+                  </p>
+                  <p style={{ margin: "0 0 14px" }}>
+                    Total:{" "}
+                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong>{" "}
+                    — esse é o custo de {ins.nome} nessa receita.
+                  </p>
+                  <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
+                    <strong>CMV</strong> (Custo de Mercadoria Vendida) é quanto cada ingrediente pesa no custo total da receita. Quanto menor o CMV, maior seu lucro.
+                  </p>
+                </>
+              ) : temValorCompra ? (
+                /* Caso 3: embalagem fracionada (lata, pacote, caixa...) */
+                <>
+                  <p style={{ margin: "0 0 10px" }}>
+                    Você paga <strong>R$ {fmt(valorPago)}</strong>{" "}
+                    {tipoEmbBaixo === "lata" || tipoEmbBaixo === "caixa" || tipoEmbBaixo === "embalagem" ? "na" : "no"}{" "}
+                    {tipoEmbBaixo} de <strong>{fmt(qtdEmb)} {ins.unidade}</strong> de {ins.nome} (cadastrado em <strong>Insumos</strong>).
+                  </p>
+                  <p style={{ margin: "0 0 10px" }}>
+                    Essa receita usa <strong>{fmt(qtdUsada)} {f.unidade_utilizada}</strong> de {ins.nome}.
+                  </p>
+                  <p style={{ margin: "0 0 14px" }}>
+                    Como é uma fração {tipoEmbBaixo === "lata" || tipoEmbBaixo === "caixa" || tipoEmbBaixo === "embalagem" ? "da" : "do"} {tipoEmbBaixo}, calculamos a proporção:{" "}
+                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong> é o quanto sai {tipoEmbBaixo === "lata" || tipoEmbBaixo === "caixa" || tipoEmbBaixo === "embalagem" ? "da" : "do"} {tipoEmbBaixo} pra fazer essa receita.
+                  </p>
+                  <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
+                    <strong>CMV</strong> (Custo de Mercadoria Vendida) é quanto cada ingrediente pesa no custo total da receita. Quanto menor o CMV, maior seu lucro.
                   </p>
                 </>
               ) : (
+                /* Caso 4: fallback — valor_compra não cadastrado (insumo antigo) */
                 <>
                   <p style={{ margin: "0 0 10px" }}>
-                    Você cadastrou em <strong>Insumos</strong> que paga{" "}
-                    <strong>R$ {fmtCusto(custoUn)}</strong> por <strong>{ins.unidade}</strong> de {ins.nome}.
+                    Esse insumo ainda não tem o <strong>valor total da compra</strong> cadastrado em Insumos. Mesmo assim, conseguimos calcular o custo na receita pela quantidade que você usa.
                   </p>
                   <p style={{ margin: "0 0 14px" }}>
-                    Assim que você informar <strong>quanto de {ins.nome}</strong> essa receita usa, calculamos automaticamente o custo proporcional.
+                    Essa receita usa <strong>{fmt(qtdUsada)} {f.unidade_utilizada}</strong> de {ins.nome} →{" "}
+                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong>.
                   </p>
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
-                    Esse cálculo compõe o <strong>CMV</strong> (Custo de Mercadoria Vendida) da receita — o quanto os ingredientes pesam no custo total do seu produto.
+                    <strong>Dica:</strong> atualize o valor da compra em <strong>Insumos</strong> pra ter cálculos mais precisos e uma explicação mais clara aqui.
                   </p>
                 </>
               )}
