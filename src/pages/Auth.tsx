@@ -375,23 +375,15 @@ export default function Auth() {
         .auth-promo { display: none; }
 
         @media (min-width: 1200px) {
-          .auth-root {
-            flex-direction: row;
-            gap: 2rem;
-            align-items: center;
-            justify-content: center;
-          }
-          .auth-card {
-            margin: 0;
-            flex-shrink: 0;
-          }
-
           .auth-promo {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            position: relative;
+            position: absolute;
             z-index: 2;
+            top: 50%;
+            left: calc(50% + 220px + 2rem);
+            transform: translateY(-50%);
             width: 360px;
             padding: 2.25rem 2rem;
             border-radius: var(--radius-lg);
