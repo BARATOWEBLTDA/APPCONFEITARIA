@@ -389,7 +389,11 @@ export default function Auth() {
             position: absolute;
             z-index: 2;
             top: 0;
+            bottom: 0;
+            margin-top: auto;
+            margin-bottom: auto;
             left: calc(100% + 2rem);
+            height: fit-content;
             width: 320px;
             padding: 1.75rem 1.5rem;
             border-radius: var(--radius-lg);
