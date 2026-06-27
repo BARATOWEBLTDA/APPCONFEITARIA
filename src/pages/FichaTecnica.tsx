@@ -531,7 +531,7 @@ export default function FichaTecnica() {
                         <span className="ft-edit-item-sub-label">Valor pago:</span> R$ {fmtCusto(ins.custo_unitario || 0)} / {ins.unidade}
                       </p>
                       <p className="ft-edit-item-sub">
-                        <span className="ft-edit-item-sub-label">Usado nesta receita:</span> R$ {fmt(custoLinha)}
+                        <span className="ft-edit-item-sub-label">Custo na receita:</span> R$ {fmt(custoLinha)}
                       </p>
 
                       <div className="ft-edit-item-row">
