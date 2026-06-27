@@ -182,6 +182,8 @@ export default function FichaTecnica() {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickAddName, setQuickAddName] = useState("");
   const [fichaView, setFichaView] = useState<"grid" | "lista">("grid");
+  const [moAtivo, setMoAtivo] = useState(false);
+  const [infoAtivo, setInfoAtivo] = useState(false);
 
   // Bloqueia scroll e oculta menu quando modal está aberto
   useEffect(() => {
@@ -274,6 +276,9 @@ export default function FichaTecnica() {
     });
     setBuscaInsumo("");
     setShowQuickAdd(false);
+    // Ativa as seções automaticamente se já houver dados salvos
+    setMoAtivo(!!(p.salario_desejado || p.tempo_preparo_min));
+    setInfoAtivo(!!(p.rendimento_qtd || p.rendimento_peso || p.validade_dias || p.embalagem || p.observacoes_ficha));
   };
 
   const fecharFicha = () => {
@@ -331,18 +336,18 @@ export default function FichaTecnica() {
       await supabase.from("produto_insumos").insert(itens);
     }
 
-    // 2. Persiste campos extras no produto
+    // 2. Persiste campos extras no produto (respeitando os toggles ativos)
     await supabase.from("produtos").update({
-      rendimento_qtd: extras.rendimento_qtd,
-      rendimento_peso: extras.rendimento_peso,
-      validade_dias: parseInt(extras.validade_dias) || 0,
-      validade_tipo: extras.validade_tipo,
-      embalagem: extras.embalagem,
-      observacoes_ficha: extras.observacoes_ficha,
+      rendimento_qtd: infoAtivo ? extras.rendimento_qtd : "",
+      rendimento_peso: infoAtivo ? extras.rendimento_peso : "",
+      validade_dias: infoAtivo ? (parseInt(extras.validade_dias) || 0) : 0,
+      validade_tipo: infoAtivo ? extras.validade_tipo : "refrigerado",
+      embalagem: infoAtivo ? extras.embalagem : "",
+      observacoes_ficha: infoAtivo ? extras.observacoes_ficha : "",
       cv_percentual: parseFloat(extras.cv_percentual) || 0,
-      tempo_preparo_min: parseInt(extras.tempo_preparo_min) || 0,
-      salario_desejado: parseFloat(extras.salario_desejado) || 0,
-      horas_semanais: parseFloat(extras.horas_semanais) || 40,
+      tempo_preparo_min: moAtivo ? (parseInt(extras.tempo_preparo_min) || 0) : 0,
+      salario_desejado: moAtivo ? (parseFloat(extras.salario_desejado) || 0) : 0,
+      horas_semanais: moAtivo ? (parseFloat(extras.horas_semanais) || 40) : 40,
       updated_at: new Date().toISOString(),
     }).eq("id", selected.id);
 
@@ -384,7 +389,7 @@ export default function FichaTecnica() {
     const horasSem = parseFloat(extras.horas_semanais) || 40;
     const tempoMin = parseInt(extras.tempo_preparo_min) || 0;
     const custoHora = horasSem > 0 ? salario / (horasSem * 4.33) : 0;
-    const moLive = custoHora * (tempoMin / 60);
+    const moLive = moAtivo ? custoHora * (tempoMin / 60) : 0;
 
     // Totais
     const custoTotalLive = cmvLive + cvLive + moLive;
@@ -443,31 +448,31 @@ export default function FichaTecnica() {
         </div>
 
         {/* Editor da Composicao */}
-        <div className="ft-section-header">
-          <h2 className="ft-section-title">Ingredientes e custos</h2>
-          {temFicha && (
-            <div className="ft-view-toggle" role="group" aria-label="Visualização">
-              <button
-                type="button"
-                className={`ft-view-btn${fichaView === "grid" ? " active" : ""}`}
-                onClick={() => setFichaView("grid")}
-                aria-label="Visualização com imagens"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-              </button>
-              <button
-                type="button"
-                className={`ft-view-btn${fichaView === "lista" ? " active" : ""}`}
-                onClick={() => setFichaView("lista")}
-                aria-label="Visualização em lista"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-              </button>
-            </div>
-          )}
-        </div>
-
         <div className="ft-edit-card">
+          <div className="ft-card-head">
+            <h2 className="ft-card-title">Ingredientes e custos</h2>
+            {temFicha && (
+              <div className="ft-view-toggle" role="group" aria-label="Visualização">
+                <button
+                  type="button"
+                  className={`ft-view-btn${fichaView === "grid" ? " active" : ""}`}
+                  onClick={() => setFichaView("grid")}
+                  aria-label="Visualização com imagens"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                </button>
+                <button
+                  type="button"
+                  className={`ft-view-btn${fichaView === "lista" ? " active" : ""}`}
+                  onClick={() => setFichaView("lista")}
+                  aria-label="Visualização em lista"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                </button>
+              </div>
+            )}
+          </div>
+
           {ficha.length === 0 ? (
             <div className="ft-edit-empty">
               <p className="ft-edit-empty-title">Nenhum ingrediente ainda</p>
@@ -619,10 +624,10 @@ export default function FichaTecnica() {
         )}
 
         {/* Custos invisíveis */}
-        <div className="ft-section-header">
-          <h2 className="ft-section-title">Custos invisíveis</h2>
-        </div>
         <div className="ft-edit-card">
+          <div className="ft-card-head">
+            <h2 className="ft-card-title">Custos invisíveis</h2>
+          </div>
           <p className="ft-edit-empty-sub" style={{ margin: 0 }}>Água, luz, gás, corantes, plástico filme e outros itens difíceis de mensurar individualmente.</p>
           <div className="ft-cv-row">
             <div className="ft-field" style={{ flex: 1 }}>
@@ -640,77 +645,97 @@ export default function FichaTecnica() {
         </div>
 
         {/* Mão de obra */}
-        <div className="ft-section-header">
-          <h2 className="ft-section-title">Mão de obra</h2>
-        </div>
         <div className="ft-edit-card">
-          <div className="ft-extras-edit" style={{ boxShadow: "none", padding: 0 }}>
-            <div className="ft-field ft-field--half">
-              <label>Quanto deseja ganhar por mês?</label>
-              <div className="ft-input-prefix">
-                <span>R$</span>
-                <input type="text" inputMode="decimal" placeholder="3.000" value={extras.salario_desejado} onChange={e => setExtras(s => ({ ...s, salario_desejado: e.target.value }))} />
-              </div>
-            </div>
-            <div className="ft-field ft-field--half">
-              <label>Horas trabalhadas/semana</label>
-              <div className="ft-input-suffix">
-                <input type="number" min="1" max="80" placeholder="40" value={extras.horas_semanais} onChange={e => setExtras(s => ({ ...s, horas_semanais: e.target.value }))} />
-                <span>h</span>
-              </div>
-            </div>
-            <div className="ft-field ft-field--half">
-              <label>Tempo de preparo</label>
-              <div className="ft-input-suffix">
-                <input type="number" min="0" placeholder="0" value={extras.tempo_preparo_min} onChange={e => setExtras(s => ({ ...s, tempo_preparo_min: e.target.value }))} />
-                <span>min</span>
-              </div>
-            </div>
-            <div className="ft-field ft-field--half">
-              <label>Custo/hora</label>
-              <div className="ft-mo-result">R$ {fmt(custoHora)}/h</div>
-            </div>
+          <div className="ft-card-head">
+            <h2 className="ft-card-title">Mão de obra</h2>
+            <label className="ft-switch">
+              <input type="checkbox" checked={moAtivo} onChange={e => setMoAtivo(e.target.checked)} />
+              <span className="ft-switch-track"><span className="ft-switch-thumb" /></span>
+            </label>
           </div>
-          {moLive > 0 && (
-            <div className="ft-cv-result" style={{ alignSelf: "flex-start" }}>
-              <span className="ft-cv-result-label">Mão de obra nesta receita: R$ {fmt(moLive)}</span>
-            </div>
+          {!moAtivo ? (
+            <p className="ft-card-off-hint">Ative para incluir o custo do seu tempo de trabalho no preço final.</p>
+          ) : (
+            <>
+              <div className="ft-extras-edit" style={{ boxShadow: "none", padding: 0 }}>
+                <div className="ft-field ft-field--half">
+                  <label>Quanto deseja ganhar por mês?</label>
+                  <div className="ft-input-prefix">
+                    <span>R$</span>
+                    <input type="text" inputMode="decimal" placeholder="3.000" value={extras.salario_desejado} onChange={e => setExtras(s => ({ ...s, salario_desejado: e.target.value }))} />
+                  </div>
+                </div>
+                <div className="ft-field ft-field--half">
+                  <label>Horas trabalhadas/semana</label>
+                  <div className="ft-input-suffix">
+                    <input type="number" min="1" max="80" placeholder="40" value={extras.horas_semanais} onChange={e => setExtras(s => ({ ...s, horas_semanais: e.target.value }))} />
+                    <span>h</span>
+                  </div>
+                </div>
+                <div className="ft-field ft-field--half">
+                  <label>Tempo de preparo</label>
+                  <div className="ft-input-suffix">
+                    <input type="number" min="0" placeholder="0" value={extras.tempo_preparo_min} onChange={e => setExtras(s => ({ ...s, tempo_preparo_min: e.target.value }))} />
+                    <span>min</span>
+                  </div>
+                </div>
+                <div className="ft-field ft-field--half">
+                  <label>Custo/hora</label>
+                  <div className="ft-mo-result">R$ {fmt(custoHora)}/h</div>
+                </div>
+              </div>
+              {moLive > 0 && (
+                <div className="ft-cv-result" style={{ alignSelf: "flex-start" }}>
+                  <span className="ft-cv-result-label">Mão de obra nesta receita: R$ {fmt(moLive)}</span>
+                </div>
+              )}
+            </>
           )}
         </div>
 
         {/* Detalhes extras */}
-        <div className="ft-section-header">
-          <h2 className="ft-section-title">Informações do produto</h2>
-        </div>
-        <div className="ft-extras-edit">
-          <div className="ft-field ft-field--half">
-            <label>Rende (unidades)</label>
-            <input type="text" placeholder="Ex: 20 brigadeiros" value={extras.rendimento_qtd} onChange={e => setExtras(s => ({ ...s, rendimento_qtd: e.target.value }))} />
+        <div className="ft-edit-card">
+          <div className="ft-card-head">
+            <h2 className="ft-card-title">Informações do produto</h2>
+            <label className="ft-switch">
+              <input type="checkbox" checked={infoAtivo} onChange={e => setInfoAtivo(e.target.checked)} />
+              <span className="ft-switch-track"><span className="ft-switch-thumb" /></span>
+            </label>
           </div>
-          <div className="ft-field ft-field--half">
-            <label>Peso total produzido</label>
-            <input type="text" placeholder="Ex: 1,2 kg" value={extras.rendimento_peso} onChange={e => setExtras(s => ({ ...s, rendimento_peso: e.target.value }))} />
-          </div>
-          <div className="ft-field ft-field--half">
-            <label>Validade após produção</label>
-            <input type="number" min="0" placeholder="Ex: 5 dias" value={extras.validade_dias} onChange={e => setExtras(s => ({ ...s, validade_dias: e.target.value }))} />
-          </div>
-          <div className="ft-field ft-field--half">
-            <label>Conservação</label>
-            <select value={extras.validade_tipo} onChange={e => setExtras(s => ({ ...s, validade_tipo: e.target.value }))}>
-              <option value="ambiente">Ambiente</option>
-              <option value="refrigerado">Refrigerado</option>
-              <option value="congelado">Congelado</option>
-            </select>
-          </div>
-          <div className="ft-field">
-            <label>Embalagem</label>
-            <input type="text" placeholder="Ex: Caixa kraft 20x20" value={extras.embalagem} onChange={e => setExtras(s => ({ ...s, embalagem: e.target.value }))} />
-          </div>
-          <div className="ft-field">
-            <label>Observações</label>
-            <textarea rows={2} placeholder="Informações sobre produção, armazenamento ou venda" value={extras.observacoes_ficha} onChange={e => setExtras(s => ({ ...s, observacoes_ficha: e.target.value }))} />
-          </div>
+          {!infoAtivo ? (
+            <p className="ft-card-off-hint">Ative para registrar rendimento, validade, embalagem e observações.</p>
+          ) : (
+            <div className="ft-extras-edit" style={{ boxShadow: "none", padding: 0 }}>
+              <div className="ft-field ft-field--half">
+                <label>Rende (unidades)</label>
+                <input type="text" placeholder="Ex: 20 brigadeiros" value={extras.rendimento_qtd} onChange={e => setExtras(s => ({ ...s, rendimento_qtd: e.target.value }))} />
+              </div>
+              <div className="ft-field ft-field--half">
+                <label>Peso total produzido</label>
+                <input type="text" placeholder="Ex: 1,2 kg" value={extras.rendimento_peso} onChange={e => setExtras(s => ({ ...s, rendimento_peso: e.target.value }))} />
+              </div>
+              <div className="ft-field ft-field--half">
+                <label>Validade após produção</label>
+                <input type="number" min="0" placeholder="Ex: 5 dias" value={extras.validade_dias} onChange={e => setExtras(s => ({ ...s, validade_dias: e.target.value }))} />
+              </div>
+              <div className="ft-field ft-field--half">
+                <label>Conservação</label>
+                <select value={extras.validade_tipo} onChange={e => setExtras(s => ({ ...s, validade_tipo: e.target.value }))}>
+                  <option value="ambiente">Ambiente</option>
+                  <option value="refrigerado">Refrigerado</option>
+                  <option value="congelado">Congelado</option>
+                </select>
+              </div>
+              <div className="ft-field">
+                <label>Embalagem</label>
+                <input type="text" placeholder="Ex: Caixa kraft 20x20" value={extras.embalagem} onChange={e => setExtras(s => ({ ...s, embalagem: e.target.value }))} />
+              </div>
+              <div className="ft-field">
+                <label>Observações</label>
+                <textarea rows={2} placeholder="Informações sobre produção, armazenamento ou venda" value={extras.observacoes_ficha} onChange={e => setExtras(s => ({ ...s, observacoes_ficha: e.target.value }))} />
+              </div>
+            </div>
+          )}
         </div>
 
         
@@ -1000,12 +1025,35 @@ const detailStyles = `
     font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-inverse);
   }
 
-  .ft-section-header { display: flex; align-items: center; justify-content: space-between; }
-  .ft-section-title {
+  /* Cabeçalho dentro do card */
+  .ft-card-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+  }
+  .ft-card-title {
     font-size: var(--font-section-label); font-weight: var(--fw-bold);
     color: var(--text-title); margin: 0;
     text-transform: uppercase; letter-spacing: var(--ls-wide);
   }
+  .ft-card-off-hint {
+    font-size: var(--font-caption); color: var(--text-muted); margin: 0; line-height: 1.4;
+  }
+
+  /* Switch (ativar seção) */
+  .ft-switch { display: inline-flex; align-items: center; cursor: pointer; flex-shrink: 0; }
+  .ft-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .ft-switch-track {
+    position: relative; width: 40px; height: 22px;
+    background: var(--border); border-radius: var(--radius-full);
+    transition: background var(--dur-fast, 0.15s) var(--ease-out, ease);
+  }
+  .ft-switch-thumb {
+    position: absolute; top: 2px; left: 2px;
+    width: 18px; height: 18px; background: var(--bg-card);
+    border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    transition: transform var(--dur-fast, 0.15s) var(--ease-out, ease);
+  }
+  .ft-switch input:checked + .ft-switch-track { background: var(--primary); }
+  .ft-switch input:checked + .ft-switch-track .ft-switch-thumb { transform: translateX(18px); }
   /* Toggle de visualização (grid / lista) */
   .ft-view-toggle {
     display: flex; gap: 2px; padding: 2px;
