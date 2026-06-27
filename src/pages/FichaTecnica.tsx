@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { useProfile } from "@/hooks/useProfile";
 import EmptyDoo from "@/components/EmptyDoo";
 import QuickAddInsumo, { InsumoQuick } from "@/components/QuickAddInsumo";
+import DooInfoModal from "@/components/DooInfoModal";
 
 // ── Famílias de unidades e conversão ──
 
@@ -167,6 +169,8 @@ function calcular(p: Produto) {
 }
 
 export default function FichaTecnica() {
+  const { profile } = useProfile();
+  const primeiroNome = (profile?.nome || "").split(" ")[0] || "Confeiteira";
   const location = useLocation();
   const [userId, setUserId] = useState("");
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -543,14 +547,6 @@ export default function FichaTecnica() {
                           </button>
                         </span>
                       </p>
-                      {infoCustoAberto === f.insumo_id && (
-                        <div className="ft-edit-item-info-pop">
-                          <span className="ft-edit-item-info-pop-title">Como calculamos</span>
-                          <span className="ft-edit-item-info-pop-line">Valor pago: R$ {fmtCusto(ins.custo_unitario || 0)} / {ins.unidade}</span>
-                          <span className="ft-edit-item-info-pop-line">Quantidade usada: {f.quantidade || 0} {f.unidade_utilizada}</span>
-                          <span className="ft-edit-item-info-pop-result">= R$ {fmt(custoLinha)}</span>
-                        </div>
-                      )}
 
                       <div className="ft-edit-item-row">
                         <div className="ft-edit-item-input-group">
@@ -809,6 +805,59 @@ export default function FichaTecnica() {
         </button>
 
         {savedToast && <div className="ft-toast">Ficha técnica salva!</div>}
+
+        {/* Modal explicativo do custo na receita (mascote Doo) */}
+        {(() => {
+          if (!infoCustoAberto) return null;
+          const f = ficha.find(x => x.insumo_id === infoCustoAberto);
+          if (!f) return null;
+          const ins = f.insumo;
+          const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
+          const qtdUsada = f.quantidade || 0;
+          const custoUn = ins.custo_unitario || 0;
+
+          return (
+            <DooInfoModal
+              open
+              onClose={() => setInfoCustoAberto(null)}
+              image="/Sistema/precifique.png"
+              imageAlt="Precificação"
+              title={`${primeiroNome}, é assim que calculamos o custo de ${ins.nome} na receita:`}
+            >
+              {qtdUsada > 0 ? (
+                <>
+                  <p style={{ margin: "0 0 10px" }}>
+                    Você cadastrou em <strong>Insumos</strong> que paga{" "}
+                    <strong>R$ {fmtCusto(custoUn)}</strong> por <strong>{ins.unidade}</strong> de {ins.nome}.
+                  </p>
+                  <p style={{ margin: "0 0 10px" }}>
+                    Nessa receita você usa <strong>{qtdUsada} {f.unidade_utilizada}</strong> de {ins.nome}.
+                  </p>
+                  <p style={{ margin: "0 0 14px" }}>
+                    Calculamos a proporção do que você paga e chegamos a{" "}
+                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong> — esse é o custo desse ingrediente especificamente nessa receita.
+                  </p>
+                  <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
+                    <strong>CMV</strong> (Custo de Mercadoria Vendida) é quanto o ingrediente pesa no custo total da sua receita. Quanto menor o CMV, maior seu lucro.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p style={{ margin: "0 0 10px" }}>
+                    Você cadastrou em <strong>Insumos</strong> que paga{" "}
+                    <strong>R$ {fmtCusto(custoUn)}</strong> por <strong>{ins.unidade}</strong> de {ins.nome}.
+                  </p>
+                  <p style={{ margin: "0 0 14px" }}>
+                    Assim que você informar <strong>quanto de {ins.nome}</strong> essa receita usa, calculamos automaticamente o custo proporcional.
+                  </p>
+                  <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
+                    Esse cálculo compõe o <strong>CMV</strong> (Custo de Mercadoria Vendida) da receita — o quanto os ingredientes pesam no custo total do seu produto.
+                  </p>
+                </>
+              )}
+            </DooInfoModal>
+          );
+        })()}
 
         <style>{detailStyles}</style>
       </div>
