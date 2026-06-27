@@ -597,7 +597,7 @@ export default function FichaTecnica() {
 
               <div className="ft-picker-busca">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input type="text" placeholder="Buscar insumo..." value={pickerBusca} onChange={e => setPickerBusca(e.target.value)} autoFocus />
+                <input type="text" placeholder="Buscar insumo..." value={pickerBusca} onChange={e => setPickerBusca(e.target.value)} />
               </div>
 
               <div className="ft-picker-grid">
@@ -1239,7 +1239,7 @@ const detailStyles = `
   /* Modal picker de insumos */
   .ft-picker {
     background: var(--bg-card); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    width: 100%; max-width: 560px; max-height: 85vh;
+    width: 100%; max-width: 560px; height: 85vh;
     display: flex; flex-direction: column;
     box-shadow: 0 -8px 32px rgba(0,0,0,0.2);
   }
@@ -1268,6 +1268,7 @@ const detailStyles = `
   }
   .ft-picker-grid {
     display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem;
+    align-content: start;
     padding: 0 1.1rem 1rem; overflow-y: auto; flex: 1;
   }
   .ft-picker-card {
