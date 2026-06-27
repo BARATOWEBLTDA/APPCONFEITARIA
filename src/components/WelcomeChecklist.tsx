@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   UserCircle, Storefront, Package, CookingPot,
   ShoppingBag, ClipboardText, CheckCircle, CaretDown,
-  Sparkle, X,
+  Sparkle,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 
@@ -23,7 +23,7 @@ export default function WelcomeChecklist({ userId }: { userId: string }) {
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
-  const [dismissed, setDismissed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -116,7 +116,7 @@ export default function WelcomeChecklist({ userId }: { userId: string }) {
   const allDone = total > 0 && doneCount === total;
   const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
 
-  if (loading || dismissed || allDone) return null;
+  if (loading || allDone) return null;
 
   return (
     <div className="wc-root">
@@ -129,8 +129,8 @@ export default function WelcomeChecklist({ userId }: { userId: string }) {
           <h2>Bem-vindo ao Doonly!</h2>
           <p>Configure seu sistema para começar a usar</p>
         </div>
-        <button className="wc-dismiss" onClick={() => setDismissed(true)} title="Fechar">
-          <X size={16} weight="bold" />
+        <button className="wc-dismiss" onClick={() => setCollapsed(c => !c)} title={collapsed ? "Expandir" : "Recolher"}>
+          <CaretDown size={16} weight="bold" className={`wc-collapse-icon ${collapsed ? "" : "wc-collapse-icon--open"}`} />
         </button>
       </div>
 
@@ -147,6 +147,7 @@ export default function WelcomeChecklist({ userId }: { userId: string }) {
       </div>
 
       {/* Steps */}
+      {!collapsed && (
       <div className="wc-steps">
         {steps.map((step) => {
           const isOpen = openId === step.id;
@@ -186,6 +187,7 @@ export default function WelcomeChecklist({ userId }: { userId: string }) {
           );
         })}
       </div>
+      )}
 
       <style>{`
         .wc-root {
@@ -238,6 +240,12 @@ export default function WelcomeChecklist({ userId }: { userId: string }) {
         .wc-dismiss:hover {
           color: var(--text-title);
           background: var(--bg-body);
+        }
+        .wc-collapse-icon {
+          transition: transform var(--dur-fast);
+        }
+        .wc-collapse-icon--open {
+          transform: rotate(180deg);
         }
 
         /* ── Progress ── */
