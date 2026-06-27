@@ -2,6 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
+// ───────────────────────────────────────────────────────────────
+// Card promocional desktop (≥1200px). Mobile NÃO renderiza.
+// TODO: trocar PLAY_STORE_URL quando o app for publicado.
+// Enquanto for "#", o QR aponta pra landing como fallback.
+// ───────────────────────────────────────────────────────────────
+const PLAY_STORE_URL = "#";
+const QR_TARGET = PLAY_STORE_URL !== "#" ? PLAY_STORE_URL : "https://doonly.com.br";
+const QR_IMG_SRC = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&bgcolor=ffffff&color=3d1a24&data=${encodeURIComponent(QR_TARGET)}`;
+
 export default function Auth() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -246,6 +255,49 @@ export default function Auth() {
       </div>
       )}
 
+      {/* Promo card — só aparece em desktop ≥1200px (controlado por CSS) */}
+      <aside className="auth-promo" aria-label="Doonly no celular">
+        <div className="auth-promo-head">
+          <div className="auth-promo-badge">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2.5" />
+              <line x1="12" y1="18" x2="12" y2="18" />
+            </svg>
+          </div>
+          <h2>Doonly no seu celular</h2>
+        </div>
+
+        <p className="auth-promo-text">
+          Gerencie pedidos, agenda, receitas e precificação onde você estiver.
+        </p>
+
+        <a
+          href={PLAY_STORE_URL}
+          className="auth-promo-store"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#00D4FF"  d="M3.6 1.3C3.2 1.6 3 2.1 3 2.7v18.6c0 .6.2 1.1.6 1.4l10.7-10.7L3.6 1.3z" />
+            <path fill="#FFD500" d="M17.9 8.9l-3.6 3.1 3.6 3.1 4-2.3c1.2-.7 1.2-2.5 0-3.2l-4-2.7z" />
+            <path fill="#FF3D00" d="M14.3 12L3.6 1.3c.2-.1.4-.2.6-.2.3 0 .6.1.9.3l13.3 7.5L14.3 12z" />
+            <path fill="#00C853" d="M14.3 12l4.1 4.1L5.1 23.6c-.3.2-.6.3-.9.3-.2 0-.4-.1-.6-.2L14.3 12z" />
+          </svg>
+          <span className="auth-promo-store-labels">
+            <span className="auth-promo-store-small">DISPONÍVEL EM BREVE NO</span>
+            <span className="auth-promo-store-big">Google Play</span>
+          </span>
+        </a>
+
+        <div className="auth-promo-divider">
+          <span>ou aponte a câmera</span>
+        </div>
+
+        <div className="auth-promo-qr">
+          <img src={QR_IMG_SRC} alt="QR Code para baixar o Doonly" loading="lazy" />
+        </div>
+      </aside>
+
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -315,6 +367,139 @@ export default function Auth() {
         .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-bold); cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
         .cad-btn:hover:not(:disabled) { opacity: 0.9; }
         .cad-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* ──────────────────────────────────────────────────────────
+           Promo card (desktop only ≥1200px).
+           Mobile/tablet: display: none — comportamento atual preservado.
+           ────────────────────────────────────────────────────────── */
+        .auth-promo { display: none; }
+
+        @media (min-width: 1200px) {
+          .auth-root {
+            flex-direction: row;
+            gap: 2rem;
+            align-items: center;
+            justify-content: center;
+          }
+          .auth-card {
+            margin: 0;
+            flex-shrink: 0;
+          }
+
+          .auth-promo {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+            z-index: 2;
+            width: 360px;
+            padding: 2.25rem 2rem;
+            border-radius: var(--radius-lg);
+            background: linear-gradient(160deg, #986274 0%, #6E3548 45%, #431524 100%);
+            color: white;
+            box-shadow: 0 12px 48px rgba(61, 26, 36, 0.35);
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-delay: 0.1s;
+          }
+
+          .auth-promo-head {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+          }
+          .auth-promo-badge {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+          }
+          .auth-promo h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: white;
+            margin: 0;
+            letter-spacing: -0.01em;
+            line-height: 1.2;
+          }
+
+          .auth-promo-text {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.85);
+            margin: 0;
+          }
+
+          .auth-promo-store {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 1.1rem;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            text-decoration: none;
+            color: white;
+            transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+            cursor: pointer;
+          }
+          .auth-promo-store:hover {
+            background: rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 255, 255, 0.35);
+            transform: translateY(-1px);
+          }
+          .auth-promo-store-labels {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+          }
+          .auth-promo-store-small {
+            font-size: 0.62rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.85;
+          }
+          .auth-promo-store-big {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+          }
+
+          .auth-promo-divider {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+          }
+          .auth-promo-divider::before,
+          .auth-promo-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+          }
+
+          .auth-promo-qr {
+            display: flex;
+            justify-content: center;
+            padding: 0.85rem;
+            background: white;
+            border-radius: 14px;
+            margin: 0 auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          }
+          .auth-promo-qr img {
+            width: 160px;
+            height: 160px;
+            display: block;
+          }
+        }
       `}</style>
     </div>
   );
