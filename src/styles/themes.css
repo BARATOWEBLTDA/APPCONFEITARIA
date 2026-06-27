@@ -31,14 +31,14 @@
   --focus-ring:       0 0 0 3px rgba(152,98,116,0.25);
 
   /* ── Sidebar / Nav ── */
-  --sidebar-bg:           #6E3548;
+  --sidebar-bg:           #431524;
   --sidebar-text:         #ECC2D0;
   --sidebar-text-muted:   rgba(236,194,208,0.6);
-  --sidebar-hover-bg:     #7D3F55;
-  --sidebar-active-bg:    var(--menu-active-bg, #431524);
+  --sidebar-hover-bg:     #5A2235;
+  --sidebar-active-bg:    var(--menu-active-bg, #6E3548);
   --sidebar-active-text:  var(--menu-active, #FFFFFF);
-  --sidebar-border:       rgba(236,194,208,0.15);
-  --sidebar-border-right: rgba(236,194,208,0.15);
+  --sidebar-border:       rgba(236,194,208,0.1);
+  --sidebar-border-right: rgba(236,194,208,0.1);
 
   /* ── Header Mobile / Top Bar ── */
   --topbar-bg:            var(--bg-card, #FFFFFF);
