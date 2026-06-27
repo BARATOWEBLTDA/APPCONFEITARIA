@@ -10,6 +10,7 @@ import {
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
+import WelcomeChecklist from "@/components/WelcomeChecklist";
 
 interface AlertaCard {
   tipo: "pedido" | "entrega" | "aniversario";
@@ -361,6 +362,10 @@ export default function Inicio() {
         </div>
       </div>
 
+      <div className="ini-content">
+        {/* ── Coluna principal ── */}
+        <div className="ini-main">
+
       {/* ── Ações rápidas ── */}
       <section className="ini-section">
         <h2 className="ini-section-title">Ações rápidas</h2>
@@ -475,6 +480,15 @@ export default function Inicio() {
           </div>
         </div>
       </section>
+        </div>
+
+        {/* ── Checklist lateral (desktop) / abaixo (mobile) ── */}
+        {profile?.id && (
+          <aside className="ini-aside">
+            <WelcomeChecklist userId={profile.id} />
+          </aside>
+        )}
+      </div>
 
       <style>{`
         .ini-root {
@@ -482,6 +496,23 @@ export default function Inicio() {
           padding: 0 0.75rem 6rem;
           display: flex; flex-direction: column;
           max-width: 980px; margin: 0 auto;
+        }
+
+        /* ── Layout 2 colunas ── */
+        .ini-content {
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+          margin-top: 0.5rem;
+        }
+        .ini-main {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          min-width: 0;
+        }
+        .ini-aside {
+          width: 100%;
         }
 
         /* ── Hero degradê animado (preservado) ── */
@@ -712,6 +743,23 @@ export default function Inicio() {
           .ini-alertas, .ini-tudo-ok, .ini-chart-card { max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-section { width: 100%; }
           .ini-profile-btn { width: 48px; height: 48px; }
+        }
+
+        /* ── 2 colunas: checklist + dashboard ── */
+        @media (min-width: 1100px) {
+          .ini-root { max-width: 1200px; }
+          .ini-content {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 1.5rem;
+            align-items: start;
+          }
+          .ini-aside { order: -1; position: sticky; top: 1.5rem; }
+          .ini-main .ini-actions,
+          .ini-main .ini-resumo,
+          .ini-main .ini-alertas,
+          .ini-main .ini-tudo-ok,
+          .ini-main .ini-chart-card { max-width: none; }
         }
       `}</style>
     </div>
