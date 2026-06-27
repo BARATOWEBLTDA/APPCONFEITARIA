@@ -871,7 +871,12 @@ export default function FichaTecnica() {
 }
 
 const listStyles = `
-  .ft-root { font-family: var(--font-base); max-width: 800px; display: flex; flex-direction: column; gap: 1rem; }
+  .ft-root {
+    font-family: var(--font-base); max-width: 800px;
+    display: flex; flex-direction: column;
+    gap: var(--space-5);
+    padding-top: var(--space-7); padding-bottom: var(--space-7);
+  }
 
   .ft-list-header { display: flex; align-items: center; justify-content: center; text-align: center; }
   .ft-list-header-inner { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 560px; }
@@ -942,7 +947,9 @@ const listStyles = `
 const detailStyles = `
   .ft-root {
     font-family: var(--font-base); max-width: 600px;
-    display: flex; flex-direction: column; gap: 1rem;
+    display: flex; flex-direction: column;
+    gap: var(--space-4);
+    padding-top: var(--space-7); padding-bottom: var(--space-7);
     --ft-line: var(--border);
   }
 
