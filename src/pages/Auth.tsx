@@ -9,7 +9,7 @@ import { supabase } from "@/lib/supabase";
 // ───────────────────────────────────────────────────────────────
 const PLAY_STORE_URL = "#";
 const QR_TARGET = PLAY_STORE_URL !== "#" ? PLAY_STORE_URL : "https://doonly.com.br";
-const QR_IMG_SRC = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=0&bgcolor=ffffff&color=3d1a24&data=${encodeURIComponent(QR_TARGET)}`;
+const QR_IMG_SRC = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=0&bgcolor=ffffff&color=3d1a24&data=${encodeURIComponent(QR_TARGET)}`;
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -303,7 +303,7 @@ export default function Auth() {
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { height: 100%; overflow: hidden; }
         #root { height: 100%; overflow-y: auto; }
-        .auth-root { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-family: inherit; padding: 1.5rem; }
+        .auth-root { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-family: inherit; padding: 1.5rem; overflow: visible; }
         .fade-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-card); opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
         .auth-bg { position: fixed; inset: 0; z-index: 0; background: var(--primary-gradient); }
@@ -378,14 +378,14 @@ export default function Auth() {
           .auth-promo {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1rem;
             position: absolute;
             z-index: 2;
             top: 50%;
-            left: calc(50% + 220px + 2rem);
+            left: calc(50% + 252px);
             transform: translateY(-50%);
-            width: 360px;
-            padding: 2.25rem 2rem;
+            width: 320px;
+            padding: 1.75rem 1.5rem;
             border-radius: var(--radius-lg);
             background: linear-gradient(160deg, #986274 0%, #6E3548 45%, #431524 100%);
             color: white;
@@ -487,8 +487,8 @@ export default function Auth() {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
           }
           .auth-promo-qr img {
-            width: 160px;
-            height: 160px;
+            width: 120px;
+            height: 120px;
             display: block;
           }
         }
