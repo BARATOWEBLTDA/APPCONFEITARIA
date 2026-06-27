@@ -184,6 +184,9 @@ export default function FichaTecnica() {
   const [fichaView, setFichaView] = useState<"grid" | "lista">("grid");
   const [moAtivo, setMoAtivo] = useState(false);
   const [infoAtivo, setInfoAtivo] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickerBusca, setPickerBusca] = useState("");
+  const [pickerSel, setPickerSel] = useState<string[]>([]);
 
   // Bloqueia scroll e oculta menu quando modal está aberto
   useEffect(() => {
@@ -289,19 +292,28 @@ export default function FichaTecnica() {
   };
 
   // -- Manipulacao da ficha --
-  const addInsumo = (ins: Insumo) => {
-    if (ficha.some(f => f.insumo_id === ins.id)) return;
-    setFicha(prev => [...prev, {
-      insumo_id: ins.id,
-      quantidade: 0,
-      unidade_utilizada: getDefaultRecipeUnit(ins),
-      insumo: ins,
-    }]);
-    setBuscaInsumo("");
-  };
   const removeInsumo = (id: string) => setFicha(prev => prev.filter(f => f.insumo_id !== id));
   const setQtd = (id: string, qtd: number) => setFicha(prev => prev.map(f => f.insumo_id === id ? { ...f, quantidade: qtd } : f));
   const setUnidade = (id: string, unidade: string) => setFicha(prev => prev.map(f => f.insumo_id === id ? { ...f, unidade_utilizada: unidade } : f));
+
+  // -- Picker (adicionar insumos já cadastrados, em lote) --
+  const abrirPicker = () => { setPickerSel([]); setPickerBusca(""); setShowPicker(true); };
+  const fecharPicker = () => { setShowPicker(false); setPickerSel([]); setPickerBusca(""); };
+  const togglePickerSel = (id: string) => {
+    setPickerSel(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+  const confirmarPicker = () => {
+    const novos = insumosCadastrados.filter(i => pickerSel.includes(i.id) && !ficha.some(f => f.insumo_id === i.id));
+    if (novos.length > 0) {
+      setFicha(prev => [...prev, ...novos.map(ins => ({
+        insumo_id: ins.id,
+        quantidade: 0,
+        unidade_utilizada: getDefaultRecipeUnit(ins),
+        insumo: ins,
+      }))]);
+    }
+    fecharPicker();
+  };
 
   const handleInsumoSalvo = (novo: InsumoQuick) => {
     const ins: Insumo = { id: novo.id, nome: novo.nome, unidade: novo.unidade, unidade_base: novo.unidade_base, custo_unitario: novo.custo_unitario, imagem_url: novo.imagem_url };
@@ -550,44 +562,74 @@ export default function FichaTecnica() {
             </div>
           )}
 
-          {/* Adicionar ingrediente */}
-            <div className="ft-add">
-              <div className="ft-add-label">Adicionar ingrediente</div>
-              <input
-                type="text" className="ft-add-input" placeholder="Buscar insumo cadastrado..."
-                value={buscaInsumo} onChange={e => setBuscaInsumo(e.target.value)}
-              />
-              {buscaInsumo.trim() && (
-                <div className="ft-add-results">
-                  {insumosCadastrados
-                    .filter(i => !ficha.some(f => f.insumo_id === i.id))
-                    .filter(i => i.nome.toLowerCase().includes(buscaInsumo.toLowerCase()))
-                    .slice(0, 6)
-                    .map(i => (
-                      <button key={i.id} type="button" className="ft-add-result" onClick={() => addInsumo(i)}>
-                        {i.imagem_url
-                          ? <img src={i.imagem_url} alt={i.nome} className="ft-add-result-img" />
-                          : <div className="ft-add-result-img ft-add-result-img--ph">{i.nome.charAt(0).toUpperCase()}</div>}
-                        <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
-                          <p className="ft-edit-item-nome">{i.nome}</p>
-                          <p className="ft-edit-item-sub">R$ {fmtCusto(i.custo_unitario || 0)} / {i.unidade}</p>
-                        </div>
-                      </button>
-                    ))}
-                  <button type="button" className="ft-add-novo" onClick={() => { setQuickAddName(buscaInsumo); setShowQuickAdd(true); }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                    Cadastrar "{buscaInsumo}" como novo insumo
-                  </button>
-                </div>
-              )}
-              {!buscaInsumo.trim() && (
-                <button type="button" className="ft-add-novo ft-add-novo--solo" onClick={() => { setQuickAddName(""); setShowQuickAdd(true); }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
-                  Cadastrar novo insumo
-                </button>
-              )}
-            </div>
+          {/* Ações: adicionar existente / cadastrar novo */}
+          <div className="ft-add-actions">
+            <button type="button" className="ft-add-existente" onClick={abrirPicker}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              Adicionar insumo
+            </button>
+            <button type="button" className="ft-add-novo" onClick={() => { setQuickAddName(""); setShowQuickAdd(true); }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              Cadastrar novo insumo
+            </button>
+          </div>
         </div>
+
+        {/* Modal: selecionar insumos cadastrados (em lote) */}
+        {showPicker && createPortal(
+          <div
+            className="ft-modal-overlay"
+            onClick={fecharPicker}
+            style={{
+              position: "fixed", inset: 0, zIndex: 9999,
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)",
+              display: "flex", alignItems: "flex-end", justifyContent: "center",
+            }}
+          >
+            <div className="ft-picker" onClick={e => e.stopPropagation()}>
+              <div className="ft-picker-head">
+                <h3 className="ft-picker-title">Adicionar insumo</h3>
+                <button className="ft-picker-close" onClick={fecharPicker} aria-label="Fechar">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+
+              <div className="ft-picker-busca">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" placeholder="Buscar insumo..." value={pickerBusca} onChange={e => setPickerBusca(e.target.value)} autoFocus />
+              </div>
+
+              <div className="ft-picker-grid">
+                {insumosCadastrados
+                  .filter(i => !ficha.some(f => f.insumo_id === i.id))
+                  .filter(i => i.nome.toLowerCase().includes(pickerBusca.toLowerCase()))
+                  .map(i => {
+                    const sel = pickerSel.includes(i.id);
+                    return (
+                      <button key={i.id} type="button" className={`ft-picker-card${sel ? " selected" : ""}`} onClick={() => togglePickerSel(i.id)}>
+                        <div className="ft-picker-card-img">
+                          {i.imagem_url
+                            ? <img src={i.imagem_url} alt={i.nome} />
+                            : <div className="ft-picker-card-ph">{i.nome.charAt(0).toUpperCase()}</div>}
+                          {sel && <span className="ft-picker-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>}
+                        </div>
+                        <span className="ft-picker-card-nome">{i.nome}</span>
+                      </button>
+                    );
+                  })}
+                {insumosCadastrados.filter(i => !ficha.some(f => f.insumo_id === i.id) && i.nome.toLowerCase().includes(pickerBusca.toLowerCase())).length === 0 && (
+                  <p className="ft-picker-vazio">Nenhum insumo disponível. Cadastre um novo insumo.</p>
+                )}
+              </div>
+
+              <button className="ft-picker-confirm" onClick={confirmarPicker} disabled={pickerSel.length === 0}>
+                {pickerSel.length === 0 ? "Selecione os insumos" : `Adicionar ${pickerSel.length} insumo${pickerSel.length > 1 ? "s" : ""}`}
+              </button>
+            </div>
+          </div>,
+          document.body
+        )}
 
         {/* Modal de cadastro de insumo */}
         {showQuickAdd && createPortal(
@@ -1170,25 +1212,6 @@ const detailStyles = `
   .ft-edit-item-custo-eq { font-size: var(--font-caption); color: var(--text-muted); }
   .ft-edit-item-custo-val { font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text-title); white-space: nowrap; text-align: right; }
 
-  .ft-add { display: flex; flex-direction: column; gap: 0.4rem; }
-  .ft-add-label { font-size: var(--font-field-label); color: var(--text-secondary); font-weight: var(--fw-semibold); }
-  .ft-add-input {
-    padding: 0.55rem 0.7rem; border: 1.5px solid var(--border); border-radius: var(--radius-md);
-    font-family: var(--font-base); font-size: var(--font-body); background: var(--bg-card); color: var(--text-primary); outline: none;
-  }
-  .ft-add-input:focus { border-color: var(--primary); }
-  .ft-add-results { display: flex; flex-direction: column; gap: 0.3rem; }
-  .ft-add-result {
-    display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem;
-    background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-md); cursor: pointer;
-    transition: border-color var(--dur-fast, 0.15s) var(--ease-out, ease);
-  }
-  .ft-add-result:hover { border-color: var(--primary); }
-  .ft-add-result-img { width: 32px; height: 32px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0; }
-  .ft-add-result-img--ph {
-    display: flex; align-items: center; justify-content: center;
-    background: var(--primary-light); color: var(--primary); font-weight: var(--fw-bold); font-size: var(--font-caption);
-  }
   .ft-add-novo {
     display: flex; align-items: center; justify-content: center; gap: 6px;
     padding: 0.85rem 0.75rem; background: var(--primary); border: none;
@@ -1200,6 +1223,95 @@ const detailStyles = `
   .ft-add-novo:hover { filter: brightness(1.08); }
   .ft-add-novo svg { stroke: var(--text-inverse); flex-shrink: 0; }
   .ft-add-novo--solo { background: var(--primary); }
+
+  /* Linha de ações: adicionar existente + cadastrar novo */
+  .ft-add-actions { display: flex; flex-direction: column; gap: 0.5rem; }
+  .ft-add-existente {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 0.85rem 0.75rem; background: var(--bg-card); border: 1.5px solid var(--primary);
+    border-radius: var(--radius-md); color: var(--primary); font-family: var(--font-base);
+    font-size: var(--font-body); font-weight: var(--fw-bold); cursor: pointer; text-align: center;
+    transition: background var(--dur-fast, 0.15s) var(--ease-out, ease);
+  }
+  .ft-add-existente:hover { background: var(--primary-light); }
+  .ft-add-existente svg { stroke: var(--primary); flex-shrink: 0; }
+
+  /* Modal picker de insumos */
+  .ft-picker {
+    background: var(--bg-card); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    width: 100%; max-width: 560px; max-height: 85vh;
+    display: flex; flex-direction: column;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.2);
+  }
+  .ft-picker-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.1rem 0.75rem; flex-shrink: 0;
+  }
+  .ft-picker-title {
+    font-size: var(--font-section-title); font-weight: var(--fw-bold); color: var(--text-title); margin: 0;
+  }
+  .ft-picker-close {
+    display: flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; flex-shrink: 0;
+    background: var(--bg-subtle); border: none; border-radius: var(--radius-full);
+    cursor: pointer; color: var(--text-muted);
+  }
+  .ft-picker-close:hover { background: var(--border); color: var(--text-secondary); }
+  .ft-picker-busca {
+    display: flex; align-items: center; gap: 8px; margin: 0 1.1rem 0.75rem;
+    padding: 0.55rem 0.75rem; background: var(--bg-subtle); border: 1.5px solid var(--border);
+    border-radius: var(--radius-md); color: var(--text-muted); flex-shrink: 0;
+  }
+  .ft-picker-busca input {
+    flex: 1; border: none; outline: none; background: transparent;
+    font-family: var(--font-base); font-size: var(--font-body); color: var(--text-primary);
+  }
+  .ft-picker-grid {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem;
+    padding: 0 1.1rem 1rem; overflow-y: auto; flex: 1;
+  }
+  .ft-picker-card {
+    display: flex; flex-direction: column; gap: 5px; padding: 0;
+    background: transparent; border: none; cursor: pointer;
+  }
+  .ft-picker-card-img {
+    position: relative; aspect-ratio: 1; width: 100%;
+    border-radius: var(--radius-md); overflow: hidden;
+    background: var(--bg-subtle);
+    border: 2px solid var(--border);
+    transition: border-color var(--dur-fast, 0.15s) var(--ease-out, ease);
+  }
+  .ft-picker-card.selected .ft-picker-card-img {
+    border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light);
+  }
+  .ft-picker-card-img img { width: 100%; height: 100%; object-fit: cover; }
+  .ft-picker-card-ph {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    background: var(--primary-light); color: var(--primary); font-weight: var(--fw-bold); font-size: var(--font-section-title);
+  }
+  .ft-picker-check {
+    position: absolute; top: 5px; right: 5px;
+    width: 24px; height: 24px; background: var(--primary);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  }
+  .ft-picker-card-nome {
+    font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-title);
+    text-align: center; line-height: 1.25;
+    overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  .ft-picker-vazio {
+    grid-column: 1 / -1; text-align: center; padding: 2rem 1rem;
+    font-size: var(--font-caption); color: var(--text-muted);
+  }
+  .ft-picker-confirm {
+    margin: 0 1.1rem 1.1rem; padding: 0.85rem; flex-shrink: 0;
+    background: var(--primary); color: var(--text-inverse); border: none;
+    border-radius: var(--radius-md); font-family: var(--font-base);
+    font-size: var(--font-button); font-weight: var(--fw-bold); cursor: pointer;
+  }
+  .ft-picker-confirm:disabled { opacity: 0.5; cursor: default; }
 
   .ft-extras-edit {
     background: var(--bg-card); border-radius: var(--radius-md); padding: 0.85rem;
