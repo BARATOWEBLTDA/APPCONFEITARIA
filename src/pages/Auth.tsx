@@ -313,6 +313,7 @@ export default function Auth() {
         .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; }
         .auth-card { position: relative; z-index: 2; background: var(--bg-card); border-radius: var(--radius-lg); padding: 2rem 1.75rem; width: 100%; max-width: 440px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 1rem auto; overflow-y: auto; max-height: calc(100vh - 2rem); }
         @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes promoFadeIn { from { opacity: 0; } to { opacity: 1; } }
         .auth-logo-wrap { display: flex; justify-content: center; margin-bottom: 1.8rem; }
         .auth-logo-img { height: 110px; object-fit: contain; }
         .auth-form { display: flex; flex-direction: column; gap: 1rem; }
@@ -387,16 +388,15 @@ export default function Auth() {
             gap: 1rem;
             position: absolute;
             z-index: 2;
-            top: 50%;
+            top: 0;
             left: calc(100% + 2rem);
-            transform: translateY(-50%);
             width: 320px;
             padding: 1.75rem 1.5rem;
             border-radius: var(--radius-lg);
             background: linear-gradient(160deg, #986274 0%, #6E3548 45%, #431524 100%);
             color: white;
             box-shadow: 0 12px 48px rgba(61, 26, 36, 0.35);
-            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation: promoFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
             animation-delay: 0.1s;
           }
 
