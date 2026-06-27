@@ -182,6 +182,10 @@ export default function DooInfoModal({
             margin: "0 0 12px",
             letterSpacing: "-0.01em",
             lineHeight: 1.4,
+            // Balanceia as quebras de linha entre todas as linhas em vez de
+            // deixar uma "órfã" no final (Chrome 114+, Safari 17.5+, Firefox 121+).
+            // Cai pra wrap normal em browsers antigos sem regressão.
+            textWrap: "balance",
           }}
         >
           {title}

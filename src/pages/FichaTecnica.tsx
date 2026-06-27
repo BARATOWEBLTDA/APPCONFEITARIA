@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
@@ -176,6 +176,26 @@ const fmtUnidade = (unidade: string, qtd: number): string => {
   return Math.abs(qtd) !== 1 ? lower + "s" : lower;
 };
 
+/** Variações do título do modal de "como calculamos o custo" — sorteadas
+ *  a cada abertura pra dar variedade e tom mais humano à conversa.
+ *  Mantidas curtas para combinar bem com `text-wrap: balance`. */
+const MODAL_TITLE_VARIANTS: ((nome: string) => ReactNode)[] = [
+  // Formais
+  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, veja como calculamos este custo.</>,
+  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, confira como chegamos a este valor.</>,
+  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, entenda como este custo foi calculado.</>,
+  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, vamos mostrar como esse valor foi obtido.</>,
+  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, veja o passo a passo deste cálculo.</>,
+  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, descubra como calculamos este ingrediente.</>,
+  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, este é o cálculo por trás deste custo.</>,
+  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, entenda de onde vem este valor.</>,
+  // Descontraídas
+  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, sem mistério! Veja como fizemos esse cálculo.</>,
+  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, vamos abrir a calculadora e mostrar tudo.</>,
+  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, aqui está a conta por trás deste custo.</>,
+  (n) => <><strong style={{ fontWeight: 800 }}>{n}</strong>, veja cada etapa do cálculo.</>,
+];
+
 function calcular(p: Produto) {
   const itens = p.produto_insumos || [];
   const cmv = itens.reduce((s, pi) => {
@@ -214,6 +234,14 @@ export default function FichaTecnica() {
   const [pickerBusca, setPickerBusca] = useState("");
   const [pickerSel, setPickerSel] = useState<string[]>([]);
   const [infoCustoAberto, setInfoCustoAberto] = useState<string | null>(null);
+
+  // Sorteia uma variação de título a cada abertura do modal explicativo.
+  // Dep é `infoCustoAberto`: muda toda vez que abre/fecha → nova escolha;
+  // enquanto aberto, fica estável (sem flicker em re-renders).
+  const tituloModalIndex = useMemo(
+    () => Math.floor(Math.random() * MODAL_TITLE_VARIANTS.length),
+    [infoCustoAberto]
+  );
 
   // Bloqueia scroll e oculta menu quando modal está aberto
   useEffect(() => {
@@ -877,13 +905,7 @@ export default function FichaTecnica() {
               image="/Sistema/precifique.png"
               imageAlt="Precificação"
               ariaLabel={`Como calculamos o custo de ${ins.nome}`}
-              title={
-                <>
-                  <strong style={{ fontWeight: 800 }}>{primeiroNome}</strong>
-                  , é assim que calculamos o custo de{" "}
-                  <strong style={{ fontWeight: 800 }}>{ins.nome}</strong> na receita
-                </>
-              }
+              title={MODAL_TITLE_VARIANTS[tituloModalIndex](primeiroNome)}
             >
               {qtdUsada <= 0 ? (
                 /* Caso 1: quantidade ainda não informada */
