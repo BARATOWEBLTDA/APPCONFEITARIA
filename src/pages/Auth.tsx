@@ -306,7 +306,7 @@ export default function Auth() {
         html, body { height: 100%; overflow: hidden; }
         #root { height: 100%; overflow-y: auto; }
         .auth-root { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-family: inherit; padding: 1.5rem; overflow: visible; }
-        .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; }
+        .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; display: flex; flex-direction: column; }
         .fade-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-card); opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
         .auth-bg { position: fixed; inset: 0; z-index: 0; background: var(--primary-gradient); }
@@ -378,6 +378,9 @@ export default function Auth() {
         .auth-promo { display: none; }
 
         @media (min-width: 1200px) {
+          .auth-card {
+            margin: 0;
+          }
           .auth-promo {
             display: flex;
             flex-direction: column;
