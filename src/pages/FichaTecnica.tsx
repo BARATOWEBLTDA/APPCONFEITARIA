@@ -526,10 +526,14 @@ export default function FichaTecnica() {
                         </button>
                       </div>
 
-                      <p className="ft-edit-item-sub">Valor pago R$ {fmtCusto(ins.custo_unitario || 0)} / {ins.unidade}</p>
+                      <p className="ft-edit-item-sub">
+                        <span className="ft-edit-item-sub-label">Valor pago:</span> R$ {fmtCusto(ins.custo_unitario || 0)} / {ins.unidade}
+                      </p>
+                      <p className="ft-edit-item-sub">
+                        <span className="ft-edit-item-sub-label">Usado nesta receita:</span> R$ {fmt(custoLinha)}
+                      </p>
 
                       <div className="ft-edit-item-usado">
-                        <span className="ft-edit-item-usado-label">Usado nesta receita</span>
                         <div className="ft-edit-item-row">
                           <div className="ft-edit-item-input-group">
                             <input
@@ -548,10 +552,6 @@ export default function FichaTecnica() {
                             ) : (
                               <span className="ft-edit-item-unit-fixed">{f.unidade_utilizada}</span>
                             )}
-                          </div>
-                          <div className="ft-edit-item-custo">
-                            <span className="ft-edit-item-custo-eq">=</span>
-                            <span className="ft-edit-item-custo-val">R$ {fmt(custoLinha)}</span>
                           </div>
                         </div>
                       </div>
@@ -584,7 +584,8 @@ export default function FichaTecnica() {
               position: "fixed", inset: 0, zIndex: 9999,
               background: "rgba(0,0,0,0.6)",
               backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)",
-              display: "flex", alignItems: "flex-end", justifyContent: "center",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              padding: "1rem",
             }}
           >
             <div className="ft-picker" onClick={e => e.stopPropagation()}>
@@ -797,9 +798,11 @@ export default function FichaTecnica() {
   return (
     <div className="ft-root">
       <div className="ft-list-header">
-        <div>
+        <div className="ft-list-header-inner">
           <h1 className="ft-list-title">Precificação Inteligente</h1>
-          <p className="ft-list-sub">{totalComFicha} de {produtos.length} produto{produtos.length !== 1 ? "s" : ""} precificado{totalComFicha !== 1 ? "s" : ""}</p>
+          <p className="ft-list-sub">
+            Você já precificou {totalComFicha} de {produtos.length} produto{produtos.length !== 1 ? "s" : ""}. Continue para conhecer os custos e lucros de todo o seu catálogo.
+          </p>
         </div>
       </div>
 
@@ -807,13 +810,6 @@ export default function FichaTecnica() {
         <div className="ft-list-busca">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input type="text" placeholder="Buscar produto..." value={busca} onChange={e => setBusca(e.target.value)} />
-        </div>
-        <div className="ft-list-filtros">
-          {(["todos", "com", "sem"] as const).map(f => (
-            <button key={f} className={`ft-filtro-btn${filtro === f ? " active" : ""}`} onClick={() => setFiltro(f)}>
-              {{ todos: "Todos", com: "Precificados", sem: "Sem preço" }[f]}
-            </button>
-          ))}
         </div>
       </div>
 
@@ -877,9 +873,10 @@ export default function FichaTecnica() {
 const listStyles = `
   .ft-root { font-family: var(--font-base); max-width: 800px; display: flex; flex-direction: column; gap: 1rem; }
 
-  .ft-list-header { display: flex; align-items: center; justify-content: space-between; }
-  .ft-list-title { font-size: var(--font-page-title); font-weight: var(--fw-bold); color: var(--text-title); margin: 0 0 2px; }
-  .ft-list-sub { font-size: var(--font-helper); color: var(--text-muted); margin: 0; }
+  .ft-list-header { display: flex; align-items: center; justify-content: center; text-align: center; }
+  .ft-list-header-inner { display: flex; flex-direction: column; align-items: center; gap: 4px; max-width: 560px; }
+  .ft-list-title { font-size: var(--font-page-title); font-weight: var(--fw-bold); color: var(--text-title); margin: 0; text-align: center; }
+  .ft-list-sub { font-size: var(--font-helper); color: var(--text-muted); margin: 0; text-align: center; line-height: 1.4; }
 
   .ft-list-toolbar { display: flex; flex-direction: column; gap: 0.5rem; }
   .ft-list-busca {
@@ -1148,7 +1145,7 @@ const detailStyles = `
   .ft-edit-list { display: flex; flex-direction: column; gap: 0.6rem; }
   .ft-edit-item {
     display: flex; flex-direction: row; align-items: flex-start; gap: 0.75rem;
-    padding: 0.85rem; background: var(--bg-subtle); border-radius: var(--radius-lg);
+    padding: 0.85rem; background: #F4F4F5; border-radius: var(--radius-lg);
   }
 
   .ft-edit-item-img {
@@ -1159,10 +1156,14 @@ const detailStyles = `
     background: var(--primary-light); color: var(--primary);
     font-weight: var(--fw-bold); font-size: var(--font-section-title);
   }
-  .ft-edit-item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-  .ft-edit-item-headline { display: flex; align-items: flex-start; gap: 0.5rem; }
+  .ft-edit-item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .ft-edit-item-headline { display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 2px; }
   .ft-edit-item-nome { flex: 1; min-width: 0; font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text-title); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ft-edit-item-sub { font-size: var(--font-caption); color: var(--text-muted); margin: 0; }
+  .ft-edit-item-sub {
+    font-size: var(--font-caption); color: var(--text-secondary); margin: 0;
+    line-height: 1.4;
+  }
+  .ft-edit-item-sub-label { color: var(--text-muted); font-weight: var(--fw-medium); }
   .ft-edit-item-del {
     width: 24px; height: 24px; flex-shrink: 0; background: transparent; border: none;
     border-radius: var(--radius-md); color: var(--text-muted); cursor: pointer;
@@ -1171,14 +1172,10 @@ const detailStyles = `
   }
   .ft-edit-item-del:active { opacity: 1; color: var(--error); }
 
-  .ft-edit-item-usado { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
-  .ft-edit-item-usado-label {
-    font-size: var(--font-caption); text-transform: uppercase; letter-spacing: var(--ls-wide);
-    color: var(--text-secondary); font-weight: var(--fw-semibold);
-  }
+  .ft-edit-item-usado { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
   .ft-edit-item-row { display: flex; align-items: center; gap: 8px; }
   .ft-edit-item-input-group {
-    flex: 1; display: flex; align-items: stretch;
+    flex: 1; width: 100%; display: flex; align-items: stretch;
     border: 1.5px solid var(--primary-dark); border-radius: var(--radius-md);
     overflow: hidden; background: var(--bg-card);
     transition: border-color 0.15s ease;
@@ -1238,10 +1235,10 @@ const detailStyles = `
 
   /* Modal picker de insumos */
   .ft-picker {
-    background: var(--bg-card); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    width: 100%; max-width: 560px; height: 85vh;
+    background: var(--bg-card); border-radius: var(--radius-lg);
+    width: 100%; max-width: 560px; max-height: 85vh;
     display: flex; flex-direction: column;
-    box-shadow: 0 -8px 32px rgba(0,0,0,0.2);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.3);
   }
   .ft-picker-head {
     display: flex; align-items: center; justify-content: space-between;
