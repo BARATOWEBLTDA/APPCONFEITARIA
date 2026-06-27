@@ -56,12 +56,31 @@ export default function DooInfoModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  // Trava scroll do body enquanto aberto
+  // Trava scroll do body enquanto aberto.
+  // iOS Safari não respeita só `overflow: hidden` no body — toques ainda
+  // disparam scroll por trás do modal. O padrão robusto é colocar o body em
+  // `position: fixed` com `top: -scrollY`, preservando a posição visual.
+  // Ao fechar, restauramos tudo e devolvemos o scroll com `scrollTo`.
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
+    const scrollY = window.scrollY;
+    const prev = {
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+      overflow: document.body.style.overflow,
+    };
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
+    return () => {
+      document.body.style.position = prev.position;
+      document.body.style.top = prev.top;
+      document.body.style.width = prev.width;
+      document.body.style.overflow = prev.overflow;
+      window.scrollTo(0, scrollY);
+    };
   }, [open]);
 
   if (!open) return null;
@@ -177,7 +196,7 @@ export default function DooInfoModal({
         <h3
           style={{
             fontSize: "1.15rem",
-            fontWeight: 500,
+            fontWeight: 600,
             color: "var(--text-title)",
             margin: "0 0 12px",
             letterSpacing: "-0.01em",
