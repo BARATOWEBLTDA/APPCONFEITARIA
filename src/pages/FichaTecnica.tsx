@@ -518,10 +518,6 @@ export default function FichaTecnica() {
                       {ins.imagem_url
                         ? <img src={ins.imagem_url} alt={ins.nome} className="ft-edit-item-img" />
                         : <div className="ft-edit-item-img ft-edit-item-img--ph">{ins.nome.charAt(0).toUpperCase()}</div>}
-                      <button className="ft-edit-item-del" onClick={() => removeInsumo(f.insumo_id)} aria-label="Remover">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                        Remover
-                      </button>
                     </div>
 
                     <div className="ft-edit-item-body">
@@ -555,6 +551,10 @@ export default function FichaTecnica() {
                         </div>
                       </div>
                     </div>
+
+                    <button className="ft-edit-item-del" onClick={() => removeInsumo(f.insumo_id)} aria-label="Remover" title="Remover">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
                   </div>
                 );
               })}
@@ -1150,7 +1150,8 @@ const detailStyles = `
 
   .ft-edit-list { display: flex; flex-direction: column; gap: 0.6rem; }
   .ft-edit-item {
-    display: flex; flex-direction: row; align-items: stretch; gap: var(--space-3);
+    position: relative;
+    display: flex; flex-direction: row; align-items: center; gap: var(--space-3);
     padding: var(--pad-card);
     padding-left: 0;
     background: #F4F4F5; border-radius: var(--radius-lg);
@@ -1158,16 +1159,14 @@ const detailStyles = `
   }
 
   .ft-edit-item-media {
-    display: flex; flex-direction: column; align-items: center;
-    gap: var(--space-2);
     flex-shrink: 0;
-    padding-top: 0;
   }
   .ft-edit-item-img {
     width: 110px; height: 110px;
     object-fit: cover;
     background: transparent;
     mix-blend-mode: multiply;
+    display: block;
   }
   .ft-edit-item-img--ph {
     display: flex; align-items: center; justify-content: center;
@@ -1176,26 +1175,25 @@ const detailStyles = `
     mix-blend-mode: normal;
   }
   .ft-edit-item-del {
+    position: absolute;
+    top: var(--space-2); right: var(--space-2);
+    width: 28px; height: 28px;
     display: inline-flex; align-items: center; justify-content: center;
-    gap: 4px;
-    padding: var(--space-1) var(--space-2);
     background: transparent;
     border: 1.5px solid var(--border);
     border-radius: var(--radius-sm);
-    color: var(--text-secondary);
-    font-family: var(--font-base);
-    font-size: var(--font-caption); font-weight: var(--fw-semibold);
+    color: var(--text-muted);
     cursor: pointer;
     transition: all var(--dur-fast) var(--ease-out);
   }
   .ft-edit-item-del:hover {
-    border-color: var(--error); color: var(--error); background: var(--primary-light);
+    border-color: var(--error); color: var(--error); background: var(--bg-card);
   }
 
   .ft-edit-item-body {
     flex: 1; min-width: 0; display: flex; flex-direction: column;
     gap: 2px;
-    padding-top: var(--space-1);
+    padding-right: calc(28px + var(--space-2));
   }
   .ft-edit-item-nome {
     font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text-title);
