@@ -461,10 +461,14 @@ function Styles() {
       .ins-item-img {
         width: 110px; height: 110px;
         border-radius: var(--radius-md); object-fit: cover;
-        background: var(--bg-subtle);
+        background: transparent;
+        mix-blend-mode: multiply;
       }
       .ins-item-img--placeholder {
-        display: flex; align-items: center; justify-content: center; font-size: var(--text-3xl);
+        display: flex; align-items: center; justify-content: center;
+        font-size: var(--text-3xl);
+        background: var(--bg-subtle);
+        mix-blend-mode: normal;
       }
       .ins-item-edit {
         display: inline-flex; align-items: center; justify-content: center;

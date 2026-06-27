@@ -1162,12 +1162,14 @@ const detailStyles = `
   .ft-edit-item-img {
     width: 110px; height: 110px;
     border-radius: var(--radius-md); object-fit: cover;
-    background: var(--bg-subtle);
+    background: transparent;
+    mix-blend-mode: multiply;
   }
   .ft-edit-item-img--ph {
     display: flex; align-items: center; justify-content: center;
     background: var(--primary-light); color: var(--primary);
     font-weight: var(--fw-bold); font-size: var(--text-3xl);
+    mix-blend-mode: normal;
   }
   .ft-edit-item-del {
     display: inline-flex; align-items: center; justify-content: center;
