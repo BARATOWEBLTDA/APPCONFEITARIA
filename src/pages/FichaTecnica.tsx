@@ -1150,18 +1150,22 @@ const detailStyles = `
 
   .ft-edit-list { display: flex; flex-direction: column; gap: 0.6rem; }
   .ft-edit-item {
-    display: flex; flex-direction: row; align-items: stretch; gap: var(--space-4);
-    padding: var(--pad-card); background: #F4F4F5; border-radius: var(--radius-lg);
+    display: flex; flex-direction: row; align-items: stretch; gap: var(--space-3);
+    padding: var(--pad-card);
+    padding-left: 0;
+    background: #F4F4F5; border-radius: var(--radius-lg);
+    overflow: hidden;
   }
 
   .ft-edit-item-media {
     display: flex; flex-direction: column; align-items: center;
     gap: var(--space-2);
     flex-shrink: 0;
+    padding-top: 0;
   }
   .ft-edit-item-img {
     width: 110px; height: 110px;
-    border-radius: var(--radius-md); object-fit: cover;
+    object-fit: cover;
     background: transparent;
     mix-blend-mode: multiply;
   }
