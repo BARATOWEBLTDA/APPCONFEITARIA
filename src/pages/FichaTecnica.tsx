@@ -156,6 +156,26 @@ const fmtCusto = (v: number) => {
   return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
+/** Formata quantidade sem casas decimais desnecessárias.
+ *  Ex: 1 → "1"; 1.5 → "1,5"; 0.25 → "0,25"; 395 → "395". */
+const fmtQty = (v: number): string => {
+  const n = Number(v) || 0;
+  if (Number.isInteger(n)) return n.toString();
+  return n.toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+};
+
+/** Retorna a unidade adaptada pra prosa, com pluralização quando faz sentido.
+ *  Ex: ("un", 1) → "unidade"; ("un", 5) → "unidades"; ("kg", 1) → "kg"; ("Lata", 2) → "latas". */
+const fmtUnidade = (unidade: string, qtd: number): string => {
+  if (!unidade) return "";
+  if (unidade === "un") return Math.abs(qtd) === 1 ? "unidade" : "unidades";
+  // Unidades de medida ficam como cadastradas (case-sensitive: "kg", "g", "ml", "L")
+  if (["kg", "g", "ml", "L"].includes(unidade)) return unidade;
+  // Embalagens (Lata, Pacote, Caixa...) — lowercase + plural quando aplicável
+  const lower = unidade.toLowerCase();
+  return Math.abs(qtd) !== 1 ? lower + "s" : lower;
+};
+
 function calcular(p: Produto) {
   const itens = p.produto_insumos || [];
   const cmv = itens.reduce((s, pi) => {
@@ -266,12 +286,25 @@ export default function FichaTecnica() {
 
   const abrirFicha = (p: Produto) => {
     setSelected(p);
-    setFicha((p.produto_insumos || []).map(pi => ({
-      insumo_id: pi.insumos.id,
-      quantidade: Number(pi.quantidade) || 0,
-      unidade_utilizada: pi.unidade_utilizada || pi.insumos.unidade,
-      insumo: pi.insumos,
-    })));
+    setFicha((p.produto_insumos || []).map(pi => {
+      const insumo = pi.insumos as Insumo;
+      const savedUnit = pi.unidade_utilizada || insumo.unidade;
+      // Auto-cura: se a unidade salva no banco não está entre as unidades
+      // compatíveis atuais do insumo (dados legados ou cadastro do insumo
+      // alterado depois), volta pra unidade padrão. Sem isso, o <select>
+      // mostra a primeira opção visualmente mas o estado fica dessincronizado,
+      // causando cálculo errado de custo.
+      const compatibleUnits = getCompatibleUnits(insumo);
+      const unidade_utilizada = compatibleUnits.includes(savedUnit)
+        ? savedUnit
+        : getDefaultRecipeUnit(insumo);
+      return {
+        insumo_id: insumo.id,
+        quantidade: Number(pi.quantidade) || 0,
+        unidade_utilizada,
+        insumo,
+      };
+    }));
     setExtras({
       rendimento_qtd: p.rendimento_qtd || "",
       rendimento_peso: p.rendimento_peso || "",
@@ -849,7 +882,7 @@ export default function FichaTecnica() {
                       <strong>R$ {fmt(valorPago)}</strong>{" "}
                       {isAvulso
                         ? <>por unidade de {ins.nome}.</>
-                        : <>{tipoEmbBaixo === "embalagem" ? "na" : `${tipoEmbBaixo === "lata" || tipoEmbBaixo === "caixa" ? "na" : "no"}`} {tipoEmbBaixo} de <strong>{fmt(qtdEmb)} {ins.unidade}</strong> de {ins.nome}.</>}
+                        : <>{tipoEmbBaixo === "embalagem" ? "na" : `${tipoEmbBaixo === "lata" || tipoEmbBaixo === "caixa" ? "na" : "no"}`} {tipoEmbBaixo} de <strong>{fmtQty(qtdEmb)} {fmtUnidade(ins.unidade, qtdEmb)}</strong> de {ins.nome}.</>}
                     </p>
                   ) : (
                     <p style={{ margin: "0 0 12px" }}>
@@ -871,7 +904,7 @@ export default function FichaTecnica() {
                     Você paga <strong>R$ {fmt(valorPago)}</strong> por unidade de {ins.nome} (cadastrado em <strong>Insumos</strong>).
                   </p>
                   <p style={{ margin: "0 0 10px" }}>
-                    Essa receita usa <strong>{fmt(qtdUsada)} {f.unidade_utilizada}</strong>.
+                    Essa receita usa <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong>.
                   </p>
                   <p style={{ margin: "0 0 14px" }}>
                     Total:{" "}
@@ -888,10 +921,10 @@ export default function FichaTecnica() {
                   <p style={{ margin: "0 0 10px" }}>
                     Você paga <strong>R$ {fmt(valorPago)}</strong>{" "}
                     {tipoEmbBaixo === "lata" || tipoEmbBaixo === "caixa" || tipoEmbBaixo === "embalagem" ? "na" : "no"}{" "}
-                    {tipoEmbBaixo} de <strong>{fmt(qtdEmb)} {ins.unidade}</strong> de {ins.nome} (cadastrado em <strong>Insumos</strong>).
+                    {tipoEmbBaixo} de <strong>{fmtQty(qtdEmb)} {fmtUnidade(ins.unidade, qtdEmb)}</strong> de {ins.nome} (cadastrado em <strong>Insumos</strong>).
                   </p>
                   <p style={{ margin: "0 0 10px" }}>
-                    Essa receita usa <strong>{fmt(qtdUsada)} {f.unidade_utilizada}</strong> de {ins.nome}.
+                    Essa receita usa <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong> de {ins.nome}.
                   </p>
                   <p style={{ margin: "0 0 14px" }}>
                     Como é uma fração {tipoEmbBaixo === "lata" || tipoEmbBaixo === "caixa" || tipoEmbBaixo === "embalagem" ? "da" : "do"} {tipoEmbBaixo}, calculamos a proporção:{" "}
@@ -908,7 +941,7 @@ export default function FichaTecnica() {
                     Esse insumo ainda não tem o <strong>valor total da compra</strong> cadastrado em Insumos. Mesmo assim, conseguimos calcular o custo na receita pela quantidade que você usa.
                   </p>
                   <p style={{ margin: "0 0 14px" }}>
-                    Essa receita usa <strong>{fmt(qtdUsada)} {f.unidade_utilizada}</strong> de {ins.nome} →{" "}
+                    Essa receita usa <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong> de {ins.nome} →{" "}
                     <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong>.
                   </p>
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
