@@ -98,15 +98,44 @@ export default function Insumos() {
     return `R$ ${v.toFixed(casas).replace(".", ",")}`;
   };
   /**
-   * Converte o custo unitário para a menor unidade prática usada em receitas.
-   *  - kg → g  (÷ 1000)
-   *  - L  → ml (÷ 1000)
-   *  - g, ml, un e demais → mantém
+   * Calcula o valor de exibição numa escala que se adapta ao tamanho da embalagem,
+   * para evitar números muito pequenos (R$ 0,005 por g).
+   *
+   *  Peso:    kg/g  → escala em g  (100g se total ≥ 1kg, 10g se ≥ 100g, 1g se < 100g)
+   *  Volume:  L/ml  → escala em ml (mesma lógica)
+   *  Outros:  un, etc. → sempre 1 unidade
    */
-  const custoMenorUnidade = (custo: number, unidade: string): { valor: number; unidade: string } => {
-    if (unidade === "kg") return { valor: custo / 1000, unidade: "g" };
-    if (unidade === "L")  return { valor: custo / 1000, unidade: "ml" };
-    return { valor: custo, unidade };
+  const custoExibicao = (
+    custo_unitario: number,
+    unidade: string,
+    qtd_embalagem: number
+  ): { quantidade: number; valor: number; unidade: string } => {
+    // Normaliza pra unidade base (g, ml ou própria)
+    let custoBase = custo_unitario;
+    let unidadeBase = unidade;
+    let totalBase = qtd_embalagem || 1;
+
+    if (unidade === "kg") {
+      custoBase = custo_unitario / 1000;
+      unidadeBase = "g";
+      totalBase = (qtd_embalagem || 1) * 1000;
+    } else if (unidade === "L") {
+      custoBase = custo_unitario / 1000;
+      unidadeBase = "ml";
+      totalBase = (qtd_embalagem || 1) * 1000;
+    }
+
+    // Pra un, pct, cx, Lata etc. não tem escala
+    if (unidadeBase !== "g" && unidadeBase !== "ml") {
+      return { quantidade: 1, valor: custoBase, unidade: unidadeBase };
+    }
+
+    // Escala adaptativa em potências de 10
+    let escala = 1;
+    if (totalBase >= 1000) escala = 100;
+    else if (totalBase >= 100) escala = 10;
+
+    return { quantidade: escala, valor: custoBase * escala, unidade: unidadeBase };
   };
 
   // ── Empty state ──
@@ -230,7 +259,8 @@ export default function Insumos() {
       ) : (
         <div className="ins-list">
           {filtrados.map(i => {
-            const custoMenor = custoMenorUnidade(i.custo_unitario || 0, i.unidade);
+            const exib = custoExibicao(i.custo_unitario || 0, i.unidade, i.qtd_embalagem || 1);
+            const labelQtd = exib.quantidade === 1 ? exib.unidade : `${exib.quantidade}${exib.unidade}`;
             return (
             <div key={i.id} className="ins-item">
               {i.imagem_url
@@ -243,7 +273,7 @@ export default function Insumos() {
                 <p className="ins-item-line">
                   Preço médio: {formatCurrency(i.valor_compra || 0)} / {i.qtd_embalagem || 1} {i.unidade}{i.embalagem_tipo && i.embalagem_tipo !== "Avulso" ? ` (${i.embalagem_tipo})` : ""}
                 </p>
-                <p className="ins-item-custo">Valor por {custoMenor.unidade}: {formatCustoUnit(custoMenor.valor)}</p>
+                <p className="ins-item-custo">Valor por {labelQtd}: {formatCustoUnit(exib.valor)}</p>
               </div>
 
               <div className="ins-item-actions">
