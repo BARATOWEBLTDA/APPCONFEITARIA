@@ -502,45 +502,45 @@ export default function FichaTecnica() {
 
                 return (
                   <div key={f.insumo_id} className="ft-edit-item">
-                    {/* Topo: imagem + nome + botão remover */}
-                    <div className="ft-edit-item-top">
-                      {ins.imagem_url
-                        ? <img src={ins.imagem_url} alt={ins.nome} className="ft-edit-item-img" />
-                        : <div className="ft-edit-item-img ft-edit-item-img--ph">{ins.nome.charAt(0).toUpperCase()}</div>}
-                      <div className="ft-edit-item-info">
-                        <p className="ft-edit-item-nome">{ins.nome}</p>
-                        <p className="ft-edit-item-sub">R$ {fmtCusto(ins.custo_unitario || 0)} / {ins.unidade}</p>
-                      </div>
-                      <button className="ft-edit-item-del" onClick={() => removeInsumo(f.insumo_id)} aria-label="Remover">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                      </button>
-                    </div>
+                    {ins.imagem_url
+                      ? <img src={ins.imagem_url} alt={ins.nome} className="ft-edit-item-img" />
+                      : <div className="ft-edit-item-img ft-edit-item-img--ph">{ins.nome.charAt(0).toUpperCase()}</div>}
 
-                    {/* Rodapé: qtd usada + custo calculado */}
-                    <div className="ft-edit-item-bottom">
-                      <label className="ft-edit-item-label">Quantidade utilizada</label>
-                      <div className="ft-edit-item-row">
-                        <div className="ft-edit-item-input-group">
-                          <input
-                            type="number" value={f.quantidade || ""} step="any" min="0" placeholder="0"
-                            onChange={e => setQtd(f.insumo_id, parseFloat(e.target.value) || 0)}
-                          />
-                          {hasUnitChoice ? (
-                            <select
-                              value={f.unidade_utilizada}
-                              onChange={e => setUnidade(f.insumo_id, e.target.value)}
-                            >
-                              {compatibleUnits.map(u => (
-                                <option key={u} value={u}>{u}</option>
-                              ))}
-                            </select>
-                          ) : (
-                            <span className="ft-edit-item-unit-fixed">{f.unidade_utilizada}</span>
-                          )}
-                        </div>
-                        <div className="ft-edit-item-custo">
-                          <span className="ft-edit-item-custo-eq">=</span>
-                          <span className="ft-edit-item-custo-val">R$ {fmt(custoLinha)}</span>
+                    <div className="ft-edit-item-body">
+                      <div className="ft-edit-item-headline">
+                        <p className="ft-edit-item-nome">{ins.nome}</p>
+                        <button className="ft-edit-item-del" onClick={() => removeInsumo(f.insumo_id)} aria-label="Remover">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                        </button>
+                      </div>
+
+                      <p className="ft-edit-item-sub">Valor pago R$ {fmtCusto(ins.custo_unitario || 0)} / {ins.unidade}</p>
+
+                      <div className="ft-edit-item-usado">
+                        <span className="ft-edit-item-usado-label">Usado nesta receita</span>
+                        <div className="ft-edit-item-row">
+                          <div className="ft-edit-item-input-group">
+                            <input
+                              type="number" value={f.quantidade || ""} step="any" min="0" placeholder="0"
+                              onChange={e => setQtd(f.insumo_id, parseFloat(e.target.value) || 0)}
+                            />
+                            {hasUnitChoice ? (
+                              <select
+                                value={f.unidade_utilizada}
+                                onChange={e => setUnidade(f.insumo_id, e.target.value)}
+                              >
+                                {compatibleUnits.map(u => (
+                                  <option key={u} value={u}>{u}</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <span className="ft-edit-item-unit-fixed">{f.unidade_utilizada}</span>
+                            )}
+                          </div>
+                          <div className="ft-edit-item-custo">
+                            <span className="ft-edit-item-custo-eq">=</span>
+                            <span className="ft-edit-item-custo-val">R$ {fmt(custoLinha)}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1105,22 +1105,22 @@ const detailStyles = `
 
   .ft-edit-list { display: flex; flex-direction: column; gap: 0.6rem; }
   .ft-edit-item {
-    display: flex; flex-direction: column; gap: 0.6rem;
+    display: flex; flex-direction: row; align-items: flex-start; gap: 0.75rem;
     padding: 0.85rem; background: var(--bg-subtle); border-radius: var(--radius-lg);
   }
 
-  .ft-edit-item-top { display: flex; align-items: center; gap: 0.6rem; }
   .ft-edit-item-img {
-    width: 44px; height: 44px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0;
+    width: 64px; height: 64px; border-radius: var(--radius-md); object-fit: cover; flex-shrink: 0;
   }
   .ft-edit-item-img--ph {
     display: flex; align-items: center; justify-content: center;
     background: var(--primary-light); color: var(--primary);
-    font-weight: var(--fw-bold); font-size: var(--font-body);
+    font-weight: var(--fw-bold); font-size: var(--font-section-title);
   }
-  .ft-edit-item-info { flex: 1; min-width: 0; }
-  .ft-edit-item-nome { font-size: var(--font-body); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .ft-edit-item-sub { font-size: var(--font-caption); color: var(--text-muted); margin: 2px 0 0; }
+  .ft-edit-item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .ft-edit-item-headline { display: flex; align-items: flex-start; gap: 0.5rem; }
+  .ft-edit-item-nome { flex: 1; min-width: 0; font-size: var(--font-body); font-weight: var(--fw-bold); color: var(--text-title); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ft-edit-item-sub { font-size: var(--font-caption); color: var(--text-muted); margin: 0; }
   .ft-edit-item-del {
     width: 24px; height: 24px; flex-shrink: 0; background: transparent; border: none;
     border-radius: var(--radius-md); color: var(--text-muted); cursor: pointer;
@@ -1129,10 +1129,10 @@ const detailStyles = `
   }
   .ft-edit-item-del:active { opacity: 1; color: var(--error); }
 
-  .ft-edit-item-bottom { display: flex; flex-direction: column; gap: 5px; }
-  .ft-edit-item-label {
+  .ft-edit-item-usado { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+  .ft-edit-item-usado-label {
     font-size: var(--font-caption); text-transform: uppercase; letter-spacing: var(--ls-wide);
-    color: var(--text-secondary); font-weight: var(--fw-semibold); margin: 0;
+    color: var(--text-secondary); font-weight: var(--fw-semibold);
   }
   .ft-edit-item-row { display: flex; align-items: center; gap: 8px; }
   .ft-edit-item-input-group {
