@@ -275,7 +275,7 @@ export default function Insumos() {
 
               <div className="ins-item-info">
                 <p className="ins-item-nome">{i.nome}</p>
-                {i.marca && <p className="ins-item-line">Marca: {i.marca}</p>}
+                <p className="ins-item-line">Marca: {i.marca || "Não informada"}</p>
                 <p className="ins-item-line">
                   Preço médio: {formatCurrency(i.valor_compra || 0)} / {i.qtd_embalagem || 1} {i.unidade}{i.embalagem_tipo && i.embalagem_tipo !== "Avulso" ? ` (${i.embalagem_tipo})` : ""}
                 </p>
