@@ -55,15 +55,21 @@ const UNIDADES_MEDIDA = [
 
 const EMBALAGENS = [
   { sigla: "Avulso", nome: "Avulso (sem embalagem)" },
-  { sigla: "Bandeja", nome: "Bandeja" },
-  { sigla: "Caixa", nome: "Caixa" },
   { sigla: "Pacote", nome: "Pacote" },
+  { sigla: "Caixa", nome: "Caixa" },
   { sigla: "Saco", nome: "Saco" },
-  { sigla: "Lata", nome: "Lata" },
-  { sigla: "Garrafa", nome: "Garrafa" },
   { sigla: "Pote", nome: "Pote" },
+  { sigla: "Garrafa", nome: "Garrafa" },
+  { sigla: "Frasco", nome: "Frasco" },
+  { sigla: "Lata", nome: "Lata" },
+  { sigla: "Bandeja", nome: "Bandeja" },
   { sigla: "Bisnaga", nome: "Bisnaga" },
+  { sigla: "Sachê", nome: "Sachê" },
+  { sigla: "Envelope", nome: "Envelope" },
+  { sigla: "Balde", nome: "Balde" },
+  { sigla: "Bombona", nome: "Bombona" },
   { sigla: "Rolo", nome: "Rolo" },
+  { sigla: "Tubo", nome: "Tubo" },
 ];
 
 /**
@@ -334,7 +340,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           </div>
         </div>
         <div className="qai-field">
-          <label>Embalagem</label>
+          <label>Tipo de embalagem</label>
           <select
             className="qai-input"
             value={form.embalagem_tipo}
