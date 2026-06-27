@@ -531,7 +531,7 @@ export default function FichaTecnica() {
                       <p className="ft-edit-item-nome">{ins.nome}</p>
 
                       <p className="ft-edit-item-sub">
-                        <span className="ft-edit-item-sub-label">Custo na receita:</span>{" "}
+                        <span className="ft-edit-item-sub-label">Custo:</span>{" "}
                         <span className="ft-edit-item-sub-value">
                           R$ {fmt(custoLinha)}
                           <button
@@ -1294,7 +1294,7 @@ const detailStyles = `
     flex-shrink: 0;
   }
   .ft-edit-item-img {
-    width: 110px; height: 110px;
+    width: 76px; height: 76px;
     object-fit: cover;
     background: transparent;
     mix-blend-mode: multiply;
@@ -1333,12 +1333,12 @@ const detailStyles = `
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .ft-edit-item-sub {
-    font-size: var(--font-caption); color: var(--text-secondary); margin: 0;
-    font-weight: var(--fw-medium);
+    font-size: var(--font-body); color: var(--text-title); margin: 0;
+    font-weight: var(--fw-semibold);
     line-height: 1.4;
   }
-  .ft-edit-item-sub-label { color: var(--text-muted); font-weight: var(--fw-medium); }
-  .ft-edit-item-sub-value { white-space: nowrap; }
+  .ft-edit-item-sub-label { color: var(--text-secondary); font-weight: var(--fw-medium); font-size: var(--font-caption); }
+  .ft-edit-item-sub-value { white-space: nowrap; font-weight: var(--fw-bold); color: var(--text-title); }
 
   .ft-edit-item-info {
     display: inline-flex; align-items: center; justify-content: center;
@@ -1375,7 +1375,7 @@ const detailStyles = `
   .ft-edit-item-row { display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
   .ft-edit-item-input-group {
     flex: 1; width: 100%; display: flex; align-items: stretch;
-    border: 1.5px solid var(--primary-dark); border-radius: var(--radius-md);
+    border: 1.5px solid var(--border); border-radius: var(--radius-md);
     overflow: hidden; background: var(--bg-card);
     transition: border-color 0.15s ease;
   }
@@ -1392,16 +1392,18 @@ const detailStyles = `
   .ft-edit-item-input-group select {
     border: none; outline: none;
     padding: 0 0.7rem; font-family: var(--font-base);
-    font-size: var(--font-caption); font-weight: var(--fw-bold);
-    color: var(--text-inverse); background: var(--primary-dark);
+    font-size: var(--font-caption); font-weight: var(--fw-semibold);
+    color: var(--text-secondary); background: var(--bg-subtle, #EAEAEC);
+    border-left: 1px solid var(--border);
     cursor: pointer; -webkit-appearance: none; appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2371717A' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 8px center;
     padding-right: 1.6rem;
   }
   .ft-edit-item-unit-fixed {
-    padding: 0 0.7rem; font-size: var(--font-caption); font-weight: var(--fw-bold);
-    color: var(--text-inverse); background: var(--primary-dark);
+    padding: 0 0.7rem; font-size: var(--font-caption); font-weight: var(--fw-semibold);
+    color: var(--text-secondary); background: var(--bg-subtle, #EAEAEC);
+    border-left: 1px solid var(--border);
     white-space: nowrap; display: flex; align-items: center;
   }
   .ft-edit-item-custo { display: flex; align-items: center; gap: 4px; flex-shrink: 0; min-width: 90px; justify-content: flex-end; }
