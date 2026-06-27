@@ -263,9 +263,15 @@ export default function Insumos() {
             const labelQtd = exib.quantidade === 1 ? exib.unidade : `${exib.quantidade}${exib.unidade}`;
             return (
             <div key={i.id} className="ins-item">
-              {i.imagem_url
-                ? <img src={i.imagem_url} alt={i.nome} className="ins-item-img" />
-                : <div className="ins-item-img ins-item-img--placeholder">🥣</div>}
+              <div className="ins-item-media">
+                {i.imagem_url
+                  ? <img src={i.imagem_url} alt={i.nome} className="ins-item-img" />
+                  : <div className="ins-item-img ins-item-img--placeholder">🥣</div>}
+                <button className="ins-item-edit" onClick={() => abrirEditar(i)} aria-label="Editar" title="Editar">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  Editar
+                </button>
+              </div>
 
               <div className="ins-item-info">
                 <p className="ins-item-nome">{i.nome}</p>
@@ -274,15 +280,6 @@ export default function Insumos() {
                   Preço médio: {formatCurrency(i.valor_compra || 0)} / {i.qtd_embalagem || 1} {i.unidade}{i.embalagem_tipo && i.embalagem_tipo !== "Avulso" ? ` (${i.embalagem_tipo})` : ""}
                 </p>
                 <p className="ins-item-custo">Valor por {labelQtd}: {formatCustoUnit(exib.valor)}</p>
-              </div>
-
-              <div className="ins-item-actions">
-                <button className="ins-act-btn" onClick={() => abrirEditar(i)} aria-label="Editar" title="Editar">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </button>
-                <button className="ins-act-btn ins-act-del" onClick={() => setDeleteConfirm(i)} aria-label="Excluir" title="Excluir">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-                </button>
               </div>
             </div>
             );
@@ -444,7 +441,7 @@ function Styles() {
       /* Lista */
       .ins-list { display: flex; flex-direction: column; gap: var(--space-2); }
       .ins-item {
-        display: flex; gap: var(--space-3); align-items: flex-start;
+        display: flex; gap: var(--space-4); align-items: stretch;
         padding: var(--pad-card);
         background: var(--bg-card);
         border: 1.5px solid var(--border);
@@ -452,17 +449,42 @@ function Styles() {
         transition: border-color var(--dur-fast) var(--ease-out);
       }
       .ins-item:hover { border-color: var(--primary); }
+      .ins-item-media {
+        display: flex; flex-direction: column; align-items: center;
+        gap: var(--space-2);
+        flex-shrink: 0;
+      }
       .ins-item-img {
-        width: 56px; height: 56px;
+        width: 110px; height: 110px;
         border-radius: var(--radius-md); object-fit: cover;
-        flex-shrink: 0; background: var(--bg-subtle);
+        background: var(--bg-subtle);
       }
       .ins-item-img--placeholder {
-        display: flex; align-items: center; justify-content: center; font-size: var(--text-xl);
+        display: flex; align-items: center; justify-content: center; font-size: var(--text-3xl);
       }
-      .ins-item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+      .ins-item-edit {
+        display: inline-flex; align-items: center; justify-content: center;
+        gap: 4px;
+        padding: var(--space-1) var(--space-2);
+        background: transparent;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+        font-family: var(--font-base);
+        font-size: var(--font-caption); font-weight: var(--fw-semibold);
+        cursor: pointer;
+        transition: all var(--dur-fast) var(--ease-out);
+      }
+      .ins-item-edit:hover {
+        border-color: var(--primary); color: var(--primary); background: var(--primary-light);
+      }
+      .ins-item-info {
+        flex: 1; min-width: 0;
+        display: flex; flex-direction: column; gap: 2px;
+        padding-top: var(--space-1);
+      }
       .ins-item-nome {
-        margin: 0; font-size: var(--font-button); font-weight: var(--fw-bold);
+        margin: 0; font-size: var(--font-body); font-weight: var(--fw-bold);
         color: var(--text-title);
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
@@ -477,23 +499,6 @@ function Styles() {
         margin: var(--space-1) 0 0;
         font-size: var(--font-helper); font-weight: var(--fw-bold);
         color: var(--primary);
-      }
-      .ins-item-actions {
-        display: flex; gap: var(--space-1); flex-shrink: 0;
-      }
-      .ins-act-btn {
-        width: 32px; height: 32px;
-        background: transparent; border: 1.5px solid var(--border);
-        border-radius: var(--radius-sm);
-        display: flex; align-items: center; justify-content: center;
-        color: var(--text-secondary);
-        cursor: pointer; transition: all var(--dur-fast) var(--ease-out);
-      }
-      .ins-act-btn:hover { background: var(--bg-body); color: var(--text-title); }
-      .ins-act-del:hover {
-        background: var(--primary-light);
-        color: var(--error);
-        border-color: var(--error);
       }
 
       .ins-loading {
@@ -581,7 +586,7 @@ function Styles() {
         .ins-title { font-size: var(--font-page-title); }
         .ins-filtros--desktop { display: none; }
         .ins-cat-dropdown { display: block; }
-        .ins-item-img { width: 48px; height: 48px; }
+        .ins-item-img { width: 88px; height: 88px; }
         .ins-item-nome { font-size: var(--font-button); }
       }
     `}</style>
