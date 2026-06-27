@@ -478,34 +478,11 @@ export default function FichaTecnica() {
               {ficha.map(f => {
                 const ins = f.insumo;
                 const custoLinha = calcCusto(f.quantidade, f.unidade_utilizada, ins);
-                const compatibleUnits = getCompatibleUnits(ins);
-                const hasUnitChoice = compatibleUnits.length > 1;
                 return (
                   <div key={f.insumo_id} className="ft-list-row">
-                    <div className="ft-list-row-main">
-                      <div className="ft-list-row-nomeline">
-                        <span className="ft-list-row-nome">{ins.nome}</span>
-                        <button className="ft-list-row-del" onClick={() => removeInsumo(f.insumo_id)} aria-label="Remover">
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                        </button>
-                      </div>
-                      <div className="ft-list-row-bottom">
-                        <div className="ft-list-row-input">
-                          <input
-                            type="number" value={f.quantidade || ""} step="any" min="0" placeholder="0"
-                            onChange={e => setQtd(f.insumo_id, parseFloat(e.target.value) || 0)}
-                          />
-                          {hasUnitChoice ? (
-                            <select value={f.unidade_utilizada} onChange={e => setUnidade(f.insumo_id, e.target.value)}>
-                              {compatibleUnits.map(u => <option key={u} value={u}>{u}</option>)}
-                            </select>
-                          ) : (
-                            <span className="ft-list-row-unit">{f.unidade_utilizada}</span>
-                          )}
-                        </div>
-                        <span className="ft-list-row-custo">R$ {fmt(custoLinha)}</span>
-                      </div>
-                    </div>
+                    <span className="ft-list-row-nome">{ins.nome}</span>
+                    <span className="ft-list-row-qtd">{f.quantidade || 0} {f.unidade_utilizada}</span>
+                    <span className="ft-list-row-custo">R$ {fmt(custoLinha)}</span>
                   </div>
                 );
               })}
@@ -1045,64 +1022,29 @@ const detailStyles = `
     box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   }
 
-  /* Modo lista (compacto, sem imagem, estilo planilha) */
+  /* Modo lista (somente leitura, estilo receita/planilha) */
   .ft-list-mode {
     display: flex; flex-direction: column;
     border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden;
   }
   .ft-list-row {
-    display: flex; align-items: stretch;
-    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.6rem 0.7rem; border-bottom: 1px solid var(--border);
   }
+  .ft-list-row:nth-child(even) { background: var(--bg-subtle); }
   .ft-list-row:last-child { border-bottom: none; }
-  .ft-list-row-main {
-    flex: 1; min-width: 0; display: flex; flex-direction: column;
-  }
-  .ft-list-row-nomeline {
-    display: flex; align-items: center; gap: 0.5rem;
-    padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--border);
-    background: var(--bg-subtle);
-  }
   .ft-list-row-nome {
-    flex: 1; min-width: 0; font-size: var(--font-body); font-weight: var(--fw-bold);
+    flex: 1; min-width: 0; font-size: var(--font-body); font-weight: var(--fw-semibold);
     color: var(--text-title); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .ft-list-row-bottom {
-    display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
-    padding: 0.5rem 0.7rem;
-  }
-  .ft-list-row-input {
-    display: flex; align-items: stretch; flex-shrink: 0;
-    border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-    overflow: hidden; background: var(--bg-card);
-  }
-  .ft-list-row-input:focus-within { border-color: var(--primary); }
-  .ft-list-row-input input {
-    width: 56px; border: none; outline: none; background: transparent;
-    padding: 0.3rem 0.4rem; font-family: var(--font-base); font-size: var(--font-caption);
-    font-weight: var(--fw-semibold); color: var(--text-primary); text-align: right;
-  }
-  .ft-list-row-input input::-webkit-outer-spin-button,
-  .ft-list-row-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  .ft-list-row-input input[type=number] { -moz-appearance: textfield; }
-  .ft-list-row-input select,
-  .ft-list-row-unit {
-    display: flex; align-items: center; border: none; outline: none;
-    padding: 0 0.45rem; font-family: var(--font-base); font-size: 0.7rem;
-    font-weight: var(--fw-bold); color: var(--text-inverse); background: var(--primary-dark);
-    cursor: pointer; -webkit-appearance: none; appearance: none;
+  .ft-list-row-qtd {
+    flex-shrink: 0; font-size: var(--font-caption); font-weight: var(--fw-semibold);
+    color: var(--text-secondary); white-space: nowrap; text-align: right; min-width: 64px;
   }
   .ft-list-row-custo {
-    font-size: var(--font-body); font-weight: var(--fw-bold);
-    color: var(--text-title); white-space: nowrap;
+    flex-shrink: 0; font-size: var(--font-body); font-weight: var(--fw-bold);
+    color: var(--text-title); white-space: nowrap; text-align: right; min-width: 72px;
   }
-  .ft-list-row-del {
-    width: 22px; height: 22px; flex-shrink: 0; background: transparent; border: none;
-    border-radius: var(--radius-sm); color: var(--text-muted); cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0.5; transition: all var(--dur-fast) var(--ease-out);
-  }
-  .ft-list-row-del:active { opacity: 1; color: var(--error); }
 
   .ft-edit-card {
     background: var(--bg-card); border-radius: var(--radius-lg);
