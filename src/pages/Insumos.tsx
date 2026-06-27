@@ -211,12 +211,10 @@ export default function Insumos() {
           onClick={() => setShowCatDropdown(s => !s)}
           aria-expanded={showCatDropdown}
         >
-          <span className="ins-cat-dropdown-label">
-            <span className="ins-cat-dropdown-tag">Categoria</span>
-            <span className="ins-cat-dropdown-value">{filtroCategoria}</span>
-          </span>
+          <span className="ins-cat-dropdown-label">Categoria:</span>
+          <span className="ins-cat-dropdown-value">{filtroCategoria}</span>
           <svg
-            width="18" height="18" viewBox="0 0 24 24" fill="none"
+            width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
             style={{ transform: showCatDropdown ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}
           >
@@ -399,27 +397,31 @@ function Styles() {
 
       .ins-cat-dropdown { display: none; position: relative; }
       .ins-cat-dropdown-trigger {
-        width: 100%; display: flex; align-items: center; justify-content: space-between;
-        gap: var(--space-2); padding: var(--pad-input);
-        background: var(--bg-card);
-        border: 1.5px solid var(--border);
-        border-radius: var(--radius-md);
-        font-family: var(--font-base); cursor: pointer;
-        color: var(--text-title);
-        transition: border-color var(--dur-fast) var(--ease-out);
+        display: inline-flex; align-items: center;
+        gap: var(--space-1);
+        padding: var(--space-1) 0;
+        background: transparent;
+        border: none;
+        font-family: var(--font-base);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: color var(--dur-fast) var(--ease-out);
       }
-      .ins-cat-dropdown-trigger:hover { border-color: var(--primary); }
-      .ins-cat-dropdown-label { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
-      .ins-cat-dropdown-tag {
-        font-size: var(--font-caption); font-weight: var(--fw-bold); text-transform: uppercase;
-        letter-spacing: var(--ls-wide);
+      .ins-cat-dropdown-trigger:hover { color: var(--primary); }
+      .ins-cat-dropdown-label {
+        font-size: var(--font-button);
+        font-weight: var(--fw-medium);
         color: var(--text-muted);
-        background: var(--bg-body); padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm);
       }
-      .ins-cat-dropdown-value { font-size: var(--font-button); font-weight: var(--fw-bold); }
+      .ins-cat-dropdown-value {
+        font-size: var(--font-button);
+        font-weight: var(--fw-bold);
+        color: var(--text-title);
+      }
       .ins-cat-dropdown-backdrop { position: fixed; inset: 0; z-index: 90; background: transparent; }
       .ins-cat-dropdown-list {
-        position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 91;
+        position: absolute; top: calc(100% + 6px); left: 0; z-index: 91;
+        min-width: 200px;
         background: var(--bg-card);
         border: 1.5px solid var(--border);
         border-radius: var(--radius-md);
