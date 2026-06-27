@@ -525,20 +525,23 @@ export default function FichaTecnica() {
                       <p className="ft-edit-item-nome">{ins.nome}</p>
 
                       <p className="ft-edit-item-sub">
-                        <span className="ft-edit-item-sub-label">Custo na receita:</span> R$ {fmt(custoLinha)}
-                        <button
-                          type="button"
-                          className="ft-edit-item-info"
-                          onClick={() => setInfoCustoAberto(prev => prev === f.insumo_id ? null : f.insumo_id)}
-                          aria-label="Como esse valor é calculado"
-                          title="Como esse valor é calculado"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="12" y1="16" x2="12" y2="12"/>
-                            <line x1="12" y1="8" x2="12.01" y2="8"/>
-                          </svg>
-                        </button>
+                        <span className="ft-edit-item-sub-label">Custo na receita:</span>{" "}
+                        <span className="ft-edit-item-sub-value">
+                          R$ {fmt(custoLinha)}
+                          <button
+                            type="button"
+                            className="ft-edit-item-info"
+                            onClick={() => setInfoCustoAberto(prev => prev === f.insumo_id ? null : f.insumo_id)}
+                            aria-label="Como esse valor é calculado"
+                            title="Como esse valor é calculado"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"/>
+                              <line x1="12" y1="16" x2="12" y2="12"/>
+                              <line x1="12" y1="8" x2="12.01" y2="8"/>
+                            </svg>
+                          </button>
+                        </span>
                       </p>
                       {infoCustoAberto === f.insumo_id && (
                         <div className="ft-edit-item-info-pop">
@@ -1225,6 +1228,7 @@ const detailStyles = `
     line-height: 1.4;
   }
   .ft-edit-item-sub-label { color: var(--text-muted); font-weight: var(--fw-medium); }
+  .ft-edit-item-sub-value { white-space: nowrap; }
 
   .ft-edit-item-info {
     display: inline-flex; align-items: center; justify-content: center;
