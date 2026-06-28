@@ -1104,7 +1104,6 @@ export default function Inicio() {
             grid-template-columns: 1fr 380px;
           }
           .ini-content--done .ini-aside { order: 0; }
-          .ini-content--done .ini-main { max-width: 640px; }
         }
       `}</style>
     </div>
