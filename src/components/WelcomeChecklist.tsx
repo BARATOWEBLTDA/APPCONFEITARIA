@@ -416,6 +416,34 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         .wc-step-cta:active {
           transform: translateY(0);
         }
+
+        /* ────────────────────────────────────────────
+           POLISH DESKTOP (≥1100px) — mobile intocado
+           ──────────────────────────────────────────── */
+        @media (min-width: 1100px) {
+          .wc-root {
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: var(--space-6);
+          }
+          /* Header com faixa de marca sutil no topo */
+          .wc-header {
+            padding: 1.5rem 1.5rem 0;
+          }
+          .wc-header-icon {
+            width: 42px; height: 42px;
+            box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+          }
+          .wc-header-text h2 { font-size: 1.15rem; }
+          .wc-progress { padding: 1.1rem 1.5rem; }
+          .wc-progress-track { height: 8px; }
+          .wc-step-header { padding: 1rem 1.5rem; }
+          .wc-step-icon { width: 40px; height: 40px; }
+          .wc-step-body { padding: 0 1.5rem 1.1rem 4rem; }
+          /* Hover mais sutil usando o tom da marca em vez de cinza */
+          .wc-step-header:hover { background: var(--bg-subtle); }
+          .wc-dismiss:hover { background: var(--bg-subtle); }
+        }
       `}</style>
     </div>
   );

@@ -370,40 +370,90 @@ export default function Inicio() {
         {/* ── Coluna principal ── */}
         <div className="ini-main">
 
-      {/* ── Resumo do dia (desktop only) ── */}
-      <section className="ini-section ini-section--greeting">
-        <div className="ini-greeting">
-          <h2 className="ini-greeting-title">Olá, {(profile?.nome || "").split(" ")[0] || "confeiteira"}</h2>
-          <div className="ini-greeting-stats">
-            <div className="ini-greeting-stat">
-              <ShoppingBag size={18} weight="duotone" />
-              <span><strong>0</strong> pedidos hoje</span>
+      {/* ── Métricas (desktop only — dados reais) ── */}
+      <section className="ini-section ini-section--metrics">
+        <div className="ini-metrics-grid">
+          {/* Card hero — Faturamento do mês (destaque) */}
+          <div className="ini-metric-card ini-metric-card--hero">
+            <div className="ini-metric-top">
+              <div className="ini-metric-icon">
+                <CurrencyDollar size={20} weight="duotone" />
+              </div>
+              <span className="ini-metric-label">Faturamento do mês</span>
             </div>
-            <div className="ini-greeting-stat">
-              <CurrencyDollar size={18} weight="duotone" />
-              <span><strong>R$ 0,00</strong> vendidos</span>
+            <p className="ini-metric-val">{loading ? <span className="ini-skeleton ini-skeleton--val" /> : formatCurrency(counts.faturamentoMes)}</p>
+            {!loading && varVendas && (
+              <p className={`ini-metric-trend ${varVendas.tipo}`}>
+                {varVendas.tipo === "up" ? <TrendUp size={13} weight="bold" /> : <TrendDown size={13} weight="bold" />}
+                {varVendas.pct.toFixed(0)}% vs. semana anterior
+              </p>
+            )}
+            {!loading && !varVendas && (
+              <p className="ini-metric-trend neutral">Acompanhe sua evolução aqui</p>
+            )}
+          </div>
+
+          {/* Card — Pedidos da semana */}
+          <div className="ini-metric-card">
+            <div className="ini-metric-top">
+              <div className="ini-metric-icon">
+                <ClipboardText size={18} weight="duotone" />
+              </div>
+              <span className="ini-metric-label">Pedidos na semana</span>
             </div>
-            <div className="ini-greeting-stat">
-              <CalendarDots size={18} weight="duotone" />
-              <span><strong>0</strong> entregas</span>
+            <p className="ini-metric-val">{loading ? <span className="ini-skeleton ini-skeleton--val" /> : resumoSemana.pedidos}</p>
+            {!loading && varPedidos && (
+              <p className={`ini-metric-trend ${varPedidos.tipo}`}>
+                {varPedidos.tipo === "up" ? <TrendUp size={12} weight="bold" /> : <TrendDown size={12} weight="bold" />}
+                {varPedidos.pct.toFixed(0)}%
+              </p>
+            )}
+            {!loading && !varPedidos && <p className="ini-metric-trend neutral">últimos 7 dias</p>}
+          </div>
+
+          {/* Card — Entregas hoje */}
+          <div className="ini-metric-card">
+            <div className="ini-metric-top">
+              <div className="ini-metric-icon">
+                <CalendarDots size={18} weight="duotone" />
+              </div>
+              <span className="ini-metric-label">Entregas hoje</span>
             </div>
+            <p className="ini-metric-val">{loading ? <span className="ini-skeleton ini-skeleton--val" /> : counts.entregasHoje}</p>
+            <p className="ini-metric-trend neutral">
+              {loading ? "" : counts.entregasHoje === 0 ? "nenhuma agendada" : counts.entregasHoje === 1 ? "para entregar" : "para entregar"}
+            </p>
+          </div>
+
+          {/* Card — Ticket médio (derivado) */}
+          <div className="ini-metric-card">
+            <div className="ini-metric-top">
+              <div className="ini-metric-icon">
+                <TrendUp size={18} weight="duotone" />
+              </div>
+              <span className="ini-metric-label">Ticket médio</span>
+            </div>
+            <p className="ini-metric-val">
+              {loading
+                ? <span className="ini-skeleton ini-skeleton--val" />
+                : formatCurrency(resumoSemana.pedidos > 0 ? resumoSemana.vendas / resumoSemana.pedidos : 0)}
+            </p>
+            <p className="ini-metric-trend neutral">por pedido na semana</p>
           </div>
         </div>
       </section>
-
-      {/* ── Acesso rápido ── */}
       <section className="ini-section ini-section--nav">
         <h2 className="ini-section-title">Acesso rápido</h2>
         <div className="ini-nav-grid">
           {[
-            { icon: <Plus size={20} weight="bold" />, label: "Novo pedido", sub: "Registrar encomenda", path: "/pedidos/novo", color: "#3d1a24", bg: "#FFF1F7" },
-            { icon: <ClipboardText size={20} weight="duotone" />, label: "Pedidos", sub: "Ver e gerenciar", path: "/pedidos", color: "#1D4ED8", bg: "#DBEAFE" },
-            { icon: <Package size={20} weight="duotone" />, label: "Insumos", sub: "Ingredientes e embalagens", path: "/insumos", color: "#15803D", bg: "#DCFCE7" },
-            { icon: <CookingPot size={20} weight="duotone" />, label: "Receitas", sub: "Fichas técnicas", path: "/receitas", color: "#D97706", bg: "#FEF3C7" },
-            { icon: <Users size={20} weight="duotone" />, label: "Clientes", sub: "Base de clientes", path: "/clientes", color: "#7C3AED", bg: "#F5F3FF" },
-            { icon: <ChartLineUp size={20} weight="duotone" />, label: "Financeiro", sub: "Contas e controle", path: "/financeiro", color: "#0891B2", bg: "#ECFEFF" },
+            { icon: <Plus size={20} weight="bold" />, label: "Novo pedido", sub: "Registrar encomenda", path: "/pedidos/novo", color: "#3d1a24", bg: "#FFF1F7", key: "novo" },
+            { icon: <ClipboardText size={20} weight="duotone" />, label: "Pedidos", sub: "Ver e gerenciar", path: "/pedidos", color: "#1D4ED8", bg: "#DBEAFE", key: "pedidos" },
+            { icon: <Package size={20} weight="duotone" />, label: "Insumos", sub: "Ingredientes e embalagens", path: "/insumos", color: "#15803D", bg: "#DCFCE7", key: "insumos" },
+            { icon: <CookingPot size={20} weight="duotone" />, label: "Receitas", sub: "Fichas técnicas", path: "/receitas", color: "#D97706", bg: "#FEF3C7", key: "receitas" },
+            { icon: <Users size={20} weight="duotone" />, label: "Clientes", sub: "Base de clientes", path: "/clientes", color: "#7C3AED", bg: "#F5F3FF", key: "clientes" },
+            { icon: <ChartLineUp size={20} weight="duotone" />, label: "Financeiro", sub: "Contas e controle", path: "/financeiro", color: "#0891B2", bg: "#ECFEFF", key: "financeiro" },
           ].map((item) => (
-            <button key={item.path} className="ini-nav-card" onClick={() => navigate(item.path)}>
+            <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
               <div className="ini-nav-icon" style={{ background: item.bg, color: item.color }}>{item.icon}</div>
               <div className="ini-nav-meta">
                 <span className="ini-nav-label">{item.label}</span>
@@ -412,47 +462,6 @@ export default function Inicio() {
               <CaretRight size={14} weight="bold" className="ini-nav-arrow" />
             </button>
           ))}
-        </div>
-      </section>
-
-      {/* ── Métricas (desktop only, mock visual) ── */}
-      <section className="ini-section ini-section--metrics">
-        <div className="ini-metrics-grid">
-          <div className="ini-metric-card">
-            <div className="ini-metric-top">
-              <div className="ini-metric-icon" style={{ background: "#FFF1F7", color: "var(--primary-dark)" }}>
-                <ClipboardText size={18} weight="duotone" />
-              </div>
-              <span className="ini-metric-label">Pedidos hoje</span>
-            </div>
-            <p className="ini-metric-val">0</p>
-            <p className="ini-metric-sub">0 no mês</p>
-            <p className="ini-metric-hint">Seu primeiro pedido do dia vai aparecer aqui</p>
-          </div>
-
-          <div className="ini-metric-card">
-            <div className="ini-metric-top">
-              <div className="ini-metric-icon" style={{ background: "#DCFCE7", color: "#15803D" }}>
-                <CurrencyDollar size={18} weight="duotone" />
-              </div>
-              <span className="ini-metric-label">Faturamento</span>
-            </div>
-            <p className="ini-metric-val">R$ 0,00</p>
-            <p className="ini-metric-sub">este mês</p>
-            <p className="ini-metric-hint">Registre pedidos para acompanhar</p>
-          </div>
-
-          <div className="ini-metric-card">
-            <div className="ini-metric-top">
-              <div className="ini-metric-icon" style={{ background: "#FEF3C7", color: "#D97706" }}>
-                <TrendUp size={18} weight="duotone" />
-              </div>
-              <span className="ini-metric-label">Lucro estimado</span>
-            </div>
-            <p className="ini-metric-val">R$ 0,00</p>
-            <p className="ini-metric-sub">margem —%</p>
-            <p className="ini-metric-hint">Calculado automaticamente com suas vendas</p>
-          </div>
         </div>
       </section>
 
@@ -546,7 +555,19 @@ export default function Inicio() {
         <div className="ini-agenda-today">
           <p className="ini-agenda-today-label">Hoje</p>
           <div className="ini-agenda-today-content">
-            <p className="ini-agenda-today-empty">Nenhuma entrega agendada para hoje</p>
+            {loading ? (
+              <p className="ini-agenda-today-empty">Carregando...</p>
+            ) : counts.entregasHoje > 0 ? (
+              <button className="ini-agenda-today-count" onClick={() => navigate("/agenda")}>
+                <span className="ini-agenda-today-num">{counts.entregasHoje}</span>
+                <span className="ini-agenda-today-txt">
+                  {counts.entregasHoje === 1 ? "entrega agendada para hoje" : "entregas agendadas para hoje"}
+                </span>
+                <CaretRight size={16} weight="bold" />
+              </button>
+            ) : (
+              <p className="ini-agenda-today-empty">Nenhuma entrega agendada para hoje</p>
+            )}
           </div>
         </div>
 
@@ -598,7 +619,7 @@ export default function Inicio() {
           <h2 className="ini-section-title">Faturamento (30 dias)</h2>
         </div>
         <div className="ini-chart-card">
-          <div style={{ width: "100%", height: 180 }}>
+          <div className="ini-chart-inner" style={{ width: "100%", height: 180 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 8, right: 10, bottom: 0, left: -10 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -786,6 +807,34 @@ export default function Inicio() {
           font-size: var(--font-body);
           color: var(--text-disabled);
           font-style: italic;
+        }
+        .ini-agenda-today-count {
+          display: flex;
+          align-items: center;
+          gap: var(--space-3);
+          width: 100%;
+          padding: var(--space-3);
+          background: var(--bg-subtle);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          cursor: pointer;
+          font-family: inherit;
+          text-align: left;
+          color: var(--primary-dark);
+          transition: border-color var(--dur-fast) var(--ease-out);
+        }
+        .ini-agenda-today-count:hover { border-color: var(--primary); }
+        .ini-agenda-today-num {
+          font-size: var(--text-2xl);
+          font-weight: var(--fw-black);
+          color: var(--text-title);
+          line-height: 1;
+        }
+        .ini-agenda-today-txt {
+          flex: 1;
+          font-size: var(--font-button);
+          font-weight: var(--fw-medium);
+          color: var(--text-secondary);
         }
         .ini-section-title {
           font-size: var(--font-button); font-weight: var(--fw-bold);
@@ -1007,6 +1056,32 @@ export default function Inicio() {
           line-height: var(--lh-relaxed);
         }
 
+        /* ── Métricas: trend, skeleton, hero (desktop) ── */
+        .ini-metric-trend {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: var(--font-caption);
+          font-weight: var(--fw-semibold);
+          margin: var(--space-2) 0 0;
+        }
+        .ini-metric-trend.up      { color: var(--success); }
+        .ini-metric-trend.down    { color: var(--error); }
+        .ini-metric-trend.neutral { color: var(--text-muted); font-weight: var(--fw-medium); }
+
+        .ini-skeleton {
+          display: inline-block;
+          background: linear-gradient(90deg, var(--bg-subtle) 25%, rgba(var(--primary-rgb), 0.08) 50%, var(--bg-subtle) 75%);
+          background-size: 200% 100%;
+          border-radius: var(--radius-sm);
+          animation: iniShimmer 1.4s ease-in-out infinite;
+        }
+        .ini-skeleton--val { width: 80px; height: 26px; vertical-align: middle; }
+        @keyframes iniShimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+
         /* ── Alertas ── */
         .ini-alertas {
           display: flex; flex-direction: column; gap: var(--gap-tight);
@@ -1142,15 +1217,13 @@ export default function Inicio() {
         @media (min-width: 1100px) {
           .ini-root { max-width: none; padding-right: var(--space-7); }
 
-          /* Hero escondido no desktop — saudação vai pro sidebar */
-          .ini-hero {
-            display: none;
-          }
+          /* Hero escondido no desktop — saudação fica na sidebar */
+          .ini-hero { display: none; }
 
-          /* Grid 2 colunas */
+          /* ── Grid principal: dashboard + aside ── */
           .ini-content {
             display: grid;
-            grid-template-columns: 380px 1fr;
+            grid-template-columns: 360px 1fr;
             gap: var(--space-6);
             align-items: start;
           }
@@ -1158,78 +1231,194 @@ export default function Inicio() {
           .ini-aside-desktop { display: block; }
           .ini-aside-mobile { display: none; }
 
-          /* Seções ocultas no desktop */
-          .ini-main .ini-section--chart { display: none; }
-          .ini-main .ini-section--alertas { display: none; }
-          .ini-main .ini-section--resumo { display: none; }
-          .ini-main .ini-section--metrics { display: flex; }
-          .ini-main .ini-section--greeting { display: flex; }
+          /* Seções: o que mostra/esconde no desktop */
+          .ini-main .ini-section--chart    { display: block; }
+          .ini-main .ini-section--alertas  { display: block; }
+          .ini-main .ini-section--resumo   { display: none; }
+          .ini-main .ini-section--metrics  { display: block; }
+          .ini-main .ini-section--greeting { display: none; }
 
-          /* Seções compactas + mais respiro */
-          .ini-main .ini-section { margin-top: var(--space-5); order: 0; }
+          /* Respiro vertical entre seções */
+          .ini-main .ini-section { margin-top: var(--space-6); order: 0; }
           .ini-main .ini-section:first-child { margin-top: 0; }
 
-          /* Greeting sem card wrapper */
-          .ini-main .ini-section--greeting { background: none; border: none; padding: 0; }
-
-          /* Nav compacta + cards clicáveis */
-          .ini-main .ini-section--nav { padding: var(--space-4); }
-          .ini-main .ini-section--nav .ini-nav-card {
-            padding: var(--space-3) var(--space-3);
+          /* ────────────────────────────────────────────
+             MÉTRICAS — grid 4 colunas, card hero destacado
+             ──────────────────────────────────────────── */
+          .ini-main .ini-section--metrics {
+            background: none; border: none; padding: 0;
+          }
+          .ini-main .ini-metrics-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr 1fr 1fr;
+            gap: var(--space-4);
+          }
+          .ini-main .ini-metric-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-5);
             box-shadow: var(--shadow-sm);
-            transition: all var(--dur-fast) var(--ease-out);
+            transition: box-shadow var(--dur-fast) var(--ease-out);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 130px;
           }
-          .ini-main .ini-section--nav .ini-nav-card:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateY(-2px);
-          }
-          .ini-main .ini-section--nav .ini-nav-icon { width: 38px; height: 38px; }
-          .ini-main .ini-section--nav .ini-nav-arrow { color: var(--text-secondary); }
+          .ini-main .ini-metric-card:hover { box-shadow: var(--shadow-md); }
 
-          /* Métricas maiores */
-          .ini-main .ini-section--metrics { background: none; border: none; padding: 0; }
+          /* Card hero — faturamento em destaque, fundo vinho */
+          .ini-main .ini-metric-card--hero {
+            background: linear-gradient(150deg, var(--primary) 0%, var(--primary-dark) 55%, var(--text-title) 130%);
+            border: none;
+            box-shadow: var(--shadow-md);
+          }
+          .ini-main .ini-metric-card--hero .ini-metric-label,
+          .ini-main .ini-metric-card--hero .ini-metric-val { color: #FFFFFF; }
+          .ini-main .ini-metric-card--hero .ini-metric-icon {
+            background: rgba(255,255,255,0.16);
+            color: #FFFFFF;
+          }
+          .ini-main .ini-metric-card--hero .ini-metric-val { font-size: var(--text-3xl, 2rem); }
+          .ini-main .ini-metric-card--hero .ini-metric-trend.up   { color: #A7F3C4; }
+          .ini-main .ini-metric-card--hero .ini-metric-trend.down { color: #FCA5A5; }
+          .ini-main .ini-metric-card--hero .ini-metric-trend.neutral { color: rgba(255,255,255,0.7); }
+          .ini-main .ini-metric-card--hero .ini-skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.15) 25%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.15) 75%);
+            background-size: 200% 100%;
+          }
+
+          /* Cards secundários — ícone sóbrio rosa-claro */
+          .ini-main .ini-metric-card:not(.ini-metric-card--hero) .ini-metric-icon {
+            background: var(--bg-subtle);
+            color: var(--primary-dark);
+          }
           .ini-main .ini-metric-val { font-size: var(--text-2xl); }
 
-          /* Agenda: lista compacta, sem calendário */
-          .ini-main .ini-agenda-today { display: block; }
-          .ini-main .ini-agenda-full { display: none; }
-
-          /* Remove max-width centralizados */
-          .ini-main .ini-actions,
-          .ini-main .ini-resumo,
-          .ini-main .ini-alertas,
-          .ini-main .ini-tudo-ok,
-          .ini-main .ini-chart-card { max-width: none; margin-left: 0; margin-right: 0; }
-
-          /* Seções em cards */
-          .ini-main .ini-section {
+          /* ────────────────────────────────────────────
+             ACESSO RÁPIDO — cards monocromáticos elegantes
+             ──────────────────────────────────────────── */
+          .ini-main .ini-section--nav {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-xl);
             padding: var(--space-5);
           }
+          .ini-main .ini-section--nav .ini-nav-grid {
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: var(--space-3);
+          }
+          .ini-main .ini-section--nav .ini-nav-card {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3) var(--space-4);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-family: inherit;
+            text-align: left;
+            transition: border-color var(--dur-fast) var(--ease-out),
+                        box-shadow var(--dur-fast) var(--ease-out),
+                        transform var(--dur-fast) var(--ease-out);
+          }
+          .ini-main .ini-section--nav .ini-nav-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+          }
+          .ini-main .ini-section--nav .ini-nav-icon {
+            width: 40px; height: 40px;
+            border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+          }
+          .ini-main .ini-section--nav .ini-nav-arrow {
+            color: var(--text-muted);
+            flex-shrink: 0;
+            transition: transform var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+          }
+          .ini-main .ini-section--nav .ini-nav-card:hover .ini-nav-arrow {
+            color: var(--primary);
+            transform: translateX(2px);
+          }
+          /* Desktop: paleta monocromática — sobrescreve inline styles do mobile.
+             Ícones secundários ficam rosa-claro coeso com a marca. */
+          .ini-main .ini-section--nav .ini-nav-icon {
+            background: var(--bg-subtle) !important;
+            color: var(--primary-dark) !important;
+          }
+          /* "Novo pedido" vira card de destaque vinho no desktop */
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"] {
+            background: var(--primary-dark);
+            border-color: var(--primary-dark);
+          }
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"]:hover {
+            background: var(--text-title);
+            border-color: var(--text-title);
+          }
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"] .ini-nav-icon {
+            background: rgba(255,255,255,0.16) !important;
+            color: #FFFFFF !important;
+          }
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"] .ini-nav-label { color: #FFFFFF; }
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"] .ini-nav-sub { color: rgba(255,255,255,0.7); }
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"] .ini-nav-arrow { color: rgba(255,255,255,0.7); }
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"]:hover .ini-nav-arrow { color: #FFFFFF; }
 
-          .ini-main .ini-section .ini-actions { grid-template-columns: 1fr 1fr; }
-          .ini-main .ini-section .ini-resumo { grid-template-columns: 1fr 1fr; }
-          .ini-main .ini-section .ini-nav-grid { grid-template-columns: 1fr 1fr 1fr; }
-
-          /* Cards internos sem borda dupla */
-          .ini-main .ini-section .ini-resumo-card { border: 1px solid var(--border); }
-          .ini-main .ini-section .ini-chart-card { border: none; padding: 0; }
-          .ini-main .ini-section .ini-tudo-ok { border: none; }
-          .ini-main .ini-section--metrics { background: none; border: none; padding: 0; }
-          .ini-main .ini-section .ini-alerta { border: 1px solid var(--border); border-left-width: 4px; }
-          .ini-main .ini-section .ini-agenda-cal { border: none; padding: var(--space-3) 0 0; }
-          .ini-main .ini-section .ini-agenda-stats { margin: 0; }
-
-          /* Chart: força dimensões corretas */
+          /* ────────────────────────────────────────────
+             AGENDA + GRÁFICO — empilhados, largura total
+             (robusto, sempre alinhado, gráfico respira)
+             ──────────────────────────────────────────── */
+          .ini-main .ini-section--agenda,
+          .ini-main .ini-section--chart {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-5);
+            box-sizing: border-box;
+          }
+          /* Agenda: lista do dia, sem calendário no desktop */
+          .ini-main .ini-agenda-today { display: block; }
+          .ini-main .ini-agenda-full { display: none; }
+          .ini-main .ini-chart-card { max-width: none; margin: 0; border: none; padding: 0; }
           .ini-main .ini-chart-card > div { width: 100% !important; min-width: 0; }
+          .ini-main .ini-chart-inner { height: 240px !important; }
 
-          /* Checklist completo: dashboard esquerda, updates direita */
+          /* ────────────────────────────────────────────
+             ATENÇÃO HOJE — alertas e tudo-ok
+             ──────────────────────────────────────────── */
+          .ini-main .ini-section--alertas {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: var(--space-5);
+          }
+          .ini-main .ini-section--alertas .ini-alertas,
+          .ini-main .ini-section--alertas .ini-tudo-ok { max-width: none; margin: 0; }
+          .ini-main .ini-section--alertas .ini-alerta {
+            border: 1px solid var(--border);
+            border-left-width: 4px;
+          }
+          .ini-main .ini-tudo-ok {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+          }
+
+          /* ────────────────────────────────────────────
+             ESTADO "CHECKLIST COMPLETO"
+             ──────────────────────────────────────────── */
           .ini-content--done {
-            grid-template-columns: 1fr 475px;
+            grid-template-columns: 1fr 420px;
           }
           .ini-content--done .ini-aside { order: 0; }
+        }
+
+        /* Telas largas: aside um pouco maior, métricas respiram */
+        @media (min-width: 1500px) {
+          .ini-content { grid-template-columns: 400px 1fr; }
+          .ini-content--done { grid-template-columns: 1fr 460px; }
         }
       `}</style>
     </div>
