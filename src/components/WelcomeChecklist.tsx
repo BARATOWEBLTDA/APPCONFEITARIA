@@ -18,7 +18,7 @@ interface Step {
   done: boolean;
 }
 
-export default function WelcomeChecklist({ userId }: { userId: string }) {
+export default function WelcomeChecklist({ userId, onAllDone }: { userId: string; onAllDone?: (done: boolean) => void }) {
   const navigate = useNavigate();
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,6 +115,8 @@ export default function WelcomeChecklist({ userId }: { userId: string }) {
   const total = steps.length;
   const allDone = total > 0 && doneCount === total;
   const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+
+  useEffect(() => { onAllDone?.(allDone); }, [allDone]);
 
   if (loading || allDone) return null;
 

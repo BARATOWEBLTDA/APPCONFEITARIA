@@ -7,10 +7,12 @@ import {
   Share, Plus, ClipboardText, CalendarDots,
   TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
   Bell, User, Storefront, SignOut,
+  Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
 import WelcomeChecklist from "@/components/WelcomeChecklist";
+import UpdatesFeed from "@/components/UpdatesFeed";
 
 interface AlertaCard {
   tipo: "pedido" | "entrega" | "aniversario";
@@ -52,6 +54,7 @@ export default function Inicio() {
   const [resumoSemana, setResumoSemana] = useState({ vendas: 0, pedidos: 0 });
   const [resumoAnterior, setResumoAnterior] = useState({ vendas: 0, pedidos: 0 });
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
+  const [checklistDone, setChecklistDone] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -366,18 +369,28 @@ export default function Inicio() {
         {/* ── Coluna principal ── */}
         <div className="ini-main">
 
-      {/* ── Ações rápidas ── */}
+      {/* ── Navegação rápida ── */}
       <section className="ini-section">
-        <h2 className="ini-section-title">Ações rápidas</h2>
-        <div className="ini-actions">
-          <button className="ini-action ini-action--primary" onClick={handleCompartilhar}>
-            <Share size={18} weight="bold" />
-            <span>{copiado ? "Link copiado!" : "Compartilhar Cardápio"}</span>
-          </button>
-          <button className="ini-action" onClick={() => navigate("/pedidos/novo")}>
-            <Plus size={18} weight="bold" />
-            <span>Novo pedido</span>
-          </button>
+        <h2 className="ini-section-title">Navegação rápida</h2>
+        <p className="ini-section-sub">Acesso direto às áreas principais</p>
+        <div className="ini-nav-grid">
+          {[
+            { icon: <Plus size={20} weight="bold" />, label: "Novo pedido", sub: "Registrar encomenda", path: "/pedidos/novo", color: "#3d1a24", bg: "#FFF1F7" },
+            { icon: <ClipboardText size={20} weight="duotone" />, label: "Pedidos", sub: "Ver e gerenciar", path: "/pedidos", color: "#1D4ED8", bg: "#DBEAFE" },
+            { icon: <Package size={20} weight="duotone" />, label: "Insumos", sub: "Ingredientes e embalagens", path: "/insumos", color: "#15803D", bg: "#DCFCE7" },
+            { icon: <CookingPot size={20} weight="duotone" />, label: "Receitas", sub: "Fichas técnicas", path: "/receitas", color: "#D97706", bg: "#FEF3C7" },
+            { icon: <Users size={20} weight="duotone" />, label: "Clientes", sub: "Base de clientes", path: "/clientes", color: "#7C3AED", bg: "#F5F3FF" },
+            { icon: <ChartLineUp size={20} weight="duotone" />, label: "Financeiro", sub: "Contas e controle", path: "/financeiro", color: "#0891B2", bg: "#ECFEFF" },
+          ].map((item) => (
+            <button key={item.path} className="ini-nav-card" onClick={() => navigate(item.path)}>
+              <div className="ini-nav-icon" style={{ background: item.bg, color: item.color }}>{item.icon}</div>
+              <div className="ini-nav-meta">
+                <span className="ini-nav-label">{item.label}</span>
+                <span className="ini-nav-sub">{item.sub}</span>
+              </div>
+              <CaretRight size={14} weight="bold" className="ini-nav-arrow" />
+            </button>
+          ))}
         </div>
       </section>
 
@@ -458,6 +471,48 @@ export default function Inicio() {
         </div>
       </section>
 
+      {/* ── Agenda de Entregas (mock visual) ── */}
+      <section className="ini-section">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <h2 className="ini-section-title">Agenda de entregas</h2>
+            <p className="ini-section-sub">Encomendas agendadas por data</p>
+          </div>
+          <button className="ini-agenda-link" onClick={() => navigate("/agenda")}>Ver todas ›</button>
+        </div>
+        <div className="ini-agenda-stats">
+          <span><CalendarDots size={14} weight="fill" /> 0 encomendas no mês</span>
+          <span><ClipboardText size={14} weight="fill" /> 0 dias com entrega</span>
+        </div>
+        <div className="ini-agenda-cal">
+          <div className="ini-agenda-nav">
+            <button>‹</button>
+            <span>{new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" }).replace(/^\w/, c => c.toUpperCase())}</span>
+            <button>›</button>
+          </div>
+          <div className="ini-agenda-grid">
+            {["dom","seg","ter","qua","qui","sex","sáb"].map(d => (
+              <span key={d} className="ini-agenda-day-label">{d}</span>
+            ))}
+            {(() => {
+              const now = new Date();
+              const first = new Date(now.getFullYear(), now.getMonth(), 1);
+              const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+              const startPad = first.getDay();
+              const cells = [];
+              for (let i = 0; i < startPad; i++) cells.push(<span key={`p${i}`} className="ini-agenda-day ini-agenda-day--pad" />);
+              for (let d = 1; d <= lastDay; d++) {
+                const isToday = d === now.getDate();
+                cells.push(
+                  <span key={d} className={`ini-agenda-day ${isToday ? "ini-agenda-day--today" : ""}`}>{d}</span>
+                );
+              }
+              return cells;
+            })()}
+          </div>
+        </div>
+      </section>
+
       {/* ── Faturamento 30 dias (dados REAIS) ── */}
       <section className="ini-section">
         <div className="ini-chart-header">
@@ -483,11 +538,12 @@ export default function Inicio() {
         </div>
 
         {/* ── Checklist lateral (desktop) / abaixo (mobile) ── */}
-        {profile?.id && (
-          <aside className="ini-aside">
-            <WelcomeChecklist userId={profile.id} />
-          </aside>
-        )}
+        <aside className="ini-aside">
+          {profile?.id && !checklistDone && (
+            <WelcomeChecklist userId={profile.id} onAllDone={setChecklistDone} />
+          )}
+          {checklistDone && <UpdatesFeed />}
+        </aside>
       </div>
 
       <style>{`
@@ -626,6 +682,124 @@ export default function Inicio() {
           box-shadow: 0 4px 12px rgba(255, 111, 169, 0.25);
         }
         .ini-action--primary:hover { background: #FF5499; border-color: #FF5499; }
+
+        /* ── Section subtitle ── */
+        .ini-section-sub {
+          margin: -0.3rem 0 0;
+          font-size: var(--font-caption);
+          color: var(--text-muted);
+        }
+
+        /* ── Navegação rápida ── */
+        .ini-nav-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 0.45rem;
+        }
+        .ini-nav-card {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem 0.9rem;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
+          cursor: pointer;
+          font-family: inherit;
+          text-align: left;
+          transition: all var(--dur-fast);
+        }
+        .ini-nav-card:hover { border-color: var(--primary); transform: translateX(2px); }
+        .ini-nav-icon {
+          width: 36px; height: 36px;
+          border-radius: var(--radius-md);
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .ini-nav-meta { flex: 1; min-width: 0; }
+        .ini-nav-label {
+          display: block;
+          font-size: 0.85rem;
+          font-weight: var(--fw-semibold);
+          color: var(--text-title);
+          line-height: 1.3;
+        }
+        .ini-nav-sub {
+          display: block;
+          font-size: var(--font-caption);
+          color: var(--text-muted);
+          margin-top: 1px;
+        }
+        .ini-nav-arrow { color: var(--text-disabled); flex-shrink: 0; }
+
+        /* ── Agenda de Entregas ── */
+        .ini-agenda-link {
+          background: none; border: none; cursor: pointer;
+          font-family: inherit; font-size: var(--font-caption);
+          font-weight: var(--fw-semibold); color: var(--primary);
+          padding: 0;
+        }
+        .ini-agenda-link:hover { text-decoration: underline; }
+        .ini-agenda-stats {
+          display: flex; gap: 1.25rem;
+          font-size: var(--font-caption);
+          color: var(--text-muted);
+          padding: 0.5rem 0.75rem;
+          background: var(--bg-body);
+          border-radius: var(--radius-md);
+        }
+        .ini-agenda-stats span {
+          display: flex; align-items: center; gap: 0.3rem;
+        }
+        .ini-agenda-cal {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          padding: 0.75rem;
+        }
+        .ini-agenda-nav {
+          display: flex; justify-content: space-between; align-items: center;
+          padding: 0 0.25rem 0.5rem;
+          font-size: 0.85rem; font-weight: var(--fw-semibold);
+          color: var(--text-title);
+        }
+        .ini-agenda-nav button {
+          background: none; border: none; cursor: pointer;
+          font-size: 1.1rem; color: var(--text-secondary);
+          padding: 0.2rem 0.5rem; border-radius: var(--radius-sm);
+        }
+        .ini-agenda-nav button:hover { background: var(--bg-body); }
+        .ini-agenda-grid {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          text-align: center;
+          gap: 2px;
+        }
+        .ini-agenda-day-label {
+          font-size: 0.68rem;
+          font-weight: var(--fw-semibold);
+          color: var(--text-muted);
+          text-transform: lowercase;
+          padding: 0.25rem 0;
+        }
+        .ini-agenda-day {
+          font-size: 0.78rem;
+          color: var(--text-secondary);
+          padding: 0.4rem 0;
+          border-radius: var(--radius-sm);
+          cursor: pointer;
+          transition: background var(--dur-fast);
+        }
+        .ini-agenda-day:hover { background: var(--bg-body); }
+        .ini-agenda-day--pad { cursor: default; }
+        .ini-agenda-day--pad:hover { background: none; }
+        .ini-agenda-day--today {
+          background: var(--primary);
+          color: var(--text-inverse);
+          font-weight: var(--fw-bold);
+          border-radius: 50%;
+        }
+        .ini-agenda-day--today:hover { background: var(--primary); }
 
         /* ── Alertas ── */
         .ini-alertas {
@@ -783,12 +957,15 @@ export default function Inicio() {
           }
           .ini-main .ini-section .ini-actions { grid-template-columns: 1fr 1fr; }
           .ini-main .ini-section .ini-resumo { grid-template-columns: 1fr 1fr; }
+          .ini-main .ini-section .ini-nav-grid { grid-template-columns: 1fr 1fr 1fr; }
 
           /* Cards internos sem borda dupla */
           .ini-main .ini-section .ini-resumo-card { border: 1px solid var(--border); }
           .ini-main .ini-section .ini-chart-card { border: none; padding: 0; }
           .ini-main .ini-section .ini-tudo-ok { border: none; }
           .ini-main .ini-section .ini-alerta { border: 1px solid var(--border); border-left-width: 4px; }
+          .ini-main .ini-section .ini-agenda-cal { border: none; padding: 0.75rem 0 0; }
+          .ini-main .ini-section .ini-agenda-stats { margin: 0; }
 
           /* Chart: força dimensões corretas */
           .ini-main .ini-chart-card > div { width: 100% !important; min-width: 0; }
