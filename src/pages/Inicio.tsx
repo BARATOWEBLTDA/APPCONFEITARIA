@@ -370,7 +370,7 @@ export default function Inicio() {
         <div className="ini-main">
 
       {/* ── Navegação rápida ── */}
-      <section className="ini-section">
+      <section className="ini-section ini-section--nav">
         <h2 className="ini-section-title">Navegação rápida</h2>
         <p className="ini-section-sub">Acesso direto às áreas principais</p>
         <div className="ini-nav-grid">
@@ -396,7 +396,7 @@ export default function Inicio() {
 
       {/* ── Atenção hoje ── */}
       {alertasVisiveis.length > 0 && (
-        <section className="ini-section">
+        <section className="ini-section ini-section--alertas">
           <h2 className="ini-section-title">Atenção hoje</h2>
           <div className="ini-alertas">
             {alertasVisiveis.map((a) => (
@@ -422,7 +422,7 @@ export default function Inicio() {
       )}
 
       {alertasVisiveis.length === 0 && !loading && (
-        <section className="ini-section">
+        <section className="ini-section ini-section--alertas">
           <div className="ini-tudo-ok">
             <span style={{ fontSize: "1.5rem" }}>✨</span>
             <div>
@@ -434,7 +434,7 @@ export default function Inicio() {
       )}
 
       {/* ── Resumo da semana ── */}
-      <section className="ini-section">
+      <section className="ini-section ini-section--resumo">
         <h2 className="ini-section-title">Resumo da semana</h2>
         <div className="ini-resumo">
           <div className="ini-resumo-card">
@@ -472,7 +472,7 @@ export default function Inicio() {
       </section>
 
       {/* ── Agenda de Entregas (mock visual) ── */}
-      <section className="ini-section">
+      <section className="ini-section ini-section--agenda">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <h2 className="ini-section-title">Agenda de entregas</h2>
@@ -514,7 +514,7 @@ export default function Inicio() {
       </section>
 
       {/* ── Faturamento 30 dias (dados REAIS) ── */}
-      <section className="ini-section">
+      <section className="ini-section ini-section--chart">
         <div className="ini-chart-header">
           <h2 className="ini-section-title">Faturamento (30 dias)</h2>
         </div>
@@ -899,6 +899,15 @@ export default function Inicio() {
           padding: 0.8rem 0.5rem 0.5rem;
         }
 
+        /* ── Mobile: ordem e visibilidade ── */
+        .ini-aside { order: -1; }
+        .ini-main { display: flex; flex-direction: column; }
+        .ini-section--resumo  { order: 1; }
+        .ini-section--nav     { order: 2; }
+        .ini-section--agenda  { order: 3; }
+        .ini-section--alertas { order: 4; }
+        .ini-section--chart   { display: none; }
+
         /* ── Desktop ajustes ── */
         @media (min-width: 768px) {
           .ini-root { padding: 0 1.5rem 2rem; }
@@ -938,8 +947,9 @@ export default function Inicio() {
           .ini-aside { order: -1; position: sticky; top: 1.5rem; }
 
           /* Seções compactas */
-          .ini-main .ini-section { margin-top: 1rem; }
+          .ini-main .ini-section { margin-top: 1rem; order: 0; }
           .ini-main .ini-section:first-child { margin-top: 0; }
+          .ini-main .ini-section--chart { display: flex; }
 
           /* Remove max-width centralizados */
           .ini-main .ini-actions,

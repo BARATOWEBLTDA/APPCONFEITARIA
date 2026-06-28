@@ -23,7 +23,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => window.innerWidth < 1100);
 
   useEffect(() => {
     if (!userId) return;
