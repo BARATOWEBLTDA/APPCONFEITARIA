@@ -157,7 +157,7 @@ export default function DooIAPanel() {
         .doo-panel {
           display: flex;
           flex-direction: column;
-          border-radius: var(--radius-xl);
+          border-radius: 14px;
           border: 1px solid var(--border);
           background: var(--bg-card);
           overflow: hidden;
@@ -217,7 +217,7 @@ export default function DooIAPanel() {
           display: flex;
           flex-direction: column;
           gap: var(--space-3);
-          min-height: 340px;
+          min-height: 440px;
         }
 
         .doo-panel-bubble {

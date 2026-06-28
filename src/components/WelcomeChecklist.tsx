@@ -425,6 +425,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
             box-shadow: var(--shadow-md);
             position: sticky;
             top: var(--space-6);
+            border-radius: 14px;
           }
           /* Header com faixa de marca sutil no topo */
           .wc-header {

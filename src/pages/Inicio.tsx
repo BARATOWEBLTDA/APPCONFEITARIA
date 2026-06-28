@@ -1233,10 +1233,11 @@ export default function Inicio() {
 
           /* Seções: o que mostra/esconde no desktop */
           .ini-main .ini-section--chart    { display: block; }
-          .ini-main .ini-section--alertas  { display: block; }
+          .ini-main .ini-section--alertas  { display: none; }
           .ini-main .ini-section--resumo   { display: none; }
           .ini-main .ini-section--metrics  { display: block; }
           .ini-main .ini-section--greeting { display: none; }
+          .ini-main .ini-section--agenda   { display: none; }
 
           /* Respiro vertical entre seções */
           .ini-main .ini-section { margin-top: var(--space-6); order: 0; }
@@ -1256,7 +1257,7 @@ export default function Inicio() {
           .ini-main .ini-metric-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: var(--radius-xl);
+            border-radius: 14px;
             padding: var(--space-5);
             box-shadow: var(--shadow-sm);
             transition: box-shadow var(--dur-fast) var(--ease-out);
@@ -1296,12 +1297,12 @@ export default function Inicio() {
           .ini-main .ini-metric-val { font-size: var(--text-2xl); }
 
           /* ────────────────────────────────────────────
-             ACESSO RÁPIDO — cards monocromáticos elegantes
+             ACESSO RÁPIDO — cards sem borda, fundo sutil (abordagem A)
              ──────────────────────────────────────────── */
           .ini-main .ini-section--nav {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: var(--radius-xl);
+            border-radius: 14px;
             padding: var(--space-5);
           }
           .ini-main .ini-section--nav .ini-nav-grid {
@@ -1313,26 +1314,26 @@ export default function Inicio() {
             align-items: center;
             gap: var(--space-3);
             padding: var(--space-3) var(--space-4);
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
+            background: var(--bg-subtle);
+            border: none;
+            border-radius: 10px;
             cursor: pointer;
             font-family: inherit;
             text-align: left;
-            transition: border-color var(--dur-fast) var(--ease-out),
-                        box-shadow var(--dur-fast) var(--ease-out),
+            transition: background var(--dur-fast) var(--ease-out),
                         transform var(--dur-fast) var(--ease-out);
           }
           .ini-main .ini-section--nav .ini-nav-card:hover {
-            border-color: var(--primary);
-            box-shadow: var(--shadow-md);
-            transform: translateY(-2px);
+            background: var(--primary-light);
+            transform: translateY(-1px);
           }
           .ini-main .ini-section--nav .ini-nav-icon {
             width: 40px; height: 40px;
-            border-radius: var(--radius-md);
+            border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
+            background: var(--bg-card) !important;
+            color: var(--primary-dark) !important;
           }
           .ini-main .ini-section--nav .ini-nav-arrow {
             color: var(--text-muted);
@@ -1343,20 +1344,12 @@ export default function Inicio() {
             color: var(--primary);
             transform: translateX(2px);
           }
-          /* Desktop: paleta monocromática — sobrescreve inline styles do mobile.
-             Ícones secundários ficam rosa-claro coeso com a marca. */
-          .ini-main .ini-section--nav .ini-nav-icon {
-            background: var(--bg-subtle) !important;
-            color: var(--primary-dark) !important;
-          }
           /* "Novo pedido" vira card de destaque vinho no desktop */
           .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"] {
             background: var(--primary-dark);
-            border-color: var(--primary-dark);
           }
           .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"]:hover {
             background: var(--text-title);
-            border-color: var(--text-title);
           }
           .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"] .ini-nav-icon {
             background: rgba(255,255,255,0.16) !important;
@@ -1368,43 +1361,18 @@ export default function Inicio() {
           .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"]:hover .ini-nav-arrow { color: #FFFFFF; }
 
           /* ────────────────────────────────────────────
-             AGENDA + GRÁFICO — empilhados, largura total
-             (robusto, sempre alinhado, gráfico respira)
+             GRÁFICO — faturamento 30 dias, largura total
              ──────────────────────────────────────────── */
-          .ini-main .ini-section--agenda,
           .ini-main .ini-section--chart {
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: var(--radius-xl);
+            border-radius: 14px;
             padding: var(--space-5);
             box-sizing: border-box;
           }
-          /* Agenda: lista do dia, sem calendário no desktop */
-          .ini-main .ini-agenda-today { display: block; }
-          .ini-main .ini-agenda-full { display: none; }
           .ini-main .ini-chart-card { max-width: none; margin: 0; border: none; padding: 0; }
           .ini-main .ini-chart-card > div { width: 100% !important; min-width: 0; }
           .ini-main .ini-chart-inner { height: 240px !important; }
-
-          /* ────────────────────────────────────────────
-             ATENÇÃO HOJE — alertas e tudo-ok
-             ──────────────────────────────────────────── */
-          .ini-main .ini-section--alertas {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-xl);
-            padding: var(--space-5);
-          }
-          .ini-main .ini-section--alertas .ini-alertas,
-          .ini-main .ini-section--alertas .ini-tudo-ok { max-width: none; margin: 0; }
-          .ini-main .ini-section--alertas .ini-alerta {
-            border: 1px solid var(--border);
-            border-left-width: 4px;
-          }
-          .ini-main .ini-tudo-ok {
-            background: var(--bg-subtle);
-            border: 1px solid var(--border);
-          }
 
           /* ────────────────────────────────────────────
              ESTADO "CHECKLIST COMPLETO"
