@@ -755,21 +755,14 @@ export default function Inicio() {
             align-items: start;
           }
           .ini-aside { order: -1; position: sticky; top: 1.5rem; }
-          .ini-main {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-          }
-          .ini-main .ini-section { margin-top: 0; }
-          .ini-main .ini-section:first-child { grid-column: 1; }
-          .ini-main .ini-section:nth-child(2) { grid-column: 2; }
-          .ini-main .ini-section:nth-child(n+3) { grid-column: 1 / -1; }
+          .ini-main .ini-section { margin-top: 1rem; }
+          .ini-main .ini-section:first-child { margin-top: 0; }
           .ini-main .ini-actions,
           .ini-main .ini-resumo,
           .ini-main .ini-alertas,
           .ini-main .ini-tudo-ok,
           .ini-main .ini-chart-card { max-width: none; }
-          .ini-main .ini-actions { grid-template-columns: 1fr; }
+          .ini-main .ini-actions { grid-template-columns: 1fr 1fr; }
           .ini-main .ini-resumo { grid-template-columns: 1fr 1fr; }
         }
       `}</style>
