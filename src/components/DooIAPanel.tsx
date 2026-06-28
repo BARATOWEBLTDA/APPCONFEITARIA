@@ -161,8 +161,8 @@ export default function DooIAPanel() {
           border: 1px solid var(--border);
           background: var(--bg-card);
           overflow: hidden;
-          height: calc(100vh - 3rem);
-          max-height: 700px;
+          height: auto;
+          max-height: calc(100vh - 3rem);
         }
         .doo-panel-header {
           display: flex;
@@ -213,10 +213,11 @@ export default function DooIAPanel() {
         .doo-panel-messages {
           flex: 1;
           overflow-y: auto;
-          padding: var(--space-4);
+          padding: var(--space-3);
           display: flex;
           flex-direction: column;
           gap: var(--space-3);
+          min-height: 180px;
         }
 
         .doo-panel-bubble {
@@ -275,20 +276,22 @@ export default function DooIAPanel() {
 
         .doo-panel-suggestions {
           display: flex;
-          flex-wrap: wrap;
+          flex-direction: column;
           gap: var(--space-2);
           padding-left: 34px;
         }
         .doo-panel-chip {
           font-size: var(--font-caption);
           padding: var(--space-2) var(--space-3);
-          border-radius: var(--radius-full);
+          border-radius: var(--radius-lg);
           border: 1px solid var(--border);
           background: var(--bg-card);
           color: var(--text-secondary);
           cursor: pointer;
           font-family: inherit;
+          text-align: left;
           transition: all var(--dur-fast);
+          width: fit-content;
         }
         .doo-panel-chip:hover {
           border-color: var(--primary);

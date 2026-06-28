@@ -370,10 +370,30 @@ export default function Inicio() {
         {/* ── Coluna principal ── */}
         <div className="ini-main">
 
-      {/* ── Navegação rápida ── */}
+      {/* ── Resumo do dia (desktop only) ── */}
+      <section className="ini-section ini-section--greeting">
+        <div className="ini-greeting">
+          <h2 className="ini-greeting-title">Olá, {(profile?.nome || "").split(" ")[0] || "confeiteira"}</h2>
+          <div className="ini-greeting-stats">
+            <div className="ini-greeting-stat">
+              <ShoppingBag size={18} weight="duotone" />
+              <span><strong>0</strong> pedidos hoje</span>
+            </div>
+            <div className="ini-greeting-stat">
+              <CurrencyDollar size={18} weight="duotone" />
+              <span><strong>R$ 0,00</strong> vendidos</span>
+            </div>
+            <div className="ini-greeting-stat">
+              <CalendarDots size={18} weight="duotone" />
+              <span><strong>0</strong> entregas</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Acesso rápido ── */}
       <section className="ini-section ini-section--nav">
-        <h2 className="ini-section-title">Navegação rápida</h2>
-        <p className="ini-section-sub">Acesso direto às áreas principais</p>
+        <h2 className="ini-section-title">Acesso rápido</h2>
         <div className="ini-nav-grid">
           {[
             { icon: <Plus size={20} weight="bold" />, label: "Novo pedido", sub: "Registrar encomenda", path: "/pedidos/novo", color: "#3d1a24", bg: "#FFF1F7" },
@@ -513,25 +533,35 @@ export default function Inicio() {
         </div>
       </section>
 
-      {/* ── Agenda de Entregas (mock visual) ── */}
+      {/* ── Agenda de Entregas ── */}
       <section className="ini-section ini-section--agenda">
         <div className="ini-agenda-header">
           <div>
-            <h2 className="ini-agenda-title"><CalendarDots size={20} weight="fill" /> Agenda de entregas</h2>
-            <p className="ini-section-sub">Encomendas agendadas por data</p>
+            <h2 className="ini-agenda-title"><CalendarDots size={20} weight="fill" /> Agenda</h2>
           </div>
-          <button className="ini-agenda-link" onClick={() => navigate("/agenda")}>Ver todas ›</button>
+          <button className="ini-agenda-link" onClick={() => navigate("/agenda")}>Ver agenda completa ›</button>
         </div>
-        <div className="ini-agenda-stats">
-          <div className="ini-agenda-stat">
-            <span className="ini-agenda-stat-val">0</span>
-            <span className="ini-agenda-stat-label">encomendas no mês</span>
-          </div>
-          <div className="ini-agenda-stat">
-            <span className="ini-agenda-stat-val">0</span>
-            <span className="ini-agenda-stat-label">dias com entrega</span>
+
+        {/* Desktop: lista compacta do dia */}
+        <div className="ini-agenda-today">
+          <p className="ini-agenda-today-label">Hoje</p>
+          <div className="ini-agenda-today-content">
+            <p className="ini-agenda-today-empty">Nenhuma entrega agendada para hoje</p>
           </div>
         </div>
+
+        {/* Mobile: stats + calendário */}
+        <div className="ini-agenda-full">
+          <div className="ini-agenda-stats">
+            <div className="ini-agenda-stat">
+              <span className="ini-agenda-stat-val">0</span>
+              <span className="ini-agenda-stat-label">encomendas no mês</span>
+            </div>
+            <div className="ini-agenda-stat">
+              <span className="ini-agenda-stat-val">0</span>
+              <span className="ini-agenda-stat-label">dias com entrega</span>
+            </div>
+          </div>
         <div className="ini-agenda-cal">
           <div className="ini-agenda-nav">
             <button>‹</button>
@@ -558,6 +588,7 @@ export default function Inicio() {
               return cells;
             })()}
           </div>
+        </div>
         </div>
       </section>
 
@@ -707,6 +738,54 @@ export default function Inicio() {
         .ini-section {
           margin-top: var(--gap-section);
           display: flex; flex-direction: column; gap: var(--gap-stack);
+        }
+
+        /* ── Greeting (desktop only) ── */
+        .ini-section--greeting { display: none; }
+        .ini-greeting-title {
+          margin: 0;
+          font-size: var(--text-xl);
+          font-weight: var(--fw-bold);
+          color: var(--text-title);
+        }
+        .ini-greeting-stats {
+          display: flex;
+          gap: var(--space-5);
+          margin-top: var(--space-3);
+        }
+        .ini-greeting-stat {
+          display: flex;
+          align-items: center;
+          gap: var(--space-2);
+          font-size: var(--font-button);
+          color: var(--text-secondary);
+        }
+        .ini-greeting-stat strong {
+          color: var(--text-title);
+          font-weight: var(--fw-bold);
+        }
+
+        /* ── Agenda today (desktop) / full (mobile) ── */
+        .ini-agenda-today { display: none; }
+        .ini-agenda-full { display: flex; flex-direction: column; gap: var(--gap-stack); }
+        .ini-agenda-today-label {
+          font-size: var(--font-caption);
+          font-weight: var(--fw-bold);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: var(--text-muted);
+          margin: 0;
+          padding-bottom: var(--space-2);
+          border-bottom: 1px solid var(--border);
+        }
+        .ini-agenda-today-content {
+          padding: var(--space-3) 0;
+        }
+        .ini-agenda-today-empty {
+          margin: 0;
+          font-size: var(--font-body);
+          color: var(--text-disabled);
+          font-style: italic;
         }
         .ini-section-title {
           font-size: var(--font-button); font-weight: var(--fw-bold);
@@ -1084,10 +1163,27 @@ export default function Inicio() {
           .ini-main .ini-section--alertas { display: none; }
           .ini-main .ini-section--resumo { display: none; }
           .ini-main .ini-section--metrics { display: flex; }
+          .ini-main .ini-section--greeting { display: flex; }
 
-          /* Seções compactas */
-          .ini-main .ini-section { margin-top: var(--space-4); order: 0; }
+          /* Seções compactas + mais respiro */
+          .ini-main .ini-section { margin-top: var(--space-5); order: 0; }
           .ini-main .ini-section:first-child { margin-top: 0; }
+
+          /* Greeting sem card wrapper */
+          .ini-main .ini-section--greeting { background: none; border: none; padding: 0; }
+
+          /* Nav compacta */
+          .ini-main .ini-section--nav { padding: var(--space-4); }
+          .ini-main .ini-section--nav .ini-nav-card { padding: var(--space-2) var(--space-3); }
+          .ini-main .ini-section--nav .ini-nav-icon { width: 32px; height: 32px; }
+
+          /* Métricas maiores */
+          .ini-main .ini-section--metrics { background: none; border: none; padding: 0; }
+          .ini-main .ini-metric-val { font-size: var(--text-2xl); }
+
+          /* Agenda: lista compacta, sem calendário */
+          .ini-main .ini-agenda-today { display: block; }
+          .ini-main .ini-agenda-full { display: none; }
 
           /* Remove max-width centralizados */
           .ini-main .ini-actions,
