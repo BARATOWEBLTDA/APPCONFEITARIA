@@ -365,7 +365,7 @@ export default function Inicio() {
         </div>
       </div>
 
-      <div className="ini-content">
+      <div className={`ini-content ${checklistDone ? "ini-content--done" : ""}`}>
         {/* ── Coluna principal ── */}
         <div className="ini-main">
 
@@ -949,10 +949,14 @@ export default function Inicio() {
           }
           .ini-aside { order: -1; position: sticky; top: var(--space-6); }
 
+          /* Seções ocultas no desktop */
+          .ini-main .ini-section--chart { display: none; }
+          .ini-main .ini-section--alertas { display: none; }
+          .ini-main .ini-section--resumo { display: none; }
+
           /* Seções compactas */
           .ini-main .ini-section { margin-top: var(--space-4); order: 0; }
           .ini-main .ini-section:first-child { margin-top: 0; }
-          .ini-main .ini-section--chart { display: flex; }
 
           /* Remove max-width centralizados */
           .ini-main .ini-actions,
@@ -1003,6 +1007,13 @@ export default function Inicio() {
 
           /* Chart: força dimensões corretas */
           .ini-main .ini-chart-card > div { width: 100% !important; min-width: 0; }
+
+          /* Checklist completo: dashboard esquerda, updates direita */
+          .ini-content--done {
+            grid-template-columns: 1fr 380px;
+          }
+          .ini-content--done .ini-aside { order: 0; }
+          .ini-content--done .ini-main { max-width: 640px; }
         }
       `}</style>
     </div>
