@@ -749,14 +749,9 @@ export default function Inicio() {
         @media (min-width: 1100px) {
           .ini-root { max-width: 1200px; }
 
-          /* Hero compacto no desktop */
+          /* Hero escondido no desktop — saudação vai pro sidebar */
           .ini-hero {
-            border-radius: var(--radius-xl);
-            margin-left: 0;
-            margin-right: 0;
-            margin-top: 0;
-            padding: 1.75rem 2rem;
-            width: auto;
+            display: none;
           }
 
           /* Grid 2 colunas */

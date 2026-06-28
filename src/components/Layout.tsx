@@ -60,6 +60,11 @@ export default function Layout() {
           </div>
         </div>
 
+        <div className="sidebar-greeting">
+          <p className="sidebar-greeting-name">Olá, {(profile?.nome || "").split(" ")[0] || "bem-vinda"}</p>
+          <p className="sidebar-greeting-date">{new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }).replace(/^\w/, c => c.toUpperCase())}</p>
+        </div>
+
         <nav className="sidebar-nav">
           <NavLink to="/inicio" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
             <span className="nav-icon"><House size={18} weight="duotone" /></span>Início
@@ -224,7 +229,7 @@ export default function Layout() {
           box-shadow: var(--shadow-card);
         }
 
-        .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1.5rem; padding-bottom: 1.25rem; }
+        .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 0.75rem; padding-bottom: 0; }
 
         .sidebar-avatar-ring { width: 100px; height: 100px; border-radius: 50%; padding: 3px; background: var(--primary-gradient); background-size: 300% 300%; animation: gradientRing 3s ease infinite; flex-shrink: 0; }
         @keyframes gradientRing { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
@@ -236,6 +241,10 @@ export default function Layout() {
         .sidebar-badge { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); font-size: var(--font-caption); font-weight: var(--fw-bold); padding: 3px 10px; white-space: nowrap; letter-spacing: 0.05em; color: var(--text-inverse); }
         .sidebar-badge--pro { background: var(--primary-gradient); border-radius: var(--radius-xl); }
         .sidebar-badge--free { background: #111111; border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius-sm); }
+
+        .sidebar-greeting { text-align: center; padding: 0 1rem 1rem; border-bottom: 1px solid var(--sidebar-border); margin-bottom: 0.25rem; }
+        .sidebar-greeting-name { margin: 0; font-size: 0.95rem; font-weight: var(--fw-semibold); color: var(--sidebar-text); line-height: 1.3; }
+        .sidebar-greeting-date { margin: 3px 0 0; font-size: var(--font-caption); color: var(--sidebar-text-muted); line-height: 1.3; }
 
         .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; overflow-y: auto; }
         .nav-icon { display: flex; align-items: center; flex-shrink: 0; opacity: 0.7; }
