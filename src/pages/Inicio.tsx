@@ -394,6 +394,44 @@ export default function Inicio() {
         </div>
       </section>
 
+      {/* ── Métricas (desktop only, mock visual) ── */}
+      <section className="ini-section ini-section--metrics">
+        <div className="ini-metrics-grid">
+          <div className="ini-metric-card">
+            <div className="ini-metric-top">
+              <div className="ini-metric-icon" style={{ background: "#FFF1F7", color: "var(--primary-dark)" }}>
+                <ClipboardText size={18} weight="duotone" />
+              </div>
+              <span className="ini-metric-label">Pedidos hoje</span>
+            </div>
+            <p className="ini-metric-val">0</p>
+            <p className="ini-metric-sub">0 no mês</p>
+          </div>
+
+          <div className="ini-metric-card">
+            <div className="ini-metric-top">
+              <div className="ini-metric-icon" style={{ background: "#DCFCE7", color: "#15803D" }}>
+                <CurrencyDollar size={18} weight="duotone" />
+              </div>
+              <span className="ini-metric-label">Faturamento</span>
+            </div>
+            <p className="ini-metric-val">R$ 0,00</p>
+            <p className="ini-metric-sub">este mês</p>
+          </div>
+
+          <div className="ini-metric-card">
+            <div className="ini-metric-top">
+              <div className="ini-metric-icon" style={{ background: "#FEF3C7", color: "#D97706" }}>
+                <TrendUp size={18} weight="duotone" />
+              </div>
+              <span className="ini-metric-label">Lucro estimado</span>
+            </div>
+            <p className="ini-metric-val">R$ 0,00</p>
+            <p className="ini-metric-sub">margem —%</p>
+          </div>
+        </div>
+      </section>
+
       {/* ── Atenção hoje ── */}
       {alertasVisiveis.length > 0 && (
         <section className="ini-section ini-section--alertas">
@@ -801,6 +839,46 @@ export default function Inicio() {
         }
         .ini-agenda-day--today:hover { background: var(--primary); }
 
+        /* ── Métricas (desktop only) ── */
+        .ini-metrics-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: var(--gap-stack);
+        }
+        .ini-metric-card {
+          background: var(--bg-subtle);
+          border-radius: var(--radius-lg);
+          padding: var(--pad-card);
+        }
+        .ini-metric-top {
+          display: flex;
+          align-items: center;
+          gap: var(--space-2);
+          margin-bottom: var(--space-3);
+        }
+        .ini-metric-icon {
+          width: 32px; height: 32px;
+          border-radius: var(--radius-md);
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .ini-metric-label {
+          font-size: var(--font-caption);
+          color: var(--text-secondary);
+        }
+        .ini-metric-val {
+          font-size: var(--text-2xl);
+          font-weight: var(--fw-bold);
+          color: var(--text-title);
+          margin: 0;
+          line-height: var(--lh-tight);
+        }
+        .ini-metric-sub {
+          font-size: var(--font-caption);
+          color: var(--text-muted);
+          margin: var(--space-1) 0 0;
+        }
+
         /* ── Alertas ── */
         .ini-alertas {
           display: flex; flex-direction: column; gap: var(--gap-tight);
@@ -907,6 +985,7 @@ export default function Inicio() {
         .ini-main { display: flex; flex-direction: column; }
         .ini-section--resumo  { order: 1; }
         .ini-section--nav     { order: 2; }
+        .ini-section--metrics { display: none; }
         .ini-section--agenda  { order: 3; }
         .ini-section--alertas { order: 4; }
         .ini-section--chart   { display: none; }
@@ -953,6 +1032,7 @@ export default function Inicio() {
           .ini-main .ini-section--chart { display: none; }
           .ini-main .ini-section--alertas { display: none; }
           .ini-main .ini-section--resumo { display: none; }
+          .ini-main .ini-section--metrics { display: flex; }
 
           /* Seções compactas */
           .ini-main .ini-section { margin-top: var(--space-4); order: 0; }
@@ -1001,6 +1081,7 @@ export default function Inicio() {
           .ini-main .ini-section .ini-resumo-card { border: 1px solid var(--border); }
           .ini-main .ini-section .ini-chart-card { border: none; padding: 0; }
           .ini-main .ini-section .ini-tudo-ok { border: none; }
+          .ini-main .ini-section--metrics { background: none; border: none; padding: 0; }
           .ini-main .ini-section .ini-alerta { border: 1px solid var(--border); border-left-width: 4px; }
           .ini-main .ini-section .ini-agenda-cal { border: none; padding: var(--space-3) 0 0; }
           .ini-main .ini-section .ini-agenda-stats { margin: 0; }
