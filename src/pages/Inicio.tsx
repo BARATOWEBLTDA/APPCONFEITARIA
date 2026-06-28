@@ -785,8 +785,8 @@ export default function Inicio() {
         .ini-agenda-day {
           font-size: 0.78rem;
           color: var(--text-secondary);
-          padding: 0.4rem 0;
-          border-radius: var(--radius-sm);
+          padding: 0.45rem 0;
+          border-radius: var(--radius-md);
           cursor: pointer;
           transition: background var(--dur-fast);
         }
@@ -797,7 +797,7 @@ export default function Inicio() {
           background: var(--primary);
           color: var(--text-inverse);
           font-weight: var(--fw-bold);
-          border-radius: 50%;
+          border-radius: var(--radius-md);
         }
         .ini-agenda-day--today:hover { background: var(--primary); }
 
