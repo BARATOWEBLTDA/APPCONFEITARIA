@@ -887,7 +887,8 @@ export default function Inicio() {
           gap: var(--gap-stack);
         }
         .ini-metric-card {
-          background: var(--bg-subtle);
+          background: var(--bg-card);
+          border: 1px solid var(--border);
           border-radius: var(--radius-lg);
           padding: var(--pad-card);
         }
@@ -954,7 +955,7 @@ export default function Inicio() {
           flex-shrink: 0;
         }
         .ini-alerta--pedido      .ini-alerta-icon { background: #FEE2E2; color: var(--error); }
-        .ini-alerta--entrega     .ini-alerta-icon { background: #DBEAFE; color: #1D4ED8; }
+        .ini-alerta--entrega     .ini-alerta-icon { background: #DBEAFE; color: var(--info); }
         .ini-alerta--aniversario .ini-alerta-icon { background: transparent; color: var(--primary); }
 
         .ini-alerta-body { flex: 1; min-width: 0; }
@@ -1102,26 +1103,6 @@ export default function Inicio() {
             border-radius: var(--radius-xl);
             padding: var(--space-5);
           }
-
-          /* Navegação rápida — estilo totem escuro */
-          .ini-main .ini-section--nav {
-            background: linear-gradient(160deg, #6E3548 0%, #431524 50%, #1f0a12 100%);
-            border: none;
-            color: var(--text-inverse);
-          }
-          .ini-main .ini-section--nav .ini-section-title { color: var(--text-inverse); }
-          .ini-main .ini-section--nav .ini-section-sub { color: rgba(255,255,255,0.55); }
-          .ini-main .ini-section--nav .ini-nav-card {
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(255,255,255,0.1);
-          }
-          .ini-main .ini-section--nav .ini-nav-card:hover {
-            background: rgba(255,255,255,0.15);
-            border-color: rgba(255,255,255,0.25);
-          }
-          .ini-main .ini-section--nav .ini-nav-label { color: var(--text-inverse); }
-          .ini-main .ini-section--nav .ini-nav-sub { color: rgba(255,255,255,0.5); }
-          .ini-main .ini-section--nav .ini-nav-arrow { color: rgba(255,255,255,0.35); }
 
           .ini-main .ini-section .ini-actions { grid-template-columns: 1fr 1fr; }
           .ini-main .ini-section .ini-resumo { grid-template-columns: 1fr 1fr; }
