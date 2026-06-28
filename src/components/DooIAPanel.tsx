@@ -217,7 +217,7 @@ export default function DooIAPanel() {
           display: flex;
           flex-direction: column;
           gap: var(--space-3);
-          min-height: 180px;
+          min-height: 340px;
         }
 
         .doo-panel-bubble {

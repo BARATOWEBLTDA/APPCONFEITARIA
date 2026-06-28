@@ -1172,10 +1172,19 @@ export default function Inicio() {
           /* Greeting sem card wrapper */
           .ini-main .ini-section--greeting { background: none; border: none; padding: 0; }
 
-          /* Nav compacta */
+          /* Nav compacta + cards clicáveis */
           .ini-main .ini-section--nav { padding: var(--space-4); }
-          .ini-main .ini-section--nav .ini-nav-card { padding: var(--space-2) var(--space-3); }
-          .ini-main .ini-section--nav .ini-nav-icon { width: 32px; height: 32px; }
+          .ini-main .ini-section--nav .ini-nav-card {
+            padding: var(--space-3) var(--space-3);
+            box-shadow: var(--shadow-sm);
+            transition: all var(--dur-fast) var(--ease-out);
+          }
+          .ini-main .ini-section--nav .ini-nav-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+          }
+          .ini-main .ini-section--nav .ini-nav-icon { width: 38px; height: 38px; }
+          .ini-main .ini-section--nav .ini-nav-arrow { color: var(--text-secondary); }
 
           /* Métricas maiores */
           .ini-main .ini-section--metrics { background: none; border: none; padding: 0; }
