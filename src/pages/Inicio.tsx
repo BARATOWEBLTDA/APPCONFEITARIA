@@ -13,6 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
 import WelcomeChecklist from "@/components/WelcomeChecklist";
 import UpdatesFeed from "@/components/UpdatesFeed";
+import DooIAPanel from "@/components/DooIAPanel";
 
 interface AlertaCard {
   tipo: "pedido" | "entrega" | "aniversario";
@@ -580,7 +581,12 @@ export default function Inicio() {
           {profile?.id && !checklistDone && (
             <WelcomeChecklist userId={profile.id} onAllDone={setChecklistDone} />
           )}
-          {checklistDone && <UpdatesFeed />}
+          {checklistDone && (
+            <>
+              <div className="ini-aside-desktop"><DooIAPanel /></div>
+              <div className="ini-aside-mobile"><UpdatesFeed /></div>
+            </>
+          )}
         </aside>
       </div>
 
@@ -608,6 +614,8 @@ export default function Inicio() {
         .ini-aside {
           width: 100%;
         }
+        .ini-aside-desktop { display: none; }
+        .ini-aside-mobile { display: block; }
 
         /* ── Hero degradê animado (preservado) ── */
         .ini-hero {
@@ -1027,6 +1035,8 @@ export default function Inicio() {
             align-items: start;
           }
           .ini-aside { order: -1; position: sticky; top: var(--space-6); }
+          .ini-aside-desktop { display: block; }
+          .ini-aside-mobile { display: none; }
 
           /* Seções ocultas no desktop */
           .ini-main .ini-section--chart { display: none; }
