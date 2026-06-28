@@ -933,7 +933,7 @@ export default function Inicio() {
 
         /* ── 2 colunas: checklist + dashboard ── */
         @media (min-width: 1100px) {
-          .ini-root { max-width: 1200px; }
+          .ini-root { max-width: none; padding-right: var(--space-7); }
 
           /* Hero escondido no desktop — saudação vai pro sidebar */
           .ini-hero {
@@ -944,13 +944,13 @@ export default function Inicio() {
           .ini-content {
             display: grid;
             grid-template-columns: 380px 1fr;
-            gap: 1.5rem;
+            gap: var(--space-6);
             align-items: start;
           }
-          .ini-aside { order: -1; position: sticky; top: 1.5rem; }
+          .ini-aside { order: -1; position: sticky; top: var(--space-6); }
 
           /* Seções compactas */
-          .ini-main .ini-section { margin-top: 1rem; order: 0; }
+          .ini-main .ini-section { margin-top: var(--space-4); order: 0; }
           .ini-main .ini-section:first-child { margin-top: 0; }
           .ini-main .ini-section--chart { display: flex; }
 
@@ -966,8 +966,29 @@ export default function Inicio() {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-xl);
-            padding: 1.25rem;
+            padding: var(--space-5);
           }
+
+          /* Navegação rápida — estilo totem escuro */
+          .ini-main .ini-section--nav {
+            background: linear-gradient(160deg, #6E3548 0%, #431524 50%, #1f0a12 100%);
+            border: none;
+            color: var(--text-inverse);
+          }
+          .ini-main .ini-section--nav .ini-section-title { color: var(--text-inverse); }
+          .ini-main .ini-section--nav .ini-section-sub { color: rgba(255,255,255,0.55); }
+          .ini-main .ini-section--nav .ini-nav-card {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.1);
+          }
+          .ini-main .ini-section--nav .ini-nav-card:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.25);
+          }
+          .ini-main .ini-section--nav .ini-nav-label { color: var(--text-inverse); }
+          .ini-main .ini-section--nav .ini-nav-sub { color: rgba(255,255,255,0.5); }
+          .ini-main .ini-section--nav .ini-nav-arrow { color: rgba(255,255,255,0.35); }
+
           .ini-main .ini-section .ini-actions { grid-template-columns: 1fr 1fr; }
           .ini-main .ini-section .ini-resumo { grid-template-columns: 1fr 1fr; }
           .ini-main .ini-section .ini-nav-grid { grid-template-columns: 1fr 1fr 1fr; }
@@ -977,7 +998,7 @@ export default function Inicio() {
           .ini-main .ini-section .ini-chart-card { border: none; padding: 0; }
           .ini-main .ini-section .ini-tudo-ok { border: none; }
           .ini-main .ini-section .ini-alerta { border: 1px solid var(--border); border-left-width: 4px; }
-          .ini-main .ini-section .ini-agenda-cal { border: none; padding: 0.75rem 0 0; }
+          .ini-main .ini-section .ini-agenda-cal { border: none; padding: var(--space-3) 0 0; }
           .ini-main .ini-section .ini-agenda-stats { margin: 0; }
 
           /* Chart: força dimensões corretas */
