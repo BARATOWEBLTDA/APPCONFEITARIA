@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  UserCircle, Storefront, Package, CookingPot,
+  UserCircle, Storefront, Package,
   ShoppingBag, ClipboardText, CheckCircle, CaretDown,
   Sparkle,
 } from "@phosphor-icons/react";
@@ -32,10 +32,9 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
 
   const checkSteps = async () => {
     try {
-      const [profileRes, insumosRes, receitasRes, produtosRes, pedidosRes] = await Promise.all([
+      const [profileRes, insumosRes, produtosRes, pedidosRes] = await Promise.all([
         supabase.from("profiles").select("nome, nome_loja, foto_url, telefone").eq("id", userId).single(),
         supabase.from("insumos").select("id", { count: "exact", head: true }).eq("user_id", userId),
-        supabase.from("receitas_minhas").select("id", { count: "exact", head: true }).eq("user_id", userId),
         supabase.from("produtos").select("id", { count: "exact", head: true }).eq("user_id", userId),
         supabase.from("pedidos").select("id", { count: "exact", head: true }).eq("user_id", userId),
       ]);
@@ -73,16 +72,6 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           cta: "Cadastrar insumos",
           path: "/insumos",
           done: (insumosRes.count ?? 0) > 0,
-        },
-        {
-          id: "receitas",
-          icon: <CookingPot size={iconSize} weight="duotone" />,
-          title: "Crie sua primeira receita",
-          desc: "Monte a ficha técnica dos seus produtos. O Doonly calcula o custo automaticamente com base nos insumos.",
-          tags: ["Ficha técnica", "Custo automático"],
-          cta: "Criar receita",
-          path: "/receitas",
-          done: (receitasRes.count ?? 0) > 0,
         },
         {
           id: "produtos",
