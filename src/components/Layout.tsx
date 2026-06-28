@@ -242,7 +242,7 @@ export default function Layout() {
         .sidebar-badge--pro { background: var(--primary-gradient); border-radius: var(--radius-xl); }
         .sidebar-badge--free { background: #111111; border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius-sm); }
 
-        .sidebar-greeting { text-align: center; padding: 0 1rem 1rem; border-bottom: 1px solid var(--sidebar-border); margin-bottom: 0.25rem; }
+        .sidebar-greeting { text-align: center; padding: 0 1rem 0.75rem; margin-bottom: 0.5rem; }
         .sidebar-greeting-name { margin: 0; font-size: 0.95rem; font-weight: var(--fw-semibold); color: var(--sidebar-text); line-height: 1.3; }
         .sidebar-greeting-date { margin: 3px 0 0; font-size: var(--font-caption); color: var(--sidebar-text-muted); line-height: 1.3; }
 
