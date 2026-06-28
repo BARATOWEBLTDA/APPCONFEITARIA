@@ -424,10 +424,10 @@ export default function Inicio() {
       {alertasVisiveis.length === 0 && !loading && (
         <section className="ini-section ini-section--alertas">
           <div className="ini-tudo-ok">
-            <span style={{ fontSize: "1.5rem" }}>✨</span>
+            <span className="ini-tudo-ok-emoji">✨</span>
             <div>
-              <p style={{ margin: 0, fontWeight: 700, color: "var(--text-title)" }}>Tudo em ordem!</p>
-              <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "var(--text-muted)" }}>Sem alertas hoje. Bom trabalho!</p>
+              <p className="ini-tudo-ok-title">Tudo em ordem!</p>
+              <p className="ini-tudo-ok-sub">Sem alertas hoje. Bom trabalho!</p>
             </div>
           </div>
         </section>
@@ -548,8 +548,8 @@ export default function Inicio() {
 
       <style>{`
         .ini-root {
-          font-family: 'Geist', sans-serif;
-          padding: 0 0.75rem 6rem;
+          font-family: var(--font-base);
+          padding: 0 var(--space-3) 6rem;
           display: flex; flex-direction: column;
           max-width: 980px; margin: 0 auto;
         }
@@ -558,8 +558,8 @@ export default function Inicio() {
         .ini-content {
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
-          margin-top: 0.5rem;
+          gap: var(--space-5);
+          margin-top: var(--space-2);
         }
         .ini-main {
           display: flex;
@@ -601,22 +601,22 @@ export default function Inicio() {
         }
         .ini-hero-greeting h1 {
           font-size: var(--font-input); font-weight: var(--fw-semibold); color: rgba(255,255,255,0.95);
-          margin: 3px 0 0; line-height: 1.3;
+          margin: var(--space-1) 0 0; line-height: 1.3;
           letter-spacing: 0;
         }
 
         /* ── Profile button + dropdown menu ── */
         .ini-profile-wrapper { position: relative; }
         .ini-profile-btn {
-          width: 42px; height: 42px; border-radius: 50%;
+          width: 42px; height: 42px; border-radius: var(--radius-full);
           border: 2.5px solid rgba(255,255,255,0.6);
           background: rgba(255,255,255,0.15);
           cursor: pointer; padding: 0; overflow: hidden;
           display: flex; align-items: center; justify-content: center;
-          transition: border-color 0.2s, transform 0.15s;
+          transition: border-color var(--dur-fast), transform var(--dur-fast);
         }
-        .ini-profile-btn:hover { border-color: #fff; transform: scale(1.05); }
-        .ini-profile-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+        .ini-profile-btn:hover { border-color: var(--text-inverse); transform: scale(1.05); }
+        .ini-profile-img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-full); }
         .ini-profile-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
 
         .ini-profile-menu {
@@ -624,34 +624,34 @@ export default function Inicio() {
           width: 260px;
           background: var(--bg-card);
           border-radius: var(--radius-lg);
-          box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+          box-shadow: var(--shadow-lg);
           border: 1px solid var(--border);
           z-index: 100;
           overflow: hidden;
-          animation: iniMenuIn 0.18s ease;
+          animation: iniMenuIn var(--dur-fast) var(--ease-out);
         }
         @keyframes iniMenuIn { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-        .ini-pm-header { padding: 1rem 1.1rem 0.7rem; }
+        .ini-pm-header { padding: var(--space-4) var(--space-4) var(--space-3); }
         .ini-pm-name { margin: 0; font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title); }
         .ini-pm-email { margin: 2px 0 0; font-size: var(--font-helper); color: var(--text-muted); }
         .ini-pm-version { margin: 4px 0 0; font-size: var(--font-caption); color: var(--text-disabled); font-style: italic; }
         .ini-pm-divider { height: 1px; background: var(--border); margin: 0; }
         .ini-pm-item {
-          display: flex; align-items: center; gap: 0.7rem;
-          width: 100%; padding: 0.75rem 1.1rem;
+          display: flex; align-items: center; gap: var(--space-3);
+          width: 100%; padding: var(--space-3) var(--space-4);
           background: none; border: none; cursor: pointer;
           font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-medium);
           color: var(--text-primary); text-align: left;
-          transition: background 0.15s;
+          transition: background var(--dur-fast);
         }
         .ini-pm-item:hover { background: var(--bg-subtle); }
         .ini-pm-item--sair { color: var(--primary); }
 
         /* ── Sections ── */
         .ini-section {
-          margin-top: 1.5rem;
-          display: flex; flex-direction: column; gap: 0.65rem;
+          margin-top: var(--gap-section);
+          display: flex; flex-direction: column; gap: var(--gap-stack);
         }
         .ini-section-title {
           font-size: var(--font-button); font-weight: var(--fw-bold);
@@ -661,11 +661,11 @@ export default function Inicio() {
 
         /* ── Ações rápidas ── */
         .ini-actions {
-          display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem;
+          display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-tight);
         }
         .ini-action {
-          display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-          padding: 0.85rem 0.9rem;
+          display: flex; align-items: center; justify-content: center; gap: var(--space-2);
+          padding: var(--space-3) var(--space-4);
           background: var(--bg-card);
           border: 1.5px solid var(--border);
           border-radius: var(--radius-lg);
@@ -675,13 +675,13 @@ export default function Inicio() {
           cursor: pointer;
           transition: all var(--dur-fast) var(--ease-out);
         }
-        .ini-action:hover { border-color: #3d1a24; transform: translateY(-1px); }
+        .ini-action:hover { border-color: var(--primary-dark); transform: translateY(-1px); }
         .ini-action--primary {
-          background: var(--primary); color: #fff;
+          background: var(--primary); color: var(--text-inverse);
           border-color: var(--primary);
-          box-shadow: 0 4px 12px rgba(255, 111, 169, 0.25);
+          box-shadow: var(--shadow-md);
         }
-        .ini-action--primary:hover { background: #FF5499; border-color: #FF5499; }
+        .ini-action--primary:hover { background: var(--btn-primary-hover); border-color: var(--btn-primary-hover); }
 
         /* ── Section subtitle ── */
         .ini-section-sub {
@@ -694,13 +694,13 @@ export default function Inicio() {
         .ini-nav-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 0.45rem;
+          gap: var(--gap-tight);
         }
         .ini-nav-card {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          padding: 0.75rem 0.9rem;
+          gap: var(--space-3);
+          padding: var(--space-3) var(--space-4);
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: var(--radius-md);
@@ -719,7 +719,7 @@ export default function Inicio() {
         .ini-nav-meta { flex: 1; min-width: 0; }
         .ini-nav-label {
           display: block;
-          font-size: 0.85rem;
+          font-size: var(--font-button);
           font-weight: var(--fw-semibold);
           color: var(--text-title);
           line-height: 1.3;
@@ -741,51 +741,51 @@ export default function Inicio() {
         }
         .ini-agenda-link:hover { text-decoration: underline; }
         .ini-agenda-stats {
-          display: flex; gap: 1.25rem;
+          display: flex; gap: var(--space-5);
           font-size: var(--font-caption);
           color: var(--text-muted);
-          padding: 0.5rem 0.75rem;
+          padding: var(--space-2) var(--space-3);
           background: var(--bg-body);
           border-radius: var(--radius-md);
         }
         .ini-agenda-stats span {
-          display: flex; align-items: center; gap: 0.3rem;
+          display: flex; align-items: center; gap: var(--space-1);
         }
         .ini-agenda-cal {
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: var(--radius-lg);
-          padding: 0.75rem;
+          padding: var(--space-3);
         }
         .ini-agenda-nav {
           display: flex; justify-content: space-between; align-items: center;
-          padding: 0 0.25rem 0.5rem;
-          font-size: 0.85rem; font-weight: var(--fw-semibold);
+          padding: 0 var(--space-1) var(--space-2);
+          font-size: var(--font-button); font-weight: var(--fw-semibold);
           color: var(--text-title);
         }
         .ini-agenda-nav button {
           background: none; border: none; cursor: pointer;
-          font-size: 1.1rem; color: var(--text-secondary);
-          padding: 0.2rem 0.5rem; border-radius: var(--radius-sm);
+          font-size: var(--text-lg); color: var(--text-secondary);
+          padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm);
         }
         .ini-agenda-nav button:hover { background: var(--bg-body); }
         .ini-agenda-grid {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
           text-align: center;
-          gap: 2px;
+          gap: 1px;
         }
         .ini-agenda-day-label {
-          font-size: 0.68rem;
+          font-size: var(--font-caption);
           font-weight: var(--fw-semibold);
           color: var(--text-muted);
           text-transform: lowercase;
-          padding: 0.25rem 0;
+          padding: var(--space-1) 0;
         }
         .ini-agenda-day {
-          font-size: 0.78rem;
+          font-size: var(--font-caption);
           color: var(--text-secondary);
-          padding: 0.45rem 0;
+          padding: var(--space-2) 0;
           border-radius: var(--radius-md);
           cursor: pointer;
           transition: background var(--dur-fast);
@@ -803,11 +803,11 @@ export default function Inicio() {
 
         /* ── Alertas ── */
         .ini-alertas {
-          display: flex; flex-direction: column; gap: 0.45rem;
+          display: flex; flex-direction: column; gap: var(--gap-tight);
         }
         .ini-alerta {
-          display: flex; align-items: center; gap: 0.7rem;
-          padding: 0.8rem 0.95rem;
+          display: flex; align-items: center; gap: var(--space-3);
+          padding: var(--space-3) var(--space-4);
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-left-width: 4px;
@@ -818,18 +818,18 @@ export default function Inicio() {
           transition: transform var(--dur-fast) var(--ease-out);
         }
         .ini-alerta:hover { transform: translateX(2px); }
-        .ini-alerta--pedido      { border-left-color: #B91C1C; }
-        .ini-alerta--entrega     { border-left-color: #1D4ED8; }
-        .ini-alerta--aniversario { border-left-color: #EC4899; }
+        .ini-alerta--pedido      { border-left-color: var(--error); }
+        .ini-alerta--entrega     { border-left-color: var(--info); }
+        .ini-alerta--aniversario { border-left-color: var(--primary); }
 
         .ini-alerta-icon {
           width: 32px; height: 32px; border-radius: var(--radius-md);
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
-        .ini-alerta--pedido      .ini-alerta-icon { background: #FEE2E2; color: #B91C1C; }
+        .ini-alerta--pedido      .ini-alerta-icon { background: #FEE2E2; color: var(--error); }
         .ini-alerta--entrega     .ini-alerta-icon { background: #DBEAFE; color: #1D4ED8; }
-        .ini-alerta--aniversario .ini-alerta-icon { background: transparent; color: #EC4899; }
+        .ini-alerta--aniversario .ini-alerta-icon { background: transparent; color: var(--primary); }
 
         .ini-alerta-body { flex: 1; min-width: 0; }
         .ini-alerta-texto {
@@ -845,19 +845,22 @@ export default function Inicio() {
         }
 
         .ini-tudo-ok {
-          display: flex; align-items: center; gap: 0.8rem;
-          padding: 1rem 1.1rem;
+          display: flex; align-items: center; gap: var(--space-3);
+          padding: var(--space-4);
           background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
           border-radius: var(--radius-lg);
         }
+        .ini-tudo-ok-emoji { font-size: var(--text-xl); }
+        .ini-tudo-ok-title { margin: 0; font-weight: var(--fw-bold); color: var(--text-title); font-size: var(--font-body); }
+        .ini-tudo-ok-sub { margin: var(--space-1) 0 0; font-size: var(--font-helper); color: var(--text-muted); }
 
         /* ── Resumo da semana ── */
         .ini-resumo {
-          display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem;
+          display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-tight);
         }
         .ini-resumo-card {
-          display: flex; align-items: flex-start; gap: 0.7rem;
-          padding: 0.95rem;
+          display: flex; align-items: flex-start; gap: var(--space-3);
+          padding: var(--pad-card);
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: var(--radius-lg);
@@ -877,18 +880,18 @@ export default function Inicio() {
         .ini-resumo-label {
           font-size: var(--font-caption); font-weight: var(--fw-medium);
           color: var(--text-muted);
-          margin: 3px 0 0;
+          margin: var(--space-1) 0 0;
         }
         .ini-resumo-var {
           display: inline-flex; align-items: center; gap: 3px;
-          margin: 8px 0 0;
-          padding: 2px 7px;
+          margin: var(--space-2) 0 0;
+          padding: var(--space-1) var(--space-2);
           border-radius: var(--radius-sm);
           font-size: var(--font-caption); font-weight: var(--fw-semibold);
           line-height: 1.4;
         }
-        .ini-resumo-var.up   { color: #15803D; background: #DCFCE7; }
-        .ini-resumo-var.down { color: #B91C1C; background: #FEE2E2; }
+        .ini-resumo-var.up   { color: var(--success); background: #DCFCE7; }
+        .ini-resumo-var.down { color: var(--error); background: #FEE2E2; }
 
         /* ── Gráfico ── */
         .ini-chart-header { display: flex; justify-content: space-between; align-items: center; }
@@ -896,7 +899,7 @@ export default function Inicio() {
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: var(--radius-lg);
-          padding: 0.8rem 0.5rem 0.5rem;
+          padding: var(--space-3) var(--space-2) var(--space-2);
         }
 
         /* ── Mobile: ordem e visibilidade ── */
