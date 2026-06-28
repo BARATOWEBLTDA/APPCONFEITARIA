@@ -748,6 +748,18 @@ export default function Inicio() {
         /* ── 2 colunas: checklist + dashboard ── */
         @media (min-width: 1100px) {
           .ini-root { max-width: 1200px; }
+
+          /* Hero compacto no desktop */
+          .ini-hero {
+            border-radius: var(--radius-xl);
+            margin-left: 0;
+            margin-right: 0;
+            margin-top: 0;
+            padding: 1.75rem 2rem;
+            width: auto;
+          }
+
+          /* Grid 2 colunas */
           .ini-content {
             display: grid;
             grid-template-columns: 380px 1fr;
@@ -755,15 +767,36 @@ export default function Inicio() {
             align-items: start;
           }
           .ini-aside { order: -1; position: sticky; top: 1.5rem; }
+
+          /* Seções compactas */
           .ini-main .ini-section { margin-top: 1rem; }
           .ini-main .ini-section:first-child { margin-top: 0; }
+
+          /* Remove max-width centralizados */
           .ini-main .ini-actions,
           .ini-main .ini-resumo,
           .ini-main .ini-alertas,
           .ini-main .ini-tudo-ok,
-          .ini-main .ini-chart-card { max-width: none; }
-          .ini-main .ini-actions { grid-template-columns: 1fr 1fr; }
-          .ini-main .ini-resumo { grid-template-columns: 1fr 1fr; }
+          .ini-main .ini-chart-card { max-width: none; margin-left: 0; margin-right: 0; }
+
+          /* Seções em cards */
+          .ini-main .ini-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 1.25rem;
+          }
+          .ini-main .ini-section .ini-actions { grid-template-columns: 1fr 1fr; }
+          .ini-main .ini-section .ini-resumo { grid-template-columns: 1fr 1fr; }
+
+          /* Cards internos sem borda dupla */
+          .ini-main .ini-section .ini-resumo-card { border: 1px solid var(--border); }
+          .ini-main .ini-section .ini-chart-card { border: none; padding: 0; }
+          .ini-main .ini-section .ini-tudo-ok { border: none; }
+          .ini-main .ini-section .ini-alerta { border: 1px solid var(--border); border-left-width: 4px; }
+
+          /* Chart: força dimensões corretas */
+          .ini-main .ini-chart-card > div { width: 100% !important; min-width: 0; }
         }
       `}</style>
     </div>

@@ -266,7 +266,7 @@ export default function Layout() {
         .desk-topbar { display: none; }
 
         @media (min-width: 900px) {
-          .desk-topbar { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; padding: 0.5rem 2rem; margin: -2rem -2rem 0.5rem -2rem; position: sticky; top: 0; z-index: 9; }
+          .desk-topbar { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; padding: 0.75rem 2rem; margin: 0 -2rem 0.5rem -2rem; position: sticky; top: 0; z-index: 9; }
         }
 
 
