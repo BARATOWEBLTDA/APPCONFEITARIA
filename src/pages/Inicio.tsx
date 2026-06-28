@@ -407,6 +407,7 @@ export default function Inicio() {
             </div>
             <p className="ini-metric-val">0</p>
             <p className="ini-metric-sub">0 no mês</p>
+            <p className="ini-metric-hint">Seu primeiro pedido do dia vai aparecer aqui</p>
           </div>
 
           <div className="ini-metric-card">
@@ -418,6 +419,7 @@ export default function Inicio() {
             </div>
             <p className="ini-metric-val">R$ 0,00</p>
             <p className="ini-metric-sub">este mês</p>
+            <p className="ini-metric-hint">Registre pedidos para acompanhar</p>
           </div>
 
           <div className="ini-metric-card">
@@ -429,6 +431,7 @@ export default function Inicio() {
             </div>
             <p className="ini-metric-val">R$ 0,00</p>
             <p className="ini-metric-sub">margem —%</p>
+            <p className="ini-metric-hint">Calculado automaticamente com suas vendas</p>
           </div>
         </div>
       </section>
@@ -512,16 +515,22 @@ export default function Inicio() {
 
       {/* ── Agenda de Entregas (mock visual) ── */}
       <section className="ini-section ini-section--agenda">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div className="ini-agenda-header">
           <div>
-            <h2 className="ini-section-title">Agenda de entregas</h2>
+            <h2 className="ini-agenda-title"><CalendarDots size={20} weight="fill" /> Agenda de entregas</h2>
             <p className="ini-section-sub">Encomendas agendadas por data</p>
           </div>
           <button className="ini-agenda-link" onClick={() => navigate("/agenda")}>Ver todas ›</button>
         </div>
         <div className="ini-agenda-stats">
-          <span><CalendarDots size={14} weight="fill" /> 0 encomendas no mês</span>
-          <span><ClipboardText size={14} weight="fill" /> 0 dias com entrega</span>
+          <div className="ini-agenda-stat">
+            <span className="ini-agenda-stat-val">0</span>
+            <span className="ini-agenda-stat-label">encomendas no mês</span>
+          </div>
+          <div className="ini-agenda-stat">
+            <span className="ini-agenda-stat-val">0</span>
+            <span className="ini-agenda-stat-label">dias com entrega</span>
+          </div>
         </div>
         <div className="ini-agenda-cal">
           <div className="ini-agenda-nav">
@@ -779,6 +788,20 @@ export default function Inicio() {
         .ini-nav-arrow { color: var(--text-disabled); flex-shrink: 0; }
 
         /* ── Agenda de Entregas ── */
+        .ini-agenda-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .ini-agenda-title {
+          display: flex;
+          align-items: center;
+          gap: var(--space-2);
+          font-size: var(--font-card-title);
+          font-weight: var(--fw-bold);
+          color: var(--primary-dark);
+          margin: 0;
+        }
         .ini-agenda-link {
           background: none; border: none; cursor: pointer;
           font-family: inherit; font-size: var(--font-caption);
@@ -787,15 +810,25 @@ export default function Inicio() {
         }
         .ini-agenda-link:hover { text-decoration: underline; }
         .ini-agenda-stats {
-          display: flex; gap: var(--space-5);
+          display: flex; gap: var(--space-3);
+        }
+        .ini-agenda-stat {
+          display: flex;
+          align-items: baseline;
+          gap: var(--space-2);
+          padding: var(--space-3) var(--space-4);
+          background: var(--bg-subtle);
+          border-radius: var(--radius-md);
+          flex: 1;
+        }
+        .ini-agenda-stat-val {
+          font-size: var(--text-lg);
+          font-weight: var(--fw-bold);
+          color: var(--primary-dark);
+        }
+        .ini-agenda-stat-label {
           font-size: var(--font-caption);
           color: var(--text-muted);
-          padding: var(--space-2) var(--space-3);
-          background: var(--bg-body);
-          border-radius: var(--radius-md);
-        }
-        .ini-agenda-stats span {
-          display: flex; align-items: center; gap: var(--space-1);
         }
         .ini-agenda-cal {
           background: var(--bg-card);
@@ -885,6 +918,13 @@ export default function Inicio() {
           font-size: var(--font-caption);
           color: var(--text-muted);
           margin: var(--space-1) 0 0;
+        }
+        .ini-metric-hint {
+          font-size: var(--font-caption);
+          color: var(--text-disabled);
+          font-style: italic;
+          margin: var(--space-2) 0 0;
+          line-height: var(--lh-relaxed);
         }
 
         /* ── Alertas ── */
@@ -1101,7 +1141,7 @@ export default function Inicio() {
 
           /* Checklist completo: dashboard esquerda, updates direita */
           .ini-content--done {
-            grid-template-columns: 1fr 380px;
+            grid-template-columns: 1fr 475px;
           }
           .ini-content--done .ini-aside { order: 0; }
         }
