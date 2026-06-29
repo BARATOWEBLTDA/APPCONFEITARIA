@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import {
-  CaretLeft, Plus, PencilSimple, Trash, House,
+  CaretLeft, PencilSimple, Trash, House,
   Calculator, Percent, Clock, Buildings, Coin, Info,
 } from "@phosphor-icons/react";
 import {
@@ -242,7 +242,7 @@ export default function Custos() {
       </div>
 
       {/* Tabs */}
-      <FinTabs tabs={TABS} active={tab} onChange={setTab} ariaLabel="Seções de custos" />
+      <FinTabs<TabKey> tabs={TABS} active={tab} onChange={setTab} ariaLabel="Seções de custos" />
 
       {/* Resumo */}
       {tab === "resumo" && (
