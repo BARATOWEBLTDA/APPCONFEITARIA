@@ -1360,8 +1360,8 @@ export default function Inicio() {
         /* Nível 2: seções dentro de .ini-main */
         .ini-section--alertas { order: 1; }
         .ini-section--nav     { order: 2; }
-        .ini-section--resumo  { order: 3; }
-        .ini-section--agenda  { order: 4; }
+        .ini-section--resumo  { display: none; }
+        .ini-section--agenda  { display: none; }
         .ini-section--metrics { display: none; }
         .ini-section--chart   { display: none; }
 
@@ -1396,10 +1396,12 @@ export default function Inicio() {
           .ini-content {
             display: grid;
             grid-template-columns: 360px 1fr;
+            grid-template-areas: "aside main";
             gap: var(--space-6);
             align-items: start;
           }
-          .ini-aside { order: -1; position: sticky; top: var(--space-6); }
+          .ini-main  { grid-area: main; }
+          .ini-aside { grid-area: aside; position: sticky; top: var(--space-6); }
           .ini-aside-desktop { display: block; }
           .ini-aside-mobile { display: none; }
           /* Updates e engajamento são exclusivos do mobile */
@@ -1554,8 +1556,8 @@ export default function Inicio() {
              ──────────────────────────────────────────── */
           .ini-content--done {
             grid-template-columns: 1fr 420px;
+            grid-template-areas: "main aside";
           }
-          .ini-content--done .ini-aside { order: 0; }
         }
 
         /* Telas largas: aside um pouco maior, métricas respiram */
