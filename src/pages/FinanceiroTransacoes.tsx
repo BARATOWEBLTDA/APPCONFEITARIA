@@ -41,7 +41,7 @@ const monthLabel = (d: Date) =>
   d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })
     .replace(/^./, c => c.toUpperCase())
 
-export default function FinanceiroVisaoGeral() {
+export default function FinanceiroTransacoes() {
   const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [mes, setMes] = useState(new Date()) // mês ancorado no primeiro dia
@@ -558,189 +558,155 @@ export default function FinanceiroVisaoGeral() {
           </div>
         </div>
 
-        {/* 4 cards de resumo */}
-        <div className="fin-cards">
-          <div className="fin-summary-card fin-card--receita">
-            <div className="fin-card-icon"><TrendUp size={20} weight="bold" /></div>
-            <div>
-              <p className="fin-card-label">Receita</p>
-              <p className="fin-card-value">{fmtMoney(entradas)}</p>
-            </div>
-          </div>
-
-          <div className="fin-summary-card fin-card--despesa">
-            <div className="fin-card-icon"><TrendDown size={20} weight="bold" /></div>
-            <div>
-              <p className="fin-card-label">Despesas</p>
-              <p className="fin-card-value">{fmtMoney(saidas)}</p>
-            </div>
-          </div>
-
-          <div className="fin-summary-card fin-card--cmv">
-            <div className="fin-card-icon"><Package size={20} weight="bold" /></div>
-            <div>
-              <p className="fin-card-label">Custo (CMV)</p>
-              <p className="fin-card-value">{fmtMoney(cmvTotal)}</p>
-            </div>
-          </div>
-
-          <div className="fin-summary-card fin-card--lucro">
-            <div className="fin-card-icon"><Wallet size={20} weight="bold" /></div>
-            <div>
-              <p className="fin-card-label">Lucro real</p>
-              <p className="fin-card-value" style={{ color: lucroReal >= 0 ? "var(--success)" : "var(--error)" }}>
-                {fmtMoney(lucroReal)}
-              </p>
-              {cmvTotal > 0 && (
-                <p style={{ fontSize: "0.66rem", color: "var(--text-muted)", margin: "1px 0 0", fontWeight: 500 }}>
-                  bruto: {fmtMoney(lucro)}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <div className="fin-summary-card fin-card--ticket">
-            <div className="fin-card-icon"><CurrencyDollar size={20} weight="bold" /></div>
-            <div>
-              <p className="fin-card-label">Ticket médio</p>
-              <p className="fin-card-value">{fmtMoney(ticketMedio)}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Card Meta Mensal */}
-        {metaMensal ? (
-          <div className="fin-meta-card">
-            <div className="fin-meta-decor" />
-            <div className="fin-meta-top">
-              <div className="fin-meta-title">
-                <div className="fin-meta-icon"><Target size={20} weight="duotone" /></div>
-                <div>
-                  <p className="fin-meta-label">Meta mensal</p>
-                  <p className="fin-meta-msg">{metaMsg}</p>
-                </div>
-              </div>
-              <button className="fin-meta-edit" onClick={abrirMeta}>
-                <PencilSimple size={13} weight="bold" /> Editar
-              </button>
-            </div>
-
-            <div className="fin-meta-values">
-              <span className="fin-meta-current">{fmtMoney(entradas)}</span>
-              <span className="fin-meta-sep">de</span>
-              <span className="fin-meta-target">{fmtMoney(metaMensal)}</span>
-              <span className="fin-meta-pct">{metaProgresso.toFixed(0)}%</span>
-            </div>
-
-            <div className="fin-thermo">
-              <div className="fin-thermo-fill" style={{ width: `${metaProgresso}%` }}>
-                {metaProgresso >= 100 && <Sparkle size={12} weight="fill" className="fin-thermo-spark" />}
-              </div>
-            </div>
-
-            {metaProgresso < 100 && (
-              <p className="fin-meta-faltam">Faltam <strong>{fmtMoney(metaFaltam)}</strong> pra bater a meta</p>
-            )}
-          </div>
-        ) : (
-          <button className="fin-meta-empty" onClick={abrirMeta}>
-            <div className="fin-meta-empty-icon"><Target size={22} weight="duotone" /></div>
-            <div style={{ flex: 1, textAlign: "left" }}>
-              <p className="fin-meta-empty-title">Defina sua meta mensal</p>
-              <p className="fin-meta-empty-sub">Acompanhe seu progresso com um termômetro motivacional</p>
-            </div>
-            <span className="fin-meta-empty-cta">+ Definir meta</span>
-          </button>
-        )}
-
-        {/* Gráfico de 6 meses */}
+        {/* Lançamentos */}
         <div className="fin-card">
           <div className="fin-section-header">
-            <div className="fin-section-icon"><ChartBar size={18} weight="duotone" /></div>
-            <div>
-              <p className="fin-section-label">Fluxo de caixa</p>
-              <p className="fin-section-sub">Últimos 6 meses</p>
+            <div className="fin-section-icon"><Receipt size={18} weight="duotone" /></div>
+            <div style={{ flex: 1 }}>
+              <p className="fin-section-label">Lançamentos do mês</p>
+              <p className="fin-section-sub">Entradas vêm automáticas dos pedidos pagos</p>
             </div>
-            <div className="fin-legend">
-              <span><i className="fin-dot fin-dot--in" /> Receita</span>
-              <span><i className="fin-dot fin-dot--out" /> Despesa</span>
-            </div>
+            <button className="fin-btn-add" onClick={() => abrirNovo(tab === "entradas" ? "entrada" : "saida")}>
+              <Plus size={13} weight="bold" />
+              {tab === "entradas" ? "Entrada avulsa" : "Despesa"}
+            </button>
           </div>
 
-          <div className="fin-chart">
-            {movsHistorico.map(h => {
-              const [y, m] = h.mes.split("-")
-              const label = new Date(parseInt(y), parseInt(m) - 1, 1)
-                .toLocaleDateString("pt-BR", { month: "short" })
-                .replace(".", "")
-              const hIn = Math.max(4, (h.entrada / maxBarra) * 100)
-              const hOut = Math.max(4, (h.saida / maxBarra) * 100)
-              const lucroMes = h.entrada - h.saida
-              return (
-                <div key={h.mes} className="fin-bar-group">
-                  <div className="fin-bars" title={`${label}: receita ${fmtMoney(h.entrada)} · despesa ${fmtMoney(h.saida)}`}>
-                    <div className="fin-bar fin-bar--in" style={{ height: `${hIn}%` }} />
-                    <div className="fin-bar fin-bar--out" style={{ height: `${hOut}%` }} />
+          <div className="fin-tabs">
+            <button className={`fin-tab${tab === "entradas" ? " fin-tab--active" : ""}`} onClick={() => setTab("entradas")}>
+              <TrendUp size={14} weight="bold" /> Entradas
+              <span className="fin-tab-pill">{fmtMoney(entradas).replace("R$", "").trim()}</span>
+            </button>
+            <button className={`fin-tab${tab === "saidas" ? " fin-tab--active" : ""}`} onClick={() => setTab("saidas")}>
+              <TrendDown size={14} weight="bold" /> Saídas
+              <span className="fin-tab-pill">{fmtMoney(saidas).replace("R$", "").trim()}</span>
+            </button>
+          </div>
+
+          {loading ? (
+            <div className="fin-loading"><span className="fin-spinner" /></div>
+          ) : movsExibidas.length === 0 ? (
+            <div className="fin-empty">
+              <div className="fin-empty-icon">
+                {tab === "entradas" ? <TrendUp size={26} weight="duotone" /> : <TrendDown size={26} weight="duotone" />}
+              </div>
+              <p className="fin-empty-text">
+                {tab === "entradas"
+                  ? "Nenhuma entrada neste mês. Marque pedidos como pagos ou adicione uma entrada avulsa."
+                  : "Nenhuma despesa neste mês. Toque em + Despesa para registrar."}
+              </p>
+            </div>
+          ) : (
+            <div className="fin-list">
+              {movsExibidas.map(m => (
+                <div key={m.id} className={`fin-item fin-item--${m.tipo}`}>
+                  <div className="fin-item-icon">
+                    {m.origem === "pedido"
+                      ? <ShoppingCartSimple size={16} weight="duotone" />
+                      : (m.tipo === "entrada" ? <TrendUp size={16} weight="duotone" /> : <TrendDown size={16} weight="duotone" />)}
                   </div>
-                  <p className="fin-bar-label">{label}</p>
-                  <p className="fin-bar-sub" style={{ color: lucroMes >= 0 ? "var(--success)" : "var(--error)" }}>
-                    {lucroMes >= 0 ? "+" : ""}{fmtMoney(lucroMes).replace("R$", "").trim()}
-                  </p>
+                  <div className="fin-item-info">
+                    <p className="fin-item-desc">{m.descricao}</p>
+                    <div className="fin-item-meta">
+                      <span className="fin-item-tag"><CalendarBlank size={10} weight="bold" /> {fmtData(m.data)}</span>
+                      {m.categoria && <span className="fin-item-tag"><Tag size={10} weight="bold" /> {m.categoria}</span>}
+                      {m.origem === "pedido" && <span className="fin-item-tag fin-item-tag--auto">automático</span>}
+                      {m.origem === "pedido" && m.cmv !== undefined && m.cmv > 0 && m.margem !== undefined && (
+                        <span className={`fin-item-tag fin-item-tag--margem fin-item-tag--margem-${m.margem >= 50 ? "alto" : m.margem >= 25 ? "medio" : "baixo"}`}>
+                          margem {m.margem.toFixed(0)}%
+                        </span>
+                      )}
+                      {m.origem === "pedido" && m.semFicha && (
+                        <span className="fin-item-tag fin-item-tag--alerta">
+                          <Warning size={10} weight="bold" /> ficha incompleta
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="fin-item-valor">{fmtMoney(m.valor)}</p>
+                  {m.origem === "manual" && (
+                    <div className="fin-item-actions">
+                      <button onClick={() => abrirEditar(m)} aria-label="Editar"><PencilSimple size={14} weight="bold" /></button>
+                      <button onClick={() => excluirMov(m)} aria-label="Excluir" className="fin-item-del"><Trash size={14} weight="bold" /></button>
+                    </div>
+                  )}
                 </div>
-              )
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
-
 
       </div>
 
-      {/* Modal de definir/editar meta */}
-      {showMetaForm && (
-        <div className="fin-modal-overlay" onClick={() => setShowMetaForm(false)}>
-          <div className="fin-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
+      {/* Modal de lançamento */}
+      {showForm && (
+        <div className="fin-modal-overlay" onClick={() => setShowForm(false)}>
+          <div className="fin-modal" onClick={e => e.stopPropagation()}>
             <div className="fin-modal-header">
-              <h3>{metaMensal ? "Editar meta mensal" : "Definir meta mensal"}</h3>
-              <button onClick={() => setShowMetaForm(false)}><X size={18} weight="bold" /></button>
+              <h3>{editando ? "Editar lançamento" : (form.tipo === "entrada" ? "Nova entrada avulsa" : "Nova despesa")}</h3>
+              <button onClick={() => setShowForm(false)}><X size={18} weight="bold" /></button>
             </div>
 
             <div className="fin-modal-body">
-              <div className="fin-meta-help">
-                <Target size={26} weight="duotone" />
-                <p>Quanto você quer faturar todo mês? Vamos te lembrar do progresso aqui no Financeiro.</p>
+              <div className="fin-form-field">
+                <label>Descrição *</label>
+                <input
+                  className="fin-input"
+                  value={form.descricao}
+                  onChange={e => setForm({ ...form, descricao: e.target.value })}
+                  placeholder={form.tipo === "saida" ? "Ex: 2kg de farinha" : "Ex: Encomenda PIX direto"}
+                  autoFocus
+                />
+              </div>
+
+              <div className="fin-form-row">
+                <div className="fin-form-field" style={{ flex: 1 }}>
+                  <label>Categoria</label>
+                  <select
+                    className="fin-input"
+                    value={form.categoria}
+                    onChange={e => setForm({ ...form, categoria: e.target.value })}
+                  >
+                    {(form.tipo === "saida" ? CATEGORIAS_SAIDA : CATEGORIAS_ENTRADA_AVULSA).map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="fin-form-field" style={{ flex: 1 }}>
+                  <label>Valor *</label>
+                  <div className="fin-money-row">
+                    <span className="fin-prefix">R$</span>
+                    <input
+                      className="fin-input"
+                      style={{ textAlign: "right" }}
+                      value={form.valor}
+                      onChange={e => setForm({ ...form, valor: e.target.value.replace(/[^0-9.,]/g, "") })}
+                      placeholder="0,00"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="fin-form-field">
-                <label>Meta de faturamento</label>
-                <div className="fin-money-row">
-                  <span className="fin-prefix">R$</span>
-                  <input
-                    className="fin-input"
-                    style={{ textAlign: "right", fontSize: "1.1rem", fontWeight: 700 }}
-                    value={metaInput}
-                    onChange={e => setMetaInput(e.target.value.replace(/[^0-9.,]/g, ""))}
-                    placeholder="5.000,00"
-                    autoFocus
-                  />
-                </div>
+                <label>Data</label>
+                <input
+                  type="date"
+                  className="fin-input"
+                  value={form.data}
+                  onChange={e => setForm({ ...form, data: e.target.value })}
+                />
               </div>
             </div>
 
             <div className="fin-modal-footer">
-              {metaMensal && (
-                <button className="fin-btn-cancel" onClick={removerMeta} style={{ color: "var(--error)", borderColor: "#fee2e2" }}>
-                  Remover
-                </button>
-              )}
-              <button className="fin-btn-cancel" onClick={() => setShowMetaForm(false)}>Cancelar</button>
-              <button className="fin-btn-save" onClick={salvarMeta} disabled={savingMeta}>
-                {savingMeta ? "Salvando..." : "Salvar meta"}
+              <button className="fin-btn-cancel" onClick={() => setShowForm(false)}>Cancelar</button>
+              <button className="fin-btn-save" onClick={salvarForm} disabled={saving}>
+                {saving ? "Salvando..." : (editando ? "Salvar alterações" : "Criar lançamento")}
               </button>
             </div>
           </div>
         </div>
       )}
-
 
       <style>{`
         @keyframes finspin { to { transform:rotate(360deg); } }

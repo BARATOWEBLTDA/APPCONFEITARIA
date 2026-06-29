@@ -27,7 +27,7 @@ export default function Financeiro() {
       label: "Transações",
       desc: "Vendas, entradas e saídas — tudo num só lugar",
       icon: <ArrowsLeftRight size={20} weight="duotone" />,
-      path: "/financeiro/visao-geral",
+      path: "/financeiro/transacoes",
     },
     {
       label: "Custos",
