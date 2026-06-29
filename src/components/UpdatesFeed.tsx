@@ -1,49 +1,32 @@
-import {
-  CookingPot, Sparkle, Bell, CreditCard, Megaphone, Star,
-} from "@phosphor-icons/react";
+import { Bell } from "@phosphor-icons/react";
 
 const MOCK_UPDATES = [
   {
     id: 1,
-    icon: <CookingPot size={18} weight="fill" />,
-    color: "#EC4899",
-    bg: "#FDF2F8",
     title: "Nova receita da comunidade",
     desc: "Bolo de cenoura com cobertura de brigadeiro foi adicionado à biblioteca.",
     time: "Hoje, 09:12",
   },
   {
     id: 2,
-    icon: <Sparkle size={18} weight="fill" />,
-    color: "#8B5CF6",
-    bg: "#F5F3FF",
     title: "Nova funcionalidade",
     desc: "Agora você pode duplicar receitas com um clique. Experimente!",
     time: "Ontem, 15:30",
   },
   {
     id: 3,
-    icon: <Megaphone size={18} weight="fill" />,
-    color: "#3d1a24",
-    bg: "#FFF1F7",
     title: "Aviso do Doonly",
     desc: "Manutenção programada para domingo às 03h. O sistema ficará fora por 15 minutos.",
     time: "27 Jun, 10:00",
   },
   {
     id: 4,
-    icon: <CreditCard size={18} weight="fill" />,
-    color: "#15803D",
-    bg: "#DCFCE7",
     title: "Assinatura renovada",
     desc: "Seu plano Premium foi renovado com sucesso até 28/07/2026.",
     time: "26 Jun, 08:45",
   },
   {
     id: 5,
-    icon: <Star size={18} weight="fill" />,
-    color: "#D97706",
-    bg: "#FEF3C7",
     title: "Dica do Doonly",
     desc: "Complete sua ficha técnica para ter precificação automática nos seus produtos.",
     time: "25 Jun, 14:20",
@@ -61,8 +44,8 @@ export default function UpdatesFeed() {
       <div className="uf-list">
         {MOCK_UPDATES.slice(0, 3).map((u) => (
           <div key={u.id} className="uf-item">
-            <div className="uf-icon" style={{ background: u.bg, color: u.color }}>
-              {u.icon}
+            <div className="uf-icon">
+              <img src="/Sistema/att.png" alt="" />
             </div>
             <div className="uf-body">
               <p className="uf-title">{u.title}</p>
@@ -108,13 +91,20 @@ export default function UpdatesFeed() {
         .uf-item:last-child { border-bottom: none; }
         .uf-item:hover { background: var(--bg-body); }
         .uf-icon {
-          width: 34px;
-          height: 34px;
+          width: 36px;
+          height: 36px;
           border-radius: var(--radius-md);
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
+          overflow: hidden;
+        }
+        .uf-icon img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          display: block;
         }
         .uf-body {
           flex: 1;

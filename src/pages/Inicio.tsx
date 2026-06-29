@@ -8,7 +8,7 @@ import {
   TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
   Bell, User, Storefront, SignOut,
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
-  Star, InstagramLogo,
+  InstagramLogo,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
@@ -564,6 +564,7 @@ export default function Inicio() {
 
       {/* ── Agenda de Entregas ── */}
       <section className="ini-section ini-section--agenda">
+        <div className="ini-agenda-card">
         <div className="ini-agenda-header">
           <div>
             <h2 className="ini-agenda-title"><CalendarDots size={20} weight="fill" /> Agenda</h2>
@@ -618,9 +619,9 @@ export default function Inicio() {
             <div className="ini-prox-empty">
               <CalendarDots size={32} weight="duotone" />
               <p>Nenhuma entrega agendada</p>
-              <button className="ini-prox-empty-btn" onClick={() => navigate("/pedidos/novo")}>Criar pedido</button>
             </div>
           )}
+        </div>
         </div>
       </section>
 
@@ -667,22 +668,30 @@ export default function Inicio() {
         {checklistDone && (
           <section className="ini-engaja">
             <a href="https://www.google.com" target="_blank" rel="noopener noreferrer" className="ini-engaja-card ini-engaja-card--play">
-              <div className="ini-engaja-icon">
-                <Star size={22} weight="fill" />
+              <div className="ini-engaja-icon ini-engaja-icon--play">
+                {/* Google Play Store official logo */}
+                <svg viewBox="0 0 512 512" width="26" height="26" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path fill="#00C1FF" d="M61.85 32.05c-9.27 5.42-14.85 15.42-14.85 28.06v391.78c0 12.64 5.58 22.64 14.85 28.06l225.9-223.95L61.85 32.05z"/>
+                  <path fill="#FFD400" d="M361.92 331.48l-74.17-73.48 74.17-73.48 89.66 51.16c25.6 14.6 25.6 47.04 0 61.64l-89.66 34.16z"/>
+                  <path fill="#FF3A44" d="M361.92 331.48L287.75 258 61.85 479.95c8.62 5.05 19.92 4.7 32.4-2.43l267.67-146.04z"/>
+                  <path fill="#00E36A" d="M361.92 184.52L94.25 38.48c-12.48-7.13-23.78-7.48-32.4-2.43L287.75 258l74.17-73.48z"/>
+                </svg>
               </div>
               <div className="ini-engaja-text">
                 <span className="ini-engaja-title">Avalie na Play Store</span>
                 <span className="ini-engaja-sub">Sua nota ajuda muito!</span>
               </div>
+              <CaretRight size={16} weight="bold" className="ini-engaja-arrow" />
             </a>
             <a href="https://www.google.com" target="_blank" rel="noopener noreferrer" className="ini-engaja-card ini-engaja-card--insta">
-              <div className="ini-engaja-icon">
-                <InstagramLogo size={22} weight="fill" />
+              <div className="ini-engaja-icon ini-engaja-icon--insta">
+                <InstagramLogo size={26} weight="fill" />
               </div>
               <div className="ini-engaja-text">
                 <span className="ini-engaja-title">Siga no Instagram</span>
                 <span className="ini-engaja-sub">Dicas e novidades</span>
               </div>
+              <CaretRight size={16} weight="bold" className="ini-engaja-arrow" />
             </a>
           </section>
         )}
@@ -824,6 +833,13 @@ export default function Inicio() {
         }
 
         /* ── Agenda today (desktop) / full (mobile) ── */
+        .ini-agenda-card {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          padding: var(--pad-card);
+          display: flex; flex-direction: column; gap: var(--gap-stack);
+        }
         .ini-agenda-today { display: none; }
         .ini-agenda-full { display: flex; flex-direction: column; gap: var(--gap-stack); }
 
@@ -878,40 +894,59 @@ export default function Inicio() {
 
         /* ── Engajamento (mobile, rodapé) ── */
         .ini-engaja {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
+          display: flex;
+          flex-direction: column;
           gap: var(--space-3);
         }
         .ini-engaja-card {
-          display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2);
+          display: flex; align-items: center; gap: var(--space-3);
           padding: var(--space-4);
           border-radius: 14px;
           text-decoration: none;
-          transition: transform var(--dur-fast) var(--ease-out);
+          transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
         }
         .ini-engaja-card:active { transform: scale(0.98); }
         .ini-engaja-card--play {
           background: var(--bg-card);
           border: 1px solid var(--border);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+        .ini-engaja-card--play:hover {
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         .ini-engaja-card--insta {
-          background: linear-gradient(135deg, #F58529, #DD2A7B 50%, #8134AF);
+          background: linear-gradient(135deg, #F58529 0%, #DD2A7B 50%, #8134AF 100%);
+          box-shadow: 0 4px 14px rgba(221, 42, 123, 0.25), 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .ini-engaja-card--insta:hover {
+          box-shadow: 0 6px 22px rgba(221, 42, 123, 0.35), 0 2px 4px rgba(0, 0, 0, 0.06);
         }
         .ini-engaja-icon {
-          width: 40px; height: 40px;
-          border-radius: 10px;
+          width: 44px; height: 44px;
+          border-radius: 12px;
           display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
         }
-        .ini-engaja-card--play .ini-engaja-icon { background: var(--bg-subtle); color: var(--warning); }
-        .ini-engaja-card--insta .ini-engaja-icon { background: rgba(255,255,255,0.2); color: #FFFFFF; }
-        .ini-engaja-text { display: flex; flex-direction: column; gap: 1px; }
+        .ini-engaja-icon--play {
+          background: #FFFFFF;
+          border: 1px solid var(--border);
+        }
+        .ini-engaja-icon--insta {
+          background: rgba(255,255,255,0.22);
+          color: #FFFFFF;
+          backdrop-filter: blur(4px);
+        }
+        .ini-engaja-text { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
         .ini-engaja-title { font-size: var(--font-button); font-weight: var(--fw-bold); line-height: 1.25; }
-        .ini-engaja-sub { font-size: var(--font-caption); }
+        .ini-engaja-sub { font-size: var(--font-caption); line-height: 1.3; }
         .ini-engaja-card--play .ini-engaja-title { color: var(--text-title); }
         .ini-engaja-card--play .ini-engaja-sub { color: var(--text-muted); }
         .ini-engaja-card--insta .ini-engaja-title,
         .ini-engaja-card--insta .ini-engaja-sub { color: #FFFFFF; }
-        .ini-engaja-card--insta .ini-engaja-sub { opacity: 0.85; }
+        .ini-engaja-card--insta .ini-engaja-sub { opacity: 0.9; }
+        .ini-engaja-arrow { flex-shrink: 0; }
+        .ini-engaja-card--play .ini-engaja-arrow { color: var(--text-muted); }
+        .ini-engaja-card--insta .ini-engaja-arrow { color: rgba(255,255,255,0.85); }
 
         .ini-agenda-today-label {
           font-size: var(--font-caption);
