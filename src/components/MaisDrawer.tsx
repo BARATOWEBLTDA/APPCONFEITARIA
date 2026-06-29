@@ -7,6 +7,7 @@ import {
   Gear, PaintBrush, Crown,
   X,
 } from "@phosphor-icons/react";
+import { useProfile } from "@/hooks/useProfile";
 
 interface MaisDrawerProps {
   open: boolean;
@@ -62,8 +63,18 @@ const GROUPS: DrawerGroup[] = [
   },
 ];
 
+/** Retorna "Bom dia" (5h–11h), "Boa tarde" (12h–17h) ou "Boa noite" (18h–4h). */
+function saudacao(): string {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return "Bom dia";
+  if (h >= 12 && h < 18) return "Boa tarde";
+  return "Boa noite";
+}
+
 export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
   const navigate = useNavigate();
+  const { profile } = useProfile();
+  const primeiroNome = profile?.nome ? profile.nome.trim().split(/\s+/)[0] : "";
 
   // Bloqueia scroll do body quando aberto
   useEffect(() => {
@@ -111,7 +122,19 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
         <div className="mais-handle" />
 
         <div className="mais-head">
-          <h2 className="mais-title">Mais opções</h2>
+          <div className="mais-greeting">
+            <div className="mais-avatar">
+              <div className="mais-avatar-inner">
+                <img src="/Sistema/doo.png" alt="" aria-hidden="true" />
+              </div>
+            </div>
+            <div className="mais-greeting-text">
+              <p className="mais-greeting-line1">
+                {saudacao()}{primeiroNome ? `, ${primeiroNome}` : ""}
+              </p>
+              <p className="mais-greeting-line2">Vamos gerenciar sua confeitaria?</p>
+            </div>
+          </div>
           <button className="mais-close" onClick={onClose} aria-label="Fechar">
             <X size={20} weight="bold" />
           </button>
@@ -178,13 +201,52 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
 
         .mais-head {
           display: flex; align-items: center; justify-content: space-between;
-          padding: 0.6rem 1.25rem 0.4rem;
+          gap: 0.75rem;
+          padding: 0.5rem 1.1rem 0.85rem;
         }
-        .mais-title {
+        .mais-greeting {
+          display: flex; align-items: center; gap: 0.7rem;
+          min-width: 0; flex: 1;
+        }
+        .mais-avatar {
+          width: 44px; height: 44px;
+          border-radius: 28%;
+          background: #3d1a24;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          box-shadow: 0 4px 12px rgba(61, 26, 36, 0.22);
+        }
+        .mais-avatar-inner {
+          width: 36px; height: 36px;
+          border-radius: 26%;
+          background: #fff;
+          display: flex; align-items: center; justify-content: center;
+          overflow: hidden;
+        }
+        .mais-avatar-inner img {
+          width: 46px; height: 46px;
+          object-fit: cover;
+          object-position: top center;
+        }
+        .mais-greeting-text {
+          display: flex; flex-direction: column;
+          min-width: 0;
+        }
+        .mais-greeting-line1 {
           font-size: var(--font-modal-title); font-weight: var(--fw-black);
           color: var(--text-title);
           margin: 0;
           letter-spacing: -0.01em;
+          line-height: 1.2;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .mais-greeting-line2 {
+          font-size: var(--font-helper);
+          color: var(--text-secondary);
+          margin: 3px 0 0;
+          line-height: 1.3;
         }
         .mais-close {
           width: 34px; height: 34px;
@@ -192,6 +254,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
           background: #F4F4F6; color: #6B7280;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
+          flex-shrink: 0;
         }
         .mais-close:hover { background: #E9E9EE; }
 
