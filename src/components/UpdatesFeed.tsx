@@ -59,7 +59,7 @@ export default function UpdatesFeed() {
       </div>
 
       <div className="uf-list">
-        {MOCK_UPDATES.map((u) => (
+        {MOCK_UPDATES.slice(0, 3).map((u) => (
           <div key={u.id} className="uf-item">
             <div className="uf-icon" style={{ background: u.bg, color: u.color }}>
               {u.icon}

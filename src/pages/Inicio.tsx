@@ -8,6 +8,7 @@ import {
   TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
   Bell, User, Storefront, SignOut,
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
+  Star, InstagramLogo,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
@@ -55,6 +56,7 @@ export default function Inicio() {
   const [resumoSemana, setResumoSemana] = useState({ vendas: 0, pedidos: 0 });
   const [resumoAnterior, setResumoAnterior] = useState({ vendas: 0, pedidos: 0 });
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
+  const [proximasEntregas, setProximasEntregas] = useState<Array<{ id: string; cliente: string; data: string; valor: number }>>([]);
   const [checklistDone, setChecklistDone] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -122,6 +124,7 @@ export default function Inicio() {
         pedidosSemanaAntRes,
         pedidos30dRes,
         pedidosMesRes,
+        proximasEntregasRes,
       ] = await Promise.all([
         // Pedidos pendentes (aguardando confirmação)
         supabase
@@ -171,6 +174,15 @@ export default function Inicio() {
           .eq("user_id", userId)
           .gte("created_at", inicioMes.toISOString())
           .neq("status", "cancelado"),
+        // Próximas entregas (a partir de hoje, ordenadas por data)
+        supabase
+          .from("pedidos")
+          .select("id, cliente_nome, data_entrega, valor_total")
+          .eq("user_id", userId)
+          .gte("data_entrega", hojeISO)
+          .in("status", STATUS_ATIVOS)
+          .order("data_entrega", { ascending: true })
+          .limit(4),
       ]);
 
       // Aniversariantes nos próximos 7 dias
@@ -200,6 +212,14 @@ export default function Inicio() {
       setResumoSemana({ vendas: vendasSemana, pedidos: pedidosSemanaRes.data?.length || 0 });
       setResumoAnterior({ vendas: vendasAnt, pedidos: pedidosSemanaAntRes.data?.length || 0 });
       setChartData(chart);
+      setProximasEntregas(
+        (proximasEntregasRes.data || []).map((p: any) => ({
+          id: p.id,
+          cliente: p.cliente_nome || "Cliente",
+          data: p.data_entrega,
+          valor: Number(p.valor_total) || 0,
+        }))
+      );
     } catch (err) {
       console.error("Erro ao carregar dados do início:", err);
     }
@@ -571,45 +591,36 @@ export default function Inicio() {
           </div>
         </div>
 
-        {/* Mobile: stats + calendário */}
+        {/* Mobile: próximas entregas (substitui o calendário vazio) */}
         <div className="ini-agenda-full">
-          <div className="ini-agenda-stats">
-            <div className="ini-agenda-stat">
-              <span className="ini-agenda-stat-val">0</span>
-              <span className="ini-agenda-stat-label">encomendas no mês</span>
-            </div>
-            <div className="ini-agenda-stat">
-              <span className="ini-agenda-stat-val">0</span>
-              <span className="ini-agenda-stat-label">dias com entrega</span>
-            </div>
-          </div>
-        <div className="ini-agenda-cal">
-          <div className="ini-agenda-nav">
-            <button>‹</button>
-            <span>{new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" }).replace(/^\w/, c => c.toUpperCase())}</span>
-            <button>›</button>
-          </div>
-          <div className="ini-agenda-grid">
-            {["dom","seg","ter","qua","qui","sex","sáb"].map(d => (
-              <span key={d} className="ini-agenda-day-label">{d}</span>
-            ))}
-            {(() => {
-              const now = new Date();
-              const first = new Date(now.getFullYear(), now.getMonth(), 1);
-              const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-              const startPad = first.getDay();
-              const cells = [];
-              for (let i = 0; i < startPad; i++) cells.push(<span key={`p${i}`} className="ini-agenda-day ini-agenda-day--pad" />);
-              for (let d = 1; d <= lastDay; d++) {
-                const isToday = d === now.getDate();
-                cells.push(
-                  <span key={d} className={`ini-agenda-day ${isToday ? "ini-agenda-day--today" : ""}`}>{d}</span>
+          {proximasEntregas.length > 0 ? (
+            <div className="ini-prox-list">
+              {proximasEntregas.map((e) => {
+                const d = new Date(e.data + "T00:00:00");
+                const diaNum = d.getDate();
+                const mesAbrev = d.toLocaleDateString("pt-BR", { month: "short" }).replace(".", "");
+                return (
+                  <button key={e.id} className="ini-prox-item" onClick={() => navigate("/agenda")}>
+                    <div className="ini-prox-date">
+                      <span className="ini-prox-day">{diaNum}</span>
+                      <span className="ini-prox-mon">{mesAbrev}</span>
+                    </div>
+                    <div className="ini-prox-info">
+                      <span className="ini-prox-cliente">{e.cliente}</span>
+                      <span className="ini-prox-valor">{formatCurrency(e.valor)}</span>
+                    </div>
+                    <CaretRight size={16} weight="bold" className="ini-prox-arrow" />
+                  </button>
                 );
-              }
-              return cells;
-            })()}
-          </div>
-        </div>
+              })}
+            </div>
+          ) : (
+            <div className="ini-prox-empty">
+              <CalendarDots size={32} weight="duotone" />
+              <p>Nenhuma entrega agendada</p>
+              <button className="ini-prox-empty-btn" onClick={() => navigate("/pedidos/novo")}>Criar pedido</button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -643,12 +654,38 @@ export default function Inicio() {
             <WelcomeChecklist userId={profile.id} onAllDone={setChecklistDone} />
           )}
           {checklistDone && (
-            <>
-              <div className="ini-aside-desktop"><DooIAPanel /></div>
-              <div className="ini-aside-mobile"><UpdatesFeed /></div>
-            </>
+            <div className="ini-aside-desktop"><DooIAPanel /></div>
           )}
         </aside>
+
+        {/* ── Últimas atualizações (mobile, fim) — só após onboarding ── */}
+        {checklistDone && (
+          <div className="ini-mobile-updates"><UpdatesFeed /></div>
+        )}
+
+        {/* ── Engajamento (mobile, rodapé) — só após onboarding ── */}
+        {checklistDone && (
+          <section className="ini-engaja">
+            <a href="https://www.google.com" target="_blank" rel="noopener noreferrer" className="ini-engaja-card ini-engaja-card--play">
+              <div className="ini-engaja-icon">
+                <Star size={22} weight="fill" />
+              </div>
+              <div className="ini-engaja-text">
+                <span className="ini-engaja-title">Avalie na Play Store</span>
+                <span className="ini-engaja-sub">Sua nota ajuda muito!</span>
+              </div>
+            </a>
+            <a href="https://www.google.com" target="_blank" rel="noopener noreferrer" className="ini-engaja-card ini-engaja-card--insta">
+              <div className="ini-engaja-icon">
+                <InstagramLogo size={22} weight="fill" />
+              </div>
+              <div className="ini-engaja-text">
+                <span className="ini-engaja-title">Siga no Instagram</span>
+                <span className="ini-engaja-sub">Dicas e novidades</span>
+              </div>
+            </a>
+          </section>
+        )}
       </div>
 
       <style>{`
@@ -789,6 +826,93 @@ export default function Inicio() {
         /* ── Agenda today (desktop) / full (mobile) ── */
         .ini-agenda-today { display: none; }
         .ini-agenda-full { display: flex; flex-direction: column; gap: var(--gap-stack); }
+
+        /* ── Próximas entregas (mobile) ── */
+        .ini-prox-list { display: flex; flex-direction: column; gap: var(--space-2); }
+        .ini-prox-item {
+          display: flex; align-items: center; gap: var(--space-3);
+          padding: var(--space-3);
+          background: var(--bg-subtle);
+          border: none;
+          border-radius: 10px;
+          cursor: pointer;
+          font-family: inherit;
+          text-align: left;
+          width: 100%;
+          transition: background var(--dur-fast) var(--ease-out);
+        }
+        .ini-prox-item:active { background: var(--primary-light); }
+        .ini-prox-date {
+          display: flex; flex-direction: column; align-items: center;
+          justify-content: center;
+          width: 44px; height: 44px;
+          background: var(--bg-card);
+          border-radius: 8px;
+          flex-shrink: 0;
+        }
+        .ini-prox-day { font-size: var(--font-body); font-weight: var(--fw-black); color: var(--primary-dark); line-height: 1; }
+        .ini-prox-mon { font-size: 0.65rem; font-weight: var(--fw-semibold); color: var(--text-muted); text-transform: uppercase; }
+        .ini-prox-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .ini-prox-cliente { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ini-prox-valor { font-size: var(--font-caption); font-weight: var(--fw-bold); color: var(--primary); }
+        .ini-prox-arrow { color: var(--text-muted); flex-shrink: 0; }
+        .ini-prox-empty {
+          display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+          padding: var(--space-6) var(--space-4);
+          color: var(--text-muted);
+          text-align: center;
+        }
+        .ini-prox-empty p { margin: 0; font-size: var(--font-button); }
+        .ini-prox-empty-btn {
+          margin-top: var(--space-2);
+          padding: var(--space-2) var(--space-5);
+          background: var(--primary-dark);
+          color: #FFFFFF;
+          border: none;
+          border-radius: var(--radius-full);
+          font-family: inherit;
+          font-size: var(--font-button);
+          font-weight: var(--fw-bold);
+          cursor: pointer;
+        }
+
+        /* ── Engajamento (mobile, rodapé) ── */
+        .ini-engaja {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: var(--space-3);
+        }
+        .ini-engaja-card {
+          display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2);
+          padding: var(--space-4);
+          border-radius: 14px;
+          text-decoration: none;
+          transition: transform var(--dur-fast) var(--ease-out);
+        }
+        .ini-engaja-card:active { transform: scale(0.98); }
+        .ini-engaja-card--play {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+        }
+        .ini-engaja-card--insta {
+          background: linear-gradient(135deg, #F58529, #DD2A7B 50%, #8134AF);
+        }
+        .ini-engaja-icon {
+          width: 40px; height: 40px;
+          border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .ini-engaja-card--play .ini-engaja-icon { background: var(--bg-subtle); color: var(--warning); }
+        .ini-engaja-card--insta .ini-engaja-icon { background: rgba(255,255,255,0.2); color: #FFFFFF; }
+        .ini-engaja-text { display: flex; flex-direction: column; gap: 1px; }
+        .ini-engaja-title { font-size: var(--font-button); font-weight: var(--fw-bold); line-height: 1.25; }
+        .ini-engaja-sub { font-size: var(--font-caption); }
+        .ini-engaja-card--play .ini-engaja-title { color: var(--text-title); }
+        .ini-engaja-card--play .ini-engaja-sub { color: var(--text-muted); }
+        .ini-engaja-card--insta .ini-engaja-title,
+        .ini-engaja-card--insta .ini-engaja-sub { color: #FFFFFF; }
+        .ini-engaja-card--insta .ini-engaja-sub { opacity: 0.85; }
+
         .ini-agenda-today-label {
           font-size: var(--font-caption);
           font-weight: var(--fw-bold);
@@ -884,20 +1008,22 @@ export default function Inicio() {
           align-items: center;
           gap: var(--space-3);
           padding: var(--space-3) var(--space-4);
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: var(--radius-md);
+          background: var(--bg-subtle);
+          border: none;
+          border-radius: 10px;
           cursor: pointer;
           font-family: inherit;
           text-align: left;
-          transition: all var(--dur-fast);
+          transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
         }
-        .ini-nav-card:hover { border-color: var(--primary); transform: translateX(2px); }
+        .ini-nav-card:active { background: var(--primary-light); transform: scale(0.99); }
         .ini-nav-icon {
-          width: 36px; height: 36px;
-          border-radius: var(--radius-md);
+          width: 38px; height: 38px;
+          border-radius: 8px;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
+          background: var(--bg-card) !important;
+          color: var(--primary-dark) !important;
         }
         .ini-nav-meta { flex: 1; min-width: 0; }
         .ini-nav-label {
@@ -913,7 +1039,14 @@ export default function Inicio() {
           color: var(--text-muted);
           margin-top: 1px;
         }
-        .ini-nav-arrow { color: var(--text-disabled); flex-shrink: 0; }
+        .ini-nav-arrow { color: var(--text-muted); flex-shrink: 0; }
+        /* "Novo pedido" destacado vinho no mobile também */
+        .ini-nav-card[data-nav="novo"] { background: var(--primary-dark); }
+        .ini-nav-card[data-nav="novo"]:active { background: var(--text-title); }
+        .ini-nav-card[data-nav="novo"] .ini-nav-icon { background: rgba(255,255,255,0.16) !important; color: #FFFFFF !important; }
+        .ini-nav-card[data-nav="novo"] .ini-nav-label { color: #FFFFFF; }
+        .ini-nav-card[data-nav="novo"] .ini-nav-sub { color: rgba(255,255,255,0.7); }
+        .ini-nav-card[data-nav="novo"] .ini-nav-arrow { color: rgba(255,255,255,0.7); }
 
         /* ── Agenda de Entregas ── */
         .ini-agenda-header {
@@ -1184,13 +1317,17 @@ export default function Inicio() {
         }
 
         /* ── Mobile: ordem e visibilidade ── */
-        .ini-aside { order: -1; }
-        .ini-main { display: flex; flex-direction: column; }
-        .ini-section--resumo  { order: 1; }
+        /* Nível 1: filhos diretos de .ini-content */
+        .ini-aside          { order: 1; }
+        .ini-main           { order: 2; display: flex; flex-direction: column; }
+        .ini-mobile-updates { order: 3; }
+        .ini-engaja         { order: 4; }
+        /* Nível 2: seções dentro de .ini-main */
+        .ini-section--alertas { order: 1; }
         .ini-section--nav     { order: 2; }
+        .ini-section--resumo  { order: 3; }
+        .ini-section--agenda  { order: 4; }
         .ini-section--metrics { display: none; }
-        .ini-section--agenda  { order: 3; }
-        .ini-section--alertas { order: 4; }
         .ini-section--chart   { display: none; }
 
         /* ── Desktop ajustes ── */
@@ -1230,6 +1367,9 @@ export default function Inicio() {
           .ini-aside { order: -1; position: sticky; top: var(--space-6); }
           .ini-aside-desktop { display: block; }
           .ini-aside-mobile { display: none; }
+          /* Updates e engajamento são exclusivos do mobile */
+          .ini-mobile-updates { display: none; }
+          .ini-engaja { display: none; }
 
           /* Seções: o que mostra/esconde no desktop */
           .ini-main .ini-section--chart    { display: block; }
