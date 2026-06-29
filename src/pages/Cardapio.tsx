@@ -310,6 +310,19 @@ export default function Cardapio() {
         </div>
       </div>
 
+      {/* Atalhos de gerenciamento — primeiro, acesso rápido */}
+      <div className="ch-block">
+        <h2 className="ch-block-title">Gerenciar</h2>
+        <div className="ch-tiles">
+          {sections.map((s) => (
+            <button key={s.path} className="ch-tile-compact" onClick={() => navigate(s.path)}>
+              <span className="ch-tile-icon">{s.icon}</span>
+              <span className="ch-tile-label">{s.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Seletor de período */}
       <div className="ch-periodo-tabs" role="tablist">
         {([
@@ -434,19 +447,6 @@ export default function Cardapio() {
         </div>
       )}
 
-      {/* Atalhos de gerenciamento */}
-      <div className="ch-block">
-        <h2 className="ch-block-title">Gerenciar</h2>
-        <div className="ch-tiles">
-          {sections.map((s) => (
-            <button key={s.path} className="ch-tile-compact" onClick={() => navigate(s.path)}>
-              <span className="ch-tile-icon">{s.icon}</span>
-              <span className="ch-tile-label">{s.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
       {loading && <div className="ch-loading">Carregando…</div>}
 
       <style>{`
@@ -561,11 +561,17 @@ export default function Cardapio() {
           margin: 0 0 4px;
         }
         .ch-metric-value {
-          font-size: var(--font-modal-title); font-weight: var(--fw-black);
+          font-size: 1.05rem; font-weight: var(--fw-black);
           color: var(--text-title);
           margin: 0;
-          line-height: 1;
-          word-break: break-word;
+          line-height: 1.15;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          letter-spacing: -0.02em;
+        }
+        @media (min-width: 720px) {
+          .ch-metric-value { font-size: var(--font-modal-title); }
         }
         .ch-metric-var {
           display: inline-flex; align-items: center; gap: 2px;
@@ -663,7 +669,11 @@ export default function Cardapio() {
         .ch-tiles {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 0.5rem;
+          gap: 0.25rem;
+          padding: 0.5rem;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
         }
         @media (min-width: 600px) {
           .ch-tiles { grid-template-columns: repeat(3, 1fr); }
@@ -672,19 +682,21 @@ export default function Cardapio() {
           .ch-tiles { grid-template-columns: repeat(6, 1fr); }
         }
         .ch-tile-compact {
-          display: flex; align-items: center; gap: 0.5rem;
-          padding: 0.7rem 0.8rem;
-          background: var(--bg-card);
-          border: 1px solid var(--border);
+          display: flex; align-items: center; gap: 0.55rem;
+          padding: 0.65rem 0.7rem;
+          background: transparent;
+          border: none;
           border-radius: var(--radius-md);
           font-family: inherit;
           cursor: pointer;
           text-align: left;
-          transition: all var(--dur-fast) var(--ease-out);
+          transition: background var(--dur-fast) var(--ease-out);
         }
         .ch-tile-compact:hover {
-          border-color: #3d1a24;
-          transform: translateY(-1px);
+          background: var(--bg-subtle);
+        }
+        .ch-tile-compact:active {
+          background: var(--primary-light);
         }
         .ch-tile-icon {
           width: 30px; height: 30px;
