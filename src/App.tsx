@@ -41,6 +41,8 @@ import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 import CardapioPublico from "@/pages/CardapioPublico";
 import Cardapio from "@/pages/Cardapio";
 import Financeiro from "@/pages/Financeiro";
+import FinanceiroVisaoGeral from "@/pages/FinanceiroVisaoGeral";
+import Custos from "@/pages/Custos";
 import FichaTecnica from "@/pages/FichaTecnica";
 
 
@@ -112,6 +114,8 @@ export default function App() {
           <Route path="/ficha-tecnica" element={<FichaTecnica />} />
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/financeiro" element={<Financeiro />} />
+          <Route path="/financeiro/visao-geral" element={<FinanceiroVisaoGeral />} />
+          <Route path="/custos" element={<Custos />} />
           <Route path="/promocoes" element={<Promocoes />} />
           <Route path="/cardapio" element={<Cardapio />} />
           <Route path="/cardapio-config" element={<CardapioConfigPage />} />
