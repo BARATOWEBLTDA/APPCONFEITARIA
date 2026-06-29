@@ -302,8 +302,9 @@ export default function Lucratividade() {
 
       {/* Header */}
       <div className="lu-page-header">
-        <button className="lu-back" onClick={() => navigate(-1)} aria-label="Voltar">
-          <CaretLeft size={22} weight="bold" />
+        <button className="lu-back" onClick={() => navigate(-1)}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          Voltar
         </button>
         <div className="lu-page-titles">
           <h1 className="lu-title">Lucratividade</h1>
@@ -552,18 +553,24 @@ export default function Lucratividade() {
           display: flex; flex-direction: column; gap: var(--space-4);
           max-width: 980px; margin: 0 auto;
         }
-        .lu-page-header { display: flex; align-items: center; gap: var(--space-3); }
-        .lu-back {
-          width: 36px; height: 36px;
-          display: inline-flex; align-items: center; justify-content: center;
-          background: transparent;
-          border: 1px solid var(--border);
-          border-radius: var(--radius-full);
-          color: var(--text-title);
-          cursor: pointer;
-          transition: background var(--dur-fast) var(--ease-out);
+        .lu-page-header {
+          display: flex; flex-direction: column;
+          align-items: flex-start;
+          gap: var(--space-2);
         }
-        .lu-back:hover { background: var(--bg-subtle); }
+        .lu-back {
+          display: inline-flex; align-items: center; gap: 6px; padding: 0;
+          background: none; border: none; font-family: var(--font-base);
+          font-size: var(--font-button); font-weight: var(--fw-medium);
+          color: var(--text-secondary); cursor: pointer;
+          transition: color var(--dur-fast) var(--ease-out);
+        }
+        .lu-back:hover { color: var(--text-title); }
+        .lu-back:focus-visible {
+          outline: 2px solid var(--primary);
+          outline-offset: 4px;
+          border-radius: 4px;
+        }
         .lu-page-titles { display: flex; flex-direction: column; gap: var(--space-1); }
         .lu-title {
           font-size: var(--font-page-title);
