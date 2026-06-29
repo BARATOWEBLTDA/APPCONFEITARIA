@@ -564,7 +564,7 @@ export default function FinanceiroTransacoes() {
             <div className="fin-section-icon"><Receipt size={18} weight="duotone" /></div>
             <div style={{ flex: 1 }}>
               <p className="fin-section-label">Lançamentos do mês</p>
-              <p className="fin-section-sub">Entradas vêm automáticas dos pedidos pagos</p>
+              <p className="fin-section-sub">Geradas automaticamente pelos pedidos pagos</p>
             </div>
             <button className="fin-btn-add" onClick={() => abrirNovo(tab === "entradas" ? "entrada" : "saida")}>
               <Plus size={13} weight="bold" />
@@ -771,7 +771,7 @@ export default function FinanceiroTransacoes() {
         .fin-card--ticket .fin-card-icon  { background:linear-gradient(135deg,#6366f1,#4f46e5); box-shadow:0 4px 12px rgba(99,102,241,0.3); }
 
         .fin-card-label { font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-secondary); margin:0 0 2px; text-transform:uppercase; letter-spacing:0.06em; }
-        .fin-card-value { font-size: var(--font-modal-title); font-weight: var(--fw-black); color:var(--text-title); margin:0; letter-spacing:-0.02em; }
+        .fin-card-value { font-size: var(--font-modal-title); font-weight: var(--fw-bold); color:var(--text-title); margin:0; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
 
         /* Card base */
         .fin-card {
@@ -794,13 +794,24 @@ export default function FinanceiroTransacoes() {
           display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap;
           padding-bottom:1rem; border-bottom:1px solid var(--border);
         }
+        .fin-section-header > div[style] { min-width: 0; } /* permite ellipsis dentro do flex */
         .fin-section-icon {
           width:36px; height:36px; flex-shrink:0; border-radius: var(--radius-md);
           background:var(--primary-light); color:var(--primary);
           display:flex; align-items:center; justify-content:center;
         }
-        .fin-section-label { font-size: var(--font-input); font-weight: var(--fw-bold); color:var(--text-title); margin:0; letter-spacing:-0.01em; }
-        .fin-section-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0.1rem 0 0; line-height:1.3; }
+        .fin-section-label { font-size: var(--font-input); font-weight: var(--fw-bold); color:var(--text-title); margin:0; letter-spacing:-0.01em; line-height:1.25; }
+        .fin-section-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0.15rem 0 0; line-height:1.35; }
+        /* No mobile, empilha o botão "+ Entrada avulsa" numa linha própria
+           pra liberar espaço pro título e o subtítulo */
+        @media (max-width: 540px) {
+          .fin-section-header .fin-btn-add {
+            flex-basis: 100%;
+            order: 99;
+            justify-content: center;
+            margin-top: 0.25rem;
+          }
+        }
 
         .fin-legend { display:flex; gap:0.85rem; margin-left:auto; font-size: var(--font-helper); color:var(--text-secondary); font-weight: var(--fw-semibold); }
         .fin-legend span { display:inline-flex; align-items:center; gap:5px; }
@@ -917,7 +928,7 @@ export default function FinanceiroTransacoes() {
         .fin-item-tag--margem-baixo { background:#fee2e2; color:#b91c1c; border-color:#fecaca; }
         .fin-item-tag--alerta { background:#fef3c7; color:#92400e; border-color:#fde68a; font-weight: var(--fw-semibold); }
         .fin-item-valor {
-          font-size: var(--font-input); font-weight: var(--fw-black); margin:0; white-space:nowrap;
+          font-size: var(--font-input); font-weight: var(--fw-bold); margin:0; white-space:nowrap;
           font-variant-numeric:tabular-nums;
         }
         .fin-item--entrada .fin-item-valor { color:#16a34a; }
