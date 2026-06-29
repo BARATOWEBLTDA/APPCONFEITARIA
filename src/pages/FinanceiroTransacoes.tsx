@@ -842,18 +842,18 @@ export default function FinanceiroTransacoes() {
         }
         .fin-bar-sub { font-size: var(--font-caption); font-weight: var(--fw-bold); margin:0; }
 
-        /* Botão + */
+        /* Botão + (padrão Doonly: wine retangular, igual aos botões de Clientes) */
         .fin-btn-add {
-          display:inline-flex; align-items:center; gap:5px;
-          padding:0.5rem 1rem;
-          background:var(--primary-gradient);
-          color:#fff; border:none; border-radius: var(--radius-full);
-          font-family:inherit; font-size: var(--font-helper); font-weight: var(--fw-bold);
+          display:inline-flex; align-items:center; justify-content:center; gap:6px;
+          padding:0.7rem 1rem;
+          background:#3d1a24;
+          color:#fff; border:none; border-radius: var(--radius-md);
+          font-family:inherit; font-size: var(--font-button); font-weight: var(--fw-semibold);
           cursor:pointer; white-space:nowrap;
-          box-shadow:0 2px 8px rgba(255,111,169,0.3);
-          transition:transform 0.15s, box-shadow 0.15s;
+          transition: opacity 0.15s;
         }
-        .fin-btn-add:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(255,111,169,0.4); }
+        .fin-btn-add:hover { opacity: 0.92; }
+        .fin-btn-add:active { opacity: 0.85; }
 
         /* Tabs */
         .fin-tabs {
