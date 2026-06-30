@@ -429,6 +429,11 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           justify-content: center;
           font-size: 1rem;
         }
+        .ob-mob-card-produto-img img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
         .ob-mob-card-produto-nome {
           font-size: 0.78rem;
           font-weight: 600;
@@ -529,9 +534,10 @@ const PEDIDOS_DEMO = [
     statusDot: "#15803d",
     cliente: "Ana Carolina",
     datetime: "Hoje · 14:32",
-    produto: "Bolo Red Velvet",
+    produto: "Bolo Dois Amores",
     qtd: "1 unidade · 2kg",
-    valor: "R$ 280,00",
+    valor: "R$ 119,00",
+    imagem: "/tuturial/bolo.jpeg",
     emoji: "🎂",
     pagamento: "PIX",
     pagamentoStatus: "Pago",
@@ -550,9 +556,10 @@ const PEDIDOS_DEMO = [
     statusDot: "#d97706",
     cliente: "Juliana Souza",
     datetime: "Hoje · 15:10",
-    produto: "Brigadeiro Gourmet",
-    qtd: "50 unidades",
-    valor: "R$ 90,00",
+    produto: "Caixa de Brigadeiro",
+    qtd: "1 caixa · 4 unidades",
+    valor: "R$ 12,00",
+    imagem: "/tuturial/brigadeiro.jpg",
     emoji: "🍫",
     pagamento: "PIX",
     pagamentoStatus: "Parcial",
@@ -571,10 +578,11 @@ const PEDIDOS_DEMO = [
     statusDot: "#1d4ed8",
     cliente: "Mariana Lima",
     datetime: "Hoje · 16:48",
-    produto: "Naked Cake",
-    qtd: "1 unidade · 3 andares",
-    valor: "R$ 450,00",
-    emoji: "🍰",
+    produto: "Cento de Salgados",
+    qtd: "100 unidades · misto",
+    valor: "R$ 70,00",
+    imagem: "/tuturial/salgadinhos.jpg",
+    emoji: "🥟",
     pagamento: "Dinheiro",
     pagamentoStatus: "Pendente",
     pagamentoColor: "#dc2626",
@@ -615,7 +623,9 @@ function Slide2Pedidos() {
             {/* Produto + valor */}
             <div className="ob-mob-card-produto">
               <div className="ob-mob-card-produto-img">
-                <span>{p.emoji}</span>
+                {p.imagem
+                  ? <img src={p.imagem} alt={p.produto} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  : <span>{p.emoji}</span>}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p className="ob-mob-card-produto-nome">{p.produto}</p>
