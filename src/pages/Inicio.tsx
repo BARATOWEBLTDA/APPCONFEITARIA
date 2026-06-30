@@ -8,13 +8,14 @@ import {
   TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
   Bell, User, Storefront, SignOut,
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
-  InstagramLogo, Crown,
+  InstagramLogo, Crown, DotsThreeOutline, Clock,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
 import WelcomeChecklist from "@/components/WelcomeChecklist";
 import UpdatesFeed from "@/components/UpdatesFeed";
 import DooIAPanel from "@/components/DooIAPanel";
+import { FinModal } from "@/components/financeiro";
 
 interface AlertaCard {
   tipo: "pedido" | "entrega" | "aniversario";
@@ -62,6 +63,32 @@ export default function Inicio() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Modal "Ver todos os alertas" + snooze ("Lembrar amanhã")
+  const ALERT_LIMIT_VISIBLE = 3;
+  const SNOOZE_STORAGE_KEY = "doonly_alertas_snoozed_until";
+  const [showAllAlerts, setShowAllAlerts] = useState(false);
+  const [snoozedUntil, setSnoozedUntil] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(SNOOZE_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  });
+  const isSnoozed = !!snoozedUntil && new Date(snoozedUntil) > new Date();
+
+  function snoozeAlerts() {
+    const tomorrow = new Date();
+    tomorrow.setHours(0, 0, 0, 0);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const iso = tomorrow.toISOString();
+    try {
+      localStorage.setItem(SNOOZE_STORAGE_KEY, iso);
+    } catch {
+      // silencioso — se localStorage falhar (incógnito/cota), só não persiste
+    }
+    setSnoozedUntil(iso);
+  }
 
   // Pega email do auth
   useEffect(() => {
@@ -537,11 +564,21 @@ export default function Inicio() {
       </section>
 
       {/* ── Atenção hoje ── */}
-      {alertasVisiveis.length > 0 && (
+      {alertasVisiveis.length > 0 && !isSnoozed && (
         <section className="ini-section ini-section--alertas">
-          <h2 className="ini-section-title">Atenção hoje</h2>
+          <div className="ini-alertas-head">
+            <h2 className="ini-section-title">Atenção hoje</h2>
+            <button
+              className="ini-alertas-snooze"
+              onClick={snoozeAlerts}
+              title="Esconde os alertas até amanhã"
+            >
+              <Clock size={14} weight="bold" />
+              Lembrar amanhã
+            </button>
+          </div>
           <div className="ini-alertas">
-            {alertasVisiveis.map((a) => (
+            {alertasVisiveis.slice(0, ALERT_LIMIT_VISIBLE).map((a) => (
               <button key={a.tipo} className={`ini-alerta ini-alerta--${a.tipo}`} onClick={a.onClick}>
                 <span className="ini-alerta-icon">
                   {a.tipo === "pedido"     && <ClipboardText size={18} weight="fill" />}
@@ -559,11 +596,25 @@ export default function Inicio() {
                 <span className="ini-alerta-cta">{a.cta} ›</span>
               </button>
             ))}
+
+            {alertasVisiveis.length > ALERT_LIMIT_VISIBLE && (
+              <button className="ini-alerta ini-alerta--more" onClick={() => setShowAllAlerts(true)}>
+                <span className="ini-alerta-icon ini-alerta-icon--neutral">
+                  <DotsThreeOutline size={18} weight="fill" />
+                </span>
+                <div className="ini-alerta-body">
+                  <span className="ini-alerta-texto">
+                    + {alertasVisiveis.length - ALERT_LIMIT_VISIBLE} {alertasVisiveis.length - ALERT_LIMIT_VISIBLE === 1 ? "outro alerta" : "outros alertas"} pra hoje
+                  </span>
+                </div>
+                <span className="ini-alerta-cta">Ver todos ›</span>
+              </button>
+            )}
           </div>
         </section>
       )}
 
-      {alertasVisiveis.length === 0 && !loading && (
+      {alertasVisiveis.length === 0 && !loading && !isSnoozed && (
         <section className="ini-section ini-section--alertas">
           <div className="ini-tudo-ok">
             <span className="ini-tudo-ok-emoji">✨</span>
@@ -573,6 +624,36 @@ export default function Inicio() {
             </div>
           </div>
         </section>
+      )}
+
+      {/* Modal: todos os alertas */}
+      {showAllAlerts && (
+        <FinModal title="Atenção hoje" onClose={() => setShowAllAlerts(false)}>
+          <div className="ini-alertas">
+            {alertasVisiveis.map((a) => (
+              <button
+                key={a.tipo}
+                className={`ini-alerta ini-alerta--${a.tipo}`}
+                onClick={() => { setShowAllAlerts(false); a.onClick(); }}
+              >
+                <span className="ini-alerta-icon">
+                  {a.tipo === "pedido"      && <ClipboardText size={18} weight="fill" />}
+                  {a.tipo === "entrega"     && <CalendarDots  size={18} weight="fill" />}
+                  {a.tipo === "aniversario" && <img src="/Sistema/aniversario.png" alt="" width={28} height={28} style={{ objectFit: "contain" }} />}
+                </span>
+                <div className="ini-alerta-body">
+                  <span className="ini-alerta-texto">
+                    {a.tipo === "aniversario" && aniversariantesDetalhe
+                      ? a.texto
+                      : <><strong>{a.count}</strong> {a.texto}</>
+                    }
+                  </span>
+                </div>
+                <span className="ini-alerta-cta">{a.cta} ›</span>
+              </button>
+            ))}
+          </div>
+        </FinModal>
       )}
 
       {/* ── Resumo da semana ── */}
@@ -1340,6 +1421,33 @@ export default function Inicio() {
         .ini-alertas {
           display: flex; flex-direction: column; gap: var(--gap-tight);
         }
+        .ini-alertas-head {
+          display: flex; align-items: center; justify-content: space-between;
+          gap: var(--space-2);
+          margin-bottom: var(--space-2);
+        }
+        .ini-alertas-head .ini-section-title { margin: 0; }
+        .ini-alertas-snooze {
+          display: inline-flex; align-items: center; gap: 4px;
+          padding: 4px 10px;
+          background: var(--bg-subtle);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-full);
+          font-family: inherit;
+          font-size: var(--font-caption);
+          font-weight: var(--fw-semibold);
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+        }
+        .ini-alertas-snooze:hover {
+          background: var(--border);
+          color: var(--text-title);
+        }
+        .ini-alertas-snooze:focus-visible {
+          outline: 2px solid var(--primary);
+          outline-offset: 2px;
+        }
         .ini-alerta {
           display: flex; align-items: center; gap: var(--space-3);
           padding: var(--space-3) var(--space-4);
@@ -1356,6 +1464,11 @@ export default function Inicio() {
         .ini-alerta--pedido      { border-left-color: var(--error); }
         .ini-alerta--entrega     { border-left-color: var(--info); }
         .ini-alerta--aniversario { border-left-color: var(--primary); }
+        .ini-alerta--more        { border-left-color: var(--text-muted); }
+        .ini-alerta-icon--neutral {
+          background: var(--bg-subtle);
+          color: var(--text-secondary);
+        }
 
         .ini-alerta-icon {
           width: 32px; height: 32px; border-radius: var(--radius-md);
