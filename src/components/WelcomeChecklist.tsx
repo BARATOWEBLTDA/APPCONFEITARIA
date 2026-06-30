@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import {
   UserCircle, Storefront, Package,
   ShoppingBag, ClipboardText, CheckCircle, CaretDown,
-  Sparkle,
+  Sparkle, PlayCircle,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import Onboarding from "@/components/Onboarding";
 
 interface Step {
   id: string;
@@ -24,11 +25,29 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState(() => window.innerWidth < 1100);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [tutorialDone, setTutorialDone] = useState(() => {
+    try {
+      return !!localStorage.getItem("doonly_tutorial_visto");
+    } catch {
+      return false;
+    }
+  });
+
+  const handleTutorialClose = () => {
+    setOnboardingOpen(false);
+    try {
+      localStorage.setItem("doonly_tutorial_visto", "1");
+    } catch {
+      // silencioso — se localStorage falhar, só não persiste
+    }
+    setTutorialDone(true);
+  };
 
   useEffect(() => {
     if (!userId) return;
     checkSteps();
-  }, [userId]);
+  }, [userId, tutorialDone]);
 
   const checkSteps = async () => {
     try {
@@ -43,6 +62,16 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
       const iconSize = 22;
 
       setSteps([
+        {
+          id: "tutorial",
+          icon: <PlayCircle size={iconSize} weight="duotone" />,
+          title: "Complete o Tutorial",
+          desc: "Veja em menos de 1 minuto como o Doonly organiza seus pedidos, calcula preços e ajuda a vender mais. Você pode rever quando quiser.",
+          tags: ["Apresentação", "1 minuto"],
+          cta: "Iniciar tutorial",
+          path: "__tutorial__", // marcador especial — não navega
+          done: tutorialDone,
+        },
         {
           id: "perfil",
           icon: <UserCircle size={iconSize} weight="duotone" />,
@@ -154,12 +183,12 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
                     {step.done ? "Concluído" : step.tags?.join(" · ")}
                   </span>
                 </div>
-                {!step.done && (
+                {(!step.done || step.id === "tutorial") && (
                   <CaretDown size={16} weight="bold" className={`wc-step-caret ${isOpen ? "wc-step-caret--open" : ""}`} />
                 )}
               </button>
 
-              {isOpen && !step.done && (
+              {isOpen && (!step.done || step.id === "tutorial") && (
                 <div className="wc-step-body">
                   <p className="wc-step-desc">{step.desc}</p>
                   {step.tags && (
@@ -169,8 +198,17 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
                       ))}
                     </div>
                   )}
-                  <button className="wc-step-cta" onClick={() => navigate(step.path)}>
-                    {step.cta}
+                  <button
+                    className="wc-step-cta"
+                    onClick={() => {
+                      if (step.path === "__tutorial__") {
+                        setOnboardingOpen(true);
+                      } else {
+                        navigate(step.path);
+                      }
+                    }}
+                  >
+                    {step.id === "tutorial" && step.done ? "Rever tutorial" : step.cta}
                   </button>
                 </div>
               )}
@@ -446,6 +484,9 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           .wc-dismiss:hover { background: var(--bg-subtle); }
         }
       `}</style>
+
+      {/* Modal de Onboarding — aberto pelo passo "Complete o Tutorial" */}
+      <Onboarding isOpen={onboardingOpen} onClose={handleTutorialClose} />
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CaretRight, CaretLeft, X } from "@phosphor-icons/react";
 
 /**
- * Onboarding — Tela cheia, aparece no primeiro login.
+ * Onboarding — Tela cheia, controlado pelo pai (isOpen + onClose).
  *
  * Estrutura:
  *  Tela 1 — Boas-vindas
@@ -14,19 +14,22 @@ import { CaretRight, CaretLeft, X } from "@phosphor-icons/react";
  *  Tela 7 — Dashboard completo
  *  Tela 8 — Final ("Pronta?")
  *
- * Persistência: localStorage (`doonly_onboarding_visto`).
+ * Aberto pelo botão "Complete o Tutorial" no WelcomeChecklist.
  * Na Etapa 1 (atual) as telas 2-7 são placeholders. Etapas seguintes
  * trocam cada placeholder pela animação real.
  */
 
 interface OnboardingProps {
-  onComplete: () => void;
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const TOTAL_SLIDES = 8;
 
-export default function Onboarding({ onComplete }: OnboardingProps) {
+export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const [slideIdx, setSlideIdx] = useState(0);
+
+  if (!isOpen) return null;
 
   const next = () => {
     if (slideIdx < TOTAL_SLIDES - 1) {
@@ -43,12 +46,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   const skip = () => finish();
 
   const finish = () => {
-    try {
-      localStorage.setItem("doonly_onboarding_visto", "1");
-    } catch {
-      // se localStorage falhar (incógnito/cota), só não persiste
-    }
-    onComplete();
+    setSlideIdx(0); // reset pra próxima vez
+    onClose();
   };
 
   return (
