@@ -94,7 +94,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           >
             <CaretLeft size={18} weight="bold" />
           </button>
-          <button className="ob-nav-btn ob-nav-btn--next" onClick={next}>
+          <button className={`ob-nav-btn ob-nav-btn--next ${slideIdx === 0 ? "ob-nav-btn--awaiting" : ""}`} onClick={next}>
             {slideIdx === 0 ? "Começar" : "Próximo"}
             <CaretRight size={18} weight="bold" />
           </button>
@@ -244,39 +244,86 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           max-width: 32ch;
         }
 
-        /* ── Slide 1 (boas-vindas) — coroa + logo ── */
-        .ob-welcome-coroa {
+        /* ── Slide 1 (boas-vindas) — coroa cinematográfica + botão ── */
+        .ob-welcome-wrap {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          position: relative;
+        }
+
+        /* Coroa "performática" — cai do topo, toca o botão e some */
+        .ob-welcome-coroa-anim {
+          width: 110px;
+          height: auto;
+          position: absolute;
+          top: -40%;
+          left: 50%;
+          transform: translateX(-50%) translateY(-200px) rotate(-20deg) scale(0.4);
+          opacity: 0;
+          filter: drop-shadow(0 8px 24px rgba(244,208,63,0.55));
+          animation: obCoroaJornada 3.2s cubic-bezier(0.34, 1.2, 0.64, 1) 0.3s forwards;
+          pointer-events: none;
+          z-index: 5;
+        }
+        @keyframes obCoroaJornada {
+          /* Entrada: cai do topo com bounce */
+          0% {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-200px) rotate(-20deg) scale(0.4);
+          }
+          15% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(8px) rotate(10deg) scale(1.05);
+          }
+          25% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-4px) rotate(-3deg) scale(0.98);
+          }
+          /* Pausa: coroa "pousa" acima do logo */
+          30%, 45% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) rotate(0) scale(1);
+          }
+          /* Voo: coroa "voa" pra baixo em direção ao botão */
+          60% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(180px) rotate(15deg) scale(0.85);
+          }
+          /* Toque: coroa toca o botão */
+          72% {
+            opacity: 1;
+            transform: translateX(-50%) translateY(280px) rotate(0deg) scale(0.7);
+          }
+          /* Some no toque */
+          80%, 100% {
+            opacity: 0;
+            transform: translateX(-50%) translateY(290px) rotate(0deg) scale(0);
+          }
+        }
+
+        /* Coroa "em repouso" — aparece quando a animada some, fica flutuando */
+        .ob-welcome-coroa-rest {
           width: 110px;
           height: auto;
           margin-bottom: 1.5rem;
-          filter: drop-shadow(0 8px 24px rgba(244,208,63,0.45));
           opacity: 0;
-          transform: translateY(-200px) rotate(-20deg) scale(0.4);
+          filter: drop-shadow(0 8px 24px rgba(244,208,63,0.45));
           animation:
-            obCoroaCai 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards,
-            obCoroaFloat 4s ease-in-out 1.4s infinite;
+            obCoroaAparece 0.5s ease 2.7s forwards,
+            obCoroaFloat 4s ease-in-out 3.2s infinite;
         }
-        @keyframes obCoroaCai {
-          0% {
-            opacity: 0;
-            transform: translateY(-200px) rotate(-20deg) scale(0.4);
-          }
-          60% {
-            opacity: 1;
-            transform: translateY(12px) rotate(8deg) scale(1.05);
-          }
-          80% {
-            transform: translateY(-4px) rotate(-3deg) scale(0.98);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) rotate(0) scale(1);
-          }
+        @keyframes obCoroaAparece {
+          from { opacity: 0; transform: scale(0.5); }
+          to   { opacity: 1; transform: scale(1); }
         }
         @keyframes obCoroaFloat {
           0%, 100% { transform: translateY(0) rotate(0); }
           50%      { transform: translateY(-8px) rotate(2deg); }
         }
+
         .ob-welcome-logo-img {
           width: 200px;
           max-width: 70vw;
@@ -299,6 +346,39 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           max-width: 30ch;
           opacity: 0;
           animation: obFadeUp 0.7s ease 1.5s both;
+        }
+
+        /* ── Botão "Começar" — desativado até a coroa tocar ── */
+        .ob-nav-btn--awaiting {
+          opacity: 0.3;
+          background: rgba(244, 208, 63, 0.35) !important;
+          color: rgba(42, 16, 25, 0.5) !important;
+          pointer-events: none;
+          animation: obBtnAtiva 0.6s cubic-bezier(0.34, 1.6, 0.64, 1) 3s forwards;
+        }
+        @keyframes obBtnAtiva {
+          0% {
+            opacity: 0.3;
+            background: rgba(244, 208, 63, 0.35);
+            color: rgba(42, 16, 25, 0.5);
+            transform: scale(1);
+            box-shadow: 0 0 0 rgba(244, 208, 63, 0);
+          }
+          50% {
+            opacity: 1;
+            background: #fff5b8;
+            color: #2a1019;
+            transform: scale(1.08);
+            box-shadow: 0 0 40px rgba(244, 208, 63, 0.9), 0 0 80px rgba(244, 208, 63, 0.5);
+          }
+          100% {
+            opacity: 1;
+            background: #F4D03F;
+            color: #2a1019;
+            transform: scale(1);
+            box-shadow: 0 0 20px rgba(244, 208, 63, 0.4);
+            pointer-events: auto;
+          }
         }
 
         /* ── Placeholder visual (etapa 1) ── */
@@ -518,7 +598,8 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           .ob-content { padding: 2rem; }
           .ob-slide-title { font-size: 2.2rem; }
           .ob-slide-text { font-size: 1.1rem; }
-          .ob-welcome-coroa { width: 150px; }
+          .ob-welcome-coroa-anim { width: 150px; }
+          .ob-welcome-coroa-rest { width: 150px; }
           .ob-welcome-logo-img { width: 260px; }
           .ob-welcome-text { font-size: 1.2rem; max-width: 36ch; }
           .ob-final-title { font-size: 2.6rem; }
@@ -539,13 +620,23 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 /* ─── Slide 1: Boas-vindas ──────────────────────── */
 function Slide1Welcome() {
   return (
-    <>
+    <div className="ob-welcome-wrap">
+      {/* Coroa principal (a que cai e ativa o botão) */}
       <img
         src="/tuturial/coroa.png"
         alt=""
-        className="ob-welcome-coroa"
+        className="ob-welcome-coroa-anim"
         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
       />
+
+      {/* Coroa final (a que fica flutuando no topo depois) */}
+      <img
+        src="/tuturial/coroa.png"
+        alt=""
+        className="ob-welcome-coroa-rest"
+        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+      />
+
       <img
         src="/tuturial/logotutorial.png"
         alt="Doonly"
@@ -555,7 +646,7 @@ function Slide1Welcome() {
       <p className="ob-welcome-text">
         Organize seus pedidos, calcule seus preços e acompanhe sua confeitaria com facilidade.
       </p>
-    </>
+    </div>
   );
 }
 
