@@ -323,24 +323,25 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
         .ob-final-cta:active { transform: translateY(0); }
 
-        /* ── Slide 2: Pedidos cards animados ── */
+        /* ── Slide 2: Pedidos cards (replica do .ped-card do app) ── */
         .ob-pedidos-stack {
           display: flex;
           flex-direction: column;
-          gap: 0.75rem;
+          gap: 0.65rem;
           width: 100%;
           max-width: 360px;
           margin-top: 1.5rem;
           perspective: 800px;
         }
-        .ob-pedido-card {
-          display: flex;
-          align-items: center;
-          gap: 0.85rem;
-          padding: 0.9rem 1rem;
+        .ob-ped-card {
           background: #fff;
-          color: #2a1019;
+          color: #431524;
           border-radius: 14px;
+          border: 1.5px solid #ECC2D0;
+          position: relative;
+          overflow: hidden;
+          font-family: inherit;
+          text-align: left;
           box-shadow: 0 12px 30px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
           opacity: 0;
           transform: translateY(-60px) rotateX(35deg) scale(0.9);
@@ -361,51 +362,107 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
             transform: translateY(0) rotateX(0) scale(1);
           }
         }
-        .ob-pedido-emoji {
-          width: 44px; height: 44px;
-          border-radius: 12px;
-          background: linear-gradient(135deg, #fff1f7, #ecc2d0);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 1.5rem;
-          flex-shrink: 0;
-        }
-        .ob-pedido-info {
-          flex: 1;
-          min-width: 0;
+
+        /* Estrutura interna — espelha .mob-card-* do app */
+        .ob-mob-card-topo {
           display: flex;
           flex-direction: column;
           gap: 2px;
-          text-align: left;
+          padding: 0.65rem 0.9rem 0;
         }
-        .ob-pedido-badge {
-          font-size: 0.62rem;
-          font-weight: 800;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          color: #15803d;
-          background: #dcfce7;
-          padding: 2px 8px;
-          border-radius: 999px;
-          align-self: flex-start;
-          margin-bottom: 2px;
+        .ob-ped-card-head-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 6px;
         }
-        .ob-pedido-titulo {
-          font-size: 0.95rem;
+        .ob-ped-card-numero {
+          font-size: 0.7rem;
+          font-weight: 600;
+          color: #C39EAA;
+        }
+        .ob-ped-card-status {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 0.7rem;
           font-weight: 700;
-          color: #2a1019;
-          line-height: 1.2;
+          padding: 3px 10px;
+          border-radius: 6px;
+          flex-shrink: 0;
         }
-        .ob-pedido-detalhe {
-          font-size: 0.75rem;
+        .ob-ped-card-status-dot {
+          width: 7px; height: 7px;
+          border-radius: 50%;
+          flex-shrink: 0;
+        }
+        .ob-mob-card-cliente {
+          font-size: 0.88rem;
+          font-weight: 700;
+          color: #431524;
+          margin: 2px 0 0;
+        }
+        .ob-mob-card-datetime {
+          font-size: 0.7rem;
+          color: #C39EAA;
+        }
+        .ob-mob-card-divider {
+          height: 1px;
+          border-top: 1px dashed #ECC2D0;
+          margin: 0.4rem 0.9rem;
+        }
+        .ob-mob-card-produto {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 0 0.9rem;
+        }
+        .ob-mob-card-produto-img {
+          width: 34px; height: 34px;
+          border-radius: 6px;
+          flex-shrink: 0;
+          background: #F7EEF1;
+          border: 1px solid #ECC2D0;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1rem;
+        }
+        .ob-mob-card-produto-nome {
+          font-size: 0.78rem;
+          font-weight: 600;
+          color: #431524;
+          margin: 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 160px;
+        }
+        .ob-mob-card-produto-qtd {
+          font-size: 0.68rem;
           color: #6E3548;
-          line-height: 1.3;
+          margin: 1px 0 0;
         }
-        .ob-pedido-valor {
+        .ob-mob-card-valor {
           font-size: 1rem;
           font-weight: 800;
-          color: #6E3548;
-          flex-shrink: 0;
-          letter-spacing: -0.01em;
+          color: #431524;
+          margin: 0;
+          letter-spacing: -0.02em;
+          white-space: nowrap;
+        }
+        .ob-mob-card-rodape {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 6px;
+          padding: 0 0.9rem 0.65rem;
+        }
+        .ob-mob-card-info-label {
+          font-weight: 600;
+          color: #431524;
+          font-size: 0.75rem;
         }
         @keyframes obFadeUp {
           from { opacity: 0; transform: translateY(8px); }
@@ -460,32 +517,71 @@ function SlidePlaceholder({ title, subtitle, emoji }: { title: string; subtitle:
 }
 
 /* ─── Slide 2: Pedidos organizados ─────────────────
-   3 cards de pedido caem em sequência, com badge "Novo".
-   Cada card animado com delay escalonado. */
+   Replica o card real mobile (.ped-card / .mob-card-*) do app,
+   com 3 pedidos caindo em sequência. */
 const PEDIDOS_DEMO = [
   {
     id: 1,
-    badge: "Novo",
-    titulo: "Bolo Red Velvet",
-    detalhe: "Entrega sábado",
-    valor: "R$ 280",
+    numero: "127",
+    statusLabel: "Novo",
+    statusColor: "#15803d",
+    statusBg: "#dcfce7",
+    statusDot: "#15803d",
+    cliente: "Ana Carolina",
+    datetime: "Hoje · 14:32",
+    produto: "Bolo Red Velvet",
+    qtd: "1 unidade · 2kg",
+    valor: "R$ 280,00",
     emoji: "🎂",
+    pagamento: "PIX",
+    pagamentoStatus: "Pago",
+    pagamentoColor: "#16a34a",
+    pagamentoBg: "#dcfce7",
+    entregaIcon: "🛵",
+    entregaLabel: "Entrega",
+    dataLabel: "Sábado",
   },
   {
     id: 2,
-    badge: "Novo",
-    titulo: "Brigadeiro Gourmet",
-    detalhe: "50 unidades",
-    valor: "R$ 90",
+    numero: "128",
+    statusLabel: "Em produção",
+    statusColor: "#d97706",
+    statusBg: "#FAEEDA",
+    statusDot: "#d97706",
+    cliente: "Juliana Souza",
+    datetime: "Hoje · 15:10",
+    produto: "Brigadeiro Gourmet",
+    qtd: "50 unidades",
+    valor: "R$ 90,00",
     emoji: "🍫",
+    pagamento: "PIX",
+    pagamentoStatus: "Parcial",
+    pagamentoColor: "#d97706",
+    pagamentoBg: "#FAEEDA",
+    entregaIcon: "📦",
+    entregaLabel: "Retirada",
+    dataLabel: "Amanhã",
   },
   {
     id: 3,
-    badge: "Novo",
-    titulo: "Naked Cake",
-    detalhe: "Sexta-feira",
-    valor: "R$ 450",
+    numero: "129",
+    statusLabel: "Confirmado",
+    statusColor: "#1d4ed8",
+    statusBg: "#dbeafe",
+    statusDot: "#1d4ed8",
+    cliente: "Mariana Lima",
+    datetime: "Hoje · 16:48",
+    produto: "Naked Cake",
+    qtd: "1 unidade · 3 andares",
+    valor: "R$ 450,00",
     emoji: "🍰",
+    pagamento: "Dinheiro",
+    pagamentoStatus: "Pendente",
+    pagamentoColor: "#dc2626",
+    pagamentoBg: "#fee2e2",
+    entregaIcon: "🛵",
+    entregaLabel: "Entrega",
+    dataLabel: "Sexta",
   },
 ];
 
@@ -498,16 +594,52 @@ function Slide2Pedidos() {
         {PEDIDOS_DEMO.map((p, idx) => (
           <div
             key={p.id}
-            className="ob-pedido-card"
+            className="ob-ped-card"
             style={{ animationDelay: `${0.4 + idx * 0.7}s` }}
           >
-            <div className="ob-pedido-emoji">{p.emoji}</div>
-            <div className="ob-pedido-info">
-              <span className="ob-pedido-badge">{p.badge}</span>
-              <span className="ob-pedido-titulo">{p.titulo}</span>
-              <span className="ob-pedido-detalhe">{p.detalhe}</span>
+            {/* Topo: número + status + cliente + datetime */}
+            <div className="ob-mob-card-topo">
+              <div className="ob-ped-card-head-row">
+                <span className="ob-ped-card-numero">Pedido #{p.numero}</span>
+                <span className="ob-ped-card-status" style={{ color: p.statusColor, background: p.statusBg }}>
+                  <span className="ob-ped-card-status-dot" style={{ background: p.statusDot }} />
+                  {p.statusLabel}
+                </span>
+              </div>
+              <p className="ob-mob-card-cliente">{p.cliente}</p>
+              <span className="ob-mob-card-datetime">{p.datetime}</span>
             </div>
-            <span className="ob-pedido-valor">{p.valor}</span>
+
+            <div className="ob-mob-card-divider" />
+
+            {/* Produto + valor */}
+            <div className="ob-mob-card-produto">
+              <div className="ob-mob-card-produto-img">
+                <span>{p.emoji}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p className="ob-mob-card-produto-nome">{p.produto}</p>
+                <p className="ob-mob-card-produto-qtd">{p.qtd}</p>
+              </div>
+              <p className="ob-mob-card-valor">{p.valor}</p>
+            </div>
+
+            <div className="ob-mob-card-divider" />
+
+            {/* Rodapé: pagamento + entrega */}
+            <div className="ob-mob-card-rodape">
+              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                <span className="ob-mob-card-info-label">Pgto:</span>
+                <span style={{ fontSize: "0.7rem", color: p.pagamentoColor, fontWeight: 600 }}>{p.pagamento}</span>
+                <span className="ob-ped-card-status" style={{ color: p.pagamentoColor, background: p.pagamentoBg, fontSize: "0.6rem", padding: "2px 6px" }}>
+                  {p.pagamentoStatus}
+                </span>
+              </div>
+              <span style={{ fontSize: "0.7rem", color: "#6E3548", display: "flex", alignItems: "center", gap: 4 }}>
+                {p.entregaIcon} {p.entregaLabel}
+                <span style={{ color: "#431524", fontWeight: 600 }}>· {p.dataLabel}</span>
+              </span>
+            </div>
           </div>
         ))}
       </div>
