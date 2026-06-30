@@ -21,7 +21,7 @@ import { CaretRight } from "@phosphor-icons/react";
 
 interface OnboardingProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (slideAlcancada: number) => void;
 }
 
 const TOTAL_SLIDES = 8;
@@ -40,8 +40,9 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   };
 
   const finish = () => {
+    const alcancada = slideIdx;
     setSlideIdx(0); // reset pra próxima vez
-    onClose();
+    onClose(alcancada);
   };
 
   return (

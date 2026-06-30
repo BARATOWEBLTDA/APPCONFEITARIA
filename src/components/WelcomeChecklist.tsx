@@ -34,14 +34,34 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
     }
   });
 
-  const handleTutorialClose = () => {
-    setOnboardingOpen(false);
+  // Abre o tutorial automaticamente se for primeiro login (nunca viu)
+  useEffect(() => {
+    if (!userId || tutorialDone) return;
     try {
-      localStorage.setItem("doonly_tutorial_visto", "1");
+      const jaTentou = localStorage.getItem("doonly_tutorial_auto_aberto");
+      if (jaTentou) return; // só abre auto 1x na vida — depois é só pelo checklist
+      const timer = setTimeout(() => {
+        setOnboardingOpen(true);
+        localStorage.setItem("doonly_tutorial_auto_aberto", "1");
+      }, 800);
+      return () => clearTimeout(timer);
     } catch {
-      // silencioso — se localStorage falhar, só não persiste
+      // localStorage indisponível, não abre auto
     }
-    setTutorialDone(true);
+  }, [userId, tutorialDone]);
+
+  // Recebe a slide em que a pessoa estava ao fechar.
+  // Só marca como "concluído" se passou de pelo menos 5 telas (slideIdx >= 5).
+  const handleTutorialClose = (slideAlcancada: number) => {
+    setOnboardingOpen(false);
+    if (slideAlcancada >= 5) {
+      try {
+        localStorage.setItem("doonly_tutorial_visto", "1");
+      } catch {
+        // silencioso — se localStorage falhar, só não persiste
+      }
+      setTutorialDone(true);
+    }
   };
 
   useEffect(() => {
