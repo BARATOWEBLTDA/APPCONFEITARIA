@@ -140,6 +140,11 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           text-align: center;
           animation: obFade 0.5s ease;
           overflow-y: auto;
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE/Edge antigo */
+        }
+        .ob-content::-webkit-scrollbar {
+          display: none; /* Chrome/Safari/Opera */
         }
         @keyframes obFade {
           from { opacity: 0; transform: translateY(12px); }
@@ -187,6 +192,15 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
 
         /* ── Slides: títulos e textos comuns ── */
+        .ob-slide-eyebrow {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #F4D03F;
+          letter-spacing: 0.04em;
+          margin-bottom: 0.4rem;
+          opacity: 0;
+          animation: obFadeUp 0.5s ease 0.1s both;
+        }
         .ob-slide-title {
           font-size: 1.6rem;
           font-weight: 800;
@@ -459,6 +473,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         @media (min-width: 768px) {
           .ob-content { padding: 2rem; }
           .ob-slide-title { font-size: 2.2rem; }
+          .ob-slide-eyebrow { font-size: 1rem; }
           .ob-slide-text { font-size: 1.1rem; }
           .ob-welcome-coroa { width: 170px; margin-bottom: 2.5rem; }
           .ob-welcome-headline { font-size: 2.6rem; }
@@ -562,7 +577,8 @@ const PEDIDOS_DEMO = [
 function Slide2Pedidos() {
   return (
     <>
-      <h2 className="ob-slide-title">Seus pedidos<br/>ficam organizados</h2>
+      <span className="ob-slide-eyebrow">Com o Doonly...</span>
+      <h2 className="ob-slide-title">SEUS PEDIDOS<br/>FICAM ORGANIZADOS</h2>
 
       <div className="ob-pedidos-stack">
         {PEDIDOS_DEMO.map((p, idx) => (
@@ -619,10 +635,6 @@ function Slide2Pedidos() {
           </div>
         ))}
       </div>
-
-      <p className="ob-slide-text" style={{ marginTop: "1.5rem", animation: "obFadeUp 0.6s ease 1.9s both" }}>
-        Todos os seus pedidos ficam organizados em um único lugar.
-      </p>
     </>
   );
 }
