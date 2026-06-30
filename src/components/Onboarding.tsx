@@ -523,7 +523,7 @@ function SlidePlaceholder({ title, subtitle, emoji }: { title: string; subtitle:
 
 /* ─── Slide 2: Pedidos organizados ─────────────────
    Replica o card real mobile (.ped-card / .mob-card-*) do app,
-   com 3 pedidos caindo em sequência.  */
+   com 3 pedidos caindo em sequência.   */
 const PEDIDOS_DEMO = [
   {
     id: 1,
@@ -550,28 +550,6 @@ const PEDIDOS_DEMO = [
   {
     id: 2,
     numero: "128",
-    statusLabel: "Em produção",
-    statusColor: "#d97706",
-    statusBg: "#FAEEDA",
-    statusDot: "#d97706",
-    cliente: "Juliana Souza",
-    datetime: "Hoje · 15:10",
-    produto: "Caixa de Brigadeiro",
-    qtd: "1 caixa · 4 unidades",
-    valor: "R$ 12,00",
-    imagem: "/tuturial/brigadeiro.jpg",
-    emoji: "🍫",
-    pagamento: "PIX",
-    pagamentoStatus: "Parcial",
-    pagamentoColor: "#d97706",
-    pagamentoBg: "#FAEEDA",
-    entregaIcon: "📦",
-    entregaLabel: "Retirada",
-    dataLabel: "Amanhã",
-  },
-  {
-    id: 3,
-    numero: "129",
     statusLabel: "Confirmado",
     statusColor: "#1d4ed8",
     statusBg: "#dbeafe",
@@ -654,7 +632,7 @@ function Slide2Pedidos() {
         ))}
       </div>
 
-      <p className="ob-slide-text" style={{ marginTop: "1.5rem", animation: "obFadeUp 0.6s ease 2.6s both" }}>
+      <p className="ob-slide-text" style={{ marginTop: "1.5rem", animation: "obFadeUp 0.6s ease 1.9s both" }}>
         Todos os seus pedidos ficam organizados em um único lugar.
       </p>
     </>
