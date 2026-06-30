@@ -552,46 +552,46 @@ const PEDIDOS_DEMO = [
   {
     id: 1,
     numero: "127",
-    statusLabel: "Novo",
-    statusColor: "#15803d",
-    statusBg: "#dcfce7",
-    statusDot: "#15803d",
+    statusLabel: "Em produção",
+    statusColor: "#d97706",
+    statusBg: "#FAEEDA",
+    statusDot: "#d97706",
     cliente: "Ana Carolina",
     datetime: "Hoje · 14:32",
     produto: "Bolo Dois Amores",
-    qtd: "1 unidade · 2kg",
+    qtd: "2kg · Retangular",
     valor: "R$ 119,00",
     imagem: "/tuturial/bolo.jpg",
     emoji: "🎂",
-    pagamento: "PIX",
-    pagamentoStatus: "Pago",
-    pagamentoColor: "#16a34a",
-    pagamentoBg: "#dcfce7",
-    entregaIcon: "🛵",
+    pagamento: "Sinal recebido",
+    pagamentoStatus: "Parcial",
+    pagamentoColor: "#d97706",
+    pagamentoBg: "#FAEEDA",
+    entregaIcon: "📍",
     entregaLabel: "Entrega",
     dataLabel: "Sábado",
   },
   {
     id: 2,
     numero: "128",
-    statusLabel: "Confirmado",
-    statusColor: "#1d4ed8",
-    statusBg: "#dbeafe",
-    statusDot: "#1d4ed8",
+    statusLabel: "Entregue",
+    statusColor: "#15803d",
+    statusBg: "#dcfce7",
+    statusDot: "#15803d",
     cliente: "Mariana Lima",
-    datetime: "Hoje · 16:48",
+    datetime: "Ontem · 15:57",
     produto: "Cento de Salgados",
     qtd: "100 unidades · misto",
     valor: "R$ 70,00",
     imagem: "/tuturial/salgadinhos.jpg",
     emoji: "🥟",
     pagamento: "Dinheiro",
-    pagamentoStatus: "Pendente",
-    pagamentoColor: "#dc2626",
-    pagamentoBg: "#fee2e2",
-    entregaIcon: "🛵",
-    entregaLabel: "Entrega",
-    dataLabel: "Sexta",
+    pagamentoStatus: "Pago",
+    pagamentoColor: "#16a34a",
+    pagamentoBg: "#dcfce7",
+    entregaIcon: "📌",
+    entregaLabel: "Retirada",
+    dataLabel: "Ontem",
   },
 ];
 
@@ -642,7 +642,7 @@ function Slide2Pedidos() {
             {/* Rodapé: pagamento + entrega */}
             <div className="ob-mob-card-rodape">
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <span className="ob-mob-card-info-label">Pgto:</span>
+                <span className="ob-mob-card-info-label">Pagamento:</span>
                 <span style={{ fontSize: "0.7rem", color: p.pagamentoColor, fontWeight: 600 }}>{p.pagamento}</span>
                 <span className="ob-ped-card-status" style={{ color: p.pagamentoColor, background: p.pagamentoBg, fontSize: "0.6rem", padding: "2px 6px" }}>
                   {p.pagamentoStatus}
@@ -661,9 +661,9 @@ function Slide2Pedidos() {
           <div className="ob-mob-card-topo">
             <div className="ob-ped-card-head-row">
               <span className="ob-ped-card-numero">Pedido #129</span>
-              <span className="ob-ped-card-status" style={{ color: "#7c3aed", background: "#ede9fe" }}>
-                <span className="ob-ped-card-status-dot" style={{ background: "#7c3aed" }} />
-                Em separação
+              <span className="ob-ped-card-status" style={{ color: "#15803d", background: "#dcfce7" }}>
+                <span className="ob-ped-card-status-dot" style={{ background: "#15803d" }} />
+                Entregue
               </span>
             </div>
             <p className="ob-mob-card-cliente">Camila Ribeiro</p>
