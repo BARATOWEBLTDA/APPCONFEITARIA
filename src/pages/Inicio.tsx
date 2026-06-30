@@ -842,7 +842,7 @@ export default function Inicio() {
           display: flex;
           flex-direction: column;
           gap: var(--space-5);
-          margin-top: var(--space-2);
+          margin-top: var(--gap-section); /* 24px — respiro após o hero (--gap-section) */
         }
         .ini-main {
           display: flex;
@@ -1599,6 +1599,7 @@ export default function Inicio() {
             grid-template-areas: "aside main";
             gap: var(--space-6);
             align-items: start;
+            margin-top: 0; /* hero oculto no desktop, sem margem extra */
           }
           .ini-main  { grid-area: main; }
           .ini-aside { grid-area: aside; position: sticky; top: var(--space-6); }
