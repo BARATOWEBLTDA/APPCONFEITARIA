@@ -156,16 +156,15 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           margin-top: env(safe-area-inset-top, 0px);
         }
         .ob-dot {
-          width: 6px; height: 6px;
+          width: 7px; height: 7px;
           border-radius: 999px;
           background: rgba(255,255,255,0.25);
-          transition: all 0.3s ease;
+          transition: background 0.3s ease;
         }
         .ob-dot--done {
-          background: rgba(244, 208, 63, 0.6);
+          background: rgba(244, 208, 63, 0.55);
         }
         .ob-dot--active {
-          width: 24px;
           background: #F4D03F;
         }
 
@@ -529,9 +528,10 @@ function Slide1Welcome() {
         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
       />
       <h1 className="ob-welcome-headline">
-        Organize seus pedidos,<br/>
-        calcule seus preços<br/>
-        e venda mais.
+        ORGANIZE SEUS<br/>
+        PEDIDOS, CALCULE<br/>
+        SEUS PREÇOS<br/>
+        E VENDA MAIS.
       </h1>
     </>
   );
