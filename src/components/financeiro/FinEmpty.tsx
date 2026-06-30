@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 
 interface FinEmptyProps {
-  /** Ícone temático Phosphor (ex.: <Buildings />) — usado até existir mascote dedicado */
-  icon: ReactNode;
+  /** Ícone temático Phosphor (ex.: <Buildings />). Usado quando não há mascote dedicado ainda. */
+  icon?: ReactNode;
+  /** Caminho da imagem do mascote Doonly (ex.: "/Sistema/doo.png"). Quando presente, substitui o icon. */
+  image?: string;
   /** Título do empty state */
   title: ReactNode;
   /** Descrição abaixo do título */
@@ -14,24 +16,33 @@ interface FinEmptyProps {
 }
 
 /**
- * Empty state padronizado do Financeiro.
+ * Empty state padronizado do Financeiro / Doonly.
  *
- * Estrutura idêntica ao <EmptyDoo>, mas com um ÍCONE Phosphor no lugar do
- * mascote — até o Bruno disponibilizar as imagens específicas
- * (calculadora, sacola, etc.). Quando as imagens chegarem, é trivial
- * trocar este componente por <EmptyDoo image="..." />.
+ * Aceita um ícone Phosphor OU uma imagem do mascote Doo (`image`). Quando
+ * o Doonly tiver mascotes específicos por contexto (calculadora, sacola,
+ * balança...), é só passar `image="/Sistema/<nome>.png"`.
  *
- * @example
+ * @example Ícone Phosphor (default, sem mascote dedicado)
  * <FinEmpty
  *   icon={<Buildings size={36} weight="duotone" />}
  *   title="Você ainda não cadastrou nenhum custo fixo"
- *   description="Cadastre aluguel, energia, internet e outros custos recorrentes."
+ *   description="Cadastre aluguel, energia, internet..."
  *   actionLabel="Cadastrar primeiro custo"
  *   onAction={openModal}
+ * />
+ *
+ * @example Avatar do Doo
+ * <FinEmpty
+ *   image="/Sistema/doo.png"
+ *   title="Quer ver seu lucro de verdade?"
+ *   description="Preencha a ficha técnica..."
+ *   actionLabel="Preencher custos"
+ *   onAction={() => navigate("/produtos")}
  * />
  */
 export default function FinEmpty({
   icon,
+  image,
   title,
   description,
   actionLabel,
@@ -40,7 +51,13 @@ export default function FinEmpty({
   return (
     <div className="fin-empty">
       <div className="fin-empty-avatar" aria-hidden="true">
-        <div className="fin-empty-avatar-inner">{icon}</div>
+        {image ? (
+          <div className="fin-empty-avatar-img-wrap">
+            <img src={image} alt="" className="fin-empty-avatar-img" />
+          </div>
+        ) : (
+          <div className="fin-empty-avatar-inner">{icon}</div>
+        )}
       </div>
       <p className="fin-empty-title">{title}</p>
       <p className="fin-empty-desc">{description}</p>
@@ -84,6 +101,22 @@ export default function FinEmpty({
           display: flex;
           align-items: center;
           justify-content: center;
+        }
+        .fin-empty-avatar-img-wrap {
+          width: 72px;
+          height: 72px;
+          border-radius: 26%;
+          background: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
+        .fin-empty-avatar-img {
+          width: 92px;
+          height: 92px;
+          object-fit: cover;
+          object-position: top center;
         }
         .fin-empty-title {
           font-size: var(--font-modal-title);

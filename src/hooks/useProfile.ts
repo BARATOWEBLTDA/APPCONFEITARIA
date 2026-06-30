@@ -7,6 +7,8 @@ export interface Profile {
   nome_loja: string;
   foto_url: string | null;
   slug?: string;
+  plano?: string | null;
+  pro_expira_em?: string | null;
 }
 
 // Store global para compartilhar o perfil entre componentes

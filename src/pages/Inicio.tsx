@@ -8,7 +8,7 @@ import {
   TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
   Bell, User, Storefront, SignOut,
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
-  InstagramLogo,
+  InstagramLogo, Crown,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { useProfile } from "@/hooks/useProfile";
@@ -91,6 +91,39 @@ export default function Inicio() {
     if (h < 18) return "Boa tarde";
     return "Boa noite";
   };
+
+  // Frases rotativas — uma por dia, determinística (mesmo dia sempre mostra a mesma)
+  const DAILY_MESSAGES = [
+    "Vamos gerenciar sua confeitaria?",
+    "Por onde quer começar hoje?",
+    "Bora deixar tudo redondo hoje?",
+    "Como está sua confeitaria hoje?",
+    "Pronta pra um dia produtivo?",
+    "Algum pedido especial pra hoje?",
+    "Um dia doce começa aqui",
+    "Vamos doçar esse dia?",
+    "Que tal organizar a semana?",
+    "__date__", // marcador: substituído pela data formatada
+  ];
+  const getDailyMessage = () => {
+    const today = new Date();
+    const key = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+    let h = 0;
+    for (let i = 0; i < key.length; i++) {
+      h = ((h << 5) - h) + key.charCodeAt(i);
+      h |= 0;
+    }
+    const idx = Math.abs(h) % DAILY_MESSAGES.length;
+    const msg = DAILY_MESSAGES[idx];
+    return msg === "__date__" ? hojeFormatado() : msg;
+  };
+
+  // Detecta plano PRO ativo (mostra a coroinha)
+  const isPro = (() => {
+    if (profile?.plano !== "pro") return false;
+    if (!profile.pro_expira_em) return true;
+    return new Date(profile.pro_expira_em) > new Date();
+  })();
 
   const hojeFormatado = () => {
     const d = new Date();
@@ -344,19 +377,47 @@ export default function Inicio() {
 
   return (
     <div className="ini-root">
-      {/* ── Hero degradê animado ── */}
+      {/* ── Hero wine com Doo, coroinha (PRO), gotas de chocolate e sparkles ── */}
       <div className="ini-hero">
-        <div className="ini-hero-greeting">
-          <p>{hojeFormatado()}</p>
-          <h1>{getGreeting()}, {(nome || "bem-vinda").split(" ")[0]}</h1>
+        {/* Decoração: gotas de chocolate escorrendo no topo */}
+        <svg className="ini-hero-drips" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 0 L100 0 L100 2 Q92 4.5 86 2 Q78 3.5 72 2 Q64 5 56 2 Q48 3.2 42 2 Q34 5.5 26 2 Q18 3.4 12 2 Q6 4.6 0 2 Z" fill="rgba(0,0,0,0.22)"/>
+        </svg>
+
+        {/* Decoração: sparkles dourados */}
+        <svg className="ini-hero-sparkles" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true">
+          <g fill="#F4D03F" opacity="0.65">
+            <path d="M18 12 L18.4 13.3 L19.7 13.7 L18.4 14.1 L18 15.4 L17.6 14.1 L16.3 13.7 L17.6 13.3 Z"/>
+            <path d="M88 8 L88.5 9.6 L90.1 10.1 L88.5 10.6 L88 12.2 L87.5 10.6 L85.9 10.1 L87.5 9.6 Z"/>
+            <path d="M62 22 L62.3 22.9 L63.2 23.2 L62.3 23.5 L62 24.4 L61.7 23.5 L60.8 23.2 L61.7 22.9 Z"/>
+            <path d="M40 6 L40.3 6.9 L41.2 7.2 L40.3 7.5 L40 8.4 L39.7 7.5 L38.8 7.2 L39.7 6.9 Z"/>
+            <path d="M75 30 L75.3 30.9 L76.2 31.2 L75.3 31.5 L75 32.4 L74.7 31.5 L73.8 31.2 L74.7 30.9 Z"/>
+            <path d="M95 38 L95.3 38.9 L96.2 39.2 L95.3 39.5 L95 40.4 L94.7 39.5 L93.8 39.2 L94.7 38.9 Z"/>
+          </g>
+        </svg>
+
+        {/* Avatar do Doo */}
+        <div className="ini-hero-doo" aria-hidden="true">
+          <img src="/Sistema/doo.png" alt="" />
         </div>
 
-        {/* Foto de perfil no canto superior direito */}
+        {/* Texto da saudação */}
+        <div className="ini-hero-greeting">
+          <h1>
+            <span>{getGreeting()}, {(nome || "bem-vinda").split(" ")[0]}</span>
+            {isPro && (
+              <Crown size={18} weight="fill" className="ini-hero-crown" aria-label="Plano PRO" />
+            )}
+          </h1>
+          <p>{getDailyMessage()}</p>
+        </div>
+
+        {/* Foto de perfil no canto superior direito — preservada */}
         <div className="ini-profile-wrapper" ref={menuRef}>
           <button className="ini-profile-btn" onClick={() => setMenuOpen(o => !o)}>
             {profile?.foto_url
               ? <img src={profile.foto_url} alt="Perfil" className="ini-profile-img" />
-              : <div className="ini-profile-placeholder"><User size={22} weight="bold" color="#fff" /></div>
+              : <div className="ini-profile-placeholder"><User size={20} weight="bold" color="#fff" /></div>
             }
           </button>
 
@@ -724,46 +785,107 @@ export default function Inicio() {
         .ini-aside-desktop { display: none; }
         .ini-aside-mobile { display: block; }
 
-        /* ── Hero degradê animado (preservado) ── */
+        /* ── Hero wine com Doo, decorações e coroinha ── */
         .ini-hero {
-          background: linear-gradient(135deg, var(--primary-dark), var(--text-title), #1f0a12, var(--text-title), var(--primary-dark));
+          background: linear-gradient(135deg, #2a1019, #3d1a24 35%, #4d1f2c 60%, #3d1a24 85%, #2a1019);
           background-size: 300% 300%;
-          animation: heroGradientMove 10s ease infinite;
-          border-radius: 0;
+          animation: heroGradientMove 14s ease infinite;
+          border-radius: 0 0 28px 28px;
           padding: 2rem 1.25rem 2rem;
           /* Full-bleed: estende até a borda da viewport ignorando padding dos pais */
           width: 100vw;
           margin-left: calc(50% - 50vw);
           margin-right: calc(50% - 50vw);
           margin-top: calc(-1 * (var(--pad-page-top) + env(safe-area-inset-top, 0px)));
-          padding-top: calc(1.25rem + env(safe-area-inset-top, 0px));
+          padding-top: calc(1.5rem + env(safe-area-inset-top, 0px));
           display: flex;
           align-items: center;
-          justify-content: space-between;
+          gap: 0.85rem;
           position: relative;
           z-index: 0;
+          overflow: hidden;
         }
         @keyframes heroGradientMove {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-        .ini-hero-greeting p {
-          font-size: var(--font-helper); color: rgba(255,255,255,0.6);
-          margin: 0; line-height: 1.3;
+
+        /* Gotas de chocolate no topo */
+        .ini-hero-drips {
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          width: 100%;
+          height: calc(18px + env(safe-area-inset-top, 0px));
+          pointer-events: none;
+          z-index: 1;
+        }
+        /* Sparkles dourados estáticos */
+        .ini-hero-sparkles {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        /* Avatar do Doo (esquerda) */
+        .ini-hero-doo {
+          width: 64px; height: 64px;
+          border-radius: 50%;
+          background: #fff;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          overflow: hidden;
+          box-shadow: 0 6px 18px rgba(0,0,0,0.28), inset 0 0 0 3px rgba(255,255,255,0.95);
+          position: relative;
+          z-index: 2;
+        }
+        .ini-hero-doo img {
+          width: 82px; height: 82px;
+          object-fit: cover;
+          object-position: top center;
+        }
+
+        /* Texto da saudação */
+        .ini-hero-greeting {
+          flex: 1;
+          min-width: 0;
+          position: relative;
+          z-index: 2;
         }
         .ini-hero-greeting h1 {
-          font-size: var(--font-input); font-weight: var(--fw-semibold); color: rgba(255,255,255,0.95);
-          margin: var(--space-1) 0 0; line-height: 1.3;
-          letter-spacing: 0;
+          display: inline-flex; align-items: center; gap: 6px;
+          font-size: 1.5rem; font-weight: var(--fw-black);
+          color: #fff;
+          margin: 0; line-height: 1.2;
+          letter-spacing: -0.02em;
+        }
+        .ini-hero-greeting h1 span {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 100%;
+        }
+        .ini-hero-crown {
+          color: #F4D03F;
+          flex-shrink: 0;
+          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        }
+        .ini-hero-greeting p {
+          font-size: var(--font-helper);
+          color: rgba(255,255,255,0.78);
+          margin: 4px 0 0;
+          line-height: 1.35;
         }
 
         /* ── Profile button + dropdown menu ── */
-        .ini-profile-wrapper { position: relative; }
+        .ini-profile-wrapper { position: relative; flex-shrink: 0; z-index: 2; }
         .ini-profile-btn {
-          width: 42px; height: 42px; border-radius: var(--radius-full);
-          border: 2.5px solid rgba(255,255,255,0.6);
-          background: rgba(255,255,255,0.15);
+          width: 38px; height: 38px; border-radius: var(--radius-full);
+          border: 2px solid rgba(255,255,255,0.7);
+          background: rgba(255,255,255,0.18);
           cursor: pointer; padding: 0; overflow: hidden;
           display: flex; align-items: center; justify-content: center;
           transition: border-color var(--dur-fast), transform var(--dur-fast);
@@ -1378,6 +1500,9 @@ export default function Inicio() {
           }
           .ini-hero-greeting h1 { font-size: var(--text-2xl); }
           .ini-hero-greeting p { font-size: var(--font-input); }
+          .ini-hero-drips, .ini-hero-sparkles { display: none; }
+          .ini-hero-doo { width: 72px; height: 72px; }
+          .ini-hero-doo img { width: 92px; height: 92px; }
           .ini-actions { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-resumo { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-alertas, .ini-tudo-ok, .ini-chart-card { max-width: 720px; margin-left: auto; margin-right: auto; }

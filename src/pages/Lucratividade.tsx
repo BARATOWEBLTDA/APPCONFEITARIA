@@ -400,27 +400,15 @@ export default function Lucratividade() {
             )}
           </FinCard>
 
-          {/* CTA cenário A */}
+          {/* CTA cenário A — pedido pra preencher custos */}
           {calc.cenarioIniciante && (
-            <FinCard>
-              <div className="lu-cta-doo">
-                <div className="lu-cta-doo-avatar" aria-hidden="true">
-                  <div className="lu-cta-doo-inner">
-                    <img src="/Sistema/doo.png" alt="" />
-                  </div>
-                </div>
-                <div className="lu-cta-doo-body">
-                  <p className="lu-cta-doo-title">Quer ver seu lucro de verdade?</p>
-                  <p className="lu-cta-doo-desc">
-                    Pra eu te mostrar quanto sobra no fim do mês, preciso saber quanto custa produzir cada produto.
-                    Preencha a ficha técnica e a análise aparece completa aqui.
-                  </p>
-                  <button className="lu-cta-doo-btn" onClick={() => navigate("/produtos")}>
-                    Preencher custos dos produtos
-                  </button>
-                </div>
-              </div>
-            </FinCard>
+            <FinEmpty
+              image="/Sistema/doo.png"
+              title="Quer ver seu lucro de verdade?"
+              description="Pra eu te mostrar quanto sobra no fim do mês, preciso saber quanto custa produzir cada produto. Preencha a ficha técnica e a análise aparece completa aqui."
+              actionLabel="Preencher custos dos produtos"
+              onAction={() => navigate("/produtos")}
+            />
           )}
 
           {/* COMPOSIÇÃO — só no cenário B */}
@@ -655,57 +643,6 @@ export default function Lucratividade() {
 
         .lu-sparkline { margin-top: var(--space-1); }
 
-        .lu-cta-doo {
-          display: flex; align-items: flex-start; gap: var(--space-3);
-        }
-        .lu-cta-doo-avatar {
-          width: 56px; height: 56px;
-          border-radius: 28%;
-          background: #3d1a24;
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-          box-shadow: 0 6px 16px rgba(61, 26, 36, 0.22);
-        }
-        .lu-cta-doo-inner {
-          width: 46px; height: 46px;
-          border-radius: 26%;
-          background: #fff;
-          display: flex; align-items: center; justify-content: center;
-          overflow: hidden;
-        }
-        .lu-cta-doo-inner img {
-          width: 58px; height: 58px;
-          object-fit: cover; object-position: top center;
-        }
-        .lu-cta-doo-body { flex: 1; min-width: 0; }
-        .lu-cta-doo-title {
-          font-size: var(--font-modal-title);
-          font-weight: var(--fw-black);
-          color: var(--text-title);
-          margin: 0 0 6px;
-          letter-spacing: -0.02em;
-          line-height: 1.25;
-        }
-        .lu-cta-doo-desc {
-          font-size: var(--font-helper);
-          color: var(--text-secondary);
-          margin: 0 0 var(--space-3);
-          line-height: 1.4;
-        }
-        .lu-cta-doo-btn {
-          background: #3d1a24;
-          color: #fff;
-          border: none;
-          border-radius: var(--radius-md);
-          padding: 0.7rem 1rem;
-          font-family: inherit;
-          font-size: var(--font-button);
-          font-weight: var(--fw-semibold);
-          cursor: pointer;
-          transition: opacity 0.15s;
-        }
-        .lu-cta-doo-btn:hover { opacity: 0.92; }
-
         .lu-comp { display: flex; flex-direction: column; gap: var(--space-2); }
 
         .lu-top {
@@ -842,11 +779,6 @@ export default function Lucratividade() {
           border-radius: var(--radius-md);
         }
         .lu-equilib-msg strong { color: var(--text-title); font-weight: var(--fw-bold); }
-
-        @media (min-width: 720px) {
-          .lu-cta-doo-avatar { width: 64px; height: 64px; }
-          .lu-cta-doo-inner { width: 54px; height: 54px; }
-        }
       `}</style>
     </div>
   );
