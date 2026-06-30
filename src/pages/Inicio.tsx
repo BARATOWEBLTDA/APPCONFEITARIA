@@ -377,13 +377,8 @@ export default function Inicio() {
 
   return (
     <div className="ini-root">
-      {/* ── Hero wine com Doo, coroinha (PRO), gotas de chocolate e sparkles ── */}
+      {/* ── Hero wine com foto da confeiteira, coroinha (PRO) e sparkles ── */}
       <div className="ini-hero">
-        {/* Decoração: gotas de chocolate escorrendo no topo */}
-        <svg className="ini-hero-drips" viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0 0 L100 0 L100 2 Q92 4.5 86 2 Q78 3.5 72 2 Q64 5 56 2 Q48 3.2 42 2 Q34 5.5 26 2 Q18 3.4 12 2 Q6 4.6 0 2 Z" fill="rgba(0,0,0,0.22)"/>
-        </svg>
-
         {/* Decoração: sparkles dourados */}
         <svg className="ini-hero-sparkles" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true">
           <g fill="#F4D03F" opacity="0.65">
@@ -396,28 +391,12 @@ export default function Inicio() {
           </g>
         </svg>
 
-        {/* Avatar do Doo */}
-        <div className="ini-hero-doo" aria-hidden="true">
-          <img src="/Sistema/doo.png" alt="" />
-        </div>
-
-        {/* Texto da saudação */}
-        <div className="ini-hero-greeting">
-          <h1>
-            <span>{getGreeting()}, {(nome || "bem-vinda").split(" ")[0]}</span>
-            {isPro && (
-              <Crown size={18} weight="fill" className="ini-hero-crown" aria-label="Plano PRO" />
-            )}
-          </h1>
-          <p>{getDailyMessage()}</p>
-        </div>
-
-        {/* Foto de perfil no canto superior direito — preservada */}
+        {/* Foto da confeiteira (esquerda) — agora é também o trigger do menu */}
         <div className="ini-profile-wrapper" ref={menuRef}>
           <button className="ini-profile-btn" onClick={() => setMenuOpen(o => !o)}>
             {profile?.foto_url
               ? <img src={profile.foto_url} alt="Perfil" className="ini-profile-img" />
-              : <div className="ini-profile-placeholder"><User size={20} weight="bold" color="#fff" /></div>
+              : <div className="ini-profile-placeholder"><User size={26} weight="bold" color="#fff" /></div>
             }
           </button>
 
@@ -444,6 +423,17 @@ export default function Inicio() {
               </button>
             </div>
           )}
+        </div>
+
+        {/* Texto da saudação */}
+        <div className="ini-hero-greeting">
+          <h1>
+            <span>{getGreeting()}, {(nome || "bem-vinda").split(" ")[0]}</span>
+            {isPro && (
+              <Crown size={18} weight="fill" className="ini-hero-crown" aria-label="Plano PRO" />
+            )}
+          </h1>
+          <p>{getDailyMessage()}</p>
         </div>
       </div>
 
@@ -785,7 +775,7 @@ export default function Inicio() {
         .ini-aside-desktop { display: none; }
         .ini-aside-mobile { display: block; }
 
-        /* ── Hero wine com Doo, decorações e coroinha ── */
+        /* ── Hero wine com foto da confeiteira, sparkles e coroinha ── */
         .ini-hero {
           background: linear-gradient(135deg, #2a1019, #3d1a24 35%, #4d1f2c 60%, #3d1a24 85%, #2a1019);
           background-size: 300% 300%;
@@ -811,15 +801,6 @@ export default function Inicio() {
           100% { background-position: 0% 50%; }
         }
 
-        /* Gotas de chocolate no topo */
-        .ini-hero-drips {
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          width: 100%;
-          height: calc(18px + env(safe-area-inset-top, 0px));
-          pointer-events: none;
-          z-index: 1;
-        }
         /* Sparkles dourados estáticos */
         .ini-hero-sparkles {
           position: absolute;
@@ -828,24 +809,6 @@ export default function Inicio() {
           height: 100%;
           pointer-events: none;
           z-index: 1;
-        }
-
-        /* Avatar do Doo (esquerda) */
-        .ini-hero-doo {
-          width: 64px; height: 64px;
-          border-radius: 50%;
-          background: #fff;
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-          overflow: hidden;
-          box-shadow: 0 6px 18px rgba(0,0,0,0.28), inset 0 0 0 3px rgba(255,255,255,0.95);
-          position: relative;
-          z-index: 2;
-        }
-        .ini-hero-doo img {
-          width: 82px; height: 82px;
-          object-fit: cover;
-          object-position: top center;
         }
 
         /* Texto da saudação */
@@ -880,22 +843,23 @@ export default function Inicio() {
           line-height: 1.35;
         }
 
-        /* ── Profile button + dropdown menu ── */
+        /* ── Foto de perfil grande à esquerda + dropdown ── */
         .ini-profile-wrapper { position: relative; flex-shrink: 0; z-index: 2; }
         .ini-profile-btn {
-          width: 38px; height: 38px; border-radius: var(--radius-full);
-          border: 2px solid rgba(255,255,255,0.7);
-          background: rgba(255,255,255,0.18);
+          width: 64px; height: 64px; border-radius: var(--radius-full);
+          border: 2.5px solid rgba(255,255,255,0.85);
+          background: rgba(255,255,255,0.15);
           cursor: pointer; padding: 0; overflow: hidden;
           display: flex; align-items: center; justify-content: center;
           transition: border-color var(--dur-fast), transform var(--dur-fast);
+          box-shadow: 0 6px 18px rgba(0,0,0,0.28);
         }
-        .ini-profile-btn:hover { border-color: var(--text-inverse); transform: scale(1.05); }
+        .ini-profile-btn:hover { border-color: var(--text-inverse); transform: scale(1.04); }
         .ini-profile-img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-full); }
         .ini-profile-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
 
         .ini-profile-menu {
-          position: absolute; top: calc(100% + 10px); right: 0;
+          position: absolute; top: calc(100% + 10px); left: 0;
           width: 260px;
           background: var(--bg-card);
           border-radius: var(--radius-lg);
@@ -1500,9 +1464,7 @@ export default function Inicio() {
           }
           .ini-hero-greeting h1 { font-size: var(--text-2xl); }
           .ini-hero-greeting p { font-size: var(--font-input); }
-          .ini-hero-drips, .ini-hero-sparkles { display: none; }
-          .ini-hero-doo { width: 72px; height: 72px; }
-          .ini-hero-doo img { width: 92px; height: 92px; }
+          .ini-hero-sparkles { display: none; }
           .ini-actions { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-resumo { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-alertas, .ini-tudo-ok, .ini-chart-card { max-width: 720px; margin-left: auto; margin-right: auto; }
