@@ -358,6 +358,26 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           }
         }
 
+        /* Card "espião" — só o topo aparece, resto some num gradiente */
+        .ob-ped-card--peek {
+          max-height: 78px;
+          overflow: hidden;
+          position: relative;
+          padding-bottom: 0;
+        }
+        .ob-ped-card-peek-fade {
+          position: absolute;
+          left: 0; right: 0; bottom: 0;
+          height: 50px;
+          background: linear-gradient(
+            to bottom,
+            rgba(255,255,255,0) 0%,
+            rgba(255,255,255,0.85) 60%,
+            rgba(255,255,255,1) 100%
+          );
+          pointer-events: none;
+        }
+
         /* Estrutura interna — espelha .mob-card-* do app */
         .ob-mob-card-topo {
           display: flex;
@@ -634,6 +654,22 @@ function Slide2Pedidos() {
             </div>
           </div>
         ))}
+
+        {/* Card "espião" — só o topo, sumindo num fade pra sugerir mais pedidos */}
+        <div className="ob-ped-card ob-ped-card--peek" style={{ animationDelay: "1.9s" }}>
+          <div className="ob-mob-card-topo">
+            <div className="ob-ped-card-head-row">
+              <span className="ob-ped-card-numero">Pedido #129</span>
+              <span className="ob-ped-card-status" style={{ color: "#7c3aed", background: "#ede9fe" }}>
+                <span className="ob-ped-card-status-dot" style={{ background: "#7c3aed" }} />
+                Em separação
+              </span>
+            </div>
+            <p className="ob-mob-card-cliente">Camila Ribeiro</p>
+            <span className="ob-mob-card-datetime">Hoje · 17:12</span>
+          </div>
+          <div className="ob-ped-card-peek-fade" />
+        </div>
       </div>
     </>
   );
