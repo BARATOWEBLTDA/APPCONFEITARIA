@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CaretRight, CaretLeft, X } from "@phosphor-icons/react";
+import { CaretRight } from "@phosphor-icons/react";
 
 /**
  * Onboarding — Tela cheia, controlado pelo pai (isOpen + onClose).
@@ -39,12 +39,6 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
     }
   };
 
-  const prev = () => {
-    if (slideIdx > 0) setSlideIdx((i) => i - 1);
-  };
-
-  const skip = () => finish();
-
   const finish = () => {
     setSlideIdx(0); // reset pra próxima vez
     onClose();
@@ -52,13 +46,6 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
   return (
     <div className="ob-root" role="dialog" aria-modal="true" aria-label="Boas-vindas ao Doonly">
-      {/* Botão pular (canto sup. direito) — não aparece na última */}
-      {slideIdx < TOTAL_SLIDES - 1 && (
-        <button className="ob-skip" onClick={skip} aria-label="Pular introdução">
-          <X size={18} weight="bold" />
-        </button>
-      )}
-
       {/* Indicador de progresso (bolinhas) */}
       <div className="ob-dots" role="tablist" aria-label="Progresso do onboarding">
         {Array.from({ length: TOTAL_SLIDES }).map((_, i) => (
@@ -86,14 +73,6 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
       {/* Navegação inferior — esconde os botões na última (CTA está na slide) */}
       {slideIdx < TOTAL_SLIDES - 1 && (
         <div className="ob-nav">
-          <button
-            className="ob-nav-btn ob-nav-btn--back"
-            onClick={prev}
-            disabled={slideIdx === 0}
-            aria-label="Voltar"
-          >
-            <CaretLeft size={18} weight="bold" />
-          </button>
           <button className="ob-nav-btn ob-nav-btn--next" onClick={next}>
             {slideIdx === 0 ? "Começar" : "Próximo"}
             <CaretRight size={18} weight="bold" />
@@ -127,25 +106,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
 
         /* ── Botão pular (X canto direito) ── */
-        .ob-skip {
-          position: absolute;
-          top: calc(1rem + env(safe-area-inset-top, 0px));
-          right: 1rem;
-          width: 36px; height: 36px;
-          border-radius: 999px;
-          background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(255,255,255,0.15);
-          color: rgba(255,255,255,0.8);
-          cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          backdrop-filter: blur(8px);
-          transition: background 0.2s, color 0.2s;
-          z-index: 2;
-        }
-        .ob-skip:hover, .ob-skip:active {
-          background: rgba(255,255,255,0.2);
-          color: #fff;
-        }
+        /* (ob-skip removido) */
 
         /* ── Dots de progresso ── */
         .ob-dots {
@@ -198,33 +159,32 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           font-weight: 700;
           cursor: pointer;
           border: none;
-          border-radius: 999px;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 6px;
-          transition: opacity 0.2s, transform 0.15s, background 0.2s;
+          transition: transform 0.15s;
         }
         .ob-nav-btn:active { transform: scale(0.97); }
-        .ob-nav-btn--back {
-          width: 48px; height: 48px;
-          background: rgba(255,255,255,0.1);
-          color: rgba(255,255,255,0.85);
-          border: 1px solid rgba(255,255,255,0.15);
-          flex-shrink: 0;
-        }
-        .ob-nav-btn--back:disabled {
-          opacity: 0.3;
-          cursor: not-allowed;
-        }
         .ob-nav-btn--next {
           flex: 1;
-          height: 48px;
+          height: 52px;
           padding: 0 1.5rem;
-          background: #F4D03F;
           color: #2a1019;
+          border-radius: 14px;
+          background: linear-gradient(110deg, #F4D03F 0%, #fce785 25%, #F4D03F 50%, #e6b800 75%, #F4D03F 100%);
+          background-size: 250% 100%;
+          animation: obBtnShine 4s linear infinite;
+          box-shadow: 0 6px 20px rgba(244, 208, 63, 0.35), inset 0 1px 0 rgba(255,255,255,0.4);
+          letter-spacing: 0.01em;
         }
-        .ob-nav-btn--next:hover { background: #f8dc6c; }
+        @keyframes obBtnShine {
+          0%   { background-position: 0% 50%; }
+          100% { background-position: 250% 50%; }
+        }
+        .ob-nav-btn--next:hover {
+          box-shadow: 0 8px 28px rgba(244, 208, 63, 0.5), inset 0 1px 0 rgba(255,255,255,0.4);
+        }
 
         /* ── Slides: títulos e textos comuns ── */
         .ob-slide-title {
