@@ -537,7 +537,7 @@ const PEDIDOS_DEMO = [
     produto: "Bolo Dois Amores",
     qtd: "1 unidade · 2kg",
     valor: "R$ 119,00",
-    imagem: "/tuturial/bolo.jpeg",
+    imagem: "/tuturial/bolo.jpg",
     emoji: "🎂",
     pagamento: "PIX",
     pagamentoStatus: "Pago",
