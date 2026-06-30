@@ -74,7 +74,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
       {/* Conteúdo da slide */}
       <div className="ob-content" key={slideIdx}>
         {slideIdx === 0 && <Slide1Welcome />}
-        {slideIdx === 1 && <SlidePlaceholder title="Seus pedidos ficam organizados" subtitle="Todos os seus pedidos ficam organizados em um único lugar." emoji="📋" />}
+        {slideIdx === 1 && <Slide2Pedidos />}
         {slideIdx === 2 && <SlidePlaceholder title="Cadastre ingredientes em segundos" subtitle="Cadastre ingredientes rapidamente sem perder tempo." emoji="🥚" />}
         {slideIdx === 3 && <SlidePlaceholder title="Nunca esqueça uma cliente" subtitle="Cadastre clientes e envie promoções na época do aniversário." emoji="🎂" />}
         {slideIdx === 4 && <SlidePlaceholder title="Descubra o preço certo" subtitle="O Doonly calcula tudo — custo, lucro e margem ideal." emoji="💰" />}
@@ -323,6 +323,95 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
         .ob-final-cta:active { transform: translateY(0); }
 
+        /* ── Slide 2: Pedidos cards animados ── */
+        .ob-pedidos-stack {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          width: 100%;
+          max-width: 360px;
+          margin-top: 1.5rem;
+          perspective: 800px;
+        }
+        .ob-pedido-card {
+          display: flex;
+          align-items: center;
+          gap: 0.85rem;
+          padding: 0.9rem 1rem;
+          background: #fff;
+          color: #2a1019;
+          border-radius: 14px;
+          box-shadow: 0 12px 30px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
+          opacity: 0;
+          transform: translateY(-60px) rotateX(35deg) scale(0.9);
+          animation: obPedidoDrop 0.65s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+          transform-origin: center top;
+        }
+        @keyframes obPedidoDrop {
+          0% {
+            opacity: 0;
+            transform: translateY(-60px) rotateX(35deg) scale(0.9);
+          }
+          60% {
+            opacity: 1;
+            transform: translateY(6px) rotateX(-3deg) scale(1.02);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) rotateX(0) scale(1);
+          }
+        }
+        .ob-pedido-emoji {
+          width: 44px; height: 44px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, #fff1f7, #ecc2d0);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 1.5rem;
+          flex-shrink: 0;
+        }
+        .ob-pedido-info {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          text-align: left;
+        }
+        .ob-pedido-badge {
+          font-size: 0.62rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          color: #15803d;
+          background: #dcfce7;
+          padding: 2px 8px;
+          border-radius: 999px;
+          align-self: flex-start;
+          margin-bottom: 2px;
+        }
+        .ob-pedido-titulo {
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: #2a1019;
+          line-height: 1.2;
+        }
+        .ob-pedido-detalhe {
+          font-size: 0.75rem;
+          color: #6E3548;
+          line-height: 1.3;
+        }
+        .ob-pedido-valor {
+          font-size: 1rem;
+          font-weight: 800;
+          color: #6E3548;
+          flex-shrink: 0;
+          letter-spacing: -0.01em;
+        }
+        @keyframes obFadeUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+
         /* ── Desktop: aumenta tipografia e centraliza melhor ── */
         @media (min-width: 768px) {
           .ob-content { padding: 2rem; }
@@ -366,6 +455,66 @@ function SlidePlaceholder({ title, subtitle, emoji }: { title: string; subtitle:
       <h2 className="ob-slide-title">{title}</h2>
       <p className="ob-slide-text">{subtitle}</p>
       <span className="ob-placeholder-note">animação chegando em breve</span>
+    </>
+  );
+}
+
+/* ─── Slide 2: Pedidos organizados ─────────────────
+   3 cards de pedido caem em sequência, com badge "Novo".
+   Cada card animado com delay escalonado. */
+const PEDIDOS_DEMO = [
+  {
+    id: 1,
+    badge: "Novo",
+    titulo: "Bolo Red Velvet",
+    detalhe: "Entrega sábado",
+    valor: "R$ 280",
+    emoji: "🎂",
+  },
+  {
+    id: 2,
+    badge: "Novo",
+    titulo: "Brigadeiro Gourmet",
+    detalhe: "50 unidades",
+    valor: "R$ 90",
+    emoji: "🍫",
+  },
+  {
+    id: 3,
+    badge: "Novo",
+    titulo: "Naked Cake",
+    detalhe: "Sexta-feira",
+    valor: "R$ 450",
+    emoji: "🍰",
+  },
+];
+
+function Slide2Pedidos() {
+  return (
+    <>
+      <h2 className="ob-slide-title">Seus pedidos<br/>ficam organizados</h2>
+
+      <div className="ob-pedidos-stack">
+        {PEDIDOS_DEMO.map((p, idx) => (
+          <div
+            key={p.id}
+            className="ob-pedido-card"
+            style={{ animationDelay: `${0.4 + idx * 0.7}s` }}
+          >
+            <div className="ob-pedido-emoji">{p.emoji}</div>
+            <div className="ob-pedido-info">
+              <span className="ob-pedido-badge">{p.badge}</span>
+              <span className="ob-pedido-titulo">{p.titulo}</span>
+              <span className="ob-pedido-detalhe">{p.detalhe}</span>
+            </div>
+            <span className="ob-pedido-valor">{p.valor}</span>
+          </div>
+        ))}
+      </div>
+
+      <p className="ob-slide-text" style={{ marginTop: "1.5rem", animation: "obFadeUp 0.6s ease 2.6s both" }}>
+        Todos os seus pedidos ficam organizados em um único lugar.
+      </p>
     </>
   );
 }
