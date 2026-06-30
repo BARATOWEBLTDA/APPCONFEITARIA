@@ -518,7 +518,7 @@ function SlidePlaceholder({ title, subtitle, emoji }: { title: string; subtitle:
 
 /* ─── Slide 2: Pedidos organizados ─────────────────
    Replica o card real mobile (.ped-card / .mob-card-*) do app,
-   com 3 pedidos caindo em sequência. */
+   com 3 pedidos caindo em sequência.  */
 const PEDIDOS_DEMO = [
   {
     id: 1,
