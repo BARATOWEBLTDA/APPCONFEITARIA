@@ -522,7 +522,7 @@ function Slide1Welcome() {
   return (
     <>
       <img
-        src="/tuturial/coroa.png"
+        src="/Sistema/TUTORIAL.png"
         alt=""
         className="ob-welcome-coroa"
         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
