@@ -244,26 +244,61 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           max-width: 32ch;
         }
 
-        /* ── Slide 1 (boas-vindas) — visual especial ── */
-        .ob-welcome-logo {
-          font-size: 4rem;
+        /* ── Slide 1 (boas-vindas) — coroa + logo ── */
+        .ob-welcome-coroa {
+          width: 110px;
+          height: auto;
           margin-bottom: 1.5rem;
-          filter: drop-shadow(0 4px 16px rgba(244,208,63,0.3));
-          animation: obFloat 3s ease-in-out infinite;
+          filter: drop-shadow(0 8px 24px rgba(244,208,63,0.45));
+          opacity: 0;
+          transform: translateY(-200px) rotate(-20deg) scale(0.4);
+          animation:
+            obCoroaCai 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards,
+            obCoroaFloat 4s ease-in-out 1.4s infinite;
         }
-        @keyframes obFloat {
-          0%, 100% { transform: translateY(0); }
-          50%      { transform: translateY(-8px); }
+        @keyframes obCoroaCai {
+          0% {
+            opacity: 0;
+            transform: translateY(-200px) rotate(-20deg) scale(0.4);
+          }
+          60% {
+            opacity: 1;
+            transform: translateY(12px) rotate(8deg) scale(1.05);
+          }
+          80% {
+            transform: translateY(-4px) rotate(-3deg) scale(0.98);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) rotate(0) scale(1);
+          }
         }
-        .ob-welcome-brand {
-          font-size: 2.2rem;
-          font-weight: 800;
-          letter-spacing: -0.03em;
-          margin: 0 0 1rem;
-          background: linear-gradient(135deg, #fff 0%, #F4D03F 100%);
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
+        @keyframes obCoroaFloat {
+          0%, 100% { transform: translateY(0) rotate(0); }
+          50%      { transform: translateY(-8px) rotate(2deg); }
+        }
+        .ob-welcome-logo-img {
+          width: 200px;
+          max-width: 70vw;
+          height: auto;
+          margin-bottom: 1.25rem;
+          opacity: 0;
+          transform: translateY(15px);
+          animation: obLogoFadeIn 0.7s ease 1s both;
+          filter: drop-shadow(0 4px 16px rgba(0,0,0,0.3));
+        }
+        @keyframes obLogoFadeIn {
+          from { opacity: 0; transform: translateY(15px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .ob-welcome-text {
+          font-size: 1.05rem;
+          line-height: 1.55;
+          color: rgba(255,255,255,0.88);
+          margin: 0;
+          max-width: 30ch;
+          opacity: 0;
+          animation: obFadeUp 0.7s ease 1.5s both;
         }
 
         /* ── Placeholder visual (etapa 1) ── */
@@ -289,6 +324,10 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           font-size: 3rem;
           margin-bottom: 1rem;
           animation: obFloat 3s ease-in-out infinite;
+        }
+        @keyframes obFloat {
+          0%, 100% { transform: translateY(0); }
+          50%      { transform: translateY(-8px); }
         }
         .ob-final-title {
           font-size: 2rem;
@@ -479,8 +518,9 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           .ob-content { padding: 2rem; }
           .ob-slide-title { font-size: 2.2rem; }
           .ob-slide-text { font-size: 1.1rem; }
-          .ob-welcome-brand { font-size: 3rem; }
-          .ob-welcome-logo { font-size: 5rem; }
+          .ob-welcome-coroa { width: 150px; }
+          .ob-welcome-logo-img { width: 260px; }
+          .ob-welcome-text { font-size: 1.2rem; max-width: 36ch; }
           .ob-final-title { font-size: 2.6rem; }
           .ob-final-sub { font-size: 1.2rem; }
           .ob-placeholder-emoji { font-size: 6rem; }
@@ -500,10 +540,20 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 function Slide1Welcome() {
   return (
     <>
-      <div className="ob-welcome-logo">✨</div>
-      <h1 className="ob-welcome-brand">Doonly</h1>
-      <p className="ob-slide-text" style={{ fontSize: "1.05rem" }}>
-        Em menos de 1 minuto você vai descobrir como milhares de confeiteiras organizam seus pedidos e calculam seus preços.
+      <img
+        src="/tuturial/coroa.png"
+        alt=""
+        className="ob-welcome-coroa"
+        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+      />
+      <img
+        src="/tuturial/logotutorial.png"
+        alt="Doonly"
+        className="ob-welcome-logo-img"
+        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+      />
+      <p className="ob-welcome-text">
+        Organize seus pedidos, calcule seus preços e acompanhe sua confeitaria com facilidade.
       </p>
     </>
   );
