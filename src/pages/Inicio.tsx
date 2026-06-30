@@ -842,7 +842,7 @@ export default function Inicio() {
           display: flex;
           flex-direction: column;
           gap: var(--space-5);
-          margin-top: var(--gap-section); /* 24px — respiro após o hero (--gap-section) */
+          margin-top: 2.5rem; /* 40px fixo — respiro após o hero (mobile) */
         }
         .ini-main {
           display: flex;
