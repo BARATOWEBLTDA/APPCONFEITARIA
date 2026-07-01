@@ -583,6 +583,11 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           font-size: 0.85rem;
           font-weight: 800;
           color: #431524;
+          font-variant-numeric: tabular-nums;
+          min-width: 70px;
+          text-align: right;
+          font-feature-settings: "tnum";
+          white-space: nowrap;
         }
         .ob-ing-cad-check {
           width: 22px; height: 22px;
@@ -1026,8 +1031,8 @@ const INGREDIENTES_DEMO: Ingrediente[] = [
     imagem: "/tutorial/nutella.webp",
   },
   {
-    nome: "Forminha Brigadeiro",
-    marca: "100 unidades",
+    nome: "Forminhas para Brigadeiro",
+    marca: "Flopel",
     preco: "4,14",
     peso: "100un",
     emoji: "🧁",
