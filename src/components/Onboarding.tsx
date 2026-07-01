@@ -1309,7 +1309,7 @@ const PEDIDOS_DEMO = [
     pagamentoStatus: "Pago Parcial",
     pagamentoColor: "#d97706",
     pagamentoBg: "#FAEEDA",
-    entregaIcon: "📍",
+    entregaIcon: "/google-maps.png",
     entregaLabel: "Entrega",
     dataLabel: "", // preenchido em runtime (2 dias depois)
   },
@@ -1466,7 +1466,10 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
                       </span>
                     </div>
                     <span style={{ fontSize: "0.7rem", color: "#6E3548", display: "flex", alignItems: "center", gap: 4 }}>
-                      {p.entregaIcon} {p.entregaLabel}
+                      {p.entregaIcon.startsWith("/")
+                        ? <img src={p.entregaIcon} alt="" style={{ width: 12, height: 12, objectFit: "contain" }} />
+                        : p.entregaIcon}
+                      {p.entregaLabel}
                       <span style={{ color: "#431524", fontWeight: 600 }}>· {p.dataLabel}</span>
                     </span>
                   </div>
