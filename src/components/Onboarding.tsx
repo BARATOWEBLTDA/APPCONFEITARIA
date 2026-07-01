@@ -28,11 +28,13 @@ const TOTAL_SLIDES = 8;
 
 export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const [slideIdx, setSlideIdx] = useState(0);
+  const [slideReady, setSlideReady] = useState(false);
 
   if (!isOpen) return null;
 
   const next = () => {
     if (slideIdx < TOTAL_SLIDES - 1) {
+      setSlideReady(false);
       setSlideIdx((i) => i + 1);
     } else {
       finish();
@@ -42,8 +44,11 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const finish = () => {
     const alcancada = slideIdx;
     setSlideIdx(0); // reset pra próxima vez
+    setSlideReady(false);
     onClose(alcancada);
   };
+
+  const handleSlideReady = () => setSlideReady(true);
 
   return (
     <div className="ob-root" role="dialog" aria-modal="true" aria-label="Boas-vindas ao Doonly">
@@ -61,18 +66,18 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
       {/* Conteúdo da slide */}
       <div className="ob-content" key={slideIdx}>
-        {slideIdx === 0 && <Slide1Welcome />}
-        {slideIdx === 1 && <Slide2Pedidos />}
-        {slideIdx === 2 && <Slide3Ingredientes />}
-        {slideIdx === 3 && <Slide4Precificacao />}
-        {slideIdx === 4 && <SlidePlaceholder title="Descubra o preço certo" subtitle="O Doonly calcula tudo — custo, lucro e margem ideal." emoji="💰" />}
-        {slideIdx === 5 && <SlidePlaceholder title="Sua receita já calcula tudo" subtitle="Ingredientes, embalagem, energia, lucro. Tudo preenchendo sozinho." emoji="📝" />}
-        {slideIdx === 6 && <SlidePlaceholder title="Seu negócio organizado" subtitle="Enquanto você faz bolos, o Doonly cuida da gestão." emoji="📊" />}
+        {slideIdx === 0 && <Slide1Welcome onReady={handleSlideReady} />}
+        {slideIdx === 1 && <Slide2Pedidos onReady={handleSlideReady} />}
+        {slideIdx === 2 && <Slide3Ingredientes onReady={handleSlideReady} />}
+        {slideIdx === 3 && <Slide4Precificacao onReady={handleSlideReady} />}
+        {slideIdx === 4 && <SlidePlaceholder title="Descubra o preço certo" subtitle="O Doonly calcula tudo — custo, lucro e margem ideal." emoji="💰" onReady={handleSlideReady} />}
+        {slideIdx === 5 && <SlidePlaceholder title="Sua receita já calcula tudo" subtitle="Ingredientes, embalagem, energia, lucro. Tudo preenchendo sozinho." emoji="📝" onReady={handleSlideReady} />}
+        {slideIdx === 6 && <SlidePlaceholder title="Seu negócio organizado" subtitle="Enquanto você faz bolos, o Doonly cuida da gestão." emoji="📊" onReady={handleSlideReady} />}
         {slideIdx === 7 && <SlideFinal onStart={finish} />}
       </div>
 
       {/* Navegação inferior — esconde os botões na última (CTA está na slide) */}
-      {slideIdx < TOTAL_SLIDES - 1 && (
+      {slideIdx < TOTAL_SLIDES - 1 && slideReady && (
         <div className="ob-nav">
           <button className="ob-nav-btn ob-nav-btn--next" onClick={next}>
             {slideIdx === 0 ? "Começar" : "Próximo"}
@@ -1048,13 +1053,13 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         /* Resultado */
         .ob-prec-resultado {
           margin-top: 0.55rem;
-          padding: 0.85rem 0.75rem;
+          padding: 0.65rem 0.75rem;
           border-radius: 12px;
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
-          gap: 0.35rem;
+          gap: 0.3rem;
           animation: obResultadoIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
         }
         @keyframes obResultadoIn {
@@ -1069,30 +1074,6 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           background: #f0fdf4;
           border: 1.5px solid #15803d;
         }
-        .ob-prec-resultado-icon {
-          width: 36px; height: 36px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.1rem;
-          flex-shrink: 0;
-        }
-        .ob-prec-resultado--prejuizo .ob-prec-resultado-icon {
-          background: #fee2e2;
-        }
-        .ob-prec-resultado--lucro .ob-prec-resultado-icon {
-          background: #dcfce7;
-          color: #15803d;
-          font-weight: 900;
-          font-size: 1.3rem;
-        }
-        .ob-prec-resultado-content {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 1px;
-        }
         .ob-prec-resultado-label {
           font-size: 0.68rem;
           font-weight: 700;
@@ -1101,8 +1082,14 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
         .ob-prec-resultado--prejuizo .ob-prec-resultado-label { color: #dc2626; }
         .ob-prec-resultado--lucro .ob-prec-resultado-label { color: #15803d; }
+
+        .ob-prec-resultado-linha {
+          display: flex;
+          align-items: center;
+          gap: 0.7rem;
+        }
         .ob-prec-resultado-valor {
-          font-size: 1.75rem;
+          font-size: 1.5rem;
           font-weight: 800;
           letter-spacing: -0.02em;
           font-variant-numeric: tabular-nums;
@@ -1110,11 +1097,26 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
         .ob-prec-resultado--prejuizo .ob-prec-resultado-valor { color: #dc2626; }
         .ob-prec-resultado--lucro .ob-prec-resultado-valor { color: #15803d; }
+        .ob-prec-resultado-divider {
+          width: 1px;
+          height: 24px;
+          background: currentColor;
+          opacity: 0.35;
+        }
+        .ob-prec-resultado--prejuizo .ob-prec-resultado-divider { color: #dc2626; }
+        .ob-prec-resultado--lucro .ob-prec-resultado-divider { color: #15803d; }
         .ob-prec-resultado-margem {
-          font-size: 0.72rem;
+          font-size: 1rem;
+          font-weight: 700;
+          font-variant-numeric: tabular-nums;
+        }
+        .ob-prec-resultado--prejuizo .ob-prec-resultado-margem { color: #dc2626; }
+        .ob-prec-resultado--lucro .ob-prec-resultado-margem { color: #15803d; }
+        .ob-prec-resultado-ideal {
+          font-size: 0.7rem;
           font-weight: 600;
           color: #6E3548;
-          margin-top: 2px;
+          margin-top: 1px;
         }
 
         /* ── Desktop: aumenta tipografia e centraliza melhor ── */
@@ -1141,7 +1143,11 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 }
 
 /* ─── Slide 1: Boas-vindas ──────────────────────── */
-function Slide1Welcome() {
+function Slide1Welcome({ onReady }: { onReady: () => void }) {
+  useEffect(() => {
+    const t = window.setTimeout(onReady, 2000); // após texto aparecer
+    return () => clearTimeout(t);
+  }, [onReady]);
   return (
     <>
       <img
@@ -1161,7 +1167,11 @@ function Slide1Welcome() {
 }
 
 /* ─── Slide Placeholder (será substituído nas próximas etapas) ─── */
-function SlidePlaceholder({ title, subtitle, emoji }: { title: string; subtitle: string; emoji: string }) {
+function SlidePlaceholder({ title, subtitle, emoji, onReady }: { title: string; subtitle: string; emoji: string; onReady: () => void }) {
+  useEffect(() => {
+    const t = window.setTimeout(onReady, 500);
+    return () => clearTimeout(t);
+  }, [onReady]);
   return (
     <>
       <div className="ob-placeholder-emoji">{emoji}</div>
@@ -1348,7 +1358,7 @@ const PEDIDOS_DEMO = [
   },
 ];
 
-function Slide2Pedidos() {
+function Slide2Pedidos({ onReady }: { onReady: () => void }) {
   // Índice do "próximo pedido a entrar" — começa em 0 e vai até 8 (para no final)
   const [proximoIdx, setProximoIdx] = useState(0);
   // Lista visível na tela (máx 2 cards principais + 1 peek)
@@ -1367,15 +1377,17 @@ function Slide2Pedidos() {
       timers.push(window.setTimeout(() => {
         setVisiveis((prev) => {
           const next = [PEDIDOS_DEMO[i], ...prev];
-          // Mantém no máximo 3 (2 visíveis + peek)
           return next.slice(0, 3);
         });
         setProximoIdx(i + 1);
       }, 300 + i * 1400));
     }
 
+    // Marca pronto depois do último
+    timers.push(window.setTimeout(onReady, 300 + PEDIDOS_DEMO.length * 1400 + 500));
+
     return () => timers.forEach((t) => clearTimeout(t));
-  }, []);
+  }, [onReady]);
 
   return (
     <>
@@ -1531,7 +1543,7 @@ const INGREDIENTES_DEMO: Ingrediente[] = [
 // (Extras removidos — agora usamos só os 5 ingredientes reais da receita)
 const INGREDIENTES_EXTRAS: Ingrediente[] = [];
 
-function Slide3Ingredientes() {
+function Slide3Ingredientes({ onReady }: { onReady: () => void }) {
   const [ingredienteIdx, setIngredienteIdx] = useState(0);
   const [step, setStep] = useState(0);
   // step: 0=vazio, 1=digitando nome, 2=nome ok, 3=digitando marca, 4=marca ok,
@@ -1624,7 +1636,10 @@ function Slide3Ingredientes() {
             window.setTimeout(() => {
               setCadastrados((prev) => [...prev, extra]);
               if (i === INGREDIENTES_DEMO.slice(3).length - 1) {
-                window.setTimeout(() => setTerminou(true), 600);
+                window.setTimeout(() => {
+                  setTerminou(true);
+                  onReady();
+                }, 600);
               }
             }, 300 + i * 350);
           });
@@ -1761,7 +1776,7 @@ const CUSTO_TOTAL = 66.23; // 40 brigadeiros com custos invisíveis
 const CUSTO_POR_CAIXA = 6.62; // caixa com 4un
 const PRECOS_TESTE = ["8,00", "15,00"];
 
-function Slide4Precificacao() {
+function Slide4Precificacao({ onReady }: { onReady: () => void }) {
   const [precoTyped, setPrecoTyped] = useState("");
   const [rodadaIdx, setRodadaIdx] = useState(-1); // -1 = ainda mostrando custos, 0 = R$ 6, 1 = R$ 12
   const [mostrandoResultado, setMostrandoResultado] = useState(false);
@@ -1818,10 +1833,13 @@ function Slide4Precificacao() {
       timers.push(window.setTimeout(() => {
         setRodadaIdx(1);
       }, digitEndTime + 3800));
+    } else {
+      // Rodada 2 (lucro) — libera botão depois do resultado
+      timers.push(window.setTimeout(onReady, digitEndTime + 1500));
     }
 
     return () => timers.forEach((t) => clearTimeout(t));
-  }, [rodadaIdx]);
+  }, [rodadaIdx, onReady]);
 
   // Cálculos
   const precoNum = parseFloat(precoTyped.replace(",", ".")) || 0;
@@ -1902,20 +1920,19 @@ function Slide4Precificacao() {
         {/* Resultado */}
         {mostrandoResultado && (
           <div className={`ob-prec-resultado ${isPrejuizo ? "ob-prec-resultado--prejuizo" : "ob-prec-resultado--lucro"}`} key={rodadaIdx}>
-            {isPrejuizo && (
-              <div className="ob-prec-resultado-icon">⚠️</div>
-            )}
-            <div className="ob-prec-resultado-content">
-              <span className="ob-prec-resultado-label">
-                {isPrejuizo ? "Margem apertada" : "Lucro por caixa"}
-              </span>
+            <span className="ob-prec-resultado-label">
+              {isPrejuizo ? "Margem apertada" : "Lucro por caixa"}
+            </span>
+            <div className="ob-prec-resultado-linha">
               <span className="ob-prec-resultado-valor">
                 R$ {lucro.toFixed(2).replace(".", ",")}
               </span>
+              <span className="ob-prec-resultado-divider" />
               <span className="ob-prec-resultado-margem">
-                Margem: {margem.toFixed(0)}% {!isPrejuizo && "— ideal!"}
+                {margem.toFixed(0)}% margem
               </span>
             </div>
+            {!isPrejuizo && <span className="ob-prec-resultado-ideal">Margem ideal!</span>}
           </div>
         )}
       </div>
