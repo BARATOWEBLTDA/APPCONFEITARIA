@@ -30,6 +30,8 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const [slideIdx, setSlideIdx] = useState(0);
   const [slideReady, setSlideReady] = useState(false);
 
+  const handleSlideReady = useCallback(() => setSlideReady(true), []);
+
   if (!isOpen) return null;
 
   const next = () => {
@@ -47,8 +49,6 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
     setSlideReady(false);
     onClose(alcancada);
   };
-
-  const handleSlideReady = useCallback(() => setSlideReady(true), []);
 
   return (
     <div className="ob-root" role="dialog" aria-modal="true" aria-label="Boas-vindas ao Doonly">
