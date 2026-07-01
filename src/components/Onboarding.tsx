@@ -512,6 +512,21 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
+          position: relative;
+        }
+        /* Fade suave nas bordas quando muitos cards se acumulam */
+        .ob-ing-wrap::after {
+          content: "";
+          position: absolute;
+          left: 0; right: 0; bottom: 0;
+          height: 30px;
+          background: linear-gradient(to bottom, transparent, rgba(42,16,25,0.95));
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.5s;
+        }
+        .ob-ing-wrap.ob-ing-wrap--full::after {
+          opacity: 1;
         }
 
         /* Card já cadastrado (compacto, verde de check) */
@@ -991,6 +1006,17 @@ const INGREDIENTES_DEMO: Ingrediente[] = [
   },
 ];
 
+// Ingredientes "extras" que surgem automaticamente depois dos 2 principais,
+// pra dar a sensação de que a despensa está enchendo sozinha.
+const INGREDIENTES_EXTRAS: Ingrediente[] = [
+  { nome: "Farinha de Trigo", marca: "Dona Benta · 1kg", preco: "5,90", peso: "1kg", emoji: "🌾", bg: "#fef9e7" },
+  { nome: "Ovos Brancos", marca: "Katayama · 12un", preco: "12,00", peso: "12un", emoji: "🥚", bg: "#fff8e1" },
+  { nome: "Açúcar Refinado", marca: "União · 1kg", preco: "4,50", peso: "1kg", emoji: "🍬", bg: "#f5f5f5" },
+  { nome: "Manteiga sem Sal", marca: "Aviação · 200g", preco: "18,90", peso: "200g", emoji: "🧈", bg: "#fff8e1" },
+  { nome: "Chocolate em Pó", marca: "Nestlé · 200g", preco: "14,50", peso: "200g", emoji: "🍫", bg: "#efebe9" },
+  { nome: "Fermento em Pó", marca: "Royal · 100g", preco: "6,90", peso: "100g", emoji: "🧂", bg: "#f5f5f5" },
+];
+
 function Slide3Ingredientes() {
   const [ingredienteIdx, setIngredienteIdx] = useState(0);
   const [step, setStep] = useState(0);
@@ -1073,11 +1099,20 @@ function Slide3Ingredientes() {
       }, precoEndTime + 1200)
     );
 
-    // Etapa 8: próximo ingrediente (ou parar)
+    // Etapa 8: próximo ingrediente (ou começar a mostrar os extras)
     if (ingredienteIdx < INGREDIENTES_DEMO.length - 1) {
       timers.push(
         window.setTimeout(() => setIngredienteIdx((i) => i + 1), precoEndTime + 2200)
       );
+    } else {
+      // Terminou os principais → começa a "chover" ingredientes extras
+      INGREDIENTES_EXTRAS.forEach((extra, i) => {
+        timers.push(
+          window.setTimeout(() => {
+            setCadastrados((prev) => [...prev, extra]);
+          }, precoEndTime + 2000 + i * 500)
+        );
+      });
     }
 
     return () => timers.forEach((t) => clearTimeout(t));
@@ -1085,12 +1120,16 @@ function Slide3Ingredientes() {
 
   const showCursor = (n: number) => step === n;
 
+  // Mostra só os últimos 5 cards pra não overflow — os anteriores somem em fade
+  const cardsVisiveis = cadastrados.slice(-5);
+  const wrapFull = cadastrados.length >= 4;
+
   return (
     <>
-      <div className="ob-ing-wrap">
+      <div className={`ob-ing-wrap ${wrapFull ? "ob-ing-wrap--full" : ""}`}>
         {/* Cards já cadastrados (aparecem em cima, empilhando) */}
-        {cadastrados.map((c, i) => (
-          <div key={i} className="ob-ing-cad-card">
+        {cardsVisiveis.map((c, i) => (
+          <div key={`${cadastrados.length - cardsVisiveis.length + i}`} className="ob-ing-cad-card">
             <div className="ob-ing-cad-img" style={{ background: c.bg }}>
               {c.imagem
                 ? <img src={c.imagem} alt={c.nome} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
