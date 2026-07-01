@@ -1231,10 +1231,10 @@ const PEDIDOS_DEMO = [
   {
     id: 4,
     numero: "124",
-    statusLabel: "Em produção",
-    statusColor: "#d97706",
-    statusBg: "#FAEEDA",
-    statusDot: "#d97706",
+    statusLabel: "Finalizado",
+    statusColor: "#15803d",
+    statusBg: "#dcfce7",
+    statusDot: "#15803d",
     cliente: "Patrícia Rocha",
     datetime: "Hoje · 10:48",
     produto: "Bolo Piscina",
@@ -1273,35 +1273,36 @@ const PEDIDOS_DEMO = [
   {
     id: 6,
     numero: "122",
-    statusLabel: "Confirmado",
-    statusColor: "#7c3aed",
-    statusBg: "#ede9fe",
-    statusDot: "#7c3aed",
+    statusLabel: "Retirada",
+    statusColor: "#15803d",
+    statusBg: "#dcfce7",
+    statusDot: "#15803d",
     cliente: "Camila Ribeiro",
     datetime: "Ontem · 16:10",
-    produto: "Torta Holandesa",
-    qtd: "1 unidade · grande",
-    valor: "R$ 135,00",
-    emoji: "🥧",
+    produto: "1 Cento de Salgadinhos",
+    qtd: "Misto",
+    valor: "R$ 67,90",
+    imagem: "/tutorial/salgadinhos.jpg",
+    emoji: "🥟",
     pagamento: "PIX",
     pagamentoStatus: "Pago",
     pagamentoColor: "#16a34a",
     pagamentoBg: "#dcfce7",
-    entregaIcon: "📍",
-    entregaLabel: "Entrega",
-    dataLabel: "Domingo",
+    entregaIcon: "📌",
+    entregaLabel: "Retirada",
+    dataLabel: "", // preenchido em runtime (1 dia antes)
   },
   {
     id: 1,
     numero: "97",
-    statusLabel: "Novo",
-    statusColor: "#1d4ed8",
-    statusBg: "#dbeafe",
-    statusDot: "#1d4ed8",
+    statusLabel: "Em Produção",
+    statusColor: "#d97706",
+    statusBg: "#FAEEDA",
+    statusDot: "#d97706",
     cliente: "Larissa Ferreira",
     datetime: "", // preenchido em runtime (é o pedido mais novo)
     produto: "Bolo Dois Amores",
-    qtd: "1 unidade",
+    qtd: "2kg · Retangular",
     valor: "R$ 119,90",
     imagem: "/tutorial/doisamores.jpg",
     emoji: "",
@@ -1367,17 +1368,28 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
   // Trio de pedidos para a animação. Larissa é o mais novo, entra por último e fica no topo.
   const pedidos = useMemo(() => {
     const now = new Date();
-    const hh = String(now.getHours()).padStart(2, "0");
-    const mm = String(now.getMinutes()).padStart(2, "0");
     const diasSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-    const entrega = new Date(now);
-    entrega.setDate(entrega.getDate() + 2);
-    const diaEntrega = diasSemana[entrega.getDay()];
+
+    // Larissa: hora aleatória entre 08h e 19h
+    const randomHour = 8 + Math.floor(Math.random() * 12); // 8..19
+    const randomMin = Math.floor(Math.random() * 60);
+    const hh = String(randomHour).padStart(2, "0");
+    const mm = String(randomMin).padStart(2, "0");
+
+    // Entrega Larissa: 2 dias depois de hoje
+    const entregaLarissa = new Date(now);
+    entregaLarissa.setDate(entregaLarissa.getDate() + 2);
+    const diaEntregaLarissa = diasSemana[entregaLarissa.getDay()];
+
+    // Retirada Camila: 1 dia antes de hoje
+    const retiradaCamila = new Date(now);
+    retiradaCamila.setDate(retiradaCamila.getDate() - 1);
+    const diaRetiradaCamila = diasSemana[retiradaCamila.getDay()];
 
     return [
-      PEDIDOS_DEMO[2], // Patrícia — Em produção
-      PEDIDOS_DEMO[4], // Camila — Confirmado
-      { ...PEDIDOS_DEMO[5], datetime: `Hoje · ${hh}:${mm}`, dataLabel: diaEntrega }, // Larissa — Novo (dinâmico)
+      PEDIDOS_DEMO[2], // Patrícia — Finalizado
+      { ...PEDIDOS_DEMO[4], dataLabel: diaRetiradaCamila }, // Camila — Retirada (ontem)
+      { ...PEDIDOS_DEMO[5], datetime: `Hoje · ${hh}:${mm}`, dataLabel: diaEntregaLarissa }, // Larissa — Em Produção (hoje + 2)
     ];
   }, []);
 
@@ -1444,8 +1456,13 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
                   <div className="ob-mob-card-produto">
                     <div className="ob-mob-card-produto-img">
                       {p.imagem
-                        ? <img src={p.imagem} alt={p.produto} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                        : <span>{p.emoji}</span>}
+                        ? <img src={p.imagem} alt={p.produto} onError={(e) => {
+                            const img = e.target as HTMLImageElement;
+                            img.style.display = 'none';
+                            const parent = img.parentElement;
+                            if (parent) parent.textContent = p.emoji || "🎂";
+                          }} />
+                        : <span>{p.emoji || "🎂"}</span>}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p className="ob-mob-card-produto-nome">{p.produto}</p>
