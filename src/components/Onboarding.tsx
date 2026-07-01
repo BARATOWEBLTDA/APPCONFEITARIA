@@ -1002,6 +1002,7 @@ const INGREDIENTES_DEMO: Ingrediente[] = [
     peso: "380g",
     emoji: "🥛",
     bg: "#fffbe6",
+    imagem: "/tutorial/ninho.webp",
   },
   {
     nome: "Creme de Leite",
@@ -1010,6 +1011,7 @@ const INGREDIENTES_DEMO: Ingrediente[] = [
     peso: "200g",
     emoji: "🥛",
     bg: "#f5f5f5",
+    imagem: "/tutorial/cremedeleite.webp",
   },
   {
     nome: "Creme de Avelã",
@@ -1018,6 +1020,7 @@ const INGREDIENTES_DEMO: Ingrediente[] = [
     peso: "3kg",
     emoji: "🍫",
     bg: "#efebe9",
+    imagem: "/tutorial/nutella.webp",
   },
   {
     nome: "Forminha Brigadeiro",
@@ -1026,6 +1029,7 @@ const INGREDIENTES_DEMO: Ingrediente[] = [
     peso: "100un",
     emoji: "🧁",
     bg: "#fce4ec",
+    imagem: "/tutorial/forminha.webp",
   },
 ];
 
