@@ -598,7 +598,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
         .ob-ing-cad-preco-value {
           flex: 1;
-          text-align: right;
+          text-align: left;
         }
         .ob-ing-cad-check {
           width: 22px; height: 22px;
