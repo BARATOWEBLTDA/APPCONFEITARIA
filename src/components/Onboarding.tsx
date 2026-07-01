@@ -224,6 +224,16 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           opacity: 0;
         }
 
+        /* Subtitle no topo (complemento do título, hierarquia menor) */
+        .ob-slide-subtitle-top {
+          margin: -0.35rem 0 0;
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: rgba(255,255,255,0.75);
+          letter-spacing: 0.01em;
+          animation: obFadeUp 0.5s ease 0.5s both;
+        }
+
         /* ── Subtitle (embaixo dos cards) — complemento do título ── */
         .ob-slide-subtitle {
           margin: 1.1rem 0 0;
@@ -1057,7 +1067,6 @@ function Slide2Pedidos() {
   const [proximoIdx, setProximoIdx] = useState(0);
   // Lista visível na tela (máx 2 cards principais + 1 peek)
   const [visiveis, setVisiveis] = useState<typeof PEDIDOS_DEMO>([]);
-  const [terminou, setTerminou] = useState(false);
 
   useEffect(() => {
     const timers: number[] = [];
@@ -1079,11 +1088,6 @@ function Slide2Pedidos() {
       }, 300 + i * 1400));
     }
 
-    // Marca "terminou" depois do último → aparece o subtitle
-    timers.push(window.setTimeout(() => {
-      setTerminou(true);
-    }, 300 + PEDIDOS_DEMO.length * 1400 + 600));
-
     return () => timers.forEach((t) => clearTimeout(t));
   }, []);
 
@@ -1092,6 +1096,7 @@ function Slide2Pedidos() {
       <div className="ob-slide-textabove">
         <span className="ob-slide-eyebrow">Com o Doonly...</span>
         <h2 className="ob-slide-title">SEUS PEDIDOS<br/>FICAM ORGANIZADOS</h2>
+        <p className="ob-slide-subtitle-top">E na palma da sua mão</p>
       </div>
 
       <div className="ob-pedidos-stack">
@@ -1158,7 +1163,6 @@ function Slide2Pedidos() {
           );
         })}
       </div>
-      {terminou && <p className="ob-slide-subtitle">E NA PALMA<br/>DA SUA MÃO</p>}
     </>
   );
 }
