@@ -1364,7 +1364,7 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
   // Lista visível na tela (máx 2 cards principais + 1 peek)
   const [visiveis, setVisiveis] = useState<typeof PEDIDOS_DEMO>([]);
 
-  // Preenche datas dinâmicas (Pedido 1: hoje agora + entrega em 2 dias)
+  // Trio de pedidos para a animação. Larissa é o mais novo, entra por último e fica no topo.
   const pedidos = useMemo(() => {
     const now = new Date();
     const hh = String(now.getHours()).padStart(2, "0");
@@ -1374,11 +1374,11 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
     entrega.setDate(entrega.getDate() + 2);
     const diaEntrega = diasSemana[entrega.getDay()];
 
-    return PEDIDOS_DEMO.map((p, i) =>
-      i === 5
-        ? { ...p, datetime: `Hoje · ${hh}:${mm}`, dataLabel: diaEntrega }
-        : p
-    );
+    return [
+      PEDIDOS_DEMO[2], // Patrícia — Em produção
+      PEDIDOS_DEMO[4], // Camila — Confirmado
+      { ...PEDIDOS_DEMO[5], datetime: `Hoje · ${hh}:${mm}`, dataLabel: diaEntrega }, // Larissa — Novo (dinâmico)
+    ];
   }, []);
 
   useEffect(() => {
@@ -1390,7 +1390,7 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
     }, 300));
 
     // Depois entra a cada 1.4s até o último
-    for (let i = 1; i < 6; i++) {
+    for (let i = 1; i < 3; i++) {
       timers.push(window.setTimeout(() => {
         setVisiveis((prev) => {
           const next = [pedidos[i], ...prev];
@@ -1401,7 +1401,7 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
     }
 
     // Marca pronto depois do último
-    timers.push(window.setTimeout(onReady, 300 + 6 * 1400 + 500));
+    timers.push(window.setTimeout(onReady, 300 + 3 * 1400 + 500));
 
     return () => timers.forEach((t) => clearTimeout(t));
   }, [onReady, pedidos]);
