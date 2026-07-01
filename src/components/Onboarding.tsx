@@ -1187,28 +1187,6 @@ function SlidePlaceholder({ title, subtitle, emoji, onReady }: { title: string; 
    os mais antigos somem. No final para com 2 fixos + peek. */
 const PEDIDOS_DEMO = [
   {
-    id: 1,
-    numero: "97",
-    statusLabel: "Novo",
-    statusColor: "#1d4ed8",
-    statusBg: "#dbeafe",
-    statusDot: "#1d4ed8",
-    cliente: "Larissa Ferreira",
-    datetime: "", // preenchido em runtime
-    produto: "Bolo Dois Amores",
-    qtd: "1 unidade",
-    valor: "R$ 119,90",
-    imagem: "/tutorial/doisamores.jpg",
-    emoji: "",
-    pagamento: "Pix",
-    pagamentoStatus: "Pago Parcial",
-    pagamentoColor: "#d97706",
-    pagamentoBg: "#FAEEDA",
-    entregaIcon: "📍",
-    entregaLabel: "Entrega",
-    dataLabel: "", // preenchido em runtime
-  },
-  {
     id: 2,
     numero: "126",
     statusLabel: "Novo",
@@ -1314,6 +1292,28 @@ const PEDIDOS_DEMO = [
     dataLabel: "Domingo",
   },
   {
+    id: 1,
+    numero: "97",
+    statusLabel: "Novo",
+    statusColor: "#1d4ed8",
+    statusBg: "#dbeafe",
+    statusDot: "#1d4ed8",
+    cliente: "Larissa Ferreira",
+    datetime: "", // preenchido em runtime (é o pedido mais novo)
+    produto: "Bolo Dois Amores",
+    qtd: "1 unidade",
+    valor: "R$ 119,90",
+    imagem: "/tutorial/doisamores.jpg",
+    emoji: "",
+    pagamento: "Pix",
+    pagamentoStatus: "Pago Parcial",
+    pagamentoColor: "#d97706",
+    pagamentoBg: "#FAEEDA",
+    entregaIcon: "📍",
+    entregaLabel: "Entrega",
+    dataLabel: "", // preenchido em runtime (2 dias depois)
+  },
+  {
     id: 7,
     numero: "121",
     statusLabel: "Entregue",
@@ -1375,7 +1375,7 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
     const diaEntrega = diasSemana[entrega.getDay()];
 
     return PEDIDOS_DEMO.map((p, i) =>
-      i === 0
+      i === 5
         ? { ...p, datetime: `Hoje · ${hh}:${mm}`, dataLabel: diaEntrega }
         : p
     );
