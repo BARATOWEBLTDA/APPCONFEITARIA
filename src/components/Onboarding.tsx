@@ -860,6 +860,12 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           justify-content: center;
           font-size: 1.2rem;
           flex-shrink: 0;
+          overflow: hidden;
+        }
+        .ob-prec-produto-img img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
         .ob-prec-produto-nome {
           font-size: 0.85rem;
@@ -927,14 +933,15 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           display: inline-flex;
           align-items: baseline;
           gap: 3px;
-          min-width: 80px;
+          min-width: 82px;
         }
         .ob-prec-preco-symbol {
           font-size: 0.7rem;
           color: #6E3548;
+          flex-shrink: 0;
         }
         .ob-prec-preco-value {
-          text-align: right;
+          text-align: left;
           flex: 1;
         }
         .ob-prec-divider {
@@ -1041,11 +1048,13 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         /* Resultado */
         .ob-prec-resultado {
           margin-top: 0.55rem;
-          padding: 0.6rem 0.75rem;
-          border-radius: 10px;
+          padding: 0.85rem 0.75rem;
+          border-radius: 12px;
           display: flex;
+          flex-direction: column;
           align-items: center;
-          gap: 0.6rem;
+          text-align: center;
+          gap: 0.35rem;
           animation: obResultadoIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
         }
         @keyframes obResultadoIn {
@@ -1061,12 +1070,12 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           border: 1.5px solid #15803d;
         }
         .ob-prec-resultado-icon {
-          width: 32px; height: 32px;
+          width: 36px; height: 36px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1rem;
+          font-size: 1.1rem;
           flex-shrink: 0;
         }
         .ob-prec-resultado--prejuizo .ob-prec-resultado-icon {
@@ -1076,24 +1085,24 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           background: #dcfce7;
           color: #15803d;
           font-weight: 900;
-          font-size: 1.2rem;
+          font-size: 1.3rem;
         }
         .ob-prec-resultado-content {
-          flex: 1;
           display: flex;
           flex-direction: column;
+          align-items: center;
           gap: 1px;
         }
         .ob-prec-resultado-label {
-          font-size: 0.65rem;
-          font-weight: 600;
+          font-size: 0.68rem;
+          font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.03em;
+          letter-spacing: 0.04em;
         }
         .ob-prec-resultado--prejuizo .ob-prec-resultado-label { color: #dc2626; }
         .ob-prec-resultado--lucro .ob-prec-resultado-label { color: #15803d; }
         .ob-prec-resultado-valor {
-          font-size: 1.15rem;
+          font-size: 1.75rem;
           font-weight: 800;
           letter-spacing: -0.02em;
           font-variant-numeric: tabular-nums;
@@ -1102,9 +1111,10 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-prec-resultado--prejuizo .ob-prec-resultado-valor { color: #dc2626; }
         .ob-prec-resultado--lucro .ob-prec-resultado-valor { color: #15803d; }
         .ob-prec-resultado-margem {
-          font-size: 0.68rem;
+          font-size: 0.72rem;
           font-weight: 600;
           color: #6E3548;
+          margin-top: 2px;
         }
 
         /* ── Desktop: aumenta tipografia e centraliza melhor ── */
@@ -1745,10 +1755,11 @@ const CUSTOS_DETALHE = [
   { label: "Ingredientes", valor: 34.48, icone: "🥄" },
   { label: "Mão de obra", valor: 15.00, icone: "👩‍🍳" },
   { label: "Custos fixos", valor: 3.50, icone: "💡" },
+  { label: "Custos invisíveis (25%)", valor: 13.25, icone: "🔍" },
 ];
-const CUSTO_TOTAL = 52.98; // 40 brigadeiros
-const CUSTO_POR_CAIXA = 5.30; // caixa com 4un
-const PRECOS_TESTE = ["6,00", "12,00"];
+const CUSTO_TOTAL = 66.23; // 40 brigadeiros com custos invisíveis
+const CUSTO_POR_CAIXA = 6.62; // caixa com 4un
+const PRECOS_TESTE = ["8,00", "15,00"];
 
 function Slide4Precificacao() {
   const [precoTyped, setPrecoTyped] = useState("");
@@ -1829,7 +1840,7 @@ function Slide4Precificacao() {
         {/* Cabeçalho do produto */}
         <div className="ob-prec-produto">
           <div className="ob-prec-produto-img">
-            <span>🍫</span>
+            <img src="/tutorial/caixa4.jpg" alt="Caixa de Brigadeiro" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
           </div>
           <div style={{ flex: 1, textAlign: "left" }}>
             <p className="ob-prec-produto-nome">Caixa de Brigadeiro</p>
