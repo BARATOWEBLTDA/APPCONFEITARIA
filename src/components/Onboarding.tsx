@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { CaretRight } from "@phosphor-icons/react";
 
 /**
@@ -1188,25 +1188,25 @@ function SlidePlaceholder({ title, subtitle, emoji, onReady }: { title: string; 
 const PEDIDOS_DEMO = [
   {
     id: 1,
-    numero: "127",
-    statusLabel: "Em produção",
-    statusColor: "#d97706",
-    statusBg: "#FAEEDA",
-    statusDot: "#d97706",
-    cliente: "Ana Carolina",
-    datetime: "Hoje · 14:32",
+    numero: "97",
+    statusLabel: "Novo",
+    statusColor: "#1d4ed8",
+    statusBg: "#dbeafe",
+    statusDot: "#1d4ed8",
+    cliente: "Larissa Ferreira",
+    datetime: "", // preenchido em runtime
     produto: "Bolo Dois Amores",
-    qtd: "2kg · Retangular",
-    valor: "R$ 119,00",
-    imagem: "/tutorial/bolo.jpg",
-    emoji: "🎂",
-    pagamento: "Sinal",
-    pagamentoStatus: "Parcial",
+    qtd: "1 unidade",
+    valor: "R$ 119,90",
+    imagem: "/tutorial/doisamores.jpg",
+    emoji: "",
+    pagamento: "Pix",
+    pagamentoStatus: "Pago Parcial",
     pagamentoColor: "#d97706",
     pagamentoBg: "#FAEEDA",
     entregaIcon: "📍",
     entregaLabel: "Entrega",
-    dataLabel: "Sábado",
+    dataLabel: "", // preenchido em runtime
   },
   {
     id: 2,
@@ -1364,11 +1364,28 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
   // Lista visível na tela (máx 2 cards principais + 1 peek)
   const [visiveis, setVisiveis] = useState<typeof PEDIDOS_DEMO>([]);
 
+  // Preenche datas dinâmicas (Pedido 1: hoje agora + entrega em 2 dias)
+  const pedidos = useMemo(() => {
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mm = String(now.getMinutes()).padStart(2, "0");
+    const diasSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+    const entrega = new Date(now);
+    entrega.setDate(entrega.getDate() + 2);
+    const diaEntrega = diasSemana[entrega.getDay()];
+
+    return PEDIDOS_DEMO.map((p, i) =>
+      i === 0
+        ? { ...p, datetime: `Hoje · ${hh}:${mm}`, dataLabel: diaEntrega }
+        : p
+    );
+  }, []);
+
   useEffect(() => {
     const timers: number[] = [];
     // Primeiro pedido entra rápido
     timers.push(window.setTimeout(() => {
-      setVisiveis([PEDIDOS_DEMO[0]]);
+      setVisiveis([pedidos[0]]);
       setProximoIdx(1);
     }, 300));
 
@@ -1376,7 +1393,7 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
     for (let i = 1; i < 6; i++) {
       timers.push(window.setTimeout(() => {
         setVisiveis((prev) => {
-          const next = [PEDIDOS_DEMO[i], ...prev];
+          const next = [pedidos[i], ...prev];
           return next.slice(0, 3);
         });
         setProximoIdx(i + 1);
@@ -1387,7 +1404,7 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
     timers.push(window.setTimeout(onReady, 300 + 6 * 1400 + 500));
 
     return () => timers.forEach((t) => clearTimeout(t));
-  }, [onReady]);
+  }, [onReady, pedidos]);
 
   return (
     <>
