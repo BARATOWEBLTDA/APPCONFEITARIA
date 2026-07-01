@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CaretRight } from "@phosphor-icons/react";
 
 /**
@@ -63,7 +63,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
       <div className="ob-content" key={slideIdx}>
         {slideIdx === 0 && <Slide1Welcome />}
         {slideIdx === 1 && <Slide2Pedidos />}
-        {slideIdx === 2 && <SlidePlaceholder title="Cadastre ingredientes em segundos" subtitle="Cadastre ingredientes rapidamente sem perder tempo." emoji="🥚" />}
+        {slideIdx === 2 && <Slide3Ingredientes />}
         {slideIdx === 3 && <SlidePlaceholder title="Nunca esqueça uma cliente" subtitle="Cadastre clientes e envie promoções na época do aniversário." emoji="🎂" />}
         {slideIdx === 4 && <SlidePlaceholder title="Descubra o preço certo" subtitle="O Doonly calcula tudo — custo, lucro e margem ideal." emoji="💰" />}
         {slideIdx === 5 && <SlidePlaceholder title="Sua receita já calcula tudo" subtitle="Ingredientes, embalagem, energia, lucro. Tudo preenchendo sozinho." emoji="📝" />}
@@ -505,6 +505,253 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           to   { opacity: 1; transform: translateY(0); }
         }
 
+        /* ── Slide 3: Cadastro de ingredientes ── */
+        .ob-ing-wrap {
+          width: 100%;
+          max-width: 360px;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        /* Card já cadastrado (compacto, verde de check) */
+        .ob-ing-cad-card {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          padding: 0.55rem 0.7rem;
+          background: #fff;
+          border-radius: 12px;
+          border: 1.5px solid #ECC2D0;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+          animation: obIngCadEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+        @keyframes obIngCadEnter {
+          from { opacity: 0; transform: translateY(-20px) scale(0.9); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .ob-ing-cad-img {
+          width: 32px; height: 32px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.1rem;
+          flex-shrink: 0;
+        }
+        .ob-ing-cad-info {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          text-align: left;
+        }
+        .ob-ing-cad-nome {
+          font-size: 0.78rem;
+          font-weight: 700;
+          color: #431524;
+          line-height: 1.2;
+        }
+        .ob-ing-cad-marca {
+          font-size: 0.68rem;
+          color: #6E3548;
+        }
+        .ob-ing-cad-preco {
+          font-size: 0.85rem;
+          font-weight: 800;
+          color: #431524;
+        }
+        .ob-ing-cad-check {
+          width: 22px; height: 22px;
+          border-radius: 50%;
+          background: #15803d;
+          color: #fff;
+          font-size: 0.7rem;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          animation: obIngCheckPop 0.4s cubic-bezier(0.34, 1.8, 0.64, 1);
+        }
+        @keyframes obIngCheckPop {
+          0%   { transform: scale(0); }
+          70%  { transform: scale(1.3); }
+          100% { transform: scale(1); }
+        }
+
+        /* Form em animação */
+        .ob-ing-form {
+          background: #fff;
+          border-radius: 16px;
+          padding: 0.85rem 0.9rem 0.9rem;
+          border: 1.5px solid #ECC2D0;
+          box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+          color: #431524;
+          text-align: left;
+          animation: obFadeUp 0.4s ease both;
+        }
+        .ob-ing-form-header {
+          margin-bottom: 0.65rem;
+        }
+        .ob-ing-form-title {
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: #431524;
+        }
+        .ob-ing-field {
+          margin-bottom: 0.55rem;
+          opacity: 0.4;
+          transition: opacity 0.3s;
+        }
+        .ob-ing-field--active {
+          opacity: 1;
+        }
+        .ob-ing-field--half {
+          flex: 1;
+          margin-bottom: 0;
+        }
+        .ob-ing-row {
+          display: flex;
+          gap: 0.55rem;
+          margin-bottom: 0.65rem;
+        }
+        .ob-ing-label {
+          display: block;
+          font-size: 0.65rem;
+          font-weight: 600;
+          color: #6E3548;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          margin-bottom: 3px;
+        }
+        .ob-ing-input {
+          background: #F7EEF1;
+          border: 1px solid #ECC2D0;
+          border-radius: 8px;
+          padding: 0.4rem 0.55rem;
+          min-height: 30px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: #431524;
+          display: flex;
+          align-items: center;
+          gap: 2px;
+        }
+        .ob-ing-cursor {
+          width: 2px;
+          height: 14px;
+          background: #6E3548;
+          animation: obCursor 0.6s infinite;
+        }
+        @keyframes obCursor {
+          0%, 50%  { opacity: 1; }
+          51%, 100% { opacity: 0; }
+        }
+
+        /* Botão buscar imagem + preview */
+        .ob-ing-imgrow {
+          display: flex;
+          align-items: center;
+          gap: 0.55rem;
+          margin-bottom: 0.65rem;
+          opacity: 0.4;
+          transition: opacity 0.3s;
+        }
+        .ob-ing-imgrow.ob-ing-field--active {
+          opacity: 1;
+        }
+        .ob-ing-btn-buscar {
+          flex: 1;
+          background: #F7EEF1;
+          border: 1px dashed #ECC2D0;
+          border-radius: 8px;
+          padding: 0.5rem;
+          font-family: inherit;
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: #6E3548;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          transition: all 0.3s;
+        }
+        .ob-ing-btn-buscar--loading {
+          background: #FAEEDA;
+          border-style: solid;
+          border-color: #d97706;
+          color: #d97706;
+        }
+        .ob-ing-btn-buscar:has(*) {
+          /* garante fallback */
+        }
+        .ob-ing-preview {
+          width: 44px;
+          height: 44px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.4rem;
+          flex-shrink: 0;
+          opacity: 0;
+          transform: scale(0.3) rotate(-180deg);
+          transition: all 0.5s cubic-bezier(0.34, 1.6, 0.64, 1);
+          border: 2px solid transparent;
+        }
+        .ob-ing-preview--visible {
+          opacity: 1;
+          transform: scale(1) rotate(0);
+          border-color: #15803d;
+          box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.2);
+        }
+
+        /* Spinner */
+        .ob-ing-spinner {
+          display: inline-block;
+          width: 10px;
+          height: 10px;
+          border: 2px solid currentColor;
+          border-right-color: transparent;
+          border-radius: 50%;
+          animation: obSpin 0.6s linear infinite;
+        }
+        @keyframes obSpin {
+          to { transform: rotate(360deg); }
+        }
+
+        /* Botão salvar */
+        .ob-ing-btn-salvar {
+          width: 100%;
+          background: #ECC2D0;
+          border: none;
+          border-radius: 10px;
+          padding: 0.65rem;
+          font-family: inherit;
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: rgba(67, 21, 36, 0.5);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          transition: all 0.3s;
+        }
+        .ob-ing-btn-salvar--active {
+          background: #431524;
+          color: #fff;
+        }
+        .ob-ing-btn-salvar--loading {
+          animation: obPulseBtn 0.6s ease infinite alternate;
+        }
+        @keyframes obPulseBtn {
+          from { transform: scale(1); }
+          to   { transform: scale(1.02); }
+        }
+
         /* ── Desktop: aumenta tipografia e centraliza melhor ── */
         @media (min-width: 768px) {
           .ob-content { padding: 2rem; }
@@ -688,6 +935,224 @@ function Slide2Pedidos() {
       <div className="ob-slide-textbelow">
         <span className="ob-slide-eyebrow">Com o Doonly...</span>
         <h2 className="ob-slide-title">SEUS PEDIDOS<br/>FICAM ORGANIZADOS</h2>
+      </div>
+    </>
+  );
+}
+
+/* ─── Slide 3: Cadastro rápido de ingredientes ─────
+   Anima o preenchimento de 2 ingredientes em sequência:
+   - Digitação de nome + marca
+   - Busca de imagem
+   - Preenchimento de preço e peso
+   - "Salva" e mostra card cadastrado
+   Depois repete pro segundo. */
+
+interface Ingrediente {
+  nome: string;
+  marca: string;
+  preco: string;
+  peso: string;
+  emoji: string;
+  bg: string;
+}
+
+const INGREDIENTES_DEMO: Ingrediente[] = [
+  {
+    nome: "Leite Condensado",
+    marca: "Moça",
+    preco: "8,90",
+    peso: "395g",
+    emoji: "🥛",
+    bg: "#fff8e1",
+  },
+  {
+    nome: "Chocolate em Pó",
+    marca: "Nestlé",
+    preco: "14,50",
+    peso: "200g",
+    emoji: "🍫",
+    bg: "#efebe9",
+  },
+];
+
+function Slide3Ingredientes() {
+  const [ingredienteIdx, setIngredienteIdx] = useState(0);
+  const [step, setStep] = useState(0);
+  // step: 0=vazio, 1=digitando nome, 2=nome ok, 3=digitando marca, 4=marca ok,
+  //       5=buscando imagem, 6=imagem apareceu, 7=digitando preço, 8=preço ok,
+  //       9=peso ok, 10=salvando, 11=cadastrado (card verde)
+  const [nomeTyped, setNomeTyped] = useState("");
+  const [marcaTyped, setMarcaTyped] = useState("");
+  const [precoTyped, setPrecoTyped] = useState("");
+  const [cadastrados, setCadastrados] = useState<Ingrediente[]>([]);
+
+  const atual = INGREDIENTES_DEMO[ingredienteIdx];
+
+  // Timeline: efeito único que orquestra tudo
+  useEffect(() => {
+    if (!atual) return;
+    const timers: number[] = [];
+
+    // Reset ao entrar num novo ingrediente
+    setStep(0);
+    setNomeTyped("");
+    setMarcaTyped("");
+    setPrecoTyped("");
+
+    const isSegundo = ingredienteIdx === 1;
+    const baseDelay = isSegundo ? 300 : 500; // 2º um pouco mais rápido
+
+    // Etapa 1: digitar nome (letra por letra)
+    timers.push(window.setTimeout(() => setStep(1), baseDelay));
+    atual.nome.split("").forEach((_, i) => {
+      timers.push(
+        window.setTimeout(() => {
+          setNomeTyped(atual.nome.slice(0, i + 1));
+        }, baseDelay + 80 * (i + 1))
+      );
+    });
+    const nomeEndTime = baseDelay + 80 * atual.nome.length + 200;
+    timers.push(window.setTimeout(() => setStep(2), nomeEndTime));
+
+    // Etapa 2: digitar marca
+    timers.push(window.setTimeout(() => setStep(3), nomeEndTime + 300));
+    atual.marca.split("").forEach((_, i) => {
+      timers.push(
+        window.setTimeout(() => {
+          setMarcaTyped(atual.marca.slice(0, i + 1));
+        }, nomeEndTime + 400 + 80 * (i + 1))
+      );
+    });
+    const marcaEndTime = nomeEndTime + 400 + 80 * atual.marca.length + 200;
+    timers.push(window.setTimeout(() => setStep(4), marcaEndTime));
+
+    // Etapa 3: buscando imagem
+    timers.push(window.setTimeout(() => setStep(5), marcaEndTime + 300));
+    timers.push(window.setTimeout(() => setStep(6), marcaEndTime + 900));
+
+    // Etapa 4: digitar preço
+    const precoStart = marcaEndTime + 1200;
+    timers.push(window.setTimeout(() => setStep(7), precoStart));
+    atual.preco.split("").forEach((_, i) => {
+      timers.push(
+        window.setTimeout(() => {
+          setPrecoTyped(atual.preco.slice(0, i + 1));
+        }, precoStart + 100 + 80 * (i + 1))
+      );
+    });
+    const precoEndTime = precoStart + 100 + 80 * atual.preco.length + 200;
+    timers.push(window.setTimeout(() => setStep(8), precoEndTime));
+
+    // Etapa 5: peso aparece
+    timers.push(window.setTimeout(() => setStep(9), precoEndTime + 300));
+
+    // Etapa 6: salvando
+    timers.push(window.setTimeout(() => setStep(10), precoEndTime + 700));
+
+    // Etapa 7: cadastrado! (mostra card verde e adiciona à lista)
+    timers.push(
+      window.setTimeout(() => {
+        setStep(11);
+        setCadastrados((prev) => [...prev, atual]);
+      }, precoEndTime + 1200)
+    );
+
+    // Etapa 8: próximo ingrediente (ou parar)
+    if (ingredienteIdx < INGREDIENTES_DEMO.length - 1) {
+      timers.push(
+        window.setTimeout(() => setIngredienteIdx((i) => i + 1), precoEndTime + 2200)
+      );
+    }
+
+    return () => timers.forEach((t) => clearTimeout(t));
+  }, [ingredienteIdx]);
+
+  const showCursor = (n: number) => step === n;
+
+  return (
+    <>
+      <div className="ob-ing-wrap">
+        {/* Cards já cadastrados (aparecem em cima, empilhando) */}
+        {cadastrados.map((c, i) => (
+          <div key={i} className="ob-ing-cad-card">
+            <div className="ob-ing-cad-img" style={{ background: c.bg }}>{c.emoji}</div>
+            <div className="ob-ing-cad-info">
+              <span className="ob-ing-cad-nome">{c.nome}</span>
+              <span className="ob-ing-cad-marca">{c.marca} · {c.peso}</span>
+            </div>
+            <span className="ob-ing-cad-preco">R$ {c.preco}</span>
+            <span className="ob-ing-cad-check">✓</span>
+          </div>
+        ))}
+
+        {/* Form em animação (só aparece se ainda não terminou) */}
+        {step < 11 && (
+          <div className="ob-ing-form">
+            {/* Cabeçalho */}
+            <div className="ob-ing-form-header">
+              <span className="ob-ing-form-title">Novo ingrediente</span>
+            </div>
+
+            {/* Nome */}
+            <div className={`ob-ing-field ${step >= 1 ? "ob-ing-field--active" : ""}`}>
+              <label className="ob-ing-label">Nome</label>
+              <div className="ob-ing-input">
+                <span>{nomeTyped}</span>
+                {showCursor(1) && <span className="ob-ing-cursor" />}
+              </div>
+            </div>
+
+            {/* Marca */}
+            <div className={`ob-ing-field ${step >= 3 ? "ob-ing-field--active" : ""}`}>
+              <label className="ob-ing-label">Marca</label>
+              <div className="ob-ing-input">
+                <span>{marcaTyped}</span>
+                {showCursor(3) && <span className="ob-ing-cursor" />}
+              </div>
+            </div>
+
+            {/* Botão buscar imagem + imagem preview */}
+            <div className={`ob-ing-imgrow ${step >= 4 ? "ob-ing-field--active" : ""}`}>
+              <button className={`ob-ing-btn-buscar ${step === 5 ? "ob-ing-btn-buscar--loading" : ""}`}>
+                {step < 5 && <>🔍 Buscar imagem</>}
+                {step === 5 && <><span className="ob-ing-spinner" /> Buscando...</>}
+                {step >= 6 && <>✓ Encontrada</>}
+              </button>
+              <div className={`ob-ing-preview ${step >= 6 ? "ob-ing-preview--visible" : ""}`} style={{ background: atual.bg }}>
+                <span>{atual.emoji}</span>
+              </div>
+            </div>
+
+            {/* Preço + Peso */}
+            <div className="ob-ing-row">
+              <div className={`ob-ing-field ob-ing-field--half ${step >= 7 ? "ob-ing-field--active" : ""}`}>
+                <label className="ob-ing-label">Preço</label>
+                <div className="ob-ing-input">
+                  <span>{precoTyped && `R$ ${precoTyped}`}</span>
+                  {showCursor(7) && <span className="ob-ing-cursor" />}
+                </div>
+              </div>
+              <div className={`ob-ing-field ob-ing-field--half ${step >= 9 ? "ob-ing-field--active" : ""}`}>
+                <label className="ob-ing-label">Peso</label>
+                <div className="ob-ing-input">
+                  <span>{step >= 9 ? atual.peso : ""}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Botão salvar */}
+            <button className={`ob-ing-btn-salvar ${step === 10 ? "ob-ing-btn-salvar--loading" : ""} ${step >= 10 ? "ob-ing-btn-salvar--active" : ""}`}>
+              {step < 10 && "Salvar"}
+              {step === 10 && <><span className="ob-ing-spinner" /> Salvando...</>}
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="ob-slide-textbelow">
+        <span className="ob-slide-eyebrow">Com o Doonly...</span>
+        <h2 className="ob-slide-title">CADASTRAR INGREDIENTES<br/>É RÁPIDO</h2>
       </div>
     </>
   );
