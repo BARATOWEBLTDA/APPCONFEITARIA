@@ -1902,9 +1902,9 @@ function Slide4Precificacao() {
         {/* Resultado */}
         {mostrandoResultado && (
           <div className={`ob-prec-resultado ${isPrejuizo ? "ob-prec-resultado--prejuizo" : "ob-prec-resultado--lucro"}`} key={rodadaIdx}>
-            <div className="ob-prec-resultado-icon">
-              {isPrejuizo ? "⚠️" : "✓"}
-            </div>
+            {isPrejuizo && (
+              <div className="ob-prec-resultado-icon">⚠️</div>
+            )}
             <div className="ob-prec-resultado-content">
               <span className="ob-prec-resultado-label">
                 {isPrejuizo ? "Margem apertada" : "Lucro por caixa"}
