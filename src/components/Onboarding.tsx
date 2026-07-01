@@ -1395,27 +1395,52 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
 
   useEffect(() => {
     const timers: number[] = [];
-    // Primeiro pedido entra rápido
-    timers.push(window.setTimeout(() => {
-      setVisiveis([pedidos[0]]);
-      setProximoIdx(1);
-    }, 300));
 
-    // Depois entra a cada 1.4s até o último
-    for (let i = 1; i < 3; i++) {
+    // Pré-carrega imagens antes de iniciar a animação (evita que a foto apareça
+    // depois do card)
+    const imagensPraCarregar = pedidos.map((p) => p.imagem).filter((s): s is string => !!s);
+
+    const preload = Promise.all(
+      imagensPraCarregar.map(
+        (src) =>
+          new Promise<void>((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve();
+            img.onerror = () => resolve(); // resolve mesmo em erro pra não travar
+            img.src = src;
+          })
+      )
+    );
+
+    let cancelado = false;
+    preload.then(() => {
+      if (cancelado) return;
+
+      // Primeiro pedido entra rápido
       timers.push(window.setTimeout(() => {
-        setVisiveis((prev) => {
-          const next = [pedidos[i], ...prev];
-          return next.slice(0, 3);
-        });
-        setProximoIdx(i + 1);
-      }, 300 + i * 1400));
-    }
+        setVisiveis([pedidos[0]]);
+        setProximoIdx(1);
+      }, 300));
 
-    // Marca pronto depois do último
-    timers.push(window.setTimeout(onReady, 300 + 3 * 1400 + 500));
+      // Depois entra a cada 1.4s até o último
+      for (let i = 1; i < 3; i++) {
+        timers.push(window.setTimeout(() => {
+          setVisiveis((prev) => {
+            const next = [pedidos[i], ...prev];
+            return next.slice(0, 3);
+          });
+          setProximoIdx(i + 1);
+        }, 300 + i * 1400));
+      }
 
-    return () => timers.forEach((t) => clearTimeout(t));
+      // Marca pronto depois do último
+      timers.push(window.setTimeout(onReady, 300 + 3 * 1400 + 500));
+    });
+
+    return () => {
+      cancelado = true;
+      timers.forEach((t) => clearTimeout(t));
+    };
   }, [onReady, pedidos]);
 
   return (
