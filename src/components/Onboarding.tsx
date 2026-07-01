@@ -202,6 +202,21 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           opacity: 0;
           animation: obFadeUp 0.5s ease 0.1s both;
         }
+
+        /* ── Textos abaixo dos cards (aparecem depois deles caírem) ── */
+        .ob-slide-textbelow {
+          margin-top: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        }
+        .ob-slide-textbelow .ob-slide-eyebrow {
+          animation: obFadeUp 0.5s ease 2.2s both;
+        }
+        .ob-slide-textbelow .ob-slide-title {
+          animation: obFadeUp 0.6s ease 2.4s both;
+          opacity: 0;
+        }
         .ob-slide-title {
           font-size: 1.6rem;
           font-weight: 800;
@@ -598,15 +613,12 @@ const PEDIDOS_DEMO = [
 function Slide2Pedidos() {
   return (
     <>
-      <span className="ob-slide-eyebrow">Com o Doonly...</span>
-      <h2 className="ob-slide-title">SEUS PEDIDOS<br/>FICAM ORGANIZADOS</h2>
-
       <div className="ob-pedidos-stack">
         {PEDIDOS_DEMO.map((p, idx) => (
           <div
             key={p.id}
             className="ob-ped-card"
-            style={{ animationDelay: `${0.4 + idx * 0.7}s` }}
+            style={{ animationDelay: `${0.2 + idx * 0.6}s` }}
           >
             {/* Topo: número + status + cliente + datetime */}
             <div className="ob-mob-card-topo">
@@ -671,6 +683,11 @@ function Slide2Pedidos() {
           </div>
           <div className="ob-ped-card-peek-fade" />
         </div>
+      </div>
+
+      <div className="ob-slide-textbelow">
+        <span className="ob-slide-eyebrow">Com o Doonly...</span>
+        <h2 className="ob-slide-title">SEUS PEDIDOS<br/>FICAM ORGANIZADOS</h2>
       </div>
     </>
   );
