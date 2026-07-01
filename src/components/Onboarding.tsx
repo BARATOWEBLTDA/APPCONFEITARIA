@@ -144,6 +144,12 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           scrollbar-width: none; /* Firefox */
           -ms-overflow-style: none; /* IE/Edge antigo */
         }
+        /* Quando tem textabove (telas com título fixo em cima), remove o centering
+           e fixa o texto no topo — evita oscilação com conteúdo dinâmico */
+        .ob-content:has(.ob-slide-textabove) {
+          justify-content: flex-start;
+          padding-top: 2rem;
+        }
         .ob-content::-webkit-scrollbar {
           display: none; /* Chrome/Safari/Opera */
         }
@@ -205,7 +211,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
         /* ── Texto no topo, fixo (não muda de lugar conforme cards surgem) ── */
         .ob-slide-textabove {
-          margin-bottom: 1.25rem;
+          margin-bottom: 1rem;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -216,6 +222,16 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-slide-textabove .ob-slide-title {
           animation: obFadeUp 0.6s ease 0.3s both;
           opacity: 0;
+        }
+
+        /* ── Subtitle (embaixo dos cards) — complemento do título ── */
+        .ob-slide-subtitle {
+          margin: 0.9rem 0 0;
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: rgba(255,255,255,0.85);
+          letter-spacing: 0.01em;
+          animation: obFadeUp 0.6s ease 1s both;
         }
         .ob-slide-title {
           font-size: 1.6rem;
@@ -963,6 +979,7 @@ function Slide2Pedidos() {
           <div className="ob-ped-card-peek-fade" />
         </div>
       </div>
+      <p className="ob-slide-subtitle">E na palma da sua mão.</p>
     </>
   );
 }
@@ -1227,6 +1244,7 @@ function Slide3Ingredientes() {
           </div>
         )}
       </div>
+      <p className="ob-slide-subtitle">Ficam organizados e catalogados.</p>
     </>
   );
 }
