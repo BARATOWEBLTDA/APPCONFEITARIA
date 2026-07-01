@@ -538,6 +538,12 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           justify-content: center;
           font-size: 1.1rem;
           flex-shrink: 0;
+          overflow: hidden;
+        }
+        .ob-ing-cad-img img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
         .ob-ing-cad-info {
           flex: 1;
@@ -700,6 +706,12 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           transform: scale(0.3) rotate(-180deg);
           transition: all 0.5s cubic-bezier(0.34, 1.6, 0.64, 1);
           border: 2px solid transparent;
+          overflow: hidden;
+        }
+        .ob-ing-preview img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
         .ob-ing-preview--visible {
           opacity: 1;
@@ -823,7 +835,7 @@ const PEDIDOS_DEMO = [
     produto: "Bolo Dois Amores",
     qtd: "2kg · Retangular",
     valor: "R$ 119,00",
-    imagem: "/tuturial/bolo.jpg",
+    imagem: "/tutorial/bolo.jpg",
     emoji: "🎂",
     pagamento: "Sinal",
     pagamentoStatus: "Parcial",
@@ -845,7 +857,7 @@ const PEDIDOS_DEMO = [
     produto: "Cento de Salgados",
     qtd: "100 unidades · misto",
     valor: "R$ 70,00",
-    imagem: "/tuturial/salgadinhos.jpg",
+    imagem: "/tutorial/salgadinhos.jpg",
     emoji: "🥟",
     pagamento: "PIX",
     pagamentoStatus: "Pago",
@@ -955,6 +967,7 @@ interface Ingrediente {
   peso: string;
   emoji: string;
   bg: string;
+  imagem?: string;
 }
 
 const INGREDIENTES_DEMO: Ingrediente[] = [
@@ -965,14 +978,16 @@ const INGREDIENTES_DEMO: Ingrediente[] = [
     peso: "395g",
     emoji: "🥛",
     bg: "#fff8e1",
+    imagem: "/tutorial/moça.webp",
   },
   {
-    nome: "Chocolate em Pó",
-    marca: "Nestlé",
-    preco: "14,50",
-    peso: "200g",
-    emoji: "🍫",
-    bg: "#efebe9",
+    nome: "Chantilly Supreme",
+    marca: "Amélia",
+    preco: "22,90",
+    peso: "1L",
+    emoji: "🥛",
+    bg: "#f5f5f5",
+    imagem: "/tutorial/chantily.png",
   },
 ];
 
@@ -1076,7 +1091,11 @@ function Slide3Ingredientes() {
         {/* Cards já cadastrados (aparecem em cima, empilhando) */}
         {cadastrados.map((c, i) => (
           <div key={i} className="ob-ing-cad-card">
-            <div className="ob-ing-cad-img" style={{ background: c.bg }}>{c.emoji}</div>
+            <div className="ob-ing-cad-img" style={{ background: c.bg }}>
+              {c.imagem
+                ? <img src={c.imagem} alt={c.nome} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                : <span>{c.emoji}</span>}
+            </div>
             <div className="ob-ing-cad-info">
               <span className="ob-ing-cad-nome">{c.nome}</span>
               <span className="ob-ing-cad-marca">{c.marca} · {c.peso}</span>
@@ -1120,7 +1139,9 @@ function Slide3Ingredientes() {
                 {step >= 6 && <>✓ Encontrada</>}
               </button>
               <div className={`ob-ing-preview ${step >= 6 ? "ob-ing-preview--visible" : ""}`} style={{ background: atual.bg }}>
-                <span>{atual.emoji}</span>
+                {atual.imagem
+                  ? <img src={atual.imagem} alt={atual.nome} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  : <span>{atual.emoji}</span>}
               </div>
             </div>
 
