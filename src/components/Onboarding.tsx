@@ -1146,20 +1146,27 @@ function Slide3Ingredientes() {
     timers.push(window.setTimeout(() => setStep(10), precoEndTime + gap + 300));
 
     // Etapa 7: cadastrado! (mostra card verde e adiciona à lista)
-    const isUltimo = ingredienteIdx === INGREDIENTES_DEMO.length - 1;
+    const isUltimoAnimado = ingredienteIdx === 2; // só 3 primeiros animam
     timers.push(
       window.setTimeout(() => {
         setStep(11);
         setCadastrados((prev) => [...prev, atual]);
-        if (isUltimo) {
-          // marca como finalizado após pequeno delay pra dar respiro à animação
-          window.setTimeout(() => setTerminou(true), 800);
+        if (isUltimoAnimado) {
+          // Depois do 3º, "chove" os demais rapidinho
+          INGREDIENTES_DEMO.slice(3).forEach((extra, i) => {
+            window.setTimeout(() => {
+              setCadastrados((prev) => [...prev, extra]);
+              if (i === INGREDIENTES_DEMO.slice(3).length - 1) {
+                window.setTimeout(() => setTerminou(true), 600);
+              }
+            }, 300 + i * 350);
+          });
         }
       }, precoEndTime + gap + 300 + saveTime)
     );
 
-    // Etapa 8: próximo ingrediente
-    if (ingredienteIdx < INGREDIENTES_DEMO.length - 1) {
+    // Etapa 8: próximo ingrediente (só até o 3º animado)
+    if (ingredienteIdx < 2) {
       timers.push(
         window.setTimeout(() => setIngredienteIdx((i) => i + 1), precoEndTime + gap + 300 + saveTime + finishTime)
       );
