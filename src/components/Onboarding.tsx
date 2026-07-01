@@ -148,7 +148,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
            e fixa o texto no topo — evita oscilação com conteúdo dinâmico */
         .ob-content:has(.ob-slide-textabove) {
           justify-content: flex-start;
-          padding-top: 2rem;
+          padding-top: 1rem;
         }
         .ob-content::-webkit-scrollbar {
           display: none; /* Chrome/Safari/Opera */
@@ -211,7 +211,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
         /* ── Texto no topo, fixo (não muda de lugar conforme cards surgem) ── */
         .ob-slide-textabove {
-          margin-bottom: 1rem;
+          margin-bottom: 0.65rem;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -834,8 +834,8 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         /* ── Slide 4: Precificação ── */
         .ob-prec-card {
           background: #fff;
-          border-radius: 16px;
-          padding: 0.9rem;
+          border-radius: 14px;
+          padding: 0.75rem 0.85rem;
           border: 1.5px solid #ECC2D0;
           box-shadow: 0 12px 30px rgba(0,0,0,0.35);
           color: #431524;
@@ -847,30 +847,30 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-prec-produto {
           display: flex;
           align-items: center;
-          gap: 0.65rem;
-          padding-bottom: 0.75rem;
+          gap: 0.6rem;
+          padding-bottom: 0.5rem;
           border-bottom: 1px dashed #ECC2D0;
         }
         .ob-prec-produto-img {
-          width: 42px; height: 42px;
+          width: 36px; height: 36px;
           border-radius: 8px;
           background: #efebe9;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1.4rem;
+          font-size: 1.2rem;
           flex-shrink: 0;
         }
         .ob-prec-produto-nome {
-          font-size: 0.9rem;
+          font-size: 0.85rem;
           font-weight: 700;
           color: #431524;
           margin: 0;
         }
         .ob-prec-produto-info {
-          font-size: 0.7rem;
+          font-size: 0.68rem;
           color: #6E3548;
-          margin: 2px 0 0;
+          margin: 1px 0 0;
         }
         .ob-prec-produto-custo {
           font-size: 0.95rem;
@@ -882,26 +882,26 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
         /* Detalhamento de custos */
         .ob-prec-detalhes {
-          margin-top: 0.75rem;
-          padding-top: 0.75rem;
+          margin-top: 0.55rem;
+          padding-top: 0.55rem;
           border-top: 1px dashed #ECC2D0;
         }
         .ob-prec-detalhes-titulo {
           display: block;
-          font-size: 0.65rem;
+          font-size: 0.62rem;
           font-weight: 700;
           color: #6E3548;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          margin-bottom: 0.5rem;
+          margin-bottom: 0.35rem;
           text-align: left;
         }
         .ob-prec-linha {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 0.3rem 0;
-          font-size: 0.82rem;
+          padding: 0.2rem 0;
+          font-size: 0.78rem;
           opacity: 0;
           transform: translateX(-8px);
           transition: opacity 0.35s ease, transform 0.35s ease;
@@ -976,38 +976,38 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
 
         .ob-prec-pergunta {
-          padding: 0.85rem 0;
+          padding: 0.65rem 0 0.4rem;
         }
         .ob-prec-label {
           display: block;
-          font-size: 0.75rem;
+          font-size: 0.72rem;
           font-weight: 600;
           color: #6E3548;
-          margin-bottom: 6px;
+          margin-bottom: 5px;
           text-align: center;
         }
         .ob-prec-input {
           background: #F7EEF1;
           border: 2px solid #ECC2D0;
-          border-radius: 12px;
-          padding: 0.7rem 1rem;
-          font-size: 1.5rem;
+          border-radius: 10px;
+          padding: 0.55rem 1rem;
+          font-size: 1.3rem;
           font-weight: 800;
           color: #431524;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
+          gap: 6px;
           transition: all 0.4s;
           font-variant-numeric: tabular-nums;
         }
         .ob-prec-input-symbol {
-          font-size: 1rem;
+          font-size: 0.9rem;
           color: #6E3548;
         }
         .ob-prec-input-value {
-          font-size: 1.5rem;
-          min-width: 24px;
+          font-size: 1.3rem;
+          min-width: 22px;
         }
         .ob-prec-input--prejuizo {
           border-color: #dc2626;
@@ -1040,12 +1040,12 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
         /* Resultado */
         .ob-prec-resultado {
-          margin-top: 0.65rem;
-          padding: 0.85rem;
-          border-radius: 12px;
+          margin-top: 0.55rem;
+          padding: 0.6rem 0.75rem;
+          border-radius: 10px;
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 0.6rem;
           animation: obResultadoIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
         }
         @keyframes obResultadoIn {
@@ -1061,12 +1061,12 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           border: 1.5px solid #15803d;
         }
         .ob-prec-resultado-icon {
-          width: 40px; height: 40px;
+          width: 32px; height: 32px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1.3rem;
+          font-size: 1rem;
           flex-shrink: 0;
         }
         .ob-prec-resultado--prejuizo .ob-prec-resultado-icon {
@@ -1076,16 +1076,16 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           background: #dcfce7;
           color: #15803d;
           font-weight: 900;
-          font-size: 1.5rem;
+          font-size: 1.2rem;
         }
         .ob-prec-resultado-content {
           flex: 1;
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          gap: 1px;
         }
         .ob-prec-resultado-label {
-          font-size: 0.72rem;
+          font-size: 0.65rem;
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.03em;
@@ -1093,15 +1093,16 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-prec-resultado--prejuizo .ob-prec-resultado-label { color: #dc2626; }
         .ob-prec-resultado--lucro .ob-prec-resultado-label { color: #15803d; }
         .ob-prec-resultado-valor {
-          font-size: 1.4rem;
+          font-size: 1.15rem;
           font-weight: 800;
           letter-spacing: -0.02em;
           font-variant-numeric: tabular-nums;
+          line-height: 1.1;
         }
         .ob-prec-resultado--prejuizo .ob-prec-resultado-valor { color: #dc2626; }
         .ob-prec-resultado--lucro .ob-prec-resultado-valor { color: #15803d; }
         .ob-prec-resultado-margem {
-          font-size: 0.75rem;
+          font-size: 0.68rem;
           font-weight: 600;
           color: #6E3548;
         }
