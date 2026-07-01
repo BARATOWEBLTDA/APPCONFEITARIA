@@ -377,6 +377,30 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           animation: obPedidoDrop 0.65s cubic-bezier(0.22, 1.2, 0.36, 1) both;
           transform-origin: center top;
         }
+        /* Novo modo "flow": novos pedidos entram por cima, empurram os antigos */
+        .ob-ped-card--flow {
+          animation: obPedidoFlowIn 0.6s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+          transform-origin: center top;
+        }
+        @keyframes obPedidoFlowIn {
+          0% {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.85);
+            max-height: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+          }
+          50% {
+            opacity: 1;
+            max-height: 200px;
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            max-height: 200px;
+          }
+        }
+
         @keyframes obPedidoDrop {
           0% {
             opacity: 0;
@@ -853,8 +877,8 @@ function SlidePlaceholder({ title, subtitle, emoji }: { title: string; subtitle:
 }
 
 /* ─── Slide 2: Pedidos organizados ─────────────────
-   Replica o card real mobile (.ped-card / .mob-card-*) do app,
-   com 3 pedidos caindo em sequência.   */
+   Fluxo animado: pedidos entram no topo, empurram os antigos pra cima,
+   os mais antigos somem. No final para com 2 fixos + peek. */
 const PEDIDOS_DEMO = [
   {
     id: 1,
@@ -880,7 +904,112 @@ const PEDIDOS_DEMO = [
   },
   {
     id: 2,
-    numero: "128",
+    numero: "126",
+    statusLabel: "Novo",
+    statusColor: "#1d4ed8",
+    statusBg: "#dbeafe",
+    statusDot: "#1d4ed8",
+    cliente: "Juliana Santos",
+    datetime: "Hoje · 13:20",
+    produto: "Torta de Morango",
+    qtd: "1 unidade · média",
+    valor: "R$ 95,00",
+    emoji: "🍰",
+    pagamento: "PIX",
+    pagamentoStatus: "Pago",
+    pagamentoColor: "#16a34a",
+    pagamentoBg: "#dcfce7",
+    entregaIcon: "📍",
+    entregaLabel: "Entrega",
+    dataLabel: "Domingo",
+  },
+  {
+    id: 3,
+    numero: "125",
+    statusLabel: "Confirmado",
+    statusColor: "#7c3aed",
+    statusBg: "#ede9fe",
+    statusDot: "#7c3aed",
+    cliente: "Fernanda Alves",
+    datetime: "Hoje · 12:05",
+    produto: "Caixa de Brigadeiros",
+    qtd: "24 unidades · gourmet",
+    valor: "R$ 48,00",
+    emoji: "🍫",
+    pagamento: "PIX",
+    pagamentoStatus: "Pago",
+    pagamentoColor: "#16a34a",
+    pagamentoBg: "#dcfce7",
+    entregaIcon: "📌",
+    entregaLabel: "Retirada",
+    dataLabel: "Hoje",
+  },
+  {
+    id: 4,
+    numero: "124",
+    statusLabel: "Em produção",
+    statusColor: "#d97706",
+    statusBg: "#FAEEDA",
+    statusDot: "#d97706",
+    cliente: "Patrícia Rocha",
+    datetime: "Hoje · 10:48",
+    produto: "Bolo Piscina",
+    qtd: "3kg · redondo",
+    valor: "R$ 210,00",
+    emoji: "🎂",
+    pagamento: "Sinal",
+    pagamentoStatus: "Parcial",
+    pagamentoColor: "#d97706",
+    pagamentoBg: "#FAEEDA",
+    entregaIcon: "📍",
+    entregaLabel: "Entrega",
+    dataLabel: "Sábado",
+  },
+  {
+    id: 5,
+    numero: "123",
+    statusLabel: "Entregue",
+    statusColor: "#15803d",
+    statusBg: "#dcfce7",
+    statusDot: "#15803d",
+    cliente: "Larissa Mendes",
+    datetime: "Ontem · 18:32",
+    produto: "Cupcakes Decorados",
+    qtd: "12 unidades · sortidos",
+    valor: "R$ 84,00",
+    emoji: "🧁",
+    pagamento: "PIX",
+    pagamentoStatus: "Pago",
+    pagamentoColor: "#16a34a",
+    pagamentoBg: "#dcfce7",
+    entregaIcon: "📌",
+    entregaLabel: "Retirada",
+    dataLabel: "Ontem",
+  },
+  {
+    id: 6,
+    numero: "122",
+    statusLabel: "Confirmado",
+    statusColor: "#7c3aed",
+    statusBg: "#ede9fe",
+    statusDot: "#7c3aed",
+    cliente: "Camila Ribeiro",
+    datetime: "Ontem · 16:10",
+    produto: "Torta Holandesa",
+    qtd: "1 unidade · grande",
+    valor: "R$ 135,00",
+    emoji: "🥧",
+    pagamento: "PIX",
+    pagamentoStatus: "Pago",
+    pagamentoColor: "#16a34a",
+    pagamentoBg: "#dcfce7",
+    entregaIcon: "📍",
+    entregaLabel: "Entrega",
+    dataLabel: "Domingo",
+  },
+  {
+    id: 7,
+    numero: "121",
     statusLabel: "Entregue",
     statusColor: "#15803d",
     statusBg: "#dcfce7",
@@ -900,9 +1029,64 @@ const PEDIDOS_DEMO = [
     entregaLabel: "Retirada",
     dataLabel: "Ontem",
   },
+  {
+    id: 8,
+    numero: "120",
+    statusLabel: "Entregue",
+    statusColor: "#15803d",
+    statusBg: "#dcfce7",
+    statusDot: "#15803d",
+    cliente: "Beatriz Costa",
+    datetime: "Ontem · 14:22",
+    produto: "Bolo de Aniversário",
+    qtd: "2kg · com pasta",
+    valor: "R$ 180,00",
+    emoji: "🎂",
+    pagamento: "PIX",
+    pagamentoStatus: "Pago",
+    pagamentoColor: "#16a34a",
+    pagamentoBg: "#dcfce7",
+    entregaIcon: "📍",
+    entregaLabel: "Entrega",
+    dataLabel: "Ontem",
+  },
 ];
 
 function Slide2Pedidos() {
+  // Índice do "próximo pedido a entrar" — começa em 0 e vai até 8 (para no final)
+  const [proximoIdx, setProximoIdx] = useState(0);
+  // Lista visível na tela (máx 2 cards principais + 1 peek)
+  const [visiveis, setVisiveis] = useState<typeof PEDIDOS_DEMO>([]);
+  const [terminou, setTerminou] = useState(false);
+
+  useEffect(() => {
+    const timers: number[] = [];
+    // Primeiro pedido entra rápido
+    timers.push(window.setTimeout(() => {
+      setVisiveis([PEDIDOS_DEMO[0]]);
+      setProximoIdx(1);
+    }, 300));
+
+    // Depois entra a cada 1.4s até o último
+    for (let i = 1; i < PEDIDOS_DEMO.length; i++) {
+      timers.push(window.setTimeout(() => {
+        setVisiveis((prev) => {
+          const next = [PEDIDOS_DEMO[i], ...prev];
+          // Mantém no máximo 3 (2 visíveis + peek)
+          return next.slice(0, 3);
+        });
+        setProximoIdx(i + 1);
+      }, 300 + i * 1400));
+    }
+
+    // Marca "terminou" depois do último → aparece o subtitle
+    timers.push(window.setTimeout(() => {
+      setTerminou(true);
+    }, 300 + PEDIDOS_DEMO.length * 1400 + 600));
+
+    return () => timers.forEach((t) => clearTimeout(t));
+  }, []);
+
   return (
     <>
       <div className="ob-slide-textabove">
@@ -911,77 +1095,70 @@ function Slide2Pedidos() {
       </div>
 
       <div className="ob-pedidos-stack">
-        {PEDIDOS_DEMO.map((p, idx) => (
-          <div
-            key={p.id}
-            className="ob-ped-card"
-            style={{ animationDelay: `${0.2 + idx * 0.6}s` }}
-          >
-            {/* Topo: número + status + cliente + datetime */}
-            <div className="ob-mob-card-topo">
-              <div className="ob-ped-card-head-row">
-                <span className="ob-ped-card-numero">Pedido #{p.numero}</span>
-                <span className="ob-ped-card-status" style={{ color: p.statusColor, background: p.statusBg }}>
-                  <span className="ob-ped-card-status-dot" style={{ background: p.statusDot }} />
-                  {p.statusLabel}
-                </span>
+        {visiveis.map((p, idx) => {
+          const isPeek = idx === 2; // 3º card é o peek
+          const isOldest = idx === visiveis.length - 1 && visiveis.length === 3;
+          return (
+            <div
+              key={p.id}
+              className={`ob-ped-card ob-ped-card--flow ${isPeek ? "ob-ped-card--peek" : ""}`}
+            >
+              {/* Topo: número + status + cliente + datetime */}
+              <div className="ob-mob-card-topo">
+                <div className="ob-ped-card-head-row">
+                  <span className="ob-ped-card-numero">Pedido #{p.numero}</span>
+                  <span className="ob-ped-card-status" style={{ color: p.statusColor, background: p.statusBg }}>
+                    <span className="ob-ped-card-status-dot" style={{ background: p.statusDot }} />
+                    {p.statusLabel}
+                  </span>
+                </div>
+                <p className="ob-mob-card-cliente">{p.cliente}</p>
+                <span className="ob-mob-card-datetime">{p.datetime}</span>
               </div>
-              <p className="ob-mob-card-cliente">{p.cliente}</p>
-              <span className="ob-mob-card-datetime">{p.datetime}</span>
+
+              {!isPeek && (
+                <>
+                  <div className="ob-mob-card-divider" />
+
+                  {/* Produto + valor */}
+                  <div className="ob-mob-card-produto">
+                    <div className="ob-mob-card-produto-img">
+                      {p.imagem
+                        ? <img src={p.imagem} alt={p.produto} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        : <span>{p.emoji}</span>}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p className="ob-mob-card-produto-nome">{p.produto}</p>
+                      <p className="ob-mob-card-produto-qtd">{p.qtd}</p>
+                    </div>
+                    <p className="ob-mob-card-valor">{p.valor}</p>
+                  </div>
+
+                  <div className="ob-mob-card-divider" />
+
+                  {/* Rodapé: pagamento + entrega */}
+                  <div className="ob-mob-card-rodape">
+                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                      <span className="ob-mob-card-info-label">Pagamento:</span>
+                      <span style={{ fontSize: "0.7rem", color: p.pagamentoColor, fontWeight: 600 }}>{p.pagamento}</span>
+                      <span className="ob-ped-card-status" style={{ color: p.pagamentoColor, background: p.pagamentoBg, fontSize: "0.6rem", padding: "2px 6px" }}>
+                        {p.pagamentoStatus}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: "0.7rem", color: "#6E3548", display: "flex", alignItems: "center", gap: 4 }}>
+                      {p.entregaIcon} {p.entregaLabel}
+                      <span style={{ color: "#431524", fontWeight: 600 }}>· {p.dataLabel}</span>
+                    </span>
+                  </div>
+                </>
+              )}
+
+              {isPeek && <div className="ob-ped-card-peek-fade" />}
             </div>
-
-            <div className="ob-mob-card-divider" />
-
-            {/* Produto + valor */}
-            <div className="ob-mob-card-produto">
-              <div className="ob-mob-card-produto-img">
-                {p.imagem
-                  ? <img src={p.imagem} alt={p.produto} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                  : <span>{p.emoji}</span>}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p className="ob-mob-card-produto-nome">{p.produto}</p>
-                <p className="ob-mob-card-produto-qtd">{p.qtd}</p>
-              </div>
-              <p className="ob-mob-card-valor">{p.valor}</p>
-            </div>
-
-            <div className="ob-mob-card-divider" />
-
-            {/* Rodapé: pagamento + entrega */}
-            <div className="ob-mob-card-rodape">
-              <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                <span className="ob-mob-card-info-label">Pagamento:</span>
-                <span style={{ fontSize: "0.7rem", color: p.pagamentoColor, fontWeight: 600 }}>{p.pagamento}</span>
-                <span className="ob-ped-card-status" style={{ color: p.pagamentoColor, background: p.pagamentoBg, fontSize: "0.6rem", padding: "2px 6px" }}>
-                  {p.pagamentoStatus}
-                </span>
-              </div>
-              <span style={{ fontSize: "0.7rem", color: "#6E3548", display: "flex", alignItems: "center", gap: 4 }}>
-                {p.entregaIcon} {p.entregaLabel}
-                <span style={{ color: "#431524", fontWeight: 600 }}>· {p.dataLabel}</span>
-              </span>
-            </div>
-          </div>
-        ))}
-
-        {/* Card "espião" — só o topo, sumindo num fade pra sugerir mais pedidos */}
-        <div className="ob-ped-card ob-ped-card--peek" style={{ animationDelay: "1.9s" }}>
-          <div className="ob-mob-card-topo">
-            <div className="ob-ped-card-head-row">
-              <span className="ob-ped-card-numero">Pedido #129</span>
-              <span className="ob-ped-card-status" style={{ color: "#15803d", background: "#dcfce7" }}>
-                <span className="ob-ped-card-status-dot" style={{ background: "#15803d" }} />
-                Entregue
-              </span>
-            </div>
-            <p className="ob-mob-card-cliente">Camila Ribeiro</p>
-            <span className="ob-mob-card-datetime">Hoje · 17:12</span>
-          </div>
-          <div className="ob-ped-card-peek-fade" />
-        </div>
+          );
+        })}
       </div>
-      <p className="ob-slide-subtitle">E NA PALMA<br/>DA SUA MÃO</p>
+      {terminou && <p className="ob-slide-subtitle">E NA PALMA<br/>DA SUA MÃO</p>}
     </>
   );
 }
