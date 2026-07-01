@@ -227,10 +227,12 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         /* ── Subtitle (embaixo dos cards) — complemento do título ── */
         .ob-slide-subtitle {
           margin: 1.1rem 0 0;
-          font-size: 1.1rem;
-          font-weight: 700;
+          font-size: 1.15rem;
+          font-weight: 800;
           color: #fff;
-          letter-spacing: 0.01em;
+          letter-spacing: -0.01em;
+          line-height: 1.2;
+          max-width: 22ch;
           animation: obFadeUp 0.6s ease both;
         }
         .ob-slide-title {
@@ -584,10 +586,19 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           font-weight: 800;
           color: #431524;
           font-variant-numeric: tabular-nums;
-          min-width: 70px;
-          text-align: right;
           font-feature-settings: "tnum";
           white-space: nowrap;
+          display: inline-flex;
+          align-items: baseline;
+          gap: 3px;
+          min-width: 78px;
+        }
+        .ob-ing-cad-preco-symbol {
+          flex-shrink: 0;
+        }
+        .ob-ing-cad-preco-value {
+          flex: 1;
+          text-align: right;
         }
         .ob-ing-cad-check {
           width: 22px; height: 22px;
@@ -970,7 +981,7 @@ function Slide2Pedidos() {
           <div className="ob-ped-card-peek-fade" />
         </div>
       </div>
-      <p className="ob-slide-subtitle">E na palma da sua mão.</p>
+      <p className="ob-slide-subtitle">E NA PALMA<br/>DA SUA MÃO</p>
     </>
   );
 }
@@ -1029,6 +1040,15 @@ const INGREDIENTES_DEMO: Ingrediente[] = [
     emoji: "🍫",
     bg: "#efebe9",
     imagem: "/tutorial/nutella.webp",
+  },
+  {
+    nome: "Granulado de Chocolate",
+    marca: "Sicão",
+    preco: "23,90",
+    peso: "300g",
+    emoji: "🍫",
+    bg: "#efebe9",
+    imagem: "/tutorial/sicao.png",
   },
   {
     nome: "Forminhas para Brigadeiro",
@@ -1171,7 +1191,10 @@ function Slide3Ingredientes() {
               <span className="ob-ing-cad-nome">{c.nome}</span>
               <span className="ob-ing-cad-marca">{c.marca} · {c.peso}</span>
             </div>
-            <span className="ob-ing-cad-preco">R$ {c.preco}</span>
+            <span className="ob-ing-cad-preco">
+              <span className="ob-ing-cad-preco-symbol">R$</span>
+              <span className="ob-ing-cad-preco-value">{c.preco}</span>
+            </span>
             <span className="ob-ing-cad-check">✓</span>
           </div>
         ))}
@@ -1242,7 +1265,7 @@ function Slide3Ingredientes() {
         )}
       </div>
       {terminou && (
-        <p className="ob-slide-subtitle">Sempre organizados e prontos para usar.</p>
+        <p className="ob-slide-subtitle">SEMPRE ORGANIZADOS<br/>E PRONTOS PARA USAR</p>
       )}
     </>
   );
