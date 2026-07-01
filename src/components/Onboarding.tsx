@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CaretRight } from "@phosphor-icons/react";
 
 /**
@@ -48,7 +48,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
     onClose(alcancada);
   };
 
-  const handleSlideReady = () => setSlideReady(true);
+  const handleSlideReady = useCallback(() => setSlideReady(true), []);
 
   return (
     <div className="ob-root" role="dialog" aria-modal="true" aria-label="Boas-vindas ao Doonly">
