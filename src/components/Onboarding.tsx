@@ -226,15 +226,15 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
         /* ── Subtitle (embaixo dos cards) — complemento do título ── */
         .ob-slide-subtitle {
-          margin: 0.9rem 0 0;
-          font-size: 0.95rem;
-          font-weight: 600;
-          color: rgba(255,255,255,0.85);
+          margin: 1.1rem 0 0;
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: #fff;
           letter-spacing: 0.01em;
-          animation: obFadeUp 0.6s ease 1s both;
+          animation: obFadeUp 0.6s ease both;
         }
         .ob-slide-title {
-          font-size: 1.6rem;
+          font-size: 1.45rem;
           font-weight: 800;
           letter-spacing: -0.02em;
           margin: 0 0 0.75rem;
@@ -530,20 +530,6 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           gap: 0.5rem;
           position: relative;
         }
-        /* Fade suave nas bordas quando muitos cards se acumulam */
-        .ob-ing-wrap::after {
-          content: "";
-          position: absolute;
-          left: 0; right: 0; bottom: 0;
-          height: 30px;
-          background: linear-gradient(to bottom, transparent, rgba(42,16,25,0.95));
-          pointer-events: none;
-          opacity: 0;
-          transition: opacity 0.5s;
-        }
-        .ob-ing-wrap.ob-ing-wrap--full::after {
-          opacity: 1;
-        }
 
         /* Card já cadastrado (compacto, verde de check) */
         .ob-ing-cad-card {
@@ -798,7 +784,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         /* ── Desktop: aumenta tipografia e centraliza melhor ── */
         @media (min-width: 768px) {
           .ob-content { padding: 2rem; }
-          .ob-slide-title { font-size: 2.2rem; }
+          .ob-slide-title { font-size: 2rem; }
           .ob-slide-eyebrow { font-size: 1rem; }
           .ob-slide-text { font-size: 1.1rem; }
           .ob-welcome-coroa { width: 170px; margin-bottom: 2.5rem; }
@@ -1063,6 +1049,7 @@ function Slide3Ingredientes() {
   const [marcaTyped, setMarcaTyped] = useState("");
   const [precoTyped, setPrecoTyped] = useState("");
   const [cadastrados, setCadastrados] = useState<Ingrediente[]>([]);
+  const [terminou, setTerminou] = useState(false);
 
   const atual = INGREDIENTES_DEMO[ingredienteIdx];
 
@@ -1134,10 +1121,15 @@ function Slide3Ingredientes() {
     timers.push(window.setTimeout(() => setStep(10), precoEndTime + gap + 300));
 
     // Etapa 7: cadastrado! (mostra card verde e adiciona à lista)
+    const isUltimo = ingredienteIdx === INGREDIENTES_DEMO.length - 1;
     timers.push(
       window.setTimeout(() => {
         setStep(11);
         setCadastrados((prev) => [...prev, atual]);
+        if (isUltimo) {
+          // marca como finalizado após pequeno delay pra dar respiro à animação
+          window.setTimeout(() => setTerminou(true), 800);
+        }
       }, precoEndTime + gap + 300 + saveTime)
     );
 
@@ -1158,7 +1150,7 @@ function Slide3Ingredientes() {
     <>
       <div className="ob-slide-textabove">
         <span className="ob-slide-eyebrow">Com o Doonly...</span>
-        <h2 className="ob-slide-title">TODOS OS INGREDIENTES<br/>DA SUA RECEITA</h2>
+        <h2 className="ob-slide-title">TODOS OS INGREDIENTES<br/>DAS SUAS RECEITAS</h2>
       </div>
 
       <div className={`ob-ing-wrap ${wrapFull ? "ob-ing-wrap--full" : ""}`}>
@@ -1244,7 +1236,9 @@ function Slide3Ingredientes() {
           </div>
         )}
       </div>
-      <p className="ob-slide-subtitle">Ficam organizados e catalogados.</p>
+      {terminou && (
+        <p className="ob-slide-subtitle">Sempre organizados e prontos para usar.</p>
+      )}
     </>
   );
 }
