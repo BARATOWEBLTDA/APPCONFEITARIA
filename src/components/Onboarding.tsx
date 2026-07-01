@@ -989,33 +989,48 @@ const INGREDIENTES_DEMO: Ingrediente[] = [
   {
     nome: "Leite Condensado",
     marca: "Moça",
-    preco: "8,90",
+    preco: "7,89",
     peso: "395g",
     emoji: "🥛",
     bg: "#fff8e1",
     imagem: "/tutorial/moça.webp",
   },
   {
-    nome: "Chantilly Supreme",
-    marca: "Amélia",
-    preco: "22,90",
-    peso: "1L",
+    nome: "Leite em Pó",
+    marca: "Ninho Forti+",
+    preco: "20,99",
+    peso: "380g",
+    emoji: "🥛",
+    bg: "#fffbe6",
+  },
+  {
+    nome: "Creme de Leite",
+    marca: "Nestlé",
+    preco: "3,48",
+    peso: "200g",
     emoji: "🥛",
     bg: "#f5f5f5",
-    imagem: "/tutorial/chantily.png",
+  },
+  {
+    nome: "Creme de Avelã",
+    marca: "Nutella",
+    preco: "192,99",
+    peso: "3kg",
+    emoji: "🍫",
+    bg: "#efebe9",
+  },
+  {
+    nome: "Forminha Brigadeiro",
+    marca: "100 unidades",
+    preco: "4,14",
+    peso: "100un",
+    emoji: "🧁",
+    bg: "#fce4ec",
   },
 ];
 
-// Ingredientes "extras" que surgem automaticamente depois dos 2 principais,
-// pra dar a sensação de que a despensa está enchendo sozinha.
-const INGREDIENTES_EXTRAS: Ingrediente[] = [
-  { nome: "Farinha de Trigo", marca: "Dona Benta · 1kg", preco: "5,90", peso: "1kg", emoji: "🌾", bg: "#fef9e7" },
-  { nome: "Ovos Brancos", marca: "Katayama · 12un", preco: "12,00", peso: "12un", emoji: "🥚", bg: "#fff8e1" },
-  { nome: "Açúcar Refinado", marca: "União · 1kg", preco: "4,50", peso: "1kg", emoji: "🍬", bg: "#f5f5f5" },
-  { nome: "Manteiga sem Sal", marca: "Aviação · 200g", preco: "18,90", peso: "200g", emoji: "🧈", bg: "#fff8e1" },
-  { nome: "Chocolate em Pó", marca: "Nestlé · 200g", preco: "14,50", peso: "200g", emoji: "🍫", bg: "#efebe9" },
-  { nome: "Fermento em Pó", marca: "Royal · 100g", preco: "6,90", peso: "100g", emoji: "🧂", bg: "#f5f5f5" },
-];
+// (Extras removidos — agora usamos só os 5 ingredientes reais da receita)
+const INGREDIENTES_EXTRAS: Ingrediente[] = [];
 
 function Slide3Ingredientes() {
   const [ingredienteIdx, setIngredienteIdx] = useState(0);
@@ -1041,8 +1056,14 @@ function Slide3Ingredientes() {
     setMarcaTyped("");
     setPrecoTyped("");
 
-    const isSegundo = ingredienteIdx === 1;
-    const baseDelay = isSegundo ? 300 : 500; // 2º um pouco mais rápido
+    // Timing adaptativo: 1º normal (didático), 2º em diante bem mais rápido
+    const isPrimeiro = ingredienteIdx === 0;
+    const typeSpeed = isPrimeiro ? 80 : 30; // velocidade de digitação (ms/letra)
+    const baseDelay = isPrimeiro ? 500 : 200;
+    const gap = isPrimeiro ? 300 : 120; // pausa entre campos
+    const searchTime = isPrimeiro ? 900 : 400; // tempo do "buscando"
+    const saveTime = isPrimeiro ? 700 : 300;
+    const finishTime = isPrimeiro ? 1200 : 600;
 
     // Etapa 1: digitar nome (letra por letra)
     timers.push(window.setTimeout(() => setStep(1), baseDelay));
@@ -1050,86 +1071,74 @@ function Slide3Ingredientes() {
       timers.push(
         window.setTimeout(() => {
           setNomeTyped(atual.nome.slice(0, i + 1));
-        }, baseDelay + 80 * (i + 1))
+        }, baseDelay + typeSpeed * (i + 1))
       );
     });
-    const nomeEndTime = baseDelay + 80 * atual.nome.length + 200;
+    const nomeEndTime = baseDelay + typeSpeed * atual.nome.length + 150;
     timers.push(window.setTimeout(() => setStep(2), nomeEndTime));
 
     // Etapa 2: digitar marca
-    timers.push(window.setTimeout(() => setStep(3), nomeEndTime + 300));
+    timers.push(window.setTimeout(() => setStep(3), nomeEndTime + gap));
     atual.marca.split("").forEach((_, i) => {
       timers.push(
         window.setTimeout(() => {
           setMarcaTyped(atual.marca.slice(0, i + 1));
-        }, nomeEndTime + 400 + 80 * (i + 1))
+        }, nomeEndTime + gap + 100 + typeSpeed * (i + 1))
       );
     });
-    const marcaEndTime = nomeEndTime + 400 + 80 * atual.marca.length + 200;
+    const marcaEndTime = nomeEndTime + gap + 100 + typeSpeed * atual.marca.length + 150;
     timers.push(window.setTimeout(() => setStep(4), marcaEndTime));
 
     // Etapa 3: buscando imagem
-    timers.push(window.setTimeout(() => setStep(5), marcaEndTime + 300));
-    timers.push(window.setTimeout(() => setStep(6), marcaEndTime + 900));
+    timers.push(window.setTimeout(() => setStep(5), marcaEndTime + gap));
+    timers.push(window.setTimeout(() => setStep(6), marcaEndTime + gap + searchTime));
 
     // Etapa 4: digitar preço
-    const precoStart = marcaEndTime + 1200;
+    const precoStart = marcaEndTime + gap + searchTime + 200;
     timers.push(window.setTimeout(() => setStep(7), precoStart));
     atual.preco.split("").forEach((_, i) => {
       timers.push(
         window.setTimeout(() => {
           setPrecoTyped(atual.preco.slice(0, i + 1));
-        }, precoStart + 100 + 80 * (i + 1))
+        }, precoStart + 100 + typeSpeed * (i + 1))
       );
     });
-    const precoEndTime = precoStart + 100 + 80 * atual.preco.length + 200;
+    const precoEndTime = precoStart + 100 + typeSpeed * atual.preco.length + 150;
     timers.push(window.setTimeout(() => setStep(8), precoEndTime));
 
     // Etapa 5: peso aparece
-    timers.push(window.setTimeout(() => setStep(9), precoEndTime + 300));
+    timers.push(window.setTimeout(() => setStep(9), precoEndTime + gap));
 
     // Etapa 6: salvando
-    timers.push(window.setTimeout(() => setStep(10), precoEndTime + 700));
+    timers.push(window.setTimeout(() => setStep(10), precoEndTime + gap + 300));
 
     // Etapa 7: cadastrado! (mostra card verde e adiciona à lista)
     timers.push(
       window.setTimeout(() => {
         setStep(11);
         setCadastrados((prev) => [...prev, atual]);
-      }, precoEndTime + 1200)
+      }, precoEndTime + gap + 300 + saveTime)
     );
 
-    // Etapa 8: próximo ingrediente (ou começar a mostrar os extras)
+    // Etapa 8: próximo ingrediente
     if (ingredienteIdx < INGREDIENTES_DEMO.length - 1) {
       timers.push(
-        window.setTimeout(() => setIngredienteIdx((i) => i + 1), precoEndTime + 2200)
+        window.setTimeout(() => setIngredienteIdx((i) => i + 1), precoEndTime + gap + 300 + saveTime + finishTime)
       );
-    } else {
-      // Terminou os principais → começa a "chover" ingredientes extras
-      INGREDIENTES_EXTRAS.forEach((extra, i) => {
-        timers.push(
-          window.setTimeout(() => {
-            setCadastrados((prev) => [...prev, extra]);
-          }, precoEndTime + 2000 + i * 500)
-        );
-      });
     }
 
     return () => timers.forEach((t) => clearTimeout(t));
   }, [ingredienteIdx]);
 
   const showCursor = (n: number) => step === n;
-
-  // Mostra só os últimos 5 cards pra não overflow — os anteriores somem em fade
-  const cardsVisiveis = cadastrados.slice(-5);
   const wrapFull = cadastrados.length >= 4;
 
   return (
     <>
       <div className={`ob-ing-wrap ${wrapFull ? "ob-ing-wrap--full" : ""}`}>
         {/* Cards já cadastrados (aparecem em cima, empilhando) */}
-        {cardsVisiveis.map((c, i) => (
-          <div key={`${cadastrados.length - cardsVisiveis.length + i}`} className="ob-ing-cad-card">
+        {cadastrados.map((c, i) => (
+          <div key={i} className="ob-ing-cad-card">
             <div className="ob-ing-cad-img" style={{ background: c.bg }}>
               {c.imagem
                 ? <img src={c.imagem} alt={c.nome} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
@@ -1212,7 +1221,7 @@ function Slide3Ingredientes() {
 
       <div className="ob-slide-textbelow">
         <span className="ob-slide-eyebrow">Com o Doonly...</span>
-        <h2 className="ob-slide-title">CADASTRAR INGREDIENTES<br/>É RÁPIDO</h2>
+        <h2 className="ob-slide-title">TODOS OS INGREDIENTES<br/>DA SUA RECEITA</h2>
       </div>
     </>
   );
