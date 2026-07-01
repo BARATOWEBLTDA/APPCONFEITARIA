@@ -993,7 +993,7 @@ const INGREDIENTES_DEMO: Ingrediente[] = [
     peso: "395g",
     emoji: "🥛",
     bg: "#fff8e1",
-    imagem: "/tutorial/moça.webp",
+    imagem: "/tutorial/moca.webp",
   },
   {
     nome: "Leite em Pó",
