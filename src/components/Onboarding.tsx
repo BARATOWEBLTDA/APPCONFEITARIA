@@ -203,18 +203,18 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           animation: obFadeUp 0.5s ease 0.1s both;
         }
 
-        /* ── Textos abaixo dos cards (aparecem depois deles caírem) ── */
-        .ob-slide-textbelow {
-          margin-top: 1.5rem;
+        /* ── Texto no topo, fixo (não muda de lugar conforme cards surgem) ── */
+        .ob-slide-textabove {
+          margin-bottom: 1.25rem;
           display: flex;
           flex-direction: column;
           align-items: center;
         }
-        .ob-slide-textbelow .ob-slide-eyebrow {
-          animation: obFadeUp 0.5s ease 2.2s both;
+        .ob-slide-textabove .ob-slide-eyebrow {
+          animation: obFadeUp 0.5s ease 0.1s both;
         }
-        .ob-slide-textbelow .ob-slide-title {
-          animation: obFadeUp 0.6s ease 2.4s both;
+        .ob-slide-textabove .ob-slide-title {
+          animation: obFadeUp 0.6s ease 0.3s both;
           opacity: 0;
         }
         .ob-slide-title {
@@ -887,6 +887,11 @@ const PEDIDOS_DEMO = [
 function Slide2Pedidos() {
   return (
     <>
+      <div className="ob-slide-textabove">
+        <span className="ob-slide-eyebrow">Com o Doonly...</span>
+        <h2 className="ob-slide-title">SEUS PEDIDOS<br/>FICAM ORGANIZADOS</h2>
+      </div>
+
       <div className="ob-pedidos-stack">
         {PEDIDOS_DEMO.map((p, idx) => (
           <div
@@ -957,11 +962,6 @@ function Slide2Pedidos() {
           </div>
           <div className="ob-ped-card-peek-fade" />
         </div>
-      </div>
-
-      <div className="ob-slide-textbelow">
-        <span className="ob-slide-eyebrow">Com o Doonly...</span>
-        <h2 className="ob-slide-title">SEUS PEDIDOS<br/>FICAM ORGANIZADOS</h2>
       </div>
     </>
   );
@@ -1135,6 +1135,11 @@ function Slide3Ingredientes() {
 
   return (
     <>
+      <div className="ob-slide-textabove">
+        <span className="ob-slide-eyebrow">Com o Doonly...</span>
+        <h2 className="ob-slide-title">TODOS OS INGREDIENTES<br/>DA SUA RECEITA</h2>
+      </div>
+
       <div className={`ob-ing-wrap ${wrapFull ? "ob-ing-wrap--full" : ""}`}>
         {/* Cards já cadastrados (aparecem em cima, empilhando) */}
         {cadastrados.map((c, i) => (
@@ -1217,11 +1222,6 @@ function Slide3Ingredientes() {
             </button>
           </div>
         )}
-      </div>
-
-      <div className="ob-slide-textbelow">
-        <span className="ob-slide-eyebrow">Com o Doonly...</span>
-        <h2 className="ob-slide-title">TODOS OS INGREDIENTES<br/>DA SUA RECEITA</h2>
       </div>
     </>
   );
