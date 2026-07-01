@@ -64,7 +64,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         {slideIdx === 0 && <Slide1Welcome />}
         {slideIdx === 1 && <Slide2Pedidos />}
         {slideIdx === 2 && <Slide3Ingredientes />}
-        {slideIdx === 3 && <SlidePlaceholder title="Nunca esqueça uma cliente" subtitle="Cadastre clientes e envie promoções na época do aniversário." emoji="🎂" />}
+        {slideIdx === 3 && <Slide4Precificacao />}
         {slideIdx === 4 && <SlidePlaceholder title="Descubra o preço certo" subtitle="O Doonly calcula tudo — custo, lucro e margem ideal." emoji="💰" />}
         {slideIdx === 5 && <SlidePlaceholder title="Sua receita já calcula tudo" subtitle="Ingredientes, embalagem, energia, lucro. Tudo preenchendo sozinho." emoji="📝" />}
         {slideIdx === 6 && <SlidePlaceholder title="Seu negócio organizado" subtitle="Enquanto você faz bolos, o Doonly cuida da gestão." emoji="📊" />}
@@ -831,6 +831,186 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           to   { transform: scale(1.02); }
         }
 
+        /* ── Slide 4: Precificação ── */
+        .ob-prec-card {
+          background: #fff;
+          border-radius: 16px;
+          padding: 0.9rem;
+          border: 1.5px solid #ECC2D0;
+          box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+          color: #431524;
+          text-align: left;
+          width: 100%;
+          max-width: 360px;
+          animation: obFadeUp 0.5s ease both;
+        }
+        .ob-prec-produto {
+          display: flex;
+          align-items: center;
+          gap: 0.65rem;
+          padding-bottom: 0.75rem;
+          border-bottom: 1px dashed #ECC2D0;
+        }
+        .ob-prec-produto-img {
+          width: 42px; height: 42px;
+          border-radius: 8px;
+          background: #efebe9;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.4rem;
+          flex-shrink: 0;
+        }
+        .ob-prec-produto-nome {
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: #431524;
+          margin: 0;
+        }
+        .ob-prec-produto-info {
+          font-size: 0.7rem;
+          color: #6E3548;
+          margin: 2px 0 0;
+        }
+        .ob-prec-produto-custo {
+          font-size: 0.95rem;
+          font-weight: 800;
+          color: #6E3548;
+          margin: 0;
+          white-space: nowrap;
+        }
+
+        .ob-prec-pergunta {
+          padding: 0.85rem 0;
+        }
+        .ob-prec-label {
+          display: block;
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: #6E3548;
+          margin-bottom: 6px;
+          text-align: center;
+        }
+        .ob-prec-input {
+          background: #F7EEF1;
+          border: 2px solid #ECC2D0;
+          border-radius: 12px;
+          padding: 0.7rem 1rem;
+          font-size: 1.5rem;
+          font-weight: 800;
+          color: #431524;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          transition: all 0.4s;
+          font-variant-numeric: tabular-nums;
+        }
+        .ob-prec-input-symbol {
+          font-size: 1rem;
+          color: #6E3548;
+        }
+        .ob-prec-input-value {
+          font-size: 1.5rem;
+          min-width: 24px;
+        }
+        .ob-prec-input--prejuizo {
+          border-color: #dc2626;
+          background: #fef2f2;
+          color: #dc2626;
+          animation: obShake 0.5s ease;
+        }
+        .ob-prec-input--lucro {
+          border-color: #15803d;
+          background: #f0fdf4;
+          color: #15803d;
+          animation: obPulseGreen 0.6s ease;
+        }
+        @keyframes obShake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-6px); }
+          75% { transform: translateX(6px); }
+        }
+        @keyframes obPulseGreen {
+          0% { transform: scale(1); box-shadow: 0 0 0 rgba(21,128,61,0); }
+          50% { transform: scale(1.03); box-shadow: 0 0 30px rgba(21,128,61,0.4); }
+          100% { transform: scale(1); box-shadow: 0 0 0 rgba(21,128,61,0); }
+        }
+        .ob-prec-cursor {
+          width: 3px;
+          height: 24px;
+          background: currentColor;
+          animation: obCursor 0.6s infinite;
+        }
+
+        /* Resultado */
+        .ob-prec-resultado {
+          margin-top: 0.65rem;
+          padding: 0.85rem;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          animation: obResultadoIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+        @keyframes obResultadoIn {
+          from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .ob-prec-resultado--prejuizo {
+          background: #fef2f2;
+          border: 1.5px solid #dc2626;
+        }
+        .ob-prec-resultado--lucro {
+          background: #f0fdf4;
+          border: 1.5px solid #15803d;
+        }
+        .ob-prec-resultado-icon {
+          width: 40px; height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.3rem;
+          flex-shrink: 0;
+        }
+        .ob-prec-resultado--prejuizo .ob-prec-resultado-icon {
+          background: #fee2e2;
+        }
+        .ob-prec-resultado--lucro .ob-prec-resultado-icon {
+          background: #dcfce7;
+          color: #15803d;
+          font-weight: 900;
+          font-size: 1.5rem;
+        }
+        .ob-prec-resultado-content {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .ob-prec-resultado-label {
+          font-size: 0.72rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+        }
+        .ob-prec-resultado--prejuizo .ob-prec-resultado-label { color: #dc2626; }
+        .ob-prec-resultado--lucro .ob-prec-resultado-label { color: #15803d; }
+        .ob-prec-resultado-valor {
+          font-size: 1.4rem;
+          font-weight: 800;
+          letter-spacing: -0.02em;
+          font-variant-numeric: tabular-nums;
+        }
+        .ob-prec-resultado--prejuizo .ob-prec-resultado-valor { color: #dc2626; }
+        .ob-prec-resultado--lucro .ob-prec-resultado-valor { color: #15803d; }
+        .ob-prec-resultado-margem {
+          font-size: 0.75rem;
+          font-weight: 600;
+          color: #6E3548;
+        }
+
         /* ── Desktop: aumenta tipografia e centraliza melhor ── */
         @media (min-width: 768px) {
           .ob-content { padding: 2rem; }
@@ -1455,6 +1635,119 @@ function Slide3Ingredientes() {
       {terminou && (
         <p className="ob-slide-subtitle">SEMPRE ORGANIZADOS<br/>E PRONTOS PARA USAR</p>
       )}
+    </>
+  );
+}
+
+/* ─── Slide 4: O desafio da precificação ───────────
+   Momento "wow" do tutorial:
+   1. Mostra o brigadeiro e pergunta quanto ela cobraria
+   2. Auto-digita R$ 2,50 → mostra prejuízo em vermelho
+   3. Limpa, auto-digita R$ 4,50 → mostra lucro em verde
+   4. Mensagem final embaixo */
+
+const CUSTO_UNITARIO = 2.38;
+const PRECOS_TESTE = ["2,50", "4,50"];
+
+function Slide4Precificacao() {
+  const [precoTyped, setPrecoTyped] = useState("");
+  const [rodadaIdx, setRodadaIdx] = useState(0); // 0 = R$ 2,50 (prejuízo), 1 = R$ 4,50 (lucro)
+  const [mostrandoResultado, setMostrandoResultado] = useState(false);
+  const [cursorAtivo, setCursorAtivo] = useState(false);
+
+  useEffect(() => {
+    const timers: number[] = [];
+    const preco = PRECOS_TESTE[rodadaIdx];
+    const startDelay = rodadaIdx === 0 ? 800 : 500;
+
+    // Reset visual ao mudar de rodada
+    setPrecoTyped("");
+    setMostrandoResultado(false);
+
+    // Ativar cursor após entrada
+    timers.push(window.setTimeout(() => setCursorAtivo(true), startDelay));
+
+    // Auto-digita o preço letra por letra
+    preco.split("").forEach((_, i) => {
+      timers.push(
+        window.setTimeout(() => {
+          setPrecoTyped(preco.slice(0, i + 1));
+        }, startDelay + 400 + 120 * (i + 1))
+      );
+    });
+
+    // Depois de digitar, "clica" e mostra resultado
+    const digitEndTime = startDelay + 400 + 120 * preco.length + 400;
+    timers.push(window.setTimeout(() => {
+      setCursorAtivo(false);
+      setMostrandoResultado(true);
+    }, digitEndTime));
+
+    // Se ainda tá na primeira rodada, avança pra segunda
+    if (rodadaIdx === 0) {
+      timers.push(window.setTimeout(() => {
+        setRodadaIdx(1);
+      }, digitEndTime + 3800));
+    }
+
+    return () => timers.forEach((t) => clearTimeout(t));
+  }, [rodadaIdx]);
+
+  // Calcula lucro dinamicamente
+  const precoNum = parseFloat(precoTyped.replace(",", ".")) || 0;
+  const lucro = precoNum - CUSTO_UNITARIO;
+  const margem = precoNum > 0 ? (lucro / precoNum) * 100 : 0;
+  const isPrejuizo = lucro < 0.5; // menos de 50 centavos = "prejuízo/apertado"
+
+  return (
+    <>
+      <div className="ob-slide-textabove">
+        <span className="ob-slide-eyebrow">Com o Doonly...</span>
+        <h2 className="ob-slide-title">DESCUBRA O<br/>PREÇO CERTO</h2>
+      </div>
+
+      {/* Card do produto sendo precificado */}
+      <div className="ob-prec-card">
+        <div className="ob-prec-produto">
+          <div className="ob-prec-produto-img">
+            <span>🍫</span>
+          </div>
+          <div style={{ flex: 1, textAlign: "left" }}>
+            <p className="ob-prec-produto-nome">Brigadeiro Gourmet</p>
+            <p className="ob-prec-produto-info">Custo por unidade</p>
+          </div>
+          <p className="ob-prec-produto-custo">R$ {CUSTO_UNITARIO.toFixed(2).replace(".", ",")}</p>
+        </div>
+
+        <div className="ob-prec-pergunta">
+          <label className="ob-prec-label">Por quanto você venderia?</label>
+          <div className={`ob-prec-input ${mostrandoResultado ? (isPrejuizo ? "ob-prec-input--prejuizo" : "ob-prec-input--lucro") : ""}`}>
+            <span className="ob-prec-input-symbol">R$</span>
+            <span className="ob-prec-input-value">{precoTyped}</span>
+            {cursorAtivo && <span className="ob-prec-cursor" />}
+          </div>
+        </div>
+
+        {/* Resultado (só aparece depois de digitar) */}
+        {mostrandoResultado && (
+          <div className={`ob-prec-resultado ${isPrejuizo ? "ob-prec-resultado--prejuizo" : "ob-prec-resultado--lucro"}`} key={rodadaIdx}>
+            <div className="ob-prec-resultado-icon">
+              {isPrejuizo ? "⚠️" : "✓"}
+            </div>
+            <div className="ob-prec-resultado-content">
+              <span className="ob-prec-resultado-label">
+                {isPrejuizo ? "Cuidado! Lucro muito baixo" : "Lucro por unidade"}
+              </span>
+              <span className="ob-prec-resultado-valor">
+                R$ {lucro.toFixed(2).replace(".", ",")}
+              </span>
+              <span className="ob-prec-resultado-margem">
+                Margem: {margem.toFixed(0)}% {!isPrejuizo && "— ideal!"}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
     </>
   );
 }
