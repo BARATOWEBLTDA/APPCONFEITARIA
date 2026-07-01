@@ -1373,7 +1373,7 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
     }, 300));
 
     // Depois entra a cada 1.4s até o último
-    for (let i = 1; i < PEDIDOS_DEMO.length; i++) {
+    for (let i = 1; i < 6; i++) {
       timers.push(window.setTimeout(() => {
         setVisiveis((prev) => {
           const next = [PEDIDOS_DEMO[i], ...prev];
@@ -1384,7 +1384,7 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
     }
 
     // Marca pronto depois do último
-    timers.push(window.setTimeout(onReady, 300 + PEDIDOS_DEMO.length * 1400 + 500));
+    timers.push(window.setTimeout(onReady, 300 + 6 * 1400 + 500));
 
     return () => timers.forEach((t) => clearTimeout(t));
   }, [onReady]);
@@ -1394,7 +1394,7 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
       <div className="ob-slide-textabove">
         <span className="ob-slide-eyebrow">Com o Doonly...</span>
         <h2 className="ob-slide-title">SEUS PEDIDOS<br/>FICAM ORGANIZADOS</h2>
-        <p className="ob-slide-subtitle-top">E na palma da sua mão</p>
+        <p className="ob-slide-subtitle-top">E na palma da sua mão!</p>
       </div>
 
       <div className="ob-pedidos-stack">
