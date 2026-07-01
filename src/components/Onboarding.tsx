@@ -880,6 +880,101 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           white-space: nowrap;
         }
 
+        /* Detalhamento de custos */
+        .ob-prec-detalhes {
+          margin-top: 0.75rem;
+          padding-top: 0.75rem;
+          border-top: 1px dashed #ECC2D0;
+        }
+        .ob-prec-detalhes-titulo {
+          display: block;
+          font-size: 0.65rem;
+          font-weight: 700;
+          color: #6E3548;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 0.5rem;
+          text-align: left;
+        }
+        .ob-prec-linha {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.3rem 0;
+          font-size: 0.82rem;
+          opacity: 0;
+          transform: translateX(-8px);
+          transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .ob-prec-linha--visible {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        .ob-prec-linha-label {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          color: #431524;
+          font-weight: 500;
+        }
+        .ob-prec-linha-icone {
+          font-size: 1rem;
+        }
+        .ob-prec-linha-valor {
+          font-weight: 700;
+          color: #431524;
+          font-variant-numeric: tabular-nums;
+          display: inline-flex;
+          align-items: baseline;
+          gap: 3px;
+          min-width: 80px;
+        }
+        .ob-prec-preco-symbol {
+          font-size: 0.7rem;
+          color: #6E3548;
+        }
+        .ob-prec-preco-value {
+          text-align: right;
+          flex: 1;
+        }
+        .ob-prec-divider {
+          height: 1px;
+          background: #ECC2D0;
+          margin: 0.35rem 0;
+          transform-origin: left;
+          transform: scaleX(0);
+          transition: transform 0.4s ease;
+        }
+        .ob-prec-divider--visible { transform: scaleX(1); }
+        .ob-prec-linha--total {
+          font-weight: 700;
+        }
+        .ob-prec-linha--total .ob-prec-linha-label,
+        .ob-prec-linha--total .ob-prec-linha-valor {
+          font-weight: 800;
+        }
+        .ob-prec-linha--destaque {
+          background: linear-gradient(90deg, #f7eef1, #fce4ec);
+          margin: 0.4rem -0.3rem 0;
+          padding: 0.55rem 0.7rem;
+          border-radius: 8px;
+          border: 1px dashed #ECC2D0;
+        }
+        .ob-prec-linha--destaque .ob-prec-linha-label {
+          color: #6E3548;
+          font-size: 0.75rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+        }
+        .ob-prec-linha--destaque .ob-prec-linha-valor {
+          color: #431524;
+          font-size: 1.05rem;
+        }
+        .ob-prec-linha--destaque .ob-prec-preco-value {
+          font-size: 1.05rem;
+        }
+
         .ob-prec-pergunta {
           padding: 0.85rem 0;
         }
@@ -1641,49 +1736,72 @@ function Slide3Ingredientes() {
 
 /* ─── Slide 4: O desafio da precificação ───────────
    Momento "wow" do tutorial:
-   1. Mostra o brigadeiro e pergunta quanto ela cobraria
-   2. Auto-digita R$ 2,50 → mostra prejuízo em vermelho
-   3. Limpa, auto-digita R$ 4,50 → mostra lucro em verde
-   4. Mensagem final embaixo */
+   1. Mostra o brigadeiro e detalha custos linha por linha
+   2. Auto-digita R$ 6,00 → mostra prejuízo em vermelho
+   3. Limpa, auto-digita R$ 12,00 → mostra lucro em verde */
 
-const CUSTO_UNITARIO = 2.38;
-const PRECOS_TESTE = ["2,50", "4,50"];
+const CUSTOS_DETALHE = [
+  { label: "Ingredientes", valor: 34.48, icone: "🥄" },
+  { label: "Mão de obra", valor: 15.00, icone: "👩‍🍳" },
+  { label: "Custos fixos", valor: 3.50, icone: "💡" },
+];
+const CUSTO_TOTAL = 52.98; // 40 brigadeiros
+const CUSTO_POR_CAIXA = 5.30; // caixa com 4un
+const PRECOS_TESTE = ["6,00", "12,00"];
 
 function Slide4Precificacao() {
   const [precoTyped, setPrecoTyped] = useState("");
-  const [rodadaIdx, setRodadaIdx] = useState(0); // 0 = R$ 2,50 (prejuízo), 1 = R$ 4,50 (lucro)
+  const [rodadaIdx, setRodadaIdx] = useState(-1); // -1 = ainda mostrando custos, 0 = R$ 6, 1 = R$ 12
   const [mostrandoResultado, setMostrandoResultado] = useState(false);
   const [cursorAtivo, setCursorAtivo] = useState(false);
+  const [linhasCustos, setLinhasCustos] = useState(0); // quantas linhas de custos apareceram
+  const [mostraTotal, setMostraTotal] = useState(false);
 
+  // Timeline inicial: revela custos linha por linha, depois começa desafio
   useEffect(() => {
     const timers: number[] = [];
-    const preco = PRECOS_TESTE[rodadaIdx];
-    const startDelay = rodadaIdx === 0 ? 800 : 500;
 
-    // Reset visual ao mudar de rodada
+    // Linhas de custo aparecem em sequência
+    CUSTOS_DETALHE.forEach((_, i) => {
+      timers.push(window.setTimeout(() => setLinhasCustos(i + 1), 800 + i * 600));
+    });
+
+    // Total aparece depois
+    timers.push(window.setTimeout(() => setMostraTotal(true), 800 + CUSTOS_DETALHE.length * 600 + 400));
+
+    // Começa o desafio de precificação
+    timers.push(window.setTimeout(() => setRodadaIdx(0), 800 + CUSTOS_DETALHE.length * 600 + 1200));
+
+    return () => timers.forEach((t) => clearTimeout(t));
+  }, []);
+
+  // Timeline do desafio: digita, mostra resultado, muda de rodada
+  useEffect(() => {
+    if (rodadaIdx < 0) return;
+    const timers: number[] = [];
+    const preco = PRECOS_TESTE[rodadaIdx];
+
     setPrecoTyped("");
     setMostrandoResultado(false);
+    setCursorAtivo(true);
 
-    // Ativar cursor após entrada
-    timers.push(window.setTimeout(() => setCursorAtivo(true), startDelay));
-
-    // Auto-digita o preço letra por letra
+    // Auto-digita o preço
     preco.split("").forEach((_, i) => {
       timers.push(
         window.setTimeout(() => {
           setPrecoTyped(preco.slice(0, i + 1));
-        }, startDelay + 400 + 120 * (i + 1))
+        }, 400 + 120 * (i + 1))
       );
     });
 
     // Depois de digitar, "clica" e mostra resultado
-    const digitEndTime = startDelay + 400 + 120 * preco.length + 400;
+    const digitEndTime = 400 + 120 * preco.length + 400;
     timers.push(window.setTimeout(() => {
       setCursorAtivo(false);
       setMostrandoResultado(true);
     }, digitEndTime));
 
-    // Se ainda tá na primeira rodada, avança pra segunda
+    // Se é primeira rodada, avança pra segunda
     if (rodadaIdx === 0) {
       timers.push(window.setTimeout(() => {
         setRodadaIdx(1);
@@ -1693,11 +1811,11 @@ function Slide4Precificacao() {
     return () => timers.forEach((t) => clearTimeout(t));
   }, [rodadaIdx]);
 
-  // Calcula lucro dinamicamente
+  // Cálculos
   const precoNum = parseFloat(precoTyped.replace(",", ".")) || 0;
-  const lucro = precoNum - CUSTO_UNITARIO;
+  const lucro = precoNum - CUSTO_POR_CAIXA;
   const margem = precoNum > 0 ? (lucro / precoNum) * 100 : 0;
-  const isPrejuizo = lucro < 0.5; // menos de 50 centavos = "prejuízo/apertado"
+  const isPrejuizo = margem < 30; // menos de 30% margem = "apertado"
 
   return (
     <>
@@ -1706,29 +1824,70 @@ function Slide4Precificacao() {
         <h2 className="ob-slide-title">DESCUBRA O<br/>PREÇO CERTO</h2>
       </div>
 
-      {/* Card do produto sendo precificado */}
       <div className="ob-prec-card">
+        {/* Cabeçalho do produto */}
         <div className="ob-prec-produto">
           <div className="ob-prec-produto-img">
             <span>🍫</span>
           </div>
           <div style={{ flex: 1, textAlign: "left" }}>
-            <p className="ob-prec-produto-nome">Brigadeiro Gourmet</p>
-            <p className="ob-prec-produto-info">Custo por unidade</p>
-          </div>
-          <p className="ob-prec-produto-custo">R$ {CUSTO_UNITARIO.toFixed(2).replace(".", ",")}</p>
-        </div>
-
-        <div className="ob-prec-pergunta">
-          <label className="ob-prec-label">Por quanto você venderia?</label>
-          <div className={`ob-prec-input ${mostrandoResultado ? (isPrejuizo ? "ob-prec-input--prejuizo" : "ob-prec-input--lucro") : ""}`}>
-            <span className="ob-prec-input-symbol">R$</span>
-            <span className="ob-prec-input-value">{precoTyped}</span>
-            {cursorAtivo && <span className="ob-prec-cursor" />}
+            <p className="ob-prec-produto-nome">Caixa de Brigadeiro</p>
+            <p className="ob-prec-produto-info">4 unidades · gourmet</p>
           </div>
         </div>
 
-        {/* Resultado (só aparece depois de digitar) */}
+        {/* Detalhamento de custos — aparece linha por linha */}
+        <div className="ob-prec-detalhes">
+          <span className="ob-prec-detalhes-titulo">Custos da produção (40 un)</span>
+
+          {CUSTOS_DETALHE.map((c, i) => (
+            <div key={c.label} className={`ob-prec-linha ${i < linhasCustos ? "ob-prec-linha--visible" : ""}`}>
+              <span className="ob-prec-linha-label">
+                <span className="ob-prec-linha-icone">{c.icone}</span>
+                {c.label}
+              </span>
+              <span className="ob-prec-linha-valor">
+                <span className="ob-prec-preco-symbol">R$</span>
+                <span className="ob-prec-preco-value">{c.valor.toFixed(2).replace(".", ",")}</span>
+              </span>
+            </div>
+          ))}
+
+          {/* Divisor */}
+          <div className={`ob-prec-divider ${mostraTotal ? "ob-prec-divider--visible" : ""}`} />
+
+          {/* Total */}
+          <div className={`ob-prec-linha ob-prec-linha--total ${mostraTotal ? "ob-prec-linha--visible" : ""}`}>
+            <span className="ob-prec-linha-label">Total</span>
+            <span className="ob-prec-linha-valor">
+              <span className="ob-prec-preco-symbol">R$</span>
+              <span className="ob-prec-preco-value">{CUSTO_TOTAL.toFixed(2).replace(".", ",")}</span>
+            </span>
+          </div>
+
+          {/* Custo por caixa (destaque) */}
+          <div className={`ob-prec-linha ob-prec-linha--destaque ${mostraTotal ? "ob-prec-linha--visible" : ""}`}>
+            <span className="ob-prec-linha-label">Custo por caixa</span>
+            <span className="ob-prec-linha-valor">
+              <span className="ob-prec-preco-symbol">R$</span>
+              <span className="ob-prec-preco-value">{CUSTO_POR_CAIXA.toFixed(2).replace(".", ",")}</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Pergunta + input (aparece só depois dos custos) */}
+        {rodadaIdx >= 0 && (
+          <div className="ob-prec-pergunta">
+            <label className="ob-prec-label">Por quanto vende a caixa?</label>
+            <div className={`ob-prec-input ${mostrandoResultado ? (isPrejuizo ? "ob-prec-input--prejuizo" : "ob-prec-input--lucro") : ""}`}>
+              <span className="ob-prec-input-symbol">R$</span>
+              <span className="ob-prec-input-value">{precoTyped}</span>
+              {cursorAtivo && <span className="ob-prec-cursor" />}
+            </div>
+          </div>
+        )}
+
+        {/* Resultado */}
         {mostrandoResultado && (
           <div className={`ob-prec-resultado ${isPrejuizo ? "ob-prec-resultado--prejuizo" : "ob-prec-resultado--lucro"}`} key={rodadaIdx}>
             <div className="ob-prec-resultado-icon">
@@ -1736,7 +1895,7 @@ function Slide4Precificacao() {
             </div>
             <div className="ob-prec-resultado-content">
               <span className="ob-prec-resultado-label">
-                {isPrejuizo ? "Cuidado! Lucro muito baixo" : "Lucro por unidade"}
+                {isPrejuizo ? "Margem apertada" : "Lucro por caixa"}
               </span>
               <span className="ob-prec-resultado-valor">
                 R$ {lucro.toFixed(2).replace(".", ",")}
