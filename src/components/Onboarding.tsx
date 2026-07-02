@@ -327,34 +327,38 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-welcome-anchor .ob-fill {
           font-weight: 900;
           text-shadow: none;
-          /* Rose gold quase uniforme com uma faixa estreita de luz no ~30% da largura da palavra */
+          color: #ffffff;
+          /* Gradiente todo branco com um "flash" quente estreito que varre */
           background: linear-gradient(
             100deg,
-            #C88762 0%,
-            #C88762 24%,
-            #FCE5CD 30%,
-            #C88762 36%,
-            #C88762 50%,
-            #ffffff 50.01%,
+            #ffffff 0%,
+            #ffffff 42%,
+            #fff3c8 48%,
+            #ffffff 50%,
+            #fff3c8 52%,
+            #ffffff 58%,
             #ffffff 100%
           );
           background-size: 200% 100%;
-          background-position: 100% 0;
+          background-position: 200% 0;
+          background-repeat: no-repeat;
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
-          color: transparent;
-          filter: drop-shadow(0 0 0 rgba(248,216,184,0));
-          animation: obFillSweep 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          filter: drop-shadow(0 0 0 rgba(255,240,200,0));
+          animation: obShimmerSweep 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
-        @keyframes obFillSweep {
+        @keyframes obShimmerSweep {
           0% {
-            background-position: 100% 0;
-            filter: drop-shadow(0 0 0 rgba(248,216,184,0));
+            background-position: 200% 0;
+            filter: drop-shadow(0 0 0 rgba(255,240,200,0));
+          }
+          50% {
+            filter: drop-shadow(0 0 8px rgba(255,240,200,0.65)) drop-shadow(0 0 18px rgba(255,215,140,0.3));
           }
           100% {
-            background-position: 0% 0;
-            filter: drop-shadow(0 0 4px rgba(252,229,205,0.6)) drop-shadow(0 0 10px rgba(200,135,98,0.3));
+            background-position: -100% 0;
+            filter: drop-shadow(0 0 4px rgba(255,240,200,0.35));
           }
         }
 
