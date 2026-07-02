@@ -310,10 +310,19 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           max-width: 620px;
           display: flex;
           flex-direction: column;
-          gap: 1.4rem;
+          gap: 1rem;
           color: #fff;
           text-align: center;
           text-shadow: 0 2px 24px rgba(0,0,0,0.35);
+        }
+        .ob-welcome-eyebrow {
+          font-size: 0.85rem;
+          font-weight: 600;
+          letter-spacing: 0.28em;
+          color: rgba(255,255,255,0.72);
+          opacity: 0;
+          transform: translateY(10px);
+          animation: obFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
         .ob-welcome-block {
           font-size: 1.55rem;
@@ -1357,17 +1366,9 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
 /* ─── Slide 1: Boas-vindas ──────────────────────── */
 function Slide1Welcome({ onReady }: { onReady: () => void }) {
-  const [phase, setPhase] = useState(0);
-
   useEffect(() => {
-    const timers: number[] = [];
-    // Fase 0: coroa + "DESCUBRA COMO O DOONLY VAI..." (~3.4s)
-    timers.push(window.setTimeout(() => setPhase(1), 3400));
-    // Fase 1: "DEIXAR SUA CONFEITARIA...." (~2.2s)
-    timers.push(window.setTimeout(() => setPhase(2), 5600));
-    // Fase 2: "ORGANIZADA DO CARDÁPIO AO LUCRO" — 3 sweeps, botão ao final
-    timers.push(window.setTimeout(onReady, 8700));
-    return () => timers.forEach((t) => clearTimeout(t));
+    const t = window.setTimeout(onReady, 4200); // após LUCRO shimmer (3.0s + 1.5s - folga)
+    return () => clearTimeout(t);
   }, [onReady]);
 
   return (
@@ -1381,32 +1382,17 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
         />
       </div>
 
-      {phase === 0 && (
-        <div className="ob-welcome-anchor" key="p0">
-          <div className="ob-welcome-block" style={{ animationDelay: "0.3s" }}>
-            DESCUBRA COMO<br/>
-            O <span className="ob-fill" style={{ animationDelay: "1.4s" }}>DOONLY</span> VAI...
-          </div>
+      <div className="ob-welcome-anchor">
+        <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.3s" }}>
+          COM O DOONLY
         </div>
-      )}
-
-      {phase === 1 && (
-        <div className="ob-welcome-anchor" key="p1">
-          <div className="ob-welcome-block" style={{ animationDelay: "0.15s" }}>
-            DEIXAR SUA<br/>
-            CONFEITARIA....
-          </div>
+        <div className="ob-welcome-block" style={{ animationDelay: "0.7s" }}>
+          SUA CONFEITARIA<br/>
+          FICA <span className="ob-fill" style={{ animationDelay: "2.0s" }}>ORGANIZADA</span><br/>
+          DO CARDÁPIO<br/>
+          AO <span className="ob-fill" style={{ animationDelay: "3.0s" }}>LUCRO</span>
         </div>
-      )}
-
-      {phase === 2 && (
-        <div className="ob-welcome-anchor" key="p2">
-          <div className="ob-welcome-block" style={{ animationDelay: "0.15s" }}>
-            <span className="ob-fill" style={{ animationDelay: "0.8s" }}>ORGANIZADA</span> DO<br/>
-            <span className="ob-fill" style={{ animationDelay: "1.5s" }}>CARDÁPIO</span> AO <span className="ob-fill" style={{ animationDelay: "2.2s" }}>LUCRO</span>
-          </div>
-        </div>
-      )}
+      </div>
     </>
   );
 }
