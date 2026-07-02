@@ -286,11 +286,11 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         @keyframes obCoroaPulse {
           0%, 100% {
             transform: scale(1);
-            filter: drop-shadow(0 0 12px rgba(244,208,63,0.4)) drop-shadow(0 0 0 rgba(244,208,63,0));
+            filter: drop-shadow(0 0 12px rgba(244,196,160,0.4)) drop-shadow(0 0 0 rgba(244,196,160,0));
           }
           50% {
             transform: scale(1.06);
-            filter: drop-shadow(0 0 28px rgba(244,208,63,0.85)) drop-shadow(0 0 60px rgba(244,208,63,0.4));
+            filter: drop-shadow(0 0 28px rgba(244,196,160,0.85)) drop-shadow(0 0 60px rgba(244,196,160,0.4));
           }
         }
 
