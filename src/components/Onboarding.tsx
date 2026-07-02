@@ -24,7 +24,7 @@ interface OnboardingProps {
   onClose: (slideAlcancada: number) => void;
 }
 
-const TOTAL_SLIDES = 9;
+const TOTAL_SLIDES = 9; // v2
 
 export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const [slideIdx, setSlideIdx] = useState(0);
