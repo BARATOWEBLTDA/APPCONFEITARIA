@@ -277,7 +277,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           filter: hue-rotate(-25deg) saturate(0.7);
           animation:
             obCoroaEntrada 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards,
-            obCoroaPulse 2.4s ease-in-out 0.9s infinite;
+            obCoroaPulse 4.5s ease-in-out 0.9s infinite;
         }
         @keyframes obCoroaEntrada {
           from { opacity: 0; transform: scale(0.6); filter: hue-rotate(-25deg) saturate(0.7); }
@@ -286,37 +286,41 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         @keyframes obCoroaPulse {
           0%, 100% {
             transform: scale(1);
-            filter: hue-rotate(-25deg) saturate(0.7) drop-shadow(0 0 12px rgba(244,196,160,0.4));
+            filter: hue-rotate(-25deg) saturate(0.7) drop-shadow(0 0 14px rgba(244,196,160,0.4));
           }
           50% {
-            transform: scale(1.06);
-            filter: hue-rotate(-25deg) saturate(0.7) drop-shadow(0 0 28px rgba(244,196,160,0.9)) drop-shadow(0 0 60px rgba(244,196,160,0.45));
+            transform: scale(1.05);
+            filter: hue-rotate(-25deg) saturate(0.7) drop-shadow(0 0 32px rgba(244,196,160,0.9)) drop-shadow(0 0 70px rgba(244,196,160,0.5));
           }
         }
 
-        .ob-welcome-headline {
-          font-size: 1.9rem;
-          font-weight: 800;
-          line-height: 1.2;
-          letter-spacing: -0.02em;
-          color: #fff;
+        .ob-welcome-anchor {
           margin: 0;
+          padding: 0 1.5rem;
+          max-width: 520px;
+          font-size: 1.4rem;
+          font-weight: 500;
+          line-height: 1.45;
+          letter-spacing: -0.005em;
+          color: #fff;
           text-align: center;
           opacity: 0;
-          animation: obFadeUp 0.7s ease 0.7s both;
+          animation: obFadeUp 0.8s ease 0.7s both;
           text-shadow: 0 2px 24px rgba(0,0,0,0.3);
         }
-        .ob-welcome-subtitle {
-          margin: 0.9rem 0 0;
-          font-size: 1rem;
-          font-weight: 400;
-          font-style: italic;
-          color: rgba(255,255,255,0.85);
-          text-align: center;
-          letter-spacing: 0.01em;
-          opacity: 0;
-          animation: obFadeUp 0.7s ease 1.15s both;
-          text-shadow: 0 2px 16px rgba(0,0,0,0.3);
+        .ob-welcome-anchor .ob-fill {
+          font-weight: 800;
+          background: linear-gradient(90deg, #F4C4A0 50%, #fff 50%);
+          background-size: 200% 100%;
+          background-position: 100% 0;
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
+          animation: obFillSweep 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        @keyframes obFillSweep {
+          to { background-position: 0% 0; }
         }
 
         /* ── Placeholder visual (etapa 1) ── */
@@ -1315,7 +1319,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 /* ─── Slide 1: Boas-vindas ──────────────────────── */
 function Slide1Welcome({ onReady }: { onReady: () => void }) {
   useEffect(() => {
-    const t = window.setTimeout(onReady, 2000); // após texto aparecer
+    const t = window.setTimeout(onReady, 4200); // após varredura terminar (última palavra: 3.3s + 0.6s + folga)
     return () => clearTimeout(t);
   }, [onReady]);
   return (
@@ -1326,11 +1330,12 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
         className="ob-welcome-coroa"
         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
       />
-      <h1 className="ob-welcome-headline">
-        SUA CONFEITARIA<br/>
-        ORGANIZADA.
-      </h1>
-      <p className="ob-welcome-subtitle">Do cardápio ao lucro.</p>
+      <p className="ob-welcome-anchor">
+        Com o <span className="ob-fill" style={{ animationDelay: "1.5s" }}>Doonly</span>,
+        sua confeitaria fica <span className="ob-fill" style={{ animationDelay: "2.1s" }}>organizada</span>,
+        do <span className="ob-fill" style={{ animationDelay: "2.7s" }}>cardápio</span> ao{" "}
+        <span className="ob-fill" style={{ animationDelay: "3.3s" }}>lucro</span>.
+      </p>
     </>
   );
 }
