@@ -337,42 +337,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           font-weight: 900;
           text-shadow: none;
           color: #FFF3C8;
-          /* Base sempre creme quente, com faixa branca mais brilhante que varre */
-          background: linear-gradient(
-            100deg,
-            #FFF3C8 0%,
-            #FFF3C8 42%,
-            #ffffff 48%,
-            #ffffff 50%,
-            #ffffff 52%,
-            #FFF3C8 58%,
-            #FFF3C8 100%
-          );
-          background-size: 220% 100%;
-          background-position: 220% 0;
-          background-repeat: no-repeat;
-          -webkit-background-clip: text;
-          background-clip: text;
-          -webkit-text-fill-color: transparent;
-          filter: drop-shadow(0 0 8px rgba(255,240,180,0.55)) drop-shadow(0 0 20px rgba(255,215,140,0.35));
-          animation: obShimmerLoop 4s ease-in-out infinite;
-        }
-        @keyframes obShimmerLoop {
-          0% {
-            background-position: 220% 0;
-            filter: drop-shadow(0 0 8px rgba(255,240,180,0.55)) drop-shadow(0 0 20px rgba(255,215,140,0.35));
-          }
-          18% {
-            filter: drop-shadow(0 0 14px rgba(255,245,200,0.85)) drop-shadow(0 0 32px rgba(255,225,160,0.5));
-          }
-          37% {
-            background-position: -120% 0;
-            filter: drop-shadow(0 0 8px rgba(255,240,180,0.55)) drop-shadow(0 0 20px rgba(255,215,140,0.35));
-          }
-          100% {
-            background-position: -120% 0;
-            filter: drop-shadow(0 0 8px rgba(255,240,180,0.55)) drop-shadow(0 0 20px rgba(255,215,140,0.35));
-          }
+          filter: drop-shadow(0 0 10px rgba(255,240,180,0.65)) drop-shadow(0 0 24px rgba(255,215,140,0.4));
         }
 
         /* ── Placeholder visual (etapa 1) ── */
