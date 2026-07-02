@@ -274,23 +274,23 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           margin-bottom: 2rem;
           opacity: 0;
           transform: scale(0.6);
-          filter: drop-shadow(0 0 0 rgba(244,208,63,0));
+          filter: hue-rotate(-25deg) saturate(0.7);
           animation:
             obCoroaEntrada 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards,
             obCoroaPulse 2.4s ease-in-out 0.9s infinite;
         }
         @keyframes obCoroaEntrada {
-          from { opacity: 0; transform: scale(0.6); }
-          to   { opacity: 1; transform: scale(1); }
+          from { opacity: 0; transform: scale(0.6); filter: hue-rotate(-25deg) saturate(0.7); }
+          to   { opacity: 1; transform: scale(1); filter: hue-rotate(-25deg) saturate(0.7); }
         }
         @keyframes obCoroaPulse {
           0%, 100% {
             transform: scale(1);
-            filter: drop-shadow(0 0 12px rgba(244,196,160,0.4)) drop-shadow(0 0 0 rgba(244,196,160,0));
+            filter: hue-rotate(-25deg) saturate(0.7) drop-shadow(0 0 12px rgba(244,196,160,0.4));
           }
           50% {
             transform: scale(1.06);
-            filter: drop-shadow(0 0 28px rgba(244,196,160,0.85)) drop-shadow(0 0 60px rgba(244,196,160,0.4));
+            filter: hue-rotate(-25deg) saturate(0.7) drop-shadow(0 0 28px rgba(244,196,160,0.9)) drop-shadow(0 0 60px rgba(244,196,160,0.45));
           }
         }
 
@@ -305,6 +305,18 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           opacity: 0;
           animation: obFadeUp 0.7s ease 0.7s both;
           text-shadow: 0 2px 24px rgba(0,0,0,0.3);
+        }
+        .ob-welcome-subtitle {
+          margin: 0.9rem 0 0;
+          font-size: 1rem;
+          font-weight: 400;
+          font-style: italic;
+          color: rgba(255,255,255,0.85);
+          text-align: center;
+          letter-spacing: 0.01em;
+          opacity: 0;
+          animation: obFadeUp 0.7s ease 1.15s both;
+          text-shadow: 0 2px 16px rgba(0,0,0,0.3);
         }
 
         /* ── Placeholder visual (etapa 1) ── */
@@ -1315,11 +1327,10 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
       />
       <h1 className="ob-welcome-headline">
-        ORGANIZE SEUS<br/>
-        PEDIDOS, CALCULE<br/>
-        SEUS PREÇOS<br/>
-        E VENDA MAIS.
+        SUA CONFEITARIA<br/>
+        ORGANIZADA.
       </h1>
+      <p className="ob-welcome-subtitle">Do cardápio ao lucro.</p>
     </>
   );
 }
