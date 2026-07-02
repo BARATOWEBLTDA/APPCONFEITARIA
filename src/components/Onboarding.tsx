@@ -336,38 +336,42 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-welcome-anchor .ob-fill {
           font-weight: 900;
           text-shadow: none;
-          color: #ffffff;
-          /* Gradiente todo branco com um "flash" quente estreito que varre */
+          color: #FFF3C8;
+          /* Base sempre creme quente, com faixa branca mais brilhante que varre */
           background: linear-gradient(
             100deg,
-            #ffffff 0%,
-            #ffffff 42%,
-            #fff3c8 48%,
+            #FFF3C8 0%,
+            #FFF3C8 42%,
+            #ffffff 48%,
             #ffffff 50%,
-            #fff3c8 52%,
-            #ffffff 58%,
-            #ffffff 100%
+            #ffffff 52%,
+            #FFF3C8 58%,
+            #FFF3C8 100%
           );
-          background-size: 200% 100%;
-          background-position: 200% 0;
+          background-size: 220% 100%;
+          background-position: 220% 0;
           background-repeat: no-repeat;
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
-          filter: drop-shadow(0 0 0 rgba(255,240,200,0));
-          animation: obShimmerSweep 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+          filter: drop-shadow(0 0 8px rgba(255,240,180,0.55)) drop-shadow(0 0 20px rgba(255,215,140,0.35));
+          animation: obShimmerLoop 4s ease-in-out infinite;
         }
-        @keyframes obShimmerSweep {
+        @keyframes obShimmerLoop {
           0% {
-            background-position: 200% 0;
-            filter: drop-shadow(0 0 0 rgba(255,240,200,0));
+            background-position: 220% 0;
+            filter: drop-shadow(0 0 8px rgba(255,240,180,0.55)) drop-shadow(0 0 20px rgba(255,215,140,0.35));
           }
-          50% {
-            filter: drop-shadow(0 0 8px rgba(255,240,200,0.65)) drop-shadow(0 0 18px rgba(255,215,140,0.3));
+          18% {
+            filter: drop-shadow(0 0 14px rgba(255,245,200,0.85)) drop-shadow(0 0 32px rgba(255,225,160,0.5));
+          }
+          37% {
+            background-position: -120% 0;
+            filter: drop-shadow(0 0 8px rgba(255,240,180,0.55)) drop-shadow(0 0 20px rgba(255,215,140,0.35));
           }
           100% {
-            background-position: -100% 0;
-            filter: drop-shadow(0 0 4px rgba(255,240,200,0.35));
+            background-position: -120% 0;
+            filter: drop-shadow(0 0 8px rgba(255,240,180,0.55)) drop-shadow(0 0 20px rgba(255,215,140,0.35));
           }
         }
 
@@ -1367,7 +1371,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 /* ─── Slide 1: Boas-vindas ──────────────────────── */
 function Slide1Welcome({ onReady }: { onReady: () => void }) {
   useEffect(() => {
-    const t = window.setTimeout(onReady, 4200); // após LUCRO shimmer (3.0s + 1.5s - folga)
+    const t = window.setTimeout(onReady, 2400); // texto fade completou + folga
     return () => clearTimeout(t);
   }, [onReady]);
 
