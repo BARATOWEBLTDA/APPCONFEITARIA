@@ -24,7 +24,7 @@ interface OnboardingProps {
   onClose: (slideAlcancada: number) => void;
 }
 
-const TOTAL_SLIDES = 8;
+const TOTAL_SLIDES = 9;
 
 export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const [slideIdx, setSlideIdx] = useState(0);
@@ -67,13 +67,14 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
       {/* Conteúdo da slide */}
       <div className="ob-content" key={slideIdx}>
         {slideIdx === 0 && <Slide1Welcome onReady={handleSlideReady} />}
-        {slideIdx === 1 && <Slide2Pedidos onReady={handleSlideReady} />}
-        {slideIdx === 2 && <Slide3Ingredientes onReady={handleSlideReady} />}
-        {slideIdx === 3 && <Slide4Precificacao onReady={handleSlideReady} />}
-        {slideIdx === 4 && <SlidePlaceholder title="Descubra o preço certo" subtitle="O Doonly calcula tudo — custo, lucro e margem ideal." emoji="💰" onReady={handleSlideReady} />}
-        {slideIdx === 5 && <SlidePlaceholder title="Sua receita já calcula tudo" subtitle="Ingredientes, embalagem, energia, lucro. Tudo preenchendo sozinho." emoji="📝" onReady={handleSlideReady} />}
-        {slideIdx === 6 && <SlidePlaceholder title="Seu negócio organizado" subtitle="Enquanto você faz bolos, o Doonly cuida da gestão." emoji="📊" onReady={handleSlideReady} />}
-        {slideIdx === 7 && <SlideFinal onStart={finish} />}
+        {slideIdx === 1 && <SlideClientes onReady={handleSlideReady} />}
+        {slideIdx === 2 && <Slide2Pedidos onReady={handleSlideReady} />}
+        {slideIdx === 3 && <Slide3Ingredientes onReady={handleSlideReady} />}
+        {slideIdx === 4 && <Slide4Precificacao onReady={handleSlideReady} />}
+        {slideIdx === 5 && <SlidePlaceholder title="Descubra o preço certo" subtitle="O Doonly calcula tudo — custo, lucro e margem ideal." emoji="💰" onReady={handleSlideReady} />}
+        {slideIdx === 6 && <SlidePlaceholder title="Sua receita já calcula tudo" subtitle="Ingredientes, embalagem, energia, lucro. Tudo preenchendo sozinho." emoji="📝" onReady={handleSlideReady} />}
+        {slideIdx === 7 && <SlidePlaceholder title="Seu negócio organizado" subtitle="Enquanto você faz bolos, o Doonly cuida da gestão." emoji="📊" onReady={handleSlideReady} />}
+        {slideIdx === 8 && <SlideFinal onStart={finish} />}
       </div>
 
       {/* Navegação inferior — esconde os botões na última (CTA está na slide) */}
@@ -414,6 +415,128 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
             transform: translateY(0) scale(1);
             max-height: 200px;
           }
+        }
+
+        /* === Cards de CLIENTES === */
+        .ob-clientes-stack {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          width: 100%;
+          max-width: 360px;
+          margin-top: 1.5rem;
+        }
+        .ob-cli-card {
+          background: #fff;
+          color: #431524;
+          border-radius: 14px;
+          border: 1.5px solid #ECC2D0;
+          padding: 0.85rem;
+          box-shadow: 0 12px 30px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
+          animation: obClienteFlowIn 0.6s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+          transform-origin: center top;
+        }
+        @keyframes obClienteFlowIn {
+          0% {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.85);
+            max-height: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+          }
+          50% {
+            opacity: 1;
+            max-height: 300px;
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            max-height: 300px;
+          }
+        }
+        .ob-cli-header {
+          display: flex;
+          align-items: center;
+          gap: 0.65rem;
+        }
+        .ob-cli-avatar {
+          width: 44px;
+          height: 44px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #fff;
+          font-weight: 700;
+          font-size: 0.95rem;
+          flex-shrink: 0;
+        }
+        .ob-cli-nome-bloco {
+          flex: 1 1 auto;
+          min-width: 0;
+        }
+        .ob-cli-nome {
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: #431524;
+          line-height: 1.2;
+        }
+        .ob-cli-sub {
+          font-size: 0.7rem;
+          color: #6E3548;
+          margin-top: 2px;
+        }
+        .ob-cli-badge-aniv {
+          background: #FEF3C7;
+          color: #B45309;
+          border: 1px solid #FCD34D;
+          font-size: 0.62rem;
+          font-weight: 600;
+          padding: 3px 7px;
+          border-radius: 999px;
+          white-space: nowrap;
+          display: flex;
+          align-items: center;
+          gap: 3px;
+          flex-shrink: 0;
+        }
+        .ob-cli-divider {
+          height: 1px;
+          background: linear-gradient(90deg, transparent, #ECC2D0, transparent);
+          margin: 0.65rem 0;
+        }
+        .ob-cli-metricas {
+          display: flex;
+          gap: 0.5rem;
+          font-size: 0.72rem;
+        }
+        .ob-cli-metrica {
+          flex: 1;
+          background: #FBF6F3;
+          border-radius: 8px;
+          padding: 0.4rem 0.55rem;
+        }
+        .ob-cli-metrica-label {
+          color: #6E3548;
+          font-size: 0.6rem;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+        }
+        .ob-cli-metrica-valor {
+          color: #431524;
+          font-weight: 700;
+          font-size: 0.85rem;
+          margin-top: 2px;
+        }
+        .ob-cli-ultima {
+          margin-top: 0.55rem;
+          font-size: 0.7rem;
+          color: #6E3548;
+          display: flex;
+          align-items: center;
+          gap: 4px;
         }
 
         @keyframes obPedidoDrop {
@@ -1358,6 +1481,113 @@ const PEDIDOS_DEMO = [
     dataLabel: "Ontem",
   },
 ];
+
+// ============================================================
+//  SLIDE CLIENTES — "Você nunca mais esquece uma cliente"
+// ============================================================
+const CLIENTES_DEMO = [
+  {
+    id: 1,
+    nome: "Ana Cristina Vieira",
+    initials: "AC",
+    avatarBg: "#F97316", // laranja
+    tempo: "8 meses",
+    totalPedidos: 12,
+    totalGasto: "R$ 1.428,00",
+    ticketMedio: "R$ 119,00",
+    ultimaCompra: "há 15 dias",
+    aniversario: "em 3 dias", // badge amarelo aparece
+  },
+  {
+    id: 2,
+    nome: "Débora Almeida",
+    initials: "DA",
+    avatarBg: "#7c3aed", // roxo
+    tempo: "1 ano e 2 meses",
+    totalPedidos: 24,
+    totalGasto: "R$ 2.845,50",
+    ticketMedio: "R$ 118,60",
+    ultimaCompra: "há 6 dias",
+    aniversario: null, // sem badge
+  },
+];
+
+function SlideClientes({ onReady }: { onReady: () => void }) {
+  const [visiveis, setVisiveis] = useState<typeof CLIENTES_DEMO>([]);
+
+  useEffect(() => {
+    const timers: number[] = [];
+
+    // Primeira cliente entra
+    timers.push(window.setTimeout(() => {
+      setVisiveis([CLIENTES_DEMO[0]]);
+    }, 300));
+
+    // Segunda entra depois
+    timers.push(window.setTimeout(() => {
+      setVisiveis([CLIENTES_DEMO[1], CLIENTES_DEMO[0]]);
+    }, 1700));
+
+    // Libera botão
+    timers.push(window.setTimeout(onReady, 3000));
+
+    return () => timers.forEach((t) => clearTimeout(t));
+  }, [onReady]);
+
+  return (
+    <div className="ob-slide-textabove">
+      <p className="ob-slide-eyebrow">Com o Doonly...</p>
+      <h2 className="ob-slide-title">
+        VOCÊ NUNCA MAIS
+        <br />
+        ESQUECE UMA CLIENTE
+      </h2>
+      <p className="ob-slide-subtitle-top">Tudo sobre elas, num só lugar</p>
+
+      <div className="ob-clientes-stack">
+        {visiveis.map((c) => (
+          <div key={c.id} className="ob-cli-card">
+            <div className="ob-cli-header">
+              <div className="ob-cli-avatar" style={{ background: c.avatarBg }}>
+                {c.initials}
+              </div>
+              <div className="ob-cli-nome-bloco">
+                <div className="ob-cli-nome">{c.nome}</div>
+                <div className="ob-cli-sub">cliente há {c.tempo}</div>
+              </div>
+              {c.aniversario && (
+                <div className="ob-cli-badge-aniv">
+                  🎂 {c.aniversario}
+                </div>
+              )}
+            </div>
+
+            <div className="ob-cli-divider" />
+
+            <div className="ob-cli-metricas">
+              <div className="ob-cli-metrica">
+                <div className="ob-cli-metrica-label">Pedidos</div>
+                <div className="ob-cli-metrica-valor">{c.totalPedidos}</div>
+              </div>
+              <div className="ob-cli-metrica">
+                <div className="ob-cli-metrica-label">Total gasto</div>
+                <div className="ob-cli-metrica-valor">{c.totalGasto}</div>
+              </div>
+              <div className="ob-cli-metrica">
+                <div className="ob-cli-metrica-label">Ticket médio</div>
+                <div className="ob-cli-metrica-valor">{c.ticketMedio}</div>
+              </div>
+            </div>
+
+            <div className="ob-cli-ultima">
+              ⏱ Última compra: <strong style={{ color: "#431524", fontWeight: 600 }}>{c.ultimaCompra}</strong>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function Slide2Pedidos({ onReady }: { onReady: () => void }) {
   // Índice do "próximo pedido a entrar" — começa em 0 e vai até 8 (para no final)
