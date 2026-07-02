@@ -327,16 +327,14 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-welcome-anchor .ob-fill {
           font-weight: 900;
           text-shadow: none;
-          /* Gradiente metálico: metade esquerda = rose gold com brilho central,
-             metade direita = branco. A varredura desloca o gradiente pra revelar. */
+          /* Rose gold quase uniforme com uma faixa estreita de luz no ~30% da largura da palavra */
           background: linear-gradient(
             100deg,
-            #B8724B 0%,
-            #E8A886 12%,
-            #F8D3B0 25%,
-            #FFF0DE 34%,
-            #F8D3B0 42%,
-            #E8A886 50%,
+            #C88762 0%,
+            #C88762 24%,
+            #FCE5CD 30%,
+            #C88762 36%,
+            #C88762 50%,
             #ffffff 50.01%,
             #ffffff 100%
           );
@@ -356,7 +354,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           }
           100% {
             background-position: 0% 0;
-            filter: drop-shadow(0 0 10px rgba(248,216,184,0.55)) drop-shadow(0 0 24px rgba(232,168,134,0.35));
+            filter: drop-shadow(0 0 4px rgba(252,229,205,0.6)) drop-shadow(0 0 10px rgba(200,135,98,0.3));
           }
         }
 
@@ -1370,7 +1368,7 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
 
   return (
     <>
-      <div className={`ob-coroa-wrap ${phase !== 0 ? "ob-coroa-wrap--gone" : ""}`}>
+      <div className="ob-coroa-wrap">
         <img
           src="/Sistema/TUTORIAL.png"
           alt=""
