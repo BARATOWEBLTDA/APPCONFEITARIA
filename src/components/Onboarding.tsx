@@ -298,15 +298,21 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           margin: 0;
           padding: 0 1.25rem;
           max-width: 620px;
+          display: flex;
+          flex-direction: column;
+          gap: 1.4rem;
+          color: #fff;
+          text-align: center;
+          text-shadow: 0 2px 24px rgba(0,0,0,0.35);
+        }
+        .ob-welcome-block {
           font-size: 1.55rem;
           font-weight: 800;
           line-height: 1.18;
           letter-spacing: 0.005em;
-          color: #fff;
-          text-align: center;
           opacity: 0;
-          animation: obFadeUp 0.8s ease 0.6s both;
-          text-shadow: 0 2px 24px rgba(0,0,0,0.35);
+          transform: translateY(14px);
+          animation: obFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
         .ob-welcome-anchor .ob-fill {
           font-weight: 900;
@@ -1319,7 +1325,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 /* ─── Slide 1: Boas-vindas ──────────────────────── */
 function Slide1Welcome({ onReady }: { onReady: () => void }) {
   useEffect(() => {
-    const t = window.setTimeout(onReady, 4200); // após varredura terminar (última palavra: 3.3s + 0.6s + folga)
+    const t = window.setTimeout(onReady, 4700); // último sweep (3.8s) + 0.75s + folga
     return () => clearTimeout(t);
   }, [onReady]);
   return (
@@ -1330,11 +1336,20 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
         className="ob-welcome-coroa"
         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
       />
-      <h1 className="ob-welcome-anchor">
-        DESCUBRA COMO O <span className="ob-fill" style={{ animationDelay: "1.5s" }}>DOONLY</span><br/>
-        VAI DEIXAR SUA CONFEITARIA <span className="ob-fill" style={{ animationDelay: "2.1s" }}>ORGANIZADA</span><br/>
-        DO <span className="ob-fill" style={{ animationDelay: "2.7s" }}>CARDÁPIO</span> AO <span className="ob-fill" style={{ animationDelay: "3.3s" }}>LUCRO</span>?
-      </h1>
+      <div className="ob-welcome-anchor">
+        <div className="ob-welcome-block" style={{ animationDelay: "0.4s" }}>
+          DESCUBRA COMO<br/>
+          O <span className="ob-fill" style={{ animationDelay: "2.0s" }}>DOONLY</span> VAI...
+        </div>
+        <div className="ob-welcome-block" style={{ animationDelay: "0.9s" }}>
+          DEIXAR SUA<br/>
+          CONFEITARIA
+        </div>
+        <div className="ob-welcome-block" style={{ animationDelay: "1.4s" }}>
+          <span className="ob-fill" style={{ animationDelay: "2.6s" }}>ORGANIZADA</span> DO<br/>
+          <span className="ob-fill" style={{ animationDelay: "3.2s" }}>CARDÁPIO</span> AO <span className="ob-fill" style={{ animationDelay: "3.8s" }}>LUCRO</span>
+        </div>
+      </div>
     </>
   );
 }
