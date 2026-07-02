@@ -316,17 +316,38 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
         .ob-welcome-anchor .ob-fill {
           font-weight: 900;
-          background: linear-gradient(90deg, #F4C4A0 50%, #fff 50%);
+          text-shadow: none;
+          /* Gradiente metálico: metade esquerda = rose gold com brilho central,
+             metade direita = branco. A varredura desloca o gradiente pra revelar. */
+          background: linear-gradient(
+            100deg,
+            #B8724B 0%,
+            #E8A886 12%,
+            #F8D3B0 25%,
+            #FFF0DE 34%,
+            #F8D3B0 42%,
+            #E8A886 50%,
+            #ffffff 50.01%,
+            #ffffff 100%
+          );
           background-size: 200% 100%;
           background-position: 100% 0;
           -webkit-background-clip: text;
           background-clip: text;
           -webkit-text-fill-color: transparent;
           color: transparent;
-          animation: obFillSweep 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          filter: drop-shadow(0 0 0 rgba(248,216,184,0));
+          animation: obFillSweep 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
         @keyframes obFillSweep {
-          to { background-position: 0% 0; }
+          0% {
+            background-position: 100% 0;
+            filter: drop-shadow(0 0 0 rgba(248,216,184,0));
+          }
+          100% {
+            background-position: 0% 0;
+            filter: drop-shadow(0 0 10px rgba(248,216,184,0.55)) drop-shadow(0 0 24px rgba(232,168,134,0.35));
+          }
         }
 
         /* ── Placeholder visual (etapa 1) ── */
