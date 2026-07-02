@@ -472,6 +472,13 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           font-weight: 700;
           font-size: 0.95rem;
           flex-shrink: 0;
+          overflow: hidden;
+        }
+        .ob-cli-avatar img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
         }
         .ob-cli-nome-bloco {
           flex: 1 1 auto;
@@ -1519,18 +1526,20 @@ const CLIENTES_DEMO = [
     nome: "Ana Cristina Vieira",
     initials: "AC",
     avatarBg: "#F97316", // laranja
+    imagem: "/tutorial/cliente1.jpeg",
     tempo: "8 meses",
     totalPedidos: 3,
     totalGasto: "R$ 279,90",
     ticketMedio: "R$ 93,30",
     ultimaCompra: "há 1 mês",
-    aniversario: "em 7 dias", // vira inline "Aniversário em 7 dias — Enviar Cardápio"
+    aniversario: "em 7 dias",
   },
   {
     id: 2,
     nome: "Débora Almeida",
     initials: "DA",
     avatarBg: "#7c3aed", // roxo
+    imagem: "/tutorial/cliente2.jpeg",
     tempo: "1 ano e 2 meses",
     totalPedidos: 9,
     totalGasto: "R$ 1.093,59",
@@ -1546,20 +1555,42 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
   useEffect(() => {
     const timers: number[] = [];
 
-    // Primeira cliente entra
-    timers.push(window.setTimeout(() => {
-      setVisiveis([CLIENTES_DEMO[0]]);
-    }, 300));
+    // Pré-carrega as fotos das clientes antes de animar
+    const imagensPraCarregar = CLIENTES_DEMO.map((c) => c.imagem).filter((s): s is string => !!s);
+    const preload = Promise.all(
+      imagensPraCarregar.map(
+        (src) =>
+          new Promise<void>((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+            img.src = src;
+          })
+      )
+    );
 
-    // Segunda entra depois
-    timers.push(window.setTimeout(() => {
-      setVisiveis([CLIENTES_DEMO[1], CLIENTES_DEMO[0]]);
-    }, 1700));
+    let cancelado = false;
+    preload.then(() => {
+      if (cancelado) return;
 
-    // Libera botão
-    timers.push(window.setTimeout(onReady, 3000));
+      // Primeira cliente entra
+      timers.push(window.setTimeout(() => {
+        setVisiveis([CLIENTES_DEMO[0]]);
+      }, 300));
 
-    return () => timers.forEach((t) => clearTimeout(t));
+      // Segunda entra depois
+      timers.push(window.setTimeout(() => {
+        setVisiveis([CLIENTES_DEMO[1], CLIENTES_DEMO[0]]);
+      }, 1700));
+
+      // Libera botão
+      timers.push(window.setTimeout(onReady, 3000));
+    });
+
+    return () => {
+      cancelado = true;
+      timers.forEach((t) => clearTimeout(t));
+    };
   }, [onReady]);
 
   return (
@@ -1577,7 +1608,14 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
           <div key={c.id} className="ob-cli-card">
             <div className="ob-cli-header">
               <div className="ob-cli-avatar" style={{ background: c.avatarBg }}>
-                {c.initials}
+                {c.imagem
+                  ? <img src={c.imagem} alt={c.nome} onError={(e) => {
+                      const img = e.target as HTMLImageElement;
+                      img.style.display = 'none';
+                      const parent = img.parentElement;
+                      if (parent) parent.textContent = c.initials;
+                    }} />
+                  : c.initials}
               </div>
               <div className="ob-cli-nome-bloco">
                 <div className="ob-cli-nome">{c.nome}</div>
