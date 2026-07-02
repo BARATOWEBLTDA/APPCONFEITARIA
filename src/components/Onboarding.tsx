@@ -509,34 +509,62 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
         .ob-cli-metricas {
           display: flex;
-          gap: 0.5rem;
+          gap: 0.55rem;
           font-size: 0.72rem;
         }
         .ob-cli-metrica {
           flex: 1;
           background: #FBF6F3;
           border-radius: 8px;
-          padding: 0.4rem 0.55rem;
+          padding: 0.5rem 0.6rem;
+          min-width: 0;
         }
         .ob-cli-metrica-label {
           color: #6E3548;
           font-size: 0.6rem;
           text-transform: uppercase;
           letter-spacing: 0.03em;
+          white-space: nowrap;
         }
         .ob-cli-metrica-valor {
           color: #431524;
           font-weight: 700;
-          font-size: 0.85rem;
-          margin-top: 2px;
+          font-size: 0.88rem;
+          margin-top: 3px;
+          white-space: nowrap;
         }
-        .ob-cli-ultima {
-          margin-top: 0.55rem;
-          font-size: 0.7rem;
+        .ob-cli-inline {
+          margin-top: 0.5rem;
+          font-size: 0.72rem;
           color: #6E3548;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 6px;
+        }
+        .ob-cli-inline strong {
+          color: #431524;
+          font-weight: 700;
+        }
+        .ob-cli-aniv {
+          margin-top: 0.6rem;
+          background: #FEF3C7;
+          border: 1px solid #FCD34D;
+          color: #92400E;
+          border-radius: 8px;
+          padding: 0.45rem 0.6rem;
+          font-size: 0.72rem;
+          font-weight: 600;
           display: flex;
           align-items: center;
           gap: 4px;
+          flex-wrap: wrap;
+        }
+        .ob-cli-acao {
+          color: #B45309;
+          text-decoration: underline;
+          font-weight: 700;
+          cursor: pointer;
         }
 
         @keyframes obPedidoDrop {
@@ -1492,11 +1520,11 @@ const CLIENTES_DEMO = [
     initials: "AC",
     avatarBg: "#F97316", // laranja
     tempo: "8 meses",
-    totalPedidos: 12,
-    totalGasto: "R$ 1.428,00",
-    ticketMedio: "R$ 119,00",
-    ultimaCompra: "há 15 dias",
-    aniversario: "em 3 dias", // badge amarelo aparece
+    totalPedidos: 3,
+    totalGasto: "R$ 279,90",
+    ticketMedio: "R$ 93,30",
+    ultimaCompra: "há 1 mês",
+    aniversario: "em 7 dias", // vira inline "Aniversário em 7 dias — Enviar Cardápio"
   },
   {
     id: 2,
@@ -1504,11 +1532,11 @@ const CLIENTES_DEMO = [
     initials: "DA",
     avatarBg: "#7c3aed", // roxo
     tempo: "1 ano e 2 meses",
-    totalPedidos: 24,
-    totalGasto: "R$ 2.845,50",
-    ticketMedio: "R$ 118,60",
+    totalPedidos: 9,
+    totalGasto: "R$ 1.093,59",
+    ticketMedio: "R$ 121,51",
     ultimaCompra: "há 6 dias",
-    aniversario: null, // sem badge
+    aniversario: null,
   },
 ];
 
@@ -1553,13 +1581,8 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
               </div>
               <div className="ob-cli-nome-bloco">
                 <div className="ob-cli-nome">{c.nome}</div>
-                <div className="ob-cli-sub">cliente há {c.tempo}</div>
+                <div className="ob-cli-sub">Cliente há {c.tempo}</div>
               </div>
-              {c.aniversario && (
-                <div className="ob-cli-badge-aniv">
-                  🎂 {c.aniversario}
-                </div>
-              )}
             </div>
 
             <div className="ob-cli-divider" />
@@ -1573,15 +1596,21 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
                 <div className="ob-cli-metrica-label">Total gasto</div>
                 <div className="ob-cli-metrica-valor">{c.totalGasto}</div>
               </div>
-              <div className="ob-cli-metrica">
-                <div className="ob-cli-metrica-label">Ticket médio</div>
-                <div className="ob-cli-metrica-valor">{c.ticketMedio}</div>
-              </div>
             </div>
 
-            <div className="ob-cli-ultima">
-              ⏱ Última compra: <strong style={{ color: "#431524", fontWeight: 600 }}>{c.ultimaCompra}</strong>
+            <div className="ob-cli-inline">
+              <span>Ticket médio:</span>
+              <strong>{c.ticketMedio}</strong>
             </div>
+            <div className="ob-cli-inline">
+              <span>⏱ Última compra:</span>
+              <strong>{c.ultimaCompra}</strong>
+            </div>
+            {c.aniversario && (
+              <div className="ob-cli-aniv">
+                🎂 Aniversário {c.aniversario} — <span className="ob-cli-acao">Enviar Cardápio</span>
+              </div>
+            )}
           </div>
         ))}
       </div>
