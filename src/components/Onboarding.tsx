@@ -296,20 +296,20 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
         .ob-welcome-anchor {
           margin: 0;
-          padding: 0 1.5rem;
-          max-width: 520px;
-          font-size: 1.4rem;
-          font-weight: 500;
-          line-height: 1.45;
-          letter-spacing: -0.005em;
+          padding: 0 1.25rem;
+          max-width: 620px;
+          font-size: 1.55rem;
+          font-weight: 800;
+          line-height: 1.18;
+          letter-spacing: 0.005em;
           color: #fff;
           text-align: center;
           opacity: 0;
-          animation: obFadeUp 0.8s ease 0.7s both;
-          text-shadow: 0 2px 24px rgba(0,0,0,0.3);
+          animation: obFadeUp 0.8s ease 0.6s both;
+          text-shadow: 0 2px 24px rgba(0,0,0,0.35);
         }
         .ob-welcome-anchor .ob-fill {
-          font-weight: 800;
+          font-weight: 900;
           background: linear-gradient(90deg, #F4C4A0 50%, #fff 50%);
           background-size: 200% 100%;
           background-position: 100% 0;
@@ -317,7 +317,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           background-clip: text;
           -webkit-text-fill-color: transparent;
           color: transparent;
-          animation: obFillSweep 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          animation: obFillSweep 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
         @keyframes obFillSweep {
           to { background-position: 0% 0; }
@@ -1330,12 +1330,11 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
         className="ob-welcome-coroa"
         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
       />
-      <p className="ob-welcome-anchor">
-        Com o <span className="ob-fill" style={{ animationDelay: "1.5s" }}>Doonly</span>,
-        sua confeitaria fica <span className="ob-fill" style={{ animationDelay: "2.1s" }}>organizada</span>,
-        do <span className="ob-fill" style={{ animationDelay: "2.7s" }}>cardápio</span> ao{" "}
-        <span className="ob-fill" style={{ animationDelay: "3.3s" }}>lucro</span>.
-      </p>
+      <h1 className="ob-welcome-anchor">
+        DESCUBRA COMO O <span className="ob-fill" style={{ animationDelay: "1.5s" }}>DOONLY</span><br/>
+        VAI DEIXAR SUA CONFEITARIA <span className="ob-fill" style={{ animationDelay: "2.1s" }}>ORGANIZADA</span><br/>
+        DO <span className="ob-fill" style={{ animationDelay: "2.7s" }}>CARDÁPIO</span> AO <span className="ob-fill" style={{ animationDelay: "3.3s" }}>LUCRO</span>?
+      </h1>
     </>
   );
 }
