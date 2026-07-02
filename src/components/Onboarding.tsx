@@ -268,6 +268,16 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
 
         /* ── Slide 1 (boas-vindas) — coroa pulsando + headline grande ── */
+        .ob-coroa-wrap {
+          opacity: 1;
+          transform: scale(1);
+          transition: opacity 0.55s ease, transform 0.55s ease;
+        }
+        .ob-coroa-wrap--gone {
+          opacity: 0;
+          transform: scale(0.7);
+          pointer-events: none;
+        }
         .ob-welcome-coroa {
           width: 130px;
           height: auto;
@@ -1345,32 +1355,56 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
 /* ─── Slide 1: Boas-vindas ──────────────────────── */
 function Slide1Welcome({ onReady }: { onReady: () => void }) {
+  const [phase, setPhase] = useState(0);
+
   useEffect(() => {
-    const t = window.setTimeout(onReady, 4700); // último sweep (3.8s) + 0.75s + folga
-    return () => clearTimeout(t);
+    const timers: number[] = [];
+    // Fase 0: coroa + "DESCUBRA COMO O DOONLY VAI..." (~3.4s)
+    timers.push(window.setTimeout(() => setPhase(1), 3400));
+    // Fase 1: "DEIXAR SUA CONFEITARIA...." (~2.2s)
+    timers.push(window.setTimeout(() => setPhase(2), 5600));
+    // Fase 2: "ORGANIZADA DO CARDÁPIO AO LUCRO" — 3 sweeps, botão ao final
+    timers.push(window.setTimeout(onReady, 8700));
+    return () => timers.forEach((t) => clearTimeout(t));
   }, [onReady]);
+
   return (
     <>
-      <img
-        src="/Sistema/TUTORIAL.png"
-        alt=""
-        className="ob-welcome-coroa"
-        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-      />
-      <div className="ob-welcome-anchor">
-        <div className="ob-welcome-block" style={{ animationDelay: "0.4s" }}>
-          DESCUBRA COMO<br/>
-          O <span className="ob-fill" style={{ animationDelay: "2.0s" }}>DOONLY</span> VAI...
-        </div>
-        <div className="ob-welcome-block" style={{ animationDelay: "0.9s" }}>
-          DEIXAR SUA<br/>
-          CONFEITARIA
-        </div>
-        <div className="ob-welcome-block" style={{ animationDelay: "1.4s" }}>
-          <span className="ob-fill" style={{ animationDelay: "2.6s" }}>ORGANIZADA</span> DO<br/>
-          <span className="ob-fill" style={{ animationDelay: "3.2s" }}>CARDÁPIO</span> AO <span className="ob-fill" style={{ animationDelay: "3.8s" }}>LUCRO</span>
-        </div>
+      <div className={`ob-coroa-wrap ${phase !== 0 ? "ob-coroa-wrap--gone" : ""}`}>
+        <img
+          src="/Sistema/TUTORIAL.png"
+          alt=""
+          className="ob-welcome-coroa"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+        />
       </div>
+
+      {phase === 0 && (
+        <div className="ob-welcome-anchor" key="p0">
+          <div className="ob-welcome-block" style={{ animationDelay: "0.3s" }}>
+            DESCUBRA COMO<br/>
+            O <span className="ob-fill" style={{ animationDelay: "1.4s" }}>DOONLY</span> VAI...
+          </div>
+        </div>
+      )}
+
+      {phase === 1 && (
+        <div className="ob-welcome-anchor" key="p1">
+          <div className="ob-welcome-block" style={{ animationDelay: "0.15s" }}>
+            DEIXAR SUA<br/>
+            CONFEITARIA....
+          </div>
+        </div>
+      )}
+
+      {phase === 2 && (
+        <div className="ob-welcome-anchor" key="p2">
+          <div className="ob-welcome-block" style={{ animationDelay: "0.15s" }}>
+            <span className="ob-fill" style={{ animationDelay: "0.8s" }}>ORGANIZADA</span> DO<br/>
+            <span className="ob-fill" style={{ animationDelay: "1.5s" }}>CARDÁPIO</span> AO <span className="ob-fill" style={{ animationDelay: "2.2s" }}>LUCRO</span>
+          </div>
+        </div>
+      )}
     </>
   );
 }
