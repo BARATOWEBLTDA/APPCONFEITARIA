@@ -267,6 +267,14 @@ export default function FinanceiroVisaoGeral() {
     [todasMovs, tab]
   )
 
+  // Últimas 10 transações (entradas + saídas juntas, mais recentes primeiro)
+  const ultimasTransacoes = useMemo(
+    () => [...todasMovs]
+      .sort((a, b) => b.data.localeCompare(a.data))
+      .slice(0, 10),
+    [todasMovs]
+  )
+
   // ── Lançamento manual ──────────────────────────────────────
   const abrirNovo = (tipo: "entrada" | "saida") => {
     setEditando(null)
@@ -698,6 +706,54 @@ export default function FinanceiroVisaoGeral() {
           </div>
         </div>
 
+        {/* Últimas transações */}
+        <div className="fin-card">
+          <div className="fin-section-header">
+            <div className="fin-section-icon"><Receipt size={18} weight="duotone" /></div>
+            <div>
+              <p className="fin-section-label">Últimas transações</p>
+              <p className="fin-section-sub">
+                {ultimasTransacoes.length > 0
+                  ? `${ultimasTransacoes.length} ${ultimasTransacoes.length === 1 ? "movimentação mais recente" : "movimentações mais recentes"}`
+                  : "Suas movimentações aparecerão aqui"}
+              </p>
+            </div>
+          </div>
+
+          {ultimasTransacoes.length > 0 ? (
+            <div className="fin-trans-lista">
+              {ultimasTransacoes.map(m => (
+                <div key={m.id} className={`fin-item fin-item--${m.tipo}`}>
+                  <div className="fin-item-icon">
+                    {m.tipo === "entrada"
+                      ? <TrendUp size={16} weight="bold" />
+                      : <TrendDown size={16} weight="bold" />}
+                  </div>
+                  <div className="fin-item-info">
+                    <p className="fin-item-desc">{m.descricao || m.categoria || "Sem descrição"}</p>
+                    <div className="fin-item-meta">
+                      <span className="fin-item-tag">{fmtData(m.data)}</span>
+                      {m.categoria && <span className="fin-item-tag">{m.categoria}</span>}
+                      {m.origem === "pedido" && m.pedido_numero && (
+                        <span className="fin-item-tag fin-item-tag--auto">Pedido #{m.pedido_numero}</span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="fin-item-valor">
+                    {m.tipo === "entrada" ? "+" : "−"} {fmtMoney(m.valor).replace("R$", "").trim()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="fin-trans-empty">
+              <Receipt size={40} weight="duotone" />
+              <p className="fin-trans-empty-title">Nenhuma transação ainda</p>
+              <p className="fin-trans-empty-sub">Suas entradas e saídas dos pedidos e lançamentos manuais aparecerão aqui.</p>
+            </div>
+          )}
+        </div>
+
 
       </div>
 
@@ -869,6 +925,17 @@ export default function FinanceiroVisaoGeral() {
         }
         .fin-chart-empty-title { font-size: var(--font-input); font-weight: var(--fw-semibold); color:var(--text-secondary); margin:0; }
         .fin-chart-empty-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0; max-width:280px; line-height:1.4; }
+
+        /* Últimas transações */
+        .fin-trans-lista {
+          display:flex; flex-direction:column; gap:0.5rem;
+        }
+        .fin-trans-empty {
+          display:flex; flex-direction:column; align-items:center; justify-content:center;
+          text-align:center; padding:2rem 1rem; color:var(--text-muted); gap:0.4rem;
+        }
+        .fin-trans-empty-title { font-size: var(--font-input); font-weight: var(--fw-semibold); color:var(--text-secondary); margin:0; }
+        .fin-trans-empty-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0; max-width:320px; line-height:1.4; }
 
         /* Botão + */
         .fin-btn-add {
