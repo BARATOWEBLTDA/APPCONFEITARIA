@@ -71,7 +71,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         {slideIdx === 2 && <Slide2Pedidos onReady={handleSlideReady} />}
         {slideIdx === 3 && <Slide3Ingredientes onReady={handleSlideReady} />}
         {slideIdx === 4 && <Slide4Precificacao onReady={handleSlideReady} />}
-        {slideIdx === 5 && <SlidePlaceholder title="Descubra o preço certo" subtitle="O Doonly calcula tudo — custo, lucro e margem ideal." emoji="💰" onReady={handleSlideReady} />}
+        {slideIdx === 5 && <SlideCardapio onReady={handleSlideReady} />}
         {slideIdx === 6 && <SlidePlaceholder title="Sua receita já calcula tudo" subtitle="Ingredientes, embalagem, energia, lucro. Tudo preenchendo sozinho." emoji="📝" onReady={handleSlideReady} />}
         {slideIdx === 7 && <SlidePlaceholder title="Seu negócio organizado" subtitle="Enquanto você faz bolos, o Doonly cuida da gestão." emoji="📊" onReady={handleSlideReady} />}
         {slideIdx === 8 && <SlideFinal onStart={finish} />}
@@ -605,6 +605,158 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           text-decoration: underline;
           font-weight: 700;
           cursor: pointer;
+        }
+
+        /* === CARDÁPIO — mockup de celular === */
+        .ob-cardapio-phone {
+          position: relative;
+          width: 275px;
+          max-width: 82vw;
+          background: #0e0509;
+          border-radius: 34px;
+          padding: 8px 8px 12px;
+          margin-top: 1.5rem;
+          box-shadow:
+            0 24px 60px rgba(0,0,0,0.55),
+            0 0 0 2px rgba(255,255,255,0.06) inset,
+            0 0 0 1px rgba(0,0,0,0.9);
+          opacity: 0;
+          transform: translateY(20px) scale(0.94);
+          animation: obPhoneIn 0.7s cubic-bezier(0.22, 1.1, 0.36, 1) 0.25s both;
+        }
+        @keyframes obPhoneIn {
+          from { opacity: 0; transform: translateY(20px) scale(0.94); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .ob-cardapio-notch {
+          position: absolute;
+          top: 14px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 82px;
+          height: 22px;
+          background: #000;
+          border-radius: 14px;
+          z-index: 2;
+        }
+        .ob-cardapio-screen {
+          background: linear-gradient(180deg, #FFFDF9 0%, #FDF5EE 100%);
+          border-radius: 26px;
+          padding: 44px 10px 12px;
+          color: #431524;
+          min-height: 340px;
+          overflow: hidden;
+        }
+        .ob-cardapio-header {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          padding: 6px 6px 12px;
+          border-bottom: 1px solid #F5E5EC;
+          margin-bottom: 10px;
+        }
+        .ob-cardapio-logo {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #C4536A, #7A2A3E);
+          color: #F4D03F;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 800;
+          font-size: 1.05rem;
+          flex-shrink: 0;
+          box-shadow: 0 2px 8px rgba(196,83,106,0.4);
+        }
+        .ob-cardapio-header-info {
+          flex: 1;
+          min-width: 0;
+        }
+        .ob-cardapio-nome {
+          font-size: 0.82rem;
+          font-weight: 800;
+          color: #431524;
+          line-height: 1.15;
+        }
+        .ob-cardapio-sub {
+          font-size: 0.6rem;
+          color: #8a5b6c;
+          margin-top: 2px;
+        }
+        .ob-cardapio-lista {
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+          padding: 0 4px;
+        }
+        .ob-cardapio-item {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          padding: 7px;
+          background: #ffffff;
+          border-radius: 10px;
+          border: 1px solid #F5E5EC;
+          box-shadow: 0 1px 3px rgba(196,83,106,0.06);
+          animation: obCardapioItemIn 0.5s cubic-bezier(0.22, 1.1, 0.36, 1) both;
+        }
+        @keyframes obCardapioItemIn {
+          0% {
+            opacity: 0;
+            transform: translateY(-10px) scale(0.9);
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            margin-bottom: -7px;
+          }
+          60% {
+            opacity: 1;
+            max-height: 80px;
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            max-height: 80px;
+            padding-top: 7px;
+            padding-bottom: 7px;
+            margin-bottom: 0;
+          }
+        }
+        .ob-cardapio-item img {
+          width: 44px;
+          height: 44px;
+          border-radius: 8px;
+          object-fit: cover;
+          flex-shrink: 0;
+        }
+        .ob-cardapio-item-info {
+          flex: 1;
+          min-width: 0;
+        }
+        .ob-cardapio-item-nome {
+          font-size: 0.72rem;
+          font-weight: 700;
+          color: #431524;
+          line-height: 1.2;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .ob-cardapio-item-desc {
+          font-size: 0.58rem;
+          color: #8a5b6c;
+          margin-top: 2px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .ob-cardapio-item-preco {
+          font-size: 0.82rem;
+          font-weight: 900;
+          color: #C4536A;
+          white-space: nowrap;
+          margin-left: 4px;
         }
 
         @keyframes obPedidoDrop {
@@ -1695,6 +1847,113 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
         ))}
       </div>
     </div>
+  );
+}
+
+// ============================================================
+//  SLIDE CARDÁPIO — "Seu cardápio na mão das clientes"
+//  Mockup de celular mostrando o cardápio da confeitaria
+// ============================================================
+const CARDAPIO_ITEMS = [
+  {
+    id: 1,
+    nome: "Bolo Dois Amores",
+    desc: "Chocolate com brigadeiro",
+    preco: "R$ 119,90",
+    imagem: "/tutorial/doisamores.jpg",
+  },
+  {
+    id: 2,
+    nome: "Caixa de Brigadeiro",
+    desc: "16 unidades gourmet",
+    preco: "R$ 45,00",
+    imagem: "/tutorial/caixa4.jpg",
+  },
+  {
+    id: 3,
+    nome: "Cento de Salgadinhos",
+    desc: "Misto sortido",
+    preco: "R$ 67,90",
+    imagem: "/tutorial/salgadinhos.jpg",
+  },
+];
+
+function SlideCardapio({ onReady }: { onReady: () => void }) {
+  const [visiveis, setVisiveis] = useState<typeof CARDAPIO_ITEMS>([]);
+
+  useEffect(() => {
+    const timers: number[] = [];
+
+    // Pré-carrega imagens
+    const imgs = CARDAPIO_ITEMS.map((i) => i.imagem);
+    const preload = Promise.all(
+      imgs.map(
+        (src) =>
+          new Promise<void>((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+            img.src = src;
+          })
+      )
+    );
+
+    let cancelado = false;
+    preload.then(() => {
+      if (cancelado) return;
+      // Itens entram um por um
+      CARDAPIO_ITEMS.forEach((item, i) => {
+        timers.push(window.setTimeout(() => {
+          setVisiveis((prev) => [...prev, item]);
+        }, 800 + i * 500));
+      });
+      // Libera botão depois do último
+      timers.push(window.setTimeout(onReady, 800 + CARDAPIO_ITEMS.length * 500 + 800));
+    });
+
+    return () => {
+      cancelado = true;
+      timers.forEach((t) => clearTimeout(t));
+    };
+  }, [onReady]);
+
+  return (
+    <>
+      <div className="ob-slide-textabove">
+        <span className="ob-slide-eyebrow">Com o Doonly...</span>
+        <h2 className="ob-slide-title">SEU CARDÁPIO<br/>NA MÃO DAS CLIENTES</h2>
+      </div>
+
+      <div className="ob-cardapio-phone">
+        <div className="ob-cardapio-notch" />
+        <div className="ob-cardapio-screen">
+          <div className="ob-cardapio-header">
+            <div className="ob-cardapio-logo">L</div>
+            <div className="ob-cardapio-header-info">
+              <div className="ob-cardapio-nome">Confeitaria da Larissa</div>
+              <div className="ob-cardapio-sub">🕒 Aberto · Retirada e Entrega</div>
+            </div>
+          </div>
+
+          <div className="ob-cardapio-lista">
+            {visiveis.map((item) => (
+              <div key={item.id} className="ob-cardapio-item">
+                <img
+                  src={item.imagem}
+                  alt={item.nome}
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+                <div className="ob-cardapio-item-info">
+                  <div className="ob-cardapio-item-nome">{item.nome}</div>
+                  <div className="ob-cardapio-item-desc">{item.desc}</div>
+                </div>
+                <div className="ob-cardapio-item-preco">{item.preco}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
