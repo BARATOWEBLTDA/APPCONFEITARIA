@@ -92,9 +92,9 @@ export default function Layout() {
             <NavLink to="/comunidade" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Comunidade</NavLink>
           </SidebarGroup>
 
-          <SidebarGroup label="Estoque" icon={<Package size={18} weight="duotone" />} paths={["/insumos","/estoque"]} location={location}>
-            <NavLink to="/insumos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Ingredientes</NavLink>
-          </SidebarGroup>
+          <NavLink to="/insumos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-icon"><Package size={18} weight="duotone" /></span>Ingredientes
+          </NavLink>
 
           <NavLink to="/financeiro" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
             <span className="nav-icon"><CurrencyDollar size={18} weight="duotone" /></span>Financeiro
