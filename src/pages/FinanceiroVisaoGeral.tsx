@@ -338,20 +338,26 @@ export default function FinanceiroVisaoGeral() {
 
   // ── Meta mensal ─────────────────────────────────────────────
   const abrirMeta = () => {
-    setMetaInput(metaMensal != null ? metaMensal.toString().replace(".", ",") : "")
+    setMetaInput(metaMensal != null ? Math.round(metaMensal * 100).toString() : "")
     setShowMetaForm(true)
   }
   const salvarMeta = async () => {
     if (!userId) return
-    const v = metaInput.replace(/\./g, "").replace(",", ".")
-    const valor = v.trim() === "" ? null : parseFloat(v)
-    if (valor !== null && (isNaN(valor) || valor < 0)) return alert("Valor inválido")
+    const valor = metaInput ? parseInt(metaInput) / 100 : NaN
+    if (!isFinite(valor) || valor <= 0) return
     setSavingMeta(true)
     await supabase.from("profiles").update({ meta_mensal: valor }).eq("id", userId)
     setMetaMensal(valor)
     setSavingMeta(false)
     setShowMetaForm(false)
   }
+
+  // Formata "500000" (centavos) → "5.000,00" (BR)
+  const metaInputCents = metaInput ? parseInt(metaInput) : 0
+  const metaInputValor = metaInputCents / 100
+  const metaInputFormatted = metaInput
+    ? metaInputValor.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : ""
   const removerMeta = async () => {
     if (!userId) return
     if (!confirm("Remover a meta mensal?")) return
@@ -760,44 +766,62 @@ export default function FinanceiroVisaoGeral() {
       {/* Modal de definir/editar meta */}
       {showMetaForm && (
         <div className="fin-modal-overlay" onClick={() => setShowMetaForm(false)}>
-          <div className="fin-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
+          <div className="fin-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
             <div className="fin-modal-header">
-              <h3>{metaMensal ? "Editar meta mensal" : "Definir meta mensal"}</h3>
+              <h3>Quanto você quer faturar por mês?</h3>
               <button onClick={() => setShowMetaForm(false)}><X size={18} weight="bold" /></button>
             </div>
 
             <div className="fin-modal-body">
-              <div className="fin-meta-help">
-                <Target size={26} weight="duotone" />
-                <p>Quanto você quer faturar todo mês? Vamos te lembrar do progresso aqui no Financeiro.</p>
+              <p className="fin-modal-desc">Sua meta te ajuda a acompanhar o progresso do mês.</p>
+
+              <div className="fin-meta-money">
+                <span className="fin-meta-money-prefix">R$</span>
+                <input
+                  className="fin-meta-money-input"
+                  value={metaInputFormatted}
+                  onChange={e => setMetaInput(e.target.value.replace(/\D/g, ""))}
+                  placeholder="0,00"
+                  autoFocus
+                  inputMode="numeric"
+                />
               </div>
 
-              <div className="fin-form-field">
-                <label>Meta de faturamento</label>
-                <div className="fin-money-row">
-                  <span className="fin-prefix">R$</span>
-                  <input
-                    className="fin-input"
-                    style={{ textAlign: "right", fontSize: "1.1rem", fontWeight: 700 }}
-                    value={metaInput}
-                    onChange={e => setMetaInput(e.target.value.replace(/[^0-9.,]/g, ""))}
-                    placeholder="5.000,00"
-                    autoFocus
-                  />
+              {metaInputValor > 0 && (
+                <p className="fin-meta-preview">
+                  ≈ <strong>{fmtMoney(metaInputValor / 30)}</strong> por dia
+                </p>
+              )}
+
+              <div className="fin-meta-sugest">
+                <p className="fin-meta-sugest-label">Sugestões</p>
+                <div className="fin-meta-sugest-chips">
+                  {[3000, 5000, 10000, 20000].map(v => (
+                    <button
+                      key={v}
+                      type="button"
+                      className={`fin-meta-chip ${metaInputValor === v ? "fin-meta-chip--active" : ""}`}
+                      onClick={() => setMetaInput((v * 100).toString())}
+                    >
+                      R$ {v.toLocaleString("pt-BR")}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
 
             <div className="fin-modal-footer">
-              {metaMensal && (
-                <button className="fin-btn-cancel" onClick={removerMeta} style={{ color: "var(--error)", borderColor: "#fee2e2" }}>
-                  Remover
+              {metaMensal != null && (
+                <button className="fin-btn-danger" onClick={removerMeta}>
+                  Remover meta
                 </button>
               )}
-              <button className="fin-btn-cancel" onClick={() => setShowMetaForm(false)}>Cancelar</button>
-              <button className="fin-btn-save" onClick={salvarMeta} disabled={savingMeta}>
-                {savingMeta ? "Salvando..." : "Salvar meta"}
-              </button>
+              <div className="fin-modal-footer-right">
+                <button className="fin-btn-text" onClick={() => setShowMetaForm(false)}>Cancelar</button>
+                <button className="fin-btn-save" onClick={salvarMeta} disabled={savingMeta || !metaInput}>
+                  {savingMeta ? "Salvando..." : "Salvar"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1110,11 +1134,84 @@ export default function FinanceiroVisaoGeral() {
         .fin-money-row { display:flex; align-items:center; gap:0.4rem; }
         .fin-prefix { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-secondary); flex-shrink:0; }
 
+        /* ── Modal Meta Mensal ── */
+        .fin-modal-desc {
+          font-size: var(--font-helper); color:var(--text-secondary);
+          margin:0 0 0.5rem; line-height:1.4;
+        }
+        .fin-meta-money {
+          display:flex; align-items:center; gap:0.5rem;
+          background:var(--bg-card);
+          border:1.5px solid var(--border); border-radius: var(--radius-lg);
+          padding:0.9rem 1.15rem; transition:border-color 0.15s, box-shadow 0.15s;
+        }
+        .fin-meta-money:focus-within {
+          border-color:var(--primary);
+          box-shadow:0 0 0 3px rgba(var(--primary-rgb),0.12);
+        }
+        .fin-meta-money-prefix {
+          font-size: 1.15rem; font-weight: var(--fw-bold); color:var(--text-secondary);
+          flex-shrink:0;
+        }
+        .fin-meta-money-input {
+          flex:1; border:none; outline:none; background:transparent;
+          font-family:'Geist', sans-serif;
+          font-size: 1.75rem; font-weight: var(--fw-black);
+          color:var(--text-title);
+          text-align:right; font-variant-numeric:tabular-nums;
+          min-width:0;
+        }
+        .fin-meta-money-input::placeholder { color:var(--text-muted); font-weight:var(--fw-semibold); }
+
+        .fin-meta-preview {
+          font-size: var(--font-helper); color:var(--text-secondary);
+          margin:-0.2rem 0 0; text-align:center;
+        }
+        .fin-meta-preview strong { color:var(--primary); font-weight: var(--fw-bold); }
+
+        .fin-meta-sugest { display:flex; flex-direction:column; gap:0.4rem; margin-top:0.35rem; }
+        .fin-meta-sugest-label {
+          font-size: var(--font-caption); font-weight: var(--fw-semibold);
+          color:var(--text-muted); margin:0;
+          text-transform:uppercase; letter-spacing:0.06em;
+        }
+        .fin-meta-sugest-chips { display:flex; flex-wrap:wrap; gap:0.4rem; }
+        .fin-meta-chip {
+          padding:0.4rem 0.7rem;
+          background:var(--bg-card);
+          border:1px solid var(--border);
+          border-radius: var(--radius-full);
+          font-family:inherit;
+          font-size: var(--font-helper); font-weight: var(--fw-semibold);
+          color:var(--text-secondary); cursor:pointer;
+          transition:all 0.15s;
+        }
+        .fin-meta-chip:hover {
+          border-color:var(--primary);
+          color:var(--primary);
+          background:var(--primary-light);
+        }
+        .fin-meta-chip--active {
+          background:var(--primary);
+          color:#fff;
+          border-color:var(--primary);
+        }
+        .fin-meta-chip--active:hover {
+          background:var(--primary-dark);
+          color:#fff;
+          border-color:var(--primary-dark);
+        }
+
         .fin-modal-footer {
           display:flex; gap:0.5rem; padding:1rem 1.4rem;
           border-top:1px solid var(--border);
           background:var(--bg-body);
           border-radius:0 0 20px 20px;
+          align-items:center;
+        }
+        .fin-modal-footer-right {
+          display:flex; gap:0.4rem; margin-left:auto;
+          align-items:center;
         }
         .fin-btn-cancel {
           flex:1; padding:0.7rem 1rem;
@@ -1126,8 +1223,30 @@ export default function FinanceiroVisaoGeral() {
           transition:all 0.15s;
         }
         .fin-btn-cancel:hover { border-color:var(--text-muted); }
+        .fin-btn-text {
+          padding:0.6rem 0.9rem;
+          background:transparent; border:none;
+          font-family:inherit;
+          font-size: var(--font-button); font-weight: var(--fw-semibold);
+          color:var(--text-secondary); cursor:pointer;
+          border-radius: var(--radius-full);
+          transition:background 0.15s, color 0.15s;
+        }
+        .fin-btn-text:hover { background:var(--primary-light); color:var(--primary); }
+        .fin-btn-danger {
+          padding:0.6rem 0.9rem;
+          background:transparent;
+          border:1.5px solid #fecaca;
+          border-radius: var(--radius-full); font-family:inherit;
+          font-size: var(--font-button); font-weight: var(--fw-semibold);
+          color:#dc2626; cursor:pointer;
+          transition:all 0.15s;
+        }
+        .fin-btn-danger:hover {
+          background:#fef2f2; border-color:#dc2626;
+        }
         .fin-btn-save {
-          flex:2; padding:0.7rem 1rem;
+          padding:0.7rem 1.4rem;
           background:var(--primary-gradient);
           color:#fff; border:none; border-radius: var(--radius-full);
           font-family:inherit; font-size: var(--font-button); font-weight: var(--fw-bold);
