@@ -31,18 +31,30 @@ const validate = {
     if (d.length !== 10 && d.length !== 11) return "Telefone incompleto";
     return "";
   },
-  senha: (v: string) => (v.length < 6 ? "Mínimo 6 caracteres" : ""),
+  senha: (v: string) => {
+    if (v.length < 6) return "Mínimo 6 caracteres";
+    if (!/[a-zA-Z]/.test(v)) return "A senha precisa ter ao menos uma letra";
+    if (!/\d/.test(v)) return "A senha precisa ter ao menos um número";
+    return "";
+  },
 };
 
 // Força da senha: 0-4 (0 = vazia, 1 = muito fraca, 4 = forte)
+// Regra base: 6+ chars com letra E número. Comprimento aumenta o nível.
 const getPasswordStrength = (senha: string): number => {
   if (!senha) return 0;
-  let score = 0;
-  if (senha.length >= 6) score++;
-  if (senha.length >= 10) score++;
-  if (/\d/.test(senha)) score++;
-  if (/[A-Z]/.test(senha) || /[^a-zA-Z0-9]/.test(senha)) score++;
-  return Math.min(score, 4);
+  const hasLetter = /[a-zA-Z]/.test(senha);
+  const hasNumber = /\d/.test(senha);
+  const len = senha.length;
+
+  // Menos de 6 chars, ou só letra, ou só número → nível 1 (muito fraca)
+  if (len < 6 || !hasLetter || !hasNumber) return 1;
+  // 6-7 chars com letra + número → fraca (mínimo aceitável)
+  if (len < 8) return 2;
+  // 8-9 chars com letra + número → média
+  if (len < 10) return 3;
+  // 10+ chars com letra + número → forte
+  return 4;
 };
 
 const STRENGTH_LABELS = ["", "Muito fraca", "Fraca", "Média", "Forte"];
