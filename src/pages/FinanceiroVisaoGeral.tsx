@@ -423,8 +423,8 @@ export default function FinanceiroVisaoGeral() {
 <style>
   * { box-sizing:border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color:#1F2937; padding:32px; margin:0; }
-  .header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid #FF6FA9; padding-bottom:14px; margin-bottom:24px; }
-  .header h1 { margin:0 0 4px; color:#FF6FA9; font-size:24px; }
+  .header { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:3px solid var(--primary); padding-bottom:14px; margin-bottom:24px; }
+  .header h1 { margin:0 0 4px; color:var(--primary); font-size:24px; }
   .header p { margin:0; color:#6B7280; font-size:13px; }
   .period { text-align:right; font-size:13px; color:#6B7280; }
   .cards { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:24px; }
@@ -434,10 +434,10 @@ export default function FinanceiroVisaoGeral() {
   .card.in .value { color:#16a34a; }
   .card.out .value { color:#dc2626; }
   .card.profit .value { color:${lucro >= 0 ? "#16a34a" : "#dc2626"}; }
-  .meta-box { border:1px solid #E5E7EB; border-radius: var(--radius-md); padding:14px; margin-bottom:24px; background:#FFF1F7; }
-  .meta-box .label { font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:#FF6FA9; font-weight: var(--fw-bold); margin:0 0 4px; }
+  .meta-box { border:1px solid #E5E7EB; border-radius: var(--radius-md); padding:14px; margin-bottom:24px; background:var(--primary-light); }
+  .meta-box .label { font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--primary); font-weight: var(--fw-bold); margin:0 0 4px; }
   .meta-bar { width:100%; height:14px; background:#fff; border-radius: var(--radius-full); overflow:hidden; margin-top:8px; }
-  .meta-bar > div { height:100%; background:linear-gradient(90deg, #FF6FA9, #F85A9A); border-radius: var(--radius-full); }
+  .meta-bar > div { height:100%; background:linear-gradient(90deg, var(--primary), var(--primary-dark)); border-radius: var(--radius-full); }
   table { width:100%; border-collapse:collapse; font-size:12px; }
   thead th { text-align:left; padding:10px 8px; background:#F7F7F8; border-bottom:2px solid #E5E7EB; font-size:11px; text-transform:uppercase; color:#6B7280; letter-spacing:0.05em; }
   tbody td { padding:10px 8px; border-bottom:1px solid #F3F4F6; }
@@ -452,7 +452,7 @@ export default function FinanceiroVisaoGeral() {
     body { padding:18px; }
     .no-print { display:none; }
   }
-  .print-btn { position:fixed; top:18px; right:18px; background:linear-gradient(135deg,#FF6FA9,#F85A9A); color:#fff; border:none; padding:10px 20px; border-radius: var(--radius-full); font-weight: var(--fw-bold); cursor:pointer; box-shadow:0 4px 14px rgba(255,111,169,0.4); font-family:inherit; }
+  .print-btn { position:fixed; top:18px; right:18px; background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:#fff; border:none; padding:10px 20px; border-radius: var(--radius-full); font-weight: var(--fw-bold); cursor:pointer; box-shadow:0 4px 14px rgba(var(--primary-rgb),0.4); font-family:inherit; }
 </style>
 </head>
 <body>
@@ -645,7 +645,7 @@ export default function FinanceiroVisaoGeral() {
         ) : (
           <button className="fin-meta-empty" onClick={abrirMeta}>
             <div className="fin-meta-empty-icon"><Target size={22} weight="duotone" /></div>
-            <div style={{ flex: 1, textAlign: "left" }}>
+            <div className="fin-meta-empty-texts">
               <p className="fin-meta-empty-title">Defina sua meta mensal</p>
               <p className="fin-meta-empty-sub">Acompanhe seu progresso com um termômetro motivacional</p>
             </div>
@@ -668,7 +668,13 @@ export default function FinanceiroVisaoGeral() {
           </div>
 
           <div className="fin-chart">
-            {movsHistorico.map(h => {
+            {movsHistorico.every(h => h.entrada === 0 && h.saida === 0) ? (
+              <div className="fin-chart-empty">
+                <ChartBar size={40} weight="duotone" />
+                <p className="fin-chart-empty-title">Sem movimentações ainda</p>
+                <p className="fin-chart-empty-sub">Suas entradas e despesas dos próximos meses aparecerão aqui.</p>
+              </div>
+            ) : movsHistorico.map(h => {
               const [y, m] = h.mes.split("-")
               const label = new Date(parseInt(y), parseInt(m) - 1, 1)
                 .toLocaleDateString("pt-BR", { month: "short" })
@@ -769,42 +775,34 @@ export default function FinanceiroVisaoGeral() {
 
         /* Cards de resumo */
         .fin-cards {
-          display:grid; gap:0.85rem;
-          grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+          display:grid; gap:0.75rem;
+          grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
         }
         .fin-summary-card {
           background:var(--bg-card);
           border:1px solid var(--border);
-          border-radius: var(--radius-lg); padding:1.1rem 1.25rem;
-          display:flex; align-items:center; gap:0.9rem;
+          border-radius: var(--radius-lg); padding:1rem 1.1rem;
+          display:flex; flex-direction:column; gap:0.35rem;
           position:relative; overflow:hidden;
           transition:transform 0.18s, box-shadow 0.18s, border-color 0.18s;
         }
         .fin-summary-card::before {
-          content:""; position:absolute; top:-40px; right:-40px;
-          width:100px; height:100px; border-radius:50%;
-          opacity:0.5; pointer-events:none;
+          content:""; position:absolute; top:0; left:0; bottom:0;
+          width:3px;
         }
-        .fin-card--receita::before { background:radial-gradient(circle, rgba(34,197,94,0.18), transparent 70%); }
-        .fin-card--despesa::before { background:radial-gradient(circle, rgba(239,68,68,0.18), transparent 70%); }
-        .fin-card--cmv::before     { background:radial-gradient(circle, rgba(245,158,11,0.18), transparent 70%); }
-        .fin-card--lucro::before   { background:radial-gradient(circle, rgba(255,111,169,0.22), transparent 70%); }
-        .fin-card--ticket::before  { background:radial-gradient(circle, rgba(99,102,241,0.18), transparent 70%); }
+        .fin-card--receita::before { background:#22c55e; }
+        .fin-card--despesa::before { background:#ef4444; }
+        .fin-card--cmv::before     { background:#f59e0b; }
+        .fin-card--lucro::before   { background:var(--primary); }
+        .fin-card--ticket::before  { background:#6366f1; }
 
-        .fin-summary-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(16,24,40,0.06); }
+        .fin-summary-card:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(16,24,40,0.05); }
 
         .fin-card-icon {
-          width:42px; height:42px; flex-shrink:0; border-radius: var(--radius-md);
-          display:flex; align-items:center; justify-content:center;
-          color:#fff; position:relative; z-index:1;
+          display:none;
         }
-        .fin-card--receita .fin-card-icon { background:linear-gradient(135deg,#22c55e,#16a34a); box-shadow:0 4px 12px rgba(34,197,94,0.3); }
-        .fin-card--despesa .fin-card-icon { background:linear-gradient(135deg,#ef4444,#dc2626); box-shadow:0 4px 12px rgba(239,68,68,0.3); }
-        .fin-card--cmv .fin-card-icon     { background:linear-gradient(135deg,#f59e0b,#d97706); box-shadow:0 4px 12px rgba(245,158,11,0.3); }
-        .fin-card--lucro .fin-card-icon   { background:linear-gradient(135deg,#FF6FA9,#F85A9A); box-shadow:0 4px 12px rgba(255,111,169,0.35); }
-        .fin-card--ticket .fin-card-icon  { background:linear-gradient(135deg,#6366f1,#4f46e5); box-shadow:0 4px 12px rgba(99,102,241,0.3); }
 
-        .fin-card-label { font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-secondary); margin:0 0 2px; text-transform:uppercase; letter-spacing:0.06em; }
+        .fin-card-label { font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-secondary); margin:0; text-transform:uppercase; letter-spacing:0.06em; }
         .fin-card-value { font-size: var(--font-modal-title); font-weight: var(--fw-black); color:var(--text-title); margin:0; letter-spacing:-0.02em; }
 
         /* Card base */
@@ -865,6 +863,13 @@ export default function FinanceiroVisaoGeral() {
         }
         .fin-bar-sub { font-size: var(--font-caption); font-weight: var(--fw-bold); margin:0; }
 
+        .fin-chart-empty {
+          flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+          text-align:center; padding:1rem; color:var(--text-muted); gap:0.4rem;
+        }
+        .fin-chart-empty-title { font-size: var(--font-input); font-weight: var(--fw-semibold); color:var(--text-secondary); margin:0; }
+        .fin-chart-empty-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0; max-width:280px; line-height:1.4; }
+
         /* Botão + */
         .fin-btn-add {
           display:inline-flex; align-items:center; gap:5px;
@@ -873,10 +878,10 @@ export default function FinanceiroVisaoGeral() {
           color:#fff; border:none; border-radius: var(--radius-full);
           font-family:inherit; font-size: var(--font-helper); font-weight: var(--fw-bold);
           cursor:pointer; white-space:nowrap;
-          box-shadow:0 2px 8px rgba(255,111,169,0.3);
+          box-shadow:0 2px 8px rgba(var(--primary-rgb),0.3);
           transition:transform 0.15s, box-shadow 0.15s;
         }
-        .fin-btn-add:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(255,111,169,0.4); }
+        .fin-btn-add:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(var(--primary-rgb),0.4); }
 
         /* Tabs */
         .fin-tabs {
@@ -918,7 +923,7 @@ export default function FinanceiroVisaoGeral() {
         }
         .fin-item--entrada::before { background:linear-gradient(180deg,#22c55e,#16a34a); }
         .fin-item--saida::before { background:linear-gradient(180deg,#ef4444,#dc2626); }
-        .fin-item:hover { border-color:rgba(255,111,169,0.3); box-shadow:0 2px 10px rgba(16,24,40,0.04); }
+        .fin-item:hover { border-color:rgba(var(--primary-rgb),0.3); box-shadow:0 2px 10px rgba(16,24,40,0.04); }
 
         .fin-item-icon {
           width:36px; height:36px; flex-shrink:0; border-radius:50%;
@@ -943,7 +948,7 @@ export default function FinanceiroVisaoGeral() {
         .fin-item-tag--auto {
           background:var(--primary-light);
           color:var(--primary-dark);
-          border-color:rgba(255,111,169,0.3);
+          border-color:rgba(var(--primary-rgb),0.3);
         }
         .fin-item-tag--margem { font-weight: var(--fw-bold); }
         .fin-item-tag--margem-alto { background:#dcfce7; color:#15803d; border-color:#bbf7d0; }
@@ -1033,7 +1038,7 @@ export default function FinanceiroVisaoGeral() {
           transition:border-color 0.15s, box-shadow 0.15s;
         }
         .fin-input:hover { border-color:var(--text-muted); }
-        .fin-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(255,111,169,0.12); }
+        .fin-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(var(--primary-rgb),0.12); }
 
         .fin-money-row { display:flex; align-items:center; gap:0.4rem; }
         .fin-prefix { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-secondary); flex-shrink:0; }
@@ -1059,10 +1064,10 @@ export default function FinanceiroVisaoGeral() {
           background:var(--primary-gradient);
           color:#fff; border:none; border-radius: var(--radius-full);
           font-family:inherit; font-size: var(--font-button); font-weight: var(--fw-bold);
-          cursor:pointer; box-shadow:0 3px 10px rgba(255,111,169,0.3);
+          cursor:pointer; box-shadow:0 3px 10px rgba(var(--primary-rgb),0.3);
           transition:transform 0.15s, box-shadow 0.15s;
         }
-        .fin-btn-save:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 6px 16px rgba(255,111,169,0.4); }
+        .fin-btn-save:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 6px 16px rgba(var(--primary-rgb),0.4); }
         .fin-btn-save:disabled { opacity:0.6; cursor:wait; }
 
         /* ── Header actions ── */
@@ -1109,8 +1114,8 @@ export default function FinanceiroVisaoGeral() {
 
         /* ── Meta card (com meta definida) ── */
         .fin-meta-card {
-          background:linear-gradient(135deg, #FFE4F0 0%, #FFF1F7 100%);
-          border:1px solid rgba(255,111,169,0.25);
+          background:linear-gradient(135deg, #FFE4F0 0%, var(--primary-light) 100%);
+          border:1px solid rgba(var(--primary-rgb),0.25);
           border-radius: var(--radius-xl); padding:1.4rem;
           position:relative; overflow:hidden;
           display:flex; flex-direction:column; gap:0.85rem;
@@ -1118,7 +1123,7 @@ export default function FinanceiroVisaoGeral() {
         .fin-meta-decor {
           position:absolute; top:-80px; right:-80px;
           width:240px; height:240px; border-radius:50%;
-          background:radial-gradient(circle, rgba(255,111,169,0.18) 0%, transparent 70%);
+          background:radial-gradient(circle, rgba(var(--primary-rgb),0.18) 0%, transparent 70%);
           pointer-events:none;
         }
         .fin-meta-top { display:flex; justify-content:space-between; align-items:flex-start; gap:0.75rem; position:relative; z-index:1; }
@@ -1127,7 +1132,7 @@ export default function FinanceiroVisaoGeral() {
           width:42px; height:42px; flex-shrink:0; border-radius: var(--radius-md);
           background:var(--primary-gradient);
           color:#fff; display:flex; align-items:center; justify-content:center;
-          box-shadow:0 4px 12px rgba(255,111,169,0.35);
+          box-shadow:0 4px 12px rgba(var(--primary-rgb),0.35);
         }
         .fin-meta-label {
           font-size: var(--font-caption); font-weight: var(--fw-bold); color:var(--primary-dark);
@@ -1138,7 +1143,7 @@ export default function FinanceiroVisaoGeral() {
         .fin-meta-edit {
           display:inline-flex; align-items:center; gap:4px;
           padding:5px 12px; background:rgba(255,255,255,0.7);
-          border:1px solid rgba(255,111,169,0.3); border-radius: var(--radius-full);
+          border:1px solid rgba(var(--primary-rgb),0.3); border-radius: var(--radius-full);
           font-family:inherit; font-size: var(--font-caption); font-weight: var(--fw-bold);
           color:var(--primary); cursor:pointer;
           transition:background 0.15s;
@@ -1166,7 +1171,7 @@ export default function FinanceiroVisaoGeral() {
           background:#fff; border-radius: var(--radius-full);
           font-size: var(--font-button); font-weight: var(--fw-black);
           color:var(--primary);
-          box-shadow:0 2px 6px rgba(255,111,169,0.18);
+          box-shadow:0 2px 6px rgba(var(--primary-rgb),0.18);
         }
 
         /* Termômetro */
@@ -1184,7 +1189,7 @@ export default function FinanceiroVisaoGeral() {
           transition:width 0.6s cubic-bezier(.32,.72,.32,1);
           display:flex; align-items:center; justify-content:flex-end;
           padding-right:6px; color:#fff;
-          box-shadow:0 2px 8px rgba(255,111,169,0.35);
+          box-shadow:0 2px 8px rgba(var(--primary-rgb),0.35);
           position:relative;
           background-size:200% 100%;
           animation:thermoShine 3s linear infinite;
@@ -1203,7 +1208,7 @@ export default function FinanceiroVisaoGeral() {
         .fin-meta-empty {
           display:flex; align-items:center; gap:0.85rem; padding:1.1rem 1.4rem;
           background:var(--bg-card);
-          border:1.5px dashed rgba(255,111,169,0.4);
+          border:1.5px dashed rgba(var(--primary-rgb),0.4);
           border-radius: var(--radius-xl); cursor:pointer;
           font-family:inherit; transition:all 0.18s; width:100%;
           color:inherit;
@@ -1218,14 +1223,18 @@ export default function FinanceiroVisaoGeral() {
           background:var(--primary-light); color:var(--primary);
           display:flex; align-items:center; justify-content:center;
         }
-        .fin-meta-empty-title { font-size: var(--font-input); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 2px; }
-        .fin-meta-empty-sub { font-size: var(--font-helper); color:var(--text-secondary); margin:0; }
+        .fin-meta-empty-texts {
+          flex:1; min-width:0; text-align:left;
+          display:flex; flex-direction:column; gap:2px;
+        }
+        .fin-meta-empty-title { font-size: var(--font-input); font-weight: var(--fw-bold); color:var(--text-title); margin:0; }
+        .fin-meta-empty-sub { font-size: var(--font-helper); color:var(--text-secondary); margin:0; line-height:1.35; }
         .fin-meta-empty-cta {
           padding:0.5rem 1rem;
           background:var(--primary-gradient);
           color:#fff; border-radius: var(--radius-full);
           font-size: var(--font-helper); font-weight: var(--fw-bold); white-space:nowrap;
-          box-shadow:0 2px 8px rgba(255,111,169,0.3);
+          box-shadow:0 2px 8px rgba(var(--primary-rgb),0.3);
         }
 
         /* Modal meta - bloco explicativo */
@@ -1240,15 +1249,16 @@ export default function FinanceiroVisaoGeral() {
 
         /* Mobile */
         @media (max-width:640px) {
-          .fin-header { flex-direction:column; align-items:stretch; }
-          .fin-header-actions { flex-direction:column-reverse; gap:0.5rem; }
-          .fin-export-wrap, .fin-btn-export { width:100%; }
-          .fin-btn-export { justify-content:center; }
-          .fin-export-menu { width:100%; right:auto; left:0; }
-          .fin-month-nav { align-self:stretch; justify-content:space-between; }
-          .fin-month-label { flex:1; }
+          .fin-header { flex-direction:column; align-items:stretch; gap:0.6rem; }
+          .fin-header-actions { flex-direction:row; gap:0.5rem; align-items:center; }
+          .fin-export-wrap { flex:0 0 auto; }
+          .fin-btn-export { padding:8px 12px; }
+          .fin-btn-export span { display:none; }
+          .fin-month-nav { flex:1; justify-content:space-between; }
+          .fin-month-label { flex:1; min-width:0; font-size: var(--font-helper); }
+          .fin-export-menu { width:calc(100vw - 2rem); right:auto; left:0; }
           .fin-cards { grid-template-columns:1fr 1fr; }
-          .fin-card-value { font-size: var(--font-modal-title); }
+          .fin-card-value { font-size: var(--font-input); }
           .fin-chart { gap:0.4rem; height:180px; }
           .fin-bars { height:120px; }
           .fin-bar-sub { display:none; }
