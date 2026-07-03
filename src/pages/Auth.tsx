@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { User, Phone, Envelope, Eye, EyeSlash } from "@phosphor-icons/react";
 
 // ───────────────────────────────────────────────────────────────
 // Card promocional desktop (≥1200px). Mobile NÃO renderiza.
@@ -157,11 +158,8 @@ export default function Auth() {
             <div className="password-wrap">
               <input type={showPassword ? "text" : "password"} name="senha" placeholder="Digite sua senha" value={form.senha} onChange={handleChange} required
                 style={{ backgroundColor: form.senha ? "var(--primary-light)" : "var(--bg-card)", borderColor: form.senha ? "var(--primary-light)" : "var(--border)" }} />
-              <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>
-                {showPassword
-                  ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                  : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                }
+              <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)} tabIndex={-1} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>
+                {showPassword ? <EyeSlash size={18} weight="regular" /> : <Eye size={18} weight="regular" />}
               </button>
             </div>
           </div>
@@ -201,32 +199,26 @@ export default function Auth() {
         <form onSubmit={handleCadastro} className="cadastro-form">
           <div className="cad-field">
             <input type="text" placeholder="Nome" value={cadastroForm.nome} onChange={e => setCadastroForm({ ...cadastroForm, nome: e.target.value })} required />
-            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <User className="cad-icon" size={20} weight="regular" />
           </div>
           <div className="cad-field">
             <input type="tel" placeholder="Telefone" value={cadastroForm.telefone} onChange={e => setCadastroForm({ ...cadastroForm, telefone: formatPhone(e.target.value) })} />
-            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.73a16 16 0 0 0 6.29 6.29l1.62-1.62a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <Phone className="cad-icon" size={20} weight="regular" />
           </div>
           <div className="cad-field">
             <input type="email" placeholder="E-mail" value={cadastroForm.email} onChange={e => setCadastroForm({ ...cadastroForm, email: e.target.value })} required />
-            <svg className="cad-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <Envelope className="cad-icon" size={20} weight="regular" />
           </div>
           <div className="cad-field">
             <input type={showCadastroSenha ? "text" : "password"} placeholder="Senha" value={cadastroForm.senha} onChange={e => setCadastroForm({ ...cadastroForm, senha: e.target.value })} required />
-            <button type="button" className="cad-eye" onClick={() => setShowCadastroSenha(!showCadastroSenha)}>
-              {showCadastroSenha
-                ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              }
+            <button type="button" className="cad-eye" onClick={() => setShowCadastroSenha(!showCadastroSenha)} aria-label={showCadastroSenha ? "Ocultar senha" : "Mostrar senha"}>
+              {showCadastroSenha ? <EyeSlash size={20} weight="regular" /> : <Eye size={20} weight="regular" />}
             </button>
           </div>
           <div className="cad-field">
             <input type={showConfirmarSenha ? "text" : "password"} placeholder="Confirmar Senha" value={cadastroForm.confirmarSenha} onChange={e => setCadastroForm({ ...cadastroForm, confirmarSenha: e.target.value })} required />
-            <button type="button" className="cad-eye" onClick={() => setShowConfirmarSenha(!showConfirmarSenha)}>
-              {showConfirmarSenha
-                ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              }
+            <button type="button" className="cad-eye" onClick={() => setShowConfirmarSenha(!showConfirmarSenha)} aria-label={showConfirmarSenha ? "Ocultar senha" : "Mostrar senha"}>
+              {showConfirmarSenha ? <EyeSlash size={20} weight="regular" /> : <Eye size={20} weight="regular" />}
             </button>
           </div>
           {cadastroError && <p className="auth-error">{cadastroError}</p>}
@@ -367,7 +359,7 @@ export default function Auth() {
         .cadastro-form { display: flex; flex-direction: column; gap: 0.9rem; padding-top: 0.5rem; }
         .cad-field { position: relative; display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--radius-full); overflow: hidden; background: var(--bg-card); transition: border-color 0.2s; }
         .cad-field:focus-within { border-color: var(--border-focus); }
-        .cad-field input { flex: 1; padding: 0.8rem 1.25rem; border: none; outline: none; font-family: inherit; font-size: var(--font-input); color: var(--text-title); background: transparent; }
+        .cad-field input { flex: 1; min-width: 0; padding: 0.8rem 0.5rem 0.8rem 1.25rem; border: none; outline: none; font-family: inherit; font-size: var(--font-input); color: var(--text-title); background: transparent; }
         .cad-field input::placeholder { color: var(--text-muted); }
         .cad-field input:-webkit-autofill,
         .cad-field input:-webkit-autofill:hover,
@@ -386,8 +378,9 @@ export default function Auth() {
           box-shadow: 0 0 0px 1000px var(--primary-light) inset;
           transition: background-color 5000s ease-in-out 0s;
         }
-        .cad-icon { margin-right: 1rem; flex-shrink: 0; }
-        .cad-eye { background: none; border: none; cursor: pointer; padding: 0 1rem 0 0; display: flex; align-items: center; color: var(--text-muted); }
+        .cad-icon { margin-right: 1.5rem; flex-shrink: 0; color: var(--text-muted); }
+        .cad-eye { background: none; border: none; cursor: pointer; padding: 0 1.5rem 0 0.25rem; display: flex; align-items: center; color: var(--text-muted); flex-shrink: 0; }
+        .cad-eye:hover { color: var(--primary); }
         .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-bold); cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
         .cad-btn:hover:not(:disabled) { opacity: 0.9; }
         .cad-btn:disabled { opacity: 0.7; cursor: not-allowed; }
