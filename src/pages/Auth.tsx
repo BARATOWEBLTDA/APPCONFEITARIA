@@ -13,6 +13,40 @@ const APP_STORE_URL = "https://google.com";
 const QR_TARGET = "https://google.com";
 const QR_IMG_SRC = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=0&bgcolor=ffffff&color=3d1a24&data=${encodeURIComponent(QR_TARGET)}`;
 
+// ───────────────────────────────────────────────────────────────
+// Validadores puros — reutilizáveis, testáveis
+// ───────────────────────────────────────────────────────────────
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const validate = {
+  nome: (v: string) => (v.trim().length < 2 ? "Informe seu nome" : ""),
+  email: (v: string) => {
+    if (!v.trim()) return "Informe seu e-mail";
+    if (!EMAIL_REGEX.test(v.trim())) return "E-mail em formato inválido";
+    return "";
+  },
+  telefone: (v: string) => {
+    if (!v.trim()) return "";
+    const d = v.replace(/\D/g, "");
+    if (d.length !== 10 && d.length !== 11) return "Telefone incompleto";
+    return "";
+  },
+  senha: (v: string) => (v.length < 6 ? "Mínimo 6 caracteres" : ""),
+};
+
+// Força da senha: 0-4 (0 = vazia, 1 = muito fraca, 4 = forte)
+const getPasswordStrength = (senha: string): number => {
+  if (!senha) return 0;
+  let score = 0;
+  if (senha.length >= 6) score++;
+  if (senha.length >= 10) score++;
+  if (/\d/.test(senha)) score++;
+  if (/[A-Z]/.test(senha) || /[^a-zA-Z0-9]/.test(senha)) score++;
+  return Math.min(score, 4);
+};
+
+const STRENGTH_LABELS = ["", "Muito fraca", "Fraca", "Média", "Forte"];
+
 export default function Auth() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -23,6 +57,11 @@ export default function Auth() {
   const [fading, setFading] = useState(false);
   const [showCadastro, setShowCadastro] = useState(false);
 
+  // ── Login: validação inline (só email) ─────────────────────
+  const [loginEmailError, setLoginEmailError] = useState("");
+  const [loginEmailTouched, setLoginEmailTouched] = useState(false);
+
+  // ── Cadastro ───────────────────────────────────────────────
   const [cadastroLoading, setCadastroLoading] = useState(false);
   const [cadastroError, setCadastroError] = useState("");
   const [showCadastroSenha, setShowCadastroSenha] = useState(false);
@@ -30,6 +69,8 @@ export default function Auth() {
   const [cadastroForm, setCadastroForm] = useState({
     nome: "", telefone: "", email: "", senha: "", confirmarSenha: ""
   });
+  const [cadastroErrors, setCadastroErrors] = useState<Record<string, string>>({});
+  const [cadastroTouched, setCadastroTouched] = useState<Record<string, boolean>>({});
 
   const bgRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
@@ -65,9 +106,18 @@ export default function Auth() {
     };
   }, []);
 
+  // ── LOGIN handlers ─────────────────────────────────────────
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError("");
+    if (e.target.name === "email" && loginEmailTouched) {
+      setLoginEmailError(validate.email(e.target.value));
+    }
+  };
+
+  const handleLoginEmailBlur = () => {
+    setLoginEmailTouched(true);
+    setLoginEmailError(validate.email(form.email));
   };
 
   const formatPhone = (value: string) => {
@@ -80,6 +130,12 @@ export default function Auth() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const emailErr = validate.email(form.email);
+    if (emailErr) {
+      setLoginEmailTouched(true);
+      setLoginEmailError(emailErr);
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -99,13 +155,66 @@ export default function Auth() {
     }
   };
 
+  // ── CADASTRO handlers ──────────────────────────────────────
+  const handleCadastroChange = (field: keyof typeof cadastroForm, rawValue: string) => {
+    const value = field === "telefone" ? formatPhone(rawValue) : rawValue;
+    const nextForm = { ...cadastroForm, [field]: value };
+    setCadastroForm(nextForm);
+    setCadastroError("");
+
+    // Se o campo já foi tocado, revalida em tempo real
+    if (cadastroTouched[field]) {
+      const validator = validate[field as keyof typeof validate];
+      if (validator) {
+        setCadastroErrors(prev => ({ ...prev, [field]: validator(value) }));
+      }
+    }
+
+    // Confirmação de senha: revalida sempre que senha OU confirmação mudam
+    if (field === "senha" && cadastroTouched.confirmarSenha) {
+      const confErr = nextForm.confirmarSenha && nextForm.confirmarSenha !== value ? "Senhas não coincidem" : "";
+      setCadastroErrors(prev => ({ ...prev, confirmarSenha: confErr }));
+    }
+    if (field === "confirmarSenha" && cadastroTouched.confirmarSenha) {
+      const confErr = value && value !== nextForm.senha ? "Senhas não coincidem" : "";
+      setCadastroErrors(prev => ({ ...prev, confirmarSenha: confErr }));
+    }
+  };
+
+  const handleCadastroBlur = (field: keyof typeof cadastroForm) => {
+    setCadastroTouched(prev => ({ ...prev, [field]: true }));
+    if (field === "confirmarSenha") {
+      const confErr = cadastroForm.confirmarSenha && cadastroForm.confirmarSenha !== cadastroForm.senha
+        ? "Senhas não coincidem" : "";
+      setCadastroErrors(prev => ({ ...prev, confirmarSenha: confErr }));
+      return;
+    }
+    const validator = validate[field as keyof typeof validate];
+    if (validator) {
+      setCadastroErrors(prev => ({ ...prev, [field]: validator(cadastroForm[field]) }));
+    }
+  };
+
+  const passwordStrength = getPasswordStrength(cadastroForm.senha);
+
   const handleCadastro = async (e: React.FormEvent) => {
     e.preventDefault();
     setCadastroError("");
-    if (!cadastroForm.nome.trim()) return setCadastroError("Informe seu nome.");
-    if (!cadastroForm.email.trim()) return setCadastroError("Informe seu e-mail.");
-    if (cadastroForm.senha.length < 6) return setCadastroError("A senha deve ter ao menos 6 caracteres.");
-    if (cadastroForm.senha !== cadastroForm.confirmarSenha) return setCadastroError("As senhas não coincidem.");
+
+    // Roda todos os validators antes de submeter
+    const nextErrors: Record<string, string> = {
+      nome: validate.nome(cadastroForm.nome),
+      email: validate.email(cadastroForm.email),
+      telefone: validate.telefone(cadastroForm.telefone),
+      senha: validate.senha(cadastroForm.senha),
+      confirmarSenha: cadastroForm.confirmarSenha !== cadastroForm.senha ? "Senhas não coincidem" : "",
+    };
+    setCadastroErrors(nextErrors);
+    setCadastroTouched({ nome: true, email: true, telefone: true, senha: true, confirmarSenha: true });
+
+    const hasError = Object.values(nextErrors).some(e => e);
+    if (hasError) return;
+
     setCadastroLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -129,7 +238,17 @@ export default function Auth() {
       setFading(true);
       setTimeout(() => navigate("/inicio"), 700);
     } catch (err: any) {
-      setCadastroError(err.message || "Erro ao criar conta. Tente novamente.");
+      // Tradução amigável dos erros mais comuns do Supabase
+      const msg = err?.message || "";
+      if (/already registered|already exists/i.test(msg)) {
+        setCadastroError("Este e-mail já tem cadastro. Faça login.");
+      } else if (/password/i.test(msg)) {
+        setCadastroError("Senha inválida. Use ao menos 6 caracteres.");
+      } else if (/valid email/i.test(msg)) {
+        setCadastroError("E-mail em formato inválido.");
+      } else {
+        setCadastroError("Erro ao criar conta. Tente novamente.");
+      }
       setCadastroLoading(false);
     }
   };
@@ -147,17 +266,47 @@ export default function Auth() {
           <img src="/cadastro.png" alt="Doonly" className="auth-logo-img" />
         </div>
 
-        <form onSubmit={handleSubmit} className="auth-form">
+        <form onSubmit={handleSubmit} className="auth-form" noValidate>
           <div className="field">
-            <label>E-mail</label>
-            <input type="email" name="email" placeholder="Digite seu e-mail" value={form.email} onChange={handleChange} required
-              style={{ backgroundColor: form.email ? "var(--primary-light)" : "var(--bg-card)", borderColor: form.email ? "var(--primary-light)" : "var(--border)" }} />
+            <label htmlFor="login-email">E-mail</label>
+            <input
+              id="login-email"
+              type="email"
+              name="email"
+              placeholder="Digite seu e-mail"
+              value={form.email}
+              onChange={handleChange}
+              onBlur={handleLoginEmailBlur}
+              required
+              autoComplete="email"
+              inputMode="email"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              enterKeyHint="next"
+              aria-invalid={!!loginEmailError}
+              style={{
+                backgroundColor: form.email ? "var(--primary-light)" : "var(--bg-card)",
+                borderColor: loginEmailError ? "var(--error)" : (form.email ? "var(--primary-light)" : "var(--border)")
+              }}
+            />
+            {loginEmailError && <span className="field-error">{loginEmailError}</span>}
           </div>
           <div className="field">
-            <label>Senha</label>
+            <label htmlFor="login-senha">Senha</label>
             <div className="password-wrap">
-              <input type={showPassword ? "text" : "password"} name="senha" placeholder="Digite sua senha" value={form.senha} onChange={handleChange} required
-                style={{ backgroundColor: form.senha ? "var(--primary-light)" : "var(--bg-card)", borderColor: form.senha ? "var(--primary-light)" : "var(--border)" }} />
+              <input
+                id="login-senha"
+                type={showPassword ? "text" : "password"}
+                name="senha"
+                placeholder="Digite sua senha"
+                value={form.senha}
+                onChange={handleChange}
+                required
+                autoComplete="current-password"
+                enterKeyHint="done"
+                style={{ backgroundColor: form.senha ? "var(--primary-light)" : "var(--bg-card)", borderColor: form.senha ? "var(--primary-light)" : "var(--border)" }}
+              />
               <button type="button" className="eye-btn" onClick={() => setShowPassword(!showPassword)} tabIndex={-1} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}>
                 {showPassword ? <EyeSlash size={18} weight="regular" /> : <Eye size={18} weight="regular" />}
               </button>
@@ -196,31 +345,141 @@ export default function Auth() {
       </div>
       ) : (
       <div className="auth-card">
-        <form onSubmit={handleCadastro} className="cadastro-form">
-          <div className="cad-field">
-            <input type="text" placeholder="Nome" value={cadastroForm.nome} onChange={e => setCadastroForm({ ...cadastroForm, nome: e.target.value })} required />
-            <User className="cad-icon" size={20} weight="regular" />
+        <form onSubmit={handleCadastro} className="cadastro-form" noValidate>
+          {/* Nome */}
+          <div className="cad-field-wrap">
+            <div className={`cad-field ${cadastroTouched.nome && cadastroErrors.nome ? "has-error" : ""}`}>
+              <input
+                type="text"
+                placeholder="Nome"
+                value={cadastroForm.nome}
+                onChange={e => handleCadastroChange("nome", e.target.value)}
+                onBlur={() => handleCadastroBlur("nome")}
+                required
+                autoComplete="name"
+                autoCapitalize="words"
+                enterKeyHint="next"
+                aria-invalid={!!(cadastroTouched.nome && cadastroErrors.nome)}
+              />
+              <User className="cad-icon" size={20} weight="regular" />
+            </div>
+            {cadastroTouched.nome && cadastroErrors.nome && (
+              <span className="cad-error">{cadastroErrors.nome}</span>
+            )}
           </div>
-          <div className="cad-field">
-            <input type="tel" placeholder="Telefone" value={cadastroForm.telefone} onChange={e => setCadastroForm({ ...cadastroForm, telefone: formatPhone(e.target.value) })} />
-            <Phone className="cad-icon" size={20} weight="regular" />
+
+          {/* Telefone */}
+          <div className="cad-field-wrap">
+            <div className={`cad-field ${cadastroTouched.telefone && cadastroErrors.telefone ? "has-error" : ""}`}>
+              <input
+                type="tel"
+                placeholder="Telefone"
+                value={cadastroForm.telefone}
+                onChange={e => handleCadastroChange("telefone", e.target.value)}
+                onBlur={() => handleCadastroBlur("telefone")}
+                autoComplete="tel"
+                inputMode="tel"
+                enterKeyHint="next"
+                aria-invalid={!!(cadastroTouched.telefone && cadastroErrors.telefone)}
+              />
+              <Phone className="cad-icon" size={20} weight="regular" />
+            </div>
+            {cadastroTouched.telefone && cadastroErrors.telefone && (
+              <span className="cad-error">{cadastroErrors.telefone}</span>
+            )}
           </div>
-          <div className="cad-field">
-            <input type="email" placeholder="E-mail" value={cadastroForm.email} onChange={e => setCadastroForm({ ...cadastroForm, email: e.target.value })} required />
-            <Envelope className="cad-icon" size={20} weight="regular" />
+
+          {/* E-mail */}
+          <div className="cad-field-wrap">
+            <div className={`cad-field ${cadastroTouched.email && cadastroErrors.email ? "has-error" : ""}`}>
+              <input
+                type="email"
+                placeholder="E-mail"
+                value={cadastroForm.email}
+                onChange={e => handleCadastroChange("email", e.target.value)}
+                onBlur={() => handleCadastroBlur("email")}
+                required
+                autoComplete="email"
+                inputMode="email"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellCheck={false}
+                enterKeyHint="next"
+                aria-invalid={!!(cadastroTouched.email && cadastroErrors.email)}
+              />
+              <Envelope className="cad-icon" size={20} weight="regular" />
+            </div>
+            {cadastroTouched.email && cadastroErrors.email && (
+              <span className="cad-error">{cadastroErrors.email}</span>
+            )}
           </div>
-          <div className="cad-field">
-            <input type={showCadastroSenha ? "text" : "password"} placeholder="Senha" value={cadastroForm.senha} onChange={e => setCadastroForm({ ...cadastroForm, senha: e.target.value })} required />
-            <button type="button" className="cad-eye" onClick={() => setShowCadastroSenha(!showCadastroSenha)} aria-label={showCadastroSenha ? "Ocultar senha" : "Mostrar senha"}>
-              {showCadastroSenha ? <EyeSlash size={20} weight="regular" /> : <Eye size={20} weight="regular" />}
-            </button>
+
+          {/* Senha */}
+          <div className="cad-field-wrap">
+            <div className={`cad-field ${cadastroTouched.senha && cadastroErrors.senha ? "has-error" : ""}`}>
+              <input
+                type={showCadastroSenha ? "text" : "password"}
+                placeholder="Senha"
+                value={cadastroForm.senha}
+                onChange={e => handleCadastroChange("senha", e.target.value)}
+                onBlur={() => handleCadastroBlur("senha")}
+                required
+                autoComplete="new-password"
+                enterKeyHint="next"
+                aria-invalid={!!(cadastroTouched.senha && cadastroErrors.senha)}
+              />
+              <button
+                type="button"
+                className="cad-eye"
+                onClick={() => setShowCadastroSenha(!showCadastroSenha)}
+                aria-label={showCadastroSenha ? "Ocultar senha" : "Mostrar senha"}
+              >
+                {showCadastroSenha ? <EyeSlash size={20} weight="regular" /> : <Eye size={20} weight="regular" />}
+              </button>
+            </div>
+            {cadastroForm.senha && (
+              <div className={`pw-strength lvl-${passwordStrength}`}>
+                <div className="pw-strength-bars">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className={`pw-bar ${passwordStrength >= i ? "pw-bar-active" : ""}`} />
+                  ))}
+                </div>
+                <span className="pw-strength-label">{STRENGTH_LABELS[passwordStrength]}</span>
+              </div>
+            )}
+            {cadastroTouched.senha && cadastroErrors.senha && (
+              <span className="cad-error">{cadastroErrors.senha}</span>
+            )}
           </div>
-          <div className="cad-field">
-            <input type={showConfirmarSenha ? "text" : "password"} placeholder="Confirmar Senha" value={cadastroForm.confirmarSenha} onChange={e => setCadastroForm({ ...cadastroForm, confirmarSenha: e.target.value })} required />
-            <button type="button" className="cad-eye" onClick={() => setShowConfirmarSenha(!showConfirmarSenha)} aria-label={showConfirmarSenha ? "Ocultar senha" : "Mostrar senha"}>
-              {showConfirmarSenha ? <EyeSlash size={20} weight="regular" /> : <Eye size={20} weight="regular" />}
-            </button>
+
+          {/* Confirmar Senha */}
+          <div className="cad-field-wrap">
+            <div className={`cad-field ${cadastroTouched.confirmarSenha && cadastroErrors.confirmarSenha ? "has-error" : ""}`}>
+              <input
+                type={showConfirmarSenha ? "text" : "password"}
+                placeholder="Confirmar Senha"
+                value={cadastroForm.confirmarSenha}
+                onChange={e => handleCadastroChange("confirmarSenha", e.target.value)}
+                onBlur={() => handleCadastroBlur("confirmarSenha")}
+                required
+                autoComplete="new-password"
+                enterKeyHint="done"
+                aria-invalid={!!(cadastroTouched.confirmarSenha && cadastroErrors.confirmarSenha)}
+              />
+              <button
+                type="button"
+                className="cad-eye"
+                onClick={() => setShowConfirmarSenha(!showConfirmarSenha)}
+                aria-label={showConfirmarSenha ? "Ocultar senha" : "Mostrar senha"}
+              >
+                {showConfirmarSenha ? <EyeSlash size={20} weight="regular" /> : <Eye size={20} weight="regular" />}
+              </button>
+            </div>
+            {cadastroTouched.confirmarSenha && cadastroErrors.confirmarSenha && (
+              <span className="cad-error">{cadastroErrors.confirmarSenha}</span>
+            )}
           </div>
+
           {cadastroError && <p className="auth-error">{cadastroError}</p>}
           <button type="submit" className="cad-btn" disabled={cadastroLoading}>
             {cadastroLoading ? <span className="spinner" /> : "Cadastrar"}
@@ -334,6 +593,7 @@ export default function Auth() {
         .field input { padding: 0.72rem 1rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: var(--font-input); color: var(--text-title); outline: none; transition: background-color 0.2s, border-color 0.2s; width: 100%; }
         .field input:focus { border-color: var(--border-focus); }
         .field input::placeholder { color: var(--text-muted); }
+        .field-error { font-size: 0.75rem; color: var(--error); padding-left: 0.25rem; }
         .password-wrap { position: relative; }
         .password-wrap input { padding-right: 2.8rem; }
         .eye-btn { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; padding: 0; }
@@ -356,9 +616,14 @@ export default function Auth() {
         .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
         .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0.75rem; background: var(--bg-card); color: var(--text-primary); border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-medium); cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
         .google-btn:hover { border-color: var(--text-muted); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
-        .cadastro-form { display: flex; flex-direction: column; gap: 0.9rem; padding-top: 0.5rem; }
+
+        /* ── Cadastro ─────────────────────────────────────── */
+        .cadastro-form { display: flex; flex-direction: column; gap: 0.75rem; padding-top: 0.5rem; }
+        .cad-field-wrap { display: flex; flex-direction: column; gap: 0.3rem; }
         .cad-field { position: relative; display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--radius-full); overflow: hidden; background: var(--bg-card); transition: border-color 0.2s; }
         .cad-field:focus-within { border-color: var(--border-focus); }
+        .cad-field.has-error { border-color: var(--error); }
+        .cad-field.has-error:focus-within { border-color: var(--error); }
         .cad-field input { flex: 1; min-width: 0; padding: 0.8rem 0.5rem 0.8rem 1.25rem; border: none; outline: none; font-family: inherit; font-size: var(--font-input); color: var(--text-title); background: transparent; }
         .cad-field input::placeholder { color: var(--text-muted); }
         .cad-field input:-webkit-autofill,
@@ -381,9 +646,21 @@ export default function Auth() {
         .cad-icon { margin-right: 1.5rem; flex-shrink: 0; color: var(--text-muted); }
         .cad-eye { background: none; border: none; cursor: pointer; padding: 0 1.5rem 0 0.25rem; display: flex; align-items: center; color: var(--text-muted); flex-shrink: 0; }
         .cad-eye:hover { color: var(--primary); }
+        .cad-error { font-size: 0.75rem; color: var(--error); padding-left: 1.25rem; }
         .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-bold); cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
         .cad-btn:hover:not(:disabled) { opacity: 0.9; }
         .cad-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* ── Medidor de força da senha ────────────────────── */
+        .pw-strength { display: flex; align-items: center; gap: 0.6rem; padding: 0 1.25rem; margin-top: 0.15rem; }
+        .pw-strength-bars { display: flex; gap: 4px; flex: 1; }
+        .pw-bar { flex: 1; height: 4px; border-radius: 2px; background: var(--border); transition: background 0.25s ease; }
+        .pw-bar-active { background: currentColor; }
+        .pw-strength-label { font-size: 0.72rem; font-weight: 600; min-width: 62px; text-align: right; color: currentColor; }
+        .pw-strength.lvl-1 { color: #EF4444; }
+        .pw-strength.lvl-2 { color: #F59E0B; }
+        .pw-strength.lvl-3 { color: #EAB308; }
+        .pw-strength.lvl-4 { color: #16A34A; }
 
         /* ──────────────────────────────────────────────────────────
            Promo card (desktop only ≥1200px).
