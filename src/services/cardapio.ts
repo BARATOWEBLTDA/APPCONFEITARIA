@@ -1,26 +1,70 @@
 import { supabase } from '@/lib/supabase'
 import { Produto, DesignSettings, Configuracoes } from '@/types/database'
 
-export async function getCardapioBySlug(slug: string): Promise<{
+export interface CardapioData {
   design: DesignSettings | null
   config: Configuracoes | null
   produtos: Produto[]
   isPro: boolean
   categoryImages: { [key: string]: string }
   categoriasList: string[]
-}> {
+  /** Slug canônico esperado — 'cardapio' pra free, slug_personalizado pra PRO */
+  slugCanonico: string
+  /** Código público — sempre presente */
+  codigoPublico: string
+}
+
+const EMPTY_RESULT: CardapioData = {
+  design: null,
+  config: null,
+  produtos: [],
+  isPro: false,
+  categoryImages: {},
+  categoriasList: [],
+  slugCanonico: 'cardapio',
+  codigoPublico: '',
+}
+
+/**
+ * Busca cardápio pelo código público (4 chars).
+ * Nova função principal — o código é o identificador real.
+ * Slug (2º segmento) é apenas decoração/SEO.
+ */
+export async function getCardapioByCodigo(codigo: string): Promise<CardapioData> {
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', slug)
-    .single()
+    .eq('codigo_publico', codigo)
+    .maybeSingle()
 
-  if (!profile) return { design: null, config: null, produtos: [], isPro: false, categoryImages: {}, categoriasList: [] }
+  if (!profile) return EMPTY_RESULT
 
   return fetchByUserId(profile.id, profile)
 }
 
-async function fetchByUserId(userId: string, profile: any) {
+/**
+ * @deprecated Compat com cardápios acessados via ID (UUID).
+ * Mantido só pra não quebrar bookmarks antigos durante a transição.
+ * Remover após 30 dias em produção.
+ */
+export async function getCardapioBySlug(slug: string): Promise<CardapioData> {
+  // Tenta primeiro por codigo_publico (novo)
+  const porCodigo = await getCardapioByCodigo(slug)
+  if (porCodigo.design) return porCodigo
+
+  // Fallback: tenta por id (comportamento antigo)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', slug)
+    .maybeSingle()
+
+  if (!profile) return EMPTY_RESULT
+
+  return fetchByUserId(profile.id, profile)
+}
+
+async function fetchByUserId(userId: string, profile: any): Promise<CardapioData> {
   const [{ data: produtos }, { data: categorias }] = await Promise.all([
     supabase.from('produtos').select('*').eq('user_id', userId).eq('disponivel', true).order('created_at', { ascending: false }),
     supabase.from('categorias').select('nome, imagem_url').eq('user_id', userId).order('ordem').order('nome')
@@ -37,6 +81,11 @@ async function fetchByUserId(userId: string, profile: any) {
 
   const expira = profile.pro_expira_em ? new Date(profile.pro_expira_em) : null
   const isPro = profile.plano === 'pro' && (!expira || expira > new Date())
+
+  // Slug canônico: se PRO e tem slug_personalizado, usa. Senão, 'cardapio' fixo.
+  const slugCanonico = isPro && profile.slug_personalizado
+    ? profile.slug_personalizado
+    : 'cardapio'
 
   const design: DesignSettings = {
     user_id: userId,
@@ -80,5 +129,14 @@ async function fetchByUserId(userId: string, profile: any) {
     prazo_minimo_horas: profile.prazo_minimo_horas || 24,
   }
 
-  return { design, config, produtos: produtos || [], isPro, categoryImages, categoriasList }
+  return {
+    design,
+    config,
+    produtos: produtos || [],
+    isPro,
+    categoryImages,
+    categoriasList,
+    slugCanonico,
+    codigoPublico: profile.codigo_publico || '',
+  }
 }

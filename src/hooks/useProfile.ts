@@ -6,6 +6,20 @@ export interface Profile {
   nome: string;
   nome_loja: string;
   foto_url: string | null;
+  /**
+   * Código único de 4 chars usado na URL pública do cardápio.
+   * Formato: /c/[codigo]/[slug]. Gerado automaticamente no cadastro (backend trigger).
+   */
+  codigo_publico?: string;
+  /**
+   * Slug personalizado usado apenas para usuários PRO.
+   * NULL para free (usa "cardapio" fixo). Ex: "brunobolos".
+   */
+  slug_personalizado?: string | null;
+  /**
+   * @deprecated Substituído por codigo_publico + slug_personalizado.
+   * Mantido apenas por compat de tipagem — sempre virá undefined do banco (coluna não existe).
+   */
   slug?: string;
   plano?: string | null;
   pro_expira_em?: string | null;
@@ -72,4 +86,28 @@ export function useProfile() {
   }, []);
 
   return { profile, loading, refetch: refreshProfile };
+}
+
+/**
+ * Retorna a URL pública canônica do cardápio.
+ * - Free (ou PRO sem slug personalizado): /c/[codigo]/cardapio
+ * - PRO com slug: /c/[codigo]/[slug]
+ */
+export function getCardapioUrl(profile: Profile | null | undefined, origin?: string): string {
+  if (!profile?.codigo_publico) return "";
+  const base = origin ?? (typeof window !== "undefined" ? window.location.origin : "");
+  const slug = isPro(profile) && profile.slug_personalizado
+    ? profile.slug_personalizado
+    : "cardapio";
+  return `${base}/c/${profile.codigo_publico}/${slug}`;
+}
+
+/**
+ * Verifica se o perfil tem plano PRO ativo (não expirado).
+ */
+export function isPro(profile: Profile | null | undefined): boolean {
+  if (!profile) return false;
+  if (profile.plano !== "pro") return false;
+  if (!profile.pro_expira_em) return true;
+  return new Date(profile.pro_expira_em) > new Date();
 }

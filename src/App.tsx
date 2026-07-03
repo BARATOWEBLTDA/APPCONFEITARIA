@@ -96,6 +96,10 @@ export default function App() {
         <Route path="/login" element={<Auth />} />
         <Route path="/termos" element={<Termos />} />
         <Route path="/privacidade" element={<Privacidade />} />
+        {/* Rota pública do cardápio — nova estrutura: /c/[codigo]/[slug?] */}
+        <Route path="/c/:codigo" element={<CardapioPublico />} />
+        <Route path="/c/:codigo/:slug" element={<CardapioPublico />} />
+        {/* Fallback: rota antiga /cardapio/:slug — mantida por compat, redireciona internamente */}
         <Route path="/cardapio/:slug" element={<CardapioPublico />} />
         <Route path="/esqueci-senha" element={<EsqueciSenha />} />
         <Route path="/reset-password" element={<ResetPassword />} />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
-import { getCardapioBySlug } from '@/services/cardapio'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { getCardapioByCodigo, getCardapioBySlug } from '@/services/cardapio'
 import { supabase } from '@/lib/supabase'
 import { useDeviceDetection } from '@/hooks/useDeviceDetection'
 import { BannerAd } from '@/components/cardapio/BannerAd'
@@ -485,7 +485,16 @@ function DeskFooterBar({ design, config }: any) {
 /* ══════════════════════════════════════════════ */
 
 function CardapioContent() {
-  const { slug } = useParams<{ slug: string }>()
+  // Suporta 2 formatos de URL:
+  //   Nova: /c/:codigo/:slug?   → codigo é o identificador real, slug é decoração
+  //   Antiga: /cardapio/:slug   → fallback por compat (slug era o UUID)
+  const params = useParams<{ codigo?: string; slug?: string }>()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const isRotaNova = location.pathname.startsWith('/c/')
+  const codigo = params.codigo || ''
+  const slugAtual = params.slug || ''
+
   const [design, setDesign] = useState<DesignSettings | null>(null)
   const [config, setConfig] = useState<Configuracoes | null>(null)
   const [produtos, setProdutos] = useState<Produto[]>([])
@@ -502,10 +511,28 @@ function CardapioContent() {
   const cartCount = cartItems.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
 
   useEffect(() => {
-    if (!slug) return
+    // Chave de busca: código na rota nova, slug (UUID legado) na antiga
+    const chave = isRotaNova ? codigo : slugAtual
+    if (!chave) return
+
     setLoading(true)
-    getCardapioBySlug(slug.toLowerCase()).then(({ design, config, produtos, isPro, categoryImages, categoriasList }) => {
+    const fetchFn = isRotaNova ? getCardapioByCodigo : getCardapioBySlug
+
+    fetchFn(chave.toLowerCase()).then(({ design, config, produtos, isPro, categoryImages, categoriasList, slugCanonico, codigoPublico }) => {
       if (!design) { setError('Cardápio não encontrado'); setLoading(false); return }
+
+      // ── Redirect canônico ──
+      // Rota antiga /cardapio/:uuid → redireciona pra nova /c/:codigo/:slug
+      if (!isRotaNova && codigoPublico) {
+        navigate(`/c/${codigoPublico}/${slugCanonico}`, { replace: true })
+        return
+      }
+      // Rota nova sem slug ou com slug errado → redireciona pra canônica
+      if (isRotaNova && slugAtual !== slugCanonico) {
+        navigate(`/c/${codigo}/${slugCanonico}`, { replace: true })
+        return
+      }
+
       setDesign(design); setConfig(config); setProdutos(produtos)
       setIsPro(isPro || false); setCategoryImages(categoryImages || {})
       setCategoriasList(categoriasList || [])
@@ -565,7 +592,7 @@ function CardapioContent() {
       }
       setLoading(false)
     }).catch(e => { setError(e.message); setLoading(false) })
-  }, [slug])
+  }, [codigo, slugAtual, isRotaNova])
 
   const toggleFavorite = (id: string) => setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
   const getCategories = () => {

@@ -5,7 +5,7 @@ import {
   Share, Percent, ForkKnife, Copy, CheckCircle, Warning, Lightbulb,
   TrendUp, TrendDown, ShoppingBag, Users as UsersIcon, CurrencyDollar,
 } from "@phosphor-icons/react";
-import { useProfile } from "@/hooks/useProfile";
+import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
 import { supabase } from "@/lib/supabase";
 
 type Periodo = "hoje" | "7d" | "30d" | "tudo";
@@ -52,10 +52,13 @@ export default function Cardapio() {
   const [loading, setLoading] = useState(true);
   const [copiado, setCopiado] = useState(false);
 
-  const slug = profile?.slug || "";
-  const linkCardapio = slug ? `${window.location.origin}/cardapio/${slug}` : "";
-  const linkDisplay = slug ? `${window.location.host}/cardapio/${slug}` : "Configure seu cardápio";
-  const publicado = !!slug;
+  // Nova arquitetura: cardápio publicado quando profile.codigo_publico existe.
+  // URL final: /c/[codigo]/[slug] — slug é "cardapio" (free) ou personalizado (PRO).
+  const codigo = profile?.codigo_publico || "";
+  const linkCardapio = getCardapioUrl(profile);
+  const slugCanonico = isPro(profile) && profile?.slug_personalizado ? profile.slug_personalizado : "cardapio";
+  const linkDisplay = codigo ? `${window.location.host}/c/${codigo}/${slugCanonico}` : "Configure seu cardápio";
+  const publicado = !!codigo;
 
   // ─── Carregar métricas + alertas ───
   useEffect(() => {
