@@ -242,7 +242,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
         /* ── Subtitle (embaixo dos cards) — complemento do título ── */
         .ob-slide-subtitle {
-          margin: 1.1rem 0 0;
+          margin: 2.4rem 0 0.5rem;
           font-size: 1.15rem;
           font-weight: 800;
           color: #fff;
@@ -2155,7 +2155,7 @@ function Slide3Ingredientes({ onReady }: { onReady: () => void }) {
         )}
       </div>
       {terminou && (
-        <p className="ob-slide-subtitle">SEMPRE ORGANIZADOS<br/>E PRONTOS PARA USAR</p>
+        <p className="ob-slide-subtitle">COM PREÇO CERTO<br/>EM CADA RECEITA</p>
       )}
     </>
   );
