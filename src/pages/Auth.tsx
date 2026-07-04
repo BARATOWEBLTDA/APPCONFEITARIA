@@ -463,7 +463,7 @@ export default function Auth() {
                 </li>
               </ul>
             )}
-            {cadastroTouched.senha && cadastroErrors.senha && (
+            {cadastroTouched.senha && cadastroErrors.senha && !cadastroForm.senha && (
               <span className="cad-error">{cadastroErrors.senha}</span>
             )}
           </div>
@@ -701,10 +701,10 @@ export default function Auth() {
         .cad-subtitle { font-size: 0.9rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
 
         /* ── Requisitos da senha (substitui medidor) ──────── */
-        .pw-req { list-style: none; padding: 0.15rem 1.25rem 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; }
-        .pw-req li { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; color: var(--text-muted); transition: color 0.2s ease; }
+        .pw-req { list-style: none; padding: 0.25rem 1.25rem 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+        .pw-req li { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--text-muted); transition: color 0.2s ease; }
         .pw-req li.ok { color: #16A34A; }
-        .pw-req-dot { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; font-size: 0.75rem; font-weight: 700; }
+        .pw-req-dot { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
         .pw-req li.ok .pw-req-dot { color: #16A34A; }
 
         /* ── Alerta soft (identidade Doonly) ──────────────── */
