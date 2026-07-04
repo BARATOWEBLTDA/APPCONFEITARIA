@@ -57,7 +57,8 @@ export default function Cardapio() {
   const codigo = profile?.codigo_publico || "";
   const linkCardapio = getCardapioUrl(profile);
   const slugCanonico = isPro(profile) && profile?.slug_personalizado ? profile.slug_personalizado : "cardapio";
-  const linkDisplay = codigo ? `${window.location.host}/c/${codigo}/${slugCanonico}` : "Configure seu cardápio";
+  // Display: mostra sem "https://" para ficar mais limpo
+  const linkDisplay = linkCardapio ? linkCardapio.replace(/^https?:\/\//, "") : "Configure seu cardápio";
   const publicado = !!codigo;
 
   // ─── Carregar métricas + alertas ───

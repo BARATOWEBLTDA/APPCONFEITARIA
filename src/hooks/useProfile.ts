@@ -89,13 +89,25 @@ export function useProfile() {
 }
 
 /**
+ * Domínio canônico do Doonly. O link público SEMPRE aponta pra cá,
+ * independente de onde o app está sendo acessado (localhost, preview 
+ * Vercel, domínio secundário). Isso garante que confeiteiras possam 
+ * compartilhar links que funcionam pra qualquer visitante.
+ *
+ * Sobrescreva via VITE_PUBLIC_URL no .env local se quiser testar 
+ * apontando pra outro ambiente.
+ */
+const CANONICAL_BASE_URL =
+  (import.meta as any).env?.VITE_PUBLIC_URL || "https://doonly.com.br";
+
+/**
  * Retorna a URL pública canônica do cardápio.
  * - Free (ou PRO sem slug personalizado): /c/[codigo]/cardapio
  * - PRO com slug: /c/[codigo]/[slug]
  */
 export function getCardapioUrl(profile: Profile | null | undefined, origin?: string): string {
   if (!profile?.codigo_publico) return "";
-  const base = origin ?? (typeof window !== "undefined" ? window.location.origin : "");
+  const base = origin ?? CANONICAL_BASE_URL;
   const slug = isPro(profile) && profile.slug_personalizado
     ? profile.slug_personalizado
     : "cardapio";
