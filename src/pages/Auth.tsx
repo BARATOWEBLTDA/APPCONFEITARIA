@@ -21,8 +21,13 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const validate = {
   nome: (v: string) => (v.trim().length < 2 ? "Informe seu nome" : ""),
   email: (v: string) => {
-    if (!v.trim()) return "Informe seu e-mail";
-    if (!EMAIL_REGEX.test(v.trim())) return "E-mail em formato inválido";
+    const trimmed = v.trim();
+    if (!trimmed) return "Informe seu e-mail";
+    if (!trimmed.includes("@")) return "Está faltando o @ no seu e-mail";
+    const [local, domain] = trimmed.split("@");
+    if (!local) return "Digite algo antes do @";
+    if (!domain || !domain.includes(".")) return "E-mail incompleto (ex: nome@gmail.com)";
+    if (!EMAIL_REGEX.test(trimmed)) return "E-mail em formato inválido";
     return "";
   },
   telefone: (v: string) => {
@@ -39,25 +44,14 @@ const validate = {
   },
 };
 
-// Força da senha: 0-4 (0 = vazia, 1 = muito fraca, 4 = forte)
-// Regra base: 6+ chars com letra E número. Comprimento aumenta o nível.
-const getPasswordStrength = (senha: string): number => {
-  if (!senha) return 0;
-  const hasLetter = /[a-zA-Z]/.test(senha);
-  const hasNumber = /\d/.test(senha);
-  const len = senha.length;
-
-  // Menos de 6 chars, ou só letra, ou só número → nível 1 (muito fraca)
-  if (len < 6 || !hasLetter || !hasNumber) return 1;
-  // 6-7 chars com letra + número → fraca (mínimo aceitável)
-  if (len < 8) return 2;
-  // 8-9 chars com letra + número → média
-  if (len < 10) return 3;
-  // 10+ chars com letra + número → forte
-  return 4;
-};
-
-const STRENGTH_LABELS = ["", "Muito fraca", "Fraca", "Média", "Forte"];
+// Requisitos da senha: retorna quais critérios foram atendidos.
+// Substitui o antigo medidor de força por uma lista de checagem — mais claro,
+// sem "julgar" o usuário, e alinhado com a regra do produto (6+ chars, letra, número).
+const getPasswordChecks = (senha: string) => ({
+  length: senha.length >= 6,
+  letter: /[a-zA-Z]/.test(senha),
+  number: /\d/.test(senha),
+});
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -184,11 +178,11 @@ export default function Auth() {
 
     // Confirmação de senha: revalida sempre que senha OU confirmação mudam
     if (field === "senha" && cadastroTouched.confirmarSenha) {
-      const confErr = nextForm.confirmarSenha && nextForm.confirmarSenha !== value ? "Senhas não coincidem" : "";
+      const confErr = nextForm.confirmarSenha && nextForm.confirmarSenha !== value ? "As senhas digitadas não são iguais" : "";
       setCadastroErrors(prev => ({ ...prev, confirmarSenha: confErr }));
     }
     if (field === "confirmarSenha" && cadastroTouched.confirmarSenha) {
-      const confErr = value && value !== nextForm.senha ? "Senhas não coincidem" : "";
+      const confErr = value && value !== nextForm.senha ? "As senhas digitadas não são iguais" : "";
       setCadastroErrors(prev => ({ ...prev, confirmarSenha: confErr }));
     }
   };
@@ -197,7 +191,7 @@ export default function Auth() {
     setCadastroTouched(prev => ({ ...prev, [field]: true }));
     if (field === "confirmarSenha") {
       const confErr = cadastroForm.confirmarSenha && cadastroForm.confirmarSenha !== cadastroForm.senha
-        ? "Senhas não coincidem" : "";
+        ? "As senhas digitadas não são iguais" : "";
       setCadastroErrors(prev => ({ ...prev, confirmarSenha: confErr }));
       return;
     }
@@ -207,7 +201,7 @@ export default function Auth() {
     }
   };
 
-  const passwordStrength = getPasswordStrength(cadastroForm.senha);
+  const passwordChecks = getPasswordChecks(cadastroForm.senha);
 
   const handleCadastro = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,7 +213,7 @@ export default function Auth() {
       email: validate.email(cadastroForm.email),
       telefone: validate.telefone(cadastroForm.telefone),
       senha: validate.senha(cadastroForm.senha),
-      confirmarSenha: cadastroForm.confirmarSenha !== cadastroForm.senha ? "Senhas não coincidem" : "",
+      confirmarSenha: cadastroForm.confirmarSenha !== cadastroForm.senha ? "As senhas digitadas não são iguais" : "",
     };
     setCadastroErrors(nextErrors);
     setCadastroTouched({ nome: true, email: true, telefone: true, senha: true, confirmarSenha: true });
@@ -357,6 +351,10 @@ export default function Auth() {
       </div>
       ) : (
       <div className="auth-card">
+        <div className="cad-header">
+          <h1 className="cad-title">Crie sua conta grátis</h1>
+          <p className="cad-subtitle">Gerencie sua confeitaria de forma profissional</p>
+        </div>
         <form onSubmit={handleCadastro} className="cadastro-form" noValidate>
           {/* Nome */}
           <div className="cad-field-wrap">
@@ -450,14 +448,20 @@ export default function Auth() {
               </button>
             </div>
             {cadastroForm.senha && (
-              <div className={`pw-strength lvl-${passwordStrength}`}>
-                <div className="pw-strength-bars">
-                  {[1, 2, 3, 4].map(i => (
-                    <div key={i} className={`pw-bar ${passwordStrength >= i ? "pw-bar-active" : ""}`} />
-                  ))}
-                </div>
-                <span className="pw-strength-label">{STRENGTH_LABELS[passwordStrength]}</span>
-              </div>
+              <ul className="pw-req" aria-label="Requisitos da senha">
+                <li className={passwordChecks.length ? "ok" : ""}>
+                  <span className="pw-req-dot" aria-hidden="true">{passwordChecks.length ? "✓" : "•"}</span>
+                  6 caracteres ou mais
+                </li>
+                <li className={passwordChecks.letter ? "ok" : ""}>
+                  <span className="pw-req-dot" aria-hidden="true">{passwordChecks.letter ? "✓" : "•"}</span>
+                  1 letra
+                </li>
+                <li className={passwordChecks.number ? "ok" : ""}>
+                  <span className="pw-req-dot" aria-hidden="true">{passwordChecks.number ? "✓" : "•"}</span>
+                  1 número
+                </li>
+              </ul>
             )}
             {cadastroTouched.senha && cadastroErrors.senha && (
               <span className="cad-error">{cadastroErrors.senha}</span>
@@ -492,7 +496,35 @@ export default function Auth() {
             )}
           </div>
 
-          {cadastroError && <p className="auth-error">{cadastroError}</p>}
+          {cadastroError && (
+            cadastroError.includes("já tem cadastro") ? (
+              <div className="auth-alert-soft" role="alert">
+                <span className="auth-alert-icon" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                </span>
+                <div className="auth-alert-body">
+                  <strong>Este e-mail já tem cadastro.</strong>
+                  <button
+                    type="button"
+                    className="auth-alert-link"
+                    onClick={() => {
+                      setCadastroError("");
+                      setForm({ email: cadastroForm.email, senha: "" });
+                      setShowCadastro(false);
+                    }}
+                  >
+                    Fazer login →
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="auth-error">{cadastroError}</p>
+            )
+          )}
           <button type="submit" className="cad-btn" disabled={cadastroLoading}>
             {cadastroLoading ? <span className="spinner" /> : "Cadastrar"}
           </button>
@@ -663,16 +695,50 @@ export default function Auth() {
         .cad-btn:hover:not(:disabled) { opacity: 0.9; }
         .cad-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
-        /* ── Medidor de força da senha ────────────────────── */
-        .pw-strength { display: flex; align-items: center; gap: 0.6rem; padding: 0 1.25rem; margin-top: 0.15rem; }
-        .pw-strength-bars { display: flex; gap: 4px; flex: 1; }
-        .pw-bar { flex: 1; height: 4px; border-radius: 2px; background: var(--border); transition: background 0.25s ease; }
-        .pw-bar-active { background: currentColor; }
-        .pw-strength-label { font-size: 0.72rem; font-weight: 600; min-width: 62px; text-align: right; color: currentColor; }
-        .pw-strength.lvl-1 { color: #EF4444; }
-        .pw-strength.lvl-2 { color: #F59E0B; }
-        .pw-strength.lvl-3 { color: #EAB308; }
-        .pw-strength.lvl-4 { color: #16A34A; }
+        /* ── Cabeçalho do cadastro ────────────────────────── */
+        .cad-header { text-align: center; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem; }
+        .cad-title { font-size: 1.5rem; font-weight: 700; color: var(--text-title); margin: 0; letter-spacing: -0.01em; line-height: 1.2; }
+        .cad-subtitle { font-size: 0.9rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
+
+        /* ── Requisitos da senha (substitui medidor) ──────── */
+        .pw-req { list-style: none; padding: 0.15rem 1.25rem 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; }
+        .pw-req li { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; color: var(--text-muted); transition: color 0.2s ease; }
+        .pw-req li.ok { color: #16A34A; }
+        .pw-req-dot { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; font-size: 0.75rem; font-weight: 700; }
+        .pw-req li.ok .pw-req-dot { color: #16A34A; }
+
+        /* ── Alerta soft (identidade Doonly) ──────────────── */
+        .auth-alert-soft {
+          display: flex;
+          align-items: flex-start;
+          gap: 0.65rem;
+          padding: 0.75rem 0.9rem;
+          background: var(--primary-light);
+          border: 1px solid rgba(110, 53, 72, 0.18);
+          border-left: 3px solid var(--primary);
+          border-radius: var(--radius-sm);
+          color: var(--text-title);
+          font-size: var(--font-button);
+          animation: slideUp 0.25s ease both;
+        }
+        .auth-alert-icon { color: var(--primary); flex-shrink: 0; display: flex; align-items: center; margin-top: 1px; }
+        .auth-alert-body { display: flex; flex-direction: column; gap: 0.15rem; line-height: 1.35; }
+        .auth-alert-body strong { font-weight: 600; color: var(--text-title); }
+        .auth-alert-link {
+          background: none;
+          border: none;
+          padding: 0;
+          color: var(--primary);
+          font-family: inherit;
+          font-size: var(--font-button);
+          font-weight: 600;
+          cursor: pointer;
+          text-align: left;
+          text-decoration: underline;
+          text-underline-offset: 2px;
+          align-self: flex-start;
+        }
+        .auth-alert-link:hover { opacity: 0.85; }
 
         /* ──────────────────────────────────────────────────────────
            Promo card (desktop only ≥1200px).
