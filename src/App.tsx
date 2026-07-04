@@ -67,6 +67,10 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   const [showSplash, setShowSplash] = useState(() => {
     try {
+      // Rotas públicas de cardápio nunca mostram splash — 
+      // o visitante está indo direto pro cardápio da confeiteira, não pro app.
+      const path = window.location.pathname;
+      if (path.startsWith('/c/') || path.startsWith('/cardapio/')) return false;
       return !sessionStorage.getItem('doonly_splash_shown');
     } catch {
       return true;
