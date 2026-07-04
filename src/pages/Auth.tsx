@@ -448,20 +448,27 @@ export default function Auth() {
               </button>
             </div>
             {cadastroForm.senha && (
-              <ul className="pw-req" aria-label="Requisitos da senha">
-                <li className={passwordChecks.length ? "ok" : ""}>
-                  <span className="pw-req-dot" aria-hidden="true">{passwordChecks.length ? "✓" : "•"}</span>
-                  6 caracteres ou mais
-                </li>
-                <li className={passwordChecks.letter ? "ok" : ""}>
-                  <span className="pw-req-dot" aria-hidden="true">{passwordChecks.letter ? "✓" : "•"}</span>
-                  1 letra
-                </li>
-                <li className={passwordChecks.number ? "ok" : ""}>
-                  <span className="pw-req-dot" aria-hidden="true">{passwordChecks.number ? "✓" : "•"}</span>
-                  1 número
-                </li>
-              </ul>
+              passwordChecks.length && passwordChecks.letter && passwordChecks.number ? (
+                <div className="pw-req-done" role="status" aria-live="polite">
+                  <span className="pw-req-dot" aria-hidden="true">✓</span>
+                  Senha forte
+                </div>
+              ) : (
+                <ul className="pw-req" aria-label="Requisitos da senha">
+                  <li className={passwordChecks.length ? "ok" : ""}>
+                    <span className="pw-req-dot" aria-hidden="true">{passwordChecks.length ? "✓" : "•"}</span>
+                    6 caracteres ou mais
+                  </li>
+                  <li className={passwordChecks.letter ? "ok" : ""}>
+                    <span className="pw-req-dot" aria-hidden="true">{passwordChecks.letter ? "✓" : "•"}</span>
+                    1 letra
+                  </li>
+                  <li className={passwordChecks.number ? "ok" : ""}>
+                    <span className="pw-req-dot" aria-hidden="true">{passwordChecks.number ? "✓" : "•"}</span>
+                    1 número
+                  </li>
+                </ul>
+              )
             )}
             {cadastroTouched.senha && cadastroErrors.senha && !cadastroForm.senha && (
               <span className="cad-error">{cadastroErrors.senha}</span>
@@ -706,6 +713,9 @@ export default function Auth() {
         .pw-req li.ok { color: #16A34A; }
         .pw-req-dot { display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
         .pw-req li.ok .pw-req-dot { color: #16A34A; }
+        .pw-req-done { display: flex; align-items: center; gap: 0.4rem; padding: 0.25rem 1.25rem 0; font-size: 0.75rem; font-weight: 600; color: #16A34A; animation: pwDoneIn 0.25s ease both; }
+        .pw-req-done .pw-req-dot { color: #16A34A; }
+        @keyframes pwDoneIn { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: translateY(0); } }
 
         /* ── Alerta soft (identidade Doonly) ──────────────── */
         .auth-alert-soft {
