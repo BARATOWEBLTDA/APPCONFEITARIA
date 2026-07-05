@@ -156,7 +156,13 @@ export default function Auth() {
       setFading(true);
       setTimeout(() => navigate(dest), 700);
     } catch (err: any) {
-      setError("E-mail ou senha incorretos. Tente novamente.");
+      // Se email não foi confirmado, oferece ação de reenviar
+      const msg = err?.message || "";
+      if (/email not confirmed|email_not_confirmed/i.test(msg)) {
+        setError("Você ainda não confirmou seu e-mail. Verifique sua caixa de entrada ou clique em cadastrar para reenviar.");
+      } else {
+        setError("E-mail ou senha incorretos. Tente novamente.");
+      }
       setLoading(false);
     }
   };
@@ -223,35 +229,55 @@ export default function Auth() {
 
     setCadastroLoading(true);
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // ── 1) Cria a conta ─────────────────────────────────────
+      // Passa nome/telefone como user_metadata. Trigger no Postgres
+      // (handle_new_user) cria row em public.profiles automaticamente.
+      // Como "Confirm email" está OFF no dashboard, signUp retorna sessão imediata.
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email: cadastroForm.email,
         password: cadastroForm.senha,
-        options: { data: { nome: cadastroForm.nome } }
+        options: {
+          data: {
+            nome: cadastroForm.nome,
+            telefone: cadastroForm.telefone,
+          },
+        }
       });
       if (error) throw error;
-      if (data.user) {
-        await supabase.from("profiles").upsert({
-          id: data.user.id,
-          nome: cadastroForm.nome,
-          telefone: cadastroForm.telefone,
-        }, { onConflict: "id" });
+
+      // ── 2) Garante sessão (login automático) ────────────────
+      // Em raros casos o signUp retorna user mas não sessão. Fallback:
+      // chama signInWithPassword para garantir que a confeiteira entra.
+      if (!signUpData.session) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: cadastroForm.email,
+          password: cadastroForm.senha,
+        });
+        if (signInError) throw signInError;
       }
-      const { error: loginError } = await supabase.auth.signInWithPassword({
-        email: cadastroForm.email,
-        password: cadastroForm.senha,
+
+      // ── 3) Dispara e-mail de boas-vindas (fire-and-forget) ──
+      // Não bloqueia a UX. Se falhar, o cadastro segue normal.
+      // A Edge Function tem dedup, então chamadas duplicadas são seguras.
+      supabase.functions.invoke("send-welcome-email").catch((err) => {
+        // Log silencioso; não interrompe fluxo do usuário
+        console.warn("welcome email failed:", err);
       });
-      if (loginError) throw loginError;
+
+      // ── 4) Redireciona para o app ───────────────────────────
       setFading(true);
       setTimeout(() => navigate("/inicio"), 700);
     } catch (err: any) {
       // Tradução amigável dos erros mais comuns do Supabase
       const msg = err?.message || "";
-      if (/already registered|already exists/i.test(msg)) {
+      if (/already registered|already exists|user already/i.test(msg)) {
         setCadastroError("Este e-mail já tem cadastro. Faça login.");
       } else if (/password/i.test(msg)) {
         setCadastroError("Senha inválida. Use ao menos 6 caracteres.");
-      } else if (/valid email/i.test(msg)) {
+      } else if (/valid email|invalid email/i.test(msg)) {
         setCadastroError("E-mail em formato inválido.");
+      } else if (/rate limit|too many/i.test(msg)) {
+        setCadastroError("Muitas tentativas. Aguarde 1 minuto e tente novamente.");
       } else {
         setCadastroError("Erro ao criar conta. Tente novamente.");
       }
