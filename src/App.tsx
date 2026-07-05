@@ -7,6 +7,7 @@ import { SplashScreen } from "@/components/SplashScreen";
 import Auth from "@/pages/Auth";
 import EsqueciSenha from "@/pages/EsqueciSenha";
 import ResetPassword from "@/pages/ResetPassword";
+import VerificarEmail from "@/pages/VerificarEmail";
 import Termos from "@/pages/Termos";
 import Privacidade from "@/pages/Privacidade";
 import Layout from "@/components/Layout";
@@ -107,6 +108,7 @@ export default function App() {
         <Route path="/cardapio/:slug" element={<CardapioPublico />} />
         <Route path="/esqueci-senha" element={<EsqueciSenha />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verificar-email" element={<VerificarEmail />} />
 
         <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
           <Route path="/dashboard" element={<Dashboard />} />
