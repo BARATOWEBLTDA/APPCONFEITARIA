@@ -28,6 +28,8 @@ export default function CardapioDesign() {
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const { isPro } = usePlano();
   const isMobile = useIsMobile();
+  const [cardapioModelo, setCardapioModelo] = useState("padrao");
+  const [salvandoModelo, setSalvandoModelo] = useState(false);
 
   const [corBorda, setCorBorda] = useState("#FF6FA9");
   const [corBackground, setCorBackground] = useState("#FFF1F7");
@@ -51,7 +53,7 @@ export default function CardapioDesign() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || "");
         setBannerUrl(data.banner_url || "");
@@ -65,6 +67,7 @@ export default function CardapioDesign() {
         setCorNavbar(data.cor_navbar || "#ffffff");
         setCorSacola(data.cor_sacola || "#FF6FA9");
         setCorRodape(data.cor_rodape || "#FF6FA9");
+        setCardapioModelo(data.cardapio_modelo || "padrao");
       }
       setLoading(false);
     };
@@ -166,6 +169,97 @@ export default function CardapioDesign() {
         <h1 className="cd-page-title">Design do Cardápio</h1>
         <p className="cd-page-sub">Personalize a aparência visual do seu cardápio</p>
         {success && <span className="cd-autosave">✓ Salvo automaticamente</span>}
+      </div>
+
+      {/* ── Seletor de Layout ─────────────────────────────── */}
+      <div className="cd-card">
+        <SectionLabel
+          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>}
+          sub="Escolha como o visitante vai ver seu cardápio"
+        >Layout do cardápio</SectionLabel>
+
+        <div className="cd-layout-grid">
+          {/* Modelo Padrão (sempre disponível) */}
+          <button
+            className={`cd-layout-card ${cardapioModelo === 'padrao' ? 'cd-layout-active' : ''}`}
+            onClick={async () => {
+              if (!userId) return;
+              setSalvandoModelo(true);
+              setCardapioModelo('padrao');
+              await supabase.from("profiles").update({ cardapio_modelo: 'padrao' }).eq("id", userId);
+              setSalvandoModelo(false);
+              showSuccess();
+            }}
+            disabled={salvandoModelo}
+          >
+            <div className="cd-layout-preview cd-layout-preview-padrao">
+              <div className="cd-lp-header" style={{ background: corBorda }} />
+              <div className="cd-lp-logo-circle" style={{ borderColor: corBorda }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: `${corBorda}33` }} />
+              </div>
+              <div className="cd-lp-lines">
+                <div style={{ width: '60%', height: 6, borderRadius: 3, background: '#e5e7eb' }} />
+                <div style={{ width: '40%', height: 4, borderRadius: 2, background: '#f3f4f6' }} />
+              </div>
+              <div className="cd-lp-products">
+                <div className="cd-lp-product" /><div className="cd-lp-product" /><div className="cd-lp-product" />
+              </div>
+            </div>
+            <div className="cd-layout-info">
+              <span className="cd-layout-name">Padrão</span>
+              <span className="cd-layout-tag">Grátis</span>
+            </div>
+            {cardapioModelo === 'padrao' && <div className="cd-layout-check">✓</div>}
+          </button>
+
+          {/* Modelo 1 — Hero Editorial (PRO) */}
+          <button
+            className={`cd-layout-card ${cardapioModelo === 'modelo1' ? 'cd-layout-active' : ''} ${!isPro ? 'cd-layout-locked' : ''}`}
+            onClick={async () => {
+              if (!isPro || !userId) return;
+              setSalvandoModelo(true);
+              setCardapioModelo('modelo1');
+              await supabase.from("profiles").update({ cardapio_modelo: 'modelo1' }).eq("id", userId);
+              setSalvandoModelo(false);
+              showSuccess();
+            }}
+            disabled={salvandoModelo || !isPro}
+          >
+            <div className="cd-layout-preview cd-layout-preview-modelo1">
+              <div className="cd-lp-hero" style={{ background: `linear-gradient(135deg, ${corBorda}cc, ${corBorda})` }}>
+                <div className="cd-lp-hero-overlay" />
+              </div>
+              <div className="cd-lp-m1-logo" style={{ borderColor: corBorda }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: `linear-gradient(135deg, ${corBorda}dd, ${corBorda})` }} />
+              </div>
+              <div className="cd-lp-m1-badge" />
+              <div className="cd-lp-lines" style={{ marginTop: 18 }}>
+                <div style={{ width: '55%', height: 6, borderRadius: 3, background: '#e5e7eb' }} />
+                <div style={{ width: '80%', height: 4, borderRadius: 2, background: '#f3f4f6' }} />
+              </div>
+              <div className="cd-lp-products" style={{ marginTop: 6 }}>
+                <div className="cd-lp-product" /><div className="cd-lp-product" /><div className="cd-lp-product" />
+              </div>
+            </div>
+            <div className="cd-layout-info">
+              <span className="cd-layout-name">Modelo 1</span>
+              <span className="cd-layout-tag cd-layout-tag-pro">{isPro ? 'PRO' : '🔒 PRO'}</span>
+            </div>
+            {cardapioModelo === 'modelo1' && <div className="cd-layout-check">✓</div>}
+            {!isPro && <div className="cd-layout-lock-overlay" />}
+          </button>
+
+          {/* Modelo 2 — Em breve */}
+          <button className="cd-layout-card cd-layout-locked cd-layout-soon" disabled>
+            <div className="cd-layout-preview" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}>
+              <span style={{ fontSize: 24, opacity: 0.3 }}>✨</span>
+            </div>
+            <div className="cd-layout-info">
+              <span className="cd-layout-name" style={{ color: '#9ca3af' }}>Modelo 2</span>
+              <span className="cd-layout-tag" style={{ color: '#9ca3af' }}>Em breve</span>
+            </div>
+          </button>
+        </div>
       </div>
 
       {/* Logo */}
@@ -602,6 +696,66 @@ export default function CardapioDesign() {
 
         .cd-spinner { width:32px; height:32px; border:3px solid var(--primary-light); border-top-color:var(--primary); border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
         .cd-spinner-sm { width:16px; height:16px; border:2px solid rgba(255,111,169,0.3); border-top-color:var(--primary); border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
+
+        /* ── Seletor de Layout ─────────────────────────── */
+        .cd-layout-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
+        @media (max-width: 420px) { .cd-layout-grid { grid-template-columns: repeat(2, 1fr); } }
+        .cd-layout-card {
+          position: relative;
+          background: #fff;
+          border: 2px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 0;
+          cursor: pointer;
+          overflow: hidden;
+          transition: border-color 0.2s, box-shadow 0.2s;
+          text-align: left;
+          font-family: inherit;
+        }
+        .cd-layout-card:hover:not(:disabled) { border-color: #d1d5db; }
+        .cd-layout-active { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(110, 53, 72, 0.12); }
+        .cd-layout-locked { opacity: 0.75; cursor: not-allowed; }
+        .cd-layout-soon { opacity: 0.5; }
+        .cd-layout-lock-overlay {
+          position: absolute; inset: 0; background: rgba(255,255,255,0.4);
+          backdrop-filter: blur(1px); border-radius: 10px; pointer-events: none;
+        }
+        .cd-layout-preview {
+          width: 100%; height: 120px; background: #f9fafb; position: relative; overflow: hidden;
+        }
+        .cd-layout-info {
+          padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;
+          border-top: 1px solid #f3f4f6;
+        }
+        .cd-layout-name { font-size: 12px; font-weight: 600; color: #374151; }
+        .cd-layout-tag { font-size: 10px; font-weight: 600; color: #6b7280; background: #f3f4f6; padding: 2px 8px; border-radius: 20px; }
+        .cd-layout-tag-pro { color: var(--primary); background: rgba(110, 53, 72, 0.08); }
+        .cd-layout-check {
+          position: absolute; top: 8px; right: 8px; width: 22px; height: 22px;
+          border-radius: 50%; background: var(--primary); color: #fff;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 12px; font-weight: 700; z-index: 2;
+        }
+        /* Mini-preview: Padrão */
+        .cd-layout-preview-padrao .cd-lp-header { height: 40px; border-radius: 0; }
+        .cd-layout-preview-padrao .cd-lp-logo-circle {
+          width: 32px; height: 32px; border-radius: 50%; border: 2px solid;
+          margin: -16px auto 0; background: #fff; position: relative; z-index: 1;
+        }
+        .cd-lp-lines { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 8px; padding: 0 12px; }
+        .cd-lp-products { display: flex; gap: 4px; padding: 6px 12px 0; }
+        .cd-lp-product { flex: 1; height: 22px; border-radius: 4px; background: #f3f4f6; }
+        /* Mini-preview: Modelo 1 */
+        .cd-layout-preview-modelo1 .cd-lp-hero { height: 60px; position: relative; }
+        .cd-layout-preview-modelo1 .cd-lp-hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.25) 100%); }
+        .cd-lp-m1-logo {
+          width: 24px; height: 24px; border-radius: 50%; border: 2px solid;
+          position: absolute; top: 48px; right: 12px; background: #fff; z-index: 2;
+        }
+        .cd-lp-m1-badge {
+          position: absolute; top: 50px; left: 12px;
+          width: 20px; height: 8px; border-radius: 4px; background: #fbbf24;
+        }
       `}</style>
     </div>
     </>

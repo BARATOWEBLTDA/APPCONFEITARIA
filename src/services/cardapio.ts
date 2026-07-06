@@ -12,6 +12,8 @@ export interface CardapioData {
   slugCanonico: string
   /** Código público — sempre presente */
   codigoPublico: string
+  /** Layout escolhido: 'padrao', 'modelo1', etc. */
+  cardapioModelo: string
 }
 
 const EMPTY_RESULT: CardapioData = {
@@ -23,6 +25,7 @@ const EMPTY_RESULT: CardapioData = {
   categoriasList: [],
   slugCanonico: 'cardapio',
   codigoPublico: '',
+  cardapioModelo: 'padrao',
 }
 
 /**
@@ -138,5 +141,6 @@ async function fetchByUserId(userId: string, profile: any): Promise<CardapioData
     categoriasList,
     slugCanonico,
     codigoPublico: profile.codigo_publico || '',
+    cardapioModelo: profile.cardapio_modelo || 'padrao',
   }
 }

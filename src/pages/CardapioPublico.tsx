@@ -500,6 +500,7 @@ function CardapioContent() {
   const [config, setConfig] = useState<Configuracoes | null>(null)
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [isPro, setIsPro] = useState(false)
+  const [cardapioModelo, setCardapioModelo] = useState('padrao')
   const [categoryImages, setCategoryImages] = useState<{[key:string]:string}>({})
   const [categoriasList, setCategoriasList] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
@@ -535,7 +536,7 @@ function CardapioContent() {
       }
 
       setDesign(design); setConfig(config); setProdutos(produtos)
-      setIsPro(isPro || false); setCategoryImages(categoryImages || {})
+      setIsPro(isPro || false); setCardapioModelo(cardapioModelo || 'padrao'); setCategoryImages(categoryImages || {})
       setCategoriasList(categoriasList || [])
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
@@ -643,11 +644,11 @@ function CardapioContent() {
       <div className="min-h-screen relative" style={{ backgroundColor: '#f8f8f8' }}>
         <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
 
-        {isPro ? (
+        {isPro && cardapioModelo === 'modelo1' ? (
           /* ── Layout PRO: CardapioModelo1 (hero editorial) ── */
           <CardapioModelo1 design={design} config={config} />
         ) : (
-          /* ── Layout Free: header sólido + logo + banner ── */
+          /* ── Layout Padrão (Free ou PRO que não trocou) ── */
           <>
             <div style={{ height: '160px', backgroundColor: design.cor_borda || '#ec4899' }} />
             <Logo logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={design.cor_nome} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars} />
