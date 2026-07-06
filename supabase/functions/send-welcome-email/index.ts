@@ -27,7 +27,7 @@ const corsHeaders = {
 // Segue mesmo padrão premium dos templates de Auth (01-04):
 // header vinho, hero circular, card de dicas, footer "Equipe Doonly"
 function buildWelcomeEmailHTML(nome: string): string {
-  const primeiroNome = (nome || "").split(" ")[0] || "confeiteira";
+  const primeiroNome = (nome || "").split(" ")[0] || "";
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -38,7 +38,7 @@ function buildWelcomeEmailHTML(nome: string): string {
 </head>
 <body style="margin:0;padding:0;background-color:#F7F0F2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;color:#3D1A24;-webkit-font-smoothing:antialiased;">
   <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#F7F0F2;opacity:0;">
-    Sua confeitaria mais organizada começa agora. Bora fazer a primeira ação?
+    Sua conta no Doonly foi criada com sucesso. Acesse pelo botão abaixo.
   </div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F7F0F2;padding:40px 16px;">
     <tr>
@@ -48,12 +48,12 @@ function buildWelcomeEmailHTML(nome: string): string {
 
           <!-- HEADER -->
           <tr>
-            <td align="center" style="background:linear-gradient(135deg,#986274 0%,#6E3548 100%);padding:56px 32px;">
+            <td align="center" style="background:linear-gradient(135deg,#986274 0%,#6E3548 100%);padding:40px 32px;">
               <img src="https://raw.githubusercontent.com/BARATOWEBLTDA/APPCONFEITARIA/main/public/mail.png"
                    width="72" height="72"
                    alt="Doonly"
-                   style="display:block;margin:0 auto 16px;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">
-              <div style="font-size:24px;font-weight:700;color:#FFFFFF;letter-spacing:-0.02em;line-height:1;margin-bottom:12px;">
+                   style="display:block;margin:0 auto 14px;border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;">
+              <div style="font-size:24px;font-weight:700;color:#FFFFFF;letter-spacing:-0.02em;line-height:1;margin-bottom:10px;">
                 Doonly
               </div>
               <div style="font-size:11px;color:rgba(255,255,255,0.75);letter-spacing:0.12em;text-transform:uppercase;font-weight:500;">
@@ -64,30 +64,27 @@ function buildWelcomeEmailHTML(nome: string): string {
 
           <!-- HERO -->
           <tr>
-            <td align="center" style="padding:56px 40px 0;">
-              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 24px;">
+            <td align="center" style="padding:40px 40px 0;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto 20px;">
                 <tr>
                   <td align="center" valign="middle"
-                      style="width:88px;height:88px;background-color:#F7F0F2;border-radius:50%;text-align:center;vertical-align:middle;">
-                    <span style="font-size:40px;line-height:88px;">🍰</span>
+                      style="width:80px;height:80px;background:linear-gradient(135deg,#986274 0%,#6E3548 100%);border-radius:50%;text-align:center;vertical-align:middle;box-shadow:0 6px 20px rgba(110,53,72,0.22);">
+                    <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:38px;font-weight:800;color:#FFFFFF;line-height:80px;letter-spacing:-0.03em;">D</span>
                   </td>
                 </tr>
               </table>
-              <h1 style="margin:0 0 20px;font-size:26px;font-weight:700;color:#3D1A24;line-height:1.25;letter-spacing:-0.02em;">
-                Bem-vinda, ${primeiroNome}!
+              <h1 style="margin:0 0 16px;font-size:26px;font-weight:700;color:#3D1A24;line-height:1.25;letter-spacing:-0.02em;">
+                Olá${primeiroNome ? `, ${primeiroNome}` : ""}!
               </h1>
-              <p style="margin:0 0 12px;font-size:16px;line-height:1.55;color:#4A3439;">
-                Sua conta no Doonly está pronta. A partir de agora, você tem tudo o que precisa para organizar pedidos, clientes, receitas e finanças da sua confeitaria em um só lugar.
-              </p>
-              <p style="margin:0 0 36px;font-size:16px;line-height:1.55;color:#4A3439;">
-                Que tal começar agora?
+              <p style="margin:0 0 28px;font-size:16px;line-height:1.55;color:#4A3439;">
+                A partir de agora, você organiza pedidos, clientes, receitas e finanças da sua confeitaria em um só lugar.
               </p>
             </td>
           </tr>
 
           <!-- CTA -->
           <tr>
-            <td align="center" style="padding:0 40px 40px;">
+            <td align="center" style="padding:0 40px 28px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center"
@@ -104,7 +101,7 @@ function buildWelcomeEmailHTML(nome: string): string {
 
           <!-- CARD DE PRIMEIROS PASSOS -->
           <tr>
-            <td style="padding:0 40px 40px;">
+            <td style="padding:0 40px 32px;">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
                      style="background-color:#F7F0F2;border-radius:14px;border:1px solid #EFE7EA;">
                 <tr>
@@ -249,7 +246,7 @@ serve(async (req) => {
         body: JSON.stringify({
           from: "Doonly <contato@doonly.com.br>",
           to: [user.email],
-          subject: "Bem-vinda ao Doonly! Sua confeitaria começa aqui 🍰",
+          subject: "Doonly: sua conta está pronta",
           html,
         }),
       });
@@ -289,7 +286,7 @@ serve(async (req) => {
         body: JSON.stringify({
           from: "Doonly <contato@doonly.com.br>",
           to: [user.email],
-          subject: "Bem-vinda ao Doonly! Sua confeitaria começa aqui 🍰",
+          subject: "Doonly: sua conta está pronta",
           html,
         }),
       });
