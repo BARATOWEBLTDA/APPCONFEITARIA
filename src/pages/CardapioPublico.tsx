@@ -10,6 +10,7 @@ import { ProductList } from '@/components/cardapio/ProductList'
 import { NavigationMenu } from '@/components/cardapio/NavigationMenu'
 import { EmptyState } from '@/components/cardapio/EmptyState'
 import { Footer } from '@/components/cardapio/Footer'
+import { CardapioModelo1 } from '@/components/cardapio/CardapioModelo1'
 import { DesktopProductCard } from '@/components/desktop/ProductCard'
 import { DesktopFooter } from '@/components/desktop/Footer'
 import { CartProvider } from '@/context/CartContext'
@@ -641,11 +642,20 @@ function CardapioContent() {
     return (
       <div className="min-h-screen relative" style={{ backgroundColor: '#f8f8f8' }}>
         <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
-        <div style={{ height: '160px', backgroundColor: design.cor_borda || '#ec4899' }} />
-        <Logo logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={design.cor_nome} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars} />
-        <div style={{ marginTop:'16px' }}>
-          <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
-        </div>
+
+        {isPro ? (
+          /* ── Layout PRO: CardapioModelo1 (hero editorial) ── */
+          <CardapioModelo1 design={design} config={config} />
+        ) : (
+          /* ── Layout Free: header sólido + logo + banner ── */
+          <>
+            <div style={{ height: '160px', backgroundColor: design.cor_borda || '#ec4899' }} />
+            <Logo logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={design.cor_nome} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars} />
+            <div style={{ marginTop:'16px' }}>
+              <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
+            </div>
+          </>
+        )}
         <div className="container mx-auto px-4 py-4 pb-24">
           {!design.ocultar_categorias && (
             <CategoryFilter categories={getCategories()} selectedCategory={selectedCategory} onCategorySelect={setSelectedCategory} categoryIcons={design.category_icons || {}} categoryImages={categoryImages} />
