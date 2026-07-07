@@ -60,16 +60,25 @@ function getStatusLoja(horarioJson: string | null): { aberto: boolean; msg?: str
   } catch { return null }
 }
 
-function getEnderecoTexto(config: Configuracoes | null): string {
-  if (!config?.endereco) return ''
+function getEnderecoData(config: Configuracoes | null): { curto: string; mapsUrl: string } | null {
+  if (!config?.endereco) return null
   try {
     const e = typeof config.endereco === 'string' ? JSON.parse(config.endereco) : config.endereco
-    const parts: string[] = []
-    if (e.rua) parts.push(e.rua + (e.numero ? `, ${e.numero}` : ''))
-    if (e.bairro) parts.push(e.bairro)
-    if (e.cidade) parts.push(e.cidade + (e.estado ? ` - ${e.estado}` : ''))
-    return parts.join(', ')
-  } catch { return '' }
+    // Versão curta: bairro + cidade
+    const partesCurtas: string[] = []
+    if (e.bairro) partesCurtas.push(e.bairro)
+    if (e.cidade) partesCurtas.push(e.cidade)
+    const curto = partesCurtas.join(', ') || ''
+    // Versão completa pra Google Maps
+    const partesCompletas: string[] = []
+    if (e.rua) partesCompletas.push(e.rua + (e.numero ? `, ${e.numero}` : ''))
+    if (e.bairro) partesCompletas.push(e.bairro)
+    if (e.cidade) partesCompletas.push(e.cidade + (e.estado ? ` - ${e.estado}` : ''))
+    if (e.cep) partesCompletas.push(e.cep)
+    const completo = partesCompletas.join(', ')
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(completo)}`
+    return curto ? { curto, mapsUrl } : null
+  } catch { return null }
 }
 
 export function CardapioModelo1({ design, config }: CardapioModeloProps) {
@@ -77,7 +86,7 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
   const banners = [design.banner_url, design.banner1_url, design.banner2_url, design.banner3_url].filter(Boolean)
   const heroImage = banners[0] || ''
   const status = getStatusLoja(config?.horario || null)
-  const endereco = getEnderecoTexto(config)
+  const enderecoData = getEnderecoData(config)
   const avaliacao = config?.avaliacao_media ?? 0
 
   const isColorLight = (hex: string): boolean => {
@@ -170,11 +179,14 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
           </div>
         </div>
 
-        {/* Endereço */}
-        {endereco && (
+        {/* Endereço compacto + Ver no mapa */}
+        {enderecoData && (
           <div className="cm1-endereco">
             <MapPin size={13} weight="bold" style={{ flexShrink: 0, color: '#9ca3af' }} />
-            <span>{endereco}</span>
+            <span>{enderecoData.curto}</span>
+            <a href={enderecoData.mapsUrl} target="_blank" rel="noopener noreferrer" className="cm1-ver-mapa" style={{ color: accent }}>
+              Ver no mapa
+            </a>
           </div>
         )}
       </div>
@@ -388,6 +400,13 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
           font-size: 12px;
           color: #6b7280;
           line-height: 1.35;
+        }
+        .cm1-ver-mapa {
+          font-size: 12px;
+          font-weight: 600;
+          text-decoration: none;
+          white-space: nowrap;
+          flex-shrink: 0;
         }
       `}</style>
     </div>
