@@ -644,7 +644,7 @@ function CardapioContent() {
       <div className="min-h-screen relative" style={{ backgroundColor: '#f8f8f8' }}>
         <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
 
-        {isPro && cardapioModelo === 'modelo1' ? (
+        {cardapioModelo === 'modelo1' ? (
           /* ── Layout PRO: CardapioModelo1 (hero editorial) ── */
           <CardapioModelo1 design={design} config={config} />
         ) : (

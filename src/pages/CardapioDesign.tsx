@@ -214,16 +214,16 @@ export default function CardapioDesign() {
 
           {/* Modelo 1 — Hero Editorial (PRO) */}
           <button
-            className={`cd-layout-card ${cardapioModelo === 'modelo1' ? 'cd-layout-active' : ''} ${!isPro ? 'cd-layout-locked' : ''}`}
+            className={`cd-layout-card ${cardapioModelo === 'modelo1' ? 'cd-layout-active' : ''}`}
             onClick={async () => {
-              if (!isPro || !userId) return;
+              if (!userId) return;
               setSalvandoModelo(true);
               setCardapioModelo('modelo1');
               await supabase.from("profiles").update({ cardapio_modelo: 'modelo1' }).eq("id", userId);
               setSalvandoModelo(false);
               showSuccess();
             }}
-            disabled={salvandoModelo || !isPro}
+            disabled={salvandoModelo}
           >
             <div className="cd-layout-preview cd-layout-preview-modelo1">
               <div className="cd-lp-hero" style={{ background: `linear-gradient(135deg, ${corBorda}cc, ${corBorda})` }}>
@@ -246,7 +246,6 @@ export default function CardapioDesign() {
               <span className="cd-layout-tag cd-layout-tag-pro">{isPro ? 'PRO' : '🔒 PRO'}</span>
             </div>
             {cardapioModelo === 'modelo1' && <div className="cd-layout-check">✓</div>}
-            {!isPro && <div className="cd-layout-lock-overlay" />}
           </button>
 
           {/* Modelo 2 — Em breve */}
