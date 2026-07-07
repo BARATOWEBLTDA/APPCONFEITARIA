@@ -657,7 +657,7 @@ function CardapioContent() {
             </div>
           </>
         )}
-        <div className="container mx-auto px-4 py-4 pb-24">
+        <div className="container mx-auto py-4 pb-24" style={{ padding: '16px 10px 96px' }}>
           {!design.ocultar_categorias && (
             <CategoryFilter categories={getCategories()} selectedCategory={selectedCategory} onCategorySelect={setSelectedCategory} categoryIcons={design.category_icons || {}} categoryImages={categoryImages} />
           )}
