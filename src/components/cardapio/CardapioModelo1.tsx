@@ -3,30 +3,18 @@ import { Star, MagnifyingGlass, MapPin, Lightning, CalendarBlank, Truck } from '
 import { DesignSettings, Configuracoes } from '@/types/database'
 
 // ─────────────────────────────────────────────────────────────
-// CardapioModelo1 — Layout "Editorial Hero"
+// CardapioModelo1 — Layout "Editorial Hero" (v2 refinado)
 //
-// Modelo PRO #1 do cardápio público mobile.
-// Inspirado em apps de delivery premium (Sischef, iFood Pro).
+// Modelo #1 do cardápio público mobile.
 //
-// Estrutura:
-//   Hero fullscreen (banner) → logo sobreposta → badge avaliação
-//   → status aberto/fechado → nome + descrição → info row
-//   (pronta entrega, sob encomenda, entrega e retirada) → endereço
-//
-// Substitui o header padrão Free (bloco sólido + Logo + BannerAd).
-// Daqui pra baixo (categorias, produtos, footer) tudo permanece igual.
-//
-// Dados: 100% dos dados já existem em DesignSettings + Configuracoes.
-// Zero colunas novas no banco.
-//
-// Nomenclatura:
-//   CardapioModelo1 — este (hero editorial)
-//   CardapioModelo2 — futuro
-//   CardapioModelo3 — futuro
-//
-// Uso em CardapioPublico.tsx:
-//   isPro ? <CardapioModelo1 design={design} config={config} />
-//         : <HeaderFree />
+// v2 mudanças:
+//   - Hero menor (175px), mais compacto
+//   - Logo maior (78px) e mais próxima do hero
+//   - Curva suave na transição hero→conteúdo (padrão iFood/Rappi)
+//   - Status badge reposicionado e sempre visível
+//   - Fallback de hero sem imagem com pattern sutil
+//   - Espaçamentos otimizados (menos gaps vazios)
+//   - Descrição ausente não deixa gap visual
 // ─────────────────────────────────────────────────────────────
 
 interface CardapioModeloProps {
@@ -34,7 +22,6 @@ interface CardapioModeloProps {
   config: Configuracoes | null
 }
 
-// ── Status da loja (mesma lógica do Logo.tsx) ────────────────
 const DIAS_MAP: Record<string, number> = {
   "Segunda": 1, "Terça": 2, "Quarta": 3, "Quinta": 4,
   "Sexta": 5, "Sábado": 6, "Domingo": 0
@@ -78,7 +65,6 @@ function getStatusLoja(horarioJson: string | null): { aberto: boolean; msg?: str
   } catch { return null }
 }
 
-// ── Endereço formatado ───────────────────────────────────────
 function getEnderecoTexto(config: Configuracoes | null): string {
   if (!config?.endereco) return ''
   try {
@@ -113,30 +99,28 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
     }
   }
 
-  const handleSearchSubmit = () => {
-    if (!searchTerm.trim()) return
-    const productSection = document.querySelector('.container.mx-auto')
-    if (productSection) productSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
   return (
     <div className="cm1-root">
-      {/* ── Hero Image ─────────────────────────────────── */}
-      <div className="cm1-hero" style={{ background: heroImage ? undefined : `linear-gradient(135deg, ${accent}cc 0%, ${accent} 100%)` }}>
-        {heroImage && (
+      {/* ── Hero ───────────────────────────────────────── */}
+      <div className="cm1-hero">
+        {heroImage ? (
           <img src={heroImage} alt={design.nome_loja || 'Banner'} className="cm1-hero-img" />
+        ) : (
+          <div className="cm1-hero-fallback" style={{ background: `linear-gradient(135deg, ${accent}88 0%, ${accent} 60%, ${accent}dd 100%)` }}>
+            <div className="cm1-hero-pattern" />
+          </div>
         )}
         <div className="cm1-hero-overlay" />
 
         {/* Busca flutuante */}
         <button className="cm1-search-btn" onClick={handleSearchClick} aria-label="Buscar produtos">
-          <MagnifyingGlass size={18} weight="bold" color="#fff" />
+          <MagnifyingGlass size={17} weight="bold" color="#fff" />
         </button>
 
         {/* Badge de avaliação */}
         {avaliacao > 0 && (
           <div className="cm1-rating">
-            <Star size={13} weight="fill" color="#78350f" />
+            <Star size={12} weight="fill" color="#78350f" />
             <span>{avaliacao.toFixed(1)}</span>
           </div>
         )}
@@ -146,16 +130,65 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
           {design.logo_url ? (
             <img src={design.logo_url} alt={design.nome_loja || ''} className="cm1-logo-img" />
           ) : (
-            <div className="cm1-logo-fallback" style={{ background: `linear-gradient(135deg, ${accent}dd, ${accent})` }}>
+            <div className="cm1-logo-fallback" style={{ background: `linear-gradient(135deg, ${accent}, ${accent}cc)` }}>
               {(design.nome_loja || 'D').charAt(0).toUpperCase()}
             </div>
           )}
         </div>
+      </div>
 
-        {/* Badge status */}
+      {/* ── Conteúdo com curva suave ───────────────────── */}
+      <div className="cm1-content">
+        {/* Status badge (dentro do content, alinhado à direita, acima do nome) */}
         {status && (
-          <div className={`cm1-status ${status.aberto ? 'cm1-status-open' : 'cm1-status-closed'}`}>
-            {status.aberto ? 'aberto agora' : (status.msg || 'fechado')}
+          <div className="cm1-status-row">
+            <div className={`cm1-status ${status.aberto ? 'cm1-status-open' : 'cm1-status-closed'}`}>
+              <span className="cm1-status-dot" />
+              {status.aberto ? 'Aberto agora' : (status.msg || 'Fechado')}
+            </div>
+          </div>
+        )}
+
+        <h1 className="cm1-nome" style={{ color: corNome }}>
+          {design.nome_loja || 'Minha Confeitaria'}
+        </h1>
+
+        {design.descricao_loja && (
+          <p className="cm1-descricao">{design.descricao_loja}</p>
+        )}
+
+        {/* Info Row */}
+        <div className="cm1-info-row">
+          <div className="cm1-info-item">
+            <Lightning size={18} weight="duotone" color={accent} />
+            <div className="cm1-info-text">
+              <span>Pronta</span>
+              <span>entrega</span>
+            </div>
+          </div>
+          <div className="cm1-info-divider" />
+          <div className="cm1-info-item">
+            <CalendarBlank size={18} weight="duotone" color={accent} />
+            <div className="cm1-info-text">
+              <span>Sob</span>
+              <span>encomenda</span>
+            </div>
+          </div>
+          <div className="cm1-info-divider" />
+          <div className="cm1-info-item">
+            <Truck size={18} weight="duotone" color={accent} />
+            <div className="cm1-info-text">
+              <span>Entrega e</span>
+              <span>retirada</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Endereço */}
+        {endereco && (
+          <div className="cm1-endereco">
+            <MapPin size={13} weight="bold" style={{ flexShrink: 0, color: '#9ca3af' }} />
+            <span>{endereco}</span>
           </div>
         )}
       </div>
@@ -170,57 +203,17 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
             placeholder="Buscar no cardápio..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSearchSubmit()}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                const s = document.querySelector('.container.mx-auto')
+                if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }
+            }}
             className="cm1-search-input"
           />
-          <button className="cm1-search-close" onClick={() => { setSearchOpen(false); setSearchTerm('') }}>
-            ✕
-          </button>
+          <button className="cm1-search-close" onClick={() => { setSearchOpen(false); setSearchTerm('') }}>✕</button>
         </div>
       )}
-
-      {/* ── Info Section ───────────────────────────────── */}
-      <div className="cm1-info" style={{ marginTop: '22px' }}>
-        <h1 className="cm1-nome" style={{ color: corNome }}>{design.nome_loja || 'Minha Confeitaria'}</h1>
-        {design.descricao_loja && (
-          <p className="cm1-descricao">{design.descricao_loja}</p>
-        )}
-
-        {/* Info Row */}
-        <div className="cm1-info-row">
-          <div className="cm1-info-item">
-            <Lightning size={20} weight="duotone" color={accent} />
-            <div className="cm1-info-text">
-              <span>Pronta</span>
-              <span>entrega</span>
-            </div>
-          </div>
-          <div className="cm1-info-divider" />
-          <div className="cm1-info-item">
-            <CalendarBlank size={20} weight="duotone" color={accent} />
-            <div className="cm1-info-text">
-              <span>Sob</span>
-              <span>encomenda</span>
-            </div>
-          </div>
-          <div className="cm1-info-divider" />
-          <div className="cm1-info-item">
-            <Truck size={20} weight="duotone" color={accent} />
-            <div className="cm1-info-text">
-              <span>Entrega e</span>
-              <span>retirada</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Endereço */}
-        {endereco && (
-          <div className="cm1-endereco">
-            <MapPin size={14} weight="bold" style={{ flexShrink: 0, color: '#9ca3af' }} />
-            <span>{endereco}</span>
-          </div>
-        )}
-      </div>
 
       <style>{`
         .cm1-root {
@@ -228,35 +221,50 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
           z-index: 1;
         }
 
-        /* ── Hero ─────────────────────────────────────── */
+        /* ── Hero (compacto: 175px) ───────────────────── */
         .cm1-hero {
           position: relative;
           width: 100%;
-          height: 220px;
-          overflow: hidden;
+          height: 175px;
+          overflow: visible;
         }
         .cm1-hero-img {
           width: 100%;
-          height: 100%;
+          height: 175px;
           object-fit: cover;
           display: block;
+        }
+        .cm1-hero-fallback {
+          width: 100%;
+          height: 175px;
+          position: relative;
+        }
+        /* Pattern sutil quando não tem foto */
+        .cm1-hero-pattern {
+          position: absolute;
+          inset: 0;
+          opacity: 0.08;
+          background-image: radial-gradient(circle at 20% 50%, #fff 1px, transparent 1px),
+                            radial-gradient(circle at 80% 20%, #fff 1px, transparent 1px),
+                            radial-gradient(circle at 50% 80%, #fff 1.5px, transparent 1.5px);
+          background-size: 60px 60px, 80px 80px, 40px 40px;
         }
         .cm1-hero-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.35) 100%);
+          background: linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.3) 100%);
           pointer-events: none;
         }
 
         /* ── Busca flutuante ──────────────────────────── */
         .cm1-search-btn {
           position: absolute;
-          top: 14px;
+          top: 12px;
           right: 14px;
-          width: 38px;
-          height: 38px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
-          background: rgba(0,0,0,0.35);
+          background: rgba(0,0,0,0.3);
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
           border: none;
@@ -265,18 +273,15 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
           justify-content: center;
           cursor: pointer;
           z-index: 5;
-          transition: background 0.2s;
         }
-        .cm1-search-btn:active {
-          background: rgba(0,0,0,0.5);
-        }
+        .cm1-search-btn:active { background: rgba(0,0,0,0.45); }
 
         /* ── Search bar ───────────────────────────────── */
         .cm1-search-bar {
           display: flex;
           align-items: center;
           gap: 8px;
-          margin: 12px 16px 0;
+          margin: 0 16px 12px;
           padding: 10px 14px;
           border-radius: 10px;
           border: 1.5px solid;
@@ -294,53 +299,49 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
         }
         .cm1-search-input::placeholder { color: #9ca3af; }
         .cm1-search-close {
-          background: none;
-          border: none;
-          font-size: 16px;
-          color: #9ca3af;
-          cursor: pointer;
-          padding: 0 2px;
-          line-height: 1;
+          background: none; border: none; font-size: 16px;
+          color: #9ca3af; cursor: pointer; padding: 0 2px; line-height: 1;
         }
         @keyframes cm1SlideDown {
-          from { opacity: 0; transform: translateY(-8px); }
+          from { opacity: 0; transform: translateY(-6px); }
           to { opacity: 1; transform: translateY(0); }
         }
 
         /* ── Rating badge ─────────────────────────────── */
         .cm1-rating {
           position: absolute;
-          bottom: 14px;
+          bottom: 36px;
           left: 16px;
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 3px;
           background: #fbbf24;
-          padding: 4px 10px;
+          padding: 3px 9px;
           border-radius: 20px;
           z-index: 3;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
         .cm1-rating span {
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 700;
           color: #78350f;
           line-height: 1;
         }
 
-        /* ── Logo sobreposta ──────────────────────────── */
+        /* ── Logo sobreposta (maior: 78px) ────────────── */
         .cm1-logo-wrap {
           position: absolute;
-          bottom: -28px;
-          right: 20px;
-          width: 68px;
-          height: 68px;
+          bottom: -22px;
+          right: 18px;
+          width: 78px;
+          height: 78px;
           border-radius: 50%;
           background: #fff;
           border: 3px solid;
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 4;
+          z-index: 6;
           box-shadow: 0 4px 16px rgba(0,0,0,0.12);
           overflow: hidden;
         }
@@ -358,77 +359,102 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
           align-items: center;
           justify-content: center;
           color: #fff;
-          font-size: 28px;
+          font-size: 32px;
           font-weight: 800;
           font-family: inherit;
+          letter-spacing: -0.02em;
         }
 
-        /* ── Status badge ─────────────────────────────── */
+        /* ── Conteúdo com curva ────────────────────────── */
+        .cm1-content {
+          position: relative;
+          z-index: 2;
+          margin-top: -24px;
+          background: #f8f8f8;
+          border-radius: 24px 24px 0 0;
+          padding: 20px 16px 14px;
+        }
+
+        /* ── Status (dentro do content, acima do nome) ── */
+        .cm1-status-row {
+          display: flex;
+          justify-content: flex-start;
+          margin-bottom: 8px;
+        }
         .cm1-status {
-          position: absolute;
-          bottom: -4px;
-          right: 72px;
-          font-size: 10px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11px;
           font-weight: 600;
-          padding: 3px 10px;
-          border-radius: 10px;
-          white-space: nowrap;
-          z-index: 4;
+          padding: 4px 10px;
+          border-radius: 20px;
           letter-spacing: 0.01em;
+        }
+        .cm1-status-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          display: inline-block;
         }
         .cm1-status-open {
           background: #dcfce7;
           color: #166534;
         }
+        .cm1-status-open .cm1-status-dot { background: #16a34a; }
         .cm1-status-closed {
           background: #fef2f2;
           color: #991b1b;
         }
+        .cm1-status-closed .cm1-status-dot { background: #dc2626; }
 
-        /* ── Info section ─────────────────────────────── */
-        .cm1-info {
-          padding: 0 16px;
-        }
+        /* ── Nome e descrição ─────────────────────────── */
         .cm1-nome {
-          margin: 0 0 4px;
-          font-size: 20px;
+          margin: 0 0 2px;
+          font-size: 21px;
           font-weight: 800;
           line-height: 1.2;
           letter-spacing: -0.01em;
+          padding-right: 90px; /* espaço pra logo não sobrepor */
         }
         .cm1-descricao {
-          margin: 0 0 14px;
+          margin: 0 0 12px;
           font-size: 13px;
           color: #6b7280;
-          line-height: 1.4;
+          line-height: 1.35;
+          padding-right: 90px;
+        }
+        /* Se não tem descrição, o nome fica com margin-bottom menor */
+        .cm1-nome:last-child {
+          margin-bottom: 12px;
         }
 
         /* ── Info row ─────────────────────────────────── */
         .cm1-info-row {
           display: flex;
           align-items: stretch;
-          border-radius: 10px;
+          border-radius: 12px;
           overflow: hidden;
           border: 1px solid #e5e7eb;
-          margin-bottom: 14px;
-          background: #fafafa;
+          margin-bottom: 12px;
+          background: #fff;
         }
         .cm1-info-item {
           flex: 1;
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 4px;
-          padding: 12px 6px;
+          gap: 3px;
+          padding: 10px 4px;
           text-align: center;
         }
         .cm1-info-text {
           display: flex;
           flex-direction: column;
-          line-height: 1.2;
+          line-height: 1.15;
         }
         .cm1-info-text span {
-          font-size: 11px;
+          font-size: 10.5px;
           font-weight: 600;
           color: #374151;
         }
@@ -442,13 +468,13 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
         .cm1-endereco {
           display: flex;
           align-items: center;
-          gap: 6px;
-          margin-bottom: 16px;
+          gap: 5px;
+          margin-bottom: 6px;
         }
         .cm1-endereco span {
           font-size: 12px;
           color: #6b7280;
-          line-height: 1.4;
+          line-height: 1.35;
         }
       `}</style>
     </div>
