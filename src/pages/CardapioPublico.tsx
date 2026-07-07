@@ -520,7 +520,7 @@ function CardapioContent() {
     setLoading(true)
     const fetchFn = isRotaNova ? getCardapioByCodigo : getCardapioBySlug
 
-    fetchFn(chave.toLowerCase()).then(({ design, config, produtos, isPro, categoryImages, categoriasList, slugCanonico, codigoPublico }) => {
+    fetchFn(chave.toLowerCase()).then(({ design, config, produtos, isPro, categoryImages, categoriasList, slugCanonico, codigoPublico, cardapioModelo: modelo }) => {
       if (!design) { setError('Cardápio não encontrado'); setLoading(false); return }
 
       // ── Redirect canônico ──
@@ -536,7 +536,7 @@ function CardapioContent() {
       }
 
       setDesign(design); setConfig(config); setProdutos(produtos)
-      setIsPro(isPro || false); setCardapioModelo(cardapioModelo || 'padrao'); setCategoryImages(categoryImages || {})
+      setIsPro(isPro || false); setCardapioModelo(modelo || 'padrao'); setCategoryImages(categoryImages || {})
       setCategoriasList(categoriasList || [])
       if (config?.telefone) localStorage.setItem('cardapio_whatsapp', config.telefone)
       if (design?.nome_loja) localStorage.setItem('cardapio_nome', design.nome_loja)
