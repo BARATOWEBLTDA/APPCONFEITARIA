@@ -1,20 +1,15 @@
-import { useState } from 'react'
-import { Star, MagnifyingGlass, MapPin, Lightning, CalendarBlank, Truck } from '@phosphor-icons/react'
+import { Star, MapPin, Lightning, CalendarBlank, Truck } from '@phosphor-icons/react'
 import { DesignSettings, Configuracoes } from '@/types/database'
 
 // ─────────────────────────────────────────────────────────────
-// CardapioModelo1 — Layout "Editorial Hero" (v2 refinado)
+// CardapioModelo1 — Layout "Editorial Hero" (v3)
 //
-// Modelo #1 do cardápio público mobile.
-//
-// v2 mudanças:
-//   - Hero menor (175px), mais compacto
-//   - Logo maior (78px) e mais próxima do hero
-//   - Curva suave na transição hero→conteúdo (padrão iFood/Rappi)
-//   - Status badge reposicionado e sempre visível
-//   - Fallback de hero sem imagem com pattern sutil
-//   - Espaçamentos otimizados (menos gaps vazios)
-//   - Descrição ausente não deixa gap visual
+// v3 mudanças:
+//   - Removeu lupa/busca flutuante (já existe busca nativa no ProductList)
+//   - "Aberto agora" moveu pro hero (onde ficava a estrela)
+//   - Estrelas moveram pra ao lado do nome da loja
+//   - Espaçamentos refinados título/descrição
+//   - Removeu useState/searchOpen (não precisa mais)
 // ─────────────────────────────────────────────────────────────
 
 interface CardapioModeloProps {
@@ -78,9 +73,6 @@ function getEnderecoTexto(config: Configuracoes | null): string {
 }
 
 export function CardapioModelo1({ design, config }: CardapioModeloProps) {
-  const [searchOpen, setSearchOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-
   const accent = design.cor_borda || design.cor_botao || '#ec4899'
   const banners = [design.banner_url, design.banner1_url, design.banner2_url, design.banner3_url].filter(Boolean)
   const heroImage = banners[0] || ''
@@ -88,31 +80,16 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
   const endereco = getEnderecoTexto(config)
   const avaliacao = config?.avaliacao_media ?? 0
 
-  // Detecta se cor_nome é clara demais pro fundo #f8f8f8 do Modelo1.
-  // No layout Padrão, cor_nome clara funciona (fundo colorido).
-  // No Modelo1, o fundo é claro — precisa de texto escuro.
   const isColorLight = (hex: string): boolean => {
     const c = hex.replace('#', '')
     if (c.length < 6) return false
     const r = parseInt(c.substring(0, 2), 16)
     const g = parseInt(c.substring(2, 4), 16)
     const b = parseInt(c.substring(4, 6), 16)
-    // Luminância relativa (fórmula W3C)
-    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-    return luminance > 0.6 // acima de 0.6 = claro demais pra fundo claro
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.6
   }
   const rawCorNome = design.cor_nome || '#1f2937'
   const corNome = isColorLight(rawCorNome) ? '#1f2937' : rawCorNome
-
-  const handleSearchClick = () => {
-    setSearchOpen(o => !o)
-    if (!searchOpen) {
-      setTimeout(() => {
-        const el = document.getElementById('cm1-search-input')
-        if (el) el.focus()
-      }, 100)
-    }
-  }
 
   return (
     <div className="cm1-root">
@@ -127,16 +104,11 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
         )}
         <div className="cm1-hero-overlay" />
 
-        {/* Busca flutuante */}
-        <button className="cm1-search-btn" onClick={handleSearchClick} aria-label="Buscar produtos">
-          <MagnifyingGlass size={17} weight="bold" color="#fff" />
-        </button>
-
-        {/* Badge de avaliação */}
-        {avaliacao > 0 && (
-          <div className="cm1-rating">
-            <Star size={12} weight="fill" color="#78350f" />
-            <span>{avaliacao.toFixed(1)}</span>
+        {/* Status badge no hero (bottom-left, onde ficava a estrela) */}
+        {status && (
+          <div className={`cm1-hero-status ${status.aberto ? 'cm1-hero-status-open' : 'cm1-hero-status-closed'}`}>
+            <span className="cm1-hero-status-dot" />
+            {status.aberto ? 'Aberto agora' : (status.msg || 'Fechado')}
           </div>
         )}
 
@@ -154,19 +126,18 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
 
       {/* ── Conteúdo com curva suave ───────────────────── */}
       <div className="cm1-content">
-        {/* Status badge (dentro do content, alinhado à direita, acima do nome) */}
-        {status && (
-          <div className="cm1-status-row">
-            <div className={`cm1-status ${status.aberto ? 'cm1-status-open' : 'cm1-status-closed'}`}>
-              <span className="cm1-status-dot" />
-              {status.aberto ? 'Aberto agora' : (status.msg || 'Fechado')}
+        {/* Nome + Estrelas inline */}
+        <div className="cm1-nome-row">
+          <h1 className="cm1-nome" style={{ color: corNome }}>
+            {design.nome_loja || 'Minha Confeitaria'}
+          </h1>
+          {avaliacao > 0 && (
+            <div className="cm1-rating-inline">
+              <Star size={14} weight="fill" color="#fbbf24" />
+              <span>{avaliacao.toFixed(1)}</span>
             </div>
-          </div>
-        )}
-
-        <h1 className="cm1-nome" style={{ color: corNome }}>
-          {design.nome_loja || 'Minha Confeitaria'}
-        </h1>
+          )}
+        </div>
 
         {design.descricao_loja && (
           <p className="cm1-descricao">{design.descricao_loja}</p>
@@ -208,35 +179,13 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
         )}
       </div>
 
-      {/* ── Search bar expandida ───────────────────────── */}
-      {searchOpen && (
-        <div className="cm1-search-bar" style={{ borderColor: accent }}>
-          <MagnifyingGlass size={16} weight="bold" color={accent} style={{ flexShrink: 0 }} />
-          <input
-            id="cm1-search-input"
-            type="text"
-            placeholder="Buscar no cardápio..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                const s = document.querySelector('.container.mx-auto')
-                if (s) s.scrollIntoView({ behavior: 'smooth', block: 'start' })
-              }
-            }}
-            className="cm1-search-input"
-          />
-          <button className="cm1-search-close" onClick={() => { setSearchOpen(false); setSearchTerm('') }}>✕</button>
-        </div>
-      )}
-
       <style>{`
         .cm1-root {
           position: relative;
           z-index: 1;
         }
 
-        /* ── Hero (compacto: 175px) ───────────────────── */
+        /* ── Hero (175px) ─────────────────────────────── */
         .cm1-hero {
           position: relative;
           width: 100%;
@@ -254,7 +203,6 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
           height: 175px;
           position: relative;
         }
-        /* Pattern sutil quando não tem foto */
         .cm1-hero-pattern {
           position: absolute;
           inset: 0;
@@ -271,79 +219,40 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
           pointer-events: none;
         }
 
-        /* ── Busca flutuante ──────────────────────────── */
-        .cm1-search-btn {
-          position: absolute;
-          top: 12px;
-          right: 14px;
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          background: rgba(0,0,0,0.3);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          z-index: 5;
-        }
-        .cm1-search-btn:active { background: rgba(0,0,0,0.45); }
-
-        /* ── Search bar ───────────────────────────────── */
-        .cm1-search-bar {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin: 0 16px 12px;
-          padding: 10px 14px;
-          border-radius: 10px;
-          border: 1.5px solid;
-          background: #fff;
-          animation: cm1SlideDown 0.2s ease both;
-        }
-        .cm1-search-input {
-          flex: 1;
-          border: none;
-          outline: none;
-          font-size: 14px;
-          color: #1f2937;
-          font-family: inherit;
-          background: transparent;
-        }
-        .cm1-search-input::placeholder { color: #9ca3af; }
-        .cm1-search-close {
-          background: none; border: none; font-size: 16px;
-          color: #9ca3af; cursor: pointer; padding: 0 2px; line-height: 1;
-        }
-        @keyframes cm1SlideDown {
-          from { opacity: 0; transform: translateY(-6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ── Rating badge ─────────────────────────────── */
-        .cm1-rating {
+        /* ── Status badge no hero (bottom-left) ───────── */
+        .cm1-hero-status {
           position: absolute;
           bottom: 36px;
           left: 16px;
-          display: flex;
+          display: inline-flex;
           align-items: center;
-          gap: 3px;
-          background: #fbbf24;
-          padding: 3px 9px;
+          gap: 5px;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 5px 12px;
           border-radius: 20px;
           z-index: 3;
           box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          letter-spacing: 0.01em;
         }
-        .cm1-rating span {
-          font-size: 11px;
-          font-weight: 700;
-          color: #78350f;
-          line-height: 1;
+        .cm1-hero-status-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          display: inline-block;
         }
+        .cm1-hero-status-open {
+          background: rgba(255,255,255,0.95);
+          color: #166534;
+        }
+        .cm1-hero-status-open .cm1-hero-status-dot { background: #16a34a; }
+        .cm1-hero-status-closed {
+          background: rgba(255,255,255,0.95);
+          color: #991b1b;
+        }
+        .cm1-hero-status-closed .cm1-hero-status-dot { background: #dc2626; }
 
-        /* ── Logo sobreposta (maior: 78px) ────────────── */
+        /* ── Logo sobreposta (78px) ───────────────────── */
         .cm1-logo-wrap {
           position: absolute;
           bottom: -22px;
@@ -387,61 +296,50 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
           margin-top: -24px;
           background: #f8f8f8;
           border-radius: 24px 24px 0 0;
-          padding: 20px 16px 14px;
+          padding: 22px 16px 14px;
         }
 
-        /* ── Status (dentro do content, acima do nome) ── */
-        .cm1-status-row {
+        /* ── Nome + Estrelas na mesma linha ────────────── */
+        .cm1-nome-row {
           display: flex;
-          justify-content: flex-start;
-          margin-bottom: 8px;
+          align-items: baseline;
+          gap: 8px;
+          margin-bottom: 4px;
+          padding-right: 80px; /* espaço pra logo não sobrepor */
         }
-        .cm1-status {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 11px;
-          font-weight: 600;
-          padding: 4px 10px;
-          border-radius: 20px;
-          letter-spacing: 0.01em;
-        }
-        .cm1-status-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          display: inline-block;
-        }
-        .cm1-status-open {
-          background: #dcfce7;
-          color: #166534;
-        }
-        .cm1-status-open .cm1-status-dot { background: #16a34a; }
-        .cm1-status-closed {
-          background: #fef2f2;
-          color: #991b1b;
-        }
-        .cm1-status-closed .cm1-status-dot { background: #dc2626; }
-
-        /* ── Nome e descrição ─────────────────────────── */
         .cm1-nome {
-          margin: 0 0 2px;
+          margin: 0;
           font-size: 21px;
           font-weight: 800;
           line-height: 1.2;
           letter-spacing: -0.01em;
-          padding-right: 90px; /* espaço pra logo não sobrepor */
+          flex-shrink: 1;
+          min-width: 0;
         }
+        .cm1-rating-inline {
+          display: flex;
+          align-items: center;
+          gap: 3px;
+          flex-shrink: 0;
+        }
+        .cm1-rating-inline span {
+          font-size: 13px;
+          font-weight: 700;
+          color: #92400e;
+          line-height: 1;
+        }
+
+        /* ── Descrição ────────────────────────────────── */
         .cm1-descricao {
-          margin: 0 0 12px;
+          margin: 0 0 14px;
           font-size: 13px;
           color: #6b7280;
-          line-height: 1.35;
-          padding-right: 90px;
+          line-height: 1.4;
+          padding-right: 80px;
         }
-        /* Se não tem descrição, o nome fica com margin-bottom menor */
-        .cm1-nome:last-child {
-          margin-bottom: 12px;
+        /* Se não tem descrição, nome-row precisa de margin-bottom maior */
+        .cm1-nome-row:last-child {
+          margin-bottom: 14px;
         }
 
         /* ── Info row ─────────────────────────────────── */
