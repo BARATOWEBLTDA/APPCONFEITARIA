@@ -73,27 +73,107 @@ export function PedidosTab({ accent, confeteiraUserId, onIrParaPerfil }: {
   // Não logado
   if (!logado) return (
     <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
-      <div style={{padding:'20px 20px 16px',borderBottom:'1px solid #f0f0f0',flexShrink:0}}>
-        <p style={{margin:0,fontWeight:700,fontSize:'16px',color:'#3e3e3e'}}>Meus Pedidos</p>
-      </div>
-      <div style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'40px 24px',gap:'12px',textAlign:'center'}}>
-        <div style={{width:'72px',height:'72px',borderRadius:'50%',background:'#f5f5f5',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'4px'}}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d4d4d4" strokeWidth="1.5">
-            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <path d="M16 10a4 4 0 0 1-8 0"/>
-          </svg>
+      <div className="po-empty-root">
+        <div className="po-empty-card">
+          <div className="po-empty-avatar" style={{ background: `${accent}18` }}>
+            <div className="po-empty-avatar-inner" style={{ background: `${accent}12` }}>
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+            </div>
+          </div>
+          <p className="po-empty-title">Seus pedidos aqui</p>
+          <p className="po-empty-desc">
+            Faça login para acompanhar seus pedidos e ver o histórico de compras.
+          </p>
+          <button onClick={onIrParaPerfil} className="po-empty-btn" style={{ background: accent }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+              <polyline points="10 17 15 12 10 7"/>
+              <line x1="15" y1="12" x2="3" y2="12"/>
+            </svg>
+            Entrar ou Cadastrar
+          </button>
         </div>
-        <p style={{margin:0,fontWeight:700,fontSize:'18px',color:'#3e3e3e'}}>Seus pedidos aqui</p>
-        <p style={{margin:0,fontSize:'13px',color:'#a0a0a0',lineHeight:'1.5'}}>
-          Faça login para acompanhar seus pedidos e ver o histórico de compras.
-        </p>
-        <button
-          onClick={onIrParaPerfil}
-          style={{marginTop:'8px',padding:'14px 32px',background:accent,color:'white',border:'none',borderRadius:'12px',fontWeight:700,fontSize:'15px',cursor:'pointer',fontFamily:'inherit',width:'100%'}}>
-          Entrar ou Cadastrar
-        </button>
       </div>
+      <style>{`
+        .po-empty-root {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 32px 20px;
+        }
+        .po-empty-card {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          padding: 2.5rem 1.5rem;
+          background: #fff;
+          border: 1.5px dashed #f0e0e6;
+          border-radius: 20px;
+          width: 100%;
+          max-width: 400px;
+        }
+        .po-empty-avatar {
+          width: 96px;
+          height: 96px;
+          border-radius: 28%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 1.25rem;
+        }
+        .po-empty-avatar-inner {
+          width: 82px;
+          height: 82px;
+          border-radius: 28%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .po-empty-title {
+          font-size: 18px;
+          font-weight: 800;
+          color: #3e3e3e;
+          margin: 0 0 8px;
+          letter-spacing: -0.02em;
+          line-height: 1.3;
+        }
+        .po-empty-desc {
+          font-size: 13px;
+          color: #8b8b8b;
+          margin: 0 0 1.5rem;
+          line-height: 1.55;
+          max-width: 300px;
+          text-wrap: balance;
+        }
+        .po-empty-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          color: #fff;
+          border: none;
+          border-radius: 12px;
+          padding: 14px 32px;
+          font-family: inherit;
+          font-size: 15px;
+          font-weight: 700;
+          cursor: pointer;
+          width: 100%;
+          max-width: 280px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .po-empty-btn:active {
+          transform: translateY(1px);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+      `}</style>
     </div>
   )
 
