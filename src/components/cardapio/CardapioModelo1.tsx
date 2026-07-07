@@ -87,7 +87,22 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
   const status = getStatusLoja(config?.horario || null)
   const endereco = getEnderecoTexto(config)
   const avaliacao = config?.avaliacao_media ?? 0
-  const corNome = design.cor_nome || '#1f2937'
+
+  // Detecta se cor_nome é clara demais pro fundo #f8f8f8 do Modelo1.
+  // No layout Padrão, cor_nome clara funciona (fundo colorido).
+  // No Modelo1, o fundo é claro — precisa de texto escuro.
+  const isColorLight = (hex: string): boolean => {
+    const c = hex.replace('#', '')
+    if (c.length < 6) return false
+    const r = parseInt(c.substring(0, 2), 16)
+    const g = parseInt(c.substring(2, 4), 16)
+    const b = parseInt(c.substring(4, 6), 16)
+    // Luminância relativa (fórmula W3C)
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    return luminance > 0.6 // acima de 0.6 = claro demais pra fundo claro
+  }
+  const rawCorNome = design.cor_nome || '#1f2937'
+  const corNome = isColorLight(rawCorNome) ? '#1f2937' : rawCorNome
 
   const handleSearchClick = () => {
     setSearchOpen(o => !o)
