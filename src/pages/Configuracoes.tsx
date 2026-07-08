@@ -411,6 +411,41 @@ export default function Configuracoes() {
         </div>
 
         <button className="cfg-btn-logout" onClick={handleLogout}>Sair</button>
+
+        {/* ── Notificações (mobile) ── */}
+        <div className="cfg-section-card" style={{ marginTop: '-0.4rem' }}>
+          <div className="cfg-accordion-header" style={{ cursor: 'default', pointerEvents: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>🔔</span>
+              <span style={{ fontWeight: 700 }}>Notificações</span>
+            </div>
+          </div>
+          <div style={{ padding: '0 1rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <PushToggle />
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.75rem' }}>
+              {([
+                { key: "receitas" as keyof typeof notifs, label: "Novas receitas" },
+                { key: "comunidade" as keyof typeof notifs, label: "Comunidade" },
+                { key: "atualizacoes" as keyof typeof notifs, label: "Atualizações do app" },
+              ]).map(item => (
+                <div key={item.key} className="cfg-notif-row" style={{ marginBottom: '0.5rem' }}>
+                  <p className="cfg-notif-label" style={{ color: notifDesativar ? "var(--border)" : undefined }}>{item.label}</p>
+                  <label className="toggle">
+                    <input type="checkbox" checked={notifs[item.key]} disabled={notifDesativar} onChange={e => setNotifs(n => ({ ...n, [item.key]: e.target.checked }))} />
+                    <span className="toggle-slider" style={{ opacity: notifDesativar ? 0.4 : 1 }} />
+                  </label>
+                </div>
+              ))}
+            </div>
+            <div className="cfg-notif-row" style={{ paddingTop: '0.5rem', borderTop: '1px solid var(--border)' }}>
+              <p className="cfg-notif-label" style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Não quero receber notificações</p>
+              <label className="toggle">
+                <input type="checkbox" checked={notifDesativar} onChange={e => toggleNotifDesativar(e.target.checked)} />
+                <span className="toggle-slider" />
+              </label>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ─────────────── DESKTOP ─────────────── */}
