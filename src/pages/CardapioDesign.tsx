@@ -247,17 +247,6 @@ export default function CardapioDesign() {
             </div>
             {cardapioModelo === 'modelo1' && <div className="cd-layout-check">✓</div>}
           </button>
-
-          {/* Modelo 2 — Em breve */}
-          <button className="cd-layout-card cd-layout-locked cd-layout-soon" disabled>
-            <div className="cd-layout-preview" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}>
-              <span style={{ fontSize: 24, opacity: 0.3 }}>✨</span>
-            </div>
-            <div className="cd-layout-info">
-              <span className="cd-layout-name" style={{ color: '#9ca3af' }}>Modelo 2</span>
-              <span className="cd-layout-tag" style={{ color: '#9ca3af' }}>Em breve</span>
-            </div>
-          </button>
         </div>
       </div>
 
@@ -697,13 +686,12 @@ export default function CardapioDesign() {
         .cd-spinner-sm { width:16px; height:16px; border:2px solid rgba(255,111,169,0.3); border-top-color:var(--primary); border-radius:50%; animation:cdspin 0.7s linear infinite; display:inline-block; }
 
         /* ── Seletor de Layout ─────────────────────────── */
-        .cd-layout-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
-        @media (max-width: 420px) { .cd-layout-grid { grid-template-columns: repeat(2, 1fr); } }
+        .cd-layout-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap-stack); margin-top: var(--gap-stack); }
         .cd-layout-card {
           position: relative;
-          background: #fff;
-          border: 2px solid #e5e7eb;
-          border-radius: 12px;
+          background: var(--bg-card);
+          border: 2px solid var(--border);
+          border-radius: var(--radius-lg);
           padding: 0;
           cursor: pointer;
           overflow: hidden;
@@ -711,49 +699,48 @@ export default function CardapioDesign() {
           text-align: left;
           font-family: inherit;
         }
-        .cd-layout-card:hover:not(:disabled) { border-color: #d1d5db; }
-        .cd-layout-active { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(110, 53, 72, 0.12); }
+        .cd-layout-card:hover:not(:disabled) { border-color: var(--text-muted); }
+        .cd-layout-active { border-color: var(--primary) !important; box-shadow: var(--focus-ring); }
         .cd-layout-locked { opacity: 0.75; cursor: not-allowed; }
-        .cd-layout-soon { opacity: 0.5; }
         .cd-layout-lock-overlay {
           position: absolute; inset: 0; background: rgba(255,255,255,0.4);
-          backdrop-filter: blur(1px); border-radius: 10px; pointer-events: none;
+          backdrop-filter: blur(1px); border-radius: var(--radius-md); pointer-events: none;
         }
         .cd-layout-preview {
-          width: 100%; height: 120px; background: #f9fafb; position: relative; overflow: hidden;
+          width: 100%; height: 120px; background: var(--bg-subtle); position: relative; overflow: hidden;
         }
         .cd-layout-info {
-          padding: 10px 12px; display: flex; align-items: center; justify-content: space-between;
-          border-top: 1px solid #f3f4f6;
+          padding: var(--space-2) var(--space-3); display: flex; align-items: center; justify-content: space-between;
+          border-top: 1px solid var(--primary-light);
         }
-        .cd-layout-name { font-size: 12px; font-weight: 600; color: #374151; }
-        .cd-layout-tag { font-size: 10px; font-weight: 600; color: #6b7280; background: #f3f4f6; padding: 2px 8px; border-radius: 20px; }
-        .cd-layout-tag-pro { color: var(--primary); background: rgba(110, 53, 72, 0.08); }
+        .cd-layout-name { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-primary); }
+        .cd-layout-tag { font-size: var(--text-xs); font-weight: var(--fw-semibold); color: var(--text-muted); background: var(--bg-subtle); padding: 2px 8px; border-radius: var(--radius-full); }
+        .cd-layout-tag-pro { color: var(--primary); background: var(--primary-light); }
         .cd-layout-check {
-          position: absolute; top: 8px; right: 8px; width: 22px; height: 22px;
-          border-radius: 50%; background: var(--primary); color: #fff;
+          position: absolute; top: var(--space-2); right: var(--space-2); width: 22px; height: 22px;
+          border-radius: 50%; background: var(--primary); color: var(--text-inverse);
           display: flex; align-items: center; justify-content: center;
-          font-size: 12px; font-weight: 700; z-index: 2;
+          font-size: var(--font-caption); font-weight: var(--fw-bold); z-index: 2;
         }
         /* Mini-preview: Padrão */
         .cd-layout-preview-padrao .cd-lp-header { height: 40px; border-radius: 0; }
         .cd-layout-preview-padrao .cd-lp-logo-circle {
           width: 32px; height: 32px; border-radius: 50%; border: 2px solid;
-          margin: -16px auto 0; background: #fff; position: relative; z-index: 1;
+          margin: -16px auto 0; background: var(--bg-card); position: relative; z-index: 1;
         }
-        .cd-lp-lines { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 8px; padding: 0 12px; }
-        .cd-lp-products { display: flex; gap: 4px; padding: 6px 12px 0; }
-        .cd-lp-product { flex: 1; height: 22px; border-radius: 4px; background: #f3f4f6; }
+        .cd-lp-lines { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: var(--space-2); padding: 0 var(--space-3); }
+        .cd-lp-products { display: flex; gap: 4px; padding: var(--space-1) var(--space-3) 0; }
+        .cd-lp-product { flex: 1; height: 22px; border-radius: var(--radius-sm); background: var(--primary-light); }
         /* Mini-preview: Modelo 1 */
         .cd-layout-preview-modelo1 .cd-lp-hero { height: 60px; position: relative; }
         .cd-layout-preview-modelo1 .cd-lp-hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.25) 100%); }
         .cd-lp-m1-logo {
           width: 24px; height: 24px; border-radius: 50%; border: 2px solid;
-          position: absolute; top: 48px; right: 12px; background: #fff; z-index: 2;
+          position: absolute; top: 48px; right: var(--space-3); background: var(--bg-card); z-index: 2;
         }
         .cd-lp-m1-badge {
-          position: absolute; top: 50px; left: 12px;
-          width: 20px; height: 8px; border-radius: 4px; background: #fbbf24;
+          position: absolute; top: 50px; left: var(--space-3);
+          width: 20px; height: 8px; border-radius: var(--radius-sm); background: var(--warning);
         }
       `}</style>
     </div>
