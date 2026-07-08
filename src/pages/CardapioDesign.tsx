@@ -388,11 +388,8 @@ export default function CardapioDesign() {
             <div>
               <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_botao' ? null : 'cor_botao')}>
                 <div className="cd-color-info">
-                  <div className="cd-color-label-row">
-                    <span className="cd-color-label">Botão "Adicionar ao carrinho"</span>
-                    <span className="cd-pro-badge">PRO</span>
-                  </div>
-                  <span className="cd-color-value">{corBotao}</span>
+                  <span className="cd-color-label">Botão "Adicionar ao carrinho"</span>
+                  <div className="cd-color-meta"><span className="cd-color-value">{corBotao}</span><span className="cd-pro-badge">PRO</span></div>
                 </div>
                 <div className="cd-color-swatch" style={{ background: corBotao }} />
               </div>
@@ -427,11 +424,8 @@ export default function CardapioDesign() {
             <div>
               <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_navbar' ? null : 'cor_navbar')}>
                 <div className="cd-color-info">
-                  <div className="cd-color-label-row">
-                    <span className="cd-color-label">Fundo da barra de navegação</span>
-                    <span className="cd-pro-badge">PRO</span>
-                  </div>
-                  <span className="cd-color-value">{corNavbar}</span>
+                  <span className="cd-color-label">Fundo da barra de navegação</span>
+                  <div className="cd-color-meta"><span className="cd-color-value">{corNavbar}</span><span className="cd-pro-badge">PRO</span></div>
                 </div>
                 <div className="cd-color-swatch" style={{ background: corNavbar }} />
               </div>
@@ -464,11 +458,8 @@ export default function CardapioDesign() {
             <div>
               <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_rodape' ? null : 'cor_rodape')}>
                 <div className="cd-color-info">
-                  <div className="cd-color-label-row">
-                    <span className="cd-color-label">Rodapé do cardápio</span>
-                    <span className="cd-pro-badge">PRO</span>
-                  </div>
-                  <span className="cd-color-value">{corRodape}</span>
+                  <span className="cd-color-label">Rodapé do cardápio</span>
+                  <div className="cd-color-meta"><span className="cd-color-value">{corRodape}</span><span className="cd-pro-badge">PRO</span></div>
                 </div>
                 <div className="cd-color-swatch" style={{ background: corRodape }} />
               </div>
@@ -649,6 +640,7 @@ export default function CardapioDesign() {
         .cd-color-label-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
         .cd-color-label { font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-primary); }
         .cd-color-value { font-size: var(--font-caption); color:var(--text-muted); font-family:'Geist Mono', ui-monospace, monospace; }
+        .cd-color-meta { display:flex; align-items:center; gap:6px; }
         .cd-color-swatch {
           width:42px; height:42px; border-radius: var(--radius-md);
           border:3px solid var(--bg-card);
