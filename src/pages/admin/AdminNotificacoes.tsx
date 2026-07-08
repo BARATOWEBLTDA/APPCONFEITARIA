@@ -44,12 +44,32 @@ export default function AdminNotificacoes() {
   const handleSend = async () => {
     if (!form.titulo.trim()) return;
     setSaving(true);
+
+    // 1. Salva na tabela notificacoes (pra histórico + sininho in-app)
     await supabase.from("notificacoes").insert({
       titulo: form.titulo,
       mensagem: form.mensagem,
       tag: form.tag || null,
       imagem_url: form.imagem_url || null,
     });
+
+    // 2. Dispara Web Push real pra todos os subscribers
+    try {
+      const { data, error } = await supabase.functions.invoke("send-push", {
+        body: {
+          titulo: form.titulo,
+          mensagem: form.mensagem,
+          imagem_url: form.imagem_url || null,
+          tag: form.tag || null,
+          url: "/",
+        },
+      });
+      if (error) console.error("Push error:", error);
+      else console.log("Push result:", data);
+    } catch (err) {
+      console.warn("Push dispatch failed (notifications still saved in-app):", err);
+    }
+
     await load();
     setShowForm(false);
     setForm({ titulo: "", mensagem: "", tag: "", imagem_url: "" });

@@ -2,6 +2,59 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { refreshProfile } from "@/hooks/useProfile";
+import { usePushSubscription } from "@/hooks/usePushSubscription";
+
+// ── Componente inline: toggle de push notifications ──────────
+function PushToggle() {
+  const { isSupported, isSubscribed, permission, loading, error, subscribe, unsubscribe } = usePushSubscription();
+
+  if (!isSupported) {
+    return (
+      <div className="cfg-push-row">
+        <div>
+          <p className="cfg-notif-label">Notificações push</p>
+          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+            Seu navegador não suporta notificações push. Use Chrome ou instale o app como PWA.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (permission === 'denied') {
+    return (
+      <div className="cfg-push-row">
+        <div>
+          <p className="cfg-notif-label">Notificações push</p>
+          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--error)', lineHeight: 1.4 }}>
+            Permissão bloqueada. Vá nas configurações do navegador para reativar.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="cfg-push-row">
+      <div style={{ flex: 1 }}>
+        <p className="cfg-notif-label">Receber notificações no celular</p>
+        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+          {isSubscribed ? 'Ativado — você receberá avisos mesmo com o app fechado.' : 'Receba avisos de novidades e atualizações do Doonly.'}
+        </p>
+        {error && <p style={{ margin: '4px 0 0', fontSize: '0.72rem', color: 'var(--error)' }}>{error}</p>}
+      </div>
+      <label className="toggle">
+        <input
+          type="checkbox"
+          checked={isSubscribed}
+          disabled={loading}
+          onChange={() => isSubscribed ? unsubscribe() : subscribe()}
+        />
+        <span className="toggle-slider" style={{ opacity: loading ? 0.5 : 1 }} />
+      </label>
+    </div>
+  );
+}
 
 const Field = ({ icon, placeholder, value, onChange, type = "text", maxLength, disabled }: any) => (
   <div className={`cfg-field${disabled ? " cfg-field-disabled" : ""}`}>
@@ -592,6 +645,11 @@ export default function Configuracoes() {
                 <span>Notificações</span>
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:"0.75rem"}}>
+
+                {/* Botão push real */}
+                <PushToggle />
+
+                <div style={{borderTop:"1px solid var(--border)", paddingTop:"0.75rem"}}>
                 {([
                   { key:"receitas",     label:"Novas receitas" },
                   { key:"comunidade",   label:"Comunidade" },
@@ -610,6 +668,7 @@ export default function Configuracoes() {
                     </label>
                   </div>
                 ))}
+                </div>
                 <div className="cfg-notif-row" style={{paddingTop:"0.5rem",borderTop:"1px solid var(--border)"}}>
                   <p className="cfg-notif-label" style={{color:"var(--text-muted)",fontSize:"0.82rem"}}>Não quero receber notificações</p>
                   <label className="toggle">
