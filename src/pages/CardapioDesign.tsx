@@ -291,13 +291,13 @@ export default function CardapioDesign() {
               <span className="cd-banner-slot-label">{bannerLabels[i]}</span>
               {bannerValues[i] ? (
                 <div className="cd-banner-thumb" style={{ position: 'relative', overflow: 'hidden' }}>
-                  {i > 0 && <div className="cd-pro-corner"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>PRO</div>}
+                  {i > 0 && <div className="cd-pro-corner">PRO</div>}
                   <img src={bannerValues[i]} alt={bannerLabels[i]} />
                   <button className="cd-remove-btn" onClick={() => handleRemoveBanner(i)}>✕</button>
                 </div>
               ) : (
                 <div className="cd-upload-box cd-upload-slot" style={{ position: 'relative', overflow: 'hidden' }} onClick={() => !uploading && bannerRefs[i].current?.click()}>
-                  {i > 0 && <div className="cd-pro-corner"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>PRO</div>}
+                  {i > 0 && <div className="cd-pro-corner">PRO</div>}
                   {uploading === `banner${i}` ? <span className="cd-spinner-sm" /> : (
                     <>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -433,7 +433,7 @@ export default function CardapioDesign() {
                   </div>
                   <span className="cd-color-value">{corNavbar}</span>
                 </div>
-                <div className="cd-color-swatch" style={{ background: corNavbar, border: '1px solid var(--border)' }} />
+                <div className="cd-color-swatch" style={{ background: corNavbar }} />
               </div>
               {activePicker === 'cor_navbar' && (
                 <div className="cd-picker-wrap">
@@ -623,12 +623,12 @@ export default function CardapioDesign() {
 
         /* ── Cantinho PRO no banner (substitui ribbon diagonal) ── */
         .cd-pro-corner {
-          position:absolute; top:8px; left:8px; z-index:10;
-          display:inline-flex; align-items:center; gap:3px;
-          background:var(--primary-gradient);
-          color:#fff; font-size: var(--font-caption); font-weight: var(--fw-black); letter-spacing:0.08em;
-          padding:3px 8px 3px 6px; border-radius: var(--radius-full);
-          box-shadow:0 2px 8px rgba(255,111,169,0.45);
+          position:absolute; top:6px; left:6px; z-index:10;
+          display:inline-flex; align-items:center; gap:4px;
+          background: var(--primary-dark);
+          color:#fff; font-size: 9px; font-weight: var(--fw-black); letter-spacing:0.1em; text-transform: uppercase;
+          padding:4px 8px; border-radius: var(--radius-full);
+          box-shadow: var(--shadow-sm);
         }
 
         /* ── Cores ── */
@@ -653,7 +653,7 @@ export default function CardapioDesign() {
           width:42px; height:42px; border-radius: var(--radius-md);
           border:3px solid var(--bg-card);
           flex-shrink:0;
-          box-shadow:0 0 0 1.5px rgba(0,0,0,0.08), 0 3px 10px rgba(0,0,0,0.1);
+          box-shadow: 0 0 0 1.5px var(--border), 0 3px 10px rgba(0,0,0,0.1);
         }
 
         /* ── Color picker wrap ── */
