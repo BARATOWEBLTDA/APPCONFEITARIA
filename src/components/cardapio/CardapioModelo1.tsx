@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Star, MapPin, Lightning, CalendarBlank, Truck } from '@phosphor-icons/react'
 import { DesignSettings, Configuracoes } from '@/types/database'
 
@@ -60,7 +61,7 @@ function getStatusLoja(horarioJson: string | null): { aberto: boolean; msg?: str
   } catch { return null }
 }
 
-function getEnderecoData(config: Configuracoes | null): { curto: string; mapsUrl: string } | null {
+function getEnderecoData(config: Configuracoes | null): { curto: string; completo: string; mapsUrl: string } | null {
   if (!config?.endereco) return null
   try {
     const e = typeof config.endereco === 'string' ? JSON.parse(config.endereco) : config.endereco
@@ -77,11 +78,12 @@ function getEnderecoData(config: Configuracoes | null): { curto: string; mapsUrl
     if (e.cep) partesCompletas.push(e.cep)
     const completo = partesCompletas.join(', ')
     const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(completo)}`
-    return curto ? { curto, mapsUrl } : null
+    return curto ? { curto, completo, mapsUrl } : null
   } catch { return null }
 }
 
 export function CardapioModelo1({ design, config }: CardapioModeloProps) {
+  const [modalEndereco, setModalEndereco] = useState(false)
   const accent = design.cor_borda || design.cor_botao || '#ec4899'
   const banners = [design.banner_url, design.banner1_url, design.banner2_url, design.banner3_url].filter(Boolean)
   const heroImage = banners[0] || ''
@@ -179,17 +181,71 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
           </div>
         </div>
 
-        {/* Endereço compacto + Ver no mapa */}
+        {/* Endereço compacto + Ver no mapa (abre modal com Waze/Google Maps) */}
         {enderecoData && (
           <div className="cm1-endereco">
             <MapPin size={13} weight="bold" style={{ flexShrink: 0, color: '#9ca3af' }} />
             <span>{enderecoData.curto}</span>
-            <a href={enderecoData.mapsUrl} target="_blank" rel="noopener noreferrer" className="cm1-ver-mapa" style={{ color: accent }}>
+            <button onClick={() => setModalEndereco(true)} className="cm1-ver-mapa" style={{ color: accent }}>
               Ver no mapa
-            </a>
+            </button>
           </div>
         )}
       </div>
+
+      {/* ── Modal de endereço (bottom sheet com mini mapa + Waze/Maps) ── */}
+      {modalEndereco && enderecoData && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => setModalEndereco(false)}>
+          <div style={{ background: '#fff', borderRadius: '24px 24px 0 0', width: '100%', maxWidth: '480px', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+
+            {/* Mini mapa */}
+            <iframe
+              width="100%"
+              height="200"
+              style={{ border: 'none', display: 'block' }}
+              src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_KEY}&q=${encodeURIComponent(enderecoData.completo)}`}
+              allowFullScreen
+            />
+
+            <div style={{ padding: '1.25rem' }}>
+              {/* Endereço completo */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '1rem' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={accent} strokeWidth="2" style={{ flexShrink: 0, marginTop: '2px' }}><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <p style={{ fontFamily: 'inherit', fontSize: '0.9rem', color: '#374151', lineHeight: '1.5', margin: 0 }}>{enderecoData.completo}</p>
+              </div>
+
+              {/* Botões Waze + Google Maps */}
+              <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
+                <a
+                  href={`https://waze.com/ul?q=${encodeURIComponent(enderecoData.completo)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#33CCFF', color: 'white', borderRadius: '12px', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
+                >
+                  <img src="/waze.png" alt="Waze" width="20" height="20" style={{objectFit:'contain'}} />
+                  Waze
+                </a>
+                <a
+                  href={`https://maps.google.com/?q=${encodeURIComponent(enderecoData.completo)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.7rem', background: '#ecf3ff', color: '#4285f4', borderRadius: '12px', fontFamily: 'inherit', fontSize: '0.88rem', fontWeight: 700, textDecoration: 'none' }}
+                >
+                  <img src="/google-maps.png" alt="Google Maps" width="20" height="20" style={{objectFit:'contain'}} />
+                  Google Maps
+                </a>
+              </div>
+
+              <button
+                onClick={() => setModalEndereco(false)}
+                style={{ width: '100%', padding: '0.85rem', background: '#f3f4f6', color: '#374151', border: 'none', borderRadius: '50px', fontFamily: 'inherit', fontSize: '0.95rem', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         .cm1-root {
@@ -404,9 +460,14 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
         .cm1-ver-mapa {
           font-size: 12px;
           font-weight: 600;
-          text-decoration: none;
+          text-decoration: underline;
           white-space: nowrap;
           flex-shrink: 0;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-family: inherit;
+          padding: 0;
         }
       `}</style>
     </div>
