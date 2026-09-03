@@ -641,7 +641,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           background: #0e0509;
           border-radius: 34px;
           padding: 8px;
-          margin-top: 1.5rem;
+          margin-top: 0.4rem;
           box-shadow:
             0 24px 60px rgba(0,0,0,0.55),
             0 0 0 2px rgba(255,255,255,0.06) inset,
@@ -649,6 +649,11 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           opacity: 0;
           transform: translateY(20px) scale(0.94);
           animation: obPhoneIn 0.7s cubic-bezier(0.22, 1.1, 0.36, 1) 0.25s both;
+        }
+        /* Nesta slide, zera o gap padrão embaixo do bloco de texto — assim
+           eyebrow → título → mockup ficam com o MESMO espaçamento (~0.4rem) */
+        .ob-content:has(.ob-cardapio-phone) .ob-slide-textabove {
+          margin-bottom: 0;
         }
         @keyframes obPhoneIn {
           from { opacity: 0; transform: translateY(20px) scale(0.94); }
@@ -2442,7 +2447,7 @@ function Slide3Ingredientes({ onReady }: { onReady: () => void }) {
     <>
       <div className="ob-slide-textabove">
         <span className="ob-slide-eyebrow">Com o Doonly...</span>
-        <h2 className="ob-slide-title">TODOS OS INGREDIENTES<br/>DAS SUAS RECEITAS</h2>
+        <h2 className="ob-slide-title">INGREDIENTES CADASTRADOS<br/>EM SEGUNDOS</h2>
       </div>
 
       <div className={`ob-ing-wrap ${wrapFull ? "ob-ing-wrap--full" : ""}`}>
