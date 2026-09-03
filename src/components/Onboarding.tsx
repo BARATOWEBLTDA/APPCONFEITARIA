@@ -2047,6 +2047,39 @@ function SlideCardapio({ onReady }: { onReady: () => void }) {
   );
 }
 
+/**
+ * Renderiza a imagem do pedido com fallback para emoji.
+ * Enquanto a imagem não carrega (ou se falhar), mostra o emoji —
+ * NUNCA um quadrado vazio. Quando a img dispara onLoad, faz um
+ * cross-fade suave para a foto real.
+ */
+function PedidoImg({ src, alt, emoji }: { src?: string; alt: string; emoji: string }) {
+  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  if (!src || failed) return <span>{emoji}</span>;
+
+  return (
+    <>
+      {!loaded && <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>{emoji}</span>}
+      <img
+        src={src}
+        alt={alt}
+        loading="eager"
+        decoding="async"
+        // @ts-ignore — fetchpriority é atributo HTML válido, tipos do React ainda não o incluem em todas as versões
+        fetchpriority="high"
+        onLoad={() => setLoaded(true)}
+        onError={() => setFailed(true)}
+        style={{
+          opacity: loaded ? 1 : 0,
+          transition: "opacity 180ms ease-out",
+        }}
+      />
+    </>
+  );
+}
+
 function Slide2Pedidos({ onReady }: { onReady: () => void }) {
   // Índice do "próximo pedido a entrar" — começa em 0 e vai até 8 (para no final)
   const [proximoIdx, setProximoIdx] = useState(0);
@@ -2075,9 +2108,9 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
     const diaRetiradaCamila = diasSemana[retiradaCamila.getDay()];
 
     return [
-      PEDIDOS_DEMO[2], // Patrícia — Finalizado
-      { ...PEDIDOS_DEMO[4], dataLabel: diaRetiradaCamila }, // Camila — Retirada (ontem)
-      { ...PEDIDOS_DEMO[5], datetime: `Hoje · ${hh}:${mm}`, dataLabel: diaEntregaLarissa }, // Larissa — Em Produção (hoje + 2)
+      { ...PEDIDOS_DEMO[2], numero: "120" }, // Patrícia — Finalizado (mais antigo)
+      { ...PEDIDOS_DEMO[4], numero: "121", dataLabel: diaRetiradaCamila }, // Camila — Retirada (ontem)
+      { ...PEDIDOS_DEMO[5], numero: "122", datetime: `Hoje · ${hh}:${mm}`, dataLabel: diaEntregaLarissa }, // Larissa — Em Produção (mais novo)
     ];
   }, []);
 
@@ -2167,15 +2200,8 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
 
                   {/* Produto + valor */}
                   <div className="ob-mob-card-produto">
-                    <div className="ob-mob-card-produto-img">
-                      {p.imagem
-                        ? <img src={p.imagem} alt={p.produto} onError={(e) => {
-                            const img = e.target as HTMLImageElement;
-                            img.style.display = 'none';
-                            const parent = img.parentElement;
-                            if (parent) parent.textContent = p.emoji || "🎂";
-                          }} />
-                        : <span>{p.emoji || "🎂"}</span>}
+                    <div className="ob-mob-card-produto-img" style={{ position: "relative" }}>
+                      <PedidoImg src={p.imagem} alt={p.produto} emoji={p.emoji || "🎂"} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p className="ob-mob-card-produto-nome">{p.produto}</p>
@@ -2198,7 +2224,7 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
                     <span style={{ fontSize: "0.7rem", color: "#6E3548", display: "flex", alignItems: "center", gap: 4 }}>
                       {p.entregaIcon.startsWith("/")
                         ? <img src={p.entregaIcon} alt="" style={{ width: 12, height: 12, objectFit: "contain" }} />
-                        : p.entregaIcon}
+                        : <span>{p.entregaIcon}</span>}
                       {p.entregaLabel}
                       <span style={{ color: "#431524", fontWeight: 600 }}>· {p.dataLabel}</span>
                     </span>
