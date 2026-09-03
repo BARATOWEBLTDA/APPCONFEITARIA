@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T09:00 — WelcomeChecklist redesign estilo Duolingo com prêmio 7 dias PRO
+// Build marker: 2026-09-04T09:30 — badge RECOMPENSA aparece tambem no colapsado
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -154,7 +154,10 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
             <Crown size={18} weight="fill" />
           </span>
           <span className="wc-collapsed-content">
-            <span className="wc-collapsed-label">Prêmio</span>
+            <span className="wc-collapsed-badge">
+              <Crown size={10} weight="fill" />
+              Recompensa
+            </span>
             <span className="wc-collapsed-title">
               <span className="wc-collapsed-hl">7 dias</span> grátis no PRO
             </span>
@@ -470,12 +473,21 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           flex-direction: column;
           gap: 2px;
         }
-        .wc-collapsed-label {
-          font-size: 10px;
-          opacity: 0.7;
-          font-weight: var(--fw-semibold);
+        .wc-collapsed-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: var(--primary);
+          color: #fff;
+          padding: 2px 8px;
+          border-radius: var(--radius-full);
+          font-size: 9px;
+          font-weight: var(--fw-black);
+          letter-spacing: 0.06em;
           text-transform: uppercase;
-          letter-spacing: 0.04em;
+          box-shadow: 0 1px 0 var(--primary-dark);
+          align-self: flex-start;
+          margin-bottom: 2px;
         }
         .wc-collapsed-title {
           font-size: 13px;
