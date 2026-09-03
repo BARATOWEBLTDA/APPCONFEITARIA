@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T09:30 — badge RECOMPENSA aparece tambem no colapsado
+// Build marker: 2026-09-04T10:00 — nasce expandido a cada novo login (sessionStorage)
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -23,8 +23,11 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
   const navigate = useNavigate();
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
+  // sessionStorage (não localStorage): a cada novo login/sessão o card nasce
+  // expandido chamando atenção. Se o usuário colapsar, fica colapsado
+  // enquanto navega pelo app na mesma sessão.
   const [minimized, setMinimized] = useState<boolean>(() => {
-    try { return localStorage.getItem(LS_MINIMIZED) === "1"; } catch { return false; }
+    try { return sessionStorage.getItem(LS_MINIMIZED) === "1"; } catch { return false; }
   });
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [tutorialDone, setTutorialDone] = useState(() => {
@@ -42,7 +45,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
   const toggleMinimized = () => {
     setMinimized((v) => {
       const novo = !v;
-      try { localStorage.setItem(LS_MINIMIZED, novo ? "1" : "0"); } catch {}
+      try { sessionStorage.setItem(LS_MINIMIZED, novo ? "1" : "0"); } catch {}
       return novo;
     });
   };
