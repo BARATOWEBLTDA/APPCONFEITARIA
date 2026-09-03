@@ -873,8 +873,9 @@ export default function Inicio() {
           align-items: center;
           gap: 0.85rem;
           position: relative;
-          z-index: 0;
-          overflow: hidden;
+          z-index: 10;
+          /* overflow: visible — o dropdown de perfil precisa vazar pra baixo do hero.
+             Os sparkles decorativos ficam contidos via .ini-hero-sparkles. */
         }
         @keyframes heroGradientMove {
           0% { background-position: 0% 50%; }
