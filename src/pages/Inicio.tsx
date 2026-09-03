@@ -1,3 +1,4 @@
+// Build marker: 2026-09-03T14:15 — badge de câmera + placeholder destacado + toggle notificações
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -6,7 +7,7 @@ import {
 import {
   Share, Plus, ClipboardText, CalendarDots,
   TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
-  Bell, User, Storefront, SignOut,
+  Bell, User, Storefront, SignOut, Camera,
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
   InstagramLogo, Crown, DotsThreeOutline, Clock,
 } from "@phosphor-icons/react";
@@ -45,7 +46,7 @@ const STATUS_ATIVOS = ["pendente", "novo", "confirmado", "em_producao", "pronto"
  */
 export default function Inicio() {
   const navigate = useNavigate();
-  const { profile } = useProfile();
+  const { profile, refetch: refetchProfile } = useProfile();
 
   const [loading, setLoading] = useState(true);
   const [counts, setCounts] = useState({
@@ -64,6 +65,52 @@ export default function Inicio() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Upload rápido de foto de perfil pelo ícone de câmera no header.
+  // Reaproveita o mesmo bucket/path usado pela página Configurações.
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingFoto, setUploadingFoto] = useState(false);
+  const handleFotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // reseta pra permitir escolher o MESMO arquivo depois
+    if (!file || !profile?.id) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Escolha um arquivo de imagem.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("A imagem precisa ter no máximo 5MB.");
+      return;
+    }
+
+    setUploadingFoto(true);
+    try {
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `avatars/${profile.id}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("profiles")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+
+      const { data: pub } = supabase.storage.from("profiles").getPublicUrl(path);
+      // cache-bust pra forçar reload da imagem se já existia no mesmo path
+      const publicUrl = `${pub.publicUrl}?t=${Date.now()}`;
+
+      const { error: dbErr } = await supabase
+        .from("profiles")
+        .update({ foto_url: publicUrl })
+        .eq("id", profile.id);
+      if (dbErr) throw dbErr;
+
+      await refetchProfile();
+    } catch (err: any) {
+      console.error("[foto] erro no upload:", err);
+      alert("Não foi possível trocar a foto. Tente novamente.");
+    } finally {
+      setUploadingFoto(false);
+    }
+  };
 
   // Toggle "Ativar notificações" — pede permissão real do navegador.
   // Persistência + registro do SW ficam em lib/notifications.ts.
@@ -441,9 +488,30 @@ export default function Inicio() {
           <button className="ini-profile-btn" onClick={() => setMenuOpen(o => !o)}>
             {profile?.foto_url
               ? <img src={profile.foto_url} alt="Perfil" className="ini-profile-img" />
-              : <div className="ini-profile-placeholder"><User size={26} weight="bold" color="#fff" /></div>
+              : <div className="ini-profile-placeholder"><User size={30} weight="bold" color="#3d1a24" /></div>
             }
           </button>
+
+          {/* Badge de câmera — atalho pra trocar a foto */}
+          <button
+            type="button"
+            className="ini-profile-cam"
+            onClick={() => !uploadingFoto && fileInputRef.current?.click()}
+            aria-label={profile?.foto_url ? "Trocar foto de perfil" : "Adicionar foto de perfil"}
+            title={profile?.foto_url ? "Trocar foto" : "Adicionar foto"}
+            disabled={uploadingFoto}
+          >
+            {uploadingFoto
+              ? <span className="ini-profile-cam-spinner" />
+              : <Camera size={14} weight="fill" color="#fff" />}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFotoUpload}
+            style={{ display: "none" }}
+          />
 
           {menuOpen && (
             <div className="ini-profile-menu">
@@ -963,16 +1031,43 @@ export default function Inicio() {
         .ini-profile-wrapper { position: relative; flex-shrink: 0; z-index: 2; }
         .ini-profile-btn {
           width: 64px; height: 64px; border-radius: var(--radius-full);
-          border: 2.5px solid rgba(255,255,255,0.85);
-          background: rgba(255,255,255,0.15);
+          border: 3px solid #c8891f;
+          background: #faf5e8;
           cursor: pointer; padding: 0; overflow: hidden;
           display: flex; align-items: center; justify-content: center;
-          transition: border-color var(--dur-fast), transform var(--dur-fast);
-          box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+          transition: border-color var(--dur-fast), transform var(--dur-fast), box-shadow var(--dur-fast);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.15);
         }
-        .ini-profile-btn:hover { border-color: var(--text-inverse); transform: scale(1.04); }
+        .ini-profile-btn:hover { transform: scale(1.04); box-shadow: 0 8px 24px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,0,0,0.2); }
         .ini-profile-img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-full); }
         .ini-profile-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+
+        /* Badge de câmera — atalho pra trocar/adicionar foto */
+        .ini-profile-cam {
+          position: absolute;
+          bottom: -2px; right: -2px;
+          width: 24px; height: 24px;
+          border-radius: var(--radius-full);
+          background: #c8891f;
+          border: 2px solid #faf5e8;
+          color: #fff;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          padding: 0;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+          transition: transform var(--dur-fast), background var(--dur-fast);
+          z-index: 2;
+        }
+        .ini-profile-cam:hover:not(:disabled) { transform: scale(1.12); background: #b47a1c; }
+        .ini-profile-cam:disabled { cursor: default; opacity: 0.7; }
+        .ini-profile-cam-spinner {
+          width: 12px; height: 12px;
+          border: 2px solid rgba(255,255,255,0.35);
+          border-top-color: #fff;
+          border-radius: 50%;
+          animation: iniSpin 0.7s linear infinite;
+        }
+        @keyframes iniSpin { to { transform: rotate(360deg); } }
 
         .ini-profile-menu {
           position: absolute; top: calc(100% + 10px); left: 0;
