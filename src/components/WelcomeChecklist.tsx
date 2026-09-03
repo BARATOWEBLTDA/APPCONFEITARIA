@@ -34,21 +34,10 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
     }
   });
 
-  // Abre o tutorial automaticamente se for primeiro login (nunca viu)
-  useEffect(() => {
-    if (!userId || tutorialDone) return;
-    try {
-      const jaTentou = localStorage.getItem("doonly_tutorial_auto_aberto");
-      if (jaTentou) return; // só abre auto 1x na vida — depois é só pelo checklist
-      const timer = setTimeout(() => {
-        setOnboardingOpen(true);
-        localStorage.setItem("doonly_tutorial_auto_aberto", "1");
-      }, 800);
-      return () => clearTimeout(timer);
-    } catch {
-      // localStorage indisponível, não abre auto
-    }
-  }, [userId, tutorialDone]);
+  // NOTA: a auto-abertura no PRIMEIRO login agora acontece no App.tsx
+  // (PrivateRoute), antes mesmo do Layout/Inicio renderizar. Isso evita o
+  // "app pisca por trás do tutorial". Aqui só cuidamos da abertura MANUAL
+  // pelo botão "Iniciar tutorial" do checklist.
 
   // Recebe a slide em que a pessoa estava ao fechar.
   // Só marca como "concluído" se passou de pelo menos 5 telas (slideIdx >= 5).

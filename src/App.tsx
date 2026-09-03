@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "@/lib/supabase";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { SplashScreen } from "@/components/SplashScreen";
+import Onboarding from "@/components/Onboarding";
 import Auth from "@/pages/Auth";
 import EsqueciSenha from "@/pages/EsqueciSenha";
 import ResetPassword from "@/pages/ResetPassword";
@@ -55,13 +56,48 @@ const Arquivos = () => <div style={{padding:"2rem"}}><h2>🗂️ Arquivos</h2><p
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<any>(undefined);
+
+  // Decidido SÍNCRONO no primeiro render — evita o "app pisca antes do tutorial".
+  // Se o usuário nunca viu o tutorial e nunca teve auto-abertura, mostramos o
+  // Onboarding em tela cheia ANTES de montar o Layout/rotas privadas.
+  const [showFirstTutorial, setShowFirstTutorial] = useState<boolean>(() => {
+    try {
+      const visto = localStorage.getItem("doonly_tutorial_visto");
+      const autoAberto = localStorage.getItem("doonly_tutorial_auto_aberto");
+      return !visto && !autoAberto;
+    } catch {
+      return false;
+    }
+  });
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => { setSession(session); });
     return () => listener.subscription.unsubscribe();
   }, []);
+
   if (session === undefined) return null;
   if (!session) return <Navigate to="/login" replace />;
+
+  if (showFirstTutorial) {
+    return (
+      <Onboarding
+        isOpen={true}
+        onClose={(slideAlcancada) => {
+          try {
+            localStorage.setItem("doonly_tutorial_auto_aberto", "1");
+            if (slideAlcancada >= 5) {
+              localStorage.setItem("doonly_tutorial_visto", "1");
+            }
+          } catch {
+            // localStorage indisponível — segue o baile
+          }
+          setShowFirstTutorial(false);
+        }}
+      />
+    );
+  }
+
   return <>{children}</>;
 }
 
