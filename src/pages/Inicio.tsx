@@ -1,4 +1,4 @@
-// Build marker: 2026-09-03T18:45 — hero gradient rosa vibrante (fix rebrand)
+// Build marker: 2026-09-03T19:15 — rosa + toque dourado + hero mais baixo
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -483,7 +483,7 @@ export default function Inicio() {
       <div className="ini-hero">
         {/* Decoração: sparkles dourados */}
         <svg className="ini-hero-sparkles" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true">
-          <g fill="#F4D03F" opacity="0.65">
+          <g fill="var(--gold-light)" opacity="0.65">
             <path d="M18 12 L18.4 13.3 L19.7 13.7 L18.4 14.1 L18 15.4 L17.6 14.1 L16.3 13.7 L17.6 13.3 Z"/>
             <path d="M88 8 L88.5 9.6 L90.1 10.1 L88.5 10.6 L88 12.2 L87.5 10.6 L85.9 10.1 L87.5 9.6 Z"/>
             <path d="M62 22 L62.3 22.9 L63.2 23.2 L62.3 23.5 L62 24.4 L61.7 23.5 L60.8 23.2 L61.7 22.9 Z"/>
@@ -542,7 +542,7 @@ export default function Inicio() {
                   <Bell
                     size={18}
                     weight={notifAtivas ? "fill" : "regular"}
-                    color={notifAtivas ? "#F4D03F" : undefined}
+                    color={notifAtivas ? "var(--gold-light)" : undefined}
                   />
                   Ativar notificações
                 </span>
@@ -973,14 +973,14 @@ export default function Inicio() {
           background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 45%, var(--primary) 70%, #F06699 100%);
           background-size: 300% 300%;
           animation: heroGradientMove 14s ease infinite;
-          border-radius: 0 0 28px 28px;
-          padding: 2rem 1.25rem 2rem;
+          border-radius: 0 0 24px 24px;
+          padding: 1.25rem 1.25rem 1.5rem;
           /* Full-bleed: estende até a borda da viewport ignorando padding dos pais */
           width: 100vw;
           margin-left: calc(50% - 50vw);
           margin-right: calc(50% - 50vw);
           margin-top: calc(-1 * (var(--pad-page-top) + env(safe-area-inset-top, 0px)));
-          padding-top: calc(1.5rem + env(safe-area-inset-top, 0px));
+          padding-top: calc(0.9rem + env(safe-area-inset-top, 0px));
           display: flex;
           align-items: center;
           gap: 0.85rem;
@@ -1026,9 +1026,9 @@ export default function Inicio() {
           max-width: 100%;
         }
         .ini-hero-crown {
-          color: #F4D03F;
+          color: var(--gold-light);
           flex-shrink: 0;
-          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35));
         }
         .ini-hero-greeting p {
           font-size: var(--font-helper);
@@ -1040,9 +1040,9 @@ export default function Inicio() {
         /* ── Foto de perfil grande à esquerda + dropdown ── */
         .ini-profile-wrapper { position: relative; flex-shrink: 0; z-index: 2; }
         .ini-profile-btn {
-          width: 64px; height: 64px; border-radius: var(--radius-full);
-          border: 3px solid #c8891f;
-          background: #faf5e8;
+          width: 56px; height: 56px; border-radius: var(--radius-full);
+          border: 3px solid var(--gold);
+          background: var(--gold-bg);
           cursor: pointer; padding: 0; overflow: hidden;
           display: flex; align-items: center; justify-content: center;
           transition: border-color var(--dur-fast), transform var(--dur-fast), box-shadow var(--dur-fast);
@@ -1058,8 +1058,8 @@ export default function Inicio() {
           bottom: -2px; right: -2px;
           width: 24px; height: 24px;
           border-radius: var(--radius-full);
-          background: #c8891f;
-          border: 2px solid #faf5e8;
+          background: var(--gold);
+          border: 2px solid var(--gold-bg);
           color: #fff;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
@@ -1068,7 +1068,7 @@ export default function Inicio() {
           transition: transform var(--dur-fast), background var(--dur-fast);
           z-index: 2;
         }
-        .ini-profile-cam:hover:not(:disabled) { transform: scale(1.12); background: #b47a1c; }
+        .ini-profile-cam:hover:not(:disabled) { transform: scale(1.12); background: var(--gold-dark); }
         .ini-profile-cam:disabled { cursor: default; opacity: 0.7; }
         .ini-profile-cam-spinner {
           width: 12px; height: 12px;
@@ -1134,7 +1134,7 @@ export default function Inicio() {
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
           transition: transform 0.22s ease;
         }
-        .ini-pm-toggle--on { background: #F4D03F; }
+        .ini-pm-toggle--on { background: var(--gold-light); }
         .ini-pm-toggle--on .ini-pm-toggle-thumb { transform: translateX(16px); }
 
         /* ── Sections ── */

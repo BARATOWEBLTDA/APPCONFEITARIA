@@ -98,10 +98,22 @@
      dinheiro/XP, sucesso, informação, premium, streak.
      Cada uma vem em trio: solid + bg (tint) + text (contraste). */
 
-  /* Amarelo — XP, dinheiro, conquistas */
-  --gam-xp:            #FFC800;
-  --gam-xp-bg:         #FFF3CD;
-  --gam-xp-text:       #8B6800;
+  /* ── Dourado — cor secundária da marca ─────
+     Segunda cor principal, usada em pares com o rosa.
+     Aplicar em: PRO, preços/valores, coroa, conquistas,
+     borda de foto de perfil, badge de câmera.
+     Traz de volta a vibe "confeitaria" (caramelo/dourado). */
+  --gold:              #C8891F;
+  --gold-dark:         #8F5F0E;
+  --gold-light:        #F4C95D;
+  --gold-bg:           #FAF5E8;
+  --gold-text:         #8F5F0E;
+  --gold-gradient:     linear-gradient(135deg, #F4C95D, #C8891F);
+
+  /* Amarelo — XP, dinheiro, conquistas (agora usa dourado) */
+  --gam-xp:            var(--gold);
+  --gam-xp-bg:         var(--gold-bg);
+  --gam-xp-text:       var(--gold-text);
 
   /* Verde — sucesso, pago, concluído */
   --gam-success:       #58CC02;
@@ -378,9 +390,18 @@
   --btn-secondary-hover:  #2A2530;
 
   /* Cores gamificadas — mesmas do claro (a saturação funciona nos dois modos) */
-  --gam-xp:            #FFC800;
-  --gam-xp-bg:         rgba(255,200,0,0.15);
-  --gam-xp-text:       #FFC800;
+
+  /* Dourado — cor secundária (mesmos valores; funciona bem no escuro também) */
+  --gold:              #F4C95D;
+  --gold-dark:         #C8891F;
+  --gold-light:        #F9DE93;
+  --gold-bg:           rgba(244,201,93,0.12);
+  --gold-text:         #F4C95D;
+  --gold-gradient:     linear-gradient(135deg, #F4C95D, #C8891F);
+
+  --gam-xp:            var(--gold);
+  --gam-xp-bg:         var(--gold-bg);
+  --gam-xp-text:       var(--gold);
 
   --gam-success:       #58CC02;
   --gam-success-bg:    rgba(88,204,2,0.15);
