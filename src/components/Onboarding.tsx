@@ -1999,7 +1999,7 @@ function SlideCardapio({ onReady }: { onReady: () => void }) {
     <>
       <div className="ob-slide-textabove">
         <span className="ob-slide-eyebrow">Com o Doonly...</span>
-        <h2 className="ob-slide-title">SEU CARDÁPIO<br/>NA MÃO DAS CLIENTES</h2>
+        <h2 className="ob-slide-title">CARDÁPIO DIGITAL<br/>QUE VENDE POR VOCÊ</h2>
       </div>
 
       <div className="ob-cardapio-phone">
