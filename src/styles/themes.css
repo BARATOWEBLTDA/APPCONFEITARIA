@@ -1,70 +1,77 @@
 /* ─────────────────────────────────────────────
-   DOONLY — Rebrand rosa (Duolingo-inspired)
-   Cor principal: #EC407A (rosa vivo e marcante)
-   Estilo: cantos generosos, sombras 3D em botões,
-   cores gamificadas com propósito.
+   DOONLY — Rebrand Rosa Coral & Grafite
+   Cor principal: #E85A8C (rosa coral marcante mas equilibrado)
+   Cor secundária: #2D1F26 (grafite quase preto, para PRO e destaques)
+   Estilo: cantos generosos, cinzas com toque rosé, semânticas suaves.
    ───────────────────────────────────────────── */
 
 /* ── Tema Claro ── */
 :root {
-  /* Primária */
-  --primary:          #EC407A;
-  --primary-dark:     #B71C5C;
-  --primary-light:    #FCE4EC;
-  --primary-gradient: linear-gradient(135deg, #EC407A, #B71C5C);
-  --primary-rgb:      236, 64, 122;
+  /* Primária — Rosa Coral */
+  --primary:          #E85A8C;
+  --primary-dark:     #C33A6E;
+  --primary-light:    #FCE0E9;
+  --primary-gradient: linear-gradient(135deg, #E85A8C, #C33A6E);
+  --primary-rgb:      232, 90, 140;
 
-  /* Tipografia */
-  --text-title:       #2D2A32;
-  --text-primary:     #2D2A32;
-  --text-secondary:   #6B6470;
-  --text-muted:       #B7B0BC;
+  /* Secundária — Grafite (accent pra PRO, valores, ênfases) */
+  --accent:            #2D1F26;
+  --accent-dark:       #1A0F14;
+  --accent-light:      #E8DEE3;
+  --accent-bg:         #F5EEF0;
+  --accent-text:       #FFFFFF;
+
+  /* Tipografia (cinzas com toque rosé) */
+  --text-title:       #2D1F26;
+  --text-primary:     #4B3D46;
+  --text-secondary:   #6B5D64;
+  --text-muted:       #9A8B93;
   --text-inverse:     #FFFFFF;
-  --text-disabled:    #D1D5DB;
-  --text-link:        #EC407A;
+  --text-disabled:    #D1CACD;
+  --text-link:        #E85A8C;
 
   /* Superfícies */
-  --bg-body:          #FFF8FA;
+  --bg-body:          #FEFCFD;
   --bg-card:          #FFFFFF;
   --bg-surface:       var(--bg-card);
   --bg-input:         #FFFFFF;
   --bg-elevated:      #FFFFFF;
-  --bg-overlay:       rgba(45, 42, 50, 0.5);
-  --bg-subtle:        #FCE4EC;
+  --bg-overlay:       rgba(45, 31, 38, 0.5);
+  --bg-subtle:        #FCE0E9;
 
   /* Bordas */
-  --border:           #F5D8E2;
-  --border-focus:     #EC407A;
-  --focus-ring:       0 0 0 3px rgba(236,64,122,0.22);
+  --border:           #F0D8DE;
+  --border-focus:     #E85A8C;
+  --focus-ring:       0 0 0 3px rgba(232,90,140,0.22);
 
-  /* ── Sidebar / Nav ── */
-  --sidebar-bg:           #201C24;
-  --sidebar-text:         #EFEAF2;
-  --sidebar-text-muted:   rgba(239,234,242,0.55);
-  --sidebar-hover-bg:     #302B34;
-  --sidebar-active-bg:    var(--menu-active-bg, #EC407A);
+  /* ── Sidebar / Nav (grafite escuro) ── */
+  --sidebar-bg:           #2D1F26;
+  --sidebar-text:         #F0E8EB;
+  --sidebar-text-muted:   rgba(240,232,235,0.55);
+  --sidebar-hover-bg:     #3D2A33;
+  --sidebar-active-bg:    var(--menu-active-bg, #E85A8C);
   --sidebar-active-text:  var(--menu-active, #FFFFFF);
-  --sidebar-border:       rgba(239,234,242,0.08);
-  --sidebar-border-right: rgba(239,234,242,0.08);
+  --sidebar-border:       rgba(240,232,235,0.08);
+  --sidebar-border-right: rgba(240,232,235,0.08);
 
   /* ── Header Mobile / Top Bar ── */
   --topbar-bg:            var(--bg-card, #FFFFFF);
-  --topbar-text:          var(--text-title, #2D2A32);
-  --topbar-border:        var(--border, #F5D8E2);
-  --topbar-shadow:        0 4px 12px rgba(45,42,50,0.08);
+  --topbar-text:          var(--text-title, #2D1F26);
+  --topbar-border:        var(--border, #F0D8DE);
+  --topbar-shadow:        0 4px 12px rgba(45,31,38,0.08);
 
   /* ── Bottom Nav Mobile ── */
-  --bottomnav-bg:         #EC407A;
-  --bottomnav-shadow:     0 -4px 16px rgba(236,64,122,0.25);
-  --bottomnav-inactive:   #FCE4EC;
+  --bottomnav-bg:         #E85A8C;
+  --bottomnav-shadow:     0 -4px 16px rgba(232,90,140,0.25);
+  --bottomnav-inactive:   #FCE0E9;
   --bottomnav-active:     #FFFFFF;
 
   /* ── Gestão Drawer ── */
-  --drawer-bg:            #201C24;
+  --drawer-bg:            #2D1F26;
   --drawer-item-bg:       rgba(255,255,255,0.05);
   --drawer-item-border:   rgba(255,255,255,0.07);
-  --drawer-item-hover-bg: rgba(236,64,122,0.15);
-  --drawer-item-hover-border: rgba(236,64,122,0.35);
+  --drawer-item-hover-bg: rgba(232,90,140,0.15);
+  --drawer-item-hover-border: rgba(232,90,140,0.35);
   --drawer-handle:        rgba(255,255,255,0.15);
   --drawer-close-bg:      rgba(255,255,255,0.08);
   --drawer-close-text:    rgba(255,255,255,0.6);
@@ -72,11 +79,11 @@
   --overlay-light:        rgba(255,255,255,0.6);
 
   /* ── Menu (legado) ── */
-  --menu-bg:          #EC407A;
-  --menu-inactive:    rgba(252,228,236,0.75);
+  --menu-bg:          #E85A8C;
+  --menu-inactive:    rgba(252,224,233,0.75);
   --menu-active:      #FFFFFF;
-  --menu-active-bg:   #B71C5C;
-  --menu-hover-bg:    #F06699;
+  --menu-active-bg:   #C33A6E;
+  --menu-hover-bg:    #ED7BA2;
 
   /* ── Estados globais ── */
   --state-hover:      var(--menu-hover-bg);
@@ -84,74 +91,68 @@
   --state-active:     var(--menu-active);
 
   /* Botões */
-  --btn-primary-bg:       #EC407A;
-  --btn-primary-hover:    #D62C6C;
+  --btn-primary-bg:       #E85A8C;
+  --btn-primary-hover:    #D8467A;
   --btn-primary-text:     #FFFFFF;
-  --btn-primary-shadow:   #B71C5C;  /* borda "3D" inferior */
+  --btn-primary-shadow:   #C33A6E;
   --btn-secondary-bg:     #FFFFFF;
-  --btn-secondary-border: #F5D8E2;
-  --btn-secondary-text:   #2D2A32;
-  --btn-secondary-hover:  #FCE4EC;
+  --btn-secondary-border: #F0D8DE;
+  --btn-secondary-text:   #2D1F26;
+  --btn-secondary-hover:  #FCE0E9;
 
-  /* ── Cores gamificadas (Duolingo-style) ─────
-     Use --gam-* pra elementos com significado:
-     dinheiro/XP, sucesso, informação, premium, streak.
-     Cada uma vem em trio: solid + bg (tint) + text (contraste). */
+  /* Ouro/Dourado — REMOVIDO do rebrand. Aliases pro accent grafite pra manter compat. */
+  --gold:              var(--accent);
+  --gold-dark:         var(--accent-dark);
+  --gold-light:        var(--accent);
+  --gold-bg:           var(--accent-bg);
+  --gold-text:         var(--accent);
+  --gold-gradient:     linear-gradient(135deg, var(--accent), var(--accent-dark));
 
-  /* ── Dourado — cor secundária da marca ─────
-     Segunda cor principal, usada em pares com o rosa.
-     Aplicar em: PRO, preços/valores, coroa, conquistas,
-     borda de foto de perfil, badge de câmera.
-     Traz de volta a vibe "confeitaria" (caramelo/dourado). */
-  --gold:              #C8891F;
-  --gold-dark:         #8F5F0E;
-  --gold-light:        #F4C95D;
-  --gold-bg:           #FAF5E8;
-  --gold-text:         #8F5F0E;
-  --gold-gradient:     linear-gradient(135deg, #F4C95D, #C8891F);
+  /* ── Cores gamificadas com significado ─────
+     Menos saturadas que Duolingo, harmonizam com o coral. */
 
-  /* Amarelo — XP, dinheiro, conquistas (agora usa dourado) */
-  --gam-xp:            var(--gold);
-  --gam-xp-bg:         var(--gold-bg);
-  --gam-xp-text:       var(--gold-text);
+  /* XP / valores em dinheiro (agora usa o rosa escuro em vez de dourado) */
+  --gam-xp:            var(--primary-dark);
+  --gam-xp-bg:         var(--primary-light);
+  --gam-xp-text:       var(--primary-dark);
 
-  /* Verde — sucesso, pago, concluído */
-  --gam-success:       #58CC02;
-  --gam-success-bg:    #E0F7D8;
-  --gam-success-text:  #2E7D0E;
+  /* Sucesso — verde suave (não neon) */
+  --gam-success:       #6BC170;
+  --gam-success-bg:    #E5F1DC;
+  --gam-success-text:  #4A8523;
 
-  /* Azul — informação, em rota */
-  --gam-info:          #1CB0F6;
-  --gam-info-bg:       #D6EFFC;
-  --gam-info-text:     #0B6D9E;
+  /* Info — azul petróleo dessaturado */
+  --gam-info:          #4A90BE;
+  --gam-info-bg:       #DCE8EF;
+  --gam-info-text:     #2D5A73;
 
-  /* Roxo — premium, PRO */
-  --gam-premium:       #CE82FF;
-  --gam-premium-bg:    #F0DDFF;
-  --gam-premium-text:  #6B2D9E;
+  /* Premium — grafite (o "PRO" pedido pelo usuário) */
+  --gam-premium:       var(--accent);
+  --gam-premium-bg:    var(--accent-bg);
+  --gam-premium-text:  var(--accent);
 
-  /* Laranja/vermelho — streak, atenção */
-  --gam-streak:        #FF6B35;
-  --gam-streak-bg:     #FFE0D3;
-  --gam-streak-text:   #A63700;
+  /* Streak / laranja terracota (harmoniza com coral) */
+  --gam-streak:        #E86D3D;
+  --gam-streak-bg:     #FCE4D8;
+  --gam-streak-text:   #A63B00;
 
   /* Status (semânticos — aliases dos gamificados) */
   --success:          var(--gam-success);
-  --warning:          var(--gam-xp);
-  --error:            #EF4444;
+  --warning:          #E8A05A;
+  --error:            #D14848;
   --info:             var(--gam-info);
 
   /* Sombras */
-  --shadow-card:      0 2px 12px rgba(45,42,50,0.06);
-  --shadow-sm:        0 1px 3px rgba(45,42,50,0.06);
-  --shadow-md:        0 4px 16px rgba(45,42,50,0.08);
-  --shadow-lg:        0 10px 30px rgba(45,42,50,0.12);
-  --shadow-pink:      0 6px 20px rgba(236,64,122,0.25); /* halo colorido */
+  --shadow-card:      0 2px 12px rgba(45,31,38,0.06);
+  --shadow-sm:        0 1px 3px rgba(45,31,38,0.06);
+  --shadow-md:        0 4px 16px rgba(45,31,38,0.08);
+  --shadow-lg:        0 10px 30px rgba(45,31,38,0.12);
+  --shadow-pink:      0 6px 20px rgba(232,90,140,0.25);
 
-  /* Raios — semânticos (apontam pros primitivos no bloco RADIUS abaixo) */
-  --radius-card:      18px;   /* var(--radius-lg) — cantos mais generosos */
-  --radius-btn:       999px;  /* var(--radius-full) — mantido pra compat */
-  --radius-input:     999px;  /* var(--radius-full) — mantido pra compat */
+  /* Raios — cantos generosos, estilo moderno */
+  --radius-card:      18px;
+  --radius-btn:       999px;
+  --radius-input:     999px;
 
   /* Fonte */
   --font-base: 'Geist', sans-serif;
@@ -160,13 +161,13 @@
      TIPOGRAFIA — SISTEMA
      ───────────────────────────────────────────── */
 
-  --text-xs:   0.75rem;    /* 12px */
-  --text-sm:   0.875rem;   /* 14px */
-  --text-md:   1rem;       /* 16px */
-  --text-lg:   1.125rem;   /* 18px */
-  --text-xl:   1.25rem;    /* 20px */
-  --text-2xl:  1.5rem;     /* 24px */
-  --text-3xl:  1.75rem;    /* 28px */
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-md:   1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.75rem;
 
   --fw-regular:  400;
   --fw-medium:   500;
@@ -223,17 +224,17 @@
   --pad-page-top:  var(--space-6);
 
   /* ─────────────────────────────────────────────
-     RAIOS — SISTEMA (mais generosos, estilo Duolingo)
+     RAIOS
      ───────────────────────────────────────────── */
 
-  --radius-sm:    10px;   /* era 6px */
-  --radius-md:    14px;   /* era 10px */
-  --radius-lg:    18px;   /* era 14px */
-  --radius-xl:    24px;   /* era 20px */
+  --radius-sm:    10px;
+  --radius-md:    14px;
+  --radius-lg:    18px;
+  --radius-xl:    24px;
   --radius-full:  999px;
 
   /* ─────────────────────────────────────────────
-     MOTION — SISTEMA (curvas bouncy pra sensação Duolingo)
+     MOTION
      ───────────────────────────────────────────── */
 
   --dur-fast:    120ms;
@@ -243,13 +244,13 @@
   --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-in:     cubic-bezier(0.4, 0, 1, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);  /* NOVO — botões e badges */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ═══════════════════════════════════════════════════════
-   UTILITY — Botão "3D" estilo Duolingo
+   UTILITY — Botão "3D"
    Uso: <button class="btn-3d">Novo pedido</button>
-   Ou variante: btn-3d btn-3d--success | btn-3d--xp
+   Variantes: btn-3d btn-3d--accent | btn-3d--success | btn-3d--secondary
    ═══════════════════════════════════════════════════════ */
 .btn-3d {
   display: inline-flex;
@@ -265,7 +266,6 @@
   font-size: var(--font-button);
   font-weight: var(--fw-bold);
   letter-spacing: 0.02em;
-  text-transform: uppercase;
   cursor: pointer;
   box-shadow: 0 4px 0 var(--primary-dark);
   transition: transform var(--dur-fast) var(--ease-bounce),
@@ -281,13 +281,13 @@
 }
 .btn-3d:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: 0 4px 0 var(--text-muted); }
 
-.btn-3d--success { background: var(--gam-success); box-shadow: 0 4px 0 var(--gam-success-text); }
-.btn-3d--success:hover:not(:disabled) { background: #4EB300; }
-.btn-3d--success:active:not(:disabled) { box-shadow: 0 1px 0 var(--gam-success-text); }
+.btn-3d--accent { background: var(--accent); box-shadow: 0 4px 0 var(--accent-dark); }
+.btn-3d--accent:hover:not(:disabled) { background: #3D2A33; }
+.btn-3d--accent:active:not(:disabled) { box-shadow: 0 1px 0 var(--accent-dark); }
 
-.btn-3d--xp { background: var(--gam-xp); color: var(--gam-xp-text); box-shadow: 0 4px 0 #C89B00; }
-.btn-3d--xp:hover:not(:disabled) { background: #F5B800; }
-.btn-3d--xp:active:not(:disabled) { box-shadow: 0 1px 0 #C89B00; }
+.btn-3d--success { background: var(--gam-success); box-shadow: 0 4px 0 var(--gam-success-text); }
+.btn-3d--success:hover:not(:disabled) { background: #5AAA5F; }
+.btn-3d--success:active:not(:disabled) { box-shadow: 0 1px 0 var(--gam-success-text); }
 
 .btn-3d--secondary {
   background: var(--bg-card);
@@ -301,21 +301,28 @@
 
 /* ── Tema Escuro ── */
 :root.dark {
-  /* Primária */
-  --primary:          #F472B6;
-  --primary-dark:     #EC407A;
-  --primary-light:    #3D1524;
-  --primary-gradient: linear-gradient(135deg, #F472B6, #EC407A);
-  --primary-rgb:      244, 114, 182;
+  /* Primária — Rosa mais suave no dark */
+  --primary:          #F27DA8;
+  --primary-dark:     #E85A8C;
+  --primary-light:    #3D1F2A;
+  --primary-gradient: linear-gradient(135deg, #F27DA8, #E85A8C);
+  --primary-rgb:      242, 125, 168;
+
+  /* Accent grafite (invertido pro dark — vira quase branco) */
+  --accent:            #F5EEF0;
+  --accent-dark:       #E0D5DA;
+  --accent-light:      #3D2A33;
+  --accent-bg:         rgba(245,238,240,0.08);
+  --accent-text:       #17131A;
 
   /* Tipografia */
-  --text-title:       #F9FAFB;
-  --text-primary:     #E5E7EB;
-  --text-secondary:   #9CA3AF;
-  --text-muted:       #6B7280;
-  --text-inverse:     #201C24;
-  --text-disabled:    #4B5563;
-  --text-link:        #F472B6;
+  --text-title:       #F9F5F7;
+  --text-primary:     #E5DEE1;
+  --text-secondary:   #A79BA0;
+  --text-muted:       #7A6D74;
+  --text-inverse:     #17131A;
+  --text-disabled:    #4B3F45;
+  --text-link:        #F27DA8;
 
   /* Superfícies */
   --bg-body:          #17131A;
@@ -328,37 +335,37 @@
 
   /* Bordas */
   --border:           #363040;
-  --border-focus:     #F472B6;
-  --focus-ring:       0 0 0 3px rgba(244,114,182,0.25);
+  --border-focus:     #F27DA8;
+  --focus-ring:       0 0 0 3px rgba(242,125,168,0.25);
 
   /* ── Sidebar / Nav ── */
   --sidebar-bg:           #0F0C12;
-  --sidebar-text:         #EFEAF2;
-  --sidebar-text-muted:   rgba(239,234,242,0.5);
+  --sidebar-text:         #F0E8EB;
+  --sidebar-text-muted:   rgba(240,232,235,0.5);
   --sidebar-hover-bg:     #221E26;
   --sidebar-active-bg:    var(--primary);
   --sidebar-active-text:  #FFFFFF;
-  --sidebar-border:       rgba(239,234,242,0.08);
-  --sidebar-border-right: rgba(239,234,242,0.1);
+  --sidebar-border:       rgba(240,232,235,0.08);
+  --sidebar-border-right: rgba(240,232,235,0.1);
 
   /* ── Header Mobile / Top Bar ── */
   --topbar-bg:            #17131A;
-  --topbar-text:          #EFEAF2;
-  --topbar-border:        rgba(239,234,242,0.1);
+  --topbar-text:          #F0E8EB;
+  --topbar-border:        rgba(240,232,235,0.1);
   --topbar-shadow:        0 4px 12px rgba(0,0,0,0.5);
 
   /* ── Bottom Nav Mobile ── */
   --bottomnav-bg:         #221E26;
   --bottomnav-shadow:     0 -2px 12px rgba(0,0,0,0.4);
-  --bottomnav-inactive:   rgba(239,234,242,0.5);
-  --bottomnav-active:     #F472B6;
+  --bottomnav-inactive:   rgba(240,232,235,0.5);
+  --bottomnav-active:     #F27DA8;
 
   /* ── Gestão Drawer ── */
   --drawer-bg:            #0F0C12;
   --drawer-item-bg:       rgba(255,255,255,0.04);
   --drawer-item-border:   rgba(255,255,255,0.06);
-  --drawer-item-hover-bg: rgba(244,114,182,0.12);
-  --drawer-item-hover-border: rgba(244,114,182,0.3);
+  --drawer-item-hover-bg: rgba(242,125,168,0.12);
+  --drawer-item-hover-border: rgba(242,125,168,0.3);
   --drawer-handle:        rgba(255,255,255,0.1);
   --drawer-close-bg:      rgba(255,255,255,0.06);
   --drawer-close-text:    rgba(255,255,255,0.5);
@@ -366,8 +373,8 @@
 
   /* ── Menu (legado) ── */
   --menu-bg:          #221E26;
-  --menu-inactive:    rgba(239,234,242,0.5);
-  --menu-active:      #F472B6;
+  --menu-inactive:    rgba(240,232,235,0.5);
+  --menu-active:      #F27DA8;
   --menu-active-bg:   #2A2530;
   --menu-hover-bg:    #2A2530;
 
@@ -380,48 +387,47 @@
   --overlay-light:    rgba(255,255,255,0.08);
 
   /* Botões */
-  --btn-primary-bg:       #F472B6;
-  --btn-primary-hover:    #EC407A;
+  --btn-primary-bg:       #F27DA8;
+  --btn-primary-hover:    #E85A8C;
   --btn-primary-text:     #17131A;
-  --btn-primary-shadow:   #B71C5C;
+  --btn-primary-shadow:   #C33A6E;
   --btn-secondary-bg:     #221E26;
   --btn-secondary-border: #363040;
-  --btn-secondary-text:   #EFEAF2;
+  --btn-secondary-text:   #F0E8EB;
   --btn-secondary-hover:  #2A2530;
 
-  /* Cores gamificadas — mesmas do claro (a saturação funciona nos dois modos) */
+  /* Aliases ouro → accent claro no dark */
+  --gold:              var(--accent);
+  --gold-dark:         var(--accent-dark);
+  --gold-light:        var(--accent);
+  --gold-bg:           var(--accent-bg);
+  --gold-text:         var(--accent);
+  --gold-gradient:     linear-gradient(135deg, var(--accent), var(--accent-dark));
 
-  /* Dourado — cor secundária (mesmos valores; funciona bem no escuro também) */
-  --gold:              #F4C95D;
-  --gold-dark:         #C8891F;
-  --gold-light:        #F9DE93;
-  --gold-bg:           rgba(244,201,93,0.12);
-  --gold-text:         #F4C95D;
-  --gold-gradient:     linear-gradient(135deg, #F4C95D, #C8891F);
+  /* Cores gamificadas — funcionam bem nos dois modos */
+  --gam-xp:            var(--primary);
+  --gam-xp-bg:         var(--primary-light);
+  --gam-xp-text:       var(--primary);
 
-  --gam-xp:            var(--gold);
-  --gam-xp-bg:         var(--gold-bg);
-  --gam-xp-text:       var(--gold);
-
-  --gam-success:       #58CC02;
-  --gam-success-bg:    rgba(88,204,2,0.15);
+  --gam-success:       #6BC170;
+  --gam-success-bg:    rgba(107,193,112,0.15);
   --gam-success-text:  #7EDC1F;
 
-  --gam-info:          #1CB0F6;
-  --gam-info-bg:       rgba(28,176,246,0.15);
-  --gam-info-text:     #4FC2F8;
+  --gam-info:          #4A90BE;
+  --gam-info-bg:       rgba(74,144,190,0.15);
+  --gam-info-text:     #6FB1D9;
 
-  --gam-premium:       #CE82FF;
-  --gam-premium-bg:    rgba(206,130,255,0.15);
-  --gam-premium-text:  #D89EFF;
+  --gam-premium:       var(--accent);
+  --gam-premium-bg:    var(--accent-bg);
+  --gam-premium-text:  var(--accent);
 
-  --gam-streak:        #FF6B35;
-  --gam-streak-bg:     rgba(255,107,53,0.15);
-  --gam-streak-text:   #FF8B5C;
+  --gam-streak:        #E86D3D;
+  --gam-streak-bg:     rgba(232,109,61,0.15);
+  --gam-streak-text:   #F08B5C;
 
   /* Status */
   --success:          var(--gam-success);
-  --warning:          var(--gam-xp);
+  --warning:          #E8A05A;
   --error:            #EF4444;
   --info:             var(--gam-info);
 
@@ -430,8 +436,7 @@
   --shadow-sm:        0 1px 3px rgba(0,0,0,0.3);
   --shadow-md:        0 4px 16px rgba(0,0,0,0.5);
   --shadow-lg:        0 10px 30px rgba(0,0,0,0.6);
-  --shadow-pink:      0 6px 20px rgba(244,114,182,0.3);
+  --shadow-pink:      0 6px 20px rgba(242,125,168,0.3);
 
-  /* Fonte */
   --font-base: 'Geist', sans-serif;
 }
