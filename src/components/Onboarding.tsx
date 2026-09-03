@@ -180,7 +180,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
            e fixa o texto no topo — evita oscilação com conteúdo dinâmico */
         .ob-content:has(.ob-slide-textabove) {
           justify-content: flex-start;
-          padding-top: 1rem;
+          padding-top: 1.85rem;
         }
         .ob-content::-webkit-scrollbar {
           display: none; /* Chrome/Safari/Opera */
@@ -268,7 +268,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
         /* ── Subtitle (embaixo dos cards) — complemento do título ── */
         .ob-slide-subtitle {
-          margin: 2.4rem 0 0.5rem;
+          margin: 1.1rem 0 0.5rem;
           font-size: 1.15rem;
           font-weight: 800;
           color: #fff;
