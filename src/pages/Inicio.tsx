@@ -11,6 +11,7 @@ import {
   InstagramLogo, Crown, DotsThreeOutline, Clock,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
+import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
 import { useProfile } from "@/hooks/useProfile";
 import WelcomeChecklist from "@/components/WelcomeChecklist";
 import UpdatesFeed from "@/components/UpdatesFeed";
@@ -63,6 +64,23 @@ export default function Inicio() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Toggle "Ativar notificações" — pede permissão real do navegador.
+  // Persistência + registro do SW ficam em lib/notifications.ts.
+  const [notifAtivas, setNotifAtivas] = useState<boolean>(() => getStoredNotifState());
+  const [notifLoading, setNotifLoading] = useState(false);
+  const toggleNotif = async () => {
+    if (notifLoading) return;
+    setNotifLoading(true);
+    try {
+      const novoEstado = notifAtivas
+        ? await disableNotifications()
+        : await enableNotifications();
+      setNotifAtivas(novoEstado);
+    } finally {
+      setNotifLoading(false);
+    }
+  };
 
   // Modal "Ver todos os alertas" + snooze ("Lembrar amanhã")
   const ALERT_LIMIT_VISIBLE = 3;
@@ -432,12 +450,28 @@ export default function Inicio() {
               <div className="ini-pm-header">
                 <p className="ini-pm-name">{profile?.nome_loja || nome}</p>
                 <p className="ini-pm-email">{email}</p>
-                <p className="ini-pm-version">Versão 1.5.8</p>
               </div>
               <div className="ini-pm-divider" />
-              <button className="ini-pm-item" onClick={() => { setMenuOpen(false); navigate("/notificacoes"); }}>
-                <Bell size={18} weight="regular" /> Notificações
-              </button>
+              <div
+                className="ini-pm-item ini-pm-item--toggle"
+                onClick={toggleNotif}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleNotif(); } }}
+                aria-pressed={notifAtivas}
+              >
+                <span className="ini-pm-item-label">
+                  <Bell
+                    size={18}
+                    weight={notifAtivas ? "fill" : "regular"}
+                    color={notifAtivas ? "#F4D03F" : undefined}
+                  />
+                  Ativar notificações
+                </span>
+                <span className={`ini-pm-toggle ${notifAtivas ? "ini-pm-toggle--on" : ""}`}>
+                  <span className="ini-pm-toggle-thumb" />
+                </span>
+              </div>
               <button className="ini-pm-item" onClick={() => { setMenuOpen(false); navigate("/configuracoes"); }}>
                 <User size={18} weight="regular" /> Minha Conta
               </button>
@@ -968,6 +1002,35 @@ export default function Inicio() {
         }
         .ini-pm-item:hover { background: var(--bg-subtle); }
         .ini-pm-item--sair { color: var(--primary); }
+
+        /* Toggle "Ativar notificações" — barra estilo iOS */
+        .ini-pm-item--toggle {
+          display: flex; align-items: center; justify-content: space-between;
+          gap: var(--space-3);
+          user-select: none;
+        }
+        .ini-pm-item-label {
+          display: flex; align-items: center; gap: var(--space-3);
+          flex: 1; min-width: 0;
+        }
+        .ini-pm-toggle {
+          width: 38px; height: 22px;
+          border-radius: 999px;
+          background: var(--border);
+          position: relative;
+          flex-shrink: 0;
+          transition: background 0.22s ease;
+        }
+        .ini-pm-toggle-thumb {
+          position: absolute; top: 2px; left: 2px;
+          width: 18px; height: 18px;
+          border-radius: 50%;
+          background: #fff;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          transition: transform 0.22s ease;
+        }
+        .ini-pm-toggle--on { background: #F4D03F; }
+        .ini-pm-toggle--on .ini-pm-toggle-thumb { transform: translateX(16px); }
 
         /* ── Sections ── */
         .ini-section {
