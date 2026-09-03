@@ -1,4 +1,4 @@
-// Build marker: 2026-09-03T17:58 — reenvio com crop + camera + placeholder + toggle notif
+// Build marker: 2026-09-03T18:45 — hero gradient rosa vibrante (fix rebrand)
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -968,9 +968,9 @@ export default function Inicio() {
         .ini-aside-desktop { display: none; }
         .ini-aside-mobile { display: block; }
 
-        /* ── Hero wine com foto da confeiteira, sparkles e coroinha ── */
+        /* ── Hero rosa vibrante com foto da confeiteira, sparkles e coroinha ── */
         .ini-hero {
-          background: linear-gradient(135deg, #2a1019, var(--text-title) 35%, #4d1f2c 60%, var(--text-title) 85%, #2a1019);
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 45%, var(--primary) 70%, #F06699 100%);
           background-size: 300% 300%;
           animation: heroGradientMove 14s ease infinite;
           border-radius: 0 0 28px 28px;
