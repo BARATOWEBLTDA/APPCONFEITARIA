@@ -1,9 +1,10 @@
+// Build marker: 2026-09-03T15:00 — welcome checklist redesenhado (donut + minimizar)
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   UserCircle, Storefront, Package,
-  ShoppingBag, ClipboardText, CheckCircle, CaretDown,
-  Sparkle, PlayCircle,
+  ShoppingBag, ClipboardText, CheckCircle,
+  PlayCircle, CaretRight, Minus, Plus,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import Onboarding from "@/components/Onboarding";
@@ -12,50 +13,47 @@ interface Step {
   id: string;
   icon: React.ReactNode;
   title: string;
-  desc: string;
-  tags?: string[];
   cta: string;
   path: string;
   done: boolean;
 }
 
+const LS_MINIMIZED = "doonly_welcome_minimized";
+
 export default function WelcomeChecklist({ userId, onAllDone }: { userId: string; onAllDone?: (done: boolean) => void }) {
   const navigate = useNavigate();
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openId, setOpenId] = useState<string | null>(null);
-  const [collapsed, setCollapsed] = useState(() => window.innerWidth < 1100);
+  const [minimized, setMinimized] = useState<boolean>(() => {
+    try { return localStorage.getItem(LS_MINIMIZED) === "1"; } catch { return false; }
+  });
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [tutorialDone, setTutorialDone] = useState(() => {
-    try {
-      return !!localStorage.getItem("doonly_tutorial_visto");
-    } catch {
-      return false;
-    }
+    try { return !!localStorage.getItem("doonly_tutorial_visto"); } catch { return false; }
   });
 
-  // NOTA: a auto-abertura no PRIMEIRO login agora acontece no App.tsx
-  // (PrivateRoute), antes mesmo do Layout/Inicio renderizar. Isso evita o
-  // "app pisca por trás do tutorial". Aqui só cuidamos da abertura MANUAL
-  // pelo botão "Iniciar tutorial" do checklist.
-
-  // Recebe a slide em que a pessoa estava ao fechar.
-  // Só marca como "concluído" se passou de pelo menos 5 telas (slideIdx >= 5).
+  // Auto-abertura do tutorial no primeiro login é feita no App.tsx (PrivateRoute).
+  // Aqui só cuidamos da abertura manual pelo botão "Iniciar tutorial".
   const handleTutorialClose = (slideAlcancada: number) => {
     setOnboardingOpen(false);
     if (slideAlcancada >= 5) {
-      try {
-        localStorage.setItem("doonly_tutorial_visto", "1");
-      } catch {
-        // silencioso — se localStorage falhar, só não persiste
-      }
+      try { localStorage.setItem("doonly_tutorial_visto", "1"); } catch {}
       setTutorialDone(true);
     }
+  };
+
+  const toggleMinimized = () => {
+    setMinimized((v) => {
+      const novo = !v;
+      try { localStorage.setItem(LS_MINIMIZED, novo ? "1" : "0"); } catch {}
+      return novo;
+    });
   };
 
   useEffect(() => {
     if (!userId) return;
     checkSteps();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, tutorialDone]);
 
   const checkSteps = async () => {
@@ -68,25 +66,21 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
       ]);
 
       const p = profileRes.data;
-      const iconSize = 22;
+      const iconSize = 20;
 
       setSteps([
         {
           id: "tutorial",
           icon: <PlayCircle size={iconSize} weight="duotone" />,
           title: "Complete o Tutorial",
-          desc: "Veja em menos de 1 minuto como o Doonly organiza seus pedidos, calcula preços e ajuda a vender mais. Você pode rever quando quiser.",
-          tags: ["Apresentação", "1 minuto"],
           cta: "Iniciar tutorial",
-          path: "__tutorial__", // marcador especial — não navega
+          path: "__tutorial__",
           done: tutorialDone,
         },
         {
           id: "perfil",
           icon: <UserCircle size={iconSize} weight="duotone" />,
           title: "Complete seu perfil",
-          desc: "Adicione seu nome e foto. Isso personaliza sua experiência e aparece no seu cardápio digital.",
-          tags: ["Nome", "Foto"],
           cta: "Completar perfil",
           path: "/configuracoes",
           done: !!(p?.nome && p?.foto_url),
@@ -95,8 +89,6 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           id: "loja",
           icon: <Storefront size={iconSize} weight="duotone" />,
           title: "Configure sua confeitaria",
-          desc: "Defina o nome da sua confeitaria e WhatsApp para seus clientes entrarem em contato.",
-          tags: ["Nome da loja", "WhatsApp"],
           cta: "Configurar loja",
           path: "/cardapio-config",
           done: !!(p?.nome_loja),
@@ -105,8 +97,6 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           id: "insumos",
           icon: <Package size={iconSize} weight="duotone" />,
           title: "Cadastre seus insumos",
-          desc: "Insumos são os ingredientes e embalagens que você compra. Eles são a base para calcular o custo das suas receitas.",
-          tags: ["Ingredientes", "Embalagens"],
           cta: "Cadastrar insumos",
           path: "/insumos",
           done: (insumosRes.count ?? 0) > 0,
@@ -115,8 +105,6 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           id: "produtos",
           icon: <ShoppingBag size={iconSize} weight="duotone" />,
           title: "Monte seu cardápio",
-          desc: "Cadastre os produtos que você vende. Eles aparecem no seu cardápio digital para os clientes.",
-          tags: ["Produtos", "Cardápio digital"],
           cta: "Adicionar produto",
           path: "/produtos",
           done: (produtosRes.count ?? 0) > 0,
@@ -125,8 +113,6 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           id: "pedidos",
           icon: <ClipboardText size={iconSize} weight="duotone" />,
           title: "Registre seu primeiro pedido",
-          desc: "Controle suas encomendas com datas, valores e status. Tudo organizado em um só lugar.",
-          tags: ["Encomendas", "Controle"],
           cta: "Novo pedido",
           path: "/pedidos/novo",
           done: (pedidosRes.count ?? 0) > 0,
@@ -142,360 +128,316 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
   const total = steps.length;
   const allDone = total > 0 && doneCount === total;
   const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+  const faltam = total - doneCount;
 
   useEffect(() => { onAllDone?.(allDone); }, [allDone]);
 
   if (loading || allDone) return null;
 
+  // Copy motivadora dinâmica
+  const copyMotivadora = (() => {
+    if (pct === 0) return `Bora começar? São ${total} passos rápidos ✨`;
+    if (pct < 34) return `Bom começo! Continua assim 🚀`;
+    if (pct < 67) return `Você tá indo bem 💪`;
+    if (pct < 100) return `Falta${faltam > 1 ? "m" : ""} ${faltam} passo${faltam > 1 ? "s" : ""} pra começar a lucrar 🍰`;
+    return `Perfeito! Tudo configurado ✨`;
+  })();
+
+  const executarStep = (step: Step) => {
+    if (step.done) return;
+    if (step.path === "__tutorial__") setOnboardingOpen(true);
+    else navigate(step.path);
+  };
+
+  // Geometria do donut
+  const RAIO = 44;
+  const CIRCUM = 2 * Math.PI * RAIO;
+  const DASH_OFFSET = CIRCUM * (1 - pct / 100);
+
+  // Geometria do donut MINI (barra minimizada)
+  const RAIO_MINI = 14;
+  const CIRCUM_MINI = 2 * Math.PI * RAIO_MINI;
+  const DASH_OFFSET_MINI = CIRCUM_MINI * (1 - pct / 100);
+
   return (
-    <div className="wc-root">
-      {/* Header */}
-      <div className="wc-header">
-        <div className="wc-header-icon">
-          <Sparkle size={20} weight="fill" />
-        </div>
-        <div className="wc-header-text">
-          <h2>Bem-vindo ao Doonly!</h2>
-          <p>Configure seu sistema para começar a usar</p>
-        </div>
-        <button className="wc-dismiss" onClick={() => setCollapsed(c => !c)} title={collapsed ? "Expandir" : "Recolher"}>
-          <CaretDown size={16} weight="bold" className={`wc-collapse-icon ${collapsed ? "" : "wc-collapse-icon--open"}`} />
+    <>
+      {minimized ? (
+        // ─── MODO MINIMIZADO ───
+        <button className="wc-bar" onClick={toggleMinimized} type="button">
+          <svg className="wc-bar-donut" viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r={RAIO_MINI} className="wc-bar-donut-bg" />
+            <circle
+              cx="18" cy="18" r={RAIO_MINI}
+              className="wc-bar-donut-fill"
+              strokeDasharray={CIRCUM_MINI}
+              strokeDashoffset={DASH_OFFSET_MINI}
+              transform="rotate(-90 18 18)"
+            />
+          </svg>
+          <div className="wc-bar-text">
+            <span className="wc-bar-title">Configuração inicial</span>
+            <span className="wc-bar-sub">{doneCount} de {total} concluídos · {pct}%</span>
+          </div>
+          <span className="wc-bar-expand" aria-label="Expandir">
+            <Plus size={16} weight="bold" />
+          </span>
         </button>
-      </div>
+      ) : (
+        // ─── MODO EXPANDIDO ───
+        <div className="wc-root">
+          <button
+            className="wc-minimize"
+            onClick={toggleMinimized}
+            type="button"
+            aria-label="Minimizar"
+            title="Minimizar"
+          >
+            <Minus size={16} weight="bold" />
+          </button>
 
-      {/* Progress */}
-      <div className="wc-progress">
-        <div className="wc-progress-info">
-          <span className="wc-progress-label">Progresso da configuração</span>
-          <span className="wc-progress-pct">{pct}%</span>
-        </div>
-        <div className="wc-progress-track">
-          <div className="wc-progress-fill" style={{ width: `${pct}%` }} />
-        </div>
-        <span className="wc-progress-count">{doneCount} de {total} etapas concluídas</span>
-      </div>
+          {/* Donut de progresso */}
+          <div className="wc-donut-wrap">
+            <svg className="wc-donut" viewBox="0 0 100 100">
+              <defs>
+                <linearGradient id="wcDonutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#f4c95d" />
+                  <stop offset="100%" stopColor="#c8891f" />
+                </linearGradient>
+              </defs>
+              <circle cx="50" cy="50" r={RAIO} className="wc-donut-bg" />
+              <circle
+                cx="50" cy="50" r={RAIO}
+                className="wc-donut-fill"
+                strokeDasharray={CIRCUM}
+                strokeDashoffset={DASH_OFFSET}
+                transform="rotate(-90 50 50)"
+              />
+              <text x="50" y="50" textAnchor="middle" dominantBaseline="central" className="wc-donut-pct">
+                {pct}%
+              </text>
+            </svg>
+          </div>
 
-      {/* Steps */}
-      {!collapsed && (
-      <div className="wc-steps">
-        {steps.map((step) => {
-          const isOpen = openId === step.id;
-          return (
-            <div key={step.id} className={`wc-step ${step.done ? "wc-step--done" : ""} ${isOpen ? "wc-step--open" : ""}`}>
-              <button className="wc-step-header" onClick={() => setOpenId(isOpen ? null : step.id)}>
-                <span className={`wc-step-icon ${step.done ? "wc-step-icon--done" : ""}`}>
-                  {step.done ? <CheckCircle size={22} weight="fill" /> : step.icon}
-                </span>
-                <div className="wc-step-meta">
-                  <span className="wc-step-title">{step.title}</span>
-                  <span className="wc-step-subtitle">
-                    {step.done ? "Concluído" : step.tags?.join(" · ")}
+          {/* Copy motivadora */}
+          <p className="wc-hype">{copyMotivadora}</p>
+
+          {/* Steps */}
+          <ul className="wc-list">
+            {steps.map((step) => (
+              <li key={step.id}>
+                <button
+                  className={`wc-item ${step.done ? "wc-item--done" : ""}`}
+                  onClick={() => executarStep(step)}
+                  disabled={step.done && step.id !== "tutorial"}
+                  type="button"
+                >
+                  <span className={`wc-item-icon ${step.done ? "wc-item-icon--done" : ""}`}>
+                    {step.done ? <CheckCircle size={20} weight="fill" /> : step.icon}
                   </span>
-                </div>
-                {(!step.done || step.id === "tutorial") && (
-                  <CaretDown size={16} weight="bold" className={`wc-step-caret ${isOpen ? "wc-step-caret--open" : ""}`} />
-                )}
-              </button>
-
-              {isOpen && (!step.done || step.id === "tutorial") && (
-                <div className="wc-step-body">
-                  <p className="wc-step-desc">{step.desc}</p>
-                  {step.tags && (
-                    <div className="wc-step-tags">
-                      {step.tags.map((t) => (
-                        <span key={t} className="wc-step-tag">{t}</span>
-                      ))}
-                    </div>
+                  <span className="wc-item-title">{step.title}</span>
+                  {(!step.done || step.id === "tutorial") && (
+                    <CaretRight size={14} weight="bold" className="wc-item-arrow" />
                   )}
-                  <button
-                    className="wc-step-cta"
-                    onClick={() => {
-                      if (step.path === "__tutorial__") {
-                        setOnboardingOpen(true);
-                      } else {
-                        navigate(step.path);
-                      }
-                    }}
-                  >
-                    {step.id === "tutorial" && step.done ? "Rever tutorial" : step.cta}
-                  </button>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       <style>{`
+        /* ══════════════════════════════════════════
+           MODO EXPANDIDO
+           ══════════════════════════════════════════ */
         .wc-root {
-          background: var(--bg-card);
+          position: relative;
+          background: linear-gradient(180deg, #faf5e8 0%, var(--bg-card) 60%);
           border: 1px solid var(--border);
           border-radius: var(--radius-xl);
+          padding: 1.5rem 1.25rem 1.25rem;
+          box-shadow: 0 4px 20px rgba(61, 26, 36, 0.08);
           overflow: hidden;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.06);
         }
-
-        /* ── Header ── */
-        .wc-header {
-          display: flex;
-          align-items: flex-start;
-          gap: 0.75rem;
-          padding: 1.25rem 1.25rem 0;
-        }
-        .wc-header-icon {
-          width: 36px; height: 36px;
-          border-radius: var(--radius-md);
-          background: var(--primary-gradient);
-          color: var(--text-inverse);
+        .wc-minimize {
+          position: absolute;
+          top: 12px; right: 12px;
+          width: 30px; height: 30px;
+          border-radius: 50%;
+          border: 1px solid var(--border);
+          background: var(--bg-card);
+          color: var(--text-muted);
           display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-        .wc-header-text h2 {
-          margin: 0;
-          font-size: 1.05rem;
-          font-weight: var(--fw-bold);
-          color: var(--text-title);
-          line-height: 1.3;
-        }
-        .wc-header-text p {
-          margin: 2px 0 0;
-          font-size: var(--font-helper);
-          color: var(--text-muted);
-          line-height: 1.4;
-        }
-        .wc-dismiss {
-          margin-left: auto;
-          background: none;
-          border: none;
           cursor: pointer;
-          color: var(--text-muted);
-          padding: 4px;
-          border-radius: var(--radius-sm);
-          transition: color var(--dur-fast), background var(--dur-fast);
-          flex-shrink: 0;
+          transition: transform var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+          z-index: 1;
         }
-        .wc-dismiss:hover {
-          color: var(--text-title);
-          background: var(--bg-body);
+        .wc-minimize:hover { color: var(--text-title); border-color: var(--text-muted); transform: scale(1.05); }
+
+        /* Donut grande */
+        .wc-donut-wrap {
+          display: flex; justify-content: center;
+          margin-bottom: 0.75rem;
         }
-        .wc-collapse-icon {
-          transition: transform var(--dur-fast);
+        .wc-donut {
+          width: 128px; height: 128px;
+          filter: drop-shadow(0 4px 12px rgba(200, 137, 31, 0.25));
         }
-        .wc-collapse-icon--open {
-          transform: rotate(180deg);
+        .wc-donut-bg {
+          fill: none;
+          stroke: rgba(200, 137, 31, 0.15);
+          stroke-width: 8;
+        }
+        .wc-donut-fill {
+          fill: none;
+          stroke: url(#wcDonutGrad);
+          stroke-width: 8;
+          stroke-linecap: round;
+          transition: stroke-dashoffset 1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .wc-donut-pct {
+          font-size: 24px;
+          font-weight: 800;
+          fill: #3d1a24;
+          letter-spacing: -0.02em;
         }
 
-        /* ── Progress ── */
-        .wc-progress {
-          padding: 1rem 1.25rem;
-        }
-        .wc-progress-info {
-          display: flex;
-          justify-content: space-between;
-          align-items: baseline;
-          margin-bottom: 0.4rem;
-        }
-        .wc-progress-label {
-          font-size: 0.7rem;
-          font-weight: var(--fw-bold);
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          color: var(--text-secondary);
-        }
-        .wc-progress-pct {
-          font-size: 0.8rem;
-          font-weight: var(--fw-bold);
-          color: var(--primary);
-        }
-        .wc-progress-track {
-          width: 100%;
-          height: 6px;
-          background: var(--bg-body);
-          border-radius: 99px;
-          overflow: hidden;
-        }
-        .wc-progress-fill {
-          height: 100%;
-          background: var(--primary-gradient);
-          border-radius: 99px;
-          transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .wc-progress-count {
-          display: block;
-          margin-top: 0.35rem;
-          font-size: var(--font-caption);
-          color: var(--text-muted);
+        /* Copy motivadora */
+        .wc-hype {
+          text-align: center;
+          margin: 0 0 1.25rem;
+          font-size: 0.95rem;
+          font-weight: var(--fw-semibold);
+          color: #3d1a24;
+          line-height: 1.35;
         }
 
-        /* ── Steps ── */
-        .wc-steps {
+        /* Lista */
+        .wc-list {
+          list-style: none;
+          margin: 0;
+          padding: 0;
           display: flex;
           flex-direction: column;
+          gap: 6px;
+          background: var(--bg-card);
+          border-radius: var(--radius-md);
+          padding: 6px;
+          border: 1px solid var(--border);
         }
-        .wc-step {
-          border-top: 1px solid var(--border);
-        }
-        .wc-step:last-child {
-          border-bottom: none;
-        }
-
-        /* Step Header (button) */
-        .wc-step-header {
-          width: 100%;
+        .wc-item {
           display: flex;
           align-items: center;
           gap: 0.75rem;
-          padding: 0.9rem 1.25rem;
-          background: none;
+          width: 100%;
+          padding: 0.7rem 0.75rem;
+          background: transparent;
           border: none;
+          border-radius: var(--radius-sm);
           cursor: pointer;
           text-align: left;
-          font-family: inherit;
           transition: background var(--dur-fast);
         }
-        .wc-step-header:hover {
-          background: var(--bg-body);
-        }
-        .wc-step--done .wc-step-header {
-          opacity: 0.7;
-        }
-        .wc-step--done .wc-step-header:hover {
-          opacity: 0.85;
-        }
+        .wc-item:not(:disabled):hover { background: var(--bg-subtle); }
+        .wc-item:disabled { cursor: default; }
 
-        /* Step icon */
-        .wc-step-icon {
-          width: 36px; height: 36px;
+        .wc-item-icon {
+          width: 32px; height: 32px;
           border-radius: 50%;
+          background: rgba(200, 137, 31, 0.10);
+          color: #c8891f;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
-          background: var(--bg-subtle);
-          color: var(--primary);
-          transition: all var(--dur-fast);
         }
-        .wc-step-icon--done {
-          background: #DCFCE7;
-          color: #15803D;
+        .wc-item-icon--done {
+          background: rgba(46, 160, 67, 0.12);
+          color: #2ea043;
         }
-
-        /* Step meta */
-        .wc-step-meta {
+        .wc-item-title {
           flex: 1;
-          min-width: 0;
-        }
-        .wc-step-title {
-          display: block;
-          font-size: 0.9rem;
-          font-weight: var(--fw-semibold);
+          font-size: 0.95rem;
+          font-weight: var(--fw-medium);
           color: var(--text-title);
-          line-height: 1.3;
         }
-        .wc-step--done .wc-step-title {
-          text-decoration: line-through;
-          text-decoration-color: var(--text-muted);
-        }
-        .wc-step-subtitle {
-          display: block;
-          font-size: var(--font-caption);
+        .wc-item--done .wc-item-title {
           color: var(--text-muted);
-          margin-top: 1px;
+          text-decoration: line-through;
+          text-decoration-color: rgba(0,0,0,0.2);
         }
-
-        /* Caret */
-        .wc-step-caret {
+        .wc-item-arrow {
           color: var(--text-muted);
           flex-shrink: 0;
-          transition: transform var(--dur-fast);
+          transition: transform var(--dur-fast), color var(--dur-fast);
         }
-        .wc-step-caret--open {
-          transform: rotate(180deg);
+        .wc-item:not(:disabled):hover .wc-item-arrow {
+          color: #c8891f;
+          transform: translateX(3px);
         }
 
-        /* Step body (expanded) */
-        .wc-step-body {
-          padding: 0 1.25rem 1rem 4.25rem;
-          animation: wcSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes wcSlide {
-          from { opacity: 0; transform: translateY(-6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .wc-step-desc {
-          margin: 0 0 0.75rem;
-          font-size: 0.82rem;
-          line-height: 1.55;
-          color: var(--text-secondary);
-        }
-        .wc-step-tags {
+        /* ══════════════════════════════════════════
+           MODO MINIMIZADO — barra fina
+           ══════════════════════════════════════════ */
+        .wc-bar {
           display: flex;
-          flex-wrap: wrap;
-          gap: 0.4rem;
-          margin-bottom: 0.85rem;
-        }
-        .wc-step-tag {
-          font-size: 0.72rem;
-          font-weight: var(--fw-medium);
-          padding: 0.2rem 0.6rem;
-          background: var(--bg-subtle);
-          color: var(--primary-dark);
-          border-radius: var(--radius-sm);
-        }
-        .wc-step-cta {
-          display: inline-flex;
           align-items: center;
-          gap: 0.4rem;
-          padding: 0.55rem 1.1rem;
-          background: var(--primary-gradient);
-          color: var(--text-inverse);
-          border: none;
-          border-radius: var(--radius-md);
-          font-family: inherit;
-          font-size: 0.82rem;
-          font-weight: var(--fw-bold);
+          gap: 0.75rem;
+          width: 100%;
+          padding: 0.75rem 1rem;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
           cursor: pointer;
-          transition: opacity var(--dur-fast), transform var(--dur-fast);
+          text-align: left;
+          transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
-        .wc-step-cta:hover {
-          opacity: 0.9;
-          transform: translateY(-1px);
-        }
-        .wc-step-cta:active {
-          transform: translateY(0);
-        }
+        .wc-bar:hover { border-color: #c8891f; box-shadow: 0 4px 14px rgba(200, 137, 31, 0.15); }
 
-        /* ────────────────────────────────────────────
-           POLISH DESKTOP (≥1100px) — mobile intocado
-           ──────────────────────────────────────────── */
-        @media (min-width: 1100px) {
-          .wc-root {
-            box-shadow: var(--shadow-md);
-            position: sticky;
-            top: var(--space-6);
-            border-radius: 14px;
-          }
-          /* Header com faixa de marca sutil no topo */
-          .wc-header {
-            padding: 1.5rem 1.5rem 0;
-          }
-          .wc-header-icon {
-            width: 42px; height: 42px;
-            box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
-          }
-          .wc-header-text h2 { font-size: 1.15rem; }
-          .wc-progress { padding: 1.1rem 1.5rem; }
-          .wc-progress-track { height: 8px; }
-          .wc-step-header { padding: 1rem 1.5rem; }
-          .wc-step-icon { width: 40px; height: 40px; }
-          .wc-step-body { padding: 0 1.5rem 1.1rem 4rem; }
-          /* Hover mais sutil usando o tom da marca em vez de cinza */
-          .wc-step-header:hover { background: var(--bg-subtle); }
-          .wc-dismiss:hover { background: var(--bg-subtle); }
+        .wc-bar-donut {
+          width: 36px; height: 36px;
+          flex-shrink: 0;
         }
+        .wc-bar-donut-bg {
+          fill: none;
+          stroke: rgba(200, 137, 31, 0.18);
+          stroke-width: 4;
+        }
+        .wc-bar-donut-fill {
+          fill: none;
+          stroke: #c8891f;
+          stroke-width: 4;
+          stroke-linecap: round;
+          transition: stroke-dashoffset 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .wc-bar-text {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          line-height: 1.25;
+        }
+        .wc-bar-title {
+          font-size: 0.92rem;
+          font-weight: var(--fw-semibold);
+          color: var(--text-title);
+        }
+        .wc-bar-sub {
+          font-size: 0.78rem;
+          color: var(--text-muted);
+        }
+        .wc-bar-expand {
+          width: 28px; height: 28px;
+          border-radius: 50%;
+          background: rgba(200, 137, 31, 0.12);
+          color: #c8891f;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          transition: background var(--dur-fast), transform var(--dur-fast);
+        }
+        .wc-bar:hover .wc-bar-expand { background: #c8891f; color: #fff; transform: scale(1.08); }
       `}</style>
 
       {/* Modal de Onboarding — aberto pelo passo "Complete o Tutorial" */}
       <Onboarding isOpen={onboardingOpen} onClose={handleTutorialClose} />
-    </div>
+    </>
   );
 }
