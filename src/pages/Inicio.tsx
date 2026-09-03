@@ -1,4 +1,4 @@
-// Build marker: 2026-09-03T14:15 — badge de câmera + placeholder destacado + toggle notificações
+// Build marker: 2026-09-03T17:58 — reenvio com crop + camera + placeholder + toggle notif
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -18,6 +18,7 @@ import WelcomeChecklist from "@/components/WelcomeChecklist";
 import UpdatesFeed from "@/components/UpdatesFeed";
 import DooIAPanel from "@/components/DooIAPanel";
 import { FinModal } from "@/components/financeiro";
+import { ImageCropper } from "@/components/ui/ImageCropper";
 
 interface AlertaCard {
   tipo: "pedido" | "entrega" | "aniversario";
@@ -67,30 +68,39 @@ export default function Inicio() {
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Upload rápido de foto de perfil pelo ícone de câmera no header.
+  // Fluxo: escolhe arquivo → abre cropper (círculo, com zoom) → confirma → upload.
   // Reaproveita o mesmo bucket/path usado pela página Configurações.
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingFoto, setUploadingFoto] = useState(false);
-  const handleFotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+
+  const handleFileSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = ""; // reseta pra permitir escolher o MESMO arquivo depois
-    if (!file || !profile?.id) return;
-
+    if (!file) return;
     if (!file.type.startsWith("image/")) {
       alert("Escolha um arquivo de imagem.");
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      alert("A imagem precisa ter no máximo 5MB.");
+    if (file.size > 10 * 1024 * 1024) {
+      alert("A imagem precisa ter no máximo 10MB.");
       return;
     }
+    // Converte pra data URL e abre o cropper
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.readAsDataURL(file);
+  };
 
+  const handleCropDone = async (blob: Blob) => {
+    if (!profile?.id) return;
+    setCropSrc(null);
     setUploadingFoto(true);
     try {
-      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-      const path = `avatars/${profile.id}.${ext}`;
+      const path = `avatars/${profile.id}.jpg`; // cropper devolve JPEG
       const { error: upErr } = await supabase.storage
         .from("profiles")
-        .upload(path, file, { upsert: true, contentType: file.type });
+        .upload(path, blob, { upsert: true, contentType: "image/jpeg" });
       if (upErr) throw upErr;
 
       const { data: pub } = supabase.storage.from("profiles").getPublicUrl(path);
@@ -509,7 +519,7 @@ export default function Inicio() {
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            onChange={handleFotoUpload}
+            onChange={handleFileSelected}
             style={{ display: "none" }}
           />
 
@@ -1926,6 +1936,17 @@ export default function Inicio() {
           .ini-content--done { grid-template-columns: 1fr 460px; }
         }
       `}</style>
+
+      {/* Modal de crop da foto de perfil (aberto pelo ícone de câmera) */}
+      {cropSrc && (
+        <ImageCropper
+          imageSrc={cropSrc}
+          aspect={1}
+          cropShape="round"
+          onCancel={() => setCropSrc(null)}
+          onCropDone={handleCropDone}
+        />
+      )}
     </div>
   );
 }
