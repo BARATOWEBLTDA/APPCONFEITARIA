@@ -2629,7 +2629,10 @@ function Slide4Precificacao({ onReady }: { onReady: () => void }) {
     <>
       <div className="ob-slide-textabove">
         <span className="ob-slide-eyebrow">Com o Doonly...</span>
-        <h2 className="ob-slide-title">PRECIFICAÇÃO INTELIGENTE,<br/>PARA LUCRAR DE VERDADE</h2>
+        <h2 className="ob-slide-title" style={{ fontSize: "clamp(1.05rem, 4.6vw, 1.45rem)" }}>
+          <span style={{ whiteSpace: "nowrap" }}>PRECIFICAÇÃO INTELIGENTE,</span><br/>
+          PARA LUCRAR DE VERDADE
+        </h2>
       </div>
 
       <div className="ob-prec-card">
