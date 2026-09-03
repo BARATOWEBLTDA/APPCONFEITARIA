@@ -1,4 +1,4 @@
-// Build marker: 2026-09-03T19:15 — rosa + toque dourado + hero mais baixo
+// Build marker: 2026-09-03T20:30 — zero dourado, tudo rosa/grafite/branco
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -481,9 +481,9 @@ export default function Inicio() {
     <div className="ini-root">
       {/* ── Hero wine com foto da confeiteira, coroinha (PRO) e sparkles ── */}
       <div className="ini-hero">
-        {/* Decoração: sparkles dourados */}
+        {/* Decoração: sparkles brancos sutis sobre o hero rosa */}
         <svg className="ini-hero-sparkles" viewBox="0 0 100 50" preserveAspectRatio="none" aria-hidden="true">
-          <g fill="var(--gold-light)" opacity="0.65">
+          <g fill="#FFFFFF" opacity="0.5">
             <path d="M18 12 L18.4 13.3 L19.7 13.7 L18.4 14.1 L18 15.4 L17.6 14.1 L16.3 13.7 L17.6 13.3 Z"/>
             <path d="M88 8 L88.5 9.6 L90.1 10.1 L88.5 10.6 L88 12.2 L87.5 10.6 L85.9 10.1 L87.5 9.6 Z"/>
             <path d="M62 22 L62.3 22.9 L63.2 23.2 L62.3 23.5 L62 24.4 L61.7 23.5 L60.8 23.2 L61.7 22.9 Z"/>
@@ -498,7 +498,7 @@ export default function Inicio() {
           <button className="ini-profile-btn" onClick={() => setMenuOpen(o => !o)}>
             {profile?.foto_url
               ? <img src={profile.foto_url} alt="Perfil" className="ini-profile-img" />
-              : <div className="ini-profile-placeholder"><User size={30} weight="bold" color="var(--text-title)" /></div>
+              : <div className="ini-profile-placeholder"><User size={30} weight="bold" color="var(--accent)" /></div>
             }
           </button>
 
@@ -542,7 +542,7 @@ export default function Inicio() {
                   <Bell
                     size={18}
                     weight={notifAtivas ? "fill" : "regular"}
-                    color={notifAtivas ? "var(--gold-light)" : undefined}
+                    color={notifAtivas ? "var(--primary)" : undefined}
                   />
                   Ativar notificações
                 </span>
@@ -569,7 +569,10 @@ export default function Inicio() {
           <h1>
             <span>{getGreeting()}, {(nome || "bem-vinda").split(" ")[0]}</span>
             {isPro && (
-              <Crown size={18} weight="fill" className="ini-hero-crown" aria-label="Plano PRO" />
+              <span className="ini-hero-pro-badge" aria-label="Plano PRO">
+                <Crown size={11} weight="fill" />
+                <span>PRO</span>
+              </span>
             )}
           </h1>
           <p>{getDailyMessage()}</p>
@@ -968,11 +971,9 @@ export default function Inicio() {
         .ini-aside-desktop { display: none; }
         .ini-aside-mobile { display: block; }
 
-        /* ── Hero rosa vibrante com foto da confeiteira, sparkles e coroinha ── */
+        /* ── Hero rosa chapado com foto da confeiteira e sparkles ── */
         .ini-hero {
-          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 45%, var(--primary) 70%, #F06699 100%);
-          background-size: 300% 300%;
-          animation: heroGradientMove 14s ease infinite;
+          background: var(--primary);
           border-radius: 0 0 24px 24px;
           padding: 1.25rem 1.25rem 1.5rem;
           /* Full-bleed: estende até a borda da viewport ignorando padding dos pais */
@@ -1025,10 +1026,20 @@ export default function Inicio() {
           text-overflow: ellipsis;
           max-width: 100%;
         }
-        .ini-hero-crown {
-          color: var(--gold-light);
+        .ini-hero-pro-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: var(--accent);
+          color: #fff;
+          padding: 3px 9px;
+          border-radius: var(--radius-full);
+          font-size: 10px;
+          font-weight: var(--fw-bold);
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.25);
           flex-shrink: 0;
-          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.35));
         }
         .ini-hero-greeting p {
           font-size: var(--font-helper);
@@ -1041,8 +1052,8 @@ export default function Inicio() {
         .ini-profile-wrapper { position: relative; flex-shrink: 0; z-index: 2; }
         .ini-profile-btn {
           width: 56px; height: 56px; border-radius: var(--radius-full);
-          border: 3px solid var(--gold);
-          background: var(--gold-bg);
+          border: 3px solid #FFFFFF;
+          background: #FFFFFF;
           cursor: pointer; padding: 0; overflow: hidden;
           display: flex; align-items: center; justify-content: center;
           transition: border-color var(--dur-fast), transform var(--dur-fast), box-shadow var(--dur-fast);
@@ -1058,17 +1069,17 @@ export default function Inicio() {
           bottom: -2px; right: -2px;
           width: 24px; height: 24px;
           border-radius: var(--radius-full);
-          background: var(--gold);
-          border: 2px solid var(--gold-bg);
+          background: var(--primary);
+          border: 2px solid #FFFFFF;
           color: #fff;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
           padding: 0;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+          box-shadow: 0 2px 6px rgba(45,31,38,0.35);
           transition: transform var(--dur-fast), background var(--dur-fast);
           z-index: 2;
         }
-        .ini-profile-cam:hover:not(:disabled) { transform: scale(1.12); background: var(--gold-dark); }
+        .ini-profile-cam:hover:not(:disabled) { transform: scale(1.12); background: var(--primary-dark); }
         .ini-profile-cam:disabled { cursor: default; opacity: 0.7; }
         .ini-profile-cam-spinner {
           width: 12px; height: 12px;
@@ -1134,7 +1145,7 @@ export default function Inicio() {
           box-shadow: 0 2px 4px rgba(0,0,0,0.2);
           transition: transform 0.22s ease;
         }
-        .ini-pm-toggle--on { background: var(--gold-light); }
+        .ini-pm-toggle--on { background: var(--primary); }
         .ini-pm-toggle--on .ini-pm-toggle-thumb { transform: translateX(16px); }
 
         /* ── Sections ── */

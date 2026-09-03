@@ -200,8 +200,8 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
             <svg className="wc-donut" viewBox="0 0 100 100">
               <defs>
                 <linearGradient id="wcDonutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#f4c95d" />
-                  <stop offset="100%" stopColor="#c8891f" />
+                  <stop offset="0%" stopColor="var(--primary)" />
+                  <stop offset="100%" stopColor="var(--primary-dark)" />
                 </linearGradient>
               </defs>
               <circle cx="50" cy="50" r={RAIO} className="wc-donut-bg" />
@@ -251,7 +251,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
            ══════════════════════════════════════════ */
         .wc-root {
           position: relative;
-          background: linear-gradient(180deg, #faf5e8 0%, var(--bg-card) 60%);
+          background: linear-gradient(180deg, var(--primary-light) 0%, var(--bg-card) 60%);
           border: 1px solid var(--border);
           border-radius: var(--radius-xl);
           padding: 1.5rem 1.25rem 1.25rem;
@@ -280,11 +280,11 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         }
         .wc-donut {
           width: 128px; height: 128px;
-          filter: drop-shadow(0 4px 12px rgba(200, 137, 31, 0.25));
+          filter: drop-shadow(0 4px 12px rgba(232, 90, 140, 0.25));
         }
         .wc-donut-bg {
           fill: none;
-          stroke: rgba(200, 137, 31, 0.15);
+          stroke: rgba(232, 90, 140, 0.15);
           stroke-width: 8;
         }
         .wc-donut-fill {
@@ -343,8 +343,8 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         .wc-item-icon {
           width: 32px; height: 32px;
           border-radius: 50%;
-          background: rgba(200, 137, 31, 0.10);
-          color: #c8891f;
+          background: rgba(232, 90, 140, 0.10);
+          color: var(--primary);
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
@@ -369,7 +369,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           transition: transform var(--dur-fast), color var(--dur-fast);
         }
         .wc-item:not(:disabled):hover .wc-item-arrow {
-          color: #c8891f;
+          color: var(--primary);
           transform: translateX(3px);
         }
 
@@ -390,7 +390,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
           box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
-        .wc-bar:hover { border-color: #c8891f; box-shadow: 0 4px 14px rgba(200, 137, 31, 0.15); }
+        .wc-bar:hover { border-color: var(--primary); box-shadow: 0 4px 14px rgba(232, 90, 140, 0.15); }
 
         .wc-bar-donut {
           width: 36px; height: 36px;
@@ -398,12 +398,12 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         }
         .wc-bar-donut-bg {
           fill: none;
-          stroke: rgba(200, 137, 31, 0.18);
+          stroke: rgba(232, 90, 140, 0.18);
           stroke-width: 4;
         }
         .wc-bar-donut-fill {
           fill: none;
-          stroke: #c8891f;
+          stroke: var(--primary);
           stroke-width: 4;
           stroke-linecap: round;
           transition: stroke-dashoffset 0.8s cubic-bezier(0.22, 1, 0.36, 1);
@@ -427,13 +427,13 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         .wc-bar-expand {
           width: 28px; height: 28px;
           border-radius: 50%;
-          background: rgba(200, 137, 31, 0.12);
-          color: #c8891f;
+          background: rgba(232, 90, 140, 0.12);
+          color: var(--primary);
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
           transition: background var(--dur-fast), transform var(--dur-fast);
         }
-        .wc-bar:hover .wc-bar-expand { background: #c8891f; color: #fff; transform: scale(1.08); }
+        .wc-bar:hover .wc-bar-expand { background: var(--primary); color: #fff; transform: scale(1.08); }
       `}</style>
 
       {/* Modal de Onboarding — aberto pelo passo "Complete o Tutorial" */}
