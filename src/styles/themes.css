@@ -1,63 +1,70 @@
+/* ─────────────────────────────────────────────
+   DOONLY — Rebrand rosa (Duolingo-inspired)
+   Cor principal: #EC407A (rosa vivo e marcante)
+   Estilo: cantos generosos, sombras 3D em botões,
+   cores gamificadas com propósito.
+   ───────────────────────────────────────────── */
+
 /* ── Tema Claro ── */
 :root {
   /* Primária */
-  --primary:          #986274;
-  --primary-dark:     #6E3548;
-  --primary-light:    #F7EEF1;
-  --primary-gradient: linear-gradient(135deg, #986274, #6E3548);
-  --primary-rgb:      152, 98, 116;
+  --primary:          #EC407A;
+  --primary-dark:     #B71C5C;
+  --primary-light:    #FCE4EC;
+  --primary-gradient: linear-gradient(135deg, #EC407A, #B71C5C);
+  --primary-rgb:      236, 64, 122;
 
   /* Tipografia */
-  --text-title:       #431524;
-  --text-primary:     #431524;
-  --text-secondary:   #6E3548;
-  --text-muted:       #C39EAA;
+  --text-title:       #2D2A32;
+  --text-primary:     #2D2A32;
+  --text-secondary:   #6B6470;
+  --text-muted:       #B7B0BC;
   --text-inverse:     #FFFFFF;
   --text-disabled:    #D1D5DB;
-  --text-link:        #986274;
+  --text-link:        #EC407A;
 
   /* Superfícies */
-  --bg-body:          #FAFAFA;
+  --bg-body:          #FFF8FA;
   --bg-card:          #FFFFFF;
   --bg-surface:       var(--bg-card);
   --bg-input:         #FFFFFF;
   --bg-elevated:      #FFFFFF;
-  --bg-overlay:       rgba(0,0,0,0.4);
-  --bg-subtle:        #F7EEF1;
+  --bg-overlay:       rgba(45, 42, 50, 0.5);
+  --bg-subtle:        #FCE4EC;
 
   /* Bordas */
-  --border:           #ECC2D0;
-  --border-focus:     #986274;
-  --focus-ring:       0 0 0 3px rgba(152,98,116,0.25);
+  --border:           #F5D8E2;
+  --border-focus:     #EC407A;
+  --focus-ring:       0 0 0 3px rgba(236,64,122,0.22);
 
   /* ── Sidebar / Nav ── */
-  --sidebar-bg:           #1f0a12;
-  --sidebar-text:         #ECC2D0;
-  --sidebar-text-muted:   rgba(236,194,208,0.6);
-  --sidebar-hover-bg:     #3D1524;
-  --sidebar-active-bg:    var(--menu-active-bg, #6E3548);
+  --sidebar-bg:           #201C24;
+  --sidebar-text:         #EFEAF2;
+  --sidebar-text-muted:   rgba(239,234,242,0.55);
+  --sidebar-hover-bg:     #302B34;
+  --sidebar-active-bg:    var(--menu-active-bg, #EC407A);
   --sidebar-active-text:  var(--menu-active, #FFFFFF);
-  --sidebar-border:       rgba(236,194,208,0.08);
-  --sidebar-border-right: rgba(236,194,208,0.08);
+  --sidebar-border:       rgba(239,234,242,0.08);
+  --sidebar-border-right: rgba(239,234,242,0.08);
 
   /* ── Header Mobile / Top Bar ── */
   --topbar-bg:            var(--bg-card, #FFFFFF);
-  --topbar-text:          var(--text-title, #431524);
-  --topbar-border:        var(--border, #ECC2D0);
-  --topbar-shadow:        0 4px 12px rgba(0,0,0,0.08);
+  --topbar-text:          var(--text-title, #2D2A32);
+  --topbar-border:        var(--border, #F5D8E2);
+  --topbar-shadow:        0 4px 12px rgba(45,42,50,0.08);
 
   /* ── Bottom Nav Mobile ── */
-  --bottomnav-bg:         #6E3548;
-  --bottomnav-shadow:     0 -4px 16px rgba(0,0,0,0.2);
-  --bottomnav-inactive:   #ECC2D0;
+  --bottomnav-bg:         #EC407A;
+  --bottomnav-shadow:     0 -4px 16px rgba(236,64,122,0.25);
+  --bottomnav-inactive:   #FCE4EC;
   --bottomnav-active:     #FFFFFF;
 
   /* ── Gestão Drawer ── */
-  --drawer-bg:            #330716;
+  --drawer-bg:            #201C24;
   --drawer-item-bg:       rgba(255,255,255,0.05);
   --drawer-item-border:   rgba(255,255,255,0.07);
-  --drawer-item-hover-bg: rgba(152,98,116,0.15);
-  --drawer-item-hover-border: rgba(152,98,116,0.3);
+  --drawer-item-hover-bg: rgba(236,64,122,0.15);
+  --drawer-item-hover-border: rgba(236,64,122,0.35);
   --drawer-handle:        rgba(255,255,255,0.15);
   --drawer-close-bg:      rgba(255,255,255,0.08);
   --drawer-close-text:    rgba(255,255,255,0.6);
@@ -65,11 +72,11 @@
   --overlay-light:        rgba(255,255,255,0.6);
 
   /* ── Menu (legado) ── */
-  --menu-bg:          #6E3548;
-  --menu-inactive:    rgba(236,194,208,0.7);
+  --menu-bg:          #EC407A;
+  --menu-inactive:    rgba(252,228,236,0.75);
   --menu-active:      #FFFFFF;
-  --menu-active-bg:   #431524;
-  --menu-hover-bg:    #7D3F55;
+  --menu-active-bg:   #B71C5C;
+  --menu-hover-bg:    #F06699;
 
   /* ── Estados globais ── */
   --state-hover:      var(--menu-hover-bg);
@@ -77,42 +84,70 @@
   --state-active:     var(--menu-active);
 
   /* Botões */
-  --btn-primary-bg:       #986274;
-  --btn-primary-hover:    #6E3548;
+  --btn-primary-bg:       #EC407A;
+  --btn-primary-hover:    #D62C6C;
   --btn-primary-text:     #FFFFFF;
+  --btn-primary-shadow:   #B71C5C;  /* borda "3D" inferior */
   --btn-secondary-bg:     #FFFFFF;
-  --btn-secondary-border: #ECC2D0;
-  --btn-secondary-text:   #431524;
-  --btn-secondary-hover:  #F2E8EC;
+  --btn-secondary-border: #F5D8E2;
+  --btn-secondary-text:   #2D2A32;
+  --btn-secondary-hover:  #FCE4EC;
 
-  /* Status */
-  --success:          #22C55E;
-  --warning:          #F59E0B;
+  /* ── Cores gamificadas (Duolingo-style) ─────
+     Use --gam-* pra elementos com significado:
+     dinheiro/XP, sucesso, informação, premium, streak.
+     Cada uma vem em trio: solid + bg (tint) + text (contraste). */
+
+  /* Amarelo — XP, dinheiro, conquistas */
+  --gam-xp:            #FFC800;
+  --gam-xp-bg:         #FFF3CD;
+  --gam-xp-text:       #8B6800;
+
+  /* Verde — sucesso, pago, concluído */
+  --gam-success:       #58CC02;
+  --gam-success-bg:    #E0F7D8;
+  --gam-success-text:  #2E7D0E;
+
+  /* Azul — informação, em rota */
+  --gam-info:          #1CB0F6;
+  --gam-info-bg:       #D6EFFC;
+  --gam-info-text:     #0B6D9E;
+
+  /* Roxo — premium, PRO */
+  --gam-premium:       #CE82FF;
+  --gam-premium-bg:    #F0DDFF;
+  --gam-premium-text:  #6B2D9E;
+
+  /* Laranja/vermelho — streak, atenção */
+  --gam-streak:        #FF6B35;
+  --gam-streak-bg:     #FFE0D3;
+  --gam-streak-text:   #A63700;
+
+  /* Status (semânticos — aliases dos gamificados) */
+  --success:          var(--gam-success);
+  --warning:          var(--gam-xp);
   --error:            #EF4444;
-  --info:             #3B82F6;
+  --info:             var(--gam-info);
 
   /* Sombras */
-  --shadow-card:      0 2px 12px rgba(0,0,0,0.06);
-  --shadow-sm:        0 1px 3px rgba(0,0,0,0.06);
-  --shadow-md:        0 4px 16px rgba(0,0,0,0.08);
-  --shadow-lg:        0 10px 30px rgba(0,0,0,0.12);
+  --shadow-card:      0 2px 12px rgba(45,42,50,0.06);
+  --shadow-sm:        0 1px 3px rgba(45,42,50,0.06);
+  --shadow-md:        0 4px 16px rgba(45,42,50,0.08);
+  --shadow-lg:        0 10px 30px rgba(45,42,50,0.12);
+  --shadow-pink:      0 6px 20px rgba(236,64,122,0.25); /* halo colorido */
 
   /* Raios — semânticos (apontam pros primitivos no bloco RADIUS abaixo) */
-  --radius-card:      14px;   /* var(--radius-lg) */
-  --radius-btn:       999px;  /* var(--radius-full) */
-  --radius-input:     999px;  /* var(--radius-full) */
+  --radius-card:      18px;   /* var(--radius-lg) — cantos mais generosos */
+  --radius-btn:       999px;  /* var(--radius-full) — mantido pra compat */
+  --radius-input:     999px;  /* var(--radius-full) — mantido pra compat */
 
   /* Fonte */
   --font-base: 'Geist', sans-serif;
 
   /* ─────────────────────────────────────────────
      TIPOGRAFIA — SISTEMA
-     Tokens compartilhados entre temas claro/escuro.
-     Tamanhos, pesos, line-heights e letter-spacings
-     não mudam por tema, então ficam só aqui.
      ───────────────────────────────────────────── */
 
-  /* ── Primitivos: tamanhos (base 16px) ── */
   --text-xs:   0.75rem;    /* 12px */
   --text-sm:   0.875rem;   /* 14px */
   --text-md:   1rem;       /* 16px */
@@ -121,175 +156,208 @@
   --text-2xl:  1.5rem;     /* 24px */
   --text-3xl:  1.75rem;    /* 28px */
 
-  /* ── Primitivos: pesos ── */
   --fw-regular:  400;
   --fw-medium:   500;
   --fw-semibold: 600;
   --fw-bold:     700;
   --fw-black:    800;
 
-  /* ── Primitivos: altura de linha ── */
-  --lh-tight:    1.2;   /* títulos */
-  --lh-normal:   1.4;   /* labels, botões, textos curtos */
-  --lh-relaxed:  1.6;   /* parágrafos longos */
+  --lh-tight:    1.2;
+  --lh-normal:   1.4;
+  --lh-relaxed:  1.6;
 
-  /* ── Primitivos: espaçamento entre letras ── */
   --ls-tight:    -0.01em;
   --ls-normal:   0;
-  --ls-wide:     0.04em;   /* labels uppercase */
+  --ls-wide:     0.04em;
 
-  /* ── Semânticos: papéis na interface ── */
-  --font-page-title:     var(--text-2xl);   /* h1 das páginas */
-  --font-page-subtitle:  var(--text-sm);    /* "X insumos cadastrados" */
-  --font-modal-title:    var(--text-lg);    /* h2 dentro de modais */
-  --font-section-label:  var(--text-xs);    /* "DADOS BÁSICOS" uppercase */
-  --font-card-title:     var(--text-md);    /* título de card */
-  --font-field-label:    var(--text-sm);    /* label acima do input */
-  --font-input:          var(--text-md);    /* valor digitado (16px = sem zoom iOS) */
-  --font-body:           var(--text-md);    /* parágrafos */
-  --font-helper:         var(--text-xs);    /* texto auxiliar embaixo do input */
-  --font-button:         var(--text-sm);    /* texto de botão */
-  --font-caption:        var(--text-xs);    /* legendas, metadados */
-  --font-stat-value:     var(--text-2xl);   /* números grandes de dashboard */
-  --font-stat-label:     var(--text-xs);    /* legenda dos números */
+  --font-page-title:     var(--text-2xl);
+  --font-page-subtitle:  var(--text-sm);
+  --font-modal-title:    var(--text-lg);
+  --font-section-label:  var(--text-xs);
+  --font-card-title:     var(--text-md);
+  --font-field-label:    var(--text-sm);
+  --font-input:          var(--text-md);
+  --font-body:           var(--text-md);
+  --font-helper:         var(--text-xs);
+  --font-button:         var(--text-sm);
+  --font-caption:        var(--text-xs);
+  --font-stat-value:     var(--text-2xl);
+  --font-stat-label:     var(--text-xs);
 
   /* ─────────────────────────────────────────────
      ESPAÇAMENTO — SISTEMA
-     Compartilhado entre temas (não muda por modo).
      ───────────────────────────────────────────── */
 
-  /* ── Primitivos: escala 4px ── */
-  --space-1:  0.25rem;   /*  4px */
-  --space-2:  0.5rem;    /*  8px */
-  --space-3:  0.75rem;   /* 12px */
-  --space-4:  1rem;      /* 16px */
-  --space-5:  1.25rem;   /* 20px */
-  --space-6:  1.5rem;    /* 24px */
-  --space-7:  2rem;      /* 32px */
-  --space-8:  2.5rem;    /* 40px */
-  --space-9:  3rem;      /* 48px */
+  --space-1:  0.25rem;
+  --space-2:  0.5rem;
+  --space-3:  0.75rem;
+  --space-4:  1rem;
+  --space-5:  1.25rem;
+  --space-6:  1.5rem;
+  --space-7:  2rem;
+  --space-8:  2.5rem;
+  --space-9:  3rem;
 
-  /* ── Semânticos: papéis de espaçamento ── */
-  /* Gaps (espaço entre filhos em flex/grid) */
-  --gap-tight:     var(--space-2);   /*  8px — chips, badges, botões em linha */
-  --gap-stack:     var(--space-3);   /* 12px — campos empilhados em form */
-  --gap-section:   var(--space-6);   /* 24px — entre seções de modal/página */
+  --gap-tight:     var(--space-2);
+  --gap-stack:     var(--space-3);
+  --gap-section:   var(--space-6);
 
-  /* Padding interno de containers */
-  --pad-input:     var(--space-3) var(--space-4);  /* 12px 16px */
-  --pad-card:      var(--space-4);                  /* 16px */
-  --pad-modal:     var(--space-5);                  /* 20px */
-  --pad-page:      var(--space-4);                  /* 16px (mobile) */
+  --pad-input:     var(--space-3) var(--space-4);
+  --pad-card:      var(--space-4);
+  --pad-modal:     var(--space-5);
+  --pad-page:      var(--space-4);
 
-  /* Margens entre blocos */
-  --margin-header: var(--space-5);   /* 20px — depois do header da página */
-
-  /* Topo das páginas (mobile-first, soma com safe-area no Layout) */
-  --pad-page-top:  var(--space-6);   /* 24px — respiro entre topo do viewport e o título */
+  --margin-header: var(--space-5);
+  --pad-page-top:  var(--space-6);
 
   /* ─────────────────────────────────────────────
-     RAIOS — SISTEMA
-     Compartilhado entre temas.
+     RAIOS — SISTEMA (mais generosos, estilo Duolingo)
      ───────────────────────────────────────────── */
 
-  /* ── Primitivos ── */
-  --radius-sm:    6px;
-  --radius-md:    10px;
-  --radius-lg:    14px;
-  --radius-xl:    20px;
+  --radius-sm:    10px;   /* era 6px */
+  --radius-md:    14px;   /* era 10px */
+  --radius-lg:    18px;   /* era 14px */
+  --radius-xl:    24px;   /* era 20px */
   --radius-full:  999px;
 
-  /* Os semânticos --radius-card, --radius-btn, --radius-input
-     já estão definidos acima (no bloco original de raios). */
-
   /* ─────────────────────────────────────────────
-     MOTION — SISTEMA
-     Durations + easings para animações e transições.
-     Compartilhado entre temas.
+     MOTION — SISTEMA (curvas bouncy pra sensação Duolingo)
      ───────────────────────────────────────────── */
 
-  /* ── Durações ── */
-  --dur-fast:    120ms;   /* hover, micro-interações */
-  --dur-normal:  200ms;   /* abertura de dropdown, troca de aba */
-  --dur-slow:    300ms;   /* abertura de modal, drawer */
+  --dur-fast:    120ms;
+  --dur-normal:  200ms;
+  --dur-slow:    300ms;
 
-  /* ── Easings ── */
-  --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);   /* padrão (entrada) */
-  --ease-in:     cubic-bezier(0.4, 0, 1, 1);       /* saída */
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);     /* transições contínuas */
+  --ease-out:    cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in:     cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);  /* NOVO — botões e badges */
 }
+
+/* ═══════════════════════════════════════════════════════
+   UTILITY — Botão "3D" estilo Duolingo
+   Uso: <button class="btn-3d">Novo pedido</button>
+   Ou variante: btn-3d btn-3d--success | btn-3d--xp
+   ═══════════════════════════════════════════════════════ */
+.btn-3d {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 22px;
+  background: var(--primary);
+  color: var(--text-inverse);
+  border: none;
+  border-radius: 14px;
+  font-family: var(--font-base);
+  font-size: var(--font-button);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 0 var(--primary-dark);
+  transition: transform var(--dur-fast) var(--ease-bounce),
+              box-shadow var(--dur-fast) var(--ease-out),
+              background var(--dur-fast);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-3d:hover:not(:disabled) { background: var(--btn-primary-hover); }
+.btn-3d:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--primary-dark);
+}
+.btn-3d:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: 0 4px 0 var(--text-muted); }
+
+.btn-3d--success { background: var(--gam-success); box-shadow: 0 4px 0 var(--gam-success-text); }
+.btn-3d--success:hover:not(:disabled) { background: #4EB300; }
+.btn-3d--success:active:not(:disabled) { box-shadow: 0 1px 0 var(--gam-success-text); }
+
+.btn-3d--xp { background: var(--gam-xp); color: var(--gam-xp-text); box-shadow: 0 4px 0 #C89B00; }
+.btn-3d--xp:hover:not(:disabled) { background: #F5B800; }
+.btn-3d--xp:active:not(:disabled) { box-shadow: 0 1px 0 #C89B00; }
+
+.btn-3d--secondary {
+  background: var(--bg-card);
+  color: var(--text-title);
+  border: 2px solid var(--border);
+  box-shadow: 0 4px 0 var(--border);
+}
+.btn-3d--secondary:hover:not(:disabled) { background: var(--bg-subtle); }
+.btn-3d--secondary:active:not(:disabled) { box-shadow: 0 1px 0 var(--border); }
+
 
 /* ── Tema Escuro ── */
 :root.dark {
   /* Primária */
-  --primary:          #ECC2D0;
-  --primary-dark:     #C39EAA;
-  --primary-light:    #3D0F20;
-  --primary-gradient: linear-gradient(135deg, #ECC2D0, #C39EAA);
-  --primary-rgb:      236, 194, 208;
+  --primary:          #F472B6;
+  --primary-dark:     #EC407A;
+  --primary-light:    #3D1524;
+  --primary-gradient: linear-gradient(135deg, #F472B6, #EC407A);
+  --primary-rgb:      244, 114, 182;
 
   /* Tipografia */
   --text-title:       #F9FAFB;
   --text-primary:     #E5E7EB;
   --text-secondary:   #9CA3AF;
   --text-muted:       #6B7280;
-  --text-inverse:     #0d0d0d;
+  --text-inverse:     #201C24;
   --text-disabled:    #4B5563;
-  --text-link:        #ECC2D0;
+  --text-link:        #F472B6;
 
   /* Superfícies */
-  --bg-body:          #330716;
-  --bg-card:          #431524;
+  --bg-body:          #17131A;
+  --bg-card:          #221E26;
   --bg-surface:       var(--bg-card);
-  --bg-input:         #431524;
-  --bg-elevated:      #4D1A2A;
+  --bg-input:         #221E26;
+  --bg-elevated:      #2A2530;
   --bg-overlay:       rgba(0,0,0,0.75);
-  --bg-subtle:        #3D0F20;
+  --bg-subtle:        #2A2530;
 
   /* Bordas */
-  --border:           #6E3548;
-  --border-focus:     #ECC2D0;
-  --focus-ring:       0 0 0 3px rgba(236,194,208,0.2);
+  --border:           #363040;
+  --border-focus:     #F472B6;
+  --focus-ring:       0 0 0 3px rgba(244,114,182,0.25);
 
   /* ── Sidebar / Nav ── */
-  --sidebar-bg:           #2A0A14;
-  --sidebar-text:         #ECC2D0;
-  --sidebar-text-muted:   #986274;
-  --sidebar-hover-bg:     #3D0F20;
-  --sidebar-active-bg:    var(--primary-gradient);
+  --sidebar-bg:           #0F0C12;
+  --sidebar-text:         #EFEAF2;
+  --sidebar-text-muted:   rgba(239,234,242,0.5);
+  --sidebar-hover-bg:     #221E26;
+  --sidebar-active-bg:    var(--primary);
   --sidebar-active-text:  #FFFFFF;
-  --sidebar-border:       rgba(236,194,208,0.08);
-  --sidebar-border-right: rgba(236,194,208,0.1);
+  --sidebar-border:       rgba(239,234,242,0.08);
+  --sidebar-border-right: rgba(239,234,242,0.1);
 
   /* ── Header Mobile / Top Bar ── */
-  --topbar-bg:            #2A0A14;
-  --topbar-text:          #ECC2D0;
-  --topbar-border:        rgba(236,194,208,0.1);
+  --topbar-bg:            #17131A;
+  --topbar-text:          #EFEAF2;
+  --topbar-border:        rgba(239,234,242,0.1);
   --topbar-shadow:        0 4px 12px rgba(0,0,0,0.5);
 
   /* ── Bottom Nav Mobile ── */
-  --bottomnav-bg:         #431524;
+  --bottomnav-bg:         #221E26;
   --bottomnav-shadow:     0 -2px 12px rgba(0,0,0,0.4);
-  --bottomnav-inactive:   #C39EAA;
-  --bottomnav-active:     #FFFFFF;
+  --bottomnav-inactive:   rgba(239,234,242,0.5);
+  --bottomnav-active:     #F472B6;
 
   /* ── Gestão Drawer ── */
-  --drawer-bg:            #330716;
+  --drawer-bg:            #0F0C12;
   --drawer-item-bg:       rgba(255,255,255,0.04);
   --drawer-item-border:   rgba(255,255,255,0.06);
-  --drawer-item-hover-bg: rgba(236,194,208,0.12);
-  --drawer-item-hover-border: rgba(236,194,208,0.25);
+  --drawer-item-hover-bg: rgba(244,114,182,0.12);
+  --drawer-item-hover-border: rgba(244,114,182,0.3);
   --drawer-handle:        rgba(255,255,255,0.1);
   --drawer-close-bg:      rgba(255,255,255,0.06);
   --drawer-close-text:    rgba(255,255,255,0.5);
   --drawer-overlay:       rgba(0,0,0,0.75);
 
   /* ── Menu (legado) ── */
-  --menu-bg:          #431524;
-  --menu-inactive:    #986274;
-  --menu-active:      #ECC2D0;
-  --menu-active-bg:   #3D0F20;
-  --menu-hover-bg:    #3D0F20;
+  --menu-bg:          #221E26;
+  --menu-inactive:    rgba(239,234,242,0.5);
+  --menu-active:      #F472B6;
+  --menu-active-bg:   #2A2530;
+  --menu-hover-bg:    #2A2530;
 
   /* ── Estados globais ── */
   --state-hover:      var(--menu-hover-bg);
@@ -300,27 +368,48 @@
   --overlay-light:    rgba(255,255,255,0.08);
 
   /* Botões */
-  --btn-primary-bg:       #ECC2D0;
-  --btn-primary-hover:    #C39EAA;
-  --btn-primary-text:     #431524;
-  --btn-secondary-bg:     #431524;
-  --btn-secondary-border: #6E3548;
-  --btn-secondary-text:   #ECC2D0;
-  --btn-secondary-hover:  #4D1A2A;
+  --btn-primary-bg:       #F472B6;
+  --btn-primary-hover:    #EC407A;
+  --btn-primary-text:     #17131A;
+  --btn-primary-shadow:   #B71C5C;
+  --btn-secondary-bg:     #221E26;
+  --btn-secondary-border: #363040;
+  --btn-secondary-text:   #EFEAF2;
+  --btn-secondary-hover:  #2A2530;
+
+  /* Cores gamificadas — mesmas do claro (a saturação funciona nos dois modos) */
+  --gam-xp:            #FFC800;
+  --gam-xp-bg:         rgba(255,200,0,0.15);
+  --gam-xp-text:       #FFC800;
+
+  --gam-success:       #58CC02;
+  --gam-success-bg:    rgba(88,204,2,0.15);
+  --gam-success-text:  #7EDC1F;
+
+  --gam-info:          #1CB0F6;
+  --gam-info-bg:       rgba(28,176,246,0.15);
+  --gam-info-text:     #4FC2F8;
+
+  --gam-premium:       #CE82FF;
+  --gam-premium-bg:    rgba(206,130,255,0.15);
+  --gam-premium-text:  #D89EFF;
+
+  --gam-streak:        #FF6B35;
+  --gam-streak-bg:     rgba(255,107,53,0.15);
+  --gam-streak-text:   #FF8B5C;
 
   /* Status */
-  --success:          #22C55E;
-  --warning:          #F59E0B;
+  --success:          var(--gam-success);
+  --warning:          var(--gam-xp);
   --error:            #EF4444;
-  --info:             #3B82F6;
+  --info:             var(--gam-info);
 
   /* Sombras */
   --shadow-card:      0 2px 12px rgba(0,0,0,0.4);
   --shadow-sm:        0 1px 3px rgba(0,0,0,0.3);
   --shadow-md:        0 4px 16px rgba(0,0,0,0.5);
   --shadow-lg:        0 10px 30px rgba(0,0,0,0.6);
-
-  /* Raios: herdados do tema claro (não variam entre temas) */
+  --shadow-pink:      0 6px 20px rgba(244,114,182,0.3);
 
   /* Fonte */
   --font-base: 'Geist', sans-serif;
