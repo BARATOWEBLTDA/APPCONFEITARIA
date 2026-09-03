@@ -808,7 +808,7 @@ export default function Pedidos() {
               {!isMobile ? (
                 <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
                   <thead>
-                    <tr style={{ background: '#3d1a24' }}>
+                    <tr style={{ background: 'var(--text-title)' }}>
                       <th className="ped-th">Pedido</th>
                       <th className="ped-th">Cliente</th>
                       <th className="ped-th">Produto</th>
@@ -875,7 +875,7 @@ export default function Pedidos() {
 
             {/* Ícone Doo */}
             <div style={{
-              width: 88, height: 88, borderRadius: '28%', background: '#3d1a24',
+              width: 88, height: 88, borderRadius: '28%', background: 'var(--text-title)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 1rem', boxShadow: '0 8px 24px rgba(61,26,36,0.25)',
             }}>
@@ -907,7 +907,7 @@ export default function Pedidos() {
             <button
               onClick={() => { setModalSemProdutos(false); navigate('/produtos', { state: { abrirCadastro: true } }) }}
               style={{
-                width: '100%', background: '#3d1a24', color: 'white', border: 'none',
+                width: '100%', background: 'var(--text-title)', color: 'white', border: 'none',
                 borderRadius: 12, padding: '0.85rem', fontSize: '0.95rem', fontWeight: 700,
                 cursor: 'pointer', fontFamily: 'inherit',
                 boxShadow: '0 4px 12px rgba(61,26,36,0.25)',
@@ -1027,7 +1027,7 @@ export default function Pedidos() {
 
         /* Footer */
         .mp-footer { padding: 0.85rem 1.25rem 1.25rem; border-top: 1px solid var(--border); flex-shrink: 0; display: flex; gap: 8px; }
-        .mp-btn-editar { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: #3d1a24; border: none; color: white; border-radius: var(--radius-md); padding: 0.8rem; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
+        .mp-btn-editar { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--text-title); border: none; color: white; border-radius: var(--radius-md); padding: 0.8rem; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
         .mp-btn-editar:hover { opacity: 0.92; }
         .mp-btn-excluir { width: 44px; height: 44px; background: #fff1f2; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
         .mp-btn-excluir:hover { background: #fee2e2; }

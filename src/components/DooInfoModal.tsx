@@ -159,7 +159,7 @@ export default function DooInfoModal({
             width: 88,
             height: 88,
             borderRadius: "28%",
-            background: "#3d1a24",
+            background: "var(--text-title)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -234,7 +234,7 @@ export default function DooInfoModal({
           onClick={handleCta}
           style={{
             width: "100%",
-            background: "#3d1a24",
+            background: "var(--text-title)",
             color: "white",
             border: "none",
             borderRadius: 12,

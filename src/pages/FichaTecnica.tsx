@@ -924,7 +924,7 @@ export default function FichaTecnica() {
                   </p>
                   <p style={{ margin: "0 0 14px" }}>
                     Sua receita usa <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong> →{" "}
-                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong>.
+                    <strong style={{ color: "var(--text-title)" }}>R$ {fmt(custoLinha)}</strong>.
                   </p>
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
                     <strong>CMV</strong> (Custo de Mercadoria Vendida) é quanto cada ingrediente pesa no custo total da receita. Quanto menor o CMV, maior seu lucro.
@@ -941,7 +941,7 @@ export default function FichaTecnica() {
                   </p>
                   <p style={{ margin: "0 0 14px" }}>
                     Total:{" "}
-                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong>{" "}
+                    <strong style={{ color: "var(--text-title)" }}>R$ {fmt(custoLinha)}</strong>{" "}
                     — esse é o custo de {ins.nome} nessa receita.
                   </p>
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
@@ -978,7 +978,7 @@ export default function FichaTecnica() {
 
                   <p style={{ margin: "0 0 14px" }}>
                     Assim, o custo desse ingrediente na receita é de{" "}
-                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong>.
+                    <strong style={{ color: "var(--text-title)" }}>R$ {fmt(custoLinha)}</strong>.
                   </p>
 
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
@@ -997,7 +997,7 @@ export default function FichaTecnica() {
                   <p style={{ margin: "0 0 14px" }}>
                     Mesmo assim, calculamos o custo proporcional pela quantidade usada na receita:{" "}
                     <strong>{fmtQty(qtdUsada)} {fmtUnidade(f.unidade_utilizada, qtdUsada)}</strong> →{" "}
-                    <strong style={{ color: "#3d1a24" }}>R$ {fmt(custoLinha)}</strong>.
+                    <strong style={{ color: "var(--text-title)" }}>R$ {fmt(custoLinha)}</strong>.
                   </p>
                   <p style={{ margin: 0, padding: "10px 12px", background: "rgba(61,26,36,0.06)", borderRadius: 10, fontSize: "0.85rem" }}>
                     <strong>Dica:</strong> abra esse insumo em <strong>Insumos</strong> e refaça o cadastro pra que a explicação aqui fique completa.

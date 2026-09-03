@@ -169,7 +169,7 @@ export default function DooIAPanel() {
           align-items: center;
           gap: var(--space-3);
           padding: var(--space-3) var(--space-4);
-          background: linear-gradient(160deg, var(--primary-dark), #431524);
+          background: linear-gradient(160deg, var(--primary-dark), var(--text-title));
           flex-shrink: 0;
         }
         .doo-panel-avatar {
@@ -324,7 +324,7 @@ export default function DooIAPanel() {
         .doo-panel-send {
           width: 36px; height: 36px;
           border-radius: var(--radius-full);
-          background: linear-gradient(160deg, var(--primary-dark), #431524);
+          background: linear-gradient(160deg, var(--primary-dark), var(--text-title));
           border: none;
           color: var(--text-inverse);
           cursor: pointer;

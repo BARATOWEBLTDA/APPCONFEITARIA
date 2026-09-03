@@ -642,7 +642,7 @@ export default function Custos() {
           letter-spacing: var(--ls-wide);
         }
         .cu-badge--tipo {
-          background: #3d1a24;
+          background: var(--text-title);
           color: #fff;
         }
         .cu-item-valor {

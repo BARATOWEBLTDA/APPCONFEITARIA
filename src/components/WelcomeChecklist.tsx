@@ -297,7 +297,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         .wc-donut-pct {
           font-size: 24px;
           font-weight: 800;
-          fill: #3d1a24;
+          fill: var(--text-title);
           letter-spacing: -0.02em;
         }
 
@@ -307,7 +307,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           margin: 0 0 1.25rem;
           font-size: 0.95rem;
           font-weight: var(--fw-semibold);
-          color: #3d1a24;
+          color: var(--text-title);
           line-height: 1.35;
         }
 

@@ -15,7 +15,7 @@ export function SplashScreen({ onDone }: { onDone?: () => void }) {
       const t = timeRef.current;
       const angle = 120 + 20 * Math.sin(t);
       if (bgRef.current) {
-        bgRef.current.style.background = `linear-gradient(${angle}deg, #986274 0%, #6E3548 50%, #C39EAA 100%)`;
+        bgRef.current.style.background = `linear-gradient(${angle}deg, var(--primary) 0%, var(--primary-dark) 50%, var(--text-muted) 100%)`;
       }
       rafRef.current = requestAnimationFrame(animate);
     };
@@ -38,7 +38,7 @@ export function SplashScreen({ onDone }: { onDone?: () => void }) {
         }
         .splash-bg {
           position: absolute; inset: 0;
-          background: linear-gradient(135deg, #986274 0%, #6E3548 50%, #C39EAA 100%);
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 50%, var(--text-muted) 100%);
         }
         .splash-glow {
           position: absolute;

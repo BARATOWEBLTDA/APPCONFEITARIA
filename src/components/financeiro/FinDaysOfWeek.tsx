@@ -87,8 +87,8 @@ export default function FinDaysOfWeek({ value, onChange }: FinDaysOfWeekProps) {
           outline-offset: 2px;
         }
         .fin-dow-chip--on {
-          background: #3d1a24;
-          border-color: #3d1a24;
+          background: var(--text-title);
+          border-color: var(--text-title);
           color: #fff;
           box-shadow: 0 3px 10px rgba(61, 26, 36, 0.22);
         }

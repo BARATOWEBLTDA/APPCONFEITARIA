@@ -20,7 +20,7 @@ const PlusIcon = (
 );
 
 /**
- * Botão CTA primário padrão Doonly — fundo escuro #3d1a24, usado para ações de
+ * Botão CTA primário padrão Doonly — fundo escuro var(--text-title), usado para ações de
  * criação em listas (Novo produto, Nova categoria, Novo ingrediente, etc).
  *
  * @example
@@ -49,7 +49,7 @@ export default function BtnNovo({
           display: inline-flex;
           align-items: center;
           gap: 0.4rem;
-          background: #3d1a24;
+          background: var(--text-title);
           color: #fff;
           border: none;
           border-radius: var(--radius-md);

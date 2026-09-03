@@ -846,7 +846,7 @@ export default function FinanceiroTransacoes() {
         .fin-btn-add {
           display:inline-flex; align-items:center; justify-content:center; gap:6px;
           padding:0.7rem 1rem;
-          background:#3d1a24;
+          background:var(--text-title);
           color:#fff; border:none; border-radius: var(--radius-md);
           font-family:inherit; font-size: var(--font-button); font-weight: var(--fw-semibold);
           cursor:pointer; white-space:nowrap;

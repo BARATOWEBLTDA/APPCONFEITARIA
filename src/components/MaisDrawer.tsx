@@ -208,7 +208,7 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
         .mais-avatar {
           width: 44px; height: 44px;
           border-radius: 28%;
-          background: #3d1a24;
+          background: var(--text-title);
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
           box-shadow: 0 4px 12px rgba(61, 26, 36, 0.22);
@@ -289,12 +289,12 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
         }
         .mais-item:hover {
           background: #FFF1F7;
-          border-color: #3d1a24;
+          border-color: var(--text-title);
         }
         .mais-item-icon {
           width: 30px; height: 30px;
           display: flex; align-items: center; justify-content: center;
-          color: #3d1a24;
+          color: var(--text-title);
           flex-shrink: 0;
         }
         .mais-item-label {

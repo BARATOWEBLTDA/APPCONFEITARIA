@@ -689,10 +689,10 @@ export default function Clientes() {
         .mob-subtitle { font-size: var(--font-helper); color: var(--text-muted); margin: 0; }
 
         .mob-actions { display: flex; gap: 0.6rem; }
-        .mob-btn-primary   { flex: 1; padding: 0.7rem 0.5rem; background: #3d1a24; color: white; border: none; border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; white-space: nowrap; transition: opacity 0.15s; }
+        .mob-btn-primary   { flex: 1; padding: 0.7rem 0.5rem; background: var(--text-title); color: white; border: none; border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; white-space: nowrap; transition: opacity 0.15s; }
         .mob-btn-primary:active { opacity: 0.85; }
         .mob-btn-secondary { flex: 1; padding: 0.7rem 0.5rem; background: var(--bg-card); color: var(--text-title); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; white-space: nowrap; transition: border-color 0.15s; }
-        .mob-btn-secondary:active { border-color: #3d1a24; }
+        .mob-btn-secondary:active { border-color: var(--text-title); }
 
         .mob-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 0.7rem 1rem; }
         .mob-search  { border: none; outline: none; flex: 1; font-family: inherit; font-size: var(--font-button); color: var(--text-title); background: transparent; }
@@ -719,9 +719,9 @@ export default function Clientes() {
         .cli-sidebar { display: flex; flex-direction: column; gap: 1rem; padding-top: 4.5rem; }
         .cli-topbar  { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
 
-        .cli-btn-new     { padding: 0.75rem 1.1rem; background: #3d1a24; color: white; border: none; border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+        .cli-btn-new     { padding: 0.75rem 1.1rem; background: var(--text-title); color: white; border: none; border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
         .cli-btn-completo{ padding: 0.75rem 1.1rem; background: var(--bg-card); color: var(--text-title); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-        .cli-btn-completo:hover { border-color: #3d1a24; color: #3d1a24; }
+        .cli-btn-completo:hover { border-color: var(--text-title); color: var(--text-title); }
 
         .cli-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem 1rem; flex: 1; min-width: 200px; }
         .cli-search      { border: none; outline: none; flex: 1; font-family: inherit; font-size: var(--font-button); color: var(--text-title); background: transparent; }
@@ -769,7 +769,7 @@ export default function Clientes() {
 
         .form-tabs      { display: flex; gap: var(--gap-tight); padding: 0 var(--space-5) var(--space-3); flex-shrink: 0; }
         .form-tab       { flex: 1; padding: var(--space-2); border-radius: var(--radius-md); border: 1.5px solid var(--border); background: var(--bg-body); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-secondary); cursor: pointer; transition: all var(--dur-fast) var(--ease-out); }
-        .form-tab--active { background: #3d1a24; color: var(--text-inverse); border-color: #3d1a24; }
+        .form-tab--active { background: var(--text-title); color: var(--text-inverse); border-color: var(--text-title); }
 
         .form-scroll    { flex: 1; overflow-y: auto; padding: 0 var(--space-5) var(--space-2); }
 
@@ -782,7 +782,7 @@ export default function Clientes() {
         .form-field     { display: flex; flex-direction: column; gap: var(--space-1); }
         .form-field label { font-size: var(--font-field-label); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-secondary); }
         .form-field input, .form-field select, .form-field textarea { padding: var(--pad-input); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-medium); line-height: var(--lh-normal); color: var(--text-title); outline: none; transition: border-color var(--dur-fast) var(--ease-out); background: var(--bg-input); resize: none; width: 100%; }
-        .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: #3d1a24; }
+        .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--text-title); }
 
         .req { color: var(--text-muted); font-size: var(--font-caption); font-weight: var(--fw-regular); font-style: italic; }
         .opt { color: var(--text-muted); font-size: var(--font-caption); font-weight: var(--fw-regular); font-style: italic; }
@@ -797,7 +797,7 @@ export default function Clientes() {
         .form-footer    { display: flex; gap: var(--gap-stack); padding: var(--space-3) var(--space-5) var(--space-5); border-top: 1px solid var(--border); flex-shrink: 0; }
         .form-btn       { flex: 1; padding: var(--space-3); border-radius: var(--radius-md); border: none; font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold); line-height: var(--lh-normal); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity var(--dur-fast) var(--ease-out); }
         .form-btn.cancel    { background: var(--bg-body); color: var(--text-secondary); }
-        .form-btn.save      { background: #3d1a24; color: var(--text-inverse); }
+        .form-btn.save      { background: var(--text-title); color: var(--text-inverse); }
         .form-btn.save:disabled { opacity: 0.5; cursor: not-allowed; }
         .form-btn.delete-btn { background: #fff1f2; color: var(--error); flex: 0 0 auto; padding: var(--space-3) var(--space-4); }
 
@@ -811,9 +811,9 @@ export default function Clientes() {
         .modal-btn.confirm { background: var(--error); color: var(--text-inverse); }
 
         /* ── Spinners ───────────────────────── */
-        .spinner         { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: #3d1a24; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+        .spinner         { width: 24px; height: 24px; border: 2px solid var(--border); border-top-color: var(--text-title); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         .spinner-sm      { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
-        .spinner-sm-dark { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: #3d1a24; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+        .spinner-sm-dark { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--text-title); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         @keyframes spin  { to { transform: rotate(360deg); } }
       `}</style>
     </div>

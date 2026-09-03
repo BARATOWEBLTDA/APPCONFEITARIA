@@ -93,8 +93,8 @@ export default function FinTabs<TKey extends string>({
           outline-offset: 2px;
         }
         .fin-tab--active {
-          background: #3d1a24;
-          border-color: #3d1a24;
+          background: var(--text-title);
+          border-color: var(--text-title);
           color: #fff;
           box-shadow: 0 4px 14px rgba(61, 26, 36, 0.22);
         }

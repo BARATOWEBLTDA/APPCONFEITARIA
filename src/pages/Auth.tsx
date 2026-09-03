@@ -95,7 +95,7 @@ export default function Auth() {
       const t = timeRef.current;
       const angle = 120 + 20 * Math.sin(t);
       if (bgRef.current) {
-        bgRef.current.style.background = `linear-gradient(${angle}deg, #986274 0%, #6E3548 50%, #C39EAA 100%)`;
+        bgRef.current.style.background = `linear-gradient(${angle}deg, var(--primary) 0%, var(--primary-dark) 50%, var(--text-muted) 100%)`;
       }
       currentRef.current.x += (mouseRef.current.x - currentRef.current.x) * 0.06;
       currentRef.current.y += (mouseRef.current.y - currentRef.current.y) * 0.06;
@@ -801,7 +801,7 @@ export default function Auth() {
             width: 320px;
             padding: 1.75rem 1.5rem;
             border-radius: var(--radius-lg);
-            background: linear-gradient(160deg, #986274 0%, #6E3548 45%, #431524 100%);
+            background: linear-gradient(160deg, var(--primary) 0%, var(--primary-dark) 45%, var(--text-title) 100%);
             color: white;
             box-shadow: 0 12px 48px rgba(61, 26, 36, 0.35);
             animation: promoFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;

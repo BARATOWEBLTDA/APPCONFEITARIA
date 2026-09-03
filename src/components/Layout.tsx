@@ -337,7 +337,7 @@ export default function Layout() {
             align-items: stretch;
             justify-content: space-between;
             width: 100%;
-            background: #3d1a24;
+            background: var(--text-title);
             border-radius: 0;
             padding: 6px 6px;
             height: 56px;
@@ -368,7 +368,7 @@ export default function Layout() {
           }
           .bn-item--active {
             background: #ffffff;
-            color: #3d1a24;
+            color: var(--text-title);
           }
           .bn-item--active:hover {
             background: #ffffff;

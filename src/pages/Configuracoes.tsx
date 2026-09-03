@@ -949,8 +949,8 @@ export default function Configuracoes() {
           margin-bottom: 0.85rem;
         }
         .mob-config-card--done {
-          background: linear-gradient(135deg, #fff 60%, #F7EEF1 100%);
-          border-color: #3d1a24;
+          background: linear-gradient(135deg, #fff 60%, var(--bg-subtle) 100%);
+          border-color: var(--text-title);
         }
         .mob-config-header {
           display: flex;
@@ -974,7 +974,7 @@ export default function Configuracoes() {
           width: 48px;
           height: 48px;
           border-radius: 50%;
-          background: #3d1a24;
+          background: var(--text-title);
           color: white;
           font-size: var(--font-helper);
           font-weight: var(--fw-black);
@@ -993,7 +993,7 @@ export default function Configuracoes() {
         }
         .mob-config-bar-fill {
           height: 100%;
-          background: #3d1a24;
+          background: var(--text-title);
           border-radius: var(--radius-sm);
           transition: width var(--dur-slow) var(--ease-out);
         }
@@ -1021,7 +1021,7 @@ export default function Configuracoes() {
           margin: 0;
         }
         .mob-config-next-btn {
-          background: #3d1a24;
+          background: var(--text-title);
           border: none;
           color: white;
           border-radius: var(--radius-sm);
@@ -1034,7 +1034,7 @@ export default function Configuracoes() {
           flex-shrink: 0;
         }
         .mob-resgatar-btn {
-          background: #3d1a24;
+          background: var(--text-title);
           border: none;
           color: white;
           border-radius: var(--radius-md);

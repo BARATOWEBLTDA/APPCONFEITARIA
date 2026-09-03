@@ -498,7 +498,7 @@ export default function Inicio() {
           <button className="ini-profile-btn" onClick={() => setMenuOpen(o => !o)}>
             {profile?.foto_url
               ? <img src={profile.foto_url} alt="Perfil" className="ini-profile-img" />
-              : <div className="ini-profile-placeholder"><User size={30} weight="bold" color="#3d1a24" /></div>
+              : <div className="ini-profile-placeholder"><User size={30} weight="bold" color="var(--text-title)" /></div>
             }
           </button>
 
@@ -656,7 +656,7 @@ export default function Inicio() {
         <h2 className="ini-section-title">Acesso rápido</h2>
         <div className="ini-nav-grid">
           {[
-            { icon: <Plus size={20} weight="bold" />, label: "Novo pedido", sub: "Registrar encomenda", path: "/pedidos/novo", color: "#3d1a24", bg: "#FFF1F7", key: "novo" },
+            { icon: <Plus size={20} weight="bold" />, label: "Novo pedido", sub: "Registrar encomenda", path: "/pedidos/novo", color: "var(--text-title)", bg: "#FFF1F7", key: "novo" },
             { icon: <ClipboardText size={20} weight="duotone" />, label: "Pedidos", sub: "Ver e gerenciar", path: "/pedidos", color: "#1D4ED8", bg: "#DBEAFE", key: "pedidos" },
             { icon: <Package size={20} weight="duotone" />, label: "Insumos", sub: "Ingredientes e embalagens", path: "/insumos", color: "#15803D", bg: "#DCFCE7", key: "insumos" },
             { icon: <CookingPot size={20} weight="duotone" />, label: "Receitas", sub: "Fichas técnicas", path: "/receitas", color: "#D97706", bg: "#FEF3C7", key: "receitas" },
@@ -789,7 +789,7 @@ export default function Inicio() {
           </div>
 
           <div className="ini-resumo-card">
-            <div className="ini-resumo-icon" style={{ background: "#FFF1F7", color: "#3d1a24" }}>
+            <div className="ini-resumo-icon" style={{ background: "#FFF1F7", color: "var(--text-title)" }}>
               <ShoppingBag size={20} weight="duotone" />
             </div>
             <div>
@@ -885,7 +885,7 @@ export default function Inicio() {
                   contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12, fontFamily: "Geist,sans-serif" }}
                   formatter={(v: any) => [formatCurrency(Number(v)), "Faturamento"]}
                 />
-                <Line type="monotone" dataKey="valor" stroke="#3d1a24" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: "#3d1a24" }} />
+                <Line type="monotone" dataKey="valor" stroke="var(--text-title)" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: "var(--text-title)" }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -970,7 +970,7 @@ export default function Inicio() {
 
         /* ── Hero wine com foto da confeiteira, sparkles e coroinha ── */
         .ini-hero {
-          background: linear-gradient(135deg, #2a1019, #3d1a24 35%, #4d1f2c 60%, #3d1a24 85%, #2a1019);
+          background: linear-gradient(135deg, #2a1019, var(--text-title) 35%, #4d1f2c 60%, var(--text-title) 85%, #2a1019);
           background-size: 300% 300%;
           animation: heroGradientMove 14s ease infinite;
           border-radius: 0 0 28px 28px;

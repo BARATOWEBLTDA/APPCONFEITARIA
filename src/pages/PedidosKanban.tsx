@@ -18,7 +18,7 @@ type Pedido = {
 }
 
 const COLUNAS = [
-  { key: 'novo',        label: 'Novo',        color: '#986274', bg: '#F7EEF1', border: '#ECC2D0' },
+  { key: 'novo',        label: 'Novo',        color: 'var(--primary)', bg: 'var(--bg-subtle)', border: 'var(--border)' },
   { key: 'em_producao', label: 'Em Produção', color: '#f97316', bg: '#fff7ed', border: '#fed7aa' },
   { key: 'pronto',      label: 'Pronto',      color: '#22c55e', bg: '#f0fdf4', border: '#bbf7d0' },
   { key: 'a_caminho',   label: 'A Caminho / Retirado', color: '#0ea5e9', bg: '#f0f9ff', border: '#bae6fd' },
@@ -146,19 +146,19 @@ export default function PedidosKanban({ pedidos, onStatusChange, onNovo }: {
                   <div
                     key={p.id}
                     onClick={() => navigate(`/pedidos/${p.id}`)}
-                    style={{ background: 'var(--bg-card,#fff)', border: `1.5px solid ${atrasado ? '#fca5a5' : 'var(--border,#ECC2D0)'}`, borderRadius: 10, padding: '0.85rem', cursor: 'pointer', opacity: isLoading ? 0.6 : 1, transition: 'box-shadow 0.15s', fontFamily: "'Geist',sans-serif" }}
+                    style={{ background: 'var(--bg-card,#fff)', border: `1.5px solid ${atrasado ? '#fca5a5' : 'var(--border,var(--border))'}`, borderRadius: 10, padding: '0.85rem', cursor: 'pointer', opacity: isLoading ? 0.6 : 1, transition: 'box-shadow 0.15s', fontFamily: "'Geist',sans-serif" }}
                     onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'}
                     onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.boxShadow = ''}
                   >
                     {/* Topo: número + status + botões */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted,#C39EAA)' }}>Pedido #{p.numero || '—'}</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted,var(--text-muted))' }}>Pedido #{p.numero || '—'}</span>
                         {atrasado && <span style={{ fontSize: '0.6rem', fontWeight: 700, color: '#dc2626', background: '#fee2e2', borderRadius: 4, padding: '1px 6px' }}>ATRASADO</span>}
                       </div>
                       <div style={{ display: 'flex', gap: 3 }} onClick={e => e.stopPropagation()}>
                         {ANTERIOR[p.status] && (
-                          <button onClick={e => voltar(e, p)} disabled={!!isLoading} title="Voltar" style={{ width: 24, height: 24, borderRadius: 6, border: '1.5px solid var(--border,#ECC2D0)', background: 'var(--bg-body,#FAFAFA)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary,#6E3548)' }}>
+                          <button onClick={e => voltar(e, p)} disabled={!!isLoading} title="Voltar" style={{ width: 24, height: 24, borderRadius: 6, border: '1.5px solid var(--border,var(--border))', background: 'var(--bg-body,#FAFAFA)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary,var(--primary-dark))' }}>
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
                           </button>
                         )}
@@ -183,27 +183,27 @@ export default function PedidosKanban({ pedidos, onStatusChange, onNovo }: {
                     </div>
 
                     {/* Cliente */}
-                    <p style={{ margin: '0 0 0.15rem', fontSize: '0.72rem', color: 'var(--text-muted,#C39EAA)', fontWeight: 500 }}>Cliente</p>
-                    <p style={{ margin: '0 0 0.4rem', fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-title,#431524)', lineHeight: 1.3 }}>{p.cliente_nome || 'Não informado'}</p>
+                    <p style={{ margin: '0 0 0.15rem', fontSize: '0.72rem', color: 'var(--text-muted,var(--text-muted))', fontWeight: 500 }}>Cliente</p>
+                    <p style={{ margin: '0 0 0.4rem', fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-title,var(--text-title))', lineHeight: 1.3 }}>{p.cliente_nome || 'Não informado'}</p>
 
                     {/* Itens */}
                     {p.pedido_itens && p.pedido_itens.length > 0 && (
                       <div style={{ marginBottom: '0.4rem' }}>
                         {p.pedido_itens.slice(0, 2).map((item, i) => (
-                          <p key={i} style={{ margin: '0 0 2px', fontSize: '0.75rem', color: 'var(--text-secondary,#6E3548)' }}>
+                          <p key={i} style={{ margin: '0 0 2px', fontSize: '0.75rem', color: 'var(--text-secondary,var(--primary-dark))' }}>
                             {item.nome_produto} ({formatQtd(item.quantidade, item.produtos?.forma_venda)})
                           </p>
                         ))}
                         {p.pedido_itens.length > 2 && (
-                          <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-muted,#C39EAA)' }}>+{p.pedido_itens.length - 2} item(s)</p>
+                          <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-muted,var(--text-muted))' }}>+{p.pedido_itens.length - 2} item(s)</p>
                         )}
                       </div>
                     )}
 
-                    <div style={{ height: 1, background: 'var(--border,#ECC2D0)', margin: '0.4rem 0' }} />
+                    <div style={{ height: 1, background: 'var(--border,var(--border))', margin: '0.4rem 0' }} />
 
                     {/* Data e tipo entrega */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem', color: 'var(--text-secondary,#6E3548)', marginBottom: '0.35rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.73rem', color: 'var(--text-secondary,var(--primary-dark))', marginBottom: '0.35rem' }}>
                       <span style={{ color: atrasado ? '#dc2626' : hoje ? '#d97706' : 'inherit', fontWeight: atrasado || hoje ? 600 : 400 }}>
                         {p.data_entrega ? `${atrasado ? 'Atrasado' : hoje ? 'Hoje' : p.data_entrega.split('-').reverse().join('/')}${p.horario_entrega ? ` · ${p.horario_entrega.slice(0, 5)}` : ''}` : 'Sem data'}
                       </span>
@@ -215,7 +215,7 @@ export default function PedidosKanban({ pedidos, onStatusChange, onNovo }: {
                       <span style={{ fontSize: '0.7rem', fontWeight: 500, color: p.status_pagamento === 'pago' ? '#16a34a' : '#dc2626' }}>
                         {PAG_CONFIG[p.forma_pagamento] || 'PIX'} · {p.status_pagamento === 'pago' ? 'Pago' : 'Pendente'}
                       </span>
-                      <span style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-title,#431524)' }}>{formatMoney(p.valor_total)}</span>
+                      <span style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--text-title,var(--text-title))' }}>{formatMoney(p.valor_total)}</span>
                     </div>
                   </div>
                 )

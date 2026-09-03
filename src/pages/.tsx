@@ -229,12 +229,12 @@ export default function MaisDrawer({ open, onClose }: MaisDrawerProps) {
         }
         .mais-item:hover {
           background: #FFF1F7;
-          border-color: #3d1a24;
+          border-color: var(--text-title);
         }
         .mais-item-icon {
           width: 30px; height: 30px;
           display: flex; align-items: center; justify-content: center;
-          color: #3d1a24;
+          color: var(--text-title);
           flex-shrink: 0;
         }
         .mais-item-label {

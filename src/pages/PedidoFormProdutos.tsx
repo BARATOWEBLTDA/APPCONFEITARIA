@@ -520,7 +520,7 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
           display: flex; align-items: center; justify-content: center;
           color: var(--primary); transition: background var(--dur-fast);
         }
-        .pf2-stepper-btn:hover { background: #ECC2D0; }
+        .pf2-stepper-btn:hover { background: var(--border); }
         .pf2-stepper-val {
           min-width: 52px; text-align: center;
           font-size: var(--font-input); font-weight: var(--fw-bold);
@@ -546,7 +546,7 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
           border: none; cursor: pointer; padding: 0;
           color: var(--primary); transition: background var(--dur-fast);
         }
-        .pf2-item-stepper button:hover { background: #ECC2D0; }
+        .pf2-item-stepper button:hover { background: var(--border); }
         .pf2-item-stepper span {
           min-width: 22px; text-align: center;
           font-size: var(--font-caption); font-weight: var(--fw-bold);

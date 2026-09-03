@@ -533,10 +533,10 @@ export default function Produtos() {
           onChange={e => setBuscaTexto(e.target.value)}
         />
         <div style={{ display: "flex", background: "white", borderRadius: 8, padding: 2, gap: 2, border: "1.5px solid var(--border)", flexShrink: 0 }}>
-          <button onClick={() => { setViewMode("grid"); localStorage.setItem("prod_viewMode", "grid"); }} style={{ width: 28, height: 28, borderRadius: 6, border: "none", cursor: "pointer", background: viewMode === "grid" ? "#3d1a24" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }} title="Grade">
+          <button onClick={() => { setViewMode("grid"); localStorage.setItem("prod_viewMode", "grid"); }} style={{ width: 28, height: 28, borderRadius: 6, border: "none", cursor: "pointer", background: viewMode === "grid" ? "var(--text-title)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }} title="Grade">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={viewMode === "grid" ? "white" : "var(--text-muted)"} strokeWidth="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
           </button>
-          <button onClick={() => { setViewMode("lista"); localStorage.setItem("prod_viewMode", "lista"); }} style={{ width: 28, height: 28, borderRadius: 6, border: "none", cursor: "pointer", background: viewMode === "lista" ? "#3d1a24" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }} title="Lista">
+          <button onClick={() => { setViewMode("lista"); localStorage.setItem("prod_viewMode", "lista"); }} style={{ width: 28, height: 28, borderRadius: 6, border: "none", cursor: "pointer", background: viewMode === "lista" ? "var(--text-title)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }} title="Lista">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={viewMode === "lista" ? "white" : "var(--text-muted)"} strokeWidth="2.2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
         </div>

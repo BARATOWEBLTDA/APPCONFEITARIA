@@ -477,7 +477,7 @@ export default function Cardapio() {
         /* ── Status card (superfície vinho escura, mesma identidade nos dois temas) ── */
         .ch-status-card {
           padding: var(--space-4) var(--space-5);
-          background: linear-gradient(135deg, #3d1a24 0%, #6E3548 100%);
+          background: linear-gradient(135deg, var(--text-title) 0%, var(--primary-dark) 100%);
           border-radius: var(--radius-lg);
           box-shadow: var(--shadow-md);
           color: #FFFFFF;

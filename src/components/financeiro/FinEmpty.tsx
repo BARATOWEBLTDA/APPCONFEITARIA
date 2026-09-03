@@ -85,7 +85,7 @@ export default function FinEmpty({
           width: 88px;
           height: 88px;
           border-radius: 28%;
-          background: #3d1a24;
+          background: var(--text-title);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -97,7 +97,7 @@ export default function FinEmpty({
           height: 72px;
           border-radius: 26%;
           background: var(--primary-light);
-          color: #3d1a24;
+          color: var(--text-title);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -139,7 +139,7 @@ export default function FinEmpty({
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
-          background: #3d1a24;
+          background: var(--text-title);
           color: #fff;
           border: none;
           border-radius: var(--radius-md);

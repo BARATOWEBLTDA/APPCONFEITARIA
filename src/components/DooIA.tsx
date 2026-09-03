@@ -11,7 +11,7 @@ interface Message {
   attachmentPreview?: string
 }
 
-const VINHO = '#6E3548'
+const VINHO = 'var(--primary-dark)'
 const MAX_HISTORY = 12
 
 const SUGGESTIONS = [
@@ -521,7 +521,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             <button onClick={handleClose} style={{
               position: 'absolute', top: 12, right: 12, width: 32, height: 32,
               background: 'transparent', border: 'none', cursor: 'pointer',
-              color: 'var(--text-muted,#C39EAA)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'var(--text-muted,var(--text-muted))', display: 'flex', alignItems: 'center', justifyContent: 'center',
               borderRadius: 8,
             }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -538,21 +538,21 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             </div>
 
             <h3 style={{
-              fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-title,#431524)',
+              fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-title,var(--text-title))',
               margin: '0 0 6px', letterSpacing: '-0.02em',
             }}>
               Conheça a Doo
             </h3>
 
             <p style={{
-              fontSize: '0.88rem', color: 'var(--text-secondary,#6E3548)',
+              fontSize: '0.88rem', color: 'var(--text-secondary,var(--primary-dark))',
               margin: '0 0 1.25rem', lineHeight: 1.5,
             }}>
               Sua consultora de confeitaria exclusiva. Calcule preços, crie receitas, planeje produção e muito mais — disponível apenas no <strong style={{ color: VINHO }}>plano PRO</strong>.
             </p>
 
             <div style={{
-              background: 'var(--bg-subtle,#F7EEF1)', borderRadius: 12, padding: '0.85rem 1rem',
+              background: 'var(--bg-subtle,var(--bg-subtle))', borderRadius: 12, padding: '0.85rem 1rem',
               marginBottom: '1.25rem', textAlign: 'left',
             }}>
               {[
@@ -561,7 +561,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
                 'Legendas prontas para o Instagram',
                 'Planejamento de produção semanal',
               ].map((feat, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.82rem', color: 'var(--text-title,#431524)', padding: '4px 0' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.82rem', color: 'var(--text-title,var(--text-title))', padding: '4px 0' }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={VINHO} strokeWidth="3" strokeLinecap="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
                   {feat}
                 </div>
@@ -583,7 +583,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
             <button
               onClick={handleClose}
               style={{
-                width: '100%', background: 'transparent', color: 'var(--text-muted,#C39EAA)',
+                width: '100%', background: 'transparent', color: 'var(--text-muted,var(--text-muted))',
                 border: 'none', padding: '0.5rem', fontSize: '0.82rem', fontWeight: 500,
                 cursor: 'pointer', fontFamily: 'inherit',
               }}
@@ -619,7 +619,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
 
           {/* Header */}
           <div style={{
-            background: `linear-gradient(135deg, ${VINHO}, #9B4468)`,
+            background: `linear-gradient(135deg, ${VINHO}, var(--primary-dark))`,
             padding: '0.85rem 1rem',
             display: 'flex', alignItems: 'center', gap: '0.65rem', flexShrink: 0,
           }}>
@@ -870,7 +870,7 @@ export default function DooIA({ forceOpen, onClose }: { forceOpen?: boolean; onC
               disabled={loading || generatingImage || (!input.trim() && !pendingImage)}
               style={{
                 width: '36px', height: '36px', borderRadius: '12px',
-                background: (input.trim() || pendingImage) ? `linear-gradient(135deg, ${VINHO}, #9B4468)` : '#E9E9EE',
+                background: (input.trim() || pendingImage) ? `linear-gradient(135deg, ${VINHO}, var(--primary-dark))` : '#E9E9EE',
                 border: 'none',
                 cursor: (input.trim() || pendingImage) ? 'pointer' : 'not-allowed',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',

@@ -542,7 +542,7 @@ export default function PedidoForm() {
           font-size: var(--font-helper); color: var(--primary);
           transition: background 0.1s;
         }
-        .pf2-drop-new:hover { background: #ECC2D0; }
+        .pf2-drop-new:hover { background: var(--border); }
         .pf2-drop-new strong { font-weight: var(--fw-bold); }
 
         /* ── Itens de produto ── */
@@ -751,7 +751,7 @@ export default function PedidoForm() {
         /* ── Botões ── */
         .pf2-btn-primary {
           display: flex; align-items: center; justify-content: center; gap: 0.4rem;
-          background: var(--btn-primary-bg, #986274);
+          background: var(--btn-primary-bg, var(--primary));
           color: var(--btn-primary-text, #fff);
           border: none; border-radius: var(--radius-md);
           padding: 0.75rem 1.25rem;

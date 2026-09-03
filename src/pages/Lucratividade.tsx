@@ -391,7 +391,7 @@ export default function Lucratividade() {
                     />
                     <Bar dataKey="receita" radius={[6, 6, 0, 0]}>
                       {chartData.map((_, i) => (
-                        <Cell key={i} fill={i === chartData.length - 1 ? "#3d1a24" : "#ECC2D0"} />
+                        <Cell key={i} fill={i === chartData.length - 1 ? "var(--text-title)" : "var(--border)"} />
                       ))}
                     </Bar>
                   </BarChart>
@@ -423,7 +423,7 @@ export default function Lucratividade() {
                 <CompRow label="Custos fixos" valor={calc.totalFixos} total={calc.receita} cor="#C58FA1" />
                 <CompRow label="Mão de obra" valor={calc.salario} total={calc.receita} cor="#D5A8B6" />
                 <CompRow label="Taxas e embalagens" valor={calc.totalVariaveis} total={calc.receita} cor="#E4C2CD" />
-                <CompRow label="Sobrou (lucro)" valor={Math.max(calc.lucroLiquido, 0)} total={calc.receita} cor="#3d1a24" destaque />
+                <CompRow label="Sobrou (lucro)" valor={Math.max(calc.lucroLiquido, 0)} total={calc.receita} cor="var(--text-title)" destaque />
               </div>
             </FinCard>
           )}
@@ -516,7 +516,7 @@ export default function Lucratividade() {
                     className="lu-equilib-bar-fill"
                     style={{
                       width: `${Math.min(calc.progressoEquilibrio, 100)}%`,
-                      background: calc.progressoEquilibrio >= 100 ? "#3d1a24" : "#C58FA1",
+                      background: calc.progressoEquilibrio >= 100 ? "var(--text-title)" : "#C58FA1",
                     }}
                   />
                 </div>
@@ -724,7 +724,7 @@ export default function Lucratividade() {
         }
         .lu-canal-bar-fill {
           height: 100%;
-          background: linear-gradient(90deg, #3d1a24, #C58FA1);
+          background: linear-gradient(90deg, var(--text-title), #C58FA1);
           border-radius: var(--radius-full);
           transition: width 0.6s var(--ease-out);
         }

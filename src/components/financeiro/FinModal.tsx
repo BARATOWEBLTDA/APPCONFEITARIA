@@ -247,10 +247,10 @@ export function FinModalFooter({
           cursor: not-allowed;
         }
         .fin-btn--primary {
-          background: #3d1a24;
+          background: var(--text-title);
           color: #fff;
         }
-        .fin-btn--primary:hover:not(:disabled) { background: #6E3548; }
+        .fin-btn--primary:hover:not(:disabled) { background: var(--primary-dark); }
         .fin-btn--secondary {
           background: var(--btn-secondary-bg);
           color: var(--btn-secondary-text);
