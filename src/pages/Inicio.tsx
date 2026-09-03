@@ -1,4 +1,4 @@
-// Build marker: 2026-09-03T20:30 — zero dourado, tudo rosa/grafite/branco
+// Build marker: 2026-09-04T10:15 — reduz espaco entre hero e primeiro card
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -957,7 +957,7 @@ export default function Inicio() {
           display: flex;
           flex-direction: column;
           gap: var(--space-5);
-          margin-top: 2.5rem; /* 40px fixo — respiro após o hero (mobile) */
+          margin-top: 1.25rem; /* respiro após o hero (mobile) */
         }
         .ini-main {
           display: flex;
