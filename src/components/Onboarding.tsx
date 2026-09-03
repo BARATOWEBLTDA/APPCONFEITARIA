@@ -1564,7 +1564,9 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 /* ─── Slide 1: Boas-vindas ──────────────────────── */
 function Slide1Welcome({ onReady }: { onReady: () => void }) {
   useEffect(() => {
-    const t = window.setTimeout(onReady, 2400); // texto fade completou + folga
+    // Fade-in mais curto: eyebrow entra ~150ms, bloco ~350ms, ambos completam em ~1000ms.
+    // Damos uma folga curta e liberamos o botão "Começar".
+    const t = window.setTimeout(onReady, 900);
     return () => clearTimeout(t);
   }, [onReady]);
 
@@ -1580,14 +1582,14 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
       </div>
 
       <div className="ob-welcome-anchor">
-        <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.3s" }}>
+        <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.15s" }}>
           COM O DOONLY
         </div>
-        <div className="ob-welcome-block" style={{ animationDelay: "0.7s" }}>
+        <div className="ob-welcome-block" style={{ animationDelay: "0.35s" }}>
           SUA CONFEITARIA<br/>
-          FICA <span className="ob-fill" style={{ animationDelay: "2.0s" }}>ORGANIZADA</span><br/>
+          FICA <span className="ob-fill">ORGANIZADA</span><br/>
           DO CARDÁPIO<br/>
-          AO <span className="ob-fill" style={{ animationDelay: "3.0s" }}>LUCRO</span>
+          AO <span className="ob-fill">LUCRO</span>
         </div>
       </div>
     </>
