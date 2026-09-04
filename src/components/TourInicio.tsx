@@ -90,32 +90,63 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
     return () => clearTimeout(t);
   }, [forceOpen]);
 
-  // Calcula o rect do elemento alvo do passo atual + re-recalcula em resize/scroll
-  const calcularRect = useCallback(() => {
+  // Calcula o rect do elemento alvo — SEM fazer scroll.
+  // Usado no listener de resize/scroll pra manter a posição do card/spotlight atualizada.
+  const recalcularRect = useCallback(() => {
     const step = STEPS[current];
     if (!step) return;
     const el = document.querySelector(step.selector) as HTMLElement | null;
     if (!el) { setRect(null); return; }
-    // Scroll até o elemento ficar visível (se estiver fora da tela)
-    el.scrollIntoView({ block: "center", behavior: "smooth" });
-    // Espera scroll estabilizar antes de medir
-    setTimeout(() => {
-      const r = el.getBoundingClientRect();
-      setRect(r);
-    }, 300);
+    setRect(el.getBoundingClientRect());
   }, [current]);
 
+  // Quando o passo muda: rola até o elemento UMA vez, depois mede.
   useEffect(() => {
     if (!visible) return;
-    calcularRect();
-    const handler = () => calcularRect();
-    window.addEventListener("resize", handler);
-    window.addEventListener("scroll", handler, true);
+    const step = STEPS[current];
+    if (!step) return;
+    const el = document.querySelector(step.selector) as HTMLElement | null;
+    if (!el) { setRect(null); return; }
+    // Rola até o elemento ficar centralizado (só uma vez, no início do passo)
+    el.scrollIntoView({ block: "center", behavior: "smooth" });
+    // Espera scroll terminar antes de medir e travar
+    const t = setTimeout(() => {
+      setRect(el.getBoundingClientRect());
+    }, 400);
+    return () => clearTimeout(t);
+  }, [visible, current]);
+
+  // Trava scroll do body enquanto o tour está visível + recalcula em resize
+  useEffect(() => {
+    if (!visible) return;
+    // Scroll lock robusto (igual usamos no dropdown de notificações)
+    const scrollY = window.scrollY;
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevBodyPosition = document.body.style.position;
+    const prevBodyTop = document.body.style.top;
+    const prevBodyWidth = document.body.style.width;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    document.documentElement.style.overflow = "hidden";
+
+    const handleResize = () => recalcularRect();
+    window.addEventListener("resize", handleResize);
+    window.addEventListener("orientationchange", handleResize);
+
     return () => {
-      window.removeEventListener("resize", handler);
-      window.removeEventListener("scroll", handler, true);
+      document.body.style.overflow = prevBodyOverflow;
+      document.body.style.position = prevBodyPosition;
+      document.body.style.top = prevBodyTop;
+      document.body.style.width = prevBodyWidth;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      window.scrollTo(0, scrollY);
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("orientationchange", handleResize);
     };
-  }, [visible, current, calcularRect]);
+  }, [visible, recalcularRect]);
 
   const fechar = () => {
     try { localStorage.setItem(LS_KEY, "1"); } catch {}
@@ -212,6 +243,7 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
           position: fixed; inset: 0;
           background: transparent;
           pointer-events: auto;
+          touch-action: none;
         }
         .tour-spotlight {
           position: fixed;
