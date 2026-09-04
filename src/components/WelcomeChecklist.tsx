@@ -143,6 +143,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         // ─── MODO COLAPSADO ───
         <button
           className="wc-collapsed"
+          data-tour="recompensa"
           onClick={() => { marcarStarted(); toggleMinimized(); }}
           type="button"
           aria-label={pct > 0 ? "Continuar configuração inicial" : "Começar configuração inicial"}
@@ -176,7 +177,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         (() => {
           const mostrarEtapas = started || pct > 0;
           return (
-            <div className="wc-root">
+            <div className="wc-root" data-tour="recompensa">
               {/* Cabeçalho grafite com o prêmio */}
               <div className={`wc-prize ${mostrarEtapas ? "" : "wc-prize--intro"}`}>
                 <span className="wc-prize-glow" aria-hidden="true" />

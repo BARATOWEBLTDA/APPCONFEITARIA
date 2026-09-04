@@ -354,6 +354,23 @@ export default function Configuracoes() {
                 ))}
               </div>
 
+              {/* Rever tutorial */}
+              <div className="cfg-tutorial-wrap">
+                <p className="cfg-tutorial-title">Tutorial da tela Início</p>
+                <p className="cfg-tutorial-sub">Reveja o passo a passo com os destaques da tela</p>
+                <button
+                  type="button"
+                  className="cfg-tutorial-btn"
+                  onClick={() => {
+                    try { localStorage.removeItem("doonly_tour_inicio_visto"); } catch {}
+                    navigate("/inicio");
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                  Reabrir tutorial
+                </button>
+              </div>
+
               <style>{`
                 .cfg-metrica-header { margin-bottom: 12px; }
                 .cfg-metrica-title { margin: 0; font-size: 14px; font-weight: var(--fw-bold); color: var(--text-title); }
@@ -389,6 +406,33 @@ export default function Configuracoes() {
                 .cfg-metrica-nome { font-size: 13px; font-weight: var(--fw-bold); color: var(--text-title); line-height: 1.3; }
                 .cfg-metrica-desc { font-size: 11px; color: var(--text-secondary); margin-top: 2px; line-height: 1.35; }
                 .cfg-metrica-check { width: 22px; color: var(--primary); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+
+                /* Rever tutorial */
+                .cfg-tutorial-wrap {
+                  margin-top: 16px;
+                  padding: 14px;
+                  background: var(--bg-subtle);
+                  border-radius: var(--radius-md);
+                  border: 1px dashed rgba(var(--primary-rgb), 0.3);
+                }
+                .cfg-tutorial-title { margin: 0; font-size: 13px; font-weight: var(--fw-bold); color: var(--text-title); }
+                .cfg-tutorial-sub { margin: 3px 0 10px; font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+                .cfg-tutorial-btn {
+                  display: inline-flex; align-items: center; gap: 6px;
+                  padding: 8px 14px;
+                  background: var(--primary);
+                  color: #fff;
+                  border: none;
+                  border-radius: var(--radius-full);
+                  font-family: inherit;
+                  font-size: 12px;
+                  font-weight: var(--fw-bold);
+                  cursor: pointer;
+                  box-shadow: 0 3px 0 var(--primary-dark);
+                  transition: transform var(--dur-fast), background var(--dur-fast);
+                }
+                .cfg-tutorial-btn:hover { background: var(--btn-primary-hover); }
+                .cfg-tutorial-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--primary-dark); }
               `}</style>
             </div>
           )}

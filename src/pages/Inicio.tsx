@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T17:00 — sino colorido, dropdown unico no Layout com blur
+// Build marker: 2026-09-04T18:00 — tour de boas-vindas na primeira entrada
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -16,6 +16,7 @@ import { enableNotifications, disableNotifications, getStoredNotifState } from "
 import { useProfile } from "@/hooks/useProfile";
 import { useNotifications } from "@/context/NotificationContext";
 import MetricaDestaque from "@/components/MetricaDestaque";
+import TourInicio from "@/components/TourInicio";
 import WelcomeChecklist from "@/components/WelcomeChecklist";
 import UpdatesFeed from "@/components/UpdatesFeed";
 import DooIAPanel from "@/components/DooIAPanel";
@@ -2037,6 +2038,9 @@ export default function Inicio() {
           onCropDone={handleCropDone}
         />
       )}
+
+      {/* Tour de boas-vindas — auto-abre no primeiro login (1s de delay) */}
+      <TourInicio />
     </div>
   );
 }
