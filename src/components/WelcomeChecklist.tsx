@@ -501,12 +501,12 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           margin-right: calc(-1 * var(--space-2));
           background: linear-gradient(135deg, #2D1F26, #4B3D46);
           border-radius: var(--radius-lg);
-          padding: 14px 16px;
+          padding: 14px;
           color: #fff;
           border: none;
           cursor: pointer;
           align-items: center;
-          gap: 12px;
+          gap: 10px;
           box-shadow: 0 6px 20px rgba(45, 31, 38, 0.22);
           transition: transform var(--dur-fast), box-shadow var(--dur-fast);
           position: relative;
@@ -557,6 +557,9 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           letter-spacing: -0.01em;
           line-height: 1.2;
           margin-bottom: 6px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .wc-collapsed-hl { color: #F27DA8; }
         .wc-collapsed-bar {
@@ -589,13 +592,13 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           position: relative;
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          padding: 10px 16px;
+          gap: 4px;
+          padding: 9px 13px;
           border-radius: var(--radius-full);
           background: var(--primary);
           color: #fff;
           font-family: inherit;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: var(--fw-black);
           letter-spacing: 0.04em;
           text-transform: uppercase;
