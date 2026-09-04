@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T12:00 — colapsado sem coroa grande (só badge + botao)
+// Build marker: 2026-09-04T21:00 — redesign colapsado v.C (grafite + coroa esq + botao chunky)
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -149,11 +149,15 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           aria-label={pct > 0 ? "Continuar configuração inicial" : "Começar configuração inicial"}
         >
           <span className="wc-collapsed-glow" aria-hidden="true" />
+
+          {/* Ícone coroa 3D à esquerda */}
+          <span className="wc-collapsed-crown" aria-hidden="true">
+            <Crown size={20} weight="fill" />
+          </span>
+
+          {/* Conteúdo do meio: badge + título + barra */}
           <span className="wc-collapsed-content">
-            <span className="wc-collapsed-badge">
-              <Crown size={10} weight="fill" />
-              Recompensa
-            </span>
+            <span className="wc-collapsed-badge">Recompensa</span>
             <span className="wc-collapsed-title">
               <span className="wc-collapsed-hl">7 dias</span> grátis no PRO
             </span>
@@ -161,12 +165,14 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
               <span className="wc-collapsed-bar-track">
                 <span className="wc-collapsed-bar-fill" style={{ width: `${pct}%` }} />
               </span>
-              <span className="wc-collapsed-bar-txt">{doneCount}/{total} · {pct}%</span>
+              <span className="wc-collapsed-bar-txt">{doneCount}/{total}</span>
             </span>
           </span>
+
+          {/* Botão CTA à direita */}
           <span className="wc-collapsed-cta" aria-hidden="true">
             {pct > 0 ? "Continuar" : "Começar"}
-            <CaretRight size={12} weight="bold" />
+            <CaretRight size={13} weight="bold" />
           </span>
         </button>
       ) : (
@@ -487,73 +493,80 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
            COLAPSADO
            ══════════════════════════════════════════════ */
         .wc-collapsed {
-          width: auto;
+          /* Fix: display:flex + width:100% pra ocupar largura toda do container */
+          display: flex;
+          width: 100%;
+          box-sizing: border-box;
           margin-left: calc(-1 * var(--space-2));
           margin-right: calc(-1 * var(--space-2));
           background: linear-gradient(135deg, #2D1F26, #4B3D46);
-          border-radius: var(--radius-md);
-          padding: 12px 14px;
+          border-radius: var(--radius-lg);
+          padding: 14px 16px;
           color: #fff;
           border: none;
           cursor: pointer;
-          display: flex;
           align-items: center;
-          gap: 10px;
-          box-shadow: 0 3px 12px rgba(45, 31, 38, 0.15);
+          gap: 12px;
+          box-shadow: 0 6px 20px rgba(45, 31, 38, 0.22);
           transition: transform var(--dur-fast), box-shadow var(--dur-fast);
           position: relative;
           overflow: hidden;
           text-align: left;
           font-family: inherit;
         }
-        .wc-collapsed:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(45, 31, 38, 0.25); }
+        .wc-collapsed:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(45, 31, 38, 0.3); }
         .wc-collapsed-glow {
           position: absolute;
-          top: -20px; right: -20px;
-          width: 90px; height: 90px;
-          background: radial-gradient(circle, rgba(232, 90, 140, 0.35), transparent 70%);
+          top: -40px; right: -40px;
+          width: 140px; height: 140px;
+          background: radial-gradient(circle, rgba(232, 90, 140, 0.4), transparent 70%);
           pointer-events: none;
         }
+
+        /* Coroa 3D à esquerda (mesma vibe do expandido) */
+        .wc-collapsed-crown {
+          position: relative;
+          width: 44px; height: 44px;
+          border-radius: var(--radius-md);
+          background: var(--primary);
+          color: #fff;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 3px 0 var(--primary-dark);
+          flex-shrink: 0;
+        }
+
         .wc-collapsed-content {
           position: relative;
           flex: 1;
           min-width: 0;
           display: flex;
           flex-direction: column;
-          gap: 2px;
         }
         .wc-collapsed-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          background: var(--primary);
-          color: #fff;
-          padding: 2px 8px;
-          border-radius: var(--radius-full);
-          font-size: 9px;
+          display: inline-block;
+          font-size: 10px;
           font-weight: var(--fw-black);
           letter-spacing: 0.06em;
           text-transform: uppercase;
-          box-shadow: 0 1px 0 var(--primary-dark);
-          align-self: flex-start;
+          color: #F27DA8;
           margin-bottom: 2px;
         }
         .wc-collapsed-title {
-          font-size: 13px;
+          font-size: 14px;
           font-weight: var(--fw-black);
           letter-spacing: -0.01em;
-          line-height: 1.15;
+          line-height: 1.2;
+          margin-bottom: 6px;
         }
         .wc-collapsed-hl { color: #F27DA8; }
         .wc-collapsed-bar {
           display: flex;
           align-items: center;
-          gap: 6px;
-          margin-top: 5px;
+          gap: 8px;
         }
         .wc-collapsed-bar-track {
           flex: 1;
-          height: 5px;
+          height: 6px;
           background: rgba(255, 255, 255, 0.15);
           border-radius: var(--radius-full);
           overflow: hidden;
@@ -568,28 +581,31 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         .wc-collapsed-bar-txt {
           font-size: 10px;
           font-weight: var(--fw-black);
-          opacity: 0.9;
+          opacity: 0.85;
         }
+
+        /* CTA — botão chunky bem cuidado à direita */
         .wc-collapsed-cta {
           position: relative;
           display: inline-flex;
           align-items: center;
-          gap: 4px;
-          padding: 8px 12px;
+          gap: 5px;
+          padding: 10px 16px;
           border-radius: var(--radius-full);
           background: var(--primary);
           color: #fff;
           font-family: inherit;
-          font-size: 11px;
+          font-size: 12px;
           font-weight: var(--fw-black);
           letter-spacing: 0.04em;
           text-transform: uppercase;
-          box-shadow: 0 2px 0 var(--primary-dark);
+          box-shadow: 0 3px 0 var(--primary-dark);
           flex-shrink: 0;
-          transition: transform var(--dur-fast);
+          transition: transform var(--dur-fast), background var(--dur-fast);
+          white-space: nowrap;
         }
-        .wc-collapsed:hover .wc-collapsed-cta { transform: translateX(2px); }
-        .wc-collapsed:active .wc-collapsed-cta { transform: translateY(1px); box-shadow: 0 1px 0 var(--primary-dark); }
+        .wc-collapsed:hover .wc-collapsed-cta { background: var(--btn-primary-hover); }
+        .wc-collapsed:active .wc-collapsed-cta { transform: translateY(2px); box-shadow: 0 1px 0 var(--primary-dark); }
       `}</style>
 
       {/* Onboarding do primeiro login é aberto pelo App.tsx (PrivateRoute), não aqui */}
