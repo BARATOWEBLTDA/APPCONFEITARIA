@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T10:30 — card Voce esta em dia rosa + coracao 3D
+// Build marker: 2026-09-04T14:00 — sino no hero + card metrica sobreposto (branco)
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -14,6 +14,8 @@ import {
 import { supabase } from "@/lib/supabase";
 import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
 import { useProfile } from "@/hooks/useProfile";
+import { useNotifications } from "@/context/NotificationContext";
+import MetricaDestaque from "@/components/MetricaDestaque";
 import WelcomeChecklist from "@/components/WelcomeChecklist";
 import UpdatesFeed from "@/components/UpdatesFeed";
 import DooIAPanel from "@/components/DooIAPanel";
@@ -126,7 +128,7 @@ export default function Inicio() {
   // Persistência + registro do SW ficam em lib/notifications.ts.
   const [notifAtivas, setNotifAtivas] = useState<boolean>(() => getStoredNotifState());
   const [notifLoading, setNotifLoading] = useState(false);
-  const toggleNotif = async () => {
+  const toggleAtivarNotif = async () => {
     if (notifLoading) return;
     setNotifLoading(true);
     try {
@@ -138,6 +140,9 @@ export default function Inicio() {
       setNotifLoading(false);
     }
   };
+
+  // Sino do header (dropdown de notificações recebidas) — reaproveita NotificationContext
+  const { notifCount, notifOpen, notificacoes, notifRef, toggleNotif: toggleSinoNotif, closeNotif } = useNotifications();
 
   // Modal "Ver todos os alertas" + snooze ("Lembrar amanhã")
   const ALERT_LIMIT_VISIBLE = 3;
@@ -532,10 +537,10 @@ export default function Inicio() {
               <div className="ini-pm-divider" />
               <div
                 className="ini-pm-item ini-pm-item--toggle"
-                onClick={toggleNotif}
+                onClick={toggleAtivarNotif}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleNotif(); } }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleAtivarNotif(); } }}
                 aria-pressed={notifAtivas}
               >
                 <span className="ini-pm-item-label">
@@ -577,7 +582,69 @@ export default function Inicio() {
           </h1>
           <p>{getDailyMessage()}</p>
         </div>
+
+        {/* Sino de notificações à direita — abre dropdown, não navega */}
+        <div className="ini-hero-bell-wrap" ref={notifRef}>
+          <button
+            className="ini-hero-bell"
+            onClick={toggleSinoNotif}
+            aria-label="Notificações"
+            type="button"
+          >
+            <img src="/Sistema/sino.png" alt="" className="ini-hero-bell-img" />
+            {notifCount > 0 && (
+              <span className="ini-hero-bell-badge">{notifCount > 9 ? "9+" : notifCount}</span>
+            )}
+          </button>
+
+          {notifOpen && (
+            <div className="ini-notif-dropdown">
+              <div className="ini-notif-header">
+                <h4>Notificações</h4>
+                {notifCount > 0 && (
+                  <button className="ini-notif-clear" onClick={closeNotif} type="button">
+                    Fechar
+                  </button>
+                )}
+              </div>
+              <div className="ini-notif-list">
+                {notificacoes.length === 0 ? (
+                  <div className="ini-notif-empty">
+                    Nenhuma notificação por aqui 💌
+                  </div>
+                ) : (
+                  notificacoes.slice(0, 10).map((n: any) => (
+                    <div key={n.id} className={`ini-notif-item ${!n.lida ? "ini-notif-item--nova" : ""}`}>
+                      <span className="ini-notif-dot" />
+                      <div className="ini-notif-content">
+                        {n.imagem_url && (
+                          <img src={n.imagem_url} alt="" className="ini-notif-img" />
+                        )}
+                        <div className="ini-notif-texto">
+                          <p className="ini-notif-titulo">{n.titulo}</p>
+                          {n.descricao && <p className="ini-notif-desc">{n.descricao}</p>}
+                          {n.created_at && (
+                            <p className="ini-notif-tempo">
+                              {new Date(n.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* ── Card de métrica em destaque, sobrepondo o hero ── */}
+      {profile?.id && (
+        <div className="ini-metrica-wrap">
+          <MetricaDestaque userId={profile.id} />
+        </div>
+      )}
 
       <div className={`ini-content ${checklistDone ? "ini-content--done" : ""}`}>
         {/* ── Coluna principal ── */}
@@ -959,7 +1026,7 @@ export default function Inicio() {
           display: flex;
           flex-direction: column;
           gap: var(--space-5);
-          margin-top: 1.25rem; /* respiro após o hero (mobile) */
+          margin-top: var(--space-4);
         }
         .ini-main {
           display: flex;
@@ -977,7 +1044,7 @@ export default function Inicio() {
         .ini-hero {
           background: var(--primary);
           border-radius: 0 0 24px 24px;
-          padding: 1.25rem 1.25rem 1.5rem;
+          padding: 1.25rem 1.25rem 3rem;
           /* Full-bleed: estende até a borda da viewport ignorando padding dos pais */
           width: 100vw;
           margin-left: calc(50% - 50vw);
@@ -1042,6 +1109,100 @@ export default function Inicio() {
           text-transform: uppercase;
           box-shadow: 0 2px 6px rgba(0,0,0,0.25);
           flex-shrink: 0;
+        }
+
+        /* ── Sino de notificações no hero ── */
+        .ini-hero-bell-wrap { position: relative; flex-shrink: 0; z-index: 3; }
+        .ini-hero-bell {
+          width: 40px; height: 40px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.2);
+          border: 1.5px solid rgba(255,255,255,0.35);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          padding: 0;
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          transition: background var(--dur-fast), transform var(--dur-fast);
+          position: relative;
+          color: #fff;
+        }
+        .ini-hero-bell:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
+        .ini-hero-bell-img { width: 22px; height: 22px; object-fit: contain; filter: brightness(0) invert(1); }
+        .ini-hero-bell-badge {
+          position: absolute;
+          top: -3px; right: -3px;
+          min-width: 18px; height: 18px;
+          padding: 0 5px;
+          border-radius: var(--radius-full);
+          background: #FFD100;
+          color: #2D1F26;
+          font-size: 10px;
+          font-weight: 900;
+          display: flex; align-items: center; justify-content: center;
+          border: 2px solid var(--primary);
+          line-height: 1;
+        }
+
+        /* ── Dropdown de notificações ── */
+        .ini-notif-dropdown {
+          position: absolute;
+          top: calc(100% + 8px);
+          right: 0;
+          width: min(300px, calc(100vw - 16px));
+          background: var(--bg-card);
+          border-radius: var(--radius-lg);
+          box-shadow: 0 12px 40px rgba(45,31,38,0.25);
+          border: 1px solid var(--border);
+          overflow: hidden;
+          animation: iniNotifIn 0.18s ease-out;
+        }
+        @keyframes iniNotifIn {
+          from { opacity: 0; transform: translateY(-6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .ini-notif-header {
+          padding: 12px 14px;
+          border-bottom: 1px solid var(--border);
+          display: flex; justify-content: space-between; align-items: center;
+        }
+        .ini-notif-header h4 { margin: 0; font-size: 14px; font-weight: var(--fw-black); color: var(--text-title); }
+        .ini-notif-clear {
+          background: none; border: none;
+          color: var(--primary); font-size: 11px; font-weight: var(--fw-bold);
+          cursor: pointer; padding: 0;
+        }
+        .ini-notif-list { max-height: 340px; overflow-y: auto; }
+        .ini-notif-item {
+          padding: 12px 14px;
+          border-bottom: 1px solid var(--border);
+          display: flex; gap: 8px;
+          cursor: pointer;
+        }
+        .ini-notif-item:last-child { border-bottom: none; }
+        .ini-notif-item--nova { background: var(--primary-light); }
+        .ini-notif-dot {
+          width: 8px; height: 8px;
+          border-radius: 50%;
+          background: var(--primary);
+          margin-top: 6px;
+          flex-shrink: 0;
+        }
+        .ini-notif-item:not(.ini-notif-item--nova) .ini-notif-dot { visibility: hidden; }
+        .ini-notif-content { flex: 1; min-width: 0; display: flex; gap: 8px; }
+        .ini-notif-img { width: 34px; height: 34px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; }
+        .ini-notif-texto { flex: 1; min-width: 0; }
+        .ini-notif-titulo { margin: 0; font-size: 12px; font-weight: var(--fw-bold); color: var(--text-title); line-height: 1.3; }
+        .ini-notif-desc { margin: 2px 0 0; font-size: 11px; color: var(--text-secondary); line-height: 1.35; }
+        .ini-notif-tempo { margin: 4px 0 0; font-size: 10px; color: var(--text-muted); }
+        .ini-notif-empty { padding: 24px 14px; text-align: center; color: var(--text-muted); font-size: 12px; }
+
+        /* ── Wrap da métrica sobreposta ao hero ── */
+        .ini-metrica-wrap {
+          padding: 0 8px;
+          margin-top: -24px;
+          position: relative;
+          z-index: 2;
         }
         .ini-hero-greeting p {
           font-size: var(--font-helper);

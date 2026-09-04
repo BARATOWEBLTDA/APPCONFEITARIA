@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { refreshProfile } from "@/hooks/useProfile";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
+import { METRICAS_DISPONIVEIS, getMetricaEscolhida, setMetricaEscolhida, type MetricaId } from "@/lib/metricas-inicio";
 
 // ── Componente inline: toggle de push notifications ──────────
 function PushToggle() {
@@ -103,6 +104,11 @@ export default function Configuracoes() {
   });
   const [categorias, setCategorias] = useState<string[]>([]);
   const [openSection, setOpenSection] = useState<string | null>(null);
+  const [metricaEscolhida, setMetricaEscolhidaState] = useState<MetricaId>(() => getMetricaEscolhida());
+  const handleTrocarMetrica = (id: MetricaId) => {
+    setMetricaEscolhida(id);
+    setMetricaEscolhidaState(id);
+  };
   const [ocultarCategorias, setOcultarCategorias] = useState(false);
   const [insumos, setInsumos] = useState(0);
   const [receitas, setReceitas] = useState(0);
@@ -312,6 +318,81 @@ export default function Configuracoes() {
         </div>
 
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
+
+        {/* Início — Métrica em destaque */}
+        <div className="cfg-accordion">
+          <button className="cfg-accordion-header" onClick={() => toggleSection("inicio")}>
+            <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+            <span className="cfg-accordion-title">Início</span>
+            <svg className={`cfg-accordion-chevron${openSection === "inicio" ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {openSection === "inicio" && (
+            <div className="cfg-accordion-body">
+              <div className="cfg-metrica-header">
+                <p className="cfg-metrica-title">Métrica em destaque</p>
+                <p className="cfg-metrica-sub">Escolha o que aparece em destaque no topo da tela Início</p>
+              </div>
+              <div className="cfg-metrica-list">
+                {METRICAS_DISPONIVEIS.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className={`cfg-metrica-opt ${metricaEscolhida === m.id ? "cfg-metrica-opt--sel" : ""}`}
+                    onClick={() => handleTrocarMetrica(m.id)}
+                  >
+                    <span className="cfg-metrica-emoji">{m.emoji}</span>
+                    <span className="cfg-metrica-txt">
+                      <span className="cfg-metrica-nome">{m.titulo}</span>
+                      <span className="cfg-metrica-desc">{m.descricao}</span>
+                    </span>
+                    <span className="cfg-metrica-check" aria-hidden="true">
+                      {metricaEscolhida === m.id ? (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                      ) : null}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <style>{`
+                .cfg-metrica-header { margin-bottom: 12px; }
+                .cfg-metrica-title { margin: 0; font-size: 14px; font-weight: var(--fw-bold); color: var(--text-title); }
+                .cfg-metrica-sub { margin: 3px 0 0; font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
+                .cfg-metrica-list { display: flex; flex-direction: column; gap: 8px; }
+                .cfg-metrica-opt {
+                  display: flex; align-items: center; gap: 12px;
+                  width: 100%; padding: 12px 14px;
+                  background: var(--bg-card);
+                  border: 2px solid var(--border);
+                  border-radius: var(--radius-md);
+                  cursor: pointer;
+                  text-align: left;
+                  transition: border-color var(--dur-fast), background var(--dur-fast), transform var(--dur-fast);
+                  font-family: inherit;
+                }
+                .cfg-metrica-opt:hover { border-color: rgba(var(--primary-rgb), 0.35); background: var(--bg-subtle); }
+                .cfg-metrica-opt--sel {
+                  border-color: var(--primary);
+                  background: var(--primary-light);
+                  box-shadow: 0 3px 0 rgba(var(--primary-rgb), 0.2);
+                }
+                .cfg-metrica-emoji {
+                  width: 40px; height: 40px;
+                  border-radius: var(--radius-md);
+                  background: var(--bg-subtle);
+                  display: flex; align-items: center; justify-content: center;
+                  font-size: 22px;
+                  flex-shrink: 0;
+                }
+                .cfg-metrica-opt--sel .cfg-metrica-emoji { background: var(--bg-card); }
+                .cfg-metrica-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+                .cfg-metrica-nome { font-size: 13px; font-weight: var(--fw-bold); color: var(--text-title); line-height: 1.3; }
+                .cfg-metrica-desc { font-size: 11px; color: var(--text-secondary); margin-top: 2px; line-height: 1.35; }
+                .cfg-metrica-check { width: 22px; color: var(--primary); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+              `}</style>
+            </div>
+          )}
+        </div>
 
         {/* Minha Conta */}
         <div className="cfg-accordion">
