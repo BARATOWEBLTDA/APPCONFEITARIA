@@ -2,7 +2,7 @@ import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 // deploy: Proposta D - nova arquitetura de navegação (Entrega 1)
 import DooIA from "@/components/DooIA";
 import MaisDrawer from "@/components/MaisDrawer";
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import {
   House, CalendarDots, ShoppingBag, ClipboardText, Users, BookOpen,
   Package, CurrencyDollar, Gear, SignOut, CaretDown, ForkKnife, List,
@@ -39,6 +39,15 @@ export default function Layout() {
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
   const isPrevia = location.pathname === "/cardapio-preview";
+
+  // Bloqueia scroll do body quando o dropdown de notificações está aberto
+  useEffect(() => {
+    if (notifOpen) {
+      const prev = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = prev; };
+    }
+  }, [notifOpen]);
 
   return (
     <div className="layout-root">
@@ -284,17 +293,71 @@ export default function Layout() {
         .topbar-btn:hover { background: rgba(0,0,0,0.08); }
         .topbar-badge { position: absolute; top: 2px; right: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--primary); color: var(--text-inverse); font-size: var(--font-caption); font-weight: var(--fw-bold); display: flex; align-items: center; justify-content: center; }
 
-        .notif-overlay { position: fixed; inset: 0; z-index: 9998; }
-        .notif-dropdown { position: fixed; right: 1rem; top: 4rem; width: 320px; background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border); z-index: 9999; overflow: hidden; }
-        .notif-header { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: var(--fw-bold); font-size: var(--font-button); color: var(--text-title); }
-        .notif-header button { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: var(--font-input); }
-        .notif-body { max-height: 360px; overflow-y: auto; }
-        .notif-empty { padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: var(--font-button); margin: 0; }
-        .notif-item { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); display: flex; gap: 0.75rem; align-items: flex-start; }
+        /* ── Overlay + Dropdown de notificações (global, funciona em todas as páginas) ── */
+        .notif-overlay {
+          position: fixed; inset: 0;
+          background: rgba(45, 31, 38, 0.55);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          z-index: 9998;
+          animation: notifOverlayIn 0.2s ease-out;
+        }
+        @keyframes notifOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .notif-dropdown {
+          position: fixed;
+          top: calc(env(safe-area-inset-top, 0px) + 12px);
+          right: 12px;
+          left: 12px;
+          max-width: 420px;
+          margin-left: auto;
+          max-height: calc(100vh - env(safe-area-inset-top, 0px) - 24px);
+          background: var(--bg-card);
+          border-radius: var(--radius-lg);
+          box-shadow: 0 20px 60px rgba(45,31,38,0.35);
+          border: 1px solid var(--border);
+          overflow: hidden;
+          z-index: 9999;
+          display: flex; flex-direction: column;
+          animation: notifDropIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes notifDropIn {
+          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .notif-header {
+          padding: 14px 16px;
+          border-bottom: 1px solid var(--border);
+          display: flex; justify-content: space-between; align-items: center;
+          font-weight: var(--fw-black); font-size: 15px;
+          color: var(--text-title);
+          flex-shrink: 0;
+        }
+        .notif-header button {
+          width: 30px; height: 30px;
+          border-radius: 50%;
+          background: var(--bg-subtle);
+          border: none;
+          cursor: pointer;
+          color: var(--text-secondary);
+          font-size: 14px;
+          font-weight: var(--fw-bold);
+          padding: 0;
+          display: flex; align-items: center; justify-content: center;
+          transition: background var(--dur-fast), color var(--dur-fast);
+        }
+        .notif-header button:hover { background: var(--primary-light); color: var(--primary); }
+        .notif-body {
+          flex: 1; min-height: 0;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+        .notif-empty { padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px; margin: 0; }
+        .notif-item { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-start; }
         .notif-item:last-child { border-bottom: none; }
-        .notif-title { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0 0 2px; }
-        .notif-msg { font-size: var(--font-helper); color: var(--text-secondary); margin: 0; }
-        .notif-time { font-size: var(--font-caption); color: var(--text-muted); margin: 4px 0 0; }
+        .notif-title { font-size: 13px; font-weight: var(--fw-bold); color: var(--text-title); margin: 0 0 2px; line-height: 1.3; }
+        .notif-msg { font-size: 12px; color: var(--text-secondary); margin: 0; line-height: 1.4; }
+        .notif-time { font-size: 10px; color: var(--text-muted); margin: 4px 0 0; }
 
         /* ── Mobile ── */
         @media (max-width: 900px) {
