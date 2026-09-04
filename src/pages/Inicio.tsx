@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T18:00 — tour de boas-vindas na primeira entrada
+// Build marker: 2026-09-04T19:00 — sino abre menu; foto abre file picker; menu z-index alto
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -142,8 +142,9 @@ export default function Inicio() {
     }
   };
 
-  // Sino do header — só chama toggleNotif. Dropdown fica no Layout (global).
-  const { notifCount, toggleNotif: toggleSinoNotif } = useNotifications();
+  // Badge de contagem de notificações não lidas — vem do NotificationContext.
+  // O clique no sino não abre notificações — abre o menu de opções (perfil).
+  const { notifCount } = useNotifications();
 
   // Modal "Ver todos os alertas" + snooze ("Lembrar amanhã")
   const ALERT_LIMIT_VISIBLE = 3;
@@ -499,16 +500,22 @@ export default function Inicio() {
           </g>
         </svg>
 
-        {/* Foto da confeiteira (esquerda) — agora é também o trigger do menu */}
-        <div className="ini-profile-wrapper" ref={menuRef}>
-          <button className="ini-profile-btn" onClick={() => setMenuOpen(o => !o)}>
+        {/* Foto da confeiteira (esquerda) — clicar sempre abre o seletor de foto */}
+        <div className="ini-profile-wrapper">
+          <button
+            className="ini-profile-btn"
+            onClick={() => !uploadingFoto && fileInputRef.current?.click()}
+            aria-label={profile?.foto_url ? "Trocar foto de perfil" : "Adicionar foto de perfil"}
+            title={profile?.foto_url ? "Trocar foto" : "Adicionar foto"}
+            disabled={uploadingFoto}
+          >
             {profile?.foto_url
               ? <img src={profile.foto_url} alt="Perfil" className="ini-profile-img" />
               : <div className="ini-profile-placeholder"><User size={30} weight="bold" color="var(--accent)" /></div>
             }
           </button>
 
-          {/* Badge de câmera — atalho pra trocar a foto */}
+          {/* Badge de câmera — atalho visual (também abre o seletor) */}
           <button
             type="button"
             className="ini-profile-cam"
@@ -516,6 +523,7 @@ export default function Inicio() {
             aria-label={profile?.foto_url ? "Trocar foto de perfil" : "Adicionar foto de perfil"}
             title={profile?.foto_url ? "Trocar foto" : "Adicionar foto"}
             disabled={uploadingFoto}
+            tabIndex={-1}
           >
             {uploadingFoto
               ? <span className="ini-profile-cam-spinner" />
@@ -528,9 +536,39 @@ export default function Inicio() {
             onChange={handleFileSelected}
             style={{ display: "none" }}
           />
+        </div>
+
+        {/* Texto da saudação */}
+        <div className="ini-hero-greeting">
+          <h1>
+            <span>{getGreeting()}, {(nome || "bem-vinda").split(" ")[0]}</span>
+            {isPro && (
+              <span className="ini-hero-pro-badge" aria-label="Plano PRO">
+                <Crown size={11} weight="fill" />
+                <span>PRO</span>
+              </span>
+            )}
+          </h1>
+          <p>{getDailyMessage()}</p>
+        </div>
+
+        {/* Sino de notificações à direita — abre o menu (conta + loja + ativar notif + sair) */}
+        <div className="ini-hero-bell-wrap" ref={menuRef}>
+          <button
+            className="ini-hero-bell"
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Menu"
+            aria-expanded={menuOpen}
+            type="button"
+          >
+            <img src="/Sistema/sino.png" alt="" className="ini-hero-bell-img" />
+            {notifCount > 0 && (
+              <span className="ini-hero-bell-badge">{notifCount > 9 ? "9+" : notifCount}</span>
+            )}
+          </button>
 
           {menuOpen && (
-            <div className="ini-profile-menu">
+            <div className="ini-profile-menu ini-profile-menu--right">
               <div className="ini-pm-header">
                 <p className="ini-pm-name">{profile?.nome_loja || nome}</p>
                 <p className="ini-pm-email">{email}</p>
@@ -568,35 +606,6 @@ export default function Inicio() {
               </button>
             </div>
           )}
-        </div>
-
-        {/* Texto da saudação */}
-        <div className="ini-hero-greeting">
-          <h1>
-            <span>{getGreeting()}, {(nome || "bem-vinda").split(" ")[0]}</span>
-            {isPro && (
-              <span className="ini-hero-pro-badge" aria-label="Plano PRO">
-                <Crown size={11} weight="fill" />
-                <span>PRO</span>
-              </span>
-            )}
-          </h1>
-          <p>{getDailyMessage()}</p>
-        </div>
-
-        {/* Sino de notificações à direita — o dropdown é global (Layout.tsx) */}
-        <div className="ini-hero-bell-wrap">
-          <button
-            className="ini-hero-bell"
-            onClick={toggleSinoNotif}
-            aria-label="Notificações"
-            type="button"
-          >
-            <img src="/Sistema/sino.png" alt="" className="ini-hero-bell-img" />
-            {notifCount > 0 && (
-              <span className="ini-hero-bell-badge">{notifCount > 9 ? "9+" : notifCount}</span>
-            )}
-          </button>
         </div>
       </div>
 
@@ -1168,9 +1177,19 @@ export default function Inicio() {
           border-radius: var(--radius-lg);
           box-shadow: var(--shadow-lg);
           border: 1px solid var(--border);
-          z-index: 100;
+          z-index: 200;
           overflow: hidden;
           animation: iniMenuIn var(--dur-fast) var(--ease-out);
+        }
+        /* Variante à direita — quando o menu abre a partir do sino.
+           Usa position:fixed pra escapar do stacking context do hero,
+           garantindo que fica acima de qualquer card sobreposto. */
+        .ini-profile-menu--right {
+          position: fixed;
+          top: calc(env(safe-area-inset-top, 0px) + 68px);
+          right: 12px;
+          left: auto;
+          z-index: 500;
         }
         @keyframes iniMenuIn { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
