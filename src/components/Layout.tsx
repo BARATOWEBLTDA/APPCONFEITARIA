@@ -40,12 +40,32 @@ export default function Layout() {
   const isAssinar = location.pathname === "/assinar";
   const isPrevia = location.pathname === "/cardapio-preview";
 
-  // Bloqueia scroll do body quando o dropdown de notificações está aberto
+  // Bloqueia scroll do body/html quando o dropdown de notificações está aberto.
+  // No iOS Safari, só body.overflow=hidden não segura — precisa travar html também
+  // e preservar a posição de scroll (senão a página "salta" pro topo).
   useEffect(() => {
     if (notifOpen) {
-      const prev = document.body.style.overflow;
+      const scrollY = window.scrollY;
+      const prevBodyOverflow = document.body.style.overflow;
+      const prevBodyPosition = document.body.style.position;
+      const prevBodyTop = document.body.style.top;
+      const prevBodyWidth = document.body.style.width;
+      const prevHtmlOverflow = document.documentElement.style.overflow;
+
       document.body.style.overflow = "hidden";
-      return () => { document.body.style.overflow = prev; };
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+      document.documentElement.style.overflow = "hidden";
+
+      return () => {
+        document.body.style.overflow = prevBodyOverflow;
+        document.body.style.position = prevBodyPosition;
+        document.body.style.top = prevBodyTop;
+        document.body.style.width = prevBodyWidth;
+        document.documentElement.style.overflow = prevHtmlOverflow;
+        window.scrollTo(0, scrollY);
+      };
     }
   }, [notifOpen]);
 
@@ -301,6 +321,7 @@ export default function Layout() {
           -webkit-backdrop-filter: blur(6px);
           z-index: 9998;
           animation: notifOverlayIn 0.2s ease-out;
+          touch-action: none;
         }
         @keyframes notifOverlayIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -351,6 +372,7 @@ export default function Layout() {
           flex: 1; min-height: 0;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
+          overscroll-behavior: contain;
         }
         .notif-empty { padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px; margin: 0; }
         .notif-item { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; gap: 10px; align-items: flex-start; }
