@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T15:00 — ajuste sobreposicao do card metrica (-20px)
+// Build marker: 2026-09-04T15:20 — fix z-index do card metrica
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -1202,7 +1202,7 @@ export default function Inicio() {
           padding: 0 8px;
           margin-top: -20px;
           position: relative;
-          z-index: 2;
+          z-index: 20;
         }
         .ini-hero-greeting p {
           font-size: var(--font-helper);
