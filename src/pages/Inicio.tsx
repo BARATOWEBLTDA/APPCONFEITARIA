@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T10:15 — reduz espaco entre hero e primeiro card
+// Build marker: 2026-09-04T10:30 — card Voce esta em dia rosa + coracao 3D
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -9,7 +9,7 @@ import {
   TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
   Bell, User, Storefront, SignOut, Camera,
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
-  InstagramLogo, Crown, DotsThreeOutline, Clock,
+  InstagramLogo, Crown, DotsThreeOutline, Clock, Heart,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
@@ -732,10 +732,12 @@ export default function Inicio() {
       {alertasVisiveis.length === 0 && !loading && !isSnoozed && (
         <section className="ini-section ini-section--alertas">
           <div className="ini-tudo-ok">
-            <span className="ini-tudo-ok-emoji">✨</span>
+            <span className="ini-tudo-ok-icon">
+              <Heart size={20} weight="fill" />
+            </span>
             <div>
-              <p className="ini-tudo-ok-title">Tudo em ordem!</p>
-              <p className="ini-tudo-ok-sub">Sem alertas hoje. Bom trabalho!</p>
+              <p className="ini-tudo-ok-title">Você está em dia!</p>
+              <p className="ini-tudo-ok-sub">Sem alertas por enquanto</p>
             </div>
           </div>
         </section>
@@ -1675,12 +1677,21 @@ export default function Inicio() {
         .ini-tudo-ok {
           display: flex; align-items: center; gap: var(--space-3);
           padding: var(--space-4);
-          background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
+          background: var(--primary-light);
+          border: 1.5px solid #F8C4D5;
           border-radius: var(--radius-lg);
         }
-        .ini-tudo-ok-emoji { font-size: var(--text-xl); }
+        .ini-tudo-ok-icon {
+          width: 40px; height: 40px;
+          border-radius: 50%;
+          background: var(--primary);
+          color: #fff;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 3px 0 var(--primary-dark);
+          flex-shrink: 0;
+        }
         .ini-tudo-ok-title { margin: 0; font-weight: var(--fw-bold); color: var(--text-title); font-size: var(--font-body); }
-        .ini-tudo-ok-sub { margin: var(--space-1) 0 0; font-size: var(--font-helper); color: var(--text-muted); }
+        .ini-tudo-ok-sub { margin: var(--space-1) 0 0; font-size: var(--font-helper); color: var(--text-secondary); }
 
         /* ── Resumo da semana ── */
         .ini-resumo {
