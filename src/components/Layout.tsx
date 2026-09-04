@@ -311,7 +311,7 @@ export default function Layout() {
 
           .layout-main {
             margin-left: 0;
-            padding: var(--pad-page);
+            padding: var(--space-2);
             padding-top: calc(var(--pad-page-top) + env(safe-area-inset-top, 0px));
             padding-bottom: 6.5rem;
             background: var(--bg-body);
