@@ -622,10 +622,6 @@ export default function Inicio() {
                 <button className="ini-pm-item" onClick={() => { setMenuOpen(false); navigate("/cardapio-config"); }}>
                   <Storefront size={18} weight="regular" /> Minha Loja
                 </button>
-                <div className="ini-pm-divider" />
-                <button className="ini-pm-item ini-pm-item--sair" onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}>
-                  <SignOut size={18} weight="regular" /> Sair
-                </button>
               </div>
             </>,
             document.body
