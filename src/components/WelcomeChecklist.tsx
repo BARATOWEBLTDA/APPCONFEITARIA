@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T11:30 — botao Continuar no colapsado + card mais largo
+// Build marker: 2026-09-04T12:00 — colapsado sem coroa grande (só badge + botao)
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -148,9 +148,6 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           aria-label={pct > 0 ? "Continuar configuração inicial" : "Começar configuração inicial"}
         >
           <span className="wc-collapsed-glow" aria-hidden="true" />
-          <span className="wc-collapsed-crown">
-            <Crown size={18} weight="fill" />
-          </span>
           <span className="wc-collapsed-content">
             <span className="wc-collapsed-badge">
               <Crown size={10} weight="fill" />
@@ -515,16 +512,6 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           width: 90px; height: 90px;
           background: radial-gradient(circle, rgba(232, 90, 140, 0.35), transparent 70%);
           pointer-events: none;
-        }
-        .wc-collapsed-crown {
-          position: relative;
-          width: 34px; height: 34px;
-          border-radius: var(--radius-sm);
-          background: var(--primary);
-          display: flex; align-items: center; justify-content: center;
-          color: #fff;
-          box-shadow: 0 2px 0 var(--primary-dark);
-          flex-shrink: 0;
         }
         .wc-collapsed-content {
           position: relative;
