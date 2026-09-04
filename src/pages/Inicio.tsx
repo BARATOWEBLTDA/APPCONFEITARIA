@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T14:00 — sino no hero + card metrica sobreposto (branco)
+// Build marker: 2026-09-04T15:00 — ajuste sobreposicao do card metrica (-20px)
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -1200,7 +1200,7 @@ export default function Inicio() {
         /* ── Wrap da métrica sobreposta ao hero ── */
         .ini-metrica-wrap {
           padding: 0 8px;
-          margin-top: -24px;
+          margin-top: -20px;
           position: relative;
           z-index: 2;
         }
