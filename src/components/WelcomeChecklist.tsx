@@ -1,10 +1,10 @@
-// Build marker: 2026-09-04T11:00 — remove tutorial, novo estado inicial com COMEÇAR grande
+// Build marker: 2026-09-04T11:30 — botao Continuar no colapsado + card mais largo
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   UserCircle, Storefront, Package,
   ShoppingBag, ClipboardText,
-  CaretRight, CaretUp, CaretDown, Lock, Check, Crown,
+  CaretRight, CaretUp, Lock, Check, Crown,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 
@@ -141,7 +141,12 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
     <>
       {minimized ? (
         // ─── MODO COLAPSADO ───
-        <button className="wc-collapsed" onClick={toggleMinimized} type="button" aria-label="Expandir configuração inicial">
+        <button
+          className="wc-collapsed"
+          onClick={() => { marcarStarted(); toggleMinimized(); }}
+          type="button"
+          aria-label={pct > 0 ? "Continuar configuração inicial" : "Começar configuração inicial"}
+        >
           <span className="wc-collapsed-glow" aria-hidden="true" />
           <span className="wc-collapsed-crown">
             <Crown size={18} weight="fill" />
@@ -161,8 +166,9 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
               <span className="wc-collapsed-bar-txt">{doneCount}/{total} · {pct}%</span>
             </span>
           </span>
-          <span className="wc-collapsed-expand" aria-hidden="true">
-            <CaretDown size={14} weight="bold" />
+          <span className="wc-collapsed-cta" aria-hidden="true">
+            {pct > 0 ? "Continuar" : "Começar"}
+            <CaretRight size={12} weight="bold" />
           </span>
         </button>
       ) : (
@@ -263,6 +269,10 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           overflow: hidden;
           border: 1px solid var(--border);
           box-shadow: 0 4px 20px rgba(45, 31, 38, 0.06);
+          /* Alarga o card em mobile pra dar mais presença — vaza pra fora
+             do padding do container pai (que é var(--space-3) = 12px). */
+          margin-left: calc(-1 * var(--space-2));
+          margin-right: calc(-1 * var(--space-2));
         }
 
         /* ── Cabeçalho grafite com o prêmio ── */
@@ -479,7 +489,9 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
            COLAPSADO
            ══════════════════════════════════════════════ */
         .wc-collapsed {
-          width: 100%;
+          width: auto;
+          margin-left: calc(-1 * var(--space-2));
+          margin-right: calc(-1 * var(--space-2));
           background: linear-gradient(135deg, #2D1F26, #4B3D46);
           border-radius: var(--radius-md);
           padding: 12px 14px;
@@ -570,15 +582,26 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           font-weight: var(--fw-black);
           opacity: 0.9;
         }
-        .wc-collapsed-expand {
+        .wc-collapsed-cta {
           position: relative;
-          width: 30px; height: 30px;
-          border-radius: 50%;
-          background: rgba(255, 255, 255, 0.12);
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 8px 12px;
+          border-radius: var(--radius-full);
+          background: var(--primary);
           color: #fff;
+          font-family: inherit;
+          font-size: 11px;
+          font-weight: var(--fw-black);
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          box-shadow: 0 2px 0 var(--primary-dark);
+          flex-shrink: 0;
+          transition: transform var(--dur-fast);
         }
+        .wc-collapsed:hover .wc-collapsed-cta { transform: translateX(2px); }
+        .wc-collapsed:active .wc-collapsed-cta { transform: translateY(1px); box-shadow: 0 1px 0 var(--primary-dark); }
       `}</style>
 
       {/* Onboarding do primeiro login é aberto pelo App.tsx (PrivateRoute), não aqui */}
