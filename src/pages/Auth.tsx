@@ -91,12 +91,7 @@ export default function Auth() {
     };
     window.addEventListener("mousemove", handleMouseMove);
     const animate = () => {
-      timeRef.current += 0.003;
-      const t = timeRef.current;
-      const angle = 120 + 20 * Math.sin(t);
-      if (bgRef.current) {
-        bgRef.current.style.background = `linear-gradient(${angle}deg, var(--primary) 0%, var(--primary-dark) 50%, var(--text-muted) 100%)`;
-      }
+      // Fundo em cor sólida (removida animação de gradient rotativo)
       currentRef.current.x += (mouseRef.current.x - currentRef.current.x) * 0.06;
       currentRef.current.y += (mouseRef.current.y - currentRef.current.y) * 0.06;
       if (glowRef.current) {
@@ -657,7 +652,7 @@ export default function Auth() {
         .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; display: flex; flex-direction: column; }
         .fade-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-card); opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
-        .auth-bg { position: fixed; inset: 0; z-index: 0; background: var(--primary-gradient); }
+        .auth-bg { position: fixed; inset: 0; z-index: 0; background: #E85A8C; }
         .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; }
         .auth-card { position: relative; z-index: 2; background: var(--bg-card); border-radius: var(--radius-lg); padding: 2rem 1.75rem; width: 100%; max-width: 440px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 1rem auto; overflow-y: auto; max-height: calc(100vh - 2rem); }
         @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
