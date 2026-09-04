@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T19:00 — sino abre menu; foto abre file picker; menu z-index alto
+// Build marker: 2026-09-04T20:00 — menu do sino com overlay/blur/scroll lock
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -187,6 +187,30 @@ export default function Inicio() {
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
+
+  // Trava o scroll do body quando o menu do sino está aberto
+  useEffect(() => {
+    if (!menuOpen) return;
+    const scrollY = window.scrollY;
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevBodyPosition = document.body.style.position;
+    const prevBodyTop = document.body.style.top;
+    const prevBodyWidth = document.body.style.width;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevBodyOverflow;
+      document.body.style.position = prevBodyPosition;
+      document.body.style.top = prevBodyTop;
+      document.body.style.width = prevBodyWidth;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      window.scrollTo(0, scrollY);
+    };
   }, [menuOpen]);
 
   const nome = profile?.nome || "";
@@ -568,43 +592,48 @@ export default function Inicio() {
           </button>
 
           {menuOpen && (
-            <div className="ini-profile-menu ini-profile-menu--right">
-              <div className="ini-pm-header">
-                <p className="ini-pm-name">{profile?.nome_loja || nome}</p>
-                <p className="ini-pm-email">{email}</p>
+            <>
+              {/* Overlay escuro com blur — clicar fecha o menu */}
+              <div className="ini-menu-overlay" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+
+              <div className="ini-profile-menu ini-profile-menu--right" role="dialog" aria-modal="true">
+                <div className="ini-pm-header">
+                  <p className="ini-pm-name">{profile?.nome_loja || nome}</p>
+                  <p className="ini-pm-email">{email}</p>
+                </div>
+                <div className="ini-pm-divider" />
+                <div
+                  className="ini-pm-item ini-pm-item--toggle"
+                  onClick={toggleAtivarNotif}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleAtivarNotif(); } }}
+                  aria-pressed={notifAtivas}
+                >
+                  <span className="ini-pm-item-label">
+                    <Bell
+                      size={18}
+                      weight={notifAtivas ? "fill" : "regular"}
+                      color={notifAtivas ? "var(--primary)" : undefined}
+                    />
+                    Ativar notificações
+                  </span>
+                  <span className={`ini-pm-toggle ${notifAtivas ? "ini-pm-toggle--on" : ""}`}>
+                    <span className="ini-pm-toggle-thumb" />
+                  </span>
+                </div>
+                <button className="ini-pm-item" onClick={() => { setMenuOpen(false); navigate("/configuracoes"); }}>
+                  <User size={18} weight="regular" /> Minha Conta
+                </button>
+                <button className="ini-pm-item" onClick={() => { setMenuOpen(false); navigate("/cardapio-config"); }}>
+                  <Storefront size={18} weight="regular" /> Minha Loja
+                </button>
+                <div className="ini-pm-divider" />
+                <button className="ini-pm-item ini-pm-item--sair" onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}>
+                  <SignOut size={18} weight="regular" /> Sair
+                </button>
               </div>
-              <div className="ini-pm-divider" />
-              <div
-                className="ini-pm-item ini-pm-item--toggle"
-                onClick={toggleAtivarNotif}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleAtivarNotif(); } }}
-                aria-pressed={notifAtivas}
-              >
-                <span className="ini-pm-item-label">
-                  <Bell
-                    size={18}
-                    weight={notifAtivas ? "fill" : "regular"}
-                    color={notifAtivas ? "var(--primary)" : undefined}
-                  />
-                  Ativar notificações
-                </span>
-                <span className={`ini-pm-toggle ${notifAtivas ? "ini-pm-toggle--on" : ""}`}>
-                  <span className="ini-pm-toggle-thumb" />
-                </span>
-              </div>
-              <button className="ini-pm-item" onClick={() => { setMenuOpen(false); navigate("/configuracoes"); }}>
-                <User size={18} weight="regular" /> Minha Conta
-              </button>
-              <button className="ini-pm-item" onClick={() => { setMenuOpen(false); navigate("/cardapio-config"); }}>
-                <Storefront size={18} weight="regular" /> Minha Loja
-              </button>
-              <div className="ini-pm-divider" />
-              <button className="ini-pm-item ini-pm-item--sair" onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}>
-                <SignOut size={18} weight="regular" /> Sair
-              </button>
-            </div>
+            </>
           )}
         </div>
       </div>
@@ -1181,6 +1210,19 @@ export default function Inicio() {
           overflow: hidden;
           animation: iniMenuIn var(--dur-fast) var(--ease-out);
         }
+        /* Overlay escuro com blur — cobre a tela inteira quando o menu abre */
+        .ini-menu-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(45, 31, 38, 0.55);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          z-index: 9998;
+          animation: iniMenuOverlayIn 0.2s ease-out;
+          touch-action: none;
+        }
+        @keyframes iniMenuOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+
         /* Variante à direita — quando o menu abre a partir do sino.
            Usa position:fixed pra escapar do stacking context do hero,
            garantindo que fica acima de qualquer card sobreposto. */
@@ -1189,7 +1231,7 @@ export default function Inicio() {
           top: calc(env(safe-area-inset-top, 0px) + 68px);
           right: 12px;
           left: auto;
-          z-index: 500;
+          z-index: 9999;
         }
         @keyframes iniMenuIn { from { opacity: 0; transform: translateY(-6px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
