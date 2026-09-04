@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T20:30 — menu do sino via React Portal (escapa stacking context)
+// Build marker: 2026-09-04T21:30 — skeleton do nome no hero (evita flash "bem-vinda")
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
@@ -559,7 +559,14 @@ export default function Inicio() {
         {/* Texto da saudação */}
         <div className="ini-hero-greeting">
           <h1>
-            <span>{getGreeting()}, {(nome || "bem-vinda").split(" ")[0]}</span>
+            <span>
+              {getGreeting()},{" "}
+              {profile ? (
+                (nome ? nome.split(" ")[0] : "bem-vinda")
+              ) : (
+                <span className="ini-hero-name-skel" aria-hidden="true" />
+              )}
+            </span>
             {isPro && (
               <span className="ini-hero-pro-badge" aria-label="Plano PRO">
                 <Crown size={11} weight="fill" />
@@ -1099,6 +1106,21 @@ export default function Inicio() {
           text-transform: uppercase;
           box-shadow: 0 2px 6px rgba(0,0,0,0.25);
           flex-shrink: 0;
+        }
+
+        /* Skeleton do nome enquanto carrega — evita flash de "bem-vinda" grande */
+        .ini-hero-name-skel {
+          display: inline-block;
+          width: 100px;
+          height: 0.9em;
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 6px;
+          animation: iniHeroSkelPulse 1.4s ease-in-out infinite;
+          vertical-align: -0.05em;
+        }
+        @keyframes iniHeroSkelPulse {
+          0%, 100% { opacity: 0.35; }
+          50%      { opacity: 0.65; }
         }
 
         /* ── Sino de notificações no hero ── */
