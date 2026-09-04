@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T16:00 — sino colorido + overlay blur + recompensa no final
+// Build marker: 2026-09-04T17:00 — sino colorido, dropdown unico no Layout com blur
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -141,17 +141,8 @@ export default function Inicio() {
     }
   };
 
-  // Sino do header (dropdown de notificações recebidas) — reaproveita NotificationContext
-  const { notifCount, notifOpen, notificacoes, notifRef, toggleNotif: toggleSinoNotif, closeNotif } = useNotifications();
-
-  // Bloqueia scroll do body quando o dropdown de notificações estiver aberto
-  useEffect(() => {
-    if (notifOpen) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => { document.body.style.overflow = prev; };
-    }
-  }, [notifOpen]);
+  // Sino do header — só chama toggleNotif. Dropdown fica no Layout (global).
+  const { notifCount, toggleNotif: toggleSinoNotif } = useNotifications();
 
   // Modal "Ver todos os alertas" + snooze ("Lembrar amanhã")
   const ALERT_LIMIT_VISIBLE = 3;
@@ -592,8 +583,8 @@ export default function Inicio() {
           <p>{getDailyMessage()}</p>
         </div>
 
-        {/* Sino de notificações à direita — abre dropdown, não navega */}
-        <div className="ini-hero-bell-wrap" ref={notifRef}>
+        {/* Sino de notificações à direita — o dropdown é global (Layout.tsx) */}
+        <div className="ini-hero-bell-wrap">
           <button
             className="ini-hero-bell"
             onClick={toggleSinoNotif}
@@ -605,49 +596,6 @@ export default function Inicio() {
               <span className="ini-hero-bell-badge">{notifCount > 9 ? "9+" : notifCount}</span>
             )}
           </button>
-
-          {notifOpen && (
-            <>
-              {/* Overlay escuro com blur — clicar fecha */}
-              <div className="ini-notif-overlay" onClick={closeNotif} aria-hidden="true" />
-
-              <div className="ini-notif-dropdown" role="dialog" aria-modal="true" aria-label="Notificações">
-                <div className="ini-notif-header">
-                  <h4>Notificações</h4>
-                  <button className="ini-notif-clear" onClick={closeNotif} type="button" aria-label="Fechar">
-                    ✕
-                  </button>
-                </div>
-                <div className="ini-notif-list">
-                  {notificacoes.length === 0 ? (
-                    <div className="ini-notif-empty">
-                      Nenhuma notificação por aqui 💌
-                    </div>
-                  ) : (
-                    notificacoes.slice(0, 20).map((n: any) => (
-                      <div key={n.id} className={`ini-notif-item ${!n.lida ? "ini-notif-item--nova" : ""}`}>
-                        <span className="ini-notif-dot" />
-                        <div className="ini-notif-content">
-                          {n.imagem_url && (
-                            <img src={n.imagem_url} alt="" className="ini-notif-img" />
-                          )}
-                          <div className="ini-notif-texto">
-                            <p className="ini-notif-titulo">{n.titulo}</p>
-                            {n.descricao && <p className="ini-notif-desc">{n.descricao}</p>}
-                            {n.created_at && (
-                              <p className="ini-notif-tempo">
-                                {new Date(n.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </>
-          )}
         </div>
       </div>
 
@@ -1155,86 +1103,6 @@ export default function Inicio() {
           border: 2px solid var(--primary);
           line-height: 1;
         }
-
-        /* ── Dropdown de notificações — modal com overlay ── */
-        .ini-notif-overlay {
-          position: fixed; inset: 0;
-          background: rgba(45, 31, 38, 0.55);
-          backdrop-filter: blur(6px);
-          -webkit-backdrop-filter: blur(6px);
-          z-index: 999;
-          animation: iniNotifOverlayIn 0.2s ease-out;
-        }
-        @keyframes iniNotifOverlayIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .ini-notif-dropdown {
-          position: fixed;
-          top: calc(env(safe-area-inset-top, 0px) + 12px);
-          right: 12px;
-          left: 12px;
-          max-width: 420px;
-          margin-left: auto;
-          max-height: calc(100vh - env(safe-area-inset-top, 0px) - 24px);
-          background: var(--bg-card);
-          border-radius: var(--radius-lg);
-          box-shadow: 0 20px 60px rgba(45,31,38,0.35);
-          border: 1px solid var(--border);
-          overflow: hidden;
-          z-index: 1000;
-          display: flex; flex-direction: column;
-          animation: iniNotifIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        @keyframes iniNotifIn {
-          from { opacity: 0; transform: translateY(-10px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .ini-notif-header {
-          padding: 14px 16px;
-          border-bottom: 1px solid var(--border);
-          display: flex; justify-content: space-between; align-items: center;
-          flex-shrink: 0;
-        }
-        .ini-notif-header h4 { margin: 0; font-size: 15px; font-weight: var(--fw-black); color: var(--text-title); }
-        .ini-notif-clear {
-          width: 30px; height: 30px;
-          border-radius: 50%;
-          background: var(--bg-subtle); border: none;
-          color: var(--text-secondary);
-          font-size: 14px;
-          font-weight: var(--fw-bold);
-          cursor: pointer; padding: 0;
-          display: flex; align-items: center; justify-content: center;
-          transition: background var(--dur-fast), color var(--dur-fast);
-        }
-        .ini-notif-clear:hover { background: var(--primary-light); color: var(--primary); }
-        .ini-notif-list {
-          flex: 1; min-height: 0;
-          overflow-y: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-        .ini-notif-item {
-          padding: 12px 14px;
-          border-bottom: 1px solid var(--border);
-          display: flex; gap: 8px;
-          cursor: pointer;
-        }
-        .ini-notif-item:last-child { border-bottom: none; }
-        .ini-notif-item--nova { background: var(--primary-light); }
-        .ini-notif-dot {
-          width: 8px; height: 8px;
-          border-radius: 50%;
-          background: var(--primary);
-          margin-top: 6px;
-          flex-shrink: 0;
-        }
-        .ini-notif-item:not(.ini-notif-item--nova) .ini-notif-dot { visibility: hidden; }
-        .ini-notif-content { flex: 1; min-width: 0; display: flex; gap: 8px; }
-        .ini-notif-img { width: 40px; height: 40px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; }
-        .ini-notif-texto { flex: 1; min-width: 0; }
-        .ini-notif-titulo { margin: 0; font-size: 13px; font-weight: var(--fw-bold); color: var(--text-title); line-height: 1.3; }
-        .ini-notif-desc { margin: 2px 0 0; font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
-        .ini-notif-tempo { margin: 4px 0 0; font-size: 10px; color: var(--text-muted); }
-        .ini-notif-empty { padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 13px; }
 
         /* ── Wrap da métrica sobreposta ao hero ── */
         .ini-metrica-wrap {
