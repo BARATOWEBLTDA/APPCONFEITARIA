@@ -1,13 +1,12 @@
-// Build marker: 2026-09-04T10:00 — nasce expandido a cada novo login (sessionStorage)
+// Build marker: 2026-09-04T11:00 — remove tutorial, novo estado inicial com COMEÇAR grande
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   UserCircle, Storefront, Package,
   ShoppingBag, ClipboardText,
-  PlayCircle, CaretRight, CaretUp, CaretDown, Lock, Check, Crown,
+  CaretRight, CaretUp, CaretDown, Lock, Check, Crown,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
-import Onboarding from "@/components/Onboarding";
 
 interface Step {
   id: string;
@@ -29,17 +28,16 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
   const [minimized, setMinimized] = useState<boolean>(() => {
     try { return sessionStorage.getItem(LS_MINIMIZED) === "1"; } catch { return false; }
   });
-  const [onboardingOpen, setOnboardingOpen] = useState(false);
-  const [tutorialDone, setTutorialDone] = useState(() => {
-    try { return !!localStorage.getItem("doonly_tutorial_visto"); } catch { return false; }
+  // ─── Estado "started" ───
+  // Controla se as etapas estão visíveis ou se ainda estamos no estado inicial
+  // (só header + botão COMEÇAR grande). Persiste na sessão.
+  const LS_STARTED = "doonly_welcome_started";
+  const [started, setStarted] = useState<boolean>(() => {
+    try { return sessionStorage.getItem(LS_STARTED) === "1"; } catch { return false; }
   });
-
-  const handleTutorialClose = (slideAlcancada: number) => {
-    setOnboardingOpen(false);
-    if (slideAlcancada >= 5) {
-      try { localStorage.setItem("doonly_tutorial_visto", "1"); } catch {}
-      setTutorialDone(true);
-    }
+  const marcarStarted = () => {
+    setStarted(true);
+    try { sessionStorage.setItem(LS_STARTED, "1"); } catch {}
   };
 
   const toggleMinimized = () => {
@@ -54,7 +52,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
     if (!userId) return;
     checkSteps();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, tutorialDone]);
+  }, [userId]);
 
   const checkSteps = async () => {
     try {
@@ -69,13 +67,6 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
       const iconSize = 18;
 
       setSteps([
-        {
-          id: "tutorial",
-          icon: <PlayCircle size={iconSize} weight="duotone" />,
-          title: "Fazer o tutorial",
-          path: "__tutorial__",
-          done: tutorialDone,
-        },
         {
           id: "perfil",
           icon: <UserCircle size={iconSize} weight="duotone" />,
@@ -143,8 +134,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
     if (step.done) return;
     // Só a missão atual (primeira pendente) é executável — as próximas estão travadas
     if (idx !== currentStepIdx) return;
-    if (step.path === "__tutorial__") setOnboardingOpen(true);
-    else navigate(step.path);
+    navigate(step.path);
   };
 
   return (
@@ -177,64 +167,90 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         </button>
       ) : (
         // ─── MODO EXPANDIDO ───
-        <div className="wc-root">
-          {/* Cabeçalho grafite com o prêmio */}
-          <div className="wc-prize">
-            <span className="wc-prize-glow" aria-hidden="true" />
-            <span className="wc-prize-badge">
-              <Crown size={11} weight="fill" />
-              Recompensa
-            </span>
-            <p className="wc-prize-l1">{copyMotivadora}</p>
-            <p className="wc-prize-l2">
-              <span>7 dias</span> grátis no PRO
-            </p>
-            <div className="wc-prize-bar">
-              <div className="wc-prize-bar-fill" style={{ width: `${pct}%` }} />
-            </div>
-            <div className="wc-prize-progress">
-              <span>{doneCount} de {total} etapas concluídas</span>
-              <span>{pct}%</span>
-            </div>
-          </div>
+        // Se ainda não iniciou (started=false e nenhuma etapa feita), mostra
+        // um botão COMEÇAR grande dentro do header. Quando clica, expande as etapas.
+        // Se já tem alguma etapa feita, mostra as etapas direto.
+        (() => {
+          const mostrarEtapas = started || pct > 0;
+          return (
+            <div className="wc-root">
+              {/* Cabeçalho grafite com o prêmio */}
+              <div className={`wc-prize ${mostrarEtapas ? "" : "wc-prize--intro"}`}>
+                <span className="wc-prize-glow" aria-hidden="true" />
+                <span className="wc-prize-badge">
+                  <Crown size={11} weight="fill" />
+                  Recompensa
+                </span>
+                <p className="wc-prize-l1">{copyMotivadora}</p>
+                <p className="wc-prize-l2">
+                  <span>7 dias</span> grátis no PRO
+                </p>
 
-          {/* Lista de etapas */}
-          <ul className="wc-steps">
-            {steps.map((step, idx) => {
-              const isCurrent = idx === currentStepIdx;
-              const isLocked = !step.done && !isCurrent;
-              const stateClass = step.done ? "wc-step--done" : isCurrent ? "wc-step--current" : "wc-step--locked";
-              return (
-                <li key={step.id}>
-                  <div
-                    className={`wc-step ${stateClass}`}
-                    onClick={() => executarStep(step, idx)}
-                    role={isCurrent ? "button" : undefined}
-                    tabIndex={isCurrent ? 0 : -1}
-                    onKeyDown={(e) => { if (isCurrent && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); executarStep(step, idx); } }}
+                {mostrarEtapas ? (
+                  <>
+                    <div className="wc-prize-bar">
+                      <div className="wc-prize-bar-fill" style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className="wc-prize-progress">
+                      <span>{doneCount} de {total} etapas concluídas</span>
+                      <span>{pct}%</span>
+                    </div>
+                  </>
+                ) : (
+                  // Estado inicial — CTA grande dentro do header
+                  <button
+                    className="wc-prize-cta"
+                    onClick={marcarStarted}
+                    type="button"
                   >
-                    <span className="wc-step-icon">
-                      {step.done ? <Check size={16} weight="bold" /> : isLocked ? <Lock size={14} weight="fill" /> : step.icon}
-                    </span>
-                    <span className="wc-step-title">{step.title}</span>
-                    {isCurrent && (
-                      <button className="wc-step-cta" type="button" onClick={(e) => { e.stopPropagation(); executarStep(step, idx); }}>
-                        {pct === 0 ? "COMEÇAR" : "CONTINUAR"} <CaretRight size={12} weight="bold" />
-                      </button>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+                    COMEÇAR <CaretRight size={14} weight="bold" />
+                  </button>
+                )}
+              </div>
 
-          {/* Rodapé — botão recolher */}
-          <div className="wc-footer">
-            <button className="wc-toggle" onClick={toggleMinimized} type="button">
-              Ver menos <CaretUp size={13} weight="bold" />
-            </button>
-          </div>
-        </div>
+              {/* Lista de etapas — só aparece após clicar COMEÇAR (ou se já tem progresso) */}
+              {mostrarEtapas && (
+                <>
+                  <ul className="wc-steps">
+                    {steps.map((step, idx) => {
+                      const isCurrent = idx === currentStepIdx;
+                      const isLocked = !step.done && !isCurrent;
+                      const stateClass = step.done ? "wc-step--done" : isCurrent ? "wc-step--current" : "wc-step--locked";
+                      return (
+                        <li key={step.id}>
+                          <div
+                            className={`wc-step ${stateClass}`}
+                            onClick={() => executarStep(step, idx)}
+                            role={isCurrent ? "button" : undefined}
+                            tabIndex={isCurrent ? 0 : -1}
+                            onKeyDown={(e) => { if (isCurrent && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); executarStep(step, idx); } }}
+                          >
+                            <span className="wc-step-icon">
+                              {step.done ? <Check size={16} weight="bold" /> : isLocked ? <Lock size={14} weight="fill" /> : step.icon}
+                            </span>
+                            <span className="wc-step-title">{step.title}</span>
+                            {isCurrent && (
+                              <button className="wc-step-cta" type="button" onClick={(e) => { e.stopPropagation(); executarStep(step, idx); }}>
+                                CONTINUAR <CaretRight size={12} weight="bold" />
+                              </button>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  {/* Rodapé — botão recolher (só aparece quando etapas visíveis) */}
+                  <div className="wc-footer">
+                    <button className="wc-toggle" onClick={toggleMinimized} type="button">
+                      Ver menos <CaretUp size={13} weight="bold" />
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })()
       )}
 
       <style>{`
@@ -319,6 +335,36 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           font-size: 11px;
           opacity: 0.85;
           font-weight: var(--fw-bold);
+        }
+
+        /* ── Estado inicial (antes de COMEÇAR): CTA grande no header ── */
+        .wc-prize--intro { padding-bottom: 18px; }
+        .wc-prize-cta {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          width: 100%;
+          padding: 13px 22px;
+          background: var(--primary);
+          color: #fff;
+          border: none;
+          border-radius: 14px;
+          font-family: inherit;
+          font-size: 13px;
+          font-weight: var(--fw-black);
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          cursor: pointer;
+          box-shadow: 0 4px 0 var(--primary-dark);
+          transition: transform var(--dur-fast), background var(--dur-fast);
+          margin-top: 4px;
+        }
+        .wc-prize-cta:hover { background: var(--btn-primary-hover); }
+        .wc-prize-cta:active {
+          transform: translateY(3px);
+          box-shadow: 0 1px 0 var(--primary-dark);
         }
 
         /* ── Lista de etapas ── */
@@ -535,8 +581,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         }
       `}</style>
 
-      {/* Modal de Onboarding — aberto pelo passo "Fazer o tutorial" */}
-      <Onboarding isOpen={onboardingOpen} onClose={handleTutorialClose} />
+      {/* Onboarding do primeiro login é aberto pelo App.tsx (PrivateRoute), não aqui */}
     </>
   );
 }
