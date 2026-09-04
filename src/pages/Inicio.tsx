@@ -1,5 +1,6 @@
-// Build marker: 2026-09-04T20:00 — menu do sino com overlay/blur/scroll lock
+// Build marker: 2026-09-04T20:30 — menu do sino via React Portal (escapa stacking context)
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -179,15 +180,8 @@ export default function Inicio() {
     });
   }, []);
 
-  // Click outside fecha o menu
-  useEffect(() => {
-    if (!menuOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [menuOpen]);
+  // Menu do sino: fecha ao clicar no overlay escuro (que está renderizado via portal).
+  // Não precisa mais de click-outside via ref porque o overlay cobre tudo.
 
   // Trava o scroll do body quando o menu do sino está aberto
   useEffect(() => {
@@ -591,7 +585,7 @@ export default function Inicio() {
             )}
           </button>
 
-          {menuOpen && (
+          {menuOpen && createPortal(
             <>
               {/* Overlay escuro com blur — clicar fecha o menu */}
               <div className="ini-menu-overlay" onClick={() => setMenuOpen(false)} aria-hidden="true" />
@@ -633,7 +627,8 @@ export default function Inicio() {
                   <SignOut size={18} weight="regular" /> Sair
                 </button>
               </div>
-            </>
+            </>,
+            document.body
           )}
         </div>
       </div>
