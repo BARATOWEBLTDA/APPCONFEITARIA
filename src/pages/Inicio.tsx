@@ -1,4 +1,4 @@
-// Build marker: 2026-09-05T10:00 — desktop: espaco metrica, hover cards, remove outline chart
+// Build marker: 2026-09-05T10:30 — desktop: esconde card metrica redundante
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
@@ -1907,12 +1907,10 @@ export default function Inicio() {
           /* Hero escondido no desktop — saudação fica na sidebar */
           .ini-hero { display: none; }
 
-          /* ── Card de métrica em destaque (desktop) — remove sobreposição
-             que só faz sentido no mobile (onde o hero está visível) ── */
+          /* ── Card de métrica em destaque: escondido no desktop
+             (os 4 cards de métrica abaixo já mostram Faturamento — evita redundância) ── */
           .ini-metrica-wrap {
-            padding: 0;
-            margin-top: 0;
-            margin-bottom: var(--space-6);
+            display: none;
           }
 
           /* ── Hover consistente nos cards de "Acesso rápido" ── */
