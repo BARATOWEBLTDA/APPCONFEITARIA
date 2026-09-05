@@ -1,4 +1,4 @@
-// Build marker: 2026-09-05T10:30 — desktop: esconde card metrica redundante
+// Build marker: 2026-09-05T11:00 — mobile hero: fonte menor, PRO achatado, texto centralizado
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
@@ -1036,13 +1036,13 @@ export default function Inicio() {
         .ini-hero {
           background: var(--primary);
           border-radius: 0 0 24px 24px;
-          padding: 1.25rem 1.25rem 3rem;
+          padding: 1.5rem 1.25rem 2.5rem;
           /* Full-bleed: estende até a borda da viewport ignorando padding dos pais */
           width: 100vw;
           margin-left: calc(50% - 50vw);
           margin-right: calc(50% - 50vw);
           margin-top: calc(-1 * (var(--pad-page-top) + env(safe-area-inset-top, 0px)));
-          padding-top: calc(0.9rem + env(safe-area-inset-top, 0px));
+          padding-top: calc(1.3rem + env(safe-area-inset-top, 0px));
           display: flex;
           align-items: center;
           gap: 0.85rem;
@@ -1076,7 +1076,7 @@ export default function Inicio() {
         }
         .ini-hero-greeting h1 {
           display: inline-flex; align-items: center; gap: 6px;
-          font-size: 1.5rem; font-weight: var(--fw-black);
+          font-size: 1.25rem; font-weight: var(--fw-black);
           color: #fff;
           margin: 0; line-height: 1.2;
           letter-spacing: -0.02em;
@@ -1090,16 +1090,16 @@ export default function Inicio() {
         .ini-hero-pro-badge {
           display: inline-flex;
           align-items: center;
-          gap: 4px;
+          gap: 3px;
           background: var(--accent);
           color: #fff;
-          padding: 3px 9px;
-          border-radius: var(--radius-full);
-          font-size: 10px;
+          padding: 2px 7px;
+          border-radius: 6px;
+          font-size: 9px;
           font-weight: var(--fw-bold);
           letter-spacing: 0.06em;
           text-transform: uppercase;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+          box-shadow: 0 1px 4px rgba(0,0,0,0.22);
           flex-shrink: 0;
         }
 
