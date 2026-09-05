@@ -1,4 +1,4 @@
-// Build marker: 2026-09-05T09:30 — remove badge de notificacao do sino (agora e menu)
+// Build marker: 2026-09-05T10:00 — desktop: espaco metrica, hover cards, remove outline chart
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
@@ -1906,6 +1906,40 @@ export default function Inicio() {
 
           /* Hero escondido no desktop — saudação fica na sidebar */
           .ini-hero { display: none; }
+
+          /* ── Card de métrica em destaque (desktop) — remove sobreposição
+             que só faz sentido no mobile (onde o hero está visível) ── */
+          .ini-metrica-wrap {
+            padding: 0;
+            margin-top: 0;
+            margin-bottom: var(--space-6);
+          }
+
+          /* ── Hover consistente nos cards de "Acesso rápido" ── */
+          .ini-nav-card:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 14px rgba(45, 31, 38, 0.08);
+          }
+          .ini-nav-card:active { transform: translateY(0); }
+
+          /* Card "Novo pedido" (rosa escuro) — mesmo movimento + escurecido */
+          .ini-nav-card[data-nav="novo"]:hover {
+            background: var(--primary-dark);
+            filter: brightness(0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(232, 90, 140, 0.35);
+          }
+
+          /* ── Remove outline preto ao clicar no gráfico ── */
+          .ini-chart-card,
+          .ini-chart-card *,
+          .ini-chart-inner,
+          .ini-chart-inner *,
+          .recharts-wrapper,
+          .recharts-surface {
+            outline: none !important;
+          }
 
           /* ── Grid principal: dashboard + aside ── */
           .ini-content {
