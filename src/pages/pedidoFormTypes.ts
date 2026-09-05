@@ -9,6 +9,7 @@ export type PedidoItem = {
   desconto: number
   observacoes: string
   imagem_url?: string
+  forma_venda?: string
   personalizacoes: Record<string, string>
 }
 
@@ -119,3 +120,45 @@ export function formatTelefone(tel: string): string {
 export function getQuantityStep(formaVenda?: string): number {
   return formaVenda === 'kg' || formaVenda === 'cento' ? 0.5 : 1
 }
+
+// Rótulo curto pra unidade de venda — usado ao lado da quantidade (ex: "2 kg", "3 un.")
+export function getUnitLabel(formaVenda?: string): string {
+  switch (formaVenda) {
+    case 'kg':            return 'kg'
+    case 'cento':         return 'cento'
+    case 'fatia':         return 'fatia'
+    case 'caixa':         return 'cx'
+    case 'tamanho':       return ''
+    case 'kit-festa':     return 'kit'
+    case 'sob-encomenda': return 'un.'
+    case 'outros':        return ''
+    case 'unidade':
+    default:              return 'un.'
+  }
+}
+
+// Rótulo por preço unitário — "R$ 45,00 / kg", "R$ 60,00 / un.", etc.
+export function getPricePerLabel(formaVenda?: string): string {
+  switch (formaVenda) {
+    case 'kg':            return '/ kg'
+    case 'cento':         return '/ cento'
+    case 'fatia':         return '/ fatia'
+    case 'caixa':         return '/ caixa'
+    case 'kit-festa':     return '/ kit'
+    case 'tamanho':
+    case 'outros':        return ''
+    case 'unidade':
+    case 'sob-encomenda':
+    default:              return '/ un.'
+  }
+}
+
+// Formata a quantidade com o rótulo certo — "2 kg", "1,5 kg", "3 un.", "0,5 cento"
+export function formatQuantidade(quantidade: number, formaVenda?: string): string {
+  const label = getUnitLabel(formaVenda)
+  const numStr = quantidade % 1 === 0
+    ? quantidade.toString()
+    : quantidade.toString().replace('.', ',')
+  return label ? `${numStr} ${label}` : numStr
+}
+

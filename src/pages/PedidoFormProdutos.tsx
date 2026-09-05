@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { type Pedido, type PedidoItem, EMPTY_ITEM, formatMoney, getQuantityStep } from '@/pages/pedidoFormTypes'
+import { type Pedido, type PedidoItem, EMPTY_ITEM, formatMoney, getQuantityStep, getUnitLabel, getPricePerLabel, formatQuantidade } from '@/pages/pedidoFormTypes'
 
 type Props = {
   pedido: Pedido
@@ -87,7 +87,10 @@ function ProdutoSheet({ produtos, onSelect, onClose }: {
               }
               <div className="ps-row-info">
                 <p className="ps-row-name">{p.nome}</p>
-                <p className="ps-row-price">{formatMoney(p.preco_normal)}</p>
+                <p className="ps-row-price">
+                  {formatMoney(p.preco_normal)}
+                  {getPricePerLabel(p.forma_venda) && <span style={{ fontWeight: 600, opacity: 0.75 }}> {getPricePerLabel(p.forma_venda)}</span>}
+                </p>
               </div>
               <span className="ps-row-plus" aria-hidden="true">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -502,12 +505,12 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
                   <button type="button" onClick={() => alterarQuantidadeItem(idx, -1)} aria-label="Diminuir quantidade">
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   </button>
-                  <span>{item.quantidade}</span>
+                  <span>{formatQuantidade(item.quantidade, item.forma_venda)}</span>
                   <button type="button" onClick={() => alterarQuantidadeItem(idx, 1)} aria-label="Aumentar quantidade">
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                   </button>
                 </div>
-                <span className="pf2-item-meta">× {formatMoney(item.valor_unitario)}</span>
+                <span className="pf2-item-meta">× {formatMoney(item.valor_unitario)}{getPricePerLabel(item.forma_venda) && ` ${getPricePerLabel(item.forma_venda)}`}</span>
               </div>
             </div>
             <span className="pf2-item-total">{formatMoney(item.valor_unitario * item.quantidade)}</span>
@@ -547,7 +550,9 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
                   }
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-title)' }}>{novoItem.nome_produto}</p>
-                    <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 600 }}>{formatMoney(novoItem.valor_unitario)} / un.</p>
+                    <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 600 }}>
+                      {formatMoney(novoItem.valor_unitario)} {getPricePerLabel(novoItem.forma_venda)}
+                    </p>
                   </div>
                   <button className="pf2-item-remove" onClick={() => { setNovoItem({ ...EMPTY_ITEM }); setBuscaProduto('') }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -557,7 +562,9 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
                 </div>
 
                 <div style={{ marginTop: '0.85rem' }}>
-                  <label className="pf2-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Quantidade</label>
+                  <label className="pf2-label" style={{ marginBottom: '0.5rem', display: 'block' }}>
+                    Quantidade {getUnitLabel(novoItem.forma_venda) && <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>({getUnitLabel(novoItem.forma_venda)})</span>}
+                  </label>
                   <div className="pf2-stepper">
                     <button
                       type="button"
@@ -566,7 +573,7 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
                     </button>
-                    <span className="pf2-stepper-val">{novoItem.quantidade}</span>
+                    <span className="pf2-stepper-val">{formatQuantidade(novoItem.quantidade, novoItem.forma_venda)}</span>
                     <button
                       type="button"
                       className="pf2-stepper-btn"
@@ -640,6 +647,8 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
                 nome_produto: p.nome,
                 valor_unitario: p.preco_normal || 0,
                 imagem_url: p.imagem_url || '',
+                forma_venda: p.forma_venda || 'unidade',
+                quantidade: getQuantityStep(p.forma_venda),
               }))
               setBuscaProduto('')
               setShowProdSheet(false)
