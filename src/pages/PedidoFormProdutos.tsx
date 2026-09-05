@@ -64,7 +64,6 @@ function ProdutoSheet({ produtos, onSelect, onClose }: {
             placeholder="Buscar por nome..."
             value={busca}
             onChange={e => setBusca(e.target.value)}
-            autoFocus
           />
           {busca && (
             <button className="ps-search-clear" onClick={() => setBusca('')} type="button" aria-label="Limpar busca">
@@ -756,34 +755,41 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
         .pf2-produto-trigger:hover { border-color: var(--primary); }
 
         .pf2-add-produto-selecionado {
-          display: flex; align-items: center; gap: 10px;
-          padding: 10px 12px;
-          background: var(--bg-card);
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-md);
+          display: flex; align-items: center; gap: 12px;
+          padding: 12px;
+          background: var(--bg-subtle);
+          border: 1px solid var(--border);
+          border-radius: 14px;
         }
+
+        /* ── Stepper moderno: fundo suave, botões redondos rosa ── */
         .pf2-stepper {
-          display: flex; align-items: center;
-          border: 1.5px solid var(--border);
-          border-radius: var(--radius-md); overflow: hidden;
+          display: inline-flex; align-items: center;
+          background: var(--bg-subtle);
+          border-radius: 999px;
+          padding: 4px;
           width: fit-content;
+          gap: 2px;
         }
         .pf2-stepper-btn {
-          width: 44px; height: 44px;
-          background: var(--bg-subtle);
+          width: 36px; height: 36px;
+          border-radius: 50%;
+          background: var(--bg-card);
           border: none; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          color: var(--primary); transition: background var(--dur-fast);
+          color: var(--primary);
+          box-shadow: 0 1px 2px rgba(45, 31, 38, 0.06);
+          transition: transform var(--dur-fast), background var(--dur-fast);
         }
-        .pf2-stepper-btn:hover { background: var(--border); }
+        .pf2-stepper-btn:hover { background: var(--primary); color: #fff; }
+        .pf2-stepper-btn:active { transform: scale(0.94); }
         .pf2-stepper-val {
-          min-width: 52px; text-align: center;
-          font-size: var(--font-input); font-weight: var(--fw-bold);
+          min-width: 58px; text-align: center;
+          font-size: var(--font-input); font-weight: var(--fw-black);
           color: var(--text-title);
           font-family: 'Geist',sans-serif;
-          border-left: 1px solid var(--border);
-          border-right: 1px solid var(--border);
-          padding: 0 8px; line-height: 44px;
+          padding: 0 8px;
+          letter-spacing: -0.01em;
         }
 
         /* ── Mini-stepper inline (editar item já lançado) ── */

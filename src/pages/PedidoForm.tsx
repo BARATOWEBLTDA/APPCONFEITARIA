@@ -597,8 +597,8 @@ export default function PedidoForm() {
 
         /* Formulário de adicionar item */
         .pf2-add-form {
-          padding: 0.85rem 1rem;
-          background: var(--bg-subtle);
+          padding: 0.85rem 1rem 1rem;
+          background: transparent;
           border-top: 1px solid var(--border);
           position: relative;
         }
