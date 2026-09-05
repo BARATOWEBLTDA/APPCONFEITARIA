@@ -12,6 +12,252 @@ type Props = {
   onBack: () => void
 }
 
+// ── Bottom Sheet de produto (mobile) ─────────────────────────────────────────
+function ProdutoSheet({ produtos, onSelect, onClose }: {
+  produtos: any[]
+  onSelect: (p: any) => void
+  onClose: () => void
+}) {
+  const [busca, setBusca] = useState('')
+
+  const filtrados = produtos.filter(p =>
+    !busca || p.nome.toLowerCase().includes(busca.toLowerCase())
+  )
+
+  useEffect(() => {
+    // Trava scroll do fundo
+    const scrollY = window.scrollY
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handleKey)
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.width = ''
+      window.scrollTo(0, scrollY)
+      window.removeEventListener('keydown', handleKey)
+    }
+  }, [])
+
+  return (
+    <>
+      <div className="ps-overlay" onClick={onClose} />
+      <div className="ps-sheet" role="dialog" aria-modal="true" aria-label="Escolher produto">
+        <div className="ps-handle" />
+        <div className="ps-header">
+          <p className="ps-title">Escolher produto</p>
+          <button className="ps-close" onClick={onClose} aria-label="Fechar" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div className="ps-search">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            className="ps-search-input"
+            placeholder="Buscar por nome..."
+            value={busca}
+            onChange={e => setBusca(e.target.value)}
+            autoFocus
+          />
+          {busca && (
+            <button className="ps-search-clear" onClick={() => setBusca('')} type="button" aria-label="Limpar busca">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          )}
+        </div>
+
+        <div className="ps-list">
+          {filtrados.length > 0 ? filtrados.map(p => (
+            <button
+              key={p.id}
+              className="ps-row"
+              onClick={() => { onSelect(p); onClose() }}
+              type="button"
+            >
+              {p.imagem_url
+                ? <img src={p.imagem_url} alt={p.nome} className="ps-row-img" />
+                : <div className="ps-row-img ps-row-img--empty">🎂</div>
+              }
+              <div className="ps-row-info">
+                <p className="ps-row-name">{p.nome}</p>
+                <p className="ps-row-price">{formatMoney(p.preco_normal)}</p>
+              </div>
+              <span className="ps-row-plus" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </span>
+            </button>
+          )) : (
+            <div className="ps-empty">
+              <span className="ps-empty-icon">🔍</span>
+              <p className="ps-empty-txt">{busca ? 'Nenhum produto encontrado' : 'Nenhum produto cadastrado'}</p>
+              {busca && <p className="ps-empty-sub">Tente buscar com outro nome</p>}
+            </div>
+          )}
+        </div>
+
+        <style>{`
+          .ps-overlay {
+            position: fixed; inset: 0;
+            background: rgba(45, 31, 38, 0.55);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 200;
+            animation: psFadeIn 0.2s ease;
+          }
+          @keyframes psFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+          .ps-sheet {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--bg-card);
+            border-radius: 20px 20px 0 0;
+            z-index: 201;
+            max-height: 82vh;
+            display: flex; flex-direction: column;
+            box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
+            animation: psSlideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+            font-family: 'Geist', sans-serif;
+          }
+          @keyframes psSlideUp {
+            from { transform: translateY(100%); }
+            to   { transform: translateY(0); }
+          }
+
+          .ps-handle {
+            width: 40px; height: 4px; border-radius: 999px;
+            background: var(--border);
+            margin: 10px auto 4px;
+            flex-shrink: 0;
+          }
+          .ps-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 16px 8px 20px;
+            flex-shrink: 0;
+          }
+          .ps-title {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-title);
+          }
+          .ps-close {
+            width: 30px; height: 30px; border-radius: 50%;
+            background: var(--bg-subtle); border: none;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary); cursor: pointer;
+            transition: background 0.15s;
+          }
+          .ps-close:hover { background: var(--primary-light); color: var(--primary); }
+
+          .ps-search {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 14px;
+            margin: 0 16px 8px;
+            background: var(--primary-light);
+            border-radius: 12px;
+            color: var(--primary-dark);
+            flex-shrink: 0;
+          }
+          .ps-search-input {
+            border: none; background: none; outline: none;
+            flex: 1; font-size: 14px;
+            color: var(--text-title);
+            font-family: inherit;
+          }
+          .ps-search-input::placeholder { color: var(--text-muted); }
+          .ps-search-clear {
+            width: 22px; height: 22px; border-radius: 50%;
+            background: rgba(255,255,255,0.7); border: none;
+            color: var(--text-secondary); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+          }
+
+          .ps-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 4px 8px 20px;
+            overscroll-behavior: contain;
+          }
+          .ps-list::-webkit-scrollbar { display: none; }
+
+          .ps-row {
+            display: flex; align-items: center; gap: 12px;
+            width: 100%;
+            padding: 10px 12px;
+            background: none; border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+            transition: background 0.15s;
+          }
+          .ps-row:hover, .ps-row:active { background: var(--primary-light); }
+          .ps-row-img {
+            width: 48px; height: 48px;
+            border-radius: 10px;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: var(--bg-subtle);
+          }
+          .ps-row-img--empty {
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+          }
+          .ps-row-info { flex: 1; min-width: 0; }
+          .ps-row-name {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-title);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .ps-row-price {
+            margin: 2px 0 0;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+          }
+          .ps-row-plus {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: var(--primary); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 0 var(--primary-dark);
+            transition: transform 0.1s;
+          }
+          .ps-row:active .ps-row-plus { transform: translateY(1px); box-shadow: 0 1px 0 var(--primary-dark); }
+
+          .ps-empty {
+            text-align: center;
+            padding: 40px 20px;
+          }
+          .ps-empty-icon { font-size: 34px; display: block; margin-bottom: 8px; }
+          .ps-empty-txt {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+          }
+          .ps-empty-sub {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: var(--text-muted);
+          }
+        `}</style>
+      </div>
+    </>
+  )
+}
+
 // ── Modal de produto (desktop) ───────────────────────────────────────────────
 function ProdutoModal({ produtos, onSelect, onClose }: {
   produtos: any[]
@@ -187,6 +433,7 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
   const [adicionando, setAdicionando] = useState(false)
   const [buscaProduto, setBuscaProduto] = useState('')
   const [showProdDrop, setShowProdDrop] = useState(false)
+  const [showProdSheet, setShowProdSheet] = useState(false)
   const [showPersonalizacao, setShowPersonalizacao] = useState(
     !!(pedido.personalizacao_tema || pedido.personalizacao_nome || pedido.personalizacao_cor)
   )
@@ -276,51 +523,19 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
         {adicionando && (
           <div className="pf2-add-form">
             {!novoItem.nome_produto ? (
-              /* Busca de produto */
-              <div className="pf2-field" style={{ position: 'relative' }}>
+              /* Trigger que abre o bottom sheet */
+              <div className="pf2-field">
                 <label className="pf2-label">Produto *</label>
-                <input
-                  className="pf2-input"
-                  placeholder="Buscar produto cadastrado..."
-                  value={buscaProduto}
-                  onChange={e => { setBuscaProduto(e.target.value); setShowProdDrop(true) }}
-                  onFocus={() => setShowProdDrop(true)}
-                  onBlur={() => setTimeout(() => setShowProdDrop(false), 180)}
-                  autoComplete="off"
-                />
-                {showProdDrop && (
-                  <div className="pf2-dropdown" onMouseDown={e => e.preventDefault()}>
-                    {prodsFiltrados.length > 0 ? prodsFiltrados.map(p => (
-                      <button
-                        key={p.id}
-                        className="pf2-drop-item pf2-drop-item--produto"
-                        onMouseDown={() => {
-                          setNovoItem(prev => ({
-                            ...prev,
-                            produto_id: p.id,
-                            nome_produto: p.nome,
-                            valor_unitario: p.preco_normal || 0,
-                            imagem_url: p.imagem_url || '',
-                          }))
-                          setBuscaProduto('')
-                          setShowProdDrop(false)
-                          if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
-                        }}
-                      >
-                        {p.imagem_url
-                          ? <img src={p.imagem_url} alt={p.nome} style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
-                          : <div style={{ width: 36, height: 36, borderRadius: 6, background: 'var(--bg-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>🎂</div>
-                        }
-                        <div style={{ flex: 1 }}>
-                          <div className="pf2-drop-name">{p.nome}</div>
-                          <div className="pf2-drop-sub" style={{ color: 'var(--primary)', fontWeight: 600 }}>{formatMoney(p.preco_normal)}</div>
-                        </div>
-                      </button>
-                    )) : (
-                      <div className="pf2-drop-empty">Nenhum produto encontrado</div>
-                    )}
-                  </div>
-                )}
+                <button
+                  type="button"
+                  className="pf2-input pf2-produto-trigger"
+                  onClick={() => setShowProdSheet(true)}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary)', flexShrink: 0 }}>
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <span style={{ color: 'var(--text-muted)' }}>Buscar produto...</span>
+                </button>
               </div>
             ) : (
               /* Produto selecionado — card + quantidade */
@@ -414,6 +629,25 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
           />
         )}
 
+        {/* Bottom Sheet de produto — mobile */}
+        {showProdSheet && (
+          <ProdutoSheet
+            produtos={produtos}
+            onSelect={(p) => {
+              setNovoItem(prev => ({
+                ...prev,
+                produto_id: p.id,
+                nome_produto: p.nome,
+                valor_unitario: p.preco_normal || 0,
+                imagem_url: p.imagem_url || '',
+              }))
+              setBuscaProduto('')
+              setShowProdSheet(false)
+            }}
+            onClose={() => setShowProdSheet(false)}
+          />
+        )}
+
         {/* Opcional: Personalização */}
         <div
           className={`pf2-optional-toggle${showPersonalizacao ? ' pf2-optional-toggle--on' : ''}`}
@@ -500,6 +734,17 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
       <style>{`@media (min-width: 768px) { .pf2-footer { display: none !important; } }`}</style>
 
       <style>{`
+        /* Trigger que abre o bottom sheet de produto (mobile) */
+        .pf2-produto-trigger {
+          display: flex !important;
+          align-items: center;
+          gap: 8px;
+          text-align: left;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        .pf2-produto-trigger:hover { border-color: var(--primary); }
+
         .pf2-add-produto-selecionado {
           display: flex; align-items: center; gap: 10px;
           padding: 10px 12px;
