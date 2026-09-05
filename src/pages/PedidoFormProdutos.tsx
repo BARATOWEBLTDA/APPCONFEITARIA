@@ -500,17 +500,18 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
             }
             <div className="pf2-item-info">
               <p className="pf2-item-name">{item.nome_produto}</p>
-              <div className="pf2-item-qty-row">
-                <div className="pf2-item-stepper">
-                  <button type="button" onClick={() => alterarQuantidadeItem(idx, -1)} aria-label="Diminuir quantidade">
-                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  </button>
-                  <span>{formatQuantidade(item.quantidade, item.forma_venda)}</span>
-                  <button type="button" onClick={() => alterarQuantidadeItem(idx, 1)} aria-label="Aumentar quantidade">
-                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  </button>
-                </div>
-                <span className="pf2-item-meta">× {formatMoney(item.valor_unitario)}{getPricePerLabel(item.forma_venda) && ` ${getPricePerLabel(item.forma_venda)}`}</span>
+              <p className="pf2-item-price-unit">
+                {formatMoney(item.valor_unitario)}
+                {getPricePerLabel(item.forma_venda) && <span style={{ marginLeft: 3 }}>{getPricePerLabel(item.forma_venda)}</span>}
+              </p>
+              <div className="pf2-item-stepper">
+                <button type="button" onClick={() => alterarQuantidadeItem(idx, -1)} aria-label="Diminuir quantidade">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+                <span>{formatQuantidade(item.quantidade, item.forma_venda)}</span>
+                <button type="button" onClick={() => alterarQuantidadeItem(idx, 1)} aria-label="Aumentar quantidade">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
               </div>
             </div>
             <span className="pf2-item-total">{formatMoney(item.valor_unitario * item.quantidade)}</span>

@@ -573,6 +573,12 @@ export default function PedidoForm() {
           margin: 0;
         }
         .pf2-item-meta { font-size: var(--font-helper); color: var(--text-muted); margin: 2px 0 0; }
+        .pf2-item-price-unit {
+          font-size: var(--font-helper);
+          color: var(--text-muted);
+          font-weight: var(--fw-medium);
+          margin: 2px 0 6px;
+        }
         .pf2-item-total { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--text-title); flex-shrink: 0; }
         .pf2-item-remove {
           background: none; border: none; cursor: pointer;
