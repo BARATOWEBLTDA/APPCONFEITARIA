@@ -361,11 +361,20 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
 
       {/* ── Rodapé ── */}
       <div className="pf2-footer">
+        {!canNext && (
+          <p className="pf2-footer-hint">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {!pedido.cliente_nome ? 'Informe o nome do cliente' : 'Informe a data de entrega'}
+          </p>
+        )}
         <button className="pf2-btn-primary" onClick={onNext} disabled={!canNext}>
           Próximo: Produtos
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        {!canNext && <p className="pf2-footer-hint">{!pedido.cliente_nome ? 'Informe o nome do cliente' : 'Informe a data de entrega'}</p>}
       </div>
 
       {showHorarioSheet && <HorarioSheet value={pedido.horario_entrega} onChange={v => set('horario_entrega', v)} onClose={() => setShowHorarioSheet(false)} />}

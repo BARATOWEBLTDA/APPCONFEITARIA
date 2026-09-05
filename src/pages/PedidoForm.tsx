@@ -791,14 +791,17 @@ export default function PedidoForm() {
 
         /* ── Rodapé fixo ── */
         .pf2-footer {
-          display: flex; align-items: center; gap: var(--gap-tight);
+          display: flex; flex-direction: column; gap: 8px;
           padding: 0.85rem 0 0;
         }
+        .pf2-footer .pf2-btn-primary { width: 100%; }
         .pf2-btn-back { flex-shrink: 0; }
         .pf2-footer-hint {
           font-size: var(--font-caption); color: var(--text-muted);
           margin: 0; text-align: center;
+          display: inline-flex; align-items: center; justify-content: center; gap: 5px;
         }
+        .pf2-footer-hint svg { color: var(--text-muted); flex-shrink: 0; }
 
         /* ── Desktop: layout 2 colunas ── */
         @media (min-width: 768px) {
