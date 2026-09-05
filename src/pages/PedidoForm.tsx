@@ -425,6 +425,7 @@ export default function PedidoForm() {
           border: 1.5px solid var(--border);
           border-radius: var(--radius-card, 18px);
           overflow: hidden;
+          padding-bottom: 1rem;
         }
         .pf2-card-eyebrow {
           font-size: var(--font-caption); font-weight: var(--fw-bold); text-transform: uppercase;
@@ -438,14 +439,16 @@ export default function PedidoForm() {
         }
 
         /* ── Campos ── */
-        .pf2-field { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
+        .pf2-field { display: flex; flex-direction: column; gap: 0.3rem; flex: 1; padding: 0 1rem; }
+        .pf2-card > .pf2-field:last-child { padding-bottom: 1rem; }
         .pf2-row   { display: flex; gap: var(--gap-stack); padding: 0 1rem 0.75rem; }
+        .pf2-row .pf2-field { padding: 0; }
         .pf2-field:first-child:not(:only-child) .pf2-label,
         .pf2-field:first-child:not(:only-child) .pf2-input { }
         .pf2-label {
           font-size: var(--font-caption); font-weight: var(--fw-semibold);
           color: var(--text-secondary);
-          padding: 0 1rem;
+          padding: 0;
         }
         .pf2-label ~ .pf2-input,
         .pf2-label ~ div > .pf2-input { /* via wrapper */ }
