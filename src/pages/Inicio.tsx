@@ -1,4 +1,4 @@
-// Build marker: 2026-09-04T21:30 — skeleton do nome no hero (evita flash "bem-vinda")
+// Build marker: 2026-09-05T09:30 — remove badge de notificacao do sino (agora e menu)
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +15,6 @@ import {
 import { supabase } from "@/lib/supabase";
 import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
 import { useProfile } from "@/hooks/useProfile";
-import { useNotifications } from "@/context/NotificationContext";
 import MetricaDestaque from "@/components/MetricaDestaque";
 import TourInicio from "@/components/TourInicio";
 import WelcomeChecklist from "@/components/WelcomeChecklist";
@@ -143,9 +142,8 @@ export default function Inicio() {
     }
   };
 
-  // Badge de contagem de notificações não lidas — vem do NotificationContext.
-  // O clique no sino não abre notificações — abre o menu de opções (perfil).
-  const { notifCount } = useNotifications();
+  // Sino do header agora abre o menu de opções (não notificações).
+  // O hook useNotifications não é mais necessário aqui — o dropdown fica no Layout.
 
   // Modal "Ver todos os alertas" + snooze ("Lembrar amanhã")
   const ALERT_LIMIT_VISIBLE = 3;
@@ -587,9 +585,6 @@ export default function Inicio() {
             type="button"
           >
             <img src="/Sistema/sino.png" alt="" className="ini-hero-bell-img" />
-            {notifCount > 0 && (
-              <span className="ini-hero-bell-badge">{notifCount > 9 ? "9+" : notifCount}</span>
-            )}
           </button>
 
           {menuOpen && createPortal(
@@ -1141,20 +1136,6 @@ export default function Inicio() {
         }
         .ini-hero-bell:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
         .ini-hero-bell-img { width: 22px; height: 22px; object-fit: contain; }
-        .ini-hero-bell-badge {
-          position: absolute;
-          top: -3px; right: -3px;
-          min-width: 18px; height: 18px;
-          padding: 0 5px;
-          border-radius: var(--radius-full);
-          background: #FFD100;
-          color: #2D1F26;
-          font-size: 10px;
-          font-weight: 900;
-          display: flex; align-items: center; justify-content: center;
-          border: 2px solid var(--primary);
-          line-height: 1;
-        }
 
         /* ── Wrap da métrica sobreposta ao hero ── */
         .ini-metrica-wrap {
