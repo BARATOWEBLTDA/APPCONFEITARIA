@@ -407,19 +407,23 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
     <>
       <div className="mp-overlay" onClick={onClose} />
       <div className="mp-modal" onClick={e => e.stopPropagation()}>
-        <div className="mp-handle" />
 
-        {/* Banner de aprovação — só aparece quando é do cardápio e ainda não foi aprovado */}
-        {aguardandoAprovacao && (
+        {/* Banner de aprovação — cola no topo do modal quando aplicável */}
+        {aguardandoAprovacao ? (
           <div className="mp-banner-aprovar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <div>
-              <p className="mp-banner-title">Pedido aguardando sua aprovação</p>
-              <p className="mp-banner-sub">Este pedido veio do cardápio digital. Confira os detalhes e aprove pra iniciar a produção.</p>
+            <div className="mp-handle mp-handle--sobre-banner" />
+            <div className="mp-banner-content">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <div>
+                <p className="mp-banner-title">Pedido aguardando sua aprovação</p>
+                <p className="mp-banner-sub">Este pedido veio do cardápio digital. Confira os detalhes e aprove pra iniciar a produção.</p>
+              </div>
             </div>
           </div>
+        ) : (
+          <div className="mp-handle" />
         )}
 
         {/* Header fixo */}
@@ -1345,20 +1349,32 @@ export default function Pedidos() {
         .mp-btn-aprovar:hover { background: var(--btn-primary-hover); }
         .mp-btn-aprovar:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--primary-dark); }
 
-        /* Banner destaque topo do modal */
+        /* Banner destaque topo do modal — cola no topo, herda border-radius */
         .mp-banner-aprovar {
-          display: flex; align-items: flex-start; gap: 10px;
-          padding: 12px 16px;
+          display: flex; flex-direction: column;
+          padding: 0 0 12px;
           background: linear-gradient(135deg, var(--primary-light), #FFF8FA);
           border-bottom: 1px solid var(--border);
+          border-top-left-radius: 20px;
+          border-top-right-radius: 20px;
           color: var(--primary-dark);
           animation: mpBannerPulse 2.5s ease-in-out infinite;
+        }
+        .mp-banner-content {
+          display: flex; align-items: flex-start; gap: 10px;
+          padding: 4px 16px 0;
+        }
+        .mp-banner-content > svg { flex-shrink: 0; margin-top: 2px; color: var(--primary); }
+
+        /* Handle que fica DENTRO do banner (em cima do rosa) */
+        .mp-handle--sobre-banner {
+          background: rgba(232, 90, 140, 0.45) !important;
+          margin: 10px auto 8px !important;
         }
         @keyframes mpBannerPulse {
           0%, 100% { background: linear-gradient(135deg, var(--primary-light), #FFF8FA); }
           50%      { background: linear-gradient(135deg, #FBCADB, #FEE9F0); }
         }
-        .mp-banner-aprovar > svg { flex-shrink: 0; margin-top: 2px; color: var(--primary); }
         .mp-banner-title {
           margin: 0;
           font-size: 13px;
