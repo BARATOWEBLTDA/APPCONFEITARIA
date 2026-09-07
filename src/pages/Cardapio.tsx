@@ -586,6 +586,7 @@ export default function Cardapio() {
           display: inline-flex; align-items: center; justify-content: center;
           background: rgba(255,255,255,0.15); color: #FFFFFF;
           border: none; border-radius: var(--radius-md);
+          font-family: inherit;
           cursor: pointer;
           transition: background var(--dur-fast) var(--ease-out);
         }
@@ -594,25 +595,31 @@ export default function Cardapio() {
 
         /* ── Seletor de período ── */
         .ch-periodo-tabs {
-          display: flex; gap: var(--space-1);
-          padding: var(--space-1);
-          background: var(--bg-subtle);
-          border-radius: var(--radius-md);
-          width: fit-content;
+          display: flex;
+          width: 100%;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          overflow: hidden;
         }
         .ch-periodo-tab {
-          padding: var(--space-2) var(--space-3);
-          border: none; border-radius: var(--radius-sm);
-          background: transparent; color: var(--text-secondary);
+          flex: 1;
+          padding: var(--space-2) var(--space-2);
+          text-align: center;
+          border: none;
+          background: transparent;
+          color: var(--text-secondary);
+          border-right: 1px solid var(--border);
           font-family: inherit; font-size: var(--font-helper); font-weight: var(--fw-semibold);
           cursor: pointer;
           transition: background var(--dur-fast) var(--ease-out),
                       color var(--dur-fast) var(--ease-out);
         }
+        .ch-periodo-tab:last-child { border-right: none; }
+        .ch-periodo-tab:hover:not(.active) { background: var(--bg-subtle); color: var(--text-title); }
         .ch-periodo-tab.active {
-          background: var(--bg-card);
-          color: var(--text-title);
-          box-shadow: var(--shadow-sm);
+          background: var(--text-title);
+          color: #fff;
         }
 
         /* ── Métricas ── */
