@@ -1,6 +1,6 @@
 // v2: excluir pedido + modal 3 secoes + imagem_url
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { ClipboardText, CurrencyDollar, CheckCircle, Cake } from '@phosphor-icons/react'
@@ -270,10 +270,17 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
           <p className="ped-dt-tipo">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</p>
         </td>
         <td className="ped-td">
-          <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
-            <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
-            {grupo.label}
-          </span>
+          {p.origem === 'cardapio' && p.status === 'novo' ? (
+            <span className="ped-card-status plist-tag--aprovar">
+              <span className="plist-tag-pulse" />
+              Aguardando aprovação
+            </span>
+          ) : (
+            <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
+              <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
+              {grupo.label}
+            </span>
+          )}
         </td>
         <td className="ped-td">
           <p className="ped-dt-valor">{formatMoney(p.valor_total)}</p>
@@ -328,10 +335,18 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
         </div>
 
         <div className="plist-tags">
-          <span className="plist-tag" style={{ color: grupo.color, background: grupo.bg }}>
-            <span className="plist-tag-dot" style={{ background: grupo.dot }} />
-            {grupo.label}
-          </span>
+          {p.origem === 'cardapio' && p.status === 'novo' && (
+            <span className="plist-tag plist-tag--aprovar">
+              <span className="plist-tag-pulse" />
+              Aguardando aprovação
+            </span>
+          )}
+          {!(p.origem === 'cardapio' && p.status === 'novo') && (
+            <span className="plist-tag" style={{ color: grupo.color, background: grupo.bg }}>
+              <span className="plist-tag-dot" style={{ background: grupo.dot }} />
+              {grupo.label}
+            </span>
+          )}
           <span
             className="plist-tag"
             style={{
@@ -356,7 +371,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
 }
 
 // ── Modal de detalhes do pedido ──────────────────────────────────────────────
-function ModalPedido({ p, onClose, onEditar, onExcluir }: { p: Pedido; onClose: () => void; onEditar: () => void; onExcluir: () => void }) {
+function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido; onClose: () => void; onEditar: () => void; onExcluir: () => void; onAprovar: () => void }) {
   const [confirmExcluir, setConfirmExcluir] = useState(false)
   const grupo = STATUS_GROUP_CONFIG[getStatusGroup(p.status)]
   const itens = p.pedido_itens || []
@@ -365,6 +380,9 @@ function ModalPedido({ p, onClose, onEditar, onExcluir }: { p: Pedido; onClose: 
   const pagamentoLabel = p.status_pagamento === 'pago'
     ? `${PAG_CONFIG[p.forma_pagamento] || 'PIX'} · Pago`
     : `${PAG_CONFIG[p.forma_pagamento] || 'PIX'} · ${p.status_pagamento === 'parcial' ? 'Parcial' : 'Pendente'}${valorPendente > 0 ? ` · ${formatMoney(valorPendente)}` : ''}`
+
+  // Pedido do cardápio ainda não aprovado — precisa da ação da confeiteira
+  const aguardandoAprovacao = p.origem === 'cardapio' && p.status === 'novo'
 
   const enderecoCompleto = [p.endereco_rua && p.endereco_numero ? `${p.endereco_rua}, ${p.endereco_numero}` : p.endereco_rua, p.endereco_complemento, p.endereco_bairro, p.endereco_cidade].filter(Boolean).join(', ')
 
@@ -390,6 +408,19 @@ function ModalPedido({ p, onClose, onEditar, onExcluir }: { p: Pedido; onClose: 
       <div className="mp-overlay" onClick={onClose} />
       <div className="mp-modal" onClick={e => e.stopPropagation()}>
         <div className="mp-handle" />
+
+        {/* Banner de aprovação — só aparece quando é do cardápio e ainda não foi aprovado */}
+        {aguardandoAprovacao && (
+          <div className="mp-banner-aprovar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <div>
+              <p className="mp-banner-title">Pedido aguardando sua aprovação</p>
+              <p className="mp-banner-sub">Este pedido veio do cardápio digital. Confira os detalhes e aprove pra iniciar a produção.</p>
+            </div>
+          </div>
+        )}
 
         {/* Header fixo */}
         <div className="mp-header">
@@ -482,9 +513,17 @@ function ModalPedido({ p, onClose, onEditar, onExcluir }: { p: Pedido; onClose: 
         <div className="mp-footer">
           {!confirmExcluir ? (
             <>
-              <button className="mp-btn-editar" onClick={onEditar}>
+              {aguardandoAprovacao && (
+                <button className="mp-btn-aprovar" onClick={onAprovar}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  Aprovar pedido
+                </button>
+              )}
+              <button className={aguardandoAprovacao ? "mp-btn-editar mp-btn-editar--secondary" : "mp-btn-editar"} onClick={onEditar}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Editar pedido
+                {aguardandoAprovacao ? 'Editar' : 'Editar pedido'}
               </button>
               <button className="mp-btn-excluir" onClick={() => setConfirmExcluir(true)} title="Excluir pedido">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
@@ -614,9 +653,15 @@ function FiltroDrawer({ statusSelecionados, setStatusSelecionados, periodoFiltro
 // ── Componente principal ─────────────────────────────────────────────────────
 export default function Pedidos() {
   const navigate = useNavigate()
+  const location = useLocation()
   const isMobile = useIsMobile()
   const [pedidos, setPedidos] = useState<Pedido[]>([])
+  const [userId, setUserId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // Filtro especial "aguardando aprovação" — ativado via ?filtro=aguardando (vindo do Início)
+  const params = new URLSearchParams(location.search)
+  const [filtroAguardando, setFiltroAguardando] = useState(params.get('filtro') === 'aguardando')
 
   const [busca, setBusca] = useState('')
   const [showFiltro, setShowFiltro] = useState(false)
@@ -640,6 +685,7 @@ export default function Pedidos() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
+      setUserId(user.id)
       fetchPedidos(user.id)
       supabase.from('produtos').select('id', { count: 'exact', head: true }).eq('user_id', user.id).then(({ count }) => {
         setTotalProdutos(count ?? 0)
@@ -659,6 +705,27 @@ export default function Pedidos() {
     setPedidos(prev => prev.filter(p => p.id !== id))
   }
 
+  // Aprova pedido vindo do cardápio público (muda status de 'novo' → 'confirmado')
+  const aprovarPedido = async (id: string) => {
+    const { error } = await supabase
+      .from('pedidos')
+      .update({ status: 'confirmado' })
+      .eq('id', id)
+    if (error) { console.error('Erro ao aprovar pedido:', error); return }
+    // Grava no histórico
+    if (userId) {
+      await supabase.from('pedido_historico').insert({
+        pedido_id: id,
+        user_id: userId,
+        evento: 'Pedido aprovado',
+        descricao: 'Pedido do cardápio digital aprovado pela confeiteira',
+      })
+    }
+    // Atualiza estado local (sem refetch)
+    setPedidos(prev => prev.map(p => p.id === id ? { ...p, status: 'confirmado' } : p))
+    setModalPedido(prev => prev && prev.id === id ? { ...prev, status: 'confirmado' } : prev)
+  }
+
   const fetchPedidos = async (uid: string) => {
     setLoading(true)
     const { data } = await supabase
@@ -671,6 +738,10 @@ export default function Pedidos() {
   }
 
   const pedidosFiltrados = pedidos.filter(p => {
+    // Filtro rápido "Aguardando aprovação" — vem do alerta no Início
+    if (filtroAguardando) {
+      return p.origem === 'cardapio' && p.status === 'novo'
+    }
     const matchStatus = statusSelecionados.includes(p.status)
     const matchBusca = !busca ||
       p.cliente_nome?.toLowerCase().includes(busca.toLowerCase()) ||
@@ -744,6 +815,30 @@ export default function Pedidos() {
               </button>
             )}
           </div>
+
+          {/* Chip de filtro ativo "Aguardando aprovação" — vindo do alerta do Início */}
+          {filtroAguardando && (
+            <div className="ped-filtro-ativo-chip">
+              <div className="ped-filtro-ativo-info">
+                <span className="ped-filtro-ativo-icon">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                </span>
+                <div>
+                  <p className="ped-filtro-ativo-title">Aguardando aprovação</p>
+                  <p className="ped-filtro-ativo-sub">Mostrando só pedidos do cardápio que precisam ser aprovados</p>
+                </div>
+              </div>
+              <button
+                className="ped-filtro-ativo-close"
+                onClick={() => { setFiltroAguardando(false); navigate('/pedidos', { replace: true }) }}
+                aria-label="Ver todos os pedidos"
+              >
+                Ver todos
+              </button>
+            </div>
+          )}
 
           {/* Cards de métricas — só desktop */}
           {!isMobile && (
@@ -834,7 +929,7 @@ export default function Pedidos() {
       )}
 
       {mapaAberto && <MapaModal endereco={mapaAberto} onClose={() => setMapaAberto(null)} />}
-      {modalPedido && <ModalPedido p={modalPedido} onClose={() => setModalPedido(null)} onEditar={() => { setModalPedido(null); navigate(`/pedidos/${modalPedido.id}`) }} onExcluir={() => excluirPedido(modalPedido.id)} />}
+      {modalPedido && <ModalPedido p={modalPedido} onClose={() => setModalPedido(null)} onEditar={() => { setModalPedido(null); navigate(`/pedidos/${modalPedido.id}`) }} onExcluir={() => excluirPedido(modalPedido.id)} onAprovar={() => aprovarPedido(modalPedido.id)} />}
 
       {/* ── Modal: precisa cadastrar produtos primeiro ── */}
       {modalSemProdutos && (
@@ -932,6 +1027,51 @@ export default function Pedidos() {
           border: 1px solid var(--border);
           box-shadow: 0 2px 8px rgba(45, 31, 38, 0.04);
         }
+
+        /* Chip de filtro ativo (aguardando aprovação) */
+        .ped-filtro-ativo-chip {
+          display: flex; align-items: center; justify-content: space-between; gap: 10px;
+          padding: 12px 14px;
+          background: linear-gradient(135deg, var(--primary-light), #FFF8FA);
+          border: 1.5px solid rgba(232, 90, 140, 0.25);
+          border-radius: var(--radius-md);
+        }
+        .ped-filtro-ativo-info { display: flex; align-items: flex-start; gap: 10px; flex: 1; min-width: 0; }
+        .ped-filtro-ativo-icon {
+          width: 28px; height: 28px; border-radius: 50%;
+          background: var(--primary); color: #fff;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          box-shadow: 0 0 0 0 rgba(232, 90, 140, 0.55);
+          animation: aprovarPulse 2s ease-in-out infinite;
+        }
+        .ped-filtro-ativo-title {
+          margin: 0;
+          font-size: 13px;
+          font-weight: 800;
+          color: var(--text-title);
+          letter-spacing: -0.01em;
+        }
+        .ped-filtro-ativo-sub {
+          margin: 2px 0 0;
+          font-size: 11px;
+          color: var(--text-secondary);
+          line-height: 1.4;
+        }
+        .ped-filtro-ativo-close {
+          background: var(--bg-card);
+          border: 1.5px solid var(--border);
+          color: var(--text-secondary);
+          border-radius: 999px;
+          padding: 6px 12px;
+          font-family: inherit;
+          font-size: 11px;
+          font-weight: 700;
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: background var(--dur-fast), color var(--dur-fast);
+        }
+        .ped-filtro-ativo-close:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
         .plist-item {
           display: flex;
           align-items: center;
@@ -1061,6 +1201,29 @@ export default function Pedidos() {
         .plist-tag--atrasado { background: #FEE2E2; color: #B91C1C; }
         .plist-tag--neutral { background: var(--bg-subtle); color: var(--text-secondary); font-weight: 700; }
 
+        /* Tag "Aguardando aprovação" — destaque rosa forte com pulso */
+        .plist-tag--aprovar {
+          background: var(--primary);
+          color: #fff;
+          box-shadow: 0 0 0 0 rgba(232, 90, 140, 0.55);
+          animation: aprovarPulse 2s ease-in-out infinite;
+        }
+        .plist-tag-pulse {
+          width: 6px; height: 6px;
+          border-radius: 50%;
+          background: #fff;
+          display: inline-block;
+          animation: dotBlink 1s ease-in-out infinite;
+        }
+        @keyframes aprovarPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(232, 90, 140, 0.55); }
+          50%      { box-shadow: 0 0 0 8px rgba(232, 90, 140, 0); }
+        }
+        @keyframes dotBlink {
+          0%, 100% { opacity: 1; }
+          50%      { opacity: 0.4; }
+        }
+
         /* Esconde a lista minimalista no desktop (usa tabela lá) */
         @media (min-width: 768px) {
           .plist-item, .plist-container { display: none; }
@@ -1157,9 +1320,58 @@ export default function Pedidos() {
         .mp-resumo-val-total { font-size: var(--font-modal-title); font-weight: var(--fw-black); color: var(--text-title); letter-spacing: -0.02em; }
 
         /* Footer */
-        .mp-footer { padding: 0.85rem 1.25rem 1.25rem; border-top: 1px solid var(--border); flex-shrink: 0; display: flex; gap: 8px; }
+        .mp-footer { padding: 0.85rem 1.25rem 1.25rem; border-top: 1px solid var(--border); flex-shrink: 0; display: flex; gap: 8px; flex-wrap: wrap; }
         .mp-btn-editar { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--text-title); border: none; color: white; border-radius: var(--radius-md); padding: 0.8rem; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
         .mp-btn-editar:hover { opacity: 0.92; }
+        .mp-btn-editar--secondary { background: transparent; color: var(--text-title); border: 1.5px solid var(--border); }
+        .mp-btn-editar--secondary:hover { background: var(--bg-subtle); opacity: 1; }
+
+        /* Botão APROVAR — destaque rosa chunky */
+        .mp-btn-aprovar {
+          flex: 1 1 100%;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          background: var(--primary); color: #fff; border: none;
+          border-radius: var(--radius-md);
+          padding: 0.95rem;
+          font-family: inherit;
+          font-size: var(--font-button);
+          font-weight: var(--fw-black);
+          letter-spacing: 0.02em;
+          text-transform: uppercase;
+          cursor: pointer;
+          box-shadow: 0 3px 0 var(--primary-dark);
+          transition: transform var(--dur-fast), background var(--dur-fast);
+        }
+        .mp-btn-aprovar:hover { background: var(--btn-primary-hover); }
+        .mp-btn-aprovar:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--primary-dark); }
+
+        /* Banner destaque topo do modal */
+        .mp-banner-aprovar {
+          display: flex; align-items: flex-start; gap: 10px;
+          padding: 12px 16px;
+          background: linear-gradient(135deg, var(--primary-light), #FFF8FA);
+          border-bottom: 1px solid var(--border);
+          color: var(--primary-dark);
+          animation: mpBannerPulse 2.5s ease-in-out infinite;
+        }
+        @keyframes mpBannerPulse {
+          0%, 100% { background: linear-gradient(135deg, var(--primary-light), #FFF8FA); }
+          50%      { background: linear-gradient(135deg, #FBCADB, #FEE9F0); }
+        }
+        .mp-banner-aprovar > svg { flex-shrink: 0; margin-top: 2px; color: var(--primary); }
+        .mp-banner-title {
+          margin: 0;
+          font-size: 13px;
+          font-weight: 800;
+          color: var(--text-title);
+          letter-spacing: -0.01em;
+        }
+        .mp-banner-sub {
+          margin: 3px 0 0;
+          font-size: 11px;
+          color: var(--text-secondary);
+          line-height: 1.4;
+        }
         .mp-btn-excluir { width: 44px; height: 44px; background: #fff1f2; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
         .mp-btn-excluir:hover { background: #fee2e2; }
         .mp-confirm-excluir { width: 100%; background: #fff1f2; border: 1.5px solid #fca5a5; border-radius: var(--radius-md); padding: 0.85rem 1rem; }

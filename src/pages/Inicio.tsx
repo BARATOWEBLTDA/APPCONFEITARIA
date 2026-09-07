@@ -467,7 +467,7 @@ export default function Inicio() {
       count: counts.pedidosPendentes,
       texto: counts.pedidosPendentes === 1 ? "pedido aguardando confirmação" : "pedidos aguardando confirmação",
       cta: "Ver pedidos",
-      onClick: () => navigate("/pedidos"),
+      onClick: () => navigate("/pedidos?filtro=aguardando"),
     },
     {
       tipo: "entrega",
