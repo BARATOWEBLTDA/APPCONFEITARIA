@@ -31,6 +31,7 @@ type Pedido = {
 // ── Status reais do sistema (usados pelo Kanban e pelo filtro) ────────────────
 const TODOS_STATUS = [
   { key: 'novo',        label: 'Novo',                 color: '#534AB7', bg: '#EEEDFE', dot: '#7F77DD' },
+  { key: 'confirmado',  label: 'Confirmado',           color: '#0e7490', bg: '#cffafe', dot: '#0891b2' },
   { key: 'em_producao', label: 'Em produção',          color: '#9a3412', bg: '#ffedd5', dot: '#f97316' },
   { key: 'pronto',      label: 'Pronto',               color: '#14532d', bg: '#dcfce7', dot: '#22c55e' },
   { key: 'a_caminho',   label: 'A Caminho / Retirado', color: '#0369a1', bg: '#e0f2fe', dot: '#0ea5e9' },
@@ -43,11 +44,12 @@ const PAG_CONFIG: Record<string, string> = {
 }
 
 // Status visíveis por padrão (sem cancelado)
-const STATUS_PADRAO = ['novo', 'em_producao', 'pronto', 'a_caminho', 'concluido']
+const STATUS_PADRAO = ['novo', 'confirmado', 'em_producao', 'pronto', 'a_caminho', 'concluido']
 
 // ── Status simplificado, só pra exibição na lista ──────────────────────────────
 const STATUS_GROUPS = [
   { key: 'novo',        label: 'Novo',        color: '#534AB7', bg: '#EEEDFE', dot: '#7F77DD' },
+  { key: 'confirmado',  label: 'Confirmado',  color: '#0e7490', bg: '#cffafe', dot: '#0891b2' },
   { key: 'em_producao', label: 'Em produção', color: '#854F0B', bg: '#FAEEDA', dot: '#EF9F27' },
   { key: 'pronto',      label: 'Pronto',      color: '#14532d', bg: '#dcfce7', dot: '#22c55e' },
   { key: 'a_caminho',   label: 'A Caminho',   color: '#0369a1', bg: '#e0f2fe', dot: '#0ea5e9' },
@@ -63,7 +65,8 @@ function getStatusGroup(status: string): string {
   if (s === 'a_caminho' || s === 'aguardando_retirada' || s === 'aguardando_entrega') return 'a_caminho'
   if (s === 'pronto') return 'pronto'
   if (s === 'em_producao') return 'em_producao'
-  return 'novo' // novo, confirmado
+  if (s === 'confirmado') return 'confirmado'
+  return 'novo' // novo, pendente
 }
 
 // ── Quantidade com a unidade certa, conforme a forma de venda do produto ──────
@@ -549,7 +552,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
 }
 
 // ── Drawer de Filtros ────────────────────────────────────────────────────────
-function FiltroDrawer({ statusSelecionados, setStatusSelecionados, periodoFiltro, setPeriodoFiltro, dataInicio, setDataInicio, dataFim, setDataFim, onClose }: {
+function FiltroDrawer({ statusSelecionados, setStatusSelecionados, periodoFiltro, setPeriodoFiltro, dataInicio, setDataInicio, dataFim, setDataFim, onClose, pedidos }: {
   statusSelecionados: string[]
   setStatusSelecionados: (v: string[]) => void
   periodoFiltro: string
@@ -559,6 +562,7 @@ function FiltroDrawer({ statusSelecionados, setStatusSelecionados, periodoFiltro
   dataFim: string
   setDataFim: (v: string) => void
   onClose: () => void
+  pedidos: Pedido[]
 }) {
   const [localStatus, setLocalStatus] = useState<string[]>(statusSelecionados)
   const [localPeriodo, setLocalPeriodo] = useState(periodoFiltro)
@@ -583,6 +587,34 @@ function FiltroDrawer({ statusSelecionados, setStatusSelecionados, periodoFiltro
     setLocalFim('')
   }
 
+  // Contadores por status (só considera o filtro de status pra dar sensação viva)
+  const countByStatus = TODOS_STATUS.reduce((acc, s) => {
+    acc[s.key] = pedidos.filter(p => p.status === s.key).length
+    return acc
+  }, {} as Record<string, number>)
+
+  // Preview: quantos pedidos vão aparecer com os filtros selecionados
+  const previewCount = pedidos.filter(p => {
+    if (!localStatus.includes(p.status)) return false
+    if (localPeriodo === 'todos') return true
+    if (!p.data_entrega) return localPeriodo === 'todos'
+    const hoje = new Date(); hoje.setHours(0, 0, 0, 0)
+    const data = parseLocalDate(p.data_entrega)
+    if (localPeriodo === 'hoje') return data.getTime() === hoje.getTime()
+    if (localPeriodo === 'semana') {
+      const inicioSemana = new Date(hoje); inicioSemana.setDate(hoje.getDate() - hoje.getDay())
+      const fimSemana = new Date(inicioSemana); fimSemana.setDate(inicioSemana.getDate() + 6)
+      return data >= inicioSemana && data <= fimSemana
+    }
+    if (localPeriodo === 'mes') return data.getMonth() === hoje.getMonth() && data.getFullYear() === hoje.getFullYear()
+    if (localPeriodo === 'personalizado') {
+      if (localInicio && data < parseLocalDate(localInicio)) return false
+      if (localFim && data > parseLocalDate(localFim)) return false
+      return true
+    }
+    return true
+  }).length
+
   return (
     <>
       <div className="fd-overlay" onClick={onClose} />
@@ -590,61 +622,94 @@ function FiltroDrawer({ statusSelecionados, setStatusSelecionados, periodoFiltro
         <div className="fd-handle" />
         <div className="fd-header">
           <span className="fd-title">Filtros</span>
-          <button className="fd-limpar" onClick={limpar}>Limpar tudo</button>
+          <button className="fd-limpar" onClick={limpar}>Restaurar padrão</button>
         </div>
         <div className="fd-body">
-          {/* Status */}
-          <p className="fd-label">Status</p>
-          <div className="fd-status-grid">
-            {TODOS_STATUS.map(s => {
-              const on = localStatus.includes(s.key)
-              return (
-                <button
-                  key={s.key}
-                  className="fd-status-btn"
-                  style={on ? { background: s.bg, borderColor: s.dot, color: s.color, fontWeight: 700 } : {}}
-                  onClick={() => toggleStatus(s.key)}
-                >
-                  <span className="fd-dot" style={{ background: s.dot }} />
-                  {s.label}
-                </button>
-              )
-            })}
-          </div>
 
-          {/* Período */}
-          <p className="fd-label" style={{ marginTop: '1.25rem' }}>Período de entrega</p>
-          <div className="fd-periodo-grid">
-            {[
-              { key: 'todos',        label: 'Todos' },
-              { key: 'hoje',         label: 'Hoje' },
-              { key: 'semana',       label: 'Esta semana' },
-              { key: 'mes',          label: 'Este mês' },
-              { key: 'personalizado', label: 'Personalizado' },
-            ].map(p => (
-              <button
-                key={p.key}
-                className={`fd-periodo-btn${localPeriodo === p.key ? ' fd-periodo-btn--on' : ''}`}
-                onClick={() => setLocalPeriodo(p.key)}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Datas personalizadas */}
-          {localPeriodo === 'personalizado' && (
-            <div className="fd-datas">
-              <div className="fd-data-field">
-                <label className="fd-data-label">De</label>
-                <input type="date" className="fd-data-input" value={localInicio} onChange={e => setLocalInicio(e.target.value)} />
-              </div>
-              <div className="fd-data-field">
-                <label className="fd-data-label">Até</label>
-                <input type="date" className="fd-data-input" value={localFim} onChange={e => setLocalFim(e.target.value)} />
-              </div>
+          {/* Preview do resultado — feedback vivo */}
+          <div className="fd-preview">
+            <div>
+              <p className="fd-preview-lbl">Resultado</p>
+              <p className="fd-preview-txt">
+                <span className="fd-preview-num">{previewCount}</span>
+                <span className="fd-preview-unit"> {previewCount === 1 ? 'pedido' : 'pedidos'}</span>
+              </p>
             </div>
-          )}
+            <span className="fd-preview-hint">com os filtros abaixo</span>
+          </div>
+
+          {/* Card Status */}
+          <div className="fd-card">
+            <div className="fd-card-head">
+              <p className="fd-card-title">Status</p>
+              <span className="fd-card-count">{localStatus.length}/{TODOS_STATUS.length}</span>
+            </div>
+            <div className="fd-card-body">
+              {TODOS_STATUS.map(s => {
+                const on = localStatus.includes(s.key)
+                const cnt = countByStatus[s.key] || 0
+                return (
+                  <button
+                    key={s.key}
+                    className={`fd-status-row${on ? ' fd-status-row--on' : ''}`}
+                    onClick={() => toggleStatus(s.key)}
+                    type="button"
+                  >
+                    <span className={`fd-check${on ? ' fd-check--on' : ''}`}>
+                      {on && (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      )}
+                    </span>
+                    <span className="fd-status-dot" style={{ background: s.dot }} />
+                    <span className="fd-status-lbl">{s.label}</span>
+                    <span className="fd-status-cnt">{cnt}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Card Período */}
+          <div className="fd-card">
+            <div className="fd-card-head">
+              <p className="fd-card-title">Período de entrega</p>
+            </div>
+            <div className="fd-segments">
+              {[
+                { key: 'todos',        label: 'Todos' },
+                { key: 'hoje',         label: 'Hoje' },
+                { key: 'semana',       label: 'Semana' },
+                { key: 'mes',          label: 'Mês' },
+                { key: 'personalizado', label: 'Custom' },
+              ].map(p => (
+                <button
+                  key={p.key}
+                  type="button"
+                  className={`fd-segment${localPeriodo === p.key ? ' fd-segment--on' : ''}`}
+                  onClick={() => setLocalPeriodo(p.key)}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Datas personalizadas */}
+            {localPeriodo === 'personalizado' && (
+              <div className="fd-datas">
+                <div className="fd-data-field">
+                  <label className="fd-data-label">De</label>
+                  <input type="date" className="fd-data-input" value={localInicio} onChange={e => setLocalInicio(e.target.value)} />
+                </div>
+                <div className="fd-data-field">
+                  <label className="fd-data-label">Até</label>
+                  <input type="date" className="fd-data-input" value={localFim} onChange={e => setLocalFim(e.target.value)} />
+                </div>
+              </div>
+            )}
+          </div>
+
         </div>
         <div className="fd-footer">
           <button className="fd-aplicar" onClick={aplicar}>Aplicar filtros</button>
@@ -929,6 +994,7 @@ export default function Pedidos() {
           dataInicio={dataInicio} setDataInicio={setDataInicio}
           dataFim={dataFim} setDataFim={setDataFim}
           onClose={() => setShowFiltro(false)}
+          pedidos={pedidos}
         />
       )}
 
@@ -1485,24 +1551,147 @@ export default function Pedidos() {
         }
         @keyframes hsSlideRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .fd-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 10px auto 0; flex-shrink: 0; }
-        .fd-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .fd-title { font-size: var(--font-input); font-weight: var(--fw-bold); color: var(--text-title); font-family: 'Geist',sans-serif; }
-        .fd-limpar { background: none; border: none; font-size: var(--font-button); color: var(--primary); font-weight: var(--fw-semibold); cursor: pointer; font-family: 'Geist',sans-serif; }
-        .fd-body { overflow-y: auto; flex: 1; padding: 16px; }
-        .fd-label { font-size: var(--font-caption); font-weight: var(--fw-bold); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin: 0 0 10px; font-family: 'Geist',sans-serif; }
-        .fd-status-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-        .fd-status-btn { display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--bg-body); font-size: var(--font-helper); font-weight: var(--fw-medium); color: var(--text-secondary); cursor: pointer; font-family: 'Geist',sans-serif; transition: all 0.15s; }
-        .fd-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-        .fd-periodo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .fd-periodo-btn { padding: 10px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); background: var(--bg-body); font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--text-secondary); cursor: pointer; font-family: 'Geist',sans-serif; transition: all 0.15s; text-align: center; }
-        .fd-periodo-btn--on { border-color: var(--primary); background: var(--primary-light); color: var(--primary); font-weight: var(--fw-bold); }
-        .fd-datas { display: flex; gap: 10px; margin-top: 12px; }
+        .fd-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .fd-title { font-size: 15px; font-weight: 800; color: var(--text-title); font-family: 'Geist',sans-serif; letter-spacing: -0.01em; }
+        .fd-limpar { background: none; border: none; font-size: 12px; color: var(--text-secondary); font-weight: 600; cursor: pointer; font-family: 'Geist',sans-serif; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(45,31,38,0.2); }
+        .fd-limpar:hover { color: var(--text-title); text-decoration-color: currentColor; }
+        .fd-body { overflow-y: auto; flex: 1; padding: 14px 16px 20px; display: flex; flex-direction: column; gap: 12px; background: var(--bg-body); }
+
+        /* Preview do resultado — feedback vivo */
+        .fd-preview {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 14px 16px;
+          background: var(--text-title);
+          border-radius: var(--radius-md);
+          color: #fff;
+        }
+        .fd-preview-lbl {
+          margin: 0;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,0.6);
+        }
+        .fd-preview-txt { margin: 2px 0 0; display: flex; align-items: baseline; gap: 5px; }
+        .fd-preview-num { font-size: 24px; font-weight: 900; letter-spacing: -0.02em; line-height: 1; }
+        .fd-preview-unit { font-size: 13px; font-weight: 600; opacity: 0.85; }
+        .fd-preview-hint { font-size: 11px; color: rgba(255,255,255,0.6); text-align: right; max-width: 100px; line-height: 1.3; }
+
+        /* Cards de categoria */
+        .fd-card {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
+          overflow: hidden;
+        }
+        .fd-card-head {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 12px 14px 8px;
+        }
+        .fd-card-title {
+          margin: 0;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: var(--text-secondary);
+        }
+        .fd-card-count {
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--text-muted);
+          font-variant-numeric: tabular-nums;
+        }
+        .fd-card-body { padding: 2px 6px 8px; }
+
+        /* Linhas de status */
+        .fd-status-row {
+          display: flex; align-items: center; gap: 12px;
+          width: 100%;
+          padding: 10px 10px;
+          background: none; border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          text-align: left;
+          font-family: 'Geist', sans-serif;
+          transition: background 0.12s;
+        }
+        .fd-status-row:hover { background: var(--bg-subtle); }
+        .fd-status-row--on { background: var(--bg-subtle); }
+        .fd-check {
+          width: 20px; height: 20px;
+          border-radius: 5px;
+          border: 1.5px solid var(--border);
+          background: var(--bg-card);
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          color: #fff;
+          transition: background 0.12s, border-color 0.12s;
+        }
+        .fd-check--on {
+          background: var(--text-title);
+          border-color: var(--text-title);
+        }
+        .fd-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .fd-status-lbl {
+          flex: 1;
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--text-title);
+        }
+        .fd-status-cnt {
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--text-muted);
+          background: var(--bg-subtle);
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-variant-numeric: tabular-nums;
+          min-width: 22px;
+          text-align: center;
+        }
+        .fd-status-row--on .fd-status-cnt { background: var(--bg-card); color: var(--text-secondary); }
+
+        /* Segmented control pro período */
+        .fd-segments {
+          display: flex;
+          background: var(--bg-subtle);
+          border-radius: 10px;
+          padding: 3px;
+          gap: 2px;
+          margin: 4px 10px 10px;
+        }
+        .fd-segment {
+          flex: 1;
+          padding: 8px 4px;
+          border: none;
+          background: none;
+          border-radius: 8px;
+          font-family: 'Geist', sans-serif;
+          font-size: 11px;
+          font-weight: 600;
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: background 0.12s, color 0.12s, box-shadow 0.12s;
+        }
+        .fd-segment--on {
+          background: var(--bg-card);
+          color: var(--text-title);
+          font-weight: 700;
+          box-shadow: 0 1px 3px rgba(45,31,38,0.08);
+        }
+
+        /* Datas */
+        .fd-datas { display: flex; gap: 10px; padding: 4px 12px 12px; }
         .fd-data-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-        .fd-data-label { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-secondary); font-family: 'Geist',sans-serif; }
-        .fd-data-input { border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 0.55rem 0.75rem; font-size: var(--font-button); font-family: 'Geist',sans-serif; color: var(--text-primary); background: var(--bg-input); outline: none; width: 100%; box-sizing: border-box; }
-        .fd-data-input:focus { border-color: var(--primary); }
-        .fd-footer { padding: 12px 16px 28px; flex-shrink: 0; border-top: 1px solid var(--border); }
-        .fd-aplicar { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: var(--radius-md); font-size: var(--font-input); font-weight: var(--fw-semibold); font-family: 'Geist',sans-serif; cursor: pointer; }
+        .fd-data-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); font-family: 'Geist',sans-serif; }
+        .fd-data-input { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; font-family: 'Geist',sans-serif; color: var(--text-primary); background: var(--bg-card); outline: none; width: 100%; box-sizing: border-box; }
+        .fd-data-input:focus { border-color: var(--text-title); }
+
+        .fd-footer { padding: 12px 16px 28px; flex-shrink: 0; border-top: 1px solid var(--border); background: var(--bg-card); }
+        .fd-aplicar { width: 100%; padding: 13px; background: var(--text-title); color: white; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; font-family: 'Geist',sans-serif; cursor: pointer; letter-spacing: 0.02em; transition: opacity 0.15s; }
+        .fd-aplicar:hover { opacity: 0.9; }
       `}</style>
     </div>
   )
