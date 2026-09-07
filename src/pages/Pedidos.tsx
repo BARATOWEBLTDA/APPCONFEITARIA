@@ -286,84 +286,71 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
     )
   }
 
-  // ── Mobile: card com div wrapper ──
+  // ── Mobile: lista minimalista (formato mensagens) ──
+
+  // Data relativa curta pra mostrar no canto: "14:32" (hoje), "Ontem", "Seg", "05/09"
+  const dataCurta = (() => {
+    if (!p.created_at) return ''
+    const d = new Date(p.created_at)
+    const hoje = new Date()
+    hoje.setHours(0, 0, 0, 0)
+    const dPuro = new Date(d); dPuro.setHours(0, 0, 0, 0)
+    const diffDias = Math.round((hoje.getTime() - dPuro.getTime()) / (1000 * 60 * 60 * 24))
+    if (diffDias === 0) return d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    if (diffDias === 1) return 'Ontem'
+    if (diffDias < 7) return ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][d.getDay()]
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+  })()
+
+  const totalItens = itens.length
+  const nomeProdutoResumo = primeiroItem
+    ? `${primeiroItem.nome_produto}${outrosItens > 0 ? ` + ${outrosItens} item${outrosItens > 1 ? 's' : ''}` : ''}`
+    : 'Sem produtos'
+
   return (
-    <div onClick={() => onVerPedido(p)} className="ped-card" style={{ border: `1.5px solid ${isUrgente ? '#fca5a5' : 'var(--border)'}` }}>
-      {isUrgente && (
-        <div className="ped-card-banner">
-          {atrasado ? 'Atrasado' : horas !== null && horas <= 3 ? `Entrega em ${horas}h` : 'Urgente'}
+    <div className="plist-item" onClick={() => onVerPedido(p)}>
+      <div className="plist-img">
+        {(primeiroItem?.imagem_url || primeiroItem?.produtos?.imagem_url)
+          ? <img src={primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url || ''} alt={primeiroItem.nome_produto} />
+          : <span className="plist-img-emoji">🎂</span>}
+        {totalItens > 1 && <span className="plist-img-badge">{totalItens}</span>}
+      </div>
+
+      <div className="plist-info">
+        <div className="plist-row-top">
+          <p className="plist-cliente">{p.cliente_nome || 'Não informado'}</p>
+          <span className="plist-time">{dataCurta}</span>
         </div>
-      )}
 
-      <div className="ped-card-head" style={{ display: 'none' }} />
+        <div className="plist-row-mid">
+          <p className="plist-produto">{nomeProdutoResumo}</p>
+          <span className="plist-valor">{formatMoney(p.valor_total)}</span>
+        </div>
 
-      <div className="mob-card-inner">
-
-          {/* Linha 1: Pedido # + Status + Data/hora */}
-          <div className="mob-card-topo">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-              <span className="ped-card-numero">Pedido #{p.numero || '—'}{p.origem === 'cardapio' && <span className="ped-card-origem"> · Cardápio</span>}</span>
-              <span className="ped-card-status" style={{ color: grupo.color, background: grupo.bg }}>
-                <span className="ped-card-status-dot" style={{ background: grupo.dot }} />
-                {grupo.label}
-              </span>
-            </div>
-            <p className="mob-card-cliente">{p.cliente_nome || 'Não informado'}</p>
-            {p.created_at && (
-              <span className="mob-card-datetime">
-                {new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' })}
-                {' · '}
-                {new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' })}
-              </span>
-            )}
-          </div>
-
-          <div className="mob-card-divider" />
-
-          {/* Linha 2: Produto + subtotal */}
-          {primeiroItem && (
-            <div className="mob-card-produto">
-              <div className="mob-card-produto-img">
-                {(primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url)
-                  ? <img src={primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url || ''} alt={primeiroItem.nome_produto} />
-                  : <span>🎂</span>}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p className="mob-card-produto-nome">
-                  {primeiroItem.nome_produto}
-                  {outrosItens > 0 && <span className="ped-card-mais-itens"> +{outrosItens}</span>}
-                </p>
-                <p className="mob-card-produto-qtd">{formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</p>
-              </div>
-              <p className="mob-card-valor">{formatMoney(p.valor_total)}</p>
-            </div>
-          )}
-
-          <div className="mob-card-divider" />
-
-          {/* Linha 3: Pagamento + Entrega */}
-          <div className="mob-card-rodape">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <span className="mob-card-info-label">Pgto:</span>
-              <span style={{ fontSize: '0.78rem', color: pagamentoCor, fontWeight: 600 }}>{PAG_CONFIG[p.forma_pagamento] || 'PIX'}</span>
-              <span className="ped-card-status" style={{ color: pagamentoCor, background: p.status_pagamento === 'pago' ? '#dcfce7' : p.status_pagamento === 'parcial' ? '#FAEEDA' : '#fee2e2', fontSize: '0.68rem', padding: '2px 7px' }}>
-                {p.status_pagamento === 'pago' ? 'Pago' : p.status_pagamento === 'parcial' ? 'Parcial' : 'Pendente'}
-              </span>
-            </div>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-              {p.tipo_entrega === 'retirada' ? '📦 Retirada' : '🛵 Entrega'}
-              {dataLabel && <span style={{ color: dataCor, fontWeight: 600 }}>· {dataLabel}</span>}
+        <div className="plist-tags">
+          <span className="plist-tag" style={{ color: grupo.color, background: grupo.bg }}>
+            <span className="plist-tag-dot" style={{ background: grupo.dot }} />
+            {grupo.label}
+          </span>
+          <span
+            className="plist-tag"
+            style={{
+              color: pagamentoCor,
+              background: p.status_pagamento === 'pago' ? '#DCFCE7' : p.status_pagamento === 'parcial' ? '#FEF3C7' : '#FEE2E2'
+            }}
+          >
+            {p.status_pagamento === 'pago' ? 'Pago' : p.status_pagamento === 'parcial' ? 'Parcial' : 'Pendente'}
+          </span>
+          {atrasado && <span className="plist-tag plist-tag--atrasado">Atrasado</span>}
+          {!atrasado && dias === 0 && (
+            <span className="plist-tag plist-tag--hoje">
+              Hoje{p.horario_entrega ? ` ${p.horario_entrega.slice(0, 5)}` : ''}
             </span>
-          </div>
-
+          )}
+          {!atrasado && dias === 1 && <span className="plist-tag plist-tag--amanha">Amanhã</span>}
+          {p.tipo_entrega === 'entrega' && temEndereco && <span className="plist-tag plist-tag--neutral">🛵 Entrega</span>}
         </div>
-
-      {(extras.length > 0 || (p.etiquetas || []).length > 0) && (
-        <div className="ped-card-extras">
-          {extras.map((e, i) => <span key={i} className="ped-card-chip">{e}</span>)}
-          {(p.etiquetas || []).slice(0, 4).map(e => <span key={e} className="ped-card-chip ped-card-chip--etiqueta">{e}</span>)}
-        </div>
-      )}
+      </div>
     </div>
   )
 }
@@ -804,7 +791,7 @@ export default function Pedidos() {
               )}
             </div>
           ) : (
-            <div className={!isMobile ? 'ped-dt-wrapper' : ''} style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '0.65rem' : 0 }}>
+            <div className={!isMobile ? 'ped-dt-wrapper' : ''} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {!isMobile ? (
                 <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
                   <thead>
@@ -825,9 +812,11 @@ export default function Pedidos() {
                   </tbody>
                 </table>
               ) : (
-                pedidosFiltrados.map(p => (
-                  <PedidoCard key={p.id} p={p} isMobile={true} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} />
-                ))
+                <div className="plist-container">
+                  {pedidosFiltrados.map(p => (
+                    <PedidoCard key={p.id} p={p} isMobile={true} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} />
+                  ))}
+                </div>
               )}
             </div>
           )}
@@ -935,7 +924,149 @@ export default function Pedidos() {
         @keyframes hsFadeIn { from { opacity: 0 } to { opacity: 1 } }
         @keyframes hsSlideUp { from { transform: translateY(100%) } to { transform: translateY(0) } }
 
-        /* ── Card de pedido ── */
+        /* ── Lista minimalista (mobile) — formato mensagens ── */
+        .plist-container {
+          background: var(--bg-card);
+          border-radius: var(--radius-lg);
+          overflow: hidden;
+          border: 1px solid var(--border);
+          box-shadow: 0 2px 8px rgba(45, 31, 38, 0.04);
+        }
+        .plist-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 12px;
+          background: var(--bg-card);
+          border-bottom: 1px solid var(--border);
+          cursor: pointer;
+          transition: background var(--dur-fast);
+          font-family: inherit;
+        }
+        .plist-item:hover, .plist-item:active { background: var(--bg-subtle); }
+        .plist-item:last-child { border-bottom: none; }
+
+        .plist-img {
+          width: 52px; height: 52px;
+          border-radius: 14px;
+          background: var(--bg-subtle);
+          flex-shrink: 0;
+          position: relative;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .plist-img img {
+          width: 100%; height: 100%;
+          object-fit: cover;
+        }
+        .plist-img-emoji {
+          font-size: 24px;
+          line-height: 1;
+        }
+        .plist-img-badge {
+          position: absolute;
+          bottom: -3px; right: -3px;
+          min-width: 20px; height: 20px;
+          padding: 0 5px;
+          border-radius: 999px;
+          background: var(--primary);
+          color: #fff;
+          font-size: 10px;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 2px solid var(--bg-card);
+          line-height: 1;
+        }
+
+        .plist-info { flex: 1; min-width: 0; }
+
+        .plist-row-top {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: 8px;
+        }
+        .plist-cliente {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--text-title);
+          letter-spacing: -0.01em;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          min-width: 0;
+        }
+        .plist-time {
+          font-size: 11px;
+          font-weight: 500;
+          color: var(--text-muted);
+          flex-shrink: 0;
+        }
+
+        .plist-row-mid {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: 8px;
+          margin-top: 3px;
+        }
+        .plist-produto {
+          margin: 0;
+          font-size: 12px;
+          color: var(--text-secondary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          min-width: 0;
+        }
+        .plist-valor {
+          font-size: 13px;
+          font-weight: 800;
+          color: var(--primary);
+          flex-shrink: 0;
+          letter-spacing: -0.01em;
+        }
+
+        .plist-tags {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          margin-top: 6px;
+          flex-wrap: wrap;
+        }
+        .plist-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 9.5px;
+          font-weight: 800;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          white-space: nowrap;
+        }
+        .plist-tag-dot {
+          width: 5px; height: 5px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+        .plist-tag--hoje { background: var(--primary-light); color: var(--primary-dark); }
+        .plist-tag--amanha { background: #F0F9FF; color: #075985; }
+        .plist-tag--atrasado { background: #FEE2E2; color: #B91C1C; }
+        .plist-tag--neutral { background: var(--bg-subtle); color: var(--text-secondary); font-weight: 700; }
+
+        /* Esconde a lista minimalista no desktop (usa tabela lá) */
+        @media (min-width: 768px) {
+          .plist-item, .plist-container { display: none; }
+        }
+
+        /* ── Card de pedido (mantido pro desktop e legado) ── */
         .ped-card { background: var(--bg-card); border-radius: var(--radius-lg); cursor: pointer; font-family: inherit; position: relative; overflow: hidden; }
         .ped-card-banner { background: #fee2e2; padding: 4px 1.1rem; font-size: var(--font-caption); font-weight: var(--fw-bold); color: #dc2626; }
         .ped-card-head { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.1rem 0; gap: 0.5rem; }
