@@ -4,6 +4,7 @@ import {
   ChartBar, Eye, Storefront, Sliders, PaintBrush, Tag,
   Share, Percent, ForkKnife, Copy, CheckCircle, Warning, Lightbulb,
   TrendUp, TrendDown, ShoppingBag, Users as UsersIcon, CurrencyDollar,
+  CaretRight,
 } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
 import { supabase } from "@/lib/supabase";
@@ -51,6 +52,7 @@ export default function Cardapio() {
   const [alertas, setAlertas] = useState<Alerta[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiado, setCopiado] = useState(false);
+  const [contadores, setContadores] = useState({ produtos: 0, produtosAtivos: 0, categorias: 0, promocoes: 0 });
 
   // Nova arquitetura: cardápio publicado quando profile.codigo_publico existe.
   // URL final: /c/[codigo]/[slug] — slug é "cardapio" (free) ou personalizado (PRO).
@@ -66,6 +68,25 @@ export default function Cardapio() {
     if (!profile?.id) return;
     carregarTudo();
   }, [profile?.id, periodo]);
+
+  // Contadores de catálogo (produtos ativos, categorias, promoções) — recarrega ao voltar pra tela
+  useEffect(() => {
+    if (!profile?.id) return;
+    (async () => {
+      const uid = profile.id;
+      const [prod, cat, promo] = await Promise.all([
+        supabase.from("produtos").select("id, disponivel", { count: "exact" }).eq("user_id", uid),
+        supabase.from("categorias").select("id", { count: "exact", head: true }).eq("user_id", uid),
+        supabase.from("promocoes").select("id", { count: "exact", head: true }).eq("user_id", uid).eq("ativo", true),
+      ]);
+      setContadores({
+        produtos: prod.count ?? 0,
+        produtosAtivos: (prod.data || []).filter((p: any) => p.disponivel !== false).length,
+        categorias: cat.count ?? 0,
+        promocoes: promo.count ?? 0,
+      });
+    })();
+  }, [profile?.id]);
 
   const calcularDataLimite = (p: Periodo): Date => {
     const d = new Date();
@@ -314,17 +335,64 @@ export default function Cardapio() {
         </div>
       </div>
 
-      {/* Atalhos de gerenciamento — primeiro, acesso rápido */}
-      <div className="ch-block">
-        <h2 className="ch-block-title">Gerenciar</h2>
-        <div className="ch-tiles">
-          {sections.map((s) => (
-            <button key={s.path} className="ch-tile-compact" onClick={() => navigate(s.path)}>
-              <span className="ch-tile-icon">{s.icon}</span>
-              <span className="ch-tile-label">{s.label}</span>
-            </button>
-          ))}
-        </div>
+      {/* Meu Catálogo — ações do dia-a-dia */}
+      <p className="ch-list-section-title">Meu Catálogo</p>
+      <div className="ch-list-group">
+        <button className="ch-list-row" onClick={() => navigate("/produtos")}>
+          <span className="ch-list-icon ch-list-icon--primary">
+            <Storefront size={18} weight="duotone" />
+          </span>
+          <span className="ch-list-lbl">Produtos</span>
+          <span className="ch-list-badge">
+            {contadores.produtosAtivos}
+            {contadores.produtos !== contadores.produtosAtivos && (
+              <span className="ch-list-badge-sub"> / {contadores.produtos}</span>
+            )}
+          </span>
+          <CaretRight size={14} weight="bold" className="ch-list-chev" />
+        </button>
+        <button className="ch-list-row" onClick={() => navigate("/categorias")}>
+          <span className="ch-list-icon ch-list-icon--accent">
+            <ForkKnife size={18} weight="duotone" />
+          </span>
+          <span className="ch-list-lbl">Categorias</span>
+          <span className="ch-list-badge">{contadores.categorias}</span>
+          <CaretRight size={14} weight="bold" className="ch-list-chev" />
+        </button>
+        <button className="ch-list-row" onClick={() => navigate("/promocoes")}>
+          <span className="ch-list-icon ch-list-icon--warning">
+            <Percent size={18} weight="duotone" />
+          </span>
+          <span className="ch-list-lbl">Promoções</span>
+          <span className="ch-list-badge">{contadores.promocoes}</span>
+          <CaretRight size={14} weight="bold" className="ch-list-chev" />
+        </button>
+      </div>
+
+      {/* Configuração da Loja — setup inicial, raramente muda */}
+      <p className="ch-list-section-title">Configuração da Loja</p>
+      <div className="ch-list-group">
+        <button className="ch-list-row" onClick={() => navigate("/cardapio-design")}>
+          <span className="ch-list-icon ch-list-icon--muted">
+            <PaintBrush size={18} weight="duotone" />
+          </span>
+          <span className="ch-list-lbl">Aparência</span>
+          <CaretRight size={14} weight="bold" className="ch-list-chev" />
+        </button>
+        <button className="ch-list-row" onClick={() => navigate("/cardapio-config")}>
+          <span className="ch-list-icon ch-list-icon--muted">
+            <Sliders size={18} weight="duotone" />
+          </span>
+          <span className="ch-list-lbl">Configurações da loja</span>
+          <CaretRight size={14} weight="bold" className="ch-list-chev" />
+        </button>
+        <button className="ch-list-row" onClick={() => navigate("/checkout-config")}>
+          <span className="ch-list-icon ch-list-icon--muted">
+            <Tag size={18} weight="duotone" />
+          </span>
+          <span className="ch-list-lbl">Entrega e Pagamento</span>
+          <CaretRight size={14} weight="bold" className="ch-list-chev" />
+        </button>
       </div>
 
       {/* Seletor de período */}
@@ -607,6 +675,69 @@ export default function Cardapio() {
           color: var(--text-title);
           margin: 0;
           letter-spacing: var(--ls-tight);
+        }
+
+        /* ── Lista tipo iOS Settings — 2 grupos temáticos ── */
+        .ch-list-section-title {
+          margin: var(--space-4) var(--space-2) var(--space-2);
+          font-size: 10px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: var(--text-muted);
+        }
+        .ch-list-section-title:first-of-type { margin-top: var(--space-2); }
+        .ch-list-group {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-md);
+          overflow: hidden;
+        }
+        .ch-list-row {
+          display: flex; align-items: center; gap: 12px;
+          width: 100%;
+          padding: 12px 14px;
+          background: none;
+          border: none;
+          border-bottom: 1px solid var(--border);
+          cursor: pointer;
+          text-align: left;
+          font-family: inherit;
+          transition: background 0.15s;
+        }
+        .ch-list-row:last-child { border-bottom: none; }
+        .ch-list-row:hover, .ch-list-row:active { background: var(--bg-subtle); }
+        .ch-list-icon {
+          width: 32px; height: 32px;
+          border-radius: 9px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .ch-list-icon--primary { background: var(--primary-light); color: var(--primary); }
+        .ch-list-icon--accent  { background: #EEEDFE; color: #534AB7; }
+        .ch-list-icon--warning { background: #FEF3C7; color: #92400E; }
+        .ch-list-icon--muted   { background: var(--bg-subtle); color: var(--text-secondary); }
+        .ch-list-lbl {
+          flex: 1;
+          font-size: 14px;
+          font-weight: 600;
+          color: var(--text-title);
+          letter-spacing: -0.01em;
+        }
+        .ch-list-badge {
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--text-muted);
+          font-variant-numeric: tabular-nums;
+          margin-right: 2px;
+        }
+        .ch-list-badge-sub {
+          font-weight: 500;
+          opacity: 0.7;
+        }
+        .ch-list-chev {
+          color: var(--border);
+          flex-shrink: 0;
         }
 
         /* ── Top produtos ── */
