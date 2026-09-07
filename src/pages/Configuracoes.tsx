@@ -199,7 +199,6 @@ export default function Configuracoes() {
   const [savingSenha, setSavingSenha] = useState(false);
   const [showExcluir, setShowExcluir] = useState(false);
   const [excluirConfirm, setExcluirConfirm] = useState("");
-  const [darkMode, setDarkMode] = useState(() => document.documentElement.classList.contains("dark"));
   const [copied, setCopied] = useState(false);
   const [ogPreview, setOgPreview] = useState<string | null>(null);
   const [ogUploading, setOgUploading] = useState(false);
@@ -243,12 +242,6 @@ export default function Configuracoes() {
   const toggleNotifDesativar = (val: boolean) => {
     setNotifDesativar(val);
     if (val) setNotifs({ receitas: false, comunidade: false, atualizacoes: false });
-  };
-
-  const toggleDark = () => {
-    const html = document.documentElement;
-    if (html.classList.contains("dark")) { html.classList.remove("dark"); setDarkMode(false); localStorage.setItem("theme", "light"); }
-    else { html.classList.add("dark"); setDarkMode(true); localStorage.setItem("theme", "dark"); }
   };
 
   const handleSave = async () => {
@@ -413,26 +406,6 @@ export default function Configuracoes() {
               </button>
             </div>
           )}
-        </div>
-
-        {/* Tema — apenas PRO */}
-        <div className="cfg-accordion">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.85rem 1rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></span>
-              <div>
-                <p className="cfg-accordion-title" style={{ margin: 0, textTransform: "none", letterSpacing: 0, fontSize: "0.88rem" }}>Tema {darkMode ? "Escuro" : "Claro"}</p>
-                {plano !== "pro" && <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: 0 }}>Exclusivo PRO</p>}
-              </div>
-            </div>
-            {plano === "pro" ? (
-              <button onClick={toggleDark} style={{ width: "48px", height: "26px", borderRadius: "13px", border: "none", cursor: "pointer", background: darkMode ? "var(--primary)" : "var(--border)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
-                <div style={{ width: "20px", height: "20px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: darkMode ? "25px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
-              </button>
-            ) : (
-              <span style={{ fontSize: "0.72rem", color: "var(--primary)", fontWeight: 600, cursor: "pointer" }} onClick={() => navigate("/assinar")}>🔒 Upgrade</span>
-            )}
-          </div>
         </div>
 
         {/* Avançado */}
@@ -982,6 +955,8 @@ export default function Configuracoes() {
         .cfg-plan-sub   { font-size: var(--font-helper); color: var(--text-secondary); margin: 0; line-height: 1.5; }
 
         .cfg-notif-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        .cfg-push-row  { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        .cfg-push-row > div:first-child { flex: 1; min-width: 0; }
         .cfg-notif-label { font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--text-primary); margin: 0; }
 
         .cfg-link-box { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.85rem 1rem; }
