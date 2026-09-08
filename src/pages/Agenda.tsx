@@ -84,7 +84,9 @@ export default function Agenda() {
 
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [pedidosFiltro, setPedidosFiltro] = useState("todos");
+  const STATUS_FILTRAVEIS = ["novo", "confirmado", "em_producao", "pronto", "concluido"];
+  const [statusSelecionados, setStatusSelecionados] = useState<string[]>(STATUS_FILTRAVEIS);
+  const [filtroDrawerOpen, setFiltroDrawerOpen] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -135,8 +137,8 @@ export default function Agenda() {
   );
 
   const pedidosDiaFiltrados = useMemo(
-    () => pedidosDoDia.filter(p => pedidosFiltro === "todos" || p.status === pedidosFiltro),
-    [pedidosDoDia, pedidosFiltro]
+    () => pedidosDoDia.filter((p: any) => statusSelecionados.includes(p.status)),
+    [pedidosDoDia, statusSelecionados]
   );
 
   const countStatusDia = useMemo(() => {
@@ -192,8 +194,12 @@ export default function Agenda() {
           pedidosDoDia={pedidosDoDia}
           pedidosFiltrados={pedidosDiaFiltrados}
           countStatus={countStatusDia}
-          filtro={pedidosFiltro}
-          setFiltro={setPedidosFiltro}
+          statusSelecionados={statusSelecionados}
+          setStatusSelecionados={setStatusSelecionados}
+          filtroDrawerOpen={filtroDrawerOpen}
+          setFiltroDrawerOpen={setFiltroDrawerOpen}
+          statusFiltraveis={STATUS_FILTRAVEIS}
+          
           loading={loading}
           onOpenPedido={(id: string) => navigate(`/pedidos/${id}`)}
           onNovoPedido={() => navigate("/pedidos/novo")}
@@ -209,8 +215,12 @@ export default function Agenda() {
           pedidosDoDia={pedidosDoDia}
           pedidosFiltrados={pedidosDiaFiltrados}
           countStatus={countStatusDia}
-          filtro={pedidosFiltro}
-          setFiltro={setPedidosFiltro}
+          statusSelecionados={statusSelecionados}
+          setStatusSelecionados={setStatusSelecionados}
+          filtroDrawerOpen={filtroDrawerOpen}
+          setFiltroDrawerOpen={setFiltroDrawerOpen}
+          statusFiltraveis={STATUS_FILTRAVEIS}
+          
           loading={loading}
           onOpenPedido={(id: string) => navigate(`/pedidos/${id}`)}
           onNovoPedido={() => navigate("/pedidos/novo")}
@@ -521,20 +531,37 @@ function VistaCalendario(props: any) {
 
 function PedidosDoDia({
   diaSel, loading, pedidosDoDia, pedidosFiltrados, countStatus,
-  filtro, setFiltro, onOpenPedido, onNovoPedido,
+  statusSelecionados, setStatusSelecionados, filtroDrawerOpen, setFiltroDrawerOpen,
+  statusFiltraveis, onOpenPedido, onNovoPedido,
 }: any) {
   const d = parseISO(diaSel);
   const rel = relativoLabel(diaSel);
   const dataFmt = d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
 
-  const FILTROS = [
-    { key: "todos",       label: "Todos" },
-    { key: "novo",        label: "Novos" },
-    { key: "confirmado",  label: "Confirmados" },
-    { key: "em_producao", label: "Produção" },
-    { key: "pronto",      label: "Prontos" },
-    { key: "concluido",   label: "Feitos" },
-  ];
+  const FILTROS_LABELS: Record<string, string> = {
+    novo: "Novos",
+    confirmado: "Confirmados",
+    em_producao: "Em produção",
+    pronto: "Prontos",
+    concluido: "Concluídos",
+  };
+
+  const toggleStatus = (s: string) => {
+    if (statusSelecionados.includes(s)) {
+      setStatusSelecionados(statusSelecionados.filter((x: string) => x !== s));
+    } else {
+      setStatusSelecionados([...statusSelecionados, s]);
+    }
+  };
+
+  const selecionarTodos = () => setStatusSelecionados(statusFiltraveis);
+  const limparFiltros = () => setStatusSelecionados([]);
+
+  const filtroResumo = statusSelecionados.length === statusFiltraveis.length
+    ? "Todos"
+    : statusSelecionados.length === 0
+      ? "Nenhum selecionado"
+      : `${statusSelecionados.length} status selecionado${statusSelecionados.length !== 1 ? "s" : ""}`;
 
   return (
     <div className="ag-pedidos-card">
@@ -552,22 +579,59 @@ function PedidosDoDia({
         </button>
       </div>
 
+      {/* Card de filtro (estilo referência) */}
       {pedidosDoDia.length > 0 && (
-        <div className="ag-filtros">
-          {FILTROS.map(f => {
-            const cnt = f.key === "todos" ? pedidosDoDia.length : (countStatus[f.key] || 0);
-            if (f.key !== "todos" && cnt === 0) return null;
-            return (
-              <button
-                key={f.key}
-                onClick={() => setFiltro(f.key)}
-                className={"ag-filtro" + (filtro === f.key ? " ag-filtro--on" : "")}
-              >
-                {f.label}
-                <span className="ag-filtro-cnt">{cnt}</span>
-              </button>
-            );
-          })}
+        <button className="ag-filtro-card" onClick={() => setFiltroDrawerOpen(true)}>
+          <span className="ag-filtro-card-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="6" x2="20" y2="6"/>
+              <line x1="7" y1="12" x2="17" y2="12"/>
+              <line x1="10" y1="18" x2="14" y2="18"/>
+            </svg>
+          </span>
+          <span className="ag-filtro-card-label">Filtro de Status</span>
+          <span className="ag-filtro-card-valor">{filtroResumo}</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--text-muted)", flexShrink: 0 }}>
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+      )}
+
+      {/* Drawer do filtro */}
+      {filtroDrawerOpen && (
+        <div className="ag-filtro-drawer-overlay" onClick={() => setFiltroDrawerOpen(false)}>
+          <div className="ag-filtro-drawer" onClick={e => e.stopPropagation()}>
+            <div className="ag-filtro-drawer-handle" />
+            <div className="ag-filtro-drawer-head">
+              <h3 className="ag-filtro-drawer-title">Filtro de Status</h3>
+              <button className="ag-filtro-drawer-close" onClick={() => setFiltroDrawerOpen(false)} aria-label="Fechar">✕</button>
+            </div>
+            <div className="ag-filtro-drawer-body">
+              {statusFiltraveis.map((s: string) => {
+                const cfg = getStatusConfig(s);
+                const marcado = statusSelecionados.includes(s);
+                const qtd = countStatus[s] || 0;
+                return (
+                  <label key={s} className={"ag-filtro-opcao" + (marcado ? " ag-filtro-opcao--on" : "")}>
+                    <input
+                      type="checkbox"
+                      checked={marcado}
+                      onChange={() => toggleStatus(s)}
+                      className="ag-filtro-opcao-check"
+                    />
+                    <span className="ag-filtro-opcao-dot" style={{ background: cfg.dot }} />
+                    <span className="ag-filtro-opcao-label">{FILTROS_LABELS[s] || cfg.label}</span>
+                    <span className="ag-filtro-opcao-cnt">{qtd}</span>
+                  </label>
+                );
+              })}
+            </div>
+            <div className="ag-filtro-drawer-acoes">
+              <button className="ag-filtro-drawer-btn-limpar" onClick={limparFiltros}>Limpar</button>
+              <button className="ag-filtro-drawer-btn-todos" onClick={selecionarTodos}>Selecionar todos</button>
+              <button className="ag-filtro-drawer-btn-aplicar" onClick={() => setFiltroDrawerOpen(false)}>Aplicar</button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -583,11 +647,14 @@ function PedidosDoDia({
           }
         />
       ) : (
-        <div className="ag-pedidos-lista">
-          {pedidosFiltrados.map((p: any) => (
-            <PedidoRow key={p.id} p={p} onClick={() => onOpenPedido(p.id)} />
-          ))}
-        </div>
+        <>
+          <div className="ag-pedidos-secao-lbl">Pedidos pendentes</div>
+          <div className="ag-pedidos-lista-rica">
+            {pedidosFiltrados.map((p: any) => (
+              <PedidoCard key={p.id} p={p} onClick={() => onOpenPedido(p.id)} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
@@ -597,44 +664,132 @@ function PedidosDoDia({
  * Componentes reutilizáveis
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-function PedidoRow({ p, onClick }: any) {
-  const primeiroItem = p.pedido_itens?.[0];
-  const outrosItens = Math.max(0, (p.pedido_itens?.length || 0) - 1);
+function PedidoCard({ p, onClick }: any) {
   const st = getStatusConfig(p.status);
-  const nomeProduto = primeiroItem
-    ? `${primeiroItem.nome_produto}${outrosItens > 0 ? ` + ${outrosItens}` : ""}`
-    : "Sem produtos";
+
+  const dataEntregaFmt = () => {
+    if (!p.data_entrega) return null;
+    const rel = relativoLabel(p.data_entrega);
+    return rel || parseISO(p.data_entrega).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+  };
+  const entregaLabel = dataEntregaFmt();
+
+  const criadoFmt = p.created_at
+    ? new Date(p.created_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "long" }) +
+      " às " +
+      new Date(p.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    : null;
+
+  const subtotal = Number(p.valor_produtos) || 0;
+  const desconto = Number(p.desconto) || 0;
+  const total = Number(p.valor_total) || 0;
+  const adiantamento = Number(p.valor_pago) || Number(p.entrada) || 0;
+  const restante = total - adiantamento;
+
+  const pagamentoStatus = p.status_pagamento || "pendente";
+  const pagamentoLabel = pagamentoStatus === "pago"
+    ? "Pagamento realizado"
+    : pagamentoStatus === "parcial"
+      ? `Pagamento parcial: ${formatMoney(restante)} restante`
+      : `Pagamento pendente: ${formatMoney(total)}`;
 
   return (
-    <button className="ag-row" onClick={onClick}>
-      <div className="ag-row-img">
-        {(primeiroItem?.imagem_url || primeiroItem?.produtos?.imagem_url) ? (
-          <img
-            src={primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url || ""}
-            alt={primeiroItem.nome_produto}
-          />
-        ) : (
-          <span className="ag-row-emoji">🎂</span>
+    <button className="ag-pc" onClick={onClick}>
+      {/* Header */}
+      <div className="ag-pc-head">
+        <div className="ag-pc-head-info">
+          <p className="ag-pc-nome">
+            {p.cliente_nome || "Cliente não informado"}
+            {p.numero && <span className="ag-pc-numero"> #{p.numero}</span>}
+          </p>
+        </div>
+        <span className="ag-pc-status" style={{ background: st.dot, color: "#fff" }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            {st.group === "concluido" ? (
+              <polyline points="20 6 9 17 4 12"/>
+            ) : st.group === "producao" ? (
+              <circle cx="12" cy="12" r="10"/>
+            ) : (
+              <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>
+            )}
+          </svg>
+          {st.label}
+        </span>
+      </div>
+
+      <div className="ag-pc-divider" />
+
+      {/* Info linhas */}
+      <div className="ag-pc-info-lines">
+        {entregaLabel && (
+          <div className={"ag-pc-info-line ag-pc-info-line--entrega" + (entregaLabel === "Hoje" ? " ag-pc-info-line--hoje" : "")}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Entrega {entregaLabel}
+            {p.horario_entrega && ` · ${p.horario_entrega.slice(0, 5)}`}
+          </div>
+        )}
+        <div className={"ag-pc-info-line ag-pc-info-line--pag ag-pc-info-line--pag-" + pagamentoStatus}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="6" width="20" height="12" rx="2"/>
+            <circle cx="12" cy="12" r="2"/>
+          </svg>
+          {pagamentoLabel}
+        </div>
+        {criadoFmt && (
+          <div className="ag-pc-info-line ag-pc-info-line--criado">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Pedido em: {criadoFmt}
+          </div>
         )}
       </div>
-      <div className="ag-row-info">
-        <div className="ag-row-top">
-          <p className="ag-row-cliente">{p.cliente_nome || "Cliente não informado"}</p>
-          {p.horario_entrega && (
-            <span className="ag-row-hora">{p.horario_entrega.slice(0, 5)}</span>
-          )}
+
+      {/* Bloco de itens + totais */}
+      <div className="ag-pc-itens">
+        {p.pedido_itens && p.pedido_itens.length > 0 && p.pedido_itens.map((item: any, idx: number) => (
+          <div key={idx} className="ag-pc-item-linha">
+            <span className="ag-pc-item-nome">
+              <b>{item.quantidade}x</b> {item.nome_produto}
+            </span>
+          </div>
+        ))}
+
+        <div className="ag-pc-item-linha">
+          <span className="ag-pc-item-nome">Subtotal</span>
+          <span className="ag-pc-item-val">{formatMoney(subtotal || total)}</span>
         </div>
-        <p className="ag-row-produto">{nomeProduto}</p>
-        <div className="ag-row-tags">
-          <span className="ag-row-tag" style={{ color: st.color, background: st.bg }}>
-            <span className="ag-row-tag-dot" style={{ background: st.dot }} />
-            {st.label}
-          </span>
-          {p.tipo_entrega === "entrega" && <span className="ag-row-tag ag-row-tag--neutral">Entrega</span>}
-          {p.tipo_entrega === "retirada" && <span className="ag-row-tag ag-row-tag--neutral">Retirada</span>}
+
+        {desconto > 0 && (
+          <div className="ag-pc-item-linha">
+            <span className="ag-pc-item-nome ag-pc-item-desconto">Desconto</span>
+            <span className="ag-pc-item-val ag-pc-item-desconto">- {formatMoney(desconto)}</span>
+          </div>
+        )}
+
+        <div className="ag-pc-item-linha ag-pc-item-linha--total">
+          <span className="ag-pc-item-nome">Total</span>
+          <span className="ag-pc-item-val">{formatMoney(total)}</span>
         </div>
+
+        {adiantamento > 0 && (
+          <>
+            <div className="ag-pc-item-linha">
+              <span className="ag-pc-item-nome ag-pc-item-pago">Adiantamento</span>
+              <span className="ag-pc-item-val ag-pc-item-pago">- {formatMoney(adiantamento)}</span>
+            </div>
+            <div className="ag-pc-item-linha ag-pc-item-linha--restante">
+              <span className="ag-pc-item-nome">Restante a pagar</span>
+              <span className="ag-pc-item-val">{formatMoney(restante)}</span>
+            </div>
+          </>
+        )}
       </div>
-      <span className="ag-row-valor">{formatMoney(p.valor_total)}</span>
     </button>
   );
 }
@@ -1132,44 +1287,304 @@ function AgendaStyles() {
       }
       .ag-btn-primary:hover { opacity: 0.9; }
 
-      /* Filtros */
-      .ag-filtros {
-        display: flex; gap: 6px;
-        flex-wrap: wrap;
-        margin-bottom: var(--space-3);
-      }
-      .ag-filtro {
-        display: inline-flex; align-items: center; gap: 5px;
-        padding: 6px 11px;
-        border-radius: 999px;
-        border: 1px solid var(--border);
+      /* Card de filtro (estilo referência) */
+      .ag-filtro-card {
+        width: 100%;
+        display: flex; align-items: center; gap: var(--space-3);
+        padding: 14px 16px;
         background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        cursor: pointer;
+        font-family: inherit;
+        margin-bottom: var(--space-3);
+        transition: background var(--dur-fast), border-color var(--dur-fast);
+      }
+      .ag-filtro-card:hover { background: var(--bg-subtle); border-color: var(--primary); }
+      .ag-filtro-card-icon {
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        background: var(--bg-subtle);
+        color: var(--text-title);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+      }
+      .ag-filtro-card-label {
+        font-size: 14px;
+        font-weight: var(--fw-bold);
+        color: var(--text-title);
+      }
+      .ag-filtro-card-valor {
+        flex: 1;
+        text-align: right;
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: var(--fw-medium);
+      }
+
+      /* Drawer do filtro */
+      .ag-filtro-drawer-overlay {
+        position: fixed; inset: 0;
+        background: rgba(45, 31, 38, 0.55);
+        backdrop-filter: blur(4px);
+        display: flex; flex-direction: column;
+        justify-content: flex-end;
+        z-index: 500;
+        animation: agFadeIn 0.2s ease;
+      }
+      @keyframes agFadeIn { from { opacity: 0; } to { opacity: 1; } }
+      .ag-filtro-drawer {
+        background: var(--bg-card);
+        border-radius: 20px 20px 0 0;
+        padding: 12px 16px 20px;
+        max-height: 80vh;
+        display: flex; flex-direction: column;
+        box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
+        animation: agSlideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+      }
+      @keyframes agSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+      .ag-filtro-drawer-handle {
+        width: 36px; height: 4px;
+        border-radius: 2px;
+        background: var(--border);
+        margin: 0 auto 12px;
+      }
+      .ag-filtro-drawer-head {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 4px 4px 12px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 12px;
+      }
+      .ag-filtro-drawer-title {
+        font-size: 17px;
+        font-weight: var(--fw-black);
+        color: var(--text-title);
+        margin: 0;
+        letter-spacing: -0.01em;
+      }
+      .ag-filtro-drawer-close {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: var(--bg-subtle);
+        border: none;
         color: var(--text-secondary);
         font-family: inherit;
-        font-size: var(--font-caption);
-        font-weight: var(--fw-semibold);
+        font-size: 15px; font-weight: 700;
         cursor: pointer;
-        transition: all var(--dur-fast);
+        display: flex; align-items: center; justify-content: center;
       }
-      .ag-filtro:hover { background: var(--bg-subtle); color: var(--text-title); }
-      .ag-filtro--on {
-        background: var(--text-title);
-        color: var(--text-inverse);
-        border-color: var(--text-title);
+      .ag-filtro-drawer-body {
+        display: flex; flex-direction: column;
+        gap: 4px;
+        overflow-y: auto;
       }
-      .ag-filtro-cnt {
+      .ag-filtro-opcao {
+        display: flex; align-items: center; gap: 12px;
+        padding: 14px 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: background var(--dur-fast);
+        font-family: inherit;
+      }
+      .ag-filtro-opcao:hover { background: var(--bg-subtle); }
+      .ag-filtro-opcao--on { background: var(--bg-subtle); }
+      .ag-filtro-opcao-check {
+        width: 20px; height: 20px;
+        accent-color: var(--primary);
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .ag-filtro-opcao-dot {
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .ag-filtro-opcao-label {
+        flex: 1;
+        font-size: 14px;
+        font-weight: var(--fw-semibold);
+        color: var(--text-title);
+      }
+      .ag-filtro-opcao-cnt {
+        font-size: 12px;
         font-weight: var(--fw-black);
-        font-size: 10px;
-        background: var(--bg-subtle);
         color: var(--text-muted);
-        padding: 1px 6px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        padding: 2px 10px;
         border-radius: 999px;
         font-variant-numeric: tabular-nums;
       }
-      .ag-filtro--on .ag-filtro-cnt {
-        background: rgba(255,255,255,0.2);
-        color: var(--text-inverse);
+      .ag-filtro-drawer-acoes {
+        display: flex; gap: 8px;
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
       }
+      .ag-filtro-drawer-btn-limpar,
+      .ag-filtro-drawer-btn-todos,
+      .ag-filtro-drawer-btn-aplicar {
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: var(--fw-bold);
+        cursor: pointer;
+        border: none;
+        transition: opacity var(--dur-fast), background var(--dur-fast);
+      }
+      .ag-filtro-drawer-btn-limpar {
+        background: transparent;
+        color: var(--text-muted);
+        text-decoration: underline;
+      }
+      .ag-filtro-drawer-btn-todos {
+        background: var(--bg-subtle);
+        color: var(--text-title);
+        flex: 1;
+      }
+      .ag-filtro-drawer-btn-aplicar {
+        background: var(--text-title);
+        color: var(--text-inverse);
+        flex: 1;
+      }
+      .ag-filtro-drawer-btn-aplicar:hover,
+      .ag-filtro-drawer-btn-todos:hover { opacity: 0.9; }
+
+      /* Label da seção "Pedidos pendentes" */
+      .ag-pedidos-secao-lbl {
+        text-align: center;
+        font-size: 11px;
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin: var(--space-2) 0 var(--space-3);
+        font-weight: var(--fw-bold);
+      }
+      .ag-pedidos-lista-rica {
+        display: flex; flex-direction: column;
+        gap: var(--space-3);
+        margin: 0 calc(var(--space-4) * -1);
+      }
+
+      /* ── Pedido Card (rico, estilo referência) ── */
+      .ag-pc {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        margin: 0 var(--space-4);
+        cursor: pointer;
+        font-family: inherit;
+        text-align: left;
+        width: auto;
+        display: block;
+        transition: box-shadow var(--dur-fast), border-color var(--dur-fast);
+      }
+      .ag-pc:hover {
+        border-color: var(--primary-light);
+        box-shadow: var(--shadow-md);
+      }
+      .ag-pc-head {
+        display: flex; align-items: flex-start; justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .ag-pc-head-info { flex: 1; min-width: 0; }
+      .ag-pc-nome {
+        font-size: 16px;
+        font-weight: var(--fw-black);
+        color: var(--text-title);
+        letter-spacing: -0.01em;
+        line-height: 1.3;
+        margin: 0;
+      }
+      .ag-pc-numero {
+        font-size: 14px;
+        color: var(--text-muted);
+        font-weight: var(--fw-medium);
+      }
+      .ag-pc-status {
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: var(--fw-black);
+        letter-spacing: 0.02em;
+        flex-shrink: 0;
+        text-transform: uppercase;
+      }
+
+      .ag-pc-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 0 -16px 12px;
+      }
+
+      .ag-pc-info-lines {
+        display: flex; flex-direction: column;
+        gap: 6px;
+      }
+      .ag-pc-info-line {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 13px;
+      }
+      .ag-pc-info-line--entrega { color: #EA580C; font-weight: var(--fw-bold); }
+      .ag-pc-info-line--hoje { color: #EA580C; font-weight: var(--fw-black); }
+      .ag-pc-info-line--pag { font-weight: var(--fw-bold); }
+      .ag-pc-info-line--pag-pendente { color: #B8860B; }
+      .ag-pc-info-line--pag-parcial { color: #B8860B; }
+      .ag-pc-info-line--pag-pago { color: #14532d; }
+      .ag-pc-info-line--criado { color: var(--text-muted); font-weight: var(--fw-medium); }
+
+      /* Bloco de itens */
+      .ag-pc-itens {
+        margin: 14px -16px -16px;
+        padding: 14px 16px;
+        background: #FAFAFA;
+        border-radius: 0 0 16px 16px;
+        border-top: 1px solid var(--border);
+        display: flex; flex-direction: column;
+        gap: 6px;
+      }
+      .ag-pc-item-linha {
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 13px;
+      }
+      .ag-pc-item-nome {
+        color: var(--text-title);
+        font-weight: var(--fw-medium);
+      }
+      .ag-pc-item-nome b {
+        font-weight: var(--fw-black);
+      }
+      .ag-pc-item-val {
+        color: var(--text-title);
+        font-weight: var(--fw-bold);
+        font-variant-numeric: tabular-nums;
+      }
+      .ag-pc-item-desconto { color: #EA580C !important; }
+      .ag-pc-item-pago { color: #16A34A !important; }
+      .ag-pc-item-linha--total {
+        padding-top: 8px;
+        margin-top: 4px;
+        border-top: 1px solid var(--border);
+      }
+      .ag-pc-item-linha--total .ag-pc-item-nome,
+      .ag-pc-item-linha--total .ag-pc-item-val {
+        font-size: 14px;
+        font-weight: var(--fw-black);
+      }
+      .ag-pc-item-linha--restante {
+        padding-top: 8px;
+        border-top: 1px solid var(--border);
+      }
+      .ag-pc-item-linha--restante .ag-pc-item-nome,
+      .ag-pc-item-linha--restante .ag-pc-item-val {
+        color: var(--primary) !important;
+        font-weight: var(--fw-black);
+      }
+
 
       .ag-loading {
         text-align: center;
