@@ -298,10 +298,7 @@ export default function Auth() {
       {showCadastro && (
         <aside className="auth-side" aria-hidden="true">
           <div className="auth-mascote">
-            <div className="auth-mascote-placeholder">
-              <span className="auth-mascote-emoji">🧁</span>
-              <span className="auth-mascote-lbl">Sua imagem aqui</span>
-            </div>
+            <img src="/cadastrofoto.png" alt="Doonly" className="auth-mascote-img" />
           </div>
           <h2 className="auth-side-title">Sua confeitaria mais organizada.</h2>
           <p className="auth-side-sub">Gerencie pedidos, agenda, receitas e precificação em um só lugar.</p>
