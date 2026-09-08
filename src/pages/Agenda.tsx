@@ -554,7 +554,7 @@ function VistaCalendario(props: any) {
 function PedidosDoDia({
   diaSel, loading, pedidosDoDia, pedidosFiltrados, countStatus,
   statusSelecionados, setStatusSelecionados, filtroDrawerOpen, setFiltroDrawerOpen,
-  statusFiltraveis, onOpenPedido, onNovoPedido,
+  statusFiltraveis, onOpenPedido, onNovoPedido, onExcluirPedido,
 }: any) {
   const d = parseISO(diaSel);
   const rel = relativoLabel(diaSel);
