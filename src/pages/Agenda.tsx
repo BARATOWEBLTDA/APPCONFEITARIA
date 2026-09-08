@@ -239,7 +239,7 @@ export default function Agenda() {
 function VistaLista(props: any) {
   const {
     refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHoje,
-    pedidosDoDia, pedidosFiltrados, countStatus, filtro, setFiltro,
+    pedidosDoDia, pedidosFiltrados, countStatus, statusSelecionados, setStatusSelecionados, filtroDrawerOpen, setFiltroDrawerOpen, statusFiltraveis,
     loading, onOpenPedido, onNovoPedido,
   } = props;
 
@@ -356,8 +356,12 @@ function VistaLista(props: any) {
         pedidosDoDia={pedidosDoDia}
         pedidosFiltrados={pedidosFiltrados}
         countStatus={countStatus}
-        filtro={filtro}
-        setFiltro={setFiltro}
+        statusSelecionados={statusSelecionados}
+        setStatusSelecionados={setStatusSelecionados}
+        filtroDrawerOpen={filtroDrawerOpen}
+        setFiltroDrawerOpen={setFiltroDrawerOpen}
+        statusFiltraveis={statusFiltraveis}
+        
         onOpenPedido={onOpenPedido}
         onNovoPedido={onNovoPedido}
       />
@@ -372,7 +376,7 @@ function VistaLista(props: any) {
 function VistaCalendario(props: any) {
   const {
     refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHoje,
-    pedidosDoDia, pedidosFiltrados, countStatus, filtro, setFiltro,
+    pedidosDoDia, pedidosFiltrados, countStatus, statusSelecionados, setStatusSelecionados, filtroDrawerOpen, setFiltroDrawerOpen, statusFiltraveis,
     loading, onOpenPedido, onNovoPedido,
   } = props;
 
@@ -516,8 +520,12 @@ function VistaCalendario(props: any) {
         pedidosDoDia={pedidosDoDia}
         pedidosFiltrados={pedidosFiltrados}
         countStatus={countStatus}
-        filtro={filtro}
-        setFiltro={setFiltro}
+        statusSelecionados={statusSelecionados}
+        setStatusSelecionados={setStatusSelecionados}
+        filtroDrawerOpen={filtroDrawerOpen}
+        setFiltroDrawerOpen={setFiltroDrawerOpen}
+        statusFiltraveis={statusFiltraveis}
+        
         onOpenPedido={onOpenPedido}
         onNovoPedido={onNovoPedido}
       />
