@@ -153,6 +153,16 @@ export default function Agenda() {
     setDiaSel(isoDate(h));
   };
 
+  const handleExcluirPedido = async (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir este pedido? Essa ação não pode ser desfeita.")) return;
+    const { error } = await supabase.from("pedidos").delete().eq("id", id);
+    if (error) {
+      alert("Erro ao excluir pedido: " + error.message);
+      return;
+    }
+    setPedidos((prev) => prev.filter(p => p.id !== id));
+  };
+
   /* ═══ RENDER ═══ */
   return (
     <div className="ag-root">
@@ -203,6 +213,7 @@ export default function Agenda() {
           loading={loading}
           onOpenPedido={(id: string) => navigate(`/pedidos/${id}`)}
           onNovoPedido={() => navigate("/pedidos/novo")}
+          onExcluirPedido={handleExcluirPedido}
         />
       ) : (
         <VistaCalendario
@@ -224,6 +235,7 @@ export default function Agenda() {
           loading={loading}
           onOpenPedido={(id: string) => navigate(`/pedidos/${id}`)}
           onNovoPedido={() => navigate("/pedidos/novo")}
+          onExcluirPedido={handleExcluirPedido}
         />
       )}
 
@@ -240,7 +252,7 @@ function VistaLista(props: any) {
   const {
     refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHoje,
     pedidosDoDia, pedidosFiltrados, countStatus, statusSelecionados, setStatusSelecionados, filtroDrawerOpen, setFiltroDrawerOpen, statusFiltraveis,
-    loading, onOpenPedido, onNovoPedido,
+    loading, onOpenPedido, onNovoPedido, onExcluirPedido,
   } = props;
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -364,6 +376,7 @@ function VistaLista(props: any) {
         
         onOpenPedido={onOpenPedido}
         onNovoPedido={onNovoPedido}
+        onExcluirPedido={onExcluirPedido}
       />
     </>
   );
@@ -377,7 +390,7 @@ function VistaCalendario(props: any) {
   const {
     refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHoje,
     pedidosDoDia, pedidosFiltrados, countStatus, statusSelecionados, setStatusSelecionados, filtroDrawerOpen, setFiltroDrawerOpen, statusFiltraveis,
-    loading, onOpenPedido, onNovoPedido,
+    loading, onOpenPedido, onNovoPedido, onExcluirPedido,
   } = props;
 
   // Gera células do mês visível — incluindo dias do mês anterior/próximo pra fechar semanas
@@ -528,6 +541,7 @@ function VistaCalendario(props: any) {
         
         onOpenPedido={onOpenPedido}
         onNovoPedido={onNovoPedido}
+        onExcluirPedido={onExcluirPedido}
       />
     </>
   );
@@ -663,7 +677,12 @@ function PedidosDoDia({
           <div className="ag-pedidos-secao-lbl">Pedidos pendentes</div>
           <div className="ag-pedidos-lista-rica">
             {pedidosFiltrados.map((p: any) => (
-              <PedidoCard key={p.id} p={p} onClick={() => onOpenPedido(p.id)} />
+              <PedidoCard
+                key={p.id}
+                p={p}
+                onEditar={() => onOpenPedido(p.id)}
+                onExcluir={() => onExcluirPedido(p.id)}
+              />
             ))}
           </div>
         </>
@@ -676,8 +695,21 @@ function PedidosDoDia({
  * Componentes reutilizáveis
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-function PedidoCard({ p, onClick }: any) {
+function PedidoCard({ p, onEditar, onExcluir }: any) {
   const st = getStatusConfig(p.status);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [menuOpen]);
 
   const dataEntregaFmt = () => {
     if (!p.data_entrega) return null;
@@ -706,7 +738,7 @@ function PedidoCard({ p, onClick }: any) {
       : `Pagamento pendente: ${formatMoney(total)}`;
 
   return (
-    <button className="ag-pc" onClick={onClick}>
+    <div className="ag-pc">
       {/* Header */}
       <div className="ag-pc-head">
         <div className="ag-pc-avatar">
@@ -732,18 +764,64 @@ function PedidoCard({ p, onClick }: any) {
             {p.numero && <span className="ag-pc-numero"> #{p.numero}</span>}
           </p>
         </div>
-        <span className="ag-pc-status" style={{ background: st.dot, color: "#fff" }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            {st.group === "concluido" ? (
-              <polyline points="20 6 9 17 4 12"/>
-            ) : st.group === "producao" ? (
-              <circle cx="12" cy="12" r="10"/>
-            ) : (
-              <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>
+        <div className="ag-pc-actions">
+          <span className="ag-pc-status" style={{ background: st.dot, color: "#fff" }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              {st.group === "concluido" ? (
+                <polyline points="20 6 9 17 4 12"/>
+              ) : st.group === "producao" ? (
+                <circle cx="12" cy="12" r="10"/>
+              ) : (
+                <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>
+              )}
+            </svg>
+            {st.label}
+          </span>
+          <div className="ag-pc-menu-wrap" ref={menuRef}>
+            <button
+              type="button"
+              className="ag-pc-menu-btn"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Ações do pedido"
+              aria-expanded={menuOpen}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="5" r="1.8"/>
+                <circle cx="12" cy="12" r="1.8"/>
+                <circle cx="12" cy="19" r="1.8"/>
+              </svg>
+            </button>
+            {menuOpen && (
+              <div className="ag-pc-menu" role="menu">
+                <button className="ag-pc-menu-item" onClick={() => { setMenuOpen(false); onEditar?.(); }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  Editar pedido
+                </button>
+                <button className="ag-pc-menu-item" onClick={() => { setMenuOpen(false); alert("Em breve: exportar/imprimir pedido"); }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 6 2 18 2 18 9"/>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                    <rect x="6" y="14" width="12" height="8"/>
+                  </svg>
+                  Exportar / Imprimir
+                </button>
+                <div className="ag-pc-menu-divider" />
+                <button className="ag-pc-menu-item ag-pc-menu-item--danger" onClick={() => { setMenuOpen(false); onExcluir?.(); }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                    <path d="M10 11v6"/>
+                    <path d="M14 11v6"/>
+                  </svg>
+                  Excluir pedido
+                </button>
+              </div>
             )}
-          </svg>
-          {st.label}
-        </span>
+          </div>
+        </div>
       </div>
 
       <div className="ag-pc-divider" />
@@ -819,7 +897,7 @@ function PedidoCard({ p, onClick }: any) {
           </>
         )}
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -1525,16 +1603,8 @@ function AgendaStyles() {
         border-radius: 16px;
         padding: var(--space-4);
         margin: 0 var(--space-4);
-        cursor: pointer;
         font-family: inherit;
         text-align: left;
-        width: auto;
-        display: block;
-        transition: box-shadow var(--dur-fast), border-color var(--dur-fast);
-      }
-      .ag-pc:hover {
-        border-color: var(--primary-light);
-        box-shadow: var(--shadow-md);
       }
       .ag-pc-head {
         display: flex; align-items: flex-start; justify-content: space-between;
@@ -1575,6 +1645,78 @@ function AgendaStyles() {
         line-height: 1;
       }
       .ag-pc-head-info { flex: 1; min-width: 0; }
+
+      .ag-pc-actions {
+        display: flex; align-items: center; gap: 4px;
+        flex-shrink: 0;
+      }
+
+      .ag-pc-menu-wrap {
+        position: relative;
+      }
+      .ag-pc-menu-btn {
+        width: 34px; height: 34px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-secondary);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        font-family: inherit;
+        transition: background var(--dur-fast), border-color var(--dur-fast);
+      }
+      .ag-pc-menu-btn:hover {
+        background: #F5F1F3;
+        border-color: #E8E2E4;
+      }
+      .ag-pc-menu-btn[aria-expanded="true"] {
+        background: #F0EBED;
+        border-color: #D8CDD1;
+      }
+      .ag-pc-menu {
+        position: absolute;
+        top: calc(100% + 4px);
+        right: 0;
+        background: var(--bg-card);
+        border: 1px solid #E8E2E4;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(45, 31, 38, 0.14);
+        min-width: 200px;
+        padding: 6px;
+        z-index: 20;
+        animation: agMenuIn 0.15s ease;
+      }
+      @keyframes agMenuIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .ag-pc-menu-item {
+        display: flex; align-items: center; gap: 10px;
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: var(--text-sm);
+        color: var(--text-title);
+        font-weight: var(--fw-semibold);
+        text-align: left;
+        transition: background var(--dur-fast);
+      }
+      .ag-pc-menu-item:hover { background: #F5F1F3; }
+      .ag-pc-menu-item svg {
+        flex-shrink: 0;
+        opacity: 0.7;
+      }
+      .ag-pc-menu-item--danger { color: #D14848; }
+      .ag-pc-menu-item--danger:hover { background: #FEF2F2; }
+      .ag-pc-menu-divider {
+        height: 1px;
+        background: #E8E2E4;
+        margin: 4px -6px;
+      }
       .ag-pc-nome {
         font-size: var(--text-md);
         font-weight: var(--fw-black);
