@@ -1772,7 +1772,7 @@ function AgendaStyles() {
       .ag-pc-info-line--pag-pago { color: #14532d; }
       .ag-pc-info-line--criado { color: var(--text-muted); font-weight: var(--fw-regular); }
       .ag-pc-pag-label { font-weight: var(--fw-regular); opacity: 0.9; }
-      .ag-pc-pag-valor { font-weight: var(--fw-bold); font-variant-numeric: tabular-nums; margin-left: auto; }
+      .ag-pc-pag-valor { font-weight: var(--fw-bold); font-variant-numeric: tabular-nums; }
 
       /* Bloco de itens */
       .ag-pc-itens {
