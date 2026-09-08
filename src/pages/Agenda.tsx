@@ -731,11 +731,11 @@ function PedidoCard({ p, onEditar, onExcluir }: any) {
   const restante = total - adiantamento;
 
   const pagamentoStatus = p.status_pagamento || "pendente";
-  const pagamentoLabel = pagamentoStatus === "pago"
-    ? "Pagamento realizado"
+  const pagamentoLabelPartes = pagamentoStatus === "pago"
+    ? { label: "Pago", valor: formatMoney(total) }
     : pagamentoStatus === "parcial"
-      ? `Pagamento parcial: ${formatMoney(restante)} restante`
-      : `Pagamento pendente: ${formatMoney(total)}`;
+      ? { label: "Restam", valor: formatMoney(restante) }
+      : { label: "A pagar", valor: formatMoney(total) };
 
   return (
     <div className="ag-pc">
@@ -844,7 +844,8 @@ function PedidoCard({ p, onEditar, onExcluir }: any) {
             <rect x="2" y="6" width="20" height="12" rx="2"/>
             <circle cx="12" cy="12" r="2"/>
           </svg>
-          {pagamentoLabel}
+          <span className="ag-pc-pag-label">{pagamentoLabelPartes.label}</span>
+          <span className="ag-pc-pag-valor">{pagamentoLabelPartes.valor}</span>
         </div>
         {criadoFmt && (
           <div className="ag-pc-info-line ag-pc-info-line--criado">
@@ -1761,14 +1762,17 @@ function AgendaStyles() {
       .ag-pc-info-line {
         display: flex; align-items: center; gap: 8px;
         font-size: var(--text-sm);
+        font-weight: var(--fw-medium);
       }
-      .ag-pc-info-line--entrega { color: #EA580C; font-weight: var(--fw-bold); }
-      .ag-pc-info-line--hoje { color: #EA580C; font-weight: var(--fw-black); }
-      .ag-pc-info-line--pag { font-weight: var(--fw-bold); }
+      .ag-pc-info-line--entrega { color: #EA580C; font-weight: var(--fw-semibold); }
+      .ag-pc-info-line--hoje { color: #EA580C; font-weight: var(--fw-bold); }
+      .ag-pc-info-line--pag { font-weight: var(--fw-medium); }
       .ag-pc-info-line--pag-pendente { color: #B8860B; }
       .ag-pc-info-line--pag-parcial { color: #B8860B; }
       .ag-pc-info-line--pag-pago { color: #14532d; }
-      .ag-pc-info-line--criado { color: var(--text-muted); font-weight: var(--fw-medium); }
+      .ag-pc-info-line--criado { color: var(--text-muted); font-weight: var(--fw-regular); }
+      .ag-pc-pag-label { font-weight: var(--fw-regular); opacity: 0.9; }
+      .ag-pc-pag-valor { font-weight: var(--fw-bold); font-variant-numeric: tabular-nums; margin-left: auto; }
 
       /* Bloco de itens */
       .ag-pc-itens {
