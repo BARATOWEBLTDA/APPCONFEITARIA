@@ -229,27 +229,27 @@ export default function Agenda() {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 function VistaDia({ refDate, setRefDate, diaSel, setDiaSel, countByDay, irParaHoje }: any) {
-  // Gera dias do mês visível
-  const dias = useMemo(() => {
+  // Gera dias do mês visível + preenche o início/fim pra completar semanas
+  const cells = useMemo(() => {
     const ano = refDate.getFullYear();
     const mes = refDate.getMonth();
     const total = new Date(ano, mes + 1, 0).getDate();
-    return Array.from({ length: total }, (_, i) => new Date(ano, mes, i + 1));
+    const primeiroDia = new Date(ano, mes, 1).getDay(); // 0 = domingo
+    const list: Array<{ date: Date | null; iso: string | null }> = [];
+
+    // Espaços vazios antes do dia 1
+    for (let i = 0; i < primeiroDia; i++) list.push({ date: null, iso: null });
+    // Dias do mês
+    for (let d = 1; d <= total; d++) {
+      const date = new Date(ano, mes, d);
+      list.push({ date, iso: isoDate(date) });
+    }
+    // Espaços vazios pra fechar a última semana
+    while (list.length % 7 !== 0) list.push({ date: null, iso: null });
+    return list;
   }, [refDate]);
 
   const hojeISO = isoDate(new Date());
-
-  // Auto-scroll pro dia selecionado ao entrar
-  useEffect(() => {
-    const el = document.querySelector<HTMLElement>(`[data-ag-day="${diaSel}"]`);
-    if (el && el.parentElement) {
-      el.parentElement.scrollTo({
-        left: el.offsetLeft - el.parentElement.clientWidth / 2 + el.offsetWidth / 2,
-        behavior: "smooth",
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [diaSel, refDate]);
 
   return (
     <div className="ag-panel">
@@ -276,22 +276,34 @@ function VistaDia({ refDate, setRefDate, diaSel, setDiaSel, countByDay, irParaHo
         </button>
       </div>
 
-      <div className="ag-strip">
-        {dias.map(d => {
-          const iso = isoDate(d);
-          const cnt = countByDay[iso] || 0;
-          const isHoje = iso === hojeISO;
-          const isSel = iso === diaSel;
+      {/* Header dos dias da semana */}
+      <div className="ag-dow-header">
+        {DOW_SHORT.map((d, i) => (
+          <div key={i} className="ag-dow-lbl">{d}</div>
+        ))}
+      </div>
+
+      {/* Grid multi-linha (mês inteiro sem scroll) */}
+      <div className="ag-mes-grid">
+        {cells.map((c, i) => {
+          if (!c.date || !c.iso) {
+            return <div key={"e" + i} className="ag-mes-empty" />;
+          }
+          const cnt = countByDay[c.iso] || 0;
+          const isHoje = c.iso === hojeISO;
+          const isSel = c.iso === diaSel;
           return (
             <button
-              key={iso}
-              data-ag-day={iso}
-              className={"ag-strip-day" + (isSel ? " ag-strip-day--sel" : "") + (isHoje ? " ag-strip-day--hoje" : "")}
-              onClick={() => setDiaSel(iso)}
+              key={c.iso}
+              className={
+                "ag-mes-day" +
+                (isSel ? " ag-mes-day--sel" : "") +
+                (isHoje ? " ag-mes-day--hoje" : "")
+              }
+              onClick={() => setDiaSel(c.iso!)}
             >
-              <span className="ag-strip-dow">{DOW_SHORT[d.getDay()]}</span>
-              <span className="ag-strip-num">{d.getDate()}</span>
-              <span className={"ag-strip-pill" + (cnt === 0 ? " ag-strip-pill--empty" : "")}>
+              <span className="ag-mes-num">{c.date.getDate()}</span>
+              <span className={"ag-mes-pill" + (cnt === 0 ? " ag-mes-pill--empty" : "")}>
                 {cnt > 0 ? cnt : ""}
               </span>
             </button>
@@ -751,72 +763,94 @@ function AgendaStyles() {
         background: var(--text-title); color: var(--text-inverse); border-color: var(--text-title);
       }
 
-      /* ── Vista DIA — timeline horizontal ── */
-      .ag-strip {
-        display: flex; gap: 6px;
-        overflow-x: auto;
-        overscroll-behavior-x: contain;
-        padding: var(--space-1) 0 var(--space-2);
-        scrollbar-width: none;
-        scroll-snap-type: x proximity;
+      /* ── Vista DIA — mês em grid multi-linha ── */
+      .ag-dow-header {
+        display: grid; grid-template-columns: repeat(7, 1fr);
+        gap: 5px;
+        margin-bottom: 4px;
+        padding: 0 2px;
       }
-      .ag-strip::-webkit-scrollbar { display: none; }
-      .ag-strip-day {
-        flex-shrink: 0;
-        scroll-snap-align: center;
-        width: 52px;
-        padding: 9px 4px 8px;
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        display: flex; flex-direction: column; align-items: center; gap: 3px;
-        cursor: pointer;
-        font-family: inherit;
-        transition: background var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
-      }
-      .ag-strip-day:hover { background: var(--bg-subtle); }
-      .ag-strip-dow {
+      .ag-dow-lbl {
+        text-align: center;
         font-size: 9px;
-        font-weight: var(--fw-bold);
+        font-weight: var(--fw-black);
         color: var(--text-muted);
         text-transform: uppercase;
-        letter-spacing: 0.06em;
-        line-height: 1;
+        letter-spacing: 0.08em;
+        padding: 4px 0;
       }
-      .ag-strip-num {
-        font-size: 17px;
+      .ag-mes-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 5px;
+      }
+      .ag-mes-empty {
+        aspect-ratio: 1;
+      }
+      .ag-mes-day {
+        position: relative;
+        aspect-ratio: 1;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        cursor: pointer;
+        font-family: inherit;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 2px;
+        padding: 4px 2px;
+        transition: background var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
+      }
+      .ag-mes-day:hover { background: var(--bg-subtle); }
+      .ag-mes-num {
+        font-size: 15px;
         font-weight: var(--fw-black);
         color: var(--text-title);
         letter-spacing: -0.02em;
         line-height: 1;
       }
-      .ag-strip-pill {
+      .ag-mes-pill {
         font-size: 9px;
         font-weight: var(--fw-black);
         padding: 1px 6px;
-        background: var(--primary-light);
-        color: var(--primary-dark);
+        background: var(--text-title);
+        color: var(--text-inverse);
         border-radius: 999px;
-        min-height: 14px;
+        line-height: 1.3;
+        min-height: 13px;
         display: inline-flex; align-items: center;
-        line-height: 1;
       }
-      .ag-strip-pill--empty {
+      .ag-mes-pill--empty {
         background: transparent;
         color: transparent;
       }
-      .ag-strip-day--hoje .ag-strip-num { color: var(--primary); }
-      .ag-strip-day--sel {
+
+      /* Hoje = borda rosa + fundo bem sutil + número rosa */
+      .ag-mes-day--hoje {
+        border-color: var(--primary);
+        background: linear-gradient(180deg, var(--primary-light) 0%, var(--bg-card) 60%);
+      }
+      .ag-mes-day--hoje .ag-mes-num { color: var(--primary); }
+
+      /* Selecionado = grafite forte */
+      .ag-mes-day--sel {
         background: var(--text-title);
         border-color: var(--text-title);
       }
-      .ag-strip-day--sel .ag-strip-dow,
-      .ag-strip-day--sel .ag-strip-num { color: var(--text-inverse); }
-      .ag-strip-day--sel .ag-strip-pill {
-        background: rgba(255,255,255,0.2);
-        color: var(--text-inverse);
+      .ag-mes-day--sel .ag-mes-num { color: var(--text-inverse); }
+      .ag-mes-day--sel .ag-mes-pill {
+        background: var(--text-inverse);
+        color: var(--text-title);
       }
-      .ag-strip-day--sel .ag-strip-pill--empty { background: transparent; color: transparent; }
+      .ag-mes-day--sel .ag-mes-pill--empty { background: transparent; color: transparent; }
+
+      /* Hoje E selecionado ao mesmo tempo */
+      .ag-mes-day--sel.ag-mes-day--hoje {
+        background: var(--text-title);
+        border-color: var(--primary);
+        border-width: 2px;
+      }
+      .ag-mes-day--sel.ag-mes-day--hoje .ag-mes-num { color: var(--text-inverse); }
 
       /* ── Vista SEMANA — grade de 7 dias ── */
       .ag-semana-grid {
@@ -860,16 +894,21 @@ function AgendaStyles() {
       .ag-semana-dot {
         width: 4px; height: 4px;
         border-radius: 50%;
-        background: var(--primary);
+        background: var(--text-title);
       }
       .ag-semana-plus {
         font-size: 8px;
         font-weight: var(--fw-black);
-        color: var(--primary);
+        color: var(--text-title);
         margin-left: 2px;
       }
-      .ag-semana-cell--hoje { border-color: var(--primary); }
+      /* Hoje = borda rosa + fundo bem sutil + número rosa */
+      .ag-semana-cell--hoje {
+        border-color: var(--primary);
+        background: linear-gradient(180deg, var(--primary-light) 0%, var(--bg-card) 60%);
+      }
       .ag-semana-cell--hoje .ag-semana-num { color: var(--primary); }
+      /* Selecionado = grafite */
       .ag-semana-cell--sel {
         background: var(--text-title);
         border-color: var(--text-title);
@@ -878,6 +917,13 @@ function AgendaStyles() {
       .ag-semana-cell--sel .ag-semana-num { color: var(--text-inverse); }
       .ag-semana-cell--sel .ag-semana-dot { background: var(--text-inverse); }
       .ag-semana-cell--sel .ag-semana-plus { color: var(--text-inverse); }
+      /* Hoje E selecionado */
+      .ag-semana-cell--sel.ag-semana-cell--hoje {
+        background: var(--text-title);
+        border-color: var(--primary);
+        border-width: 2px;
+      }
+      .ag-semana-cell--sel.ag-semana-cell--hoje .ag-semana-num { color: var(--text-inverse); }
 
       /* ── Painel de PEDIDOS DO DIA ── */
       .ag-pedidos-card {
