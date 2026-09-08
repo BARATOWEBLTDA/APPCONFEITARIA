@@ -175,7 +175,7 @@ export default function Produtos() {
 
   // Bloqueia scroll quando modal aberto
   useEffect(() => {
-    if (modal) {
+    if (modal || previewProduto) {
       const scrollY = window.scrollY;
       document.body.style.position = "fixed";
       document.body.style.top = `-${scrollY}px`;
@@ -196,7 +196,7 @@ export default function Produtos() {
         window.scrollTo(0, y ? -parseInt(y, 10) : 0);
       };
     }
-  }, [modal]);
+  }, [modal, previewProduto]);
 
   useEffect(() => {
     const load = async () => {
@@ -1319,8 +1319,9 @@ export default function Produtos() {
 
       {/* ── Modal dedicado da Ficha Técnica (overlay duplo, fica por cima do modal do produto) ── */}
       {modal && fichaModalOpen && (
-        <div className="ficha-modal-overlay">
+        <div className="ficha-modal-overlay" onClick={() => setFichaModalOpen(false)}>
           <div className="ficha-modal" onClick={e => e.stopPropagation()}>
+            <button className="ficha-modal-close-x" onClick={() => setFichaModalOpen(false)} aria-label="Fechar">✕</button>
             {/* Header com imagem do produto + métricas */}
             <div className="ficha-modal-header">
               <div className="ficha-modal-header-inner">
@@ -1470,74 +1471,72 @@ export default function Produtos() {
 
       {/* Preview Modal */}
       {previewProduto && (
-        <div className="prod-modal-overlay" onClick={() => setPreviewProduto(null)} style={{ background: "rgba(0,0,0,0.5)", alignItems: "flex-end", justifyContent: "center" }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "var(--bg-card)", borderRadius: "var(--radius-lg) var(--radius-lg) 0 0", width: "100%", maxWidth: "480px", maxHeight: "85vh", overflow: "auto", animation: "slideUp 0.25s ease-out" }}>
+        <div className="prod-preview-overlay" onClick={() => setPreviewProduto(null)}>
+          <div className="prod-preview-modal" onClick={e => e.stopPropagation()}>
+            <button className="prod-preview-close" onClick={() => setPreviewProduto(null)} aria-label="Fechar">✕</button>
+
+            {/* Imagem do produto (hero) */}
             {previewProduto.imagem_url ? (
-              <div style={{ width: "100%", aspectRatio: "16/10", overflow: "hidden", borderRadius: "var(--radius-lg) var(--radius-lg) 0 0" }}>
-                <img src={previewProduto.imagem_url.split(",")[0]} alt={previewProduto.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div className="prod-preview-img">
+                <img src={previewProduto.imagem_url.split(",")[0]} alt={previewProduto.nome} />
               </div>
             ) : (
-              <div style={{ width: "100%", aspectRatio: "16/10", background: "var(--bg-subtle)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "var(--radius-lg) var(--radius-lg) 0 0", color: "var(--text-muted)", fontSize: "0.85rem" }}>
-                Sem imagem
-              </div>
+              <div className="prod-preview-img prod-preview-img--placeholder">Sem imagem</div>
             )}
-            <div style={{ padding: "1.25rem" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
-                <div>
-                  {previewProduto.categoria && <p style={{ fontSize: "var(--font-caption)", color: "var(--text-muted)", margin: "0 0 2px", fontWeight: "var(--fw-medium)" as any }}>{previewProduto.categoria}</p>}
-                  <h3 style={{ margin: 0, fontSize: "var(--font-section-title)", fontWeight: "var(--fw-bold)" as any, color: "var(--text-title)" }}>{previewProduto.nome}</h3>
+
+            <div className="prod-preview-body">
+              {/* Header: nome + preço */}
+              <div className="prod-preview-head">
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  {previewProduto.categoria && <p className="prod-preview-cat">{previewProduto.categoria}</p>}
+                  <h3 className="prod-preview-nome">{previewProduto.nome}</h3>
                 </div>
-                <div style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                <div className="prod-preview-preco-wrap">
                   {previewProduto.promocao && previewProduto.preco_promocional && previewProduto.preco_promocional > 0 ? (
                     <>
-                      <p style={{ margin: 0, fontSize: "0.75rem", color: "var(--text-muted)", textDecoration: "line-through" }}>R$ {formatPreco(previewProduto.preco_normal)}</p>
-                      <p style={{ margin: 0, fontSize: "var(--font-input)", fontWeight: "var(--fw-bold)" as any, color: "var(--primary)" }}>R$ {formatPreco(previewProduto.preco_promocional)}</p>
+                      <p className="prod-preview-preco-old">R$ {formatPreco(previewProduto.preco_normal)}</p>
+                      <p className="prod-preview-preco">R$ {formatPreco(previewProduto.preco_promocional)}</p>
                     </>
                   ) : (
-                    <p style={{ margin: 0, fontSize: "var(--font-input)", fontWeight: "var(--fw-bold)" as any, color: "var(--primary)" }}>R$ {formatPreco(previewProduto.preco_normal)}</p>
+                    <p className="prod-preview-preco">R$ {formatPreco(previewProduto.preco_normal)}</p>
                   )}
                 </div>
               </div>
 
               {previewProduto.descricao && (
-                <p style={{ margin: "0.75rem 0 0", fontSize: "var(--font-body)", color: "var(--text-secondary)", lineHeight: 1.5 }}>{previewProduto.descricao}</p>
+                <p className="prod-preview-desc">{previewProduto.descricao}</p>
               )}
 
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.75rem" }}>
+              <div className="prod-preview-tags">
                 {previewProduto.forma_venda && (
-                  <span style={{ fontSize: "var(--font-caption)", color: "var(--text-muted)", background: "var(--bg-subtle)", padding: "3px 8px", borderRadius: "var(--radius-sm)" }}>
+                  <span className="prod-preview-tag">
                     {FORMAS_VENDA.find(f => f.value === previewProduto.forma_venda)?.label || previewProduto.forma_venda}
                   </span>
                 )}
-                {!previewProduto.disponivel && (
-                  <span style={{ fontSize: "var(--font-caption)", color: "var(--error)", background: "#fff1f2", padding: "3px 8px", borderRadius: "var(--radius-sm)", fontWeight: 600 }}>Indisponível</span>
-                )}
-                {previewProduto.promocao && (
-                  <span style={{ fontSize: "var(--font-caption)", color: "var(--primary)", background: "var(--primary-light)", padding: "3px 8px", borderRadius: "var(--radius-sm)", fontWeight: 600 }}>Promoção</span>
-                )}
-                {previewProduto.zero_acucar && (
-                  <span style={{ fontSize: "var(--font-caption)", color: "var(--text-muted)", background: "var(--bg-subtle)", padding: "3px 8px", borderRadius: "var(--radius-sm)" }}>Zero açúcar</span>
-                )}
+                {!previewProduto.disponivel && <span className="prod-preview-tag prod-preview-tag--error">Indisponível</span>}
+                {previewProduto.promocao && <span className="prod-preview-tag prod-preview-tag--promo">Promoção</span>}
+                {previewProduto.zero_acucar && <span className="prod-preview-tag">Zero açúcar</span>}
               </div>
 
               {previewProduto.created_at && (
-                <p style={{ margin: "0.75rem 0 0", fontSize: "var(--font-caption)", color: "var(--text-muted)" }}>
+                <p className="prod-preview-created">
                   Cadastrado em {new Date(previewProduto.created_at).toLocaleDateString("pt-BR")}
                 </p>
               )}
 
-              <div style={{ display: "flex", gap: "0.5rem", marginTop: "1.25rem" }}>
+              <div className="prod-preview-actions">
                 <button
+                  className="prod-preview-btn-editar"
                   onClick={() => { setPreviewProduto(null); openEditar(previewProduto); }}
-                  style={{ flex: 1, padding: "0.7rem", background: "var(--primary)", color: "var(--text-inverse)", border: "none", borderRadius: "var(--radius-md)", fontFamily: "var(--font-base)", fontSize: "var(--font-button)", fontWeight: "var(--fw-bold)" as any, cursor: "pointer" }}
                 >
-                  Editar
+                  Editar produto
                 </button>
                 <button
+                  className="prod-preview-btn-excluir"
                   onClick={() => { setPreviewProduto(null); setDeleteConfirm(previewProduto.id!); }}
-                  style={{ padding: "0.7rem 1rem", background: "#fff1f2", color: "var(--error)", border: "none", borderRadius: "var(--radius-md)", fontFamily: "var(--font-base)", fontSize: "var(--font-button)", fontWeight: "var(--fw-semibold)" as any, cursor: "pointer" }}
+                  aria-label="Excluir"
                 >
-                  Excluir
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
                 </button>
               </div>
             </div>
@@ -1654,6 +1653,185 @@ export default function Produtos() {
         .prod-card-actions { display:flex; gap:0.4rem; padding:0.5rem 0.75rem; border-top:1px solid var(--border); }
         .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle); border:none; border-radius: var(--radius-sm); font-family: var(--font-base); font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-primary); cursor:pointer; }
         .prod-card-btn-del { padding:0.4rem 0.6rem; background:#fff1f2; border:none; border-radius: var(--radius-sm); color:var(--error); cursor:pointer; display:flex; align-items:center; }
+        /* ── Modal de Preview do Produto (abre ao clicar no card) ── */
+        .prod-preview-overlay {
+          position: fixed; inset: 0; z-index: 500;
+          background: rgba(45, 31, 38, 0.55);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          display: flex; flex-direction: column;
+          justify-content: flex-end;
+          animation: prodOverlayIn 0.2s ease;
+        }
+        .prod-preview-modal {
+          background: var(--bg-card);
+          width: 100%;
+          max-height: 92vh;
+          display: flex; flex-direction: column;
+          border-radius: 20px 20px 0 0;
+          overflow: hidden;
+          box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
+          animation: prodModalSlideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+          position: relative;
+        }
+        .prod-preview-modal::before {
+          content: '';
+          display: block;
+          width: 36px; height: 4px;
+          border-radius: 2px;
+          background: rgba(255, 255, 255, 0.6);
+          margin: 10px auto 0;
+          flex-shrink: 0;
+          position: absolute; top: 0; left: 50%;
+          transform: translateX(-50%);
+          z-index: 5;
+        }
+        @media (min-width: 720px) {
+          .prod-preview-overlay { justify-content: center; align-items: center; padding: 24px; }
+          .prod-preview-modal {
+            max-width: 520px;
+            max-height: 88vh;
+            border-radius: 20px;
+            animation: prodModalFadeIn 0.22s ease;
+          }
+          .prod-preview-modal::before { display: none; }
+        }
+        .prod-preview-close {
+          position: absolute; top: 12px; right: 14px; z-index: 6;
+          width: 34px; height: 34px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.92);
+          backdrop-filter: blur(6px);
+          border: 1px solid var(--border);
+          color: var(--text-secondary);
+          font-family: inherit;
+          font-size: 16px; font-weight: 700;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          transition: background var(--dur-fast), color var(--dur-fast);
+        }
+        .prod-preview-close:hover { background: var(--text-title); color: #fff; border-color: var(--text-title); }
+        .prod-preview-img {
+          width: 100%;
+          aspect-ratio: 16/10;
+          overflow: hidden;
+          background: var(--bg-subtle);
+          flex-shrink: 0;
+        }
+        .prod-preview-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .prod-preview-img--placeholder {
+          display: flex; align-items: center; justify-content: center;
+          color: var(--text-muted);
+          font-family: inherit;
+          font-size: var(--font-helper);
+        }
+        .prod-preview-body {
+          padding: var(--space-4);
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior: contain;
+          flex: 1;
+        }
+        .prod-preview-head {
+          display: flex; align-items: flex-start; justify-content: space-between;
+          gap: var(--space-3);
+        }
+        .prod-preview-cat {
+          margin: 0 0 3px;
+          font-size: var(--font-caption);
+          color: var(--text-muted);
+          font-weight: var(--fw-medium);
+          font-family: inherit;
+        }
+        .prod-preview-nome {
+          margin: 0;
+          font-size: var(--font-section-title);
+          font-weight: var(--fw-bold);
+          color: var(--text-title);
+          font-family: inherit;
+          line-height: var(--lh-tight);
+          letter-spacing: -0.01em;
+        }
+        .prod-preview-preco-wrap {
+          text-align: right;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .prod-preview-preco {
+          margin: 0;
+          font-size: var(--font-input);
+          font-weight: var(--fw-black);
+          color: var(--primary);
+          font-family: inherit;
+          letter-spacing: -0.01em;
+        }
+        .prod-preview-preco-old {
+          margin: 0 0 2px;
+          font-size: 12px;
+          color: var(--text-muted);
+          text-decoration: line-through;
+          font-family: inherit;
+        }
+        .prod-preview-desc {
+          margin: var(--space-3) 0 0;
+          font-size: var(--font-body);
+          color: var(--text-secondary);
+          line-height: 1.5;
+          font-family: inherit;
+        }
+        .prod-preview-tags {
+          display: flex; flex-wrap: wrap;
+          gap: var(--space-2);
+          margin-top: var(--space-3);
+        }
+        .prod-preview-tag {
+          font-size: var(--font-caption);
+          color: var(--text-secondary);
+          background: var(--bg-subtle);
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-family: inherit;
+          font-weight: var(--fw-medium);
+        }
+        .prod-preview-tag--error { color: var(--error); background: #fee2e2; font-weight: var(--fw-semibold); }
+        .prod-preview-tag--promo { color: var(--primary); background: var(--primary-light); font-weight: var(--fw-semibold); }
+        .prod-preview-created {
+          margin: var(--space-3) 0 0;
+          font-size: var(--font-caption);
+          color: var(--text-muted);
+          font-family: inherit;
+        }
+        .prod-preview-actions {
+          display: flex; gap: var(--space-2);
+          margin-top: var(--space-4);
+        }
+        .prod-preview-btn-editar {
+          flex: 1;
+          padding: 12px;
+          background: var(--text-title);
+          color: #fff;
+          border: none;
+          border-radius: var(--radius-md);
+          font-family: inherit;
+          font-size: var(--font-button);
+          font-weight: var(--fw-bold);
+          cursor: pointer;
+          transition: opacity 0.15s;
+        }
+        .prod-preview-btn-editar:hover { opacity: 0.9; }
+        .prod-preview-btn-excluir {
+          width: 44px;
+          background: #fff1f2;
+          color: var(--error);
+          border: none;
+          border-radius: var(--radius-md);
+          font-family: inherit;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          transition: background 0.15s;
+        }
+        .prod-preview-btn-excluir:hover { background: #fee2e2; }
+
         /* ── Modal de Produto ── */
         .prod-modal-overlay {
           position: fixed; inset: 0; z-index: 500;
@@ -2190,18 +2368,68 @@ export default function Produtos() {
         /* ── Ficha técnica em TELA CHEIA (100% via design tokens) ── */
         .ficha-modal-overlay {
           position: fixed; inset: 0; z-index: 1100;
-          background: var(--bg-card);
-          display: flex; flex-direction: column;
+          background: rgba(45, 31, 38, 0.55);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
           animation: fichaFadeIn var(--dur-normal) var(--ease-out);
         }
         @keyframes fichaFadeIn { from { opacity: 0; } to { opacity: 1; } }
         .ficha-modal {
-          width: 100%; height: 100%;
+          width: 100%;
+          max-height: 92vh;
           background: var(--bg-card);
+          border-radius: 20px 20px 0 0;
           display: flex; flex-direction: column;
-          animation: fichaSlideIn var(--dur-normal) var(--ease-in-out);
+          overflow: hidden;
+          box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
+          animation: fichaSlideIn 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+          position: relative;
         }
-        @keyframes fichaSlideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fichaSlideIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .ficha-modal::before {
+          content: '';
+          display: block;
+          width: 36px; height: 4px;
+          border-radius: 2px;
+          background: var(--border);
+          margin: 10px auto 0;
+          flex-shrink: 0;
+        }
+        .ficha-modal-close-x {
+          position: absolute;
+          top: 12px; right: 14px;
+          z-index: 5;
+          width: 34px; height: 34px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.92);
+          backdrop-filter: blur(6px);
+          border: 1px solid var(--border);
+          color: var(--text-secondary);
+          font-size: 16px;
+          font-weight: 700;
+          font-family: inherit;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          transition: background var(--dur-fast), color var(--dur-fast);
+        }
+        .ficha-modal-close-x:hover { background: var(--text-title); color: #fff; border-color: var(--text-title); }
+        @media (min-width: 720px) {
+          .ficha-modal-overlay { justify-content: center; align-items: center; padding: 24px; }
+          .ficha-modal {
+            max-width: 760px;
+            max-height: 88vh;
+            border-radius: 20px;
+            animation: fichaFadeScale 0.22s ease;
+          }
+          .ficha-modal::before { display: none; }
+          @keyframes fichaFadeScale {
+            from { opacity: 0; transform: scale(0.96); }
+            to   { opacity: 1; transform: scale(1); }
+          }
+        }
 
         /* Header com imagem grande do produto */
         .ficha-modal-header {
