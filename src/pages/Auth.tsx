@@ -372,6 +372,62 @@ export default function Auth() {
       </div>
       ) : (
       <div className="auth-card">
+        {/* ─────────────────────────────────────────────────────────
+            HERO: Preview do app + Social proof integrado
+            TODO: Quando tiver os prints reais do app, substitua os
+            3 <div className="cad-phone"> pelas <img> reais.
+            Sugestão de tamanhos: 260x420px (proporção celular).
+            Salve em /public/screenshots/ como tela1.png, tela2.png, tela3.png
+            E troque cada .cad-phone-mock por:
+            <img src="/screenshots/telaN.png" alt="..." className="cad-phone-img" />
+        ───────────────────────────────────────────────────────── */}
+        <div className="cad-hero">
+          <div className="cad-hero-orb cad-hero-orb--a" />
+          <div className="cad-hero-orb cad-hero-orb--b" />
+          <div className="cad-phones">
+            <div className="cad-phone cad-phone--l">
+              <div className="cad-phone-mock">
+                <div className="cad-phone-header" />
+                <div className="cad-phone-line cad-phone-line--pink" />
+                <div className="cad-phone-line" />
+                <div className="cad-phone-line cad-phone-line--green" />
+                <div className="cad-phone-line cad-phone-line--short" />
+                <div className="cad-phone-line cad-phone-line--orange" />
+                <div className="cad-phone-line" />
+              </div>
+            </div>
+            <div className="cad-phone cad-phone--c">
+              <div className="cad-phone-mock">
+                <div className="cad-phone-header" />
+                <div className="cad-phone-line cad-phone-line--pink" />
+                <div className="cad-phone-line" />
+                <div className="cad-phone-line cad-phone-line--short" />
+                <div className="cad-phone-line cad-phone-line--green" />
+                <div className="cad-phone-line" />
+                <div className="cad-phone-line cad-phone-line--orange cad-phone-line--short" />
+              </div>
+            </div>
+            <div className="cad-phone cad-phone--r">
+              <div className="cad-phone-mock">
+                <div className="cad-phone-header" />
+                <div className="cad-phone-line cad-phone-line--orange" />
+                <div className="cad-phone-line" />
+                <div className="cad-phone-line cad-phone-line--pink" />
+                <div className="cad-phone-line cad-phone-line--green cad-phone-line--short" />
+                <div className="cad-phone-line" />
+              </div>
+            </div>
+          </div>
+          <div className="cad-proof">
+            <div className="cad-proof-avatars">
+              <div className="cad-proof-av" style={{ background: "#F97316" }}>M</div>
+              <div className="cad-proof-av" style={{ background: "#22c55e" }}>A</div>
+              <div className="cad-proof-av" style={{ background: "#7F77DD" }}>J</div>
+            </div>
+            <span className="cad-proof-txt"><b>+500 confeitarias</b> já usam</span>
+          </div>
+        </div>
+
         <div className="cad-header">
           <h1 className="cad-title">Crie sua conta grátis</h1>
           <p className="cad-subtitle">Gerencie sua confeitaria de forma profissional</p>
@@ -771,6 +827,80 @@ export default function Auth() {
         .cad-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
         /* ── Cabeçalho do cadastro ────────────────────────── */
+        /* ── Hero do cadastro (preview + social proof) ─── */
+        .cad-hero {
+          position: relative;
+          background: linear-gradient(135deg, #FF9AC1 0%, #E85A8C 60%, #C33A6E 100%);
+          border-radius: var(--radius-md);
+          padding: 1.25rem 1rem 0.9rem;
+          margin-bottom: 1.25rem;
+          overflow: hidden;
+        }
+        .cad-hero-orb {
+          position: absolute; border-radius: 50%;
+          filter: blur(28px); -webkit-filter: blur(28px);
+          opacity: 0.55; pointer-events: none;
+          will-change: transform;
+        }
+        .cad-hero-orb--a { width: 120px; height: 120px; background: #FFD1E1; top: -32px; left: -20px; }
+        .cad-hero-orb--b { width: 90px; height: 90px; background: #FFCBDD; bottom: -25px; right: 15px; }
+
+        .cad-phones {
+          display: flex; justify-content: center; gap: 8px;
+          position: relative; z-index: 2;
+        }
+        .cad-phone {
+          width: 62px; height: 100px;
+          background: #fff;
+          border-radius: 10px;
+          padding: 5px;
+          box-shadow: 0 6px 16px rgba(0,0,0,0.22);
+          border: 2px solid #2D1F26;
+        }
+        .cad-phone--l { transform: rotate(-7deg) translateY(4px); }
+        .cad-phone--r { transform: rotate(7deg) translateY(4px); }
+        .cad-phone-mock { display: flex; flex-direction: column; gap: 3px; height: 100%; }
+        .cad-phone-header {
+          height: 8px; background: #E85A8C; border-radius: 3px;
+          margin-bottom: 3px;
+        }
+        .cad-phone-line {
+          height: 5px; background: #F0EBED; border-radius: 2px;
+        }
+        .cad-phone-line--pink { background: #E85A8C; width: 60%; }
+        .cad-phone-line--green { background: #22c55e; width: 45%; }
+        .cad-phone-line--orange { background: #EF9F27; width: 55%; }
+        .cad-phone-line--short { width: 40%; }
+        /* Se você trocar por <img>, use estas classes: */
+        .cad-phone-img {
+          width: 100%; height: 100%;
+          object-fit: cover;
+          border-radius: 6px;
+        }
+
+        .cad-proof {
+          display: flex; align-items: center; justify-content: center;
+          gap: 8px; margin-top: 12px;
+          position: relative; z-index: 2;
+        }
+        .cad-proof-avatars { display: flex; }
+        .cad-proof-av {
+          width: 24px; height: 24px; border-radius: 50%;
+          border: 2px solid rgba(255,255,255,0.9);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 10px; font-weight: var(--fw-black); color: #fff;
+          margin-left: -7px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        .cad-proof-av:first-child { margin-left: 0; }
+        .cad-proof-txt {
+          color: #fff; font-size: var(--text-xs);
+          font-weight: var(--fw-semibold);
+          text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+          letter-spacing: 0.01em;
+        }
+        .cad-proof-txt b { font-weight: var(--fw-black); }
+
         .cad-header { text-align: center; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem; }
         .cad-title { font-size: 1.5rem; font-weight: 700; color: var(--text-title); margin: 0; letter-spacing: -0.01em; line-height: 1.2; }
         .cad-subtitle { font-size: 0.9rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
