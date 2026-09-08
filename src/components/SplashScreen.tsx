@@ -190,13 +190,34 @@ export function SplashScreen({ onDone: _onDone }: { onDone?: () => void }) {
           to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ── Ajustes desktop (telas grandes) ── */
-        @media (min-width: 768px) {
+        /* ── Ajustes tablet (portrait/landscape médio) ── */
+        @media (min-width: 640px) and (max-width: 1023px) {
+          .splash-orb--1 { width: 400px; height: 400px; }
+          .splash-orb--2 { width: 360px; height: 360px; }
+          .splash-orb--3 { width: 260px; height: 260px; }
+          .splash-glow { width: 440px; height: 440px; }
+          .splash-content { gap: 36px; }
+          .splash-logo { width: clamp(150px, 22vw, 190px); }
+          .splash-tag { font-size: 12px; bottom: 3.2rem; }
+        }
+
+        /* ── Ajustes desktop (telas grandes ≥1024px) ── */
+        @media (min-width: 1024px) {
           .splash-orb--1 { width: 480px; height: 480px; }
           .splash-orb--2 { width: 420px; height: 420px; }
           .splash-orb--3 { width: 300px; height: 300px; }
           .splash-glow { width: 520px; height: 520px; }
           .splash-content { gap: 40px; }
+          .splash-logo { width: clamp(170px, 12vw, 210px); }
+          .splash-tag { font-size: 13px; bottom: 3.5rem; }
+        }
+
+        /* ── Landscape em telas curtas (celular deitado) ── */
+        @media (max-height: 500px) and (orientation: landscape) {
+          .splash-content { gap: 20px; }
+          .splash-logo { width: 90px; }
+          .splash-tag { bottom: 1rem; font-size: 10px; }
+          .splash-orb--1, .splash-orb--2, .splash-orb--3 { transform: scale(0.6); }
         }
 
         /* ── Respeitar preferência de menos animação ── */
