@@ -824,10 +824,12 @@ function AgendaStyles() {
       /* Carrossel de dias */
       .ag-strip-wrap {
         position: relative;
+        margin: 0 calc(var(--space-4) * -1);
       }
       .ag-strip-nav {
         display: flex; justify-content: flex-end;
         margin-bottom: 4px;
+        padding: 0 var(--space-4);
       }
       .ag-strip-hoje {
         background: var(--bg-subtle);
@@ -848,7 +850,7 @@ function AgendaStyles() {
         display: flex; gap: 8px;
         overflow-x: auto;
         overscroll-behavior-x: contain;
-        padding: 6px 2px 10px;
+        padding: 6px var(--space-4) 10px;
         scrollbar-width: none;
         scroll-snap-type: x proximity;
       }
