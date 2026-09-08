@@ -81,8 +81,14 @@ export function SplashScreen({ onDone: _onDone }: { onDone?: () => void }) {
           position: absolute;
           border-radius: 50%;
           filter: blur(40px);
+          -webkit-filter: blur(40px);
           opacity: 0.55;
           pointer-events: none;
+          will-change: transform;
+          transform: translate3d(0, 0, 0);
+          -webkit-transform: translate3d(0, 0, 0);
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
         }
         .splash-orb--1 {
           width: 340px; height: 340px;
@@ -148,7 +154,11 @@ export function SplashScreen({ onDone: _onDone }: { onDone?: () => void }) {
           height: auto;
           object-fit: contain;
           filter: drop-shadow(0 12px 32px rgba(60, 15, 40, 0.35)) drop-shadow(0 0 20px rgba(255, 220, 235, 0.4));
+          -webkit-filter: drop-shadow(0 12px 32px rgba(60, 15, 40, 0.35)) drop-shadow(0 0 20px rgba(255, 220, 235, 0.4));
           animation: splashLogoPulse 1.8s ease-in-out infinite;
+          will-change: transform;
+          transform: translateZ(0);
+          -webkit-transform: translateZ(0);
         }
         @keyframes splashLogoPulse {
           0%, 100% { transform: scale(1); }
@@ -174,8 +184,9 @@ export function SplashScreen({ onDone: _onDone }: { onDone?: () => void }) {
 
         /* ── Tagline ── */
         .splash-tag {
-          position: absolute; bottom: 2.8rem;
-          font-family: 'Geist', -apple-system, sans-serif;
+          position: absolute;
+          bottom: calc(2.8rem + env(safe-area-inset-bottom, 0px));
+          font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
           font-size: clamp(10px, 2.6vw, 12px);
           font-weight: 500;
           color: rgba(255, 255, 255, 0.82);
@@ -184,6 +195,7 @@ export function SplashScreen({ onDone: _onDone }: { onDone?: () => void }) {
           text-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
           z-index: 2;
           animation: splashTagIn 1.2s ease 0.4s both;
+          -webkit-tap-highlight-color: transparent;
         }
         @keyframes splashTagIn {
           from { opacity: 0; transform: translateY(10px); }
