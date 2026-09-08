@@ -877,7 +877,7 @@ function AgendaStyles() {
   return (
     <style>{`
       .ag-root {
-        padding: 0 0 6rem;
+        padding: var(--space-4) var(--space-4) 6rem;
         display: flex; flex-direction: column;
         gap: var(--space-3);
         font-family: var(--font-base);
@@ -901,7 +901,7 @@ function AgendaStyles() {
       /* ── Toggle ── */
       .ag-toggle {
         display: flex;
-        background: var(--bg-subtle);
+        background: #F0EBED;
         padding: 3px;
         border-radius: var(--radius-sm);
         gap: 2px;
@@ -1348,11 +1348,11 @@ function AgendaStyles() {
         margin-bottom: var(--space-3);
         transition: background var(--dur-fast), border-color var(--dur-fast);
       }
-      .ag-filtro-card:hover { background: var(--bg-subtle); border-color: var(--primary); }
+      .ag-filtro-card:hover { background: #F5F1F3; border-color: #D8CDD1; }
       .ag-filtro-card-icon {
         width: 32px; height: 32px;
         border-radius: 8px;
-        background: var(--bg-subtle);
+        background: #F0EBED;
         color: var(--text-title);
         display: flex; align-items: center; justify-content: center;
         flex-shrink: 0;
@@ -1434,8 +1434,8 @@ function AgendaStyles() {
         transition: background var(--dur-fast);
         font-family: inherit;
       }
-      .ag-filtro-opcao:hover { background: var(--bg-subtle); }
-      .ag-filtro-opcao--on { background: var(--bg-subtle); }
+      .ag-filtro-opcao:hover { background: #F5F1F3; }
+      .ag-filtro-opcao--on { background: #F5F1F3; }
       .ag-filtro-opcao-check {
         width: 20px; height: 20px;
         accent-color: var(--primary);
@@ -1464,18 +1464,16 @@ function AgendaStyles() {
         font-variant-numeric: tabular-nums;
       }
       .ag-filtro-drawer-acoes {
-        display: flex; gap: 8px;
+        display: flex; align-items: center; gap: var(--space-2);
         margin-top: var(--space-4);
-        padding-top: 12px;
+        padding-top: var(--space-3);
         border-top: 1px solid var(--border);
       }
       .ag-filtro-drawer-btn-limpar,
       .ag-filtro-drawer-btn-todos,
       .ag-filtro-drawer-btn-aplicar {
-        padding: 12px 16px;
-        border-radius: var(--radius-sm);
         font-family: inherit;
-        font-size: var(--text-sm);
+        font-size: var(--text-xs);
         font-weight: var(--fw-bold);
         cursor: pointer;
         border: none;
@@ -1484,20 +1482,25 @@ function AgendaStyles() {
       .ag-filtro-drawer-btn-limpar {
         background: transparent;
         color: var(--text-muted);
+        padding: 8px 4px;
         text-decoration: underline;
       }
       .ag-filtro-drawer-btn-todos {
-        background: var(--bg-subtle);
-        color: var(--text-title);
-        flex: 1;
+        background: transparent;
+        color: var(--text-secondary);
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
       }
+      .ag-filtro-drawer-btn-todos:hover { background: #F5F1F3; }
       .ag-filtro-drawer-btn-aplicar {
         background: var(--text-title);
         color: var(--text-inverse);
-        flex: 1;
+        padding: 10px 20px;
+        border-radius: 8px;
+        margin-left: auto;
       }
-      .ag-filtro-drawer-btn-aplicar:hover,
-      .ag-filtro-drawer-btn-todos:hover { opacity: 0.9; }
+      .ag-filtro-drawer-btn-aplicar:hover { opacity: 0.9; }
 
       /* Label da seção "Pedidos pendentes" */
       .ag-pedidos-secao-lbl {
