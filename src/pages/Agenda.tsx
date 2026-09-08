@@ -744,7 +744,7 @@ function PedidoCard({ p, onEditar, onExcluir }: any) {
   const subtotal = Number(p.valor_produtos) || 0;
   const desconto = Number(p.desconto) || 0;
   const total = Number(p.valor_total) || 0;
-  const adiantamento = Number(p.valor_pago) || Number(p.entrada) || 0;
+  const adiantamento = Number(p.valor_sinal) || Number(p.valor_recebido) || Number(p.valor_pago) || Number(p.entrada) || 0;
   const restante = total - adiantamento;
 
   const pagamentoStatus = p.status_pagamento || "pendente";
