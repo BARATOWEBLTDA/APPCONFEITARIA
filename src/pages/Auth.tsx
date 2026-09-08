@@ -374,48 +374,26 @@ export default function Auth() {
       <div className="auth-card">
         {/* ─────────────────────────────────────────────────────────
             HERO: Preview do app + Social proof integrado
-            TODO: Quando tiver os prints reais do app, substitua os
-            3 <div className="cad-phone"> pelas <img> reais.
-            Sugestão de tamanhos: 260x420px (proporção celular).
-            Salve em /public/screenshots/ como tela1.png, tela2.png, tela3.png
-            E troque cada .cad-phone-mock por:
-            <img src="/screenshots/telaN.png" alt="..." className="cad-phone-img" />
+            TODO: Quando tiver o print real do app, substitua o
+            <div className="cad-phone-mock"> pela <img> real.
+            Sugestão de tamanho: 280x420px (proporção celular).
+            Salve em /public/screenshots/ como tela1.png
+            E troque o .cad-phone-mock inteiro por:
+            <img src="/screenshots/tela1.png" alt="Doonly" className="cad-phone-img" />
         ───────────────────────────────────────────────────────── */}
         <div className="cad-hero">
           <div className="cad-hero-orb cad-hero-orb--a" />
           <div className="cad-hero-orb cad-hero-orb--b" />
-          <div className="cad-phones">
-            <div className="cad-phone cad-phone--l">
-              <div className="cad-phone-mock">
-                <div className="cad-phone-header" />
-                <div className="cad-phone-line cad-phone-line--pink" />
-                <div className="cad-phone-line" />
-                <div className="cad-phone-line cad-phone-line--green" />
-                <div className="cad-phone-line cad-phone-line--short" />
-                <div className="cad-phone-line cad-phone-line--orange" />
-                <div className="cad-phone-line" />
-              </div>
-            </div>
-            <div className="cad-phone cad-phone--c">
-              <div className="cad-phone-mock">
-                <div className="cad-phone-header" />
-                <div className="cad-phone-line cad-phone-line--pink" />
-                <div className="cad-phone-line" />
-                <div className="cad-phone-line cad-phone-line--short" />
-                <div className="cad-phone-line cad-phone-line--green" />
-                <div className="cad-phone-line" />
-                <div className="cad-phone-line cad-phone-line--orange cad-phone-line--short" />
-              </div>
-            </div>
-            <div className="cad-phone cad-phone--r">
-              <div className="cad-phone-mock">
-                <div className="cad-phone-header" />
-                <div className="cad-phone-line cad-phone-line--orange" />
-                <div className="cad-phone-line" />
-                <div className="cad-phone-line cad-phone-line--pink" />
-                <div className="cad-phone-line cad-phone-line--green cad-phone-line--short" />
-                <div className="cad-phone-line" />
-              </div>
+          <div className="cad-phone">
+            <div className="cad-phone-mock">
+              <div className="cad-phone-header" />
+              <div className="cad-phone-line cad-phone-line--pink" />
+              <div className="cad-phone-line" />
+              <div className="cad-phone-line cad-phone-line--green" />
+              <div className="cad-phone-line cad-phone-line--short" />
+              <div className="cad-phone-line cad-phone-line--orange" />
+              <div className="cad-phone-line" />
+              <div className="cad-phone-line cad-phone-line--green cad-phone-line--short" />
             </div>
           </div>
           <div className="cad-proof">
@@ -846,20 +824,20 @@ export default function Auth() {
         .cad-hero-orb--b { width: 90px; height: 90px; background: #FFCBDD; bottom: -25px; right: 15px; }
 
         .cad-phones {
-          display: flex; justify-content: center; gap: 8px;
+          display: flex; justify-content: center;
           position: relative; z-index: 2;
         }
         .cad-phone {
-          width: 62px; height: 100px;
+          width: 96px; height: 140px;
           background: #fff;
-          border-radius: 10px;
-          padding: 5px;
-          box-shadow: 0 6px 16px rgba(0,0,0,0.22);
+          border-radius: 12px;
+          padding: 6px;
+          box-shadow: 0 10px 24px rgba(0,0,0,0.28);
           border: 2px solid #2D1F26;
+          margin: 0 auto;
+          position: relative; z-index: 2;
         }
-        .cad-phone--l { transform: rotate(-7deg) translateY(4px); }
-        .cad-phone--r { transform: rotate(7deg) translateY(4px); }
-        .cad-phone-mock { display: flex; flex-direction: column; gap: 3px; height: 100%; }
+        .cad-phone-mock { display: flex; flex-direction: column; gap: 4px; height: 100%; }
         .cad-phone-header {
           height: 8px; background: #E85A8C; border-radius: 3px;
           margin-bottom: 3px;
