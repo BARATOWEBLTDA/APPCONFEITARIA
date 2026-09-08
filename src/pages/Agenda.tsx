@@ -49,6 +49,19 @@ const parseISO = (iso: string) => new Date(iso + "T12:00:00");
 const formatMoney = (v: number) =>
   (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+/** "BOLO DE CHOCOLATE" → "Bolo de chocolate" */
+const capitalizePrimeira = (s: string) => {
+  if (!s) return "";
+  const lower = s.toLowerCase().trim();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+};
+
+/** Trunca com "..." mantendo palavra inteira quando possível, respeitando limite */
+const truncar = (s: string, max: number) => {
+  if (!s || s.length <= max) return s;
+  return s.slice(0, max - 1).trimEnd() + "…";
+};
+
 const diffDias = (isoAlvo: string) => {
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
   const alvo = parseISO(isoAlvo); alvo.setHours(0, 0, 0, 0);
@@ -106,7 +119,7 @@ export default function Agenda() {
       setLoading(true);
       // Traz TODOS os pedidos do usuário — não filtra por data (garante que nenhum "some")
       const { data } = await supabase.from("pedidos")
-        .select("*, pedido_itens(nome_produto, quantidade, imagem_url, produtos(imagem_url))")
+        .select("*, pedido_itens(nome_produto, quantidade, valor_unitario, imagem_url, produtos(imagem_url))")
         .eq("user_id", userId)
         .order("data_entrega", { ascending: true, nullsFirst: false })
         .order("horario_entrega", { ascending: true, nullsFirst: false });
@@ -767,18 +780,9 @@ function PedidoCard({ p, onEditar, onExcluir }: any) {
             {p.cliente_nome || "Cliente não informado"}
             {p.numero && <span className="ag-pc-numero"> #{p.numero}</span>}
           </p>
-          <span className="ag-pc-status" style={{ background: st.dot, color: "#fff" }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              {st.group === "concluido" ? (
-                <polyline points="20 6 9 17 4 12"/>
-              ) : st.group === "producao" ? (
-                <circle cx="12" cy="12" r="10"/>
-              ) : (
-                <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>
-              )}
-            </svg>
-            {st.label}
-          </span>
+          {criadoFmt && (
+            <span className="ag-pc-pedido-em">Pedido em {criadoFmt}</span>
+          )}
         </div>
         <div className="ag-pc-actions">
           <div className="ag-pc-menu-wrap" ref={menuRef}>
@@ -832,6 +836,14 @@ function PedidoCard({ p, onEditar, onExcluir }: any) {
 
       {/* Info linhas */}
       <div className="ag-pc-info-lines">
+        <div className="ag-pc-info-line ag-pc-info-line--status">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+          <span className="ag-pc-info-label">Status</span>
+          <span className="ag-pc-status-tag" style={{ background: st.dot, color: "#fff" }}>{st.label}</span>
+        </div>
         {entregaLabel && (
           <div className={"ag-pc-info-line ag-pc-info-line--entrega" + (entregaLabel === "Hoje" ? " ag-pc-info-line--hoje" : "")}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -840,7 +852,7 @@ function PedidoCard({ p, onEditar, onExcluir }: any) {
               <line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
             Entrega {entregaLabel}
-            {p.horario_entrega && ` · ${p.horario_entrega.slice(0, 5)}`}
+            {p.horario_entrega && ` às ${p.horario_entrega.slice(0, 5)}`}
           </div>
         )}
         <div className={"ag-pc-info-line ag-pc-info-line--pag ag-pc-info-line--pag-" + pagamentoStatus}>
@@ -848,31 +860,30 @@ function PedidoCard({ p, onEditar, onExcluir }: any) {
             <rect x="2" y="6" width="20" height="12" rx="2"/>
             <circle cx="12" cy="12" r="2"/>
           </svg>
-          <span className="ag-pc-pag-label">{pagamentoLabelPartes.label}</span>
-          <span className="ag-pc-pag-valor">{pagamentoLabelPartes.valor}</span>
+          {pagamentoStatus === "pago"
+            ? "Pagamento realizado"
+            : pagamentoStatus === "parcial"
+              ? "Pagamento parcial (sinal)"
+              : "Pagamento pendente"}
         </div>
-        {criadoFmt && (
-          <div className="ag-pc-info-line ag-pc-info-line--criado">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10"/>
-              <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            Pedido em: {criadoFmt}
-          </div>
-        )}
       </div>
 
       {/* Bloco de itens + totais */}
       <div className="ag-pc-itens">
-        {p.pedido_itens && p.pedido_itens.length > 0 && p.pedido_itens.map((item: any, idx: number) => (
-          <div key={idx} className="ag-pc-item-linha">
-            <span className="ag-pc-item-nome">
-              <b>{item.quantidade}x</b> {item.nome_produto}
-            </span>
-          </div>
-        ))}
+        {p.pedido_itens && p.pedido_itens.length > 0 && p.pedido_itens.map((item: any, idx: number) => {
+          const nomeFmt = truncar(capitalizePrimeira(item.nome_produto || ""), 20);
+          const subtotalItem = (Number(item.valor_unitario) || 0) * (Number(item.quantidade) || 0);
+          return (
+            <div key={idx} className="ag-pc-item-linha">
+              <span className="ag-pc-item-nome">
+                <b>{item.quantidade}x</b> {nomeFmt}
+              </span>
+              <span className="ag-pc-item-val">{formatMoney(subtotalItem)}</span>
+            </div>
+          );
+        })}
 
-        <div className="ag-pc-item-linha">
+        <div className="ag-pc-item-linha ag-pc-item-linha--subtotal">
           <span className="ag-pc-item-nome">Subtotal</span>
           <span className="ag-pc-item-val">{formatMoney(subtotal || total)}</span>
         </div>
@@ -884,22 +895,24 @@ function PedidoCard({ p, onEditar, onExcluir }: any) {
           </div>
         )}
 
-        <div className="ag-pc-item-linha ag-pc-item-linha--total">
-          <span className="ag-pc-item-nome">Total</span>
-          <span className="ag-pc-item-val">{formatMoney(total)}</span>
-        </div>
-
         {adiantamento > 0 && (
           <>
             <div className="ag-pc-item-linha">
-              <span className="ag-pc-item-nome ag-pc-item-pago">Adiantamento</span>
+              <span className="ag-pc-item-nome ag-pc-item-pago">Sinal</span>
               <span className="ag-pc-item-val ag-pc-item-pago">- {formatMoney(adiantamento)}</span>
             </div>
             <div className="ag-pc-item-linha ag-pc-item-linha--restante">
-              <span className="ag-pc-item-nome">Restante a pagar</span>
+              <span className="ag-pc-item-nome">Falta</span>
               <span className="ag-pc-item-val">{formatMoney(restante)}</span>
             </div>
           </>
+        )}
+
+        {adiantamento === 0 && (
+          <div className="ag-pc-item-linha ag-pc-item-linha--total">
+            <span className="ag-pc-item-nome">Total</span>
+            <span className="ag-pc-item-val">{formatMoney(total)}</span>
+          </div>
         )}
       </div>
     </div>
@@ -1741,6 +1754,39 @@ function AgendaStyles() {
         color: var(--text-muted);
         font-weight: var(--fw-medium);
       }
+      .ag-pc-pedido-em {
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+        font-weight: var(--fw-regular);
+      }
+      .ag-pc-info-label {
+        font-weight: var(--fw-regular);
+        opacity: 0.9;
+      }
+      .ag-pc-status-tag {
+        display: inline-flex; align-items: center;
+        padding: 2px 8px;
+        border-radius: var(--radius-full);
+        font-size: 10px;
+        font-weight: var(--fw-black);
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        margin-left: 4px;
+      }
+      .ag-pc-item-linha--subtotal {
+        padding-top: 8px;
+        margin-top: 4px;
+        border-top: 1px solid var(--border);
+      }
+      .ag-pc-item-nome {
+        color: var(--text-title);
+        font-weight: var(--fw-medium);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex: 1;
+        min-width: 0;
+      }
       .ag-pc-status {
         display: inline-flex; align-items: center; gap: 5px;
         padding: 3px 9px;
@@ -1791,10 +1837,6 @@ function AgendaStyles() {
       .ag-pc-item-linha {
         display: flex; justify-content: space-between; align-items: center;
         font-size: var(--text-sm);
-      }
-      .ag-pc-item-nome {
-        color: var(--text-title);
-        font-weight: var(--fw-medium);
       }
       .ag-pc-item-nome b {
         font-weight: var(--fw-black);
