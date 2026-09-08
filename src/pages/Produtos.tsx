@@ -176,13 +176,26 @@ export default function Produtos() {
   // Bloqueia scroll quando modal aberto
   useEffect(() => {
     if (modal) {
-      document.documentElement.style.overflow = "hidden";
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+      document.body.style.width = "100%";
       document.body.style.overflow = "hidden";
-    } else {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "hidden";
+      return () => {
+        const y = document.body.style.top;
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.left = "";
+        document.body.style.right = "";
+        document.body.style.width = "";
+        document.body.style.overflow = "";
+        document.documentElement.style.overflow = "";
+        window.scrollTo(0, y ? -parseInt(y, 10) : 0);
+      };
     }
-    return () => { document.documentElement.style.overflow = ""; document.body.style.overflow = ""; };
   }, [modal]);
 
   useEffect(() => {
@@ -1641,17 +1654,118 @@ export default function Produtos() {
         .prod-card-actions { display:flex; gap:0.4rem; padding:0.5rem 0.75rem; border-top:1px solid var(--border); }
         .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle); border:none; border-radius: var(--radius-sm); font-family: var(--font-base); font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-primary); cursor:pointer; }
         .prod-card-btn-del { padding:0.4rem 0.6rem; background:#fff1f2; border:none; border-radius: var(--radius-sm); color:var(--error); cursor:pointer; display:flex; align-items:center; }
-        /* ── Modal de Produto (100% via design tokens) ── */
-        .prod-modal-overlay { position: fixed; inset: 0; z-index: 500; background: var(--bg-card); display: flex; flex-direction: column; }
-        .prod-modal { background: var(--bg-card); width: 100%; height: 100%; max-width: none; max-height: none; display: flex; flex-direction: column; border-radius: 0; animation: none; margin: 0; }
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .prod-modal-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5) var(--space-3); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .prod-modal-title { font-size: var(--font-modal-title); font-weight: var(--fw-bold); line-height: var(--lh-tight); color: var(--text-title); margin: 0; }
-        .prod-modal-close { background: var(--bg-subtle); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-secondary); font-size: var(--font-caption); transition: background var(--dur-fast) var(--ease-out); }
-        .prod-modal-back { background: none; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; padding: 0; margin-right: -4px; transition: color 0.15s; }
-        .prod-modal-back:hover { color: var(--text-title); }
-        .prod-modal-body { flex: 1; overflow-y: auto; padding: var(--pad-modal); display: flex; flex-direction: column; gap: var(--gap-section); overscroll-behavior: contain; }
-        .prod-modal-footer { padding: var(--pad-modal); border-top: 1px solid var(--border); display: flex; gap: var(--gap-stack); flex-shrink: 0; }
+        /* ── Modal de Produto ── */
+        .prod-modal-overlay {
+          position: fixed; inset: 0; z-index: 500;
+          background: rgba(45, 31, 38, 0.55);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+          animation: prodOverlayIn 0.2s ease;
+        }
+        @keyframes prodOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+        .prod-modal {
+          background: var(--bg-card);
+          width: 100%;
+          max-height: 92vh;
+          display: flex;
+          flex-direction: column;
+          border-radius: 20px 20px 0 0;
+          animation: prodModalSlideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+          overflow: hidden;
+          box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
+        }
+        @keyframes prodModalSlideUp {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
+        }
+        /* Handle grip no topo (só mobile) */
+        .prod-modal::before {
+          content: '';
+          display: block;
+          width: 36px; height: 4px;
+          border-radius: 2px;
+          background: var(--border);
+          margin: 10px auto 0;
+          flex-shrink: 0;
+        }
+        @media (min-width: 720px) {
+          .prod-modal-overlay { justify-content: center; align-items: center; padding: 24px; }
+          .prod-modal {
+            max-width: 640px;
+            max-height: 88vh;
+            border-radius: 20px;
+            animation: prodModalFadeIn 0.22s ease;
+          }
+          .prod-modal::before { display: none; }
+          @keyframes prodModalFadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to   { opacity: 1; transform: scale(1); }
+          }
+        }
+        .prod-modal-header {
+          display: flex; align-items: center; justify-content: space-between;
+          gap: var(--space-3);
+          padding: var(--space-3) var(--space-4);
+          border-bottom: 1px solid var(--border);
+          flex-shrink: 0;
+        }
+        .prod-modal-title {
+          font-size: var(--font-modal-title);
+          font-weight: var(--fw-bold);
+          line-height: var(--lh-tight);
+          color: var(--text-title);
+          margin: 0;
+          flex: 1;
+          min-width: 0;
+          font-family: inherit;
+        }
+        .prod-modal-close {
+          background: var(--bg-subtle);
+          border: none;
+          border-radius: 50%;
+          width: 34px; height: 34px;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          color: var(--text-secondary);
+          font-size: 18px;
+          font-family: inherit;
+          flex-shrink: 0;
+          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+        }
+        .prod-modal-close:hover { background: var(--border); color: var(--text-title); }
+        .prod-modal-back {
+          background: var(--bg-subtle);
+          border: none;
+          border-radius: 50%;
+          width: 34px; height: 34px;
+          cursor: pointer;
+          color: var(--text-secondary);
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+        }
+        .prod-modal-back:hover { background: var(--border); color: var(--text-title); }
+        .prod-modal-body {
+          flex: 1;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          padding: var(--space-4);
+          display: flex; flex-direction: column;
+          gap: var(--gap-section);
+          overscroll-behavior: contain;
+        }
+        .prod-modal-footer {
+          padding: var(--space-3) var(--space-4);
+          padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
+          border-top: 1px solid var(--border);
+          display: flex;
+          gap: var(--gap-stack);
+          flex-shrink: 0;
+          background: var(--bg-card);
+        }
         .prod-section { display: flex; flex-direction: column; gap: var(--gap-stack); }
         .prod-section-label { font-size: var(--font-section-label); font-weight: var(--fw-bold); line-height: var(--lh-normal); letter-spacing: var(--ls-wide); text-transform: uppercase; color: var(--primary); margin: 0; }
         .prod-img-upload { width: 120px; height: 120px; border-radius: var(--radius-lg); border: 2px dashed var(--primary-light); background: var(--primary-light); cursor: pointer; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: border-color var(--dur-fast) var(--ease-out); }
