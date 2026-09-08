@@ -918,7 +918,7 @@ function AgendaStyles() {
         font-size: var(--font-modal-title);
         font-weight: var(--fw-black);
         color: var(--text-title);
-        letter-spacing: -0.01em;
+        letter-spacing: var(--ls-tight);
         text-transform: capitalize;
       }
       .ag-hoje-pedidos {
@@ -927,7 +927,7 @@ function AgendaStyles() {
         margin-top: 2px;
       }
       .ag-hoje-valor {
-        font-size: 22px;
+        font-size: var(--text-xl);
         font-weight: var(--fw-black);
         color: var(--text-title);
         letter-spacing: -0.02em;
@@ -942,7 +942,7 @@ function AgendaStyles() {
         color: var(--text-secondary);
       }
       .ag-hoje-prog-pct {
-        font-size: 11px;
+        font-size: var(--text-xs);
         font-weight: var(--fw-black);
         color: #B8860B;
         background: #FFF3D1;
@@ -952,13 +952,13 @@ function AgendaStyles() {
       .ag-hoje-bar {
         height: 8px;
         background: var(--border);
-        border-radius: 999px;
+        border-radius: var(--radius-full);
         overflow: hidden;
       }
       .ag-hoje-bar-fill {
         height: 100%;
         background: linear-gradient(90deg, #22C55E, #16A34A);
-        border-radius: 999px;
+        border-radius: var(--radius-full);
         transition: width var(--dur-normal) var(--ease-out);
       }
       .ag-hoje-stats {
@@ -990,7 +990,7 @@ function AgendaStyles() {
         background: var(--bg-subtle);
         border: 1px solid var(--border);
         color: var(--text-secondary);
-        border-radius: 999px;
+        border-radius: var(--radius-full);
         padding: 4px 12px;
         font-family: inherit;
         font-size: var(--font-caption);
@@ -1015,7 +1015,7 @@ function AgendaStyles() {
         scroll-snap-align: center;
         background: var(--bg-card);
         border: 2px solid transparent;
-        border-radius: 14px;
+        border-radius: var(--radius-md);
         padding: 10px 14px;
         min-width: 76px;
         display: flex; flex-direction: column; align-items: center; gap: 2px;
@@ -1027,20 +1027,20 @@ function AgendaStyles() {
       }
       .ag-day-card:hover { transform: translateY(-1px); }
       .ag-day-mes {
-        font-size: 11px;
+        font-size: var(--text-xs);
         color: var(--text-secondary);
         font-weight: var(--fw-semibold);
         letter-spacing: 0.02em;
       }
       .ag-day-num {
-        font-size: 24px;
+        font-size: var(--text-2xl);
         font-weight: var(--fw-black);
         color: var(--text-title);
         letter-spacing: -0.02em;
         line-height: 1.1;
       }
       .ag-day-dow {
-        font-size: 11px;
+        font-size: var(--text-xs);
         color: var(--text-secondary);
         font-weight: var(--fw-medium);
       }
@@ -1051,7 +1051,7 @@ function AgendaStyles() {
         border-radius: 50%;
         background: var(--primary);
         color: var(--text-inverse);
-        font-size: 11px;
+        font-size: var(--text-xs);
         font-weight: var(--fw-black);
         display: flex; align-items: center; justify-content: center;
         padding: 0 5px;
@@ -1081,14 +1081,14 @@ function AgendaStyles() {
       }
       .ag-data-hdr-ic { color: var(--text-secondary); flex-shrink: 0; }
       .ag-data-hdr-txt {
-        font-size: 17px;
+        font-size: var(--text-lg);
         font-weight: var(--fw-black);
         color: var(--text-title);
         letter-spacing: -0.02em;
       }
       .ag-data-hdr-meta {
         display: inline-flex; align-items: center; gap: 4px;
-        font-size: 12px; font-weight: var(--fw-bold);
+        font-size: var(--text-xs); font-weight: var(--fw-bold);
         padding: 3px 8px;
         border-radius: 6px;
       }
@@ -1138,13 +1138,13 @@ function AgendaStyles() {
         font-weight: var(--fw-bold);
         color: var(--text-title);
         text-transform: capitalize;
-        letter-spacing: -0.01em;
+        letter-spacing: var(--ls-tight);
       }
       .ag-cal-hoje {
         background: var(--bg-subtle);
         border: 1px solid var(--border);
         color: var(--text-secondary);
-        border-radius: 999px;
+        border-radius: var(--radius-full);
         padding: 3px 10px;
         font-family: inherit;
         font-size: var(--font-caption);
@@ -1161,7 +1161,7 @@ function AgendaStyles() {
       }
       .ag-cal-dow {
         text-align: center;
-        font-size: 11px;
+        font-size: var(--text-xs);
         font-weight: var(--fw-semibold);
         color: var(--text-secondary);
       }
@@ -1184,7 +1184,7 @@ function AgendaStyles() {
       }
       .ag-cal-day:hover { background: var(--bg-subtle); }
       .ag-cal-num {
-        font-size: 14px;
+        font-size: var(--text-sm);
         font-weight: var(--fw-medium);
         color: var(--text-title);
         line-height: 1;
@@ -1251,7 +1251,7 @@ function AgendaStyles() {
         color: var(--text-title);
         margin: 0 0 4px;
         text-transform: capitalize;
-        letter-spacing: -0.01em;
+        letter-spacing: var(--ls-tight);
         line-height: var(--lh-tight);
       }
       .ag-pedidos-sub {
@@ -1265,8 +1265,8 @@ function AgendaStyles() {
         padding: 2px 8px;
         background: var(--bg-subtle);
         color: var(--primary-dark);
-        border-radius: 999px;
-        font-size: 10px;
+        border-radius: var(--radius-full);
+        font-size: var(--text-xs);
         font-weight: var(--fw-black);
         text-transform: uppercase;
         letter-spacing: 0.05em;
@@ -1276,7 +1276,7 @@ function AgendaStyles() {
         background: var(--text-title);
         color: var(--text-inverse);
         border: none;
-        border-radius: 10px;
+        border-radius: var(--radius-sm);
         padding: 8px 14px;
         font-family: inherit;
         font-size: var(--font-helper);
@@ -1294,7 +1294,7 @@ function AgendaStyles() {
         padding: 14px 16px;
         background: var(--bg-card);
         border: 1px solid var(--border);
-        border-radius: 14px;
+        border-radius: var(--radius-md);
         cursor: pointer;
         font-family: inherit;
         margin-bottom: var(--space-3);
@@ -1310,14 +1310,14 @@ function AgendaStyles() {
         flex-shrink: 0;
       }
       .ag-filtro-card-label {
-        font-size: 14px;
+        font-size: var(--text-sm);
         font-weight: var(--fw-bold);
         color: var(--text-title);
       }
       .ag-filtro-card-valor {
         flex: 1;
         text-align: right;
-        font-size: 13px;
+        font-size: var(--text-sm);
         color: var(--text-muted);
         font-weight: var(--fw-medium);
       }
@@ -1353,14 +1353,14 @@ function AgendaStyles() {
         display: flex; align-items: center; justify-content: space-between;
         padding: 4px 4px 12px;
         border-bottom: 1px solid var(--border);
-        margin-bottom: 12px;
+        margin-bottom: var(--space-3);
       }
       .ag-filtro-drawer-title {
-        font-size: 17px;
+        font-size: var(--text-lg);
         font-weight: var(--fw-black);
         color: var(--text-title);
         margin: 0;
-        letter-spacing: -0.01em;
+        letter-spacing: var(--ls-tight);
       }
       .ag-filtro-drawer-close {
         width: 32px; height: 32px;
@@ -1369,7 +1369,7 @@ function AgendaStyles() {
         border: none;
         color: var(--text-secondary);
         font-family: inherit;
-        font-size: 15px; font-weight: 700;
+        font-size: var(--text-md); font-weight: var(--fw-bold);
         cursor: pointer;
         display: flex; align-items: center; justify-content: center;
       }
@@ -1379,7 +1379,7 @@ function AgendaStyles() {
         overflow-y: auto;
       }
       .ag-filtro-opcao {
-        display: flex; align-items: center; gap: 12px;
+        display: flex; align-items: center; gap: var(--space-3);
         padding: 14px 12px;
         border-radius: 12px;
         cursor: pointer;
@@ -1401,23 +1401,23 @@ function AgendaStyles() {
       }
       .ag-filtro-opcao-label {
         flex: 1;
-        font-size: 14px;
+        font-size: var(--text-sm);
         font-weight: var(--fw-semibold);
         color: var(--text-title);
       }
       .ag-filtro-opcao-cnt {
-        font-size: 12px;
+        font-size: var(--text-xs);
         font-weight: var(--fw-black);
         color: var(--text-muted);
         background: var(--bg-card);
         border: 1px solid var(--border);
         padding: 2px 10px;
-        border-radius: 999px;
+        border-radius: var(--radius-full);
         font-variant-numeric: tabular-nums;
       }
       .ag-filtro-drawer-acoes {
         display: flex; gap: 8px;
-        margin-top: 16px;
+        margin-top: var(--space-4);
         padding-top: 12px;
         border-top: 1px solid var(--border);
       }
@@ -1425,9 +1425,9 @@ function AgendaStyles() {
       .ag-filtro-drawer-btn-todos,
       .ag-filtro-drawer-btn-aplicar {
         padding: 12px 16px;
-        border-radius: 10px;
+        border-radius: var(--radius-sm);
         font-family: inherit;
-        font-size: 13px;
+        font-size: var(--text-sm);
         font-weight: var(--fw-bold);
         cursor: pointer;
         border: none;
@@ -1454,7 +1454,7 @@ function AgendaStyles() {
       /* Label da seção "Pedidos pendentes" */
       .ag-pedidos-secao-lbl {
         text-align: center;
-        font-size: 11px;
+        font-size: var(--text-xs);
         color: var(--text-muted);
         letter-spacing: 0.1em;
         text-transform: uppercase;
@@ -1472,7 +1472,7 @@ function AgendaStyles() {
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: 16px;
-        padding: 16px;
+        padding: var(--space-4);
         margin: 0 var(--space-4);
         cursor: pointer;
         font-family: inherit;
@@ -1488,27 +1488,27 @@ function AgendaStyles() {
       .ag-pc-head {
         display: flex; align-items: flex-start; justify-content: space-between;
         gap: 10px;
-        margin-bottom: 12px;
+        margin-bottom: var(--space-3);
       }
       .ag-pc-head-info { flex: 1; min-width: 0; }
       .ag-pc-nome {
-        font-size: 16px;
+        font-size: var(--text-md);
         font-weight: var(--fw-black);
         color: var(--text-title);
-        letter-spacing: -0.01em;
-        line-height: 1.3;
+        letter-spacing: var(--ls-tight);
+        line-height: var(--lh-tight);
         margin: 0;
       }
       .ag-pc-numero {
-        font-size: 14px;
+        font-size: var(--text-sm);
         color: var(--text-muted);
         font-weight: var(--fw-medium);
       }
       .ag-pc-status {
         display: inline-flex; align-items: center; gap: 5px;
         padding: 6px 12px;
-        border-radius: 999px;
-        font-size: 12px;
+        border-radius: var(--radius-full);
+        font-size: var(--text-xs);
         font-weight: var(--fw-black);
         letter-spacing: 0.02em;
         flex-shrink: 0;
@@ -1527,7 +1527,7 @@ function AgendaStyles() {
       }
       .ag-pc-info-line {
         display: flex; align-items: center; gap: 8px;
-        font-size: 13px;
+        font-size: var(--text-sm);
       }
       .ag-pc-info-line--entrega { color: #EA580C; font-weight: var(--fw-bold); }
       .ag-pc-info-line--hoje { color: #EA580C; font-weight: var(--fw-black); }
@@ -1549,7 +1549,7 @@ function AgendaStyles() {
       }
       .ag-pc-item-linha {
         display: flex; justify-content: space-between; align-items: center;
-        font-size: 13px;
+        font-size: var(--text-sm);
       }
       .ag-pc-item-nome {
         color: var(--text-title);
@@ -1572,7 +1572,7 @@ function AgendaStyles() {
       }
       .ag-pc-item-linha--total .ag-pc-item-nome,
       .ag-pc-item-linha--total .ag-pc-item-val {
-        font-size: 14px;
+        font-size: var(--text-sm);
         font-weight: var(--fw-black);
       }
       .ag-pc-item-linha--restante {
@@ -1616,7 +1616,7 @@ function AgendaStyles() {
         font-weight: var(--fw-bold);
         color: var(--text-title);
         margin: 0;
-        letter-spacing: -0.01em;
+        letter-spacing: var(--ls-tight);
       }
       .ag-empty-sub {
         font-size: var(--font-helper);
@@ -1633,7 +1633,7 @@ function AgendaStyles() {
         border-top: 1px solid var(--border);
       }
       .ag-row {
-        display: flex; align-items: center; gap: 12px;
+        display: flex; align-items: center; gap: var(--space-3);
         padding: 12px var(--space-4);
         border-bottom: 1px solid var(--border);
         cursor: pointer;
@@ -1655,7 +1655,7 @@ function AgendaStyles() {
         display: flex; align-items: center; justify-content: center;
       }
       .ag-row-img img { width: 100%; height: 100%; object-fit: cover; }
-      .ag-row-emoji { font-size: 22px; }
+      .ag-row-emoji { font-size: var(--text-xl); }
       .ag-row-info { flex: 1; min-width: 0; }
       .ag-row-top {
         display: flex; align-items: baseline; justify-content: space-between;
@@ -1663,14 +1663,14 @@ function AgendaStyles() {
       }
       .ag-row-cliente {
         margin: 0;
-        font-size: 14px;
+        font-size: var(--text-sm);
         font-weight: var(--fw-bold);
         color: var(--text-title);
-        letter-spacing: -0.01em;
+        letter-spacing: var(--ls-tight);
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
       .ag-row-hora {
-        font-size: 11px;
+        font-size: var(--text-xs);
         font-weight: var(--fw-bold);
         color: var(--primary);
         font-variant-numeric: tabular-nums;
@@ -1678,7 +1678,7 @@ function AgendaStyles() {
       }
       .ag-row-produto {
         margin: 2px 0 5px;
-        font-size: 12px;
+        font-size: var(--text-xs);
         color: var(--text-secondary);
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       }
@@ -1689,7 +1689,7 @@ function AgendaStyles() {
       .ag-row-tag {
         display: inline-flex; align-items: center; gap: 4px;
         padding: 2px 7px;
-        border-radius: 999px;
+        border-radius: var(--radius-full);
         font-size: 9.5px;
         font-weight: var(--fw-black);
         letter-spacing: 0.03em;
@@ -1703,11 +1703,11 @@ function AgendaStyles() {
         font-weight: var(--fw-bold);
       }
       .ag-row-valor {
-        font-size: 13px;
+        font-size: var(--text-sm);
         font-weight: var(--fw-black);
         color: var(--primary);
         flex-shrink: 0;
-        letter-spacing: -0.01em;
+        letter-spacing: var(--ls-tight);
       }
     `}</style>
   );
