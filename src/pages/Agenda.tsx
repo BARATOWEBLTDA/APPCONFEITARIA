@@ -709,6 +709,23 @@ function PedidoCard({ p, onClick }: any) {
     <button className="ag-pc" onClick={onClick}>
       {/* Header */}
       <div className="ag-pc-head">
+        <div className="ag-pc-avatar">
+          {(() => {
+            const primeiro = p.pedido_itens?.[0];
+            const src = primeiro?.imagem_url || primeiro?.produtos?.imagem_url;
+            const extras = Math.max(0, (p.pedido_itens?.length || 0) - 1);
+            return (
+              <>
+                {src ? (
+                  <img src={src} alt={primeiro.nome_produto} className="ag-pc-avatar-img" />
+                ) : (
+                  <span className="ag-pc-avatar-emoji">🎂</span>
+                )}
+                {extras > 0 && <span className="ag-pc-avatar-badge">+{extras}</span>}
+              </>
+            );
+          })()}
+        </div>
         <div className="ag-pc-head-info">
           <p className="ag-pc-nome">
             {p.cliente_nome || "Cliente não informado"}
@@ -1520,6 +1537,39 @@ function AgendaStyles() {
         display: flex; align-items: flex-start; justify-content: space-between;
         gap: 10px;
         margin-bottom: var(--space-3);
+      }
+      .ag-pc-avatar {
+        position: relative;
+        width: 44px; height: 44px;
+        border-radius: 12px;
+        background: var(--bg-subtle);
+        flex-shrink: 0;
+        overflow: visible;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .ag-pc-avatar-img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        border-radius: 12px;
+      }
+      .ag-pc-avatar-emoji {
+        font-size: var(--text-xl);
+        line-height: 1;
+      }
+      .ag-pc-avatar-badge {
+        position: absolute;
+        bottom: -4px; right: -4px;
+        min-width: 20px; height: 20px;
+        border-radius: var(--radius-full);
+        background: var(--text-title);
+        color: var(--text-inverse);
+        font-size: 10px;
+        font-weight: var(--fw-black);
+        display: flex; align-items: center; justify-content: center;
+        padding: 0 5px;
+        border: 2px solid var(--bg-card);
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
       }
       .ag-pc-head-info { flex: 1; min-width: 0; }
       .ag-pc-nome {
