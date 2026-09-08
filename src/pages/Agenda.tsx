@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
@@ -6,22 +6,35 @@ import { supabase } from "@/lib/supabase";
  * Config
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-type ViewMode = "dia" | "semana" | "lista";
+type ViewMode = "lista" | "calendario";
 const VIEW_KEY = "agenda_view_mode";
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string }> = {
-  novo:         { label: "Novo",         color: "#534AB7", bg: "#EEEDFE", dot: "#7F77DD" },
-  confirmado:   { label: "Confirmado",   color: "#0e7490", bg: "#cffafe", dot: "#0891b2" },
-  em_producao:  { label: "Em produção",  color: "#854F0B", bg: "#FAEEDA", dot: "#EF9F27" },
-  pronto:       { label: "Pronto",       color: "#14532d", bg: "#dcfce7", dot: "#22c55e" },
-  a_caminho:    { label: "A caminho",    color: "#0369a1", bg: "#e0f2fe", dot: "#0ea5e9" },
-  concluido:    { label: "Concluído",    color: "#374151", bg: "#f3f4f6", dot: "#9ca3af" },
-  cancelado:    { label: "Cancelado",    color: "#791F1F", bg: "#FCEBEB", dot: "#E24B4A" },
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string; group: "agendado" | "producao" | "concluido" }> = {
+  novo:         { label: "Novo",         color: "#534AB7", bg: "#EEEDFE", dot: "#7F77DD", group: "agendado" },
+  confirmado:   { label: "Confirmado",   color: "#0e7490", bg: "#cffafe", dot: "#0891b2", group: "agendado" },
+  em_producao:  { label: "Em produção",  color: "#854F0B", bg: "#FAEEDA", dot: "#EF9F27", group: "producao" },
+  pronto:       { label: "Pronto",       color: "#14532d", bg: "#dcfce7", dot: "#22c55e", group: "concluido" },
+  a_caminho:    { label: "A caminho",    color: "#0369a1", bg: "#e0f2fe", dot: "#0ea5e9", group: "concluido" },
+  concluido:    { label: "Concluído",    color: "#374151", bg: "#f3f4f6", dot: "#9ca3af", group: "concluido" },
+  cancelado:    { label: "Cancelado",    color: "#791F1F", bg: "#FCEBEB", dot: "#E24B4A", group: "concluido" },
 };
 const getStatusConfig = (s: string) => STATUS_CONFIG[s] || STATUS_CONFIG.novo;
 
+/* Cores das bolinhas na agenda (grupo agendado/produção/concluído) */
+const GROUP_DOT_COLORS = {
+  agendado:  "#7F77DD", // roxo (mesmo do status "novo")
+  producao:  "#EF9F27", // laranja
+  concluido: "#22c55e", // verde
+};
+const GROUP_LABELS = {
+  agendado:  "Agendado",
+  producao:  "Em produção",
+  concluido: "Concluído",
+};
+
 const DOW_SHORT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-const DOW_FULL = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+const DOW_MINI  = ["dom", "seg", "ter", "qua", "qui", "sex", "sab"];
+const DOW_FULL  = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 const MESES_SHORT = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
 
 const isoDate = (d: Date) => {
@@ -36,7 +49,6 @@ const parseISO = (iso: string) => new Date(iso + "T12:00:00");
 const formatMoney = (v: number) =>
   (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-/* Retorna diferença em dias de forma humana */
 const diffDias = (isoAlvo: string) => {
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
   const alvo = parseISO(isoAlvo); alvo.setHours(0, 0, 0, 0);
@@ -61,18 +73,15 @@ export default function Agenda() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState("");
 
-  // Modo de visualização (persistido em localStorage)
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (typeof window === "undefined") return "dia";
+    if (typeof window === "undefined") return "lista";
     const saved = localStorage.getItem(VIEW_KEY) as ViewMode | null;
-    return saved && ["dia", "semana", "lista"].includes(saved) ? saved : "dia";
+    return saved && ["lista", "calendario"].includes(saved) ? saved : "lista";
   });
 
-  // Estado do calendário / navegação
-  const [refDate, setRefDate] = useState(new Date()); // data de referência (mês/semana visível)
-  const [diaSel, setDiaSel] = useState(isoDate(new Date())); // dia selecionado (para vistas dia/semana)
+  const [refDate, setRefDate] = useState(new Date());
+  const [diaSel, setDiaSel] = useState(isoDate(new Date()));
 
-  // Dados
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [pedidosFiltro, setPedidosFiltro] = useState("todos");
@@ -85,17 +94,14 @@ export default function Agenda() {
     })();
   }, []);
 
-  // Persiste modo de visualização
   useEffect(() => {
     localStorage.setItem(VIEW_KEY, viewMode);
   }, [viewMode]);
 
-  /* ─── Busca pedidos do range visível ─── */
   useEffect(() => {
     if (!userId) return;
     (async () => {
       setLoading(true);
-      // Buscamos sempre 90 dias em torno da refDate — cobre navegação sem refetch a cada clique
       const ini = new Date(refDate); ini.setDate(refDate.getDate() - 30);
       const fim = new Date(refDate); fim.setDate(refDate.getDate() + 60);
       const { data } = await supabase.from("pedidos")
@@ -110,13 +116,15 @@ export default function Agenda() {
     })();
   }, [userId, refDate]);
 
-  /* ─── Deriva mapa de contagem por dia ─── */
-  const countByDay = useMemo(() => {
-    const m: Record<string, number> = {};
+  /* Mapa de contagens por dia com grupos de status */
+  const dayStats = useMemo(() => {
+    const m: Record<string, { total: number; agendado: number; producao: number; concluido: number }> = {};
     pedidos.forEach(p => {
-      if (p.data_entrega && p.status !== "cancelado") {
-        m[p.data_entrega] = (m[p.data_entrega] || 0) + 1;
-      }
+      if (!p.data_entrega || p.status === "cancelado") return;
+      if (!m[p.data_entrega]) m[p.data_entrega] = { total: 0, agendado: 0, producao: 0, concluido: 0 };
+      m[p.data_entrega].total++;
+      const g = getStatusConfig(p.status).group;
+      m[p.data_entrega][g]++;
     });
     return m;
   }, [pedidos]);
@@ -143,10 +151,7 @@ export default function Agenda() {
     setDiaSel(isoDate(h));
   };
 
-  /* ═════════════════════════════════════════════════════════════════════════
-   * RENDER
-   * ═════════════════════════════════════════════════════════════════════════ */
-
+  /* ═══ RENDER ═══ */
   return (
     <div className="ag-root">
       <div className="ag-header">
@@ -154,67 +159,60 @@ export default function Agenda() {
         <p className="ag-sub">Seus pedidos por data de entrega</p>
       </div>
 
-      {/* Toggle de modo de visualização */}
+      {/* Toggle Lista / Calendário */}
       <div className="ag-toggle" role="tablist" aria-label="Modo de visualização">
-        {([
-          { key: "dia" as ViewMode, label: "Dia", icon: <IcDia /> },
-          { key: "semana" as ViewMode, label: "Semana", icon: <IcSemana /> },
-          { key: "lista" as ViewMode, label: "Lista", icon: <IcLista /> },
-        ]).map(o => (
-          <button
-            key={o.key}
-            role="tab"
-            aria-selected={viewMode === o.key}
-            className={"ag-toggle-btn" + (viewMode === o.key ? " ag-toggle-btn--on" : "")}
-            onClick={() => setViewMode(o.key)}
-          >
-            {o.icon}
-            <span>{o.label}</span>
-          </button>
-        ))}
+        <button
+          role="tab"
+          aria-selected={viewMode === "lista"}
+          className={"ag-toggle-btn" + (viewMode === "lista" ? " ag-toggle-btn--on" : "")}
+          onClick={() => setViewMode("lista")}
+        >
+          <IcLista />
+          <span>Lista</span>
+        </button>
+        <button
+          role="tab"
+          aria-selected={viewMode === "calendario"}
+          className={"ag-toggle-btn" + (viewMode === "calendario" ? " ag-toggle-btn--on" : "")}
+          onClick={() => setViewMode("calendario")}
+        >
+          <IcCalendario />
+          <span>Calendário</span>
+        </button>
       </div>
 
-      {/* Painel de navegação (Dia ou Semana) */}
-      {viewMode === "dia" && (
-        <VistaDia
-          refDate={refDate}
-          setRefDate={setRefDate}
-          diaSel={diaSel}
-          setDiaSel={setDiaSel}
-          countByDay={countByDay}
-          irParaHoje={irParaHoje}
-        />
-      )}
-
-      {viewMode === "semana" && (
-        <VistaSemana
-          refDate={refDate}
-          setRefDate={setRefDate}
-          diaSel={diaSel}
-          setDiaSel={setDiaSel}
-          countByDay={countByDay}
-          irParaHoje={irParaHoje}
-        />
-      )}
-
-      {/* Painel de pedidos */}
       {viewMode === "lista" ? (
         <VistaLista
-          pedidos={pedidos}
-          countByDay={countByDay}
-          onOpenPedido={(id) => navigate(`/pedidos/${id}`)}
-          navigate={navigate}
-        />
-      ) : (
-        <PedidosDoDia
+          refDate={refDate}
+          setRefDate={setRefDate}
           diaSel={diaSel}
-          loading={loading}
+          setDiaSel={setDiaSel}
+          dayStats={dayStats}
+          irParaHoje={irParaHoje}
           pedidosDoDia={pedidosDoDia}
           pedidosFiltrados={pedidosDiaFiltrados}
           countStatus={countStatusDia}
           filtro={pedidosFiltro}
           setFiltro={setPedidosFiltro}
-          onOpenPedido={(id) => navigate(`/pedidos/${id}`)}
+          loading={loading}
+          onOpenPedido={(id: string) => navigate(`/pedidos/${id}`)}
+          onNovoPedido={() => navigate("/pedidos/novo")}
+        />
+      ) : (
+        <VistaCalendario
+          refDate={refDate}
+          setRefDate={setRefDate}
+          diaSel={diaSel}
+          setDiaSel={setDiaSel}
+          dayStats={dayStats}
+          irParaHoje={irParaHoje}
+          pedidosDoDia={pedidosDoDia}
+          pedidosFiltrados={pedidosDiaFiltrados}
+          countStatus={countStatusDia}
+          filtro={pedidosFiltro}
+          setFiltro={setPedidosFiltro}
+          loading={loading}
+          onOpenPedido={(id: string) => navigate(`/pedidos/${id}`)}
           onNovoPedido={() => navigate("/pedidos/novo")}
         />
       )}
@@ -225,252 +223,300 @@ export default function Agenda() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
- * VISTA DIA — timeline horizontal
+ * VISTA LISTA — carrossel horizontal de cards + resumo do dia + lista
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-function VistaDia({ refDate, setRefDate, diaSel, setDiaSel, countByDay, irParaHoje }: any) {
-  // Gera dias do mês visível + preenche o início/fim pra completar semanas
+function VistaLista(props: any) {
+  const {
+    refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHoje,
+    pedidosDoDia, pedidosFiltrados, countStatus, filtro, setFiltro,
+    loading, onOpenPedido, onNovoPedido,
+  } = props;
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const hojeISO = isoDate(new Date());
+
+  // Gera 60 dias começando de "hoje - 3" pra ver contexto (anteontem, ontem, hoje...)
+  const dias = useMemo(() => {
+    const list: Date[] = [];
+    const inicio = new Date();
+    inicio.setDate(inicio.getDate() - 3);
+    for (let i = 0; i < 60; i++) {
+      const d = new Date(inicio);
+      d.setDate(inicio.getDate() + i);
+      list.push(d);
+    }
+    return list;
+  }, []);
+
+  // Auto-scroll pro dia selecionado quando entra ou muda
+  useEffect(() => {
+    if (!scrollRef.current) return;
+    const el = scrollRef.current.querySelector<HTMLElement>(`[data-day="${diaSel}"]`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+    }
+  }, [diaSel]);
+
+  // Estatísticas do dia selecionado
+  const stats = dayStats[diaSel] || { total: 0, agendado: 0, producao: 0, concluido: 0 };
+  const valorTotalDia = useMemo(
+    () => pedidosDoDia.reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0),
+    [pedidosDoDia]
+  );
+  const progressoPct = stats.total > 0 ? Math.round((stats.concluido / stats.total) * 100) : 0;
+
+  return (
+    <>
+      {/* Card resumo do dia selecionado */}
+      <div className="ag-hoje-card">
+        <div className="ag-hoje-top">
+          <div>
+            <div className="ag-hoje-lbl">
+              {diaSel === hojeISO ? "Hoje" : parseISO(diaSel).toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "short" })}
+            </div>
+            <div className="ag-hoje-pedidos">
+              {stats.total === 0 ? "Nenhum pedido" : `${stats.total} pedido${stats.total !== 1 ? "s" : ""}`}
+            </div>
+          </div>
+          <div className="ag-hoje-valor">{formatMoney(valorTotalDia)}</div>
+        </div>
+
+        {stats.total > 0 && (
+          <>
+            <div className="ag-hoje-prog-row">
+              <span className="ag-hoje-prog-lbl">Progresso</span>
+              <span className="ag-hoje-prog-pct">{progressoPct}%</span>
+            </div>
+            <div className="ag-hoje-bar">
+              <div className="ag-hoje-bar-fill" style={{ width: `${progressoPct}%` }} />
+            </div>
+
+            <div className="ag-hoje-stats">
+              <span className="ag-hoje-stat">
+                <span className="ag-hoje-stat-dot" style={{ background: GROUP_DOT_COLORS.agendado }} />
+                {stats.agendado} agendado{stats.agendado !== 1 ? "s" : ""}
+              </span>
+              <span className="ag-hoje-stat">
+                <span className="ag-hoje-stat-dot" style={{ background: GROUP_DOT_COLORS.producao }} />
+                {stats.producao} em produção
+              </span>
+              <span className="ag-hoje-stat">
+                <span className="ag-hoje-stat-dot" style={{ background: GROUP_DOT_COLORS.concluido }} />
+                {stats.concluido} pronto{stats.concluido !== 1 ? "s" : ""}
+              </span>
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Carrossel de cards dos dias */}
+      <div className="ag-strip-wrap">
+        <div className="ag-strip-nav">
+          <button className="ag-strip-hoje" onClick={irParaHoje}>Hoje</button>
+        </div>
+        <div className="ag-strip" ref={scrollRef}>
+          {dias.map(d => {
+            const iso = isoDate(d);
+            const st = dayStats[iso];
+            const cnt = st?.total || 0;
+            const isSel = iso === diaSel;
+            const isHoje = iso === hojeISO;
+            return (
+              <button
+                key={iso}
+                data-day={iso}
+                className={"ag-day-card" + (isSel ? " ag-day-card--sel" : "") + (isHoje ? " ag-day-card--hoje" : "")}
+                onClick={() => setDiaSel(iso)}
+              >
+                <span className="ag-day-mes">{MESES_SHORT[d.getMonth()]}</span>
+                <span className="ag-day-num">{d.getDate()}</span>
+                <span className="ag-day-dow">{DOW_FULL[d.getDay()]}</span>
+                {cnt > 0 && <span className="ag-day-badge">{cnt}</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Lista de pedidos */}
+      <PedidosDoDia
+        diaSel={diaSel}
+        loading={loading}
+        pedidosDoDia={pedidosDoDia}
+        pedidosFiltrados={pedidosFiltrados}
+        countStatus={countStatus}
+        filtro={filtro}
+        setFiltro={setFiltro}
+        onOpenPedido={onOpenPedido}
+        onNovoPedido={onNovoPedido}
+      />
+    </>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ * VISTA CALENDÁRIO — mês completo com bolinhas coloridas
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+function VistaCalendario(props: any) {
+  const {
+    refDate, setRefDate, diaSel, setDiaSel, dayStats, irParaHoje,
+    pedidosDoDia, pedidosFiltrados, countStatus, filtro, setFiltro,
+    loading, onOpenPedido, onNovoPedido,
+  } = props;
+
+  // Gera células do mês visível — incluindo dias do mês anterior/próximo pra fechar semanas
   const cells = useMemo(() => {
     const ano = refDate.getFullYear();
     const mes = refDate.getMonth();
-    const total = new Date(ano, mes + 1, 0).getDate();
     const primeiroDia = new Date(ano, mes, 1).getDay(); // 0 = domingo
-    const list: Array<{ date: Date | null; iso: string | null }> = [];
+    const totalDias = new Date(ano, mes + 1, 0).getDate();
+    const list: Array<{ date: Date; iso: string; outroMes: boolean }> = [];
 
-    // Espaços vazios antes do dia 1
-    for (let i = 0; i < primeiroDia; i++) list.push({ date: null, iso: null });
-    // Dias do mês
-    for (let d = 1; d <= total; d++) {
-      const date = new Date(ano, mes, d);
-      list.push({ date, iso: isoDate(date) });
+    // Dias do mês anterior
+    for (let i = primeiroDia - 1; i >= 0; i--) {
+      const d = new Date(ano, mes, -i);
+      list.push({ date: d, iso: isoDate(d), outroMes: true });
     }
-    // Espaços vazios pra fechar a última semana
-    while (list.length % 7 !== 0) list.push({ date: null, iso: null });
+    // Dias do mês atual
+    for (let d = 1; d <= totalDias; d++) {
+      const date = new Date(ano, mes, d);
+      list.push({ date, iso: isoDate(date), outroMes: false });
+    }
+    // Dias do próximo mês pra fechar as semanas (múltiplo de 7)
+    let extra = 1;
+    while (list.length % 7 !== 0) {
+      const d = new Date(ano, mes + 1, extra);
+      list.push({ date: d, iso: isoDate(d), outroMes: true });
+      extra++;
+    }
     return list;
   }, [refDate]);
 
   const hojeISO = isoDate(new Date());
-
-  return (
-    <div className="ag-panel">
-      <div className="ag-panel-nav">
-        <button
-          className="ag-nav-btn"
-          onClick={() => setRefDate(new Date(refDate.getFullYear(), refDate.getMonth() - 1, 1))}
-          aria-label="Mês anterior"
-        >
-          <ChevronLeft />
-        </button>
-        <div className="ag-panel-title-wrap">
-          <span className="ag-panel-title">
-            {refDate.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
-          </span>
-          <button className="ag-btn-hoje" onClick={irParaHoje}>Hoje</button>
-        </div>
-        <button
-          className="ag-nav-btn"
-          onClick={() => setRefDate(new Date(refDate.getFullYear(), refDate.getMonth() + 1, 1))}
-          aria-label="Próximo mês"
-        >
-          <ChevronRight />
-        </button>
-      </div>
-
-      {/* Header dos dias da semana */}
-      <div className="ag-dow-header">
-        {DOW_SHORT.map((d, i) => (
-          <div key={i} className="ag-dow-lbl">{d}</div>
-        ))}
-      </div>
-
-      {/* Grid multi-linha (mês inteiro sem scroll) */}
-      <div className="ag-mes-grid">
-        {cells.map((c, i) => {
-          if (!c.date || !c.iso) {
-            return <div key={"e" + i} className="ag-mes-empty" />;
-          }
-          const cnt = countByDay[c.iso] || 0;
-          const isHoje = c.iso === hojeISO;
-          const isSel = c.iso === diaSel;
-          return (
-            <button
-              key={c.iso}
-              className={
-                "ag-mes-day" +
-                (isSel ? " ag-mes-day--sel" : "") +
-                (isHoje ? " ag-mes-day--hoje" : "")
-              }
-              onClick={() => setDiaSel(c.iso!)}
-            >
-              <span className="ag-mes-num">{c.date.getDate()}</span>
-              <span className={"ag-mes-pill" + (cnt === 0 ? " ag-mes-pill--empty" : "")}>
-                {cnt > 0 ? cnt : ""}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
+  const diaSelDate = parseISO(diaSel);
+  const totalDiaSel = dayStats[diaSel]?.total || 0;
+  const valorTotalDia = useMemo(
+    () => pedidosDoDia.reduce((s: number, p: any) => s + (Number(p.valor_total) || 0), 0),
+    [pedidosDoDia]
   );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * VISTA SEMANA — grade de 7 dias
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-function VistaSemana({ refDate, setRefDate, diaSel, setDiaSel, countByDay, irParaHoje }: any) {
-  // Começo da semana (domingo)
-  const inicioSemana = useMemo(() => {
-    const d = new Date(refDate);
-    d.setDate(d.getDate() - d.getDay());
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }, [refDate]);
-
-  const diasSemana = useMemo(() => {
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(inicioSemana);
-      d.setDate(inicioSemana.getDate() + i);
-      return d;
-    });
-  }, [inicioSemana]);
-
-  const fimSemana = diasSemana[6];
-  const hojeISO = isoDate(new Date());
-
-  const semanaLabel = useMemo(() => {
-    const mesmoMes = inicioSemana.getMonth() === fimSemana.getMonth();
-    if (mesmoMes) {
-      return `${inicioSemana.getDate()} – ${fimSemana.getDate()} ${MESES_SHORT[inicioSemana.getMonth()].toLowerCase()}`;
-    }
-    return `${inicioSemana.getDate()} ${MESES_SHORT[inicioSemana.getMonth()].toLowerCase()} – ${fimSemana.getDate()} ${MESES_SHORT[fimSemana.getMonth()].toLowerCase()}`;
-  }, [inicioSemana, fimSemana]);
-
-  const navegarSemana = (dir: -1 | 1) => {
-    const nova = new Date(refDate);
-    nova.setDate(refDate.getDate() + dir * 7);
-    setRefDate(nova);
-  };
 
   return (
-    <div className="ag-panel">
-      <div className="ag-panel-nav">
-        <button className="ag-nav-btn" onClick={() => navegarSemana(-1)} aria-label="Semana anterior">
-          <ChevronLeft />
-        </button>
-        <div className="ag-panel-title-wrap">
-          <div style={{ textAlign: "center" }}>
-            <div className="ag-panel-title">{semanaLabel}</div>
-            <div className="ag-panel-subtitle">
-              {refDate.toLocaleDateString("pt-BR", { year: "numeric" })}
-            </div>
+    <>
+      {/* Data grande + metadados */}
+      <div className="ag-data-hdr">
+        <svg className="ag-data-hdr-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span className="ag-data-hdr-txt">
+          {diaSelDate.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })}
+        </span>
+        {totalDiaSel > 0 && (
+          <>
+            <span className="ag-data-hdr-meta ag-data-hdr-meta--qtd">
+              {totalDiaSel} pedido{totalDiaSel !== 1 ? "s" : ""}
+            </span>
+            <span className="ag-data-hdr-meta ag-data-hdr-meta--valor">
+              {formatMoney(valorTotalDia)}
+            </span>
+          </>
+        )}
+      </div>
+
+      {/* Calendário */}
+      <div className="ag-cal-card">
+        <div className="ag-cal-nav">
+          <button
+            className="ag-cal-nav-btn"
+            onClick={() => setRefDate(new Date(refDate.getFullYear(), refDate.getMonth() - 1, 1))}
+            aria-label="Mês anterior"
+          >
+            <ChevronLeft />
+          </button>
+          <div className="ag-cal-titulo-wrap">
+            <span className="ag-cal-titulo">
+              {refDate.toLocaleDateString("pt-BR", { month: "long", year: "numeric" })}
+            </span>
+            <button className="ag-cal-hoje" onClick={irParaHoje}>Hoje</button>
           </div>
-          <button className="ag-btn-hoje" onClick={irParaHoje}>Hoje</button>
+          <button
+            className="ag-cal-nav-btn"
+            onClick={() => setRefDate(new Date(refDate.getFullYear(), refDate.getMonth() + 1, 1))}
+            aria-label="Próximo mês"
+          >
+            <ChevronRight />
+          </button>
         </div>
-        <button className="ag-nav-btn" onClick={() => navegarSemana(1)} aria-label="Próxima semana">
-          <ChevronRight />
-        </button>
+
+        <div className="ag-cal-dow-hdr">
+          {DOW_MINI.map((d, i) => (
+            <div key={i} className="ag-cal-dow">{d}</div>
+          ))}
+        </div>
+
+        <div className="ag-cal-grid">
+          {cells.map(c => {
+            const st = dayStats[c.iso];
+            const isSel = c.iso === diaSel;
+            const isHoje = c.iso === hojeISO && !c.outroMes;
+            return (
+              <button
+                key={c.iso + (c.outroMes ? "-o" : "")}
+                className={
+                  "ag-cal-day" +
+                  (c.outroMes ? " ag-cal-day--outro" : "") +
+                  (isSel ? " ag-cal-day--sel" : "") +
+                  (isHoje ? " ag-cal-day--hoje" : "")
+                }
+                onClick={() => setDiaSel(c.iso)}
+              >
+                <span className="ag-cal-num">{c.date.getDate()}</span>
+                {st && st.total > 0 && (
+                  <span className="ag-cal-dots">
+                    {st.agendado > 0 && <span className="ag-cal-dot" style={{ background: GROUP_DOT_COLORS.agendado }} />}
+                    {st.producao > 0 && <span className="ag-cal-dot" style={{ background: GROUP_DOT_COLORS.producao }} />}
+                    {st.concluido > 0 && <span className="ag-cal-dot" style={{ background: GROUP_DOT_COLORS.concluido }} />}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="ag-semana-grid">
-        {diasSemana.map(d => {
-          const iso = isoDate(d);
-          const cnt = countByDay[iso] || 0;
-          const isHoje = iso === hojeISO;
-          const isSel = iso === diaSel;
-          const dots = Math.min(cnt, 3);
-          return (
-            <button
-              key={iso}
-              className={
-                "ag-semana-cell" +
-                (isSel ? " ag-semana-cell--sel" : "") +
-                (isHoje ? " ag-semana-cell--hoje" : "")
-              }
-              onClick={() => setDiaSel(iso)}
-            >
-              <span className="ag-semana-dow">{DOW_SHORT[d.getDay()]}</span>
-              <span className="ag-semana-num">{d.getDate()}</span>
-              <span className="ag-semana-dots">
-                {Array.from({ length: dots }).map((_, i) => (
-                  <span key={i} className="ag-semana-dot" />
-                ))}
-                {cnt > 3 && <span className="ag-semana-plus">+{cnt - 3}</span>}
-              </span>
-            </button>
-          );
-        })}
+      {/* Legenda */}
+      <div className="ag-legenda">
+        <span className="ag-legenda-item">
+          <span className="ag-legenda-dot" style={{ background: GROUP_DOT_COLORS.agendado }} />
+          {GROUP_LABELS.agendado}
+        </span>
+        <span className="ag-legenda-item">
+          <span className="ag-legenda-dot" style={{ background: GROUP_DOT_COLORS.producao }} />
+          {GROUP_LABELS.producao}
+        </span>
+        <span className="ag-legenda-item">
+          <span className="ag-legenda-dot" style={{ background: GROUP_DOT_COLORS.concluido }} />
+          {GROUP_LABELS.concluido}
+        </span>
       </div>
-    </div>
+
+      {/* Lista de pedidos do dia clicado */}
+      <PedidosDoDia
+        diaSel={diaSel}
+        loading={loading}
+        pedidosDoDia={pedidosDoDia}
+        pedidosFiltrados={pedidosFiltrados}
+        countStatus={countStatus}
+        filtro={filtro}
+        setFiltro={setFiltro}
+        onOpenPedido={onOpenPedido}
+        onNovoPedido={onNovoPedido}
+      />
+    </>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
- * VISTA LISTA — cronograma vertical agrupado por dia (só dias com pedidos)
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-function VistaLista({ pedidos, countByDay, onOpenPedido, navigate }: any) {
-  const grupos = useMemo(() => {
-    // Agrupa pedidos por data_entrega (só dias >= hoje, ignora cancelados)
-    const hojeISO = isoDate(new Date());
-    const g: Record<string, any[]> = {};
-    pedidos.forEach((p: any) => {
-      if (!p.data_entrega || p.status === "cancelado") return;
-      if (p.data_entrega < hojeISO) return; // só futuros
-      if (!g[p.data_entrega]) g[p.data_entrega] = [];
-      g[p.data_entrega].push(p);
-    });
-    return Object.keys(g)
-      .sort()
-      .map(dia => ({ dia, itens: g[dia] }));
-  }, [pedidos]);
-
-  if (grupos.length === 0) {
-    return (
-      <div className="ag-panel ag-panel--lista">
-        <EmptyState
-          titulo="Sem entregas agendadas"
-          sub="Você não tem pedidos com data de entrega nos próximos dias"
-          cta={<button className="ag-btn-primary" onClick={() => navigate("/pedidos/novo")}>+ Novo pedido</button>}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="ag-lista-wrap">
-      {grupos.map(({ dia, itens }) => {
-        const d = parseISO(dia);
-        const dif = diffDias(dia);
-        const rel = relativoLabel(dia);
-        return (
-          <section key={dia} className={"ag-grupo" + (dif === 0 ? " ag-grupo--hoje" : "") + (dif === 1 ? " ag-grupo--amanha" : "")}>
-            <header className="ag-grupo-head">
-              <span className="ag-grupo-num">{d.getDate()}</span>
-              <div className="ag-grupo-info">
-                <span className="ag-grupo-mes">
-                  {MESES_SHORT[d.getMonth()]}{rel ? ` · ${rel}` : ""}
-                </span>
-                <span className="ag-grupo-dow">{DOW_FULL[d.getDay()]}</span>
-              </div>
-              <span className="ag-grupo-cnt">
-                {itens.length} {itens.length === 1 ? "pedido" : "pedidos"}
-              </span>
-            </header>
-            <div className="ag-grupo-lista">
-              {itens.map((p: any) => (
-                <PedidoRow key={p.id} p={p} onClick={() => onOpenPedido(p.id)} compact />
-              ))}
-            </div>
-          </section>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * PEDIDOS DO DIA (usado nos modos Dia e Semana)
+ * PEDIDOS DO DIA (compartilhado entre Lista e Calendário)
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 function PedidosDoDia({
@@ -551,7 +597,7 @@ function PedidosDoDia({
  * Componentes reutilizáveis
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-function PedidoRow({ p, onClick, compact }: any) {
+function PedidoRow({ p, onClick }: any) {
   const primeiroItem = p.pedido_itens?.[0];
   const outrosItens = Math.max(0, (p.pedido_itens?.length || 0) - 1);
   const st = getStatusConfig(p.status);
@@ -560,7 +606,7 @@ function PedidoRow({ p, onClick, compact }: any) {
     : "Sem produtos";
 
   return (
-    <button className={"ag-row" + (compact ? " ag-row--compact" : "")} onClick={onClick}>
+    <button className="ag-row" onClick={onClick}>
       <div className="ag-row-img">
         {(primeiroItem?.imagem_url || primeiroItem?.produtos?.imagem_url) ? (
           <img
@@ -597,7 +643,7 @@ function EmptyState({ titulo, sub, cta }: any) {
   return (
     <div className="ag-empty">
       <div className="ag-empty-icon">
-        <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2"/>
           <line x1="16" y1="2" x2="16" y2="6"/>
           <line x1="8" y1="2" x2="8" y2="6"/>
@@ -627,20 +673,15 @@ const PlusIcon = () => (
     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
   </svg>
 );
-const IcDia = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>
-  </svg>
-);
-const IcSemana = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="4" x2="9" y2="22"/><line x1="15" y1="4" x2="15" y2="22"/>
-  </svg>
-);
 const IcLista = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
     <circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>
+  </svg>
+);
+const IcCalendario = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
   </svg>
 );
 
@@ -658,7 +699,7 @@ function AgendaStyles() {
         font-family: var(--font-base);
       }
 
-      /* Header da página */
+      /* ── Header ── */
       .ag-header { display: flex; flex-direction: column; gap: var(--space-1); }
       .ag-title {
         font-size: var(--font-page-title);
@@ -673,7 +714,7 @@ function AgendaStyles() {
         margin: 0;
       }
 
-      /* Toggle de modo */
+      /* ── Toggle ── */
       .ag-toggle {
         display: flex;
         background: var(--bg-subtle);
@@ -684,7 +725,7 @@ function AgendaStyles() {
       .ag-toggle-btn {
         flex: 1;
         display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-        padding: 9px 6px;
+        padding: 10px 6px;
         background: transparent;
         border: none;
         border-radius: 8px;
@@ -702,37 +743,247 @@ function AgendaStyles() {
         box-shadow: var(--shadow-sm);
       }
 
-      /* Painel de navegação (Dia/Semana) */
-      .ag-panel {
+      /* ─────────────────────────────────────────────────
+         VISTA LISTA
+         ───────────────────────────────────────────────── */
+
+      /* Card de resumo do dia */
+      .ag-hoje-card {
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: var(--radius-lg);
-        padding: var(--space-3) var(--space-3) var(--space-2);
+        padding: var(--space-4);
         box-shadow: var(--shadow-sm);
       }
-      .ag-panel-nav {
+      .ag-hoje-top {
+        display: flex; justify-content: space-between; align-items: flex-start;
+        gap: var(--space-2);
+      }
+      .ag-hoje-lbl {
+        font-size: var(--font-modal-title);
+        font-weight: var(--fw-black);
+        color: var(--text-title);
+        letter-spacing: -0.01em;
+        text-transform: capitalize;
+      }
+      .ag-hoje-pedidos {
+        font-size: var(--font-helper);
+        color: var(--text-muted);
+        margin-top: 2px;
+      }
+      .ag-hoje-valor {
+        font-size: 22px;
+        font-weight: var(--fw-black);
+        color: var(--text-title);
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+      }
+      .ag-hoje-prog-row {
+        display: flex; justify-content: space-between; align-items: center;
+        margin: var(--space-3) 0 6px;
+      }
+      .ag-hoje-prog-lbl {
+        font-size: var(--font-helper);
+        color: var(--text-secondary);
+      }
+      .ag-hoje-prog-pct {
+        font-size: 11px;
+        font-weight: var(--fw-black);
+        color: #B8860B;
+        background: #FFF3D1;
+        padding: 2px 8px;
+        border-radius: 6px;
+      }
+      .ag-hoje-bar {
+        height: 8px;
+        background: var(--border);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+      .ag-hoje-bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #22C55E, #16A34A);
+        border-radius: 999px;
+        transition: width var(--dur-normal) var(--ease-out);
+      }
+      .ag-hoje-stats {
+        display: flex; justify-content: space-between; gap: var(--space-2);
+        padding-top: var(--space-3);
+        margin-top: var(--space-3);
+        border-top: 1px solid var(--border);
+        flex-wrap: wrap;
+      }
+      .ag-hoje-stat {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: var(--font-helper);
+        color: var(--text-secondary);
+        font-weight: var(--fw-medium);
+      }
+      .ag-hoje-stat-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+      /* Carrossel de dias */
+      .ag-strip-wrap {
+        position: relative;
+      }
+      .ag-strip-nav {
+        display: flex; justify-content: flex-end;
+        margin-bottom: 4px;
+      }
+      .ag-strip-hoje {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-family: inherit;
+        font-size: var(--font-caption);
+        font-weight: var(--fw-bold);
+        cursor: pointer;
+        transition: all var(--dur-fast);
+      }
+      .ag-strip-hoje:hover {
+        background: var(--text-title); color: var(--text-inverse); border-color: var(--text-title);
+      }
+      .ag-strip {
+        display: flex; gap: 8px;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        padding: 6px 2px 10px;
+        scrollbar-width: none;
+        scroll-snap-type: x proximity;
+      }
+      .ag-strip::-webkit-scrollbar { display: none; }
+      .ag-day-card {
+        flex-shrink: 0;
+        scroll-snap-align: center;
+        background: var(--bg-card);
+        border: 2px solid transparent;
+        border-radius: 14px;
+        padding: 10px 14px;
+        min-width: 76px;
+        display: flex; flex-direction: column; align-items: center; gap: 2px;
+        cursor: pointer;
+        font-family: inherit;
+        box-shadow: var(--shadow-sm);
+        position: relative;
+        transition: all var(--dur-fast);
+      }
+      .ag-day-card:hover { transform: translateY(-1px); }
+      .ag-day-mes {
+        font-size: 11px;
+        color: var(--text-secondary);
+        font-weight: var(--fw-semibold);
+        letter-spacing: 0.02em;
+      }
+      .ag-day-num {
+        font-size: 24px;
+        font-weight: var(--fw-black);
+        color: var(--text-title);
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+      }
+      .ag-day-dow {
+        font-size: 11px;
+        color: var(--text-secondary);
+        font-weight: var(--fw-medium);
+      }
+      .ag-day-badge {
+        position: absolute;
+        top: -6px; right: -6px;
+        min-width: 22px; height: 22px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: var(--text-inverse);
+        font-size: 11px;
+        font-weight: var(--fw-black);
+        display: flex; align-items: center; justify-content: center;
+        padding: 0 5px;
+        box-shadow: 0 2px 4px rgba(232, 90, 140, 0.35);
+      }
+      .ag-day-card--hoje {
+        border-color: var(--border);
+      }
+      .ag-day-card--hoje .ag-day-num { color: var(--primary); }
+      .ag-day-card--sel {
+        background: var(--bg-subtle);
+        border-color: var(--primary);
+      }
+      .ag-day-card--sel .ag-day-mes,
+      .ag-day-card--sel .ag-day-num,
+      .ag-day-card--sel .ag-day-dow { color: var(--primary-dark); }
+
+      /* ─────────────────────────────────────────────────
+         VISTA CALENDÁRIO
+         ───────────────────────────────────────────────── */
+
+      /* Data header */
+      .ag-data-hdr {
+        display: flex; align-items: center; gap: 8px;
+        flex-wrap: wrap;
+        padding: 4px 2px 0;
+      }
+      .ag-data-hdr-ic { color: var(--text-secondary); flex-shrink: 0; }
+      .ag-data-hdr-txt {
+        font-size: 17px;
+        font-weight: var(--fw-black);
+        color: var(--text-title);
+        letter-spacing: -0.02em;
+      }
+      .ag-data-hdr-meta {
+        display: inline-flex; align-items: center; gap: 4px;
+        font-size: 12px; font-weight: var(--fw-bold);
+        padding: 3px 8px;
+        border-radius: 6px;
+      }
+      .ag-data-hdr-meta--qtd {
+        color: var(--primary-dark);
+        background: var(--bg-subtle);
+      }
+      .ag-data-hdr-meta--valor {
+        color: #14532d;
+        background: #dcfce7;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Card do calendário */
+      .ag-cal-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4) var(--space-3);
+        box-shadow: var(--shadow-sm);
+      }
+      .ag-cal-nav {
         display: flex; align-items: center; justify-content: space-between;
         gap: var(--space-2);
         margin-bottom: var(--space-3);
+        padding: 0 4px;
       }
-      .ag-panel-title-wrap {
+      .ag-cal-nav-btn {
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--text-secondary);
+        font-family: inherit;
+        transition: all var(--dur-fast);
+      }
+      .ag-cal-nav-btn:hover {
+        background: var(--text-title); color: var(--text-inverse); border-color: var(--text-title);
+      }
+      .ag-cal-titulo-wrap {
         display: flex; align-items: center; gap: var(--space-2);
-        flex: 1; justify-content: center;
       }
-      .ag-panel-title {
+      .ag-cal-titulo {
         font-size: var(--font-button);
         font-weight: var(--fw-bold);
         color: var(--text-title);
         text-transform: capitalize;
         letter-spacing: -0.01em;
       }
-      .ag-panel-subtitle {
-        font-size: var(--font-caption);
-        color: var(--text-muted);
-        font-weight: var(--fw-medium);
-        margin-top: 2px;
-      }
-      .ag-btn-hoje {
+      .ag-cal-hoje {
         background: var(--bg-subtle);
         border: 1px solid var(--border);
         color: var(--text-secondary);
@@ -742,197 +993,94 @@ function AgendaStyles() {
         font-size: var(--font-caption);
         font-weight: var(--fw-bold);
         cursor: pointer;
-        transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+        transition: all var(--dur-fast);
       }
-      .ag-btn-hoje:hover {
+      .ag-cal-hoje:hover {
         background: var(--text-title); color: var(--text-inverse); border-color: var(--text-title);
       }
-      .ag-nav-btn {
-        width: 34px; height: 34px;
-        border-radius: 50%;
-        border: 1px solid var(--border);
-        background: var(--bg-card);
-        cursor: pointer;
-        display: flex; align-items: center; justify-content: center;
-        color: var(--text-secondary);
-        font-family: inherit;
-        transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
-        flex-shrink: 0;
-      }
-      .ag-nav-btn:hover {
-        background: var(--text-title); color: var(--text-inverse); border-color: var(--text-title);
-      }
-
-      /* ── Vista DIA — mês em grid multi-linha ── */
-      .ag-dow-header {
+      .ag-cal-dow-hdr {
         display: grid; grid-template-columns: repeat(7, 1fr);
-        gap: 5px;
-        margin-bottom: 4px;
-        padding: 0 2px;
+        padding: 0 2px 6px;
       }
-      .ag-dow-lbl {
+      .ag-cal-dow {
         text-align: center;
-        font-size: 9px;
-        font-weight: var(--fw-black);
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        padding: 4px 0;
+        font-size: 11px;
+        font-weight: var(--fw-semibold);
+        color: var(--text-secondary);
       }
-      .ag-mes-grid {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 5px;
+      .ag-cal-grid {
+        display: grid; grid-template-columns: repeat(7, 1fr);
+        row-gap: 4px;
       }
-      .ag-mes-empty {
+      .ag-cal-day {
         aspect-ratio: 1;
-      }
-      .ag-mes-day {
-        position: relative;
-        aspect-ratio: 1;
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        cursor: pointer;
-        font-family: inherit;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
-        gap: 2px;
-        padding: 4px 2px;
-        transition: background var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
-      }
-      .ag-mes-day:hover { background: var(--bg-subtle); }
-      .ag-mes-num {
-        font-size: 15px;
-        font-weight: var(--fw-black);
-        color: var(--text-title);
-        letter-spacing: -0.02em;
-        line-height: 1;
-      }
-      .ag-mes-pill {
-        font-size: 9px;
-        font-weight: var(--fw-black);
-        padding: 1px 6px;
-        background: var(--text-title);
-        color: var(--text-inverse);
-        border-radius: 999px;
-        line-height: 1.3;
-        min-height: 13px;
-        display: inline-flex; align-items: center;
-      }
-      .ag-mes-pill--empty {
-        background: transparent;
-        color: transparent;
-      }
-
-      /* Hoje = borda rosa + fundo bem sutil + número rosa */
-      .ag-mes-day--hoje {
-        border-color: var(--primary);
-        background: linear-gradient(180deg, var(--primary-light) 0%, var(--bg-card) 60%);
-      }
-      .ag-mes-day--hoje .ag-mes-num { color: var(--primary); }
-
-      /* Selecionado = grafite forte */
-      .ag-mes-day--sel {
-        background: var(--text-title);
-        border-color: var(--text-title);
-      }
-      .ag-mes-day--sel .ag-mes-num { color: var(--text-inverse); }
-      .ag-mes-day--sel .ag-mes-pill {
-        background: var(--text-inverse);
-        color: var(--text-title);
-      }
-      .ag-mes-day--sel .ag-mes-pill--empty { background: transparent; color: transparent; }
-
-      /* Hoje E selecionado ao mesmo tempo */
-      .ag-mes-day--sel.ag-mes-day--hoje {
-        background: var(--text-title);
-        border-color: var(--primary);
-        border-width: 2px;
-      }
-      .ag-mes-day--sel.ag-mes-day--hoje .ag-mes-num { color: var(--text-inverse); }
-
-      /* ── Vista SEMANA — grade de 7 dias ── */
-      .ag-semana-grid {
-        display: grid; grid-template-columns: repeat(7, 1fr);
-        gap: 5px;
-      }
-      .ag-semana-cell {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 8px 3px 9px;
-        display: flex; flex-direction: column; align-items: center;
-        gap: 4px;
-        cursor: pointer;
         font-family: inherit;
-        min-height: 68px;
-        transition: background var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
+        background: transparent;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        position: relative;
+        gap: 3px;
+        transition: background var(--dur-fast);
       }
-      .ag-semana-cell:hover { background: var(--bg-subtle); }
-      .ag-semana-dow {
-        font-size: 9px;
-        font-weight: var(--fw-bold);
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        line-height: 1;
-      }
-      .ag-semana-num {
-        font-size: 15px;
-        font-weight: var(--fw-black);
+      .ag-cal-day:hover { background: var(--bg-subtle); }
+      .ag-cal-num {
+        font-size: 14px;
+        font-weight: var(--fw-medium);
         color: var(--text-title);
-        letter-spacing: -0.02em;
         line-height: 1;
       }
-      .ag-semana-dots {
-        display: flex; align-items: center; justify-content: center;
-        gap: 2px;
-        margin-top: auto;
-        min-height: 6px;
+      .ag-cal-day--outro .ag-cal-num { color: var(--text-disabled); }
+      .ag-cal-dots {
+        display: flex; gap: 2px;
+        min-height: 5px;
       }
-      .ag-semana-dot {
+      .ag-cal-dot {
         width: 4px; height: 4px;
         border-radius: 50%;
-        background: var(--text-title);
       }
-      .ag-semana-plus {
-        font-size: 8px;
+      .ag-cal-day--hoje .ag-cal-num {
+        color: var(--primary);
         font-weight: var(--fw-black);
-        color: var(--text-title);
-        margin-left: 2px;
       }
-      /* Hoje = borda rosa + fundo bem sutil + número rosa */
-      .ag-semana-cell--hoje {
-        border-color: var(--primary);
-        background: linear-gradient(180deg, var(--primary-light) 0%, var(--bg-card) 60%);
+      .ag-cal-day--sel {
+        background: var(--primary) !important;
+        box-shadow: 0 0 0 5px var(--bg-subtle);
       }
-      .ag-semana-cell--hoje .ag-semana-num { color: var(--primary); }
-      /* Selecionado = grafite */
-      .ag-semana-cell--sel {
-        background: var(--text-title);
-        border-color: var(--text-title);
+      .ag-cal-day--sel .ag-cal-num {
+        color: var(--text-inverse);
+        font-weight: var(--fw-black);
       }
-      .ag-semana-cell--sel .ag-semana-dow,
-      .ag-semana-cell--sel .ag-semana-num { color: var(--text-inverse); }
-      .ag-semana-cell--sel .ag-semana-dot { background: var(--text-inverse); }
-      .ag-semana-cell--sel .ag-semana-plus { color: var(--text-inverse); }
-      /* Hoje E selecionado */
-      .ag-semana-cell--sel.ag-semana-cell--hoje {
-        background: var(--text-title);
-        border-color: var(--primary);
-        border-width: 2px;
+      .ag-cal-day--sel .ag-cal-dot {
+        box-shadow: 0 0 0 1px rgba(255,255,255,0.5);
       }
-      .ag-semana-cell--sel.ag-semana-cell--hoje .ag-semana-num { color: var(--text-inverse); }
 
-      /* ── Painel de PEDIDOS DO DIA ── */
+      /* Legenda */
+      .ag-legenda {
+        display: flex; justify-content: center; gap: var(--space-4);
+        padding: var(--space-2) 0;
+        flex-wrap: wrap;
+      }
+      .ag-legenda-item {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: var(--font-caption);
+        color: var(--text-secondary);
+        font-weight: var(--fw-medium);
+      }
+      .ag-legenda-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+      /* ─────────────────────────────────────────────────
+         PAINEL DE PEDIDOS (compartilhado)
+         ───────────────────────────────────────────────── */
       .ag-pedidos-card {
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: var(--radius-lg);
         padding: var(--space-4);
         box-shadow: var(--shadow-sm);
-        min-height: 240px;
+        min-height: 200px;
         display: flex; flex-direction: column;
       }
       .ag-pedidos-head {
@@ -958,7 +1106,7 @@ function AgendaStyles() {
       .ag-rel-pill {
         display: inline-block;
         padding: 2px 8px;
-        background: var(--primary-light);
+        background: var(--bg-subtle);
         color: var(--primary-dark);
         border-radius: 999px;
         font-size: 10px;
@@ -999,7 +1147,7 @@ function AgendaStyles() {
         font-size: var(--font-caption);
         font-weight: var(--fw-semibold);
         cursor: pointer;
-        transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+        transition: all var(--dur-fast);
       }
       .ag-filtro:hover { background: var(--bg-subtle); color: var(--text-title); }
       .ag-filtro--on {
@@ -1028,18 +1176,18 @@ function AgendaStyles() {
         padding: var(--space-6) 0;
       }
 
-      /* Empty state */
+      /* Empty */
       .ag-empty {
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
         text-align: center;
         gap: var(--space-1);
         flex: 1;
-        min-height: 240px;
+        min-height: 200px;
         padding: var(--space-4);
       }
       .ag-empty-icon {
-        width: 62px; height: 62px;
+        width: 56px; height: 56px;
         border-radius: 50%;
         background: var(--bg-subtle);
         color: var(--primary);
@@ -1057,11 +1205,11 @@ function AgendaStyles() {
         font-size: var(--font-helper);
         color: var(--text-muted);
         margin: 0;
-        max-width: 280px;
+        max-width: 260px;
         line-height: var(--lh-normal);
       }
 
-      /* ── Lista de pedidos ── */
+      /* Lista de pedidos */
       .ag-pedidos-lista {
         display: flex; flex-direction: column;
         margin: 0 calc(var(--space-4) * -1);
@@ -1089,7 +1237,6 @@ function AgendaStyles() {
         overflow: hidden;
         display: flex; align-items: center; justify-content: center;
       }
-      .ag-row--compact .ag-row-img { width: 42px; height: 42px; border-radius: 10px; }
       .ag-row-img img { width: 100%; height: 100%; object-fit: cover; }
       .ag-row-emoji { font-size: 22px; }
       .ag-row-info { flex: 1; min-width: 0; }
@@ -1144,70 +1291,6 @@ function AgendaStyles() {
         color: var(--primary);
         flex-shrink: 0;
         letter-spacing: -0.01em;
-      }
-
-      /* ── Vista LISTA — cronograma ── */
-      .ag-lista-wrap {
-        display: flex; flex-direction: column;
-        gap: var(--space-4);
-      }
-      .ag-grupo {
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        padding: var(--space-3) var(--space-2) var(--space-2);
-        box-shadow: var(--shadow-sm);
-      }
-      .ag-grupo--hoje { border-color: var(--primary); }
-      .ag-grupo--amanha { border-color: var(--warning); }
-      .ag-grupo-head {
-        display: flex; align-items: center; gap: var(--space-3);
-        padding: 0 var(--space-2) var(--space-2);
-      }
-      .ag-grupo-num {
-        font-size: 26px;
-        font-weight: var(--fw-black);
-        color: var(--text-title);
-        line-height: 1;
-        letter-spacing: -0.02em;
-        flex-shrink: 0;
-      }
-      .ag-grupo--hoje .ag-grupo-num { color: var(--primary); }
-      .ag-grupo--amanha .ag-grupo-num { color: var(--warning); }
-      .ag-grupo-info {
-        display: flex; flex-direction: column; gap: 2px;
-        flex: 1; min-width: 0;
-      }
-      .ag-grupo-mes {
-        font-size: 10px;
-        font-weight: var(--fw-black);
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        line-height: 1;
-      }
-      .ag-grupo-dow {
-        font-size: var(--font-helper);
-        color: var(--text-title);
-        font-weight: var(--fw-semibold);
-      }
-      .ag-grupo-cnt {
-        font-size: 11px;
-        font-weight: var(--fw-bold);
-        color: var(--text-muted);
-        background: var(--bg-subtle);
-        padding: 3px 9px;
-        border-radius: 999px;
-        flex-shrink: 0;
-      }
-      .ag-grupo-lista {
-        display: flex; flex-direction: column;
-        border-top: 1px solid var(--border);
-        margin: 0 calc(var(--space-2) * -1);
-      }
-      .ag-grupo-lista .ag-row {
-        padding-left: var(--space-3);
-        padding-right: var(--space-3);
       }
     `}</style>
   );
