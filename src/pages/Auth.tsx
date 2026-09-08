@@ -373,23 +373,19 @@ export default function Auth() {
       ) : (
       <div className="auth-card">
         {/* ─────────────────────────────────────────────────────────
-            HERO: Logo + Social proof
-            A imagem /logoapp.png é a mesma usada no splash.
-            Se quiser trocar por outra, salve em /public/ e mude o src.
+            HEADER: Logo + Social proof pill (sem hero rosa)
+            Se quiser trocar a logo, altere o src abaixo.
+            Se quiser trocar o número, altere o "+500" no proof.
         ───────────────────────────────────────────────────────── */}
         <div className="cad-hero">
-          <div className="cad-hero-orb cad-hero-orb--a" />
-          <div className="cad-hero-orb cad-hero-orb--b" />
-          <div className="cad-hero-logo-wrap">
-            <img src="/logoapp.png" alt="Doonly" className="cad-hero-logo" />
-          </div>
-          <div className="cad-proof">
+          <img src="/logoapp.png" alt="Doonly" className="cad-hero-logo" />
+          <div className="cad-proof-pill">
             <div className="cad-proof-avatars">
               <div className="cad-proof-av" style={{ background: "#F97316" }}>M</div>
               <div className="cad-proof-av" style={{ background: "#22c55e" }}>A</div>
               <div className="cad-proof-av" style={{ background: "#7F77DD" }}>J</div>
             </div>
-            <span className="cad-proof-txt"><b>+500 confeitarias</b> já usam</span>
+            <span className="cad-proof-pill-txt"><b>+500</b> confeitarias</span>
           </div>
         </div>
 
@@ -792,58 +788,41 @@ export default function Auth() {
         .cad-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
         /* ── Cabeçalho do cadastro ────────────────────────── */
-        /* ── Hero do cadastro (preview + social proof) ─── */
+        /* ── Header do cadastro (logo + social proof pill) ─── */
         .cad-hero {
-          position: relative;
-          background: linear-gradient(135deg, #FF9AC1 0%, #E85A8C 60%, #C33A6E 100%);
-          border-radius: var(--radius-md);
-          padding: 1.25rem 1rem 0.9rem;
+          display: flex; flex-direction: column; align-items: center;
+          gap: 0.6rem;
           margin-bottom: 1.25rem;
-          overflow: hidden;
-        }
-        .cad-hero-orb {
-          position: absolute; border-radius: 50%;
-          filter: blur(28px); -webkit-filter: blur(28px);
-          opacity: 0.55; pointer-events: none;
-          will-change: transform;
-        }
-        .cad-hero-orb--a { width: 120px; height: 120px; background: #FFD1E1; top: -32px; left: -20px; }
-        .cad-hero-orb--b { width: 90px; height: 90px; background: #FFCBDD; bottom: -25px; right: 15px; }
-
-        .cad-hero-logo-wrap {
-          display: flex; justify-content: center;
-          position: relative; z-index: 2;
-          padding: 8px 0 4px;
         }
         .cad-hero-logo {
-          width: 90px; height: 90px;
+          width: 72px; height: 72px;
           object-fit: contain;
-          filter: drop-shadow(0 8px 20px rgba(60, 15, 40, 0.35)) drop-shadow(0 0 12px rgba(255, 220, 235, 0.3));
-          -webkit-filter: drop-shadow(0 8px 20px rgba(60, 15, 40, 0.35)) drop-shadow(0 0 12px rgba(255, 220, 235, 0.3));
+          filter: drop-shadow(0 4px 12px rgba(232, 90, 140, 0.25));
+          -webkit-filter: drop-shadow(0 4px 12px rgba(232, 90, 140, 0.25));
         }
-
-        .cad-proof {
-          display: flex; align-items: center; justify-content: center;
-          gap: 8px; margin-top: 12px;
-          position: relative; z-index: 2;
+        .cad-proof-pill {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 4px 12px 4px 5px;
+          background: #FEF4E7;
+          border: 1px solid #FCD9A1;
+          border-radius: var(--radius-full);
         }
         .cad-proof-avatars { display: flex; }
         .cad-proof-av {
-          width: 24px; height: 24px; border-radius: 50%;
-          border: 2px solid rgba(255,255,255,0.9);
+          width: 22px; height: 22px; border-radius: 50%;
+          border: 2px solid #FEF4E7;
           display: flex; align-items: center; justify-content: center;
           font-size: 10px; font-weight: var(--fw-black); color: #fff;
           margin-left: -7px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         .cad-proof-av:first-child { margin-left: 0; }
-        .cad-proof-txt {
-          color: #fff; font-size: var(--text-xs);
-          font-weight: var(--fw-semibold);
-          text-shadow: 0 1px 3px rgba(0,0,0,0.25);
-          letter-spacing: 0.01em;
+        .cad-proof-pill-txt {
+          font-size: var(--text-xs);
+          font-weight: var(--fw-bold);
+          color: #854F0B;
+          white-space: nowrap;
         }
-        .cad-proof-txt b { font-weight: var(--fw-black); }
+        .cad-proof-pill-txt b { color: var(--text-title); font-weight: var(--fw-black); }
 
         .cad-header { text-align: center; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem; }
         .cad-title { font-size: 1.5rem; font-weight: 700; color: var(--text-title); margin: 0; letter-spacing: -0.01em; line-height: 1.2; }
