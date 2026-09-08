@@ -53,6 +53,7 @@ export default function Cardapio() {
   const [loading, setLoading] = useState(true);
   const [copiado, setCopiado] = useState(false);
   const [contadores, setContadores] = useState({ produtos: 0, produtosAtivos: 0, categorias: 0, promocoes: 0 });
+  const [visitasPop, setVisitasPop] = useState<number | null>(null); // +N flutuante quando chega visita nova
 
   // Nova arquitetura: cardápio publicado quando profile.codigo_publico existe.
   // URL final: /c/[codigo]/[slug] — slug é "cardapio" (free) ou personalizado (PRO).
@@ -86,6 +87,25 @@ export default function Cardapio() {
         promocoes: promo.count ?? 0,
       });
     })();
+  }, [profile?.id]);
+
+  // Visitas em tempo real — subscribe a novos inserts na tabela cardapio_visitas
+  useEffect(() => {
+    if (!profile?.id) return;
+    const canal = supabase
+      .channel(`visitas-live-${profile.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "cardapio_visitas", filter: `user_id=eq.${profile.id}` },
+        () => {
+          // Incrementa visitas do período atual + dispara pop "+1"
+          setMetricas((m) => ({ ...m, visitas: m.visitas + 1 }));
+          setVisitasPop(1);
+          window.setTimeout(() => setVisitasPop(null), 1200);
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(canal); };
   }, [profile?.id]);
 
   const calcularDataLimite = (p: Periodo): Date => {
@@ -465,7 +485,14 @@ export default function Cardapio() {
               </div>
               <div className="ch-metric-body">
                 <p className="ch-metric-label">{m.label}</p>
-                <p className="ch-metric-value">{m.value}</p>
+                {m.label === "Visitas" ? (
+                  <span className="ch-metric-value-wrap">
+                    <span className="ch-metric-value">{m.value}</span>
+                    {visitasPop !== null && <span className="ch-metric-pop">+{visitasPop}</span>}
+                  </span>
+                ) : (
+                  <p className="ch-metric-value">{m.value}</p>
+                )}
                 {v && v.tipo !== "flat" && (
                   <p className={`ch-metric-var ${v.tipo}`}>
                     {v.tipo === "up" ? <TrendUp size={11} weight="bold" /> : <TrendDown size={11} weight="bold" />}
@@ -473,6 +500,12 @@ export default function Cardapio() {
                   </p>
                 )}
               </div>
+              {m.label === "Visitas" && (
+                <span className="ch-live-badge">
+                  <span className="ch-live-dot" />
+                  Ao vivo
+                </span>
+              )}
             </div>
           );
         })}
@@ -646,10 +679,14 @@ export default function Cardapio() {
         }
         .ch-metric-body { min-width: 0; flex: 1; }
         .ch-metric-label {
-          font-size: var(--font-caption); font-weight: var(--fw-semibold);
+          font-size: 10px; font-weight: var(--fw-bold);
           color: var(--text-muted);
-          text-transform: uppercase; letter-spacing: var(--ls-wide);
+          text-transform: uppercase; letter-spacing: 0.04em;
           margin: 0 0 var(--space-1);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          line-height: 1.2;
         }
         .ch-metric-value {
           font-size: var(--font-card-title);
@@ -661,6 +698,7 @@ export default function Cardapio() {
           overflow: hidden;
           text-overflow: ellipsis;
           letter-spacing: var(--ls-tight);
+          display: inline-block;
         }
         @media (min-width: 720px) {
           .ch-metric-value { font-size: var(--font-modal-title); }
@@ -672,6 +710,47 @@ export default function Cardapio() {
         }
         .ch-metric-var.up   { color: var(--success); }
         .ch-metric-var.down { color: var(--error); }
+
+        /* ── Badge "Ao vivo" + animação de +N incrementando ── */
+        .ch-metric-card { position: relative; }
+        .ch-live-badge {
+          position: absolute; top: 8px; right: 8px;
+          display: inline-flex; align-items: center; gap: 4px;
+          padding: 2px 8px 2px 6px;
+          background: #DCFCE7; color: #14532d;
+          border-radius: 999px;
+          font-family: inherit;
+          font-size: 9px; font-weight: var(--fw-black);
+          letter-spacing: 0.05em; text-transform: uppercase;
+          line-height: 1;
+        }
+        .ch-live-dot {
+          width: 6px; height: 6px; border-radius: 50%;
+          background: #22c55e;
+          box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+          animation: chLiveDot 1.6s ease-in-out infinite;
+        }
+        @keyframes chLiveDot {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+          50%      { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
+        }
+        .ch-metric-value-wrap { position: relative; display: inline-block; }
+        .ch-metric-pop {
+          position: absolute; top: -6px; right: -26px;
+          background: #22c55e; color: #fff;
+          padding: 1px 7px; border-radius: 999px;
+          font-family: inherit;
+          font-size: 9px; font-weight: var(--fw-black);
+          line-height: 1.4;
+          pointer-events: none;
+          animation: chPopIn 1.2s ease-out forwards;
+        }
+        @keyframes chPopIn {
+          0%   { transform: translateY(6px) scale(0.6); opacity: 0; }
+          30%  { transform: translateY(-2px) scale(1.1); opacity: 1; }
+          70%  { transform: translateY(-4px) scale(1); opacity: 1; }
+          100% { transform: translateY(-12px) scale(0.9); opacity: 0; }
+        }
 
         /* ── Blocos ── */
         .ch-block {
