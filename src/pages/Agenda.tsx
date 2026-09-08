@@ -84,7 +84,7 @@ export default function Agenda() {
 
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const STATUS_FILTRAVEIS = ["novo", "confirmado", "em_producao", "pronto", "concluido"];
+  const STATUS_FILTRAVEIS = ["novo", "confirmado", "em_producao", "pronto", "a_caminho", "concluido"];
   const [statusSelecionados, setStatusSelecionados] = useState<string[]>(STATUS_FILTRAVEIS);
   const [filtroDrawerOpen, setFiltroDrawerOpen] = useState(false);
 
@@ -104,19 +104,23 @@ export default function Agenda() {
     if (!userId) return;
     (async () => {
       setLoading(true);
-      const ini = new Date(refDate); ini.setDate(refDate.getDate() - 30);
-      const fim = new Date(refDate); fim.setDate(refDate.getDate() + 60);
+      // Traz TODOS os pedidos do usuário — não filtra por data (garante que nenhum "some")
       const { data } = await supabase.from("pedidos")
         .select("*, pedido_itens(nome_produto, quantidade, imagem_url, produtos(imagem_url))")
         .eq("user_id", userId)
-        .gte("data_entrega", isoDate(ini))
-        .lte("data_entrega", isoDate(fim))
-        .order("data_entrega", { ascending: true })
+        .order("data_entrega", { ascending: true, nullsFirst: false })
         .order("horario_entrega", { ascending: true, nullsFirst: false });
-      setPedidos(data || []);
+
+      // Se pedido não tem data_entrega, usa created_at como fallback (agrupa pela data que foi criado)
+      const pedidosNormalizados = (data || []).map((p: any) => ({
+        ...p,
+        data_entrega: p.data_entrega || (p.created_at ? p.created_at.slice(0, 10) : null),
+      }));
+
+      setPedidos(pedidosNormalizados);
       setLoading(false);
     })();
-  }, [userId, refDate]);
+  }, [userId]);
 
   /* Mapa de contagens por dia com grupos de status */
   const dayStats = useMemo(() => {
