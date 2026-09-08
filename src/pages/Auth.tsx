@@ -554,7 +554,7 @@ export default function Auth() {
             )
           )}
           <button type="submit" className="cad-btn" disabled={cadastroLoading}>
-            {cadastroLoading ? <span className="spinner" /> : "Cadastrar"}
+            {cadastroLoading ? <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><span className="spinner" /> Criando conta...</span> : "Cadastrar"}
           </button>
           <div className="auth-divider"><span>ou</span></div>
           <button type="button" className="google-btn" onClick={async () => {
@@ -647,14 +647,35 @@ export default function Auth() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { height: 100%; overflow: hidden; }
-        #root { height: 100%; overflow-y: auto; }
-        .auth-root { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; font-family: inherit; padding: 1.5rem; overflow: visible; }
+        #root { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .auth-root {
+          min-height: 100vh;
+          min-height: 100dvh;
+          display: flex; flex-direction: column; align-items: center; justify-content: center;
+          position: relative; font-family: inherit;
+          padding: max(1.5rem, env(safe-area-inset-top)) 1.5rem max(1.5rem, env(safe-area-inset-bottom));
+          overflow: visible;
+        }
         .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; display: flex; flex-direction: column; }
         .fade-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-card); opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
-        .auth-bg { position: fixed; inset: 0; z-index: 0; background: #E85A8C; }
-        .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; }
-        .auth-card { position: relative; z-index: 2; background: var(--bg-card); border-radius: var(--radius-lg); padding: 1.5rem 1.75rem 2rem; width: 100%; max-width: 440px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; margin: 1rem auto; overflow-y: auto; max-height: calc(100vh - 2rem); }
+        .auth-bg {
+          position: fixed; inset: 0; z-index: 0;
+          background: linear-gradient(135deg, #FF9AC1 0%, #E85A8C 50%, #A8235A 100%);
+        }
+        .mouse-glow { position: fixed; z-index: 1; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%); transform: translate(-50%, -50%); pointer-events: none; will-change: transform; }
+        .auth-card {
+          position: relative; z-index: 2;
+          background: var(--bg-card); border-radius: var(--radius-lg);
+          padding: 1.5rem 1.75rem 2rem;
+          width: 100%; max-width: 440px;
+          box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+          animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+          margin: 1rem auto;
+          overflow-y: auto;
+          max-height: calc(100vh - 2rem);
+          max-height: calc(100dvh - 2rem);
+        }
         @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes promoFadeIn { from { opacity: 0; } to { opacity: 1; } }
         .auth-logo-wrap { display: flex; justify-content: center; margin-bottom: 0.75rem; }
@@ -662,32 +683,47 @@ export default function Auth() {
         .auth-form { display: flex; flex-direction: column; gap: 1rem; }
         .field { display: flex; flex-direction: column; gap: 0.35rem; }
         .field label { font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--text-primary); }
-        .field input { padding: 0.72rem 1rem; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: var(--font-input); color: var(--text-title); outline: none; transition: background-color 0.2s, border-color 0.2s; width: 100%; }
+        .field input {
+          padding: 0.72rem 1rem;
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-sm);
+          font-family: inherit;
+          font-size: 16px; /* Evita zoom automatico no iOS Safari */
+          color: var(--text-title);
+          outline: none;
+          transition: background-color 0.2s, border-color 0.2s;
+          width: 100%;
+          -webkit-appearance: none;
+          appearance: none;
+          -webkit-tap-highlight-color: transparent;
+        }
         .field input:focus { border-color: var(--border-focus); }
         .field input::placeholder { color: var(--text-muted); }
         .field-error { font-size: 0.75rem; color: var(--error); padding-left: 0.25rem; }
         .password-wrap { position: relative; }
         .password-wrap input { padding-right: 2.8rem; }
-        .eye-btn { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; padding: 0; }
+        .eye-btn { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; padding: 0.5rem; -webkit-tap-highlight-color: transparent; }
         .eye-btn:hover { color: var(--primary); }
         .login-bottom-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 0.5rem; }
         .keep-connected { display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0; }
         .keep-connected input[type="checkbox"] { accent-color: var(--primary); width: 15px; height: 15px; cursor: pointer; }
         .keep-connected label { font-size: var(--font-helper); color: var(--text-primary); cursor: pointer; white-space: nowrap; }
-        .forgot-link { font-size: var(--font-helper); color: var(--primary); text-decoration: none; white-space: nowrap; font-weight: var(--fw-medium); }
+        .forgot-link { font-size: var(--font-helper); color: var(--primary); text-decoration: none; white-space: nowrap; font-weight: var(--fw-medium); -webkit-tap-highlight-color: transparent; }
         .forgot-link:hover { text-decoration: underline; }
         .auth-error { background: #fff1f2; border: 1px solid #fecdd3; color: var(--error); border-radius: var(--radius-sm); padding: 0.6rem 0.9rem; font-size: var(--font-button); }
-        .auth-btn { padding: 0.85rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-semibold); cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; min-height: 48px; }
+        .auth-btn { padding: 0.85rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-sm); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-semibold); cursor: pointer; transition: opacity 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; min-height: 48px; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
         .auth-btn:hover:not(:disabled) { opacity: 0.92; transform: translateY(-1px); }
         .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+        .auth-btn:active:not(:disabled) { transform: scale(0.98); }
         .cadastro-link-wrap { text-align: center; font-size: var(--font-button); color: var(--text-secondary); }
-        .cadastro-link { background: none; border: none; color: var(--primary); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; font-size: var(--font-button); text-decoration: underline; }
+        .cadastro-link { background: none; border: none; color: var(--primary); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; font-size: var(--font-button); text-decoration: underline; -webkit-tap-highlight-color: transparent; }
         .spinner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         .auth-divider { display: flex; align-items: center; gap: 0.75rem; color: var(--border); font-size: var(--font-helper); }
         .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-        .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0.75rem; background: var(--bg-card); color: var(--text-primary); border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-medium); cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; }
+        .google-btn { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0.75rem; background: var(--bg-card); color: var(--text-primary); border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-medium); cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; width: 100%; min-height: 48px; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
         .google-btn:hover { border-color: var(--text-muted); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+        .google-btn:active { transform: scale(0.98); }
 
         /* ── Cadastro ─────────────────────────────────────── */
         .cadastro-form { display: flex; flex-direction: column; gap: 0.75rem; padding-top: 0.5rem; }
@@ -696,7 +732,18 @@ export default function Auth() {
         .cad-field:focus-within { border-color: var(--border-focus); }
         .cad-field.has-error { border-color: var(--error); }
         .cad-field.has-error:focus-within { border-color: var(--error); }
-        .cad-field input { flex: 1; min-width: 0; padding: 0.8rem 0.5rem 0.8rem 1.25rem; border: none; outline: none; font-family: inherit; font-size: var(--font-input); color: var(--text-title); background: transparent; }
+        .cad-field input {
+          flex: 1; min-width: 0;
+          padding: 0.8rem 0.5rem 0.8rem 1.25rem;
+          border: none; outline: none;
+          font-family: inherit;
+          font-size: 16px; /* Evita zoom no iOS */
+          color: var(--text-title);
+          background: transparent;
+          -webkit-appearance: none;
+          appearance: none;
+          -webkit-tap-highlight-color: transparent;
+        }
         .cad-field input::placeholder { color: var(--text-muted); }
         .cad-field input:-webkit-autofill,
         .cad-field input:-webkit-autofill:hover,
@@ -716,7 +763,7 @@ export default function Auth() {
           transition: background-color 5000s ease-in-out 0s;
         }
         .cad-icon { margin-right: 1.5rem; flex-shrink: 0; color: var(--text-muted); }
-        .cad-eye { background: none; border: none; cursor: pointer; padding: 0 1.5rem 0 0.25rem; display: flex; align-items: center; color: var(--text-muted); flex-shrink: 0; }
+        .cad-eye { background: none; border: none; cursor: pointer; padding: 0.5rem 1.5rem 0.5rem 0.25rem; display: flex; align-items: center; color: var(--text-muted); flex-shrink: 0; -webkit-tap-highlight-color: transparent; }
         .cad-eye:hover { color: var(--primary); }
         .cad-error { font-size: 0.75rem; color: var(--error); padding-left: 1.25rem; }
         .cad-btn { margin-top: 0.5rem; padding: 0.9rem; background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-bold); cursor: pointer; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; min-height: 52px; letter-spacing: 0.5px; }
