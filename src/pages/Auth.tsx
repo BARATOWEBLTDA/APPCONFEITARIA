@@ -373,28 +373,15 @@ export default function Auth() {
       ) : (
       <div className="auth-card">
         {/* ─────────────────────────────────────────────────────────
-            HERO: Preview do app + Social proof integrado
-            TODO: Quando tiver o print real do app, substitua o
-            <div className="cad-phone-mock"> pela <img> real.
-            Sugestão de tamanho: 280x420px (proporção celular).
-            Salve em /public/screenshots/ como tela1.png
-            E troque o .cad-phone-mock inteiro por:
-            <img src="/screenshots/tela1.png" alt="Doonly" className="cad-phone-img" />
+            HERO: Logo + Social proof
+            A imagem /logoapp.png é a mesma usada no splash.
+            Se quiser trocar por outra, salve em /public/ e mude o src.
         ───────────────────────────────────────────────────────── */}
         <div className="cad-hero">
           <div className="cad-hero-orb cad-hero-orb--a" />
           <div className="cad-hero-orb cad-hero-orb--b" />
-          <div className="cad-phone">
-            <div className="cad-phone-mock">
-              <div className="cad-phone-header" />
-              <div className="cad-phone-line cad-phone-line--pink" />
-              <div className="cad-phone-line" />
-              <div className="cad-phone-line cad-phone-line--green" />
-              <div className="cad-phone-line cad-phone-line--short" />
-              <div className="cad-phone-line cad-phone-line--orange" />
-              <div className="cad-phone-line" />
-              <div className="cad-phone-line cad-phone-line--green cad-phone-line--short" />
-            </div>
+          <div className="cad-hero-logo-wrap">
+            <img src="/logoapp.png" alt="Doonly" className="cad-hero-logo" />
           </div>
           <div className="cad-proof">
             <div className="cad-proof-avatars">
@@ -823,37 +810,16 @@ export default function Auth() {
         .cad-hero-orb--a { width: 120px; height: 120px; background: #FFD1E1; top: -32px; left: -20px; }
         .cad-hero-orb--b { width: 90px; height: 90px; background: #FFCBDD; bottom: -25px; right: 15px; }
 
-        .cad-phones {
+        .cad-hero-logo-wrap {
           display: flex; justify-content: center;
           position: relative; z-index: 2;
+          padding: 8px 0 4px;
         }
-        .cad-phone {
-          width: 96px; height: 140px;
-          background: #fff;
-          border-radius: 12px;
-          padding: 6px;
-          box-shadow: 0 10px 24px rgba(0,0,0,0.28);
-          border: 2px solid #2D1F26;
-          margin: 0 auto;
-          position: relative; z-index: 2;
-        }
-        .cad-phone-mock { display: flex; flex-direction: column; gap: 4px; height: 100%; }
-        .cad-phone-header {
-          height: 8px; background: #E85A8C; border-radius: 3px;
-          margin-bottom: 3px;
-        }
-        .cad-phone-line {
-          height: 5px; background: #F0EBED; border-radius: 2px;
-        }
-        .cad-phone-line--pink { background: #E85A8C; width: 60%; }
-        .cad-phone-line--green { background: #22c55e; width: 45%; }
-        .cad-phone-line--orange { background: #EF9F27; width: 55%; }
-        .cad-phone-line--short { width: 40%; }
-        /* Se você trocar por <img>, use estas classes: */
-        .cad-phone-img {
-          width: 100%; height: 100%;
-          object-fit: cover;
-          border-radius: 6px;
+        .cad-hero-logo {
+          width: 90px; height: 90px;
+          object-fit: contain;
+          filter: drop-shadow(0 8px 20px rgba(60, 15, 40, 0.35)) drop-shadow(0 0 12px rgba(255, 220, 235, 0.3));
+          -webkit-filter: drop-shadow(0 8px 20px rgba(60, 15, 40, 0.35)) drop-shadow(0 0 12px rgba(255, 220, 235, 0.3));
         }
 
         .cad-proof {
