@@ -1660,19 +1660,20 @@ function AgendaStyles() {
         position: relative;
       }
       .ag-pc-menu-btn {
-        width: 34px; height: 34px;
+        width: 36px; height: 36px;
         border-radius: 8px;
-        border: 1px solid transparent;
-        background: transparent;
-        color: var(--text-secondary);
+        border: 1px solid #E8E2E4;
+        background: #FAFAFA;
+        color: #2D1F26;
         display: flex; align-items: center; justify-content: center;
         cursor: pointer;
         font-family: inherit;
+        flex-shrink: 0;
         transition: background var(--dur-fast), border-color var(--dur-fast);
       }
       .ag-pc-menu-btn:hover {
         background: #F5F1F3;
-        border-color: #E8E2E4;
+        border-color: #D8CDD1;
       }
       .ag-pc-menu-btn[aria-expanded="true"] {
         background: #F0EBED;
