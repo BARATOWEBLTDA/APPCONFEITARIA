@@ -544,7 +544,8 @@ function PedidosDoDia({
 }: any) {
   const d = parseISO(diaSel);
   const rel = relativoLabel(diaSel);
-  const dataFmt = d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
+  const diaSemanaFmt = d.toLocaleDateString("pt-BR", { weekday: "long" });
+  const dataFmt = d.toLocaleDateString("pt-BR", { day: "2-digit", month: "long" });
 
   const FILTROS_LABELS: Record<string, string> = {
     novo: "Novos",
@@ -575,7 +576,10 @@ function PedidosDoDia({
     <div className="ag-pedidos-card">
       <div className="ag-pedidos-head">
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h2 className="ag-pedidos-title">{dataFmt}</h2>
+          <div className="ag-pedidos-title-stack">
+            <span className="ag-pedidos-dow">{diaSemanaFmt}</span>
+            <span className="ag-pedidos-data">{dataFmt}</span>
+          </div>
           <p className="ag-pedidos-sub">
             {rel && <span className="ag-rel-pill">{rel}</span>}
             {pedidosDoDia.length === 0 ? "Nenhum pedido" : `${pedidosDoDia.length} pedido${pedidosDoDia.length !== 1 ? "s" : ""}`}
@@ -1252,6 +1256,25 @@ function AgendaStyles() {
         display: flex; justify-content: space-between; align-items: flex-start;
         gap: var(--space-3);
         margin-bottom: var(--space-3);
+      }
+      .ag-pedidos-title-stack {
+        display: flex; flex-direction: column;
+        gap: 2px;
+        margin-bottom: var(--space-1);
+      }
+      .ag-pedidos-dow {
+        font-size: var(--font-modal-title);
+        font-weight: var(--fw-black);
+        color: var(--text-title);
+        text-transform: capitalize;
+        letter-spacing: -0.02em;
+        line-height: var(--lh-tight);
+      }
+      .ag-pedidos-data {
+        font-size: var(--font-helper);
+        color: var(--text-secondary);
+        font-weight: var(--fw-semibold);
+        text-transform: capitalize;
       }
       .ag-pedidos-title {
         font-size: var(--font-modal-title);
