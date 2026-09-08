@@ -287,6 +287,37 @@ export default function Auth() {
       <div ref={glowRef} className="mouse-glow" />
 
       <div className="auth-layout">
+      {/* ─────────────────────────────────────────────────────────
+          COLUNA ESQUERDA: mascote + frase motivacional
+          Só aparece em desktop ≥1200px E só no cadastro.
+          TODO: trocar o placeholder por uma imagem PNG real.
+          Salve em /public/mascote.png e substitua o bloco
+          .auth-mascote-placeholder por:
+          <img src="/mascote.png" alt="Mascote Doonly" className="auth-mascote-img" />
+      ───────────────────────────────────────────────────────── */}
+      {showCadastro && (
+        <aside className="auth-side" aria-hidden="true">
+          <div className="auth-mascote">
+            <div className="auth-mascote-placeholder">
+              <span className="auth-mascote-emoji">🧁</span>
+              <span className="auth-mascote-lbl">Sua imagem aqui</span>
+            </div>
+          </div>
+          <h2 className="auth-side-title">Sua confeitaria mais organizada.</h2>
+          <p className="auth-side-sub">Gerencie pedidos, agenda, receitas e precificação em um só lugar.</p>
+          <div className="auth-side-stats">
+            <div className="auth-side-stat">
+              <div className="auth-side-stat-num">+500</div>
+              <div className="auth-side-stat-lbl">Confeitarias</div>
+            </div>
+            <div className="auth-side-stat">
+              <div className="auth-side-stat-num">10k+</div>
+              <div className="auth-side-stat-lbl">Pedidos/mês</div>
+            </div>
+          </div>
+        </aside>
+      )}
+
       {!showCadastro ? (
       <div className="auth-card">
         <div className="auth-logo-wrap">
@@ -674,6 +705,7 @@ export default function Auth() {
           overflow: visible;
         }
         .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; display: flex; flex-direction: column; }
+        .auth-side { display: none; }
         .fade-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-card); opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
         .auth-bg {
@@ -878,22 +910,108 @@ export default function Auth() {
         .auth-promo { display: none; }
 
         @media (min-width: 1200px) {
+          /* Grid 3 colunas: mascote | cadastro | promo */
+          .auth-layout {
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 440px 260px;
+            gap: 2.5rem;
+            align-items: center;
+          }
+          /* Se estiver no login (sem coluna esquerda), volta pra 2 colunas */
+          .auth-layout:not(:has(.auth-side)) {
+            grid-template-columns: 440px 260px;
+            justify-content: center;
+            max-width: 740px;
+            gap: 2rem;
+          }
           .auth-card {
             margin: 0;
           }
+
+          /* ── Coluna esquerda: mascote + frase ── */
+          .auth-side {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.1rem;
+            color: #fff;
+            animation: promoFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-delay: 0.1s;
+          }
+          .auth-mascote {
+            width: 220px; height: 220px;
+            display: flex; align-items: center; justify-content: center;
+          }
+          .auth-mascote-placeholder {
+            width: 100%; height: 100%;
+            background: rgba(255,255,255,0.18);
+            border: 2px dashed rgba(255,255,255,0.4);
+            border-radius: 24px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            gap: 6px;
+          }
+          .auth-mascote-emoji { font-size: 72px; line-height: 1; }
+          .auth-mascote-lbl {
+            font-size: 10px; font-weight: 700;
+            opacity: 0.7;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+          }
+          .auth-mascote-img {
+            width: 220px; height: 220px;
+            object-fit: contain;
+            filter: drop-shadow(0 12px 32px rgba(0,0,0,0.2));
+          }
+          .auth-side-title {
+            font-size: 1.9rem;
+            font-weight: 900;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            max-width: 340px;
+            margin: 0;
+          }
+          .auth-side-sub {
+            font-size: 0.9rem;
+            font-weight: 500;
+            line-height: 1.5;
+            opacity: 0.92;
+            max-width: 340px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            margin: 0;
+          }
+          .auth-side-stats {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.25rem;
+          }
+          .auth-side-stat {
+            display: flex; flex-direction: column;
+          }
+          .auth-side-stat-num {
+            font-size: 1.6rem;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            line-height: 1;
+          }
+          .auth-side-stat-lbl {
+            font-size: 0.65rem;
+            font-weight: 600;
+            opacity: 0.85;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 3px;
+          }
+
           .auth-promo {
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            position: absolute;
-            z-index: 2;
-            top: 0;
-            bottom: 0;
-            margin-top: auto;
-            margin-bottom: auto;
-            left: calc(100% + 2rem);
-            height: fit-content;
-            width: 320px;
+            width: 100%;
             padding: 1.75rem 1.5rem;
             border-radius: var(--radius-lg);
             background: linear-gradient(160deg, var(--primary) 0%, var(--primary-dark) 45%, var(--text-title) 100%);
