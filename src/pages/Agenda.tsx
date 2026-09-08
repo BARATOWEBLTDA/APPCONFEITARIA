@@ -763,10 +763,8 @@ function PedidoCard({ p, onEditar, onExcluir }: any) {
             {p.cliente_nome || "Cliente não informado"}
             {p.numero && <span className="ag-pc-numero"> #{p.numero}</span>}
           </p>
-        </div>
-        <div className="ag-pc-actions">
           <span className="ag-pc-status" style={{ background: st.dot, color: "#fff" }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               {st.group === "concluido" ? (
                 <polyline points="20 6 9 17 4 12"/>
               ) : st.group === "producao" ? (
@@ -777,6 +775,8 @@ function PedidoCard({ p, onEditar, onExcluir }: any) {
             </svg>
             {st.label}
           </span>
+        </div>
+        <div className="ag-pc-actions">
           <div className="ag-pc-menu-wrap" ref={menuRef}>
             <button
               type="button"
@@ -1644,7 +1644,12 @@ function AgendaStyles() {
         font-variant-numeric: tabular-nums;
         line-height: 1;
       }
-      .ag-pc-head-info { flex: 1; min-width: 0; }
+      .ag-pc-head-info {
+        flex: 1; min-width: 0;
+        display: flex; flex-direction: column;
+        gap: 6px;
+        align-items: flex-start;
+      }
 
       .ag-pc-actions {
         display: flex; align-items: center; gap: 4px;
@@ -1732,13 +1737,14 @@ function AgendaStyles() {
       }
       .ag-pc-status {
         display: inline-flex; align-items: center; gap: 5px;
-        padding: 6px 12px;
+        padding: 3px 9px;
         border-radius: var(--radius-full);
-        font-size: var(--text-xs);
+        font-size: 10px;
         font-weight: var(--fw-black);
         letter-spacing: 0.02em;
-        flex-shrink: 0;
         text-transform: uppercase;
+        white-space: nowrap;
+        max-width: 100%;
       }
 
       .ag-pc-divider {
