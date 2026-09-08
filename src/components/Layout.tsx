@@ -203,6 +203,7 @@ export default function Layout() {
           <div className="bottom-nav-pill">
             {[
               { to: "/inicio",   icon: <House          size={20} weight="fill" />, label: "Início"   },
+              { to: "/agenda",   icon: <CalendarDots   size={20} weight="fill" />, label: "Agenda"   },
               { to: "/pedidos",  icon: <ClipboardText  size={20} weight="fill" />, label: "Pedidos"  },
               { to: "/cardapio", icon: <ForkKnife      size={20} weight="fill" />, label: "Cardápio" },
             ].map((item) => {
