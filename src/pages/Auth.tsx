@@ -424,12 +424,11 @@ export default function Auth() {
         <div className="cad-header">
           <h1 className="cad-title">
             <span className="cad-title-desktop">Crie sua conta grátis</span>
-            <span className="cad-title-mobile">CRIE SUA<br/>CONTA, É GRÁTIS</span>
           </h1>
           <div className="cad-subtitle">
             <span className="cad-sub-desktop">Gerencie sua confeitaria de forma profissional</span>
             <span className="cad-sub-mobile">
-              <strong>1. ORGANIZE SUA CONFEITARIA</strong>
+              <strong>ORGANIZE SUA<br/>CONFEITARIA</strong>
               Tenha seus produtos, receitas, clientes e pedidos em um só lugar.
             </span>
           </div>
@@ -630,6 +629,10 @@ export default function Auth() {
             {' '}e{' '}
             <a href="/privacidade" target="_blank" style={{ color: 'var(--primary)', fontWeight: 600 }}>Política de Privacidade</a>
           </p>
+          <div className="cad-mobile-login-link">
+            <span>Já tem conta? </span>
+            <button type="button" className="cadastro-link" onClick={() => setShowCadastro(false)}>Fazer login</button>
+          </div>
         </form>
       </div>
       )}
@@ -701,8 +704,9 @@ export default function Auth() {
         .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; display: flex; flex-direction: column; }
         .auth-side { display: none; }
 
-        /* ── Botão "Fazer login" flutuante no topo (só cadastro) ── */
+        /* ── Botão "Fazer login" flutuante no topo (só desktop, escondido no mobile) ── */
         .auth-topbar-login {
+          display: none;
           position: fixed;
           top: max(1.1rem, env(safe-area-inset-top));
           left: max(1.1rem, env(safe-area-inset-left));
@@ -876,9 +880,11 @@ export default function Auth() {
           -webkit-filter: drop-shadow(0 8px 20px rgba(232, 90, 140, 0.3));
         }
 
-        /* Título e subtítulo: versão mobile por padrão, desktop escondida */
+        /* Título e subtítulo mobile:
+           - No mobile o <h1> (Crie sua conta) some
+           - Só aparece o subtitulo em versão mobile com destaque ORGANIZE SUA CONFEITARIA */
         .cad-title-desktop { display: none; }
-        .cad-title-mobile { display: inline-block; }
+        .cad-title { display: none; } /* h1 escondido no mobile */
         .cad-sub-desktop { display: none; }
         .cad-sub-mobile {
           display: block;
@@ -887,26 +893,26 @@ export default function Auth() {
         }
         .cad-sub-mobile strong {
           display: block;
-          font-size: 0.85rem;
+          font-size: 1.5rem;
           font-weight: 900;
-          color: var(--primary);
-          letter-spacing: 0.03em;
-          margin-bottom: 0.4rem;
+          color: var(--text-title);
+          letter-spacing: -0.01em;
+          line-height: 1.1;
+          margin-bottom: 0.6rem;
+          text-transform: uppercase;
         }
         .cad-subtitle .cad-sub-mobile {
           font-size: 0.85rem;
           color: var(--text-secondary);
         }
-        .cad-title:has(.cad-title-mobile) {
-          font-size: 1.7rem;
-          font-weight: 900;
-          letter-spacing: -0.02em;
-          line-height: 1.1;
-          text-transform: none;
-        }
-        .cad-title-mobile {
-          font-family: inherit;
-          text-transform: uppercase;
+        .cad-header { margin-bottom: 1rem; }
+
+        /* Link "Já tem conta? Fazer login" — só mobile no fim do form */
+        .cad-mobile-login-link {
+          text-align: center;
+          font-size: 0.9rem;
+          color: var(--text-secondary);
+          padding-top: 0.5rem;
         }
 
         /* ── Header do cadastro (só social proof pill) ─── */
@@ -1004,20 +1010,22 @@ export default function Auth() {
             align-items: center;
             justify-content: center;
           }
-          .auth-card {
-            margin: 0;
-          }
           /* Esconde mascote mobile no desktop (já aparece na coluna esquerda) */
           .cad-mobile-mascote { display: none; }
-          /* Alterna versão de título/subtítulo pra versão desktop */
-          .cad-title-mobile { display: none; }
-          .cad-title-desktop { display: inline-block; }
+          .auth-card { margin: 0; }
+          /* No desktop, esconde o link do mobile (já tem topbar) */
+          .cad-mobile-login-link { display: none; }
+          /* Restaura título/subtítulo desktop */
+          .cad-title { display: block; }
+          .cad-title-desktop { display: inline; }
           .cad-sub-mobile { display: none; }
           .cad-sub-desktop { display: inline-block; text-align: center; }
-          .cad-title:has(.cad-title-desktop) {
+          .cad-title {
             font-size: 1.85rem;
             text-transform: none;
           }
+          /* Botão login topbar só aparece em desktop */
+          .auth-topbar-login { display: inline-flex; }
 
           /* ── Coluna esquerda: frase estilizada + mascote ── */
           .auth-side {
