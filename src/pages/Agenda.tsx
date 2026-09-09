@@ -361,6 +361,7 @@ export default function Agenda() {
         </div>
         <FiltroCard
           statusSelecionados={statusSelecionados}
+          setStatusSelecionados={setStatusSelecionados}
           countStatusDia={countStatusDia}
           onOpen={() => setFiltroDrawerOpen(true)}
         />
@@ -677,32 +678,88 @@ function StatMini({ num, label, cor }: any) {
  * FILTRO CARD (botão que abre o drawer)
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-function FiltroCard({ statusSelecionados, countStatusDia, onOpen }: any) {
+function FiltroCard({ statusSelecionados, setStatusSelecionados, countStatusDia, onOpen }: any) {
   const totalFiltros = STATUS_FILTRAVEIS.length;
   const ativos = statusSelecionados.length;
-  const totalPedidosDia = Object.values(countStatusDia).reduce((s: number, n: any) => s + (Number(n) || 0), 0) as number;
+  const filtrosInativos = totalFiltros - ativos;
+  const [open, setOpen] = useState(false);
+  const popRef = useRef<HTMLDivElement>(null);
+  const [isDesktop] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 900px)").matches : false
+  );
 
-  const dotsAtivos = statusSelecionados
-    .filter((s: string) => countStatusDia[s] > 0)
-    .slice(0, 5)
-    .map((s: string) => getStatusConfig(s).dot);
+  // Fecha popover ao clicar fora (só desktop)
+  useEffect(() => {
+    if (!open || !isDesktop) return;
+    const handler = (e: MouseEvent) => {
+      if (popRef.current && !popRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open, isDesktop]);
+
+  const handleClick = () => {
+    if (isDesktop) setOpen(o => !o);
+    else onOpen(); // mobile abre drawer bottom-sheet
+  };
+
+  const toggleStatus = (s: string) => {
+    setStatusSelecionados((prev: string[]) =>
+      prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]
+    );
+  };
+
+  const limpar = () => setStatusSelecionados([]);
+  const todos = () => setStatusSelecionados([...STATUS_FILTRAVEIS]);
 
   return (
-    <button className="ag-filtro-card" onClick={onOpen} aria-label="Abrir filtros">
-      <span className="ag-filtro-card-icon"><IconFilter /></span>
-      <span className="ag-filtro-card-label">Filtros</span>
-      {dotsAtivos.length > 0 ? (
-        <span className="ag-filtro-card-dots">
-          {dotsAtivos.map((d: string, i: number) => (
-            <span key={i} className="ag-filtro-card-dot" style={{ background: d }} />
-          ))}
-        </span>
-      ) : (
-        <span className="ag-filtro-card-empty">Nenhum</span>
+    <div className="ag-filtro-wrap" ref={popRef}>
+      <button
+        className={"ag-filtro-icon-btn" + (filtrosInativos > 0 ? " ag-filtro-icon-btn--ativo" : "")}
+        onClick={handleClick}
+        aria-label="Filtros"
+        aria-expanded={open}
+        type="button"
+      >
+        <IconFilter />
+        {filtrosInativos > 0 && (
+          <span className="ag-filtro-badge">{filtrosInativos}</span>
+        )}
+      </button>
+
+      {open && isDesktop && (
+        <div className="ag-filtro-pop" role="dialog" aria-label="Filtrar por status">
+          <div className="ag-filtro-pop-hdr">
+            <span className="ag-filtro-pop-title">Filtrar por status</span>
+            <button className="ag-filtro-pop-link" onClick={ativos === totalFiltros ? limpar : todos} type="button">
+              {ativos === totalFiltros ? "Limpar" : "Todos"}
+            </button>
+          </div>
+          <div className="ag-filtro-pop-list">
+            {STATUS_FILTRAVEIS.map(s => {
+              const cfg = getStatusConfig(s);
+              const checked = statusSelecionados.includes(s);
+              const count = countStatusDia[s] || 0;
+              return (
+                <button
+                  key={s}
+                  className="ag-filtro-pop-item"
+                  onClick={() => toggleStatus(s)}
+                  type="button"
+                >
+                  <span className={"ag-filtro-pop-check" + (checked ? " ag-filtro-pop-check--on" : "")}>
+                    {checked && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                  </span>
+                  <span className="ag-filtro-pop-dot" style={{ background: cfg.dot }} />
+                  <span className="ag-filtro-pop-label">{cfg.label}</span>
+                  {count > 0 && <span className="ag-filtro-pop-count">{count}</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       )}
-      <span className="ag-filtro-card-info">{ativos} de {totalFiltros}{totalPedidosDia > 0 ? ` · ${totalPedidosDia}` : ""}</span>
-      <IconChevDown />
-    </button>
+    </div>
   );
 }
 
@@ -1768,6 +1825,123 @@ function AgendaStyles() {
         color: var(--primary-dark, #C33A6E);
         letter-spacing: 0.02em;
       }
+      /* ── Filtro: ícone + popover (desktop) / drawer (mobile) ── */
+      .ag-filtro-wrap { position: relative; flex-shrink: 0; }
+      .ag-filtro-icon-btn {
+        width: 40px; height: 40px;
+        background: var(--bg-card, #fff);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--text-title);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer;
+        position: relative;
+        font-family: inherit;
+        transition: background var(--dur-fast), border-color var(--dur-fast);
+      }
+      .ag-filtro-icon-btn:hover { background: var(--ag-gray-100); border-color: var(--ag-gray-400); }
+      .ag-filtro-icon-btn--ativo { border-color: var(--primary); background: var(--primary-light, #FCE0E9); color: var(--primary-dark); }
+      .ag-filtro-badge {
+        position: absolute; top: -5px; right: -5px;
+        background: var(--primary-dark, #C33A6E); color: #fff;
+        font-size: 9px; font-weight: var(--fw-black);
+        min-width: 16px; height: 16px;
+        padding: 0 4px; border-radius: 999px;
+        display: flex; align-items: center; justify-content: center;
+        border: 2px solid var(--bg-body, #F8F5F6);
+        line-height: 1;
+      }
+      /* Popover desktop */
+      .ag-filtro-pop {
+        position: absolute;
+        top: calc(100% + 10px); right: 0;
+        background: var(--bg-card, #fff);
+        border-radius: 14px;
+        padding: 12px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.08);
+        border: 1px solid var(--border);
+        min-width: 260px;
+        z-index: 100;
+        animation: agFiltroPopIn 0.15s ease;
+      }
+      @keyframes agFiltroPopIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .ag-filtro-pop::before {
+        content: "";
+        position: absolute; top: -6px; right: 15px;
+        width: 12px; height: 12px;
+        background: var(--bg-card, #fff);
+        transform: rotate(45deg);
+        border-left: 1px solid var(--border);
+        border-top: 1px solid var(--border);
+      }
+      .ag-filtro-pop-hdr {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 4px 6px 8px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 4px;
+      }
+      .ag-filtro-pop-title {
+        font-size: var(--font-caption);
+        font-weight: var(--fw-black);
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .ag-filtro-pop-link {
+        background: none; border: none; padding: 0;
+        color: var(--primary);
+        font-family: inherit;
+        font-size: var(--font-caption);
+        font-weight: var(--fw-bold);
+        cursor: pointer;
+      }
+      .ag-filtro-pop-link:hover { text-decoration: underline; }
+      .ag-filtro-pop-list { display: flex; flex-direction: column; gap: 1px; }
+      .ag-filtro-pop-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px; border-radius: 8px;
+        background: none; border: none; cursor: pointer;
+        font-family: inherit;
+        text-align: left;
+        width: 100%;
+        transition: background var(--dur-fast);
+      }
+      .ag-filtro-pop-item:hover { background: var(--ag-gray-100); }
+      .ag-filtro-pop-check {
+        width: 18px; height: 18px;
+        border-radius: 5px;
+        border: 1.5px solid var(--ag-gray-400);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        transition: background var(--dur-fast), border-color var(--dur-fast);
+      }
+      .ag-filtro-pop-check--on {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+      }
+      .ag-filtro-pop-dot {
+        width: 10px; height: 10px; border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .ag-filtro-pop-label {
+        flex: 1;
+        font-size: var(--font-body);
+        font-weight: var(--fw-medium);
+        color: var(--text-title);
+      }
+      .ag-filtro-pop-count {
+        font-size: var(--font-caption);
+        color: var(--text-muted);
+        font-weight: var(--fw-bold);
+        background: var(--ag-gray-100);
+        padding: 1px 8px;
+        border-radius: 999px;
+      }
+
       /* Grid 2 colunas — desktop apenas.
          Mobile: display: contents = wrapper "some", filhos ficam no fluxo normal */
       .ag-desk-grid { display: contents; }
@@ -1780,19 +1954,11 @@ function AgendaStyles() {
         margin-bottom: 12px;
       }
       .ag-search-row .ag-search { flex: 1; margin-bottom: 0; }
-      .ag-search-row .ag-filtro-card {
-        flex-shrink: 0;
-        margin-bottom: 0;
-        width: auto;
-      }
-      /* Mobile: filtro em cima, busca embaixo */
+      .ag-search-row .ag-filtro-wrap { flex-shrink: 0; }
+      /* Mobile: busca + ícone filtro na mesma linha */
       @media (max-width: 899px) {
         .ag-search-row {
-          flex-direction: column-reverse;
-        }
-        .ag-search-row .ag-filtro-card {
-          align-self: flex-end;
-          width: auto;
+          flex-direction: row;
         }
       }
 
