@@ -6,7 +6,7 @@ import { useState, useEffect, type ReactNode } from "react";
 import {
   House, CalendarDots, ShoppingBag, ClipboardText, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown, ForkKnife, List,
-  User, SquaresFour,
+  User, SquaresFour, Camera,
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
@@ -74,7 +74,12 @@ export default function Layout() {
       {/* ── Sidebar Desktop ── */}
       <aside className="sidebar">
         <div className="sidebar-profile">
-          <div style={{ position: "relative", display: "inline-block" }}>
+          <button
+            type="button"
+            className="sidebar-avatar-btn"
+            onClick={() => navigate("/inicio")}
+            aria-label={profile?.foto_url ? "Trocar foto de perfil" : "Adicionar foto de perfil"}
+          >
             <div className="sidebar-avatar-ring">
               <div className="sidebar-avatar">
                 {profile?.foto_url
@@ -83,11 +88,14 @@ export default function Layout() {
                 }
               </div>
             </div>
+            <span className="sidebar-avatar-cam" aria-hidden="true">
+              <Camera size={14} weight="fill" />
+            </span>
             <div className={`sidebar-badge ${isPro ? "sidebar-badge--pro" : "sidebar-badge--free"}`}>
               {isPro && <img src="/coroa.png" alt="" className="sidebar-badge-coroa" />}
               {isPro ? "PRO" : "Inicial"}
             </div>
-          </div>
+          </button>
         </div>
 
         <div className="sidebar-greeting">
@@ -257,6 +265,32 @@ export default function Layout() {
 
         .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 0.75rem; padding-bottom: 0; }
 
+        .sidebar-avatar-btn {
+          background: none; border: none; padding: 0; cursor: pointer;
+          position: relative; display: inline-block;
+          border-radius: 50%;
+          transition: transform var(--dur-fast, 150ms);
+        }
+        .sidebar-avatar-btn:hover { transform: scale(1.03); }
+        .sidebar-avatar-btn:focus-visible { outline: 3px solid var(--primary); outline-offset: 4px; border-radius: 50%; }
+        .sidebar-avatar-cam {
+          position: absolute;
+          bottom: 4px; right: 4px;
+          width: 26px; height: 26px;
+          border-radius: 50%;
+          background: var(--primary);
+          color: #fff;
+          display: flex; align-items: center; justify-content: center;
+          border: 2px solid #fff;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+          transition: transform var(--dur-fast, 150ms), background var(--dur-fast, 150ms);
+          pointer-events: none;
+          z-index: 2;
+        }
+        .sidebar-avatar-btn:hover .sidebar-avatar-cam {
+          background: var(--primary-dark);
+          transform: scale(1.1);
+        }
         .sidebar-avatar-ring { width: 100px; height: 100px; border-radius: 50%; padding: 3px; background: var(--primary-gradient); background-size: 300% 300%; animation: gradientRing 3s ease infinite; flex-shrink: 0; }
         @keyframes gradientRing { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
