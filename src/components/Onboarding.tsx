@@ -386,14 +386,14 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            order: 2;
+            order: 1;
           }
           .ob-slide1-right {
             display: flex;
             align-items: center;
             justify-content: center;
             position: relative;
-            order: 1;
+            order: 2;
           }
           .ob-slide1-right .ob-coroa-wrap {
             position: relative;
@@ -1635,6 +1635,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
             margin: 0 auto;
             width: 100%;
             box-sizing: border-box;
+            padding: 1rem 1.5rem 4rem;
           }
         }
       `}</style>
