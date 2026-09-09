@@ -1255,7 +1255,7 @@ export default function Inicio() {
           overflow: hidden;
           text-overflow: ellipsis;
           min-width: 0;
-          flex: 1 1 auto;
+          flex: 0 1 auto;
         }
         .ini-hero-greeting h1 > .ini-hero-pro-badge {
           flex-shrink: 0;
