@@ -91,7 +91,11 @@ export default function Layout() {
         </div>
 
         <div className="sidebar-greeting">
-          <p className="sidebar-greeting-name">Olá, {(profile?.nome || "").split(" ")[0] || "bem-vinda"}</p>
+          <p className="sidebar-greeting-name">
+            {profile?.nome
+              ? <>Olá, {profile.nome.split(" ")[0]}</>
+              : <span className="sidebar-greeting-skel" aria-hidden="true" />}
+          </p>
           <p className="sidebar-greeting-date">{new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }).replace(/^\w/, c => c.toUpperCase())}</p>
         </div>
 
@@ -277,8 +281,19 @@ export default function Layout() {
         .sidebar-badge--free { padding: 4px 12px; }
         .sidebar-badge-coroa { width: 14px; height: 14px; object-fit: contain; }
 
-        .sidebar-greeting { text-align: center; padding: 0 1rem 0.75rem; margin-bottom: 0.5rem; }
-        .sidebar-greeting-name { margin: 0; font-size: 0.95rem; font-weight: var(--fw-semibold); color: var(--sidebar-text); line-height: 1.3; }
+        .sidebar-greeting { text-align: center; padding: 0 1rem 0.75rem; margin-bottom: 0.5rem; min-height: 3.4rem; }
+        .sidebar-greeting-name { margin: 0; font-size: 0.95rem; font-weight: var(--fw-semibold); color: var(--sidebar-text); line-height: 1.3; min-height: 1.25rem; display: flex; align-items: center; justify-content: center; }
+        .sidebar-greeting-skel {
+          display: inline-block;
+          width: 120px; height: 12px;
+          background: rgba(255,255,255,0.12);
+          border-radius: 4px;
+          animation: sbSkelPulse 1.4s ease-in-out infinite;
+        }
+        @keyframes sbSkelPulse {
+          0%, 100% { opacity: 0.5; }
+          50% { opacity: 0.9; }
+        }
         .sidebar-greeting-date { margin: 3px 0 0; font-size: var(--font-caption); color: var(--sidebar-text-muted); line-height: 1.3; }
 
         .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; overflow-y: auto; }

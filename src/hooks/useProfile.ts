@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 
 export interface Profile {
@@ -25,13 +25,45 @@ export interface Profile {
   pro_expira_em?: string | null;
 }
 
+// ─── Cache localStorage ────────────────────────────────────────────
+// Evita layout shift na 2ª visita: o perfil é servido do cache imediatamente
+// enquanto o Supabase é consultado em background pra revalidar.
+const PROFILE_CACHE_KEY = "doonly_profile_cache_v1";
+
+function loadCachedProfile(): Profile | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(PROFILE_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && parsed.id ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCachedProfile(profile: Profile | null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (profile) {
+      localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(profile));
+    } else {
+      localStorage.removeItem(PROFILE_CACHE_KEY);
+    }
+  } catch {
+    /* localStorage cheio ou desabilitado — ignora */
+  }
+}
+
 // Store global para compartilhar o perfil entre componentes
-let globalProfile: Profile | null = null;
+// Inicializa com o cache pra 2ª visita ser instantânea
+let globalProfile: Profile | null = loadCachedProfile();
 const listeners: Set<(p: Profile | null) => void> = new Set();
 let channelStarted = false;
 
 function notifyListeners(profile: Profile | null) {
   globalProfile = profile;
+  saveCachedProfile(profile);
   listeners.forEach(fn => fn(profile));
 }
 
@@ -64,18 +96,19 @@ function ensureRealtimeChannel() {
 
 export function useProfile() {
   const [profile, setProfile] = useState<Profile | null>(globalProfile);
+  // Loading=false se já temos algo em cache (mostramos e revalidamos em bg)
   const [loading, setLoading] = useState(!globalProfile);
 
   useEffect(() => {
     // Registra listener para atualizações
     listeners.add(setProfile);
 
-    // Busca perfil se ainda não tiver
-    if (!globalProfile) {
-      refreshProfile().then(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    // Sempre revalida do banco em background (mesmo com cache).
+    // Se não temos cache, o loading termina aqui.
+    // Se temos cache, o loading já era false — mas ainda atualizamos.
+    refreshProfile().then(() => {
+      if (loading) setLoading(false);
+    });
 
     // Garante o canal realtime único (não recria a cada montagem)
     ensureRealtimeChannel();
@@ -83,9 +116,17 @@ export function useProfile() {
     return () => {
       listeners.delete(setProfile);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { profile, loading, refetch: refreshProfile };
+}
+
+/** Limpa o cache do perfil — usar no logout. */
+export function clearProfileCache() {
+  globalProfile = null;
+  saveCachedProfile(null);
+  listeners.forEach(fn => fn(null));
 }
 
 /**
