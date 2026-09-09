@@ -514,6 +514,59 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           margin-top: 1.5rem;
           perspective: 800px;
         }
+        @media (min-width: 900px) {
+          .ob-pedidos-stack {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            max-width: 1100px;
+            perspective: none;
+          }
+          .ob-ped-kanban-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            min-width: 0;
+          }
+          .ob-ped-kanban-header {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 0.85rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+          }
+          .ob-ped-kanban-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+          }
+          .ob-ped-kanban-count {
+            margin-left: auto;
+            background: rgba(255,255,255,0.55);
+            padding: 1px 8px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+          }
+          .ob-ped-kanban-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+          }
+          .ob-ped-card--kanban {
+            padding: 0;
+            opacity: 1;
+            transform: none;
+            animation: obPedidoFadeIn 0.4s ease both;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.2), 0 2px 6px rgba(0,0,0,0.12);
+          }
+          @keyframes obPedidoFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        }
         .ob-ped-card {
           background: #fff;
           color: #431524;
@@ -2240,41 +2293,66 @@ function PedidoImg({ src, alt, emoji }: { src?: string; alt: string; emoji: stri
 }
 
 function Slide2Pedidos({ onReady }: { onReady: () => void }) {
-  // Índice do "próximo pedido a entrar" — começa em 0 e vai até 8 (para no final)
   const [proximoIdx, setProximoIdx] = useState(0);
-  // Lista visível na tela (máx 2 cards principais + 1 peek)
   const [visiveis, setVisiveis] = useState<typeof PEDIDOS_DEMO>([]);
+  const [isDesktop] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 900px)").matches : false
+  );
 
   // Trio de pedidos para a animação. Larissa é o mais novo, entra por último e fica no topo.
   const pedidos = useMemo(() => {
     const now = new Date();
     const diasSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-
-    // Larissa: hora aleatória entre 08h e 19h
-    const randomHour = 8 + Math.floor(Math.random() * 12); // 8..19
+    const randomHour = 8 + Math.floor(Math.random() * 12);
     const randomMin = Math.floor(Math.random() * 60);
     const hh = String(randomHour).padStart(2, "0");
     const mm = String(randomMin).padStart(2, "0");
-
-    // Entrega Larissa: 2 dias depois de hoje
     const entregaLarissa = new Date(now);
     entregaLarissa.setDate(entregaLarissa.getDate() + 2);
     const diaEntregaLarissa = diasSemana[entregaLarissa.getDay()];
-
-    // Retirada Camila: 1 dia antes de hoje
     const retiradaCamila = new Date(now);
     retiradaCamila.setDate(retiradaCamila.getDate() - 1);
     const diaRetiradaCamila = diasSemana[retiradaCamila.getDay()];
 
     return [
-      { ...PEDIDOS_DEMO[2], numero: "120" }, // Patrícia — Finalizado (mais antigo)
-      { ...PEDIDOS_DEMO[4], numero: "121", dataLabel: diaRetiradaCamila }, // Camila — Retirada (ontem)
-      { ...PEDIDOS_DEMO[5], numero: "122", datetime: `Hoje · ${hh}:${mm}`, dataLabel: diaEntregaLarissa }, // Larissa — Em Produção (mais novo)
+      { ...PEDIDOS_DEMO[2], numero: "120" },
+      { ...PEDIDOS_DEMO[4], numero: "121", dataLabel: diaRetiradaCamila },
+      { ...PEDIDOS_DEMO[5], numero: "122", datetime: `Hoje · ${hh}:${mm}`, dataLabel: diaEntregaLarissa },
+    ];
+  }, []);
+
+  // Kanban: agrupamento por status (desktop)
+  const kanbanCols = useMemo(() => {
+    return [
+      {
+        titulo: "Novos",
+        color: "#1d4ed8",
+        bg: "#dbeafe",
+        pedidos: PEDIDOS_DEMO.filter(p => p.statusLabel === "Novo" || p.statusLabel === "Confirmado"),
+      },
+      {
+        titulo: "Em Produção",
+        color: "#d97706",
+        bg: "#FAEEDA",
+        pedidos: PEDIDOS_DEMO.filter(p => p.statusLabel === "Em Produção"),
+      },
+      {
+        titulo: "Finalizados",
+        color: "#15803d",
+        bg: "#dcfce7",
+        pedidos: PEDIDOS_DEMO.filter(p => p.statusLabel === "Entregue"),
+      },
     ];
   }, []);
 
   useEffect(() => {
     const timers: number[] = [];
+
+    // No desktop, o kanban é estático — libera o botão rápido
+    if (isDesktop) {
+      timers.push(window.setTimeout(onReady, 500));
+      return () => timers.forEach((t) => clearTimeout(t));
+    }
 
     // Pré-carrega imagens antes de iniciar a animação (evita que a foto apareça
     // depois do card)
@@ -2286,7 +2364,7 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
           new Promise<void>((resolve) => {
             const img = new Image();
             img.onload = () => resolve();
-            img.onerror = () => resolve(); // resolve mesmo em erro pra não travar
+            img.onerror = () => resolve();
             img.src = src;
           })
       )
@@ -2321,7 +2399,7 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
       cancelado = true;
       timers.forEach((t) => clearTimeout(t));
     };
-  }, [onReady, pedidos]);
+  }, [onReady, pedidos, isDesktop]);
 
   return (
     <>
@@ -2332,7 +2410,59 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
       </div>
 
       <div className="ob-pedidos-stack">
-        {visiveis.map((p, idx) => {
+        {isDesktop ? (
+          /* KANBAN DESKTOP: 3 colunas por status */
+          <>
+            {kanbanCols.map((col) => (
+              <div key={col.titulo} className="ob-ped-kanban-col">
+                <div className="ob-ped-kanban-header" style={{ color: col.color, background: col.bg }}>
+                  <span className="ob-ped-kanban-dot" style={{ background: col.color }} />
+                  {col.titulo}
+                  <span className="ob-ped-kanban-count">{col.pedidos.length}</span>
+                </div>
+                <div className="ob-ped-kanban-list">
+                  {col.pedidos.map((p) => (
+                    <div key={p.id} className="ob-ped-card ob-ped-card--kanban">
+                      <div className="ob-mob-card-topo">
+                        <div className="ob-ped-card-head-row">
+                          <span className="ob-ped-card-numero">Pedido #{p.numero}</span>
+                        </div>
+                        <p className="ob-mob-card-cliente">{p.cliente}</p>
+                        <span className="ob-mob-card-datetime">{p.datetime}</span>
+                      </div>
+                      <div className="ob-mob-card-divider" />
+                      <div className="ob-mob-card-produto">
+                        <div className="ob-mob-card-produto-img" style={{ position: "relative" }}>
+                          <PedidoImg src={p.imagem} alt={p.produto} emoji={p.emoji || "🎂"} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p className="ob-mob-card-produto-nome">{p.produto}</p>
+                          <p className="ob-mob-card-produto-qtd">{p.qtd}</p>
+                        </div>
+                        <p className="ob-mob-card-valor">{p.valor}</p>
+                      </div>
+                      <div className="ob-mob-card-divider" />
+                      <div className="ob-mob-card-rodape">
+                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                          <span className="ob-mob-card-info-label">Pgto:</span>
+                          <span style={{ fontSize: "0.7rem", color: p.pagamentoColor, fontWeight: 600 }}>{p.pagamento}</span>
+                        </div>
+                        <span style={{ fontSize: "0.7rem", color: "#6E3548", display: "flex", alignItems: "center", gap: 4 }}>
+                          {p.entregaIcon.startsWith("/")
+                            ? <img src={p.entregaIcon} alt="" style={{ width: 12, height: 12, objectFit: "contain" }} />
+                            : <span>{p.entregaIcon}</span>}
+                          <span style={{ color: "#431524", fontWeight: 600 }}>{p.dataLabel}</span>
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </>
+        ) : (
+          /* STACK MOBILE: comportamento original */
+          visiveis.map((p, idx) => {
           const isPeek = idx === 2; // 3º card é o peek
           const isOldest = idx === visiveis.length - 1 && visiveis.length === 3;
           return (
@@ -2394,7 +2524,8 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
               {isPeek && <div className="ob-ped-card-peek-fade" />}
             </div>
           );
-        })}
+        })
+        )}
       </div>
     </>
   );
