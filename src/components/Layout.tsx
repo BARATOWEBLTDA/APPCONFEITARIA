@@ -5,7 +5,7 @@ import MaisDrawer from "@/components/MaisDrawer";
 import { useState, useEffect, type ReactNode } from "react";
 import {
   House, CalendarDots, ShoppingBag, ClipboardText, Users, BookOpen,
-  Package, CurrencyDollar, Gear, SignOut, CaretDown, ForkKnife, List,
+  Package, CurrencyDollar, Gear, CaretDown, ForkKnife, List,
   User, SquaresFour,
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
@@ -133,19 +133,10 @@ export default function Layout() {
           </NavLink>
         </nav>
 
-        {!isPro && (
-          <a href="/assinar" className="sidebar-upgrade">
-            <span className="sidebar-upgrade-text">✨ Fazer upgrade</span>
-          </a>
-        )}
-
-        <button
-          onClick={async () => { await supabase.auth.signOut(); window.location.href = "/login"; }}
-          className="sidebar-logout"
-        >
-          <SignOut size={16} weight="duotone" />
-          Sair
-        </button>
+        <a href="/completar-cadastro" className="sidebar-cad-complete">
+          <span className="sidebar-cad-complete-icon" aria-hidden="true">🎁</span>
+          <span className="sidebar-cad-complete-text">COMPLETAR CADASTRO</span>
+        </a>
       </aside>
 
       <main className={`layout-main${isAssinar ? " layout-main--no-header" : ""}`}>
@@ -294,11 +285,50 @@ export default function Layout() {
         .nav-subitem:hover { color: var(--sidebar-text); background: var(--sidebar-hover-bg); }
         .nav-subitem.active { color: var(--sidebar-active-text); background: var(--sidebar-active-bg); font-weight: var(--fw-semibold); }
 
-        .sidebar-upgrade { display: block; margin: 0 0.25rem 0.5rem; background: rgba(var(--primary-rgb), 0.12); border: 1px solid rgba(var(--primary-rgb), 0.2); border-radius: var(--radius-lg); padding: 0.75rem 1rem; text-decoration: none; text-align: center; }
-        .sidebar-upgrade-text { font-size: var(--font-helper); font-weight: var(--fw-bold); color: var(--primary); }
-
-        .sidebar-logout { display: flex; align-items: center; gap: 0.6rem; width: calc(100% - 0.5rem); margin: 0 0.25rem 1rem; background: none; border: none; cursor: pointer; padding: 0.6rem 1rem; border-radius: var(--radius-md); color: var(--sidebar-text-muted); font-size: var(--font-helper); font-weight: var(--fw-medium); font-family: var(--font-base); transition: color var(--dur-fast); }
-        .sidebar-logout:hover { color: var(--sidebar-text); }
+        .sidebar-cad-complete {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          margin: 0 0.25rem 1rem;
+          padding: 0.85rem 1rem;
+          background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+          color: #fff;
+          border: none;
+          border-radius: var(--radius-md);
+          text-decoration: none;
+          text-align: center;
+          font-family: var(--font-base);
+          font-size: var(--font-helper);
+          font-weight: var(--fw-black);
+          letter-spacing: 0.03em;
+          box-shadow: 0 6px 18px rgba(var(--primary-rgb), 0.35);
+          position: relative;
+          overflow: hidden;
+          transition: transform 0.15s, box-shadow 0.2s;
+          cursor: pointer;
+        }
+        .sidebar-cad-complete:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 8px 22px rgba(var(--primary-rgb), 0.45);
+        }
+        .sidebar-cad-complete:active { transform: scale(0.98); }
+        .sidebar-cad-complete-icon {
+          font-size: 1rem;
+          line-height: 1;
+        }
+        .sidebar-cad-complete-text {
+          flex-shrink: 0;
+        }
+        .sidebar-cad-complete::after {
+          content: "";
+          position: absolute;
+          top: 0; bottom: 0; left: -60%;
+          width: 40px;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+          animation: sbCadShimmer 3.5s linear infinite;
+        }
+        @keyframes sbCadShimmer { to { left: 160%; } }
 
         /* ── Layout main ── */
         .layout-main { margin-left: 220px; flex: 1; padding: 2rem; min-height: 100vh; }

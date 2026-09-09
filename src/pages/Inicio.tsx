@@ -1939,18 +1939,18 @@ export default function Inicio() {
             outline: none !important;
           }
 
-          /* ── Grid principal: dashboard + aside ── */
+          /* ── Grid principal: SÓ main no desktop (aside removido) ── */
           .ini-content {
             display: grid;
-            grid-template-columns: 360px 1fr;
-            grid-template-areas: "aside main";
+            grid-template-columns: 1fr;
+            grid-template-areas: "main";
             gap: var(--space-6);
             align-items: start;
-            margin-top: 0; /* hero oculto no desktop, sem margem extra */
+            margin-top: 0;
           }
           .ini-main  { grid-area: main; }
-          .ini-aside { grid-area: aside; position: sticky; top: var(--space-6); }
-          .ini-aside-desktop { display: block; }
+          .ini-aside { display: none; }
+          .ini-aside-desktop { display: none; }
           .ini-aside-mobile { display: none; }
           /* Updates e engajamento são exclusivos do mobile */
           .ini-mobile-updates { display: none; }
