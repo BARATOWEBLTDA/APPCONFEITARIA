@@ -1799,6 +1799,10 @@ function AgendaStyles() {
         color: var(--primary-dark, #C33A6E);
         letter-spacing: 0.02em;
       }
+      /* Grid 2 colunas — desktop apenas.
+         Mobile: display: contents = wrapper "some", filhos ficam no fluxo normal */
+      .ag-desk-grid { display: contents; }
+
       @media (min-width: 900px) {
         .ag-cli-avatar { width: 34px; height: 34px; }
         .ag-cli-avatar-iniciais { font-size: 12px; }
@@ -1806,7 +1810,7 @@ function AgendaStyles() {
         .ag-toggle { display: none; }
         /* Grid 2 colunas: calendário à esquerda, lista à direita */
         .ag-desk-grid {
-          display: grid;
+          display: grid !important;
           grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
           gap: var(--space-5, 1.25rem);
           align-items: start;
@@ -1818,11 +1822,28 @@ function AgendaStyles() {
           gap: var(--space-3, 0.75rem);
           position: sticky;
           top: var(--space-4, 1rem);
+          min-width: 0;
         }
-      }
-      /* No mobile, o grid vira uma coluna só naturalmente */
-      .ag-desk-grid {
-        display: contents;
+        /* Calendário compacto: dias com altura controlada no desktop */
+        .ag-desk-grid .ag-cal-day {
+          aspect-ratio: auto;
+          height: 60px;
+        }
+        .ag-desk-grid .ag-cal-grid {
+          row-gap: 6px;
+          column-gap: 4px;
+        }
+        .ag-desk-grid .ag-cal-num {
+          font-size: 13px;
+        }
+        .ag-desk-grid .ag-cal-day--sel {
+          border-radius: 12px;
+          box-shadow: 0 0 0 2px var(--primary-light);
+        }
+        /* Card do calendário: não expande ilimitadamente */
+        .ag-desk-grid .ag-cal-card {
+          padding: 16px;
+        }
       }
       .ag-pc-numero {
         font-size: var(--text-sm);
