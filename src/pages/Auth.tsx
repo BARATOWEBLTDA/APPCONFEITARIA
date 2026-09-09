@@ -286,6 +286,16 @@ export default function Auth() {
       <div ref={bgRef} className="auth-bg" />
       <div ref={glowRef} className="mouse-glow" />
 
+      {/* Botão "Fazer login" flutuante no topo (só aparece no cadastro) */}
+      {showCadastro && (
+        <button type="button" className="auth-topbar-login" onClick={() => setShowCadastro(false)}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          <span>Já tem conta? <b>Fazer login</b></span>
+        </button>
+      )}
+
       <div className="auth-layout">
       {/* ─────────────────────────────────────────────────────────
           COLUNA ESQUERDA: mascote + frase motivacional
@@ -400,20 +410,6 @@ export default function Auth() {
       </div>
       ) : (
       <div className="auth-card">
-        {/* ─────────────────────────────────────────────────────────
-            HEADER: Social proof pill (a logo Doonly agora é o header do card)
-        ───────────────────────────────────────────────────────── */}
-        <div className="cad-hero">
-          <div className="cad-proof-pill">
-            <div className="cad-proof-avatars">
-              <div className="cad-proof-av" style={{ background: "#F97316" }}>M</div>
-              <div className="cad-proof-av" style={{ background: "#22c55e" }}>A</div>
-              <div className="cad-proof-av" style={{ background: "#7F77DD" }}>J</div>
-            </div>
-            <span className="cad-proof-pill-txt"><b>+500</b> confeitarias</span>
-          </div>
-        </div>
-
         <div className="cad-header">
           <h1 className="cad-title">Crie sua conta grátis</h1>
           <p className="cad-subtitle">Gerencie sua confeitaria de forma profissional</p>
@@ -614,10 +610,6 @@ export default function Auth() {
             {' '}e{' '}
             <a href="/privacidade" target="_blank" style={{ color: 'var(--primary)', fontWeight: 600 }}>Política de Privacidade</a>
           </p>
-          <div className="cadastro-link-wrap">
-            <span>Já tem conta? </span>
-            <button type="button" className="cadastro-link" onClick={() => setShowCadastro(false)}>Fazer login</button>
-          </div>
         </form>
       </div>
       )}
@@ -675,13 +667,6 @@ export default function Auth() {
           </a>
         </div>
 
-        <div className="auth-promo-divider">
-          <span>ou aponte a câmera</span>
-        </div>
-
-        <div className="auth-promo-qr">
-          <img src={QR_IMG_SRC} alt="QR Code para baixar o Doonly" loading="lazy" />
-        </div>
       </aside>
       </div>
 
@@ -700,6 +685,39 @@ export default function Auth() {
         }
         .auth-layout { position: relative; z-index: 2; width: 100%; max-width: 440px; display: flex; flex-direction: column; }
         .auth-side { display: none; }
+
+        /* ── Botão "Fazer login" flutuante no topo (só cadastro) ── */
+        .auth-topbar-login {
+          position: fixed;
+          top: max(1.25rem, env(safe-area-inset-top));
+          left: max(1.25rem, env(safe-area-inset-left));
+          z-index: 10;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 0.55rem 1.1rem 0.55rem 0.85rem;
+          background: rgba(255, 255, 255, 0.18);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.35);
+          border-radius: 999px;
+          color: #fff;
+          font-family: inherit;
+          font-size: 0.82rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: background 0.2s, transform 0.15s;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+          -webkit-tap-highlight-color: transparent;
+          -webkit-appearance: none;
+          appearance: none;
+        }
+        .auth-topbar-login:hover {
+          background: rgba(255, 255, 255, 0.28);
+          transform: translateY(-1px);
+        }
+        .auth-topbar-login:active { transform: scale(0.97); }
+        .auth-topbar-login b { font-weight: 800; }
         .fade-overlay { position: fixed; inset: 0; z-index: 100; background: var(--bg-card); opacity: 0; pointer-events: none; transition: opacity 0.7s ease; }
         .fade-overlay.fade-in { opacity: 1; pointer-events: all; }
         .auth-bg {
