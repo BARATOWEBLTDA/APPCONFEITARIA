@@ -877,9 +877,9 @@ export default function Auth() {
           font-size: var(--font-button);
           color: var(--text-secondary);
           line-height: 1.5;
-          margin: 0 auto;
-          max-width: 320px;
+          margin: 0;
           text-wrap: balance;
+          text-align: center;
         }
 
         /* Link "Já tem conta? Fazer login" — só mobile no fim do form */
