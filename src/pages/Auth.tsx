@@ -853,13 +853,13 @@ export default function Auth() {
 
         @media (min-width: 1200px) {
           /* Grid layouts:
-             - Cadastro: mascote + form (2 colunas)
+             - Cadastro: mascote (auto) + form (440px) → conjunto centralizado
              - Login: só o form centralizado */
           .auth-layout {
-            max-width: 1200px;
+            max-width: 960px;
             display: grid;
-            grid-template-columns: 1fr 440px;
-            gap: 2.5rem;
+            grid-template-columns: auto 440px;
+            gap: 3rem;
             align-items: center;
             justify-content: center;
           }
@@ -879,6 +879,7 @@ export default function Auth() {
             align-items: flex-start;
             gap: 1.1rem;
             color: #fff;
+            max-width: 340px;
             animation: promoFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
             animation-delay: 0.1s;
           }
