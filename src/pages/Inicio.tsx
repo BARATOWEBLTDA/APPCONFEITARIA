@@ -874,12 +874,12 @@ export default function Inicio() {
         <h2 className="ini-section-title">Acesso rápido</h2>
         <div className="ini-nav-grid">
           {[
-            { icon: <Plus size={20} weight="bold" />, label: "Novo pedido", sub: "Registrar encomenda", path: "/pedidos/novo", color: "var(--text-title)", bg: "#FFF1F7", key: "novo" },
-            { icon: <ClipboardText size={20} weight="duotone" />, label: "Pedidos", sub: "Ver e gerenciar", path: "/pedidos", color: "#1D4ED8", bg: "#DBEAFE", key: "pedidos" },
-            { icon: <Package size={20} weight="duotone" />, label: "Insumos", sub: "Ingredientes e embalagens", path: "/insumos", color: "#15803D", bg: "#DCFCE7", key: "insumos" },
-            { icon: <CookingPot size={20} weight="duotone" />, label: "Receitas", sub: "Fichas técnicas", path: "/receitas", color: "#D97706", bg: "#FEF3C7", key: "receitas" },
-            { icon: <Users size={20} weight="duotone" />, label: "Clientes", sub: "Base de clientes", path: "/clientes", color: "#7C3AED", bg: "#F5F3FF", key: "clientes" },
-            { icon: <ChartLineUp size={20} weight="duotone" />, label: "Financeiro", sub: "Contas e controle", path: "/financeiro", color: "#0891B2", bg: "#ECFEFF", key: "financeiro" },
+            { icon: <Plus         size={20} weight="bold" />,     label: "Novo pedido", sub: "Registrar encomenda",       path: "/pedidos/novo", color: "var(--text-title)", bg: "#FFF1F7", key: "novo" },
+            { icon: <Storefront   size={20} weight="duotone" />,  label: "Produtos",    sub: "Itens do cardápio",         path: "/produtos",     color: "#BE185D",           bg: "#FCE7F3", key: "produtos" },
+            { icon: <Users        size={20} weight="duotone" />,  label: "Clientes",    sub: "Base de clientes",          path: "/clientes",     color: "#7C3AED",           bg: "#F5F3FF", key: "clientes" },
+            { icon: <Package      size={20} weight="duotone" />,  label: "Insumos",     sub: "Ingredientes e embalagens", path: "/insumos",      color: "#15803D",           bg: "#DCFCE7", key: "insumos" },
+            { icon: <CookingPot   size={20} weight="duotone" />,  label: "Receitas",    sub: "Fichas técnicas",           path: "/receitas",     color: "#D97706",           bg: "#FEF3C7", key: "receitas" },
+            { icon: <ChartLineUp  size={20} weight="duotone" />,  label: "Financeiro",  sub: "Contas e controle",         path: "/financeiro",   color: "#0891B2",           bg: "#ECFEFF", key: "financeiro" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
               <div className="ini-nav-icon" style={{ background: item.bg, color: item.color }}>{item.icon}</div>
