@@ -291,7 +291,7 @@ export default function Layout() {
           justify-content: center;
           gap: 0.5rem;
           margin: 0 0.25rem 1rem;
-          padding: 0.85rem 1rem;
+          padding: 0.75rem 0.5rem;
           background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
           color: #fff;
           border: none;
@@ -299,7 +299,7 @@ export default function Layout() {
           text-decoration: none;
           text-align: center;
           font-family: var(--font-base);
-          font-size: var(--font-helper);
+          font-size: 0.68rem;
           font-weight: var(--fw-black);
           letter-spacing: 0.03em;
           box-shadow: 0 6px 18px rgba(var(--primary-rgb), 0.35);
@@ -307,6 +307,7 @@ export default function Layout() {
           overflow: hidden;
           transition: transform 0.15s, box-shadow 0.2s;
           cursor: pointer;
+          white-space: nowrap;
         }
         .sidebar-cad-complete:hover {
           transform: translateY(-1px);

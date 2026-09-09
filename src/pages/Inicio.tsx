@@ -1942,13 +1942,14 @@ export default function Inicio() {
           /* ── Grid principal: SÓ main no desktop (aside removido) ── */
           .ini-content {
             display: grid;
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
             grid-template-areas: "main";
             gap: var(--space-6);
             align-items: start;
             margin-top: 0;
+            width: 100%;
           }
-          .ini-main  { grid-area: main; }
+          .ini-main  { grid-area: main; min-width: 0; width: 100%; }
           .ini-aside { display: none; }
           .ini-aside-desktop { display: none; }
           .ini-aside-mobile { display: none; }
