@@ -956,7 +956,7 @@ export default function Auth() {
            Promo card (desktop only ≥1200px).
            Mobile/tablet: display: none — comportamento atual preservado.
            ────────────────────────────────────────────────────────── */
-        .auth-promo { display: none; }
+        .auth-promo { display: none !important; }
 
         @media (min-width: 900px) {
           /* Grid layouts:
@@ -989,7 +989,7 @@ export default function Auth() {
           .auth-topbar-login { display: inline-flex !important; }
 
           .auth-promo {
-            display: flex;
+            display: flex !important;
             flex-direction: column;
             gap: 1rem;
             width: 100%;
