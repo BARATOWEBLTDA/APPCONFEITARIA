@@ -127,19 +127,30 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
     setRect(el.getBoundingClientRect());
   }, [current, stepsAtivos, getSelector]);
 
-  // Quando o passo muda: rola até o elemento UMA vez, depois mede.
+  // Quando o passo muda: rola até o elemento UMA vez (se não for fixed), depois mede.
   useEffect(() => {
     if (!visible) return;
     const step = stepsAtivos[current];
     if (!step) return;
     const el = document.querySelector(getSelector(step)) as HTMLElement | null;
-    if (!el) { setRect(null); return; }
-    // Rola até o elemento ficar centralizado (só uma vez, no início do passo)
-    el.scrollIntoView({ block: "center", behavior: "smooth" });
-    // Espera scroll terminar antes de medir e travar
+    if (!el) {
+      // Retry uma vez após 200ms (elemento pode ainda estar montando)
+      const retry = setTimeout(() => {
+        const el2 = document.querySelector(getSelector(step)) as HTMLElement | null;
+        if (el2) setRect(el2.getBoundingClientRect());
+        else setRect(null);
+      }, 200);
+      return () => clearTimeout(retry);
+    }
+    // Só faz scroll se o elemento não estiver em position fixed/sticky (senão o scroll não afeta)
+    const posType = window.getComputedStyle(el).position;
+    if (posType !== "fixed" && posType !== "sticky") {
+      el.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+    // Espera scroll terminar (ou zero se não rolou) antes de medir e travar
     const t = setTimeout(() => {
       setRect(el.getBoundingClientRect());
-    }, 400);
+    }, posType === "fixed" || posType === "sticky" ? 60 : 400);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, current, isDesktop]);
@@ -209,13 +220,20 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
       }
     : { display: "none" };
 
-  // Posição do card (acima ou abaixo do elemento)
-  const cardStyle: React.CSSProperties = { visibility: rect ? "visible" : "hidden" };
+  // Posição do card (acima ou abaixo do elemento) — fallback: centro da tela
+  const cardStyle: React.CSSProperties = { visibility: "visible" };
+  const CARD_W = 300;
   if (rect) {
     const GAP = 16;
-    const CARD_W = 300;
-    // Vertical
-    if (step.cardPosition === "top") {
+    // Vertical: se o card não couber embaixo, coloca em cima
+    const CARD_H_ESTIMADA = 180;
+    const cabeEmbaixo = rect.bottom + GAP + CARD_H_ESTIMADA < window.innerHeight - 12;
+    const cabeEmCima = rect.top - GAP - CARD_H_ESTIMADA > 12;
+    const posEfetiva = step.cardPosition === "top" && cabeEmCima
+      ? "top"
+      : cabeEmbaixo ? "bottom" : (cabeEmCima ? "top" : "bottom");
+
+    if (posEfetiva === "top") {
       cardStyle.bottom = window.innerHeight - rect.top + GAP;
     } else {
       cardStyle.top = rect.bottom + GAP;
@@ -226,6 +244,12 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
     if (left < 12) left = 12;
     if (left + CARD_W > window.innerWidth - 12) left = window.innerWidth - CARD_W - 12;
     cardStyle.left = left;
+    cardStyle.width = Math.min(CARD_W, window.innerWidth - 24);
+  } else {
+    // Fallback: card no centro da tela (não achou o elemento alvo)
+    cardStyle.top = "50%";
+    cardStyle.left = "50%";
+    cardStyle.transform = "translate(-50%, -50%)";
     cardStyle.width = Math.min(CARD_W, window.innerWidth - 24);
   }
 
