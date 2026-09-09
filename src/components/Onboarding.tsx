@@ -375,23 +375,24 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         @media (min-width: 900px) {
           .ob-slide1-split {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: auto auto;
             gap: 3rem;
-            max-width: 1100px;
+            max-width: 900px;
             width: 100%;
             align-items: center;
+            justify-content: center;
             padding: 0 2rem;
           }
           .ob-slide1-left {
             display: flex;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: flex-end;
             order: 1;
           }
           .ob-slide1-right {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             position: relative;
             order: 2;
           }
