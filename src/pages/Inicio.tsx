@@ -212,13 +212,6 @@ export default function Inicio() {
   const linkCardapio = slug ? `${window.location.origin}/cardapio/${slug}` : "";
   const publicado = !!slug;
 
-  const getGreeting = () => {
-    const h = new Date().getHours();
-    if (h < 12) return "Bom dia";
-    if (h < 18) return "Boa tarde";
-    return "Boa noite";
-  };
-
   // Frases rotativas — uma por dia, determinística (mesmo dia sempre mostra a mesma)
   const DAILY_MESSAGES = [
     "Vamos gerenciar sua confeitaria?",
@@ -702,9 +695,9 @@ export default function Inicio() {
         <div className="ini-hero-greeting">
           <h1>
             <span>
-              {getGreeting()},{" "}
+              Olá{" "}
               {profile ? (
-                (nome ? nome.split(" ")[0] : "bem-vinda")
+                (nome ? nome.split(" ")[0] : "!")
               ) : (
                 <span className="ini-hero-name-skel" aria-hidden="true" />
               )}
