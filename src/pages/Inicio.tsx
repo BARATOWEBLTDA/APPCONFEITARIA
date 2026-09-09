@@ -66,6 +66,13 @@ export default function Inicio() {
   const [resumoAnterior, setResumoAnterior] = useState({ vendas: 0, pedidos: 0 });
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
   const [proximasEntregas, setProximasEntregas] = useState<Array<{ id: string; cliente: string; data: string; valor: number }>>([]);
+  // Onboarding: se cliente novo, o card destaque muda pra empty state contextual
+  const [onboarding, setOnboarding] = useState({
+    produtosCount: 0,
+    clientesCount: 0,
+    cardapioPublicado: false,
+    loading: true,
+  });
   const [checklistDone, setChecklistDone] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -372,6 +379,25 @@ export default function Inicio() {
     if (!profile?.id) return;
     carregarTudo();
   }, [profile?.id]);
+
+  // Onboarding: verifica se cliente é novo (sem produtos/clientes/cardápio publicado)
+  // pra mostrar empty state contextual em vez do "Novo pedido" como destaque
+  useEffect(() => {
+    if (!profile?.id) return;
+    (async () => {
+      const [prodRes, cliRes] = await Promise.all([
+        supabase.from("produtos").select("id", { count: "exact", head: true }).eq("user_id", profile.id),
+        supabase.from("clientes").select("id", { count: "exact", head: true }).eq("user_id", profile.id),
+      ]);
+      setOnboarding({
+        produtosCount: prodRes.count || 0,
+        clientesCount: cliRes.count || 0,
+        // Cardápio "publicado" = tem código público (gerado no cadastro) + nome_loja preenchido
+        cardapioPublicado: !!(profile.codigo_publico && profile.nome_loja),
+        loading: false,
+      });
+    })();
+  }, [profile?.id, profile?.codigo_publico, profile?.nome_loja]);
 
   const carregarTudo = async () => {
     setLoading(true);
@@ -871,7 +897,25 @@ export default function Inicio() {
         </div>
       </section>
       <section className="ini-section ini-section--nav">
-        <h2 className="ini-section-title">Acesso rápido</h2>
+        {/* Empty state contextual (mobile only, quando não tem produtos ainda) */}
+        {!onboarding.loading && onboarding.produtosCount === 0 && (
+          <button
+            className="ini-empty-hero"
+            onClick={() => navigate("/produtos")}
+            type="button"
+          >
+            <span className="ini-empty-hero-label">🎯 COMECE POR AQUI</span>
+            <span className="ini-empty-hero-icon" aria-hidden="true">🎂</span>
+            <span className="ini-empty-hero-title">Cadastre seu primeiro produto</span>
+            <span className="ini-empty-hero-sub">Bolos, doces, salgados… Depois use eles nos pedidos</span>
+            <span className="ini-empty-hero-btn">Adicionar produto →</span>
+          </button>
+        )}
+
+        {/* Título da grade — muda de "Acesso rápido" pra "Explorar" durante onboarding */}
+        <h2 className="ini-section-title">
+          {!onboarding.loading && onboarding.produtosCount === 0 ? "Explorar" : "Acesso rápido"}
+        </h2>
         <div className="ini-nav-grid">
           {[
             { icon: <Plus         size={20} weight="bold" />,     label: "Novo pedido", sub: "Registrar encomenda",       path: "/pedidos/novo", color: "var(--text-title)", bg: "#FFF1F7", key: "novo" },
@@ -1474,6 +1518,56 @@ export default function Inicio() {
         .ini-section {
           margin-top: var(--gap-section);
           display: flex; flex-direction: column; gap: var(--gap-stack);
+        }
+
+        /* ── Empty state hero: aparece só no mobile quando produtosCount = 0 ── */
+        .ini-empty-hero {
+          width: 100%;
+          background: linear-gradient(135deg, #FFF1F7, #FCE7F3);
+          border: 2px dashed #F9A8D4;
+          border-radius: var(--radius-lg);
+          padding: 22px 16px 20px;
+          text-align: center;
+          display: flex; flex-direction: column; align-items: center; gap: 6px;
+          cursor: pointer;
+          font-family: var(--font-base);
+          transition: transform var(--dur-fast), box-shadow var(--dur-fast);
+        }
+        .ini-empty-hero:active {
+          transform: scale(0.98);
+        }
+        .ini-empty-hero-label {
+          font-size: var(--text-xs);
+          font-weight: var(--fw-black);
+          color: var(--primary-dark);
+          letter-spacing: 0.06em;
+        }
+        .ini-empty-hero-icon {
+          font-size: 40px;
+          line-height: 1;
+          margin: 4px 0;
+        }
+        .ini-empty-hero-title {
+          font-size: var(--text-lg);
+          font-weight: var(--fw-black);
+          color: var(--text-title);
+          letter-spacing: -0.01em;
+        }
+        .ini-empty-hero-sub {
+          font-size: var(--text-sm);
+          color: var(--text-secondary);
+          line-height: 1.4;
+          padding: 0 8px;
+          margin-bottom: 6px;
+        }
+        .ini-empty-hero-btn {
+          background: var(--primary);
+          color: #fff;
+          padding: 10px 22px;
+          border-radius: 999px;
+          font-size: var(--text-sm);
+          font-weight: var(--fw-black);
+          box-shadow: 0 4px 12px rgba(232,90,140,0.3);
         }
 
         /* ── Greeting (desktop only) ── */
@@ -2123,6 +2217,8 @@ export default function Inicio() {
             box-shadow: 0 4px 14px rgba(45, 31, 38, 0.08);
           }
           .ini-nav-card:active { transform: translateY(0); }
+          /* Desktop: sem empty state hero (confeiteira que sabe usar PC não precisa) */
+          .ini-empty-hero { display: none !important; }
 
           /* Card "Novo pedido" (rosa escuro) — mesmo movimento + escurecido */
           .ini-nav-card[data-nav="novo"]:hover {
