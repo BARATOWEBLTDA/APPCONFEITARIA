@@ -401,12 +401,9 @@ export default function Auth() {
       ) : (
       <div className="auth-card">
         {/* ─────────────────────────────────────────────────────────
-            HEADER: Logo + Social proof pill (sem hero rosa)
-            Se quiser trocar a logo, altere o src abaixo.
-            Se quiser trocar o número, altere o "+500" no proof.
+            HEADER: Social proof pill (a logo Doonly agora é o header do card)
         ───────────────────────────────────────────────────────── */}
         <div className="cad-hero">
-          <img src="/logoapp.png" alt="Doonly" className="cad-hero-logo" />
           <div className="cad-proof-pill">
             <div className="cad-proof-avatars">
               <div className="cad-proof-av" style={{ background: "#F97316" }}>M</div>
@@ -817,17 +814,11 @@ export default function Auth() {
         .cad-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
         /* ── Cabeçalho do cadastro ────────────────────────── */
-        /* ── Header do cadastro (logo + social proof pill) ─── */
+        /* ── Header do cadastro (só social proof pill) ─── */
         .cad-hero {
           display: flex; flex-direction: column; align-items: center;
           gap: 0.6rem;
-          margin-bottom: 1.25rem;
-        }
-        .cad-hero-logo {
-          width: 72px; height: 72px;
-          object-fit: contain;
-          filter: drop-shadow(0 4px 12px rgba(232, 90, 140, 0.25));
-          -webkit-filter: drop-shadow(0 4px 12px rgba(232, 90, 140, 0.25));
+          margin-bottom: 1rem;
         }
         .cad-proof-pill {
           display: inline-flex; align-items: center; gap: 8px;
@@ -854,7 +845,7 @@ export default function Auth() {
         .cad-proof-pill-txt b { color: var(--text-title); font-weight: var(--fw-black); }
 
         .cad-header { text-align: center; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem; }
-        .cad-title { font-size: 1.5rem; font-weight: 700; color: var(--text-title); margin: 0; letter-spacing: -0.01em; line-height: 1.2; }
+        .cad-title { font-size: 1.85rem; font-weight: var(--fw-black, 900); color: var(--text-title); margin: 0; letter-spacing: -0.025em; line-height: 1.15; }
         .cad-subtitle { font-size: 0.9rem; color: var(--text-secondary); margin: 0; line-height: 1.4; }
 
         /* ── Requisitos da senha (substitui medidor) ──────── */
