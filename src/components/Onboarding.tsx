@@ -118,7 +118,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           position: fixed;
           inset: 0;
           z-index: 9999;
-          background: linear-gradient(160deg, #2a1019 0%, #3d1a24 40%, #4d1f2c 70%, #3d1a24 100%);
+          background: linear-gradient(160deg, #FF9AC1 0%, #E85A8C 40%, #A8235A 70%, #E85A8C 100%);
           background-size: 200% 200%;
           animation: obBgMove 18s ease infinite;
           color: #fff;
@@ -156,10 +156,11 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           transition: background 0.3s ease;
         }
         .ob-dot--done {
-          background: rgba(244, 208, 63, 0.55);
+          background: rgba(255, 255, 255, 0.6);
         }
         .ob-dot--active {
-          background: #F4D03F;
+          background: #FFFFFF;
+          box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
         }
 
         /* ── Conteúdo principal (a tela em si) ── */
@@ -214,27 +215,23 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           flex: 1;
           height: 52px;
           padding: 0 1.5rem;
-          color: #2a1019;
+          color: var(--primary-dark, #A8235A);
           border-radius: 14px;
-          background: linear-gradient(110deg, #F4D03F 0%, #fce785 25%, #F4D03F 50%, #e6b800 75%, #F4D03F 100%);
-          background-size: 250% 100%;
-          animation: obBtnShine 4s linear infinite;
-          box-shadow: 0 6px 20px rgba(244, 208, 63, 0.35), inset 0 1px 0 rgba(255,255,255,0.4);
+          background: #FFFFFF;
+          box-shadow: 0 8px 24px rgba(60, 15, 40, 0.3), inset 0 1px 0 rgba(255,255,255,0.9);
           letter-spacing: 0.01em;
-        }
-        @keyframes obBtnShine {
-          0%   { background-position: 0% 50%; }
-          100% { background-position: 250% 50%; }
+          font-weight: 800;
         }
         .ob-nav-btn--next:hover {
-          box-shadow: 0 8px 28px rgba(244, 208, 63, 0.5), inset 0 1px 0 rgba(255,255,255,0.4);
+          box-shadow: 0 10px 32px rgba(60, 15, 40, 0.4), inset 0 1px 0 rgba(255,255,255,0.9);
+          transform: translateY(-1px);
         }
 
         /* ── Slides: títulos e textos comuns ── */
         .ob-slide-eyebrow {
           font-size: 0.85rem;
           font-weight: 600;
-          color: #F4D03F;
+          color: rgba(255, 255, 255, 0.9);
           letter-spacing: 0.04em;
           margin-bottom: 0.4rem;
           opacity: 0;
@@ -362,8 +359,87 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-welcome-anchor .ob-fill {
           font-weight: 900;
           text-shadow: none;
-          color: #FFF3C8;
-          filter: drop-shadow(0 0 10px rgba(255,240,180,0.65)) drop-shadow(0 0 24px rgba(255,215,140,0.4));
+          color: #FFFFFF;
+          filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 28px rgba(255, 200, 220, 0.5));
+        }
+
+        /* ── Slide 1: layout split (mobile = fluxo normal, desktop = 2 colunas) ── */
+        .ob-slide1-split {
+          display: contents;
+        }
+        .ob-slide1-left, .ob-slide1-right {
+          display: contents;
+        }
+        .ob-slide1-orb { display: none; }
+
+        @media (min-width: 900px) {
+          .ob-slide1-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            max-width: 1100px;
+            width: 100%;
+            align-items: center;
+            padding: 0 2rem;
+          }
+          .ob-slide1-left {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            order: 2;
+          }
+          .ob-slide1-right {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            order: 1;
+          }
+          .ob-slide1-right .ob-coroa-wrap {
+            position: relative;
+            z-index: 2;
+          }
+          .ob-slide1-right .ob-welcome-coroa {
+            width: 280px;
+            margin-bottom: 0;
+          }
+          .ob-slide1-left .ob-welcome-anchor {
+            text-align: left;
+            padding: 0;
+            max-width: none;
+          }
+          .ob-slide1-left .ob-welcome-block {
+            font-size: 2.6rem;
+            line-height: 1.15;
+          }
+          .ob-slide1-left .ob-welcome-eyebrow {
+            font-size: 0.95rem;
+          }
+          /* Orbs decorativos atrás do mascote */
+          .ob-slide1-orb {
+            display: block;
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.18);
+            filter: blur(40px);
+            -webkit-filter: blur(40px);
+            pointer-events: none;
+            z-index: 1;
+          }
+          .ob-slide1-orb--a {
+            width: 220px; height: 220px;
+            top: 10%; right: 5%;
+            animation: ob1Float 12s ease-in-out infinite;
+          }
+          .ob-slide1-orb--b {
+            width: 160px; height: 160px;
+            bottom: 15%; left: 10%;
+            animation: ob1Float 14s ease-in-out 2s infinite reverse;
+          }
+          @keyframes ob1Float {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.55; }
+            50% { transform: translate(30px, -20px) scale(1.15); opacity: 0.75; }
+          }
         }
 
         /* ── Placeholder visual (etapa 1) ── */
@@ -413,17 +489,17 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           font-size: 1.05rem;
           font-weight: 800;
           padding: 1rem 2.5rem;
-          background: #F4D03F;
-          color: #2a1019;
+          background: #FFFFFF;
+          color: var(--primary-dark, #A8235A);
           border: none;
           border-radius: 999px;
           cursor: pointer;
-          box-shadow: 0 8px 24px rgba(244,208,63,0.3);
+          box-shadow: 0 8px 24px rgba(60, 15, 40, 0.3);
           transition: transform 0.15s, box-shadow 0.2s;
         }
         .ob-final-cta:hover {
           transform: translateY(-2px);
-          box-shadow: 0 12px 32px rgba(244,208,63,0.4);
+          box-shadow: 0 12px 32px rgba(60, 15, 40, 0.4);
         }
         .ob-final-cta:active { transform: translateY(0); }
 
@@ -1576,28 +1652,34 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
   }, [onReady]);
 
   return (
-    <>
-      <div className="ob-coroa-wrap">
-        <img
-          src="/Sistema/TUTORIAL.png"
-          alt=""
-          className="ob-welcome-coroa"
-          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-        />
+    <div className="ob-slide1-split">
+      <div className="ob-slide1-right">
+        <div className="ob-slide1-orb ob-slide1-orb--a" aria-hidden="true" />
+        <div className="ob-slide1-orb ob-slide1-orb--b" aria-hidden="true" />
+        <div className="ob-coroa-wrap">
+          <img
+            src="/Sistema/TUTORIAL.png"
+            alt=""
+            className="ob-welcome-coroa"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        </div>
       </div>
 
-      <div className="ob-welcome-anchor">
-        <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.15s" }}>
-          COM O DOONLY
-        </div>
-        <div className="ob-welcome-block" style={{ animationDelay: "0.35s" }}>
-          SUA CONFEITARIA<br/>
-          FICA <span className="ob-fill">ORGANIZADA</span><br/>
-          DO CARDÁPIO<br/>
-          AO <span className="ob-fill">LUCRO</span>
+      <div className="ob-slide1-left">
+        <div className="ob-welcome-anchor">
+          <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.15s" }}>
+            COM O DOONLY
+          </div>
+          <div className="ob-welcome-block" style={{ animationDelay: "0.35s" }}>
+            SUA CONFEITARIA<br/>
+            FICA <span className="ob-fill">ORGANIZADA</span><br/>
+            DO CARDÁPIO<br/>
+            AO <span className="ob-fill">LUCRO</span>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
