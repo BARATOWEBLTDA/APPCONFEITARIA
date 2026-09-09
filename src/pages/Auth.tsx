@@ -402,7 +402,6 @@ export default function Auth() {
         </div>
 
         <div className="cad-header">
-          <h1 className="cad-title">ORGANIZE SUA<br/>CONFEITARIA</h1>
           <p className="cad-subtitle">Tenha seus produtos, receitas, clientes e pedidos em um só lugar.</p>
         </div>
         <form onSubmit={handleCadastro} className="cadastro-form" noValidate>
