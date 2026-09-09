@@ -3,6 +3,7 @@ import { ImageCropper } from "@/components/ui/ImageCropper";
 import { supabase } from "@/lib/supabase";
 import CardapioDesign from "@/pages/CardapioDesign";
 import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
+import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 
 const SectionLabel = ({ children, icon, sub }: any) => (
   <div className="ccc-section-header">
@@ -56,6 +57,17 @@ export default function CardapioConfigPage() {
 
   const [autoSaved, setAutoSaved] = useState(false);
   const autoSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Preview: pega URL do cardápio público + key pra forçar reload do iframe
+  const { profile } = useProfile();
+  const cardapioUrl = getCardapioUrl(profile);
+  const [previewKey, setPreviewKey] = useState(0);
+  // Recarrega o iframe 2s após um auto-save (dá tempo do Supabase persistir)
+  useEffect(() => {
+    if (!autoSaved) return;
+    const t = setTimeout(() => setPreviewKey(k => k + 1), 1200);
+    return () => clearTimeout(t);
+  }, [autoSaved]);
 
   // Auto-save com debounce de 2 segundos
   useEffect(() => {
@@ -464,43 +476,43 @@ export default function CardapioConfigPage() {
             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
           </svg>
           Prévia · como o cliente vê
+          <button
+            className="ccc-preview-refresh"
+            onClick={() => setPreviewKey(k => k + 1)}
+            title="Atualizar prévia"
+            type="button"
+            aria-label="Atualizar prévia"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+            </svg>
+          </button>
         </div>
-        <div className="ccc-preview-phone">
-          {/* Logo */}
-          <div className="ccc-prev-logo">
-            {form.foto_url
-              ? <img src={form.foto_url} alt="" />
-              : <span>🍰</span>}
-          </div>
-          <div className="ccc-prev-nome">{form.nome_loja || "Nome da confeitaria"}</div>
-          {!form.hide_stars && (
-            <div className="ccc-prev-stars">★★★★★ <span>{Number(form.avaliacao_media || 5).toFixed(1)}</span></div>
-          )}
-          {form.descricao_loja && <div className="ccc-prev-desc">{form.descricao_loja}</div>}
-          <div className="ccc-prev-info">
-            {form.mostrar_localizacao && form.cidade && (
-              <span>📍 {form.mostrar_apenas_cidade ? form.cidade : `${form.bairro ? form.bairro + ", " : ""}${form.cidade}${form.estado ? " · " + form.estado : ""}`}</span>
+        {/* Moldura de iPhone */}
+        <div className="ccc-iphone">
+          <div className="ccc-iphone-notch"></div>
+          <div className="ccc-iphone-screen">
+            {cardapioUrl ? (
+              <iframe
+                key={previewKey}
+                src={cardapioUrl}
+                title="Prévia do cardápio"
+                className="ccc-iphone-iframe"
+                loading="lazy"
+              />
+            ) : (
+              <div className="ccc-iphone-empty">
+                <span>🔗</span>
+                <p>Publique seu cardápio pra ver a prévia</p>
+              </div>
             )}
-            {form.telefone && <span>📞 {form.telefone}</span>}
           </div>
-          <div className="ccc-prev-divider"></div>
-          {/* Produtos fake */}
-          <div className="ccc-prev-prod">
-            <div className="ccc-prev-prod-img" style={{background:"linear-gradient(135deg,#ffb4d1,#ff7ba8)"}}></div>
-            <div className="ccc-prev-prod-info">
-              <div className="ccc-prev-prod-nome">Bolo Red Velvet</div>
-              <div className="ccc-prev-prod-preco">R$ 180</div>
-            </div>
-          </div>
-          <div className="ccc-prev-prod">
-            <div className="ccc-prev-prod-img" style={{background:"linear-gradient(135deg,#c084fc,#a855f7)"}}></div>
-            <div className="ccc-prev-prod-info">
-              <div className="ccc-prev-prod-nome">Brigadeiro Gourmet</div>
-              <div className="ccc-prev-prod-preco">R$ 5</div>
-            </div>
-          </div>
-          <div className="ccc-prev-fake-cta">Adicionar ao carrinho</div>
         </div>
+        {cardapioUrl && (
+          <a href={cardapioUrl} target="_blank" rel="noopener" className="ccc-preview-open">
+            Abrir em nova aba ↗
+          </a>
+        )}
       </aside>
       </div>{/* fim .ccc-geral-wrap */}
 
@@ -563,7 +575,7 @@ export default function CardapioConfigPage() {
         @media (min-width: 900px) {
           .ccc-geral-wrap {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 320px;
+            grid-template-columns: minmax(0, 1fr) 340px;
             gap: 1.5rem;
             align-items: start;
           }
@@ -573,102 +585,93 @@ export default function CardapioConfigPage() {
             min-width: 0;
           }
           .ccc-preview {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             position: sticky;
             top: 1rem;
-            background: #2D1F26;
-            border-radius: 20px;
-            padding: 14px;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+            gap: 10px;
           }
           .ccc-preview-head {
             display: flex; align-items: center; justify-content: center; gap: 6px;
-            color: rgba(255,255,255,0.85);
+            color: var(--text-secondary);
             font-size: var(--text-xs);
             font-weight: var(--fw-bold);
-            margin-bottom: 10px;
+            width: 100%;
           }
-          .ccc-preview-phone {
-            background: #FBF4F6;
-            border-radius: 14px;
-            padding: 18px 14px;
-            min-height: 480px;
-            display: flex; flex-direction: column;
-            gap: 8px;
-            box-shadow: inset 0 2px 6px rgba(0,0,0,0.08);
+          .ccc-preview-refresh {
+            background: var(--bg-subtle, #F8F5F6);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            border-radius: 50%;
+            width: 24px; height: 24px;
+            display: inline-flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            margin-left: 4px;
+            transition: background var(--dur-fast), transform var(--dur-fast);
           }
-          .ccc-prev-logo {
-            width: 72px; height: 72px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-light), var(--primary));
-            margin: 0 auto;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 30px;
-            border: 3px solid #fff;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+          .ccc-preview-refresh:hover { background: var(--primary-light); color: var(--primary); }
+          .ccc-preview-refresh:active { transform: rotate(-90deg); }
+          .ccc-preview-open {
+            font-size: 10px;
+            color: var(--primary);
+            font-weight: var(--fw-bold);
+            text-decoration: none;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--primary-light);
+          }
+          .ccc-preview-open:hover { background: var(--primary); color: #fff; }
+
+          /* ─── Moldura de iPhone ─── */
+          .ccc-iphone {
+            width: 300px;
+            height: 620px;
+            background: #1a1a1a;
+            border-radius: 40px;
+            padding: 12px 8px;
+            box-shadow:
+              0 0 0 2px #2a2a2a,
+              0 30px 60px -20px rgba(0,0,0,0.4),
+              0 20px 40px -25px rgba(0,0,0,0.3),
+              inset 0 0 2px rgba(255,255,255,0.05);
+            position: relative;
             overflow: hidden;
           }
-          .ccc-prev-logo img { width: 100%; height: 100%; object-fit: cover; }
-          .ccc-prev-nome {
-            text-align: center;
-            font-size: var(--text-md);
-            font-weight: var(--fw-black);
-            color: var(--text-title);
-            margin-top: 4px;
+          .ccc-iphone-notch {
+            position: absolute;
+            top: 14px; left: 50%;
+            transform: translateX(-50%);
+            width: 96px; height: 26px;
+            background: #000;
+            border-radius: 999px;
+            z-index: 2;
           }
-          .ccc-prev-stars {
-            text-align: center;
-            color: #F59E0B;
-            font-size: var(--text-xs);
-            font-weight: var(--fw-bold);
+          .ccc-iphone-screen {
+            width: 100%; height: 100%;
+            background: #fff;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
           }
-          .ccc-prev-stars span { color: var(--text-secondary); margin-left: 4px; }
-          .ccc-prev-desc {
-            text-align: center;
-            font-size: 11px;
-            color: var(--text-secondary);
-            line-height: 1.4;
-            padding: 0 8px;
+          .ccc-iphone-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
           }
-          .ccc-prev-info {
-            text-align: center;
-            font-size: 10px;
+          .ccc-iphone-empty {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 12px;
             color: var(--text-muted);
-            display: flex; flex-direction: column; gap: 2px;
-          }
-          .ccc-prev-divider {
-            border-top: 1px dashed #E5E0E2;
-            margin: 6px 0;
-          }
-          .ccc-prev-prod {
-            background: #fff; border-radius: 10px; padding: 8px;
-            display: flex; gap: 8px; align-items: center;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-          }
-          .ccc-prev-prod-img {
-            width: 44px; height: 44px; border-radius: 8px;
-            flex-shrink: 0;
-          }
-          .ccc-prev-prod-info { flex: 1; }
-          .ccc-prev-prod-nome {
-            font-size: 11px;
-            font-weight: var(--fw-bold);
-            color: var(--text-title);
-          }
-          .ccc-prev-prod-preco {
-            font-size: 12px;
-            color: var(--primary);
-            font-weight: var(--fw-black);
-          }
-          .ccc-prev-fake-cta {
-            margin-top: auto;
-            background: var(--primary);
-            color: #fff;
+            padding: 20px;
             text-align: center;
-            padding: 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: var(--fw-bold);
           }
+          .ccc-iphone-empty span { font-size: 40px; }
+          .ccc-iphone-empty p { font-size: 12px; margin: 0; }
+
           /* No desktop, o grid de cards vira só 2 colunas (já que perde espaço pro preview) */
           .ccc-row-top { grid-template-columns: 1fr 1fr !important; }
           .ccc-row-top > .ccc-card { grid-column: auto !important; grid-row: auto !important; }
