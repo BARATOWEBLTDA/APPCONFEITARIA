@@ -12,16 +12,21 @@ import { CaretRight, Check, X } from "@phosphor-icons/react";
 
 interface Step {
   selector: string;
+  /** Seletor alternativo pra desktop (>=1100px). Se ausente, usa `selector` em ambas telas. */
+  selectorDesktop?: string;
   title: string;
   desc: string;
   shape: "circle" | "rect";
   padding?: number;
   cardPosition?: "top" | "bottom" | "auto";
+  /** Se true, esse passo é pulado quando o layout for desktop */
+  skipOnDesktop?: boolean;
 }
 
 const STEPS: Step[] = [
   {
     selector: ".ini-profile-btn",
+    selectorDesktop: ".sidebar-avatar-btn",
     title: "Sua foto de perfil",
     desc: "Toque no ícone da câmera pra adicionar ou trocar sua foto de perfil.",
     shape: "circle",
@@ -30,6 +35,7 @@ const STEPS: Step[] = [
   },
   {
     selector: ".ini-hero-bell",
+    selectorDesktop: ".ini-desktop-bell",
     title: "Suas notificações",
     desc: "Toque no sino pra ver novidades, avisos e atualizações do app.",
     shape: "circle",
@@ -38,8 +44,9 @@ const STEPS: Step[] = [
   },
   {
     selector: ".ini-metrica-wrap",
-    title: "Métrica em destaque",
-    desc: "Este card mostra a métrica que você escolheu. Dá pra trocar em Gestão → Configurações → Início.",
+    selectorDesktop: ".ini-metrics-grid",
+    title: "Métricas em destaque",
+    desc: "Aqui você acompanha faturamento, pedidos e entregas em tempo real.",
     shape: "rect",
     padding: 8,
     cardPosition: "bottom",
@@ -51,11 +58,13 @@ const STEPS: Step[] = [
     shape: "rect",
     padding: 8,
     cardPosition: "top",
+    skipOnDesktop: true,
   },
   {
     selector: ".bottom-nav",
+    selectorDesktop: ".sidebar",
     title: "Menu de navegação",
-    desc: "Use o menu inferior pra navegar entre Início, Pedidos, Cardápio e Gestão.",
+    desc: "Navegue entre Início, Agenda, Cardápio, Pedidos e demais seções por aqui.",
     shape: "rect",
     padding: 4,
     cardPosition: "top",
@@ -75,6 +84,25 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
   const [visible, setVisible] = useState(false);
   const [current, setCurrent] = useState(0);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 1100px)").matches : false
+  );
+
+  // Escuta mudança de breakpoint (o usuário pode redimensionar a janela)
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1100px)");
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
+  // Lista dos passos aplicáveis à tela atual (desktop pula os `skipOnDesktop`)
+  const stepsAtivos = STEPS.filter(s => !(isDesktop && s.skipOnDesktop));
+
+  // Retorna o seletor correto pra plataforma atual
+  const getSelector = useCallback((step: Step) =>
+    isDesktop && step.selectorDesktop ? step.selectorDesktop : step.selector
+  , [isDesktop]);
 
   // Abre após 1s no primeiro login (ou quando forceOpen mudar pra true)
   useEffect(() => {
@@ -91,21 +119,20 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
   }, [forceOpen]);
 
   // Calcula o rect do elemento alvo — SEM fazer scroll.
-  // Usado no listener de resize/scroll pra manter a posição do card/spotlight atualizada.
   const recalcularRect = useCallback(() => {
-    const step = STEPS[current];
+    const step = stepsAtivos[current];
     if (!step) return;
-    const el = document.querySelector(step.selector) as HTMLElement | null;
+    const el = document.querySelector(getSelector(step)) as HTMLElement | null;
     if (!el) { setRect(null); return; }
     setRect(el.getBoundingClientRect());
-  }, [current]);
+  }, [current, stepsAtivos, getSelector]);
 
   // Quando o passo muda: rola até o elemento UMA vez, depois mede.
   useEffect(() => {
     if (!visible) return;
-    const step = STEPS[current];
+    const step = stepsAtivos[current];
     if (!step) return;
-    const el = document.querySelector(step.selector) as HTMLElement | null;
+    const el = document.querySelector(getSelector(step)) as HTMLElement | null;
     if (!el) { setRect(null); return; }
     // Rola até o elemento ficar centralizado (só uma vez, no início do passo)
     el.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -114,7 +141,8 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
       setRect(el.getBoundingClientRect());
     }, 400);
     return () => clearTimeout(t);
-  }, [visible, current]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, current, isDesktop]);
 
   // Trava scroll do body enquanto o tour está visível + recalcula em resize
   useEffect(() => {
@@ -155,7 +183,7 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
   };
 
   const proximo = () => {
-    if (current < STEPS.length - 1) {
+    if (current < stepsAtivos.length - 1) {
       setCurrent((c) => c + 1);
     } else {
       fechar();
@@ -164,8 +192,9 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
 
   if (!visible) return null;
 
-  const step = STEPS[current];
-  const isLast = current === STEPS.length - 1;
+  const step = stepsAtivos[current];
+  if (!step) { fechar(); return null; }
+  const isLast = current === stepsAtivos.length - 1;
   const isFirst = current === 0;
   const padding = step.padding ?? 6;
 
@@ -211,13 +240,13 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
         <button className="tour-close" onClick={fechar} aria-label="Fechar tour" type="button">
           <X size={14} weight="bold" />
         </button>
-        <span className="tour-step-count">Passo {current + 1} de {STEPS.length}</span>
+        <span className="tour-step-count">Passo {current + 1} de {stepsAtivos.length}</span>
         <p className="tour-title">{step.title}</p>
         <p className="tour-desc">{step.desc}</p>
 
         <div className="tour-actions">
           <div className="tour-dots" aria-hidden="true">
-            {STEPS.map((_, i) => (
+            {stepsAtivos.map((_, i) => (
               <span key={i} className={`tour-dot ${i === current ? "tour-dot--active" : ""}`} />
             ))}
           </div>
