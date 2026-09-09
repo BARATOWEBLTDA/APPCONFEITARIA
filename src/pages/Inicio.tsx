@@ -58,7 +58,9 @@ export default function Inicio() {
     entregasHoje: 0,
     aniversariantes: 0,
     faturamentoMes: 0,
+    pedidosAtrasados: 0,
   });
+  const [proximaEntregaHoje, setProximaEntregaHoje] = useState<{ cliente: string; hora: string; produto: string | null } | null>(null);
   const [aniversariantesDetalhe, setAniversariantesDetalhe] = useState<{ nome: string; dias: number } | null>(null);
   const [resumoSemana, setResumoSemana] = useState({ vendas: 0, pedidos: 0 });
   const [resumoAnterior, setResumoAnterior] = useState({ vendas: 0, pedidos: 0 });
@@ -243,6 +245,122 @@ export default function Inicio() {
     return msg === "__date__" ? hojeFormatado() : msg;
   };
 
+  /**
+   * Mensagem inteligente contextual — retorna a mais relevante do momento.
+   * Ordem de prioridade:
+   *  1. Pedidos atrasados (urgente)
+   *  2. Próxima entrega hoje (com horário)
+   *  3. Entregas de hoje (contagem)
+   *  4. Aniversariante próximo
+   *  5. Comparativo semanal (vendas subiram)
+   *  6. Meta bateu (faturamento alto)
+   *  7. Início de semana (segunda)
+   *  8. Sexta-feira
+   *  9. Fallback motivacional
+   * Retorna { icon, prefix, highlight, suffix, tone } — tone define cor.
+   */
+  const getSmartMessage = (): { icon: string; prefix: string; highlight?: string; suffix?: string; tone: "danger" | "info" | "success" | "warning" | "neutral" } => {
+    // 1. Pedidos atrasados
+    if (counts.pedidosAtrasados > 0) {
+      return {
+        icon: "⚠️",
+        prefix: "",
+        highlight: `${counts.pedidosAtrasados} ${counts.pedidosAtrasados === 1 ? "pedido atrasado" : "pedidos atrasados"}`,
+        suffix: " — precisa de atenção",
+        tone: "danger",
+      };
+    }
+    // 2. Próxima entrega hoje com horário
+    if (proximaEntregaHoje) {
+      const [hh, mm] = proximaEntregaHoje.hora.split(":").map(Number);
+      const agora = new Date();
+      const alvo = new Date();
+      alvo.setHours(hh, mm || 0, 0, 0);
+      const diffMs = alvo.getTime() - agora.getTime();
+      const diffMin = Math.max(0, Math.floor(diffMs / 60000));
+      if (diffMin > 0 && diffMin < 6 * 60) {
+        const tempo = diffMin < 60 ? `${diffMin}min` : `${Math.floor(diffMin / 60)}h${diffMin % 60 > 0 ? ` ${diffMin % 60}min` : ""}`;
+        return {
+          icon: "⏰",
+          prefix: "Próxima entrega em ",
+          highlight: tempo,
+          suffix: ` — ${proximaEntregaHoje.cliente}`,
+          tone: "info",
+        };
+      }
+    }
+    // 3. Entregas de hoje
+    if (counts.entregasHoje > 0) {
+      return {
+        icon: "📦",
+        prefix: "Você tem ",
+        highlight: `${counts.entregasHoje} ${counts.entregasHoje === 1 ? "entrega" : "entregas"}`,
+        suffix: " hoje",
+        tone: "info",
+      };
+    }
+    // 4. Aniversariante próximo
+    if (aniversariantesDetalhe) {
+      const primeiroNome = aniversariantesDetalhe.nome.split(" ")[0];
+      const quando = aniversariantesDetalhe.dias === 0 ? "hoje" : aniversariantesDetalhe.dias === 1 ? "amanhã" : `em ${aniversariantesDetalhe.dias} dias`;
+      return {
+        icon: "🎂",
+        prefix: "",
+        highlight: `${primeiroNome} faz aniversário`,
+        suffix: ` ${quando}`,
+        tone: "warning",
+      };
+    }
+    // 5. Comparativo semanal (subiu)
+    if (resumoAnterior.vendas > 0 && resumoSemana.vendas > resumoAnterior.vendas) {
+      const pct = Math.round(((resumoSemana.vendas - resumoAnterior.vendas) / resumoAnterior.vendas) * 100);
+      if (pct >= 5) {
+        return {
+          icon: "📈",
+          prefix: "",
+          highlight: `+${pct}%`,
+          suffix: " em vendas vs semana passada",
+          tone: "success",
+        };
+      }
+    }
+    // 6. Meta bateu (faturamento alto)
+    if (resumoSemana.vendas >= 1000) {
+      return {
+        icon: "🎉",
+        prefix: "Você faturou ",
+        highlight: formatCurrency(resumoSemana.vendas),
+        suffix: " essa semana!",
+        tone: "success",
+      };
+    }
+    // 7. Segunda-feira
+    const diaSemana = new Date().getDay();
+    if (diaSemana === 1 && counts.entregasHoje === 0 && proximasEntregas.length > 0) {
+      return {
+        icon: "🚀",
+        prefix: "Nova semana, ",
+        highlight: `${proximasEntregas.length} ${proximasEntregas.length === 1 ? "pedido agendado" : "pedidos agendados"}`,
+        tone: "info",
+      };
+    }
+    // 8. Sexta-feira
+    if (diaSemana === 5) {
+      return {
+        icon: "🎊",
+        prefix: "Sextouu! ",
+        highlight: "Bora fechar a semana",
+        tone: "warning",
+      };
+    }
+    // 9. Fallback — mensagem motivacional (rotativa por dia)
+    return {
+      icon: "✨",
+      prefix: getDailyMessage(),
+      tone: "neutral",
+    };
+  };
+
   // Detecta plano PRO ativo (mostra a coroinha)
   const isPro = (() => {
     if (profile?.plano !== "pro") return false;
@@ -283,6 +401,8 @@ export default function Inicio() {
         pedidos30dRes,
         pedidosMesRes,
         proximasEntregasRes,
+        pedidosAtrasadosRes,
+        proximaEntregaHojeRes,
       ] = await Promise.all([
         // Pedidos pendentes (aguardando confirmação)
         supabase
@@ -341,6 +461,23 @@ export default function Inicio() {
           .in("status", STATUS_ATIVOS)
           .order("data_entrega", { ascending: true })
           .limit(4),
+        // Pedidos atrasados (data_entrega < hoje, ainda ativos)
+        supabase
+          .from("pedidos")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .lt("data_entrega", hojeISO)
+          .in("status", STATUS_ATIVOS),
+        // Próxima entrega HOJE com horário (pra "próxima em Xh")
+        supabase
+          .from("pedidos")
+          .select("cliente_nome, hora_entrega, data_entrega, produto_nome")
+          .eq("user_id", userId)
+          .eq("data_entrega", hojeISO)
+          .in("status", STATUS_ATIVOS)
+          .not("hora_entrega", "is", null)
+          .order("hora_entrega", { ascending: true })
+          .limit(1),
       ]);
 
       // Aniversariantes nos próximos 7 dias
@@ -365,7 +502,14 @@ export default function Inicio() {
         entregasHoje: entregasHojeRes.count || 0,
         aniversariantes: aniversariantes.length,
         faturamentoMes,
+        pedidosAtrasados: pedidosAtrasadosRes.count || 0,
       });
+      const proxHoje = proximaEntregaHojeRes.data?.[0];
+      setProximaEntregaHoje(proxHoje ? {
+        cliente: proxHoje.cliente_nome || "Cliente",
+        hora: proxHoje.hora_entrega,
+        produto: proxHoje.produto_nome || null,
+      } : null);
       setAniversariantesDetalhe(proxAniv);
       setResumoSemana({ vendas: vendasSemana, pedidos: pedidosSemanaRes.data?.length || 0 });
       setResumoAnterior({ vendas: vendasAnt, pedidos: pedidosSemanaAntRes.data?.length || 0 });
@@ -570,7 +714,17 @@ export default function Inicio() {
               <span>{isPro ? "PRO" : "Inicial"}</span>
             </span>
           </h1>
-          <p>{getDailyMessage()}</p>
+          {(() => {
+            const msg = getSmartMessage();
+            return (
+              <p className={`ini-hero-msg ini-hero-msg--${msg.tone}`}>
+                <span className="ini-hero-msg-icon" aria-hidden="true">{msg.icon}</span>
+                {msg.prefix && <span>{msg.prefix}</span>}
+                {msg.highlight && <span className="ini-hero-msg-hl">{msg.highlight}</span>}
+                {msg.suffix && <span>{msg.suffix}</span>}
+              </p>
+            );
+          })()}
         </div>
 
         {/* Sino de notificações à direita — abre o menu (conta + loja + ativar notif + sair) */}
@@ -1121,6 +1275,30 @@ export default function Inicio() {
           height: 13px;
           object-fit: contain;
         }
+
+        /* ── Mensagem contextual embaixo do nome (hero mobile) ── */
+        .ini-hero-msg {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.85rem;
+          line-height: 1.35;
+          color: rgba(255, 255, 255, 0.9);
+          flex-wrap: wrap;
+        }
+        .ini-hero-msg-icon {
+          font-size: 0.95rem;
+          line-height: 1;
+        }
+        .ini-hero-msg-hl {
+          font-weight: 800;
+          color: #FFFFFF;
+        }
+        .ini-hero-msg--danger .ini-hero-msg-hl { color: #FDA5A5; }
+        .ini-hero-msg--success .ini-hero-msg-hl { color: #A7F3C4; }
+        .ini-hero-msg--warning .ini-hero-msg-hl { color: #FFE58C; }
+        .ini-hero-msg--info .ini-hero-msg-hl { color: #FFFFFF; }
+        .ini-hero-msg--neutral { color: rgba(255, 255, 255, 0.85); }
 
         /* Skeleton do nome enquanto carrega — evita flash de "bem-vinda" grande */
         .ini-hero-name-skel {
