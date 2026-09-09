@@ -2102,17 +2102,18 @@ export default function Inicio() {
 
           /* ────────────────────────────────────────────
              ESTADO "CHECKLIST COMPLETO"
+             (aside removido — checklist não aparece mais no desktop)
              ──────────────────────────────────────────── */
           .ini-content--done {
-            grid-template-columns: 1fr 420px;
-            grid-template-areas: "main aside";
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-areas: "main";
           }
         }
 
-        /* Telas largas: aside um pouco maior, métricas respiram */
+        /* Telas largas: main continua ocupando tudo */
         @media (min-width: 1500px) {
-          .ini-content { grid-template-columns: 400px 1fr; }
-          .ini-content--done { grid-template-columns: 1fr 460px; }
+          .ini-content { grid-template-columns: minmax(0, 1fr); }
+          .ini-content--done { grid-template-columns: minmax(0, 1fr); }
         }
       `}</style>
 
