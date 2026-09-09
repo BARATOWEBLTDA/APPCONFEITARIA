@@ -4,6 +4,14 @@ import { supabase } from "@/lib/supabase";
 import { User, Phone, Envelope, Eye, EyeSlash } from "@phosphor-icons/react";
 
 // ───────────────────────────────────────────────────────────────
+// Links de download do app (desktop ≥1200px)
+// ───────────────────────────────────────────────────────────────
+const PLAY_STORE_URL = "https://google.com";
+const APP_STORE_URL = "https://google.com";
+const QR_TARGET = "https://google.com";
+const QR_IMG_SRC = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&margin=0&bgcolor=ffffff&color=3d1a24&data=${encodeURIComponent(QR_TARGET)}`;
+
+// ───────────────────────────────────────────────────────────────
 // Validadores puros — reutilizáveis, testáveis
 // ───────────────────────────────────────────────────────────────
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -288,37 +296,45 @@ export default function Auth() {
 
       <div className="auth-layout">
       {/* ─────────────────────────────────────────────────────────
-          COLUNA ESQUERDA: mascote + frase motivacional
-          Só aparece em desktop ≥1200px E só no cadastro.
-          TODO: trocar o placeholder por uma imagem PNG real.
-          Salve em /public/mascote.png e substitua o bloco
-          .auth-mascote-placeholder por:
-          <img src="/mascote.png" alt="Mascote Doonly" className="auth-mascote-img" />
+          COLUNA ESQUERDA: mascote + frase estilizada
+          Aparece em desktop ≥1200px, no LOGIN e no CADASTRO.
+          Mascote: /public/cadastrofoto.png
       ───────────────────────────────────────────────────────── */}
-      {showCadastro && (
-        <aside className="auth-side" aria-hidden="true">
-          <div className="auth-mascote">
-            <img src="/cadastrofoto.png" alt="Doonly" className="auth-mascote-img" />
+      <aside className="auth-side" aria-hidden="true">
+        <div className="auth-side-decor">
+          <div className="auth-side-frase">
+            <span className="auth-side-frase-l1">Sua confeitaria,</span>
+            <span className="auth-side-frase-l2">mais organizada</span>
+            <svg className="auth-side-underline" viewBox="0 0 220 12" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M4 6 C 60 2, 120 10, 216 4" stroke="#fff" strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.9"/>
+              <path d="M208 8 c 2 2, 5 2, 8 -4 M208 8 c -1 -2, -1 -4, 1 -6" stroke="#fff" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.9"/>
+            </svg>
+            {/* Faíscas decorativas */}
+            <svg className="auth-side-spark auth-side-spark--1" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2 L14 10 L22 12 L14 14 L12 22 L10 14 L2 12 L10 10 Z" fill="#fff" opacity="0.85"/>
+            </svg>
+            <svg className="auth-side-spark auth-side-spark--2" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 4 L13 11 L20 12 L13 13 L12 20 L11 13 L4 12 L11 11 Z" fill="#fff" opacity="0.7"/>
+            </svg>
+            <svg className="auth-side-heart" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 21s-7-4.5-9-9.5C1.5 7 5 3 9 5c1.5 0.5 2.5 2 3 3 0.5-1 1.5-2.5 3-3 4-2 7.5 2 6 6.5-2 5-9 9.5-9 9.5z" fill="#fff" opacity="0.9"/>
+            </svg>
           </div>
-          <h2 className="auth-side-title">Sua confeitaria mais organizada.</h2>
-          <p className="auth-side-sub">Gerencie pedidos, agenda, receitas e precificação em um só lugar.</p>
-          <div className="auth-side-stats">
-            <div className="auth-side-stat">
-              <div className="auth-side-stat-num">+500</div>
-              <div className="auth-side-stat-lbl">Confeitarias</div>
-            </div>
-            <div className="auth-side-stat">
-              <div className="auth-side-stat-num">10k+</div>
-              <div className="auth-side-stat-lbl">Pedidos/mês</div>
-            </div>
-          </div>
-        </aside>
-      )}
+        </div>
+        <div className="auth-mascote">
+          <img src="/cadastrofoto.png" alt="Doonly" className="auth-mascote-img" />
+        </div>
+      </aside>
 
       {!showCadastro ? (
       <div className="auth-card">
         <div className="auth-logo-wrap">
           <img src="/cadastro.png" alt="Doonly" className="auth-logo-img" />
+        </div>
+
+        <div className="auth-text-hdr">
+          <h2 className="auth-h2">Faça seu login</h2>
+          <p className="auth-p">Entre na sua conta e continue organizando<br/>sua confeitaria de forma profissional.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form" noValidate>
@@ -370,9 +386,9 @@ export default function Auth() {
           <div className="login-bottom-row">
             <div className="keep-connected">
               <input type="checkbox" id="keep" checked={keepConnected} onChange={e => setKeepConnected(e.target.checked)} />
-              <label htmlFor="keep">Manter conectado</label>
+              <label htmlFor="keep">Lembrar de mim</label>
             </div>
-            <a href="/esqueci-senha" className="forgot-link">Esqueci minha senha</a>
+            <a href="/esqueci-senha" className="forgot-link">Esqueceu sua senha?</a>
           </div>
           {error && <p className="auth-error">{error}</p>}
           <button type="submit" className="auth-btn" disabled={loading || fading}>
@@ -400,6 +416,11 @@ export default function Auth() {
       </div>
       ) : (
       <div className="auth-card">
+        {/* Mascote no mobile (some em desktop ≥1200px, onde aparece na coluna esquerda) */}
+        <div className="cad-mobile-mascote" aria-hidden="true">
+          <img src="/cadastrofoto.png" alt="Doonly" />
+        </div>
+
         <div className="cad-header">
           <h1 className="cad-title">Crie sua conta grátis</h1>
           <p className="cad-subtitle">Gerencie sua confeitaria de forma profissional</p>
@@ -604,10 +625,59 @@ export default function Auth() {
       </div>
       )}
 
+      {/* ─────────────────────────────────────────────────────────
+          COLUNA DIREITA: Card promo "Doonly no seu celular"
+          Só aparece em desktop ≥1200px, em ambos (login e cadastro).
+      ───────────────────────────────────────────────────────── */}
+      <aside className="auth-promo" aria-label="Doonly no celular">
+        <div className="auth-promo-head">
+          <div className="auth-promo-badge">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2.5" />
+              <line x1="12" y1="18" x2="12" y2="18" />
+            </svg>
+          </div>
+          <h2>Doonly no seu celular</h2>
+        </div>
+        <p className="auth-promo-text">
+          Gerencie pedidos, agenda, receitas e precificação onde você estiver.
+        </p>
+        <p className="auth-promo-cta">Baixe agora gratuitamente</p>
+        <div className="auth-promo-stores">
+          <a href={APP_STORE_URL} className="auth-promo-store" target="_blank" rel="noopener noreferrer">
+            <svg width="20" height="24" viewBox="0 0 20 24" aria-hidden="true">
+              <path fill="white" d="M16.52 12.46c-.03-2.85 2.33-4.22 2.44-4.29-1.33-1.94-3.4-2.21-4.14-2.24-1.76-.18-3.43 1.04-4.33 1.04-.89 0-2.27-1.01-3.73-.99-1.92.03-3.69 1.12-4.68 2.84-2 3.46-.51 8.59 1.43 11.4.95 1.38 2.09 2.92 3.58 2.87 1.43-.06 1.98-.93 3.71-.93 1.74 0 2.23.93 3.75.9 1.55-.03 2.53-1.4 3.47-2.78 1.1-1.6 1.55-3.14 1.57-3.22-.03-.01-3.02-1.16-3.07-4.6zM13.67 3.88C14.45 2.94 14.97 1.64 14.82.32c-1.13.05-2.5.75-3.31 1.7-.73.84-1.37 2.18-1.19 3.47 1.26.1 2.54-.64 3.35-1.61z"/>
+            </svg>
+            <span className="auth-promo-store-labels">
+              <span className="auth-promo-store-small">DISPONÍVEL NA</span>
+              <span className="auth-promo-store-big">App Store</span>
+            </span>
+          </a>
+          <a href={PLAY_STORE_URL} className="auth-promo-store" target="_blank" rel="noopener noreferrer">
+            <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#00D4FF" d="M3.6 1.3C3.2 1.6 3 2.1 3 2.7v18.6c0 .6.2 1.1.6 1.4l10.7-10.7L3.6 1.3z" />
+              <path fill="#FFD500" d="M17.9 8.9l-3.6 3.1 3.6 3.1 4-2.3c1.2-.7 1.2-2.5 0-3.2l-4-2.7z" />
+              <path fill="#FF3D00" d="M14.3 12L3.6 1.3c.2-.1.4-.2.6-.2.3 0 .6.1.9.3l13.3 7.5L14.3 12z" />
+              <path fill="#00C853" d="M14.3 12l4.1 4.1L5.1 23.6c-.3.2-.6.3-.9.3-.2 0-.4-.1-.6-.2L14.3 12z" />
+            </svg>
+            <span className="auth-promo-store-labels">
+              <span className="auth-promo-store-small">DISPONÍVEL NO</span>
+              <span className="auth-promo-store-big">Google Play</span>
+            </span>
+          </a>
+        </div>
+        <div className="auth-promo-divider">
+          <span>ou aponte a câmera</span>
+        </div>
+        <div className="auth-promo-qr">
+          <img src={QR_IMG_SRC} alt="QR Code para baixar o Doonly" loading="lazy" />
+        </div>
+      </aside>
+
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Kaushan+Script&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body { height: 100%; overflow: hidden; }
         #root { height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -677,6 +747,23 @@ export default function Auth() {
         @keyframes promoFadeIn { from { opacity: 0; } to { opacity: 1; } }
         .auth-logo-wrap { display: flex; justify-content: center; margin-bottom: 0.75rem; }
         .auth-logo-img { height: 90px; object-fit: contain; }
+        .auth-text-hdr {
+          text-align: center;
+          margin-bottom: 1rem;
+        }
+        .auth-h2 {
+          font-size: 1.35rem;
+          font-weight: var(--fw-bold, 700);
+          color: var(--text-title);
+          margin: 0 0 0.4rem;
+          letter-spacing: -0.01em;
+        }
+        .auth-p {
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+          line-height: 1.5;
+          margin: 0;
+        }
         .auth-form { display: flex; flex-direction: column; gap: 1rem; }
         .field { display: flex; flex-direction: column; gap: 0.35rem; }
         .field label { font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--text-primary); }
@@ -768,6 +855,20 @@ export default function Auth() {
         .cad-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
         /* ── Cabeçalho do cadastro ────────────────────────── */
+        /* ── Mascote mobile (some em desktop ≥1200px) ─── */
+        .cad-mobile-mascote {
+          display: flex;
+          justify-content: center;
+          margin-bottom: 0.75rem;
+        }
+        .cad-mobile-mascote img {
+          width: 110px;
+          height: 110px;
+          object-fit: contain;
+          filter: drop-shadow(0 6px 16px rgba(232, 90, 140, 0.25));
+          -webkit-filter: drop-shadow(0 6px 16px rgba(232, 90, 140, 0.25));
+        }
+
         /* ── Header do cadastro (só social proof pill) ─── */
         .cad-hero {
           display: flex; flex-direction: column; align-items: center;
@@ -853,102 +954,100 @@ export default function Auth() {
 
         @media (min-width: 1200px) {
           /* Grid layouts:
-             - Cadastro: mascote (auto) + form (440px) → conjunto centralizado
-             - Login: só o form centralizado */
+             - Sempre 3 colunas em desktop (≥1200px): mascote + form + promo
+             - Mobile: só o form */
           .auth-layout {
-            max-width: 960px;
+            max-width: 1200px;
             display: grid;
-            grid-template-columns: auto 440px;
-            gap: 3rem;
+            grid-template-columns: 1fr 440px 260px;
+            gap: 2rem;
             align-items: center;
             justify-content: center;
-          }
-          /* Se for login (sem mascote): só form centralizado */
-          .auth-layout:not(:has(.auth-side)) {
-            grid-template-columns: 440px;
-            max-width: 440px;
           }
           .auth-card {
             margin: 0;
           }
+          /* Esconde mascote mobile no desktop (já aparece na coluna esquerda) */
+          .cad-mobile-mascote { display: none; }
 
-          /* ── Coluna esquerda: mascote + frase ── */
+          /* ── Coluna esquerda: frase estilizada + mascote ── */
           .auth-side {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-            gap: 1.1rem;
+            align-items: center;
+            gap: 0.5rem;
             color: #fff;
-            max-width: 340px;
+            max-width: 380px;
+            justify-self: end;
             animation: promoFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
             animation-delay: 0.1s;
           }
+          .auth-side-decor {
+            position: relative;
+            padding: 0.5rem 1rem;
+            width: 100%;
+          }
+          .auth-side-frase {
+            position: relative;
+            font-family: 'Kaushan Script', 'Pacifico', cursive;
+            font-weight: 400;
+            line-height: 1;
+            text-align: center;
+            text-shadow: 0 3px 10px rgba(80, 20, 45, 0.35);
+          }
+          .auth-side-frase-l1 {
+            display: block;
+            font-size: 2rem;
+            transform: rotate(-2deg);
+            margin-bottom: 0.15rem;
+          }
+          .auth-side-frase-l2 {
+            display: block;
+            font-size: 2.6rem;
+            transform: rotate(-2deg) translateX(20px);
+            padding-bottom: 0.5rem;
+          }
+          .auth-side-underline {
+            position: absolute;
+            bottom: -6px; left: 15%;
+            width: 200px; height: 10px;
+            opacity: 0.9;
+          }
+          .auth-side-spark {
+            position: absolute;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+          }
+          .auth-side-spark--1 {
+            width: 24px; height: 24px;
+            top: -8px; left: -6px;
+            animation: sparkTwinkle 2.4s ease-in-out infinite;
+          }
+          .auth-side-spark--2 {
+            width: 18px; height: 18px;
+            top: 12px; right: 12px;
+            animation: sparkTwinkle 2.4s ease-in-out 0.6s infinite;
+          }
+          .auth-side-heart {
+            position: absolute;
+            width: 22px; height: 22px;
+            bottom: 6px; right: -10px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            animation: sparkTwinkle 2s ease-in-out 0.3s infinite;
+          }
+          @keyframes sparkTwinkle {
+            0%, 100% { opacity: 0.85; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.15); }
+          }
+
           .auth-mascote {
-            width: 220px; height: 220px;
             display: flex; align-items: center; justify-content: center;
-          }
-          .auth-mascote-placeholder {
-            width: 100%; height: 100%;
-            background: rgba(255,255,255,0.18);
-            border: 2px dashed rgba(255,255,255,0.4);
-            border-radius: 24px;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            gap: 6px;
-          }
-          .auth-mascote-emoji { font-size: 72px; line-height: 1; }
-          .auth-mascote-lbl {
-            font-size: 10px; font-weight: 700;
-            opacity: 0.7;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
+            margin-top: -0.5rem;
           }
           .auth-mascote-img {
-            width: 220px; height: 220px;
+            width: 280px; height: 280px;
             object-fit: contain;
-            filter: drop-shadow(0 12px 32px rgba(0,0,0,0.2));
-          }
-          .auth-side-title {
-            font-size: 1.9rem;
-            font-weight: 900;
-            line-height: 1.15;
-            letter-spacing: -0.02em;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            max-width: 340px;
-            margin: 0;
-          }
-          .auth-side-sub {
-            font-size: 0.9rem;
-            font-weight: 500;
-            line-height: 1.5;
-            opacity: 0.92;
-            max-width: 340px;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.12);
-            margin: 0;
-          }
-          .auth-side-stats {
-            display: flex;
-            gap: 1.5rem;
-            margin-top: 0.25rem;
-          }
-          .auth-side-stat {
-            display: flex; flex-direction: column;
-          }
-          .auth-side-stat-num {
-            font-size: 1.6rem;
-            font-weight: 900;
-            letter-spacing: -0.02em;
-            line-height: 1;
-          }
-          .auth-side-stat-lbl {
-            font-size: 0.65rem;
-            font-weight: 600;
-            opacity: 0.85;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-top: 3px;
+            filter: drop-shadow(0 20px 40px rgba(60, 15, 40, 0.35));
+            -webkit-filter: drop-shadow(0 20px 40px rgba(60, 15, 40, 0.35));
           }
 
           .auth-promo {
