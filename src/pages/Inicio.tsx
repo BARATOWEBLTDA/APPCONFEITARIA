@@ -1106,18 +1106,19 @@ export default function Inicio() {
           gap: 4px;
           background: var(--accent);
           color: #fff;
-          padding: 2px 8px;
+          padding: 3px 10px;
           border-radius: 6px;
-          font-size: 9px;
-          font-weight: var(--fw-bold);
-          letter-spacing: 0.06em;
+          font-size: 10.5px;
+          font-weight: var(--fw-black, 800);
+          letter-spacing: 0.05em;
           text-transform: uppercase;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.22);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.28);
           flex-shrink: 0;
+          line-height: 1;
         }
         .ini-hero-pro-coroa {
-          width: 11px;
-          height: 11px;
+          width: 13px;
+          height: 13px;
           object-fit: contain;
         }
 
