@@ -10,6 +10,8 @@ import {
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
+import { useAvatarUpload } from "@/hooks/useAvatarUpload";
+import { ImageCropper } from "@/components/ui/ImageCropper";
 import { useNotifications } from "@/context/NotificationContext";
 import { supabase } from "@/lib/supabase";
 
@@ -33,6 +35,11 @@ export default function Layout() {
   const { profile } = useProfile();
   const { isPro } = usePlano();
   const { notifCount, notifOpen, notificacoes, notifRef, toggleNotif, closeNotif } = useNotifications();
+  const {
+    fileInputRef, uploading: uploadingFoto, cropSrc,
+    openPicker: abrirSeletorFoto,
+    handleFileSelected, handleCropDone, cancelCrop,
+  } = useAvatarUpload();
   const [maisOpen, setMaisOpen] = useState(false);
   const [dooOpen, setDooOpen] = useState(false);
   const location = useLocation();
@@ -77,7 +84,8 @@ export default function Layout() {
           <button
             type="button"
             className="sidebar-avatar-btn"
-            onClick={() => navigate("/inicio")}
+            onClick={abrirSeletorFoto}
+            disabled={uploadingFoto}
             aria-label={profile?.foto_url ? "Trocar foto de perfil" : "Adicionar foto de perfil"}
           >
             <div className="sidebar-avatar-ring">
@@ -96,6 +104,14 @@ export default function Layout() {
               {isPro ? "PRO" : "Inicial"}
             </div>
           </button>
+          {/* Input file escondido — disparado pelo botão do avatar */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleFileSelected}
+          />
         </div>
 
         <div className="sidebar-greeting">
@@ -200,6 +216,17 @@ export default function Layout() {
 
       {/* ── Drawer "Mais" (Proposta D) ── */}
       <MaisDrawer open={maisOpen} onClose={() => setMaisOpen(false)} />
+
+      {/* Modal de crop da foto de perfil (aberto pelo ícone câmera do sidebar) */}
+      {cropSrc && (
+        <ImageCropper
+          imageSrc={cropSrc}
+          aspect={1}
+          cropShape="round"
+          onCancel={cancelCrop}
+          onCropDone={handleCropDone}
+        />
+      )}
 
       {/* ── Bottom nav Mobile ── */}
       {!isReceitas && !isPrevia && (
