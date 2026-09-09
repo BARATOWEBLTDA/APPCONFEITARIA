@@ -341,22 +341,29 @@ export default function Agenda() {
         <p className="ag-sub">Seus pedidos por data de entrega</p>
       </div>
 
-      {/* Busca */}
-      <div className="ag-search">
-        <IconSearch />
-        <input
-          type="text"
-          placeholder="Buscar cliente ou número do pedido..."
-          value={busca}
-          onChange={e => setBusca(e.target.value)}
-          className="ag-search-input"
-          aria-label="Buscar pedidos"
+      {/* Busca + Filtro (topo) */}
+      <div className="ag-search-row">
+        <div className="ag-search">
+          <IconSearch />
+          <input
+            type="text"
+            placeholder="Buscar cliente ou número do pedido..."
+            value={busca}
+            onChange={e => setBusca(e.target.value)}
+            className="ag-search-input"
+            aria-label="Buscar pedidos"
+          />
+          {busca && (
+            <button className="ag-search-clear" onClick={() => setBusca("")} aria-label="Limpar busca">
+              <IconClose />
+            </button>
+          )}
+        </div>
+        <FiltroCard
+          statusSelecionados={statusSelecionados}
+          countStatusDia={countStatusDia}
+          onOpen={() => setFiltroDrawerOpen(true)}
         />
-        {busca && (
-          <button className="ag-search-clear" onClick={() => setBusca("")} aria-label="Limpar busca">
-            <IconClose />
-          </button>
-        )}
       </div>
 
       {/* Vista (sempre calendário) */}
@@ -381,13 +388,6 @@ export default function Agenda() {
         pedidosDoDia={pedidosDoDia}
         pedidosFiltrados={pedidosDiaFiltrados}
         acoes={acoes}
-      />
-
-      {/* Filtro card — no fim */}
-      <FiltroCard
-        statusSelecionados={statusSelecionados}
-        countStatusDia={countStatusDia}
-        onOpen={() => setFiltroDrawerOpen(true)}
       />
       </div>
       </div>
@@ -1772,12 +1772,37 @@ function AgendaStyles() {
          Mobile: display: contents = wrapper "some", filhos ficam no fluxo normal */
       .ag-desk-grid { display: contents; }
 
-      /* Fix: barra de busca focus */
-      .ag-search:focus-within {
-        border-color: var(--primary) !important;
-        box-shadow: 0 0 0 3px rgba(232, 90, 140, 0.15) !important;
+      /* Linha topo: busca + filtro */
+      .ag-search-row {
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+        margin-bottom: 12px;
       }
-      .ag-search-input:focus {
+      .ag-search-row .ag-search { flex: 1; margin-bottom: 0; }
+      .ag-search-row .ag-filtro-card {
+        flex-shrink: 0;
+        margin-bottom: 0;
+        width: auto;
+      }
+      /* Mobile: filtro em cima, busca embaixo */
+      @media (max-width: 899px) {
+        .ag-search-row {
+          flex-direction: column-reverse;
+        }
+        .ag-search-row .ag-filtro-card {
+          align-self: flex-end;
+          width: auto;
+        }
+      }
+
+      /* Barra de pesquisa: SEM decoração ao focar */
+      .ag-search, .ag-search:focus, .ag-search:focus-within, .ag-search:hover {
+        border: 1px solid var(--border) !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
+      .ag-search-input, .ag-search-input:focus, .ag-search-input:hover, .ag-search-input:active {
         outline: none !important;
         border: none !important;
         box-shadow: none !important;
