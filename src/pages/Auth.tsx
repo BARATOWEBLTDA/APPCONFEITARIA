@@ -614,7 +614,8 @@ export default function Auth() {
       </div>
       )}
 
-      {/* Promo card — só aparece em desktop ≥1200px (controlado por CSS) */}
+      {/* Promo card — só aparece em desktop ≥1200px E só no LOGIN */}
+      {!showCadastro && (
       <aside className="auth-promo" aria-label="Doonly no celular">
         <div className="auth-promo-head">
           <div className="auth-promo-badge">
@@ -668,6 +669,7 @@ export default function Auth() {
         </div>
 
       </aside>
+      )}
       </div>
 
       <style>{`
@@ -916,18 +918,20 @@ export default function Auth() {
         .auth-promo { display: none; }
 
         @media (min-width: 1200px) {
-          /* Grid 3 colunas: mascote | cadastro | promo */
+          /* Grid layouts:
+             - Cadastro: mascote + form (sem promo)
+             - Login: form + promo (sem mascote) */
           .auth-layout {
             max-width: 1200px;
             display: grid;
-            grid-template-columns: 1fr 440px 260px;
+            grid-template-columns: 1fr 440px;
             gap: 2.5rem;
             align-items: center;
+            justify-content: center;
           }
-          /* Se estiver no login (sem coluna esquerda), volta pra 2 colunas */
+          /* Se for login (sem mascote, com promo): 2 colunas form+promo */
           .auth-layout:not(:has(.auth-side)) {
             grid-template-columns: 440px 260px;
-            justify-content: center;
             max-width: 740px;
             gap: 2rem;
           }
