@@ -735,6 +735,10 @@ export default function Auth() {
         .auth-text-hdr {
           text-align: center;
           margin-bottom: 1rem;
+          display: none; /* mobile: só o mascote (sem título "Faça seu login") */
+        }
+        @media (min-width: 900px) {
+          .auth-text-hdr { display: block; }
         }
         .auth-h2 {
           font-size: 1.35rem;
