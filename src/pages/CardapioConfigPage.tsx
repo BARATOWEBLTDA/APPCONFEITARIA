@@ -263,6 +263,10 @@ export default function CardapioConfigPage() {
         </button>
       </div>
 
+      {/* ── Wrapper com preview lateral (aplica em TODAS as tabs) ── */}
+      <div className="ccc-geral-wrap">
+      <div className="ccc-geral-main">
+
       {/* ── Tab Design ── */}
       {activeTab === "design" && <CardapioDesign />}
 
@@ -271,8 +275,6 @@ export default function CardapioConfigPage() {
 
       {/* ── Tab Geral ── */}
       {activeTab === "geral" && <>
-      <div className="ccc-geral-wrap">
-      <div className="ccc-geral-main">
 
       {/* LINHA 1: 4 cards */}
       <div className="ccc-row-top">
@@ -467,9 +469,11 @@ export default function CardapioConfigPage() {
 
       {success && <div className="ccc-toast">✓ Salvo com sucesso!</div>}
 
+      </>
+      }
       </div>{/* fim .ccc-geral-main */}
 
-      {/* ── Preview do cardápio (só desktop) ── */}
+      {/* ── Preview do cardápio (só desktop) — visível em TODAS as abas ── */}
       <aside className="ccc-preview" aria-label="Prévia do cardápio">
         <div className="ccc-preview-head">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -488,9 +492,8 @@ export default function CardapioConfigPage() {
             </svg>
           </button>
         </div>
-        {/* Moldura de iPhone */}
+        {/* Moldura de celular (sem notch) */}
         <div className="ccc-iphone">
-          <div className="ccc-iphone-notch"></div>
           <div className="ccc-iphone-screen">
             {cardapioUrl ? (
               <iframe
@@ -515,9 +518,6 @@ export default function CardapioConfigPage() {
         )}
       </aside>
       </div>{/* fim .ccc-geral-wrap */}
-
-      </>
-      }
 
       <style>{`
         @keyframes ccspin { to { transform:rotate(360deg); } }
@@ -547,6 +547,10 @@ export default function CardapioConfigPage() {
           display:flex; flex-direction:column; gap:1.5rem;
           box-sizing:border-box; padding:0 2rem;
           overflow-x:hidden;
+        }
+        /* Desktop: overflow visible nos ancestrais pra position:sticky funcionar */
+        @media (min-width: 900px) {
+          .ccc-outer, .ccc-root { overflow-x: visible; overflow: visible; }
         }
 
         /* ── Header da página ── */
@@ -623,13 +627,13 @@ export default function CardapioConfigPage() {
           }
           .ccc-preview-open:hover { background: var(--primary); color: #fff; }
 
-          /* ─── Moldura de iPhone ─── */
+          /* ─── Moldura de celular (sem notch) ─── */
           .ccc-iphone {
             width: 300px;
-            height: 620px;
+            height: 600px;
             background: #1a1a1a;
-            border-radius: 40px;
-            padding: 12px 8px;
+            border-radius: 36px;
+            padding: 8px;
             box-shadow:
               0 0 0 2px #2a2a2a,
               0 30px 60px -20px rgba(0,0,0,0.4),
@@ -638,19 +642,10 @@ export default function CardapioConfigPage() {
             position: relative;
             overflow: hidden;
           }
-          .ccc-iphone-notch {
-            position: absolute;
-            top: 14px; left: 50%;
-            transform: translateX(-50%);
-            width: 96px; height: 26px;
-            background: #000;
-            border-radius: 999px;
-            z-index: 2;
-          }
           .ccc-iphone-screen {
             width: 100%; height: 100%;
             background: #fff;
-            border-radius: 30px;
+            border-radius: 28px;
             overflow: hidden;
             position: relative;
           }
