@@ -2074,6 +2074,9 @@ export default function Inicio() {
         .ini-section--agenda  { display: none; }
         .ini-section--metrics { display: none; }
         .ini-section--chart   { display: none; }
+        /* Menos espaço vazio entre MetricaDestaque e Acesso rápido no mobile */
+        .ini-content { margin-top: var(--space-2); gap: var(--space-3); }
+        .ini-main > .ini-section:first-child { margin-top: 0; }
 
         /* ── Desktop ajustes ── */
         @media (min-width: 768px) {
