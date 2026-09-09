@@ -757,17 +757,18 @@ export default function Auth() {
         @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes promoFadeIn { from { opacity: 0; } to { opacity: 1; } }
         .auth-logo-wrap { display: flex; justify-content: center; margin-bottom: 0.75rem; }
-        .auth-logo-img { height: 90px; object-fit: contain; }
+        .auth-logo-img { height: 120px; object-fit: contain; }
         .auth-text-hdr {
           text-align: center;
           margin-bottom: 1rem;
         }
         .auth-h2 {
           font-size: 1.35rem;
-          font-weight: var(--fw-bold, 700);
+          font-weight: var(--fw-black, 900);
           color: var(--text-title);
           margin: 0 0 0.4rem;
-          letter-spacing: -0.01em;
+          letter-spacing: 0.02em;
+          text-transform: uppercase;
         }
         .auth-p {
           font-size: 0.85rem;
@@ -998,19 +999,20 @@ export default function Auth() {
            ────────────────────────────────────────────────────────── */
         .auth-promo { display: none; }
 
-        @media (min-width: 1200px) {
+        @media (min-width: 900px) {
           /* Grid layouts:
-             - Sempre 3 colunas em desktop (≥1200px): mascote + form + promo
+             - Desktop/tablet: form + card promo QR (sem mascote esquerda)
              - Mobile: só o form */
           .auth-layout {
-            max-width: 1200px;
+            max-width: 780px;
             display: grid;
-            grid-template-columns: 1fr 440px 260px;
+            grid-template-columns: 440px 260px;
             gap: 2rem;
             align-items: center;
             justify-content: center;
           }
-          /* Esconde mascote mobile no desktop (já aparece na coluna esquerda) */
+          /* Esconde mascote esquerda inteira e mascote mobile no desktop */
+          .auth-side { display: none !important; }
           .cad-mobile-mascote { display: none; }
           .auth-card { margin: 0; }
           /* No desktop, esconde o link do mobile (já tem topbar) */
