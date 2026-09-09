@@ -140,9 +140,9 @@ export default function Agenda() {
   const [userId, setUserId] = useState("");
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
-    if (typeof window === "undefined") return "lista";
+    if (typeof window === "undefined") return "calendario";
     const saved = localStorage.getItem(VIEW_KEY) as ViewMode | null;
-    return saved && ["lista", "calendario"].includes(saved) ? saved : "lista";
+    return saved && ["lista", "calendario"].includes(saved) ? saved : "calendario";
   });
 
   const [isDesktop, setIsDesktop] = useState(() =>
@@ -154,8 +154,8 @@ export default function Agenda() {
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
   }, []);
-  // Força modo calendário no desktop (sem toggle)
-  const modoAtual: ViewMode = isDesktop ? "calendario" : viewMode;
+  // Sempre modo calendário (toggle Lista/Calendário foi removido)
+  const modoAtual: ViewMode = "calendario";
 
   const [refDate, setRefDate] = useState(new Date());
   const [diaSel, setDiaSel] = useState(isoDate(new Date()));
@@ -341,26 +341,6 @@ export default function Agenda() {
         <p className="ag-sub">Seus pedidos por data de entrega</p>
       </div>
 
-      {/* Toggle */}
-      <div className="ag-toggle" role="tablist">
-        <button
-          className={"ag-toggle-btn" + (viewMode === "lista" ? " ag-toggle-btn--on" : "")}
-          onClick={() => setViewMode("lista")}
-          role="tab"
-          aria-selected={viewMode === "lista"}
-        >
-          Lista
-        </button>
-        <button
-          className={"ag-toggle-btn" + (viewMode === "calendario" ? " ag-toggle-btn--on" : "")}
-          onClick={() => setViewMode("calendario")}
-          role="tab"
-          aria-selected={viewMode === "calendario"}
-        >
-          Calendário
-        </button>
-      </div>
-
       {/* Busca */}
       <div className="ag-search">
         <IconSearch />
@@ -379,18 +359,8 @@ export default function Agenda() {
         )}
       </div>
 
-      {/* Vista */}
-      {modoAtual === "lista" ? (
-        <VistaLista
-          refDate={refDate}
-          setRefDate={setRefDate}
-          diaSel={diaSel}
-          setDiaSel={setDiaSel}
-          dayStats={dayStats}
-          pedidosDoDia={pedidosDoDia}
-        />
-      ) : (
-        <div className="ag-desk-grid">
+      {/* Vista (sempre calendário) */}
+      <div className="ag-desk-grid">
         <VistaCalendario
           refDate={refDate}
           setRefDate={setRefDate}
@@ -405,13 +375,6 @@ export default function Agenda() {
       {/* Card de resumo do dia (sempre, em ambas as abas) */}
       <ResumoDoDia diaSel={diaSel} pedidosDoDia={pedidosDoDia} dayStats={dayStats} />
 
-      {/* Filtro card */}
-      <FiltroCard
-        statusSelecionados={statusSelecionados}
-        countStatusDia={countStatusDia}
-        onOpen={() => setFiltroDrawerOpen(true)}
-      />
-
       {/* Lista de pedidos do dia */}
       <PedidosDoDia
         loading={loading}
@@ -419,9 +382,15 @@ export default function Agenda() {
         pedidosFiltrados={pedidosDiaFiltrados}
         acoes={acoes}
       />
+
+      {/* Filtro card — no fim */}
+      <FiltroCard
+        statusSelecionados={statusSelecionados}
+        countStatusDia={countStatusDia}
+        onOpen={() => setFiltroDrawerOpen(true)}
+      />
       </div>
       </div>
-      )}
 
       {/* Drawer de filtro */}
       {filtroDrawerOpen && (
@@ -1802,6 +1771,23 @@ function AgendaStyles() {
       /* Grid 2 colunas — desktop apenas.
          Mobile: display: contents = wrapper "some", filhos ficam no fluxo normal */
       .ag-desk-grid { display: contents; }
+
+      /* Fix: barra de busca focus */
+      .ag-search:focus-within {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(232, 90, 140, 0.15) !important;
+      }
+      .ag-search-input:focus {
+        outline: none !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+      /* Fix: hover no dia do calendário — arredondado (não oval) */
+      .ag-cal-day { border-radius: 12px !important; }
+      .ag-cal-day--sel {
+        border-radius: 12px !important;
+        box-shadow: none !important;
+      }
 
       @media (min-width: 900px) {
         .ag-cli-avatar { width: 34px; height: 34px; }
