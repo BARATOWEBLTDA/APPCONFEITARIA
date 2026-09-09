@@ -1763,7 +1763,7 @@ function AgendaStyles() {
         object-fit: cover;
       }
       .ag-cli-avatar-iniciais {
-        font-size: 11px;
+        font-size: var(--text-xs);
         font-weight: var(--fw-black, 800);
         color: var(--primary-dark, #C33A6E);
         letter-spacing: 0.02em;
@@ -1816,7 +1816,7 @@ function AgendaStyles() {
 
       @media (min-width: 900px) {
         .ag-cli-avatar { width: 34px; height: 34px; }
-        .ag-cli-avatar-iniciais { font-size: 12px; }
+        .ag-cli-avatar-iniciais { font-size: var(--text-sm); }
         /* Esconde toggle Lista/Calendário no desktop (só calendário) */
         .ag-toggle { display: none; }
         /* Grid 2 colunas: calendário à esquerda, lista à direita */
@@ -1845,7 +1845,7 @@ function AgendaStyles() {
           column-gap: 4px;
         }
         .ag-desk-grid .ag-cal-num {
-          font-size: 13px;
+          font-size: var(--text-sm);
         }
         .ag-desk-grid .ag-cal-day--sel {
           border-radius: 12px;
