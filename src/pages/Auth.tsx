@@ -422,8 +422,17 @@ export default function Auth() {
         </div>
 
         <div className="cad-header">
-          <h1 className="cad-title">Crie sua conta grátis</h1>
-          <p className="cad-subtitle">Gerencie sua confeitaria de forma profissional</p>
+          <h1 className="cad-title">
+            <span className="cad-title-desktop">Crie sua conta grátis</span>
+            <span className="cad-title-mobile">CRIE SUA<br/>CONTA, É GRÁTIS</span>
+          </h1>
+          <div className="cad-subtitle">
+            <span className="cad-sub-desktop">Gerencie sua confeitaria de forma profissional</span>
+            <span className="cad-sub-mobile">
+              <strong>1. ORGANIZE SUA CONFEITARIA</strong>
+              Tenha seus produtos, receitas, clientes e pedidos em um só lugar.
+            </span>
+          </div>
         </div>
         <form onSubmit={handleCadastro} className="cadastro-form" noValidate>
           {/* Nome */}
@@ -695,32 +704,30 @@ export default function Auth() {
         /* ── Botão "Fazer login" flutuante no topo (só cadastro) ── */
         .auth-topbar-login {
           position: fixed;
-          top: max(1.25rem, env(safe-area-inset-top));
-          left: max(1.25rem, env(safe-area-inset-left));
+          top: max(1.1rem, env(safe-area-inset-top));
+          left: max(1.1rem, env(safe-area-inset-left));
           z-index: 10;
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 0.55rem 1.1rem 0.55rem 0.85rem;
-          background: rgba(255, 255, 255, 0.18);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.35);
+          padding: 0.55rem 1rem 0.55rem 0.75rem;
+          background: #fff;
+          border: none;
           border-radius: 999px;
-          color: #fff;
+          color: var(--primary);
           font-family: inherit;
           font-size: 0.82rem;
-          font-weight: 500;
+          font-weight: 600;
           cursor: pointer;
-          transition: background 0.2s, transform 0.15s;
-          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+          transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+          box-shadow: 0 4px 14px rgba(60, 15, 40, 0.2);
           -webkit-tap-highlight-color: transparent;
           -webkit-appearance: none;
           appearance: none;
         }
         .auth-topbar-login:hover {
-          background: rgba(255, 255, 255, 0.28);
           transform: translateY(-1px);
+          box-shadow: 0 6px 18px rgba(60, 15, 40, 0.28);
         }
         .auth-topbar-login:active { transform: scale(0.97); }
         .auth-topbar-login b { font-weight: 800; }
@@ -862,11 +869,44 @@ export default function Auth() {
           margin-bottom: 0.75rem;
         }
         .cad-mobile-mascote img {
-          width: 110px;
-          height: 110px;
+          width: 140px;
+          height: 140px;
           object-fit: contain;
-          filter: drop-shadow(0 6px 16px rgba(232, 90, 140, 0.25));
-          -webkit-filter: drop-shadow(0 6px 16px rgba(232, 90, 140, 0.25));
+          filter: drop-shadow(0 8px 20px rgba(232, 90, 140, 0.3));
+          -webkit-filter: drop-shadow(0 8px 20px rgba(232, 90, 140, 0.3));
+        }
+
+        /* Título e subtítulo: versão mobile por padrão, desktop escondida */
+        .cad-title-desktop { display: none; }
+        .cad-title-mobile { display: inline-block; }
+        .cad-sub-desktop { display: none; }
+        .cad-sub-mobile {
+          display: block;
+          text-align: center;
+          line-height: 1.5;
+        }
+        .cad-sub-mobile strong {
+          display: block;
+          font-size: 0.85rem;
+          font-weight: 900;
+          color: var(--primary);
+          letter-spacing: 0.03em;
+          margin-bottom: 0.4rem;
+        }
+        .cad-subtitle .cad-sub-mobile {
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+        }
+        .cad-title:has(.cad-title-mobile) {
+          font-size: 1.7rem;
+          font-weight: 900;
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+          text-transform: none;
+        }
+        .cad-title-mobile {
+          font-family: inherit;
+          text-transform: uppercase;
         }
 
         /* ── Header do cadastro (só social proof pill) ─── */
@@ -969,6 +1009,15 @@ export default function Auth() {
           }
           /* Esconde mascote mobile no desktop (já aparece na coluna esquerda) */
           .cad-mobile-mascote { display: none; }
+          /* Alterna versão de título/subtítulo pra versão desktop */
+          .cad-title-mobile { display: none; }
+          .cad-title-desktop { display: inline-block; }
+          .cad-sub-mobile { display: none; }
+          .cad-sub-desktop { display: inline-block; text-align: center; }
+          .cad-title:has(.cad-title-desktop) {
+            font-size: 1.85rem;
+            text-transform: none;
+          }
 
           /* ── Coluna esquerda: frase estilizada + mascote ── */
           .auth-side {
