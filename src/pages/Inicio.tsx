@@ -471,7 +471,7 @@ export default function Inicio() {
         // Próxima entrega HOJE com horário (pra "próxima em Xh")
         supabase
           .from("pedidos")
-          .select("cliente_nome, hora_entrega, data_entrega, produto_nome")
+          .select("cliente_nome, hora_entrega, data_entrega")
           .eq("user_id", userId)
           .eq("data_entrega", hojeISO)
           .in("status", STATUS_ATIVOS)
@@ -508,7 +508,7 @@ export default function Inicio() {
       setProximaEntregaHoje(proxHoje ? {
         cliente: proxHoje.cliente_nome || "Cliente",
         hora: proxHoje.hora_entrega,
-        produto: proxHoje.produto_nome || null,
+        produto: null,
       } : null);
       setAniversariantesDetalhe(proxAniv);
       setResumoSemana({ vendas: vendasSemana, pedidos: pedidosSemanaRes.data?.length || 0 });

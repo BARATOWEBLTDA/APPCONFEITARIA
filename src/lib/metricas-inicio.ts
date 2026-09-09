@@ -154,19 +154,21 @@ export async function fetchMetricaData(id: MetricaId, userId: string): Promise<M
       case "proxima-entrega": {
         const { data } = await supabase
           .from("pedidos")
-          .select("cliente_nome, data_entrega, hora_entrega, valor_total, produto_nome")
+          .select("cliente_nome, data_entrega, hora_entrega, valor_total, pedido_itens(nome_produto)")
           .eq("user_id", userId)
           .gte("data_entrega", inicioHoje.substring(0, 10))
+          .neq("status", "cancelado")
           .order("data_entrega", { ascending: true })
           .limit(1);
         const p: any = data?.[0];
         if (!p) return { label: "Próxima entrega", valor: "Sem pedidos", sub: "Nenhuma entrega agendada" };
         const dia = labelDia(new Date(p.data_entrega));
         const hora = p.hora_entrega ? ` · ${String(p.hora_entrega).substring(0, 5)}` : "";
+        const nomeProduto = p.pedido_itens?.[0]?.nome_produto || null;
         return {
           label: "Próxima entrega",
           valor: `${primeiroNome(p.cliente_nome)} · ${dia}${hora}`,
-          sub: p.produto_nome ? `${p.produto_nome}${p.valor_total ? ` · ${formatCurrency(Number(p.valor_total))}` : ""}` : undefined,
+          sub: nomeProduto ? `${nomeProduto}${p.valor_total ? ` · ${formatCurrency(Number(p.valor_total))}` : ""}` : (p.valor_total ? formatCurrency(Number(p.valor_total)) : undefined),
         };
       }
 
