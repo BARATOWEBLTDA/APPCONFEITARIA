@@ -851,8 +851,8 @@ export default function Auth() {
           margin-bottom: var(--space-2, 0.5rem);
         }
         .cad-mascote img {
-          width: 160px;
-          height: 160px;
+          width: 120px;
+          height: 120px;
           object-fit: contain;
           filter: drop-shadow(0 8px 20px rgba(232, 90, 140, 0.3));
           -webkit-filter: drop-shadow(0 8px 20px rgba(232, 90, 140, 0.3));
@@ -995,10 +995,10 @@ export default function Auth() {
           .cad-mobile-login-link { display: none; }
           /* Restaura o topbar no desktop */
           .auth-topbar-login { display: inline-flex !important; }
-          /* Mascote do cadastro fica um pouco menor no desktop pra respeitar o card */
+          /* Mascote do cadastro no mesmo tamanho do logo do login */
           .cad-mascote img {
-            width: 140px;
-            height: 140px;
+            width: 120px;
+            height: 120px;
           }
         }
             text-transform: none;
