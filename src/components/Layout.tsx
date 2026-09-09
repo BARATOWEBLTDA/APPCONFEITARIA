@@ -84,7 +84,8 @@ export default function Layout() {
               </div>
             </div>
             <div className={`sidebar-badge ${isPro ? "sidebar-badge--pro" : "sidebar-badge--free"}`}>
-              {isPro ? "❤️ Premium" : "Free"}
+              {isPro && <img src="/coroa.png" alt="" className="sidebar-badge-coroa" />}
+              {isPro ? "PRO" : "Inicial"}
             </div>
           </div>
         </div>
@@ -259,9 +260,22 @@ export default function Layout() {
         .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 
-        .sidebar-badge { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); font-size: var(--font-caption); font-weight: var(--fw-bold); padding: 3px 10px; white-space: nowrap; letter-spacing: 0.05em; color: var(--text-inverse); }
-        .sidebar-badge--pro { background: var(--primary-gradient); border-radius: var(--radius-xl); }
-        .sidebar-badge--free { background: #111111; border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius-sm); }
+        .sidebar-badge {
+          position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+          font-size: var(--font-caption);
+          font-weight: var(--fw-bold);
+          padding: 4px 12px 4px 10px;
+          white-space: nowrap;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: #fff;
+          background: #2D1F26;
+          border-radius: 8px;
+          box-shadow: 0 3px 8px rgba(0,0,0,0.35);
+          display: inline-flex; align-items: center; gap: 4px;
+        }
+        .sidebar-badge--free { padding: 4px 12px; }
+        .sidebar-badge-coroa { width: 14px; height: 14px; object-fit: contain; }
 
         .sidebar-greeting { text-align: center; padding: 0 1rem 0.75rem; margin-bottom: 0.5rem; }
         .sidebar-greeting-name { margin: 0; font-size: 0.95rem; font-weight: var(--fw-semibold); color: var(--sidebar-text); line-height: 1.3; }

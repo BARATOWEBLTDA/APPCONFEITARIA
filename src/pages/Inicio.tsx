@@ -10,7 +10,7 @@ import {
   TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
   Bell, User, Storefront, SignOut, Camera,
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
-  InstagramLogo, Crown, DotsThreeOutline, Clock, Heart,
+  InstagramLogo, DotsThreeOutline, Clock, Heart,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
@@ -565,12 +565,10 @@ export default function Inicio() {
                 <span className="ini-hero-name-skel" aria-hidden="true" />
               )}
             </span>
-            {isPro && (
-              <span className="ini-hero-pro-badge" aria-label="Plano PRO">
-                <Crown size={11} weight="fill" />
-                <span>PRO</span>
-              </span>
-            )}
+            <span className={`ini-hero-pro-badge ${isPro ? "ini-hero-pro-badge--pro" : "ini-hero-pro-badge--free"}`} aria-label={isPro ? "Plano PRO" : "Plano Inicial"}>
+              {isPro && <img src="/coroa.png" alt="" className="ini-hero-pro-coroa" />}
+              <span>{isPro ? "PRO" : "Inicial"}</span>
+            </span>
           </h1>
           <p>{getDailyMessage()}</p>
         </div>
@@ -1105,10 +1103,10 @@ export default function Inicio() {
         .ini-hero-pro-badge {
           display: inline-flex;
           align-items: center;
-          gap: 3px;
+          gap: 4px;
           background: var(--accent);
           color: #fff;
-          padding: 2px 7px;
+          padding: 2px 8px;
           border-radius: 6px;
           font-size: 9px;
           font-weight: var(--fw-bold);
@@ -1116,6 +1114,11 @@ export default function Inicio() {
           text-transform: uppercase;
           box-shadow: 0 1px 4px rgba(0,0,0,0.22);
           flex-shrink: 0;
+        }
+        .ini-hero-pro-coroa {
+          width: 11px;
+          height: 11px;
+          object-fit: contain;
         }
 
         /* Skeleton do nome enquanto carrega — evita flash de "bem-vinda" grande */
