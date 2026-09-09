@@ -1902,7 +1902,11 @@ export default function Inicio() {
 
         /* ── 2 colunas: checklist + dashboard ── */
         @media (min-width: 1100px) {
-          .ini-root { max-width: none; padding-right: var(--space-7); }
+          .ini-root {
+            max-width: none;
+            padding-left: 36px;
+            padding-right: 36px;
+          }
 
           /* Hero escondido no desktop — saudação fica na sidebar */
           .ini-hero { display: none; }
