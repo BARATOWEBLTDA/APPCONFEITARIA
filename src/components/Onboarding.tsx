@@ -562,6 +562,14 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           max-width: 360px;
           margin-top: 1.5rem;
         }
+        @media (min-width: 900px) {
+          .ob-clientes-stack {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            max-width: 900px;
+          }
+        }
         .ob-cli-card {
           background: #fff;
           color: #431524;
@@ -1908,15 +1916,69 @@ const CLIENTES_DEMO = [
     ultimaCompra: "há 6 dias",
     aniversario: null,
   },
+  {
+    id: 3,
+    nome: "Larissa Ferreira",
+    initials: "LF",
+    avatarBg: "#22c55e", // verde
+    imagem: null,
+    tempo: "6 meses",
+    totalPedidos: 5,
+    totalGasto: "R$ 487,50",
+    ticketMedio: "R$ 97,50",
+    ultimaCompra: "há 3 dias",
+    aniversario: null,
+  },
+  {
+    id: 4,
+    nome: "Camila Ribeiro",
+    initials: "CR",
+    avatarBg: "#E85A8C", // rosa
+    imagem: null,
+    tempo: "2 anos",
+    totalPedidos: 18,
+    totalGasto: "R$ 2.340,00",
+    ticketMedio: "R$ 130,00",
+    ultimaCompra: "há 2 dias",
+    aniversario: "em 20 dias",
+  },
+  {
+    id: 5,
+    nome: "Patrícia Rocha",
+    initials: "PR",
+    avatarBg: "#0891b2", // ciano
+    imagem: null,
+    tempo: "4 meses",
+    totalPedidos: 2,
+    totalGasto: "R$ 158,00",
+    ticketMedio: "R$ 79,00",
+    ultimaCompra: "há 2 semanas",
+    aniversario: null,
+  },
+  {
+    id: 6,
+    nome: "Juliana Souza",
+    initials: "JS",
+    avatarBg: "#eab308", // amarelo
+    imagem: null,
+    tempo: "1 ano",
+    totalPedidos: 7,
+    totalGasto: "R$ 692,00",
+    ticketMedio: "R$ 98,86",
+    ultimaCompra: "há 10 dias",
+    aniversario: null,
+  },
 ];
 
 function SlideClientes({ onReady }: { onReady: () => void }) {
   const [visiveis, setVisiveis] = useState<typeof CLIENTES_DEMO>([]);
+  const [isDesktop] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 900px)").matches : false
+  );
 
   useEffect(() => {
     const timers: number[] = [];
 
-    // Pré-carrega as fotos das clientes antes de animar
     const imagensPraCarregar = CLIENTES_DEMO.map((c) => c.imagem).filter((s): s is string => !!s);
     const preload = Promise.all(
       imagensPraCarregar.map(
@@ -1934,25 +1996,31 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
     preload.then(() => {
       if (cancelado) return;
 
-      // Primeira cliente entra
-      timers.push(window.setTimeout(() => {
-        setVisiveis([CLIENTES_DEMO[0]]);
-      }, 300));
-
-      // Segunda entra depois
-      timers.push(window.setTimeout(() => {
-        setVisiveis([CLIENTES_DEMO[1], CLIENTES_DEMO[0]]);
-      }, 1700));
-
-      // Libera botão
-      timers.push(window.setTimeout(onReady, 3000));
+      if (isDesktop) {
+        // Desktop: mostra os 6 em cascata rápida
+        CLIENTES_DEMO.forEach((_, idx) => {
+          timers.push(window.setTimeout(() => {
+            setVisiveis(CLIENTES_DEMO.slice(0, idx + 1));
+          }, 200 + idx * 220));
+        });
+        timers.push(window.setTimeout(onReady, 200 + CLIENTES_DEMO.length * 220 + 400));
+      } else {
+        // Mobile: apenas 2 clientes (comportamento original)
+        timers.push(window.setTimeout(() => {
+          setVisiveis([CLIENTES_DEMO[0]]);
+        }, 300));
+        timers.push(window.setTimeout(() => {
+          setVisiveis([CLIENTES_DEMO[1], CLIENTES_DEMO[0]]);
+        }, 1700));
+        timers.push(window.setTimeout(onReady, 3000));
+      }
     });
 
     return () => {
       cancelado = true;
       timers.forEach((t) => clearTimeout(t));
     };
-  }, [onReady]);
+  }, [onReady, isDesktop]);
 
   return (
     <div className="ob-slide-textabove">
