@@ -60,6 +60,16 @@ export default function Auth() {
   const [form, setForm] = useState({ email: "", senha: "" });
   const [fading, setFading] = useState(false);
   const [showCadastro, setShowCadastro] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 900px)").matches : false
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 900px)");
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   // ── Login: validação inline (só email) ─────────────────────
   const [loginEmailError, setLoginEmailError] = useState("");
@@ -601,8 +611,10 @@ export default function Auth() {
 
       {/* ─────────────────────────────────────────────────────────
           COLUNA DIREITA: Card promo "Doonly no seu celular"
-          Só aparece em desktop ≥1200px, em ambos (login e cadastro).
+          Renderizado APENAS em desktop/tablet (≥900px).
+          Garantido via matchMedia — impossível vazar no mobile.
       ───────────────────────────────────────────────────────── */}
+      {isDesktop && (
       <aside className="auth-promo" aria-label="Doonly no celular">
         <div className="auth-promo-head">
           <div className="auth-promo-badge">
@@ -647,6 +659,7 @@ export default function Auth() {
           <img src={QR_IMG_SRC} alt="QR Code para baixar o Doonly" loading="lazy" />
         </div>
       </aside>
+      )}
 
       </div>
 
