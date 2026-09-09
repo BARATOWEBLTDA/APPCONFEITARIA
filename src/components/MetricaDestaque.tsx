@@ -214,15 +214,16 @@ export default function MetricaDestaque({ userId }: Props) {
           outline-offset: 2px;
         }
 
-        /* ── Bottom sheet explicativo ── */
+        /* ── Modal explicativo (centralizado, mobile + desktop) ── */
         .md-sheet-overlay {
           position: fixed;
           inset: 0;
           background: rgba(45, 31, 38, 0.6);
           z-index: 1000;
           display: flex;
-          align-items: flex-end;
+          align-items: center;
           justify-content: center;
+          padding: 20px;
           animation: mdOverlayIn 0.2s ease;
         }
         @keyframes mdOverlayIn { from { opacity: 0; } to { opacity: 1; } }
@@ -230,21 +231,18 @@ export default function MetricaDestaque({ userId }: Props) {
         .md-sheet {
           background: var(--bg-card);
           width: 100%;
-          max-width: 500px;
-          border-radius: 20px 20px 0 0;
-          padding: 8px 18px 24px;
-          box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.2);
-          animation: mdSheetIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
-          padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+          max-width: 420px;
+          border-radius: var(--radius-lg);
+          padding: 20px 22px 22px;
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+          animation: mdSheetIn 0.2s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        @keyframes mdSheetIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes mdSheetIn {
+          from { opacity: 0; transform: scale(0.94); }
+          to   { opacity: 1; transform: scale(1); }
+        }
 
-        .md-sheet-handle {
-          width: 40px; height: 4px;
-          background: var(--border);
-          border-radius: 2px;
-          margin: 0 auto 14px;
-        }
+        .md-sheet-handle { display: none; }
         .md-sheet-header {
           display: flex;
           align-items: center;
@@ -286,22 +284,6 @@ export default function MetricaDestaque({ userId }: Props) {
           line-height: 1.55;
         }
         .md-sheet-body b { color: var(--text-title); }
-
-        /* Desktop: modal centralizado em vez de bottom sheet */
-        @media (min-width: 900px) {
-          .md-sheet-overlay { align-items: center; }
-          .md-sheet {
-            max-width: 420px;
-            border-radius: var(--radius-lg);
-            padding: 20px 22px 22px;
-            animation: mdSheetInDesk 0.2s cubic-bezier(0.22, 1, 0.36, 1);
-          }
-          .md-sheet-handle { display: none; }
-        }
-        @keyframes mdSheetInDesk {
-          from { opacity: 0; transform: scale(0.96); }
-          to   { opacity: 1; transform: scale(1); }
-        }
       `}</style>
     </div>
   );
