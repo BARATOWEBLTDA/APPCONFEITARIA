@@ -1920,7 +1920,7 @@ export default function Inicio() {
           .ini-root {
             max-width: none;
             padding-left: 36px;
-            padding-right: 36px;
+            padding-right: 80px;
           }
 
           /* Hero escondido no desktop — saudação fica na sidebar */
@@ -1978,7 +1978,7 @@ export default function Inicio() {
             display: flex;
             position: absolute;
             top: 24px;
-            right: 0;
+            right: 20px;
             width: 40px;
             height: 40px;
             border-radius: 50%;
