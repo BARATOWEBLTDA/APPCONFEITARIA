@@ -1243,19 +1243,22 @@ export default function Inicio() {
         }
         .ini-hero-greeting h1 {
           display: flex; align-items: center; gap: 8px;
-          flex-wrap: wrap;
           font-size: 1.25rem; font-weight: var(--fw-black);
           color: #fff;
           margin: 0; line-height: 1.2;
           letter-spacing: -0.02em;
           min-height: 1.5rem; /* reserva espaço antes do nome carregar */
+          min-width: 0; /* permite encolher pra fazer ellipsis */
         }
         .ini-hero-greeting h1 > span:first-child {
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
           min-width: 0;
-          flex-shrink: 1;
+          flex: 1 1 auto;
+        }
+        .ini-hero-greeting h1 > .ini-hero-pro-badge {
+          flex-shrink: 0;
         }
         .ini-hero-pro-badge {
           display: inline-flex;
