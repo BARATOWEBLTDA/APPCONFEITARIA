@@ -77,7 +77,19 @@ export default function MetricaDestaque({ userId }: Props) {
         <span className="md-emoji">{opt.emoji}</span>
       </div>
       <div className="md-content">
-        <p className="md-label">{data?.label || opt.titulo}</p>
+        <p className="md-label">
+          {data?.label || opt.titulo}
+          {mostrarInfo && (
+            <button
+              type="button"
+              className="md-info-btn"
+              onClick={() => setInfoOpen(true)}
+              aria-label="Por que está zerado?"
+            >
+              i
+            </button>
+          )}
+        </p>
         <p className={`md-value ${data && data.valor.length > 12 ? "md-value--sm" : ""}`}>
           {loading ? <span className="md-skeleton md-skeleton--val" /> : (data?.valor || "—")}
         </p>
@@ -88,18 +100,6 @@ export default function MetricaDestaque({ userId }: Props) {
           </span>
         )}
       </div>
-
-      {/* Ícone info — só aparece se faturamento está zerado */}
-      {mostrarInfo && (
-        <button
-          type="button"
-          className="md-info-btn"
-          onClick={() => setInfoOpen(true)}
-          aria-label="Por que está zerado?"
-        >
-          i
-        </button>
-      )}
 
       {/* Bottom sheet explicativo */}
       {infoOpen && (
@@ -185,27 +185,29 @@ export default function MetricaDestaque({ userId }: Props) {
         .md-skeleton--val { width: 100px; }
         @keyframes mdShimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
-        /* ── Ícone info no canto (quando faturamento zerado) ── */
+        /* ── Ícone info inline com o label (quando faturamento zerado) ── */
         .md-info-btn {
-          position: absolute;
-          top: 8px; right: 8px;
-          width: 22px; height: 22px;
+          display: inline-flex;
+          align-items: center; justify-content: center;
+          width: 16px; height: 16px;
+          margin-left: 6px;
           border-radius: 50%;
           background: var(--bg-subtle, #FBF4F6);
           color: var(--text-secondary);
           border: none;
           font-family: Georgia, 'Times New Roman', serif;
           font-style: italic;
-          font-size: 12px;
+          font-size: 10px;
           font-weight: var(--fw-bold);
           line-height: 1;
           cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          transition: background var(--dur-fast), color var(--dur-fast);
+          vertical-align: middle;
+          transition: background var(--dur-fast), color var(--dur-fast), transform var(--dur-fast);
         }
         .md-info-btn:hover {
           background: var(--primary-light);
           color: var(--primary);
+          transform: scale(1.15);
         }
         .md-info-btn:focus-visible {
           outline: 2px solid var(--primary);
