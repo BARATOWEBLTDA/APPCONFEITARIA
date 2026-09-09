@@ -631,6 +631,17 @@ export default function Inicio() {
         </div>
       </div>
 
+      {/* Sino desktop — só aparece em ≥1100px (CSS controla) */}
+      <button
+        className="ini-desktop-bell"
+        onClick={() => setMenuOpen(o => !o)}
+        aria-label="Menu"
+        aria-expanded={menuOpen}
+        type="button"
+      >
+        <img src="/Sistema/sino.png" alt="" className="ini-desktop-bell-img" />
+      </button>
+
       {/* ── Card de métrica em destaque, sobrepondo o hero ── */}
       {profile?.id && (
         <div className="ini-metrica-wrap">
@@ -1011,7 +1022,11 @@ export default function Inicio() {
           padding: 0 var(--space-3) 6rem;
           display: flex; flex-direction: column;
           max-width: 980px; margin: 0 auto;
+          position: relative;
         }
+
+        /* Sino desktop — só aparece em ≥1100px */
+        .ini-desktop-bell { display: none; }
 
         /* ── Layout 2 colunas ── */
         .ini-content {
@@ -1957,6 +1972,41 @@ export default function Inicio() {
           .ini-aside { display: none; }
           .ini-aside-desktop { display: none; }
           .ini-aside-mobile { display: none; }
+
+          /* ── Sino desktop no canto superior direito ── */
+          .ini-desktop-bell {
+            display: flex;
+            position: absolute;
+            top: 24px;
+            right: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            padding: 0;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.35);
+            transition: transform 0.15s, box-shadow 0.2s;
+            z-index: 20;
+          }
+          .ini-desktop-bell:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(var(--primary-rgb), 0.45);
+          }
+          .ini-desktop-bell:active { transform: scale(0.95); }
+          .ini-desktop-bell-img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            filter: brightness(0) invert(1);
+          }
+          /* Empurra o conteúdo pra baixo pra não ficar atrás do sino */
+          .ini-main .ini-section--metrics {
+            margin-top: var(--space-6);
+          }
           /* Updates e engajamento são exclusivos do mobile */
           .ini-mobile-updates { display: none; }
           .ini-engaja { display: none; }
