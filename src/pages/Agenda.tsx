@@ -145,6 +145,18 @@ export default function Agenda() {
     return saved && ["lista", "calendario"].includes(saved) ? saved : "lista";
   });
 
+  const [isDesktop, setIsDesktop] = useState(() =>
+    typeof window !== "undefined" ? window.matchMedia("(min-width: 900px)").matches : false
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 900px)");
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  // Força modo calendário no desktop (sem toggle)
+  const modoAtual: ViewMode = isDesktop ? "calendario" : viewMode;
+
   const [refDate, setRefDate] = useState(new Date());
   const [diaSel, setDiaSel] = useState(isoDate(new Date()));
   const [busca, setBusca] = useState("");
@@ -368,7 +380,7 @@ export default function Agenda() {
       </div>
 
       {/* Vista */}
-      {viewMode === "lista" ? (
+      {modoAtual === "lista" ? (
         <VistaLista
           refDate={refDate}
           setRefDate={setRefDate}
@@ -378,6 +390,7 @@ export default function Agenda() {
           pedidosDoDia={pedidosDoDia}
         />
       ) : (
+        <div className="ag-desk-grid">
         <VistaCalendario
           refDate={refDate}
           setRefDate={setRefDate}
@@ -386,8 +399,9 @@ export default function Agenda() {
           dayStats={dayStats}
           irParaHoje={irParaHoje}
         />
-      )}
 
+      {/* Coluna direita (desktop) / abaixo (mobile calendário) */}
+      <div className="ag-desk-side">
       {/* Card de resumo do dia (sempre, em ambas as abas) */}
       <ResumoDoDia diaSel={diaSel} pedidosDoDia={pedidosDoDia} dayStats={dayStats} />
 
@@ -405,6 +419,9 @@ export default function Agenda() {
         pedidosFiltrados={pedidosDiaFiltrados}
         acoes={acoes}
       />
+      </div>
+      </div>
+      )}
 
       {/* Drawer de filtro */}
       {filtroDrawerOpen && (
@@ -1785,6 +1802,27 @@ function AgendaStyles() {
       @media (min-width: 900px) {
         .ag-cli-avatar { width: 34px; height: 34px; }
         .ag-cli-avatar-iniciais { font-size: 12px; }
+        /* Esconde toggle Lista/Calendário no desktop (só calendário) */
+        .ag-toggle { display: none; }
+        /* Grid 2 colunas: calendário à esquerda, lista à direita */
+        .ag-desk-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+          gap: var(--space-5, 1.25rem);
+          align-items: start;
+          margin-top: var(--space-4, 1rem);
+        }
+        .ag-desk-side {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-3, 0.75rem);
+          position: sticky;
+          top: var(--space-4, 1rem);
+        }
+      }
+      /* No mobile, o grid vira uma coluna só naturalmente */
+      .ag-desk-grid {
+        display: contents;
       }
       .ag-pc-numero {
         font-size: var(--text-sm);
