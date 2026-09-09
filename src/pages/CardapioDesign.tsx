@@ -250,34 +250,6 @@ export default function CardapioDesign() {
         </div>
       </div>
 
-      {/* Logo */}
-      <div className="cd-card">
-        <SectionLabel
-          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>}
-          sub="Aparece no topo do cardápio em formato circular"
-        >Logotipo</SectionLabel>
-        <div className="cd-logo-area">
-          {logoUrl ? (
-            <div className="cd-logo-preview">
-              <img src={logoUrl} alt="Logo" />
-              <button className="cd-remove-btn" onClick={() => { setLogoUrl(""); supabase.from("profiles").update({ logo_url: null }).eq("id", userId!); }}>✕</button>
-            </div>
-          ) : (
-            <div className="cd-upload-box cd-upload-logo" onClick={() => uploading !== "logo" && logoRef.current?.click()}>
-              {uploading === "logo" ? <span className="cd-spinner" /> : (
-                <>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  <p className="cd-upload-label">Enviar logo</p>
-                  <span className="cd-upload-hint">PNG ou JPG</span>
-                </>
-              )}
-            </div>
-          )}
-          <input ref={logoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleLogoUpload} />
-          {logoUrl && <button className="cd-change-btn" onClick={() => logoRef.current?.click()}>{uploading === "logo" ? <span className="cd-spinner-sm" /> : "Trocar logo"}</button>}
-        </div>
-      </div>
-
       {/* Banners */}
       <div className="cd-card">
         <SectionLabel
