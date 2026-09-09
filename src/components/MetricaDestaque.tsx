@@ -50,7 +50,9 @@ export default function MetricaDestaque({ userId }: Props) {
 
   // Detecta se é métrica de faturamento zerada — pra mostrar ícone de info explicando
   const isFaturamento = metricaId === "faturamento-mes" || metricaId === "faturamento-hoje";
-  const valorZerado = data?.valor === "R$ 0,00" || data?.valor === "R$\u00A00,00";
+  // Extrai apenas dígitos do valor (ex: "R$ 0" → "0", "R$ 1.500" → "1500") e checa se é tudo zero
+  const somenteDigitos = (data?.valor || "").replace(/\D/g, "");
+  const valorZerado = somenteDigitos === "" || Number(somenteDigitos) === 0;
   const mostrarInfo = !loading && isFaturamento && valorZerado;
 
   const [infoOpen, setInfoOpen] = useState(false);
@@ -62,7 +64,7 @@ export default function MetricaDestaque({ userId }: Props) {
     </>
   ) : (
     <>
-      Seu faturamento aparece <b>R$ 0,00</b> porque nenhum pedido foi registrado <b>neste mês</b> ainda.<br/><br/>
+      Seu faturamento está <b>zerado</b> porque nenhum pedido foi registrado <b>neste mês</b> ainda.<br/><br/>
       Assim que você registrar seu primeiro pedido (ou receber um pelo <b>cardápio digital</b>), o valor começa a aparecer aqui automaticamente.
     </>
   );
