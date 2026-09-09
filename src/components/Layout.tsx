@@ -422,7 +422,9 @@ export default function Layout() {
         @keyframes sbCadShimmer { to { left: 160%; } }
 
         /* ── Layout main ── */
-        .layout-main { margin-left: 220px; flex: 1; padding: 2rem; min-height: 100vh; }
+        /* Desktop: margem lateral (esquerda vem do sidebar 220px) + respiro no topo.
+           Aplica em TODAS as páginas: Início, Agenda, Pedidos, Clientes, Cardápio, etc. */
+        .layout-main { margin-left: 220px; flex: 1; padding: 3rem 2rem 2rem; min-height: 100vh; }
         .desk-topbar { display: none; }
 
         @media (min-width: 900px) {
