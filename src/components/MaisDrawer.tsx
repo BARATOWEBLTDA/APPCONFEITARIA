@@ -5,6 +5,7 @@ import {
   Users,
   Package, BookOpen, Files, Bell, ClipboardText,
   Gear, PaintBrush, Crown,
+  CalendarDots,
   X,
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
@@ -43,6 +44,7 @@ const GROUPS: DrawerGroup[] = [
   {
     label: "Operação",
     items: [
+      { label: "Agenda",       path: "/agenda",         icon: <CalendarDots   size={20} weight="duotone" /> },
       { label: "Ingredientes",    path: "/insumos",        icon: <Package        size={20} weight="duotone" /> },
       { label: "Precificação", path: "/ficha-tecnica",  icon: <ClipboardText  size={20} weight="duotone" /> },
       { label: "Receitas",     path: "/receitas",      icon: <BookOpen size={20} weight="duotone" /> },

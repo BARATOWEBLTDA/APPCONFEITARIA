@@ -6,7 +6,7 @@ import { useState, useEffect, type ReactNode } from "react";
 import {
   House, CalendarDots, ShoppingBag, ClipboardText, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown, ForkKnife, List,
-  User, SquaresFour, Camera,
+  User, SquaresFour, Camera, Cake,
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
@@ -75,6 +75,11 @@ export default function Layout() {
       };
     }
   }, [notifOpen]);
+
+  // Scroll pro topo ao mudar de rota (fix: antes ficava na posição anterior)
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.pathname]);
 
   return (
     <div className="layout-root">
@@ -234,9 +239,8 @@ export default function Layout() {
           <div className="bottom-nav-pill">
             {[
               { to: "/inicio",   icon: <House          size={20} weight="fill" />, label: "Início"   },
-              { to: "/agenda",   icon: <CalendarDots   size={20} weight="fill" />, label: "Agenda"   },
+              { to: "/cardapio", icon: <Cake           size={20} weight="fill" />, label: "Cardápio" },
               { to: "/pedidos",  icon: <ClipboardText  size={20} weight="fill" />, label: "Pedidos"  },
-              { to: "/cardapio", icon: <ForkKnife      size={20} weight="fill" />, label: "Cardápio" },
             ].map((item) => {
               const isActive =
                 location.pathname === item.to ||
@@ -564,7 +568,7 @@ export default function Layout() {
             border: none;
             background: none;
             cursor: pointer;
-            border-radius: var(--radius-lg);
+            border-radius: 10px;
             font-family: var(--font-base);
             text-decoration: none;
             transition: background var(--dur-fast), transform 0.1s;
@@ -573,7 +577,7 @@ export default function Layout() {
           }
           .bn-item:hover {
             background: rgba(255, 255, 255, 0.12);
-            border-radius: var(--radius-lg);
+            border-radius: 10px;
           }
           .bn-item--active {
             background: #ffffff;
