@@ -57,6 +57,27 @@ export default function MetricaDestaque({ userId }: Props) {
 
   const [infoOpen, setInfoOpen] = useState(false);
 
+  // Bloqueia scroll do body enquanto modal aberto
+  useEffect(() => {
+    if (!infoOpen) return;
+    const scrollY = window.scrollY;
+    const prevBodyOverflow = document.body.style.overflow;
+    const prevBodyPosition = document.body.style.position;
+    const prevBodyTop = document.body.style.top;
+    const prevBodyWidth = document.body.style.width;
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+    return () => {
+      document.body.style.overflow = prevBodyOverflow;
+      document.body.style.position = prevBodyPosition;
+      document.body.style.top = prevBodyTop;
+      document.body.style.width = prevBodyWidth;
+      window.scrollTo(0, scrollY);
+    };
+  }, [infoOpen]);
+
   const explicacao = metricaId === "faturamento-hoje" ? (
     <>
       Nenhum pedido foi registrado <b>hoje</b> ainda.<br/><br/>
@@ -218,7 +239,9 @@ export default function MetricaDestaque({ userId }: Props) {
         .md-sheet-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(45, 31, 38, 0.6);
+          background: rgba(45, 31, 38, 0.55);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
           z-index: 1000;
           display: flex;
           align-items: center;
@@ -226,7 +249,10 @@ export default function MetricaDestaque({ userId }: Props) {
           padding: 20px;
           animation: mdOverlayIn 0.2s ease;
         }
-        @keyframes mdOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes mdOverlayIn {
+          from { opacity: 0; backdrop-filter: blur(0); -webkit-backdrop-filter: blur(0); }
+          to   { opacity: 1; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+        }
 
         .md-sheet {
           background: var(--bg-card);
