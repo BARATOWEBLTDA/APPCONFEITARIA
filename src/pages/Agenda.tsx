@@ -68,6 +68,15 @@ const truncar = (s: string, max: number) => {
   return s.slice(0, max - 1).trimEnd() + "…";
 };
 
+/** Retorna as iniciais do nome do cliente (ex: "Ana Silva" → "AS"). */
+const getIniciaisCliente = (nome?: string | null): string => {
+  if (!nome) return "?";
+  const partes = nome.trim().split(/\s+/).filter(Boolean);
+  if (partes.length === 0) return "?";
+  if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
+  return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+};
+
 const diffDias = (isoAlvo: string) => {
   const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
   const alvo = parseISO(isoAlvo); alvo.setHours(0, 0, 0, 0);
@@ -168,7 +177,7 @@ export default function Agenda() {
     (async () => {
       setLoading(true);
       const { data } = await supabase.from("pedidos")
-        .select("*, pedido_itens(nome_produto, quantidade, valor_unitario, imagem_url, produtos(imagem_url))")
+        .select("*, pedido_itens(nome_produto, quantidade, valor_unitario, imagem_url, produtos(imagem_url)), clientes(foto_url)")
         .eq("user_id", userId)
         .order("data_entrega", { ascending: true, nullsFirst: false })
         .order("horario_entrega", { ascending: true, nullsFirst: false });
@@ -856,8 +865,17 @@ function PedidoCard({ p, acoes }: any) {
         </div>
         <div className="ag-pc-head-info">
           <p className="ag-pc-nome">
-            {p.cliente_nome || "Cliente não informado"}
-            {p.numero != null && <span className="ag-pc-numero"> #{p.numero}</span>}
+            <span className="ag-cli-avatar" aria-hidden="true">
+              {p.clientes?.foto_url ? (
+                <img src={p.clientes.foto_url} alt="" />
+              ) : (
+                <span className="ag-cli-avatar-iniciais">{getIniciaisCliente(p.cliente_nome)}</span>
+              )}
+            </span>
+            <span className="ag-pc-nome-texto">
+              {p.cliente_nome || "Cliente não informado"}
+              {p.numero != null && <span className="ag-pc-numero"> #{p.numero}</span>}
+            </span>
           </p>
           {p.created_at && (
             <span className="ag-pc-pedido-em">Pedido em {criadoFmt(p.created_at)}</span>
@@ -1732,6 +1750,41 @@ function AgendaStyles() {
         letter-spacing: var(--ls-tight);
         line-height: var(--lh-tight);
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .ag-pc-nome-texto {
+        min-width: 0;
+        flex: 1;
+      }
+      /* ── Avatar do cliente (foto ou iniciais) ── */
+      .ag-cli-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: var(--primary-light, #FCE0E9);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 1px rgba(232, 90, 140, 0.25);
+      }
+      .ag-cli-avatar img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+      }
+      .ag-cli-avatar-iniciais {
+        font-size: 11px;
+        font-weight: var(--fw-black, 800);
+        color: var(--primary-dark, #C33A6E);
+        letter-spacing: 0.02em;
+      }
+      @media (min-width: 900px) {
+        .ag-cli-avatar { width: 34px; height: 34px; }
+        .ag-cli-avatar-iniciais { font-size: 12px; }
       }
       .ag-pc-numero {
         font-size: var(--text-sm);
