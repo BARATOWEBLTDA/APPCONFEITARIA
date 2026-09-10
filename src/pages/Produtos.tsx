@@ -81,9 +81,25 @@ type Produto = {
   titulo_outro?: string;
   valor_outro?: number;
   tem_adicionais?: boolean;
+  adicionais?: Adicional[];
   tipo_promocao?: 'fixo' | 'percentual';
   desconto_percentual?: number;
   created_at?: string;
+};
+
+// Um adicional (extra) de um produto: nome + valor + origem opcional na biblioteca
+type Adicional = {
+  nome: string;
+  valor: number;
+  from_biblioteca?: string; // id do extra na biblioteca_extras
+};
+
+// Extra na biblioteca do usuário (reutilizável entre produtos)
+type BibliotecaExtra = {
+  id: string;
+  nome: string;
+  valor: number;
+  categorias: string[];
 };
 
 const SYSTEM_ICONS = Array.from({ length: 42 }, (_, i) => `/categoriaicones/icone (${i + 1}).png`);
@@ -114,6 +130,7 @@ const EMPTY: Produto = {
   tem_papel_arroz: false, valor_papel_arroz: 0,
   tem_outro: false, titulo_outro: "", valor_outro: 0,
   tem_adicionais: false,
+  adicionais: [],
   tipo_promocao: 'fixo' as const, desconto_percentual: 0,
 };
 
@@ -144,6 +161,11 @@ export default function Produtos() {
   const [novaOpcao, setNovaOpcao] = useState<{ massa: string; recheio: string; cobertura: string }>({ massa: "", recheio: "", cobertura: "" });
   const [novoTamanho, setNovoTamanho] = useState({ label: "", preco: "" });
   const [novoKitItem, setNovoKitItem] = useState({ nome: "", quantidade: "" });
+
+  // ═══ BIBLIOTECA DE EXTRAS ═══
+  const [novoAdicional, setNovoAdicional] = useState({ nome: "", valor: "" });
+  const [biblioteca, setBiblioteca] = useState<BibliotecaExtra[]>([]);
+  const [salvarBibliotecaAsk, setSalvarBibliotecaAsk] = useState<{ nome: string; valor: number; index: number } | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [cropSlot, setCropSlot] = useState(0);
   const [viewMode, setViewMode] = useState<"grid" | "lista">(() => (localStorage.getItem("prod_viewMode") as "grid" | "lista") || "grid");
@@ -206,10 +228,38 @@ export default function Produtos() {
       await loadProdutos(user.id);
       await loadCategorias(user.id);
       await loadInsumos(user.id);
+      await loadBiblioteca(user.id);
       setLoading(false);
     };
     load();
   }, []);
+
+  // ═══ BIBLIOTECA DE EXTRAS ═══
+  const loadBiblioteca = async (uid: string) => {
+    const { data } = await supabase.from("biblioteca_extras").select("*").eq("user_id", uid).order("nome");
+    if (data) setBiblioteca(data as BibliotecaExtra[]);
+  };
+
+  // Migra campos hardcoded antigos (tem_vela/tem_topo/etc) para o array adicionais
+  const migrarAdicionaisLegacy = (p: Produto): Produto => {
+    if (p.adicionais && p.adicionais.length > 0) return p;
+    const legacy: Adicional[] = [];
+    if (p.tem_vela) legacy.push({ nome: "Vela", valor: p.valor_vela || 0 });
+    if (p.tem_topo) legacy.push({ nome: "Topo de bolo", valor: p.valor_topo || 0 });
+    if (p.tem_papel_arroz) legacy.push({ nome: "Papel de arroz", valor: p.valor_papel_arroz || 0 });
+    if (p.tem_outro && p.titulo_outro) legacy.push({ nome: p.titulo_outro, valor: p.valor_outro || 0 });
+    return { ...p, adicionais: legacy };
+  };
+
+  // Sugestões da biblioteca pra categoria atual (que não estão já no produto)
+  const sugestoesBiblioteca = biblioteca.filter(b => {
+    const noProdutoAtual = (form.adicionais || []).some(a => a.from_biblioteca === b.id);
+    if (noProdutoAtual) return false;
+    if (!form.categoria) return true;
+    // Se o extra não tem categorias, mostra pra todos
+    if (!b.categorias || b.categorias.length === 0) return true;
+    return b.categorias.includes(form.categoria);
+  });
 
   const loadInsumos = async (uid: string) => {
     const { data } = await supabase.from("insumos").select("id, nome, unidade, custo_unitario, imagem_url").eq("user_id", uid).order("nome");
@@ -268,7 +318,7 @@ export default function Produtos() {
 
   const openNovo = () => { setForm(EMPTY); setFichaTecnica([]); setWizardStep(1); setWizardTipo("simples"); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setModal(true); };
   const openEditar = async (p: Produto) => {
-    setForm({ ...EMPTY, ...p });
+    setForm(migrarAdicionaisLegacy({ ...EMPTY, ...p }));
     setFichaTecnica([]);
     setWizardStep(2);
     setModal(true);
@@ -1170,68 +1220,93 @@ export default function Produtos() {
               {/* Adicionais */}
               {(form.id || wizardOpts.complementos) && (
               <div className="prod-section">
-                <p className="prod-section-label">Adicionais</p>
-                <Toggle label="Oferecer adicionais" value={form.tem_adicionais || false} onChange={(v: boolean) => setForm(f => ({ ...f, tem_adicionais: v }))} colorClass="active-pink" />
+                <p className="prod-section-label">Extras pagos</p>
+                <Toggle label="Oferecer extras" value={form.tem_adicionais || false} onChange={(v: boolean) => setForm(f => ({ ...f, tem_adicionais: v }))} colorClass="active-pink" />
 
                 {form.tem_adicionais && (
                   <>
-                    <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", margin: "0" }}>Itens extras que o cliente pode solicitar</p>
+                    <p style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "0" }}>Itens extras que o cliente pode adicionar (vela, topo, embalagem…)</p>
 
-                {[
-                  { label: "Velas", sub: "Cliente escolhe se quer velas", campo: "tem_vela" as const, valor: "valor_vela" as const },
-                  { label: "Topo de Bolo", sub: "Cliente escolhe o topo personalizado", campo: "tem_topo" as const, valor: "valor_topo" as const },
-                  { label: "Papel de Arroz", sub: "Impressão comestível personalizada", campo: "tem_papel_arroz" as const, valor: "valor_papel_arroz" as const },
-                ].map(({ label, sub, campo, valor }) => (
-                  <div key={campo} style={{ background: "var(--bg-body)", borderRadius: "12px", border: "1px solid var(--border)", overflow: "hidden" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px" }}>
-                      <div>
-                        <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 2px" }}>{label}</p>
-                        <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: 0 }}>{sub}</p>
-                      </div>
-                      <button onClick={() => setForm(f => ({ ...f, [campo]: !f[campo] }))}
-                        style={{ width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer", background: form[campo] ? "var(--primary)" : "var(--border)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
-                        <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: form[campo] ? "23px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
-                      </button>
-                    </div>
-                    {form[campo] && (
-                      <div style={{ padding: "0 12px 12px", borderTop: "1px solid var(--border)" }}>
-                        <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", display: "block", margin: "8px 0 4px" }}>Valor adicional</label>
-                        <div className="prod-preco-input" style={{ background: "var(--bg-card)" }}>
-                          <span>R$</span>
-                          <input type="text" placeholder="0,00" value={form[valor] ? formatPreco(form[valor] as number) : ""} onChange={e => setForm(f => ({ ...f, [valor]: parsePreco(e.target.value) }))} />
+                    {/* Sugestões da biblioteca */}
+                    {sugestoesBiblioteca.length > 0 && (
+                      <div className="prod-sugestoes">
+                        <p className="prod-sugestoes-lbl">💡 Da sua biblioteca:</p>
+                        <div className="prod-sugestoes-chips">
+                          {sugestoesBiblioteca.map(b => (
+                            <button
+                              key={b.id}
+                              type="button"
+                              className="prod-sug-chip"
+                              onClick={() => {
+                                setForm(f => ({
+                                  ...f,
+                                  adicionais: [...(f.adicionais || []), { nome: b.nome, valor: b.valor, from_biblioteca: b.id }]
+                                }));
+                              }}
+                            >
+                              + {b.nome} · R$ {formatPreco(b.valor)}
+                            </button>
+                          ))}
                         </div>
                       </div>
                     )}
-                  </div>
-                ))}
 
-                <div style={{ background: "var(--bg-body)", borderRadius: "12px", border: "1px solid var(--border)", overflow: "hidden" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px" }}>
-                    <div>
-                      <p style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 2px" }}>Outro</p>
-                      <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: 0 }}>Adicional personalizado</p>
-                    </div>
-                    <button onClick={() => setForm(f => ({ ...f, tem_outro: !f.tem_outro }))}
-                      style={{ width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer", background: form.tem_outro ? "var(--primary)" : "var(--border)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
-                      <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: form.tem_outro ? "23px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
-                    </button>
-                  </div>
-                  {form.tem_outro && (
-                    <div style={{ padding: "0 12px 12px", borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: "8px" }}>
-                      <div>
-                        <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", display: "block", margin: "8px 0 4px" }}>Nome do adicional</label>
-                        <input type="text" placeholder="Ex: Embalagem especial, Laço..." value={form.titulo_outro || ""} onChange={e => setForm(f => ({ ...f, titulo_outro: e.target.value }))} style={{ width: "100%", padding: "0.55rem 0.85rem", border: "1.5px solid var(--border)", borderRadius: "10px", fontSize: "0.85rem", fontFamily: "inherit", outline: "none", boxSizing: "border-box", background: "var(--bg-card)" }} />
+                    {/* Lista de adicionais deste produto */}
+                    {(form.adicionais || []).length > 0 && (
+                      <div className="prod-adic-lista">
+                        {(form.adicionais || []).map((a, i) => (
+                          <div key={i} className="prod-adic-item">
+                            <div className="prod-adic-item-info">
+                              <span className="prod-adic-nome">{a.nome}</span>
+                              <span className="prod-adic-valor">+ R$ {formatPreco(a.valor)}</span>
+                              {a.from_biblioteca && <span className="prod-adic-tag">📚</span>}
+                            </div>
+                            <button
+                              type="button"
+                              className="prod-adic-remove"
+                              onClick={() => setForm(f => ({ ...f, adicionais: (f.adicionais || []).filter((_, idx) => idx !== i) }))}
+                              aria-label="Remover"
+                            >×</button>
+                          </div>
+                        ))}
                       </div>
-                      <div>
-                        <label style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--text-secondary)", display: "block", margin: "0 0 4px" }}>Valor adicional</label>
-                        <div className="prod-preco-input" style={{ background: "var(--bg-card)" }}>
-                          <span>R$</span>
-                          <input type="text" placeholder="0,00" value={form.valor_outro ? formatPreco(form.valor_outro) : ""} onChange={e => setForm(f => ({ ...f, valor_outro: parsePreco(e.target.value) }))} />
-                        </div>
+                    )}
+
+                    {/* Form pra adicionar novo */}
+                    <div className="prod-adic-add">
+                      <input
+                        type="text"
+                        placeholder="Ex: Vela decorativa"
+                        value={novoAdicional.nome}
+                        onChange={e => setNovoAdicional(a => ({ ...a, nome: e.target.value }))}
+                        className="prod-add-input"
+                        style={{ flex: 2 }}
+                      />
+                      <div className="prod-preco-input" style={{ flex: 1, background: "var(--bg-card)" }}>
+                        <span>R$</span>
+                        <input
+                          type="text"
+                          placeholder="0,00"
+                          value={novoAdicional.valor}
+                          onChange={e => setNovoAdicional(a => ({ ...a, valor: e.target.value }))}
+                        />
                       </div>
+                      <button
+                        type="button"
+                        className="prod-btn-3d"
+                        onClick={() => {
+                          const nome = novoAdicional.nome.trim();
+                          const valor = parsePreco(novoAdicional.valor);
+                          if (!nome) return;
+                          const novoIndex = (form.adicionais || []).length;
+                          setForm(f => ({ ...f, adicionais: [...(f.adicionais || []), { nome, valor }] }));
+                          setNovoAdicional({ nome: "", valor: "" });
+                          // Pergunta se quer salvar na biblioteca
+                          setSalvarBibliotecaAsk({ nome, valor, index: novoIndex });
+                        }}
+                        disabled={!novoAdicional.nome.trim()}
+                      >Adicionar</button>
                     </div>
-                  )}
-                </div>
                   </>
                 )}
               </div>
@@ -1367,6 +1442,52 @@ export default function Produtos() {
               <p className="prod-desk-preview-hint">A prévia atualiza conforme você digita</p>
             </aside>
           )}
+        </div>
+      )}
+
+      {/* ── Modal: perguntar se salva extra na biblioteca ── */}
+      {salvarBibliotecaAsk && (
+        <div className="prod-lib-overlay" onClick={() => setSalvarBibliotecaAsk(null)}>
+          <div className="prod-lib-modal" onClick={e => e.stopPropagation()}>
+            <div className="prod-lib-icon">📚</div>
+            <h3 className="prod-lib-title">Salvar na sua biblioteca?</h3>
+            <p className="prod-lib-desc">
+              Você adicionou <b>"{salvarBibliotecaAsk.nome}"</b> {salvarBibliotecaAsk.valor > 0 && <>por <b>R$ {formatPreco(salvarBibliotecaAsk.valor)}</b> </>}
+              como extra. Quer usar em outros produtos {form.categoria ? <>de <b>"{form.categoria}"</b></> : null}?
+            </p>
+            <div className="prod-lib-actions">
+              <button
+                type="button"
+                className="prod-lib-btn-ghost"
+                onClick={() => setSalvarBibliotecaAsk(null)}
+              >Só neste produto</button>
+              <button
+                type="button"
+                className="prod-btn-3d"
+                style={{ flex: 1 }}
+                onClick={async () => {
+                  if (!userId) return;
+                  const { data, error } = await supabase.from("biblioteca_extras").insert({
+                    user_id: userId,
+                    nome: salvarBibliotecaAsk.nome,
+                    valor: salvarBibliotecaAsk.valor,
+                    categorias: form.categoria ? [form.categoria] : []
+                  }).select().single();
+                  if (!error && data) {
+                    setBiblioteca(b => [...b, data as BibliotecaExtra]);
+                    // Vincula esse adicional ao id da biblioteca
+                    setForm(f => ({
+                      ...f,
+                      adicionais: (f.adicionais || []).map((a, i) =>
+                        i === salvarBibliotecaAsk.index ? { ...a, from_biblioteca: (data as BibliotecaExtra).id } : a
+                      )
+                    }));
+                  }
+                  setSalvarBibliotecaAsk(null);
+                }}
+              >Salvar {form.categoria ? `em "${form.categoria}"` : "na biblioteca"}</button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1714,6 +1835,165 @@ export default function Produtos() {
           margin-top: 8px;
           align-items: stretch;
         }
+
+        /* ═══ EXTRAS / BIBLIOTECA ═══ */
+        /* Sugestões da biblioteca */
+        .prod-sugestoes {
+          background: linear-gradient(135deg, #FFF9E5, #FFF3D6);
+          border-radius: 12px;
+          padding: 12px 14px;
+        }
+        .prod-sugestoes-lbl {
+          font-size: 11px;
+          font-weight: 700;
+          color: #92400E;
+          margin: 0 0 8px;
+          letter-spacing: 0.03em;
+        }
+        .prod-sugestoes-chips {
+          display: flex; flex-wrap: wrap; gap: 6px;
+        }
+        .prod-sug-chip {
+          background: #fff;
+          border: 1.5px solid #FCD34D;
+          color: #92400E;
+          padding: 6px 12px;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: var(--font-base);
+          transition: all var(--dur-fast);
+        }
+        .prod-sug-chip:hover {
+          background: #FCD34D;
+          transform: translateY(-1px);
+        }
+
+        /* Lista de adicionais */
+        .prod-adic-lista {
+          display: flex; flex-direction: column;
+          gap: 6px;
+        }
+        .prod-adic-item {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: var(--bg-subtle, #FBF4F6);
+          border: 1.5px solid transparent;
+          border-radius: 10px;
+          padding: 10px 12px;
+          gap: 8px;
+        }
+        .prod-adic-item-info {
+          display: flex; align-items: center;
+          gap: 8px; flex: 1; min-width: 0;
+        }
+        .prod-adic-nome {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--text-title);
+        }
+        .prod-adic-valor {
+          font-size: 13px;
+          font-weight: 800;
+          color: var(--success, #15803D);
+        }
+        .prod-adic-tag {
+          font-size: 12px;
+          opacity: 0.6;
+        }
+        .prod-adic-remove {
+          background: transparent;
+          border: none;
+          color: var(--error, #DC2626);
+          font-size: 20px;
+          cursor: pointer;
+          padding: 0;
+          line-height: 1;
+          width: 24px; height: 24px;
+          border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          transition: background var(--dur-fast);
+        }
+        .prod-adic-remove:hover { background: #FEE2E2; }
+
+        /* Row de adicionar novo extra */
+        .prod-adic-add {
+          display: flex;
+          gap: 8px;
+          align-items: stretch;
+          margin-top: 4px;
+        }
+        @media (max-width: 480px) {
+          .prod-adic-add { flex-wrap: wrap; }
+          .prod-adic-add .prod-btn-3d { width: 100%; }
+        }
+
+        /* ── Modal salvar na biblioteca ── */
+        .prod-lib-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(45, 31, 38, 0.6);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          z-index: 2000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          animation: prodLibIn 0.2s ease;
+        }
+        @keyframes prodLibIn { from { opacity: 0; } to { opacity: 1; } }
+        .prod-lib-modal {
+          background: #fff;
+          border-radius: 20px;
+          padding: 26px 22px 20px;
+          width: 100%;
+          max-width: 380px;
+          text-align: center;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+          animation: prodLibScale 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+          font-family: var(--font-base);
+        }
+        @keyframes prodLibScale {
+          from { transform: scale(0.94); opacity: 0; }
+          to   { transform: scale(1); opacity: 1; }
+        }
+        .prod-lib-icon {
+          font-size: 44px;
+          margin-bottom: 8px;
+        }
+        .prod-lib-title {
+          font-size: 17px;
+          font-weight: 900;
+          margin: 0 0 8px;
+          letter-spacing: -0.02em;
+          color: var(--text-title);
+        }
+        .prod-lib-desc {
+          font-size: 13px;
+          color: var(--text-secondary);
+          margin: 0 0 20px;
+          line-height: 1.5;
+        }
+        .prod-lib-desc b { color: var(--text-title); }
+        .prod-lib-actions {
+          display: flex; gap: 8px;
+        }
+        .prod-lib-btn-ghost {
+          background: var(--bg-subtle, #F0EBED);
+          border: none;
+          padding: 12px 16px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--text-secondary);
+          cursor: pointer;
+          font-family: inherit;
+          white-space: nowrap;
+        }
+        .prod-lib-btn-ghost:hover { background: var(--border); }
         .prod-add-input {
           padding: 10px 14px !important;
           border: 1.5px solid var(--border) !important;
