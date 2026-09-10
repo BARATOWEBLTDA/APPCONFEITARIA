@@ -234,7 +234,6 @@ export default function ClientePerfil() {
         <div className="cp-card">
           <div className="cp-card-head">
             <div className="cp-card-t"><span>👤</span> Dados do Cliente</div>
-            <button className="cp-card-edit" onClick={() => goToEdit("all")}>✏️ Editar</button>
           </div>
 
           {/* Dados pessoais */}
@@ -391,9 +390,11 @@ export default function ClientePerfil() {
         .cp-hero {
           background: linear-gradient(135deg, var(--primary), var(--primary-dark));
           color: var(--text-inverse);
-          padding: var(--space-6) var(--space-4) var(--space-5);
+          padding: calc(var(--space-6) + env(safe-area-inset-top, 0px)) var(--space-4) var(--space-5);
           text-align: center;
           position: relative;
+          /* Escape do padding do .layout-main pra pegar 100% da largura e topo */
+          margin: calc(-1 * (var(--pad-page-top) + env(safe-area-inset-top, 0px))) calc(-1 * var(--space-2)) 0;
         }
         .cp-back {
           position: absolute;
@@ -794,10 +795,11 @@ export default function ClientePerfil() {
             margin: 0;
             padding: 0 0 6rem;
           }
-          /* Hero 100% da largura, sem cantos arredondados nem margem lateral */
+          /* Hero 100% da largura E altura, escape do padding do layout-main (3rem 2rem 2rem) */
           .cp-hero {
             border-radius: 0;
             padding: var(--space-6) var(--space-5) var(--space-5);
+            margin: -3rem -2rem 0;
           }
           .cp-actions {
             padding: var(--space-4) var(--space-6);

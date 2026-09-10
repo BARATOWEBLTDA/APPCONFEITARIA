@@ -134,6 +134,9 @@ export default function Clientes() {
   const usuarioEhPro = isPro(profile);
   const suportaContatos = typeof navigator !== "undefined" && "contacts" in navigator && "ContactsManager" in window;
 
+  // Guard "descartar cadastro?" ao clicar fora
+  const [confirmDiscard, setConfirmDiscard] = useState<"form" | "import" | null>(null);
+
   // Form state
   const [showForm,      setShowForm]      = useState(false);
   const [formMode,      setFormMode]      = useState<FormMode>("rapido");
@@ -348,6 +351,45 @@ export default function Clientes() {
 
   // ═══ IMPORTAÇÃO DE CONTATOS (PRO) ═══
 
+  // Detecta se tem dados preenchidos no formulário (pra decidir se abre guard)
+  const hasFormData = (): boolean => {
+    if (editando) return true; // Se está editando, sempre confirma
+    // Verifica qualquer campo preenchido além do padrão
+    return !!(
+      completo.nome?.trim() ||
+      completo.whatsapp?.trim() ||
+      completo.email?.trim() ||
+      completo.cpf_cnpj?.trim() ||
+      completo.data_nascimento ||
+      completo.sexo ||
+      completo.observacoes?.trim() ||
+      completo.cep?.trim() ||
+      completo.rua?.trim() ||
+      completo.foto_url
+    );
+  };
+
+  const tryCloseForm = () => {
+    if (hasFormData()) setConfirmDiscard("form");
+    else setShowForm(false);
+  };
+
+  const tryCloseImport = () => {
+    if (importSheet && importSheet.some(c => c.selecionado)) setConfirmDiscard("import");
+    else setImportSheet(null);
+  };
+
+  const confirmDiscardYes = () => {
+    if (confirmDiscard === "form") {
+      setShowForm(false);
+      setEditando(null);
+      setTimeout(() => setCompleto(emptyCompleto), 200);
+    } else if (confirmDiscard === "import") {
+      setImportSheet(null);
+    }
+    setConfirmDiscard(null);
+  };
+
   const handleAbrirImportarContatos = async () => {
     // Não é PRO → não faz nada (botão está desabilitado visualmente)
     if (!usuarioEhPro) return;
@@ -457,7 +499,7 @@ export default function Clientes() {
   const iniciais = (completo.nome || "").trim().split(/\s+/).slice(0,2).map(s => s[0]?.toUpperCase() || "").join("") || "?";
 
   const formJSX = showForm ? (
-    <div className="cli-modal-overlay" onClick={() => setShowForm(false)}>
+    <div className="cli-modal-overlay" onClick={tryCloseForm}>
       <div className="cli-modal" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="cli-modal-hdr">
@@ -471,7 +513,7 @@ export default function Clientes() {
             <h2 className="cli-modal-title">{editando ? "Editar cliente" : "Novo cliente"}</h2>
             <p className="cli-modal-sub">{editando ? "Atualize os dados" : "Cadastre rápido, complete depois se quiser"}</p>
           </div>
-          <button className="cli-modal-close" onClick={() => setShowForm(false)} aria-label="Fechar">✕</button>
+          <button className="cli-modal-close" onClick={tryCloseForm} aria-label="Fechar">✕</button>
         </div>
 
         <div className="cli-modal-split">
@@ -652,7 +694,7 @@ export default function Clientes() {
 
         {/* Footer */}
         <div className="cli-modal-footer">
-          <button className="cli-btn-cancel" onClick={() => setShowForm(false)}>Cancelar</button>
+          <button className="cli-btn-cancel" onClick={tryCloseForm}>Cancelar</button>
           <button
             className="cli-btn-save"
             onClick={handleSave}
@@ -1697,6 +1739,35 @@ export default function Clientes() {
 
       {/* ═══════════════════════ MODAIS COMPARTILHADOS ═══════════════════════ */}
 
+      {/* ═══ Modal "Descartar cadastro?" (guard) ═══ */}
+      {confirmDiscard && (
+        <div className="cli-discard-ov" onClick={() => setConfirmDiscard(null)}>
+          <div className="cli-discard-box" onClick={e => e.stopPropagation()}>
+            <div className="cli-discard-icon">⚠️</div>
+            <h3 className="cli-discard-title">
+              {confirmDiscard === "form"
+                ? (editando ? "Descartar alterações?" : "Descartar cadastro?")
+                : "Descartar seleção?"
+              }
+            </h3>
+            <p className="cli-discard-desc">
+              {confirmDiscard === "form"
+                ? "Você preencheu dados que serão perdidos."
+                : "Os contatos selecionados serão descartados."
+              }
+            </p>
+            <div className="cli-discard-actions">
+              <button className="cli-discard-btn cli-discard-btn--stay" onClick={() => setConfirmDiscard(null)}>
+                Continuar preenchendo
+              </button>
+              <button className="cli-discard-btn cli-discard-btn--go" onClick={confirmDiscardYes}>
+                Descartar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {confirmDelete && (
         <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
           <div className="modal-box" onClick={e => e.stopPropagation()}>
@@ -1721,7 +1792,7 @@ export default function Clientes() {
         const desmarcarTodos = () => setImportSheet(prev => prev?.map(c => ({ ...c, selecionado: false })) || null);
         const toggleItem = (idx: number) => setImportSheet(prev => prev?.map((c, i) => i === idx ? { ...c, selecionado: !c.selecionado } : c) || null);
         return (
-          <div className="cli-imp-ov" onClick={() => !importing && setImportSheet(null)}>
+          <div className="cli-imp-ov" onClick={() => !importing && tryCloseImport()}>
             <div className="cli-imp-modal" onClick={e => e.stopPropagation()}>
               <div className="cli-imp-hdr">
                 <div className="cli-imp-icon">📱</div>
@@ -1729,7 +1800,7 @@ export default function Clientes() {
                   <h2 className="cli-imp-title">Importar {importSheet.length} contato{importSheet.length !== 1 ? "s" : ""}</h2>
                   <p className="cli-imp-sub">Revise antes de cadastrar</p>
                 </div>
-                <button className="cli-imp-close" onClick={() => setImportSheet(null)} disabled={importing}>✕</button>
+                <button className="cli-imp-close" onClick={tryCloseImport} disabled={importing}>✕</button>
               </div>
 
               <div className="cli-imp-stats">
@@ -1785,7 +1856,7 @@ export default function Clientes() {
               </div>
 
               <div className="cli-imp-footer">
-                <button className="cli-imp-btn-cancel" onClick={() => setImportSheet(null)} disabled={importing}>Cancelar</button>
+                <button className="cli-imp-btn-cancel" onClick={tryCloseImport} disabled={importing}>Cancelar</button>
                 <button
                   className="cli-imp-btn-import"
                   onClick={handleConfirmImport}
@@ -2171,7 +2242,85 @@ export default function Clientes() {
           font-weight: var(--fw-medium);
         }
 
-        /* ═══ MODAL IMPORTAÇÃO ═══ */
+        /* ═══ MODAL "DESCARTAR?" (guard) ═══ */
+        .cli-discard-ov {
+          position: fixed; inset: 0; z-index: 1200;
+          background: rgba(45, 31, 38, 0.75);
+          backdrop-filter: blur(8px);
+          display: flex; align-items: center; justify-content: center;
+          padding: var(--space-4);
+          animation: cliDiscOvIn 0.2s ease;
+          font-family: var(--font-base);
+        }
+        @keyframes cliDiscOvIn { from { opacity: 0; } to { opacity: 1; } }
+        .cli-discard-box {
+          background: var(--bg-card);
+          border-radius: var(--radius-xl);
+          padding: var(--space-5) var(--space-4);
+          max-width: 360px; width: 100%;
+          text-align: center;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+          animation: cliDiscBoxIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes cliDiscBoxIn {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .cli-discard-box, .cli-discard-box * { font-family: var(--font-base) !important; }
+
+        .cli-discard-icon {
+          font-size: 32px;
+          margin-bottom: var(--space-2);
+          filter: drop-shadow(0 2px 8px rgba(232,90,140,0.3));
+        }
+        .cli-discard-title {
+          font-size: var(--text-lg);
+          font-weight: var(--fw-black);
+          color: var(--text-title);
+          margin: 0 0 var(--space-2);
+          letter-spacing: -0.01em;
+        }
+        .cli-discard-desc {
+          font-size: var(--text-sm);
+          color: var(--text-secondary);
+          margin: 0 0 var(--space-4);
+          line-height: 1.5;
+        }
+        .cli-discard-actions {
+          display: flex; flex-direction: column;
+          gap: var(--space-2);
+        }
+        .cli-discard-btn {
+          padding: 12px;
+          border: none;
+          border-radius: var(--radius-md);
+          font-size: var(--text-sm);
+          font-weight: var(--fw-black);
+          cursor: pointer;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          font-family: var(--font-base) !important;
+          transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }
+        .cli-discard-btn--stay {
+          background: var(--primary);
+          color: var(--text-inverse);
+          box-shadow: 0 4px 0 var(--primary-dark);
+        }
+        .cli-discard-btn--stay:hover { filter: brightness(1.05); }
+        .cli-discard-btn--stay:active {
+          transform: translateY(4px);
+          box-shadow: 0 0 0 var(--primary-dark);
+        }
+        .cli-discard-btn--go {
+          background: transparent;
+          color: #DC2626;
+          border: 1.5px solid #FEE2E2;
+        }
+        .cli-discard-btn--go:hover {
+          background: #FEE2E2;
+          border-color: #DC2626;
+        }
         .cli-imp-ov {
           position: fixed; inset: 0; z-index: 1100;
           background: rgba(45, 31, 38, 0.6);
