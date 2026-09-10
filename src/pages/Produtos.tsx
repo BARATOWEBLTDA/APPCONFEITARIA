@@ -2045,6 +2045,7 @@ export default function Produtos() {
             gap: var(--space-8);
             align-items: center;
             padding: var(--space-5) var(--space-2);
+            min-height: calc(100vh - 220px);
           }
           .prod-hero-left { order: 1; gap: var(--space-3); }
           .prod-hero-right { order: 2; padding: var(--space-2); }
