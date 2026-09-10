@@ -321,6 +321,15 @@ export default function Produtos() {
   const openEditar = async (p: Produto) => {
     setForm(migrarAdicionaisLegacy({ ...EMPTY, ...p }));
     setFichaTecnica([]);
+    // Detecta tipo baseado nos dados salvos
+    const temVariacoes = (p.tamanhos_disponiveis && p.tamanhos_disponiveis.length > 0) ||
+                        (p.kit_itens && p.kit_itens.length > 0);
+    setWizardTipo(temVariacoes ? "variacoes" : "simples");
+    setWizardOpts({
+      complementos: !!p.tem_adicionais || !!(p.adicionais && p.adicionais.length > 0),
+      personalizacao: !!p.permite_personalizacao,
+      promocao: !!p.promocao,
+    });
     setWizardStep(2);
     setModal(true);
     if (p.id && userId) {
@@ -1113,24 +1122,42 @@ export default function Produtos() {
 
               {/* Preço e Venda */}
               <div className="prod-section">
-                <p className="prod-section-label">Preço e Venda</p>
-                <div className="prod-row-2">
+                <div className="prod-section-hdr-row">
+                  <p className="prod-section-label">Preço e Venda</p>
+                  <span className={`prod-tipo-badge prod-tipo-badge--${wizardTipo}`}>
+                    {wizardTipo === "simples" ? "🍰 Simples" : "🎂 Com variações"}
+                  </span>
+                </div>
+
+                {wizardTipo === "simples" ? (
+                  /* MODO SIMPLES: 1 preço só */
                   <div className="prod-field">
-                    <label>Preço base <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
-                    <div className="prod-preco-input">
+                    <label>Preço <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
+                    <div className="prod-preco-input prod-preco-input--big">
                       <span>R$</span>
                       <input type="text" placeholder="0,00" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => setForm(f => ({ ...f, preco_normal: parsePreco(e.target.value) }))} />
                     </div>
                   </div>
-                  <div className="prod-field">
-                    <label>Vendido por</label>
-                    <select value={form.forma_venda} onChange={e => setForm(f => ({ ...f, forma_venda: e.target.value }))}>
-                      {FORMAS_VENDA.map(fv => <option key={fv.value} value={fv.value}>{fv.label}</option>)}
-                    </select>
-                  </div>
-                </div>
+                ) : (
+                  /* MODO VARIAÇÕES: forma + tabela */
+                  <>
+                    <div className="prod-row-2">
+                      <div className="prod-field">
+                        <label>Preço base <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
+                        <div className="prod-preco-input">
+                          <span>R$</span>
+                          <input type="text" placeholder="0,00" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => setForm(f => ({ ...f, preco_normal: parsePreco(e.target.value) }))} />
+                        </div>
+                      </div>
+                      <div className="prod-field">
+                        <label>Vendido por</label>
+                        <select value={form.forma_venda} onChange={e => setForm(f => ({ ...f, forma_venda: e.target.value }))}>
+                          {FORMAS_VENDA.map(fv => <option key={fv.value} value={fv.value}>{fv.label}</option>)}
+                        </select>
+                      </div>
+                    </div>
 
-                {!["kit-festa", "sob-encomenda"].includes(form.forma_venda) && (() => {
+                    {!["kit-festa", "sob-encomenda"].includes(form.forma_venda) && (() => {
                   const config: Record<string, { label: string; sub: string; placeholder: string; placeholderPreco: string; suffix?: string }> = {
                     unidade:  { label: "Opções de quantidade", sub: "Ex: 6 unidades, 12 unidades, 24 unidades", placeholder: "Ex: 6, 12, 24...", placeholderPreco: "Preço", suffix: "un" },
                     fatia:    { label: "Opções de fatias", sub: "Ex: 1 fatia, 2 fatias, 4 fatias", placeholder: "Ex: 1, 2, 4...", placeholderPreco: "Preço", suffix: "fatia(s)" },
@@ -1190,6 +1217,31 @@ export default function Produtos() {
                     </div>
                   );
                 })()}
+                  </>
+                )}
+
+                {/* Botão "+ Adicionar variação" — só aparece no modo Simples */}
+                {wizardTipo === "simples" && (
+                  <button
+                    className="prod-btn-add-variacao"
+                    onClick={() => setWizardTipo("variacoes")}
+                    type="button"
+                  >
+                    <span style={{fontSize: 18, marginRight: 6}}>➕</span>
+                    Adicionar variações (P/M/G, sabores...)
+                  </button>
+                )}
+
+                {/* Botão "Voltar pra simples" — só aparece se está em variações E sem variações cadastradas */}
+                {wizardTipo === "variacoes" && (form.tamanhos_disponiveis || []).length === 0 && !form.kit_itens?.length && (
+                  <button
+                    className="prod-btn-back-simples"
+                    onClick={() => setWizardTipo("simples")}
+                    type="button"
+                  >
+                    ← Voltar para produto simples
+                  </button>
+                )}
               </div>
 
               {/* Kit Festa */}
@@ -3062,6 +3114,92 @@ export default function Produtos() {
           background: rgba(255,255,255,0.85);
           color: #4a3b42;
         }
+        /* ═══ Header seção com badge do tipo ═══ */
+        .prod-section-hdr-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 4px;
+        }
+        .prod-tipo-badge {
+          display: inline-flex;
+          align-items: center;
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: var(--fw-black);
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          line-height: 1;
+        }
+        .prod-tipo-badge--simples {
+          background: #FEF3C7;
+          color: #92400E;
+        }
+        .prod-tipo-badge--variacoes {
+          background: #DBEAFE;
+          color: #1E40AF;
+        }
+        /* ═══ Preço grande no modo simples ═══ */
+        .prod-preco-input--big {
+          padding: 8px 14px !important;
+        }
+        .prod-preco-input--big input {
+          font-size: 22px !important;
+          font-weight: var(--fw-black) !important;
+          padding: 8px 4px !important;
+        }
+        .prod-preco-input--big span {
+          font-size: 18px !important;
+          font-weight: var(--fw-black) !important;
+        }
+        /* ═══ Botão "+ Adicionar variação" (dentro da seção simples) ═══ */
+        .prod-btn-add-variacao {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          padding: 14px;
+          margin-top: 12px;
+          background: linear-gradient(135deg, #FCE7F3, #FBCFE8);
+          color: var(--primary-dark);
+          border: 2px dashed var(--primary);
+          border-radius: 12px;
+          font-family: var(--font-base) !important;
+          font-size: 14px;
+          font-weight: var(--fw-black);
+          cursor: pointer;
+          text-transform: none;
+          letter-spacing: 0;
+          transition: transform 0.08s, filter 0.08s;
+        }
+        .prod-btn-add-variacao:hover {
+          filter: brightness(1.05);
+          transform: translateY(-1px);
+        }
+        .prod-btn-add-variacao:active {
+          transform: translateY(0);
+        }
+        /* ═══ Botão "← Voltar para simples" ═══ */
+        .prod-btn-back-simples {
+          display: block;
+          margin: 10px auto 0;
+          padding: 8px 14px;
+          background: transparent;
+          border: none;
+          color: var(--text-muted);
+          font-size: 12px;
+          font-weight: var(--fw-bold);
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+          text-decoration: underline;
+        }
+        .prod-btn-back-simples:hover {
+          color: var(--text-title);
+        }
+
+
         /* ═══ MODAL "DESCARTAR?" (guard produto) ═══ */
         .prod-discard-ov {
           position: fixed; inset: 0; z-index: 1200;
