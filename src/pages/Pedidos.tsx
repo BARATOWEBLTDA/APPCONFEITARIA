@@ -842,6 +842,352 @@ export default function Pedidos() {
     periodoFiltro !== 'todos'
 
   return (
+    <>
+    {/* ═══ HERO CONDICIONAL — sem produtos OU sem pedidos ═══ */}
+    {!loading && (totalProdutos === 0 || pedidos.length === 0) ? (
+      <div className="ped-hero-wrap">
+        {totalProdutos === 0 ? (
+          /* CENÁRIO 1: sem produtos — hero split simples (bloqueando) */
+          <div className="ped-hero-split">
+            <div className="ped-hero-left">
+              <span className="ped-hero-eyebrow">⚠️ CADASTRE PRIMEIRO</span>
+              <h1 className="ped-hero-title">Antes precisamos<br/>de produtos</h1>
+              <p className="ped-hero-desc">
+                Pra registrar pedidos, você precisa ter produtos cadastrados.
+                Vamos começar pelo seu catálogo?
+              </p>
+              <div className="ped-hero-actions">
+                <button className="ped-hero-btn-primary" onClick={() => navigate('/produtos')}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  CADASTRAR PRODUTO
+                </button>
+              </div>
+              <div className="ped-hero-tip">
+                <div className="ped-hero-tip-icon">💡</div>
+                <div>
+                  <p className="ped-hero-tip-t">Dica: comece pelos mais vendidos</p>
+                  <p className="ped-hero-tip-d">Cadastre 3-5 produtos principais primeiro. Depois volta aqui pra registrar pedidos.</p>
+                </div>
+              </div>
+            </div>
+            <aside className="ped-hero-right" aria-label="Vídeo tutorial">
+              <div className="ped-hero-video-thumb">
+                <button
+                  type="button"
+                  className="ped-hero-video-play"
+                  onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}
+                  aria-label="Assistir tutorial"
+                >
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </button>
+              </div>
+              <div className="ped-hero-video-footer">
+                <span className="ped-hero-video-t">🎬 Como funciona</span>
+                <span className="ped-hero-video-badge">EM BREVE</span>
+              </div>
+            </aside>
+          </div>
+        ) : (
+          /* CENÁRIO 2: tem produtos mas sem pedidos — 3 cards educativos */
+          <div className="ped-hero-3cards">
+            <div className="ped-hero-3cards-head">
+              <span className="ped-hero-eyebrow">📋 SEUS PEDIDOS</span>
+              <h1 className="ped-hero-title">Comece a receber<br/>seus pedidos</h1>
+              <p className="ped-hero-desc">
+                Existem 2 formas de receber pedidos no Doonly.
+                Escolha por onde começar:
+              </p>
+            </div>
+
+            <div className="ped-cards-grid">
+              {/* Card 1: manual (primary rosa) */}
+              <button className="ped-card ped-card--primary" onClick={handleNovoPedido}>
+                <div className="ped-card-icon">✍️</div>
+                <div className="ped-card-t">Cadastrar manualmente</div>
+                <div className="ped-card-d">Cliente ligou ou mandou WhatsApp? Registre o pedido aqui em 30 segundos.</div>
+                <div className="ped-card-cta">Começar agora →</div>
+              </button>
+
+              {/* Card 2: compartilhar cardápio */}
+              <button className="ped-card" onClick={() => navigate('/cardapio-config')}>
+                <div className="ped-card-icon">🔗</div>
+                <div className="ped-card-t">Compartilhar cardápio</div>
+                <div className="ped-card-d">Envie o link do seu cardápio digital e receba pedidos automaticamente pelo WhatsApp.</div>
+                <div className="ped-card-cta ped-card-cta--pink">Ver meu link →</div>
+              </button>
+
+              {/* Card 3: tutorial */}
+              <button className="ped-card" onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}>
+                <div className="ped-card-icon">🎬</div>
+                <div className="ped-card-t">Ver tutorial</div>
+                <div className="ped-card-d">Aprenda em 2 minutos como o sistema de pedidos funciona de ponta a ponta.</div>
+                <div className="ped-card-cta ped-card-cta--pink">Assistir →</div>
+              </button>
+            </div>
+
+            <div className="ped-hero-tip ped-hero-tip--center">
+              <div className="ped-hero-tip-icon">💡</div>
+              <div>
+                <p className="ped-hero-tip-t">Confeitarias que divulgam o cardápio 3x/semana recebem 5x mais pedidos</p>
+                <p className="ped-hero-tip-d">Poste o link em stories, status do WhatsApp e Instagram.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <style>{`
+          .ped-hero-wrap {
+            min-height: calc(100vh - 5rem);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-4);
+            font-family: var(--font-base);
+          }
+          /* ═══ HERO SPLIT (cenário 1: sem produtos) ═══ */
+          .ped-hero-split {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+            width: 100%;
+          }
+          .ped-hero-left {
+            display: flex; flex-direction: column;
+            gap: var(--space-3);
+            order: 2;
+            text-align: center;
+            align-items: center;
+          }
+          .ped-hero-right {
+            display: flex; flex-direction: column;
+            background: linear-gradient(135deg, var(--accent), #4A3038);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2);
+            box-shadow: 0 10px 30px rgba(45, 31, 38, 0.2);
+            order: 1;
+          }
+          .ped-hero-video-thumb {
+            aspect-ratio: 16/10;
+            background: linear-gradient(135deg, var(--primary), #7C3AED);
+            border-radius: var(--radius-md);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+          }
+          .ped-hero-video-thumb::before {
+            content: ""; position: absolute; inset: 0;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.2) 100%);
+          }
+          .ped-hero-video-play {
+            width: 50px; height: 50px;
+            border-radius: var(--radius-full);
+            background: rgba(255,255,255,0.95); border: none;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary); cursor: pointer;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            transition: transform var(--dur-fast) var(--ease-out);
+            position: relative; z-index: 2;
+          }
+          .ped-hero-video-play:hover { transform: scale(1.08); }
+          .ped-hero-video-play svg { margin-left: 3px; }
+          .ped-hero-video-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: var(--space-3) var(--space-2) var(--space-1);
+            color: var(--text-inverse);
+          }
+          .ped-hero-video-t { font-size: var(--text-xs); font-weight: var(--fw-bold); }
+          .ped-hero-video-badge {
+            background: var(--primary); color: var(--text-inverse);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-full);
+            font-size: 0.625rem; font-weight: var(--fw-black);
+            letter-spacing: 0.08em;
+          }
+
+          /* ═══ 3 CARDS (cenário 2: sem pedidos) ═══ */
+          .ped-hero-3cards {
+            display: flex; flex-direction: column;
+            gap: var(--space-5);
+            width: 100%;
+            max-width: 900px;
+          }
+          .ped-hero-3cards-head {
+            text-align: center;
+            display: flex; flex-direction: column;
+            gap: var(--space-2);
+            align-items: center;
+          }
+          .ped-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--space-3);
+          }
+          .ped-card {
+            display: flex; flex-direction: column;
+            gap: var(--space-2);
+            background: var(--bg-card);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            text-align: left;
+            cursor: pointer;
+            font-family: var(--font-base);
+            transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+          }
+          .ped-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border-color: var(--primary-light);
+          }
+          .ped-card--primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--text-inverse);
+            border: none;
+            box-shadow: 0 6px 0 var(--primary-dark);
+          }
+          .ped-card--primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 var(--primary-dark);
+          }
+          .ped-card--primary:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 var(--primary-dark);
+          }
+          .ped-card-icon {
+            width: 44px; height: 44px;
+            border-radius: var(--radius-md);
+            background: var(--primary-light);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+          }
+          .ped-card--primary .ped-card-icon { background: rgba(255,255,255,0.25); }
+          .ped-card-t {
+            font-size: var(--text-md);
+            font-weight: var(--fw-black);
+            color: var(--text-title);
+            letter-spacing: -0.01em;
+          }
+          .ped-card--primary .ped-card-t { color: var(--text-inverse); }
+          .ped-card-d {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            line-height: 1.5;
+            flex: 1;
+          }
+          .ped-card--primary .ped-card-d { color: rgba(255,255,255,0.9); }
+          .ped-card-cta {
+            font-size: var(--text-sm);
+            font-weight: var(--fw-black);
+            color: var(--text-inverse);
+            margin-top: var(--space-1);
+          }
+          .ped-card-cta--pink { color: var(--primary); }
+
+          /* ═══ Comum: eyebrow / título / desc / botões / dica ═══ */
+          .ped-hero-eyebrow {
+            font-size: var(--text-xs); font-weight: var(--fw-black);
+            color: var(--primary);
+            text-transform: uppercase; letter-spacing: 0.1em;
+            line-height: 1;
+          }
+          .ped-hero-title {
+            font-size: var(--text-2xl);
+            font-weight: var(--fw-black);
+            letter-spacing: -0.03em; line-height: 1.15;
+            color: var(--text-title);
+            margin: var(--space-1) 0 0;
+          }
+          .ped-hero-desc {
+            font-size: var(--text-sm);
+            color: var(--text-secondary);
+            line-height: 1.55;
+            margin: var(--space-2) 0 0;
+            max-width: 480px;
+          }
+          .ped-hero-actions {
+            display: flex; gap: var(--space-2); flex-wrap: wrap;
+            margin-top: var(--space-3);
+            justify-content: center;
+          }
+          .ped-hero-btn-primary {
+            display: inline-flex; align-items: center;
+            gap: var(--space-2);
+            background: var(--primary); color: var(--text-inverse);
+            border: none;
+            padding: var(--space-3) var(--space-5);
+            border-radius: var(--radius-md);
+            font-size: var(--text-sm); font-weight: var(--fw-black);
+            cursor: pointer;
+            font-family: var(--font-base) !important;
+            letter-spacing: 0.03em; text-transform: uppercase;
+            box-shadow: 0 4px 0 var(--primary-dark);
+            transition: transform 0.08s ease, box-shadow 0.08s ease;
+          }
+          .ped-hero-btn-primary:hover { filter: brightness(1.05); }
+          .ped-hero-btn-primary:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 var(--primary-dark);
+          }
+          .ped-hero-tip {
+            display: flex; gap: var(--space-3);
+            background: var(--primary-light);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-md);
+            align-items: flex-start;
+            margin-top: var(--space-4);
+            text-align: left;
+            max-width: 480px;
+          }
+          .ped-hero-tip--center { max-width: 640px; margin: 0 auto; }
+          .ped-hero-tip-icon { font-size: var(--text-xl); line-height: 1; flex-shrink: 0; }
+          .ped-hero-tip-t {
+            font-size: var(--text-xs); font-weight: var(--fw-black);
+            color: var(--text-title); margin: 0 0 var(--space-1);
+          }
+          .ped-hero-tip-d {
+            font-size: var(--text-xs); color: var(--text-secondary);
+            line-height: 1.5; margin: 0;
+          }
+
+          /* ═══ Desktop ═══ */
+          @media (min-width: 900px) {
+            .ped-hero-split {
+              flex-direction: row;
+              align-items: center; justify-content: center;
+              gap: var(--space-6);
+            }
+            .ped-hero-left {
+              order: 1;
+              gap: var(--space-4);
+              flex: 1.3 1 440px;
+              max-width: 560px; min-width: 0;
+              text-align: left; align-items: flex-start;
+            }
+            .ped-hero-right {
+              order: 2;
+              padding: var(--space-2);
+              flex: 1 1 340px;
+              max-width: 460px; min-width: 0;
+            }
+            .ped-hero-eyebrow { font-size: var(--text-sm); }
+            .ped-hero-title { font-size: 2.5rem; line-height: 1.05; }
+            .ped-hero-desc { font-size: var(--text-lg); }
+            .ped-hero-tip-t { font-size: var(--text-sm); }
+            .ped-hero-tip-d { font-size: var(--text-sm); }
+            .ped-hero-btn-primary { padding: var(--space-4) var(--space-6); font-size: var(--text-md); }
+            .ped-hero-actions { justify-content: flex-start; }
+            .ped-hero-video-play { width: 60px; height: 60px; }
+            .ped-hero-video-play svg { width: 28px; height: 28px; }
+            .ped-hero-video-t { font-size: var(--text-sm); }
+            /* 3 cards em grid horizontal no desktop */
+            .ped-cards-grid { grid-template-columns: repeat(3, 1fr); }
+            .ped-card-t { font-size: var(--text-lg); }
+          }
+        `}</style>
+      </div>
+    ) : (
     <div style={{ fontFamily: "'Geist', sans-serif", display: 'flex', flexDirection: 'column', gap: '0.85rem', padding: '1.25rem 1rem 6rem' }}>
 
       {/* ── Header com padding mobile ── */}
@@ -1694,5 +2040,7 @@ export default function Pedidos() {
         .fd-aplicar:hover { opacity: 0.9; }
       `}</style>
     </div>
+    )}
+    </>
   )
 }
