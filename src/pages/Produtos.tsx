@@ -1873,9 +1873,11 @@ export default function Produtos() {
         @media (min-width: 900px) {
           .prod-empty-wrap {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 260px;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
             gap: 20px;
-            align-items: start;
+            align-items: stretch;
+            max-width: 900px;
+            margin: 0 auto;
           }
           .prod-video-card {
             display: flex;
@@ -1885,10 +1887,10 @@ export default function Produtos() {
             overflow: hidden;
             color: #fff;
             box-shadow: 0 10px 30px rgba(45,31,38,0.2);
-            align-self: start;
           }
           .prod-video-thumb {
-            aspect-ratio: 16/10;
+            flex: 1;
+            min-height: 240px;
             background: linear-gradient(135deg, #E85A8C 0%, #7C3AED 100%);
             display: flex; align-items: center; justify-content: center;
             position: relative;
@@ -1900,7 +1902,7 @@ export default function Produtos() {
             background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.15) 100%);
           }
           .prod-video-play {
-            width: 48px; height: 48px;
+            width: 60px; height: 60px;
             border-radius: 50%;
             background: rgba(255,255,255,0.95);
             border: none;
@@ -1913,52 +1915,52 @@ export default function Produtos() {
             z-index: 2;
           }
           .prod-video-play:hover { transform: scale(1.08); }
-          .prod-video-play svg { margin-left: 2px; width: 20px; height: 20px; }
+          .prod-video-play svg { margin-left: 3px; width: 24px; height: 24px; }
           .prod-video-soon {
             position: absolute;
-            top: 10px; right: 10px;
+            top: 12px; right: 12px;
             background: rgba(0,0,0,0.7);
             color: #fff;
-            padding: 3px 8px;
+            padding: 3px 10px;
             border-radius: 999px;
-            font-size: 8px;
+            font-size: 9px;
             font-weight: 800;
             letter-spacing: 0.08em;
             backdrop-filter: blur(4px);
             z-index: 2;
           }
           .prod-video-info {
-            padding: 12px 14px 14px;
+            padding: 16px 20px 20px;
           }
           .prod-video-title {
-            font-size: 12px;
+            font-size: 15px;
             font-weight: 800;
-            margin: 0 0 3px;
+            margin: 0 0 4px;
             letter-spacing: -0.01em;
           }
           .prod-video-desc {
-            font-size: 10px;
-            color: rgba(255,255,255,0.7);
-            margin: 0 0 10px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.75);
+            margin: 0 0 12px;
             line-height: 1.5;
           }
           .prod-video-btn {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
             background: #E85A8C;
             color: #fff;
             border: none;
-            padding: 5px 12px;
+            padding: 8px 16px;
             border-radius: 999px;
-            font-size: 9px;
+            font-size: 11px;
             font-weight: 800;
             cursor: pointer;
             font-family: var(--font-base);
             transition: transform var(--dur-fast), background var(--dur-fast);
           }
           .prod-video-btn:hover { background: #C33A6E; transform: translateY(-1px); }
-          .prod-video-btn svg { width: 9px; height: 9px; }
+          .prod-video-btn svg { width: 11px; height: 11px; }
         }
 
         /* ═══ EXTRAS / BIBLIOTECA ═══ */
