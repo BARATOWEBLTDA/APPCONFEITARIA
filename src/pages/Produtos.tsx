@@ -728,14 +728,28 @@ export default function Produtos() {
       {modal && (
         <div className="prod-modal-overlay" onClick={fecharModal}>
           <div className="prod-modal" onClick={e => e.stopPropagation()}>
-            <div className="prod-modal-header">
+            <div className="prod-modal-header prod-modal-header--v2">
               {wizardStep === 2 && !form.id && (
                 <button className="prod-modal-back" onClick={() => setWizardStep(1)}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
               )}
-              <h2 className="prod-modal-title">{form.id ? "Editar Produto" : wizardStep === 1 ? "Criar Novo Produto" : "Novo Produto"}</h2>
-              <button className="prod-modal-close" onClick={fecharModal}>✕</button>
+              <div className="prod-modal-header-icon">
+                {form.imagem_url ? (
+                  <img src={(form.imagem_url || "").split(",")[0]} alt="" />
+                ) : (
+                  <span>🎂</span>
+                )}
+              </div>
+              <div className="prod-modal-header-text">
+                <h2 className="prod-modal-title">{form.id ? "Editar produto" : (wizardStep === 1 ? "Novo produto" : (form.nome || "Novo produto"))}</h2>
+                <p className="prod-modal-header-sub">
+                  {form.id ? "Ajuste as informações do produto" :
+                    wizardStep === 1 ? "Escolha o tipo pra gente organizar melhor" :
+                    "Preencha as informações principais"}
+                </p>
+              </div>
+              <button className="prod-modal-close" onClick={fecharModal} aria-label="Fechar">✕</button>
             </div>
 
             {/* ══════ WIZARD STEP 1 ══════ */}
@@ -1314,6 +1328,42 @@ export default function Produtos() {
             </div>
             )}
           </div>
+
+          {/* ── Preview lateral (só desktop, sibling do modal) ── */}
+          {wizardStep === 2 && (
+            <aside className="prod-desk-preview" aria-label="Prévia do produto" onClick={e => e.stopPropagation()}>
+              <div className="prod-desk-preview-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Como o cliente vê
+              </div>
+              <div className="prod-desk-preview-card">
+                <div className="prod-desk-preview-img">
+                  {(() => {
+                    const firstImg = (form.imagem_url || "").split(",")[0]?.trim();
+                    return firstImg
+                      ? <img src={firstImg} alt="" />
+                      : <span className="prod-desk-preview-placeholder">🎂</span>;
+                  })()}
+                </div>
+                <div className="prod-desk-preview-body">
+                  <div className="prod-desk-preview-nome">{form.nome || "Nome do produto"}</div>
+                  {form.descricao && <div className="prod-desk-preview-desc">{form.descricao}</div>}
+                  <div className="prod-desk-preview-preco-row">
+                    {form.promocao && form.preco_promocional ? (
+                      <>
+                        <span className="prod-desk-preview-preco-old">R$ {formatPreco(Number(form.preco_normal) || 0)}</span>
+                        <span className="prod-desk-preview-preco">R$ {formatPreco(Number(form.preco_promocional) || 0)}</span>
+                      </>
+                    ) : (
+                      <span className="prod-desk-preview-preco">R$ {formatPreco(Number(form.preco_normal) || 0)}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="prod-desk-preview-cta">Adicionar</div>
+              </div>
+              <p className="prod-desk-preview-hint">A prévia atualiza conforme você digita</p>
+            </aside>
+          )}
         </div>
       )}
 
@@ -1883,12 +1933,156 @@ export default function Produtos() {
             to   { opacity: 1; transform: scale(1); }
           }
         }
+        /* Desktop: overlay em row pra caber preview ao lado */
+        @media (min-width: 900px) {
+          .prod-modal-overlay {
+            flex-direction: row !important;
+            align-items: center !important;
+            gap: 20px;
+          }
+        }
         .prod-modal-header {
           display: flex; align-items: center; justify-content: space-between;
           gap: var(--space-3);
           padding: var(--space-3) var(--space-4);
           border-bottom: 1px solid var(--border);
           flex-shrink: 0;
+        }
+
+        /* ── Header v2: ícone + título + subtitle ── */
+        .prod-modal-header--v2 {
+          gap: 12px;
+          padding: 16px 18px;
+          background: linear-gradient(180deg, var(--primary-light), var(--bg-card));
+        }
+        .prod-modal-header-icon {
+          width: 44px; height: 44px;
+          border-radius: 12px;
+          background: #fff;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 22px;
+          flex-shrink: 0;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(45,31,38,0.08);
+        }
+        .prod-modal-header-icon img {
+          width: 100%; height: 100%; object-fit: cover;
+        }
+        .prod-modal-header-text {
+          flex: 1; min-width: 0;
+          display: flex; flex-direction: column; gap: 2px;
+        }
+        .prod-modal-header--v2 .prod-modal-title {
+          font-size: 16px;
+          font-weight: var(--fw-black);
+          letter-spacing: -0.02em;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .prod-modal-header-sub {
+          margin: 0;
+          font-size: 11px;
+          color: var(--text-secondary);
+          line-height: 1.35;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* ── Preview lateral (só desktop) ── */
+        .prod-desk-preview { display: none; }
+
+        @media (min-width: 900px) {
+          .prod-modal-overlay {
+            /* precisa reservar espaço pro preview lateral */
+            gap: 16px;
+          }
+          .prod-desk-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 260px;
+            flex-shrink: 0;
+            max-height: 88vh;
+            background: transparent;
+          }
+          .prod-desk-preview-label {
+            display: flex; align-items: center; gap: 6px;
+            color: #fff;
+            font-size: 11px;
+            font-weight: var(--fw-bold);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.9;
+          }
+          .prod-desk-preview-card {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+            display: flex; flex-direction: column;
+          }
+          .prod-desk-preview-img {
+            aspect-ratio: 4/3;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+          }
+          .prod-desk-preview-img img {
+            width: 100%; height: 100%; object-fit: cover;
+          }
+          .prod-desk-preview-placeholder {
+            font-size: 44px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+          }
+          .prod-desk-preview-body {
+            padding: 12px 14px;
+            display: flex; flex-direction: column; gap: 4px;
+          }
+          .prod-desk-preview-nome {
+            font-size: 14px;
+            font-weight: var(--fw-black);
+            color: var(--text-title);
+            letter-spacing: -0.01em;
+          }
+          .prod-desk-preview-desc {
+            font-size: 10px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          .prod-desk-preview-preco-row {
+            display: flex; align-items: baseline; gap: 6px;
+            margin-top: 4px;
+          }
+          .prod-desk-preview-preco {
+            font-size: 16px;
+            font-weight: var(--fw-black);
+            color: var(--primary);
+          }
+          .prod-desk-preview-preco-old {
+            font-size: 10px;
+            color: var(--text-muted);
+            text-decoration: line-through;
+          }
+          .prod-desk-preview-cta {
+            background: var(--primary);
+            color: #fff;
+            text-align: center;
+            padding: 8px;
+            font-size: 11px;
+            font-weight: var(--fw-black);
+            letter-spacing: 0.03em;
+          }
+          .prod-desk-preview-hint {
+            margin: 0;
+            font-size: 10px;
+            color: rgba(255,255,255,0.65);
+            text-align: center;
+            font-style: italic;
+          }
         }
         .prod-modal-title {
           font-size: var(--font-modal-title);
@@ -1992,6 +2186,46 @@ export default function Produtos() {
           position: relative;
         }
         .wiz-tipo-card--active { border-color: var(--primary-dark); border-width: 2.5px; background: var(--primary-dark); }
+
+        /* ── Override visual moderno (mantém layout vertical) ── */
+        .wiz-tipo-list { gap: 10px; }
+        .wiz-tipo-card {
+          background: var(--bg-subtle, #FBF4F6) !important;
+          border-color: transparent !important;
+          border-radius: 14px !important;
+          padding: 18px 14px !important;
+          gap: 8px !important;
+        }
+        .wiz-tipo-card:hover { background: var(--primary-light) !important; }
+        .wiz-tipo-card--active {
+          background: var(--primary-light) !important;
+          border-color: var(--primary) !important;
+          box-shadow: 0 4px 14px rgba(232, 90, 140, 0.15);
+        }
+        .wiz-tipo-card--active .wiz-tipo-title,
+        .wiz-tipo-card--active .wiz-tipo-desc,
+        .wiz-tipo-card--active .wiz-tipo-example {
+          color: var(--text-title) !important;
+        }
+        .wiz-tipo-card--active .wiz-tipo-desc,
+        .wiz-tipo-card--active .wiz-tipo-example { opacity: 0.75 !important; }
+        .wiz-tipo-icon {
+          font-size: 36px !important;
+          line-height: 1;
+          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
+          margin-bottom: 2px;
+        }
+        .wiz-card-check {
+          background: var(--primary) !important;
+          color: #fff;
+        }
+        @media (min-width: 720px) {
+          .wiz-tipo-list {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px !important;
+          }
+        }
         .wiz-card-check {
           position: absolute; top: var(--space-3); right: var(--space-3);
           width: 24px; height: 24px; border-radius: 50%;
