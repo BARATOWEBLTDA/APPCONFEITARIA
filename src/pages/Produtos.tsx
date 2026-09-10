@@ -673,7 +673,11 @@ export default function Produtos() {
       </>
       )}
 
-      {produtosFiltrados.length === 0 ? (
+      {loading ? (
+        <div className="prod-loading-full">
+          <span className="prod-spinner" />
+        </div>
+      ) : produtosFiltrados.length === 0 ? (
         <div className="prod-hero-split">
           {/* ── Lado esquerdo: texto + CTAs + dica ── */}
           <div className="prod-hero-left">
@@ -1891,6 +1895,12 @@ export default function Produtos() {
         }
 
         /* ═══ SPLIT HERO (empty state) ═══ */
+        .prod-loading-full {
+          min-height: calc(100vh - 5rem);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
         .prod-hero-split {
           display: flex;
           flex-direction: column;

@@ -229,17 +229,19 @@ export default function CardapioConfigPage() {
     setTimeout(() => setSuccess(false), 3000);
   };
 
-  if (loading) return (
-    <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"40vh"}}>
+  if (loading || produtosCount === null) return (
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"calc(100vh - 5rem)"}}>
       <span className="ccc-spinner-lg" />
       <style>{`@keyframes ccspin{to{transform:rotate(360deg)}} .ccc-spinner-lg{width:32px;height:32px;border:3px solid var(--primary-light);border-top-color:var(--primary);border-radius:50%;animation:ccspin 0.7s linear infinite;display:inline-block;}`}</style>
     </div>
   );
 
   // ═══ HERO CONDICIONAL ═══
+  // Aguarda produtosCount carregar (pra evitar piscar entre hero1 e hero2)
+  const contagemCarregada = produtosCount !== null;
   const semProdutos = produtosCount === 0;
   const semTelefone = !form.telefone || form.telefone.replace(/\D/g, "").length < 10;
-  const mostrarHero = !heroDismissed && (semProdutos || semTelefone);
+  const mostrarHero = contagemCarregada && !heroDismissed && (semProdutos || semTelefone);
 
   if (mostrarHero) {
     return (

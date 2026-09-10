@@ -843,8 +843,12 @@ export default function Pedidos() {
 
   return (
     <>
-    {/* ═══ HERO CONDICIONAL — sem produtos OU sem pedidos ═══ */}
-    {!loading && (totalProdutos === 0 || pedidos.length === 0) ? (
+    {loading ? (
+      <div style={{ minHeight: "calc(100vh - 5rem)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ width: 32, height: 32, border: "3px solid var(--primary-light)", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "spin 0.7s linear infinite", display: "inline-block" }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    ) : (totalProdutos === 0 || pedidos.length === 0) ? (
       <div className="ped-hero-wrap">
         {totalProdutos === 0 ? (
           /* CENÁRIO 1: sem produtos — hero split simples (bloqueando) */

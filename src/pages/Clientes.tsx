@@ -972,8 +972,20 @@ export default function Clientes() {
   return (
     <div className="cli-root">
 
+      {/* ═══════════════════════ LOADING (evita piscar) ═══════════════════════ */}
+      {loading ? (
+        <div className="cli-loading-full">
+          <span className="cli-spinner-lg" />
+          <style>{`
+            .cli-loading-full { min-height: calc(100vh - 5rem); display: flex; align-items: center; justify-content: center; }
+            .cli-spinner-lg { width: 32px; height: 32px; border: 3px solid var(--primary-light); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+          `}</style>
+        </div>
+      ) : (
+      <>
+
       {/* ═══════════════════════ EMPTY STATE (sem clientes) ═══════════════════════ */}
-      {!loading && clientes.length === 0 ? (
+      {clientes.length === 0 ? (
         <div className="cli-hero-split">
           <div className="cli-hero-left">
             <span className="cli-hero-eyebrow">💰 VENDA MAIS PRO MESMO CLIENTE</span>
@@ -1541,6 +1553,8 @@ export default function Clientes() {
         .spinner-sm-dark { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--text-title); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         @keyframes spin  { to { transform: rotate(360deg); } }
       `}</style>
+      </>
+      )}
       </>
       )}
     </div>
