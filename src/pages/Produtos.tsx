@@ -734,13 +734,11 @@ export default function Produtos() {
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
               )}
-              <div className="prod-modal-header-icon">
-                {form.imagem_url ? (
+              {form.imagem_url && (
+                <div className="prod-modal-header-icon">
                   <img src={(form.imagem_url || "").split(",")[0]} alt="" />
-                ) : (
-                  <span>🎂</span>
-                )}
-              </div>
+                </div>
+              )}
               <div className="prod-modal-header-text">
                 <h2 className="prod-modal-title">{form.id ? "Editar produto" : (wizardStep === 1 ? "Novo produto" : (form.nome || "Novo produto"))}</h2>
                 <p className="prod-modal-header-sub">
@@ -1918,13 +1916,7 @@ export default function Produtos() {
         }
         /* Handle grip no topo (só mobile) */
         .prod-modal::before {
-          content: '';
-          display: block;
-          width: 36px; height: 4px;
-          border-radius: 2px;
-          background: var(--border);
-          margin: 10px auto 0;
-          flex-shrink: 0;
+          content: none;
         }
         @media (min-width: 720px) {
           .prod-modal-overlay { justify-content: center; align-items: center; padding: 24px; }
@@ -2215,8 +2207,8 @@ export default function Produtos() {
           margin-left: 6px;
           font-size: 9px;
           font-weight: var(--fw-bold);
-          color: var(--text-muted);
-          background: var(--bg-subtle);
+          color: #6B5D64;
+          background: #F0EBED;
           padding: 2px 6px;
           border-radius: 999px;
           text-transform: uppercase;
@@ -2236,6 +2228,15 @@ export default function Produtos() {
         }
         .wiz-tipo-card:hover, .wiz-opt-card:hover {
           background: var(--bg-subtle, #FBF4F6) !important;
+        }
+        /* No touch (mobile), remove hover pra não ficar "sticky" após tap */
+        @media (hover: none) {
+          .wiz-tipo-card:hover, .wiz-opt-card:hover {
+            background: #fff !important;
+          }
+          .wiz-tipo-card--active:hover, .wiz-opt-card--active:hover {
+            background: var(--primary-light) !important;
+          }
         }
         .wiz-tipo-card--active, .wiz-opt-card--active {
           background: var(--primary-light) !important;
