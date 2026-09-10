@@ -2043,12 +2043,25 @@ export default function Produtos() {
             display: grid;
             grid-template-columns: 1fr 1.2fr;
             gap: var(--space-8);
-            align-items: center;
+            place-items: center;
             padding: var(--space-5) var(--space-2);
             min-height: calc(100vh - 220px);
           }
-          .prod-hero-left { order: 1; gap: var(--space-3); }
-          .prod-hero-right { order: 2; padding: var(--space-2); }
+          .prod-hero-left {
+            order: 1;
+            gap: var(--space-3);
+            align-self: center;
+            justify-self: end;
+            max-width: 480px;
+          }
+          .prod-hero-right {
+            order: 2;
+            padding: var(--space-2);
+            align-self: center;
+            justify-self: start;
+            width: 100%;
+            max-width: 620px;
+          }
           .prod-hero-title { font-size: var(--text-3xl); }
           .prod-hero-desc { font-size: var(--text-md); }
           .prod-hero-btn-ghost {
