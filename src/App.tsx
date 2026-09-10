@@ -37,6 +37,7 @@ import CardapioResumo from "@/pages/CardapioResumo";
 import Produtos from "@/pages/Produtos";
 import Categorias from "@/pages/Categorias";
 import Clientes from "@/pages/Clientes";
+import ClientePerfil from "@/pages/ClientePerfil";
 import CardapioConfigPage from "@/pages/CardapioConfigPage";
 import CardapioDesign from "@/pages/CardapioDesign";
 import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
@@ -161,6 +162,7 @@ export default function App() {
           <Route path="/insumos" element={<Insumos />} />
           <Route path="/ficha-tecnica" element={<FichaTecnica />} />
           <Route path="/clientes" element={<Clientes />} />
+          <Route path="/clientes/:id" element={<ClientePerfil />} />
           <Route path="/financeiro" element={<Financeiro />} />
           <Route path="/financeiro/visao-geral" element={<FinanceiroVisaoGeral />} />
           <Route path="/financeiro/transacoes" element={<FinanceiroTransacoes />} />

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -95,10 +95,13 @@ function getHoursUntil(data: string) {
 
 export default function Clientes() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [clientes,      setClientes]      = useState<Cliente[]>([]);
   const [loading,       setLoading]       = useState(true);
   const [search,        setSearch]        = useState("");
   const [userId,        setUserId]        = useState<string | null>(null);
+  const [toast,         setToast]         = useState<{ nome: string; id: string } | null>(null);
+  const [filtroChip,    setFiltroChip]    = useState<"todos" | "aniversariantes" | "recentes">("todos");
 
   // Form state
   const [showForm,      setShowForm]      = useState(false);
@@ -126,6 +129,27 @@ export default function Clientes() {
       fetchClientes(user.id);
     });
   }, []);
+
+  // Se URL tem ?edit=xxx, abre modal de edição do cliente
+  useEffect(() => {
+    const editId = searchParams.get("edit");
+    if (editId && clientes.length > 0) {
+      const cliente = clientes.find(c => c.id === editId);
+      if (cliente) {
+        openEdit(cliente);
+        // Remove params depois de abrir
+        setSearchParams({}, { replace: true });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientes, searchParams]);
+
+  // Auto-hide do toast
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   useEffect(() => {
     const isOpen = showForm || !!confirmDelete || showNiver;
@@ -243,13 +267,25 @@ export default function Clientes() {
       pais: completo.pais?.trim() || "Brasil",
       origem: completo.origem || null,
     };
-    if (editando) await supabase.from("clientes").update(payload).eq("id", editando);
-    else await supabase.from("clientes").insert(payload);
+
+    let savedId = editando;
+    if (editando) {
+      await supabase.from("clientes").update(payload).eq("id", editando);
+    } else {
+      const { data: inserted } = await supabase.from("clientes").insert(payload).select("id").single();
+      if (inserted) savedId = inserted.id;
+    }
 
     await fetchClientes(userId);
     setShowForm(false);
+    const wasEditing = !!editando;
     setEditando(null);
     setSaving(false);
+
+    // Toast (só ao criar novo, não ao editar)
+    if (!wasEditing && savedId) {
+      setToast({ nome: completo.nome.trim(), id: savedId });
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -261,11 +297,25 @@ export default function Clientes() {
 
   // ── Derived ───────────────────────────────────────────────────────────────
 
-  const filtered = clientes.filter(c =>
-    c.nome.toLowerCase().includes(search.toLowerCase()) ||
-    c.whatsapp?.includes(search) ||
-    c.email?.toLowerCase().includes(search.toLowerCase())
+  const aniversarianteIds = new Set(
+    clientes
+      .filter(c => c.data_nascimento && getDaysUntil(c.data_nascimento) <= 30)
+      .map(c => c.id)
   );
+
+  const filtered = clientes.filter(c => {
+    // Filtro de chip
+    if (filtroChip === "aniversariantes" && !aniversarianteIds.has(c.id)) return false;
+    if (filtroChip === "recentes") {
+      const d = new Date(c.created_at);
+      const dias = Math.floor((Date.now() - d.getTime()) / (1000 * 60 * 60 * 24));
+      if (dias > 30) return false;
+    }
+    // Filtro de busca
+    return c.nome.toLowerCase().includes(search.toLowerCase()) ||
+      c.whatsapp?.includes(search) ||
+      c.email?.toLowerCase().includes(search.toLowerCase());
+  });
 
   const aniversariantes = clientes
     .filter(c => c.data_nascimento && getDaysUntil(c.data_nascimento) <= 30)
@@ -1237,6 +1287,38 @@ export default function Clientes() {
           </button>
         </div>
 
+        {/* Banner de aniversariantes destaque (se tem no mês) */}
+        {aniversariantes.length > 0 && (
+          <button className="cli-aniv-banner" onClick={() => setShowNiver(true)}>
+            <div className="cli-aniv-banner-icon">🎂</div>
+            <div className="cli-aniv-banner-body">
+              <div className="cli-aniv-banner-t">
+                {aniversariantes.length} cliente{aniversariantes.length !== 1 ? "s" : ""} fazem aniversário nos próximos 30 dias
+              </div>
+              <div className="cli-aniv-banner-d">
+                {aniversariantes.slice(0, 2).map(c => c.nome).join(", ")}
+                {aniversariantes.length > 2 && ` e mais ${aniversariantes.length - 2}`}
+              </div>
+            </div>
+            <div className="cli-aniv-banner-arrow">→</div>
+          </button>
+        )}
+
+        {/* Chips de filtro */}
+        <div className="cli-chips">
+          <button className={`cli-chip${filtroChip === "todos" ? " cli-chip--active" : ""}`} onClick={() => setFiltroChip("todos")}>
+            Todos <span className="cli-chip-count">{clientes.length}</span>
+          </button>
+          {aniversariantes.length > 0 && (
+            <button className={`cli-chip${filtroChip === "aniversariantes" ? " cli-chip--active" : ""}`} onClick={() => setFiltroChip("aniversariantes")}>
+              🎂 Aniversariantes <span className="cli-chip-count">{aniversariantes.length}</span>
+            </button>
+          )}
+          <button className={`cli-chip${filtroChip === "recentes" ? " cli-chip--active" : ""}`} onClick={() => setFiltroChip("recentes")}>
+            🆕 Recentes
+          </button>
+        </div>
+
         {/* Busca */}
         <div className="mob-search-wrap">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1261,7 +1343,7 @@ export default function Clientes() {
         ) : (
           <div className="mob-list">
             {filtered.map(c => (
-              <div key={c.id} className="mob-card" onClick={() => openEdit(c)}>
+              <div key={c.id} className="mob-card" onClick={() => navigate(`/clientes/${c.id}`)}>
                 <div className="mob-avatar">
                   {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
                 </div>
@@ -1301,7 +1383,7 @@ export default function Clientes() {
                   const diff = getDaysUntil(c.data_nascimento!);
                   const hours = getHoursUntil(c.data_nascimento!);
                   return (
-                    <div key={c.id} className="cli-aniv-item" style={{marginBottom:"0.5rem"}}>
+                    <div key={c.id} className="cli-aniv-item" style={{marginBottom:"0.5rem", cursor: "pointer"}} onClick={() => { setShowNiver(false); navigate(`/clientes/${c.id}`); }}>
                       <div className="cli-aniv-avatar">
                         {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
                       </div>
@@ -1342,7 +1424,7 @@ export default function Clientes() {
             ) : (
               <div className="cli-list">
                 {filtered.map(c => (
-                  <div key={c.id} className="cli-card" onClick={() => openEdit(c)} style={{cursor:"pointer"}}>
+                  <div key={c.id} className="cli-card" onClick={() => navigate(`/clientes/${c.id}`)} style={{cursor:"pointer"}}>
                     <div className="cli-avatar">
                       {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
                     </div>
@@ -1375,7 +1457,7 @@ export default function Clientes() {
                   const diff = getDaysUntil(c.data_nascimento!);
                   const hours = getHoursUntil(c.data_nascimento!);
                   return (
-                    <div key={c.id} className="cli-aniv-item">
+                    <div key={c.id} className="cli-aniv-item" style={{cursor: "pointer"}} onClick={() => navigate(`/clientes/${c.id}`)}>
                       <div className="cli-aniv-avatar">
                         {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0)}</span>}
                       </div>
@@ -1411,6 +1493,23 @@ export default function Clientes() {
       )}
 
       {formJSX}
+
+      {/* ═══════════════════════ TOAST ═══════════════════════ */}
+      {toast && (
+        <div className="cli-toast" role="status">
+          <div className="cli-toast-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div className="cli-toast-body">
+            <div className="cli-toast-t">{toast.nome} cadastrada!</div>
+            <div className="cli-toast-d">Cliente adicionada com sucesso</div>
+          </div>
+          <button className="cli-toast-btn" onClick={() => { navigate(`/clientes/${toast.id}`); setToast(null); }}>
+            Ver perfil
+          </button>
+          <button className="cli-toast-close" onClick={() => setToast(null)} aria-label="Fechar">✕</button>
+        </div>
+      )}
 
       {/* ═══════════════════════ STYLES ═══════════════════════ */}
       <style>{`
@@ -1553,6 +1652,159 @@ export default function Clientes() {
         .spinner-sm      { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         .spinner-sm-dark { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--text-title); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         @keyframes spin  { to { transform: rotate(360deg); } }
+
+        /* ═══ CHIPS DE FILTRO ═══ */
+        .cli-chips {
+          display: flex; gap: var(--space-2);
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          padding: 0 var(--space-1);
+          margin: 0 -4px;
+        }
+        .cli-chips::-webkit-scrollbar { display: none; }
+        .cli-chip {
+          background: var(--bg-card);
+          border: 1.5px solid var(--border);
+          padding: 8px 14px;
+          border-radius: var(--radius-full);
+          font-size: var(--text-xs);
+          font-weight: var(--fw-bold);
+          color: var(--text-secondary);
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+          white-space: nowrap;
+          display: inline-flex; align-items: center; gap: 4px;
+          transition: all var(--dur-fast);
+          flex-shrink: 0;
+        }
+        .cli-chip:hover { border-color: var(--primary); }
+        .cli-chip--active {
+          background: var(--primary);
+          border-color: var(--primary);
+          color: var(--text-inverse);
+        }
+        .cli-chip-count {
+          background: rgba(0,0,0,0.1);
+          padding: 1px 6px;
+          border-radius: var(--radius-full);
+          font-size: 0.65rem;
+          font-weight: var(--fw-black);
+        }
+        .cli-chip--active .cli-chip-count {
+          background: rgba(255,255,255,0.25);
+        }
+
+        /* ═══ BANNER ANIVERSARIANTES ═══ */
+        .cli-aniv-banner {
+          background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+          border: 1.5px solid #FCD34D;
+          padding: 12px 14px;
+          border-radius: var(--radius-md);
+          display: flex; align-items: center; gap: 12px;
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+          text-align: left;
+          transition: transform var(--dur-fast) var(--ease-out);
+          width: 100%;
+        }
+        .cli-aniv-banner:hover { transform: translateY(-2px); }
+        .cli-aniv-banner-icon { font-size: 22px; flex-shrink: 0; }
+        .cli-aniv-banner-body { flex: 1; min-width: 0; }
+        .cli-aniv-banner-t {
+          font-size: var(--text-sm);
+          font-weight: var(--fw-black);
+          color: #92400E;
+          line-height: 1.2;
+        }
+        .cli-aniv-banner-d {
+          font-size: var(--text-xs);
+          color: #92400E;
+          margin-top: 2px;
+          opacity: 0.85;
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .cli-aniv-banner-arrow {
+          font-size: var(--text-lg);
+          color: #92400E;
+          font-weight: var(--fw-black);
+          flex-shrink: 0;
+        }
+
+        /* ═══ TOAST ═══ */
+        .cli-toast {
+          position: fixed;
+          top: var(--space-4);
+          left: 50%;
+          transform: translateX(-50%);
+          background: linear-gradient(135deg, #16A34A, #15803D);
+          color: var(--text-inverse);
+          padding: 12px 14px 12px 16px;
+          border-radius: var(--radius-md);
+          display: flex; align-items: center; gap: 12px;
+          box-shadow: 0 10px 30px rgba(22,163,74,0.35);
+          z-index: 2000;
+          animation: cliToastIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+          font-family: var(--font-base) !important;
+          width: calc(100% - 32px);
+          max-width: 420px;
+        }
+        @keyframes cliToastIn {
+          from { transform: translate(-50%, -100%); opacity: 0; }
+          to   { transform: translate(-50%, 0); opacity: 1; }
+        }
+        .cli-toast-icon {
+          background: rgba(255,255,255,0.25);
+          width: 32px; height: 32px; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .cli-toast-body { flex: 1; min-width: 0; }
+        .cli-toast-t {
+          font-size: var(--text-sm);
+          font-weight: var(--fw-black);
+          line-height: 1.2;
+        }
+        .cli-toast-d {
+          font-size: var(--text-xs);
+          opacity: 0.9;
+          margin-top: 2px;
+        }
+        .cli-toast-btn {
+          background: rgba(255,255,255,0.25);
+          color: var(--text-inverse);
+          border: none;
+          padding: 6px 12px;
+          border-radius: var(--radius-sm);
+          font-size: var(--text-xs);
+          font-weight: var(--fw-bold);
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+          transition: background var(--dur-fast);
+          flex-shrink: 0;
+        }
+        .cli-toast-btn:hover { background: rgba(255,255,255,0.35); }
+        .cli-toast-close {
+          background: transparent;
+          border: none;
+          color: rgba(255,255,255,0.7);
+          padding: 4px;
+          cursor: pointer;
+          font-size: var(--text-md);
+          flex-shrink: 0;
+        }
+        .cli-toast-close:hover { color: var(--text-inverse); }
+
+        @media (min-width: 900px) {
+          .cli-toast {
+            left: auto;
+            right: var(--space-5);
+            transform: none;
+          }
+          @keyframes cliToastIn {
+            from { transform: translateY(-100%); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+          }
+        }
       `}</style>
       </>
       )}
