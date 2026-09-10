@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -72,6 +73,7 @@ function getHoursUntil(data: string) {
 // ─── Componente principal ─────────────────────────────────────────────────────
 
 export default function Clientes() {
+  const navigate = useNavigate();
   const [clientes,      setClientes]      = useState<Cliente[]>([]);
   const [loading,       setLoading]       = useState(true);
   const [search,        setSearch]        = useState("");
@@ -86,6 +88,7 @@ export default function Clientes() {
   const [preview,       setPreview]       = useState<string | null>(null);
   const [saving,        setSaving]        = useState(false);
   const [cepLoading,    setCepLoading]    = useState(false);
+  const [avancadoOpen,  setAvancadoOpen]  = useState(false);
 
   // Modais
   const [showNiver,     setShowNiver]     = useState(false);
@@ -134,12 +137,13 @@ export default function Clientes() {
 
   // ── Form helpers ──────────────────────────────────────────────────────────
 
-  const openNew = (mode: FormMode) => {
-    setFormMode(mode);
+  const openNew = (_mode?: FormMode) => {
+    setFormMode("completo");
     setEditando(null);
     setRapido(emptyRapido);
     setCompleto(emptyCompleto);
     setPreview(null);
+    setAvancadoOpen(false);
     setShowForm(true);
   };
 
@@ -156,6 +160,9 @@ export default function Clientes() {
       origem: c.origem || c.como_conheceu || "",
     });
     setPreview(c.foto_url || null);
+    // Se cliente tem dados extras, abre avançado automaticamente
+    const temExtras = !!(c.foto_url || c.data_nascimento || c.sexo || c.email || c.cpf_cnpj || c.cep || c.rua || c.bairro || c.observacoes || c.origem || c.como_conheceu);
+    setAvancadoOpen(temExtras);
     setShowForm(true);
   };
 
@@ -195,43 +202,28 @@ export default function Clientes() {
   const handleSave = async () => {
     if (!userId) return;
     setSaving(true);
-    let payload: any;
-
-    if (formMode === "rapido" && !editando) {
-      if (!rapido.nome.trim() || !rapido.whatsapp.trim()) { setSaving(false); return; }
-      payload = {
-        user_id: userId,
-        nome: rapido.nome.trim(),
-        whatsapp: rapido.whatsapp.trim(),
-        email: rapido.email.trim() || null,
-        observacoes: rapido.observacoes.trim() || null,
-        data_nascimento: rapido.data_nascimento || null,
-      };
-      await supabase.from("clientes").insert(payload);
-    } else {
-      if (!completo.nome.trim()) { setSaving(false); return; }
-      payload = {
-        user_id: userId,
-        ...completo,
-        nome: completo.nome.trim(),
-        foto_url: completo.foto_url || null,
-        email: completo.email?.trim() || null,
-        whatsapp: completo.whatsapp?.trim() || null,
-        cpf_cnpj: completo.cpf_cnpj?.trim() || null,
-        observacoes: completo.observacoes?.trim() || null,
-        cep: completo.cep?.trim() || null,
-        rua: completo.rua?.trim() || null,
-        numero: completo.numero?.trim() || null,
-        complemento: completo.complemento?.trim() || null,
-        bairro: completo.bairro?.trim() || null,
-        cidade: completo.cidade?.trim() || null,
-        estado: completo.estado?.trim() || null,
-        pais: completo.pais?.trim() || "Brasil",
-        origem: completo.origem || null,
-      };
-      if (editando) await supabase.from("clientes").update(payload).eq("id", editando);
-      else await supabase.from("clientes").insert(payload);
-    }
+    if (!completo.nome.trim() || !completo.whatsapp?.trim()) { setSaving(false); return; }
+    const payload: any = {
+      user_id: userId,
+      ...completo,
+      nome: completo.nome.trim(),
+      foto_url: completo.foto_url || null,
+      email: completo.email?.trim() || null,
+      whatsapp: completo.whatsapp?.trim() || null,
+      cpf_cnpj: completo.cpf_cnpj?.trim() || null,
+      observacoes: completo.observacoes?.trim() || null,
+      cep: completo.cep?.trim() || null,
+      rua: completo.rua?.trim() || null,
+      numero: completo.numero?.trim() || null,
+      complemento: completo.complemento?.trim() || null,
+      bairro: completo.bairro?.trim() || null,
+      cidade: completo.cidade?.trim() || null,
+      estado: completo.estado?.trim() || null,
+      pais: completo.pais?.trim() || "Brasil",
+      origem: completo.origem || null,
+    };
+    if (editando) await supabase.from("clientes").update(payload).eq("id", editando);
+    else await supabase.from("clientes").insert(payload);
 
     await fetchClientes(userId);
     setShowForm(false);
@@ -260,218 +252,696 @@ export default function Clientes() {
 
   // ── Form JSX ──────────────────────────────────────────────────────────────
 
-  const formJSX = showForm ? (
-    <div className="modal-overlay" onClick={() => setShowForm(false)}>
-      <div className="form-drawer" onClick={e => e.stopPropagation()}>
-        <div className="form-handle" />
+  // Iniciais pra avatar preview
+  const iniciais = (completo.nome || "").trim().split(/\s+/).slice(0,2).map(s => s[0]?.toUpperCase() || "").join("") || "?";
 
-        {/* Header com tabs */}
-        <div className="form-header">
-          <h2>{editando ? "Editar cliente" : "Novo cliente"}</h2>
-          <button className="form-close" onClick={() => setShowForm(false)}>✕</button>
+  const formJSX = showForm ? (
+    <div className="cli-modal-overlay" onClick={() => setShowForm(false)}>
+      <div className="cli-modal" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="cli-modal-hdr">
+          {preview
+            ? <img src={preview} alt="foto" className="cli-modal-avatar cli-modal-avatar--img" />
+            : completo.nome.trim()
+              ? <div className="cli-modal-avatar cli-modal-avatar--iniciais">{iniciais}</div>
+              : <div className="cli-modal-avatar cli-modal-avatar--empty">👤</div>
+          }
+          <div className="cli-modal-hdr-t">
+            <h2 className="cli-modal-title">{editando ? "Editar cliente" : "Novo cliente"}</h2>
+            <p className="cli-modal-sub">{editando ? "Atualize os dados" : "Cadastre rápido, complete depois se quiser"}</p>
+          </div>
+          <button className="cli-modal-close" onClick={() => setShowForm(false)} aria-label="Fechar">✕</button>
         </div>
 
-        {!editando && (
-          <div className="form-tabs">
-            <button
-              className={`form-tab${formMode === "rapido" ? " form-tab--active" : ""}`}
-              onClick={() => setFormMode("rapido")}
-            >
-              ⚡ Rápido
-            </button>
-            <button
-              className={`form-tab${formMode === "completo" ? " form-tab--active" : ""}`}
-              onClick={() => setFormMode("completo")}
-            >
-              📋 Completo
-            </button>
-          </div>
-        )}
-
-        <div className="form-scroll">
-
-          {/* ── CADASTRO RÁPIDO ── */}
-          {formMode === "rapido" && !editando && (
-            <div className="form-fields">
-              <div className="form-field">
-                <label>Nome <span className="req">Obrigatório</span></label>
-                <input type="text" placeholder="Nome do cliente" value={rapido.nome} onChange={e => setRapido(f => ({...f, nome: e.target.value}))} autoComplete="off" />
-              </div>
-              <div className="form-field">
-                <label>Telefone / WhatsApp <span className="req">Obrigatório</span></label>
-                <input type="tel" placeholder="(00) 9 0000-0000" value={rapido.whatsapp} onChange={e => setRapido(f => ({...f, whatsapp: e.target.value}))} autoComplete="off" />
-              </div>
-              <div className="form-field">
-                <label>E-mail <span className="opt">opcional</span></label>
-                <input type="email" placeholder="email@exemplo.com" value={rapido.email} onChange={e => setRapido(f => ({...f, email: e.target.value}))} autoComplete="off" />
-              </div>
-              <div className="form-field">
-                <label>Data de nascimento <span className="opt">opcional</span></label>
-                <input type="date" value={rapido.data_nascimento} onChange={e => setRapido(f => ({...f, data_nascimento: e.target.value}))} />
-              </div>
-              <div className="form-field">
-                <label>Observações <span className="opt">opcional</span></label>
-                <textarea placeholder="Alergias, preferências, anotações..." value={rapido.observacoes} onChange={e => setRapido(f => ({...f, observacoes: e.target.value}))} rows={3} />
-              </div>
+        <div className="cli-modal-split">
+          {/* ── Form (esquerda) ── */}
+          <div className="cli-modal-body">
+            {/* ═══ ESSENCIAL ═══ */}
+            <div className="cli-section-lbl">Essencial</div>
+            <div className="cli-field">
+              <label>Nome <span className="cli-req">*</span></label>
+              <input type="text" placeholder="Ex: Ana Beatriz" value={completo.nome} onChange={e => setCompleto(f => ({...f, nome: e.target.value}))} autoComplete="off" />
             </div>
-          )}
+            <div className="cli-field">
+              <label>WhatsApp <span className="cli-req">*</span></label>
+              <input type="tel" placeholder="(00) 9 0000-0000" value={completo.whatsapp} onChange={e => setCompleto(f => ({...f, whatsapp: e.target.value}))} autoComplete="off" />
+            </div>
 
-          {/* ── CADASTRO COMPLETO ── */}
-          {(formMode === "completo" || editando) && (
-            <>
-              {/* Foto */}
-              <div className="form-avatar-wrap">
-                <div className="form-avatar" onClick={() => fileRef.current?.click()}>
-                  {preview
-                    ? <img src={preview} alt="foto" />
-                    : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                  }
-                  <div className="form-avatar-overlay">📷</div>
-                </div>
-                <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
-                <span className="form-avatar-hint">Foto do cliente</span>
-              </div>
-
-              {/* Dados pessoais */}
-              <div className="form-section-title">Dados pessoais</div>
-              <div className="form-fields">
-                <div className="form-field">
-                  <label>Nome completo <span className="req">Obrigatório</span></label>
-                  <input type="text" placeholder="Nome completo" value={completo.nome} onChange={e => setCompleto(f => ({...f, nome: e.target.value}))} autoComplete="off" />
-                </div>
-                <div className="form-field">
-                  <label>Nome para contato <span className="opt">opcional</span></label>
-                  <input type="text" placeholder="Como prefere ser chamado(a)" value={completo.nome_contato} onChange={e => setCompleto(f => ({...f, nome_contato: e.target.value}))} autoComplete="off" />
-                </div>
-                <div className="form-row">
-                  <div className="form-field">
-                    <label>CPF / CNPJ <span className="opt">opcional</span></label>
-                    <input type="text" placeholder="000.000.000-00" value={completo.cpf_cnpj} onChange={e => setCompleto(f => ({...f, cpf_cnpj: e.target.value}))} autoComplete="off" />
+            {/* ═══ + AVANÇADO (toggle) ═══ */}
+            {!avancadoOpen ? (
+              <button type="button" className="cli-adv-toggle" onClick={() => setAvancadoOpen(true)}>
+                <div className="cli-adv-toggle-info">
+                  <div className="cli-adv-toggle-t">
+                    <span>⚙️</span>
+                    <span className="cli-adv-toggle-lbl">+ Avançado</span>
                   </div>
-                  <div className="form-field">
-                    <label>Data de nascimento <span className="opt">opcional</span></label>
+                  <p className="cli-adv-toggle-desc">Foto, aniversário, endereço, observações...</p>
+                </div>
+                <div className="cli-adv-toggle-arrow">+</div>
+              </button>
+            ) : (
+              <div className="cli-adv-open">
+                <div className="cli-adv-hdr">
+                  <span className="cli-adv-hdr-t">⚙️ Avançado</span>
+                  <button type="button" className="cli-adv-collapse" onClick={() => setAvancadoOpen(false)}>− Fechar</button>
+                </div>
+
+                {/* Foto */}
+                <div className="cli-field">
+                  <label>Foto do cliente <span className="cli-opt">opcional</span></label>
+                  <div className="cli-foto-row">
+                    <div className="cli-foto-picker" onClick={() => fileRef.current?.click()}>
+                      {preview
+                        ? <img src={preview} alt="foto" />
+                        : <span>📷</span>
+                      }
+                    </div>
+                    <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
+                    <button type="button" className="cli-foto-btn" onClick={() => fileRef.current?.click()}>
+                      {preview ? "Trocar foto" : "Escolher foto..."}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Aniversário + Sexo */}
+                <div className="cli-row-2">
+                  <div className="cli-field">
+                    <label>🎂 Aniversário <span className="cli-opt">opcional</span></label>
                     <input type="date" value={completo.data_nascimento} onChange={e => setCompleto(f => ({...f, data_nascimento: e.target.value}))} />
                   </div>
-                </div>
-                <div className="form-field">
-                  <label>Sexo <span className="opt">opcional</span></label>
-                  <select value={completo.sexo} onChange={e => setCompleto(f => ({...f, sexo: e.target.value}))}>
-                    <option value="">Selecione...</option>
-                    {SEXO_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              {/* Contato */}
-              <div className="form-section-title">Contato</div>
-              <div className="form-fields">
-                <div className="form-field">
-                  <label>WhatsApp <span className="opt">opcional</span></label>
-                  <input type="tel" placeholder="(00) 9 0000-0000" value={completo.whatsapp} onChange={e => setCompleto(f => ({...f, whatsapp: e.target.value}))} autoComplete="off" />
-                </div>
-                <div className="form-field">
-                  <label>E-mail <span className="opt">opcional</span></label>
-                  <input type="email" placeholder="email@exemplo.com" value={completo.email} onChange={e => setCompleto(f => ({...f, email: e.target.value}))} autoComplete="off" />
-                </div>
-              </div>
-
-              {/* Endereço */}
-              <div className="form-section-title">Endereço</div>
-              <div className="form-fields">
-                <div className="form-field">
-                  <label>CEP <span className="opt">opcional</span></label>
-                  <div style={{position:"relative"}}>
-                    <input
-                      type="text" placeholder="00000-000"
-                      value={completo.cep}
-                      onChange={e => {
-                        setCompleto(f => ({...f, cep: e.target.value}));
-                        fetchCep(e.target.value);
-                      }}
-                      autoComplete="off"
-                      style={{width:"100%"}}
-                    />
-                    {cepLoading && <span style={{position:"absolute",right:"0.75rem",top:"50%",transform:"translateY(-50%)"}} className="spinner-sm-dark" />}
-                  </div>
-                </div>
-                <div className="form-field">
-                  <label>Rua</label>
-                  <input type="text" placeholder="Logradouro" value={completo.rua} onChange={e => setCompleto(f => ({...f, rua: e.target.value}))} autoComplete="off" />
-                </div>
-                <div className="form-row">
-                  <div className="form-field" style={{flex:"0 0 90px"}}>
-                    <label>Número</label>
-                    <input type="text" placeholder="Nº" value={completo.numero} onChange={e => setCompleto(f => ({...f, numero: e.target.value}))} autoComplete="off" />
-                  </div>
-                  <div className="form-field">
-                    <label>Complemento</label>
-                    <input type="text" placeholder="Apto, bloco..." value={completo.complemento} onChange={e => setCompleto(f => ({...f, complemento: e.target.value}))} autoComplete="off" />
-                  </div>
-                </div>
-                <div className="form-field">
-                  <label>Bairro</label>
-                  <input type="text" placeholder="Bairro" value={completo.bairro} onChange={e => setCompleto(f => ({...f, bairro: e.target.value}))} autoComplete="off" />
-                </div>
-                <div className="form-row">
-                  <div className="form-field">
-                    <label>Cidade</label>
-                    <input type="text" placeholder="Cidade" value={completo.cidade} onChange={e => setCompleto(f => ({...f, cidade: e.target.value}))} autoComplete="off" />
-                  </div>
-                  <div className="form-field" style={{flex:"0 0 80px"}}>
-                    <label>UF</label>
-                    <select value={completo.estado} onChange={e => setCompleto(f => ({...f, estado: e.target.value}))}>
-                      <option value="">-</option>
-                      {UF_OPTIONS.map(uf => <option key={uf} value={uf}>{uf}</option>)}
+                  <div className="cli-field">
+                    <label>Sexo <span className="cli-opt">opcional</span></label>
+                    <select value={completo.sexo} onChange={e => setCompleto(f => ({...f, sexo: e.target.value}))}>
+                      <option value="">Selecione...</option>
+                      {SEXO_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
                     </select>
                   </div>
                 </div>
-                <div className="form-field">
-                  <label>País</label>
-                  <input type="text" placeholder="Brasil" value={completo.pais} onChange={e => setCompleto(f => ({...f, pais: e.target.value}))} autoComplete="off" />
-                </div>
-              </div>
 
-              {/* Origem + Obs */}
-              <div className="form-section-title">Mais informações</div>
-              <div className="form-fields">
-                <div className="form-field">
-                  <label>Como conheceu <span className="opt">opcional</span></label>
+                {/* Email + CPF */}
+                <div className="cli-row-2">
+                  <div className="cli-field">
+                    <label>E-mail <span className="cli-opt">opcional</span></label>
+                    <input type="email" placeholder="email@exemplo.com" value={completo.email} onChange={e => setCompleto(f => ({...f, email: e.target.value}))} autoComplete="off" />
+                  </div>
+                  <div className="cli-field">
+                    <label>CPF/CNPJ <span className="cli-opt">opcional</span></label>
+                    <input type="text" placeholder="000.000.000-00" value={completo.cpf_cnpj} onChange={e => setCompleto(f => ({...f, cpf_cnpj: e.target.value}))} autoComplete="off" />
+                  </div>
+                </div>
+
+                {/* Endereço */}
+                <div className="cli-sub-lbl">📍 Endereço</div>
+                <div className="cli-field">
+                  <label>CEP</label>
+                  <div style={{position:"relative"}}>
+                    <input type="text" placeholder="00000-000" value={completo.cep}
+                      onChange={e => { setCompleto(f => ({...f, cep: e.target.value})); fetchCep(e.target.value); }}
+                      autoComplete="off" style={{width:"100%"}} />
+                    {cepLoading && <span style={{position:"absolute",right:"14px",top:"50%",transform:"translateY(-50%)"}} className="spinner-sm-dark" />}
+                  </div>
+                </div>
+                <div className="cli-field">
+                  <label>Rua</label>
+                  <input type="text" placeholder="Logradouro" value={completo.rua} onChange={e => setCompleto(f => ({...f, rua: e.target.value}))} autoComplete="off" />
+                </div>
+                <div className="cli-row-2">
+                  <div className="cli-field">
+                    <label>Número</label>
+                    <input type="text" placeholder="Nº" value={completo.numero} onChange={e => setCompleto(f => ({...f, numero: e.target.value}))} autoComplete="off" />
+                  </div>
+                  <div className="cli-field">
+                    <label>Complemento</label>
+                    <input type="text" placeholder="Apto, bloco" value={completo.complemento} onChange={e => setCompleto(f => ({...f, complemento: e.target.value}))} autoComplete="off" />
+                  </div>
+                </div>
+                <div className="cli-row-2">
+                  <div className="cli-field">
+                    <label>Bairro</label>
+                    <input type="text" placeholder="Bairro" value={completo.bairro} onChange={e => setCompleto(f => ({...f, bairro: e.target.value}))} autoComplete="off" />
+                  </div>
+                  <div className="cli-field">
+                    <label>Cidade</label>
+                    <input type="text" placeholder="Cidade" value={completo.cidade} onChange={e => setCompleto(f => ({...f, cidade: e.target.value}))} autoComplete="off" />
+                  </div>
+                </div>
+                <div className="cli-field">
+                  <label>UF</label>
+                  <select value={completo.estado} onChange={e => setCompleto(f => ({...f, estado: e.target.value}))}>
+                    <option value="">-</option>
+                    {UF_OPTIONS.map(uf => <option key={uf} value={uf}>{uf}</option>)}
+                  </select>
+                </div>
+
+                {/* Origem + Obs */}
+                <div className="cli-sub-lbl">💬 Mais informações</div>
+                <div className="cli-field">
+                  <label>Como conheceu <span className="cli-opt">opcional</span></label>
                   <select value={completo.origem} onChange={e => setCompleto(f => ({...f, origem: e.target.value}))}>
                     <option value="">Selecione...</option>
                     {ORIGEM_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                 </div>
-                <div className="form-field">
-                  <label>Observações <span className="opt">opcional</span></label>
-                  <textarea
-                    placeholder="Alergias, preferências, anotações..."
-                    value={completo.observacoes}
-                    onChange={e => setCompleto(f => ({...f, observacoes: e.target.value}))}
-                    rows={3}
-                  />
+                <div className="cli-field">
+                  <label>📝 Observações <span className="cli-opt">opcional</span></label>
+                  <textarea placeholder="Alergias, preferências, anotações..." value={completo.observacoes} onChange={e => setCompleto(f => ({...f, observacoes: e.target.value}))} rows={3} />
                 </div>
               </div>
-            </>
-          )}
+            )}
+          </div>
+
+          {/* ── Preview (direita, só desktop) ── */}
+          <aside className="cli-modal-preview">
+            <span className="cli-preview-lbl">👁️ Como aparece</span>
+            <div className="cli-preview-wa">
+              {preview
+                ? <img src={preview} alt="" className="cli-preview-avatar cli-preview-avatar--img" />
+                : <div className="cli-preview-avatar">{iniciais}</div>
+              }
+              <div className="cli-preview-wa-info">
+                <div className="cli-preview-wa-name">{completo.nome.trim() || "Nome do cliente"}</div>
+                <div className="cli-preview-wa-msg">💬 Abrir no WhatsApp</div>
+              </div>
+            </div>
+            <div className="cli-preview-list">
+              {preview
+                ? <img src={preview} alt="" className="cli-preview-list-avatar cli-preview-list-avatar--img" />
+                : <div className="cli-preview-list-avatar">{iniciais}</div>
+              }
+              <div className="cli-preview-list-info">
+                <div className="cli-preview-list-name">{completo.nome.trim() || "Nome do cliente"}</div>
+                <div className="cli-preview-list-phone">{completo.whatsapp || "(00) 0 0000-0000"}</div>
+              </div>
+              {completo.data_nascimento && (
+                <span className="cli-preview-list-tag">🎂 {completo.data_nascimento.split("-").reverse().slice(0,2).join("/")}</span>
+              )}
+            </div>
+            {completo.data_nascimento ? (
+              <div className="cli-preview-alert cli-preview-alert--success">
+                ✅ <span>Vai receber lembrete de aniversário</span>
+              </div>
+            ) : !avancadoOpen && (
+              <div className="cli-preview-hint">
+                Abra "<b>+ Avançado</b>" pra desbloquear<br/>
+                <b>🎂 aniversário</b> e <b>📍 endereço</b>
+              </div>
+            )}
+          </aside>
         </div>
 
         {/* Footer */}
-        <div className="form-footer">
+        <div className="cli-modal-footer">
           {editando && (
-            <button className="form-btn delete-btn" onClick={() => { setShowForm(false); setConfirmDelete(editando); }}>
+            <button className="cli-btn-delete" onClick={() => { setShowForm(false); setConfirmDelete(editando); }} aria-label="Excluir">
               🗑️
             </button>
           )}
-          <button className="form-btn cancel" onClick={() => setShowForm(false)}>Cancelar</button>
+          <button className="cli-btn-cancel" onClick={() => setShowForm(false)}>Cancelar</button>
           <button
-            className="form-btn save"
+            className="cli-btn-save"
             onClick={handleSave}
-            disabled={saving || (formMode === "rapido" && !editando ? !rapido.nome.trim() || !rapido.whatsapp.trim() : !completo.nome.trim())}
+            disabled={saving || !completo.nome.trim() || !completo.whatsapp?.trim()}
           >
-            {saving ? <span className="spinner-sm" /> : editando ? "Salvar" : "Cadastrar"}
+            {saving ? <span className="spinner-sm" /> : (editando ? "Salvar" : "✓ Cadastrar cliente")}
           </button>
         </div>
       </div>
+
+      <style>{`
+        /* ═══ MODAL CLIENTE (Doonly patterns) ═══ */
+        .cli-modal-overlay {
+          position: fixed; inset: 0; z-index: 1000;
+          background: rgba(45, 31, 38, 0.6);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          display: flex; align-items: flex-end; justify-content: center;
+          padding: 0;
+          font-family: var(--font-base);
+          animation: cliOverlayIn 0.2s ease;
+        }
+        @keyframes cliOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+        .cli-modal {
+          background: var(--bg-card);
+          border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+          width: 100%;
+          max-width: 100%;
+          max-height: 92vh;
+          display: flex; flex-direction: column;
+          overflow: hidden;
+          animation: cliModalIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+          font-family: var(--font-base);
+        }
+        @keyframes cliModalIn {
+          from { transform: translateY(100%); }
+          to   { transform: translateY(0); }
+        }
+        .cli-modal, .cli-modal * {
+          font-family: var(--font-base) !important;
+        }
+        .cli-modal button, .cli-modal input, .cli-modal select, .cli-modal textarea {
+          font-family: var(--font-base) !important;
+        }
+
+        /* Header */
+        .cli-modal-hdr {
+          background: linear-gradient(180deg, var(--primary-light), var(--bg-card));
+          padding: var(--space-4) var(--space-4) var(--space-3);
+          display: flex; align-items: center;
+          gap: var(--space-3);
+          flex-shrink: 0;
+        }
+        .cli-modal-avatar {
+          width: 48px; height: 48px; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          font-size: var(--text-lg); font-weight: var(--fw-black);
+          flex-shrink: 0;
+          color: var(--text-inverse);
+        }
+        .cli-modal-avatar--empty {
+          background: var(--bg-subtle);
+          color: var(--text-muted);
+          border: 2px dashed var(--text-disabled);
+        }
+        .cli-modal-avatar--iniciais {
+          background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+        .cli-modal-avatar--img {
+          object-fit: cover;
+        }
+        .cli-modal-hdr-t { flex: 1; min-width: 0; }
+        .cli-modal-title {
+          font-size: var(--text-lg);
+          font-weight: var(--fw-black);
+          color: var(--text-title);
+          letter-spacing: -0.01em;
+          margin: 0;
+        }
+        .cli-modal-sub {
+          font-size: var(--text-xs);
+          color: var(--text-secondary);
+          margin: 2px 0 0;
+        }
+        .cli-modal-close {
+          width: 32px; height: 32px;
+          border: none; background: transparent;
+          color: var(--text-muted);
+          font-size: var(--text-lg);
+          cursor: pointer;
+          border-radius: var(--radius-full);
+          transition: background var(--dur-fast);
+        }
+        .cli-modal-close:hover { background: var(--bg-subtle); color: var(--text-title); }
+
+        /* Body */
+        .cli-modal-split {
+          flex: 1;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          display: flex; flex-direction: column;
+        }
+        .cli-modal-body {
+          padding: var(--space-4);
+          display: flex; flex-direction: column;
+          gap: var(--space-3);
+        }
+        .cli-modal-preview { display: none; }
+
+        /* Section labels */
+        .cli-section-lbl {
+          font-size: var(--text-xs);
+          font-weight: var(--fw-black);
+          color: var(--primary);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          display: flex; align-items: center;
+          gap: var(--space-2);
+          margin: 0 0 var(--space-1);
+        }
+        .cli-section-lbl::before {
+          content: "";
+          width: 3px; height: 14px;
+          background: var(--primary);
+          border-radius: 2px;
+        }
+        .cli-sub-lbl {
+          font-size: var(--text-xs);
+          font-weight: var(--fw-bold);
+          color: var(--text-title);
+          margin: var(--space-2) 0 0;
+        }
+
+        /* Field */
+        .cli-field {
+          display: flex; flex-direction: column;
+          gap: var(--space-1);
+        }
+        .cli-field label {
+          font-size: var(--text-xs);
+          font-weight: var(--fw-bold);
+          color: var(--text-secondary);
+          display: flex; align-items: center;
+          gap: 4px;
+        }
+        .cli-req {
+          color: var(--primary);
+          font-size: var(--text-xs);
+          font-weight: var(--fw-black);
+        }
+        .cli-opt {
+          color: var(--text-muted);
+          font-size: 0.65rem;
+          font-weight: var(--fw-regular);
+          margin-left: 4px;
+        }
+        .cli-field input,
+        .cli-field select,
+        .cli-field textarea {
+          background: var(--bg-input);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md);
+          padding: 14px 16px;
+          font-size: var(--text-sm);
+          font-weight: var(--fw-medium);
+          color: var(--text-title);
+          outline: none;
+          transition: border-color var(--dur-fast) var(--ease-out);
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .cli-field input:focus,
+        .cli-field select:focus,
+        .cli-field textarea:focus {
+          border-color: var(--primary);
+        }
+        .cli-field textarea { resize: none; min-height: 60px; }
+        .cli-row-2 {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: var(--space-2);
+        }
+
+        /* Foto */
+        .cli-foto-row {
+          display: flex; align-items: center; gap: var(--space-3);
+        }
+        .cli-foto-picker {
+          width: 56px; height: 56px;
+          border-radius: 50%;
+          background: var(--bg-subtle);
+          border: 2px dashed var(--text-disabled);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          overflow: hidden;
+          flex-shrink: 0;
+          font-size: var(--text-lg);
+          color: var(--text-muted);
+          transition: border-color var(--dur-fast);
+        }
+        .cli-foto-picker:hover { border-color: var(--primary); }
+        .cli-foto-picker img { width: 100%; height: 100%; object-fit: cover; }
+        .cli-foto-btn {
+          flex: 1;
+          background: var(--bg-input);
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md);
+          padding: 12px 14px;
+          font-size: var(--text-sm);
+          font-weight: var(--fw-medium);
+          color: var(--text-secondary);
+          cursor: pointer;
+          text-align: left;
+          transition: border-color var(--dur-fast);
+        }
+        .cli-foto-btn:hover { border-color: var(--primary); }
+
+        /* + Avançado (fechado) */
+        .cli-adv-toggle {
+          display: flex; align-items: center; justify-content: space-between;
+          background: var(--bg-subtle);
+          border: 1.5px dashed var(--text-disabled);
+          border-radius: var(--radius-md);
+          padding: 14px 16px;
+          cursor: pointer;
+          transition: all var(--dur-fast) var(--ease-out);
+          width: 100%;
+          text-align: left;
+          margin-top: var(--space-2);
+        }
+        .cli-adv-toggle:hover {
+          border-color: var(--primary);
+          background: var(--primary-light);
+        }
+        .cli-adv-toggle-info { flex: 1; }
+        .cli-adv-toggle-t {
+          display: flex; align-items: center;
+          gap: var(--space-2);
+        }
+        .cli-adv-toggle-lbl {
+          font-size: var(--text-sm);
+          font-weight: var(--fw-black);
+          color: var(--text-title);
+        }
+        .cli-adv-toggle-desc {
+          font-size: var(--text-xs);
+          color: var(--text-secondary);
+          margin: 4px 0 0;
+        }
+        .cli-adv-toggle-arrow {
+          font-size: var(--text-lg);
+          color: var(--primary);
+          font-weight: var(--fw-black);
+        }
+
+        /* Avançado (aberto) */
+        .cli-adv-open {
+          background: var(--primary-light);
+          border-radius: var(--radius-md);
+          padding: var(--space-4);
+          display: flex; flex-direction: column;
+          gap: var(--space-3);
+          margin-top: var(--space-2);
+        }
+        .cli-adv-hdr {
+          display: flex; align-items: center; justify-content: space-between;
+          padding-bottom: var(--space-2);
+          border-bottom: 1px solid rgba(232, 90, 140, 0.2);
+        }
+        .cli-adv-hdr-t {
+          font-size: var(--text-xs);
+          font-weight: var(--fw-black);
+          color: var(--primary);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+        }
+        .cli-adv-collapse {
+          background: transparent;
+          border: none;
+          font-size: var(--text-xs);
+          font-weight: var(--fw-bold);
+          color: var(--text-secondary);
+          cursor: pointer;
+          padding: 4px 8px;
+          border-radius: var(--radius-sm);
+        }
+        .cli-adv-collapse:hover { background: rgba(255,255,255,0.5); color: var(--text-title); }
+        .cli-adv-open .cli-field input,
+        .cli-adv-open .cli-field select,
+        .cli-adv-open .cli-field textarea {
+          background: var(--bg-card);
+        }
+
+        /* Footer */
+        .cli-modal-footer {
+          padding: var(--space-3) var(--space-4);
+          padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
+          display: flex; gap: var(--space-2);
+          background: var(--bg-card);
+          flex-shrink: 0;
+          border-top: 1px solid var(--border);
+        }
+        .cli-btn-delete {
+          background: transparent;
+          border: 1.5px solid var(--border);
+          border-radius: var(--radius-md);
+          width: 44px; height: 44px;
+          font-size: var(--text-md);
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: background var(--dur-fast);
+        }
+        .cli-btn-delete:hover { background: var(--bg-subtle); }
+        .cli-btn-cancel {
+          flex: 1;
+          padding: 12px;
+          background: var(--bg-subtle);
+          border: none;
+          border-radius: var(--radius-md);
+          font-size: var(--text-sm);
+          font-weight: var(--fw-bold);
+          color: var(--text-secondary);
+          cursor: pointer;
+        }
+        .cli-btn-save {
+          flex: 2;
+          padding: 12px;
+          background: var(--primary);
+          color: var(--text-inverse);
+          border: none;
+          border-radius: var(--radius-md);
+          font-size: var(--text-sm);
+          font-weight: var(--fw-black);
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          cursor: pointer;
+          box-shadow: 0 4px 0 var(--primary-dark);
+          transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }
+        .cli-btn-save:hover:not(:disabled) { filter: brightness(1.05); }
+        .cli-btn-save:active:not(:disabled) {
+          transform: translateY(4px);
+          box-shadow: 0 0 0 var(--primary-dark);
+        }
+        .cli-btn-save:disabled {
+          background: var(--text-disabled);
+          box-shadow: 0 4px 0 #A8A0A4;
+          cursor: not-allowed;
+        }
+
+        /* ═══ DESKTOP ═══ */
+        @media (min-width: 900px) {
+          .cli-modal-overlay {
+            align-items: center;
+            padding: var(--space-6);
+          }
+          .cli-modal {
+            border-radius: var(--radius-xl);
+            max-width: 880px;
+            max-height: 90vh;
+          }
+          .cli-modal-split {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            overflow: hidden;
+          }
+          .cli-modal-body {
+            padding: var(--space-5);
+            overflow-y: auto;
+            max-height: calc(90vh - 170px);
+          }
+          .cli-modal-preview {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: var(--space-3);
+            padding: var(--space-5);
+            background: linear-gradient(180deg, var(--bg-subtle), var(--primary-light));
+            border-left: 1px solid var(--border);
+          }
+          .cli-preview-lbl {
+            font-size: 0.65rem;
+            font-weight: var(--fw-black);
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: var(--space-1);
+          }
+          .cli-preview-wa {
+            background: var(--bg-card);
+            padding: var(--space-3);
+            border-radius: var(--radius-md);
+            width: 100%; max-width: 240px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            display: flex; gap: var(--space-3);
+            align-items: center;
+          }
+          .cli-preview-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--text-inverse);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: var(--fw-black);
+            font-size: var(--text-sm);
+            flex-shrink: 0;
+          }
+          .cli-preview-avatar--img { object-fit: cover; }
+          .cli-preview-wa-info { flex: 1; min-width: 0; }
+          .cli-preview-wa-name {
+            font-size: var(--text-sm);
+            font-weight: var(--fw-black);
+            color: var(--text-title);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .cli-preview-wa-msg {
+            font-size: var(--text-xs);
+            color: #16A34A;
+            font-weight: var(--fw-medium);
+          }
+          .cli-preview-list {
+            background: var(--bg-card);
+            padding: var(--space-3);
+            border-radius: var(--radius-md);
+            width: 100%; max-width: 240px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex; gap: var(--space-3);
+            align-items: center;
+          }
+          .cli-preview-list-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--text-inverse);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: var(--fw-black);
+            font-size: var(--text-xs);
+            flex-shrink: 0;
+          }
+          .cli-preview-list-avatar--img { object-fit: cover; }
+          .cli-preview-list-info { flex: 1; min-width: 0; }
+          .cli-preview-list-name {
+            font-size: var(--text-xs);
+            font-weight: var(--fw-black);
+            color: var(--text-title);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+          .cli-preview-list-phone {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+          }
+          .cli-preview-list-tag {
+            background: #FEF3C7;
+            color: #92400E;
+            padding: 2px 6px;
+            border-radius: var(--radius-full);
+            font-size: 0.65rem;
+            font-weight: var(--fw-black);
+            flex-shrink: 0;
+          }
+          .cli-preview-alert {
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-sm);
+            font-size: var(--text-xs);
+            font-weight: var(--fw-bold);
+            text-align: center;
+            display: flex; align-items: center; justify-content: center;
+            gap: var(--space-1);
+          }
+          .cli-preview-alert--success {
+            background: #F0FDF4;
+            color: #14532D;
+          }
+          .cli-preview-hint {
+            font-size: var(--text-xs);
+            color: var(--text-secondary);
+            text-align: center;
+            background: var(--bg-card);
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-sm);
+            line-height: 1.5;
+          }
+          .cli-preview-hint b { color: var(--text-title); }
+        }
+      `}</style>
     </div>
   ) : null;
 
@@ -480,6 +950,239 @@ export default function Clientes() {
   return (
     <div className="cli-root">
 
+      {/* ═══════════════════════ EMPTY STATE (sem clientes) ═══════════════════════ */}
+      {!loading && clientes.length === 0 ? (
+        <div className="cli-hero-split">
+          <div className="cli-hero-left">
+            <span className="cli-hero-eyebrow">💰 VENDA MAIS PRO MESMO CLIENTE</span>
+            <h1 className="cli-hero-title">Sua base de<br/>clientes fiéis</h1>
+            <p className="cli-hero-desc">
+              <b>70% da sua renda vem de quem já comprou antes.</b>
+              {" "}Salve WhatsApp, aniversário e receba lembretes pra reconquistar
+              clientes e fechar mais encomendas.
+            </p>
+            <div className="cli-hero-actions">
+              <button className="cli-hero-btn-primary" onClick={() => openNew("rapido")}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                CADASTRAR CLIENTE
+              </button>
+              <button className="cli-hero-btn-ghost" onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Ver tutorial
+              </button>
+            </div>
+            <div className="cli-hero-tip">
+              <div className="cli-hero-tip-icon">💡</div>
+              <div>
+                <p className="cli-hero-tip-t">Aniversariantes recebem alerta automático</p>
+                <p className="cli-hero-tip-d">Envie parabéns + cupom = venda garantida!</p>
+              </div>
+            </div>
+          </div>
+
+          <aside className="cli-hero-right" aria-label="Vídeo tutorial">
+            <div className="cli-hero-video-thumb">
+              <button
+                type="button"
+                className="cli-hero-video-play"
+                onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}
+                aria-label="Assistir tutorial"
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
+            </div>
+            <div className="cli-hero-video-footer">
+              <span className="cli-hero-video-t">🎬 Como usar</span>
+              <span className="cli-hero-video-badge">EM BREVE</span>
+            </div>
+          </aside>
+
+          <style>{`
+            .cli-hero-split {
+              min-height: calc(100vh - 5rem);
+              display: flex;
+              flex-direction: column;
+              gap: var(--space-4);
+              padding: var(--space-4);
+              font-family: var(--font-base);
+              align-items: center;
+              justify-content: center;
+            }
+            .cli-hero-split, .cli-hero-split * { font-family: var(--font-base); }
+
+            .cli-hero-left {
+              display: flex; flex-direction: column;
+              gap: var(--space-3);
+              order: 2;
+              text-align: center;
+              align-items: center;
+              max-width: 480px;
+            }
+            .cli-hero-right {
+              display: flex; flex-direction: column;
+              background: linear-gradient(135deg, var(--accent), #4A3038);
+              border-radius: var(--radius-lg);
+              padding: var(--space-2);
+              box-shadow: 0 10px 30px rgba(45, 31, 38, 0.2);
+              order: 1;
+              width: 100%;
+              max-width: 460px;
+            }
+            .cli-hero-video-thumb {
+              aspect-ratio: 16/10;
+              background: linear-gradient(135deg, var(--primary) 0%, #7C3AED 100%);
+              border-radius: var(--radius-md);
+              display: flex; align-items: center; justify-content: center;
+              position: relative; overflow: hidden;
+            }
+            .cli-hero-video-thumb::before {
+              content: ""; position: absolute; inset: 0;
+              background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.2) 100%);
+            }
+            .cli-hero-video-play {
+              width: 50px; height: 50px;
+              border-radius: var(--radius-full);
+              background: rgba(255,255,255,0.95); border: none;
+              display: flex; align-items: center; justify-content: center;
+              color: var(--primary); cursor: pointer;
+              box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+              transition: transform var(--dur-fast) var(--ease-out);
+              position: relative; z-index: 2;
+            }
+            .cli-hero-video-play:hover { transform: scale(1.08); }
+            .cli-hero-video-play svg { margin-left: 3px; }
+            .cli-hero-video-footer {
+              display: flex; justify-content: space-between; align-items: center;
+              padding: var(--space-3) var(--space-2) var(--space-1);
+              color: var(--text-inverse);
+            }
+            .cli-hero-video-t { font-size: var(--text-xs); font-weight: var(--fw-bold); }
+            .cli-hero-video-badge {
+              background: var(--primary); color: var(--text-inverse);
+              padding: var(--space-1) var(--space-2);
+              border-radius: var(--radius-full);
+              font-size: 0.625rem; font-weight: var(--fw-black);
+              letter-spacing: 0.08em;
+            }
+            .cli-hero-eyebrow {
+              font-size: var(--text-xs); font-weight: var(--fw-black);
+              color: var(--primary);
+              text-transform: uppercase; letter-spacing: 0.1em;
+              line-height: 1;
+            }
+            .cli-hero-title {
+              font-size: var(--text-2xl);
+              font-weight: var(--fw-black);
+              letter-spacing: -0.03em; line-height: 1.15;
+              color: var(--text-title);
+              margin: var(--space-1) 0 0;
+            }
+            .cli-hero-desc {
+              font-size: var(--text-sm);
+              color: var(--text-secondary);
+              line-height: 1.55;
+              margin: var(--space-2) 0 0;
+              max-width: 480px;
+            }
+            .cli-hero-desc b { color: var(--text-title); }
+            .cli-hero-actions {
+              display: flex; gap: var(--space-2); flex-wrap: wrap;
+              margin-top: var(--space-3);
+              justify-content: center;
+            }
+            .cli-hero-btn-primary {
+              display: inline-flex; align-items: center;
+              gap: var(--space-2);
+              background: var(--primary); color: var(--text-inverse);
+              border: none;
+              padding: var(--space-3) var(--space-5);
+              border-radius: var(--radius-md);
+              font-size: var(--text-sm); font-weight: var(--fw-black);
+              cursor: pointer;
+              font-family: var(--font-base) !important;
+              letter-spacing: 0.03em; text-transform: uppercase;
+              box-shadow: 0 4px 0 var(--primary-dark);
+              transition: transform 0.08s ease, box-shadow 0.08s ease;
+            }
+            .cli-hero-btn-primary:hover { filter: brightness(1.05); }
+            .cli-hero-btn-primary:active {
+              transform: translateY(4px);
+              box-shadow: 0 0 0 var(--primary-dark);
+            }
+            .cli-hero-btn-ghost { display: none; }
+            .cli-hero-tip {
+              display: flex; gap: var(--space-3);
+              background: var(--primary-light);
+              padding: var(--space-3) var(--space-4);
+              border-radius: var(--radius-md);
+              align-items: flex-start;
+              margin-top: var(--space-4);
+              text-align: left;
+              max-width: 480px;
+            }
+            .cli-hero-tip-icon { font-size: var(--text-xl); line-height: 1; flex-shrink: 0; }
+            .cli-hero-tip-t {
+              font-size: var(--text-xs); font-weight: var(--fw-black);
+              color: var(--text-title); margin: 0 0 var(--space-1);
+            }
+            .cli-hero-tip-d {
+              font-size: var(--text-xs); color: var(--text-secondary);
+              line-height: 1.5; margin: 0;
+            }
+
+            /* Desktop */
+            @media (min-width: 900px) {
+              .cli-hero-split {
+                flex-direction: row;
+                gap: var(--space-6);
+                max-width: 1000px;
+                margin: 0 auto;
+              }
+              .cli-hero-left {
+                order: 1;
+                gap: var(--space-4);
+                flex: 1.3 1 440px;
+                max-width: 560px; min-width: 0;
+                text-align: left; align-items: flex-start;
+              }
+              .cli-hero-right {
+                order: 2;
+                padding: var(--space-2);
+                flex: 1 1 340px;
+                max-width: 460px; min-width: 0;
+              }
+              .cli-hero-eyebrow { font-size: var(--text-sm); }
+              .cli-hero-title { font-size: 2.5rem; line-height: 1.05; }
+              .cli-hero-desc { font-size: var(--text-lg); }
+              .cli-hero-tip-t { font-size: var(--text-sm); }
+              .cli-hero-tip-d { font-size: var(--text-sm); }
+              .cli-hero-btn-primary { padding: var(--space-4) var(--space-6); font-size: var(--text-md); }
+              .cli-hero-actions { justify-content: flex-start; }
+              .cli-hero-btn-ghost {
+                display: inline-flex; align-items: center;
+                gap: var(--space-2);
+                background: var(--bg-subtle); color: var(--text-secondary);
+                border: none;
+                padding: var(--space-4) var(--space-6);
+                border-radius: var(--radius-md);
+                font-size: var(--text-md); font-weight: var(--fw-bold);
+                cursor: pointer;
+                font-family: var(--font-base) !important;
+                transition: background var(--dur-fast) var(--ease-out);
+              }
+              .cli-hero-btn-ghost:hover { background: var(--accent-light); }
+              .cli-hero-video-play { width: 60px; height: 60px; }
+              .cli-hero-video-play svg { width: 28px; height: 28px; }
+              .cli-hero-video-t { font-size: var(--text-sm); }
+            }
+          `}</style>
+
+          {formJSX}
+        </div>
+      ) : (
+      <>
       {/* ═══════════════════════ MOBILE ═══════════════════════ */}
       <div className="cli-mobile">
 
@@ -816,6 +1519,8 @@ export default function Clientes() {
         .spinner-sm-dark { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--text-title); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         @keyframes spin  { to { transform: rotate(360deg); } }
       `}</style>
+      </>
+      )}
     </div>
   );
 }
