@@ -1784,6 +1784,9 @@ export default function Produtos() {
         @media(max-width:640px) { .prod-tabs { width:100%; } .prod-tab { flex:1; justify-content:center; padding:0.5rem 0.25rem; font-size: var(--font-helper); } }
 
         .prod-root { font-family: var(--font-base); max-width:800px; display:flex; flex-direction:column; gap:1rem; }
+        @media (min-width: 900px) {
+          .prod-root { max-width: 1200px; }
+        }
         .prod-root, .prod-root * { font-family: var(--font-base); }
         .prod-root button, .prod-root input, .prod-root select, .prod-root textarea { font-family: var(--font-base) !important; }
 
