@@ -561,7 +561,8 @@ export default function Produtos() {
     )}
     <div className="prod-root">
 
-      {/* ── Tabs estilo Doonly ── */}
+      {/* ── Tabs — só quando tem produtos ── */}
+      {produtos.length > 0 && (
       <div className="prod-tabs-novo">
         <button className={`prod-tab-novo${activeTab==="produtos"?" active":""}`} onClick={()=>setActiveTab("produtos")}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
@@ -572,6 +573,7 @@ export default function Produtos() {
           Categorias
         </button>
       </div>
+      )}
 
       {activeTab === "categorias" && <Categorias />}
 
@@ -2043,8 +2045,8 @@ export default function Produtos() {
         /* ═══ Desktop: split 1fr / 1.2fr — vídeo vai pra direita ═══ */
         @media (min-width: 900px) {
           .prod-hero-split {
-            /* Ocupa espaço restante do .prod-root (que tem min-height full viewport) */
-            flex: 1;
+            /* Força ocupar altura da tela inteira (menos padding do layout-main) */
+            min-height: calc(100vh - 5rem);
             display: grid;
             grid-template-columns: 1fr 1.2fr;
             grid-template-rows: auto;
@@ -2053,6 +2055,8 @@ export default function Produtos() {
             place-content: center;
             justify-items: center;
             padding: var(--space-5) var(--space-2);
+            margin: 0 auto;
+            width: 100%;
           }
           .prod-hero-left {
             order: 1;
@@ -3085,6 +3089,12 @@ export default function Produtos() {
             max-width: 1200px;
             min-height: calc(100vh - 5rem);
             padding-bottom: var(--space-4);
+          }
+          /* Quando página está em empty state (só o hero), zera padding/gap
+             pra o hero ocupar tudo e centralizar de verdade */
+          .prod-root:has(> .prod-hero-split) {
+            padding: 0;
+            gap: 0;
           }
         }
 
