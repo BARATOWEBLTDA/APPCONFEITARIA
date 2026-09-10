@@ -297,7 +297,7 @@ export default function Layout() {
           box-shadow: var(--shadow-card);
         }
 
-        .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 0.75rem; padding-bottom: 0; }
+        .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1rem; padding-bottom: 0; }
 
         .sidebar-avatar-btn {
           background: none; border: none; padding: 0; cursor: pointer;
@@ -349,7 +349,7 @@ export default function Layout() {
         .sidebar-badge--free { padding: 4px 12px; }
         .sidebar-badge-coroa { width: 14px; height: 14px; object-fit: contain; }
 
-        .sidebar-greeting { text-align: center; padding: 0 1rem 0.75rem; margin-bottom: 0.5rem; min-height: 3.4rem; }
+        .sidebar-greeting { text-align: center; padding: 0 1rem; margin-bottom: 1rem; min-height: 3.4rem; }
         .sidebar-greeting-name { margin: 0; font-size: 0.95rem; font-weight: var(--fw-semibold); color: var(--sidebar-text); line-height: 1.3; min-height: 1.25rem; display: flex; align-items: center; justify-content: center; }
         .sidebar-greeting-skel {
           display: inline-block;
