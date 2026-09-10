@@ -1066,6 +1066,7 @@ export default function Clientes() {
             }
             .cli-hero-video-thumb {
               aspect-ratio: 16/10;
+          max-height: 200px;
               background: linear-gradient(135deg, var(--primary) 0%, #7C3AED 100%);
               border-radius: var(--radius-md);
               display: flex; align-items: center; justify-content: center;
@@ -1092,7 +1093,7 @@ export default function Clientes() {
               padding: var(--space-3) var(--space-2) var(--space-1);
               color: var(--text-inverse);
             }
-            .cli-hero-video-t { font-size: var(--text-xs); font-weight: var(--fw-bold); }
+            .cli-hero-video-t { font-size: var(--text-sm); font-weight: var(--fw-bold); }
             .cli-hero-video-badge {
               background: var(--primary); color: var(--text-inverse);
               padding: var(--space-1) var(--space-2);
@@ -1101,20 +1102,20 @@ export default function Clientes() {
               letter-spacing: 0.08em;
             }
             .cli-hero-eyebrow {
-              font-size: var(--text-xs); font-weight: var(--fw-black);
+              font-size: var(--text-sm); font-weight: var(--fw-black);
               color: var(--primary);
               text-transform: uppercase; letter-spacing: 0.1em;
               line-height: 1;
             }
             .cli-hero-title {
-              font-size: var(--text-2xl);
+              font-size: 2rem;
               font-weight: var(--fw-black);
               letter-spacing: -0.03em; line-height: 1.15;
               color: var(--text-title);
               margin: var(--space-1) 0 0;
             }
             .cli-hero-desc {
-              font-size: var(--text-sm);
+              font-size: var(--text-md);
               color: var(--text-secondary);
               line-height: 1.55;
               margin: var(--space-2) 0 0;
@@ -1131,9 +1132,9 @@ export default function Clientes() {
               gap: var(--space-2);
               background: var(--primary); color: var(--text-inverse);
               border: none;
-              padding: var(--space-3) var(--space-5);
+              padding: var(--space-4) var(--space-6);
               border-radius: var(--radius-md);
-              font-size: var(--text-sm); font-weight: var(--fw-black);
+              font-size: var(--text-md); font-weight: var(--fw-black);
               cursor: pointer;
               font-family: var(--font-base) !important;
               letter-spacing: 0.03em; text-transform: uppercase;
@@ -1158,11 +1159,11 @@ export default function Clientes() {
             }
             .cli-hero-tip-icon { font-size: var(--text-xl); line-height: 1; flex-shrink: 0; }
             .cli-hero-tip-t {
-              font-size: var(--text-xs); font-weight: var(--fw-black);
+              font-size: var(--text-sm); font-weight: var(--fw-black);
               color: var(--text-title); margin: 0 0 var(--space-1);
             }
             .cli-hero-tip-d {
-              font-size: var(--text-xs); color: var(--text-secondary);
+              font-size: var(--text-sm); color: var(--text-secondary);
               line-height: 1.5; margin: 0;
             }
 
