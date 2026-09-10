@@ -2045,31 +2045,26 @@ export default function Produtos() {
         /* ═══ Desktop: split 1fr / 1.2fr — vídeo vai pra direita ═══ */
         @media (min-width: 900px) {
           .prod-hero-split {
-            /* Força ocupar altura da tela inteira (menos padding do layout-main) */
+            /* FLEX ROW: mais simples que grid pra centralizar */
             min-height: calc(100vh - 5rem);
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            grid-template-rows: auto;
+            display: flex;
+            flex-direction: row;
+            align-items: center;      /* centraliza vertical */
+            justify-content: center;  /* centraliza horizontal */
             gap: var(--space-8);
-            /* Centraliza o conteúdo da grid como um bloco unido */
-            place-content: center;
-            justify-items: center;
-            padding: var(--space-5) var(--space-2);
-            margin: 0 auto;
-            width: 100%;
+            padding: 0 var(--space-4);
           }
           .prod-hero-left {
             order: 1;
             gap: var(--space-3);
-            justify-self: end;
-            max-width: 480px;
+            width: 480px;
+            flex-shrink: 0;
           }
           .prod-hero-right {
             order: 2;
             padding: var(--space-2);
-            justify-self: start;
-            width: 100%;
-            max-width: 620px;
+            width: 620px;
+            flex-shrink: 0;
           }
           .prod-hero-title { font-size: var(--text-3xl); }
           .prod-hero-desc { font-size: var(--text-md); }
