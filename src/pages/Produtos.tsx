@@ -2055,20 +2055,24 @@ export default function Produtos() {
           }
           .prod-hero-left {
             order: 1;
-            gap: var(--space-3);
-            flex: 1 1 380px;
-            max-width: 480px;
+            gap: var(--space-4);
+            flex: 1.3 1 440px;
+            max-width: 560px;
             min-width: 0;
           }
           .prod-hero-right {
             order: 2;
             padding: var(--space-2);
-            flex: 1 1 420px;
-            max-width: 620px;
+            flex: 1 1 340px;
+            max-width: 460px;
             min-width: 0;
           }
-          .prod-hero-title { font-size: var(--text-3xl); }
-          .prod-hero-desc { font-size: var(--text-md); }
+          .prod-hero-eyebrow { font-size: var(--text-sm); }
+          .prod-hero-title { font-size: 2.5rem; line-height: 1.05; }
+          .prod-hero-desc { font-size: var(--text-lg); }
+          .prod-hero-tip-t { font-size: var(--text-sm); }
+          .prod-hero-tip-d { font-size: var(--text-sm); }
+          .prod-hero-btn-primary { padding: var(--space-4) var(--space-6); font-size: var(--text-md); }
           .prod-hero-btn-ghost {
             display: inline-flex;
             align-items: center;
