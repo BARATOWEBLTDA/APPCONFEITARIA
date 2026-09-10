@@ -2199,6 +2199,7 @@ export default function Inicio() {
             max-width: none;
             padding-left: 36px;
             padding-right: 80px;
+            padding-top: var(--space-6);
           }
 
           /* Hero escondido no desktop — saudação fica na sidebar */
