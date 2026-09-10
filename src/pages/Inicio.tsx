@@ -1142,7 +1142,7 @@ export default function Inicio() {
           {(() => {
             const temDados = chartData.some(d => (d.valor || 0) > 0);
             return (
-              <div className="ini-chart-inner" style={{ width: "100%", height: 180, position: "relative" }}>
+              <div className="ini-chart-inner" style={{ width: "100%", height: 220, position: "relative" }}>
                 <div style={{ width: "100%", height: "100%", filter: temDados ? "none" : "blur(6px)", opacity: temDados ? 1 : 0.4, pointerEvents: temDados ? "auto" : "none", transition: "filter 0.3s ease" }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={temDados ? chartData : chartData.map((d, i) => ({ ...d, valor: 100 + Math.sin(i / 3) * 40 + i * 4 }))} margin={{ top: 8, right: 10, bottom: 0, left: -10 }}>
@@ -1161,7 +1161,7 @@ export default function Inicio() {
                 </div>
                 {!temDados && (
                   <div className="ini-chart-overlay">
-                    <img src="/Sistema/doo.png" alt="" className="ini-chart-overlay-icon" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <img src="/financeiro.png" alt="" className="ini-chart-overlay-icon" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     <p className="ini-chart-overlay-text">
                       Seu faturamento vai aparecer aqui quando sair o <strong>primeiro pedido</strong>
                     </p>
@@ -2267,7 +2267,7 @@ export default function Inicio() {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: var(--space-2);
+            gap: var(--space-3);
             padding: var(--space-4);
             text-align: center;
             background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(252,224,233,0.5));
@@ -2276,18 +2276,18 @@ export default function Inicio() {
             z-index: 2;
           }
           .ini-chart-overlay-icon {
-            width: 48px;
-            height: 48px;
+            width: 88px;
+            height: 88px;
             object-fit: contain;
-            opacity: 0.85;
-            filter: drop-shadow(0 4px 12px rgba(232, 90, 140, 0.25));
+            opacity: 0.95;
+            filter: drop-shadow(0 6px 16px rgba(232, 90, 140, 0.35));
           }
           .ini-chart-overlay-text {
-            font-size: var(--text-sm);
+            font-size: var(--text-md);
             color: var(--text-title);
             font-weight: var(--fw-semibold);
             line-height: 1.5;
-            max-width: 340px;
+            max-width: 420px;
             margin: 0;
           }
           .ini-chart-overlay-text strong {
@@ -2330,30 +2330,10 @@ export default function Inicio() {
           .ini-aside-desktop { display: none; }
           .ini-aside-mobile { display: none; }
 
-          /* ── Sino desktop no canto superior direito ── */
+          /* ── Sino desktop no canto superior direito — REMOVIDO ── */
           .ini-desktop-bell {
-            display: flex;
-            position: absolute;
-            top: 24px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            border: none;
-            padding: 0;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.35);
-            transition: transform 0.15s, box-shadow 0.2s;
-            z-index: 20;
+            display: none !important;
           }
-          .ini-desktop-bell:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 24px rgba(var(--primary-rgb), 0.45);
-          }
-          .ini-desktop-bell:active { transform: scale(0.95); }
           .ini-desktop-bell-img {
             width: 22px;
             height: 22px;
@@ -2362,7 +2342,7 @@ export default function Inicio() {
           }
           /* Empurra o conteúdo pra baixo pra não ficar atrás do sino */
           .ini-main .ini-section--metrics {
-            margin-top: var(--space-6);
+            margin-top: 0;
           }
           /* Updates e engajamento são exclusivos do mobile */
           .ini-mobile-updates { display: none; }
