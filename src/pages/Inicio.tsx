@@ -988,7 +988,7 @@ export default function Inicio() {
         </section>
       )}
 
-      {alertasVisiveis.length === 0 && !loading && !isSnoozed && (
+      {alertasVisiveis.length === 0 && !loading && !isSnoozed && !(!onboarding.loading && onboarding.produtosCount === 0) && (
         <section className="ini-section ini-section--alertas">
           <div className="ini-tudo-ok">
             <span className="ini-tudo-ok-icon">
