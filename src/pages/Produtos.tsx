@@ -873,14 +873,13 @@ export default function Produtos() {
                 {/* Tipo — cards horizontais */}
                 <div className="wiz-tipo-list">
                   {[
-                    { tipo: "simples" as const, icon: "🍰", title: "Produto simples", desc: "Uma versão, um preço", ex: "Ex: Brigadeiro gourmet · R$ 4,50" },
-                    { tipo: "variacoes" as const, icon: "🎂", title: "Com variações", desc: "Tamanhos, sabores ou versões", ex: "Ex: Bolo P R$ 80 · M R$ 120 · G R$ 180" },
-                  ].map(({ tipo, icon, title, desc, ex }) => (
+                    { tipo: "simples" as const, icon: "🍰", title: "Produto Simples", ex: "Exemplo: Pudim 500g" },
+                    { tipo: "variacoes" as const, icon: "🎂", title: "Produto com Variações", ex: "Exemplo: Bolo p/m/g..." },
+                  ].map(({ tipo, icon, title, ex }) => (
                     <button key={tipo} className={`wiz-tipo-card${wizardTipo === tipo ? " wiz-tipo-card--active" : ""}`} onClick={() => setWizardTipo(tipo)}>
                       <span className="wiz-tipo-icon">{icon}</span>
                       <div className="wiz-tipo-info">
                         <p className="wiz-tipo-title">{title}</p>
-                        <p className="wiz-tipo-desc">{desc}</p>
                         <p className="wiz-tipo-ex">{ex}</p>
                       </div>
                       <div className={`wiz-tipo-radio${wizardTipo === tipo ? " wiz-tipo-radio--active" : ""}`}>
@@ -2964,7 +2963,7 @@ export default function Produtos() {
           font-family: var(--font-base); text-align: center; transition: all var(--dur-fast) var(--ease-out);
           position: relative;
         }
-        .wiz-tipo-card--active { border-color: var(--primary-dark); border-width: 2.5px; background: var(--primary-dark); }
+        .wiz-tipo-card--active { border-width: 2.5px; }
 
         /* ══════ Override: layout HORIZONTAL (mockup mobile) ══════ */
         .wiz-hero { margin: 4px 0; }
@@ -3039,9 +3038,6 @@ export default function Produtos() {
           margin: 3px 0 0;
           line-height: 1.3;
         }
-        .wiz-tipo-card--active .wiz-tipo-ex {
-          color: rgba(255,255,255,0.75);
-        }
         .wiz-tipo-list, .wiz-opts-list { gap: 8px !important; }
         .wiz-tipo-card, .wiz-opt-card {
           flex-direction: row !important;
@@ -3063,13 +3059,13 @@ export default function Produtos() {
             background: #fff !important;
           }
           .wiz-tipo-card--active:hover, .wiz-opt-card--active:hover {
-            background: var(--primary-light) !important;
+            background: var(--accent, #2D1F26) !important;
           }
         }
         .wiz-tipo-card--active, .wiz-opt-card--active {
-          background: var(--primary-light) !important;
-          border-color: var(--primary) !important;
-          box-shadow: 0 4px 12px rgba(232, 90, 140, 0.15);
+          background: var(--accent, #2D1F26) !important;
+          border-color: var(--accent, #2D1F26) !important;
+          box-shadow: 0 4px 12px rgba(45, 31, 38, 0.25);
         }
         .wiz-tipo-icon {
           font-size: 26px !important;
@@ -3094,11 +3090,22 @@ export default function Produtos() {
           margin: 0 !important;
           line-height: 1.35 !important;
         }
+        /* Estado ativo: texto branco no fundo cinza escuro */
         .wiz-tipo-card--active .wiz-tipo-title,
         .wiz-tipo-card--active .wiz-tipo-desc,
         .wiz-opt-card--active .wiz-tipo-title,
         .wiz-opt-card--active .wiz-tipo-desc {
-          color: var(--text-title) !important;
+          color: #FFFFFF !important;
+        }
+        .wiz-tipo-card--active .wiz-tipo-ex,
+        .wiz-opt-card--active .wiz-tipo-ex {
+          color: rgba(255,255,255,0.75) !important;
+        }
+        /* Radio/check no active */
+        .wiz-tipo-card--active .wiz-tipo-radio,
+        .wiz-opt-card--active .wiz-opt-check {
+          background: var(--primary) !important;
+          border-color: var(--primary) !important;
         }
         .wiz-tipo-radio {
           width: 20px; height: 20px;
