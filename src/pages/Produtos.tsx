@@ -861,7 +861,7 @@ export default function Produtos() {
                 </div>
               )}
               <div className="prod-modal-header-text">
-                <h2 className="prod-modal-title">{form.id ? "Editar produto" : "Novo Produto"}</h2>
+                <h2 className="prod-modal-title">{form.id ? "Editar produto" : "Vamos cadastrar seu produto"}</h2>
               </div>
               <button className="prod-modal-close" onClick={handleTryClose} aria-label="Fechar">✕</button>
             </div>
@@ -876,11 +876,6 @@ export default function Produtos() {
                     <div className="wiz-progress-bar wiz-progress-bar--active" />
                     <div className="wiz-progress-bar" />
                   </div>
-                </div>
-
-                {/* Título grande */}
-                <div className="wiz-hero">
-                  <h3 className="wiz-hero-title">Vamos cadastrar seu produto</h3>
                 </div>
 
                 {/* Tipo — cards horizontais */}
@@ -3169,6 +3164,11 @@ export default function Produtos() {
         .wiz-tipo-card:hover, .wiz-opt-card:hover {
           background: #F5F1F3 !important;
           border-color: #D1CACD !important;
+        }
+        /* Hover no card JÁ SELECIONADO: mantém cinza escuro fixo (não muda) */
+        .wiz-tipo-card--active:hover, .wiz-opt-card--active:hover {
+          background: var(--accent, #2D1F26) !important;
+          border-color: var(--accent, #2D1F26) !important;
         }
         /* No touch (mobile), remove hover pra não ficar "sticky" após tap */
         @media (hover: none) {
