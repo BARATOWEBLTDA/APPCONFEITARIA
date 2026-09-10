@@ -321,14 +321,9 @@ export default function Clientes() {
     setEditando(null);
     setSaving(false);
 
-    // Cliente NOVO → navega pro perfil (assim ela vê o resultado)
-    // Cliente EDITADO → fica na lista
+    // Cliente NOVO → toast com botão "Ver perfil" (não navega automaticamente)
     if (!wasEditing && savedId) {
       setToast({ nome: completo.nome.trim(), id: savedId });
-      // Auto-navega pro perfil após 1.5s (dá tempo de ver o toast)
-      setTimeout(() => {
-        navigate(`/clientes/${savedId}`);
-      }, 1500);
     }
   };
 
@@ -1410,20 +1405,12 @@ export default function Clientes() {
           <button className="mob-btn-primary" onClick={() => openNew()}>
             + Cadastrar cliente
           </button>
-          <button className="mob-btn-secondary" onClick={() => setShowNiver(true)}>
-            🎂 Aniversariantes
+          <button className="cli-btn-pro cli-btn-pro--compact" onClick={handleAbrirImportarContatos}>
+            <span style={{fontSize: "0.95rem"}}>📱</span>
+            Importar
+            <span className="cli-btn-pro-badge">PRO</span>
           </button>
         </div>
-
-        {/* Botão PRO importar contatos */}
-        <button className="cli-btn-pro cli-btn-pro--mobile" onClick={handleAbrirImportarContatos}>
-          <span style={{fontSize: "1rem"}}>📱</span>
-          Importar contatos do celular
-          <span className="cli-btn-pro-badge">
-            <img src="/coroa.png" alt="" style={{width: 10, height: 10, verticalAlign: "middle"}} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-            PRO
-          </span>
-        </button>
 
         {/* Banner de aniversariantes destaque (se tem no mês) */}
         {aniversariantes.length > 0 && (
@@ -1553,12 +1540,9 @@ export default function Clientes() {
                 Novo cliente
               </button>
               <button className="cli-btn-pro" onClick={handleAbrirImportarContatos} title={usuarioEhPro ? "Importar contatos do celular" : "Feature PRO — clique pra saber mais"}>
-                <span style={{fontSize: "1rem"}}>📱</span>
-                Importar contatos
-                <span className="cli-btn-pro-badge">
-                  <img src="/coroa.png" alt="" style={{width: 10, height: 10, verticalAlign: "middle"}} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                  PRO
-                </span>
+                <span style={{fontSize: "0.95rem"}}>📱</span>
+                Importar
+                <span className="cli-btn-pro-badge">PRO</span>
               </button>
               <div className="cli-search-wrap">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1920,44 +1904,41 @@ export default function Clientes() {
         /* ═══ BOTÃO PRO (Importar contatos) ═══ */
         .cli-btn-pro {
           display: inline-flex; align-items: center;
-          gap: var(--space-2);
+          gap: 6px;
           background: linear-gradient(135deg, #FBBF24, #F59E0B);
           color: #78350F;
           border: none;
-          padding: 12px 18px;
+          padding: 10px 14px;
           border-radius: var(--radius-md);
-          font-size: var(--text-sm);
+          font-size: var(--text-xs);
           font-weight: var(--fw-black);
           cursor: pointer;
           font-family: var(--font-base) !important;
-          box-shadow: 0 4px 0 #B45309;
+          box-shadow: 0 3px 0 #B45309;
           text-transform: uppercase;
           letter-spacing: 0.02em;
           white-space: nowrap;
           transition: transform 0.08s ease, box-shadow 0.08s ease;
-          position: relative;
         }
         .cli-btn-pro:hover { filter: brightness(1.05); }
         .cli-btn-pro:active {
-          transform: translateY(4px);
+          transform: translateY(3px);
           box-shadow: 0 0 0 #B45309;
         }
         .cli-btn-pro-badge {
           background: #000;
           color: #FBBF24;
-          padding: 3px 7px;
+          padding: 2px 6px;
           border-radius: var(--radius-sm);
-          font-size: 0.6rem;
+          font-size: 0.55rem;
           font-weight: var(--fw-black);
           letter-spacing: 0.06em;
-          display: inline-flex; align-items: center;
-          gap: 3px;
           line-height: 1;
         }
-        .cli-btn-pro--mobile {
-          width: 100%;
+        .cli-btn-pro--compact {
+          flex: 1;
+          padding: 12px 8px;
           justify-content: center;
-          margin-top: var(--space-2);
         }
 
         /* ═══ MODAL IMPORTAÇÃO ═══ */
