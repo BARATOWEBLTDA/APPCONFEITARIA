@@ -1790,7 +1790,10 @@ export default function Produtos() {
 
         .prod-root { font-family: var(--font-base); max-width:800px; display:flex; flex-direction:column; gap:1rem; }
         @media (min-width: 900px) {
-          .prod-root { max-width: 1200px; }
+          .prod-root {
+            max-width: 1200px;
+            min-height: calc(100vh - 5rem); /* menos padding do layout-main (3rem + 2rem) */
+          }
         }
         .prod-root, .prod-root * { font-family: var(--font-base); }
         .prod-root button, .prod-root input, .prod-root select, .prod-root textarea { font-family: var(--font-base) !important; }
@@ -2040,24 +2043,26 @@ export default function Produtos() {
         /* ═══ Desktop: split 1fr / 1.2fr — vídeo vai pra direita ═══ */
         @media (min-width: 900px) {
           .prod-hero-split {
+            /* Ocupa espaço restante do .prod-root (que tem min-height full viewport) */
+            flex: 1;
             display: grid;
             grid-template-columns: 1fr 1.2fr;
+            grid-template-rows: auto;
             gap: var(--space-8);
-            place-items: center;
+            /* Centraliza o conteúdo da grid como um bloco unido */
+            place-content: center;
+            justify-items: center;
             padding: var(--space-5) var(--space-2);
-            min-height: calc(100vh - 220px);
           }
           .prod-hero-left {
             order: 1;
             gap: var(--space-3);
-            align-self: center;
             justify-self: end;
             max-width: 480px;
           }
           .prod-hero-right {
             order: 2;
             padding: var(--space-2);
-            align-self: center;
             justify-self: start;
             width: 100%;
             max-width: 620px;
