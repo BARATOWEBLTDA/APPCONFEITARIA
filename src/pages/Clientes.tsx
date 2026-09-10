@@ -104,11 +104,11 @@ function formatSince(created_at: string): string {
   const d = new Date(created_at);
   const now = new Date();
   const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return "Cadastrada hoje";
-  if (diffDays === 1) return "Cadastrada ontem";
-  if (diffDays < 30) return `Cadastrada há ${diffDays} dias`;
-  const meses = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
-  return `Cliente desde ${meses[d.getMonth()]}/${d.getFullYear()}`;
+  if (diffDays === 0) return "🎉 Nova cliente hoje!";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  return `Cliente desde ${dd}/${mm}/${yy}`;
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
@@ -1950,7 +1950,7 @@ export default function Clientes() {
         .mob-avatar  { width: 44px; height: 44px; border-radius: var(--radius-md); flex-shrink: 0; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: var(--font-modal-title); font-weight: var(--fw-bold); color: var(--primary); overflow: hidden; }
         .mob-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .mob-info    { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
-        .mob-nome    { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mob-nome    { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .mob-whatsapp { display: inline-flex; align-items: center; gap: 0.3rem; font-size: var(--font-helper); color: #25D366; font-weight: var(--fw-medium); text-decoration: none; }
         .mob-email   { font-size: var(--font-helper); color: var(--text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .mob-sem-tel { font-size: var(--font-helper); color: var(--text-muted); margin: 0; }
@@ -1981,7 +1981,7 @@ export default function Clientes() {
         .cli-avatar  { width: 48px; height: 48px; border-radius: var(--radius-md); flex-shrink: 0; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: var(--font-modal-title); font-weight: var(--fw-bold); color: var(--primary); overflow: hidden; }
         .cli-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .cli-info    { flex: 1; min-width: 0; }
-        .cli-nome    { font-size: var(--font-input); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0 0 0.2rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cli-nome    { font-size: var(--font-input); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cli-whatsapp-link { display: inline-flex; align-items: center; gap: 0.3rem; font-size: var(--font-helper); color: #25D366; font-weight: var(--fw-medium); text-decoration: none; }
         .cli-whatsapp-link:hover { text-decoration: underline; }
 
@@ -2237,12 +2237,13 @@ export default function Clientes() {
           font-weight: var(--fw-black);
         }
 
-        /* ═══ Cliente desde X ═══ */
+        /* ═══ Cliente desde X (mais colado no nome) ═══ */
         .mob-since, .cli-since {
           font-size: var(--text-xs);
           color: var(--text-muted);
-          margin: 2px 0 0;
+          margin: 1px 0 0;
           font-weight: var(--fw-medium);
+          line-height: 1.3;
         }
 
         /* ═══ MODAL "DESCARTAR?" (guard) ═══ */
