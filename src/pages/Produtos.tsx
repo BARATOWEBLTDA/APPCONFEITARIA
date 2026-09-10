@@ -577,13 +577,16 @@ export default function Produtos() {
 
       {activeTab === "produtos" && <>
 
+      {/* Header + Busca + Ordenar — só quando tem produtos */}
+      {produtos.length > 0 && (
+      <>
       {/* Header novo: título à esquerda, botão Novo grande à direita */}
       <div className="prod-header-novo">
         <div>
           <h1 className="prod-title-novo">Produtos</h1>
           <p className="prod-sub-novo">{produtos.length} cadastrado{produtos.length !== 1 ? "s" : ""}</p>
         </div>
-        {produtos.length > 0 && <BtnNovo label="Novo produto" onClick={openNovo} />}
+        <BtnNovo label="Novo produto" onClick={openNovo} />
       </div>
 
       {/* Barra de pesquisa */}
@@ -665,6 +668,8 @@ export default function Produtos() {
           </>
         )}
       </div>
+      </>
+      )}
 
       {produtosFiltrados.length === 0 ? (
         <div className="prod-hero-split">
