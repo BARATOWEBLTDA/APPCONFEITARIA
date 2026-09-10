@@ -667,13 +667,43 @@ export default function Produtos() {
       </div>
 
       {produtosFiltrados.length === 0 ? (
-        <EmptyDoo
-          image="produtos.png"
-          title={<>Vamos cadastrar seu<br/>primeiro produto?</>}
-          description="Seu catálogo é a vitrine da sua confeitaria. Quanto mais completo, mais profissional ele será."
-          actionLabel="Cadastrar primeiro produto"
-          onAction={openNovo}
-        />
+        <div className="prod-empty-wrap">
+          <EmptyDoo
+            image="produtos.png"
+            title={<>Vamos cadastrar seu<br/>primeiro produto?</>}
+            description="Seu catálogo é a vitrine da sua confeitaria. Quanto mais completo, mais profissional ele será."
+            actionLabel="Cadastrar primeiro produto"
+            onAction={openNovo}
+          />
+          {/* Card vídeo tutorial (só desktop, placeholder até ter vídeo) */}
+          <aside className="prod-video-card">
+            <div className="prod-video-thumb" aria-label="Vídeo tutorial (em breve)">
+              <button
+                type="button"
+                className="prod-video-play"
+                onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}
+                aria-label="Assistir tutorial"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
+              <span className="prod-video-soon">EM BREVE</span>
+            </div>
+            <div className="prod-video-info">
+              <h3 className="prod-video-title">Aprenda em 2 minutos</h3>
+              <p className="prod-video-desc">Veja como cadastrar produtos e configurar seu catálogo pra vender mais</p>
+              <button
+                type="button"
+                className="prod-video-btn"
+                onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Assistir agora
+              </button>
+            </div>
+          </aside>
+        </div>
       ) : (
         <div className={viewMode === "grid" ? "prod-grid" : "prod-list"}>
           {(filtroOrfaos
@@ -1834,6 +1864,99 @@ export default function Produtos() {
           gap: 8px;
           margin-top: 8px;
           align-items: stretch;
+        }
+
+        /* ═══ EMPTY STATE COM VÍDEO TUTORIAL (só desktop) ═══ */
+        .prod-empty-wrap { display: contents; }
+        .prod-video-card { display: none; }
+
+        @media (min-width: 900px) {
+          .prod-empty-wrap {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 300px;
+            gap: 20px;
+            align-items: start;
+          }
+          .prod-video-card {
+            display: flex;
+            flex-direction: column;
+            background: #2D1F26;
+            border-radius: 16px;
+            overflow: hidden;
+            color: #fff;
+            box-shadow: 0 10px 30px rgba(45,31,38,0.2);
+          }
+          .prod-video-thumb {
+            aspect-ratio: 16/10;
+            background: linear-gradient(135deg, #E85A8C 0%, #7C3AED 100%);
+            display: flex; align-items: center; justify-content: center;
+            position: relative;
+            overflow: hidden;
+          }
+          .prod-video-thumb::before {
+            content: "";
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.15) 100%);
+          }
+          .prod-video-play {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.95);
+            border: none;
+            display: flex; align-items: center; justify-content: center;
+            color: #E85A8C;
+            cursor: pointer;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            transition: transform var(--dur-fast);
+            position: relative;
+            z-index: 2;
+          }
+          .prod-video-play:hover { transform: scale(1.08); }
+          .prod-video-play svg { margin-left: 3px; }
+          .prod-video-soon {
+            position: absolute;
+            top: 12px; right: 12px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 9px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            backdrop-filter: blur(4px);
+            z-index: 2;
+          }
+          .prod-video-info {
+            padding: 16px 18px 18px;
+          }
+          .prod-video-title {
+            font-size: 14px;
+            font-weight: 800;
+            margin: 0 0 4px;
+            letter-spacing: -0.01em;
+          }
+          .prod-video-desc {
+            font-size: 11px;
+            color: rgba(255,255,255,0.75);
+            margin: 0 0 14px;
+            line-height: 1.5;
+          }
+          .prod-video-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #E85A8C;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: var(--font-base);
+            transition: transform var(--dur-fast), background var(--dur-fast);
+          }
+          .prod-video-btn:hover { background: #C33A6E; transform: translateY(-1px); }
         }
 
         /* ═══ EXTRAS / BIBLIOTECA ═══ */
