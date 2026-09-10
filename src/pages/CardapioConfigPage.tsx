@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { supabase } from "@/lib/supabase";
 import CardapioDesign from "@/pages/CardapioDesign";
@@ -25,6 +26,7 @@ const Field = ({ icon, placeholder, value, onChange, type = "text" }: any) => (
 const DIAS = ["Segunda","Terça","Quarta","Quinta","Sexta","Sábado","Domingo"];
 
 export default function CardapioConfigPage() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"geral"|"design"|"checkout">("geral");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -36,6 +38,8 @@ export default function CardapioConfigPage() {
   const [buscandoCep, setBuscandoCep] = useState(false);
   const [cepPreenchido, setCepPreenchido] = useState(false);
   const [gerandoDescricao, setGerandoDescricao] = useState(false);
+  const [produtosCount, setProdutosCount] = useState<number | null>(null);
+  const [heroDismissed, setHeroDismissed] = useState(false);
 
   const [horario, setHorario] = useState({
     dias: ["Segunda","Terça","Quarta","Quinta","Sexta"] as string[],
@@ -109,6 +113,11 @@ export default function CardapioConfigPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
+
+      // Conta produtos (pra decidir se mostra hero de bloqueio)
+      const { count } = await supabase.from("produtos").select("*", { count: "exact", head: true }).eq("user_id", user.id);
+      setProdutosCount(count || 0);
+
       const { data } = await supabase.from("profiles")
         .select("nome_loja, telefone, foto_url, descricao_loja, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega, horario")
         .eq("id", user.id).single();
@@ -226,6 +235,291 @@ export default function CardapioConfigPage() {
       <style>{`@keyframes ccspin{to{transform:rotate(360deg)}} .ccc-spinner-lg{width:32px;height:32px;border:3px solid var(--primary-light);border-top-color:var(--primary);border-radius:50%;animation:ccspin 0.7s linear infinite;display:inline-block;}`}</style>
     </div>
   );
+
+  // ═══ HERO CONDICIONAL ═══
+  const semProdutos = produtosCount === 0;
+  const semTelefone = !form.telefone || form.telefone.replace(/\D/g, "").length < 10;
+  const mostrarHero = !heroDismissed && (semProdutos || semTelefone);
+
+  if (mostrarHero) {
+    return (
+      <>
+      <div className="ccc-hero-split">
+        <div className="ccc-hero-left">
+          {semProdutos ? (
+            <>
+              <span className="ccc-hero-eyebrow">⚠️ CADASTRE PRIMEIRO</span>
+              <h1 className="ccc-hero-title">Antes precisamos<br/>de produtos</h1>
+              <p className="ccc-hero-desc">
+                Seu cardápio digital mostra os produtos que você cadastrou.
+                Comece adicionando pelo menos 1 produto pra depois personalizar sua vitrine.
+              </p>
+              <div className="ccc-hero-actions">
+                <button className="ccc-hero-btn-primary" onClick={() => navigate("/produtos")}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                  CADASTRAR PRODUTO
+                </button>
+              </div>
+              <div className="ccc-hero-tip">
+                <div className="ccc-hero-tip-icon">💡</div>
+                <div>
+                  <p className="ccc-hero-tip-t">Dica: comece pelos mais vendidos</p>
+                  <p className="ccc-hero-tip-d">Cadastre 3-5 produtos principais primeiro. Depois volta aqui pra personalizar o cardápio.</p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <span className="ccc-hero-eyebrow">✨ SUA VITRINE ONLINE</span>
+              <h1 className="ccc-hero-title">Compartilhe seu<br/>cardápio digital</h1>
+              <p className="ccc-hero-desc">
+                Personalize cores, logo e endereço. Envie o link no WhatsApp
+                e receba pedidos direto do celular do cliente.
+              </p>
+              <div className="ccc-hero-actions">
+                <button className="ccc-hero-btn-primary" onClick={() => setHeroDismissed(true)}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0L19.2 12l-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+                  PERSONALIZAR AGORA
+                </button>
+                <button className="ccc-hero-btn-ghost" onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                  Ver tutorial
+                </button>
+              </div>
+              <div className="ccc-hero-tip">
+                <div className="ccc-hero-tip-icon">💡</div>
+                <div>
+                  <p className="ccc-hero-tip-t">Um cardápio bem configurado vende 60% mais</p>
+                  <p className="ccc-hero-tip-d">Personalize cor, logo, telefone e endereço pra parecer profissional.</p>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        <aside className="ccc-hero-right" aria-label="Vídeo tutorial">
+          <div className="ccc-hero-video-thumb">
+            <button
+              type="button"
+              className="ccc-hero-video-play"
+              onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}
+              aria-label="Assistir tutorial"
+            >
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            </button>
+          </div>
+          <div className="ccc-hero-video-footer">
+            <span className="ccc-hero-video-t">🎬 Como funciona</span>
+            <span className="ccc-hero-video-badge">EM BREVE</span>
+          </div>
+        </aside>
+      </div>
+
+      <style>{`
+        .ccc-hero-split {
+          display: flex;
+          flex-direction: column;
+          gap: var(--space-4);
+          min-height: calc(100vh - 5rem);
+          padding: 0 var(--space-4);
+          font-family: var(--font-base);
+        }
+        .ccc-hero-left {
+          display: flex; flex-direction: column;
+          gap: var(--space-3);
+          order: 2;
+          text-align: center;
+          align-items: center;
+        }
+        .ccc-hero-right {
+          display: flex;
+          flex-direction: column;
+          background: linear-gradient(135deg, var(--accent), #4A3038);
+          border-radius: var(--radius-lg);
+          padding: var(--space-2);
+          box-shadow: 0 10px 30px rgba(45, 31, 38, 0.2);
+          order: 1;
+        }
+        .ccc-hero-video-thumb {
+          aspect-ratio: 16/10;
+          background: linear-gradient(135deg, var(--primary) 0%, #7C3AED 100%);
+          border-radius: var(--radius-md);
+          display: flex; align-items: center; justify-content: center;
+          position: relative;
+          overflow: hidden;
+        }
+        .ccc-hero-video-thumb::before {
+          content: "";
+          position: absolute; inset: 0;
+          background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.2) 100%);
+        }
+        .ccc-hero-video-play {
+          width: 50px; height: 50px;
+          border-radius: var(--radius-full);
+          background: rgba(255,255,255,0.95);
+          border: none;
+          display: flex; align-items: center; justify-content: center;
+          color: var(--primary);
+          cursor: pointer;
+          box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+          transition: transform var(--dur-fast) var(--ease-out);
+          position: relative;
+          z-index: 2;
+        }
+        .ccc-hero-video-play:hover { transform: scale(1.08); }
+        .ccc-hero-video-play svg { margin-left: 3px; }
+        .ccc-hero-video-footer {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: var(--space-3) var(--space-2) var(--space-1);
+          color: var(--text-inverse);
+        }
+        .ccc-hero-video-t { font-size: var(--text-xs); font-weight: var(--fw-bold); }
+        .ccc-hero-video-badge {
+          background: var(--primary);
+          color: var(--text-inverse);
+          padding: var(--space-1) var(--space-2);
+          border-radius: var(--radius-full);
+          font-size: 0.625rem;
+          font-weight: var(--fw-black);
+          letter-spacing: 0.08em;
+        }
+        .ccc-hero-eyebrow {
+          font-size: var(--text-xs);
+          font-weight: var(--fw-black);
+          color: var(--primary);
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          line-height: 1;
+        }
+        .ccc-hero-title {
+          font-size: var(--text-2xl);
+          font-weight: var(--fw-black);
+          letter-spacing: -0.03em;
+          line-height: 1.15;
+          color: var(--text-title);
+          margin: var(--space-1) 0 0;
+        }
+        .ccc-hero-desc {
+          font-size: var(--text-sm);
+          color: var(--text-secondary);
+          line-height: 1.55;
+          margin: var(--space-2) 0 0;
+          max-width: 480px;
+        }
+        .ccc-hero-actions {
+          display: flex; gap: var(--space-2); flex-wrap: wrap;
+          margin-top: var(--space-3);
+          justify-content: center;
+        }
+        .ccc-hero-btn-primary {
+          display: inline-flex;
+          align-items: center;
+          gap: var(--space-2);
+          background: var(--primary);
+          color: var(--text-inverse);
+          border: none;
+          padding: var(--space-3) var(--space-5);
+          border-radius: var(--radius-md);
+          font-size: var(--text-sm);
+          font-weight: var(--fw-black);
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          box-shadow: 0 4px 0 var(--primary-dark);
+          transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }
+        .ccc-hero-btn-primary:hover { filter: brightness(1.05); }
+        .ccc-hero-btn-primary:active {
+          transform: translateY(4px);
+          box-shadow: 0 0 0 var(--primary-dark);
+        }
+        .ccc-hero-btn-ghost { display: none; }
+        .ccc-hero-tip {
+          display: flex;
+          gap: var(--space-3);
+          background: var(--primary-light);
+          padding: var(--space-3) var(--space-4);
+          border-radius: var(--radius-md);
+          align-items: flex-start;
+          margin-top: var(--space-4);
+          text-align: left;
+          max-width: 480px;
+        }
+        .ccc-hero-tip-icon { font-size: var(--text-xl); line-height: 1; flex-shrink: 0; }
+        .ccc-hero-tip-t {
+          font-size: var(--text-xs);
+          font-weight: var(--fw-black);
+          color: var(--text-title);
+          margin: 0 0 var(--space-1);
+        }
+        .ccc-hero-tip-d {
+          font-size: var(--text-xs);
+          color: var(--text-secondary);
+          line-height: 1.5;
+          margin: 0;
+        }
+
+        /* ═══ Desktop ═══ */
+        @media (min-width: 900px) {
+          .ccc-hero-split {
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-6);
+            padding: 0 var(--space-4);
+          }
+          .ccc-hero-left {
+            order: 1;
+            gap: var(--space-4);
+            flex: 1.3 1 440px;
+            max-width: 560px;
+            min-width: 0;
+            text-align: left;
+            align-items: flex-start;
+          }
+          .ccc-hero-right {
+            order: 2;
+            padding: var(--space-2);
+            flex: 1 1 340px;
+            max-width: 460px;
+            min-width: 0;
+          }
+          .ccc-hero-eyebrow { font-size: var(--text-sm); }
+          .ccc-hero-title { font-size: 2.5rem; line-height: 1.05; }
+          .ccc-hero-desc { font-size: var(--text-lg); }
+          .ccc-hero-tip-t { font-size: var(--text-sm); }
+          .ccc-hero-tip-d { font-size: var(--text-sm); }
+          .ccc-hero-btn-primary { padding: var(--space-4) var(--space-6); font-size: var(--text-md); }
+          .ccc-hero-actions { justify-content: flex-start; }
+          .ccc-hero-btn-ghost {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-2);
+            background: var(--bg-subtle);
+            color: var(--text-secondary);
+            border: none;
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius-md);
+            font-size: var(--text-md);
+            font-weight: var(--fw-bold);
+            cursor: pointer;
+            font-family: var(--font-base) !important;
+            transition: background var(--dur-fast) var(--ease-out);
+          }
+          .ccc-hero-btn-ghost:hover { background: var(--accent-light); }
+          .ccc-hero-video-play { width: 60px; height: 60px; }
+          .ccc-hero-video-play svg { width: 28px; height: 28px; }
+          .ccc-hero-video-t { font-size: var(--text-sm); }
+        }
+      `}</style>
+      </>
+    );
+  }
 
   return (
     <>
