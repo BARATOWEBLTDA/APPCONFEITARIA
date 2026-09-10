@@ -533,7 +533,7 @@ export default function Produtos() {
           <h1 className="prod-title-novo">Produtos</h1>
           <p className="prod-sub-novo">{produtos.length} cadastrado{produtos.length !== 1 ? "s" : ""}</p>
         </div>
-        <BtnNovo label="Novo produto" onClick={openNovo} />
+        {produtos.length > 0 && <BtnNovo label="Novo produto" onClick={openNovo} />}
       </div>
 
       {/* Barra de pesquisa */}

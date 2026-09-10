@@ -125,28 +125,28 @@ export default function EmptyDoo({
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          background: var(--text-title);
+          background: var(--primary, #E85A8C);
           color: #fff;
           border: none;
-          border-radius: var(--radius-md);
-          padding: 0.8rem 1.5rem;
+          border-radius: 12px;
+          padding: 12px 24px;
           font-family: inherit;
-          font-size: var(--font-button);
-          font-weight: var(--fw-bold);
+          font-size: 14px;
+          font-weight: var(--fw-black, 900);
+          letter-spacing: 0.02em;
+          text-transform: uppercase;
           cursor: pointer;
-          box-shadow: 0 4px 12px rgba(61, 26, 36, 0.25);
-          transition: all var(--dur-fast) var(--ease-out);
+          box-shadow: 0 4px 0 var(--primary-dark, #C33A6E);
+          transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s ease;
         }
-        .empty-doo-btn:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 16px rgba(61, 26, 36, 0.3);
-        }
+        .empty-doo-btn:hover { filter: brightness(1.05); }
         .empty-doo-btn:active {
-          transform: translateY(0);
+          transform: translateY(4px);
+          box-shadow: 0 0 0 var(--primary-dark, #C33A6E);
         }
         .empty-doo-btn:focus-visible {
           outline: 2px solid var(--primary);
-          outline-offset: 2px;
+          outline-offset: 3px;
         }
       `}</style>
     </div>
