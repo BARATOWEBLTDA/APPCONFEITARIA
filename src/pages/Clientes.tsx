@@ -100,6 +100,17 @@ function getHoursUntil(data: string) {
   return Math.ceil((aniv.getTime() - hoje.getTime()) / (1000 * 60 * 60));
 }
 
+function formatSince(created_at: string): string {
+  const d = new Date(created_at);
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return "Cadastrada hoje";
+  if (diffDays === 1) return "Cadastrada ontem";
+  if (diffDays < 30) return `Cadastrada há ${diffDays} dias`;
+  const meses = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  return `Cliente desde ${meses[d.getMonth()]}/${d.getFullYear()}`;
+}
+
 // ─── Componente principal ─────────────────────────────────────────────────────
 
 export default function Clientes() {
@@ -113,6 +124,7 @@ export default function Clientes() {
   const [toast,         setToast]         = useState<{ nome: string; id: string } | null>(null);
   const [toastImport,   setToastImport]   = useState<{ importados: number; duplicados: number } | null>(null);
   const [filtroChip,    setFiltroChip]    = useState<"todos" | "aniversariantes" | "recentes">("todos");
+  const [filterOpen,    setFilterOpen]    = useState(false);
 
   // Importação de contatos
   const [importSheet,   setImportSheet]   = useState<ImportContato[] | null>(null);
@@ -337,11 +349,9 @@ export default function Clientes() {
   // ═══ IMPORTAÇÃO DE CONTATOS (PRO) ═══
 
   const handleAbrirImportarContatos = async () => {
-    // Não é PRO → leva pra página de assinar
-    if (!usuarioEhPro) {
-      navigate("/assinar");
-      return;
-    }
+    // Não é PRO → não faz nada (botão está desabilitado visualmente)
+    if (!usuarioEhPro) return;
+
     // Não suporta → alerta (não deveria acontecer, botão só aparece se suporta)
     if (!suportaContatos) {
       alert("Essa funcionalidade só funciona no Chrome do Android. Use um celular Android pra importar contatos.");
@@ -642,11 +652,6 @@ export default function Clientes() {
 
         {/* Footer */}
         <div className="cli-modal-footer">
-          {editando && (
-            <button className="cli-btn-delete" onClick={() => { setShowForm(false); setConfirmDelete(editando); }} aria-label="Excluir">
-              🗑️
-            </button>
-          )}
           <button className="cli-btn-cancel" onClick={() => setShowForm(false)}>Cancelar</button>
           <button
             className="cli-btn-save"
@@ -656,6 +661,15 @@ export default function Clientes() {
             {saving ? <span className="spinner-sm" /> : (editando ? "Salvar" : "✓ Cadastrar cliente")}
           </button>
         </div>
+
+        {/* Link excluir cliente (só em edição, discreto) */}
+        {editando && (
+          <div className="cli-modal-danger">
+            <button className="cli-danger-link" onClick={() => { setShowForm(false); setConfirmDelete(editando); }}>
+              🗑️ Excluir este cliente
+            </button>
+          </div>
+        )}
       </div>
 
       <style>{`
@@ -997,6 +1011,28 @@ export default function Clientes() {
           box-shadow: 0 4px 0 #A8A0A4;
           cursor: not-allowed;
         }
+
+        /* Link excluir cliente (discreto no rodapé do modal) */
+        .cli-modal-danger {
+          padding: 0 var(--space-4) var(--space-3);
+          padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
+          text-align: center;
+          background: var(--bg-card);
+          margin-top: -8px;
+        }
+        .cli-danger-link {
+          background: transparent;
+          border: none;
+          color: #DC2626;
+          font-size: var(--text-xs);
+          font-weight: var(--fw-bold);
+          cursor: pointer;
+          padding: 8px 12px;
+          font-family: var(--font-base) !important;
+          opacity: 0.7;
+          transition: opacity var(--dur-fast);
+        }
+        .cli-danger-link:hover { opacity: 1; text-decoration: underline; }
 
         /* ═══ DESKTOP ═══ */
         @media (min-width: 900px) {
@@ -1397,7 +1433,7 @@ export default function Clientes() {
         {/* Header */}
         <div className="mob-header">
           <h1 className="mob-title">Clientes</h1>
-          <p className="mob-subtitle">{clientes.length} cadastrado{clientes.length !== 1 ? "s" : ""}</p>
+          <p className="mob-subtitle">{clientes.length} {clientes.length === 1 ? "cliente cadastrado" : "clientes cadastrados"}</p>
         </div>
 
         {/* Botões de ação */}
@@ -1405,7 +1441,11 @@ export default function Clientes() {
           <button className="mob-btn-primary" onClick={() => openNew()}>
             + Cadastrar cliente
           </button>
-          <button className="cli-btn-pro cli-btn-pro--compact" onClick={handleAbrirImportarContatos}>
+          <button
+            className={`cli-btn-pro cli-btn-pro--compact${!usuarioEhPro ? " cli-btn-pro--off" : ""}`}
+            onClick={handleAbrirImportarContatos}
+            disabled={!usuarioEhPro}
+          >
             <span style={{fontSize: "0.95rem"}}>📱</span>
             Importar
             <span className="cli-btn-pro-badge">PRO</span>
@@ -1429,32 +1469,49 @@ export default function Clientes() {
           </button>
         )}
 
-        {/* Chips de filtro */}
-        <div className="cli-chips">
-          <button className={`cli-chip${filtroChip === "todos" ? " cli-chip--active" : ""}`} onClick={() => setFiltroChip("todos")}>
-            Todos <span className="cli-chip-count">{clientes.length}</span>
-          </button>
-          {aniversariantes.length > 0 && (
-            <button className={`cli-chip${filtroChip === "aniversariantes" ? " cli-chip--active" : ""}`} onClick={() => setFiltroChip("aniversariantes")}>
-              🎂 Aniversariantes <span className="cli-chip-count">{aniversariantes.length}</span>
+        {/* Busca + Filtro dropdown na mesma linha */}
+        <div className="cli-search-row">
+          <div className="mob-search-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input
+              type="text" placeholder="Buscar por nome, telefone ou e-mail..."
+              value={search} onChange={e => setSearch(e.target.value)}
+              className="mob-search" autoComplete="off"
+            />
+            {search && (
+              <button onClick={() => setSearch("")} style={{background:"none",border:"none",cursor:"pointer",color:"var(--text-muted)",padding:0,lineHeight:1}}>✕</button>
+            )}
+          </div>
+          <div style={{position:"relative"}}>
+            <button className="cli-filter-btn" onClick={() => setFilterOpen(o => !o)} title="Filtrar" aria-label="Filtrar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+              {filtroChip !== "todos" && <span className="cli-filter-dot" />}
             </button>
-          )}
-          <button className={`cli-chip${filtroChip === "recentes" ? " cli-chip--active" : ""}`} onClick={() => setFiltroChip("recentes")}>
-            🆕 Recentes
-          </button>
-        </div>
-
-        {/* Busca */}
-        <div className="mob-search-wrap">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input
-            type="text" placeholder="Buscar por nome, telefone ou e-mail..."
-            value={search} onChange={e => setSearch(e.target.value)}
-            className="mob-search" autoComplete="off"
-          />
-          {search && (
-            <button onClick={() => setSearch("")} style={{background:"none",border:"none",cursor:"pointer",color:"var(--text-muted)",padding:0,lineHeight:1}}>✕</button>
-          )}
+            {filterOpen && (
+              <>
+                <div className="cli-filter-backdrop" onClick={() => setFilterOpen(false)} />
+                <div className="cli-filter-panel">
+                  <div className="cli-filter-title">Filtrar clientes</div>
+                  <button className={`cli-filter-opt${filtroChip === "todos" ? " cli-filter-opt--active" : ""}`} onClick={() => { setFiltroChip("todos"); setFilterOpen(false); }}>
+                    <div className="cli-filter-radio" />
+                    <span>Todos</span>
+                    <span className="cli-filter-count">{clientes.length}</span>
+                  </button>
+                  {aniversariantes.length > 0 && (
+                    <button className={`cli-filter-opt${filtroChip === "aniversariantes" ? " cli-filter-opt--active" : ""}`} onClick={() => { setFiltroChip("aniversariantes"); setFilterOpen(false); }}>
+                      <div className="cli-filter-radio" />
+                      <span>Aniversariantes</span>
+                      <span className="cli-filter-count">{aniversariantes.length}</span>
+                    </button>
+                  )}
+                  <button className={`cli-filter-opt${filtroChip === "recentes" ? " cli-filter-opt--active" : ""}`} onClick={() => { setFiltroChip("recentes"); setFilterOpen(false); }}>
+                    <div className="cli-filter-radio" />
+                    <span>Recentes (30 dias)</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Lista */}
@@ -1474,16 +1531,7 @@ export default function Clientes() {
                 </div>
                 <div className="mob-info">
                   <p className="mob-nome">{c.nome}</p>
-                  {c.whatsapp ? (
-                    <a href={`https://wa.me/55${c.whatsapp.replace(/\D/g,"")}`} target="_blank" rel="noreferrer" className="mob-whatsapp" onClick={e => e.stopPropagation()}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                      {formatPhone(c.whatsapp)}
-                    </a>
-                  ) : c.email ? (
-                    <p className="mob-email">{c.email}</p>
-                  ) : (
-                    <p className="mob-sem-tel">Sem contato</p>
-                  )}
+                  <p className="mob-since">{formatSince(c.created_at)}</p>
                 </div>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
@@ -1534,19 +1582,65 @@ export default function Clientes() {
       <div className="cli-desktop">
         <div className="cli-layout">
           <div className="cli-main">
-            <div className="cli-topbar">
-              <button className="cli-btn-new" onClick={() => openNew()}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" style={{marginRight: 6}}><path d="M12 5v14M5 12h14"/></svg>
-                Novo cliente
-              </button>
-              <button className="cli-btn-pro" onClick={handleAbrirImportarContatos} title={usuarioEhPro ? "Importar contatos do celular" : "Feature PRO — clique pra saber mais"}>
-                <span style={{fontSize: "0.95rem"}}>📱</span>
-                Importar
-                <span className="cli-btn-pro-badge">PRO</span>
-              </button>
+            {/* Header desktop */}
+            <div className="cli-page-hdr">
+              <div>
+                <h1 className="cli-page-title">Clientes</h1>
+                <p className="cli-page-sub">{clientes.length} {clientes.length === 1 ? "cliente cadastrado" : "clientes cadastrados"}</p>
+              </div>
+              <div className="cli-page-actions">
+                <button className="cli-btn-new" onClick={() => openNew()}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" style={{marginRight: 6}}><path d="M12 5v14M5 12h14"/></svg>
+                  Novo cliente
+                </button>
+                <button
+                  className={`cli-btn-pro${!usuarioEhPro ? " cli-btn-pro--off" : ""}`}
+                  onClick={handleAbrirImportarContatos}
+                  disabled={!usuarioEhPro}
+                  title={usuarioEhPro ? "Importar contatos do celular" : "Feature PRO — assine para desbloquear"}
+                >
+                  <span style={{fontSize: "0.95rem"}}>📱</span>
+                  Importar
+                  <span className="cli-btn-pro-badge">PRO</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Busca + filtro na mesma linha */}
+            <div className="cli-search-row cli-search-row--desktop">
               <div className="cli-search-wrap">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input type="text" placeholder="Buscar por nome, telefone ou e-mail..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
+              </div>
+              <div style={{position:"relative"}}>
+                <button className="cli-filter-btn" onClick={() => setFilterOpen(o => !o)} title="Filtrar" aria-label="Filtrar">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                  {filtroChip !== "todos" && <span className="cli-filter-dot" />}
+                </button>
+                {filterOpen && (
+                  <>
+                    <div className="cli-filter-backdrop" onClick={() => setFilterOpen(false)} />
+                    <div className="cli-filter-panel">
+                      <div className="cli-filter-title">Filtrar clientes</div>
+                      <button className={`cli-filter-opt${filtroChip === "todos" ? " cli-filter-opt--active" : ""}`} onClick={() => { setFiltroChip("todos"); setFilterOpen(false); }}>
+                        <div className="cli-filter-radio" />
+                        <span>Todos</span>
+                        <span className="cli-filter-count">{clientes.length}</span>
+                      </button>
+                      {aniversariantes.length > 0 && (
+                        <button className={`cli-filter-opt${filtroChip === "aniversariantes" ? " cli-filter-opt--active" : ""}`} onClick={() => { setFiltroChip("aniversariantes"); setFilterOpen(false); }}>
+                          <div className="cli-filter-radio" />
+                          <span>Aniversariantes</span>
+                          <span className="cli-filter-count">{aniversariantes.length}</span>
+                        </button>
+                      )}
+                      <button className={`cli-filter-opt${filtroChip === "recentes" ? " cli-filter-opt--active" : ""}`} onClick={() => { setFiltroChip("recentes"); setFilterOpen(false); }}>
+                        <div className="cli-filter-radio" />
+                        <span>Recentes (30 dias)</span>
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             {loading ? (
@@ -1561,18 +1655,10 @@ export default function Clientes() {
                       {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
                     </div>
                     <div className="cli-info">
-                      <p className="cli-nome">{c.nome}{c.nome_contato ? <span style={{fontWeight:400,color:"var(--text-muted)",fontSize:"0.82rem"}}> · {c.nome_contato}</span> : null}</p>
-                      <div style={{display:"flex",gap:"0.75rem",alignItems:"center",flexWrap:"wrap"}}>
-                        {c.whatsapp && (
-                          <a href={`https://wa.me/55${c.whatsapp.replace(/\D/g,"")}`} target="_blank" rel="noreferrer" className="cli-whatsapp-link" onClick={e => e.stopPropagation()}>
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                            {formatPhone(c.whatsapp)}
-                          </a>
-                        )}
-                        {c.email && <span style={{fontSize:"0.78rem",color:"var(--text-muted)"}}>{c.email}</span>}
-                        {c.cidade && <span style={{fontSize:"0.78rem",color:"var(--text-muted)"}}>{c.cidade}{c.estado ? `/${c.estado}` : ""}</span>}
-                      </div>
+                      <p className="cli-nome">{c.nome}</p>
+                      <p className="cli-since">{formatSince(c.created_at)}</p>
                     </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" style={{flexShrink: 0}}><polyline points="9 18 15 12 9 6"/></svg>
                   </div>
                 ))}
               </div>
@@ -1800,7 +1886,7 @@ export default function Clientes() {
         /* ── Desktop ────────────────────────── */
         .cli-layout  { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; align-items: start; }
         .cli-main    { min-width: 0; }
-        .cli-sidebar { display: flex; flex-direction: column; gap: 1rem; padding-top: 4.5rem; }
+        .cli-sidebar { display: flex; flex-direction: column; gap: 1rem; padding-top: 7rem; }
         .cli-topbar  { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
 
         .cli-btn-new     { padding: 12px 20px; background: var(--primary); color: var(--text-inverse); border: none; border-radius: var(--radius-md); font-family: var(--font-base) !important; font-size: var(--text-sm); font-weight: var(--fw-black); cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 4px 0 var(--primary-dark); letter-spacing: 0.02em; text-transform: uppercase; display: inline-flex; align-items: center; transition: transform 0.08s ease, box-shadow 0.08s ease; }
@@ -1920,8 +2006,8 @@ export default function Clientes() {
           white-space: nowrap;
           transition: transform 0.08s ease, box-shadow 0.08s ease;
         }
-        .cli-btn-pro:hover { filter: brightness(1.05); }
-        .cli-btn-pro:active {
+        .cli-btn-pro:hover:not(:disabled) { filter: brightness(1.05); }
+        .cli-btn-pro:active:not(:disabled) {
           transform: translateY(3px);
           box-shadow: 0 0 0 #B45309;
         }
@@ -1939,6 +2025,150 @@ export default function Clientes() {
           flex: 1;
           padding: 12px 8px;
           justify-content: center;
+        }
+        /* Estado desabilitado (não é PRO) */
+        .cli-btn-pro--off {
+          background: linear-gradient(135deg, #F0EBED, #E8DEE3) !important;
+          color: #9A8B93 !important;
+          box-shadow: 0 3px 0 #D1CACD !important;
+          opacity: 0.7;
+          cursor: not-allowed !important;
+          filter: none !important;
+        }
+        .cli-btn-pro--off .cli-btn-pro-badge {
+          background: #9A8B93;
+          color: #fff;
+        }
+        .cli-btn-pro--off:active { transform: none !important; }
+
+        /* ═══ HEADER DESKTOP ═══ */
+        .cli-page-hdr {
+          display: flex; justify-content: space-between; align-items: center;
+          margin-bottom: var(--space-4);
+          padding: 0;
+        }
+        .cli-page-title {
+          font-size: var(--text-2xl);
+          font-weight: var(--fw-black);
+          color: var(--text-title);
+          letter-spacing: -0.02em;
+          margin: 0;
+        }
+        .cli-page-sub {
+          font-size: var(--text-sm);
+          color: var(--text-secondary);
+          margin: 4px 0 0;
+        }
+        .cli-page-actions { display: flex; gap: var(--space-2); align-items: center; }
+
+        /* ═══ Busca + Filtro linha ═══ */
+        .cli-search-row {
+          display: flex; gap: var(--space-2);
+          align-items: center;
+          margin-bottom: var(--space-3);
+          position: relative;
+        }
+        .cli-search-row > .mob-search-wrap,
+        .cli-search-row > .cli-search-wrap { flex: 1; margin-bottom: 0; }
+
+        /* Botão de filtro */
+        .cli-filter-btn {
+          width: 40px; height: 40px;
+          border: 1.5px solid var(--border);
+          background: var(--bg-card);
+          border-radius: var(--radius-md);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          color: var(--text-secondary);
+          position: relative;
+          transition: all var(--dur-fast);
+          flex-shrink: 0;
+        }
+        .cli-filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .cli-filter-dot {
+          position: absolute;
+          top: -3px; right: -3px;
+          width: 10px; height: 10px;
+          background: var(--primary);
+          border: 2px solid var(--bg-card);
+          border-radius: 50%;
+        }
+
+        /* Painel filtro */
+        .cli-filter-backdrop {
+          position: fixed; inset: 0; z-index: 40;
+        }
+        .cli-filter-panel {
+          position: absolute;
+          top: calc(100% + 8px);
+          right: 0;
+          background: var(--bg-card);
+          border-radius: var(--radius-md);
+          padding: var(--space-3);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+          width: 240px;
+          z-index: 50;
+          border: 1px solid var(--border);
+        }
+        .cli-filter-title {
+          font-size: var(--text-xs);
+          font-weight: var(--fw-black);
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          margin-bottom: var(--space-2);
+          padding-bottom: var(--space-2);
+          border-bottom: 1px solid var(--border);
+        }
+        .cli-filter-opt {
+          display: flex; align-items: center;
+          gap: var(--space-2);
+          padding: 8px 10px;
+          border-radius: var(--radius-sm);
+          font-size: var(--text-sm);
+          cursor: pointer;
+          margin-bottom: 2px;
+          background: transparent;
+          border: none;
+          width: 100%;
+          text-align: left;
+          font-family: var(--font-base) !important;
+          color: var(--text-title);
+          transition: background var(--dur-fast);
+        }
+        .cli-filter-opt:hover { background: var(--accent-bg, #F5EEF0); }
+        .cli-filter-opt--active {
+          background: var(--primary-light);
+          color: var(--primary);
+          font-weight: var(--fw-black);
+        }
+        .cli-filter-radio {
+          width: 14px; height: 14px; border-radius: 50%;
+          border: 2px solid var(--border);
+          flex-shrink: 0;
+        }
+        .cli-filter-opt--active .cli-filter-radio {
+          border-color: var(--primary);
+          background: var(--primary);
+          box-shadow: inset 0 0 0 2px var(--bg-card);
+        }
+        .cli-filter-count {
+          margin-left: auto;
+          color: var(--text-muted);
+          font-size: var(--text-xs);
+          font-weight: var(--fw-medium);
+        }
+        .cli-filter-opt--active .cli-filter-count {
+          color: var(--primary);
+          font-weight: var(--fw-black);
+        }
+
+        /* ═══ Cliente desde X ═══ */
+        .mob-since, .cli-since {
+          font-size: var(--text-xs);
+          color: var(--text-muted);
+          margin: 2px 0 0;
+          font-weight: var(--fw-medium);
         }
 
         /* ═══ MODAL IMPORTAÇÃO ═══ */

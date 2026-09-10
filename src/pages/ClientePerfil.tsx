@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 
@@ -98,6 +98,8 @@ export default function ClientePerfil() {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [uploadingFoto, setUploadingFoto] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -137,6 +139,25 @@ export default function ClientePerfil() {
     window.open(`https://wa.me/55${d}`, "_blank");
   };
 
+  const handleFotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !cliente) return;
+    setUploadingFoto(true);
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const path = `clientes/${cliente.user_id}-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("profiles").upload(path, file, { upsert: true });
+    if (error) {
+      alert("Erro ao enviar foto: " + error.message);
+      setUploadingFoto(false);
+      return;
+    }
+    const { data } = supabase.storage.from("profiles").getPublicUrl(path);
+    // Atualiza cliente no banco
+    await supabase.from("clientes").update({ foto_url: data.publicUrl }).eq("id", cliente.id);
+    setCliente({ ...cliente, foto_url: data.publicUrl });
+    setUploadingFoto(false);
+  };
+
   if (loading) return (
     <div style={{ minHeight: "calc(100vh - 5rem)", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <span style={{ width: 32, height: 32, border: "3px solid var(--primary-light)", borderTopColor: "var(--primary)", borderRadius: "50%", animation: "cpSpin 0.7s linear infinite", display: "inline-block" }} />
@@ -174,11 +195,15 @@ export default function ClientePerfil() {
           Voltar
         </button>
 
-        <div className="cp-avatar-wrap">
+        <div className="cp-avatar-wrap" onClick={() => fileRef.current?.click()} title="Trocar foto">
           {cliente.foto_url
             ? <img src={cliente.foto_url} alt={cliente.nome} className="cp-avatar cp-avatar--img" />
             : <div className="cp-avatar">{iniciais}</div>
           }
+          <span className="cp-avatar-cam" aria-hidden="true">
+            {uploadingFoto ? <span className="cp-cam-spinner" /> : "📷"}
+          </span>
+          <input ref={fileRef} type="file" accept="image/*" onChange={handleFotoUpload} style={{display:"none"}} />
         </div>
         <h1 className="cp-name">{cliente.nome}</h1>
         {cliente.whatsapp && <p className="cp-phone">{formatPhone(cliente.whatsapp)}</p>}
@@ -193,25 +218,26 @@ export default function ClientePerfil() {
         </div>
       </div>
 
-      {/* ═══ Ações principais ═══ */}
+      {/* ═══ Ações principais (só 2 botões) ═══ */}
       <div className="cp-actions">
         <button className="cp-btn cp-btn-wa" onClick={handleWhatsApp} disabled={!cliente.whatsapp}>
           <span>💬</span> WhatsApp
         </button>
         <button className="cp-btn cp-btn-edit" onClick={() => goToEdit("all")}>
-          <span>✏️</span> Editar tudo
+          <span>✏️</span> Editar
         </button>
-        <button className="cp-btn cp-btn-del" onClick={() => setConfirmDelete(true)} aria-label="Excluir">🗑️</button>
       </div>
 
       {/* ═══ Cards ═══ */}
       <div className="cp-content">
-        {/* Card: Dados pessoais */}
+        {/* Card ÚNICO: Dados do Cliente (juntou dados + endereço + observações) */}
         <div className="cp-card">
           <div className="cp-card-head">
-            <div className="cp-card-t"><span>👤</span> Dados pessoais</div>
-            <button className="cp-card-edit" onClick={() => goToEdit("dados")}>✏️ Editar</button>
+            <div className="cp-card-t"><span>👤</span> Dados do Cliente</div>
+            <button className="cp-card-edit" onClick={() => goToEdit("all")}>✏️ Editar</button>
           </div>
+
+          {/* Dados pessoais */}
           {cliente.data_nascimento && (
             <div className="cp-row">
               <div className="cp-row-lbl">Aniversário</div>
@@ -224,33 +250,61 @@ export default function ClientePerfil() {
           {cliente.sexo && <div className="cp-row"><div className="cp-row-lbl">Sexo</div><div className="cp-row-val">{cliente.sexo}</div></div>}
           {cliente.email && <div className="cp-row"><div className="cp-row-lbl">E-mail</div><div className="cp-row-val">{cliente.email}</div></div>}
           {cliente.cpf_cnpj && <div className="cp-row"><div className="cp-row-lbl">CPF/CNPJ</div><div className="cp-row-val">{cliente.cpf_cnpj}</div></div>}
-          {!cliente.data_nascimento && !cliente.sexo && !cliente.email && !cliente.cpf_cnpj && (
-            <div className="cp-empty">Nenhum dado extra cadastrado</div>
-          )}
-        </div>
 
-        {/* Card: Endereço */}
-        <div className="cp-card">
-          <div className="cp-card-head">
-            <div className="cp-card-t"><span>📍</span> Endereço</div>
-            <button className="cp-card-edit" onClick={() => goToEdit("endereco")}>✏️ Editar</button>
-          </div>
-          {temEndereco ? (
-            <div style={{ fontSize: "var(--text-sm)", color: "var(--text-title)", padding: "6px 0" }}>
-              {enderecoCompleto && <><b>{enderecoCompleto}</b><br/></>}
-              {cliente.complemento && <><span style={{ color: "var(--text-secondary)" }}>{cliente.complemento}</span><br/></>}
-              {localizacao && <span style={{ color: "var(--text-secondary)" }}>{localizacao}</span>}
-              {cliente.cep && <><br/><span style={{ color: "var(--text-secondary)", fontSize: "var(--text-xs)" }}>CEP: {cliente.cep}</span></>}
+          {/* Endereço + Mapa lado a lado */}
+          {temEndereco && (
+            <>
+              <div className="cp-sub-lbl">📍 Endereço</div>
+              <div className="cp-endereco-row">
+                <div className="cp-endereco-info">
+                  {enderecoCompleto && <div className="cp-endereco-street"><b>{enderecoCompleto}</b></div>}
+                  {cliente.complemento && <div className="cp-endereco-sec">{cliente.complemento}</div>}
+                  {localizacao && <div className="cp-endereco-sec">{localizacao}</div>}
+                  {cliente.cep && <div className="cp-endereco-sec" style={{fontSize: "var(--text-xs)"}}>CEP: {cliente.cep}</div>}
+                </div>
+                {import.meta.env.VITE_GOOGLE_MAPS_KEY && (
+                  <a
+                    href={`https://maps.google.com/?q=${encodeURIComponent([enderecoCompleto, localizacao].filter(Boolean).join(", "))}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="cp-mini-map-wrap"
+                    aria-label="Abrir no Google Maps"
+                  >
+                    <iframe
+                      className="cp-mini-map"
+                      loading="lazy"
+                      src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_KEY}&q=${encodeURIComponent([enderecoCompleto, localizacao].filter(Boolean).join(", "))}`}
+                      allowFullScreen
+                      title="Mapa"
+                    />
+                    <span className="cp-mini-map-overlay">↗</span>
+                  </a>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* Observações */}
+          <div className="cp-sub-lbl">📝 Observações</div>
+          {cliente.observacoes ? (
+            <div style={{ fontSize: "var(--text-sm)", color: "var(--text-title)", padding: "4px 0 6px", lineHeight: 1.5 }}>
+              {cliente.observacoes}
             </div>
           ) : (
-            <div className="cp-empty">Sem endereço cadastrado</div>
+            <div className="cp-empty" style={{ padding: "6px 0 4px", textAlign: "left" }}>
+              Sem observações.
+            </div>
+          )}
+
+          {!cliente.data_nascimento && !cliente.sexo && !cliente.email && !cliente.cpf_cnpj && !temEndereco && !cliente.observacoes && (
+            <div className="cp-empty">Nenhum dado extra cadastrado ainda.<br/>Clique em Editar pra completar.</div>
           )}
         </div>
 
-        {/* Card: Histórico de compras (destaque) */}
+        {/* Card: Histórico de Compras (destaque) */}
         <div className="cp-card cp-card--highlight">
           <div className="cp-card-head">
-            <div className="cp-card-t"><span>🛍️</span> Histórico de compras</div>
+            <div className="cp-card-t"><span>🛍️</span> Histórico de Compras</div>
             <div className="cp-card-count">{pedidos.length} pedido{pedidos.length !== 1 ? "s" : ""}</div>
           </div>
 
@@ -309,21 +363,6 @@ export default function ClientePerfil() {
             </div>
           )}
         </div>
-
-        {/* Card: Observações */}
-        <div className="cp-card">
-          <div className="cp-card-head">
-            <div className="cp-card-t"><span>📝</span> Observações</div>
-            <button className="cp-card-edit" onClick={() => goToEdit("obs")}>✏️ Editar</button>
-          </div>
-          {cliente.observacoes ? (
-            <div style={{ fontSize: "var(--text-sm)", color: "var(--text-title)", padding: "6px 0", lineHeight: 1.5 }}>
-              {cliente.observacoes}
-            </div>
-          ) : (
-            <div className="cp-empty">Sem observações. Clique em Editar pra adicionar</div>
-          )}
-        </div>
       </div>
 
       {/* ═══ Modal confirmar excluir ═══ */}
@@ -373,7 +412,12 @@ export default function ClientePerfil() {
         }
         .cp-back:hover { background: rgba(255,255,255,0.3); }
 
-        .cp-avatar-wrap { margin: 0 auto var(--space-2); display: inline-block; }
+        .cp-avatar-wrap {
+          margin: 0 auto var(--space-2);
+          display: inline-block;
+          position: relative;
+          cursor: pointer;
+        }
         .cp-avatar {
           width: 80px; height: 80px;
           border-radius: 50%;
@@ -385,6 +429,28 @@ export default function ClientePerfil() {
           color: var(--text-inverse);
         }
         .cp-avatar--img { object-fit: cover; }
+        .cp-avatar-cam {
+          position: absolute;
+          bottom: 0; right: -2px;
+          width: 28px; height: 28px;
+          border-radius: 50%;
+          background: var(--bg-card);
+          color: var(--primary);
+          display: flex; align-items: center; justify-content: center;
+          border: 2px solid var(--primary);
+          font-size: 13px;
+          cursor: pointer;
+          transition: transform var(--dur-fast);
+        }
+        .cp-avatar-wrap:hover .cp-avatar-cam { transform: scale(1.1); }
+        .cp-cam-spinner {
+          width: 14px; height: 14px;
+          border: 2px solid var(--primary-light);
+          border-top-color: var(--primary);
+          border-radius: 50%;
+          animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .cp-name {
           font-size: var(--text-xl);
@@ -438,25 +504,77 @@ export default function ClientePerfil() {
         .cp-btn-wa:active:not(:disabled) { box-shadow: 0 1px 0 #15803D; }
         .cp-btn-wa:disabled { opacity: 0.5; cursor: not-allowed; }
         .cp-btn-edit {
-          background: var(--primary);
+          background: var(--accent, #2D1F26);
           color: var(--text-inverse);
-          box-shadow: 0 4px 0 var(--primary-dark);
+          box-shadow: 0 4px 0 #1a1017;
         }
-        .cp-btn-edit:active { box-shadow: 0 1px 0 var(--primary-dark); }
-        .cp-btn-del {
-          background: transparent;
-          color: var(--text-secondary);
-          border: 1.5px solid var(--border);
-          flex: 0 0 48px;
-          padding: 12px;
-        }
-        .cp-btn-del:hover { background: var(--bg-subtle); }
+        .cp-btn-edit:active { box-shadow: 0 1px 0 #1a1017; }
+        /* .cp-btn-del removido — botão excluir agora vive no modal de edição */
 
         /* ═══ Cards ═══ */
         .cp-content {
           padding: 0 var(--space-4);
           display: flex; flex-direction: column;
           gap: var(--space-3);
+        }
+
+        /* Sub-label dentro do card (endereço, obs) */
+        .cp-sub-lbl {
+          font-size: var(--text-xs);
+          font-weight: var(--fw-black);
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          margin: var(--space-3) 0 var(--space-2);
+          padding-top: var(--space-3);
+          border-top: 1px dashed var(--border);
+        }
+        .cp-card > .cp-sub-lbl:first-of-type { padding-top: var(--space-3); }
+
+        /* Endereço + Mini mapa lado a lado */
+        .cp-endereco-row {
+          display: grid;
+          grid-template-columns: 1fr 130px;
+          gap: var(--space-3);
+          align-items: start;
+        }
+        .cp-endereco-info {
+          font-size: var(--text-sm);
+          color: var(--text-title);
+          line-height: 1.5;
+        }
+        .cp-endereco-street { color: var(--text-title); }
+        .cp-endereco-sec { color: var(--text-secondary); margin-top: 2px; }
+        .cp-mini-map-wrap {
+          position: relative;
+          display: block;
+          width: 130px; height: 100px;
+          border-radius: var(--radius-md);
+          overflow: hidden;
+          border: 1.5px solid var(--border);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+          text-decoration: none;
+        }
+        .cp-mini-map {
+          width: 100%; height: 100%;
+          border: 0;
+          pointer-events: none;
+        }
+        .cp-mini-map-overlay {
+          position: absolute;
+          top: 4px; right: 4px;
+          background: rgba(255,255,255,0.95);
+          color: var(--primary);
+          width: 22px; height: 22px;
+          border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 12px;
+          font-weight: 900;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        @media (min-width: 600px) {
+          .cp-mini-map-wrap { width: 160px; height: 110px; }
+          .cp-endereco-row { grid-template-columns: 1fr 160px; }
         }
         .cp-card {
           background: var(--bg-card);
@@ -672,26 +790,32 @@ export default function ClientePerfil() {
         /* ═══ Desktop ═══ */
         @media (min-width: 900px) {
           .cp-root {
-            max-width: 720px;
-            margin: 0 auto;
-            padding: var(--space-4) var(--space-4) 6rem;
+            max-width: 100%;
+            margin: 0;
+            padding: 0 0 6rem;
           }
+          /* Hero 100% da largura, sem cantos arredondados nem margem lateral */
           .cp-hero {
-            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            border-radius: 0;
             padding: var(--space-6) var(--space-5) var(--space-5);
           }
           .cp-actions {
-            padding: var(--space-4);
+            padding: var(--space-4) var(--space-6);
             background: var(--bg-card);
             border-radius: 0;
+            max-width: 900px;
+            margin: 0 auto;
           }
           .cp-content {
-            padding: var(--space-4) var(--space-4) 0;
-            background: var(--bg-card);
-            border-radius: 0 0 var(--radius-xl) var(--radius-xl);
+            padding: var(--space-4) var(--space-6) 0;
+            background: transparent;
+            border-radius: 0;
+            max-width: 900px;
+            margin: 0 auto;
           }
           .cp-name { font-size: var(--text-2xl); }
           .cp-avatar { width: 100px; height: 100px; font-size: var(--text-3xl); }
+          .cp-avatar-cam { width: 32px; height: 32px; font-size: 15px; }
           .cp-stat-v { font-size: var(--text-xl); }
         }
       `}</style>
