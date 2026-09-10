@@ -764,7 +764,12 @@ export default function Produtos() {
             if (viewMode === "lista") return (
               <div key={p.id} className="prod-list-item" style={{ outline: catInvalida ? "2px solid #fcd34d" : "none", cursor: "pointer" }} onClick={() => setPreviewProduto(p)}>
                 <div className="prod-list-img">
-                  {p.imagem_url ? <img src={p.imagem_url.split(",")[0]} alt={p.nome} /> : <span style={{ fontSize: "1.5rem" }}>🎂</span>}
+                  {p.imagem_url
+                    ? <img src={p.imagem_url.split(",")[0]} alt={p.nome} />
+                    : <div className="prod-list-img-sem-foto" title="Adicione uma foto pra chamar mais atenção">
+                        <span style={{fontSize: 18}}>📸</span>
+                      </div>
+                  }
                   {!p.disponivel && <div className="prod-card-indisponivel">Indisponível</div>}
                 </div>
                 <div className="prod-list-info">
@@ -807,9 +812,22 @@ export default function Produtos() {
             return (
             <div key={p.id} className="prod-card" style={{ outline: catInvalida ? "2px solid #fcd34d" : "none", cursor: "pointer" }} onClick={() => setPreviewProduto(p)}>
               <div className="prod-card-img">
-                {p.imagem_url ? <img src={p.imagem_url.split(",")[0]} alt={p.nome} /> : <span style={{ fontSize: "2rem" }}>🎂</span>}
+                {p.imagem_url ? (
+                  <img src={p.imagem_url.split(",")[0]} alt={p.nome} />
+                ) : (
+                  <div className="prod-card-sem-foto">
+                    <div className="prod-card-sem-foto-icon">📸</div>
+                    <div className="prod-card-sem-foto-title">Foto vende mais</div>
+                    <div className="prod-card-sem-foto-cta">toque pra adicionar</div>
+                  </div>
+                )}
                 {!p.disponivel && <div className="prod-card-indisponivel">Indisponível</div>}
-                {p.promocao && <div className="prod-card-promo">Promoção</div>}
+                {p.promocao && <div className="prod-card-promo">🔥 Promoção</div>}
+                {(p.tamanhos_disponiveis && p.tamanhos_disponiveis.length > 0) && (
+                  <div className="prod-card-badge-var">
+                    📏 {p.tamanhos_disponiveis.length === 1 ? p.tamanhos_disponiveis[0].label : `${p.tamanhos_disponiveis.length} opções`}
+                  </div>
+                )}
                 {p.pronta_entrega === false && <div className="prod-card-encomenda">Encomenda</div>}
                 {catInvalida && <div style={{ position: "absolute", top: "0.4rem", left: "0.4rem", background: "var(--warning)", color: "var(--text-inverse)", fontSize: "0.6rem", fontWeight: 700, padding: "2px 6px", borderRadius: "6px" }}>Sem categoria</div>}
               </div>
@@ -2378,17 +2396,124 @@ export default function Produtos() {
         .prod-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; padding:3rem 1rem; text-align:center; }
         .prod-empty-title { font-size: var(--font-input); font-weight: var(--fw-bold); color:var(--text-title); margin:0; }
         .prod-empty-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0; }
-        .prod-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:0.75rem; }
+        /* Mobile: 2 colunas no grid. Desktop: auto-fill respirável */
+        .prod-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.6rem;
+        }
+        @media (min-width: 720px) {
+          .prod-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem; }
+        }
+        @media (min-width: 1100px) {
+          .prod-grid { grid-template-columns: repeat(4, 1fr); gap: 0.9rem; }
+        }
+        @media (min-width: 1400px) {
+          .prod-grid { grid-template-columns: repeat(5, 1fr); }
+        }
         .prod-list { display:flex; flex-direction:column; gap:0.5rem; }
         .prod-list-item { background:var(--bg-card); border-radius: var(--radius-lg); padding:0.65rem; display:flex; align-items:center; gap:0.85rem; box-shadow:var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06)); }
         .prod-list-img { width:64px; height:64px; border-radius: var(--radius-md); overflow:hidden; background:var(--primary-light); display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative; cursor:pointer; }
         .prod-list-img img { width:100%; height:100%; object-fit:cover; }
+        .prod-list-img-sem-foto {
+          width: 100%; height: 100%;
+          background: linear-gradient(135deg, #FEF3C7, #FCE7F3);
+          display: flex; align-items: center; justify-content: center;
+        }
         .prod-list-info { flex:1; min-width:0; }
-        .prod-card { background:var(--bg-card); border-radius: var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06)); display:flex; flex-direction:column; }
-        .prod-card-img { aspect-ratio:1; background:var(--bg-subtle); display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; overflow:hidden; }
-        .prod-card-img img { width:100%; height:100%; object-fit:cover; }
-        .prod-card-indisponivel { position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; color:white; font-size: var(--font-caption); font-weight: var(--fw-bold); }
-        .prod-card-promo { position:absolute; top:0.4rem; left:0.4rem; background:var(--primary); color:var(--text-inverse); font-size: var(--font-caption); font-weight: var(--fw-bold); padding:0.15rem 0.45rem; border-radius: var(--radius-xl); }
+        .prod-card {
+          background: var(--bg-card);
+          border-radius: var(--radius-lg);
+          overflow: hidden;
+          border: 1.5px solid transparent;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          display: flex; flex-direction: column;
+          transition: transform 0.18s var(--ease-out), box-shadow 0.18s var(--ease-out), border-color 0.18s var(--ease-out);
+        }
+        @media (hover: hover) {
+          .prod-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(232, 90, 140, 0.15);
+            border-color: var(--primary);
+          }
+        }
+        .prod-card-img {
+          aspect-ratio: 4/3;
+          background: var(--bg-subtle);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+        }
+        .prod-card-img img { width: 100%; height: 100%; object-fit: cover; }
+        .prod-card-indisponivel {
+          position: absolute; inset: 0;
+          background: rgba(255,255,255,0.85);
+          backdrop-filter: blur(1px);
+          display: flex; align-items: center; justify-content: center;
+          color: var(--text-secondary);
+          font-size: 0.7rem;
+          font-weight: var(--fw-black);
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+        }
+        .prod-card-promo {
+          position: absolute;
+          top: 8px; right: 8px;
+          background: linear-gradient(135deg, #F59E0B, #D97706);
+          color: var(--text-inverse);
+          font-size: 0.6rem;
+          font-weight: var(--fw-black);
+          padding: 3px 8px;
+          border-radius: 999px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+        .prod-card-badge-var {
+          position: absolute;
+          top: 8px; left: 8px;
+          background: rgba(255,255,255,0.95);
+          color: #1E40AF;
+          font-size: 0.6rem;
+          font-weight: var(--fw-black);
+          padding: 3px 7px;
+          border-radius: 6px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+        }
+        /* Placeholder motivador quando não tem foto */
+        .prod-card-sem-foto {
+          width: 100%; height: 100%;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          gap: 4px;
+          padding: 8px;
+          background: linear-gradient(135deg, #FEF3C7 0%, #FCE7F3 100%);
+          text-align: center;
+          transition: filter 0.2s;
+        }
+        .prod-card-sem-foto:hover { filter: brightness(1.03); }
+        .prod-card-sem-foto-icon {
+          font-size: 28px;
+          line-height: 1;
+          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
+        }
+        .prod-card-sem-foto-title {
+          font-size: 0.72rem;
+          font-weight: var(--fw-black);
+          color: var(--primary-dark);
+          line-height: 1.1;
+          letter-spacing: -0.01em;
+        }
+        .prod-card-sem-foto-cta {
+          font-size: 0.6rem;
+          color: #92400E;
+          font-weight: var(--fw-medium);
+          line-height: 1.1;
+        }
         .prod-card-encomenda { position:absolute; top:0.4rem; right:0.4rem; background:var(--warning); color:var(--text-inverse); font-size: var(--font-caption); font-weight: var(--fw-bold); padding:0.15rem 0.45rem; border-radius: var(--radius-xl); }
         .prod-card-info { padding:0.65rem 0.75rem; flex:1; display:flex; flex-direction:column; }
         .prod-card-bottom { margin-top:auto; }
