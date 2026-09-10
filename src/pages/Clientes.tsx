@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { useProfile, isPro } from "@/hooks/useProfile";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -30,6 +31,14 @@ interface Cliente {
 }
 
 type FormMode = "rapido" | "completo";
+
+interface ImportContato {
+  nome: string;
+  telefone: string;
+  telefoneNormalizado: string;
+  duplicado: boolean;
+  selecionado: boolean;
+}
 
 const ORIGEM_OPTIONS = ["Instagram", "Indicação", "Google", "Facebook", "TikTok", "WhatsApp", "Loja física", "Outro"];
 const SEXO_OPTIONS   = ["Feminino", "Masculino", "Outro", "Prefiro não informar"];
@@ -95,13 +104,23 @@ function getHoursUntil(data: string) {
 
 export default function Clientes() {
   const navigate = useNavigate();
+  const { profile } = useProfile();
   const [searchParams, setSearchParams] = useSearchParams();
   const [clientes,      setClientes]      = useState<Cliente[]>([]);
   const [loading,       setLoading]       = useState(true);
   const [search,        setSearch]        = useState("");
   const [userId,        setUserId]        = useState<string | null>(null);
   const [toast,         setToast]         = useState<{ nome: string; id: string } | null>(null);
+  const [toastImport,   setToastImport]   = useState<{ importados: number; duplicados: number } | null>(null);
   const [filtroChip,    setFiltroChip]    = useState<"todos" | "aniversariantes" | "recentes">("todos");
+
+  // Importação de contatos
+  const [importSheet,   setImportSheet]   = useState<ImportContato[] | null>(null);
+  const [importing,     setImporting]     = useState(false);
+  const [importError,   setImportError]   = useState<string | null>(null);
+
+  const usuarioEhPro = isPro(profile);
+  const suportaContatos = typeof navigator !== "undefined" && "contacts" in navigator && "ContactsManager" in window;
 
   // Form state
   const [showForm,      setShowForm]      = useState(false);
@@ -150,6 +169,12 @@ export default function Clientes() {
     const t = setTimeout(() => setToast(null), 4000);
     return () => clearTimeout(t);
   }, [toast]);
+
+  useEffect(() => {
+    if (!toastImport) return;
+    const t = setTimeout(() => setToastImport(null), 5000);
+    return () => clearTimeout(t);
+  }, [toastImport]);
 
   useEffect(() => {
     const isOpen = showForm || !!confirmDelete || showNiver;
@@ -312,6 +337,87 @@ export default function Clientes() {
     await supabase.from("clientes").delete().eq("id", id);
     await fetchClientes(userId);
     setConfirmDelete(null);
+  };
+
+  // ═══ IMPORTAÇÃO DE CONTATOS (PRO) ═══
+
+  const handleAbrirImportarContatos = async () => {
+    // Não é PRO → leva pra página de assinar
+    if (!usuarioEhPro) {
+      navigate("/assinar");
+      return;
+    }
+    // Não suporta → alerta (não deveria acontecer, botão só aparece se suporta)
+    if (!suportaContatos) {
+      alert("Essa funcionalidade só funciona no Chrome do Android. Use um celular Android pra importar contatos.");
+      return;
+    }
+
+    setImportError(null);
+    try {
+      // @ts-ignore - Contacts API não tem types nativos
+      const contatosAndroid = await navigator.contacts.select(["name", "tel"], { multiple: true });
+      if (!contatosAndroid || contatosAndroid.length === 0) return;
+
+      // Normaliza telefones existentes no banco pra detectar duplicatas
+      const telefonesExistentes = new Set(
+        clientes
+          .map(c => (c.whatsapp || "").replace(/\D/g, ""))
+          .filter(t => t.length >= 10)
+      );
+
+      const importados: ImportContato[] = contatosAndroid
+        .map((c: any) => {
+          const nome = Array.isArray(c.name) && c.name.length > 0 ? c.name[0] : "";
+          const telRaw = Array.isArray(c.tel) && c.tel.length > 0 ? c.tel[0] : "";
+          const telNorm = (telRaw || "").replace(/\D/g, "").replace(/^55/, ""); // Remove código país BR
+          return {
+            nome: nome.trim(),
+            telefone: maskPhone(telNorm),
+            telefoneNormalizado: telNorm,
+            duplicado: telNorm.length >= 10 && telefonesExistentes.has(telNorm),
+            selecionado: !(telNorm.length >= 10 && telefonesExistentes.has(telNorm)) && !!nome.trim() && telNorm.length >= 10,
+          };
+        })
+        .filter((c: ImportContato) => c.nome || c.telefone); // Descarta contatos vazios
+
+      setImportSheet(importados);
+    } catch (err: any) {
+      console.error("Erro ao selecionar contatos:", err);
+      if (err.name === "SecurityError") {
+        setImportError("Permissão negada pra acessar contatos.");
+      } else {
+        setImportError(err.message || "Erro ao acessar contatos");
+      }
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!importSheet || !userId) return;
+    const paraCadastrar = importSheet.filter(c => c.selecionado && !c.duplicado && c.nome && c.telefoneNormalizado.length >= 10);
+    if (paraCadastrar.length === 0) return;
+
+    setImporting(true);
+    const payloads = paraCadastrar.map(c => ({
+      user_id: userId,
+      nome: c.nome,
+      whatsapp: c.telefone,
+    }));
+
+    const { data, error } = await supabase.from("clientes").insert(payloads).select("id");
+    setImporting(false);
+
+    if (error) {
+      alert("Erro ao importar: " + error.message);
+      return;
+    }
+
+    const importadosCount = data?.length || 0;
+    const duplicadosCount = importSheet.filter(c => c.duplicado).length;
+
+    await fetchClientes(userId);
+    setImportSheet(null);
+    setToastImport({ importados: importadosCount, duplicados: duplicadosCount });
   };
 
   // ── Derived ───────────────────────────────────────────────────────────────
@@ -1309,6 +1415,16 @@ export default function Clientes() {
           </button>
         </div>
 
+        {/* Botão PRO importar contatos */}
+        <button className="cli-btn-pro cli-btn-pro--mobile" onClick={handleAbrirImportarContatos}>
+          <span style={{fontSize: "1rem"}}>📱</span>
+          Importar contatos do celular
+          <span className="cli-btn-pro-badge">
+            <img src="/coroa.png" alt="" style={{width: 10, height: 10, verticalAlign: "middle"}} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            PRO
+          </span>
+        </button>
+
         {/* Banner de aniversariantes destaque (se tem no mês) */}
         {aniversariantes.length > 0 && (
           <button className="cli-aniv-banner" onClick={() => setShowNiver(true)}>
@@ -1436,6 +1552,14 @@ export default function Clientes() {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" style={{marginRight: 6}}><path d="M12 5v14M5 12h14"/></svg>
                 Novo cliente
               </button>
+              <button className="cli-btn-pro" onClick={handleAbrirImportarContatos} title={usuarioEhPro ? "Importar contatos do celular" : "Feature PRO — clique pra saber mais"}>
+                <span style={{fontSize: "1rem"}}>📱</span>
+                Importar contatos
+                <span className="cli-btn-pro-badge">
+                  <img src="/coroa.png" alt="" style={{width: 10, height: 10, verticalAlign: "middle"}} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  PRO
+                </span>
+              </button>
               <div className="cli-search-wrap">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input type="text" placeholder="Buscar por nome, telefone ou e-mail..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
@@ -1517,6 +1641,121 @@ export default function Clientes() {
       )}
 
       {formJSX}
+
+      {/* ═══════════════════════ MODAL IMPORTAÇÃO CONTATOS ═══════════════════════ */}
+      {importSheet && (() => {
+        const totalNovos = importSheet.filter(c => !c.duplicado).length;
+        const totalDuplicados = importSheet.filter(c => c.duplicado).length;
+        const totalSelecionados = importSheet.filter(c => c.selecionado && !c.duplicado).length;
+        const marcarTodos = () => setImportSheet(prev => prev?.map(c => ({ ...c, selecionado: !c.duplicado && !!c.nome && c.telefoneNormalizado.length >= 10 })) || null);
+        const desmarcarTodos = () => setImportSheet(prev => prev?.map(c => ({ ...c, selecionado: false })) || null);
+        const toggleItem = (idx: number) => setImportSheet(prev => prev?.map((c, i) => i === idx ? { ...c, selecionado: !c.selecionado } : c) || null);
+        return (
+          <div className="cli-imp-ov" onClick={() => !importing && setImportSheet(null)}>
+            <div className="cli-imp-modal" onClick={e => e.stopPropagation()}>
+              <div className="cli-imp-hdr">
+                <div className="cli-imp-icon">📱</div>
+                <div className="cli-imp-hdr-t">
+                  <h2 className="cli-imp-title">Importar {importSheet.length} contato{importSheet.length !== 1 ? "s" : ""}</h2>
+                  <p className="cli-imp-sub">Revise antes de cadastrar</p>
+                </div>
+                <button className="cli-imp-close" onClick={() => setImportSheet(null)} disabled={importing}>✕</button>
+              </div>
+
+              <div className="cli-imp-stats">
+                <div className="cli-imp-stat">
+                  <div className="cli-imp-stat-v cli-imp-stat-v--green">{totalNovos}</div>
+                  <div className="cli-imp-stat-l">Novos</div>
+                </div>
+                <div className="cli-imp-stat">
+                  <div className="cli-imp-stat-v cli-imp-stat-v--gray">{totalDuplicados}</div>
+                  <div className="cli-imp-stat-l">Já existem</div>
+                </div>
+                <div className="cli-imp-stat">
+                  <div className="cli-imp-stat-v">{totalSelecionados}</div>
+                  <div className="cli-imp-stat-l">Selecionados</div>
+                </div>
+              </div>
+
+              <div className="cli-imp-list">
+                {importSheet.map((c, idx) => {
+                  const semTel = c.telefoneNormalizado.length < 10;
+                  const inputInvalido = c.duplicado || semTel || !c.nome;
+                  const iniciais = c.nome ? c.nome.split(/\s+/).slice(0, 2).map(s => s[0]?.toUpperCase() || "").join("") : "?";
+                  return (
+                    <div key={idx} className={`cli-imp-item${c.selecionado ? " cli-imp-item--sel" : ""}${c.duplicado ? " cli-imp-item--dup" : ""}${semTel ? " cli-imp-item--warn" : ""}`}>
+                      <button
+                        className={`cli-imp-check${c.selecionado ? " cli-imp-check--on" : ""}${inputInvalido ? " cli-imp-check--disabled" : ""}`}
+                        onClick={() => !inputInvalido && toggleItem(idx)}
+                        disabled={inputInvalido}
+                        aria-label={c.selecionado ? "Desmarcar" : "Marcar"}
+                      >
+                        {c.duplicado ? "🚫" : semTel ? "!" : c.selecionado ? "✓" : ""}
+                      </button>
+                      <div className={`cli-imp-avatar${c.duplicado ? " cli-imp-avatar--gray" : ""}`}>{iniciais}</div>
+                      <div className="cli-imp-info">
+                        <div className="cli-imp-nome">{c.nome || "(sem nome)"}</div>
+                        <div className="cli-imp-tel">{c.telefone || "(sem telefone)"}</div>
+                      </div>
+                      {c.duplicado ? (
+                        <span className="cli-imp-tag cli-imp-tag--dup">Já existe</span>
+                      ) : semTel ? (
+                        <span className="cli-imp-tag cli-imp-tag--warn">Sem telefone</span>
+                      ) : (
+                        <span className="cli-imp-tag cli-imp-tag--new">Novo</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="cli-imp-toolbar">
+                <button className="cli-imp-toolbar-btn" onClick={marcarTodos}>✓ Marcar todos</button>
+                <button className="cli-imp-toolbar-btn" onClick={desmarcarTodos}>✕ Desmarcar todos</button>
+              </div>
+
+              <div className="cli-imp-footer">
+                <button className="cli-imp-btn-cancel" onClick={() => setImportSheet(null)} disabled={importing}>Cancelar</button>
+                <button
+                  className="cli-imp-btn-import"
+                  onClick={handleConfirmImport}
+                  disabled={importing || totalSelecionados === 0}
+                >
+                  {importing ? <span className="spinner-sm" /> : `✓ IMPORTAR ${totalSelecionados} CLIENTE${totalSelecionados !== 1 ? "S" : ""}`}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Erro de importação */}
+      {importError && (
+        <div className="cli-toast" role="status" style={{background: "linear-gradient(135deg, #DC2626, #B91C1C)", boxShadow: "0 10px 30px rgba(220,38,38,0.35)"}}>
+          <div className="cli-toast-icon">⚠️</div>
+          <div className="cli-toast-body">
+            <div className="cli-toast-t">Erro ao importar</div>
+            <div className="cli-toast-d">{importError}</div>
+          </div>
+          <button className="cli-toast-close" onClick={() => setImportError(null)} aria-label="Fechar">✕</button>
+        </div>
+      )}
+
+      {/* Toast de sucesso importação */}
+      {toastImport && (
+        <div className="cli-toast" role="status">
+          <div className="cli-toast-icon">
+            <span style={{fontSize: 18}}>🎉</span>
+          </div>
+          <div className="cli-toast-body">
+            <div className="cli-toast-t">{toastImport.importados} cliente{toastImport.importados !== 1 ? "s" : ""} importado{toastImport.importados !== 1 ? "s" : ""}!</div>
+            {toastImport.duplicados > 0 && (
+              <div className="cli-toast-d">{toastImport.duplicados} já {toastImport.duplicados === 1 ? "existia" : "existiam"} e {toastImport.duplicados === 1 ? "foi ignorada" : "foram ignorados"}</div>
+            )}
+          </div>
+          <button className="cli-toast-close" onClick={() => setToastImport(null)} aria-label="Fechar">✕</button>
+        </div>
+      )}
 
       {/* ═══════════════════════ TOAST ═══════════════════════ */}
       {toast && (
@@ -1677,6 +1916,302 @@ export default function Clientes() {
         .spinner-sm      { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         .spinner-sm-dark { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--text-title); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
         @keyframes spin  { to { transform: rotate(360deg); } }
+
+        /* ═══ BOTÃO PRO (Importar contatos) ═══ */
+        .cli-btn-pro {
+          display: inline-flex; align-items: center;
+          gap: var(--space-2);
+          background: linear-gradient(135deg, #FBBF24, #F59E0B);
+          color: #78350F;
+          border: none;
+          padding: 12px 18px;
+          border-radius: var(--radius-md);
+          font-size: var(--text-sm);
+          font-weight: var(--fw-black);
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+          box-shadow: 0 4px 0 #B45309;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          white-space: nowrap;
+          transition: transform 0.08s ease, box-shadow 0.08s ease;
+          position: relative;
+        }
+        .cli-btn-pro:hover { filter: brightness(1.05); }
+        .cli-btn-pro:active {
+          transform: translateY(4px);
+          box-shadow: 0 0 0 #B45309;
+        }
+        .cli-btn-pro-badge {
+          background: #000;
+          color: #FBBF24;
+          padding: 3px 7px;
+          border-radius: var(--radius-sm);
+          font-size: 0.6rem;
+          font-weight: var(--fw-black);
+          letter-spacing: 0.06em;
+          display: inline-flex; align-items: center;
+          gap: 3px;
+          line-height: 1;
+        }
+        .cli-btn-pro--mobile {
+          width: 100%;
+          justify-content: center;
+          margin-top: var(--space-2);
+        }
+
+        /* ═══ MODAL IMPORTAÇÃO ═══ */
+        .cli-imp-ov {
+          position: fixed; inset: 0; z-index: 1100;
+          background: rgba(45, 31, 38, 0.6);
+          backdrop-filter: blur(6px);
+          display: flex; align-items: flex-end; justify-content: center;
+          padding: 0;
+          animation: cliImpOvIn 0.2s ease;
+          font-family: var(--font-base);
+        }
+        @keyframes cliImpOvIn { from { opacity: 0; } to { opacity: 1; } }
+        .cli-imp-modal {
+          background: var(--bg-card);
+          border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+          width: 100%;
+          max-width: 100%;
+          max-height: 92vh;
+          display: flex; flex-direction: column;
+          overflow: hidden;
+          animation: cliImpModalIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes cliImpModalIn {
+          from { transform: translateY(100%); }
+          to   { transform: translateY(0); }
+        }
+        .cli-imp-modal, .cli-imp-modal * { font-family: var(--font-base) !important; }
+
+        .cli-imp-hdr {
+          background: linear-gradient(180deg, var(--accent-bg, #F5EEF0), var(--bg-card));
+          padding: var(--space-4);
+          display: flex; align-items: center;
+          gap: var(--space-3);
+          border-bottom: 1px solid var(--border);
+          flex-shrink: 0;
+        }
+        .cli-imp-icon {
+          width: 44px; height: 44px; border-radius: 50%;
+          background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+          color: var(--text-inverse);
+          display: flex; align-items: center; justify-content: center;
+          font-size: var(--text-xl);
+          flex-shrink: 0;
+        }
+        .cli-imp-hdr-t { flex: 1; min-width: 0; }
+        .cli-imp-title {
+          font-size: var(--text-md);
+          font-weight: var(--fw-black);
+          color: var(--text-title);
+          letter-spacing: -0.01em;
+          margin: 0;
+        }
+        .cli-imp-sub {
+          font-size: var(--text-xs);
+          color: var(--text-secondary);
+          margin: 2px 0 0;
+        }
+        .cli-imp-close {
+          width: 32px; height: 32px;
+          border: none; background: transparent;
+          color: var(--text-muted);
+          font-size: var(--text-lg);
+          cursor: pointer;
+          border-radius: var(--radius-full);
+        }
+        .cli-imp-close:hover:not(:disabled) { background: var(--bg-subtle); }
+        .cli-imp-close:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Stats */
+        .cli-imp-stats {
+          display: flex; gap: var(--space-2);
+          padding: var(--space-3) var(--space-4);
+          background: var(--accent-bg, #F5EEF0);
+          border-bottom: 1px solid var(--border);
+        }
+        .cli-imp-stat {
+          flex: 1;
+          background: var(--bg-card);
+          border-radius: var(--radius-sm);
+          padding: 8px 10px;
+          text-align: center;
+          border: 1.5px solid var(--border);
+        }
+        .cli-imp-stat-v {
+          font-size: var(--text-lg);
+          font-weight: var(--fw-black);
+          color: var(--primary);
+          line-height: 1;
+        }
+        .cli-imp-stat-v--gray { color: var(--text-muted); }
+        .cli-imp-stat-v--green { color: #16A34A; }
+        .cli-imp-stat-l {
+          font-size: 0.6rem;
+          color: var(--text-secondary);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          font-weight: var(--fw-bold);
+          margin-top: 4px;
+        }
+
+        /* List */
+        .cli-imp-list {
+          flex: 1;
+          padding: var(--space-2) var(--space-3);
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+        .cli-imp-item {
+          display: flex; align-items: center;
+          gap: var(--space-3);
+          padding: 10px 8px;
+          border-radius: var(--radius-md);
+          border: 1.5px solid transparent;
+          margin-bottom: 4px;
+          transition: background var(--dur-fast);
+        }
+        .cli-imp-item--sel { background: var(--primary-light); border-color: rgba(232,90,140,0.2); }
+        .cli-imp-item--dup { opacity: 0.6; background: #FEF3C7; }
+        .cli-imp-item--warn { background: #FEF3C7; }
+        .cli-imp-check {
+          width: 22px; height: 22px;
+          border-radius: 6px;
+          border: 2px solid var(--border);
+          background: var(--bg-card);
+          flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          font-size: var(--text-xs);
+          font-weight: var(--fw-black);
+          color: var(--text-muted);
+        }
+        .cli-imp-check--on {
+          background: var(--primary);
+          border-color: var(--primary);
+          color: var(--text-inverse);
+        }
+        .cli-imp-check--disabled {
+          background: var(--bg-subtle);
+          border-color: var(--border);
+          cursor: not-allowed;
+        }
+        .cli-imp-avatar {
+          width: 36px; height: 36px; border-radius: 50%;
+          background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+          color: var(--text-inverse);
+          display: flex; align-items: center; justify-content: center;
+          font-size: var(--text-xs);
+          font-weight: var(--fw-black);
+          flex-shrink: 0;
+        }
+        .cli-imp-avatar--gray { background: var(--bg-subtle); color: var(--text-muted); }
+        .cli-imp-info { flex: 1; min-width: 0; }
+        .cli-imp-nome {
+          font-size: var(--text-sm);
+          font-weight: var(--fw-bold);
+          color: var(--text-title);
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .cli-imp-tel {
+          font-size: var(--text-xs);
+          color: var(--text-secondary);
+          margin-top: 1px;
+        }
+        .cli-imp-tag {
+          padding: 3px 8px;
+          border-radius: var(--radius-full);
+          font-size: 0.6rem;
+          font-weight: var(--fw-black);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          flex-shrink: 0;
+        }
+        .cli-imp-tag--new { background: #DCFCE7; color: #14532D; }
+        .cli-imp-tag--dup { background: #FEF3C7; color: #92400E; }
+        .cli-imp-tag--warn { background: #FEE2E2; color: #991B1B; }
+
+        /* Toolbar */
+        .cli-imp-toolbar {
+          display: flex; justify-content: space-between;
+          padding: 8px var(--space-4);
+          background: var(--accent-bg, #F5EEF0);
+          border-top: 1px solid var(--border);
+        }
+        .cli-imp-toolbar-btn {
+          background: transparent;
+          border: none;
+          color: var(--primary);
+          font-size: var(--text-xs);
+          font-weight: var(--fw-black);
+          cursor: pointer;
+          padding: 4px 8px;
+          font-family: var(--font-base) !important;
+        }
+        .cli-imp-toolbar-btn:hover { text-decoration: underline; }
+
+        /* Footer */
+        .cli-imp-footer {
+          padding: var(--space-3) var(--space-4);
+          padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
+          display: flex; gap: var(--space-2);
+          background: var(--bg-card);
+          border-top: 1px solid var(--border);
+        }
+        .cli-imp-btn-cancel {
+          flex: 1;
+          padding: 12px;
+          background: var(--accent-bg, #F5EEF0);
+          border: none;
+          border-radius: var(--radius-md);
+          font-size: var(--text-sm);
+          font-weight: var(--fw-bold);
+          color: var(--text-secondary);
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+        }
+        .cli-imp-btn-import {
+          flex: 2;
+          padding: 12px;
+          background: var(--primary);
+          color: var(--text-inverse);
+          border: none;
+          border-radius: var(--radius-md);
+          font-size: var(--text-sm);
+          font-weight: var(--fw-black);
+          text-transform: uppercase;
+          cursor: pointer;
+          box-shadow: 0 4px 0 var(--primary-dark);
+          font-family: var(--font-base) !important;
+          transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }
+        .cli-imp-btn-import:hover:not(:disabled) { filter: brightness(1.05); }
+        .cli-imp-btn-import:active:not(:disabled) {
+          transform: translateY(4px);
+          box-shadow: 0 0 0 var(--primary-dark);
+        }
+        .cli-imp-btn-import:disabled {
+          background: var(--text-disabled);
+          box-shadow: 0 4px 0 #A8A0A4;
+          cursor: not-allowed;
+        }
+
+        /* Desktop modal */
+        @media (min-width: 900px) {
+          .cli-imp-ov {
+            align-items: center;
+            padding: var(--space-6);
+          }
+          .cli-imp-modal {
+            border-radius: var(--radius-xl);
+            max-width: 560px;
+            max-height: 85vh;
+          }
+        }
 
         /* ═══ CHIPS DE FILTRO ═══ */
         .cli-chips {
