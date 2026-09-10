@@ -882,8 +882,11 @@ export default function Clientes() {
         }
         .cli-field textarea { resize: none; min-height: 60px; }
         .cli-row-2 {
-          display: grid; grid-template-columns: 1fr 1fr;
+          display: grid; grid-template-columns: 1fr;
           gap: var(--space-2);
+        }
+        @media (min-width: 900px) {
+          .cli-row-2 { grid-template-columns: 1fr 1fr; }
         }
 
         /* Foto */

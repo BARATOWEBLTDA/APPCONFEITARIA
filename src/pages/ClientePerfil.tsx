@@ -212,7 +212,7 @@ export default function ClientePerfil() {
           {diasAniv !== null && diasAniv <= 30 && (
             <span className="cp-badge">🎂 {cliente.data_nascimento?.split("-").reverse().slice(0,2).join("/")} (em {diasAniv} dias)</span>
           )}
-          {cliente.cidade && <span className="cp-badge">📍 {cliente.cidade}</span>}
+          {cliente.cidade && <span className="cp-badge">📍 {cliente.cidade}{cliente.estado ? ` - ${cliente.estado}` : ""}</span>}
           {(cliente.origem || cliente.como_conheceu) && <span className="cp-badge">📱 {cliente.origem || cliente.como_conheceu}</span>}
           {pedidosValidos.length >= 3 && <span className="cp-badge">👑 Top cliente</span>}
         </div>
