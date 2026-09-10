@@ -1902,10 +1902,15 @@ export default function Produtos() {
           max-height: 92vh;
           display: flex;
           flex-direction: column;
+          font-family: var(--font-base);
           border-radius: 20px 20px 0 0;
           animation: prodModalSlideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
           overflow: hidden;
           box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
+        }
+        .prod-modal *, .prod-modal button, .prod-modal input,
+        .prod-modal select, .prod-modal textarea {
+          font-family: inherit;
         }
         @keyframes prodModalSlideUp {
           from { transform: translateY(100%); }
