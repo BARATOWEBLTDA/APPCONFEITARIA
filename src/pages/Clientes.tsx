@@ -54,6 +54,27 @@ function formatPhone(phone?: string) {
   return phone;
 }
 
+// Máscara live durante digitação: (00) 9 0000-0000 ou (00) 0000-0000
+function maskPhone(value: string): string {
+  const d = value.replace(/\D/g, "").slice(0, 11);
+  if (d.length === 0) return "";
+  if (d.length <= 2) return `(${d}`;
+  if (d.length <= 3) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 7) {
+    // Se começa com 9 (celular), separa depois do 9
+    if (d.length >= 3 && d[2] === "9") {
+      return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3)}`;
+    }
+    return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  }
+  // 8-11 dígitos
+  if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  // 8-9 dígitos: assume celular com 9
+  if (d.length >= 8 && d[2] === "9") return `(${d.slice(0, 2)}) ${d.slice(2, 3)} ${d.slice(3, 7)}-${d.slice(7)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+}
+
 function getDaysUntil(data: string) {
   const hoje = new Date();
   const nasc = new Date(data);
@@ -284,7 +305,7 @@ export default function Clientes() {
             </div>
             <div className="cli-field">
               <label>WhatsApp <span className="cli-req">*</span></label>
-              <input type="tel" placeholder="(00) 9 0000-0000" value={completo.whatsapp} onChange={e => setCompleto(f => ({...f, whatsapp: e.target.value}))} autoComplete="off" />
+              <input type="tel" placeholder="(00) 9 0000-0000" value={completo.whatsapp} onChange={e => setCompleto(f => ({...f, whatsapp: maskPhone(e.target.value)}))} autoComplete="off" maxLength={16} />
             </div>
 
             {/* ═══ + AVANÇADO (toggle) ═══ */}
@@ -504,7 +525,7 @@ export default function Clientes() {
 
         /* Header */
         .cli-modal-hdr {
-          background: linear-gradient(180deg, var(--primary-light), var(--bg-card));
+          background: linear-gradient(180deg, var(--accent-bg, #F5EEF0), var(--bg-card));
           padding: var(--space-4) var(--space-4) var(--space-3);
           display: flex; align-items: center;
           gap: var(--space-3);
@@ -646,7 +667,7 @@ export default function Clientes() {
         .cli-foto-picker {
           width: 56px; height: 56px;
           border-radius: 50%;
-          background: var(--bg-subtle);
+          background: var(--accent-bg, #F5EEF0);
           border: 2px dashed var(--text-disabled);
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
@@ -676,7 +697,7 @@ export default function Clientes() {
         /* + Avançado (fechado) */
         .cli-adv-toggle {
           display: flex; align-items: center; justify-content: space-between;
-          background: var(--bg-subtle);
+          background: var(--accent-bg, #F5EEF0);
           border: 1.5px dashed var(--text-disabled);
           border-radius: var(--radius-md);
           padding: 14px 16px;
@@ -688,7 +709,7 @@ export default function Clientes() {
         }
         .cli-adv-toggle:hover {
           border-color: var(--primary);
-          background: var(--primary-light);
+          background: var(--bg-card);
         }
         .cli-adv-toggle-info { flex: 1; }
         .cli-adv-toggle-t {
@@ -713,7 +734,8 @@ export default function Clientes() {
 
         /* Avançado (aberto) */
         .cli-adv-open {
-          background: var(--primary-light);
+          background: var(--accent-bg, #F5EEF0);
+          border: 1.5px solid var(--border);
           border-radius: var(--radius-md);
           padding: var(--space-4);
           display: flex; flex-direction: column;
@@ -723,12 +745,12 @@ export default function Clientes() {
         .cli-adv-hdr {
           display: flex; align-items: center; justify-content: space-between;
           padding-bottom: var(--space-2);
-          border-bottom: 1px solid rgba(232, 90, 140, 0.2);
+          border-bottom: 1px solid var(--border);
         }
         .cli-adv-hdr-t {
           font-size: var(--text-xs);
           font-weight: var(--fw-black);
-          color: var(--primary);
+          color: var(--text-secondary);
           text-transform: uppercase;
           letter-spacing: 0.06em;
         }
@@ -742,7 +764,7 @@ export default function Clientes() {
           padding: 4px 8px;
           border-radius: var(--radius-sm);
         }
-        .cli-adv-collapse:hover { background: rgba(255,255,255,0.5); color: var(--text-title); }
+        .cli-adv-collapse:hover { background: var(--bg-card); color: var(--text-title); }
         .cli-adv-open .cli-field input,
         .cli-adv-open .cli-field select,
         .cli-adv-open .cli-field textarea {
@@ -772,7 +794,7 @@ export default function Clientes() {
         .cli-btn-cancel {
           flex: 1;
           padding: 12px;
-          background: var(--bg-subtle);
+          background: var(--accent-bg, #F5EEF0);
           border: none;
           border-radius: var(--radius-md);
           font-size: var(--text-sm);
@@ -832,7 +854,7 @@ export default function Clientes() {
             align-items: center; justify-content: center;
             gap: var(--space-3);
             padding: var(--space-5);
-            background: linear-gradient(180deg, var(--bg-subtle), var(--primary-light));
+            background: var(--accent-bg, #F5EEF0);
             border-left: 1px solid var(--border);
           }
           .cli-preview-lbl {
