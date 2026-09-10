@@ -248,31 +248,45 @@ export default function Clientes() {
     if (!userId) return;
     setSaving(true);
     if (!completo.nome.trim() || !completo.whatsapp?.trim()) { setSaving(false); return; }
+
+    // Converte strings vazias em null (Supabase reclama de "" em campos DATE/UUID)
+    const toNullable = (v?: string) => (v && v.trim() ? v.trim() : null);
     const payload: any = {
       user_id: userId,
-      ...completo,
       nome: completo.nome.trim(),
+      whatsapp: toNullable(completo.whatsapp),
       foto_url: completo.foto_url || null,
-      email: completo.email?.trim() || null,
-      whatsapp: completo.whatsapp?.trim() || null,
-      cpf_cnpj: completo.cpf_cnpj?.trim() || null,
-      observacoes: completo.observacoes?.trim() || null,
-      cep: completo.cep?.trim() || null,
-      rua: completo.rua?.trim() || null,
-      numero: completo.numero?.trim() || null,
-      complemento: completo.complemento?.trim() || null,
-      bairro: completo.bairro?.trim() || null,
-      cidade: completo.cidade?.trim() || null,
-      estado: completo.estado?.trim() || null,
-      pais: completo.pais?.trim() || "Brasil",
-      origem: completo.origem || null,
+      email: toNullable(completo.email),
+      cpf_cnpj: toNullable(completo.cpf_cnpj),
+      data_nascimento: toNullable(completo.data_nascimento),
+      sexo: toNullable(completo.sexo),
+      observacoes: toNullable(completo.observacoes),
+      cep: toNullable(completo.cep),
+      rua: toNullable(completo.rua),
+      numero: toNullable(completo.numero),
+      complemento: toNullable(completo.complemento),
+      bairro: toNullable(completo.bairro),
+      cidade: toNullable(completo.cidade),
+      estado: toNullable(completo.estado),
+      pais: toNullable(completo.pais) || "Brasil",
+      origem: toNullable(completo.origem),
     };
 
     let savedId = editando;
     if (editando) {
-      await supabase.from("clientes").update(payload).eq("id", editando);
+      const { error } = await supabase.from("clientes").update(payload).eq("id", editando);
+      if (error) {
+        alert("Erro ao atualizar: " + error.message);
+        setSaving(false);
+        return;
+      }
     } else {
-      const { data: inserted } = await supabase.from("clientes").insert(payload).select("id").single();
+      const { data: inserted, error } = await supabase.from("clientes").insert(payload).select("id").single();
+      if (error) {
+        alert("Erro ao cadastrar: " + error.message);
+        setSaving(false);
+        return;
+      }
       if (inserted) savedId = inserted.id;
     }
 
@@ -282,9 +296,14 @@ export default function Clientes() {
     setEditando(null);
     setSaving(false);
 
-    // Toast (só ao criar novo, não ao editar)
+    // Cliente NOVO → navega pro perfil (assim ela vê o resultado)
+    // Cliente EDITADO → fica na lista
     if (!wasEditing && savedId) {
       setToast({ nome: completo.nome.trim(), id: savedId });
+      // Auto-navega pro perfil após 1.5s (dá tempo de ver o toast)
+      setTimeout(() => {
+        navigate(`/clientes/${savedId}`);
+      }, 1500);
     }
   };
 
@@ -893,11 +912,13 @@ export default function Clientes() {
             display: grid;
             grid-template-columns: 1.3fr 1fr;
             overflow: hidden;
+            padding: var(--space-4);
+            gap: var(--space-3);
           }
           .cli-modal-body {
-            padding: var(--space-5);
+            padding: var(--space-4);
             overflow-y: auto;
-            max-height: calc(90vh - 170px);
+            max-height: calc(90vh - 180px);
           }
           .cli-modal-preview {
             display: flex; flex-direction: column;
@@ -905,7 +926,8 @@ export default function Clientes() {
             gap: var(--space-3);
             padding: var(--space-5);
             background: var(--accent-bg, #F5EEF0);
-            border-left: 1px solid var(--border);
+            border-left: none;
+            border-radius: var(--radius-lg);
           }
           .cli-preview-lbl {
             font-size: 0.65rem;
@@ -1046,7 +1068,7 @@ export default function Clientes() {
               clientes e fechar mais encomendas.
             </p>
             <div className="cli-hero-actions">
-              <button className="cli-hero-btn-primary" onClick={() => openNew("rapido")}>
+              <button className="cli-hero-btn-primary" onClick={() => openNew()}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
                 CADASTRAR CLIENTE
               </button>
@@ -1279,7 +1301,7 @@ export default function Clientes() {
 
         {/* Botões de ação */}
         <div className="mob-actions">
-          <button className="mob-btn-primary" onClick={() => openNew("rapido")}>
+          <button className="mob-btn-primary" onClick={() => openNew()}>
             + Cadastrar cliente
           </button>
           <button className="mob-btn-secondary" onClick={() => setShowNiver(true)}>
@@ -1410,8 +1432,10 @@ export default function Clientes() {
         <div className="cli-layout">
           <div className="cli-main">
             <div className="cli-topbar">
-              <button className="cli-btn-new" onClick={() => openNew("rapido")}>⚡ Cadastro rápido</button>
-              <button className="cli-btn-completo" onClick={() => openNew("completo")}>📋 Cadastro completo</button>
+              <button className="cli-btn-new" onClick={() => openNew()}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" style={{marginRight: 6}}><path d="M12 5v14M5 12h14"/></svg>
+                Novo cliente
+              </button>
               <div className="cli-search-wrap">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input type="text" placeholder="Buscar por nome, telefone ou e-mail..." value={search} onChange={e => setSearch(e.target.value)} className="cli-search" autoComplete="off" />
@@ -1556,9 +1580,10 @@ export default function Clientes() {
         .cli-sidebar { display: flex; flex-direction: column; gap: 1rem; padding-top: 4.5rem; }
         .cli-topbar  { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; }
 
-        .cli-btn-new     { padding: 0.75rem 1.1rem; background: var(--text-title); color: white; border: none; border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-        .cli-btn-completo{ padding: 0.75rem 1.1rem; background: var(--bg-card); color: var(--text-title); border: 1.5px solid var(--border); border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
-        .cli-btn-completo:hover { border-color: var(--text-title); color: var(--text-title); }
+        .cli-btn-new     { padding: 12px 20px; background: var(--primary); color: var(--text-inverse); border: none; border-radius: var(--radius-md); font-family: var(--font-base) !important; font-size: var(--text-sm); font-weight: var(--fw-black); cursor: pointer; white-space: nowrap; flex-shrink: 0; box-shadow: 0 4px 0 var(--primary-dark); letter-spacing: 0.02em; text-transform: uppercase; display: inline-flex; align-items: center; transition: transform 0.08s ease, box-shadow 0.08s ease; }
+        .cli-btn-new:hover { filter: brightness(1.05); }
+        .cli-btn-new:active { transform: translateY(4px); box-shadow: 0 0 0 var(--primary-dark); }
+        .cli-btn-completo{ display: none; }
 
         .cli-search-wrap { display: flex; align-items: center; gap: 0.5rem; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem 1rem; flex: 1; min-width: 200px; }
         .cli-search      { border: none; outline: none; flex: 1; font-family: inherit; font-size: var(--font-button); color: var(--text-title); background: transparent; }
