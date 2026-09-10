@@ -755,53 +755,55 @@ export default function Produtos() {
             {/* ══════ WIZARD STEP 1 ══════ */}
             {wizardStep === 1 && (
               <div className="prod-modal-body">
-                <div>
-                  <p className="wiz-subtitle">Vamos configurar seu produto para aparecer no seu catálogo.</p>
-                  <p className="wiz-reassurance">Você poderá editar essas configurações quando quiser.</p>
-                </div>
-
                 {/* Barra de progresso */}
                 <div>
-                  <p className="wiz-step-label">Passo 1 de 2</p>
+                  <p className="wiz-step-label">Etapa 1 de 2</p>
                   <div className="wiz-progress">
                     <div className="wiz-progress-bar wiz-progress-bar--active" />
                     <div className="wiz-progress-bar" />
                   </div>
                 </div>
 
-                {/* Tipo */}
-                <p className="wiz-section-title">Como é o seu produto?</p>
+                {/* Título grande */}
+                <div className="wiz-hero">
+                  <h3 className="wiz-hero-title">O que você vende? 🎂</h3>
+                  <p className="wiz-hero-sub">Escolha o tipo pra gente organizar melhor</p>
+                </div>
+
+                {/* Tipo — cards horizontais */}
                 <div className="wiz-tipo-list">
                   {[
-                    { tipo: "simples" as const, icon: "📦", title: "Produto simples", desc: "Uma única versão.", example: "Ex.: Pudim Tradicional" },
-                    { tipo: "variacoes" as const, icon: "🎂", title: "Com variações", desc: "Possui tamanhos, sabores ou versões diferentes.", example: "Ex.: Bolo de Chocolate — 15cm, 20cm, 25cm" },
-                  ].map(({ tipo, icon, title, desc, example }) => (
+                    { tipo: "simples" as const, icon: "🍰", title: "Produto simples", desc: "Uma versão, um preço" },
+                    { tipo: "variacoes" as const, icon: "🎂", title: "Com variações", desc: "Tamanhos, sabores ou versões (P, M, G)" },
+                  ].map(({ tipo, icon, title, desc }) => (
                     <button key={tipo} className={`wiz-tipo-card${wizardTipo === tipo ? " wiz-tipo-card--active" : ""}`} onClick={() => setWizardTipo(tipo)}>
-                      {wizardTipo === tipo && <div className="wiz-card-check"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-inverse)" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>}
                       <span className="wiz-tipo-icon">{icon}</span>
-                      <p className="wiz-tipo-title">{title}</p>
-                      <p className="wiz-tipo-desc">{desc}</p>
-                      <p className="wiz-tipo-example">{example}</p>
+                      <div className="wiz-tipo-info">
+                        <p className="wiz-tipo-title">{title}</p>
+                        <p className="wiz-tipo-desc">{desc}</p>
+                      </div>
+                      <div className={`wiz-tipo-radio${wizardTipo === tipo ? " wiz-tipo-radio--active" : ""}`}>
+                        {wizardTipo === tipo && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                      </div>
                     </button>
                   ))}
                 </div>
 
                 {/* Recursos extras */}
-                <p className="wiz-section-title">Recursos extras</p>
-                <p className="wiz-micro">Escolha apenas o necessário. Você poderá adicionar mais opções depois.</p>
+                <p className="wiz-section-title">Recursos extras <span className="wiz-optional">opcional</span></p>
                 <div className="wiz-opts-list">
                   {[
-                    { key: "personalizacao" as const, icon: "🎨", title: "Personalização", desc: "Permita que o cliente escolha opções do produto.", example: "Ex.: massa, recheio e cobertura." },
-                    { key: "complementos" as const, icon: "🎁", title: "Complementos", desc: "Itens que podem ser adicionados ao pedido.", example: "Ex.: vela, topo de bolo e embalagem especial." },
-                  ].map(({ key, icon, title, desc, example }) => (
+                    { key: "personalizacao" as const, icon: "🎨", title: "Personalização", desc: "Cliente escolhe massa, recheio, cobertura..." },
+                    { key: "complementos" as const, icon: "🎁", title: "Complementos", desc: "Vela, topo de bolo, embalagem especial..." },
+                  ].map(({ key, icon, title, desc }) => (
                     <button key={key} className={`wiz-opt-card${wizardOpts[key] ? " wiz-opt-card--active" : ""}`} onClick={() => setWizardOpts(o => ({ ...o, [key]: !o[key] }))}>
-                      <div className={`wiz-opt-check${wizardOpts[key] ? " wiz-opt-check--active" : ""}`}>
-                        {wizardOpts[key] && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-inverse)" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                      <span className="wiz-tipo-icon">{icon}</span>
+                      <div className="wiz-tipo-info">
+                        <p className="wiz-tipo-title">{title}</p>
+                        <p className="wiz-tipo-desc">{desc}</p>
                       </div>
-                      <div>
-                        <p className="wiz-opt-title"><span>{icon}</span> {title}</p>
-                        <p className="wiz-opt-desc">{desc}</p>
-                        <p className="wiz-opt-example">{example}</p>
+                      <div className={`wiz-opt-check${wizardOpts[key] ? " wiz-opt-check--active" : ""}`}>
+                        {wizardOpts[key] && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                       </div>
                     </button>
                   ))}
@@ -2187,44 +2189,129 @@ export default function Produtos() {
         }
         .wiz-tipo-card--active { border-color: var(--primary-dark); border-width: 2.5px; background: var(--primary-dark); }
 
-        /* ── Override visual moderno (mantém layout vertical) ── */
-        .wiz-tipo-list { gap: 10px; }
-        .wiz-tipo-card {
-          background: var(--bg-subtle, #FBF4F6) !important;
-          border-color: transparent !important;
-          border-radius: 14px !important;
-          padding: 18px 14px !important;
-          gap: 8px !important;
+        /* ══════ Override: layout HORIZONTAL (mockup mobile) ══════ */
+        .wiz-hero { margin: 4px 0; }
+        .wiz-hero-title {
+          font-size: 18px;
+          font-weight: var(--fw-black);
+          color: var(--text-title);
+          letter-spacing: -0.02em;
+          margin: 0 0 3px;
+          line-height: 1.15;
         }
-        .wiz-tipo-card:hover { background: var(--primary-light) !important; }
-        .wiz-tipo-card--active {
+        .wiz-hero-sub {
+          font-size: 11px;
+          color: var(--text-secondary);
+          margin: 0;
+          line-height: 1.4;
+        }
+        .wiz-optional {
+          display: inline-block;
+          margin-left: 6px;
+          font-size: 9px;
+          font-weight: var(--fw-bold);
+          color: var(--text-muted);
+          background: var(--bg-subtle);
+          padding: 2px 6px;
+          border-radius: 999px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .wiz-tipo-list, .wiz-opts-list { gap: 8px !important; }
+        .wiz-tipo-card, .wiz-opt-card {
+          flex-direction: row !important;
+          align-items: center !important;
+          text-align: left !important;
+          gap: 12px !important;
+          padding: 12px 14px !important;
+          border-radius: 12px !important;
+          background: #fff !important;
+          border: 2px solid transparent !important;
+          box-shadow: 0 1px 3px rgba(45,31,38,0.06);
+        }
+        .wiz-tipo-card:hover, .wiz-opt-card:hover {
+          background: var(--bg-subtle, #FBF4F6) !important;
+        }
+        .wiz-tipo-card--active, .wiz-opt-card--active {
           background: var(--primary-light) !important;
           border-color: var(--primary) !important;
-          box-shadow: 0 4px 14px rgba(232, 90, 140, 0.15);
+          box-shadow: 0 4px 12px rgba(232, 90, 140, 0.15);
+        }
+        .wiz-tipo-icon {
+          font-size: 26px !important;
+          line-height: 1;
+          flex-shrink: 0;
+        }
+        .wiz-tipo-info {
+          flex: 1;
+          min-width: 0;
+          display: flex; flex-direction: column; gap: 1px;
+        }
+        .wiz-tipo-title {
+          font-size: 13px !important;
+          font-weight: var(--fw-black) !important;
+          color: var(--text-title) !important;
+          margin: 0 !important;
+          letter-spacing: -0.01em;
+        }
+        .wiz-tipo-desc {
+          font-size: 10.5px !important;
+          color: var(--text-secondary) !important;
+          margin: 0 !important;
+          line-height: 1.35 !important;
         }
         .wiz-tipo-card--active .wiz-tipo-title,
         .wiz-tipo-card--active .wiz-tipo-desc,
-        .wiz-tipo-card--active .wiz-tipo-example {
+        .wiz-opt-card--active .wiz-tipo-title,
+        .wiz-opt-card--active .wiz-tipo-desc {
           color: var(--text-title) !important;
         }
-        .wiz-tipo-card--active .wiz-tipo-desc,
-        .wiz-tipo-card--active .wiz-tipo-example { opacity: 0.75 !important; }
-        .wiz-tipo-icon {
-          font-size: 36px !important;
-          line-height: 1;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.08));
-          margin-bottom: 2px;
+        .wiz-tipo-radio {
+          width: 20px; height: 20px;
+          border-radius: 50%;
+          border: 2px solid #D1CACD;
+          flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          background: #fff;
         }
-        .wiz-card-check {
+        .wiz-tipo-radio--active {
+          background: var(--primary);
+          border-color: var(--primary);
+        }
+        .wiz-opt-check {
+          width: 20px; height: 20px;
+          border-radius: 6px;
+          border: 2px solid #D1CACD;
+          flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          background: #fff;
+        }
+        .wiz-opt-check--active {
           background: var(--primary) !important;
-          color: #fff;
+          border-color: var(--primary) !important;
         }
-        @media (min-width: 720px) {
-          .wiz-tipo-list {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px !important;
-          }
+        .wiz-section-title {
+          font-size: 12px !important;
+          font-weight: var(--fw-bold) !important;
+          color: var(--text-title) !important;
+          margin: 6px 0 0 !important;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          display: flex;
+          align-items: center;
+        }
+        .wiz-step-label {
+          color: var(--primary) !important;
+          font-weight: var(--fw-black) !important;
+          font-size: 10px !important;
+        }
+        .wiz-progress-bar { height: 3px !important; border-radius: 999px !important; background: #F0EBED !important; }
+        .wiz-progress-bar--active { background: linear-gradient(90deg, var(--primary), var(--primary-dark)) !important; }
+        .wiz-footer {
+          display: flex; gap: 8px;
+          padding-top: 12px;
+          margin-top: 4px;
+          border-top: 1px solid var(--border);
         }
         .wiz-card-check {
           position: absolute; top: var(--space-3); right: var(--space-3);
