@@ -149,6 +149,7 @@ export default function Produtos() {
   const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes">("simples");
   const [wizardOpts, setWizardOpts] = useState({ complementos: false, personalizacao: false, promocao: false });
   const [form, setForm] = useState<Produto>(EMPTY);
+  const [confirmDiscardProd, setConfirmDiscardProd] = useState(false);
   const [ordenarPor, setOrdenarPor] = useState<"recentes"|"alfabetica"|"categoria"|"preco">("recentes");
   const [showOrdenar, setShowOrdenar] = useState(false);
   const [filtroOrfaos, setFiltroOrfaos] = useState(false);
@@ -337,7 +338,25 @@ export default function Produtos() {
       }
     }
   };
-  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(1); setWizardTipo("simples"); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); };
+  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(1); setWizardTipo("simples"); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setConfirmDiscardProd(false); };
+
+  // Guard: verifica se o produto tem dados preenchidos (pra decidir se avisa antes de fechar)
+  const hasProdData = (): boolean => {
+    if (form.id) return true; // Editando → sempre confirma
+    return !!(
+      form.nome?.trim() ||
+      form.descricao?.trim() ||
+      (form.preco_normal && form.preco_normal > 0) ||
+      form.categoria?.trim() ||
+      form.imagem_url?.trim() ||
+      (fichaTecnica && fichaTecnica.length > 0) ||
+      (form.tamanhos_disponiveis && form.tamanhos_disponiveis.length > 0)
+    );
+  };
+  const handleTryClose = () => {
+    if (hasProdData()) setConfirmDiscardProd(true);
+    else fecharModal();
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slot: number = 0) => {
     const file = e.target.files?.[0];
@@ -828,7 +847,7 @@ export default function Produtos() {
       )}
 
       {modal && (
-        <div className="prod-modal-overlay" onClick={fecharModal}>
+        <div className="prod-modal-overlay" onClick={handleTryClose}>
           <div className="prod-modal" onClick={e => e.stopPropagation()}>
             <div className="prod-modal-header prod-modal-header--v2">
               {wizardStep === 2 && !form.id && (
@@ -842,14 +861,9 @@ export default function Produtos() {
                 </div>
               )}
               <div className="prod-modal-header-text">
-                <h2 className="prod-modal-title">{form.id ? "Editar produto" : (wizardStep === 1 ? "Novo produto" : (form.nome || "Novo produto"))}</h2>
-                <p className="prod-modal-header-sub">
-                  {form.id ? "Ajuste as informações do produto" :
-                    wizardStep === 1 ? "Escolha o tipo pra gente organizar melhor" :
-                    "Preencha as informações principais"}
-                </p>
+                <h2 className="prod-modal-title">{form.id ? "Editar produto" : "Novo Produto"}</h2>
               </div>
-              <button className="prod-modal-close" onClick={fecharModal} aria-label="Fechar">✕</button>
+              <button className="prod-modal-close" onClick={handleTryClose} aria-label="Fechar">✕</button>
             </div>
 
             {/* ══════ WIZARD STEP 1 ══════ */}
@@ -866,8 +880,7 @@ export default function Produtos() {
 
                 {/* Título grande */}
                 <div className="wiz-hero">
-                  <h3 className="wiz-hero-title">Vamos criar seu produto 🎂</h3>
-                  <p className="wiz-hero-sub">Escolha o tipo pra gente organizar melhor</p>
+                  <h3 className="wiz-hero-title">Vamos cadastrar seu produto</h3>
                 </div>
 
                 {/* Tipo — cards horizontais */}
@@ -914,7 +927,7 @@ export default function Produtos() {
 
                 {/* Footer step 1 */}
                 <div className="wiz-footer">
-                  <button className="prod-btn-cancelar" onClick={fecharModal}>Cancelar</button>
+                  <button className="prod-btn-cancelar" onClick={handleTryClose}>Cancelar</button>
                   <button className="prod-btn-salvar" onClick={() => {
                     setForm(f => ({
                       ...f,
@@ -1454,7 +1467,7 @@ export default function Produtos() {
 
             {wizardStep === 2 && (
             <div className="prod-modal-footer">
-              <button className="prod-btn-cancelar" onClick={fecharModal}>Cancelar</button>
+              <button className="prod-btn-cancelar" onClick={handleTryClose}>Cancelar</button>
               <button className="prod-btn-salvar" onClick={handleSalvar} disabled={saving}>
                 {saving ? <span className="prod-spinner-sm" /> : (form.id ? "Salvar alterações" : "Publicar produto")}
               </button>
@@ -1768,6 +1781,25 @@ export default function Produtos() {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Modal "Descartar cadastro?" ═══ */}
+      {confirmDiscardProd && (
+        <div className="prod-discard-ov" onClick={() => setConfirmDiscardProd(false)}>
+          <div className="prod-discard-box" onClick={e => e.stopPropagation()}>
+            <div className="prod-discard-icon">⚠️</div>
+            <h3 className="prod-discard-title">{form.id ? "Descartar alterações?" : "Descartar cadastro?"}</h3>
+            <p className="prod-discard-desc">Você preencheu dados que serão perdidos.</p>
+            <div className="prod-discard-actions">
+              <button className="prod-discard-btn prod-discard-btn--stay" onClick={() => setConfirmDiscardProd(false)}>
+                Continuar preenchendo
+              </button>
+              <button className="prod-discard-btn prod-discard-btn--go" onClick={() => { setConfirmDiscardProd(false); fecharModal(); }}>
+                Descartar
+              </button>
             </div>
           </div>
         </div>
@@ -2762,19 +2794,24 @@ export default function Produtos() {
           font-family: inherit;
         }
         .prod-modal-close {
-          background: var(--bg-subtle);
-          border: none;
+          background: rgba(45, 31, 38, 0.1);
+          border: 1.5px solid rgba(45, 31, 38, 0.15);
           border-radius: 50%;
-          width: 34px; height: 34px;
+          width: 36px; height: 36px;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
-          color: var(--text-secondary);
+          color: var(--text-title);
           font-size: 18px;
+          font-weight: 900;
           font-family: inherit;
           flex-shrink: 0;
-          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+          transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
         }
-        .prod-modal-close:hover { background: var(--border); color: var(--text-title); }
+        .prod-modal-close:hover {
+          background: var(--accent, #2D1F26);
+          color: #fff;
+          border-color: var(--accent, #2D1F26);
+        }
         .prod-modal-back {
           background: var(--bg-subtle);
           border: none;
@@ -2900,24 +2937,24 @@ export default function Produtos() {
         .prod-toggle-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--bg-card); position: absolute; top: 2px; left: 2px; transition: transform var(--dur-normal) var(--ease-out); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
         .prod-btn-cancelar {
           flex: 1; padding: var(--space-3);
-          background: var(--bg-body);
+          background: #6B5D64;
           border: none;
           border-radius: var(--radius-md);
           font-family: var(--font-base) !important;
           font-size: var(--font-button);
           font-weight: var(--fw-black);
           line-height: var(--lh-normal);
-          color: var(--text-secondary);
+          color: #FFFFFF;
           cursor: pointer;
           text-transform: uppercase;
           letter-spacing: 0.02em;
-          box-shadow: 0 4px 0 #D1CACD;
-          transition: transform 0.08s ease, box-shadow 0.08s ease;
+          box-shadow: 0 4px 0 #4A3E44;
+          transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.08s;
         }
-        .prod-btn-cancelar:hover { filter: brightness(0.97); }
+        .prod-btn-cancelar:hover { background: #5A4E55; }
         .prod-btn-cancelar:active {
           transform: translateY(4px);
-          box-shadow: 0 0 0 #D1CACD;
+          box-shadow: 0 0 0 #4A3E44;
         }
         .prod-btn-salvar {
           flex: 2; padding: var(--space-3);
@@ -3030,9 +3067,87 @@ export default function Produtos() {
           background: rgba(255,255,255,0.85);
           color: #4a3b42;
         }
-        /* ═══ Exemplo de produto (Ex: ...) ═══ */
+        /* ═══ MODAL "DESCARTAR?" (guard produto) ═══ */
+        .prod-discard-ov {
+          position: fixed; inset: 0; z-index: 1200;
+          background: rgba(45, 31, 38, 0.75);
+          backdrop-filter: blur(8px);
+          display: flex; align-items: center; justify-content: center;
+          padding: var(--space-4);
+          animation: prodDiscOvIn 0.2s ease;
+          font-family: var(--font-base);
+        }
+        @keyframes prodDiscOvIn { from { opacity: 0; } to { opacity: 1; } }
+        .prod-discard-box {
+          background: var(--bg-card);
+          border-radius: var(--radius-xl);
+          padding: var(--space-5) var(--space-4);
+          max-width: 360px; width: 100%;
+          text-align: center;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+          animation: prodDiscBoxIn 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes prodDiscBoxIn {
+          from { opacity: 0; transform: scale(0.9); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        .prod-discard-box, .prod-discard-box * { font-family: var(--font-base) !important; }
+        .prod-discard-icon {
+          font-size: 32px;
+          margin-bottom: var(--space-2);
+          filter: drop-shadow(0 2px 8px rgba(232,90,140,0.3));
+        }
+        .prod-discard-title {
+          font-size: var(--text-lg);
+          font-weight: var(--fw-black);
+          color: var(--text-title);
+          margin: 0 0 var(--space-2);
+          letter-spacing: -0.01em;
+        }
+        .prod-discard-desc {
+          font-size: var(--text-sm);
+          color: var(--text-secondary);
+          margin: 0 0 var(--space-4);
+          line-height: 1.5;
+        }
+        .prod-discard-actions {
+          display: flex; flex-direction: column;
+          gap: var(--space-2);
+        }
+        .prod-discard-btn {
+          padding: 12px;
+          border: none;
+          border-radius: var(--radius-md);
+          font-size: var(--text-sm);
+          font-weight: var(--fw-black);
+          cursor: pointer;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          font-family: var(--font-base) !important;
+          transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }
+        .prod-discard-btn--stay {
+          background: var(--primary);
+          color: var(--text-inverse);
+          box-shadow: 0 4px 0 var(--primary-dark);
+        }
+        .prod-discard-btn--stay:hover { filter: brightness(1.05); }
+        .prod-discard-btn--stay:active {
+          transform: translateY(4px);
+          box-shadow: 0 0 0 var(--primary-dark);
+        }
+        .prod-discard-btn--go {
+          background: transparent;
+          color: #DC2626;
+          border: 1.5px solid #FEE2E2;
+        }
+        .prod-discard-btn--go:hover {
+          background: #FEE2E2;
+          border-color: #DC2626;
+        }
+
         .wiz-tipo-ex {
-          font-size: var(--font-caption);
+          font-size: 12px;
           color: var(--text-muted);
           font-style: italic;
           margin: 3px 0 0;
@@ -3043,15 +3158,17 @@ export default function Produtos() {
           flex-direction: row !important;
           align-items: center !important;
           text-align: left !important;
-          gap: 12px !important;
-          padding: 12px 14px !important;
+          gap: 14px !important;
+          padding: 16px 16px !important;
           border-radius: 12px !important;
           background: #fff !important;
-          border: 2px solid transparent !important;
+          border: 2px solid var(--border) !important;
           box-shadow: 0 1px 3px rgba(45,31,38,0.06);
         }
+        /* Hover: cinza bem sutil, NÃO rosa */
         .wiz-tipo-card:hover, .wiz-opt-card:hover {
-          background: var(--bg-subtle, #FBF4F6) !important;
+          background: #F5F1F3 !important;
+          border-color: #D1CACD !important;
         }
         /* No touch (mobile), remove hover pra não ficar "sticky" após tap */
         @media (hover: none) {
@@ -3068,7 +3185,7 @@ export default function Produtos() {
           box-shadow: 0 4px 12px rgba(45, 31, 38, 0.25);
         }
         .wiz-tipo-icon {
-          font-size: 26px !important;
+          font-size: 32px !important;
           line-height: 1;
           flex-shrink: 0;
         }
@@ -3078,14 +3195,14 @@ export default function Produtos() {
           display: flex; flex-direction: column; gap: 1px;
         }
         .wiz-tipo-title {
-          font-size: 13px !important;
+          font-size: 15px !important;
           font-weight: var(--fw-black) !important;
           color: var(--text-title) !important;
           margin: 0 !important;
           letter-spacing: -0.01em;
         }
         .wiz-tipo-desc {
-          font-size: 10.5px !important;
+          font-size: 12px !important;
           color: var(--text-secondary) !important;
           margin: 0 !important;
           line-height: 1.35 !important;
