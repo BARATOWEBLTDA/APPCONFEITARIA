@@ -230,73 +230,60 @@ export default function ClientePerfil() {
 
       {/* ═══ Cards ═══ */}
       <div className="cp-content">
-        {/* Card ÚNICO: Dados do Cliente (juntou dados + endereço + observações) */}
+        {/* Card ÚNICO: Dados do Cliente (endereço + observações) */}
         <div className="cp-card">
           <div className="cp-card-head">
-            <div className="cp-card-t"><span>👤</span> Dados do Cliente</div>
+            <div className="cp-card-t"><span>📍</span> Endereço</div>
           </div>
 
-          {/* Dados pessoais */}
-          {cliente.data_nascimento && (
-            <div className="cp-row">
-              <div className="cp-row-lbl">Aniversário</div>
-              <div className="cp-row-val">
-                {cliente.data_nascimento.split("-").reverse().join("/")}
-                {diasAniv !== null && diasAniv <= 30 && <span style={{ color: "var(--primary)", marginLeft: 6 }}>(em {diasAniv}d)</span>}
+          {/* Endereço + Mapa lado a lado */}
+          {temEndereco ? (
+            <div className="cp-endereco-row">
+              <div className="cp-endereco-info">
+                {enderecoCompleto && <div className="cp-endereco-street"><b>{enderecoCompleto}</b></div>}
+                {cliente.complemento && <div className="cp-endereco-sec">{cliente.complemento}</div>}
+                {localizacao && <div className="cp-endereco-sec">{localizacao}</div>}
+                {cliente.cep && <div className="cp-endereco-sec" style={{fontSize: "var(--text-xs)"}}>CEP: {cliente.cep}</div>}
               </div>
+              {import.meta.env.VITE_GOOGLE_MAPS_KEY && (
+                <a
+                  href={`https://maps.google.com/?q=${encodeURIComponent([enderecoCompleto, localizacao].filter(Boolean).join(", "))}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="cp-mini-map-wrap"
+                  aria-label="Abrir no Google Maps"
+                >
+                  <iframe
+                    className="cp-mini-map"
+                    loading="lazy"
+                    src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_KEY}&q=${encodeURIComponent([enderecoCompleto, localizacao].filter(Boolean).join(", "))}`}
+                    allowFullScreen
+                    title="Mapa"
+                  />
+                  <span className="cp-mini-map-overlay">↗</span>
+                </a>
+              )}
+            </div>
+          ) : (
+            <div className="cp-empty" style={{ padding: "6px 0", textAlign: "left" }}>
+              Sem endereço cadastrado. Clique em Editar pra adicionar.
             </div>
           )}
-          {cliente.sexo && <div className="cp-row"><div className="cp-row-lbl">Sexo</div><div className="cp-row-val">{cliente.sexo}</div></div>}
-          {cliente.email && <div className="cp-row"><div className="cp-row-lbl">E-mail</div><div className="cp-row-val">{cliente.email}</div></div>}
-          {cliente.cpf_cnpj && <div className="cp-row"><div className="cp-row-lbl">CPF/CNPJ</div><div className="cp-row-val">{cliente.cpf_cnpj}</div></div>}
+        </div>
 
-          {/* Endereço + Mapa lado a lado */}
-          {temEndereco && (
-            <>
-              <div className="cp-sub-lbl">📍 Endereço</div>
-              <div className="cp-endereco-row">
-                <div className="cp-endereco-info">
-                  {enderecoCompleto && <div className="cp-endereco-street"><b>{enderecoCompleto}</b></div>}
-                  {cliente.complemento && <div className="cp-endereco-sec">{cliente.complemento}</div>}
-                  {localizacao && <div className="cp-endereco-sec">{localizacao}</div>}
-                  {cliente.cep && <div className="cp-endereco-sec" style={{fontSize: "var(--text-xs)"}}>CEP: {cliente.cep}</div>}
-                </div>
-                {import.meta.env.VITE_GOOGLE_MAPS_KEY && (
-                  <a
-                    href={`https://maps.google.com/?q=${encodeURIComponent([enderecoCompleto, localizacao].filter(Boolean).join(", "))}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="cp-mini-map-wrap"
-                    aria-label="Abrir no Google Maps"
-                  >
-                    <iframe
-                      className="cp-mini-map"
-                      loading="lazy"
-                      src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_KEY}&q=${encodeURIComponent([enderecoCompleto, localizacao].filter(Boolean).join(", "))}`}
-                      allowFullScreen
-                      title="Mapa"
-                    />
-                    <span className="cp-mini-map-overlay">↗</span>
-                  </a>
-                )}
-              </div>
-            </>
-          )}
-
-          {/* Observações */}
-          <div className="cp-sub-lbl">📝 Observações</div>
+        {/* Card: Observações */}
+        <div className="cp-card">
+          <div className="cp-card-head">
+            <div className="cp-card-t"><span>📝</span> Observações</div>
+          </div>
           {cliente.observacoes ? (
             <div style={{ fontSize: "var(--text-sm)", color: "var(--text-title)", padding: "4px 0 6px", lineHeight: 1.5 }}>
               {cliente.observacoes}
             </div>
           ) : (
             <div className="cp-empty" style={{ padding: "6px 0 4px", textAlign: "left" }}>
-              Sem observações.
+              Sem observações. Clique em Editar pra adicionar.
             </div>
-          )}
-
-          {!cliente.data_nascimento && !cliente.sexo && !cliente.email && !cliente.cpf_cnpj && !temEndereco && !cliente.observacoes && (
-            <div className="cp-empty">Nenhum dado extra cadastrado ainda.<br/>Clique em Editar pra completar.</div>
           )}
         </div>
 

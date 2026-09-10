@@ -503,12 +503,6 @@ export default function Clientes() {
       <div className="cli-modal" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="cli-modal-hdr">
-          {preview
-            ? <img src={preview} alt="foto" className="cli-modal-avatar cli-modal-avatar--img" />
-            : completo.nome.trim()
-              ? <div className="cli-modal-avatar cli-modal-avatar--iniciais">{iniciais}</div>
-              : <div className="cli-modal-avatar cli-modal-avatar--empty">👤</div>
-          }
           <div className="cli-modal-hdr-t">
             <h2 className="cli-modal-title">{editando ? "Editar cliente" : "Novo cliente"}</h2>
             <p className="cli-modal-sub">{editando ? "Atualize os dados" : "Cadastre rápido, complete depois se quiser"}</p>
@@ -653,43 +647,7 @@ export default function Clientes() {
             )}
           </div>
 
-          {/* ── Preview (direita, só desktop) ── */}
-          <aside className="cli-modal-preview">
-            <span className="cli-preview-lbl">👁️ Como aparece</span>
-            <div className="cli-preview-wa">
-              {preview
-                ? <img src={preview} alt="" className="cli-preview-avatar cli-preview-avatar--img" />
-                : <div className="cli-preview-avatar">{iniciais}</div>
-              }
-              <div className="cli-preview-wa-info">
-                <div className="cli-preview-wa-name">{completo.nome.trim() || "Nome do cliente"}</div>
-                <div className="cli-preview-wa-msg">💬 Abrir no WhatsApp</div>
-              </div>
-            </div>
-            <div className="cli-preview-list">
-              {preview
-                ? <img src={preview} alt="" className="cli-preview-list-avatar cli-preview-list-avatar--img" />
-                : <div className="cli-preview-list-avatar">{iniciais}</div>
-              }
-              <div className="cli-preview-list-info">
-                <div className="cli-preview-list-name">{completo.nome.trim() || "Nome do cliente"}</div>
-                <div className="cli-preview-list-phone">{completo.whatsapp || "(00) 0 0000-0000"}</div>
-              </div>
-              {completo.data_nascimento && (
-                <span className="cli-preview-list-tag">🎂 {completo.data_nascimento.split("-").reverse().slice(0,2).join("/")}</span>
-              )}
-            </div>
-            {completo.data_nascimento ? (
-              <div className="cli-preview-alert cli-preview-alert--success">
-                ✅ <span>Vai receber lembrete de aniversário</span>
-              </div>
-            ) : !avancadoOpen && (
-              <div className="cli-preview-hint">
-                Abra "<b>+ Avançado</b>" pra desbloquear<br/>
-                <b>🎂 aniversário</b> e <b>📍 endereço</b>
-              </div>
-            )}
-          </aside>
+          {/* Preview lateral removido — formulário centralizado */}
         </div>
 
         {/* Footer */}
@@ -1092,25 +1050,19 @@ export default function Clientes() {
           }
           .cli-modal-split {
             display: grid;
-            grid-template-columns: 1.3fr 1fr;
+            grid-template-columns: 1fr;
             overflow: hidden;
             padding: var(--space-4);
-            gap: var(--space-3);
           }
           .cli-modal-body {
             padding: var(--space-4);
             overflow-y: auto;
             max-height: calc(90vh - 180px);
+            max-width: 560px;
+            margin: 0 auto;
+            width: 100%;
           }
-          .cli-modal-preview {
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            gap: var(--space-3);
-            padding: var(--space-5);
-            background: var(--accent-bg, #F5EEF0);
-            border-left: none;
-            border-radius: var(--radius-lg);
-          }
+          .cli-modal-preview { display: none !important; }
           .cli-preview-lbl {
             font-size: 0.65rem;
             font-weight: var(--fw-black);
