@@ -667,40 +667,51 @@ export default function Produtos() {
       </div>
 
       {produtosFiltrados.length === 0 ? (
-        <div className="prod-empty-wrap">
-          <EmptyDoo
-            image="produtos.png"
-            title={<>Vamos cadastrar seu<br/>primeiro produto?</>}
-            description="Seu catálogo é a vitrine da sua confeitaria. Quanto mais completo, mais profissional ele será."
-            actionLabel="Cadastrar primeiro produto"
-            onAction={openNovo}
-          />
-          {/* Card vídeo tutorial (só desktop, placeholder até ter vídeo) */}
-          <aside className="prod-video-card">
-            <div className="prod-video-thumb" aria-label="Vídeo tutorial (em breve)">
+        <div className="prod-hero-split">
+          {/* ── Lado esquerdo: texto + CTAs + dica ── */}
+          <div className="prod-hero-left">
+            <span className="prod-hero-eyebrow">✨ VAMOS COMEÇAR</span>
+            <h1 className="prod-hero-title">Cadastre seu<br/>primeiro produto</h1>
+            <p className="prod-hero-desc">
+              Seu catálogo é a vitrine da sua confeitaria. Quanto mais completo,
+              mais profissional ele será e mais clientes você conquista.
+            </p>
+            <div className="prod-hero-actions">
+              <button className="prod-hero-btn-primary" onClick={openNovo}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                CADASTRAR PRODUTO
+              </button>
+              <button className="prod-hero-btn-ghost" onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                Ver tutorial
+              </button>
+            </div>
+            <div className="prod-hero-tip">
+              <div className="prod-hero-tip-icon">💡</div>
+              <div>
+                <p className="prod-hero-tip-t">Dica: fotos boas vendem 3x mais</p>
+                <p className="prod-hero-tip-d">Use luz natural, fundo branco, e mostre o produto de ângulos diferentes.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Lado direito: vídeo grande ── */}
+          <aside className="prod-hero-right" aria-label="Vídeo tutorial">
+            <div className="prod-hero-video-thumb">
               <button
                 type="button"
-                className="prod-video-play"
+                className="prod-hero-video-play"
                 onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}
                 aria-label="Assistir tutorial"
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M8 5v14l11-7z"/>
                 </svg>
               </button>
-              <span className="prod-video-soon">EM BREVE</span>
             </div>
-            <div className="prod-video-info">
-              <h3 className="prod-video-title">Aprenda em 2 minutos</h3>
-              <p className="prod-video-desc">Veja como cadastrar produtos e configurar seu catálogo pra vender mais</p>
-              <button
-                type="button"
-                className="prod-video-btn"
-                onClick={() => alert("🎬 Vídeo em produção! Em breve disponível.")}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                Assistir agora
-              </button>
+            <div className="prod-hero-video-footer">
+              <span className="prod-hero-video-t">🎬 Tutorial completo</span>
+              <span className="prod-hero-video-badge">EM BREVE</span>
             </div>
           </aside>
         </div>
@@ -1866,101 +1877,183 @@ export default function Produtos() {
           align-items: stretch;
         }
 
-        /* ═══ EMPTY STATE COM VÍDEO TUTORIAL (só desktop) ═══ */
-        .prod-empty-wrap { display: contents; }
-        .prod-video-card { display: none; }
+        /* ═══ SPLIT HERO (empty state) ═══ */
+        .prod-hero-split {
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
 
+        /* Mobile: só o conteúdo, sem vídeo */
+        .prod-hero-left {
+          display: flex; flex-direction: column;
+          gap: 12px;
+        }
+        .prod-hero-right { display: none; }
+
+        .prod-hero-eyebrow {
+          font-size: 11px;
+          font-weight: 900;
+          color: var(--primary);
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          line-height: 1;
+        }
+        .prod-hero-title {
+          font-size: 26px;
+          font-weight: 900;
+          letter-spacing: -0.03em;
+          line-height: 1.1;
+          color: var(--text-title);
+          margin: 4px 0 0;
+        }
+        .prod-hero-desc {
+          font-size: 13px;
+          color: var(--text-secondary);
+          line-height: 1.55;
+          margin: 6px 0 0;
+          max-width: 480px;
+        }
+        .prod-hero-actions {
+          display: flex; gap: 10px; flex-wrap: wrap;
+          margin-top: 12px;
+        }
+        .prod-hero-btn-primary {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: var(--primary);
+          color: #fff;
+          border: none;
+          padding: 12px 22px;
+          border-radius: 12px;
+          font-size: 13px;
+          font-weight: 900;
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+          box-shadow: 0 4px 0 var(--primary-dark);
+          transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }
+        .prod-hero-btn-primary:hover { filter: brightness(1.05); }
+        .prod-hero-btn-primary:active {
+          transform: translateY(4px);
+          box-shadow: 0 0 0 var(--primary-dark);
+        }
+        .prod-hero-btn-ghost {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: var(--bg-subtle, #F0EBED);
+          color: var(--text-secondary);
+          border: none;
+          padding: 12px 20px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+          transition: background var(--dur-fast);
+        }
+        .prod-hero-btn-ghost:hover { background: var(--border); }
+
+        .prod-hero-tip {
+          display: flex;
+          gap: 12px;
+          background: var(--primary-light);
+          padding: 14px 16px;
+          border-radius: 14px;
+          align-items: flex-start;
+          margin-top: 16px;
+        }
+        .prod-hero-tip-icon {
+          font-size: 22px;
+          line-height: 1;
+          flex-shrink: 0;
+        }
+        .prod-hero-tip-t {
+          font-size: 12px;
+          font-weight: 800;
+          color: var(--text-title);
+          margin: 0 0 3px;
+        }
+        .prod-hero-tip-d {
+          font-size: 11px;
+          color: var(--text-secondary);
+          line-height: 1.5;
+          margin: 0;
+        }
+
+        /* ═══ Desktop: split 1fr / 1.2fr + vídeo aparece ═══ */
         @media (min-width: 900px) {
-          .prod-empty-wrap {
+          .prod-hero-split {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 20px;
-            align-items: stretch;
-            max-width: 900px;
-            margin: 0 auto;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 40px;
+            align-items: center;
+            padding: 20px 8px;
           }
-          .prod-video-card {
+          .prod-hero-title { font-size: 34px; }
+          .prod-hero-desc { font-size: 14px; }
+
+          .prod-hero-right {
             display: flex;
             flex-direction: column;
-            background: #2D1F26;
-            border-radius: 16px;
-            overflow: hidden;
-            color: #fff;
-            box-shadow: 0 10px 30px rgba(45,31,38,0.2);
+            background: linear-gradient(135deg, #2D1F26, #4A3038);
+            border-radius: 20px;
+            padding: 8px;
+            box-shadow: 0 20px 60px rgba(45, 31, 38, 0.25);
           }
-          .prod-video-thumb {
-            flex: 1;
-            min-height: 240px;
+          .prod-hero-video-thumb {
+            aspect-ratio: 16/10;
             background: linear-gradient(135deg, #E85A8C 0%, #7C3AED 100%);
+            border-radius: 14px;
             display: flex; align-items: center; justify-content: center;
             position: relative;
             overflow: hidden;
           }
-          .prod-video-thumb::before {
+          .prod-hero-video-thumb::before {
             content: "";
             position: absolute; inset: 0;
-            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.15) 100%);
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.2) 100%);
           }
-          .prod-video-play {
+          .prod-hero-video-play {
             width: 60px; height: 60px;
             border-radius: 50%;
             background: rgba(255,255,255,0.95);
             border: none;
             display: flex; align-items: center; justify-content: center;
-            color: #E85A8C;
+            color: var(--primary);
             cursor: pointer;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.4);
             transition: transform var(--dur-fast);
             position: relative;
             z-index: 2;
           }
-          .prod-video-play:hover { transform: scale(1.08); }
-          .prod-video-play svg { margin-left: 3px; width: 24px; height: 24px; }
-          .prod-video-soon {
-            position: absolute;
-            top: 12px; right: 12px;
-            background: rgba(0,0,0,0.7);
+          .prod-hero-video-play:hover { transform: scale(1.08); }
+          .prod-hero-video-play svg { margin-left: 3px; }
+
+          .prod-hero-video-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 12px 8px;
             color: #fff;
-            padding: 3px 10px;
+          }
+          .prod-hero-video-t {
+            font-size: 12px;
+            font-weight: 700;
+          }
+          .prod-hero-video-badge {
+            background: var(--primary);
+            color: #fff;
+            padding: 4px 10px;
             border-radius: 999px;
             font-size: 9px;
-            font-weight: 800;
+            font-weight: 900;
             letter-spacing: 0.08em;
-            backdrop-filter: blur(4px);
-            z-index: 2;
           }
-          .prod-video-info {
-            padding: 16px 20px 20px;
-          }
-          .prod-video-title {
-            font-size: 15px;
-            font-weight: 800;
-            margin: 0 0 4px;
-            letter-spacing: -0.01em;
-          }
-          .prod-video-desc {
-            font-size: 12px;
-            color: rgba(255,255,255,0.75);
-            margin: 0 0 12px;
-            line-height: 1.5;
-          }
-          .prod-video-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: #E85A8C;
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-            font-family: var(--font-base);
-            transition: transform var(--dur-fast), background var(--dur-fast);
-          }
-          .prod-video-btn:hover { background: #C33A6E; transform: translateY(-1px); }
-          .prod-video-btn svg { width: 11px; height: 11px; }
         }
 
         /* ═══ EXTRAS / BIBLIOTECA ═══ */
