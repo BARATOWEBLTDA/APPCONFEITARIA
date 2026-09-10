@@ -2045,26 +2045,27 @@ export default function Produtos() {
         /* ═══ Desktop: split 1fr / 1.2fr — vídeo vai pra direita ═══ */
         @media (min-width: 900px) {
           .prod-hero-split {
-            /* FLEX ROW: mais simples que grid pra centralizar */
             min-height: calc(100vh - 5rem);
             display: flex;
             flex-direction: row;
-            align-items: center;      /* centraliza vertical */
-            justify-content: center;  /* centraliza horizontal */
-            gap: var(--space-8);
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-6);
             padding: 0 var(--space-4);
           }
           .prod-hero-left {
             order: 1;
             gap: var(--space-3);
-            width: 480px;
-            flex-shrink: 0;
+            flex: 1 1 380px;
+            max-width: 480px;
+            min-width: 0;
           }
           .prod-hero-right {
             order: 2;
             padding: var(--space-2);
-            width: 620px;
-            flex-shrink: 0;
+            flex: 1 1 420px;
+            max-width: 620px;
+            min-width: 0;
           }
           .prod-hero-title { font-size: var(--text-3xl); }
           .prod-hero-desc { font-size: var(--text-md); }
@@ -3084,6 +3085,7 @@ export default function Produtos() {
             max-width: 1200px;
             min-height: calc(100vh - 5rem);
             padding-bottom: var(--space-4);
+            margin: 0 auto;
           }
           /* Quando página está em empty state (só o hero), zera padding/gap
              pra o hero ocupar tudo e centralizar de verdade */
