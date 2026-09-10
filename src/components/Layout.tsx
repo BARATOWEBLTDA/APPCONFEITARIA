@@ -132,28 +132,30 @@ export default function Layout() {
           <NavLink to="/inicio" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
             <span className="nav-icon"><House size={18} weight="duotone" /></span>Início
           </NavLink>
-          <NavLink to="/agenda" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><CalendarDots size={18} weight="duotone" /></span>Agenda
+
+          <NavLink to="/produtos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-icon"><Cake size={18} weight="duotone" /></span>Produtos
           </NavLink>
 
-          <SidebarGroup label="Cardápio" icon={<ShoppingBag size={18} weight="duotone" />} paths={["/cardapio-config","/cardapio-preview","/produtos"]} location={location}>
-            <NavLink to="/cardapio-config" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Configuração</NavLink>
-            <NavLink to="/produtos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Produtos</NavLink>
-            <NavLink to="/cardapio-preview" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Prévia</NavLink>
-          </SidebarGroup>
+          <NavLink to="/cardapio-config" className={({ isActive }) => `nav-item ${(isActive || location.pathname.startsWith("/cardapio")) ? "active" : ""}`}>
+            <span className="nav-icon"><ShoppingBag size={18} weight="duotone" /></span>Cardápio Digital
+          </NavLink>
 
           <NavLink to="/pedidos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
             <span className="nav-icon"><ClipboardText size={18} weight="duotone" /></span>Pedidos
           </NavLink>
+
+          <NavLink to="/agenda" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+            <span className="nav-icon"><CalendarDots size={18} weight="duotone" /></span>Agenda
+          </NavLink>
+
           <NavLink to="/clientes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
             <span className="nav-icon"><Users size={18} weight="duotone" /></span>Clientes
           </NavLink>
 
-          <SidebarGroup label="Receitas" icon={<BookOpen size={18} weight="duotone" />} paths={["/receitas","/comunidade"]} location={location}>
-            <NavLink to="/receitas" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Minhas receitas</NavLink>
-            <NavLink to="/receitas?tipo=app" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Receitas do app</NavLink>
-            <NavLink to="/comunidade" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>Comunidade</NavLink>
-          </SidebarGroup>
+          <NavLink to="/receitas" className={({ isActive }) => `nav-item ${(isActive || location.pathname.startsWith("/comunidade")) ? "active" : ""}`}>
+            <span className="nav-icon"><BookOpen size={18} weight="duotone" /></span>Receitas
+          </NavLink>
 
           <NavLink to="/insumos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
             <span className="nav-icon"><Package size={18} weight="duotone" /></span>Ingredientes
@@ -162,6 +164,7 @@ export default function Layout() {
           <NavLink to="/financeiro" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
             <span className="nav-icon"><CurrencyDollar size={18} weight="duotone" /></span>Financeiro
           </NavLink>
+
           <NavLink to="/configuracoes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
             <span className="nav-icon"><Gear size={18} weight="duotone" /></span>Configurações
           </NavLink>
