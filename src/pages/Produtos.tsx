@@ -3078,6 +3078,14 @@ export default function Produtos() {
           gap: var(--gap-stack);
           padding: var(--space-5) var(--space-4) 6rem;
           font-family: var(--font-base);
+          max-width: 800px;
+        }
+        @media (min-width: 900px) {
+          .prod-root {
+            max-width: 1200px;
+            min-height: calc(100vh - 5rem);
+            padding-bottom: var(--space-4);
+          }
         }
 
         /* ── Tabs Produtos / Categorias ── */
