@@ -866,21 +866,22 @@ export default function Produtos() {
 
                 {/* Título grande */}
                 <div className="wiz-hero">
-                  <h3 className="wiz-hero-title">O que você vende? 🎂</h3>
+                  <h3 className="wiz-hero-title">Vamos criar seu produto 🎂</h3>
                   <p className="wiz-hero-sub">Escolha o tipo pra gente organizar melhor</p>
                 </div>
 
                 {/* Tipo — cards horizontais */}
                 <div className="wiz-tipo-list">
                   {[
-                    { tipo: "simples" as const, icon: "🍰", title: "Produto simples", desc: "Uma versão, um preço" },
-                    { tipo: "variacoes" as const, icon: "🎂", title: "Com variações", desc: "Tamanhos, sabores ou versões (P, M, G)" },
-                  ].map(({ tipo, icon, title, desc }) => (
+                    { tipo: "simples" as const, icon: "🍰", title: "Produto simples", desc: "Uma versão, um preço", ex: "Ex: Brigadeiro gourmet · R$ 4,50" },
+                    { tipo: "variacoes" as const, icon: "🎂", title: "Com variações", desc: "Tamanhos, sabores ou versões", ex: "Ex: Bolo P R$ 80 · M R$ 120 · G R$ 180" },
+                  ].map(({ tipo, icon, title, desc, ex }) => (
                     <button key={tipo} className={`wiz-tipo-card${wizardTipo === tipo ? " wiz-tipo-card--active" : ""}`} onClick={() => setWizardTipo(tipo)}>
                       <span className="wiz-tipo-icon">{icon}</span>
                       <div className="wiz-tipo-info">
                         <p className="wiz-tipo-title">{title}</p>
                         <p className="wiz-tipo-desc">{desc}</p>
+                        <p className="wiz-tipo-ex">{ex}</p>
                       </div>
                       <div className={`wiz-tipo-radio${wizardTipo === tipo ? " wiz-tipo-radio--active" : ""}`}>
                         {wizardTipo === tipo && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
@@ -890,16 +891,19 @@ export default function Produtos() {
                 </div>
 
                 {/* Recursos extras */}
-                <p className="wiz-section-title">Recursos extras <span className="wiz-optional">opcional</span></p>
+                <p className="wiz-section-title">Recursos extras</p>
                 <div className="wiz-opts-list">
                   {[
-                    { key: "personalizacao" as const, icon: "🎨", title: "Personalização", desc: "Cliente escolhe massa, recheio, cobertura..." },
-                    { key: "complementos" as const, icon: "🎁", title: "Complementos", desc: "Vela, topo de bolo, embalagem especial..." },
-                  ].map(({ key, icon, title, desc }) => (
+                    { key: "complementos" as const, icon: "🎁", title: "Complementos", desc: "Vela, topo de bolo, embalagem especial...", tag: "Aumente seu Lucro", tagKind: "money" as const },
+                    { key: "personalizacao" as const, icon: "🎨", title: "Personalização", desc: "Cliente escolhe massa, recheio, cobertura...", tag: "Opcional", tagKind: "neutral" as const },
+                  ].map(({ key, icon, title, desc, tag, tagKind }) => (
                     <button key={key} className={`wiz-opt-card${wizardOpts[key] ? " wiz-opt-card--active" : ""}`} onClick={() => setWizardOpts(o => ({ ...o, [key]: !o[key] }))}>
                       <span className="wiz-tipo-icon">{icon}</span>
                       <div className="wiz-tipo-info">
-                        <p className="wiz-tipo-title">{title}</p>
+                        <div className="wiz-opt-title-row">
+                          <p className="wiz-tipo-title">{title}</p>
+                          <span className={`wiz-opt-tag wiz-opt-tag--${tagKind}`}>{tag}</span>
+                        </div>
                         <p className="wiz-tipo-desc">{desc}</p>
                       </div>
                       <div className={`wiz-opt-check${wizardOpts[key] ? " wiz-opt-check--active" : ""}`}>
@@ -2895,9 +2899,53 @@ export default function Produtos() {
         .prod-toggle-item.active-pink { background: var(--primary-light); color: var(--primary-dark); }
         .prod-toggle-slider { width: 40px; height: 22px; border-radius: var(--radius-md); background: var(--border); position: relative; flex-shrink: 0; transition: background var(--dur-normal) var(--ease-out); }
         .prod-toggle-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--bg-card); position: absolute; top: 2px; left: 2px; transition: transform var(--dur-normal) var(--ease-out); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        .prod-btn-cancelar { flex: 1; padding: var(--space-3); background: var(--bg-body); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-secondary); cursor: pointer; transition: opacity var(--dur-fast) var(--ease-out); }
-        .prod-btn-salvar { flex: 2; padding: var(--space-3); background: var(--primary-gradient); color: var(--text-inverse); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold); line-height: var(--lh-normal); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity var(--dur-fast) var(--ease-out); }
-        .prod-btn-salvar:disabled { opacity: 0.65; cursor: not-allowed; }
+        .prod-btn-cancelar {
+          flex: 1; padding: var(--space-3);
+          background: var(--bg-body);
+          border: none;
+          border-radius: var(--radius-md);
+          font-family: var(--font-base) !important;
+          font-size: var(--font-button);
+          font-weight: var(--fw-black);
+          line-height: var(--lh-normal);
+          color: var(--text-secondary);
+          cursor: pointer;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          box-shadow: 0 4px 0 #D1CACD;
+          transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }
+        .prod-btn-cancelar:hover { filter: brightness(0.97); }
+        .prod-btn-cancelar:active {
+          transform: translateY(4px);
+          box-shadow: 0 0 0 #D1CACD;
+        }
+        .prod-btn-salvar {
+          flex: 2; padding: var(--space-3);
+          background: var(--primary);
+          color: var(--text-inverse);
+          border: none;
+          border-radius: var(--radius-md);
+          font-family: var(--font-base) !important;
+          font-size: var(--font-button);
+          font-weight: var(--fw-black);
+          line-height: var(--lh-normal);
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          box-shadow: 0 4px 0 var(--primary-dark);
+          transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }
+        .prod-btn-salvar:hover:not(:disabled) { filter: brightness(1.05); }
+        .prod-btn-salvar:active:not(:disabled) {
+          transform: translateY(4px);
+          box-shadow: 0 0 0 var(--primary-dark);
+        }
+        .prod-btn-salvar:disabled {
+          opacity: 0.5; cursor: not-allowed;
+          box-shadow: 0 4px 0 var(--primary-dark);
+        }
 
         /* ── Wizard ── */
         .wiz-subtitle { font-size: var(--font-button); color: var(--text-secondary); margin: 0; line-height: var(--lh-relaxed); }
@@ -2945,6 +2993,54 @@ export default function Produtos() {
           border-radius: 999px;
           text-transform: uppercase;
           letter-spacing: 0.05em;
+        }
+        /* ═══ Tags marketing (Aumente Lucro / Opcional) ═══ */
+        .wiz-opt-title-row {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin-bottom: 2px;
+        }
+        .wiz-opt-tag {
+          display: inline-block;
+          font-size: 9px;
+          font-weight: var(--fw-black);
+          padding: 3px 7px;
+          border-radius: 999px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          line-height: 1;
+          white-space: nowrap;
+        }
+        .wiz-opt-tag--money {
+          background: linear-gradient(135deg, #DCFCE7, #BBF7D0);
+          color: #14532D;
+          border: 1px solid #86EFAC;
+        }
+        .wiz-opt-tag--neutral {
+          background: #F0EBED;
+          color: #6B5D64;
+        }
+        .wiz-opt-card--active .wiz-opt-tag--money {
+          background: rgba(255,255,255,0.9);
+          color: #14532D;
+          border-color: transparent;
+        }
+        .wiz-opt-card--active .wiz-opt-tag--neutral {
+          background: rgba(255,255,255,0.85);
+          color: #4a3b42;
+        }
+        /* ═══ Exemplo de produto (Ex: ...) ═══ */
+        .wiz-tipo-ex {
+          font-size: var(--font-caption);
+          color: var(--text-muted);
+          font-style: italic;
+          margin: 3px 0 0;
+          line-height: 1.3;
+        }
+        .wiz-tipo-card--active .wiz-tipo-ex {
+          color: rgba(255,255,255,0.75);
         }
         .wiz-tipo-list, .wiz-opts-list { gap: 8px !important; }
         .wiz-tipo-card, .wiz-opt-card {
