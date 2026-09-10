@@ -1902,6 +1902,8 @@ export default function Produtos() {
           display: flex; flex-direction: column;
           gap: var(--space-3);
           order: 2;
+          text-align: center;
+          align-items: center;
         }
         .prod-hero-right {
           display: flex;
@@ -1987,6 +1989,7 @@ export default function Produtos() {
         .prod-hero-actions {
           display: flex; gap: var(--space-2); flex-wrap: wrap;
           margin-top: var(--space-3);
+          justify-content: center;
         }
         .prod-hero-btn-primary {
           display: inline-flex;
@@ -2073,6 +2076,9 @@ export default function Produtos() {
           .prod-hero-tip-t { font-size: var(--text-sm); }
           .prod-hero-tip-d { font-size: var(--text-sm); }
           .prod-hero-btn-primary { padding: var(--space-4) var(--space-6); font-size: var(--text-md); }
+          /* Desktop: volta alinhamento à esquerda (texto ao lado do vídeo) */
+          .prod-hero-left { text-align: left; align-items: flex-start; }
+          .prod-hero-actions { justify-content: flex-start; }
           .prod-hero-btn-ghost {
             display: inline-flex;
             align-items: center;
