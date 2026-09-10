@@ -1139,20 +1139,37 @@ export default function Inicio() {
           <h2 className="ini-section-title">Faturamento (30 dias)</h2>
         </div>
         <div className="ini-chart-card">
-          <div className="ini-chart-inner" style={{ width: "100%", height: 180 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 8, right: 10, bottom: 0, left: -10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="dia" tick={{ fontSize: 10, fill: "var(--text-muted)" }} tickLine={false} axisLine={false} interval={4} />
-                <YAxis tick={{ fontSize: 10, fill: "var(--text-muted)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `R$${v}`} />
-                <Tooltip
-                  contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12, fontFamily: "Geist,sans-serif" }}
-                  formatter={(v: any) => [formatCurrency(Number(v)), "Faturamento"]}
-                />
-                <Line type="monotone" dataKey="valor" stroke="var(--text-title)" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: "var(--text-title)" }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          {(() => {
+            const temDados = chartData.some(d => (d.valor || 0) > 0);
+            return (
+              <div className="ini-chart-inner" style={{ width: "100%", height: 180, position: "relative" }}>
+                <div style={{ width: "100%", height: "100%", filter: temDados ? "none" : "blur(6px)", opacity: temDados ? 1 : 0.4, pointerEvents: temDados ? "auto" : "none", transition: "filter 0.3s ease" }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={temDados ? chartData : chartData.map((d, i) => ({ ...d, valor: 100 + Math.sin(i / 3) * 40 + i * 4 }))} margin={{ top: 8, right: 10, bottom: 0, left: -10 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                      <XAxis dataKey="dia" tick={{ fontSize: 10, fill: "var(--text-muted)" }} tickLine={false} axisLine={false} interval={4} />
+                      <YAxis tick={{ fontSize: 10, fill: "var(--text-muted)" }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `R$${v}`} />
+                      {temDados && (
+                        <Tooltip
+                          contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12, fontFamily: "Geist,sans-serif" }}
+                          formatter={(v: any) => [formatCurrency(Number(v)), "Faturamento"]}
+                        />
+                      )}
+                      <Line type="monotone" dataKey="valor" stroke="var(--text-title)" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: "var(--text-title)" }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+                {!temDados && (
+                  <div className="ini-chart-overlay">
+                    <img src="/Sistema/doo.png" alt="" className="ini-chart-overlay-icon" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    <p className="ini-chart-overlay-text">
+                      Seu faturamento vai aparecer aqui quando sair o <strong>primeiro pedido</strong>
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       </section>
         </div>
@@ -2205,6 +2222,9 @@ export default function Inicio() {
           /* Hero escondido no desktop — saudação fica na sidebar */
           .ini-hero { display: none; }
 
+          /* Sino escondido no desktop — menu de conta fica na sidebar */
+          .ini-hero-bell-wrap { display: none; }
+
           /* ── Card de métrica em destaque: escondido no desktop
              (os 4 cards de métrica abaixo já mostram Faturamento — evita redundância) ── */
           .ini-metrica-wrap {
@@ -2214,10 +2234,66 @@ export default function Inicio() {
           /* ── Hover consistente nos cards de "Acesso rápido" ── */
           .ini-nav-card:hover {
             background: var(--primary-light);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 14px rgba(45, 31, 38, 0.08);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(232, 90, 140, 0.18);
+            border: 1.5px solid var(--primary);
+          }
+          .ini-nav-card {
+            border: 1.5px solid transparent;
+            transition: background var(--dur-fast) var(--ease-out),
+                        transform var(--dur-fast) var(--ease-out),
+                        box-shadow var(--dur-fast) var(--ease-out),
+                        border-color var(--dur-fast) var(--ease-out) !important;
+          }
+          .ini-nav-card:hover .ini-nav-icon {
+            transform: scale(1.05);
+            transition: transform var(--dur-fast) var(--ease-out);
+          }
+          .ini-nav-card:hover .ini-nav-arrow {
+            color: var(--primary) !important;
+            transform: translateX(3px);
           }
           .ini-nav-card:active { transform: translateY(0); }
+
+          /* ═══ Overlay do gráfico (sem dados ainda) ═══ */
+          .ini-chart-card {
+            position: relative;
+            overflow: hidden;
+          }
+          .ini-chart-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            padding: var(--space-4);
+            text-align: center;
+            background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(252,224,233,0.5));
+            backdrop-filter: blur(2px);
+            pointer-events: none;
+            z-index: 2;
+          }
+          .ini-chart-overlay-icon {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            opacity: 0.85;
+            filter: drop-shadow(0 4px 12px rgba(232, 90, 140, 0.25));
+          }
+          .ini-chart-overlay-text {
+            font-size: var(--text-sm);
+            color: var(--text-title);
+            font-weight: var(--fw-semibold);
+            line-height: 1.5;
+            max-width: 340px;
+            margin: 0;
+          }
+          .ini-chart-overlay-text strong {
+            color: var(--primary);
+            font-weight: var(--fw-black);
+          }
           /* Desktop: sem empty state hero (confeiteira que sabe usar PC não precisa) */
           .ini-empty-hero { display: none !important; }
 
@@ -2386,7 +2462,9 @@ export default function Inicio() {
           }
           .ini-main .ini-section--nav .ini-nav-card:hover {
             background: var(--primary-light);
-            transform: translateY(-1px);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(232, 90, 140, 0.18);
+            border-color: var(--primary);
           }
           .ini-main .ini-section--nav .ini-nav-icon {
             width: 40px; height: 40px;
