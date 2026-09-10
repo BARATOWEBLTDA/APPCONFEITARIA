@@ -844,7 +844,7 @@ export default function Produtos() {
               {/* Foto */}
               <div className="prod-section">
                 <p className="prod-section-label">Fotos do Produto</p>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
                   {[0, 1, 2].map(slot => {
                     const imgs = (form.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
                     const imgUrl = imgs[slot];
@@ -852,11 +852,11 @@ export default function Produtos() {
                     const ref = slot === 0 ? imgRef : slot === 1 ? img2Ref : img3Ref;
                     return (
                       <div key={slot} style={{ position: "relative" }}>
-                        {slot > 0 && <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", display: "block", marginBottom: "3px", textAlign: "center" }}>Foto {slot + 1}</span>}
-                        {slot === 0 && <span style={{ fontSize: "0.65rem", color: "var(--text-muted)", display: "block", marginBottom: "3px", textAlign: "center" }}>Principal</span>}
+                        {slot > 0 && <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, display: "block", marginBottom: "6px", textAlign: "center" }}>Foto {slot + 1}</span>}
+                        {slot === 0 && <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, display: "block", marginBottom: "6px", textAlign: "center" }}>Principal</span>}
                         <div
                           className="prod-img-upload"
-                          style={{ width: "100%", height: "90px", borderRadius: "12px", cursor: isLocked ? "default" : "pointer", position: "relative", overflow: "hidden", background: isLocked ? "var(--primary-light)" : (slot > 0 ? "#f0f4ff" : undefined), border: isLocked ? "2px dashed var(--primary)" : (slot > 0 ? "2px dashed #c7d2fe" : undefined) }}
+                          style={{ width: "100%", height: "130px", borderRadius: "14px", cursor: isLocked ? "default" : "pointer", position: "relative", overflow: "hidden", background: isLocked ? "var(--primary-light)" : (slot > 0 ? "#f0f4ff" : undefined), border: isLocked ? "2px dashed var(--primary)" : (slot > 0 ? "2px dashed #c7d2fe" : undefined) }}
                           onClick={() => !isLocked && !uploading && ref.current?.click()}
                         >
                           {imgUrl ? (
@@ -2238,6 +2238,74 @@ export default function Produtos() {
           gap: var(--gap-section);
           overscroll-behavior: contain;
         }
+
+        /* ═══ PROPOSTA A: Espaçamento + fontes maiores ═══ */
+        .prod-modal-body {
+          padding: 20px 18px !important;
+          gap: 22px !important;
+        }
+        /* Divisores entre seções */
+        .prod-section + .prod-section {
+          border-top: 1px solid #F0EBED;
+          padding-top: 22px;
+        }
+        /* Label de seção com barrinha rosa lateral */
+        .prod-section-label {
+          font-size: 11px !important;
+          font-weight: 800 !important;
+          letter-spacing: 0.06em !important;
+          display: flex !important;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 4px !important;
+        }
+        .prod-section-label::before {
+          content: "";
+          width: 3px;
+          height: 14px;
+          background: var(--primary);
+          border-radius: 2px;
+          flex-shrink: 0;
+        }
+        /* Inputs maiores e mais respiráveis */
+        .prod-field label {
+          font-size: 12px !important;
+          font-weight: 700 !important;
+          color: var(--text-secondary);
+          margin-bottom: 2px;
+        }
+        .prod-field input,
+        .prod-field select,
+        .prod-field textarea {
+          padding: 14px 16px !important;
+          font-size: 14px !important;
+          border-radius: 12px !important;
+        }
+        .prod-preco-input { border-radius: 12px !important; }
+        .prod-preco-input span { font-size: 14px !important; }
+        .prod-preco-input input { padding: 14px 8px 14px 0 !important; font-size: 14px !important; }
+        /* Fotos maiores */
+        .prod-img-upload {
+          width: 100% !important;
+          aspect-ratio: 1 !important;
+          height: auto !important;
+          border-radius: 14px !important;
+        }
+        .prod-imgs-row {
+          display: grid !important;
+          grid-template-columns: 1fr 1fr 1fr !important;
+          gap: 10px !important;
+        }
+        .prod-img-placeholder p { font-size: 12px !important; font-weight: 800 !important; }
+        .prod-img-placeholder span { font-size: 10px !important; }
+        /* Toggle maior */
+        .prod-toggle-item {
+          padding: 14px 16px !important;
+          font-size: 14px !important;
+          font-weight: 700 !important;
+          border-radius: 12px !important;
+        }
+        /* ═══ FIM PROPOSTA A ═══ */
         .prod-modal-footer {
           padding: var(--space-3) var(--space-4);
           padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
