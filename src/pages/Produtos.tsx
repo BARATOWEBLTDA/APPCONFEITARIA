@@ -865,14 +865,11 @@ export default function Produtos() {
                               {!isLocked && <button className="prod-img-remove" onClick={e => { e.stopPropagation(); removeImage(slot); }}>✕</button>}
                             </>
                           ) : isLocked ? (
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: "5px", padding: "4px" }}>
-                              <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "var(--primary-gradient)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 3px 8px rgba(255,111,169,0.35)" }}>
-                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                                  <rect x="4" y="11" width="16" height="10" rx="2.5"/>
-                                  <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
-                                </svg>
-                              </div>
-                              <span style={{ fontSize: "0.6rem", fontWeight: 800, color: "var(--primary)", textAlign: "center", letterSpacing: "0.05em" }}>PRO</span>
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: "6px", padding: "4px" }}>
+                              <span className="prod-pro-badge">
+                                <img src="/coroa.png" alt="" />
+                                PRO
+                              </span>
                             </div>
                           ) : (
                             <div className="prod-img-placeholder">
@@ -968,6 +965,7 @@ export default function Produtos() {
                     <label style={{ margin: 0 }}>Descrição</label>
                     <button
                       type="button"
+                      className={`prod-ia-btn ${(form.nome.trim() && isPro) ? "prod-ia-btn--active" : "prod-ia-btn--locked"}`}
                       disabled={!form.nome.trim() || !isPro}
                       onClick={async () => {
                         if (!form.nome.trim() || !isPro) return;
@@ -985,10 +983,15 @@ export default function Produtos() {
                           setForm(f => ({ ...f, descricao: "" }));
                         }
                       }}
-                      style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: (form.nome.trim() && isPro) ? "var(--primary-gradient)" : "var(--border)", color: (form.nome.trim() && isPro) ? "var(--text-inverse)" : "var(--text-muted)", border: "none", borderRadius: "20px", fontFamily: "inherit", fontSize: "0.7rem", fontWeight: 700, cursor: (form.nome.trim() && isPro) ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}
                       title={!isPro ? "Disponível apenas no plano PRO" : ""}
                     >
-                      ✨ {isPro ? "Gerar com IA" : "IA — PRO"}
+                      ✨ Gerar com IA
+                      {!isPro && (
+                        <span className="prod-pro-badge prod-pro-badge--inline">
+                          <img src="/coroa.png" alt="" />
+                          PRO
+                        </span>
+                      )}
                     </button>
                   </div>
                   <textarea placeholder="Feito com ingredientes frescos e selecionados. Conte o que torna esse produto especial..." value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={3} />
@@ -1059,9 +1062,9 @@ export default function Produtos() {
                           </div>
                         </div>
                       ))}
-                      <div style={{ display: "flex", gap: "6px", marginTop: "4px" }}>
-                        <input type="text" placeholder={cfg.placeholder} value={novoTamanho.label} onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))} style={{ flex: 2, padding: "0.5rem 0.75rem", border: "1.5px solid var(--border)", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "inherit", outline: "none" }} />
-                        <input type="text" placeholder={cfg.placeholderPreco} value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} style={{ flex: 1, padding: "0.5rem 0.75rem", border: "1.5px solid var(--border)", borderRadius: "10px", fontSize: "0.82rem", fontFamily: "inherit", outline: "none" }} />
+                      <div className="prod-add-row">
+                        <input type="text" placeholder={cfg.placeholder} value={novoTamanho.label} onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))} className="prod-add-input" style={{ flex: 2 }} />
+                        <input type="text" placeholder={cfg.placeholderPreco} value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} className="prod-add-input" style={{ flex: 1 }} />
                         <button onClick={() => {
                           if (!novoTamanho.label.trim()) return;
                           const preco = parseFloat(novoTamanho.preco.replace(",", "."));
@@ -1069,7 +1072,7 @@ export default function Produtos() {
                           const label = formatLabel(novoTamanho.label.trim());
                           setForm(f => ({ ...f, tamanhos_disponiveis: [...(f.tamanhos_disponiveis || []), { label, preco }] }));
                           setNovoTamanho({ label: "", preco: "" });
-                        }} style={{ padding: "0.5rem 0.85rem", background: "var(--primary)", color: "var(--text-inverse)", border: "none", borderRadius: "10px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>+ Add</button>
+                        }} className="prod-btn-3d">Adicionar</button>
                       </div>
                     </div>
                   );
@@ -1155,8 +1158,8 @@ export default function Produtos() {
                           ))}
                           <input id={`input-${key}`} type="text" placeholder={(form[campo] || []).length === 0 ? placeholder : "Adicionar..."} value={novaOpcao[key]} onChange={e => setNovaOpcao(o => ({ ...o, [key]: e.target.value }))} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addOpcao(campo, key); } }} style={{ border: "none", outline: "none", fontSize: "0.82rem", fontFamily: "inherit", flex: 1, minWidth: "100px", background: "transparent", padding: "2px 0" }} />
                         </div>
-                        <p style={{ fontSize: "0.68rem", color: "var(--text-muted)", margin: "4px 0 0" }}>Pressione Enter ou clique em + Add</p>
-                        <button onClick={() => addOpcao(campo, key)} style={{ marginTop: "6px", padding: "0.4rem 1rem", background: "var(--primary)", color: "var(--text-inverse)", border: "none", borderRadius: "8px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer" }}>+ Add</button>
+                        <p style={{ fontSize: "0.68rem", color: "var(--text-muted)", margin: "4px 0 0" }}>Pressione Enter ou clique em Adicionar</p>
+                        <button onClick={() => addOpcao(campo, key)} className="prod-btn-3d" style={{ marginTop: "8px", alignSelf: "flex-start" }}>Adicionar</button>
                       </div>
                     ))}
                   </>
@@ -1310,7 +1313,7 @@ export default function Produtos() {
               {/* Status */}
               <div className="prod-section">
                 <p className="prod-section-label">Status</p>
-                <div className="prod-toggles" style={{ gap: "0.5rem" }}>
+                <div className="prod-toggles" style={{ flexDirection: "column", gap: "0.5rem" }}>
                   <Toggle label="Disponível" value={form.disponivel} onChange={(v: boolean) => setForm(f => ({ ...f, disponivel: v }))} colorClass="active-green" />
                   <Toggle label="Pronta entrega" value={form.pronta_entrega !== false} onChange={(v: boolean) => setForm(f => ({ ...f, pronta_entrega: v }))} colorClass="active-green" />
                 </div>
@@ -1619,6 +1622,113 @@ export default function Produtos() {
         @media(max-width:640px) { .prod-tabs { width:100%; } .prod-tab { flex:1; justify-content:center; padding:0.5rem 0.25rem; font-size: var(--font-helper); } }
 
         .prod-root { font-family: var(--font-base); max-width:800px; display:flex; flex-direction:column; gap:1rem; }
+        .prod-root, .prod-root * { font-family: var(--font-base); }
+        .prod-root button, .prod-root input, .prod-root select, .prod-root textarea { font-family: var(--font-base) !important; }
+
+        /* ── Badge PRO (coroa + PRO, fundo preto) — igual perfil ── */
+        .prod-pro-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: var(--accent, #2D1F26);
+          color: #fff;
+          padding: 3px 9px;
+          border-radius: 6px;
+          font-size: 10px;
+          font-weight: var(--fw-black, 800);
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+          line-height: 1;
+          flex-shrink: 0;
+        }
+        .prod-pro-badge img {
+          width: 12px; height: 12px;
+          object-fit: contain;
+        }
+        .prod-pro-badge--inline {
+          font-size: 9px;
+          padding: 2px 6px;
+        }
+        .prod-pro-badge--inline img { width: 10px; height: 10px; }
+
+        /* ── Botão IA Descrição ── */
+        .prod-ia-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 5px 12px;
+          border: none;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: var(--fw-bold);
+          cursor: pointer;
+          white-space: nowrap;
+          transition: transform var(--dur-fast), opacity var(--dur-fast);
+        }
+        .prod-ia-btn--active {
+          background: var(--primary-gradient, linear-gradient(135deg, #E85A8C, #C33A6E));
+          color: #fff;
+        }
+        .prod-ia-btn--active:hover { transform: translateY(-1px); }
+        .prod-ia-btn--locked {
+          background: var(--bg-subtle, #F0EBED);
+          color: var(--text-secondary);
+          cursor: not-allowed;
+        }
+
+        /* ── Botão 3D estilo Duolingo ── */
+        .prod-btn-3d {
+          padding: 10px 20px;
+          background: var(--primary, #E85A8C);
+          color: #fff;
+          border: none;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: var(--fw-black);
+          cursor: pointer;
+          white-space: nowrap;
+          letter-spacing: 0.02em;
+          box-shadow: 0 4px 0 var(--primary-dark, #C33A6E);
+          transition: transform 0.08s ease, box-shadow 0.08s ease;
+          text-transform: uppercase;
+          font-family: var(--font-base) !important;
+        }
+        .prod-btn-3d:hover {
+          filter: brightness(1.05);
+        }
+        .prod-btn-3d:active {
+          transform: translateY(4px);
+          box-shadow: 0 0 0 var(--primary-dark, #C33A6E);
+        }
+        .prod-btn-3d:disabled {
+          background: #CFC5C9;
+          box-shadow: 0 4px 0 #A8A0A4;
+          cursor: not-allowed;
+        }
+
+        /* ── Row com inputs + botão Adicionar (tamanhos) ── */
+        .prod-add-row {
+          display: flex;
+          gap: 8px;
+          margin-top: 8px;
+          align-items: stretch;
+        }
+        .prod-add-input {
+          padding: 10px 14px !important;
+          border: 1.5px solid var(--border) !important;
+          border-radius: 10px !important;
+          font-size: 14px !important;
+          font-family: var(--font-base) !important;
+          outline: none !important;
+          background: var(--bg-input, #fff) !important;
+          transition: border-color var(--dur-fast) !important;
+        }
+        .prod-add-input:focus { border-color: var(--primary) !important; }
+        @media (max-width: 480px) {
+          .prod-add-row { flex-wrap: wrap; }
+          .prod-add-row .prod-btn-3d { width: 100%; }
+        }
         .prod-spinner { width:32px; height:32px; border:3px solid var(--primary-light); border-top-color:var(--primary); border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
         .prod-spinner-sm { width:18px; height:18px; border:2px solid rgba(255,255,255,0.4); border-top-color:white; border-radius:50%; animation:pspin 0.7s linear infinite; display:inline-block; }
         @keyframes pspin { to { transform:rotate(360deg); } }
@@ -2131,7 +2241,6 @@ export default function Produtos() {
         .prod-modal-footer {
           padding: var(--space-3) var(--space-4);
           padding-bottom: calc(var(--space-3) + env(safe-area-inset-bottom));
-          border-top: 1px solid var(--border);
           display: flex;
           gap: var(--gap-stack);
           flex-shrink: 0;
@@ -2317,7 +2426,6 @@ export default function Produtos() {
           display: flex; gap: 8px;
           padding-top: 12px;
           margin-top: 4px;
-          border-top: 1px solid var(--border);
         }
         .wiz-card-check {
           position: absolute; top: var(--space-3); right: var(--space-3);
