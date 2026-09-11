@@ -1345,15 +1345,23 @@ export default function Produtos() {
                         value={novoAdicional.nome}
                         onChange={e => setNovoAdicional(a => ({ ...a, nome: e.target.value }))}
                         className="prod-add-input"
-                        style={{ flex: 2 }}
+                        style={{ flex: 1.5, minWidth: 0 }}
                       />
-                      <div className="prod-preco-input" style={{ flex: 1, background: "var(--bg-card)" }}>
+                      <div className="prod-preco-input" style={{ flex: 1.1, minWidth: "110px", background: "var(--bg-card)" }}>
                         <span>R$</span>
                         <input
                           type="text"
+                          inputMode="decimal"
                           placeholder="0,00"
-                          value={novoAdicional.valor}
-                          onChange={e => setNovoAdicional(a => ({ ...a, valor: e.target.value }))}
+                          value={novoAdicional.valor ? formatPreco(parsePreco(novoAdicional.valor)) : novoAdicional.valor}
+                          onChange={e => {
+                            const raw = e.target.value;
+                            // Se está vazio, deixa vazio (permite apagar)
+                            if (!raw) { setNovoAdicional(a => ({ ...a, valor: "" })); return; }
+                            // Aplica a máscara: converte pra número e formata BRL
+                            const numero = parsePreco(raw);
+                            setNovoAdicional(a => ({ ...a, valor: numero ? formatPreco(numero) : raw }));
+                          }}
                         />
                       </div>
                       <button
