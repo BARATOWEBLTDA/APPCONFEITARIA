@@ -680,7 +680,7 @@ export default function Inicio() {
         </svg>
 
         {/* Foto da confeiteira (esquerda) — clicar sempre abre o seletor de foto */}
-        <div className="ini-profile-wrapper">
+        <div className="ini-profile-wrapper" data-has-photo={profile?.foto_url ? "true" : "false"}>
           <button
             className="ini-profile-btn"
             onClick={() => !uploadingFoto && fileInputRef.current?.click()}
@@ -1460,9 +1460,17 @@ export default function Inicio() {
           transition: transform var(--dur-fast), background var(--dur-fast);
           z-index: 2;
         }
-        /* Câmera só no mobile */
+        /* Câmera some COMPLETAMENTE quando já tem foto (mobile + desktop) */
+        .ini-profile-wrapper[data-has-photo="true"] .ini-profile-cam {
+          display: none !important;
+          visibility: hidden !important;
+        }
+        /* Câmera some no desktop mesmo sem foto (avatar é grande, não precisa) */
         @media (min-width: 768px) {
-          .ini-profile-cam { display: none !important; }
+          .ini-profile-cam {
+            display: none !important;
+            visibility: hidden !important;
+          }
         }
 
         /* Tags PRO / Upgrade — ao lado do nome (mobile + desktop) */
@@ -1477,7 +1485,7 @@ export default function Inicio() {
           font-weight: 900;
           letter-spacing: 0.05em;
           text-transform: uppercase;
-          margin-left: 8px;
+          margin-left: 4px;
           vertical-align: middle;
           white-space: nowrap;
           border: none;
@@ -1491,14 +1499,11 @@ export default function Inicio() {
           object-fit: contain;
           display: block;
         }
-        /* Variante PRO (não clicável) — preta/accent */
+        /* Variante PRO (não clicável) — preta/accent, coroa colorida original */
         .ini-plan-tag--pro {
           background: var(--accent);
           color: #fff;
           cursor: default;
-        }
-        .ini-plan-tag--pro img {
-          filter: brightness(0) invert(1);
         }
         /* Variante Upgrade (clicável) — branca com borda */
         .ini-plan-tag--upgrade {
