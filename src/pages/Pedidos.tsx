@@ -2668,7 +2668,7 @@ export default function Pedidos() {
         .kb-col {
           width: 260px;
           flex-shrink: 0;
-          background: #FAFAFA;
+          background: #F1F5F9;
           border-radius: 12px;
           padding: 12px;
           display: flex;
@@ -2680,7 +2680,7 @@ export default function Pedidos() {
           transition: background 0.15s, border-color 0.15s;
         }
         .kb-col--hover {
-          background: #F1F5F9;
+          background: #E2E8F0;
           border-color: #E85A8C;
         }
 
