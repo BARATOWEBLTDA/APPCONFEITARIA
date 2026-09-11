@@ -15,7 +15,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
 import { useProfile } from "@/hooks/useProfile";
-import MetricaDestaque from "@/components/MetricaDestaque";
+
 import TourInicio from "@/components/TourInicio";
 import WelcomeChecklist from "@/components/WelcomeChecklist";
 import UpdatesFeed from "@/components/UpdatesFeed";
@@ -829,13 +829,6 @@ export default function Inicio() {
       >
         <img src="/Sistema/sino.png" alt="" className="ini-desktop-bell-img" />
       </button>
-
-      {/* ── Card de métrica em destaque, sobrepondo o hero ── */}
-      {profile?.id && (
-        <div className="ini-metrica-wrap">
-          <MetricaDestaque userId={profile.id} />
-        </div>
-      )}
 
       <div className={`ini-content ${checklistDone ? "ini-content--done" : ""}`}>
         {/* ── Coluna principal ── */}
