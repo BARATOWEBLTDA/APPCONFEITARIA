@@ -1267,7 +1267,7 @@ export default function Inicio() {
         .ini-hero {
           background: var(--primary);
           border-radius: 0 0 24px 24px;
-          padding: 1.5rem 1.25rem 2.5rem;
+          padding: 1.25rem 1.25rem 1.25rem;
           /* Full-bleed: estende até a borda da viewport ignorando padding dos pais */
           width: 100vw;
           margin-left: calc(50% - 50vw);
@@ -1390,7 +1390,7 @@ export default function Inicio() {
         }
 
         /* ── Sino de notificações no hero ── */
-        .ini-hero-bell-wrap { position: relative; flex-shrink: 0; z-index: 3; }
+        .ini-hero-bell-wrap { position: relative; flex-shrink: 0; z-index: 3; display: none; }
         .ini-hero-bell {
           width: 40px; height: 40px;
           border-radius: 50%;
@@ -2287,6 +2287,7 @@ export default function Inicio() {
           .ini-hero-greeting h1 { font-size: var(--text-2xl); }
           .ini-hero-greeting p { font-size: var(--font-input); }
           .ini-hero-sparkles { display: none; }
+          .ini-hero-bell-wrap { display: block; }
           .ini-actions { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-resumo { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-alertas, .ini-tudo-ok, .ini-chart-card { max-width: 720px; margin-left: auto; margin-right: auto; }

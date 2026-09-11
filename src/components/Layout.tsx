@@ -101,9 +101,11 @@ export default function Layout() {
                 }
               </div>
             </div>
-            <span className="sidebar-avatar-cam" aria-hidden="true">
-              <Camera size={14} weight="fill" />
-            </span>
+            {!profile?.foto_url && (
+              <span className="sidebar-avatar-cam" aria-hidden="true">
+                <Camera size={14} weight="fill" />
+              </span>
+            )}
             <div className={`sidebar-badge ${isPro ? "sidebar-badge--pro" : "sidebar-badge--free"}`}>
               {isPro && <img src="/coroa.png" alt="" className="sidebar-badge-coroa" />}
               {isPro ? "PRO" : "Inicial"}
