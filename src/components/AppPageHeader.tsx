@@ -179,17 +179,20 @@ export default function AppPageHeader({
           gap: 12px;
           color: #fff;
           font-family: var(--font-base) !important;
-          margin: calc(-1 * (var(--pad-page-top, 1.5rem) + env(safe-area-inset-top, 0px))) calc(50% - 50vw) 0;
+          /* Mobile: escapa dos paddings pra ir de borda a borda */
+          margin-left: calc(50% - 50vw);
+          margin-right: calc(50% - 50vw);
           width: 100vw;
+          box-sizing: border-box;
         }
         @media (min-width: 768px) {
           .app-header-novo {
+            /* Desktop: cancela o padding do layout-main (2rem lados, 3rem topo) */
             margin-top: -3rem;
             margin-left: -2rem;
             margin-right: -2rem;
             width: auto;
             padding: 28px 2rem 22px;
-            border-radius: 0;
           }
           .app-header-title { font-size: 24px; }
           .app-header-sub { font-size: 13.5px; }
