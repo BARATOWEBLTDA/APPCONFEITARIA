@@ -224,7 +224,11 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
             {primeiroItem.nome_produto}
             {outrosItens > 0 && <span className="ped-card-mais-itens">+{outrosItens} item{outrosItens > 1 ? 's' : ''}</span>}
           </p>
-          <p className="ped-card-produto-qtd">{formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</p>
+          <p className="ped-card-produto-qtd">
+            {itens.length > 1
+              ? `${itens.length} itens`
+              : formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}
+          </p>
         </div>
       </div>
     )
@@ -291,7 +295,11 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
                     : primeiroItem.nome_produto}
                   {outrosItens > 0 && <span className="ped-card-mais-itens">+{outrosItens}</span>}
                 </p>
-                <p className="ped-dt-produto-qtd">{formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</p>
+                <p className="ped-dt-produto-qtd">
+                  {itens.length > 1
+                    ? `${itens.length} itens`
+                    : formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}
+                </p>
               </div>
             </div>
           ) : <span className="ped-dt-vazio">—</span>}
