@@ -1897,7 +1897,7 @@ export default function Produtos() {
         .prod-root { font-family: var(--font-base); max-width:800px; display:flex; flex-direction:column; gap:1rem; }
         @media (min-width: 900px) {
           .prod-root {
-            max-width: 1200px;
+            max-width: 1400px;
             min-height: calc(100vh - 5rem); /* menos padding do layout-main (3rem + 2rem) */
           }
         }
@@ -3586,7 +3586,7 @@ export default function Produtos() {
         }
         @media (min-width: 900px) {
           .prod-root {
-            max-width: 1200px;
+            max-width: 1400px;
             min-height: calc(100vh - 5rem);
             padding-bottom: var(--space-4);
             margin: 0 auto;
@@ -3718,11 +3718,20 @@ export default function Produtos() {
           color: var(--text-inverse);
         }
 
-        /* ── Lista / Grid de produtos ── */
+        /* ── Lista / Grid de produtos (responsivo) ── */
         .prod-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 0.75rem;
+          gap: 0.6rem;
+        }
+        @media (min-width: 720px) {
+          .prod-grid { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+        }
+        @media (min-width: 1000px) {
+          .prod-grid { grid-template-columns: repeat(4, 1fr); gap: 0.85rem; }
+        }
+        @media (min-width: 1300px) {
+          .prod-grid { grid-template-columns: repeat(5, 1fr); }
         }
         .prod-list {
           display: flex;
