@@ -662,7 +662,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
           <style>{`
             .mpd-overlay { position: fixed; inset: 0; background: rgba(45, 31, 38, 0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 9998; }
             .mpd-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(900px, calc(100vw - 40px)); max-height: calc(100vh - 40px); background: #fff; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,0.35); z-index: 9999; display: flex; flex-direction: column; overflow: hidden; font-family: var(--font-base) !important; }
-            .mpd-header { padding: 18px 24px; border-bottom: 1px solid #F0EBED; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-shrink: 0; position: relative; }
+            .mpd-header { padding: 18px 24px; background: #FAFAFA; border-bottom: 1px solid #F0EBED; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-shrink: 0; position: relative; }
             .mpd-num-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
             .mpd-num { font-size: 22px; font-weight: 900; color: #2D1F26; letter-spacing: -0.02em; font-family: var(--font-base) !important; }
             .mpd-meta { font-size: 12.5px; color: #9A8B93; line-height: 1.5; font-family: var(--font-base) !important; margin: 0; }
@@ -680,7 +680,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-menu-sep { height: 1px; background: #F0EBED; margin: 4px 0; }
             .mpd-body { display: grid; grid-template-columns: 1fr 300px; flex: 1; min-height: 0; overflow: hidden; }
             .mpd-col-left { padding: 22px 24px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; min-height: 0; }
-            .mpd-col-right { padding: 22px 24px; background: #FAFAFA; border-left: 1px solid #F0EBED; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; min-height: 0; }
+            .mpd-col-right { padding: 22px 24px; background: #fff; border-left: 1px solid #F0EBED; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; min-height: 0; }
             .mpd-sec-titulo { font-size: 11px; font-weight: 800; color: #9A8B93; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; font-family: var(--font-base) !important; }
             .mpd-sec-val { font-size: 15px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
             .mpd-cli-linha { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #6B5D64; margin-top: 4px; font-family: var(--font-base) !important; }
@@ -717,7 +717,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-fin-row-lbl { color: #6B5D64; }
             .mpd-fin-row-val { font-weight: 700; color: #2D1F26; }
             .mpd-fin-pag-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: 800; font-family: var(--font-base) !important; }
-            .mpd-footer { padding: 14px 24px; background: #FAFAFA; border-top: 1px solid #F0EBED; display: flex; gap: 10px; justify-content: flex-end; align-items: center; flex-shrink: 0; }
+            .mpd-footer { padding: 14px 24px; background: #fff; border-top: 1px solid #F0EBED; display: flex; gap: 10px; justify-content: flex-end; align-items: center; flex-shrink: 0; }
             .mpd-btn { all: unset; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-base) !important; box-sizing: border-box; transition: filter 0.12s, transform 0.08s; }
             .mpd-btn-editar { background: #F5F1F3; color: #6B5D64; }
             .mpd-btn-editar:hover { background: #EBE5E8; }
