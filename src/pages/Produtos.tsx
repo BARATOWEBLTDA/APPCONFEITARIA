@@ -67,6 +67,7 @@ type Produto = {
   coberturas_disponiveis?: string[];
   tamanhos_disponiveis?: Tamanho[];
   usar_foto_variacao?: boolean;
+  oferece_pacote?: boolean;
   pronta_entrega?: boolean;
   kit_itens?: KitItem[];
   kit_serve_pessoas?: string;
@@ -123,7 +124,7 @@ const EMPTY: Produto = {
   disponivel: true, promocao: false,
   permite_personalizacao: false,
   massas_disponiveis: [], recheios_disponiveis: [], coberturas_disponiveis: [],
-  tamanhos_disponiveis: [], usar_foto_variacao: false, pronta_entrega: true,
+  tamanhos_disponiveis: [], usar_foto_variacao: false, oferece_pacote: false, pronta_entrega: true,
   kit_itens: [], kit_serve_pessoas: "", kit_prazo_encomenda: "",
   zero_acucar: false,
   tem_vela: false, valor_vela: 0,
@@ -1129,10 +1130,37 @@ export default function Produtos() {
                   <>
                     <div className="prod-row-2">
                       <div className="prod-field">
-                        <label>Preço base <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
-                        <div className="prod-preco-input">
+                        <label>
+                          {(() => {
+                            const labels: Record<string, string> = {
+                              unidade: "Preço por unidade",
+                              fatia:   "Preço por fatia",
+                              kg:      "Preço por kg",
+                              cento:   "Preço por cento (100 un)",
+                              caixa:   "Preço por caixa",
+                              tamanho: "Preço base",
+                              outros:  "Preço base",
+                              "kit-festa": "Preço do kit",
+                              "sob-encomenda": "Preço base",
+                            };
+                            return labels[form.forma_venda] || "Preço base";
+                          })()}
+                          <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em>
+                        </label>
+                        <div className="prod-preco-input prod-preco-input--taginline">
                           <span>R$</span>
                           <input type="text" placeholder="0,00" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => setForm(f => ({ ...f, preco_normal: parsePreco(e.target.value) }))} />
+                          {(() => {
+                            const tags: Record<string, string> = {
+                              unidade: "/ UNIDADE",
+                              fatia:   "/ FATIA",
+                              kg:      "/ KG",
+                              cento:   "/ CENTO",
+                              caixa:   "/ CAIXA",
+                            };
+                            const tag = tags[form.forma_venda];
+                            return tag ? <span className="prod-preco-input-tag">{tag}</span> : null;
+                          })()}
                         </div>
                       </div>
                       <div className="prod-field">
@@ -1143,7 +1171,43 @@ export default function Produtos() {
                       </div>
                     </div>
 
-                    {!["kit-festa", "sob-encomenda"].includes(form.forma_venda) && (() => {
+                    {/* ══ Toggle "Ofereço desconto por pacote?" — só pra unidade/fatia/kg/cento/caixa ══ */}
+                    {["unidade", "fatia", "kg", "cento", "caixa"].includes(form.forma_venda) && (
+                      <div
+                        className={`prod-pacote-toggle${form.oferece_pacote ? " prod-pacote-toggle--on" : ""}`}
+                        onClick={() => setForm(f => ({ ...f, oferece_pacote: !f.oferece_pacote }))}
+                      >
+                        <div className="prod-pacote-toggle-icon">💰</div>
+                        <div className="prod-pacote-toggle-info">
+                          <div className="prod-pacote-toggle-title">
+                            {form.oferece_pacote ? "✓ Desconto por pacote ativo" : "Ofereço desconto por pacote?"}
+                          </div>
+                          <div className="prod-pacote-toggle-desc">
+                            {form.oferece_pacote
+                              ? "Cadastre os pacotes e o valor promocional abaixo"
+                              : (() => {
+                                  const exs: Record<string, string> = {
+                                    unidade: "Ex: 6 unidades por R$ 25 (em vez de R$ 30)",
+                                    fatia: "Ex: 4 fatias por R$ 30 (em vez de R$ 40)",
+                                    kg: "Ex: 2 kg por R$ 100 (em vez de R$ 120)",
+                                    cento: "Ex: 2 centos por R$ 400 (em vez de R$ 500)",
+                                    caixa: "Ex: 3 caixas por R$ 250 (em vez de R$ 300)",
+                                  };
+                                  return exs[form.forma_venda] || "";
+                                })()}
+                          </div>
+                        </div>
+                        <div className={`prod-pacote-switch${form.oferece_pacote ? " prod-pacote-switch--on" : ""}`}>
+                          <div className="prod-pacote-switch-thumb" />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Variações: aparece sempre pra tamanho/outros; só se toggle ON pros outros */}
+                    {(
+                      (!["unidade", "fatia", "kg", "cento", "caixa"].includes(form.forma_venda))
+                      || form.oferece_pacote
+                    ) && !["kit-festa", "sob-encomenda"].includes(form.forma_venda) && (() => {
                   const config: Record<string, { label: string; sub: string; placeholder: string; placeholderPreco: string; suffix?: string }> = {
                     unidade:  { label: "Opções de quantidade", sub: "Ex: 6 unidades, 12 unidades, 24 unidades", placeholder: "Ex: 6, 12, 24...", placeholderPreco: "Preço", suffix: "un" },
                     fatia:    { label: "Opções de fatias", sub: "Ex: 1 fatia, 2 fatias, 4 fatias", placeholder: "Ex: 1, 2, 4...", placeholderPreco: "Preço", suffix: "fatia(s)" },
@@ -1213,11 +1277,13 @@ export default function Produtos() {
                         })
                         .map(t => {
                           const i = t.originalIdx;
-                          const precoUnit = (() => {
-                            const num = parseFloat(String(t.label).replace(/[^\d,.-]/g, "").replace(",", ".")) || 0;
-                            if (num <= 0) return null;
-                            return t.preco / num;
-                          })();
+                          const numQtd = parseFloat(String(t.label).replace(/[^\d,.-]/g, "").replace(",", ".")) || 0;
+                          const precoUnit = numQtd > 0 ? t.preco / numQtd : null;
+                          // Cálculo de economia: quanto sairia pelo preço base × qtd
+                          const precoSemDesconto = numQtd > 0 && form.preco_normal > 0 ? form.preco_normal * numQtd : null;
+                          const economia = precoSemDesconto && precoSemDesconto > t.preco
+                            ? Math.round(((precoSemDesconto - t.preco) / precoSemDesconto) * 100)
+                            : null;
                           const isEditando = editandoVariacao === i;
                           const useFoto = form.usar_foto_variacao && isPro;
 
@@ -1285,10 +1351,20 @@ export default function Produtos() {
                                       />
                                     </div>
                                   ) : (
-                                    <div className="prod-var-preco-row">
-                                      <span className="prod-var-preco">R$ {formatPreco(t.preco)}</span>
-                                      {precoUnit && <span className="prod-var-preco-un">· R$ {formatPreco(precoUnit)}/un</span>}
-                                    </div>
+                                    <>
+                                      <div className="prod-var-preco-row">
+                                        <span className="prod-var-preco">R$ {formatPreco(t.preco)}</span>
+                                        {economia !== null && economia > 0 && (
+                                          <span className="prod-var-eco">💰 -{economia}%</span>
+                                        )}
+                                      </div>
+                                      <div className="prod-var-preco-un-row">
+                                        {precoUnit && <span className="prod-var-preco-un">R$ {formatPreco(precoUnit)}/un</span>}
+                                        {precoSemDesconto && economia !== null && economia > 0 && (
+                                          <span className="prod-var-preco-tachado">· sem desconto R$ {formatPreco(precoSemDesconto)}</span>
+                                        )}
+                                      </div>
+                                    </>
                                   )}
                                 </div>
                                 <div className="prod-var-actions">
@@ -1349,8 +1425,18 @@ export default function Produtos() {
                                     </div>
                                   ) : (
                                     <>
-                                      <div className="prod-var-preco-big">R$ {formatPreco(t.preco)}</div>
-                                      {precoUnit && <div className="prod-var-preco-un-mini">R$ {formatPreco(precoUnit)} por {cfg.suffix?.replace(/\(|\)|s$/g, "") || "un"}</div>}
+                                      <div className="prod-var-preco-row">
+                                        <div className="prod-var-preco-big">R$ {formatPreco(t.preco)}</div>
+                                        {economia !== null && economia > 0 && (
+                                          <span className="prod-var-eco">💰 -{economia}%</span>
+                                        )}
+                                      </div>
+                                      <div className="prod-var-preco-un-row">
+                                        {precoUnit && <span className="prod-var-preco-un-mini">R$ {formatPreco(precoUnit)} por {cfg.suffix?.replace(/\(|\)|s$/g, "") || "un"}</span>}
+                                        {precoSemDesconto && economia !== null && economia > 0 && (
+                                          <span className="prod-var-preco-tachado">· sem desconto R$ {formatPreco(precoSemDesconto)}</span>
+                                        )}
+                                      </div>
                                     </>
                                   )}
                                 </div>
@@ -4174,9 +4260,113 @@ export default function Produtos() {
           }
         }
 
-        /* ═══ MODAL "DESCARTAR?" (guard produto) ═══ */
-        .prod-discard-ov {
-          position: fixed; inset: 0; z-index: 1200;
+        /* ═══════════════════════════════════════════════════════════
+           TOGGLE "OFEREÇO DESCONTO POR PACOTE?" + PREÇO COM TAG
+           ═══════════════════════════════════════════════════════════ */
+
+        /* Tag "/UNIDADE" colada dentro do input R$ */
+        .prod-preco-input--taginline { overflow: hidden; }
+        .prod-preco-input-tag {
+          background: #F5EEF0;
+          color: #E85A8C;
+          font-size: 10px;
+          font-weight: 900;
+          padding: 0 12px;
+          display: flex; align-items: center;
+          letter-spacing: 0.08em;
+          border-left: 1px solid #E5DFE1;
+          align-self: stretch;
+          white-space: nowrap;
+          font-family: var(--font-base);
+        }
+
+        /* Toggle desconto por pacote */
+        .prod-pacote-toggle {
+          display: flex; align-items: center; gap: 12px;
+          padding: 12px 14px; margin-bottom: 12px;
+          background: linear-gradient(135deg, #FEF3C7 0%, #FCE7F3 100%);
+          border: 1.5px solid #F59E0B;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          font-family: var(--font-base);
+        }
+        .prod-pacote-toggle:hover { transform: translateY(-1px); }
+        .prod-pacote-toggle--on {
+          background: linear-gradient(135deg, #DCFCE7 0%, #F0FDF4 100%);
+          border-color: #16A34A;
+        }
+        .prod-pacote-toggle-icon {
+          width: 40px; height: 40px; border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          background: rgba(255,255,255,0.7);
+          font-size: 20px; flex-shrink: 0;
+        }
+        .prod-pacote-toggle-info { flex: 1; min-width: 0; }
+        .prod-pacote-toggle-title {
+          font-size: 13px; font-weight: 900; color: #2D1F26;
+          line-height: 1.25;
+        }
+        .prod-pacote-toggle-desc {
+          font-size: 11px; color: #6B5D64;
+          margin-top: 2px; line-height: 1.35;
+        }
+        .prod-pacote-switch {
+          position: relative;
+          width: 42px; height: 24px;
+          background: #D1CACD; border-radius: 999px;
+          transition: background 0.2s;
+          flex-shrink: 0;
+        }
+        .prod-pacote-switch--on { background: #16A34A; }
+        .prod-pacote-switch-thumb {
+          position: absolute;
+          top: 3px; left: 3px;
+          width: 18px; height: 18px;
+          background: #fff; border-radius: 50%;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          transition: left 0.2s;
+        }
+        .prod-pacote-switch--on .prod-pacote-switch-thumb { left: 21px; }
+
+        /* Economia % badge */
+        .prod-var-eco {
+          display: inline-flex; align-items: center;
+          background: #DCFCE7; color: #14532D;
+          font-size: 10px; font-weight: 900;
+          padding: 2px 8px; border-radius: 999px;
+          letter-spacing: 0.02em;
+          white-space: nowrap;
+        }
+
+        /* Linha adicional: R$/un · sem desconto R$ X */
+        .prod-var-preco-un-row {
+          display: flex; align-items: baseline; gap: 4px;
+          flex-wrap: wrap;
+          margin-top: 2px;
+        }
+        .prod-var-preco-tachado {
+          font-size: 10px; color: #9A8B93;
+          text-decoration: line-through;
+          font-weight: 600;
+        }
+
+        /* Responsivo mobile pro toggle */
+        @media (max-width: 640px) {
+          .prod-pacote-toggle {
+            padding: 10px 12px;
+          }
+          .prod-pacote-toggle-icon {
+            width: 36px; height: 36px;
+            font-size: 18px;
+          }
+          .prod-preco-input-tag {
+            padding: 0 10px;
+            font-size: 9px;
+          }
+        }
+
+
           background: rgba(45, 31, 38, 0.75);
           backdrop-filter: blur(8px);
           display: flex; align-items: center; justify-content: center;
