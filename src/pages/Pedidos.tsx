@@ -2211,8 +2211,32 @@ export default function Pedidos() {
         gap: 12px;
         color: #fff;
         font-family: var(--font-base) !important;
+        /* Mobile: full-bleed (100vw), compensando padding do layout */
         margin: calc(-1 * (var(--pad-page-top, 1.5rem) + env(safe-area-inset-top, 0px))) calc(50% - 50vw) 0;
         width: 100vw;
+      }
+      /* Desktop (≥768px) — dentro do layout-main (que tem padding 3rem 2rem 2rem) */
+      @media (min-width: 768px) {
+        .ped-header-novo {
+          /* Compensa o padding do layout-main: -3rem no top, -2rem nos lados */
+          margin-top: -3rem;
+          margin-left: -2rem;
+          margin-right: -2rem;
+          width: auto;
+          padding: 28px 2rem 22px;
+          border-radius: 0;
+        }
+        .ped-header-title { font-size: 24px; }
+        .ped-header-sub { font-size: 13.5px; }
+      }
+      /* Desktop grande (≥1100px, com sidebar) — top maior por causa do padding do layout */
+      @media (min-width: 1100px) {
+        .ped-header-novo {
+          padding: 32px 3rem 26px;
+          margin-left: -2rem;
+          margin-right: -2rem;
+        }
+        .ped-header-title { font-size: 28px; }
       }
       .ped-header-info { flex: 1; min-width: 0; }
       .ped-header-title-row { display: flex; align-items: center; gap: 8px; }
