@@ -368,7 +368,7 @@ export default function Layout() {
           position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
           font-size: var(--font-caption);
           font-weight: var(--fw-bold);
-          padding: 4px 12px 4px 10px;
+          padding: 5px 11px;
           white-space: nowrap;
           letter-spacing: 0.06em;
           text-transform: uppercase;
@@ -376,7 +376,10 @@ export default function Layout() {
           background: #2D1F26;
           border-radius: 8px;
           box-shadow: 0 3px 8px rgba(0,0,0,0.35);
-          display: inline-flex; align-items: center; gap: 4px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          line-height: 1;
           border: none;
           font-family: inherit;
         }
@@ -396,7 +399,13 @@ export default function Layout() {
         .sidebar-badge--upgrade:active {
           transform: translateX(-50%) translateY(0);
         }
-        .sidebar-badge-coroa { width: 14px; height: 14px; object-fit: contain; }
+        .sidebar-badge-coroa {
+          width: 13px;
+          height: 13px;
+          object-fit: contain;
+          display: block;
+          flex-shrink: 0;
+        }
         /* Skeleton enquanto carrega o plano (evita flash Upgrade→PRO) */
         .sidebar-badge--skel {
           width: 68px;

@@ -1275,6 +1275,7 @@ export default function Inicio() {
           margin-top: calc(-1 * (var(--pad-page-top) + env(safe-area-inset-top, 0px)));
           padding-top: calc(1.3rem + env(safe-area-inset-top, 0px));
           display: flex;
+          flex-direction: row-reverse;
           align-items: center;
           gap: 0.85rem;
           position: relative;
