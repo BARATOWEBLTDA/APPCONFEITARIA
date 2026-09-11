@@ -68,15 +68,20 @@ function getStatusGroup(status: string): string {
 }
 
 // ── Quantidade com a unidade certa, conforme a forma de venda do produto ──────
-const UNIDADE_LABEL: Record<string, string> = {
-  fatia: 'fatia', kg: 'kg', cento: 'cento', caixa: 'caixa', 'kit-festa': 'kit',
+const UNIDADE_LABEL: Record<string, { sing: string; plural: string; fracionavel: boolean }> = {
+  fatia:       { sing: 'fatia',   plural: 'fatias',  fracionavel: false },
+  kg:          { sing: 'kg',      plural: 'kg',      fracionavel: true  },
+  cento:       { sing: 'cento',   plural: 'centos',  fracionavel: true  },
+  caixa:       { sing: 'caixa',   plural: 'caixas',  fracionavel: false },
+  'kit-festa': { sing: 'kit',     plural: 'kits',    fracionavel: false },
 }
 function formatItemQuantidade(qtd: number, formaVenda?: string | null): string {
-  const unidade = formaVenda ? UNIDADE_LABEL[formaVenda] : undefined
-  const fracionavel = formaVenda === 'kg' || formaVenda === 'cento'
+  const cfg = formaVenda ? UNIDADE_LABEL[formaVenda] : undefined
   const qtdStr = Number.isInteger(qtd) ? String(qtd) : String(qtd).replace('.', ',')
-  if (!unidade) return `${qtdStr}x`
-  return fracionavel ? `${qtdStr} ${unidade}` : `${qtdStr}x ${unidade}`
+  // Sem forma de venda → mostra "1 unidade" / "3 unidades"
+  if (!cfg) return `${qtdStr} ${qtd === 1 ? 'unidade' : 'unidades'}`
+  const label = qtd === 1 ? cfg.sing : cfg.plural
+  return `${qtdStr} ${label}`
 }
 
 function formatDate(d: string) {
@@ -266,10 +271,26 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
               <div className="ped-dt-produto-img">
                 {(primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url)
                   ? <img src={primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url || ''} alt={primeiroItem.nome_produto} />
-                  : <span>🎂</span>}
+                  : (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/>
+                      <path d="M4 16h16"/>
+                      <path d="M12 4v3"/>
+                      <path d="M8 2v2"/>
+                      <path d="M16 2v2"/>
+                    </svg>
+                  )}
               </div>
               <div>
-                <p className="ped-dt-produto-nome">{primeiroItem.nome_produto}{outrosItens > 0 && <span className="ped-card-mais-itens"> +{outrosItens}</span>}</p>
+                <p
+                  className="ped-dt-produto-nome"
+                  title={primeiroItem.nome_produto && primeiroItem.nome_produto.length > 20 ? primeiroItem.nome_produto : undefined}
+                >
+                  {primeiroItem.nome_produto && primeiroItem.nome_produto.length > 20
+                    ? primeiroItem.nome_produto.slice(0, 20) + '..'
+                    : primeiroItem.nome_produto}
+                  {outrosItens > 0 && <span className="ped-card-mais-itens"> +{outrosItens}</span>}
+                </p>
                 <p className="ped-dt-produto-qtd">{formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</p>
               </div>
             </div>
@@ -1887,11 +1908,11 @@ export default function Pedidos() {
           .ped-dt-ver-btn:hover { background: var(--primary); color: white; }
 
           /* Produto */
-          .ped-dt-produto-row { display: flex; align-items: center; gap: 10px; min-width: 0; width: 100%; }
+          .ped-dt-produto-row { display: flex; align-items: center; gap: 12px; min-width: 0; width: 100%; }
           .ped-dt-produto-img {
-            width: 36px; height: 36px; border-radius: var(--radius-sm); flex-shrink: 0;
+            width: 44px; height: 44px; border-radius: 8px; flex-shrink: 0;
             background: var(--bg-subtle); border: 1px solid var(--border);
-            overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: var(--font-input); line-height: 1;
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
           }
           .ped-dt-produto-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
           .ped-dt-produto-info { flex: 1; min-width: 0; }
@@ -1899,7 +1920,7 @@ export default function Pedidos() {
             font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title);
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; margin: 0; max-width: 280px;
           }
-          .ped-dt-produto-qtd { font-size: var(--font-caption); color: var(--text-secondary); margin: 2px 0 0; }
+          .ped-dt-produto-qtd { font-size: var(--font-caption); color: var(--text-secondary); font-weight: 600; margin: 2px 0 0; }
 
           /* Entrega */
           .ped-dt-data { font-size: var(--font-button); font-weight: var(--fw-semibold); margin: 0; }
