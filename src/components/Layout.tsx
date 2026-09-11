@@ -86,6 +86,7 @@ export default function Layout() {
       {/* ── Sidebar Desktop ── */}
       <aside className="sidebar">
         <div className="sidebar-profile">
+          <div className="sidebar-avatar-container">
           <button
             type="button"
             className="sidebar-avatar-btn"
@@ -106,11 +107,24 @@ export default function Layout() {
                 <Camera size={14} weight="fill" />
               </span>
             )}
-            <div className={`sidebar-badge ${isPro ? "sidebar-badge--pro" : "sidebar-badge--free"}`}>
-              {isPro && <img src="/coroa.png" alt="" className="sidebar-badge-coroa" />}
-              {isPro ? "PRO" : "Inicial"}
-            </div>
           </button>
+          {isPro ? (
+            <div className="sidebar-badge sidebar-badge--pro">
+              <img src="/coroa.png" alt="" className="sidebar-badge-coroa" />
+              PRO
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="sidebar-badge sidebar-badge--upgrade"
+              onClick={() => navigate("/assinar")}
+              aria-label="Fazer upgrade para PRO"
+            >
+              <img src="/coroa.png" alt="" className="sidebar-badge-coroa" />
+              Upgrade
+            </button>
+          )}
+          </div>
           {/* Input file escondido — disparado pelo botão do avatar */}
           <input
             ref={fileInputRef}
@@ -343,6 +357,11 @@ export default function Layout() {
         .sidebar-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .sidebar-avatar-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
 
+        .sidebar-avatar-container {
+          position: relative;
+          display: inline-block;
+        }
+
         .sidebar-badge {
           position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
           font-size: var(--font-caption);
@@ -356,8 +375,25 @@ export default function Layout() {
           border-radius: 8px;
           box-shadow: 0 3px 8px rgba(0,0,0,0.35);
           display: inline-flex; align-items: center; gap: 4px;
+          border: none;
+          font-family: inherit;
         }
-        .sidebar-badge--free { padding: 4px 12px; }
+        /* Variante PRO — preta */
+        .sidebar-badge--pro { cursor: default; }
+        /* Variante Upgrade — branca clicável */
+        .sidebar-badge--upgrade {
+          background: #fff;
+          color: var(--primary);
+          cursor: pointer;
+          transition: transform 0.12s ease, box-shadow 0.12s ease;
+        }
+        .sidebar-badge--upgrade:hover {
+          transform: translateX(-50%) translateY(-1px);
+          box-shadow: 0 5px 12px rgba(0,0,0,0.4);
+        }
+        .sidebar-badge--upgrade:active {
+          transform: translateX(-50%) translateY(0);
+        }
         .sidebar-badge-coroa { width: 14px; height: 14px; object-fit: contain; }
 
         .sidebar-greeting { text-align: center; padding: 0 1rem; margin-bottom: 1rem; min-height: 3.4rem; }
