@@ -1045,6 +1045,169 @@ function FiltroDrawer({ statusSelecionados, setStatusSelecionados, periodoFiltro
 }
 
 // ── Componente principal ─────────────────────────────────────────────────────
+// ── Kanban Desktop ────────────────────────────────────────────────────────
+const KANBAN_COLS: { key: string; label: string; color: string; bg: string; dot: string; acao: string }[] = [
+  { key: 'aguardando_pagamento', label: 'Aguardando Pagamento', color: '#9A3412', bg: '#FFEDD5', dot: '#F97316', acao: 'Marcar pago' },
+  { key: 'aguardando_aceite',    label: 'Aguardando Aceite',    color: '#5B21B6', bg: '#EDE9FE', dot: '#7C3AED', acao: 'Aceitar' },
+  { key: 'agendado',             label: 'Agendado',             color: '#1E3A8A', bg: '#DBEAFE', dot: '#1E3A8A', acao: 'Iniciar' },
+  { key: 'em_producao',          label: 'Em Produção',          color: '#92400E', bg: '#FEF3C7', dot: '#F59E0B', acao: 'Finalizar' },
+  { key: 'finalizado',           label: 'Finalizado',           color: '#14532D', bg: '#DCFCE7', dot: '#16A34A', acao: 'Enviar' },
+  { key: 'aguardando_retirada',  label: 'Aguardando Retirada',  color: '#6B21A8', bg: '#F3E8FF', dot: '#9333EA', acao: 'Entregue' },
+  { key: 'em_entrega',           label: 'Em Entrega',           color: '#1E40AF', bg: '#DBEAFE', dot: '#3B82F6', acao: 'Entregue' },
+  { key: 'entregue',             label: 'Entregue',             color: '#475569', bg: '#F1F5F9', dot: '#64748B', acao: '' },
+  { key: 'cancelado',            label: 'Cancelado',            color: '#991B1B', bg: '#FEE2E2', dot: '#DC2626', acao: '' },
+]
+
+function proximoStatusFluxo(atual: string, tipo_entrega?: string | null): string | null {
+  const map: Record<string, string | null> = {
+    aguardando_pagamento: 'aguardando_aceite',
+    aguardando_aceite:    'agendado',
+    agendado:             'em_producao',
+    em_producao:          'finalizado',
+    finalizado:           tipo_entrega === 'retirada' ? 'aguardando_retirada' : 'em_entrega',
+    aguardando_retirada:  'entregue',
+    em_entrega:           'entregue',
+    entregue:             null,
+    cancelado:            null,
+  }
+  return map[atual] ?? null
+}
+
+function KanbanView({ pedidos, onVerPedido, onMoverStatus }: {
+  pedidos: Pedido[]
+  onVerPedido: (p: Pedido) => void
+  onMoverStatus: (id: string, novoStatus: string) => void
+}) {
+  const [draggedId, setDraggedId] = useState<string | null>(null)
+  const [hoverCol, setHoverCol] = useState<string | null>(null)
+
+  const porStatus: Record<string, Pedido[]> = {}
+  KANBAN_COLS.forEach(c => porStatus[c.key] = [])
+  pedidos.forEach(p => {
+    const key = getStatusGroup(p.status)
+    if (porStatus[key]) porStatus[key].push(p)
+  })
+  // Ordenar cada coluna por data de entrega
+  Object.values(porStatus).forEach(arr => {
+    arr.sort((a, b) => {
+      if (!a.data_entrega) return 1
+      if (!b.data_entrega) return -1
+      return a.data_entrega.localeCompare(b.data_entrega)
+    })
+  })
+
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggedId(id)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+  const handleDragOver = (e: React.DragEvent, colKey: string) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (hoverCol !== colKey) setHoverCol(colKey)
+  }
+  const handleDrop = (e: React.DragEvent, colKey: string) => {
+    e.preventDefault()
+    if (draggedId) {
+      const p = pedidos.find(x => x.id === draggedId)
+      if (p && getStatusGroup(p.status) !== colKey) {
+        onMoverStatus(draggedId, colKey)
+      }
+    }
+    setDraggedId(null)
+    setHoverCol(null)
+  }
+  const handleDragEnd = () => {
+    setDraggedId(null)
+    setHoverCol(null)
+  }
+
+  return (
+    <div className="kb-scroll">
+      <div className="kb-grid">
+        {KANBAN_COLS.map(col => {
+          const cards = porStatus[col.key] || []
+          const isHover = hoverCol === col.key
+          return (
+            <div
+              key={col.key}
+              className={`kb-col${isHover ? ' kb-col--hover' : ''}`}
+              onDragOver={(e) => handleDragOver(e, col.key)}
+              onDrop={(e) => handleDrop(e, col.key)}
+              onDragLeave={() => hoverCol === col.key && setHoverCol(null)}
+            >
+              <div className="kb-col-header">
+                <span className="kb-col-dot" style={{ background: col.dot }} />
+                <span className="kb-col-titulo" style={{ color: col.color }}>{col.label}</span>
+                <span className="kb-col-count">{cards.length}</span>
+              </div>
+              <div className="kb-col-body">
+                {cards.length === 0 ? (
+                  <div className="kb-empty">Nenhum pedido</div>
+                ) : (
+                  cards.map(p => {
+                    const prox = proximoStatusFluxo(getStatusGroup(p.status), p.tipo_entrega)
+                    const proxCol = prox ? KANBAN_COLS.find(c => c.key === prox) : null
+                    const itens = p.pedido_itens || []
+                    const primeiroItem = itens[0]
+                    const outrosItens = itens.length - 1
+                    const nomeProduto = primeiroItem?.nome_produto || '—'
+                    const nomeCurto = nomeProduto.length > 22 ? nomeProduto.slice(0, 22) + '..' : nomeProduto
+                    const clienteCurto = (p.cliente_nome || 'Sem nome')
+                    const clienteShort = clienteCurto.length > 20 ? clienteCurto.slice(0, 20) + '..' : clienteCurto
+                    const dias = p.data_entrega ? diasParaEntrega(p.data_entrega) : null
+                    const dataLbl = !p.data_entrega ? 'Sem data'
+                      : dias === 0 ? 'Hoje'
+                      : dias === 1 ? 'Amanhã'
+                      : (dias !== null && dias < 0) ? 'Atrasado'
+                      : formatDate(p.data_entrega)
+                    const isCancelado = col.key === 'cancelado'
+                    const isEntregue = col.key === 'entregue'
+
+                    return (
+                      <div
+                        key={p.id}
+                        className={`kb-card${draggedId === p.id ? ' kb-card--dragging' : ''}${isCancelado ? ' kb-card--cancelado' : ''}${isEntregue ? ' kb-card--entregue' : ''}`}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, p.id)}
+                        onDragEnd={handleDragEnd}
+                        onClick={() => onVerPedido(p)}
+                      >
+                        <div className="kb-card-top">
+                          <span className="kb-card-num">#{p.numero || '—'}</span>
+                          <span className="kb-card-valor">{formatMoney(p.valor_total || 0)}</span>
+                        </div>
+                        <div className="kb-card-cliente">{clienteShort}</div>
+                        <div className="kb-card-data">{dataLbl}{p.horario_entrega ? ` · ${p.horario_entrega.slice(0,5)}` : ''}</div>
+                        <div className="kb-card-itens">
+                          {nomeCurto}{outrosItens > 0 && <span className="kb-card-plus"> +{outrosItens}</span>}
+                        </div>
+                        <div className="kb-card-bot">
+                          <span className="kb-card-tipo">
+                            {p.tipo_entrega === 'retirada' ? '🛍 Retirada' : '🛵 Delivery'}
+                          </span>
+                          {proxCol && !isCancelado && (
+                            <button
+                              className="kb-card-btn"
+                              onClick={(e) => { e.stopPropagation(); onMoverStatus(p.id, proxCol.key) }}
+                              title={`Mover para ${proxCol.label}`}
+                            >
+                              {col.acao} →
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function Pedidos() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -1067,6 +1230,7 @@ export default function Pedidos() {
   const [filtroAguardando, setFiltroAguardando] = useState(params.get('filtro') === 'aguardando')
 
   const [busca, setBusca] = useState('')
+  const [viewMode, setViewMode] = useState<'lista' | 'kanban'>('lista')
   const [showFiltro, setShowFiltro] = useState(false)
   const [statusSelecionados, setStatusSelecionados] = useState<string[]>(STATUS_PADRAO)
   const [periodoFiltro, setPeriodoFiltro] = useState('todos')
@@ -1578,6 +1742,28 @@ export default function Pedidos() {
 
       {(
         <>
+          {/* Toggle Lista | Kanban — só desktop */}
+          {!isMobile && (
+            <div className="ped-viewmode-toggle">
+              <button
+                className={`ped-viewmode-btn${viewMode === 'lista' ? ' ped-viewmode-btn--active' : ''}`}
+                onClick={() => setViewMode('lista')}
+                type="button"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                Lista
+              </button>
+              <button
+                className={`ped-viewmode-btn${viewMode === 'kanban' ? ' ped-viewmode-btn--active' : ''}`}
+                onClick={() => setViewMode('kanban')}
+                type="button"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><rect x="3" y="3" width="7" height="18"/><rect x="14" y="3" width="7" height="10"/><rect x="14" y="17" width="7" height="4"/></svg>
+                Kanban
+              </button>
+            </div>
+          )}
+
           {/* Busca + Filtro + Registrar — na mesma linha */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', paddingTop: isMobile ? '1.25rem' : 0 }}>
             {/* Barra de busca */}
@@ -1658,24 +1844,32 @@ export default function Pedidos() {
           ) : (
             <div className={!isMobile ? 'ped-dt-wrapper' : ''} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
               {!isMobile ? (
-                <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
-                  <thead>
-                    <tr style={{ background: 'var(--text-title)' }}>
-                      <th className="ped-th">Pedido</th>
-                      <th className="ped-th">Cliente</th>
-                      <th className="ped-th">Produto</th>
-                      <th className="ped-th">Entrega</th>
-                      <th className="ped-th">Status</th>
-                      <th className="ped-th">Valor</th>
-                      <th className="ped-th">Ações</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pedidosFiltrados.map(p => (
-                      <PedidoCard key={p.id} p={p} isMobile={false} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} />
-                    ))}
-                  </tbody>
-                </table>
+                viewMode === 'kanban' ? (
+                  <KanbanView
+                    pedidos={pedidosFiltrados}
+                    onVerPedido={setModalPedido}
+                    onMoverStatus={updateStatus}
+                  />
+                ) : (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
+                    <thead>
+                      <tr style={{ background: 'var(--text-title)' }}>
+                        <th className="ped-th">Pedido</th>
+                        <th className="ped-th">Cliente</th>
+                        <th className="ped-th">Produto</th>
+                        <th className="ped-th">Entrega</th>
+                        <th className="ped-th">Status</th>
+                        <th className="ped-th">Valor</th>
+                        <th className="ped-th">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pedidosFiltrados.map(p => (
+                        <PedidoCard key={p.id} p={p} isMobile={false} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} />
+                      ))}
+                    </tbody>
+                  </table>
+                )
               ) : (
                 <div className="plist-container">
                   {pedidosFiltrados.map(p => (
@@ -2414,6 +2608,226 @@ export default function Pedidos() {
         .fd-footer { padding: 12px 16px 28px; flex-shrink: 0; border-top: 1px solid var(--border); background: var(--bg-card); }
         .fd-aplicar { width: 100%; padding: 13px; background: var(--text-title); color: white; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; font-family: var(--font-base); cursor: pointer; letter-spacing: 0.02em; transition: opacity 0.15s; }
         .fd-aplicar:hover { opacity: 0.9; }
+
+        /* ═══════════════ TOGGLE Lista/Kanban ═══════════════ */
+        .ped-viewmode-toggle {
+          display: inline-flex;
+          gap: 0;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          padding: 3px;
+          width: fit-content;
+        }
+        .ped-viewmode-btn {
+          all: unset;
+          padding: 7px 14px;
+          border-radius: 7px;
+          font-size: 13px;
+          font-weight: 700;
+          letter-spacing: 0.01em;
+          color: #9A8B93;
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          transition: background 0.12s, color 0.12s;
+          box-sizing: border-box;
+        }
+        .ped-viewmode-btn:hover { color: #2D1F26; }
+        .ped-viewmode-btn--active { background: #2D1F26; color: #fff; }
+        .ped-viewmode-btn--active:hover { color: #fff; }
+
+        /* ═══════════════ KANBAN ═══════════════ */
+        .kb-scroll {
+          overflow-x: auto;
+          padding-bottom: 12px;
+          margin: 0 -1rem;
+          padding-left: 1rem;
+          padding-right: 1rem;
+        }
+        .kb-scroll::-webkit-scrollbar { height: 10px; }
+        .kb-scroll::-webkit-scrollbar-track { background: #F0EBED; border-radius: 5px; }
+        .kb-scroll::-webkit-scrollbar-thumb { background: #B8ACB1; border-radius: 5px; }
+        .kb-scroll::-webkit-scrollbar-thumb:hover { background: #9A8B93; }
+
+        .kb-grid {
+          display: flex;
+          gap: 12px;
+          min-width: max-content;
+          padding-bottom: 4px;
+          font-family: var(--font-base) !important;
+        }
+
+        .kb-col {
+          width: 260px;
+          flex-shrink: 0;
+          background: #FAFAFA;
+          border-radius: 12px;
+          padding: 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          max-height: calc(100vh - 300px);
+          min-height: 300px;
+          border: 2px solid transparent;
+          transition: background 0.15s, border-color 0.15s;
+        }
+        .kb-col--hover {
+          background: #F1F5F9;
+          border-color: #E85A8C;
+        }
+
+        .kb-col-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 6px 8px 10px;
+          border-bottom: 1px solid #F0EBED;
+        }
+        .kb-col-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .kb-col-titulo {
+          font-size: 12.5px;
+          font-weight: 700;
+          letter-spacing: 0.01em;
+          flex: 1;
+          font-family: var(--font-base) !important;
+        }
+        .kb-col-count {
+          background: #fff; color: #6B5D64;
+          font-size: 11px; font-weight: 700;
+          padding: 2px 8px; border-radius: 10px;
+          border: 1px solid #F0EBED;
+          font-family: var(--font-base) !important;
+        }
+
+        .kb-col-body {
+          display: flex; flex-direction: column; gap: 8px;
+          overflow-y: auto;
+          padding-right: 2px;
+          flex: 1;
+        }
+        .kb-col-body::-webkit-scrollbar { width: 5px; }
+        .kb-col-body::-webkit-scrollbar-thumb { background: #D5CBCF; border-radius: 5px; }
+
+        .kb-empty {
+          font-size: 11.5px;
+          color: #9A8B93;
+          padding: 20px 8px;
+          text-align: center;
+          font-style: italic;
+          font-family: var(--font-base) !important;
+        }
+
+        /* ═══ Card do kanban ═══ */
+        .kb-card {
+          background: #fff;
+          border-radius: 10px;
+          padding: 10px 12px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+          border: 1px solid #F0EBED;
+          cursor: grab;
+          transition: transform 0.12s, box-shadow 0.12s, opacity 0.12s;
+          font-family: var(--font-base) !important;
+        }
+        .kb-card:active { cursor: grabbing; }
+        .kb-card:hover {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+          transform: translateY(-1px);
+          border-color: #E5D8DE;
+        }
+        .kb-card--dragging { opacity: 0.4; }
+        .kb-card--cancelado { opacity: 0.55; }
+        .kb-card--cancelado .kb-card-cliente,
+        .kb-card--cancelado .kb-card-valor { text-decoration: line-through; }
+        .kb-card--entregue { opacity: 0.8; }
+
+        .kb-card-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 6px;
+        }
+        .kb-card-num {
+          font-size: 12px;
+          font-weight: 800;
+          color: #E85A8C;
+          letter-spacing: -0.01em;
+          font-family: var(--font-base) !important;
+        }
+        .kb-card-valor {
+          font-size: 13px;
+          font-weight: 700;
+          letter-spacing: 0.01em;
+          color: #2D1F26;
+          font-family: var(--font-base) !important;
+        }
+        .kb-card-cliente {
+          font-size: 13px;
+          font-weight: 700;
+          color: #2D1F26;
+          margin-bottom: 2px;
+          font-family: var(--font-base) !important;
+        }
+        .kb-card-data {
+          font-size: 11.5px;
+          color: #6B5D64;
+          margin-bottom: 6px;
+          font-family: var(--font-base) !important;
+        }
+        .kb-card-itens {
+          font-size: 11.5px;
+          color: #4A3540;
+          background: #F5F1F3;
+          padding: 5px 8px;
+          border-radius: 6px;
+          line-height: 1.4;
+          margin-bottom: 8px;
+          font-family: var(--font-base) !important;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .kb-card-plus {
+          background: var(--text-title);
+          color: #fff;
+          font-weight: 600;
+          font-size: 10px;
+          padding: 1px 5px;
+          border-radius: 3px;
+          margin-left: 4px;
+        }
+        .kb-card-bot {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 6px;
+          padding-top: 6px;
+          border-top: 1px dashed #F0EBED;
+        }
+        .kb-card-tipo {
+          font-size: 10.5px;
+          font-weight: 700;
+          color: #6B5D64;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          font-family: var(--font-base) !important;
+        }
+        .kb-card-btn {
+          all: unset;
+          background: var(--text-title);
+          color: #fff;
+          padding: 4px 9px;
+          border-radius: 5px;
+          font-size: 10.5px;
+          font-weight: 700;
+          letter-spacing: 0.01em;
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+          transition: filter 0.12s;
+        }
+        .kb-card-btn:hover { filter: brightness(1.15); }
       `}</style>
     </div>
     )}
