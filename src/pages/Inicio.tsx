@@ -76,6 +76,7 @@ export default function Inicio() {
   const [checklistDone, setChecklistDone] = useState(false);
   const [copiado, setCopiado] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmSair, setConfirmSair] = useState(false);
   const [email, setEmail] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -837,7 +838,7 @@ export default function Inicio() {
                     <span>Relatar um problema</span>
                   </button>
 
-                  <button className="ini-menu-novo-item ini-menu-novo-sair" onClick={async () => { setMenuOpen(false); await supabase.auth.signOut(); navigate("/login"); }}>
+                  <button className="ini-menu-novo-item ini-menu-novo-sair" onClick={() => { setMenuOpen(false); setConfirmSair(true); }}>
                     <span className="ini-menu-novo-icon ini-menu-novo-icon--sair">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     </span>
@@ -846,6 +847,39 @@ export default function Inicio() {
                 </div>
               </div>
             </>,
+            document.body
+          )}
+
+          {/* Modal de confirmação — sair do app */}
+          {confirmSair && createPortal(
+            <div className="ini-sair-overlay" onClick={() => setConfirmSair(false)}>
+              <div className="ini-sair-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+                <div className="ini-sair-icon">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                  </svg>
+                </div>
+                <h3 className="ini-sair-title">Sair do Doonly?</h3>
+                <p className="ini-sair-sub">Você precisará entrar novamente na próxima vez. Até já! 👋</p>
+                <div className="ini-sair-actions">
+                  <button className="ini-sair-btn-cancel" onClick={() => setConfirmSair(false)}>
+                    Cancelar
+                  </button>
+                  <button
+                    className="ini-sair-btn-ok"
+                    onClick={async () => {
+                      setConfirmSair(false);
+                      await supabase.auth.signOut();
+                      navigate("/login");
+                    }}
+                  >
+                    Sim, sair
+                  </button>
+                </div>
+              </div>
+            </div>,
             document.body
           )}
         </div>
@@ -1471,10 +1505,13 @@ export default function Inicio() {
           color: #E85A8C;
           flex-shrink: 0;
         }
-        /* Sair — texto vermelho, ícone vermelho */
+        /* Sair — texto vermelho, ícone vermelho, com linha sutil acima */
         .ini-menu-novo-body .ini-menu-novo-sair {
           color: #DC2626 !important;
           font-weight: 700 !important;
+          border-top: 1px solid #F0EBED !important;
+          margin-top: 4px !important;
+          padding-top: 10px !important;
         }
         .ini-menu-novo-body .ini-menu-novo-sair:hover {
           background: #FEF2F2 !important;
@@ -1495,6 +1532,91 @@ export default function Inicio() {
         @keyframes menuOverlayIn {
           from { opacity: 0; }
           to { opacity: 1; }
+        }
+
+        /* ═══ MODAL CONFIRMAÇÃO SAIR ═══ */
+        .ini-sair-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(45, 31, 38, 0.55);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          z-index: 10001;
+          animation: menuOverlayIn 0.18s ease-out;
+          font-family: var(--font-base) !important;
+        }
+        .ini-sair-modal {
+          background: #fff;
+          border-radius: 16px;
+          padding: 28px 24px 20px;
+          max-width: 340px;
+          width: 100%;
+          text-align: center;
+          box-shadow: 0 24px 60px rgba(0,0,0,0.35);
+          animation: menuNovoIn 0.2s ease-out;
+        }
+        .ini-sair-icon {
+          width: 64px;
+          height: 64px;
+          border-radius: 50%;
+          background: #FEE2E2;
+          color: #DC2626;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 14px;
+        }
+        .ini-sair-title {
+          font-size: 18px;
+          font-weight: 900;
+          color: #2D1F26;
+          margin: 0 0 6px;
+          letter-spacing: -0.01em;
+          font-family: var(--font-base) !important;
+        }
+        .ini-sair-sub {
+          font-size: 13px;
+          color: #6B5D64;
+          line-height: 1.5;
+          margin: 0 0 20px;
+          font-family: var(--font-base) !important;
+        }
+        .ini-sair-actions {
+          display: flex;
+          gap: 8px;
+        }
+        .ini-sair-btn-cancel,
+        .ini-sair-btn-ok {
+          all: unset;
+          flex: 1;
+          padding: 12px;
+          border-radius: 10px;
+          font-family: var(--font-base) !important;
+          font-size: 13.5px;
+          font-weight: 800;
+          cursor: pointer;
+          text-align: center;
+          transition: filter 0.12s, transform 0.08s;
+          box-sizing: border-box;
+        }
+        .ini-sair-btn-cancel {
+          background: #F5F1F3;
+          color: #6B5D64;
+        }
+        .ini-sair-btn-cancel:hover { background: #EBE5E8; }
+        .ini-sair-btn-ok {
+          background: #DC2626;
+          color: #fff;
+          box-shadow: 0 3px 0 #991B1B;
+        }
+        .ini-sair-btn-ok:hover { filter: brightness(1.05); }
+        .ini-sair-btn-ok:active {
+          transform: translateY(3px);
+          box-shadow: 0 0 0 #991B1B;
         }
 
 
