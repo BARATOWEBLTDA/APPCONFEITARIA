@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
 import { useProfile } from "@/hooks/useProfile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import AppPageHeader from "@/components/AppPageHeader";
 
 import TourInicio from "@/components/TourInicio";
@@ -51,6 +52,7 @@ const STATUS_ATIVOS = ["pendente", "novo", "confirmado", "em_producao", "pronto"
  */
 export default function Inicio() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const { profile, refetch: refetchProfile } = useProfile();
 
   const [loading, setLoading] = useState(true);
@@ -667,18 +669,20 @@ export default function Inicio() {
 
   return (
     <>
-    <AppPageHeader
-      title="Início"
-      subtitle="Sua visão geral do dia"
-      infoIcon="🏠"
-      infoContent={
-        <>
-          <p>Aqui você tem um <strong>resumo do que está rolando</strong> na sua confeitaria: pedidos do dia, faturamento, agenda e atalhos.</p>
-          <p>É a sua <strong>central de controle</strong> — bate o olho e sabe o que está acontecendo.</p>
-        </>
-      }
-      infoTip={<>Use os <strong>cards de acesso rápido</strong> pra ir direto pras funções mais usadas.</>}
-    />
+    {!isMobile && (
+      <AppPageHeader
+        title="Início"
+        subtitle="Sua visão geral do dia"
+        infoIcon="🏠"
+        infoContent={
+          <>
+            <p>Aqui você tem um <strong>resumo do que está rolando</strong> na sua confeitaria: pedidos do dia, faturamento, agenda e atalhos.</p>
+            <p>É a sua <strong>central de controle</strong> — bate o olho e sabe o que está acontecendo.</p>
+          </>
+        }
+        infoTip={<>Use os <strong>cards de acesso rápido</strong> pra ir direto pras funções mais usadas.</>}
+      />
+    )}
     <div className="ini-root">
       {/* ── Hero wine com foto da confeiteira, coroinha (PRO) e sparkles ── */}
       <div className="ini-hero">
