@@ -924,7 +924,12 @@ export default function Produtos() {
                 </button>
               ) : <div style={{width: 32}} />}
               <div className="prod-modal-title-novo">
-                {form.id ? "Editar produto" : "Cadastrar produto"}
+                {form.id ? "Editar produto" : (() => {
+                  if (wizardStep === 2) return "Informações";
+                  if (wizardStep === 3) return "Visual e preço";
+                  if (wizardStep === 4) return "Extras";
+                  return "Cadastrar produto";
+                })()}
               </div>
               <button className="prod-modal-close-novo" onClick={handleTryClose} aria-label="Fechar">✕</button>
             </div>
@@ -1014,36 +1019,35 @@ export default function Produtos() {
             {wizardStep === 2 && (
             <div className="prod-modal-body">
               <div className="prod-section">
-                <p className="prod-section-label prod-section-label--novo">Informações</p>
-
                 {/* 1. Nome */}
                 <div className="prod-field">
-                  <label className="prod-field-label--rosa">Nome do produto <em className="prod-field-obrig">(obrigatório)</em></label>
+                  <label className="prod-field-label--rosa">Nome do produto <em className="prod-field-obrig">(Obrigatório)</em></label>
                   <input type="text" placeholder="Ex: Bolo de Morango" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
                 </div>
 
                 {/* 2. Categoria */}
                 <div className="prod-field">
-                  <label className="prod-field-label--rosa">Categoria <em className="prod-field-obrig">(obrigatório)</em></label>
+                  <label className="prod-field-label--rosa">Categoria <em className="prod-field-obrig">(Obrigatório)</em></label>
                   {!showCatInput ? (
-                    <div style={{display:'flex', gap:8}}>
-                      <select
-                        value={form.categoria}
-                        onChange={e => setForm(f => ({ ...f, categoria: e.target.value }))}
-                        style={{flex:1}}
-                      >
-                        <option value="">Selecione uma categoria...</option>
-                        {todasCategorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                      </select>
-                      <button
-                        type="button"
-                        onClick={() => setShowCatInput(true)}
-                        className="prod-cat-nova-btn"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        Nova
-                      </button>
-                    </div>
+                    <select
+                      value={form.categoria}
+                      onChange={e => {
+                        if (e.target.value === "__nova__") {
+                          setShowCatInput(true);
+                          return;
+                        }
+                        setForm(f => ({ ...f, categoria: e.target.value }));
+                      }}
+                    >
+                      <option value="">
+                        {todasCategorias.length > 0 ? "Selecione uma categoria..." : "Nenhuma categoria cadastrada"}
+                      </option>
+                      {todasCategorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                      {todasCategorias.length > 0 && <option disabled>─────────────</option>}
+                      <option value="__nova__">
+                        {todasCategorias.length > 0 ? "+ Criar nova categoria" : "+ Criar primeira categoria"}
+                      </option>
+                    </select>
                   ) : (
                     <div className="prod-cat-nova-form">
                       <p className="prod-cat-nova-hint">✨ Criar nova categoria</p>
@@ -4306,7 +4310,8 @@ export default function Produtos() {
           font-size: 14px;
           font-weight: 900;
           color: #2D1F26;
-          letter-spacing: -0.01em;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
         }
         .prod-modal-close-novo {
           width: 32px; height: 32px;
