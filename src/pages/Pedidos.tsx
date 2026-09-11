@@ -686,7 +686,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-cli-linha { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #6B5D64; margin-top: 4px; font-family: var(--font-base) !important; }
             .mpd-btn-whats { display: inline-flex; align-items: center; gap: 4px; background: #25D366; color: #fff; padding: 4px 10px; border-radius: 5px; font-size: 10.5px; font-weight: 800; text-decoration: none; cursor: pointer; border: 0; font-family: var(--font-base) !important; transition: filter 0.12s; }
             .mpd-btn-whats:hover { filter: brightness(1.08); }
-            .mpd-entrega { background: #FCE0E9; border-radius: 10px; padding: 14px; }
+            .mpd-entrega { background: #F1F5F9; border-radius: 10px; padding: 14px; }
             .mpd-entrega--com-mapa { display: grid; grid-template-columns: 1fr 120px; gap: 14px; align-items: stretch; min-height: 110px; }
             .mpd-entrega-info { display: flex; flex-direction: column; justify-content: center; }
             .mpd-entrega-topo { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11.5px; font-weight: 800; color: #6B5D64; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: var(--font-base) !important; }
