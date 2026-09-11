@@ -33,7 +33,7 @@ function SidebarGroup({ label, icon, paths, location, children }: { label: strin
 export default function Layout() {
   const navigate = useNavigate();
   const { profile } = useProfile();
-  const { isPro } = usePlano();
+  const { isPro, loading: loadingPlano } = usePlano();
   const { notifCount, notifOpen, notificacoes, notifRef, toggleNotif, closeNotif } = useNotifications();
   const {
     fileInputRef, uploading: uploadingFoto, cropSrc,
@@ -108,7 +108,9 @@ export default function Layout() {
               </span>
             )}
           </button>
-          {isPro ? (
+          {loadingPlano ? (
+            <div className="sidebar-badge sidebar-badge--skel" aria-hidden="true" />
+          ) : isPro ? (
             <div className="sidebar-badge sidebar-badge--pro">
               <img src="/coroa.png" alt="" className="sidebar-badge-coroa" />
               PRO
@@ -395,6 +397,20 @@ export default function Layout() {
           transform: translateX(-50%) translateY(0);
         }
         .sidebar-badge-coroa { width: 14px; height: 14px; object-fit: contain; }
+        /* Skeleton enquanto carrega o plano (evita flash Upgrade→PRO) */
+        .sidebar-badge--skel {
+          width: 68px;
+          height: 24px;
+          background: linear-gradient(90deg, rgba(255,255,255,0.15) 25%, rgba(255,255,255,0.28) 50%, rgba(255,255,255,0.15) 75%);
+          background-size: 200% 100%;
+          animation: sidebarBadgeShimmer 1.2s ease-in-out infinite;
+          box-shadow: none;
+          padding: 0;
+        }
+        @keyframes sidebarBadgeShimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
 
         .sidebar-greeting { text-align: center; padding: 0 1rem; margin-bottom: 1rem; min-height: 3.4rem; }
         .sidebar-greeting-name { margin: 0; font-size: 0.95rem; font-weight: var(--fw-semibold); color: var(--sidebar-text); line-height: 1.3; min-height: 1.25rem; display: flex; align-items: center; justify-content: center; }
