@@ -1384,30 +1384,37 @@ export default function Inicio() {
            ═══════════════════════════════════════════════════════════ */
         .ini-menu-novo {
           position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
+          top: calc(72px + env(safe-area-inset-top, 0px));
+          right: 12px;
           background: #fff;
-          border-radius: 14px;
+          border-radius: 12px;
           overflow: hidden;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.35);
-          max-width: 300px;
+          box-shadow: 0 12px 40px rgba(0,0,0,0.28);
+          max-width: 260px;
           width: calc(100vw - 32px);
           z-index: 10000;
           font-family: var(--font-base) !important;
-          animation: menuNovoIn 0.18s ease-out;
+          animation: menuNovoIn 0.16s ease-out;
+          transform-origin: top right;
         }
         @keyframes menuNovoIn {
-          from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
-          to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+          from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        /* Desktop médio: menu maior, ao lado do sino */
+        @media (min-width: 768px) {
+          .ini-menu-novo {
+            top: 72px;
+            right: 24px;
+          }
         }
 
         .ini-menu-novo-hdr {
           background: #F5F1F3;
-          padding: 16px 18px 14px;
+          padding: 12px 16px 10px;
         }
         .ini-menu-novo-hdr-name {
-          font-size: 13.5px;
+          font-size: 13px;
           font-weight: 900;
           color: #2D1F26;
           letter-spacing: -0.01em;
@@ -1416,16 +1423,16 @@ export default function Inicio() {
           font-family: var(--font-base) !important;
         }
         .ini-menu-novo-hdr-ver {
-          font-size: 11px;
+          font-size: 10.5px;
           color: #9A8B93;
           font-weight: 500;
-          margin: 3px 0 0;
+          margin: 2px 0 0;
           letter-spacing: 0.03em;
           font-family: var(--font-base) !important;
         }
 
         .ini-menu-novo-body {
-          padding: 6px 0;
+          padding: 4px 0;
           background: #fff;
         }
 
@@ -1434,10 +1441,10 @@ export default function Inicio() {
           all: unset;
           display: flex;
           align-items: center;
-          gap: 12px;
-          padding: 12px 18px;
+          gap: 10px;
+          padding: 8px 16px;
           cursor: pointer;
-          font-size: 14px;
+          font-size: 13.5px;
           color: #2D1F26;
           font-weight: 600;
           width: 100%;
@@ -1455,8 +1462,8 @@ export default function Inicio() {
           outline: 0 !important;
         }
         .ini-menu-novo-icon {
-          width: 30px; height: 30px;
-          border-radius: 8px;
+          width: 26px; height: 26px;
+          border-radius: 7px;
           background: #F5EEF0;
           display: flex;
           align-items: center;
@@ -1477,15 +1484,13 @@ export default function Inicio() {
           color: #DC2626 !important;
         }
 
-        /* Overlay escuro por trás */
+        /* Overlay leve por trás — só pra capturar clique fora */
         .ini-menu-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(45, 31, 38, 0.55);
-          backdrop-filter: blur(3px);
-          -webkit-backdrop-filter: blur(3px);
+          background: rgba(45, 31, 38, 0.15);
           z-index: 9999;
-          animation: menuOverlayIn 0.18s ease-out;
+          animation: menuOverlayIn 0.16s ease-out;
         }
         @keyframes menuOverlayIn {
           from { opacity: 0; }
