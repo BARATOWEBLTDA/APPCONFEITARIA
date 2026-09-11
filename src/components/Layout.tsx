@@ -487,24 +487,10 @@ export default function Layout() {
         .nav-group-btn.active { color: var(--primary); }
 
         .nav-subitems { display: flex; flex-direction: column; padding: 0 0 0.25rem 0; }
-        .nav-subitem { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.85rem 0.5rem 2.25rem; border-radius: var(--radius-sm); font-size: var(--font-button); color: var(--sidebar-text-muted); text-decoration: none; transition: all var(--dur-fast); position: relative; }
-        .nav-subitem::before {
-          content: "";
-          position: absolute;
-          left: 1.5rem;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 4px;
-          height: 4px;
-          border-radius: 50%;
-          background: var(--sidebar-text-muted);
-          opacity: 0.5;
-        }
-        .nav-subitem .nav-subicon { display: inline-flex; align-items: center; justify-content: center; width: 16px; opacity: 0.75; }
-        .nav-subitem:hover { color: var(--sidebar-text); background: var(--sidebar-hover-bg); }
-        .nav-subitem:hover::before { opacity: 1; }
+        .nav-subitem { display: flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.85rem 0.45rem 2.1rem; border-radius: var(--radius-sm); font-size: 12.5px; color: rgba(255,255,255,0.85); text-decoration: none; transition: all var(--dur-fast); }
+        .nav-subitem .nav-subicon { display: inline-flex; align-items: center; justify-content: center; width: 16px; opacity: 0.85; }
+        .nav-subitem:hover { color: #fff; background: var(--sidebar-hover-bg); }
         .nav-subitem.active { color: var(--sidebar-active-text); background: var(--sidebar-active-bg); font-weight: var(--fw-semibold); }
-        .nav-subitem.active::before { background: var(--sidebar-active-text); opacity: 1; }
         .nav-subitem.active .nav-subicon { opacity: 1; }
 
         .sidebar-cad-complete {
