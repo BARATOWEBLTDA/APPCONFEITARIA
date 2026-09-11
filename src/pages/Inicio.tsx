@@ -750,6 +750,8 @@ export default function Inicio() {
               )
             )}
           </h1>
+          {/* Data — só mobile (embaixo do nome) */}
+          <p className="ini-hero-data-mobile">{hojeFormatado()}</p>
           {(() => {
             const msg = getSmartMessage();
             return (
@@ -1267,7 +1269,7 @@ export default function Inicio() {
         .ini-hero {
           background: var(--primary);
           border-radius: 0 0 24px 24px;
-          padding: 1.25rem 1.25rem 1.25rem;
+          padding: 1.25rem 1.25rem 1.25rem 1.75rem;
           /* Full-bleed: estende até a borda da viewport ignorando padding dos pais */
           width: 100vw;
           margin-left: calc(50% - 50vw);
@@ -1345,6 +1347,19 @@ export default function Inicio() {
           width: 13px;
           height: 13px;
           object-fit: contain;
+        }
+
+        /* Data mobile — embaixo do nome, só aparece no mobile */
+        .ini-hero-data-mobile {
+          font-size: 0.78rem;
+          color: rgba(255, 255, 255, 0.85);
+          margin: 4px 0 0;
+          font-weight: 500;
+          line-height: 1.3;
+          letter-spacing: 0.01em;
+        }
+        @media (min-width: 768px) {
+          .ini-hero-data-mobile { display: none; }
         }
 
         /* ── Mensagem contextual embaixo do nome (hero mobile) ── */
