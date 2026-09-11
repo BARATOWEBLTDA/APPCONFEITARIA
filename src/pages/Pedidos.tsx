@@ -1539,7 +1539,7 @@ export default function Pedidos() {
           color: var(--text-secondary);
           border-radius: 999px;
           padding: 6px 12px;
-          font-family: inherit;
+          font-family: var(--font-base);
           font-size: 11px;
           font-weight: 700;
           cursor: pointer;
@@ -1556,7 +1556,7 @@ export default function Pedidos() {
           border-bottom: 1px solid var(--border);
           cursor: pointer;
           transition: background var(--dur-fast);
-          font-family: inherit;
+          font-family: var(--font-base);
         }
         .plist-item:hover, .plist-item:active { background: var(--bg-subtle); }
         .plist-item:last-child { border-bottom: none; }
@@ -1707,7 +1707,7 @@ export default function Pedidos() {
         }
 
         /* ── Card de pedido (mantido pro desktop e legado) ── */
-        .ped-card { background: var(--bg-card); border-radius: var(--radius-lg); cursor: pointer; font-family: inherit; position: relative; overflow: hidden; }
+        .ped-card { background: var(--bg-card); border-radius: var(--radius-lg); cursor: pointer; font-family: var(--font-base); position: relative; overflow: hidden; }
         .ped-card-banner { background: #fee2e2; padding: 4px 1.1rem; font-size: var(--font-caption); font-weight: var(--fw-bold); color: #dc2626; }
         .ped-card-head { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.1rem 0; gap: 0.5rem; }
         .ped-card-numero { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-muted); }
@@ -1725,7 +1725,7 @@ export default function Pedidos() {
         .ped-card-produto-qtd { margin: 2px 0 0; font-size: var(--font-helper); color: var(--text-secondary); }
         .ped-card-data { margin: 0; font-size: var(--font-helper); font-weight: var(--fw-semibold); line-height: 1.3; }
         .ped-card-tipo-entrega { margin: 1px 0 0; font-size: var(--font-helper); color: var(--text-secondary); }
-        .ped-card-mapa { display: inline-flex; align-items: center; gap: 4px; background: none; border: none; padding: 0; margin-top: 3px; font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--primary); cursor: pointer; font-family: inherit; }
+        .ped-card-mapa { display: inline-flex; align-items: center; gap: 4px; background: none; border: none; padding: 0; margin-top: 3px; font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--primary); cursor: pointer; font-family: var(--font-base); }
         .ped-card-mapa:hover { text-decoration: underline; }
         .ped-card-pagamento { font-size: var(--font-helper); font-weight: var(--fw-semibold); }
         .ped-card-valor { font-size: var(--font-modal-title); font-weight: var(--fw-black); color: var(--text-title); letter-spacing: -0.02em; }
@@ -1760,7 +1760,7 @@ export default function Pedidos() {
         .mp-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 10px auto 0; flex-shrink: 0; }
         @media (min-width: 768px) { .mp-handle { display: none; } }
         .mp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; animation: hsFadeIn 0.2s ease; }
-        .mp-modal { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-radius: var(--radius-xl) 20px 0 0; z-index: 9999; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 -4px 32px rgba(0,0,0,0.2); animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); font-family: inherit; }
+        .mp-modal { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-radius: var(--radius-xl) 20px 0 0; z-index: 9999; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 -4px 32px rgba(0,0,0,0.2); animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); font-family: var(--font-base); }
         @media (min-width: 768px) { .mp-modal { top: 50%; left: 50%; right: auto; bottom: auto; transform: translate(-50%,-50%); border-radius: var(--radius-lg); width: 460px; max-width: 95vw; max-height: 85vh; animation: hsFadeIn 0.2s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.2); } }
 
         /* Header */
@@ -1798,7 +1798,7 @@ export default function Pedidos() {
 
         /* Footer */
         .mp-footer { padding: 0.85rem 1.25rem 1.25rem; border-top: 1px solid var(--border); flex-shrink: 0; display: flex; gap: 8px; flex-wrap: wrap; }
-        .mp-btn-editar { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--text-title); border: none; color: white; border-radius: var(--radius-md); padding: 0.8rem; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
+        .mp-btn-editar { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--text-title); border: none; color: white; border-radius: var(--radius-md); padding: 0.8rem; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; font-family: var(--font-base); transition: opacity 0.15s; }
         .mp-btn-editar:hover { opacity: 0.92; }
         .mp-btn-editar--secondary { background: transparent; color: var(--text-title); border: 1.5px solid var(--border); }
         .mp-btn-editar--secondary:hover { background: var(--bg-subtle); opacity: 1; }
@@ -1810,7 +1810,7 @@ export default function Pedidos() {
           background: var(--primary); color: #fff; border: none;
           border-radius: var(--radius-md);
           padding: 0.95rem;
-          font-family: inherit;
+          font-family: var(--font-base);
           font-size: var(--font-button);
           font-weight: var(--fw-black);
           letter-spacing: 0.02em;
@@ -1861,12 +1861,12 @@ export default function Pedidos() {
           color: var(--text-secondary);
           line-height: 1.4;
         }
-        .mp-btn-excluir { width: 44px; height: 44px; background: #fff1f2; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: var(--radius-md); cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+        .mp-btn-excluir { width: 44px; height: 44px; background: #fff1f2; border: 1.5px solid #fca5a5; color: #dc2626; border-radius: var(--radius-md); cursor: pointer; font-family: var(--font-base); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
         .mp-btn-excluir:hover { background: #fee2e2; }
         .mp-confirm-excluir { width: 100%; background: #fff1f2; border: 1.5px solid #fca5a5; border-radius: var(--radius-md); padding: 0.85rem 1rem; }
         .mp-confirm-excluir p { font-size: var(--font-button); color: #991b1b; margin: 0 0 10px; font-weight: var(--fw-medium); }
-        .mp-btn-cancel { flex: 1; background: var(--bg-card); border: 1.5px solid var(--border); color: var(--text-secondary); border-radius: var(--radius-sm); padding: 0.55rem; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; }
-        .mp-btn-confirmar-excluir { flex: 1; background: #dc2626; border: none; color: white; border-radius: var(--radius-sm); padding: 0.55rem; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; }
+        .mp-btn-cancel { flex: 1; background: var(--bg-card); border: 1.5px solid var(--border); color: var(--text-secondary); border-radius: var(--radius-sm); padding: 0.55rem; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; font-family: var(--font-base); }
+        .mp-btn-confirmar-excluir { flex: 1; background: #dc2626; border: none; color: white; border-radius: var(--radius-sm); padding: 0.55rem; font-size: var(--font-button); font-weight: var(--fw-semibold); cursor: pointer; font-family: var(--font-base); }
 
         @media (min-width: 768px) {
           .ped-dt-wrapper { background: var(--bg-card); border: 1.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; width: 100%; }
@@ -1884,7 +1884,7 @@ export default function Pedidos() {
           .ped-dt-row:last-child { border-bottom: none; }
           .ped-dt-row:hover { background: var(--bg-subtle); }
 
-          .ped-td { padding: 0.65rem 1rem; vertical-align: middle; font-family: inherit; }
+          .ped-td { padding: 0.65rem 1rem; vertical-align: middle; font-family: var(--font-base); }
 
           /* Colunas individuais */
           .ped-dt-col { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
@@ -1903,7 +1903,7 @@ export default function Pedidos() {
           .ped-dt-cliente-nome { font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--text-title); display: block; white-space: nowrap; }
           .ped-dt-cliente-tel { font-size: var(--font-caption); color: var(--text-muted); display: block; }
 
-          .ped-dt-ver-btn { background: none; border: 1.5px solid var(--primary); color: var(--primary); border-radius: var(--radius-sm); padding: 0.3rem 0.7rem; font-size: var(--font-caption); font-weight: var(--fw-semibold); cursor: pointer; font-family: inherit; white-space: nowrap; transition: all 0.15s; }
+          .ped-dt-ver-btn { background: none; border: 1.5px solid var(--primary); color: var(--primary); border-radius: var(--radius-sm); padding: 0.3rem 0.7rem; font-size: var(--font-caption); font-weight: var(--fw-semibold); cursor: pointer; font-family: var(--font-base); white-space: nowrap; transition: all 0.15s; }
           .ped-dt-ver-btn:hover { background: var(--primary); color: white; }
 
           /* Produto */
@@ -1942,10 +1942,10 @@ export default function Pedidos() {
         /* ── Modal de mapa ── */
         .map-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; animation: hsFadeIn 0.2s ease; }
         .map-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-radius: var(--radius-xl) 20px 0 0; z-index: 201; max-width: 480px; margin: 0 auto; max-height: 80vh; overflow-y: auto; animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
-        .map-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem; border-radius: var(--radius-md); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold); text-decoration: none; }
+        .map-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem; border-radius: var(--radius-md); font-family: var(--font-base); font-size: var(--font-button); font-weight: var(--fw-bold); text-decoration: none; }
         .map-btn--waze { background: #33CCFF; color: white; }
         .map-btn--maps { background: #ecf3ff; color: #4285f4; }
-        .map-btn-close { width: 100%; padding: 0.85rem; background: var(--bg-subtle); color: var(--text-primary); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-input); font-weight: var(--fw-bold); cursor: pointer; }
+        .map-btn-close { width: 100%; padding: 0.85rem; background: var(--bg-subtle); color: var(--text-primary); border: none; border-radius: var(--radius-full); font-family: var(--font-base); font-size: var(--font-input); font-weight: var(--fw-bold); cursor: pointer; }
 
         .fd-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; animation: hsFadeIn 0.2s ease; }
         .fd-drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-card); border-radius: var(--radius-xl) 20px 0 0; z-index: 301; max-height: 85vh; display: flex; flex-direction: column; animation: hsSlideUp 0.28s cubic-bezier(0.32,0.72,0,1); box-shadow: 0 -4px 32px rgba(0,0,0,0.15); }
@@ -1959,8 +1959,8 @@ export default function Pedidos() {
         @keyframes hsSlideRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .fd-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 10px auto 0; flex-shrink: 0; }
         .fd-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .fd-title { font-size: 15px; font-weight: 800; color: var(--text-title); font-family: 'Geist',sans-serif; letter-spacing: -0.01em; }
-        .fd-limpar { background: none; border: none; font-size: 12px; color: var(--text-secondary); font-weight: 600; cursor: pointer; font-family: 'Geist',sans-serif; text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(45,31,38,0.2); }
+        .fd-title { font-size: 15px; font-weight: 800; color: var(--text-title); font-family: var(--font-base); letter-spacing: -0.01em; }
+        .fd-limpar { background: none; border: none; font-size: 12px; color: var(--text-secondary); font-weight: 600; cursor: pointer; font-family: var(--font-base); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(45,31,38,0.2); }
         .fd-limpar:hover { color: var(--text-title); text-decoration-color: currentColor; }
         .fd-body { overflow-y: auto; flex: 1; padding: 14px 16px 20px; display: flex; flex-direction: column; gap: 12px; background: var(--bg-body); }
 
@@ -2021,7 +2021,7 @@ export default function Pedidos() {
           border-radius: 8px;
           cursor: pointer;
           text-align: left;
-          font-family: 'Geist', sans-serif;
+          font-family: var(--font-base);
           transition: background 0.12s;
         }
         .fd-status-row:hover { background: var(--bg-subtle); }
@@ -2075,7 +2075,7 @@ export default function Pedidos() {
           border: none;
           background: none;
           border-radius: 8px;
-          font-family: 'Geist', sans-serif;
+          font-family: var(--font-base);
           font-size: 11px;
           font-weight: 600;
           color: var(--text-secondary);
@@ -2092,12 +2092,12 @@ export default function Pedidos() {
         /* Datas */
         .fd-datas { display: flex; gap: 10px; padding: 4px 12px 12px; }
         .fd-data-field { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-        .fd-data-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); font-family: 'Geist',sans-serif; }
-        .fd-data-input { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; font-family: 'Geist',sans-serif; color: var(--text-primary); background: var(--bg-card); outline: none; width: 100%; box-sizing: border-box; }
+        .fd-data-label { font-size: 11px; font-weight: 600; color: var(--text-secondary); font-family: var(--font-base); }
+        .fd-data-input { border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; font-family: var(--font-base); color: var(--text-primary); background: var(--bg-card); outline: none; width: 100%; box-sizing: border-box; }
         .fd-data-input:focus { border-color: var(--text-title); }
 
         .fd-footer { padding: 12px 16px 28px; flex-shrink: 0; border-top: 1px solid var(--border); background: var(--bg-card); }
-        .fd-aplicar { width: 100%; padding: 13px; background: var(--text-title); color: white; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; font-family: 'Geist',sans-serif; cursor: pointer; letter-spacing: 0.02em; transition: opacity 0.15s; }
+        .fd-aplicar { width: 100%; padding: 13px; background: var(--text-title); color: white; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; font-family: var(--font-base); cursor: pointer; letter-spacing: 0.02em; transition: opacity 0.15s; }
         .fd-aplicar:hover { opacity: 0.9; }
       `}</style>
     </div>
