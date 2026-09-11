@@ -7,7 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { useProfile } from '@/hooks/useProfile'
 import { usePlano } from '@/hooks/usePlano'
 import { useAvatarUpload } from '@/hooks/useAvatarUpload'
-import { ClipboardText, CurrencyDollar, CheckCircle, Cake, Camera, User } from '@phosphor-icons/react'
+import { Camera, User } from '@phosphor-icons/react'
 import BtnNovo from '@/components/BtnNovo'
 
 type PedidoItem = {
@@ -1309,29 +1309,6 @@ export default function Pedidos() {
               >
                 Ver todos
               </button>
-            </div>
-          )}
-
-          {/* Cards de métricas — só desktop */}
-          {!isMobile && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
-              {[
-                { label: 'Total de pedidos', value: pedidos.length, sub: 'Todos os registros', bg: '#EEEDFE', icon: <ClipboardText size={22} weight="duotone" color="#534AB7" /> },
-                { label: 'Faturamento', value: pedidos.reduce((acc, p) => acc + (p.valor_total || 0), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }), sub: 'Valor total', bg: '#E1F5EE', icon: <CurrencyDollar size={22} weight="duotone" color="#0F6E56" /> },
-                { label: 'Concluídos', value: pedidos.filter(p => ['concluido','entregue'].includes(p.status)).length, sub: 'Pedidos finalizados', bg: '#dcfce7', icon: <CheckCircle size={22} weight="duotone" color="#14532d" /> },
-                { label: 'Em produção', value: pedidos.filter(p => p.status === 'em_producao').length, sub: 'No momento', bg: '#FAEEDA', icon: <Cake size={22} weight="duotone" color="#854F0B" /> },
-              ].map((card, i) => (
-                <div key={i} style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 14, padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: card.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {card.icon}
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 2px' }}>{card.label}</p>
-                    <p style={{ fontSize: '1.15rem', fontWeight: 800, color: 'var(--text-title)', margin: 0, letterSpacing: '-0.02em' }}>{card.value}</p>
-                    <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', margin: '1px 0 0' }}>{card.sub}</p>
-                  </div>
-                </div>
-              ))}
             </div>
           )}
 
