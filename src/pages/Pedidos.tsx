@@ -34,13 +34,15 @@ type Pedido = {
 
 // ── Status reais do sistema (usados pelo Kanban e pelo filtro) ────────────────
 const TODOS_STATUS = [
-  { key: 'novo',        label: 'Novo',                 color: '#534AB7', bg: '#EEEDFE', dot: '#7F77DD' },
-  { key: 'confirmado',  label: 'Confirmado',           color: '#0e7490', bg: '#cffafe', dot: '#0891b2' },
-  { key: 'em_producao', label: 'Em produção',          color: '#9a3412', bg: '#ffedd5', dot: '#f97316' },
-  { key: 'pronto',      label: 'Pronto',               color: '#14532d', bg: '#dcfce7', dot: '#22c55e' },
-  { key: 'a_caminho',   label: 'A Caminho / Retirado', color: '#0369a1', bg: '#e0f2fe', dot: '#0ea5e9' },
-  { key: 'concluido',   label: 'Concluído',            color: '#374151', bg: '#f3f4f6', dot: '#9ca3af' },
-  { key: 'cancelado',   label: 'Cancelado',            color: '#991b1b', bg: '#fee2e2', dot: '#ef4444' },
+  { key: 'aguardando_pagamento', label: 'Aguardando Pagamento', color: '#9A3412', bg: '#FFEDD5', dot: '#F97316' },
+  { key: 'aguardando_aceite',    label: 'Aguardando Aceite',    color: '#5B21B6', bg: '#EDE9FE', dot: '#7C3AED' },
+  { key: 'agendado',             label: 'Agendado',             color: '#1E3A8A', bg: '#DBEAFE', dot: '#1E3A8A' },
+  { key: 'em_producao',          label: 'Em Produção',          color: '#92400E', bg: '#FEF3C7', dot: '#F59E0B' },
+  { key: 'finalizado',           label: 'Finalizado',           color: '#14532D', bg: '#DCFCE7', dot: '#16A34A' },
+  { key: 'aguardando_retirada',  label: 'Aguardando Retirada',  color: '#6B21A8', bg: '#F3E8FF', dot: '#9333EA' },
+  { key: 'em_entrega',           label: 'Em Entrega',           color: '#1E40AF', bg: '#DBEAFE', dot: '#3B82F6' },
+  { key: 'entregue',             label: 'Entregue',             color: '#475569', bg: '#F1F5F9', dot: '#64748B' },
+  { key: 'cancelado',            label: 'Cancelado',            color: '#991B1B', bg: '#FEE2E2', dot: '#DC2626' },
 ]
 
 const PAG_CONFIG: Record<string, string> = {
@@ -48,29 +50,21 @@ const PAG_CONFIG: Record<string, string> = {
 }
 
 // Status visíveis por padrão (sem cancelado)
-const STATUS_PADRAO = ['novo', 'confirmado', 'em_producao', 'pronto', 'a_caminho', 'concluido']
+const STATUS_PADRAO = ['aguardando_pagamento', 'aguardando_aceite', 'agendado', 'em_producao', 'finalizado', 'aguardando_retirada', 'em_entrega', 'entregue']
 
 // ── Status simplificado, só pra exibição na lista ──────────────────────────────
-const STATUS_GROUPS = [
-  { key: 'novo',        label: 'Novo',        color: '#534AB7', bg: '#EEEDFE', dot: '#7F77DD' },
-  { key: 'confirmado',  label: 'Confirmado',  color: '#0e7490', bg: '#cffafe', dot: '#0891b2' },
-  { key: 'em_producao', label: 'Em produção', color: '#854F0B', bg: '#FAEEDA', dot: '#EF9F27' },
-  { key: 'pronto',      label: 'Pronto',      color: '#14532d', bg: '#dcfce7', dot: '#22c55e' },
-  { key: 'a_caminho',   label: 'A Caminho',   color: '#0369a1', bg: '#e0f2fe', dot: '#0ea5e9' },
-  { key: 'concluido',   label: 'Concluído',   color: '#374151', bg: '#f3f4f6', dot: '#9ca3af' },
-  { key: 'cancelado',   label: 'Cancelado',   color: '#791F1F', bg: '#FCEBEB', dot: '#E24B4A' },
-]
+const STATUS_GROUPS = TODOS_STATUS
 const STATUS_GROUP_CONFIG = Object.fromEntries(STATUS_GROUPS.map(s => [s.key, s]))
 
 function getStatusGroup(status: string): string {
-  const s = status || 'novo'
-  if (s === 'cancelado' || s === 'excluido') return 'cancelado'
-  if (s === 'concluido' || s === 'entregue') return 'concluido'
-  if (s === 'a_caminho' || s === 'aguardando_retirada' || s === 'aguardando_entrega') return 'a_caminho'
-  if (s === 'pronto') return 'pronto'
-  if (s === 'em_producao') return 'em_producao'
-  if (s === 'confirmado') return 'confirmado'
-  return 'novo' // novo, pendente
+  const s = status || 'aguardando_aceite'
+  // Compatibilidade retroativa (caso ainda haja status antigos no banco)
+  if (s === 'novo') return 'aguardando_aceite'
+  if (s === 'confirmado') return 'agendado'
+  if (s === 'pronto') return 'finalizado'
+  if (s === 'a_caminho') return 'em_entrega'
+  if (s === 'concluido') return 'entregue'
+  return s
 }
 
 // ── Quantidade com a unidade certa, conforme a forma de venda do produto ──────
@@ -1663,19 +1657,21 @@ export default function Pedidos() {
         .plist-tag {
           display: inline-flex;
           align-items: center;
-          gap: 4px;
-          padding: 2px 8px;
-          border-radius: 999px;
-          font-size: 9.5px;
-          font-weight: 800;
-          letter-spacing: 0.03em;
-          text-transform: uppercase;
+          gap: 5px;
+          padding: 5px 10px;
+          border-radius: 6px;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.01em;
           white-space: nowrap;
+          line-height: 1;
+          font-family: var(--font-base) !important;
         }
         .plist-tag-dot {
-          width: 5px; height: 5px;
+          width: 6px; height: 6px;
           border-radius: 50%;
           display: inline-block;
+          flex-shrink: 0;
         }
         .plist-tag--hoje { background: var(--primary-light); color: var(--primary-dark); }
         .plist-tag--amanha { background: #F0F9FF; color: #075985; }
