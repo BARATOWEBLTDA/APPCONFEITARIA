@@ -551,14 +551,12 @@ export default function CardapioConfigPage() {
     <div className="ccc-outer">
     <div className="ccc-root">
 
-      {/* Cabeçalho */}
-      <div className="ccc-page-header">
-        <div>
-          <h1 className="ccc-page-title">Cardápio Digital</h1>
-          <p className="ccc-page-sub">Deixe seu cardápio com a cara da sua confeitaria</p>
+      {/* Autosave indicator */}
+      {autoSaved && activeTab === "geral" && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+          <span className="ccc-autosave">✓ Salvo automaticamente</span>
         </div>
-        {autoSaved && activeTab === "geral" && <span className="ccc-autosave">✓ Salvo automaticamente</span>}
-      </div>
+      )}
 
       {/* ── Tabs ── */}
       <div className="ccc-tabs">

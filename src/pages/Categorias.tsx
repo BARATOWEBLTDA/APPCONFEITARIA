@@ -127,13 +127,19 @@ export default function Categorias() {
       />
     )}
     <div className="cat-root">
-      <div className="cat-header">
-        <div>
-          <h1 className="cat-title">Categorias</h1>
-          <p className="cat-sub">{categorias.length} categoria{categorias.length !== 1 ? "s" : ""}</p>
+      {isStandalone ? (
+        <div className="cat-header" style={{ justifyContent: 'flex-end' }}>
+          <BtnNovo label="Nova categoria" onClick={openNova} />
         </div>
-        <BtnNovo label="Nova categoria" onClick={openNova} />
-      </div>
+      ) : (
+        <div className="cat-header">
+          <div>
+            <h1 className="cat-title">Categorias</h1>
+            <p className="cat-sub">{categorias.length} categoria{categorias.length !== 1 ? "s" : ""}</p>
+          </div>
+          <BtnNovo label="Nova categoria" onClick={openNova} />
+        </div>
+      )}
 
       {categorias.length === 0 ? (
         <EmptyDoo

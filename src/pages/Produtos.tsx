@@ -665,12 +665,8 @@ export default function Produtos() {
       {/* Header + Busca + Ordenar — só quando tem produtos */}
       {produtos.length > 0 && (
       <>
-      {/* Header novo: título à esquerda, botão Novo grande à direita */}
-      <div className="prod-header-novo">
-        <div>
-          <h1 className="prod-title-novo">Produtos</h1>
-          <p className="prod-sub-novo">{produtos.length} cadastrado{produtos.length !== 1 ? "s" : ""}</p>
-        </div>
+      {/* Botão Novo Produto à direita */}
+      <div className="prod-header-novo" style={{ justifyContent: 'flex-end' }}>
         <BtnNovo label="Novo produto" onClick={openNovo} />
       </div>
 
