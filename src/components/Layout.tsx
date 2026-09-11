@@ -6,7 +6,7 @@ import { useState, useEffect, type ReactNode } from "react";
 import {
   House, CalendarDots, ShoppingBag, ClipboardText, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown, ForkKnife, List,
-  User, SquaresFour, Camera, Cake,
+  User, SquaresFour, Camera, Cake, Clipboard,
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
@@ -42,6 +42,10 @@ export default function Layout() {
   } = useAvatarUpload();
   const [maisOpen, setMaisOpen] = useState(false);
   const [dooOpen, setDooOpen] = useState(false);
+  // Cadastros: expande automaticamente quando estiver em uma das rotas filhas
+  const isInCadastros = ["/produtos", "/clientes", "/insumos", "/categorias"].some(p => location.pathname.startsWith(p));
+  const [cadastrosOpen, setCadastrosOpen] = useState(isInCadastros);
+  useEffect(() => { if (isInCadastros) setCadastrosOpen(true); }, [isInCadastros]);
   const location = useLocation();
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
@@ -151,17 +155,38 @@ export default function Layout() {
             <span className="nav-icon"><House size={18} weight="duotone" /></span>Início
           </NavLink>
 
-          <NavLink to="/produtos" end className={({ isActive }) => `nav-item ${(isActive || location.pathname === "/produtos") ? "active" : ""}`}>
-            <span className="nav-icon"><Cake size={18} weight="duotone" /></span>Produtos
-          </NavLink>
-          {/* Sub-item Categorias — aparece quando está em produtos */}
-          {(location.pathname === "/produtos" || location.pathname.startsWith("/produtos/categorias")) && (
-            <NavLink to="/produtos/categorias" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
-              <span className="nav-subicon" aria-hidden="true">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
-              </span>
-              Categorias
-            </NavLink>
+          {/* ═══ CADASTROS (accordion) ═══ */}
+          <button
+            type="button"
+            className={`nav-item nav-item--group ${isInCadastros ? "active-parent" : ""}`}
+            onClick={() => setCadastrosOpen(o => !o)}
+            aria-expanded={cadastrosOpen}
+          >
+            <span className="nav-icon"><Clipboard size={18} weight="duotone" /></span>
+            <span style={{ flex: 1, textAlign: "left" }}>Cadastros</span>
+            <CaretDown size={14} weight="bold" style={{ transform: cadastrosOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }} />
+          </button>
+          {cadastrosOpen && (
+            <div className="nav-group-body">
+              <NavLink to="/produtos" end className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
+                <span className="nav-subicon" aria-hidden="true"><Cake size={14} weight="duotone" /></span>
+                Produtos
+              </NavLink>
+              <NavLink to="/categorias" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
+                <span className="nav-subicon" aria-hidden="true">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+                </span>
+                Categorias de Produtos
+              </NavLink>
+              <NavLink to="/insumos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
+                <span className="nav-subicon" aria-hidden="true"><Package size={14} weight="duotone" /></span>
+                Ingredientes
+              </NavLink>
+              <NavLink to="/clientes" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
+                <span className="nav-subicon" aria-hidden="true"><Users size={14} weight="duotone" /></span>
+                Clientes
+              </NavLink>
+            </div>
           )}
 
           <NavLink to="/cardapio-config" className={({ isActive }) => `nav-item ${(isActive || location.pathname.startsWith("/cardapio")) ? "active" : ""}`}>
@@ -176,16 +201,8 @@ export default function Layout() {
             <span className="nav-icon"><CalendarDots size={18} weight="duotone" /></span>Agenda
           </NavLink>
 
-          <NavLink to="/clientes" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><Users size={18} weight="duotone" /></span>Clientes
-          </NavLink>
-
           <NavLink to="/receitas" className={({ isActive }) => `nav-item ${(isActive || location.pathname.startsWith("/comunidade")) ? "active" : ""}`}>
             <span className="nav-icon"><BookOpen size={18} weight="duotone" /></span>Receitas
-          </NavLink>
-
-          <NavLink to="/insumos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
-            <span className="nav-icon"><Package size={18} weight="duotone" /></span>Ingredientes
           </NavLink>
 
           <NavLink to="/financeiro" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
@@ -440,6 +457,26 @@ export default function Layout() {
         .nav-icon { display: flex; align-items: center; flex-shrink: 0; opacity: 0.7; }
 
         .nav-item { padding: 0.7rem 1rem; border-radius: var(--radius-md); font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--sidebar-text); text-decoration: none; transition: background var(--dur-fast), color 0.15s; outline: none; display: flex; align-items: center; gap: 0.6rem; }
+
+        /* Grupo accordion (Cadastros) */
+        .nav-item--group {
+          all: unset;
+          padding: 0.7rem 1rem;
+          border-radius: var(--radius-md);
+          font-size: var(--font-button);
+          font-weight: var(--fw-medium);
+          color: var(--sidebar-text);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          box-sizing: border-box;
+          font-family: var(--font-base);
+          transition: background var(--dur-fast), color 0.15s;
+        }
+        .nav-item--group:hover { background: var(--sidebar-hover-bg); color: var(--sidebar-text); }
+        .nav-item--group.active-parent { color: var(--sidebar-active-text); font-weight: var(--fw-semibold); }
+        .nav-group-body { display: flex; flex-direction: column; gap: 2px; padding: 4px 0 6px; }
         .nav-item:hover { background: var(--sidebar-hover-bg); color: var(--sidebar-text); }
         .nav-item:hover .nav-icon { opacity: 1; }
         .nav-item:focus { background: var(--sidebar-hover-bg); color: var(--sidebar-text); outline: none; }

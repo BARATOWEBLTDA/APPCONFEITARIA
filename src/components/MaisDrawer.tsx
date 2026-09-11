@@ -6,6 +6,7 @@ import {
   Package, BookOpen, Files, Bell, ClipboardText,
   Gear, PaintBrush, Crown,
   CalendarDots,
+  Cake, SquaresFour,
   X,
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
@@ -28,6 +29,15 @@ interface DrawerGroup {
 
 const GROUPS: DrawerGroup[] = [
   {
+    label: "Cadastros",
+    items: [
+      { label: "Produtos",              path: "/produtos",   icon: <Cake         size={20} weight="duotone" /> },
+      { label: "Categorias de Produtos", path: "/categorias", icon: <SquaresFour  size={20} weight="duotone" /> },
+      { label: "Ingredientes",          path: "/insumos",    icon: <Package      size={20} weight="duotone" /> },
+      { label: "Clientes",              path: "/clientes",   icon: <Users        size={20} weight="duotone" /> },
+    ],
+  },
+  {
     label: "Negócio",
     items: [
       { label: "Financeiro",     path: "/financeiro",     icon: <CurrencyDollar size={20} weight="duotone" /> },
@@ -36,16 +46,9 @@ const GROUPS: DrawerGroup[] = [
     ],
   },
   {
-    label: "Clientes",
-    items: [
-      { label: "Clientes",          path: "/clientes",       icon: <Users  size={20} weight="duotone" /> },
-    ],
-  },
-  {
     label: "Operação",
     items: [
       { label: "Agenda",       path: "/agenda",         icon: <CalendarDots   size={20} weight="duotone" /> },
-      { label: "Ingredientes",    path: "/insumos",        icon: <Package        size={20} weight="duotone" /> },
       { label: "Precificação", path: "/ficha-tecnica",  icon: <ClipboardText  size={20} weight="duotone" /> },
       { label: "Receitas",     path: "/receitas",      icon: <BookOpen size={20} weight="duotone" /> },
       { label: "Arquivos",     path: "/arquivos",      icon: <Files    size={20} weight="duotone" /> },
