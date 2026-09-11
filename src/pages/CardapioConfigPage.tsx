@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import CardapioDesign from "@/pages/CardapioDesign";
 import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
+import AppPageHeader from "@/components/AppPageHeader";
 
 const SectionLabel = ({ children, icon, sub }: any) => (
   <div className="ccc-section-header">
@@ -526,6 +527,18 @@ export default function CardapioConfigPage() {
 
   return (
     <>
+    <AppPageHeader
+      title="Meu Cardápio"
+      subtitle="Personalize sua loja online"
+      infoIcon="🛍️"
+      infoContent={
+        <>
+          <p>Este é o <strong>cardápio digital</strong> que seus clientes acessam. Personalize as cores, adicione produtos, configure entrega e pagamento.</p>
+          <p>Depois é só <strong>compartilhar o link</strong> no WhatsApp, Instagram, bio, ou onde preferir. Seus clientes fazem pedidos direto por lá.</p>
+        </>
+      }
+      infoTip={<>Copie o link do seu cardápio e coloque na <strong>bio do Instagram</strong> ou envie no WhatsApp.</>}
+    />
     {cropSrc && (
       <ImageCropper
         imageSrc={cropSrc}
