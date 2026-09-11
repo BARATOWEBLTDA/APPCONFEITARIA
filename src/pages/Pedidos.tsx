@@ -2310,6 +2310,10 @@ export default function Pedidos() {
       @media (min-width: 768px) {
         .ped-header-foto-cam { display: none; }
       }
+      /* Desktop com sidebar (≥901px) — foto some do header rosa (já existe na sidebar) */
+      @media (min-width: 901px) {
+        .ped-header-foto-wrap { display: none; }
+      }
 
       /* ═══ Modal info ═══ */
       .ped-info-overlay {
