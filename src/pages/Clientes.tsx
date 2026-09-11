@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useProfile, isPro } from "@/hooks/useProfile";
+import AppPageHeader from "@/components/AppPageHeader";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1176,6 +1177,19 @@ export default function Clientes() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
+    <>
+    <AppPageHeader
+      title="Meus Clientes"
+      subtitle="Sua base de clientes"
+      infoIcon="👥"
+      infoContent={
+        <>
+          <p>Aqui fica sua <strong>base de clientes</strong> cadastrados. Nome, telefone, endereço, aniversário e histórico completo de pedidos.</p>
+          <p>Um bom cadastro te ajuda a <strong>fidelizar clientes</strong>, lembrar de aniversários, oferecer promoções e vender mais com o passar do tempo.</p>
+        </>
+      }
+      infoTip={<>Clique em qualquer cliente pra ver o <strong>histórico de pedidos</strong> e o valor total já gasto.</>}
+    />
     <div className="cli-root">
 
       {/* ═══════════════════════ LOADING (evita piscar) ═══════════════════════ */}
@@ -2687,5 +2701,6 @@ export default function Clientes() {
       </>
       )}
     </div>
+    </>
   );
 }

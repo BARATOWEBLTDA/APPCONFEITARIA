@@ -8,6 +8,7 @@ import {
 } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
 import { supabase } from "@/lib/supabase";
+import AppPageHeader from "@/components/AppPageHeader";
 
 type Periodo = "hoje" | "7d" | "30d" | "tudo";
 
@@ -325,12 +326,20 @@ export default function Cardapio() {
 
   // ─── Render ───
   return (
+    <>
+    <AppPageHeader
+      title="Meu Cardápio"
+      subtitle="Personalize sua loja online"
+      infoIcon="🛍️"
+      infoContent={
+        <>
+          <p>Este é o <strong>cardápio digital</strong> que seus clientes acessam. Personalize as cores, adicione produtos, configure entrega e pagamento.</p>
+          <p>Depois é só <strong>compartilhar o link</strong> no WhatsApp, Instagram, bio, ou onde preferir. Seus clientes fazem pedidos direto por lá.</p>
+        </>
+      }
+      infoTip={<>Copie o link do seu cardápio e coloque na <strong>bio do Instagram</strong> ou envie no WhatsApp.</>}
+    />
     <div className="cardapio-hub">
-      <div className="ch-header">
-        <h1 className="ch-title">Cardápio</h1>
-        <p className="ch-sub">Sua vitrine online</p>
-      </div>
-
       {/* Status + link + ações */}
       <div className="ch-status-card">
         <div className="ch-status-row">
@@ -956,5 +965,6 @@ export default function Cardapio() {
         }
       `}</style>
     </div>
+    </>
   );
 }

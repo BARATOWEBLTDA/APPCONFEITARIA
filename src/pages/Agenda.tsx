@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import AppPageHeader from "@/components/AppPageHeader";
 
 /* ═══════════════════════════════════════════════════════════════════════════
  * CONFIG
@@ -334,13 +335,20 @@ export default function Agenda() {
 
   /* ═══ Render ═══ */
   return (
+    <>
+    <AppPageHeader
+      title="Minha Agenda"
+      subtitle="Acompanhe suas entregas e produção"
+      infoIcon="📅"
+      infoContent={
+        <>
+          <p>Visualize seus <strong>pedidos por data de entrega</strong>. Veja o que precisa produzir hoje, amanhã e nos próximos dias.</p>
+          <p>Ideal pra <strong>se organizar</strong>, planejar a produção da semana e nunca perder um prazo.</p>
+        </>
+      }
+      infoTip={<>Clique em qualquer data pra ver os <strong>pedidos do dia</strong> em detalhes.</>}
+    />
     <div className="ag-root">
-      {/* Header */}
-      <div className="ag-header">
-        <h1 className="ag-title">Agenda</h1>
-        <p className="ag-sub">Seus pedidos por data de entrega</p>
-      </div>
-
       {/* Busca + Filtro (topo) */}
       <div className="ag-search-row">
         <div className="ag-search">
@@ -435,6 +443,7 @@ export default function Agenda() {
 
       <AgendaStyles />
     </div>
+    </>
   );
 }
 

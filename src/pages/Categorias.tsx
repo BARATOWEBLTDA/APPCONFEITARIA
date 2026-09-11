@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import EmptyDoo from "@/components/EmptyDoo";
 import BtnNovo from "@/components/BtnNovo";
+import AppPageHeader from "@/components/AppPageHeader";
 
 type Categoria = {
   id?: string;
@@ -14,6 +16,8 @@ type Categoria = {
 const SYSTEM_ICONS = Array.from({ length: 42 }, (_, i) => `/categoriaicones/icone (${i + 1}).png`);
 
 export default function Categorias() {
+  const location = useLocation();
+  const isStandalone = location.pathname === "/categorias";
   const [userId, setUserId] = useState("");
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [produtos, setProdutos] = useState<{ categoria: string }[]>([]);
@@ -107,6 +111,21 @@ export default function Categorias() {
   );
 
   return (
+    <>
+    {isStandalone && (
+      <AppPageHeader
+        title="Categorias"
+        subtitle="Organize seus produtos"
+        infoIcon="🏷️"
+        infoContent={
+          <>
+            <p>As <strong>categorias organizam seus produtos</strong> por tipo — bolos, cupcakes, doces, salgados, kits, e o que mais fizer sentido pro seu negócio.</p>
+            <p>Isso <strong>facilita a busca</strong> no seu cardápio digital pros clientes e pra você mesma no dia a dia.</p>
+          </>
+        }
+        infoTip={<>Crie categorias específicas do seu negócio: "Bolos de casamento", "Kit festa infantil", "Sem lactose", etc.</>}
+      />
+    )}
     <div className="cat-root">
       <div className="cat-header">
         <div>
@@ -301,5 +320,6 @@ export default function Categorias() {
         .cat-confirm-btns button { flex: 1; padding: var(--space-3); border: none; border-radius: var(--radius-full); font-family: inherit; font-size: var(--font-button); font-weight: var(--fw-bold); line-height: var(--lh-normal); cursor: pointer; background: var(--bg-body); color: var(--text-secondary); transition: opacity var(--dur-fast) var(--ease-out); }
       `}</style>
     </div>
+    </>
   );
 }
