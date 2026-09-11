@@ -32,7 +32,7 @@ const GROUPS: DrawerGroup[] = [
     label: "Cadastros",
     items: [
       { label: "Produtos",              path: "/produtos",   icon: <Cake         size={20} weight="duotone" /> },
-      { label: "Categorias de Produtos", path: "/categorias", icon: <SquaresFour  size={20} weight="duotone" /> },
+      { label: "Categorias",            path: "/categorias", icon: <SquaresFour  size={20} weight="duotone" /> },
       { label: "Ingredientes",          path: "/insumos",    icon: <Package      size={20} weight="duotone" /> },
       { label: "Clientes",              path: "/clientes",   icon: <Users        size={20} weight="duotone" /> },
     ],

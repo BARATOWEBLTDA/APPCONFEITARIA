@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
 import { useProfile } from "@/hooks/useProfile";
+import AppPageHeader from "@/components/AppPageHeader";
 
 import TourInicio from "@/components/TourInicio";
 import WelcomeChecklist from "@/components/WelcomeChecklist";
@@ -665,6 +666,19 @@ export default function Inicio() {
   const varPedidos = variacao(resumoSemana.pedidos, resumoAnterior.pedidos);
 
   return (
+    <>
+    <AppPageHeader
+      title="Início"
+      subtitle="Sua visão geral do dia"
+      infoIcon="🏠"
+      infoContent={
+        <>
+          <p>Aqui você tem um <strong>resumo do que está rolando</strong> na sua confeitaria: pedidos do dia, faturamento, agenda e atalhos.</p>
+          <p>É a sua <strong>central de controle</strong> — bate o olho e sabe o que está acontecendo.</p>
+        </>
+      }
+      infoTip={<>Use os <strong>cards de acesso rápido</strong> pra ir direto pras funções mais usadas.</>}
+    />
     <div className="ini-root">
       {/* ── Hero wine com foto da confeiteira, coroinha (PRO) e sparkles ── */}
       <div className="ini-hero">
@@ -2895,5 +2909,6 @@ export default function Inicio() {
       {/* Tour de boas-vindas — auto-abre no primeiro login (1s de delay) */}
       <TourInicio />
     </div>
+    </>
   );
 }

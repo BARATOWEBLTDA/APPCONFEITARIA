@@ -182,7 +182,7 @@ export default function Produtos() {
   // Editar variação inline
   const [editandoVariacao, setEditandoVariacao] = useState<number | null>(null);
   const [editVariacaoValor, setEditVariacaoValor] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "lista">(() => (localStorage.getItem("prod_viewMode") as "grid" | "lista") || "grid");
+  // viewMode fixo em grid (Netflix) — modo lista removido
   const [buscaTexto, setBuscaTexto] = useState("");
 
   // Ficha técnica (CMV)
@@ -679,14 +679,6 @@ export default function Produtos() {
           value={buscaTexto}
           onChange={e => setBuscaTexto(e.target.value)}
         />
-        <div style={{ display: "flex", background: "white", borderRadius: 8, padding: 2, gap: 2, border: "1.5px solid var(--border)", flexShrink: 0 }}>
-          <button onClick={() => { setViewMode("grid"); localStorage.setItem("prod_viewMode", "grid"); }} style={{ width: 28, height: 28, borderRadius: 6, border: "none", cursor: "pointer", background: viewMode === "grid" ? "var(--text-title)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }} title="Grade">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={viewMode === "grid" ? "white" : "var(--text-muted)"} strokeWidth="2.2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          </button>
-          <button onClick={() => { setViewMode("lista"); localStorage.setItem("prod_viewMode", "lista"); }} style={{ width: 28, height: 28, borderRadius: 6, border: "none", cursor: "pointer", background: viewMode === "lista" ? "var(--text-title)" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }} title="Lista">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={viewMode === "lista" ? "white" : "var(--text-muted)"} strokeWidth="2.2" strokeLinecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-          </button>
-        </div>
       </div>
 
       {/* Aviso de produtos sem categoria válida */}
@@ -806,60 +798,12 @@ export default function Produtos() {
           </aside>
         </div>
       ) : (
-        <div className={viewMode === "grid" ? "prod-grid" : "prod-list"}>
+        <div className="prod-grid">
           {(filtroOrfaos
             ? produtos.filter(p => p.categoria && !categorias.includes(p.categoria))
             : produtosFiltrados
           ).map(p => {
             const catInvalida = p.categoria && !categorias.includes(p.categoria);
-            if (viewMode === "lista") return (
-              <div key={p.id} className="prod-list-item" style={{ outline: catInvalida ? "2px solid #fcd34d" : "none", cursor: "pointer" }} onClick={() => setPreviewProduto(p)}>
-                <div className="prod-list-img">
-                  {p.imagem_url
-                    ? <img src={p.imagem_url.split(",")[0]} alt={p.nome} />
-                    : <div className="prod-list-img-sem-foto" title="Adicione uma foto pra chamar mais atenção">
-                        <span style={{fontSize: 18}}>📸</span>
-                      </div>
-                  }
-                  {!p.disponivel && <div className="prod-card-indisponivel">Indisponível</div>}
-                </div>
-                <div className="prod-list-info">
-                  <p className="prod-card-nome">{p.nome}</p>
-                  <div style={{ display: "flex", alignItems: "center", gap: "5px", flexWrap: "nowrap" }}>
-                    {p.promocao && p.preco_promocional && p.preco_promocional > 0 ? (
-                      <>
-                        <span style={{ textDecoration: "line-through", color: "var(--text-muted)", fontSize: "0.75rem" }}>R$ {formatPreco(p.preco_normal)}</span>
-                        <p className="prod-card-preco" style={{ margin: 0 }}>R$ {formatPreco(p.preco_promocional)}</p>
-                      </>
-                    ) : (
-                      <p className="prod-card-preco" style={{ margin: 0 }}>R$ {formatPreco(p.preco_normal)}</p>
-                    )}
-                    {p.promocao && <span style={{ background: "var(--primary)", color: "var(--text-inverse)", fontSize: "0.55rem", fontWeight: 700, padding: "2px 5px", borderRadius: "6px" }}>Promoção</span>}
-                  </div>
-                  {(() => {
-                    const { lucro, margem, temFicha } = calcularLucro(p);
-                    if (!temFicha) {
-                      return (
-                        <button
-                          type="button"
-                          className="prod-card-sem-ficha"
-                          onClick={(e) => { e.stopPropagation(); navigate("/ficha-tecnica", { state: { produtoId: p.id } }); }}
-                        >
-                          Configure a<br/>Ficha Técnica
-                        </button>
-                      );
-                    }
-                    const tier = margem >= 50 ? "alto" : margem >= 25 ? "medio" : "baixo";
-                    return (
-                      <div className={`prod-card-lucro prod-card-lucro--${tier}`}>
-                        <span className="prod-card-lucro-label">Lucro/venda</span>
-                        <strong>R$ {formatPreco(lucro)} <span className="prod-card-lucro-pct">({margem.toFixed(0)}%)</span></strong>
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-            );
             return (
             <div key={p.id} className="prod-card" style={{ outline: catInvalida ? "2px solid #fcd34d" : "none", cursor: "pointer" }} onClick={() => setPreviewProduto(p)}>
               <div className="prod-card-img">

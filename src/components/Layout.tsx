@@ -176,7 +176,7 @@ export default function Layout() {
                 <span className="nav-subicon" aria-hidden="true">
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
                 </span>
-                Categorias de Produtos
+                Categorias
               </NavLink>
               <NavLink to="/insumos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
                 <span className="nav-subicon" aria-hidden="true"><Package size={14} weight="duotone" /></span>
@@ -438,7 +438,15 @@ export default function Layout() {
           100% { background-position: -200% 0; }
         }
 
-        .sidebar-greeting { text-align: center; padding: 0 1rem; margin-bottom: 1rem; min-height: 3.4rem; }
+        .sidebar-greeting {
+          text-align: center;
+          padding: 0 1rem;
+          margin: 1.5rem 0 1.5rem;
+          min-height: 3.4rem;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+        }
         .sidebar-greeting-name { margin: 0; font-size: 0.95rem; font-weight: var(--fw-semibold); color: var(--sidebar-text); line-height: 1.3; min-height: 1.25rem; display: flex; align-items: center; justify-content: center; }
         .sidebar-greeting-skel {
           display: inline-block;
