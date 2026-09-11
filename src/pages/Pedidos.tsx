@@ -222,7 +222,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
         <div className="ped-card-produto-info">
           <p className="ped-card-produto-nome">
             {primeiroItem.nome_produto}
-            {outrosItens > 0 && <span className="ped-card-mais-itens"> +{outrosItens} item{outrosItens > 1 ? 's' : ''}</span>}
+            {outrosItens > 0 && <span className="ped-card-mais-itens">+{outrosItens} item{outrosItens > 1 ? 's' : ''}</span>}
           </p>
           <p className="ped-card-produto-qtd">{formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</p>
         </div>
@@ -289,7 +289,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
                   {primeiroItem.nome_produto && primeiroItem.nome_produto.length > 20
                     ? primeiroItem.nome_produto.slice(0, 20) + '..'
                     : primeiroItem.nome_produto}
-                  {outrosItens > 0 && <span className="ped-card-mais-itens"> +{outrosItens}</span>}
+                  {outrosItens > 0 && <span className="ped-card-mais-itens">+{outrosItens}</span>}
                 </p>
                 <p className="ped-dt-produto-qtd">{formatItemQuantidade(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</p>
               </div>
@@ -1720,7 +1720,22 @@ export default function Pedidos() {
         .ped-card-produto-img img { width: 100%; height: 100%; object-fit: cover; }
         .ped-card-produto-info { flex: 1; min-width: 0; }
         .ped-card-produto-nome { margin: 0; font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .ped-card-mais-itens { font-weight: var(--fw-medium); color: var(--text-muted); }
+        .ped-card-mais-itens {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: #475569;
+          color: #fff;
+          font-weight: 800;
+          font-size: 10px;
+          padding: 2px 6px;
+          border-radius: 4px;
+          margin-left: 6px;
+          letter-spacing: 0.02em;
+          line-height: 1;
+          vertical-align: middle;
+          font-family: var(--font-base);
+        }
         .ped-card-produto-qtd { margin: 2px 0 0; font-size: var(--font-helper); color: var(--text-secondary); }
         .ped-card-data { margin: 0; font-size: var(--font-helper); font-weight: var(--fw-semibold); line-height: 1.3; }
         .ped-card-tipo-entrega { margin: 1px 0 0; font-size: var(--font-helper); color: var(--text-secondary); }
