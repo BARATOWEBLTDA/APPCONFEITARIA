@@ -245,7 +245,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
         <td className="ped-td">
           <span className="ped-dt-num">#{p.numero || '—'}</span>
           <span className="ped-dt-criado">{p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' · ' + new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : ''}</span>
-          {p.origem === 'cardapio' && <span className="ped-dt-origem-tag">Cardápio</span>}
+          <span className="ped-dt-origem">Origem: {p.origem === 'cardapio' ? 'Cardápio Digital' : 'Pedido Manual'}</span>
         </td>
         <td className="ped-td">
           <span className="ped-dt-cliente-nome">{p.cliente_nome || 'Não informado'}</span>
@@ -445,8 +445,8 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
                   {new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' })}
                 </>
               )}
-              {p.origem === 'cardapio' && <> · via Cardápio</>}
             </p>
+            <p className="mp-criado">Origem: {p.origem === 'cardapio' ? 'Cardápio Digital' : 'Pedido Manual'}</p>
           </div>
           <button className="mp-fechar" onClick={onClose}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1711,7 +1711,7 @@ export default function Pedidos() {
         .ped-card-banner { background: #fee2e2; padding: 4px 1.1rem; font-size: var(--font-caption); font-weight: var(--fw-bold); color: #dc2626; }
         .ped-card-head { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1.1rem 0; gap: 0.5rem; }
         .ped-card-numero { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-muted); }
-        .ped-card-origem { margin-left: 6px; background: #ede9fe; color: #5b21b6; border-radius: var(--radius-sm); padding: 1px 6px; font-size: var(--font-caption); font-weight: var(--fw-bold); }
+        .ped-card-origem { display: none; }
         .ped-card-status { display: inline-flex; align-items: center; gap: 5px; font-size: var(--font-caption); font-weight: var(--fw-bold); padding: 3px 10px; border-radius: var(--radius-sm); flex-shrink: 0; }
         .ped-card-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
         .ped-card-body { padding: 0.65rem 1.1rem 0; }
@@ -1897,7 +1897,7 @@ export default function Pedidos() {
           /* Número do pedido */
           .ped-dt-num { font-size: var(--font-button); font-weight: var(--fw-bold); color: var(--primary); display: block; }
           .ped-dt-criado { font-size: var(--font-caption); color: var(--text-muted); display: block; margin-top: 1px; }
-          .ped-dt-origem-tag { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: #185FA5; background: #E6F1FB; padding: 1px 6px; border-radius: var(--radius-sm); margin-top: 2px; display: inline-block; }
+          .ped-dt-origem { font-size: var(--font-caption); color: var(--text-muted); display: block; margin-top: 1px; }
 
           /* Cliente */
           .ped-dt-cliente-nome { font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--text-title); display: block; white-space: nowrap; }
