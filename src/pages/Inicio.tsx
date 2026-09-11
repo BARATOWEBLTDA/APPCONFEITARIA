@@ -724,7 +724,7 @@ export default function Inicio() {
         <div className="ini-hero-greeting">
           <h1>
             <span>
-              Olá{" "}
+              Olá,{" "}
               {profile ? (
                 (nome ? nome.split(" ")[0] : "!")
               ) : (
@@ -1460,58 +1460,69 @@ export default function Inicio() {
           transition: transform var(--dur-fast), background var(--dur-fast);
           z-index: 2;
         }
+        /* Câmera só no mobile */
+        @media (min-width: 768px) {
+          .ini-profile-cam { display: none !important; }
+        }
 
         /* Tags PRO / Upgrade — ao lado do nome (mobile + desktop) */
         .ini-plan-tag {
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          padding: 3px 9px 3px 7px;
-          border-radius: 999px;
+          padding: 3px 10px;
+          border-radius: 6px;
           font-family: var(--font-base);
-          font-size: 10px;
+          font-size: 10.5px;
           font-weight: 900;
-          letter-spacing: 0.06em;
+          letter-spacing: 0.05em;
           text-transform: uppercase;
           margin-left: 8px;
           vertical-align: middle;
           white-space: nowrap;
           border: none;
-          cursor: default;
-          line-height: 1.4;
+          line-height: 1;
           flex-shrink: 0;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.28);
         }
         .ini-plan-tag img {
-          width: 11px;
-          height: 11px;
+          width: 13px;
+          height: 13px;
           object-fit: contain;
           display: block;
         }
-        /* Variante PRO (não clicável) — amarela */
+        /* Variante PRO (não clicável) — preta/accent */
         .ini-plan-tag--pro {
-          background: #FFC107;
-          color: #2D1F26;
-          box-shadow: 0 2px 5px rgba(255, 193, 7, 0.35);
+          background: var(--accent);
+          color: #fff;
+          cursor: default;
+        }
+        .ini-plan-tag--pro img {
+          filter: brightness(0) invert(1);
         }
         /* Variante Upgrade (clicável) — branca com borda */
         .ini-plan-tag--upgrade {
-          background: rgba(255,255,255,0.95);
+          background: #fff;
           color: var(--primary);
           cursor: pointer;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-          transition: transform 0.12s ease, background 0.12s ease;
+          transition: transform 0.12s ease, box-shadow 0.12s ease;
+          font-family: var(--font-base);
         }
         .ini-plan-tag--upgrade:hover {
-          background: #fff;
           transform: translateY(-1px);
-          box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+          box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
         .ini-plan-tag--upgrade:active {
           transform: translateY(0);
         }
-        .ini-plan-tag--upgrade img {
-          /* Coroa colorida em cor primary sobre fundo branco */
-          filter: none;
+        /* Desktop: mais respiro entre nome e tag */
+        @media (min-width: 768px) {
+          .ini-plan-tag {
+            margin-left: 12px;
+            font-size: 11.5px;
+            padding: 4px 11px;
+          }
+          .ini-plan-tag img { width: 14px; height: 14px; }
         }
 
         .ini-profile-cam:hover:not(:disabled) { transform: scale(1.12); background: var(--primary-dark); }
