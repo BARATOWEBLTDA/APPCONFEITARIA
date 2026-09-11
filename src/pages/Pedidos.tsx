@@ -1881,7 +1881,7 @@ export default function Pedidos() {
 
           .ped-dt-row { cursor: pointer; transition: background 0.12s; border-bottom: 1px solid var(--border); }
           .ped-dt-row:last-child { border-bottom: none; }
-          .ped-dt-row:hover { background: var(--bg-subtle); }
+          .ped-dt-row:hover { background: #F1F5F9; }
 
           .ped-td { padding: 0.65rem 1rem; vertical-align: middle; font-family: var(--font-base); }
 
