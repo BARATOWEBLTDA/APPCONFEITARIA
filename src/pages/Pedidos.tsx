@@ -422,7 +422,9 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
 
 // ── Modal de detalhes do pedido ──────────────────────────────────────────────
 function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido; onClose: () => void; onEditar: () => void; onExcluir: () => void; onAprovar: () => void }) {
+  const isMobile = useIsMobile()
   const [confirmExcluir, setConfirmExcluir] = useState(false)
+  const [menuAcoesOpen, setMenuAcoesOpen] = useState(false)
   const grupo = STATUS_GROUP_CONFIG[getStatusGroup(p.status)]
   const itens = p.pedido_itens || []
   const valorPendente = Math.max(0, (p.valor_total || 0) - (p.valor_recebido || 0))
@@ -453,6 +455,282 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
     }
   }, [])
 
+  // ══════════════ MODAL DESKTOP — versão nova bonita ══════════════
+  if (!isMobile) {
+    const proximoStatus: Record<string, { key: string; label: string } | null> = {
+      aguardando_pagamento: { key: 'aguardando_aceite', label: 'Aguardando Aceite' },
+      aguardando_aceite:    { key: 'agendado',          label: 'Agendado' },
+      agendado:             { key: 'em_producao',       label: 'Em Produção' },
+      em_producao:          { key: 'finalizado',        label: 'Finalizado' },
+      finalizado:           { key: p.tipo_entrega === 'retirada' ? 'aguardando_retirada' : 'em_entrega', label: p.tipo_entrega === 'retirada' ? 'Aguardando Retirada' : 'Em Entrega' },
+      aguardando_retirada:  { key: 'entregue',          label: 'Entregue' },
+      em_entrega:           { key: 'entregue',          label: 'Entregue' },
+      entregue:             null,
+      cancelado:            null,
+    }
+    const prox = proximoStatus[getStatusGroup(p.status)] ?? null
+    const enderecoMapaQuery = encodeURIComponent(enderecoCompleto || `${p.endereco_bairro || ''} ${p.endereco_cidade || ''}`.trim())
+
+    return (
+      <>
+        <div className="mpd-overlay" onClick={onClose} />
+        <div className="mpd-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+
+          {/* HEADER */}
+          <div className="mpd-header">
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="mpd-num-row">
+                <span className="mpd-num">Pedido #{p.numero || '—'}</span>
+                <span className="plist-tag" style={{ color: grupo.color, background: grupo.bg }}>
+                  <span className="plist-tag-dot" style={{ background: grupo.dot }} />
+                  {grupo.label}
+                </span>
+              </div>
+              <p className="mpd-meta">
+                {p.created_at && `Criado em ${new Date(p.created_at).toLocaleDateString('pt-BR')} · ${new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' })}`}
+                {' · '}
+                Origem: {p.origem === 'cardapio' ? 'Cardápio Digital' : 'Pedido Manual'}
+              </p>
+            </div>
+
+            <div className="mpd-menu-wrap">
+              <button className="mpd-menu-btn" onClick={() => setMenuAcoesOpen(o => !o)} aria-label="Mais ações" title="Mais ações">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+              </button>
+              {menuAcoesOpen && (
+                <>
+                  <div className="mpd-menu-overlay" onClick={() => setMenuAcoesOpen(false)} />
+                  <div className="mpd-menu">
+                    <button className="mpd-menu-item" onClick={() => { setMenuAcoesOpen(false); alert('🚀 Em breve: duplicar pedido') }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      Duplicar pedido
+                    </button>
+                    <button className="mpd-menu-item" onClick={() => { setMenuAcoesOpen(false); alert('🚀 Em breve: exportar em PDF') }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      Exportar em PDF
+                    </button>
+                    <button className="mpd-menu-item" onClick={() => { setMenuAcoesOpen(false); alert('🚀 Em breve: enviar pelo WhatsApp') }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/></svg>
+                      Enviar pelo WhatsApp
+                    </button>
+                    <div className="mpd-menu-sep" />
+                    <button className="mpd-menu-item mpd-menu-item--danger" onClick={() => { setMenuAcoesOpen(false); alert('🚀 Em breve: cancelar pedido') }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                      Cancelar pedido
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <button className="mpd-close" onClick={onClose} aria-label="Fechar">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div className="mpd-body">
+            <div className="mpd-col-left">
+
+              <div>
+                <div className="mpd-sec-titulo">Cliente</div>
+                <div className="mpd-sec-val">{p.cliente_nome || 'Cliente não informado'}</div>
+                {p.cliente_telefone && (
+                  <div className="mpd-cli-linha">
+                    <span>{p.cliente_telefone}</span>
+                    <a href={`https://wa.me/55${p.cliente_telefone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="mpd-btn-whats">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/></svg>
+                      WhatsApp
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <div className="mpd-sec-titulo">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</div>
+                <div className={`mpd-entrega ${p.tipo_entrega === 'entrega' && enderecoCompleto ? 'mpd-entrega--com-mapa' : ''}`}>
+                  <div className="mpd-entrega-info">
+                    <div className="mpd-entrega-topo">
+                      <span>{p.tipo_entrega === 'retirada' ? 'Retirada no Local' : 'Delivery'}</span>
+                      {p.data_entrega && (
+                        <>
+                          <span className="mpd-entrega-sep">·</span>
+                          <span>{formatDate(p.data_entrega)}{p.horario_entrega ? ` · ${p.horario_entrega.slice(0,5)}` : ''}</span>
+                        </>
+                      )}
+                    </div>
+                    {p.tipo_entrega === 'entrega' && enderecoCompleto && (
+                      <>
+                        <div className="mpd-entrega-val">{p.endereco_rua}{p.endereco_numero ? `, ${p.endereco_numero}` : ''}</div>
+                        <div className="mpd-entrega-end">{[p.endereco_bairro, p.endereco_cidade, p.endereco_complemento].filter(Boolean).join(' · ')}</div>
+                      </>
+                    )}
+                    {p.tipo_entrega === 'retirada' && (
+                      <div className="mpd-entrega-end">Cliente vai buscar no local combinado.</div>
+                    )}
+                  </div>
+                  {p.tipo_entrega === 'entrega' && enderecoCompleto && (
+                    <a className="mpd-mini-mapa" href={`https://www.google.com/maps/search/?api=1&query=${enderecoMapaQuery}`} target="_blank" rel="noopener noreferrer" title="Abrir no Google Maps">
+                      <div className="mpd-mapa-rua-h" style={{ top: '30%' }} />
+                      <div className="mpd-mapa-rua-h" style={{ top: '65%' }} />
+                      <div className="mpd-mapa-rua-v" style={{ left: '40%' }} />
+                      <div className="mpd-mapa-rua-v" style={{ left: '75%' }} />
+                      <div className="mpd-mapa-pin">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C7.58 2 4 5.58 4 10c0 6 8 12 8 12s8-6 8-12c0-4.42-3.58-8-8-8zm0 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/></svg>
+                      </div>
+                      <div className="mpd-mapa-abrir">VER NO MAPA</div>
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {itens.length > 0 && (
+                <div>
+                  <div className="mpd-sec-titulo">Produtos ({itens.length})</div>
+                  {itens.map((item, idx) => (
+                    <div key={idx} className="mpd-produto-row">
+                      <div className="mpd-produto-img">
+                        {(item.imagem_url || item.produtos?.imagem_url)
+                          ? <img src={item.imagem_url || item.produtos?.imagem_url || ''} alt={item.nome_produto} />
+                          : (
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16h16"/><path d="M12 4v3"/><path d="M8 2v2"/><path d="M16 2v2"/>
+                            </svg>
+                          )}
+                      </div>
+                      <div className="mpd-produto-info">
+                        <div className="mpd-produto-nome">{item.nome_produto}</div>
+                        <div className="mpd-produto-qtd">
+                          {formatItemQuantidade(item.quantidade, item.produtos?.forma_venda)}
+                          {(item.personalizacoes?.massa || item.personalizacoes?.recheio || item.personalizacoes?.cobertura) && (
+                            <> · {[item.personalizacoes?.massa, item.personalizacoes?.recheio, item.personalizacoes?.cobertura].filter(Boolean).join(', ')}</>
+                          )}
+                        </div>
+                        {item.observacoes && <div className="mpd-produto-obs">Obs: {item.observacoes}</div>}
+                      </div>
+                      <div className="mpd-produto-preco">{formatMoney((item.valor_unitario || 0) * (item.quantidade || 1))}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {(p.personalizacao_tema || p.personalizacao_nome || p.personalizacao_idade || p.personalizacao_cor || p.personalizacao_obs || p.observacoes) && (
+                <div>
+                  <div className="mpd-sec-titulo">Personalização</div>
+                  {p.personalizacao_tema && <div className="mpd-pers-item"><span className="mpd-pers-lbl">Tema:</span> <span>{p.personalizacao_tema}</span></div>}
+                  {p.personalizacao_nome && <div className="mpd-pers-item"><span className="mpd-pers-lbl">Nome:</span> <span>{p.personalizacao_nome}</span></div>}
+                  {p.personalizacao_idade && <div className="mpd-pers-item"><span className="mpd-pers-lbl">Idade:</span> <span>{p.personalizacao_idade}</span></div>}
+                  {p.personalizacao_cor && <div className="mpd-pers-item"><span className="mpd-pers-lbl">Cor:</span> <span>{p.personalizacao_cor}</span></div>}
+                  {p.personalizacao_obs && <div className="mpd-pers-item"><span className="mpd-pers-lbl">Decoração:</span> <span>{p.personalizacao_obs}</span></div>}
+                  {p.observacoes && <div className="mpd-pers-item"><span className="mpd-pers-lbl">Obs:</span> <span>{p.observacoes}</span></div>}
+                </div>
+              )}
+
+            </div>
+
+            <div className="mpd-col-right">
+              <div className="mpd-fin-total">
+                <div className="mpd-fin-total-lbl">Total do pedido</div>
+                <div className="mpd-fin-total-val">{formatMoney(p.valor_total || 0)}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div className="mpd-fin-row"><span className="mpd-fin-row-lbl">Pagamento</span><span className="mpd-fin-row-val">{PAG_CONFIG[p.forma_pagamento] || 'PIX'}</span></div>
+                <div className="mpd-fin-row">
+                  <span className="mpd-fin-row-lbl">Status</span>
+                  <span className="mpd-fin-pag-tag" style={{ background: p.status_pagamento === 'pago' ? '#DCFCE7' : p.status_pagamento === 'parcial' ? '#FEF3C7' : '#FEE2E2', color: p.status_pagamento === 'pago' ? '#14532D' : p.status_pagamento === 'parcial' ? '#92400E' : '#991B1B' }}>
+                    {p.status_pagamento === 'pago' ? '✓ Pago' : p.status_pagamento === 'parcial' ? 'Parcial' : 'Pendente'}
+                  </span>
+                </div>
+                {p.valor_recebido > 0 && <div className="mpd-fin-row"><span className="mpd-fin-row-lbl">Recebido</span><span className="mpd-fin-row-val">{formatMoney(p.valor_recebido)}</span></div>}
+                {valorPendente > 0 && <div className="mpd-fin-row"><span className="mpd-fin-row-lbl">Falta receber</span><span className="mpd-fin-row-val" style={{ color: '#dc2626' }}>{formatMoney(valorPendente)}</span></div>}
+              </div>
+            </div>
+          </div>
+
+          <div className="mpd-footer">
+            <button className="mpd-btn mpd-btn-editar" onClick={onEditar}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              Editar
+            </button>
+            {prox && (
+              <button className="mpd-btn mpd-btn-avancar" onClick={() => alert(`🚀 Em breve: avançar pra "${prox.label}"`)}>
+                Avançar para {prox.label}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </button>
+            )}
+          </div>
+
+          <style>{`
+            .mpd-overlay { position: fixed; inset: 0; background: rgba(45, 31, 38, 0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 9998; }
+            .mpd-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(900px, calc(100vw - 40px)); max-height: calc(100vh - 40px); background: #fff; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,0.35); z-index: 9999; display: flex; flex-direction: column; overflow: hidden; font-family: var(--font-base) !important; }
+            .mpd-header { padding: 18px 24px; border-bottom: 1px solid #F0EBED; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-shrink: 0; position: relative; }
+            .mpd-num-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
+            .mpd-num { font-size: 22px; font-weight: 900; color: #2D1F26; letter-spacing: -0.02em; font-family: var(--font-base) !important; }
+            .mpd-meta { font-size: 12px; color: #9A8B93; line-height: 1.5; font-family: var(--font-base) !important; margin: 0; }
+            .mpd-close, .mpd-menu-btn { all: unset; background: #F5F1F3; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; color: #6B5D64; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.12s; }
+            .mpd-close:hover, .mpd-menu-btn:hover { background: #EBE5E8; color: #2D1F26; }
+            .mpd-menu-wrap { position: relative; }
+            .mpd-menu-overlay { position: fixed; inset: 0; z-index: 1; }
+            .mpd-menu { position: absolute; top: calc(100% + 6px); right: 0; background: #fff; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.18); min-width: 210px; z-index: 2; padding: 4px 0; }
+            .mpd-menu-item { all: unset; display: flex; align-items: center; gap: 10px; padding: 9px 14px; font-size: 13px; font-weight: 600; color: #2D1F26; cursor: pointer; width: 100%; box-sizing: border-box; transition: background 0.12s; font-family: var(--font-base) !important; }
+            .mpd-menu-item:hover { background: #FDFAFB; }
+            .mpd-menu-item svg { color: #9A8B93; }
+            .mpd-menu-item--danger { color: #DC2626 !important; }
+            .mpd-menu-item--danger svg { color: #DC2626 !important; }
+            .mpd-menu-item--danger:hover { background: #FEF2F2 !important; }
+            .mpd-menu-sep { height: 1px; background: #F0EBED; margin: 4px 0; }
+            .mpd-body { display: grid; grid-template-columns: 1fr 300px; flex: 1; min-height: 0; overflow: hidden; }
+            .mpd-col-left { padding: 22px 24px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; min-height: 0; }
+            .mpd-col-right { padding: 22px 24px; background: #FAFAFA; border-left: 1px solid #F0EBED; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; min-height: 0; }
+            .mpd-sec-titulo { font-size: 10.5px; font-weight: 800; color: #9A8B93; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; font-family: var(--font-base) !important; }
+            .mpd-sec-val { font-size: 14.5px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
+            .mpd-cli-linha { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #6B5D64; margin-top: 4px; font-family: var(--font-base) !important; }
+            .mpd-btn-whats { display: inline-flex; align-items: center; gap: 4px; background: #25D366; color: #fff; padding: 4px 10px; border-radius: 5px; font-size: 10.5px; font-weight: 800; text-decoration: none; cursor: pointer; border: 0; font-family: var(--font-base) !important; transition: filter 0.12s; }
+            .mpd-btn-whats:hover { filter: brightness(1.08); }
+            .mpd-entrega { background: #FCE0E9; border-radius: 10px; padding: 14px; }
+            .mpd-entrega--com-mapa { display: grid; grid-template-columns: 1fr 120px; gap: 14px; align-items: stretch; min-height: 110px; }
+            .mpd-entrega-info { display: flex; flex-direction: column; justify-content: center; }
+            .mpd-entrega-topo { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11.5px; font-weight: 800; color: #6B5D64; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: var(--font-base) !important; }
+            .mpd-entrega-sep { color: #B8A5AD; font-weight: 600; }
+            .mpd-entrega-val { font-size: 13.5px; font-weight: 800; color: #2D1F26; line-height: 1.35; font-family: var(--font-base) !important; }
+            .mpd-entrega-end { font-size: 12px; color: #4A3540; margin-top: 4px; line-height: 1.4; font-family: var(--font-base) !important; }
+            .mpd-mini-mapa { background: linear-gradient(135deg, #E5EAE0 0%, #D4E0D0 100%); border-radius: 8px; position: relative; overflow: hidden; cursor: pointer; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); text-decoration: none; transition: transform 0.15s; }
+            .mpd-mini-mapa:hover { transform: scale(1.02); }
+            .mpd-mapa-rua-h { position: absolute; left: 0; right: 0; height: 3px; background: #F0EBE0; }
+            .mpd-mapa-rua-v { position: absolute; top: 0; bottom: 0; width: 3px; background: #F0EBE0; }
+            .mpd-mapa-pin { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -70%); color: #E85A8C; }
+            .mpd-mapa-abrir { position: absolute; bottom: 4px; left: 4px; right: 4px; background: rgba(255,255,255,0.95); color: #2D1F26; border-radius: 4px; padding: 3px 6px; font-size: 9px; font-weight: 800; text-align: center; letter-spacing: 0.03em; font-family: var(--font-base) !important; }
+            .mpd-produto-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #F5EEF0; }
+            .mpd-produto-row:last-child { border-bottom: 0; }
+            .mpd-produto-img { width: 44px; height: 44px; border-radius: 8px; background: #F5EEF0; display: flex; align-items: center; justify-content: center; color: #B8ACB1; flex-shrink: 0; overflow: hidden; }
+            .mpd-produto-img img { width: 100%; height: 100%; object-fit: cover; }
+            .mpd-produto-info { flex: 1; min-width: 0; }
+            .mpd-produto-nome { font-size: 13.5px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
+            .mpd-produto-qtd { font-size: 12px; color: #6B5D64; margin-top: 2px; font-family: var(--font-base) !important; }
+            .mpd-produto-obs { font-size: 11.5px; color: #9A8B93; margin-top: 3px; font-style: italic; font-family: var(--font-base) !important; }
+            .mpd-produto-preco { font-size: 13px; font-weight: 800; color: #2D1F26; font-family: var(--font-base) !important; white-space: nowrap; }
+            .mpd-pers-item { display: flex; gap: 8px; font-size: 12.5px; line-height: 1.5; margin-bottom: 3px; color: #2D1F26; font-family: var(--font-base) !important; }
+            .mpd-pers-lbl { font-weight: 700; color: #6B5D64; min-width: 76px; }
+            .mpd-fin-total { text-align: right; padding-bottom: 16px; border-bottom: 2px solid #F0EBED; }
+            .mpd-fin-total-lbl { font-size: 11px; color: #9A8B93; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--font-base) !important; }
+            .mpd-fin-total-val { font-size: 28px; font-weight: 900; color: #2D1F26; letter-spacing: -0.02em; margin-top: 4px; font-family: var(--font-base) !important; }
+            .mpd-fin-row { display: flex; justify-content: space-between; font-size: 13px; align-items: center; font-family: var(--font-base) !important; }
+            .mpd-fin-row-lbl { color: #6B5D64; }
+            .mpd-fin-row-val { font-weight: 700; color: #2D1F26; }
+            .mpd-fin-pag-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: 800; font-family: var(--font-base) !important; }
+            .mpd-footer { padding: 14px 24px; background: #FAFAFA; border-top: 1px solid #F0EBED; display: flex; gap: 10px; justify-content: flex-end; align-items: center; flex-shrink: 0; }
+            .mpd-btn { all: unset; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-base) !important; box-sizing: border-box; transition: filter 0.12s, transform 0.08s; }
+            .mpd-btn-editar { background: #F5F1F3; color: #6B5D64; }
+            .mpd-btn-editar:hover { background: #EBE5E8; }
+            .mpd-btn-avancar { background: #E85A8C; color: #fff; box-shadow: 0 3px 0 #C33A6E; padding: 10px 20px; }
+            .mpd-btn-avancar:hover { filter: brightness(1.05); }
+            .mpd-btn-avancar:active { transform: translateY(3px); box-shadow: 0 0 0 #C33A6E; }
+          `}</style>
+        </div>
+      </>
+    )
+  }
+
+  // ══════════════ MODAL MOBILE — versão bottom sheet (mantida) ══════════════
   return (
     <>
       <div className="mp-overlay" onClick={onClose} />
