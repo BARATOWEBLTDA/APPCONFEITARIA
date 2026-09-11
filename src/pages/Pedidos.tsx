@@ -2650,6 +2650,7 @@ export default function Pedidos() {
           width: calc(100% + 2rem);
           min-width: 0;
           max-width: calc(100% + 2rem);
+          min-height: calc(100vh - 340px);
         }
         .kb-scroll::-webkit-scrollbar { height: 10px; }
         .kb-scroll::-webkit-scrollbar-track { background: #F0EBED; border-radius: 5px; }
