@@ -45,7 +45,7 @@ function toBaseProd(qtd: number, unidade: string): number {
   return info ? qtd * info.toBase : qtd;
 }
 
-type Tamanho = { label: string; preco: number };
+type Tamanho = { label: string; preco: number; foto_url?: string };
 
 type KitItem = { nome: string; quantidade: string };
 
@@ -66,6 +66,7 @@ type Produto = {
   recheios_disponiveis?: string[];
   coberturas_disponiveis?: string[];
   tamanhos_disponiveis?: Tamanho[];
+  usar_foto_variacao?: boolean;
   pronta_entrega?: boolean;
   kit_itens?: KitItem[];
   kit_serve_pessoas?: string;
@@ -122,7 +123,7 @@ const EMPTY: Produto = {
   disponivel: true, promocao: false,
   permite_personalizacao: false,
   massas_disponiveis: [], recheios_disponiveis: [], coberturas_disponiveis: [],
-  tamanhos_disponiveis: [], pronta_entrega: true,
+  tamanhos_disponiveis: [], usar_foto_variacao: false, pronta_entrega: true,
   kit_itens: [], kit_serve_pessoas: "", kit_prazo_encomenda: "",
   zero_acucar: false,
   tem_vela: false, valor_vela: 0,
@@ -173,6 +174,12 @@ export default function Produtos() {
   const [salvarBibliotecaAsk, setSalvarBibliotecaAsk] = useState<{ nome: string; valor: number; index: number } | null>(null);
   const [cropSrc, setCropSrc] = useState<string | null>(null);
   const [cropSlot, setCropSlot] = useState(0);
+  // Foto por variação (feature PRO)
+  const [cropVariacaoIdx, setCropVariacaoIdx] = useState<number | null>(null);
+  const cropVariacaoRef = useRef<HTMLInputElement>(null);
+  // Editar variação inline
+  const [editandoVariacao, setEditandoVariacao] = useState<number | null>(null);
+  const [editVariacaoValor, setEditVariacaoValor] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "lista">(() => (localStorage.getItem("prod_viewMode") as "grid" | "lista") || "grid");
   const [buscaTexto, setBuscaTexto] = useState("");
 
@@ -382,20 +389,49 @@ export default function Produtos() {
 
   const handleProductCropDone = async (blob: Blob) => {
     if (!userId) return;
+    const isVariacao = cropVariacaoIdx !== null;
+    const idxVar = cropVariacaoIdx;
     setCropSrc(null);
+    setCropVariacaoIdx(null);
     setUploading(true);
-    const path = `produtos/${userId}-${Date.now()}-${cropSlot}.jpg`;
+    const suffix = isVariacao ? `var-${idxVar}` : `${cropSlot}`;
+    const path = `produtos/${userId}-${Date.now()}-${suffix}.jpg`;
     const { error } = await supabase.storage.from("products").upload(path, blob, { upsert: true, contentType: 'image/jpeg' });
     if (!error) {
       const { data } = supabase.storage.from("products").getPublicUrl(path);
       const url = `${data.publicUrl}?t=${Date.now()}`;
-      setForm(f => {
-        const imgs = (f.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
-        imgs[cropSlot] = url;
-        return { ...f, imagem_url: imgs.join(",") };
-      });
+      if (isVariacao && idxVar !== null) {
+        setForm(f => {
+          const arr = [...(f.tamanhos_disponiveis || [])];
+          if (arr[idxVar]) arr[idxVar] = { ...arr[idxVar], foto_url: url };
+          return { ...f, tamanhos_disponiveis: arr };
+        });
+      } else {
+        setForm(f => {
+          const imgs = (f.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
+          imgs[cropSlot] = url;
+          return { ...f, imagem_url: imgs.join(",") };
+        });
+      }
     }
     setUploading(false);
+  };
+
+  const handleVariacaoFotoUpload = (e: React.ChangeEvent<HTMLInputElement>, idx: number) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { setCropSrc(reader.result as string); setCropVariacaoIdx(idx); };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const removeVariacaoFoto = (idx: number) => {
+    setForm(f => {
+      const arr = [...(f.tamanhos_disponiveis || [])];
+      if (arr[idx]) arr[idx] = { ...arr[idx], foto_url: undefined };
+      return { ...f, tamanhos_disponiveis: arr };
+    });
   };
 
   const removeImage = (slot: number) => {
@@ -587,7 +623,7 @@ export default function Produtos() {
         imageSrc={cropSrc}
         cropShape="rect"
         aspect={1}
-        onCancel={() => setCropSrc(null)}
+        onCancel={() => { setCropSrc(null); setCropVariacaoIdx(null); }}
         onCropDone={handleProductCropDone}
       />
     )}
@@ -1142,27 +1178,255 @@ export default function Produtos() {
                   return (
                     <div className="prod-field">
                       <label>{cfg.label} <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(opcional)</span></label>
-                      <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: "0 0 6px" }}>{cfg.sub}</p>
-                      {(form.tamanhos_disponiveis || []).map((t, i) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "var(--primary-light)", borderRadius: "8px", marginBottom: "4px" }}>
-                          <span style={{ fontSize: "0.88rem", fontWeight: 700, color: "var(--primary)" }}>{t.label}</span>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <span style={{ fontSize: "0.82rem", color: "var(--success)", fontWeight: 700 }}>R$ {t.preco.toFixed(2).replace(".", ",")}</span>
-                            <button onClick={() => removeTamanho(i)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--error)", fontSize: "1rem", padding: 0 }}>×</button>
+                      <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: "0 0 10px" }}>{cfg.sub}</p>
+
+                      {/* ══ Toggle PRO — Foto personalizada por variação (só pra unidade/fatia/cento/caixa) ══ */}
+                      {["unidade", "fatia", "cento", "caixa"].includes(form.forma_venda) && (
+                        <div
+                          className={`prod-var-toggle${form.usar_foto_variacao && isPro ? " prod-var-toggle--on" : ""}${!isPro ? " prod-var-toggle--locked" : ""}`}
+                          onClick={() => { if (isPro) setForm(f => ({ ...f, usar_foto_variacao: !f.usar_foto_variacao })); }}
+                        >
+                          <div className="prod-var-toggle-icon">📷</div>
+                          <div className="prod-var-toggle-info">
+                            <div className="prod-var-toggle-title">
+                              Foto personalizada por variação
+                              {!isPro && <span className="prod-var-toggle-pro">👑 PRO</span>}
+                            </div>
+                            <div className="prod-var-toggle-desc">
+                              Personalize cada variação do seu produto e venda muito mais
+                            </div>
+                          </div>
+                          <div className={`prod-var-switch${form.usar_foto_variacao && isPro ? " prod-var-switch--on" : ""}${!isPro ? " prod-var-switch--locked" : ""}`}>
+                            <div className="prod-var-switch-thumb" />
                           </div>
                         </div>
-                      ))}
-                      <div className="prod-add-row">
-                        <input type="text" placeholder={cfg.placeholder} value={novoTamanho.label} onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))} className="prod-add-input" style={{ flex: 2 }} />
-                        <input type="text" placeholder={cfg.placeholderPreco} value={novoTamanho.preco} onChange={e => setNovoTamanho(t => ({ ...t, preco: e.target.value }))} className="prod-add-input" style={{ flex: 1 }} />
-                        <button onClick={() => {
-                          if (!novoTamanho.label.trim()) return;
-                          const preco = parseFloat(novoTamanho.preco.replace(",", "."));
-                          if (isNaN(preco)) return;
-                          const label = formatLabel(novoTamanho.label.trim());
-                          setForm(f => ({ ...f, tamanhos_disponiveis: [...(f.tamanhos_disponiveis || []), { label, preco }] }));
-                          setNovoTamanho({ label: "", preco: "" });
-                        }} className="prod-btn-3d">Adicionar</button>
+                      )}
+
+                      {/* ══ Lista de variações cadastradas (ordenadas crescente) ══ */}
+                      {(form.tamanhos_disponiveis || [])
+                        .map((t, originalIdx) => ({ ...t, originalIdx }))
+                        .sort((a, b) => {
+                          // Extrai números pra ordenar (funciona pra "6 un", "12 fatias", "500g", etc)
+                          const numA = parseFloat(String(a.label).replace(/[^\d,.-]/g, "").replace(",", ".")) || 0;
+                          const numB = parseFloat(String(b.label).replace(/[^\d,.-]/g, "").replace(",", ".")) || 0;
+                          return numA - numB;
+                        })
+                        .map(t => {
+                          const i = t.originalIdx;
+                          const precoUnit = (() => {
+                            const num = parseFloat(String(t.label).replace(/[^\d,.-]/g, "").replace(",", ".")) || 0;
+                            if (num <= 0) return null;
+                            return t.preco / num;
+                          })();
+                          const isEditando = editandoVariacao === i;
+                          const useFoto = form.usar_foto_variacao && isPro;
+
+                          // Extrai só o número (ex: "6 unidades" → "6")
+                          const num = String(t.label).replace(/[^\d,.-]/g, "") || t.label;
+                          // Tag da unidade (ex: "6 unidades" → "UNIDADES")
+                          const unLabel = String(t.label).replace(/[\d,.-]+\s*/g, "").trim().toUpperCase() || cfg.suffix?.toUpperCase() || "";
+
+                          // Modo COM foto (V3 - avatar circular)
+                          if (useFoto) {
+                            return (
+                              <div key={i} className="prod-var-item prod-var-item--v3">
+                                <div
+                                  className={`prod-var-avatar${!t.foto_url ? " prod-var-avatar--empty" : ""}`}
+                                  onClick={() => { setCropVariacaoIdx(i); cropVariacaoRef.current?.click(); }}
+                                  title={t.foto_url ? "Trocar foto" : "Adicionar foto"}
+                                >
+                                  {t.foto_url ? (
+                                    <>
+                                      <img src={t.foto_url} alt="" />
+                                      <button
+                                        type="button"
+                                        className="prod-var-avatar-x"
+                                        onClick={e => { e.stopPropagation(); removeVariacaoFoto(i); }}
+                                        title="Remover foto"
+                                      >✕</button>
+                                    </>
+                                  ) : (
+                                    <span className="prod-var-avatar-icon">📸</span>
+                                  )}
+                                  <span className="prod-var-avatar-cam">📷</span>
+                                </div>
+                                <div className="prod-var-info">
+                                  <div className="prod-var-info-top">
+                                    <span className="prod-var-num-inline">{num}</span>
+                                    <span className="prod-var-tag-inline">{unLabel}</span>
+                                  </div>
+                                  {isEditando ? (
+                                    <div className="prod-var-edit-row">
+                                      <span className="prod-var-edit-rs">R$</span>
+                                      <input
+                                        type="text"
+                                        inputMode="decimal"
+                                        autoFocus
+                                        className="prod-var-edit-input"
+                                        value={editVariacaoValor ? formatPreco(parsePreco(editVariacaoValor)) : editVariacaoValor}
+                                        onChange={e => {
+                                          const raw = e.target.value;
+                                          if (!raw) { setEditVariacaoValor(""); return; }
+                                          const n = parsePreco(raw);
+                                          setEditVariacaoValor(n ? formatPreco(n) : raw);
+                                        }}
+                                        onBlur={() => {
+                                          const p = parsePreco(editVariacaoValor);
+                                          if (p > 0) {
+                                            setForm(f => {
+                                              const arr = [...(f.tamanhos_disponiveis || [])];
+                                              if (arr[i]) arr[i] = { ...arr[i], preco: p };
+                                              return { ...f, tamanhos_disponiveis: arr };
+                                            });
+                                          }
+                                          setEditandoVariacao(null); setEditVariacaoValor("");
+                                        }}
+                                        onKeyDown={e => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") { setEditandoVariacao(null); setEditVariacaoValor(""); } }}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="prod-var-preco-row">
+                                      <span className="prod-var-preco">R$ {formatPreco(t.preco)}</span>
+                                      {precoUnit && <span className="prod-var-preco-un">· R$ {formatPreco(precoUnit)}/un</span>}
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="prod-var-actions">
+                                  <button
+                                    type="button"
+                                    className="prod-var-btn-mini"
+                                    onClick={() => { setEditandoVariacao(i); setEditVariacaoValor(formatPreco(t.preco)); }}
+                                    title="Editar preço"
+                                  >✏️</button>
+                                  <button
+                                    type="button"
+                                    className="prod-var-btn-mini prod-var-btn-mini--del"
+                                    onClick={() => removeTamanho(i)}
+                                    title="Excluir"
+                                  >🗑️</button>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // Modo SEM foto (Design D - etiqueta rosa)
+                          return (
+                            <div key={i} className="prod-var-item prod-var-item--d">
+                              <div className="prod-var-tag-side">
+                                <div className="prod-var-tag-num">{num}</div>
+                                <div className="prod-var-tag-un">{unLabel}</div>
+                              </div>
+                              <div className="prod-var-body">
+                                <div className="prod-var-body-info">
+                                  {isEditando ? (
+                                    <div className="prod-var-edit-row">
+                                      <span className="prod-var-edit-rs">R$</span>
+                                      <input
+                                        type="text"
+                                        inputMode="decimal"
+                                        autoFocus
+                                        className="prod-var-edit-input"
+                                        value={editVariacaoValor ? formatPreco(parsePreco(editVariacaoValor)) : editVariacaoValor}
+                                        onChange={e => {
+                                          const raw = e.target.value;
+                                          if (!raw) { setEditVariacaoValor(""); return; }
+                                          const n = parsePreco(raw);
+                                          setEditVariacaoValor(n ? formatPreco(n) : raw);
+                                        }}
+                                        onBlur={() => {
+                                          const p = parsePreco(editVariacaoValor);
+                                          if (p > 0) {
+                                            setForm(f => {
+                                              const arr = [...(f.tamanhos_disponiveis || [])];
+                                              if (arr[i]) arr[i] = { ...arr[i], preco: p };
+                                              return { ...f, tamanhos_disponiveis: arr };
+                                            });
+                                          }
+                                          setEditandoVariacao(null); setEditVariacaoValor("");
+                                        }}
+                                        onKeyDown={e => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") { setEditandoVariacao(null); setEditVariacaoValor(""); } }}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <div className="prod-var-preco-big">R$ {formatPreco(t.preco)}</div>
+                                      {precoUnit && <div className="prod-var-preco-un-mini">R$ {formatPreco(precoUnit)} por {cfg.suffix?.replace(/\(|\)|s$/g, "") || "un"}</div>}
+                                    </>
+                                  )}
+                                </div>
+                                <div className="prod-var-actions">
+                                  <button
+                                    type="button"
+                                    className="prod-var-btn-mini"
+                                    onClick={() => { setEditandoVariacao(i); setEditVariacaoValor(formatPreco(t.preco)); }}
+                                    title="Editar preço"
+                                  >✏️</button>
+                                  <button
+                                    type="button"
+                                    className="prod-var-btn-mini prod-var-btn-mini--del"
+                                    onClick={() => removeTamanho(i)}
+                                    title="Excluir"
+                                  >🗑️</button>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                      {/* Input file oculto pra upload de foto de variação */}
+                      <input
+                        ref={cropVariacaoRef}
+                        type="file"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={e => { if (cropVariacaoIdx !== null) handleVariacaoFotoUpload(e, cropVariacaoIdx); }}
+                      />
+
+                      {/* Form pra adicionar novo (V1 aprovado - tag "UNIDADES" colada) */}
+                      <div className="prod-var-add-row">
+                        <div className="prod-var-input-group">
+                          <input
+                            type="text"
+                            inputMode={form.forma_venda === "kg" || form.forma_venda === "cento" ? "decimal" : "numeric"}
+                            placeholder={cfg.placeholder}
+                            value={novoTamanho.label}
+                            onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))}
+                            className="prod-var-input"
+                          />
+                          <span className="prod-var-input-tag">
+                            {(cfg.suffix || (form.forma_venda === "kg" ? "kg" : form.forma_venda === "tamanho" ? "" : "un")).toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="prod-var-preco-input">
+                          <span>R$</span>
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="0,00"
+                            value={novoTamanho.preco ? formatPreco(parsePreco(novoTamanho.preco)) : novoTamanho.preco}
+                            onChange={e => {
+                              const raw = e.target.value;
+                              if (!raw) { setNovoTamanho(t => ({ ...t, preco: "" })); return; }
+                              const numero = parsePreco(raw);
+                              setNovoTamanho(t => ({ ...t, preco: numero ? formatPreco(numero) : raw }));
+                            }}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="prod-var-btn-add"
+                          onClick={() => {
+                            if (!novoTamanho.label.trim()) return;
+                            const preco = parsePreco(novoTamanho.preco);
+                            if (preco <= 0) return;
+                            const label = formatLabel(novoTamanho.label.trim());
+                            setForm(f => ({ ...f, tamanhos_disponiveis: [...(f.tamanhos_disponiveis || []), { label, preco }] }));
+                            setNovoTamanho({ label: "", preco: "" });
+                          }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                          <span>Adicionar</span>
+                        </button>
                       </div>
                     </div>
                   );
@@ -2607,23 +2871,23 @@ export default function Produtos() {
 
         .prod-card-sem-ficha {
           margin-top: 6px;
-          padding: 6px 8px;
-          background: var(--bg-subtle);
-          border: 1px dashed var(--border);
+          padding: 8px 10px;
+          background: var(--primary-light);
+          border: 1.5px dashed var(--primary);
           border-radius: var(--radius-sm);
-          color: var(--text-muted);
+          color: var(--primary-dark);
           font-family: var(--font-base);
           font-size: var(--font-caption);
-          font-weight: var(--fw-medium);
+          font-weight: var(--fw-semibold);
           cursor: pointer;
           text-align: center;
           width: 100%;
           line-height: 1.3;
-          transition: background var(--dur-fast) var(--ease-out);
+          transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast);
         }
         .prod-card-sem-ficha:hover {
-          background: var(--border);
-          color: var(--text-secondary);
+          background: #fce5ee;
+          transform: translateY(-1px);
         }
         .prod-card-actions { display:flex; gap:0.4rem; padding:0.5rem 0.75rem; border-top:1px solid var(--border); }
         .prod-card-btn-edit { flex:1; padding:0.4rem; background:var(--bg-subtle); border:none; border-radius: var(--radius-sm); font-family: var(--font-base); font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--text-primary); cursor:pointer; }
@@ -3568,6 +3832,347 @@ export default function Produtos() {
         }
         .wiz-cat-criar:disabled { opacity: 0.5; cursor: not-allowed; }
 
+
+        /* ═══════════════════════════════════════════════════════════
+           VARIAÇÕES DE QUANTIDADE — Toggle PRO + Design D/V3
+           ═══════════════════════════════════════════════════════════ */
+
+        /* ── Toggle PRO ── */
+        .prod-var-toggle {
+          display: flex; align-items: center; gap: 12px;
+          padding: 12px 14px; margin-bottom: 12px;
+          background: linear-gradient(135deg, #FEF3C7 0%, #FCE7F3 100%);
+          border: 1.5px solid #F59E0B;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          font-family: var(--font-base);
+        }
+        .prod-var-toggle:hover { transform: translateY(-1px); }
+        .prod-var-toggle--on {
+          background: linear-gradient(135deg, #DCFCE7 0%, #F0FDF4 100%);
+          border-color: #16A34A;
+        }
+        .prod-var-toggle--locked {
+          background: #F5F1F3;
+          border-color: #E5DFE1;
+          opacity: 0.95;
+          cursor: default;
+        }
+        .prod-var-toggle--locked:hover { transform: none; }
+        .prod-var-toggle-icon {
+          width: 40px; height: 40px; border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          background: rgba(255,255,255,0.7);
+          font-size: 20px; flex-shrink: 0;
+        }
+        .prod-var-toggle-info { flex: 1; min-width: 0; }
+        .prod-var-toggle-title {
+          font-size: 13px; font-weight: 900; color: #2D1F26;
+          display: flex; align-items: center; gap: 6px;
+          flex-wrap: wrap; line-height: 1.25;
+        }
+        .prod-var-toggle-pro {
+          display: inline-flex; align-items: center;
+          background: #2D1F26; color: #fff;
+          padding: 2px 7px; border-radius: 6px;
+          font-size: 9px; font-weight: 900;
+          letter-spacing: 0.05em;
+        }
+        .prod-var-toggle-desc {
+          font-size: 11px; color: #6B5D64;
+          margin-top: 2px; line-height: 1.35;
+        }
+        /* Switch iOS */
+        .prod-var-switch {
+          position: relative;
+          width: 42px; height: 24px;
+          background: #D1CACD; border-radius: 999px;
+          transition: background 0.2s;
+          flex-shrink: 0;
+        }
+        .prod-var-switch--on { background: #16A34A; }
+        .prod-var-switch--locked {
+          opacity: 0.6;
+          position: relative;
+        }
+        .prod-var-switch--locked::after {
+          content: "🔒";
+          position: absolute;
+          top: -3px; right: -6px;
+          font-size: 11px;
+        }
+        .prod-var-switch-thumb {
+          position: absolute;
+          top: 3px; left: 3px;
+          width: 18px; height: 18px;
+          background: #fff; border-radius: 50%;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          transition: left 0.2s;
+        }
+        .prod-var-switch--on .prod-var-switch-thumb { left: 21px; }
+
+        /* ── Item da lista (design D) ── */
+        .prod-var-item {
+          display: flex; align-items: stretch;
+          background: #fff; border: 1.5px solid #F0EBED;
+          border-radius: 10px; margin-bottom: 6px;
+          overflow: hidden;
+          transition: border-color 0.15s ease;
+        }
+        .prod-var-item:hover { border-color: #E85A8C; }
+
+        /* Design D — etiqueta rosa gigante */
+        .prod-var-item--d .prod-var-tag-side {
+          background: linear-gradient(135deg, #E85A8C, #C33A6E);
+          color: #fff; padding: 10px 14px;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          min-width: 76px;
+        }
+        .prod-var-tag-num {
+          font-size: 20px; font-weight: 900; line-height: 1;
+        }
+        .prod-var-tag-un {
+          font-size: 8px; font-weight: 900;
+          margin-top: 3px; letter-spacing: 0.08em; opacity: 0.95;
+          text-align: center;
+        }
+        .prod-var-body {
+          flex: 1; padding: 10px 12px;
+          display: flex; justify-content: space-between;
+          align-items: center; gap: 8px;
+          min-width: 0;
+        }
+        .prod-var-body-info { min-width: 0; flex: 1; }
+        .prod-var-preco-big {
+          font-size: 16px; font-weight: 900; color: #16A34A;
+          line-height: 1.1;
+        }
+        .prod-var-preco-un-mini {
+          font-size: 10px; color: #6B5D64; font-weight: 700;
+          margin-top: 2px;
+        }
+
+        /* Design V3 — avatar circular (com foto) */
+        .prod-var-item--v3 {
+          align-items: center; gap: 12px;
+          padding: 10px 12px;
+        }
+        .prod-var-avatar {
+          width: 52px; height: 52px; border-radius: 12px;
+          background: linear-gradient(135deg, #B45309, #7C2D12);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 20px; flex-shrink: 0;
+          border: 3px solid #E85A8C;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+          transition: transform 0.12s ease;
+        }
+        .prod-var-avatar:hover { transform: scale(1.05); }
+        .prod-var-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .prod-var-avatar--empty {
+          background: #FCE7F3;
+          color: #E85A8C;
+          border-style: dashed;
+        }
+        .prod-var-avatar-icon { font-size: 20px; }
+        .prod-var-avatar-cam {
+          position: absolute;
+          bottom: -4px; right: -4px;
+          background: #E85A8C; color: #fff;
+          width: 20px; height: 20px; border-radius: 50%;
+          font-size: 9px;
+          display: flex; align-items: center; justify-content: center;
+          border: 2px solid #fff;
+        }
+        .prod-var-avatar-x {
+          position: absolute;
+          top: 2px; right: 2px;
+          background: rgba(0,0,0,0.65); color: #fff;
+          border: none; width: 18px; height: 18px;
+          border-radius: 50%;
+          font-size: 10px; font-weight: 900;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          font-family: var(--font-base);
+        }
+        .prod-var-avatar-x:hover { background: #DC2626; }
+        .prod-var-info { flex: 1; min-width: 0; }
+        .prod-var-info-top {
+          display: flex; align-items: baseline; gap: 6px;
+          flex-wrap: wrap;
+        }
+        .prod-var-num-inline {
+          font-size: 17px; font-weight: 900; color: #2D1F26;
+          line-height: 1;
+        }
+        .prod-var-tag-inline {
+          display: inline-block;
+          background: #F5EEF0; color: #E85A8C;
+          font-size: 9px; font-weight: 900;
+          padding: 2px 7px; border-radius: 999px;
+          letter-spacing: 0.05em;
+        }
+        .prod-var-preco-row {
+          display: flex; align-items: baseline; gap: 6px;
+          margin-top: 4px; flex-wrap: wrap;
+        }
+        .prod-var-preco {
+          font-size: 14px; font-weight: 900; color: #16A34A;
+        }
+        .prod-var-preco-un {
+          font-size: 10px; color: #6B5D64; font-weight: 600;
+        }
+
+        /* Botões editar/excluir */
+        .prod-var-actions {
+          display: flex; gap: 4px; flex-shrink: 0;
+        }
+        .prod-var-btn-mini {
+          width: 30px; height: 30px; border-radius: 6px;
+          display: flex; align-items: center; justify-content: center;
+          background: #F5EEF0; color: #6B5D64;
+          border: none; cursor: pointer; font-size: 13px;
+          font-family: var(--font-base);
+          transition: all 0.12s;
+        }
+        .prod-var-btn-mini:hover { background: #FCE7F3; color: #E85A8C; }
+        .prod-var-btn-mini--del:hover { background: #FEE2E2; color: #DC2626; }
+
+        /* Edição inline do preço */
+        .prod-var-edit-row {
+          display: flex; align-items: center; gap: 4px;
+          border: 1.5px solid #E85A8C; border-radius: 8px;
+          background: #fff; padding: 4px 8px;
+          max-width: 130px;
+        }
+        .prod-var-edit-rs {
+          font-size: 12px; font-weight: 800; color: #6B5D64;
+        }
+        .prod-var-edit-input {
+          flex: 1; min-width: 0;
+          border: none; outline: none;
+          font-family: var(--font-base) !important;
+          font-size: 14px; font-weight: 900;
+          color: #16A34A;
+          background: transparent;
+          padding: 2px 0;
+        }
+
+        /* ── Input V1 — Tag "UNIDADES" colada ── */
+        .prod-var-add-row {
+          display: flex; gap: 6px; align-items: stretch;
+          margin-top: 8px;
+        }
+        .prod-var-input-group {
+          display: flex; align-items: stretch;
+          border: 1.5px solid #E5DFE1; border-radius: 10px;
+          background: #fff; overflow: hidden;
+          flex: 1.4; min-width: 0;
+          transition: border-color 0.15s ease;
+        }
+        .prod-var-input-group:focus-within { border-color: #E85A8C; }
+        .prod-var-input {
+          flex: 1; padding: 12px 12px; border: none; outline: none;
+          font-family: var(--font-base) !important;
+          font-size: 15px; font-weight: 800;
+          min-width: 0; color: #2D1F26;
+          background: transparent;
+        }
+        .prod-var-input::placeholder {
+          font-weight: 500; color: #9A8B93;
+        }
+        .prod-var-input-tag {
+          background: #F5EEF0;
+          color: #E85A8C;
+          font-size: 10px;
+          font-weight: 900;
+          padding: 0 12px;
+          display: flex; align-items: center;
+          letter-spacing: 0.08em;
+          border-left: 1px solid #E5DFE1;
+          white-space: nowrap;
+          font-family: var(--font-base);
+        }
+        .prod-var-preco-input {
+          flex: 1; min-width: 100px;
+          display: flex; align-items: center;
+          border: 1.5px solid #E5DFE1; border-radius: 10px;
+          background: #fff; padding-left: 10px;
+          transition: border-color 0.15s ease;
+        }
+        .prod-var-preco-input:focus-within { border-color: #E85A8C; }
+        .prod-var-preco-input span {
+          color: #6B5D64; font-weight: 700; font-size: 13px;
+          margin-right: 2px;
+        }
+        .prod-var-preco-input input {
+          flex: 1; padding: 12px 12px 12px 0; border: none; outline: none;
+          font-family: var(--font-base) !important;
+          font-size: 15px; font-weight: 800;
+          background: transparent; min-width: 0; color: #2D1F26;
+        }
+        .prod-var-preco-input input::placeholder {
+          font-weight: 500; color: #9A8B93;
+        }
+        .prod-var-btn-add {
+          padding: 12px 16px; background: #E85A8C; color: #fff;
+          border: none; border-radius: 10px;
+          font-family: var(--font-base) !important;
+          font-size: 13px; font-weight: 900;
+          box-shadow: 0 3px 0 #C33A6E;
+          cursor: pointer;
+          display: flex; align-items: center; gap: 6px;
+          white-space: nowrap;
+          transition: transform 0.08s, box-shadow 0.08s;
+        }
+        .prod-var-btn-add:hover { filter: brightness(1.05); }
+        .prod-var-btn-add:active {
+          transform: translateY(3px);
+          box-shadow: 0 0 0 #C33A6E;
+        }
+
+        /* ── Responsivo: mobile ── */
+        @media (max-width: 640px) {
+          .prod-var-add-row {
+            flex-wrap: wrap;
+          }
+          .prod-var-input-group {
+            flex: 1 1 60%;
+            min-width: 0;
+          }
+          .prod-var-preco-input {
+            flex: 1 1 35%;
+            min-width: 100px;
+          }
+          .prod-var-btn-add {
+            flex: 1 1 100%;
+            justify-content: center;
+            padding: 12px;
+          }
+          .prod-var-toggle {
+            padding: 10px 12px;
+          }
+          .prod-var-toggle-icon {
+            width: 36px; height: 36px;
+            font-size: 18px;
+          }
+          .prod-var-item--d .prod-var-tag-side {
+            min-width: 66px;
+            padding: 8px 10px;
+          }
+          .prod-var-tag-num { font-size: 18px; }
+          .prod-var-preco-big { font-size: 14px; }
+          .prod-var-item--v3 {
+            padding: 8px 10px;
+            gap: 10px;
+          }
+          .prod-var-avatar {
+            width: 46px; height: 46px;
+          }
+        }
 
         /* ═══ MODAL "DESCARTAR?" (guard produto) ═══ */
         .prod-discard-ov {
