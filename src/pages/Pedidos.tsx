@@ -243,7 +243,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
     return (
       <tr className="ped-dt-row" onClick={() => onVerPedido(p)}>
         <td className="ped-td">
-          <span className="ped-dt-num">#{p.numero || '—'}</span>
+          <span className="ped-dt-num">Pedido #{p.numero || '—'}</span>
           <span className="ped-dt-criado">{p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' }) + ' · ' + new Date(p.created_at).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : ''}</span>
           <span className="ped-dt-origem">Origem: {p.origem === 'cardapio' ? 'Cardápio Digital' : 'Pedido Manual'}</span>
         </td>
@@ -812,7 +812,7 @@ export default function Pedidos() {
       .from('pedidos')
       .select('*, pedido_itens(nome_produto, quantidade, valor_unitario, observacoes, personalizacoes, imagem_url, produtos(imagem_url, forma_venda))')
       .eq('user_id', uid)
-      .order('created_at', { ascending: false })
+      .order('numero', { ascending: false })
     setPedidos(data || [])
     setLoading(false)
   }
