@@ -1253,39 +1253,37 @@ export default function Pedidos() {
     ) : (
     <div style={{ fontFamily: "'Geist', sans-serif", display: 'flex', flexDirection: 'column', gap: '0.85rem', padding: '1.25rem 1rem 6rem' }}>
 
-      {/* ── Barra de ações (filtro + registrar) ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.75rem', paddingTop: isMobile ? '1.25rem' : 0 }}>
-        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-          {/* Botão filtro */}
-          <button
-            onClick={() => setShowFiltro(true)}
-            style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 38, height: 38, borderRadius: 10, border: `1.5px solid ${filtrosAtivos ? 'var(--primary)' : 'var(--border)'}`, background: filtrosAtivos ? 'var(--primary-light)' : 'var(--bg-card)', cursor: 'pointer', color: filtrosAtivos ? 'var(--primary)' : 'var(--text-secondary)', flexShrink: 0 }}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-            {filtrosAtivos && <span style={{ position: 'absolute', top: -4, right: -4, width: 10, height: 10, borderRadius: '50%', background: 'var(--primary)', border: '2px solid white' }} />}
-          </button>
-
-          {/* Novo pedido */}
-          <BtnNovo label="Registrar pedido" onClick={handleNovoPedido} />
-        </div>
-      </div>
-
       {(
         <>
-          {/* Busca */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '0.6rem 0.9rem' }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            <input
-              style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.85rem', fontFamily: 'inherit', color: 'var(--text-primary)', background: 'transparent' }}
-              placeholder="Buscar por cliente ou número..."
-              value={busca}
-              onChange={e => setBusca(e.target.value)}
-            />
-            {busca && (
-              <button onClick={() => setBusca('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 0 }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            )}
+          {/* Busca + Filtro + Registrar — na mesma linha */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', paddingTop: isMobile ? '1.25rem' : 0 }}>
+            {/* Barra de busca */}
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '0.75rem 1rem' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input
+                style={{ flex: 1, border: 'none', outline: 'none', fontSize: '0.9rem', fontFamily: 'var(--font-base)', color: 'var(--text-primary)', background: 'transparent' }}
+                placeholder="Buscar por cliente ou número..."
+                value={busca}
+                onChange={e => setBusca(e.target.value)}
+              />
+              {busca && (
+                <button onClick={() => setBusca('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', padding: 0 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              )}
+            </div>
+
+            {/* Botão filtro */}
+            <button
+              onClick={() => setShowFiltro(true)}
+              style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: 10, border: `1.5px solid ${filtrosAtivos ? 'var(--primary)' : 'var(--border)'}`, background: filtrosAtivos ? 'var(--primary-light)' : 'var(--bg-card)', cursor: 'pointer', color: filtrosAtivos ? 'var(--primary)' : 'var(--text-secondary)', flexShrink: 0 }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+              {filtrosAtivos && <span style={{ position: 'absolute', top: -4, right: -4, width: 10, height: 10, borderRadius: '50%', background: 'var(--primary)', border: '2px solid white' }} />}
+            </button>
+
+            {/* Novo pedido */}
+            <BtnNovo label="Registrar pedido" onClick={handleNovoPedido} />
           </div>
 
           {/* Chip de filtro ativo "Aguardando aprovação" — vindo do alerta do Início */}
