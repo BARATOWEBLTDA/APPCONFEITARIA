@@ -665,7 +665,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-header { padding: 18px 24px; border-bottom: 1px solid #F0EBED; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-shrink: 0; position: relative; }
             .mpd-num-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
             .mpd-num { font-size: 22px; font-weight: 900; color: #2D1F26; letter-spacing: -0.02em; font-family: var(--font-base) !important; }
-            .mpd-meta { font-size: 12px; color: #9A8B93; line-height: 1.5; font-family: var(--font-base) !important; margin: 0; }
+            .mpd-meta { font-size: 12.5px; color: #9A8B93; line-height: 1.5; font-family: var(--font-base) !important; margin: 0; }
             .mpd-close, .mpd-menu-btn { all: unset; background: #F5F1F3; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; color: #6B5D64; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.12s; }
             .mpd-close:hover, .mpd-menu-btn:hover { background: #EBE5E8; color: #2D1F26; }
             .mpd-menu-wrap { position: relative; }
@@ -681,8 +681,8 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-body { display: grid; grid-template-columns: 1fr 300px; flex: 1; min-height: 0; overflow: hidden; }
             .mpd-col-left { padding: 22px 24px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; min-height: 0; }
             .mpd-col-right { padding: 22px 24px; background: #FAFAFA; border-left: 1px solid #F0EBED; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; min-height: 0; }
-            .mpd-sec-titulo { font-size: 10.5px; font-weight: 800; color: #9A8B93; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; font-family: var(--font-base) !important; }
-            .mpd-sec-val { font-size: 14.5px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
+            .mpd-sec-titulo { font-size: 11px; font-weight: 800; color: #9A8B93; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; font-family: var(--font-base) !important; }
+            .mpd-sec-val { font-size: 15px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
             .mpd-cli-linha { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #6B5D64; margin-top: 4px; font-family: var(--font-base) !important; }
             .mpd-btn-whats { display: inline-flex; align-items: center; gap: 4px; background: #25D366; color: #fff; padding: 4px 10px; border-radius: 5px; font-size: 10.5px; font-weight: 800; text-decoration: none; cursor: pointer; border: 0; font-family: var(--font-base) !important; transition: filter 0.12s; }
             .mpd-btn-whats:hover { filter: brightness(1.08); }
@@ -691,8 +691,8 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-entrega-info { display: flex; flex-direction: column; justify-content: center; }
             .mpd-entrega-topo { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11.5px; font-weight: 800; color: #6B5D64; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: var(--font-base) !important; }
             .mpd-entrega-sep { color: #B8A5AD; font-weight: 600; }
-            .mpd-entrega-val { font-size: 13.5px; font-weight: 800; color: #2D1F26; line-height: 1.35; font-family: var(--font-base) !important; }
-            .mpd-entrega-end { font-size: 12px; color: #4A3540; margin-top: 4px; line-height: 1.4; font-family: var(--font-base) !important; }
+            .mpd-entrega-val { font-size: 15px; font-weight: 800; color: #2D1F26; line-height: 1.35; font-family: var(--font-base) !important; }
+            .mpd-entrega-end { font-size: 12.5px; color: #4A3540; margin-top: 4px; line-height: 1.4; font-family: var(--font-base) !important; }
             .mpd-mini-mapa { background: linear-gradient(135deg, #E5EAE0 0%, #D4E0D0 100%); border-radius: 8px; position: relative; overflow: hidden; cursor: pointer; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); text-decoration: none; transition: transform 0.15s; }
             .mpd-mini-mapa:hover { transform: scale(1.02); }
             .mpd-mapa-rua-h { position: absolute; left: 0; right: 0; height: 3px; background: #F0EBE0; }
@@ -704,10 +704,10 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-produto-img { width: 44px; height: 44px; border-radius: 8px; background: #F5EEF0; display: flex; align-items: center; justify-content: center; color: #B8ACB1; flex-shrink: 0; overflow: hidden; }
             .mpd-produto-img img { width: 100%; height: 100%; object-fit: cover; }
             .mpd-produto-info { flex: 1; min-width: 0; }
-            .mpd-produto-nome { font-size: 13.5px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
-            .mpd-produto-qtd { font-size: 12px; color: #6B5D64; margin-top: 2px; font-family: var(--font-base) !important; }
-            .mpd-produto-obs { font-size: 11.5px; color: #9A8B93; margin-top: 3px; font-style: italic; font-family: var(--font-base) !important; }
-            .mpd-produto-preco { font-size: 13px; font-weight: 800; color: #2D1F26; font-family: var(--font-base) !important; white-space: nowrap; }
+            .mpd-produto-nome { font-size: 15px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
+            .mpd-produto-qtd { font-size: 12.5px; color: #6B5D64; margin-top: 2px; font-family: var(--font-base) !important; }
+            .mpd-produto-obs { font-size: 12.5px; color: #9A8B93; margin-top: 3px; font-style: italic; font-family: var(--font-base) !important; }
+            .mpd-produto-preco { font-size: 15px; font-weight: 800; color: #2D1F26; font-family: var(--font-base) !important; white-space: nowrap; }
             .mpd-pers-item { display: flex; gap: 8px; font-size: 12.5px; line-height: 1.5; margin-bottom: 3px; color: #2D1F26; font-family: var(--font-base) !important; }
             .mpd-pers-lbl { font-weight: 700; color: #6B5D64; min-width: 76px; }
             .mpd-fin-total { text-align: right; padding-bottom: 16px; border-bottom: 2px solid #F0EBED; }
