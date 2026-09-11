@@ -42,14 +42,14 @@ export default function Layout() {
   } = useAvatarUpload();
   const [maisOpen, setMaisOpen] = useState(false);
   const [dooOpen, setDooOpen] = useState(false);
-  // Cadastros: expande automaticamente quando estiver em uma das rotas filhas
-  const isInCadastros = ["/produtos", "/clientes", "/insumos", "/categorias"].some(p => location.pathname.startsWith(p));
-  const [cadastrosOpen, setCadastrosOpen] = useState(isInCadastros);
-  useEffect(() => { if (isInCadastros) setCadastrosOpen(true); }, [isInCadastros]);
   const location = useLocation();
   const isReceitas = location.pathname === "/receitas";
   const isAssinar = location.pathname === "/assinar";
   const isPrevia = location.pathname === "/cardapio-preview";
+  // Cadastros: expande automaticamente quando estiver em uma das rotas filhas
+  const isInCadastros = ["/produtos", "/clientes", "/insumos", "/categorias"].some(p => location.pathname.startsWith(p));
+  const [cadastrosOpen, setCadastrosOpen] = useState(isInCadastros);
+  useEffect(() => { if (isInCadastros) setCadastrosOpen(true); }, [isInCadastros]);
 
   // Bloqueia scroll do body/html quando o dropdown de notificações está aberto.
   // No iOS Safari, só body.overflow=hidden não segura — precisa travar html também
