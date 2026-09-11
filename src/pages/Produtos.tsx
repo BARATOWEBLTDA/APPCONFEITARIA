@@ -917,6 +917,7 @@ export default function Produtos() {
       {modal && (
         <div className="prod-modal-overlay" onClick={handleTryClose}>
           <div className="prod-modal prod-modal--novo" onClick={e => e.stopPropagation()}>
+            {wizardStep >= 2 && (
             <div className="prod-modal-header-novo">
               {wizardStep > 1 && !form.id ? (
                 <button className="prod-modal-back-novo" onClick={() => setWizardStep(s => Math.max(1, s - 1) as 1 | 2 | 3 | 4)} aria-label="Voltar">
@@ -933,6 +934,7 @@ export default function Produtos() {
               </div>
               <button className="prod-modal-close-novo" onClick={handleTryClose} aria-label="Fechar">✕</button>
             </div>
+            )}
 
             {/* Progresso — bolinhas conectadas (só nos passos 2, 3, 4) */}
             {wizardStep >= 2 && (
@@ -950,67 +952,63 @@ export default function Produtos() {
               </div>
             )}
 
-            {/* ══════ WIZARD STEP 1 — Escolha do tipo ══════ */}
+            {/* ══════ WIZARD STEP 1 — Escolha do tipo (TELA CHEIA ROSA) ══════ */}
             {wizardStep === 1 && (
-              <div className="prod-modal-body">
-                {/* Tipo — cards horizontais */}
-                <div className="wiz-tipo-list">
-                  {[
-                    { tipo: "simples" as const, icon: "🍰", title: "Produto Simples", ex: "Exemplo: Pudim 500g" },
-                    { tipo: "variacoes" as const, icon: "🎂", title: "Produto com Variações", ex: "Exemplo: Bolo p/m/g..." },
-                  ].map(({ tipo, icon, title, ex }) => (
-                    <button key={tipo} className={`wiz-tipo-card${wizardTipo === tipo ? " wiz-tipo-card--active" : ""}`} onClick={() => setWizardTipo(tipo)}>
-                      <span className="wiz-tipo-icon">{icon}</span>
-                      <div className="wiz-tipo-info">
-                        <p className="wiz-tipo-title">{title}</p>
-                        <p className="wiz-tipo-ex">{ex}</p>
-                      </div>
-                      <div className={`wiz-tipo-radio${wizardTipo === tipo ? " wiz-tipo-radio--active" : ""}`}>
-                        {wizardTipo === tipo && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                      </div>
-                    </button>
-                  ))}
+              <div className="wiz-step1-full">
+                {/* Bolhas decorativas de fundo */}
+                <div className="wiz-step1-blob wiz-step1-blob--1" />
+                <div className="wiz-step1-blob wiz-step1-blob--2" />
+
+                {/* Botão X translúcido */}
+                <button className="wiz-step1-x" onClick={handleTryClose} aria-label="Fechar">✕</button>
+
+                {/* Hero — pergunta grande */}
+                <div className="wiz-step1-hero">
+                  <h1 className="wiz-step1-title">Como é o seu produto?</h1>
+                  <p className="wiz-step1-sub">Você pode mudar isso depois se precisar.</p>
                 </div>
 
-                {/* Recursos extras */}
-                <p className="wiz-section-title">Recursos extras</p>
-                <div className="wiz-opts-list">
-                  {[
-                    { key: "complementos" as const, icon: "🎁", title: "Complementos", desc: "Vela, topo de bolo, embalagem especial...", tag: "Aumente seu Lucro", tagKind: "money" as const },
-                    { key: "personalizacao" as const, icon: "🎨", title: "Personalização", desc: "Cliente escolhe massa, recheio, cobertura...", tag: "Opcional", tagKind: "neutral" as const },
-                  ].map(({ key, icon, title, desc, tag, tagKind }) => (
-                    <button key={key} className={`wiz-opt-card${wizardOpts[key] ? " wiz-opt-card--active" : ""}`} onClick={() => setWizardOpts(o => ({ ...o, [key]: !o[key] }))}>
-                      <span className="wiz-tipo-icon">{icon}</span>
-                      <div className="wiz-tipo-info">
-                        <div className="wiz-opt-title-row">
-                          <p className="wiz-tipo-title">{title}</p>
-                          <span className={`wiz-opt-tag wiz-opt-tag--${tagKind}`}>{tag}</span>
-                        </div>
-                        <p className="wiz-tipo-desc">{desc}</p>
-                      </div>
-                      <div className={`wiz-opt-check${wizardOpts[key] ? " wiz-opt-check--active" : ""}`}>
-                        {wizardOpts[key] && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                {/* 2 cards centralizados */}
+                <div className="wiz-step1-cards">
+                  <button
+                    type="button"
+                    className="wiz-step1-card"
+                    onClick={() => {
+                      setWizardTipo("simples");
+                      setForm(f => ({ ...f, forma_venda: "unidade" }));
+                      setWizardStep(2);
+                    }}
+                  >
+                    <img
+                      src={`/categoriaicones/${encodeURIComponent("icone (29).png")}`}
+                      alt=""
+                      className="wiz-step1-card-icon"
+                    />
+                    <div className="wiz-step1-card-title">Produto simples</div>
+                    <div className="wiz-step1-card-desc">Um produto, um preço</div>
+                    <div className="wiz-step1-card-ex">Ex.: Brownie, cookie</div>
+                  </button>
 
-                {/* Footer step 1 */}
-                <div className="wiz-footer">
-                  <button className="prod-btn-cancelar" onClick={handleTryClose}>Cancelar</button>
-                  <button className="prod-btn-salvar" onClick={() => {
-                    setForm(f => ({
-                      ...f,
-                      forma_venda: wizardTipo === "simples" ? "unidade" : f.forma_venda,
-                      permite_personalizacao: wizardOpts.personalizacao,
-                      tem_adicionais: wizardOpts.complementos,
-                      promocao: wizardOpts.promocao,
-                    }));
-                    setWizardStep(2);
-                  }}>
-                    Continuar
+                  <button
+                    type="button"
+                    className="wiz-step1-card"
+                    onClick={() => {
+                      setWizardTipo("variacoes");
+                      setWizardStep(2);
+                    }}
+                  >
+                    <img
+                      src={`/categoriaicones/${encodeURIComponent("icone (26).png")}`}
+                      alt=""
+                      className="wiz-step1-card-icon"
+                    />
+                    <div className="wiz-step1-card-title">Com variações</div>
+                    <div className="wiz-step1-card-desc">Um produto com diferentes opções</div>
+                    <div className="wiz-step1-card-ex">Ex.: Bolo P, M ou G</div>
                   </button>
                 </div>
+
+                <p className="wiz-step1-hint">Toque na opção que combina com o seu produto</p>
               </div>
             )}
 
@@ -4265,6 +4263,169 @@ export default function Produtos() {
             width: 46px; height: 46px;
           }
         }
+
+        /* ═══════════════════════════════════════════════════════════
+           WIZARD STEP 1 — TELA CHEIA ROSA (escolha do tipo)
+           ═══════════════════════════════════════════════════════════ */
+        .wiz-step1-full {
+          background: linear-gradient(150deg, #E85A8C 0%, #C33A6E 55%, #2D1F26 130%);
+          color: #fff;
+          position: relative;
+          min-height: 560px;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          border-radius: 16px;
+          font-family: var(--font-base);
+        }
+
+        /* Bolhas decorativas */
+        .wiz-step1-blob {
+          position: absolute;
+          border-radius: 50%;
+          pointer-events: none;
+        }
+        .wiz-step1-blob--1 {
+          top: -80px; right: -80px;
+          width: 240px; height: 240px;
+          background: rgba(255,255,255,0.06);
+        }
+        .wiz-step1-blob--2 {
+          bottom: -60px; left: -60px;
+          width: 200px; height: 200px;
+          background: rgba(255,255,255,0.05);
+        }
+
+        /* X translúcido no canto */
+        .wiz-step1-x {
+          position: absolute;
+          top: 14px; right: 16px;
+          width: 32px; height: 32px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.15);
+          color: #fff;
+          border: 1px solid rgba(255,255,255,0.2);
+          display: flex; align-items: center; justify-content: center;
+          font-size: 13px;
+          font-weight: 900;
+          cursor: pointer;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          z-index: 3;
+          font-family: var(--font-base);
+          transition: background 0.15s;
+        }
+        .wiz-step1-x:hover { background: rgba(255,255,255,0.28); }
+
+        /* Hero — pergunta grande */
+        .wiz-step1-hero {
+          padding: 60px 32px 32px;
+          text-align: center;
+          position: relative;
+          z-index: 2;
+        }
+        .wiz-step1-title {
+          font-size: 24px;
+          font-weight: 900;
+          color: #fff;
+          letter-spacing: -0.01em;
+          line-height: 1.15;
+          margin-bottom: 8px;
+        }
+        .wiz-step1-sub {
+          font-size: 13px;
+          color: rgba(255,255,255,0.75);
+          line-height: 1.4;
+          margin: 0;
+        }
+
+        /* Cards */
+        .wiz-step1-cards {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          padding: 0 24px 20px;
+          position: relative;
+          z-index: 2;
+          flex: 1;
+          align-content: center;
+        }
+        .wiz-step1-card {
+          background: #fff;
+          border-radius: 14px;
+          padding: 24px 14px 20px;
+          text-align: center;
+          cursor: pointer;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+          border: none;
+          color: #2D1F26;
+          font-family: var(--font-base);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+        }
+        .wiz-step1-card:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+        }
+        .wiz-step1-card:active {
+          transform: translateY(-1px);
+        }
+        .wiz-step1-card-icon {
+          width: 56px;
+          height: 56px;
+          object-fit: contain;
+          margin-bottom: 6px;
+        }
+        .wiz-step1-card-title {
+          font-size: 14px;
+          font-weight: 900;
+          color: #2D1F26;
+          line-height: 1.2;
+        }
+        .wiz-step1-card-desc {
+          font-size: 11.5px;
+          color: #6B5D64;
+          line-height: 1.35;
+          font-weight: 600;
+        }
+        .wiz-step1-card-ex {
+          font-size: 10.5px;
+          color: #9A8B93;
+          line-height: 1.35;
+          margin-top: 2px;
+          font-style: italic;
+        }
+
+        /* Hint no fim */
+        .wiz-step1-hint {
+          text-align: center;
+          padding: 4px 24px 24px;
+          font-size: 11px;
+          color: rgba(255,255,255,0.65);
+          position: relative;
+          z-index: 2;
+          margin: 0;
+        }
+
+        /* Responsivo */
+        @media (max-width: 480px) {
+          .wiz-step1-hero {
+            padding: 50px 24px 24px;
+          }
+          .wiz-step1-title { font-size: 21px; }
+          .wiz-step1-cards {
+            padding: 0 16px 16px;
+            gap: 10px;
+          }
+          .wiz-step1-card {
+            padding: 20px 10px 16px;
+          }
+          .wiz-step1-card-icon { width: 48px; height: 48px; }
+        }
+
+
 
         /* ═══════════════════════════════════════════════════════════
            WIZARD NOVO — Design limpo com progresso, header e rodapé
