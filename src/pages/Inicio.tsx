@@ -711,12 +711,6 @@ export default function Inicio() {
           </button>
           )}
 
-          {/* Coroa PRO — bolinha amarela no canto inferior esquerdo do avatar */}
-          {isPro && (
-            <div className="ini-profile-pro-crown" aria-label="Plano PRO" title="Plano PRO">
-              <img src="/coroa.png" alt="" />
-            </div>
-          )}
           <input
             ref={fileInputRef}
             type="file"
@@ -737,6 +731,24 @@ export default function Inicio() {
                 <span className="ini-hero-name-skel" aria-hidden="true" />
               )}
             </span>
+            {profile && (
+              isPro ? (
+                <span className="ini-plan-tag ini-plan-tag--pro" aria-label="Plano PRO">
+                  <img src="/coroa.png" alt="" />
+                  <span>PRO</span>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className="ini-plan-tag ini-plan-tag--upgrade"
+                  onClick={() => navigate("/assinar")}
+                  aria-label="Fazer upgrade para PRO"
+                >
+                  <img src="/coroa.png" alt="" />
+                  <span>Upgrade</span>
+                </button>
+              )
+            )}
           </h1>
           {(() => {
             const msg = getSmartMessage();
@@ -1449,27 +1461,59 @@ export default function Inicio() {
           z-index: 2;
         }
 
-        /* Coroa PRO — bolinha amarela no canto inferior esquerdo */
-        .ini-profile-pro-crown {
-          position: absolute;
-          bottom: -2px; left: -2px;
-          width: 24px; height: 24px;
-          border-radius: var(--radius-full);
-          background: #FFC107;
-          border: 2px solid #FFFFFF;
-          display: flex;
+        /* Tags PRO / Upgrade — ao lado do nome (mobile + desktop) */
+        .ini-plan-tag {
+          display: inline-flex;
           align-items: center;
-          justify-content: center;
-          box-shadow: 0 2px 6px rgba(45,31,38,0.35);
-          z-index: 2;
-          pointer-events: none;
+          gap: 4px;
+          padding: 3px 9px 3px 7px;
+          border-radius: 999px;
+          font-family: var(--font-base);
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          margin-left: 8px;
+          vertical-align: middle;
+          white-space: nowrap;
+          border: none;
+          cursor: default;
+          line-height: 1.4;
+          flex-shrink: 0;
         }
-        .ini-profile-pro-crown img {
-          width: 14px;
-          height: 14px;
+        .ini-plan-tag img {
+          width: 11px;
+          height: 11px;
           object-fit: contain;
           display: block;
         }
+        /* Variante PRO (não clicável) — amarela */
+        .ini-plan-tag--pro {
+          background: #FFC107;
+          color: #2D1F26;
+          box-shadow: 0 2px 5px rgba(255, 193, 7, 0.35);
+        }
+        /* Variante Upgrade (clicável) — branca com borda */
+        .ini-plan-tag--upgrade {
+          background: rgba(255,255,255,0.95);
+          color: var(--primary);
+          cursor: pointer;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+          transition: transform 0.12s ease, background 0.12s ease;
+        }
+        .ini-plan-tag--upgrade:hover {
+          background: #fff;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .ini-plan-tag--upgrade:active {
+          transform: translateY(0);
+        }
+        .ini-plan-tag--upgrade img {
+          /* Coroa colorida em cor primary sobre fundo branco */
+          filter: none;
+        }
+
         .ini-profile-cam:hover:not(:disabled) { transform: scale(1.12); background: var(--primary-dark); }
         .ini-profile-cam:disabled { cursor: default; opacity: 0.7; }
         .ini-profile-cam-spinner {
