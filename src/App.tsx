@@ -154,6 +154,7 @@ export default function App() {
           <Route path="/receitas" element={<Receitas />} />
           <Route path="/notificacoes" element={<Notificacoes />} />
           <Route path="/produtos" element={<Produtos />} />
+          <Route path="/produtos/categorias" element={<Produtos />} />
           <Route path="/categorias" element={<Categorias />} />
           <Route path="/pedidos" element={<Pedidos />} />
           <Route path="/pedidos/novo" element={<PedidoForm />} />

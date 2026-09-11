@@ -137,7 +137,11 @@ const EMPTY: Produto = {
 export default function Produtos() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"produtos"|"categorias">("produtos");
+  // activeTab segue a URL: /produtos/categorias → "categorias", senão "produtos"
+  const activeTab: "produtos" | "categorias" = location.pathname.startsWith("/produtos/categorias") ? "categorias" : "produtos";
+  const setActiveTab = (tab: "produtos" | "categorias") => {
+    navigate(tab === "categorias" ? "/produtos/categorias" : "/produtos");
+  };
   const [userId, setUserId] = useState("");
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [categorias, setCategorias] = useState<string[]>([]);
@@ -3606,6 +3610,10 @@ export default function Produtos() {
           background: var(--bg-subtle);
           padding: 4px;
           border-radius: var(--radius-md);
+        }
+        /* Desktop: tabs escondidas — navegação vem da sidebar (sub-item Categorias) */
+        @media (min-width: 900px) {
+          .prod-tabs-novo { display: none; }
         }
         .prod-tab-novo {
           flex: 1;

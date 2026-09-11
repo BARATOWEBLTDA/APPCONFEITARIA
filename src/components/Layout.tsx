@@ -133,9 +133,18 @@ export default function Layout() {
             <span className="nav-icon"><House size={18} weight="duotone" /></span>Início
           </NavLink>
 
-          <NavLink to="/produtos" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
+          <NavLink to="/produtos" end className={({ isActive }) => `nav-item ${(isActive || location.pathname === "/produtos") ? "active" : ""}`}>
             <span className="nav-icon"><Cake size={18} weight="duotone" /></span>Produtos
           </NavLink>
+          {/* Sub-item Categorias — aparece quando está em produtos */}
+          {(location.pathname === "/produtos" || location.pathname.startsWith("/produtos/categorias")) && (
+            <NavLink to="/produtos/categorias" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
+              <span className="nav-subicon" aria-hidden="true">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+              </span>
+              Categorias
+            </NavLink>
+          )}
 
           <NavLink to="/cardapio-config" className={({ isActive }) => `nav-item ${(isActive || location.pathname.startsWith("/cardapio")) ? "active" : ""}`}>
             <span className="nav-icon"><ShoppingBag size={18} weight="duotone" /></span>Cardápio Digital
@@ -378,9 +387,25 @@ export default function Layout() {
         .nav-group-btn.active { color: var(--primary); }
 
         .nav-subitems { display: flex; flex-direction: column; padding: 0 0 0.25rem 0; }
-        .nav-subitem { display: flex; align-items: center; padding: 0.5rem 0.85rem 0.5rem 1.75rem; border-radius: var(--radius-sm); font-size: var(--font-button); color: var(--sidebar-text-muted); text-decoration: none; transition: all var(--dur-fast); }
+        .nav-subitem { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.85rem 0.5rem 2.25rem; border-radius: var(--radius-sm); font-size: var(--font-button); color: var(--sidebar-text-muted); text-decoration: none; transition: all var(--dur-fast); position: relative; }
+        .nav-subitem::before {
+          content: "";
+          position: absolute;
+          left: 1.5rem;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background: var(--sidebar-text-muted);
+          opacity: 0.5;
+        }
+        .nav-subitem .nav-subicon { display: inline-flex; align-items: center; justify-content: center; width: 16px; opacity: 0.75; }
         .nav-subitem:hover { color: var(--sidebar-text); background: var(--sidebar-hover-bg); }
+        .nav-subitem:hover::before { opacity: 1; }
         .nav-subitem.active { color: var(--sidebar-active-text); background: var(--sidebar-active-bg); font-weight: var(--fw-semibold); }
+        .nav-subitem.active::before { background: var(--sidebar-active-text); opacity: 1; }
+        .nav-subitem.active .nav-subicon { opacity: 1; }
 
         .sidebar-cad-complete {
           display: flex;
