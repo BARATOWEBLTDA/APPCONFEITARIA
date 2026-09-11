@@ -900,15 +900,6 @@ export default function Produtos() {
             {/* ══════ WIZARD STEP 1 ══════ */}
             {wizardStep === 1 && (
               <div className="prod-modal-body">
-                {/* Barra de progresso */}
-                <div>
-                  <p className="wiz-step-label">Etapa 1 de 2</p>
-                  <div className="wiz-progress">
-                    <div className="wiz-progress-bar wiz-progress-bar--active" />
-                    <div className="wiz-progress-bar" />
-                  </div>
-                </div>
-
                 {/* Tipo — cards horizontais */}
                 <div className="wiz-tipo-list">
                   {[
@@ -974,17 +965,6 @@ export default function Produtos() {
             {wizardStep === 2 && (
             <div className="prod-modal-body">
 
-              {/* Barra de progresso */}
-              {!form.id && (
-                <div>
-                  <p className="wiz-step-label">Passo 2 de 2</p>
-                  <div className="wiz-progress">
-                    <div className="wiz-progress-bar wiz-progress-bar--active" />
-                    <div className="wiz-progress-bar wiz-progress-bar--active" />
-                  </div>
-                </div>
-              )}
-
               {/* Foto */}
               <div className="prod-section">
                 <p className="prod-section-label">Fotos do Produto</p>
@@ -994,13 +974,25 @@ export default function Produtos() {
                     const imgUrl = imgs[slot];
                     const isLocked = slot > 0 && !isPro;
                     const ref = slot === 0 ? imgRef : slot === 1 ? img2Ref : img3Ref;
+                    // Foto principal: rosa. Extras (2 e 3): cinza
+                    const bgExtra = "#F1EEF0";
+                    const borderExtra = "2px dashed #D8D1D5";
                     return (
                       <div key={slot} style={{ position: "relative" }}>
                         {slot > 0 && <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, display: "block", marginBottom: "6px", textAlign: "center" }}>Foto {slot + 1}</span>}
                         {slot === 0 && <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, display: "block", marginBottom: "6px", textAlign: "center" }}>Principal</span>}
                         <div
                           className="prod-img-upload"
-                          style={{ width: "100%", height: "130px", borderRadius: "14px", cursor: isLocked ? "default" : "pointer", position: "relative", overflow: "hidden", background: isLocked ? "var(--primary-light)" : (slot > 0 ? "#f0f4ff" : undefined), border: isLocked ? "2px dashed var(--primary)" : (slot > 0 ? "2px dashed #c7d2fe" : undefined) }}
+                          style={{
+                            width: "100%",
+                            height: "130px",
+                            borderRadius: "14px",
+                            cursor: isLocked ? "default" : "pointer",
+                            position: "relative",
+                            overflow: "hidden",
+                            background: isLocked ? bgExtra : (slot > 0 ? bgExtra : undefined),
+                            border: isLocked ? borderExtra : (slot > 0 ? borderExtra : undefined),
+                          }}
                           onClick={() => !isLocked && !uploading && ref.current?.click()}
                         >
                           {imgUrl ? (
@@ -1018,7 +1010,7 @@ export default function Produtos() {
                           ) : (
                             <div className="prod-img-placeholder">
                               {uploading ? <span className="prod-spinner" /> : (
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818cf8" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={slot === 0 ? "#818cf8" : "#9A8B93"} strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                               )}
                             </div>
                           )}
@@ -1028,7 +1020,6 @@ export default function Produtos() {
                     );
                   })}
                 </div>
-                {!isPro && <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: "4px 0 0", textAlign: "center" }}>Fotos 2 e 3 disponíveis no plano PRO</p>}
               </div>
 
               {/* Informações */}
@@ -3022,28 +3013,38 @@ export default function Produtos() {
         }
         /* Label de seção com barrinha rosa lateral */
         .prod-section-label {
-          font-size: 11px !important;
+          font-size: 13px !important;
           font-weight: 800 !important;
           letter-spacing: 0.06em !important;
           display: flex !important;
           align-items: center;
           gap: 8px;
-          margin-bottom: 4px !important;
+          margin-bottom: 6px !important;
         }
         .prod-section-label::before {
           content: "";
           width: 3px;
-          height: 14px;
+          height: 16px;
           background: var(--primary);
           border-radius: 2px;
           flex-shrink: 0;
         }
         /* Inputs maiores e mais respiráveis */
         .prod-field label {
-          font-size: 12px !important;
+          font-size: 14px !important;
           font-weight: 700 !important;
-          color: var(--text-secondary);
-          margin-bottom: 2px;
+          color: var(--text-title);
+          margin-bottom: 4px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .prod-field label em {
+          font-size: 11px !important;
+          font-style: normal;
+          color: var(--text-muted);
+          font-weight: 500 !important;
+          text-transform: lowercase;
         }
         .prod-field input,
         .prod-field select,
