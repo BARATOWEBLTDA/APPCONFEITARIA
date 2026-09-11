@@ -1738,7 +1738,7 @@ export default function Pedidos() {
         `}</style>
       </div>
     ) : (
-    <div style={{ fontFamily: "'Geist', sans-serif", display: 'flex', flexDirection: 'column', gap: '0.85rem', padding: '1.25rem 1rem 6rem' }}>
+    <div style={{ fontFamily: "'Geist', sans-serif", display: 'flex', flexDirection: 'column', gap: '0.85rem', padding: '1.25rem 1rem 6rem', minWidth: 0 }}>
 
       {(
         <>
@@ -2642,10 +2642,14 @@ export default function Pedidos() {
         /* ═══════════════ KANBAN ═══════════════ */
         .kb-scroll {
           overflow-x: auto;
+          overflow-y: hidden;
           padding-bottom: 12px;
           margin: 0 -1rem;
           padding-left: 1rem;
           padding-right: 1rem;
+          width: calc(100% + 2rem);
+          min-width: 0;
+          max-width: calc(100% + 2rem);
         }
         .kb-scroll::-webkit-scrollbar { height: 10px; }
         .kb-scroll::-webkit-scrollbar-track { background: #F0EBED; border-radius: 5px; }
