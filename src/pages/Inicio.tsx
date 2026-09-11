@@ -994,12 +994,12 @@ export default function Inicio() {
         </h2>
         <div className="ini-nav-grid">
           {[
-            { icon: <Plus         size={20} weight="bold" />,     label: "Novo pedido", sub: "Registrar encomenda",       path: "/pedidos/novo", color: "var(--text-title)", bg: "#FFF1F7", key: "novo" },
-            { icon: <Storefront   size={20} weight="duotone" />,  label: "Produtos",    sub: "Itens do cardápio",         path: "/produtos",     color: "#BE185D",           bg: "#FCE7F3", key: "produtos" },
-            { icon: <Users        size={20} weight="duotone" />,  label: "Clientes",    sub: "Base de clientes",          path: "/clientes",     color: "#7C3AED",           bg: "#F5F3FF", key: "clientes" },
-            { icon: <Package      size={20} weight="duotone" />,  label: "Insumos",     sub: "Ingredientes e embalagens", path: "/insumos",      color: "#15803D",           bg: "#DCFCE7", key: "insumos" },
-            { icon: <CookingPot   size={20} weight="duotone" />,  label: "Receitas",    sub: "Fichas técnicas",           path: "/receitas",     color: "#D97706",           bg: "#FEF3C7", key: "receitas" },
-            { icon: <ChartLineUp  size={20} weight="duotone" />,  label: "Financeiro",  sub: "Contas e controle",         path: "/financeiro",   color: "#0891B2",           bg: "#ECFEFF", key: "financeiro" },
+            { icon: <Plus         size={20} weight="bold" />,     label: "Nova Venda",   sub: "Registrar venda ou encomenda", path: "/pedidos/novo", color: "var(--text-title)", bg: "#FFF1F7", key: "nova-venda" },
+            { icon: <ClipboardText size={20} weight="duotone" />, label: "Meus Pedidos", sub: "Acompanhar em andamento",      path: "/pedidos",      color: "#BE185D",           bg: "#FCE7F3", key: "pedidos" },
+            { icon: <Users        size={20} weight="duotone" />,  label: "Clientes",     sub: "Base de clientes",             path: "/clientes",     color: "#7C3AED",           bg: "#F5F3FF", key: "clientes" },
+            { icon: <Storefront   size={20} weight="duotone" />,  label: "Produtos",     sub: "Itens do cardápio",            path: "/produtos",     color: "#0891B2",           bg: "#ECFEFF", key: "produtos" },
+            { icon: <ChartLineUp  size={20} weight="duotone" />,  label: "Financeiro",   sub: "Contas e controle",            path: "/financeiro",   color: "#15803D",           bg: "#DCFCE7", key: "financeiro" },
+            { icon: <CalendarDots size={20} weight="duotone" />,  label: "Agenda",       sub: "Datas de entrega",             path: "/agenda",       color: "#D97706",           bg: "#FEF3C7", key: "agenda" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
               <div className="ini-nav-icon" style={{ background: item.bg, color: item.color }}>{item.icon}</div>
@@ -2226,12 +2226,12 @@ export default function Inicio() {
         }
         .ini-nav-arrow { color: var(--text-muted); flex-shrink: 0; }
         /* "Novo pedido" destacado vinho no mobile também */
-        .ini-nav-card[data-nav="novo"] { background: var(--primary-dark); }
-        .ini-nav-card[data-nav="novo"]:active { background: var(--text-title); }
-        .ini-nav-card[data-nav="novo"] .ini-nav-icon { background: rgba(255,255,255,0.16) !important; color: #FFFFFF !important; }
-        .ini-nav-card[data-nav="novo"] .ini-nav-label { color: #FFFFFF; }
-        .ini-nav-card[data-nav="novo"] .ini-nav-sub { color: rgba(255,255,255,0.7); }
-        .ini-nav-card[data-nav="novo"] .ini-nav-arrow { color: rgba(255,255,255,0.7); }
+        .ini-nav-card[data-nav="nova-venda"] { background: var(--primary-dark); }
+        .ini-nav-card[data-nav="nova-venda"]:active { background: var(--text-title); }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-icon { background: rgba(255,255,255,0.16) !important; color: #FFFFFF !important; }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #FFFFFF; }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-sub { color: rgba(255,255,255,0.7); }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-arrow { color: rgba(255,255,255,0.7); }
 
         /* ── Agenda de Entregas ── */
         .ini-agenda-header {
@@ -2669,7 +2669,7 @@ export default function Inicio() {
           .ini-empty-hero { display: none !important; }
 
           /* Card "Novo pedido" (rosa escuro) — mesmo movimento + escurecido */
-          .ini-nav-card[data-nav="novo"]:hover {
+          .ini-nav-card[data-nav="nova-venda"]:hover {
             background: var(--primary-dark);
             filter: brightness(0.9);
             transform: translateY(-2px);
@@ -2835,20 +2835,20 @@ export default function Inicio() {
             transform: translateX(2px);
           }
           /* "Novo pedido" vira card de destaque vinho no desktop */
-          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"] {
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"] {
             background: var(--primary-dark);
           }
-          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"]:hover {
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"]:hover {
             background: var(--text-title);
           }
-          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"] .ini-nav-icon {
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"] .ini-nav-icon {
             background: rgba(255,255,255,0.16) !important;
             color: #FFFFFF !important;
           }
-          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"] .ini-nav-label { color: #FFFFFF; }
-          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"] .ini-nav-sub { color: rgba(255,255,255,0.7); }
-          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"] .ini-nav-arrow { color: rgba(255,255,255,0.7); }
-          .ini-main .ini-section--nav .ini-nav-card[data-nav="novo"]:hover .ini-nav-arrow { color: #FFFFFF; }
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #FFFFFF; }
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"] .ini-nav-sub { color: rgba(255,255,255,0.7); }
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"] .ini-nav-arrow { color: rgba(255,255,255,0.7); }
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"]:hover .ini-nav-arrow { color: #FFFFFF; }
 
           /* ────────────────────────────────────────────
              GRÁFICO — faturamento 30 dias, largura total
