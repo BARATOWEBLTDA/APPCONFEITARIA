@@ -150,6 +150,17 @@ export default function Layout() {
           <p className="sidebar-greeting-date">{new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" }).replace(/^\w/, c => c.toUpperCase())}</p>
         </div>
 
+        <button
+          type="button"
+          className="sidebar-nova-venda"
+          onClick={() => navigate("/pedidos/novo")}
+        >
+          <span className="sidebar-nova-venda-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </span>
+          Nova Venda
+        </button>
+
         <nav className="sidebar-nav">
           <NavLink to="/inicio" className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}>
             <span className="nav-icon"><House size={18} weight="duotone" /></span>Início
@@ -336,12 +347,12 @@ export default function Layout() {
           background: var(--sidebar-bg);
           border-right: 1px solid var(--sidebar-border);
           display: flex; flex-direction: column;
-          padding: 1.5rem 1rem;
+          padding: 1rem 1rem 1.25rem;
           position: fixed; top: 0; left: 0; bottom: 0; z-index: 10;
           box-shadow: var(--shadow-card);
         }
 
-        .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; margin-top: 2rem; margin-bottom: 1rem; padding-bottom: 0; }
+        .sidebar-profile { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-top: 0.75rem; margin-bottom: 0.5rem; padding-bottom: 0; }
 
         .sidebar-avatar-btn {
           background: none; border: none; padding: 0; cursor: pointer;
@@ -441,8 +452,8 @@ export default function Layout() {
         .sidebar-greeting {
           text-align: center;
           padding: 0 1rem;
-          margin: 1.5rem 0 1.5rem;
-          min-height: 3.4rem;
+          margin: 0.5rem 0 0.75rem;
+          min-height: 2.6rem;
           display: flex;
           flex-direction: column;
           justify-content: center;
@@ -462,6 +473,38 @@ export default function Layout() {
         .sidebar-greeting-date { margin: 3px 0 0; font-size: var(--font-caption); color: var(--sidebar-text-muted); line-height: 1.3; }
 
         .sidebar-nav { display: flex; flex-direction: column; gap: 0.25rem; flex: 1; overflow-y: auto; }
+
+        /* Botão destacado Nova Venda */
+        .sidebar-nova-venda {
+          all: unset;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          margin: 0 0 0.85rem;
+          padding: 0.7rem 1rem;
+          background: var(--primary, #E85A8C);
+          color: #fff;
+          border-radius: var(--radius-md, 8px);
+          font-size: 13.5px;
+          font-weight: 700;
+          letter-spacing: 0.01em;
+          cursor: pointer;
+          box-shadow: 0 3px 0 var(--primary-dark, #C33A6E);
+          font-family: var(--font-base);
+          text-align: center;
+          box-sizing: border-box;
+          transition: filter 0.12s, transform 0.08s;
+        }
+        .sidebar-nova-venda:hover { filter: brightness(1.05); }
+        .sidebar-nova-venda:active { transform: translateY(3px); box-shadow: 0 0 0 var(--primary-dark, #C33A6E); }
+        .sidebar-nova-venda-icon {
+          display: inline-flex; align-items: center; justify-content: center;
+          width: 20px; height: 20px;
+          background: rgba(255,255,255,0.22);
+          border-radius: 5px;
+          flex-shrink: 0;
+        }
         .nav-icon { display: flex; align-items: center; flex-shrink: 0; opacity: 0.7; }
 
         .nav-item { padding: 0.7rem 1rem; border-radius: var(--radius-md); font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--sidebar-text); text-decoration: none; transition: background var(--dur-fast), color 0.15s; outline: none; display: flex; align-items: center; gap: 0.6rem; }
