@@ -1448,6 +1448,28 @@ export default function Inicio() {
           transition: transform var(--dur-fast), background var(--dur-fast);
           z-index: 2;
         }
+
+        /* Coroa PRO — bolinha amarela no canto inferior esquerdo */
+        .ini-profile-pro-crown {
+          position: absolute;
+          bottom: -2px; left: -2px;
+          width: 24px; height: 24px;
+          border-radius: var(--radius-full);
+          background: #FFC107;
+          border: 2px solid #FFFFFF;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 6px rgba(45,31,38,0.35);
+          z-index: 2;
+          pointer-events: none;
+        }
+        .ini-profile-pro-crown img {
+          width: 14px;
+          height: 14px;
+          object-fit: contain;
+          display: block;
+        }
         .ini-profile-cam:hover:not(:disabled) { transform: scale(1.12); background: var(--primary-dark); }
         .ini-profile-cam:disabled { cursor: default; opacity: 0.7; }
         .ini-profile-cam-spinner {
