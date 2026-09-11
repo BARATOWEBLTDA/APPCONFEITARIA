@@ -1010,24 +1010,21 @@ export default function Produtos() {
             )}
 
             {/* ══════ WIZARD STEP 2 (FORMULÁRIO) ══════ */}
-            {/* ══════ WIZARD STEP 2 — IDENTIDADE (nome, descrição, categoria) ══════ */}
+            {/* ══════ WIZARD STEP 2 — IDENTIDADE (nome, categoria, descrição) ══════ */}
             {wizardStep === 2 && (
             <div className="prod-modal-body">
               <div className="prod-section">
                 <p className="prod-section-label prod-section-label--novo">Informações</p>
 
+                {/* 1. Nome */}
                 <div className="prod-field">
-                  <label>Nome do Produto <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
+                  <label className="prod-field-label--rosa">Nome do produto <em className="prod-field-obrig">(obrigatório)</em></label>
                   <input type="text" placeholder="Ex: Bolo de Morango" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
                 </div>
 
+                {/* 2. Categoria */}
                 <div className="prod-field">
-                  <label>Descrição</label>
-                  <textarea placeholder="Fale sobre o produto..." value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={3} style={{fontFamily: 'inherit', resize: 'vertical'}} />
-                </div>
-
-                <div className="prod-field">
-                  <label>Categoria <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
+                  <label className="prod-field-label--rosa">Categoria <em className="prod-field-obrig">(obrigatório)</em></label>
                   {!showCatInput ? (
                     <div style={{display:'flex', gap:8}}>
                       <select
@@ -1058,7 +1055,6 @@ export default function Produtos() {
                         autoFocus
                         onKeyDown={e => {
                           if (e.key === "Enter" && novaCategoria.trim()) {
-                            // Cria com ícone padrão do sistema (o primeiro)
                             if (!novaCategoriaIcone) setNovaCategoriaIcone(SYSTEM_ICONS[0]);
                             handleAdicionarCategoria();
                           }
@@ -1074,7 +1070,6 @@ export default function Produtos() {
                           type="button"
                           onClick={() => {
                             if (!novaCategoria.trim()) return;
-                            // Usa ícone padrão automaticamente
                             if (!novaCategoriaIcone) setNovaCategoriaIcone(SYSTEM_ICONS[0]);
                             handleAdicionarCategoria();
                           }}
@@ -1085,6 +1080,66 @@ export default function Produtos() {
                         </button>
                       </div>
                     </div>
+                  )}
+                </div>
+
+                {/* 3. Descrição — com CTA IA (V3) */}
+                <div className="prod-field">
+                  <label className="prod-field-label--rosa">Descrição</label>
+                  {!form.descricao ? (
+                    /* Textarea vazio → CTA IA convidativo */
+                    <div className="prod-desc-empty-cta">
+                      <div className="prod-desc-empty-icon">✨</div>
+                      <div className="prod-desc-empty-txt">
+                        Escreva a descrição ou <b>deixe a IA fazer pra você</b>
+                      </div>
+                      <div style={{display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap'}}>
+                        <button
+                          type="button"
+                          className="prod-desc-btn-write"
+                          onClick={() => { setForm(f => ({ ...f, descricao: " " })); setTimeout(() => setForm(f => ({...f, descricao: ""})), 0); document.getElementById("prod-desc-input")?.focus(); }}
+                        >
+                          Escrever eu mesma
+                        </button>
+                        <button
+                          type="button"
+                          className={`prod-desc-btn-ia ${(form.nome.trim() && isPro) ? "" : "prod-desc-btn-ia--locked"}`}
+                          disabled={!form.nome.trim() || !isPro}
+                          onClick={async () => {
+                            if (!form.nome.trim() || !isPro) return;
+                            setForm(f => ({ ...f, descricao: "Gerando..." }));
+                            try {
+                              const res = await fetch("/api/gerar-descricao", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ prompt: `Crie uma descrição MUITO curta e atraente para um produto de confeitaria chamado "${form.nome}". MÁXIMO 2 frases curtas (até 100 caracteres no total). Português brasileiro, transmita qualidade e sabor. Retorne APENAS a descrição, sem aspas, sem emojis.` })
+                              });
+                              const data = await res.json();
+                              const desc = data.content?.[0]?.text?.trim() || "";
+                              setForm(f => ({ ...f, descricao: desc }));
+                            } catch {
+                              setForm(f => ({ ...f, descricao: "" }));
+                            }
+                          }}
+                          title={!form.nome.trim() ? "Preencha o nome primeiro" : !isPro ? "Disponível no plano PRO" : ""}
+                        >
+                          Gerar com IA
+                          <img src="/coroa.png" alt="" className="prod-desc-btn-ia-crown" />
+                        </button>
+                      </div>
+                      {!form.nome.trim() && (
+                        <div className="prod-desc-empty-hint">Preencha o nome primeiro pra IA gerar</div>
+                      )}
+                    </div>
+                  ) : (
+                    <textarea
+                      id="prod-desc-input"
+                      placeholder="Fale sobre o produto..."
+                      value={form.descricao}
+                      onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
+                      rows={3}
+                      style={{fontFamily: 'inherit', resize: 'vertical'}}
+                    />
                   )}
                 </div>
               </div>
@@ -4380,10 +4435,106 @@ export default function Produtos() {
           box-shadow: 0 0 0 #C33A6E;
         }
         .prod-btn-avancar-novo:disabled {
-          background: #E5DFE1;
-          color: #9A8B93;
-          box-shadow: 0 3px 0 #D1CACD;
+          background: #E85A8C;
+          color: #fff;
+          box-shadow: 0 3px 0 #C33A6E;
+          opacity: 0.4;
           cursor: not-allowed;
+        }
+
+        /* Labels rosa */
+        .prod-field-label--rosa {
+          color: #E85A8C !important;
+          font-weight: 800 !important;
+        }
+        .prod-field-obrig {
+          font-size: 11px !important;
+          font-style: normal !important;
+          color: #9A8B93 !important;
+          font-weight: 500 !important;
+          margin-left: 4px;
+        }
+
+        /* CTA IA no textarea vazio (V3) */
+        .prod-desc-empty-cta {
+          padding: 20px 16px;
+          background: linear-gradient(135deg, #FDFAFF 0%, #FDF7FA 100%);
+          border: 1.5px dashed #E5DBEB;
+          border-radius: 10px;
+          text-align: center;
+          transition: all 0.15s;
+        }
+        .prod-desc-empty-cta:hover {
+          border-color: #A855F7;
+          background: linear-gradient(135deg, #FAF0FF 0%, #FDF7FA 100%);
+        }
+        .prod-desc-empty-icon {
+          font-size: 24px;
+          margin-bottom: 6px;
+          line-height: 1;
+        }
+        .prod-desc-empty-txt {
+          font-size: 12px;
+          color: #6B5D64;
+          margin-bottom: 12px;
+          line-height: 1.4;
+        }
+        .prod-desc-empty-txt b {
+          color: #A855F7;
+          font-weight: 900;
+        }
+        .prod-desc-empty-hint {
+          font-size: 10px;
+          color: #9A8B93;
+          margin-top: 8px;
+          font-style: italic;
+        }
+        .prod-desc-btn-write {
+          padding: 8px 14px;
+          background: #fff;
+          border: 1.5px solid #E5DFE1;
+          color: #6B5D64;
+          border-radius: 8px;
+          font-family: var(--font-base) !important;
+          font-size: 11px;
+          font-weight: 800;
+          cursor: pointer;
+          transition: all 0.12s;
+        }
+        .prod-desc-btn-write:hover {
+          border-color: #E85A8C;
+          color: #E85A8C;
+        }
+        .prod-desc-btn-ia {
+          padding: 8px 14px;
+          background: linear-gradient(135deg, #A855F7, #EC4899);
+          color: #fff;
+          border: none;
+          border-radius: 8px;
+          font-family: var(--font-base) !important;
+          font-size: 11px;
+          font-weight: 900;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
+          transition: transform 0.08s, filter 0.08s;
+        }
+        .prod-desc-btn-ia:hover:not(:disabled) {
+          transform: translateY(-1px);
+          filter: brightness(1.05);
+        }
+        .prod-desc-btn-ia--locked {
+          background: linear-gradient(135deg, #A855F7, #EC4899) !important;
+          opacity: 0.55;
+          cursor: not-allowed;
+        }
+        .prod-desc-btn-ia-crown {
+          width: 12px;
+          height: 12px;
+          object-fit: contain;
+          filter: brightness(0) invert(1);
         }
 
         /* Categoria compacta */
