@@ -248,8 +248,12 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
           <span className="ped-dt-origem">Origem: {p.origem === 'cardapio' ? 'Cardápio Digital' : 'Pedido Manual'}</span>
         </td>
         <td className="ped-td">
-          <span className="ped-dt-cliente-nome">{p.cliente_nome || 'Não informado'}</span>
-          {p.cliente_telefone && <span className="ped-dt-cliente-tel">{p.cliente_telefone}</span>}
+          <span className={`ped-dt-cliente-nome${!p.cliente_nome ? ' ped-dt-cliente-nome--vazio' : ''}`}>
+            {p.cliente_nome || 'Cliente não informado'}
+          </span>
+          <span className={`ped-dt-cliente-tel${!p.cliente_telefone ? ' ped-dt-cliente-tel--vazio' : ''}`}>
+            {p.cliente_telefone || 'Telefone não informado'}
+          </span>
         </td>
         <td className="ped-td">
           {primeiroItem ? (
@@ -1901,7 +1905,9 @@ export default function Pedidos() {
 
           /* Cliente */
           .ped-dt-cliente-nome { font-size: var(--font-button); font-weight: var(--fw-medium); color: var(--text-title); display: block; white-space: nowrap; }
+          .ped-dt-cliente-nome--vazio { color: var(--text-muted); font-style: italic; font-weight: var(--fw-medium); }
           .ped-dt-cliente-tel { font-size: var(--font-caption); color: var(--text-muted); display: block; }
+          .ped-dt-cliente-tel--vazio { font-style: italic; opacity: 0.75; }
 
           .ped-dt-ver-btn { background: none; border: 1.5px solid var(--primary); color: var(--primary); border-radius: var(--radius-sm); padding: 0.3rem 0.7rem; font-size: var(--font-caption); font-weight: var(--fw-semibold); cursor: pointer; font-family: var(--font-base); white-space: nowrap; transition: all 0.15s; }
           .ped-dt-ver-btn:hover { background: var(--primary); color: white; }
