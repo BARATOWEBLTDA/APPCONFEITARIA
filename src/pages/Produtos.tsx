@@ -881,8 +881,8 @@ export default function Produtos() {
         <div className="prod-modal-overlay" onClick={handleTryClose}>
           <div className="prod-modal" onClick={e => e.stopPropagation()}>
             <div className="prod-modal-header prod-modal-header--v2">
-              {wizardStep === 2 && !form.id && (
-                <button className="prod-modal-back" onClick={() => setWizardStep(1)}>
+              {wizardStep > 1 && !form.id && (
+                <button className="prod-modal-back" onClick={() => setWizardStep(s => (s - 1) as 1 | 2 | 3)}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
               )}
@@ -1010,7 +1010,10 @@ export default function Produtos() {
                           ) : (
                             <div className="prod-img-placeholder">
                               {uploading ? <span className="prod-spinner" /> : (
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={slot === 0 ? "#818cf8" : "#9A8B93"} strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                <>
+                                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={slot === 0 ? "#818cf8" : "#9A8B93"} strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                  {slot === 0 && <span className="prod-img-cta">Selecionar</span>}
+                                </>
                               )}
                             </div>
                           )}
@@ -1028,72 +1031,6 @@ export default function Produtos() {
                 <div className="prod-field">
                   <label>Nome do Produto <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
                   <input type="text" placeholder="Ex: Bolo de Morango" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
-                </div>
-                <div className="prod-field">
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
-                    <label style={{ margin: 0 }}>Categoria <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
-                    {!showCatInput && (
-                      <button
-                        type="button"
-                        onClick={() => setShowCatInput(true)}
-                        style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "3px 10px", background: "var(--primary-light)", color: "var(--primary)", border: "none", borderRadius: "20px", fontFamily: "inherit", fontSize: "0.72rem", fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}
-                      >
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        Nova categoria
-                      </button>
-                    )}
-                  </div>
-                  <select value={form.categoria} onChange={e => setForm(f => ({ ...f, categoria: e.target.value }))}>
-                    <option value="">Selecione...</option>
-                    {todasCategorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                  </select>
-
-                  {showCatInput && (
-                    <div style={{ marginTop: "10px", padding: "12px", background: "var(--primary-light)", borderRadius: "14px", border: "1.5px dashed var(--primary)" }}>
-                      <p style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--primary)", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>✨ Criar nova categoria</p>
-
-                      <input
-                        type="text"
-                        placeholder="Nome (ex: Bolos, Doces...)"
-                        value={novaCategoria}
-                        onChange={e => setNovaCategoria(e.target.value)}
-                        style={{ width: "100%", padding: "0.6rem 0.85rem", border: "1.5px solid var(--border)", borderRadius: "10px", fontFamily: "inherit", fontSize: "0.85rem", outline: "none", boxSizing: "border-box", background: "var(--bg-card)", marginBottom: "10px" }}
-                      />
-
-                      <p style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--text-secondary)", margin: "0 0 6px" }}>Escolha um ícone:</p>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "6px", maxHeight: "160px", overflowY: "auto", padding: "2px", marginBottom: "10px" }}>
-                        {SYSTEM_ICONS.map((src, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => setNovaCategoriaIcone(src)}
-                            style={{ aspectRatio: "1", borderRadius: "8px", border: `2px solid ${novaCategoriaIcone === src ? "var(--primary)" : "transparent"}`, background: novaCategoriaIcone === src ? "var(--bg-card)" : "rgba(255,255,255,0.6)", padding: "3px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-                          >
-                            <img src={src} alt={`ícone ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "contain" }}
-                              onError={e => { e.currentTarget.parentElement!.style.display = "none" }} />
-                          </button>
-                        ))}
-                      </div>
-
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button
-                          type="button"
-                          onClick={() => { setShowCatInput(false); setNovaCategoria(""); setNovaCategoriaIcone(""); }}
-                          style={{ flex: 1, padding: "0.55rem", background: "var(--bg-card)", border: "1.5px solid var(--border)", borderRadius: "50px", fontFamily: "inherit", fontSize: "0.8rem", fontWeight: 600, color: "var(--text-secondary)", cursor: "pointer" }}
-                        >
-                          Cancelar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handleAdicionarCategoria}
-                          disabled={!novaCategoria.trim() || !novaCategoriaIcone || savingCat}
-                          style={{ flex: 2, padding: "0.55rem", background: "var(--primary-gradient)", color: "var(--text-inverse)", border: "none", borderRadius: "50px", fontFamily: "inherit", fontSize: "0.82rem", fontWeight: 700, cursor: (!novaCategoria.trim() || !novaCategoriaIcone) ? "not-allowed" : "pointer", opacity: (!novaCategoria.trim() || !novaCategoriaIcone || savingCat) ? 0.6 : 1 }}
-                        >
-                          {savingCat ? "Salvando..." : "Criar categoria"}
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
                 <div className="prod-field">
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
@@ -1525,12 +1462,125 @@ export default function Produtos() {
             </div>
             )}
 
+            {/* ══════ WIZARD STEP 3 — CATEGORIA ══════ */}
+            {wizardStep === 3 && (
+            <div className="prod-modal-body">
+              <div className="wiz-cat-hero">
+                <div className="wiz-cat-icon">🎨</div>
+                <h3 className="wiz-cat-title">Última etapa: em qual categoria?</h3>
+                <p className="wiz-cat-sub">Isso ajuda a organizar seu catálogo pra ficar bonito pros clientes</p>
+              </div>
+
+              {/* Grid de categorias existentes */}
+              {todasCategorias.length > 0 && (
+                <div className="wiz-cat-list">
+                  {todasCategorias.map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      className={`wiz-cat-item${form.categoria === cat ? " wiz-cat-item--active" : ""}`}
+                      onClick={() => { setForm(f => ({ ...f, categoria: cat })); setShowCatInput(false); }}
+                    >
+                      <span className="wiz-cat-item-radio">
+                        {form.categoria === cat && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                      </span>
+                      <span className="wiz-cat-item-nome">{cat}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Criar nova */}
+              {!showCatInput ? (
+                <button
+                  type="button"
+                  className="wiz-cat-nova-btn"
+                  onClick={() => { setShowCatInput(true); setForm(f => ({ ...f, categoria: "" })); }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Criar nova categoria
+                </button>
+              ) : (
+                <div className="wiz-cat-nova-form">
+                  <p className="wiz-cat-nova-label">✨ Criar nova categoria</p>
+                  <input
+                    type="text"
+                    placeholder="Nome (ex: Bolos, Doces, Salgados...)"
+                    value={novaCategoria}
+                    onChange={e => setNovaCategoria(e.target.value)}
+                    className="wiz-cat-nova-input"
+                    autoFocus
+                  />
+                  <p className="wiz-cat-nova-label" style={{marginTop: 12, fontSize: 11}}>Escolha um ícone:</p>
+                  <div className="wiz-cat-icones-grid">
+                    {SYSTEM_ICONS.map((src, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setNovaCategoriaIcone(src)}
+                        className={`wiz-cat-icone-btn${novaCategoriaIcone === src ? " wiz-cat-icone-btn--active" : ""}`}
+                      >
+                        <img src={src} alt="" onError={e => { e.currentTarget.parentElement!.style.display = "none" }} />
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{display: "flex", gap: 8, marginTop: 12}}>
+                    <button type="button" onClick={() => { setShowCatInput(false); setNovaCategoria(""); setNovaCategoriaIcone(""); }} className="wiz-cat-cancel">Cancelar</button>
+                    <button
+                      type="button"
+                      onClick={handleAdicionarCategoria}
+                      disabled={!novaCategoria.trim() || !novaCategoriaIcone || savingCat}
+                      className="wiz-cat-criar"
+                    >
+                      {savingCat ? "Criando..." : "Criar e selecionar"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            )}
+
+            {wizardStep === 3 && (
+            <div className="prod-modal-footer">
+              <button className="prod-btn-cancelar" onClick={() => setWizardStep(2)}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{marginRight: 6}}><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Voltar
+              </button>
+              <button
+                className="prod-btn-salvar"
+                onClick={handleSalvar}
+                disabled={saving || !form.categoria.trim()}
+              >
+                {saving ? <span className="prod-spinner-sm" /> : (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" style={{marginRight: 6}}><polyline points="20 6 9 17 4 12"/></svg>
+                    Publicar produto
+                  </>
+                )}
+              </button>
+            </div>
+            )}
+
             {wizardStep === 2 && (
             <div className="prod-modal-footer">
               <button className="prod-btn-cancelar" onClick={handleTryClose}>Cancelar</button>
-              <button className="prod-btn-salvar" onClick={handleSalvar} disabled={saving}>
-                {saving ? <span className="prod-spinner-sm" /> : (form.id ? "Salvar alterações" : "Publicar produto")}
-              </button>
+              {form.id ? (
+                <button className="prod-btn-salvar" onClick={handleSalvar} disabled={saving}>
+                  {saving ? <span className="prod-spinner-sm" /> : "Salvar alterações"}
+                </button>
+              ) : (
+                <button
+                  className="prod-btn-salvar"
+                  onClick={() => {
+                    if (!form.nome.trim()) { alert("Nome é obrigatório"); return; }
+                    if (!form.preco_normal || form.preco_normal <= 0) { alert("Preço é obrigatório"); return; }
+                    setWizardStep(3);
+                  }}
+                >
+                  Avançar
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{marginLeft: 6}}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+              )}
             </div>
             )}
           </div>
@@ -3070,6 +3120,14 @@ export default function Produtos() {
         }
         .prod-img-placeholder p { font-size: 12px !important; font-weight: 800 !important; }
         .prod-img-placeholder span { font-size: 10px !important; }
+        .prod-img-cta {
+          font-size: 11px !important;
+          font-weight: 800 !important;
+          color: #6366F1 !important;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-top: 4px;
+        }
         /* Toggle maior */
         .prod-toggle-item {
           padding: 14px 16px !important;
@@ -3328,6 +3386,179 @@ export default function Produtos() {
         .prod-btn-back-simples:hover {
           color: var(--text-title);
         }
+
+
+        /* ═══ WIZARD STEP 3 — CATEGORIA ═══ */
+        .wiz-cat-hero {
+          text-align: center;
+          padding: var(--space-2) 0 var(--space-4);
+        }
+        .wiz-cat-icon {
+          font-size: 44px;
+          margin-bottom: 6px;
+          filter: drop-shadow(0 4px 12px rgba(232, 90, 140, 0.2));
+        }
+        .wiz-cat-title {
+          font-size: 18px;
+          font-weight: var(--fw-black);
+          color: var(--text-title);
+          margin: 0 0 4px;
+          letter-spacing: -0.02em;
+        }
+        .wiz-cat-sub {
+          font-size: 13px;
+          color: var(--text-secondary);
+          margin: 0;
+          max-width: 320px;
+          margin-left: auto;
+          margin-right: auto;
+          line-height: 1.4;
+        }
+        .wiz-cat-list {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 6px;
+          margin-bottom: 12px;
+        }
+        @media (min-width: 720px) {
+          .wiz-cat-list { grid-template-columns: 1fr 1fr; }
+        }
+        .wiz-cat-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 14px;
+          background: #fff;
+          border: 2px solid var(--border);
+          border-radius: 12px;
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+          text-align: left;
+          transition: all 0.15s;
+        }
+        .wiz-cat-item:hover {
+          background: #F5F1F3;
+          border-color: #D1CACD;
+        }
+        .wiz-cat-item--active {
+          background: var(--accent, #2D1F26) !important;
+          border-color: var(--accent, #2D1F26) !important;
+          box-shadow: 0 4px 12px rgba(45, 31, 38, 0.25);
+        }
+        .wiz-cat-item--active:hover {
+          background: var(--accent, #2D1F26) !important;
+        }
+        .wiz-cat-item-radio {
+          width: 20px; height: 20px;
+          border-radius: 50%;
+          border: 2px solid #D1CACD;
+          flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          background: #fff;
+        }
+        .wiz-cat-item--active .wiz-cat-item-radio {
+          background: var(--primary);
+          border-color: var(--primary);
+        }
+        .wiz-cat-item-nome {
+          font-size: 14px;
+          font-weight: var(--fw-black);
+          color: var(--text-title);
+        }
+        .wiz-cat-item--active .wiz-cat-item-nome { color: #fff; }
+        .wiz-cat-nova-btn {
+          width: 100%;
+          padding: 14px;
+          background: linear-gradient(135deg, #FCE7F3, #FBCFE8);
+          color: var(--primary-dark);
+          border: 2px dashed var(--primary);
+          border-radius: 12px;
+          font-family: var(--font-base) !important;
+          font-size: 14px;
+          font-weight: var(--fw-black);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          transition: filter 0.1s, transform 0.1s;
+        }
+        .wiz-cat-nova-btn:hover { filter: brightness(1.05); transform: translateY(-1px); }
+        .wiz-cat-nova-form {
+          padding: 16px;
+          background: var(--primary-light);
+          border-radius: 14px;
+          border: 1.5px dashed var(--primary);
+        }
+        .wiz-cat-nova-label {
+          font-size: 13px;
+          font-weight: var(--fw-black);
+          color: var(--primary);
+          margin: 0 0 8px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .wiz-cat-nova-input {
+          width: 100%;
+          padding: 12px 14px;
+          border: 1.5px solid var(--border);
+          border-radius: 10px;
+          font-family: var(--font-base) !important;
+          font-size: 14px;
+          outline: none;
+          box-sizing: border-box;
+          background: var(--bg-card);
+        }
+        .wiz-cat-nova-input:focus { border-color: var(--primary); }
+        .wiz-cat-icones-grid {
+          display: grid;
+          grid-template-columns: repeat(6, 1fr);
+          gap: 6px;
+          max-height: 160px;
+          overflow-y: auto;
+          padding: 2px;
+        }
+        .wiz-cat-icone-btn {
+          aspect-ratio: 1;
+          border-radius: 8px;
+          border: 2px solid transparent;
+          background: rgba(255,255,255,0.7);
+          padding: 3px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .wiz-cat-icone-btn img { width: 100%; height: 100%; object-fit: contain; }
+        .wiz-cat-icone-btn--active {
+          border-color: var(--primary);
+          background: var(--bg-card);
+        }
+        .wiz-cat-cancel {
+          flex: 1;
+          padding: 12px;
+          background: var(--bg-card);
+          border: 1.5px solid var(--border);
+          border-radius: 10px;
+          font-family: var(--font-base) !important;
+          font-size: 13px;
+          font-weight: var(--fw-bold);
+          color: var(--text-secondary);
+          cursor: pointer;
+        }
+        .wiz-cat-criar {
+          flex: 2;
+          padding: 12px;
+          background: var(--primary);
+          color: #fff;
+          border: none;
+          border-radius: 10px;
+          font-family: var(--font-base) !important;
+          font-size: 13px;
+          font-weight: var(--fw-black);
+          cursor: pointer;
+        }
+        .wiz-cat-criar:disabled { opacity: 0.5; cursor: not-allowed; }
 
 
         /* ═══ MODAL "DESCARTAR?" (guard produto) ═══ */
