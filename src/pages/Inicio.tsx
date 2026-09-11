@@ -694,13 +694,14 @@ export default function Inicio() {
             }
           </button>
 
-          {/* Badge de câmera — atalho visual (também abre o seletor) */}
+          {/* Badge de câmera — só quando NÃO tem foto (ou durante upload) */}
+          {(!profile?.foto_url || uploadingFoto) && (
           <button
             type="button"
             className="ini-profile-cam"
             onClick={() => !uploadingFoto && fileInputRef.current?.click()}
-            aria-label={profile?.foto_url ? "Trocar foto de perfil" : "Adicionar foto de perfil"}
-            title={profile?.foto_url ? "Trocar foto" : "Adicionar foto"}
+            aria-label="Adicionar foto de perfil"
+            title="Adicionar foto"
             disabled={uploadingFoto}
             tabIndex={-1}
           >
@@ -708,6 +709,14 @@ export default function Inicio() {
               ? <span className="ini-profile-cam-spinner" />
               : <Camera size={14} weight="fill" color="#fff" />}
           </button>
+          )}
+
+          {/* Coroa PRO — bolinha amarela no canto inferior esquerdo do avatar */}
+          {isPro && (
+            <div className="ini-profile-pro-crown" aria-label="Plano PRO" title="Plano PRO">
+              <img src="/coroa.png" alt="" />
+            </div>
+          )}
           <input
             ref={fileInputRef}
             type="file"
@@ -727,10 +736,6 @@ export default function Inicio() {
               ) : (
                 <span className="ini-hero-name-skel" aria-hidden="true" />
               )}
-            </span>
-            <span className={`ini-hero-pro-badge ${isPro ? "ini-hero-pro-badge--pro" : "ini-hero-pro-badge--free"}`} aria-label={isPro ? "Plano PRO" : "Plano Inicial"}>
-              {isPro && <img src="/coroa.png" alt="" className="ini-hero-pro-coroa" />}
-              <span>{isPro ? "PRO" : "Inicial"}</span>
             </span>
           </h1>
           {(() => {
@@ -1345,6 +1350,10 @@ export default function Inicio() {
           line-height: 1.35;
           color: rgba(255, 255, 255, 0.9);
           flex-wrap: wrap;
+        }
+        /* Esconder mensagem no mobile (desktop mantém) */
+        @media (max-width: 767.98px) {
+          .ini-hero-msg { display: none !important; }
         }
         .ini-hero-msg-icon {
           font-size: 0.95rem;
