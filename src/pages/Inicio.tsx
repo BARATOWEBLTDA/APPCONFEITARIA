@@ -679,13 +679,19 @@ export default function Inicio() {
           </g>
         </svg>
 
-        {/* Foto da confeiteira (esquerda) — clicar sempre abre o seletor de foto */}
+        {/* Foto da confeiteira — no mobile abre menu, no desktop abre seletor de foto */}
         <div className="ini-profile-wrapper" data-has-photo={profile?.foto_url ? "true" : "false"}>
           <button
             className="ini-profile-btn"
-            onClick={() => !uploadingFoto && fileInputRef.current?.click()}
-            aria-label={profile?.foto_url ? "Trocar foto de perfil" : "Adicionar foto de perfil"}
-            title={profile?.foto_url ? "Trocar foto" : "Adicionar foto"}
+            onClick={() => {
+              if (window.innerWidth < 768) {
+                setMenuOpen(o => !o);
+              } else if (!uploadingFoto) {
+                fileInputRef.current?.click();
+              }
+            }}
+            aria-label={window.innerWidth < 768 ? "Abrir menu" : (profile?.foto_url ? "Trocar foto de perfil" : "Adicionar foto de perfil")}
+            title={window.innerWidth < 768 ? "Menu" : (profile?.foto_url ? "Trocar foto" : "Adicionar foto")}
             disabled={uploadingFoto}
           >
             {profile?.foto_url
@@ -779,41 +785,65 @@ export default function Inicio() {
 
           {menuOpen && createPortal(
             <>
-              {/* Overlay escuro com blur — clicar fecha o menu */}
               <div className="ini-menu-overlay" onClick={() => setMenuOpen(false)} aria-hidden="true" />
+              <div className="ini-menu-novo" role="dialog" aria-modal="true">
+                {/* Header cinza */}
+                <div className="ini-menu-novo-hdr">
+                  <p className="ini-menu-novo-hdr-name">Doonly Gestão Inteligente</p>
+                  <p className="ini-menu-novo-hdr-ver">Versão 1.0.0</p>
+                </div>
 
-              <div className="ini-profile-menu ini-profile-menu--right" role="dialog" aria-modal="true">
-                <div className="ini-pm-header">
-                  <p className="ini-pm-name">{profile?.nome_loja || nome}</p>
-                  <p className="ini-pm-email">{email}</p>
+                {/* Itens */}
+                <div className="ini-menu-novo-body">
+                  <button className="ini-menu-novo-item" onClick={() => { setMenuOpen(false); navigate("/notificacoes"); }}>
+                    <span className="ini-menu-novo-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    </span>
+                    <span>Notificações</span>
+                  </button>
+
+                  <button className="ini-menu-novo-item" onClick={() => { setMenuOpen(false); alert("🚀 Em breve! Estamos preparando essa página."); }}>
+                    <span className="ini-menu-novo-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    </span>
+                    <span>Solicitar recursos</span>
+                  </button>
+
+                  <button className="ini-menu-novo-item" onClick={() => { setMenuOpen(false); navigate("/configuracoes"); }}>
+                    <span className="ini-menu-novo-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </span>
+                    <span>Minha conta</span>
+                  </button>
+
+                  <button className="ini-menu-novo-item" onClick={() => { setMenuOpen(false); navigate("/cardapio-config"); }}>
+                    <span className="ini-menu-novo-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    </span>
+                    <span>Minha loja</span>
+                  </button>
+
+                  <button className="ini-menu-novo-item" onClick={() => { setMenuOpen(false); alert("🤖 Assistente virtual em breve!"); }}>
+                    <span className="ini-menu-novo-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="9" cy="10" r="1.2" fill="currentColor"/><circle cx="15" cy="10" r="1.2" fill="currentColor"/><path d="M8 15c1 1.2 2.5 2 4 2s3-.8 4-2"/></svg>
+                    </span>
+                    <span>Assistente virtual</span>
+                  </button>
+
+                  <button className="ini-menu-novo-item" onClick={() => { setMenuOpen(false); alert("📝 Em breve você poderá relatar problemas por aqui!"); }}>
+                    <span className="ini-menu-novo-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </span>
+                    <span>Relatar um problema</span>
+                  </button>
+
+                  <button className="ini-menu-novo-item ini-menu-novo-sair" onClick={async () => { setMenuOpen(false); await supabase.auth.signOut(); navigate("/login"); }}>
+                    <span className="ini-menu-novo-icon ini-menu-novo-icon--sair">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    </span>
+                    <span>Sair</span>
+                  </button>
                 </div>
-                <div className="ini-pm-divider" />
-                <div
-                  className="ini-pm-item ini-pm-item--toggle"
-                  onClick={toggleAtivarNotif}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleAtivarNotif(); } }}
-                  aria-pressed={notifAtivas}
-                >
-                  <span className="ini-pm-item-label">
-                    <Bell
-                      size={18}
-                      weight={notifAtivas ? "fill" : "regular"}
-                      color={notifAtivas ? "var(--primary)" : undefined}
-                    />
-                    Ativar notificações
-                  </span>
-                  <span className={`ini-pm-toggle ${notifAtivas ? "ini-pm-toggle--on" : ""}`}>
-                    <span className="ini-pm-toggle-thumb" />
-                  </span>
-                </div>
-                <button className="ini-pm-item" onClick={() => { setMenuOpen(false); navigate("/configuracoes"); }}>
-                  <User size={18} weight="regular" /> Minha Conta
-                </button>
-                <button className="ini-pm-item" onClick={() => { setMenuOpen(false); navigate("/cardapio-config"); }}>
-                  <Storefront size={18} weight="regular" /> Minha Loja
-                </button>
               </div>
             </>,
             document.body
@@ -1349,7 +1379,120 @@ export default function Inicio() {
           object-fit: contain;
         }
 
-        /* Data mobile — embaixo do nome, só aparece no mobile */
+        /* ═══════════════════════════════════════════════════════════
+           MENU PERFIL NOVO — zero bordas, Geist, header cinza
+           ═══════════════════════════════════════════════════════════ */
+        .ini-menu-novo {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: #fff;
+          border-radius: 14px;
+          overflow: hidden;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+          max-width: 300px;
+          width: calc(100vw - 32px);
+          z-index: 10000;
+          font-family: var(--font-base) !important;
+          animation: menuNovoIn 0.18s ease-out;
+        }
+        @keyframes menuNovoIn {
+          from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); }
+          to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .ini-menu-novo-hdr {
+          background: #F5F1F3;
+          padding: 16px 18px 14px;
+        }
+        .ini-menu-novo-hdr-name {
+          font-size: 13.5px;
+          font-weight: 900;
+          color: #2D1F26;
+          letter-spacing: -0.01em;
+          line-height: 1.2;
+          margin: 0;
+          font-family: var(--font-base) !important;
+        }
+        .ini-menu-novo-hdr-ver {
+          font-size: 11px;
+          color: #9A8B93;
+          font-weight: 500;
+          margin: 3px 0 0;
+          letter-spacing: 0.03em;
+          font-family: var(--font-base) !important;
+        }
+
+        .ini-menu-novo-body {
+          padding: 6px 0;
+          background: #fff;
+        }
+
+        /* Reset TOTAL de botão + estilo */
+        .ini-menu-novo-body .ini-menu-novo-item {
+          all: unset;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 18px;
+          cursor: pointer;
+          font-size: 14px;
+          color: #2D1F26;
+          font-weight: 600;
+          width: 100%;
+          box-sizing: border-box;
+          transition: background 0.12s;
+          font-family: var(--font-base) !important;
+          border: 0 !important;
+          outline: 0 !important;
+          box-shadow: none !important;
+          background: transparent;
+        }
+        .ini-menu-novo-body .ini-menu-novo-item:hover,
+        .ini-menu-novo-body .ini-menu-novo-item:focus-visible {
+          background: #FDFAFB;
+          outline: 0 !important;
+        }
+        .ini-menu-novo-icon {
+          width: 30px; height: 30px;
+          border-radius: 8px;
+          background: #F5EEF0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #E85A8C;
+          flex-shrink: 0;
+        }
+        /* Sair — texto vermelho, ícone vermelho */
+        .ini-menu-novo-body .ini-menu-novo-sair {
+          color: #DC2626 !important;
+          font-weight: 700 !important;
+        }
+        .ini-menu-novo-body .ini-menu-novo-sair:hover {
+          background: #FEF2F2 !important;
+        }
+        .ini-menu-novo-icon--sair {
+          background: #FEE2E2 !important;
+          color: #DC2626 !important;
+        }
+
+        /* Overlay escuro por trás */
+        .ini-menu-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(45, 31, 38, 0.55);
+          backdrop-filter: blur(3px);
+          -webkit-backdrop-filter: blur(3px);
+          z-index: 9999;
+          animation: menuOverlayIn 0.18s ease-out;
+        }
+        @keyframes menuOverlayIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+
         .ini-hero-data-mobile {
           font-size: 0.78rem;
           color: rgba(255, 255, 255, 0.85);
