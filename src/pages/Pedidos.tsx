@@ -684,14 +684,14 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-sec-titulo { font-size: 11px; font-weight: 800; color: #9A8B93; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; font-family: var(--font-base) !important; }
             .mpd-sec-val { font-size: 15px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
             .mpd-cli-linha { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #6B5D64; margin-top: 4px; font-family: var(--font-base) !important; }
-            .mpd-btn-whats { display: inline-flex; align-items: center; gap: 4px; background: #25D366; color: #fff; padding: 4px 10px; border-radius: 5px; font-size: 10.5px; font-weight: 800; text-decoration: none; cursor: pointer; border: 0; font-family: var(--font-base) !important; transition: filter 0.12s; }
+            .mpd-btn-whats { display: inline-flex; align-items: center; gap: 4px; background: #25D366; color: #fff; padding: 4px 10px; border-radius: 5px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.01em; text-decoration: none; cursor: pointer; border: 0; font-family: var(--font-base) !important; transition: filter 0.12s; }
             .mpd-btn-whats:hover { filter: brightness(1.08); }
             .mpd-entrega { background: #F1F5F9; border-radius: 10px; padding: 14px; }
             .mpd-entrega--com-mapa { display: grid; grid-template-columns: 1fr 120px; gap: 14px; align-items: stretch; min-height: 110px; }
             .mpd-entrega-info { display: flex; flex-direction: column; justify-content: center; }
             .mpd-entrega-topo { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11.5px; font-weight: 800; color: #6B5D64; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: var(--font-base) !important; }
             .mpd-entrega-sep { color: #B8A5AD; font-weight: 600; }
-            .mpd-entrega-val { font-size: 15px; font-weight: 800; color: #2D1F26; line-height: 1.35; font-family: var(--font-base) !important; }
+            .mpd-entrega-val { font-size: 15px; font-weight: 700; letter-spacing: 0.01em; color: #2D1F26; line-height: 1.35; font-family: var(--font-base) !important; }
             .mpd-entrega-end { font-size: 12.5px; color: #4A3540; margin-top: 4px; line-height: 1.4; font-family: var(--font-base) !important; }
             .mpd-mini-mapa { background: linear-gradient(135deg, #E5EAE0 0%, #D4E0D0 100%); border-radius: 8px; position: relative; overflow: hidden; cursor: pointer; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.1); text-decoration: none; transition: transform 0.15s; }
             .mpd-mini-mapa:hover { transform: scale(1.02); }
@@ -707,7 +707,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-produto-nome { font-size: 15px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
             .mpd-produto-qtd { font-size: 12.5px; color: #6B5D64; margin-top: 2px; font-family: var(--font-base) !important; }
             .mpd-produto-obs { font-size: 12.5px; color: #9A8B93; margin-top: 3px; font-style: italic; font-family: var(--font-base) !important; }
-            .mpd-produto-preco { font-size: 15px; font-weight: 800; color: #2D1F26; font-family: var(--font-base) !important; white-space: nowrap; }
+            .mpd-produto-preco { font-size: 15px; font-weight: 700; letter-spacing: 0.01em; color: #2D1F26; font-family: var(--font-base) !important; white-space: nowrap; }
             .mpd-pers-item { display: flex; gap: 8px; font-size: 12.5px; line-height: 1.5; margin-bottom: 3px; color: #2D1F26; font-family: var(--font-base) !important; }
             .mpd-pers-lbl { font-weight: 700; color: #6B5D64; min-width: 76px; }
             .mpd-fin-total { text-align: right; padding-bottom: 16px; border-bottom: 2px solid #F0EBED; }
@@ -716,9 +716,9 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-fin-row { display: flex; justify-content: space-between; font-size: 13px; align-items: center; font-family: var(--font-base) !important; }
             .mpd-fin-row-lbl { color: #6B5D64; }
             .mpd-fin-row-val { font-weight: 700; color: #2D1F26; }
-            .mpd-fin-pag-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: 800; font-family: var(--font-base) !important; }
+            .mpd-fin-pag-tag { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 5px; font-size: 11px; font-weight: 700; letter-spacing: 0.01em; font-family: var(--font-base) !important; }
             .mpd-footer { padding: 14px 24px; background: #fff; border-top: 1px solid #F0EBED; display: flex; gap: 10px; justify-content: flex-end; align-items: center; flex-shrink: 0; }
-            .mpd-btn { all: unset; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-base) !important; box-sizing: border-box; transition: filter 0.12s, transform 0.08s; }
+            .mpd-btn { all: unset; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.01em; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-base) !important; box-sizing: border-box; transition: filter 0.12s, transform 0.08s; }
             .mpd-btn-editar { background: #F5F1F3; color: #6B5D64; }
             .mpd-btn-editar:hover { background: #EBE5E8; }
             .mpd-btn-avancar { background: #E85A8C; color: #fff; box-shadow: 0 3px 0 #C33A6E; padding: 10px 20px; }
