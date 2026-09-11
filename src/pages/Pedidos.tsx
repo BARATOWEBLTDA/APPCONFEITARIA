@@ -29,6 +29,8 @@ type Pedido = {
   personalizacao_tema?: string; personalizacao_nome?: string; personalizacao_idade?: string
   personalizacao_cor?: string; personalizacao_obs?: string
   observacoes?: string
+  cliente_id?: string | null
+  clientes?: { foto_url?: string | null } | null
   pedido_itens?: PedidoItem[]
 }
 
@@ -533,16 +535,42 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
 
               <div>
                 <div className="mpd-sec-titulo">Cliente</div>
-                <div className="mpd-sec-val">{p.cliente_nome || 'Cliente não informado'}</div>
-                {p.cliente_telefone && (
-                  <div className="mpd-cli-linha">
-                    <span>{p.cliente_telefone}</span>
-                    <a href={`https://wa.me/55${p.cliente_telefone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer" className="mpd-btn-whats">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/></svg>
-                      WhatsApp
-                    </a>
+                <div className="mpd-cli-b2">
+                  <div className="mpd-cli-b2-top">
+                    <div className="mpd-cli-b2-avatar">
+                      {p.clientes?.foto_url
+                        ? <img src={p.clientes.foto_url} alt={p.cliente_nome || ''} />
+                        : (p.cliente_nome || '?').trim().split(/\s+/).map(n => n[0]).slice(0, 2).join('').toUpperCase() || '?'
+                      }
+                    </div>
+                    <div className="mpd-cli-b2-info">
+                      <div className="mpd-cli-b2-nome">{p.cliente_nome || 'Cliente não informado'}</div>
+                      {p.cliente_telefone && (
+                        <div className="mpd-cli-b2-tel">{p.cliente_telefone}</div>
+                      )}
+                    </div>
                   </div>
-                )}
+                  {p.cliente_telefone && (
+                    <div className="mpd-cli-b2-acoes">
+                      <a
+                        href={`https://wa.me/55${p.cliente_telefone.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mpd-cli-b2-btn mpd-cli-b2-btn--whats"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347"/></svg>
+                        WhatsApp
+                      </a>
+                      <a
+                        href={`tel:${p.cliente_telefone.replace(/\D/g, '')}`}
+                        className="mpd-cli-b2-btn mpd-cli-b2-btn--ligar"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        Ligar
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -686,6 +714,42 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-cli-linha { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #6B5D64; margin-top: 4px; font-family: var(--font-base) !important; }
             .mpd-btn-whats { display: inline-flex; align-items: center; gap: 4px; background: #25D366; color: #fff; padding: 4px 10px; border-radius: 5px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.01em; text-decoration: none; cursor: pointer; border: 0; font-family: var(--font-base) !important; transition: filter 0.12s; }
             .mpd-btn-whats:hover { filter: brightness(1.08); }
+
+            /* ═══ Card cliente B2 ═══ */
+            .mpd-cli-b2 { background: #fff; border: 1.5px solid #F0EBED; border-radius: 12px; padding: 14px; font-family: var(--font-base) !important; }
+            .mpd-cli-b2-top { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+            .mpd-cli-b2-avatar {
+              width: 44px; height: 44px;
+              border-radius: 50%;
+              background: linear-gradient(135deg, #E85A8C, #C33A6E);
+              color: #fff;
+              display: flex; align-items: center; justify-content: center;
+              font-size: 15px; font-weight: 800;
+              flex-shrink: 0;
+              overflow: hidden;
+              font-family: var(--font-base) !important;
+            }
+            .mpd-cli-b2-avatar img { width: 100%; height: 100%; object-fit: cover; }
+            .mpd-cli-b2-info { flex: 1; min-width: 0; }
+            .mpd-cli-b2-nome { font-size: 15px; font-weight: 700; letter-spacing: 0.01em; color: #2D1F26; line-height: 1.2; font-family: var(--font-base) !important; }
+            .mpd-cli-b2-tel { font-size: 12.5px; color: #6B5D64; margin-top: 3px; font-family: var(--font-base) !important; }
+            .mpd-cli-b2-acoes { display: flex; gap: 8px; }
+            .mpd-cli-b2-btn {
+              all: unset;
+              flex: 1;
+              padding: 9px 10px;
+              border-radius: 8px;
+              font-size: 11.5px; font-weight: 700; letter-spacing: 0.01em;
+              display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+              cursor: pointer;
+              font-family: var(--font-base) !important;
+              text-decoration: none;
+              box-sizing: border-box;
+              transition: filter 0.12s;
+            }
+            .mpd-cli-b2-btn:hover { filter: brightness(1.05); }
+            .mpd-cli-b2-btn--whats { background: #25D366; color: #fff; }
+            .mpd-cli-b2-btn--ligar { background: #fff; color: #2D1F26; border: 1px solid #E0E0E0 !important; }
             .mpd-entrega { background: #F1F5F9; border-radius: 10px; padding: 14px; }
             .mpd-entrega--com-mapa { display: grid; grid-template-columns: 1fr 120px; gap: 14px; align-items: stretch; min-height: 110px; }
             .mpd-entrega-info { display: flex; flex-direction: column; justify-content: center; }
@@ -1297,7 +1361,7 @@ export default function Pedidos() {
     setLoading(true)
     const { data } = await supabase
       .from('pedidos')
-      .select('*, pedido_itens(nome_produto, quantidade, valor_unitario, observacoes, personalizacoes, imagem_url, produtos(imagem_url, forma_venda))')
+      .select('*, clientes(foto_url), pedido_itens(nome_produto, quantidade, valor_unitario, observacoes, personalizacoes, imagem_url, produtos(imagem_url, forma_venda))')
       .eq('user_id', uid)
       .order('numero', { ascending: false })
     setPedidos(data || [])
