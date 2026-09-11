@@ -248,8 +248,13 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
           <span className="ped-dt-origem">Origem: {p.origem === 'cardapio' ? 'Cardápio Digital' : 'Pedido Manual'}</span>
         </td>
         <td className="ped-td">
-          <span className={`ped-dt-cliente-nome${!p.cliente_nome ? ' ped-dt-cliente-nome--vazio' : ''}`}>
-            {p.cliente_nome || 'Cliente não informado'}
+          <span
+            className={`ped-dt-cliente-nome${!p.cliente_nome ? ' ped-dt-cliente-nome--vazio' : ''}`}
+            title={p.cliente_nome && p.cliente_nome.length > 15 ? p.cliente_nome : undefined}
+          >
+            {p.cliente_nome
+              ? (p.cliente_nome.length > 15 ? p.cliente_nome.slice(0, 15) + '..' : p.cliente_nome)
+              : 'Cliente não informado'}
           </span>
           <span className={`ped-dt-cliente-tel${!p.cliente_telefone ? ' ped-dt-cliente-tel--vazio' : ''}`}>
             {p.cliente_telefone || 'Telefone não informado'}
