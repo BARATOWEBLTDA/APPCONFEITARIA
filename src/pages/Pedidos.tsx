@@ -306,7 +306,21 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
         </td>
         <td className="ped-td">
           {dataLabel && <p className="ped-dt-data" style={{ color: dataCor }}>{dataLabel}{p.horario_entrega ? ` · ${p.horario_entrega.slice(0,5)}` : ''}</p>}
-          <p className="ped-dt-tipo">{p.tipo_entrega === 'retirada' ? 'Retirada' : 'Entrega'}</p>
+          <p className="ped-dt-tipo">
+            {p.tipo_entrega === 'retirada' ? (
+              <>Retirada no Local</>
+            ) : (
+              <>
+                Entrega
+                <span className="ped-dt-tipo-mapa" aria-label="Ver endereço no mapa" title="Ver endereço no mapa">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                </span>
+              </>
+            )}
+          </p>
         </td>
         <td className="ped-td">
           {p.origem === 'cardapio' && p.status === 'novo' ? (
@@ -1947,7 +1961,8 @@ export default function Pedidos() {
 
           /* Entrega */
           .ped-dt-data { font-size: var(--font-button); font-weight: var(--fw-semibold); margin: 0; }
-          .ped-dt-tipo { font-size: var(--font-helper); color: var(--text-secondary); margin: 2px 0 0; }
+          .ped-dt-tipo { font-size: var(--font-helper); color: var(--text-secondary); margin: 2px 0 0; display: flex; align-items: center; gap: 5px; }
+          .ped-dt-tipo-mapa { display: inline-flex; align-items: center; color: var(--primary); }
 
           /* Valor */
           .ped-dt-valor { font-size: var(--font-input); font-weight: var(--fw-black); color: var(--text-title); letter-spacing: -0.02em; margin: 0; }
