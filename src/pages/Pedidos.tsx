@@ -1253,14 +1253,8 @@ export default function Pedidos() {
     ) : (
     <div style={{ fontFamily: "'Geist', sans-serif", display: 'flex', flexDirection: 'column', gap: '0.85rem', padding: '1.25rem 1rem 6rem' }}>
 
-      {/* ── Header com padding mobile ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', paddingTop: isMobile ? '1.25rem' : 0 }}>
-        <div>
-          <h1 style={{ fontSize: 'var(--text-2xl)', fontWeight: 'var(--fw-black)', color: 'var(--text-title)', margin: 0, letterSpacing: '-0.02em' }}>Pedidos</h1>
-          <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0.1rem 0 0' }}>
-            {pedidosFiltrados.length} pedido{pedidosFiltrados.length !== 1 ? 's' : ''}
-          </p>
-        </div>
+      {/* ── Barra de ações (filtro + registrar) ── */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.75rem', paddingTop: isMobile ? '1.25rem' : 0 }}>
         <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
           {/* Botão filtro */}
           <button
