@@ -1765,7 +1765,7 @@ export default function Pedidos() {
           )}
 
           {/* Busca + Filtro + Registrar — na mesma linha */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', paddingTop: isMobile ? '1.25rem' : 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', paddingTop: isMobile ? '1.25rem' : 0, maxWidth: !isMobile ? 780 : 'none' }}>
             {/* Barra de busca */}
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '0.75rem 1rem' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -1842,35 +1842,35 @@ export default function Pedidos() {
               )}
             </div>
           ) : (
-            <div className={!isMobile ? 'ped-dt-wrapper' : ''} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-              {!isMobile ? (
-                viewMode === 'kanban' ? (
-                  <KanbanView
-                    pedidos={pedidosFiltrados}
-                    onVerPedido={setModalPedido}
-                    onMoverStatus={updateStatus}
-                  />
-                ) : (
-                  <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
-                    <thead>
-                      <tr style={{ background: 'var(--text-title)' }}>
-                        <th className="ped-th">Pedido</th>
-                        <th className="ped-th">Cliente</th>
-                        <th className="ped-th">Produto</th>
-                        <th className="ped-th">Entrega</th>
-                        <th className="ped-th">Status</th>
-                        <th className="ped-th">Valor</th>
-                        <th className="ped-th">Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pedidosFiltrados.map(p => (
-                        <PedidoCard key={p.id} p={p} isMobile={false} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} />
-                      ))}
-                    </tbody>
-                  </table>
-                )
+            <>
+              {!isMobile && viewMode === 'kanban' ? (
+                <KanbanView
+                  pedidos={pedidosFiltrados}
+                  onVerPedido={setModalPedido}
+                  onMoverStatus={updateStatus}
+                />
               ) : (
+                <div className={!isMobile ? 'ped-dt-wrapper' : ''} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                  {!isMobile ? (
+                    <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'auto' }}>
+                      <thead>
+                        <tr style={{ background: 'var(--text-title)' }}>
+                          <th className="ped-th">Pedido</th>
+                          <th className="ped-th">Cliente</th>
+                          <th className="ped-th">Produto</th>
+                          <th className="ped-th">Entrega</th>
+                          <th className="ped-th">Status</th>
+                          <th className="ped-th">Valor</th>
+                          <th className="ped-th">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pedidosFiltrados.map(p => (
+                          <PedidoCard key={p.id} p={p} isMobile={false} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} />
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
                 <div className="plist-container">
                   {pedidosFiltrados.map(p => (
                     <PedidoCard key={p.id} p={p} isMobile={true} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} />
@@ -2670,7 +2670,7 @@ export default function Pedidos() {
           flex-direction: column;
           gap: 8px;
           max-height: calc(100vh - 300px);
-          min-height: 300px;
+          align-self: flex-start;
           border: 2px solid transparent;
           transition: background 0.15s, border-color 0.15s;
         }
@@ -2706,7 +2706,7 @@ export default function Pedidos() {
           display: flex; flex-direction: column; gap: 8px;
           overflow-y: auto;
           padding-right: 2px;
-          flex: 1;
+          min-height: 0;
         }
         .kb-col-body::-webkit-scrollbar { width: 5px; }
         .kb-col-body::-webkit-scrollbar-thumb { background: #D5CBCF; border-radius: 5px; }
@@ -2829,6 +2829,8 @@ export default function Pedidos() {
         }
         .kb-card-btn:hover { filter: brightness(1.15); }
       `}</style>
+        </>
+      )}
     </div>
     )}
 
