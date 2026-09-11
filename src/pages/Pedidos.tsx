@@ -1724,14 +1724,14 @@ export default function Pedidos() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          background: #475569;
+          background: var(--text-title);
           color: #fff;
-          font-weight: 800;
+          font-weight: 600;
           font-size: 10px;
           padding: 2px 6px;
           border-radius: 4px;
           margin-left: 6px;
-          letter-spacing: 0.02em;
+          letter-spacing: 0;
           line-height: 1;
           vertical-align: middle;
           font-family: var(--font-base);
