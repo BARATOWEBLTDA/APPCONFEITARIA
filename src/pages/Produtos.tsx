@@ -7,6 +7,7 @@ import EmptyDoo from "@/components/EmptyDoo";
 import BtnNovo from "@/components/BtnNovo";
 import Categorias from "@/pages/Categorias";
 import QuickAddInsumo from "@/components/QuickAddInsumo";
+import AppPageHeader from "@/components/AppPageHeader";
 
 // ── Helpers de conversão de unidades (ficha técnica) ──
 const UNIT_FAMILIES_MAP: Record<string, { family: string; base: string; toBase: number }> = {
@@ -629,6 +630,19 @@ export default function Produtos() {
       />
     )}
     <div className="prod-root">
+
+      <AppPageHeader
+        title="Meus Produtos"
+        subtitle="Gerencie o que você vende"
+        infoIcon="🎂"
+        infoContent={
+          <>
+            <p>Aqui você <strong>cadastra e organiza tudo que vende</strong> na sua confeitaria — bolos, doces, cupcakes, kits de festa e mais.</p>
+            <p>Cada produto pode ter foto, preço, descrição, sabores e variações. Você organiza por <strong>categorias</strong> pra ficar fácil de encontrar e mostrar no seu cardápio digital.</p>
+          </>
+        }
+        infoTip={<>Clique em <strong>"+ Novo Produto"</strong> pra cadastrar. Depois é só compartilhar seu cardápio com os clientes.</>}
+      />
 
       {/* ── Tabs — só quando tem produtos ── */}
       {produtos.length > 0 && (
