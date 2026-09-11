@@ -151,7 +151,7 @@ export default function Produtos() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [modal, setModal] = useState(false);
-  const [wizardStep, setWizardStep] = useState(1);
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4>(1);
   const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes">("simples");
   const [wizardOpts, setWizardOpts] = useState({ complementos: false, personalizacao: false, promocao: false });
   const [form, setForm] = useState<Produto>(EMPTY);
@@ -916,25 +916,36 @@ export default function Produtos() {
 
       {modal && (
         <div className="prod-modal-overlay" onClick={handleTryClose}>
-          <div className="prod-modal" onClick={e => e.stopPropagation()}>
-            <div className="prod-modal-header prod-modal-header--v2">
-              {wizardStep > 1 && !form.id && (
-                <button className="prod-modal-back" onClick={() => setWizardStep(s => (s - 1) as 1 | 2 | 3)}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <div className="prod-modal prod-modal--novo" onClick={e => e.stopPropagation()}>
+            <div className="prod-modal-header-novo">
+              {wizardStep > 1 && !form.id ? (
+                <button className="prod-modal-back-novo" onClick={() => setWizardStep(s => Math.max(1, s - 1) as 1 | 2 | 3 | 4)} aria-label="Voltar">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
-              )}
-              {form.imagem_url && (
-                <div className="prod-modal-header-icon">
-                  <img src={(form.imagem_url || "").split(",")[0]} alt="" />
-                </div>
-              )}
-              <div className="prod-modal-header-text">
-                <h2 className="prod-modal-title">{form.id ? "Editar produto" : "Vamos cadastrar seu produto"}</h2>
+              ) : <div style={{width: 32}} />}
+              <div className="prod-modal-title-novo">
+                {form.id ? "Editar produto" : "Cadastrar produto"}
               </div>
-              <button className="prod-modal-close" onClick={handleTryClose} aria-label="Fechar">✕</button>
+              <button className="prod-modal-close-novo" onClick={handleTryClose} aria-label="Fechar">✕</button>
             </div>
 
-            {/* ══════ WIZARD STEP 1 ══════ */}
+            {/* Progresso — bolinhas conectadas (só nos passos 2, 3, 4) */}
+            {wizardStep >= 2 && (
+              <div className="prod-progresso">
+                {[2, 3, 4].map(n => (
+                  <div key={n} className="prod-progresso-item">
+                    <div className={`prod-progresso-dot${wizardStep === n ? " prod-progresso-dot--ativo" : ""}${wizardStep > n ? " prod-progresso-dot--feito" : ""}`}>
+                      {wizardStep > n ? (
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      ) : n - 1}
+                    </div>
+                    {n < 4 && <div className={`prod-progresso-line${wizardStep > n ? " prod-progresso-line--feito" : ""}`} />}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ══════ WIZARD STEP 1 — Escolha do tipo ══════ */}
             {wizardStep === 1 && (
               <div className="prod-modal-body">
                 {/* Tipo — cards horizontais */}
@@ -999,12 +1010,94 @@ export default function Produtos() {
             )}
 
             {/* ══════ WIZARD STEP 2 (FORMULÁRIO) ══════ */}
+            {/* ══════ WIZARD STEP 2 — IDENTIDADE (nome, descrição, categoria) ══════ */}
             {wizardStep === 2 && (
+            <div className="prod-modal-body">
+              <div className="prod-section">
+                <p className="prod-section-label prod-section-label--novo">Informações</p>
+
+                <div className="prod-field">
+                  <label>Nome do Produto <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
+                  <input type="text" placeholder="Ex: Bolo de Morango" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
+                </div>
+
+                <div className="prod-field">
+                  <label>Descrição</label>
+                  <textarea placeholder="Fale sobre o produto..." value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={3} style={{fontFamily: 'inherit', resize: 'vertical'}} />
+                </div>
+
+                <div className="prod-field">
+                  <label>Categoria <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
+                  {!showCatInput ? (
+                    <div style={{display:'flex', gap:8}}>
+                      <select
+                        value={form.categoria}
+                        onChange={e => setForm(f => ({ ...f, categoria: e.target.value }))}
+                        style={{flex:1}}
+                      >
+                        <option value="">Selecione uma categoria...</option>
+                        {todasCategorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => setShowCatInput(true)}
+                        className="prod-cat-nova-btn"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Nova
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="prod-cat-nova-form">
+                      <p className="prod-cat-nova-hint">✨ Criar nova categoria</p>
+                      <input
+                        type="text"
+                        placeholder="Ex: Bolos, Doces, Salgados..."
+                        value={novaCategoria}
+                        onChange={e => setNovaCategoria(e.target.value)}
+                        autoFocus
+                        onKeyDown={e => {
+                          if (e.key === "Enter" && novaCategoria.trim()) {
+                            // Cria com ícone padrão do sistema (o primeiro)
+                            if (!novaCategoriaIcone) setNovaCategoriaIcone(SYSTEM_ICONS[0]);
+                            handleAdicionarCategoria();
+                          }
+                        }}
+                      />
+                      <div style={{display:'flex', gap:8, marginTop: 8}}>
+                        <button
+                          type="button"
+                          onClick={() => { setShowCatInput(false); setNovaCategoria(""); setNovaCategoriaIcone(""); }}
+                          className="prod-cat-cancel-btn"
+                        >Cancelar</button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!novaCategoria.trim()) return;
+                            // Usa ícone padrão automaticamente
+                            if (!novaCategoriaIcone) setNovaCategoriaIcone(SYSTEM_ICONS[0]);
+                            handleAdicionarCategoria();
+                          }}
+                          disabled={!novaCategoria.trim() || savingCat}
+                          className="prod-cat-criar-btn"
+                        >
+                          {savingCat ? "Criando..." : "Criar categoria"}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            )}
+
+            {/* ══════ WIZARD STEP 3 — VISUAL E PREÇO (fotos, preço, variações) ══════ */}
+            {wizardStep === 3 && (
             <div className="prod-modal-body">
 
               {/* Foto */}
               <div className="prod-section">
-                <p className="prod-section-label">Fotos do Produto</p>
+                <p className="prod-section-label prod-section-label--novo">Fotos do Produto</p>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
                   {[0, 1, 2].map(slot => {
                     const imgs = (form.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
@@ -1062,59 +1155,9 @@ export default function Produtos() {
                 </div>
               </div>
 
-              {/* Informações */}
-              <div className="prod-section">
-                <p className="prod-section-label">Informações</p>
-                <div className="prod-field">
-                  <label>Nome do Produto <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
-                  <input type="text" placeholder="Ex: Bolo de Morango" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
-                </div>
-                <div className="prod-field">
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
-                    <label style={{ margin: 0 }}>Descrição</label>
-                    <button
-                      type="button"
-                      className={`prod-ia-btn ${(form.nome.trim() && isPro) ? "prod-ia-btn--active" : "prod-ia-btn--locked"}`}
-                      disabled={!form.nome.trim() || !isPro}
-                      onClick={async () => {
-                        if (!form.nome.trim() || !isPro) return;
-                        setForm(f => ({ ...f, descricao: "Gerando..." }));
-                        try {
-                          const res = await fetch("/api/gerar-descricao", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ prompt: `Crie uma descrição MUITO curta e atraente para um produto de confeitaria chamado "${form.nome}". MÁXIMO 2 frases curtas (até 100 caracteres no total). Português brasileiro, transmita qualidade e sabor. Retorne APENAS a descrição, sem aspas, sem emojis.` })
-                          });
-                          const data = await res.json();
-                          const desc = data.content?.[0]?.text?.trim() || "";
-                          setForm(f => ({ ...f, descricao: desc }));
-                        } catch {
-                          setForm(f => ({ ...f, descricao: "" }));
-                        }
-                      }}
-                      title={!isPro ? "Disponível apenas no plano PRO" : ""}
-                    >
-                      ✨ Gerar com IA
-                      {!isPro && (
-                        <span className="prod-pro-badge prod-pro-badge--inline">
-                          <img src="/coroa.png" alt="" />
-                          PRO
-                        </span>
-                      )}
-                    </button>
-                  </div>
-                  <textarea placeholder="Feito com ingredientes frescos e selecionados. Conte o que torna esse produto especial..." value={form.descricao} onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))} rows={3} />
-                </div>
-              </div>
-
               {/* Preço e Venda */}
               <div className="prod-section">
-                <div className="prod-section-hdr-row">
-                  <p className="prod-section-label">Preço e Venda</p>
-                  <span className={`prod-tipo-badge prod-tipo-badge--${wizardTipo}`}>
-                    {wizardTipo === "simples" ? "🍰 Simples" : "🎂 Com variações"}
-                  </span>
-                </div>
+                <p className="prod-section-label prod-section-label--novo">Preço e Venda</p>
 
                 {wizardTipo === "simples" ? (
                   /* MODO SIMPLES: 1 preço só */
@@ -1632,10 +1675,17 @@ export default function Produtos() {
               </div>
               )}
 
+            </div>
+            )}
+
+            {/* ══════ WIZARD STEP 4 — EXTRAS E CONFIGURAÇÕES ══════ */}
+            {wizardStep === 4 && (
+            <div className="prod-modal-body">
+
               {/* Adicionais */}
               {(form.id || wizardOpts.complementos) && (
               <div className="prod-section">
-                <p className="prod-section-label">Extras pagos</p>
+                <p className="prod-section-label prod-section-label--novo">Extras pagos</p>
                 <Toggle label="Oferecer extras" value={form.tem_adicionais || false} onChange={(v: boolean) => setForm(f => ({ ...f, tem_adicionais: v }))} colorClass="active-pink" />
 
                 {form.tem_adicionais && (
@@ -1820,164 +1870,61 @@ export default function Produtos() {
             </div>
             )}
 
-            {/* ══════ WIZARD STEP 3 — CATEGORIA ══════ */}
-            {wizardStep === 3 && (
-            <div className="prod-modal-body">
-              <div className="wiz-cat-hero">
-                <div className="wiz-cat-icon">🎨</div>
-                <h3 className="wiz-cat-title">Última etapa: em qual categoria?</h3>
-                <p className="wiz-cat-sub">Isso ajuda a organizar seu catálogo pra ficar bonito pros clientes</p>
-              </div>
 
-              {/* Grid de categorias existentes */}
-              {todasCategorias.length > 0 && (
-                <div className="wiz-cat-list">
-                  {todasCategorias.map(cat => (
-                    <button
-                      key={cat}
-                      type="button"
-                      className={`wiz-cat-item${form.categoria === cat ? " wiz-cat-item--active" : ""}`}
-                      onClick={() => { setForm(f => ({ ...f, categoria: cat })); setShowCatInput(false); }}
-                    >
-                      <span className="wiz-cat-item-radio">
-                        {form.categoria === cat && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="4" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                      </span>
-                      <span className="wiz-cat-item-nome">{cat}</span>
+            {/* ══════ RODAPÉ (steps 2, 3, 4) ══════ */}
+            {wizardStep >= 2 && (
+            <div className="prod-modal-footer prod-modal-footer--novo">
+              <button className="prod-btn-cancelar-novo" onClick={handleTryClose}>Cancelar</button>
+              {(() => {
+                // Validações por passo
+                const canAdvance = (() => {
+                  if (wizardStep === 2) return form.nome.trim().length > 0 && form.categoria.trim().length > 0;
+                  if (wizardStep === 3) return form.preco_normal > 0;
+                  return true;
+                })();
+                const isLast = wizardStep === 4;
+                const isEdit = !!form.id;
+
+                if (isEdit) {
+                  // Modo edição: salva direto em qualquer passo
+                  return (
+                    <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving}>
+                      {saving ? <span className="prod-spinner-sm" /> : "Salvar alterações"}
                     </button>
-                  ))}
-                </div>
-              )}
+                  );
+                }
 
-              {/* Criar nova */}
-              {!showCatInput ? (
-                <button
-                  type="button"
-                  className="wiz-cat-nova-btn"
-                  onClick={() => { setShowCatInput(true); setForm(f => ({ ...f, categoria: "" })); }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Criar nova categoria
-                </button>
-              ) : (
-                <div className="wiz-cat-nova-form">
-                  <p className="wiz-cat-nova-label">✨ Criar nova categoria</p>
-                  <input
-                    type="text"
-                    placeholder="Nome (ex: Bolos, Doces, Salgados...)"
-                    value={novaCategoria}
-                    onChange={e => setNovaCategoria(e.target.value)}
-                    className="wiz-cat-nova-input"
-                    autoFocus
-                  />
-                  <p className="wiz-cat-nova-label" style={{marginTop: 12, fontSize: 11}}>Escolha um ícone:</p>
-                  <div className="wiz-cat-icones-grid">
-                    {SYSTEM_ICONS.map((src, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => setNovaCategoriaIcone(src)}
-                        className={`wiz-cat-icone-btn${novaCategoriaIcone === src ? " wiz-cat-icone-btn--active" : ""}`}
-                      >
-                        <img src={src} alt="" onError={e => { e.currentTarget.parentElement!.style.display = "none" }} />
-                      </button>
-                    ))}
-                  </div>
-                  <div style={{display: "flex", gap: 8, marginTop: 12}}>
-                    <button type="button" onClick={() => { setShowCatInput(false); setNovaCategoria(""); setNovaCategoriaIcone(""); }} className="wiz-cat-cancel">Cancelar</button>
-                    <button
-                      type="button"
-                      onClick={handleAdicionarCategoria}
-                      disabled={!novaCategoria.trim() || !novaCategoriaIcone || savingCat}
-                      className="wiz-cat-criar"
-                    >
-                      {savingCat ? "Criando..." : "Criar e selecionar"}
+                if (isLast) {
+                  return (
+                    <button className="prod-btn-avancar-novo" onClick={handleSalvar} disabled={saving}>
+                      {saving ? <span className="prod-spinner-sm" /> : (
+                        <>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" style={{marginRight: 6}}><polyline points="20 6 9 17 4 12"/></svg>
+                          Publicar produto
+                        </>
+                      )}
                     </button>
-                  </div>
-                </div>
-              )}
-            </div>
-            )}
+                  );
+                }
 
-            {wizardStep === 3 && (
-            <div className="prod-modal-footer">
-              <button className="prod-btn-cancelar" onClick={() => setWizardStep(2)}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{marginRight: 6}}><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                Voltar
-              </button>
-              <button
-                className="prod-btn-salvar"
-                onClick={handleSalvar}
-                disabled={saving || !form.categoria.trim()}
-              >
-                {saving ? <span className="prod-spinner-sm" /> : (
-                  <>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" style={{marginRight: 6}}><polyline points="20 6 9 17 4 12"/></svg>
-                    Publicar produto
-                  </>
-                )}
-              </button>
-            </div>
-            )}
-
-            {wizardStep === 2 && (
-            <div className="prod-modal-footer">
-              <button className="prod-btn-cancelar" onClick={handleTryClose}>Cancelar</button>
-              {form.id ? (
-                <button className="prod-btn-salvar" onClick={handleSalvar} disabled={saving}>
-                  {saving ? <span className="prod-spinner-sm" /> : "Salvar alterações"}
-                </button>
-              ) : (
-                <button
-                  className="prod-btn-salvar"
-                  onClick={() => {
-                    if (!form.nome.trim()) { alert("Nome é obrigatório"); return; }
-                    if (!form.preco_normal || form.preco_normal <= 0) { alert("Preço é obrigatório"); return; }
-                    setWizardStep(3);
-                  }}
-                >
-                  Avançar
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{marginLeft: 6}}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </button>
-              )}
+                return (
+                  <button
+                    className="prod-btn-avancar-novo"
+                    disabled={!canAdvance}
+                    onClick={() => {
+                      if (!canAdvance) return;
+                      setWizardStep(s => (s + 1) as 1 | 2 | 3 | 4);
+                    }}
+                  >
+                    Avançar
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" style={{marginLeft: 6}}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                  </button>
+                );
+              })()}
             </div>
             )}
           </div>
 
-          {/* ── Preview lateral (só desktop, sibling do modal) ── */}
-          {wizardStep === 2 && (
-            <aside className="prod-desk-preview" aria-label="Prévia do produto" onClick={e => e.stopPropagation()}>
-              <div className="prod-desk-preview-label">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                Como o cliente vê
-              </div>
-              <div className="prod-desk-preview-card">
-                <div className="prod-desk-preview-img">
-                  {(() => {
-                    const firstImg = (form.imagem_url || "").split(",")[0]?.trim();
-                    return firstImg
-                      ? <img src={firstImg} alt="" />
-                      : <span className="prod-desk-preview-placeholder">🎂</span>;
-                  })()}
-                </div>
-                <div className="prod-desk-preview-body">
-                  <div className="prod-desk-preview-nome">{form.nome || "Nome do produto"}</div>
-                  {form.descricao && <div className="prod-desk-preview-desc">{form.descricao}</div>}
-                  <div className="prod-desk-preview-preco-row">
-                    {form.promocao && form.preco_promocional ? (
-                      <>
-                        <span className="prod-desk-preview-preco-old">R$ {formatPreco(Number(form.preco_normal) || 0)}</span>
-                        <span className="prod-desk-preview-preco">R$ {formatPreco(Number(form.preco_promocional) || 0)}</span>
-                      </>
-                    ) : (
-                      <span className="prod-desk-preview-preco">R$ {formatPreco(Number(form.preco_normal) || 0)}</span>
-                    )}
-                  </div>
-                </div>
-                <div className="prod-desk-preview-cta">Adicionar</div>
-              </div>
-              <p className="prod-desk-preview-hint">A prévia atualiza conforme você digita</p>
-            </aside>
-          )}
         </div>
       )}
 
@@ -4259,6 +4206,254 @@ export default function Produtos() {
             width: 46px; height: 46px;
           }
         }
+
+        /* ═══════════════════════════════════════════════════════════
+           WIZARD NOVO — Design limpo com progresso, header e rodapé
+           ═══════════════════════════════════════════════════════════ */
+
+        /* Modal com cantos menos arredondados */
+        .prod-modal--novo {
+          border-radius: 16px !important;
+        }
+        @media (max-width: 640px) {
+          .prod-modal--novo {
+            border-radius: 12px !important;
+          }
+        }
+
+        /* Header limpo */
+        .prod-modal-header-novo {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 16px;
+          background: #fff;
+          font-family: var(--font-base);
+          gap: 8px;
+        }
+        .prod-modal-back-novo {
+          width: 32px; height: 32px;
+          border-radius: 8px;
+          background: transparent;
+          color: #6B5D64;
+          border: none;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          transition: background 0.12s;
+        }
+        .prod-modal-back-novo:hover {
+          background: #F5EEF0;
+          color: #E85A8C;
+        }
+        .prod-modal-title-novo {
+          flex: 1;
+          text-align: center;
+          font-size: 14px;
+          font-weight: 900;
+          color: #2D1F26;
+          letter-spacing: -0.01em;
+        }
+        .prod-modal-close-novo {
+          width: 32px; height: 32px;
+          border-radius: 50%;
+          background: #E85A8C;
+          color: #fff;
+          border: none;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 13px; font-weight: 900;
+          cursor: pointer;
+          transition: background 0.12s;
+          font-family: var(--font-base);
+        }
+        .prod-modal-close-novo:hover { background: #C33A6E; }
+
+        /* Progresso — bolinhas conectadas */
+        .prod-progresso {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 4px 20px 12px;
+          background: #fff;
+          gap: 0;
+        }
+        .prod-progresso-item {
+          display: flex;
+          align-items: center;
+        }
+        .prod-progresso-dot {
+          width: 26px; height: 26px;
+          border-radius: 999px;
+          background: #F0EBED;
+          color: #9A8B93;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: 900;
+          font-family: var(--font-base);
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+        }
+        .prod-progresso-dot--ativo {
+          background: #E85A8C;
+          color: #fff;
+          box-shadow: 0 0 0 4px #FCE7F3;
+        }
+        .prod-progresso-dot--feito {
+          background: #16A34A;
+          color: #fff;
+        }
+        .prod-progresso-line {
+          width: 48px;
+          height: 2px;
+          background: #F0EBED;
+          transition: background 0.2s ease;
+        }
+        .prod-progresso-line--feito {
+          background: #16A34A;
+        }
+        @media (max-width: 640px) {
+          .prod-progresso-line {
+            width: 32px;
+          }
+        }
+
+        /* Labels de seção — SEM barrinha rosa */
+        .prod-section-label--novo {
+          font-size: 12px !important;
+          font-weight: 900 !important;
+          color: #6B5D64 !important;
+          letter-spacing: 0.08em !important;
+          text-transform: uppercase !important;
+          margin: 0 0 10px !important;
+          display: block !important;
+        }
+        .prod-section-label--novo::before {
+          display: none !important;
+        }
+
+        /* Rodapé novo */
+        .prod-modal-footer--novo {
+          background: #fff !important;
+          padding: 12px 16px 16px !important;
+          padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+          border-top: 1px solid #F5EEF0 !important;
+          display: flex !important;
+          gap: 8px !important;
+        }
+        .prod-btn-cancelar-novo {
+          flex: 1;
+          padding: 12px 20px;
+          background: #F5F1F3;
+          color: #6B5D64;
+          border: 1.5px solid #E5DFE1;
+          border-radius: 8px;
+          font-family: var(--font-base) !important;
+          font-size: 13px;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          cursor: pointer;
+          transition: background 0.12s;
+        }
+        .prod-btn-cancelar-novo:hover { background: #EBE5E8; }
+        .prod-btn-avancar-novo {
+          flex: 1.5;
+          padding: 12px 20px;
+          background: #E85A8C;
+          color: #fff;
+          border: none;
+          border-radius: 8px;
+          font-family: var(--font-base) !important;
+          font-size: 13px;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          box-shadow: 0 3px 0 #C33A6E;
+          cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          transition: transform 0.08s, filter 0.08s;
+        }
+        .prod-btn-avancar-novo:hover:not(:disabled) { filter: brightness(1.05); }
+        .prod-btn-avancar-novo:active:not(:disabled) {
+          transform: translateY(3px);
+          box-shadow: 0 0 0 #C33A6E;
+        }
+        .prod-btn-avancar-novo:disabled {
+          background: #E5DFE1;
+          color: #9A8B93;
+          box-shadow: 0 3px 0 #D1CACD;
+          cursor: not-allowed;
+        }
+
+        /* Categoria compacta */
+        .prod-cat-nova-btn {
+          padding: 11px 14px;
+          background: #FCE7F3;
+          color: #E85A8C;
+          border: 1.5px dashed #E85A8C;
+          border-radius: 8px;
+          font-family: var(--font-base) !important;
+          font-size: 12px;
+          font-weight: 900;
+          cursor: pointer;
+          display: flex; align-items: center; gap: 4px;
+          white-space: nowrap;
+        }
+        .prod-cat-nova-btn:hover { background: #FBCFE8; }
+        .prod-cat-nova-form {
+          padding: 12px;
+          background: #FDF7FA;
+          border: 1.5px dashed #E85A8C;
+          border-radius: 10px;
+        }
+        .prod-cat-nova-hint {
+          font-size: 11px;
+          font-weight: 900;
+          color: #E85A8C;
+          margin: 0 0 8px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .prod-cat-nova-form input {
+          width: 100%;
+          padding: 11px 12px;
+          border: 1.5px solid #E5DFE1;
+          border-radius: 8px;
+          font-family: var(--font-base) !important;
+          font-size: 14px;
+          outline: none;
+          background: #fff;
+          box-sizing: border-box;
+        }
+        .prod-cat-nova-form input:focus { border-color: #E85A8C; }
+        .prod-cat-cancel-btn {
+          flex: 1;
+          padding: 10px;
+          background: #fff;
+          border: 1.5px solid #E5DFE1;
+          color: #6B5D64;
+          border-radius: 8px;
+          font-family: var(--font-base) !important;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+        .prod-cat-criar-btn {
+          flex: 2;
+          padding: 10px;
+          background: #E85A8C;
+          color: #fff;
+          border: none;
+          border-radius: 8px;
+          font-family: var(--font-base) !important;
+          font-size: 12px;
+          font-weight: 900;
+          cursor: pointer;
+        }
+        .prod-cat-criar-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+
 
         /* ═══════════════════════════════════════════════════════════
            TOGGLE "OFEREÇO DESCONTO POR PACOTE?" + PREÇO COM TAG
