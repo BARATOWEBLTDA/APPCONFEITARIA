@@ -597,7 +597,7 @@ export default function NovaVenda() {
       <div className="nv-modal-overlay" onClick={() => setModalProduto(false)}>
         <div className="nv-modal" onClick={e => e.stopPropagation()}>
           <h3 className="nv-modal-title">Escolher produto</h3>
-          <input className="nv-input" placeholder="Buscar produto..." value={buscaProduto} onChange={e => setBuscaProduto(e.target.value)} autoFocus />
+          <input className="nv-input" placeholder="Buscar produto..." value={buscaProduto} onChange={e => setBuscaProduto(e.target.value)} />
           <div className="nv-modal-lista">
             {produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase())).map(p => (
               <button key={p.id} type="button" className="nv-modal-item" onClick={() => addProduto(p)}>
@@ -618,7 +618,7 @@ export default function NovaVenda() {
       <div className="nv-modal-overlay" onClick={() => setModalCliente(false)}>
         <div className="nv-modal" onClick={e => e.stopPropagation()}>
           <h3 className="nv-modal-title">Buscar cliente</h3>
-          <input className="nv-input" placeholder="Nome ou telefone..." value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} autoFocus />
+          <input className="nv-input" placeholder="Nome ou telefone..." value={buscaCliente} onChange={e => setBuscaCliente(e.target.value)} />
           <div className="nv-modal-lista">
             {clientes.filter(c => c.nome.toLowerCase().includes(buscaCliente.toLowerCase()) || (c.telefone || '').includes(buscaCliente)).map(c => (
               <button key={c.id} type="button" className="nv-modal-item" onClick={() => selecionarCliente(c)}>
