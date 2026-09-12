@@ -99,7 +99,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           id: "pedidos",
           icon: <ClipboardText size={iconSize} weight="duotone" />,
           title: "Criar primeiro pedido",
-          path: "/pedidos/novo",
+          path: "/vendas/novo",
           done: (pedidosRes.count ?? 0) > 0,
         },
       ]);

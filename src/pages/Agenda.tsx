@@ -435,7 +435,7 @@ export default function Agenda() {
       {/* FAB */}
       <button
         className="ag-fab"
-        onClick={() => navigate("/pedidos/novo")}
+        onClick={() => navigate("/vendas/novo")}
         aria-label="Novo pedido"
       >
         <IconPlus />

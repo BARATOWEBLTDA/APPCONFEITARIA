@@ -1012,7 +1012,7 @@ export default function Inicio() {
         </h2>
         <div className="ini-nav-grid">
           {[
-            { icon: <Plus         size={20} weight="bold" />,     label: "Nova Venda",   sub: "Registrar venda ou encomenda", path: "/pedidos/novo", color: "var(--text-title)", bg: "#FFF1F7", key: "nova-venda" },
+            { icon: <Plus         size={20} weight="bold" />,     label: "Nova Venda",   sub: "Registrar venda ou encomenda", path: "/vendas/novo", color: "var(--text-title)", bg: "#FFF1F7", key: "nova-venda" },
             { icon: <ClipboardText size={20} weight="duotone" />, label: "Meus Pedidos", sub: "Acompanhar em andamento",      path: "/pedidos",      color: "#BE185D",           bg: "#FCE7F3", key: "pedidos" },
             { icon: <Users        size={20} weight="duotone" />,  label: "Clientes",     sub: "Base de clientes",             path: "/clientes",     color: "#7C3AED",           bg: "#F5F3FF", key: "clientes" },
             { icon: <Storefront   size={20} weight="duotone" />,  label: "Produtos",     sub: "Itens do cardápio",            path: "/produtos",     color: "#0891B2",           bg: "#ECFEFF", key: "produtos" },

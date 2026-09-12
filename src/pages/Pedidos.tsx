@@ -1436,7 +1436,7 @@ export default function Pedidos() {
       setModalSemProdutos(true)
       return
     }
-    navigate('/pedidos/novo')
+    navigate('/vendas/novo')
   }
 
   useEffect(() => {
