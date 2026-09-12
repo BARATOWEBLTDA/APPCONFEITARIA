@@ -24,6 +24,11 @@ interface Cliente {
   nome: string
   telefone?: string
   whatsapp?: string
+  rua?: string
+  numero?: string
+  bairro?: string
+  cidade?: string
+  complemento?: string
 }
 
 interface Produto {
@@ -104,7 +109,7 @@ export default function NovaVenda() {
       setUserId(user.id)
       const [{ data: prds }, { data: cls }] = await Promise.all([
         supabase.from('produtos').select('id,nome,preco_normal,forma_venda,imagem_url').eq('user_id', user.id).order('nome'),
-        supabase.from('clientes').select('id,nome,telefone,whatsapp').eq('user_id', user.id).order('nome'),
+        supabase.from('clientes').select('id,nome,telefone,whatsapp,rua,numero,bairro,cidade,complemento').eq('user_id', user.id).order('nome'),
       ])
       setProdutos(prds || [])
       setClientes(cls || [])
@@ -175,6 +180,12 @@ export default function NovaVenda() {
     setClienteNome(c.nome)
     setClienteTelefone(c.telefone || c.whatsapp || '')
     setSemCliente(false)
+    // Puxa endereço cadastrado (se tiver)
+    if (c.rua) setEnderecoRua(c.rua)
+    if (c.numero) setEnderecoNumero(c.numero)
+    if (c.bairro) setEnderecoBairro(c.bairro)
+    if (c.cidade) setEnderecoCidade(c.cidade)
+    if (c.complemento) setEnderecoComplemento(c.complemento)
     setModalCliente(false)
     setBuscaCliente('')
   }
@@ -371,14 +382,14 @@ export default function NovaVenda() {
 
             <div className="nv-cli-opts">
               <button className={`nv-cli-btn ${!semCliente && clienteId ? 'nv-cli-btn--ativo' : ''}`} onClick={() => setModalCliente(true)} type="button">
-                🔍 Buscar existente
+                🔍 Cliente cadastrado
               </button>
               <button className={`nv-cli-btn ${!semCliente && !clienteId && clienteNome ? 'nv-cli-btn--ativo' : ''}`} onClick={() => { setClienteId(null); setSemCliente(false); setClienteNome(''); setClienteTelefone(''); }} type="button">
-                + Novo cliente
+                + Cadastrar novo cliente
               </button>
               {tipo === 'pronta_entrega' && (
                 <button className={`nv-cli-btn ${semCliente ? 'nv-cli-btn--ativo' : ''}`} onClick={() => { setSemCliente(true); setClienteId(null); setClienteNome(''); setClienteTelefone(''); }} type="button">
-                  Sem cliente
+                  Venda sem cliente identificado
                 </button>
               )}
             </div>
@@ -389,6 +400,9 @@ export default function NovaVenda() {
                 <input className="nv-input" placeholder="Nome completo" value={clienteNome} onChange={e => { setClienteNome(e.target.value); if (clienteId) setClienteId(null); }} />
                 <label className="nv-label" style={{ marginTop: 12 }}>Telefone / WhatsApp</label>
                 <input className="nv-input" placeholder="(41) 99999-0000" value={clienteTelefone} onChange={e => setClienteTelefone(e.target.value)} />
+                {clienteId && enderecoRua && (
+                  <p className="nv-hint">✓ Endereço puxado do cadastro do cliente. Pode editar na próxima etapa.</p>
+                )}
                 {!clienteId && clienteNome && (
                   <p className="nv-hint">💡 Este cliente será cadastrado automaticamente ao finalizar</p>
                 )}
