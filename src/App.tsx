@@ -14,6 +14,7 @@ import Privacidade from "@/pages/Privacidade";
 import Layout from "@/components/Layout";
 import Pedidos from "@/pages/Pedidos";
 import PedidoForm from "@/pages/PedidoForm";
+import NovaVenda from "@/pages/NovaVenda";
 import Dashboard from "@/pages/Dashboard";
 import Inicio from "@/pages/Inicio";
 import Agenda from "@/pages/Agenda";
@@ -158,6 +159,7 @@ export default function App() {
           <Route path="/categorias" element={<Categorias />} />
           <Route path="/pedidos" element={<Pedidos />} />
           <Route path="/pedidos/novo" element={<PedidoForm />} />
+          <Route path="/vendas/novo" element={<NovaVenda />} />
           <Route path="/pedidos/:id" element={<PedidoForm />} />
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/insumos" element={<Insumos />} />
