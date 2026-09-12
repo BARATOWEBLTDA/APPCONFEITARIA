@@ -628,7 +628,6 @@ export default function NovaVenda() {
         font-family: var(--font-base) !important;
         display: flex;
         flex-direction: column;
-        min-height: calc(100vh - 240px);
       }
       @media (max-width: 767px) {
         .nv-root { margin: 0; border-radius: 0; min-height: calc(100vh - 180px); box-shadow: none; }
@@ -638,8 +637,7 @@ export default function NovaVenda() {
       .nv-progress {
         display: flex;
         justify-content: center;
-        padding: 18px 20px 14px;
-        border-bottom: 1px solid #F0EBED;
+        padding: 18px 20px 8px;
         background: #fff;
         border-radius: 12px 12px 0 0;
       }
@@ -667,20 +665,19 @@ export default function NovaVenda() {
       .nv-sub { font-size: 13px; color: #6B5D64; margin: 0 0 18px; font-family: var(--font-base) !important; }
 
       /* Tipos venda */
-      .nv-tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-      @media (max-width: 500px) { .nv-tipos { grid-template-columns: 1fr; } }
+      .nv-tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
       .nv-tipo-card {
         all: unset;
-        padding: 24px 20px; border-radius: 12px;
+        padding: 20px 14px; border-radius: 12px;
         border: 2px solid #F0EBED; cursor: pointer;
         text-align: center; box-sizing: border-box;
         transition: all 0.15s; font-family: var(--font-base) !important;
       }
       .nv-tipo-card:hover { border-color: #E85A8C; transform: translateY(-2px); }
       .nv-tipo-card--ativo { border-color: #E85A8C; background: #FDF3F7; }
-      .nv-tipo-emoji { font-size: 36px; margin-bottom: 8px; }
-      .nv-tipo-nome { font-size: 15px; font-weight: 800; color: #2D1F26; }
-      .nv-tipo-desc { font-size: 12px; color: #6B5D64; margin-top: 4px; line-height: 1.4; }
+      .nv-tipo-emoji { font-size: 32px; margin-bottom: 6px; }
+      .nv-tipo-nome { font-size: 14px; font-weight: 800; color: #2D1F26; }
+      .nv-tipo-desc { font-size: 11.5px; color: #6B5D64; margin-top: 4px; line-height: 1.35; }
 
       /* Itens da venda */
       .nv-empty {
@@ -814,12 +811,10 @@ export default function NovaVenda() {
 
       /* Rodapé */
       .nv-footer {
-        background: #FAFAFA;
-        border-top: 1px solid #F0EBED;
-        padding: 14px 20px;
+        background: #fff;
+        padding: 14px 20px 20px;
         display: flex; align-items: center; justify-content: space-between;
         gap: 12px; border-radius: 0 0 12px 12px;
-        position: sticky; bottom: 0;
       }
       .nv-footer-total { display: flex; flex-direction: column; }
       .nv-footer-lbl { font-size: 10.5px; text-transform: uppercase; color: #9A8B93; font-weight: 800; letter-spacing: 0.06em; }
