@@ -1337,7 +1337,8 @@ export default function NovaVenda() {
       .nv-modal {
         background: #fff; border-radius: 14px;
         padding: 20px; max-width: 460px; width: 100%;
-        max-height: 80vh; display: flex; flex-direction: column;
+        height: 80vh; max-height: 640px;
+        display: flex; flex-direction: column;
         box-shadow: 0 20px 60px rgba(0,0,0,0.35);
         font-family: var(--font-base) !important;
       }
