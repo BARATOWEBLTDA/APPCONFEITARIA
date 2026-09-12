@@ -37,6 +37,7 @@ interface Produto {
   preco_normal: number
   forma_venda?: string
   imagem_url?: string
+  categoria?: string
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -104,6 +105,8 @@ export default function NovaVenda() {
   const [modalProduto, setModalProduto] = useState(false)
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [buscaProduto, setBuscaProduto] = useState('')
+  const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null)
+  const [dropdownAberto, setDropdownAberto] = useState(false)
 
   // Modal cliente
   const [modalCliente, setModalCliente] = useState(false)
@@ -118,7 +121,7 @@ export default function NovaVenda() {
       if (!user) { navigate('/login'); return }
       setUserId(user.id)
       const [{ data: prds }, { data: cls }] = await Promise.all([
-        supabase.from('produtos').select('id,nome,preco_normal,forma_venda,imagem_url').eq('user_id', user.id).order('nome'),
+        supabase.from('produtos').select('id,nome,preco_normal,forma_venda,imagem_url,categoria').eq('user_id', user.id).order('nome'),
         supabase.from('clientes').select('id,nome,telefone,whatsapp,rua,numero,bairro,cidade,complemento').eq('user_id', user.id).order('nome'),
       ])
       setProdutos(prds || [])
@@ -135,6 +138,18 @@ export default function NovaVenda() {
     () => Math.max(0, subtotalProdutos + (tipoEntrega === 'entrega' && tipo === 'encomenda' ? taxaEntrega : 0) - desconto + acrescimo),
     [subtotalProdutos, taxaEntrega, desconto, acrescimo, tipoEntrega, tipo]
   )
+
+  // Lista de categorias com contagem (ordenada)
+  const categoriasComContagem = useMemo(() => {
+    const map = new Map<string, number>()
+    produtos.forEach(p => {
+      const cat = (p.categoria || '').trim()
+      if (cat) map.set(cat, (map.get(cat) || 0) + 1)
+    })
+    return Array.from(map.entries())
+      .map(([nome, count]) => ({ nome, count }))
+      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+  }, [produtos])
 
   // Etapas dinâmicas (pronta entrega pula "Entrega")
   const etapas = tipo === 'pronta_entrega' ? ETAPAS_PRONTA : ETAPAS_ENCOMENDA
@@ -173,6 +188,8 @@ export default function NovaVenda() {
     }])
     setModalProduto(false)
     setBuscaProduto('')
+    setFiltroCategoria(null)
+    setDropdownAberto(false)
   }
   const removerItem = (idx: number) => setItens(itens.filter((_, i) => i !== idx))
   const atualizarQtd = (idx: number, qtd: number) => {
@@ -701,13 +718,60 @@ export default function NovaVenda() {
     </div>
 
     {/* ═══ MODAL: escolher produto ═══ */}
-    {modalProduto && (
-      <div className="nv-modal-overlay" onClick={() => setModalProduto(false)}>
+    {modalProduto && (() => {
+      const produtosFiltrados = produtos.filter(p => {
+        const matchBusca = p.nome.toLowerCase().includes(buscaProduto.toLowerCase())
+        const matchCat = !filtroCategoria || (p.categoria || '').trim() === filtroCategoria
+        return matchBusca && matchCat
+      })
+      const labelFiltro = filtroCategoria || 'Todas'
+      const temCategorias = categoriasComContagem.length > 0
+      return (
+      <div className="nv-modal-overlay" onClick={() => { setModalProduto(false); setDropdownAberto(false); }}>
         <div className="nv-modal" onClick={e => e.stopPropagation()}>
           <h3 className="nv-modal-title">Escolher produto</h3>
-          <input className="nv-input" placeholder="Buscar produto..." value={buscaProduto} onChange={e => setBuscaProduto(e.target.value)} />
+
+          <div className="nv-filtro-row">
+            <input className="nv-input" placeholder="Buscar produto..." value={buscaProduto} onChange={e => setBuscaProduto(e.target.value)} />
+            {temCategorias && (
+              <div className={`nv-dropdown ${dropdownAberto ? 'nv-dropdown--open' : ''}`}>
+                <button
+                  type="button"
+                  className={`nv-dropdown-btn ${filtroCategoria ? 'nv-dropdown-btn--ativo' : ''}`}
+                  onClick={() => setDropdownAberto(!dropdownAberto)}
+                >
+                  <span>{labelFiltro}</span>
+                  <svg className="nv-caret" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+                {dropdownAberto && (
+                  <div className="nv-dropdown-menu">
+                    <button
+                      type="button"
+                      className={`nv-dropdown-item ${!filtroCategoria ? 'nv-dropdown-item--ativo' : ''}`}
+                      onClick={() => { setFiltroCategoria(null); setDropdownAberto(false); }}
+                    >
+                      <span>Todas</span>
+                      <span className="nv-dropdown-count">{produtos.length}</span>
+                    </button>
+                    {categoriasComContagem.map(c => (
+                      <button
+                        key={c.nome}
+                        type="button"
+                        className={`nv-dropdown-item ${filtroCategoria === c.nome ? 'nv-dropdown-item--ativo' : ''}`}
+                        onClick={() => { setFiltroCategoria(c.nome); setDropdownAberto(false); }}
+                      >
+                        <span>{c.nome}</span>
+                        <span className="nv-dropdown-count">{c.count}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="nv-modal-lista">
-            {produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase())).map(p => (
+            {produtosFiltrados.map(p => (
               <button key={p.id} type="button" className="nv-modal-item" onClick={() => addProduto(p)}>
                 <div className="nv-modal-item-img">{p.imagem_url ? <img src={p.imagem_url} alt={p.nome} /> : '🎂'}</div>
                 <div className="nv-modal-item-nome">{toTitleCase(p.nome)}</div>
@@ -715,11 +779,13 @@ export default function NovaVenda() {
               </button>
             ))}
             {produtos.length === 0 && <p className="nv-empty">Nenhum produto cadastrado. <a href="/produtos">Cadastre um produto</a></p>}
+            {produtos.length > 0 && produtosFiltrados.length === 0 && <p className="nv-empty">Nenhum produto encontrado com esse filtro</p>}
           </div>
-          <button className="nv-btn nv-btn-voltar" style={{ marginTop: 12, width: '100%' }} onClick={() => setModalProduto(false)}>Fechar</button>
+          <button className="nv-btn nv-btn-voltar" style={{ marginTop: 12, width: '100%' }} onClick={() => { setModalProduto(false); setDropdownAberto(false); }}>Fechar</button>
         </div>
       </div>
-    )}
+      )
+    })()}
 
     {/* ═══ MODAL: buscar cliente ═══ */}
     {modalCliente && (
@@ -1276,6 +1342,70 @@ export default function NovaVenda() {
         font-family: var(--font-base) !important;
       }
       .nv-modal-title { font-size: 16px; font-weight: 900; color: #2D1F26; margin: 0 0 12px; font-family: var(--font-base) !important; }
+
+      /* Filtro row (busca + dropdown) */
+      .nv-filtro-row {
+        display: flex; gap: 8px; align-items: stretch;
+        margin-bottom: 4px;
+      }
+      .nv-filtro-row .nv-input { flex: 1; min-width: 0; }
+      .nv-dropdown {
+        position: relative;
+        flex-shrink: 0;
+        min-width: 120px;
+      }
+      .nv-dropdown-btn {
+        all: unset;
+        box-sizing: border-box;
+        width: 100%;
+        display: flex; align-items: center; justify-content: space-between; gap: 6px;
+        padding: 10px 12px;
+        border: 1.5px solid #E5D8DE;
+        background: #fff;
+        border-radius: 8px;
+        font-size: 13px; font-weight: 600;
+        color: #2D1F26;
+        cursor: pointer;
+        font-family: var(--font-base) !important;
+        transition: border-color 0.12s;
+      }
+      .nv-dropdown-btn:hover { border-color: #E85A8C; }
+      .nv-dropdown-btn--ativo { border-color: #E85A8C; background: #FDF3F7; color: #E85A8C; font-weight: 800; }
+      .nv-caret { color: #9A8B93; transition: transform 0.15s; flex-shrink: 0; }
+      .nv-dropdown--open .nv-caret { transform: rotate(180deg); color: #E85A8C; }
+
+      .nv-dropdown-menu {
+        position: absolute;
+        top: calc(100% + 4px); right: 0;
+        min-width: 180px;
+        max-height: 260px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1.5px solid #F0EBED;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        padding: 4px;
+        z-index: 10;
+      }
+      .nv-dropdown-item {
+        all: unset;
+        box-sizing: border-box;
+        display: flex; justify-content: space-between; align-items: center;
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #2D1F26;
+        font-family: var(--font-base) !important;
+      }
+      .nv-dropdown-item:hover { background: #FDFAFB; }
+      .nv-dropdown-item--ativo { background: #FDF3F7; color: #E85A8C; font-weight: 700; }
+      .nv-dropdown-count {
+        font-size: 11px; color: #9A8B93; font-weight: 700;
+        margin-left: 8px;
+      }
+      .nv-dropdown-item--ativo .nv-dropdown-count { color: #E85A8C; }
       .nv-modal-lista { flex: 1; overflow-y: auto; margin-top: 10px; display: flex; flex-direction: column; gap: 4px; }
       .nv-modal-item {
         all: unset;
