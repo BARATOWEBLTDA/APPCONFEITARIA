@@ -585,7 +585,7 @@ export default function NovaVenda() {
             </button>
           ) : (
             <button className="nv-btn nv-btn-avancar" onClick={proximaEtapa} disabled={!podeAvancar()} type="button">
-              Avançar →
+              {etapas[etapa]} →
             </button>
           )}
         </div>
