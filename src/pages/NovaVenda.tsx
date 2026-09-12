@@ -129,6 +129,15 @@ export default function NovaVenda() {
     })
   }, [])
 
+  // Trava scroll do body quando modal aberto
+  useEffect(() => {
+    if (modalProduto || modalCliente) {
+      const original = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = original }
+    }
+  }, [modalProduto, modalCliente])
+
   // ── Cálculos ────────────────────────────────────────────────────────────
   const subtotalProdutos = useMemo(
     () => itens.reduce((acc, i) => acc + i.valor_unitario * i.quantidade, 0),
