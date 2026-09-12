@@ -338,7 +338,7 @@ export default function NovaVenda() {
               >
                 <div className="nv-tipo-emoji">📅</div>
                 <div className="nv-tipo-nome">Encomenda</div>
-                <div className="nv-tipo-desc">Cliente busca depois</div>
+                <div className="nv-tipo-desc">Pra buscar ou entregar em outra data</div>
               </button>
               <button
                 type="button"
@@ -348,7 +348,7 @@ export default function NovaVenda() {
               >
                 <div className="nv-tipo-emoji">⚡</div>
                 <div className="nv-tipo-nome">Pronta Entrega</div>
-                <div className="nv-tipo-desc">Levou agora</div>
+                <div className="nv-tipo-desc">Cliente já está levando</div>
               </button>
             </div>
 
