@@ -179,7 +179,8 @@ export default function AppPageHeader({
           gap: 12px;
           color: #fff;
           font-family: var(--font-base) !important;
-          /* Mobile: escapa dos paddings pra ir de borda a borda */
+          /* Mobile: cancela padding do layout-main + escapa lateral */
+          margin-top: calc(-1 * (var(--pad-page-top, 1.5rem) + env(safe-area-inset-top, 0px)));
           margin-left: calc(50% - 50vw);
           margin-right: calc(50% - 50vw);
           width: 100vw;
