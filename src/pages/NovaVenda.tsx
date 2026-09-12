@@ -332,6 +332,7 @@ export default function NovaVenda() {
             <div className="nv-tipos">
               <button
                 type="button"
+                data-tipo="encomenda"
                 className={`nv-tipo-card ${tipo === 'encomenda' ? 'nv-tipo-card--ativo' : ''}`}
                 onClick={() => setTipo('encomenda')}
               >
@@ -341,6 +342,7 @@ export default function NovaVenda() {
               </button>
               <button
                 type="button"
+                data-tipo="pronta_entrega"
                 className={`nv-tipo-card ${tipo === 'pronta_entrega' ? 'nv-tipo-card--ativo' : ''}`}
                 onClick={() => setTipo('pronta_entrega')}
               >
@@ -992,16 +994,45 @@ export default function NovaVenda() {
       }
       .nv-tipo-card {
         all: unset;
-        padding: 20px 14px; border-radius: 12px;
-        border: 2px solid #F0EBED; cursor: pointer;
+        padding: 22px 14px; border-radius: 14px;
+        cursor: pointer;
         text-align: center; box-sizing: border-box;
-        transition: all 0.15s; font-family: var(--font-base) !important;
+        border: 2px solid transparent;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+        transition: all 0.15s;
+        font-family: var(--font-base) !important;
       }
-      .nv-tipo-card:hover { border-color: #E85A8C; transform: translateY(-2px); }
-      .nv-tipo-card--ativo { border-color: #E85A8C; background: #FDF3F7; }
-      .nv-tipo-emoji { font-size: 32px; margin-bottom: 6px; }
-      .nv-tipo-nome { font-size: 14px; font-weight: 800; color: #2D1F26; }
-      .nv-tipo-desc { font-size: 11.5px; color: #6B5D64; margin-top: 4px; line-height: 1.35; }
+      .nv-tipo-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+
+      /* Encomenda - rosa */
+      .nv-tipo-card[data-tipo="encomenda"] {
+        background: linear-gradient(160deg, #FDF3F7 0%, #FAE8EF 100%);
+      }
+      .nv-tipo-card[data-tipo="encomenda"] .nv-tipo-nome,
+      .nv-tipo-card[data-tipo="encomenda"] .nv-tipo-desc {
+        color: #831843;
+      }
+      .nv-tipo-card[data-tipo="encomenda"].nv-tipo-card--ativo {
+        border-color: #E85A8C;
+        box-shadow: 0 6px 20px rgba(232,90,140,0.25);
+      }
+
+      /* Pronta Entrega - amarelo */
+      .nv-tipo-card[data-tipo="pronta_entrega"] {
+        background: linear-gradient(160deg, #FEF3C7 0%, #FDE68A 100%);
+      }
+      .nv-tipo-card[data-tipo="pronta_entrega"] .nv-tipo-nome,
+      .nv-tipo-card[data-tipo="pronta_entrega"] .nv-tipo-desc {
+        color: #78350F;
+      }
+      .nv-tipo-card[data-tipo="pronta_entrega"].nv-tipo-card--ativo {
+        border-color: #D97706;
+        box-shadow: 0 6px 20px rgba(217,119,6,0.25);
+      }
+
+      .nv-tipo-emoji { font-size: 40px; margin-bottom: 6px; display: block; line-height: 1; }
+      .nv-tipo-nome { font-size: 14.5px; font-weight: 900; letter-spacing: -0.01em; font-family: var(--font-base) !important; }
+      .nv-tipo-desc { font-size: 11.5px; margin-top: 4px; line-height: 1.35; font-weight: 600; opacity: 0.8; font-family: var(--font-base) !important; }
 
       /* Itens da venda */
       .nv-empty {
