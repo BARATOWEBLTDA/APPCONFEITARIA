@@ -884,9 +884,18 @@ export default function NovaVenda() {
         margin-bottom: 10px;
         transition: filter 0.12s, transform 0.08s;
       }
-      .nv-add-produto--ativo { background: #E85A8C; color: #fff; box-shadow: 0 3px 0 #C33A6E; }
+      .nv-add-produto--ativo {
+        background: #E85A8C; color: #fff;
+        box-shadow: 0 3px 0 #C33A6E;
+        animation: nvPulseSutil 0.7s ease-in-out 3;
+      }
       .nv-add-produto--ativo:hover { filter: brightness(1.05); }
-      .nv-add-produto--ativo:active { transform: translateY(3px); box-shadow: 0 0 0 #C33A6E; }
+      .nv-add-produto--ativo:active { transform: translateY(3px); box-shadow: 0 0 0 #C33A6E; animation: none; }
+
+      @keyframes nvPulseSutil {
+        0%, 100% { transform: scale(1); box-shadow: 0 3px 0 #C33A6E; }
+        50% { transform: scale(1.025); box-shadow: 0 6px 16px rgba(232,90,140,0.35), 0 3px 0 #C33A6E; }
+      }
       .nv-add-produto--dis {
         background: #F5F1F3; color: #B8ACB1;
         cursor: not-allowed;
