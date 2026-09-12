@@ -201,6 +201,14 @@ export default function NovaVenda() {
     setDropdownAberto(false)
   }
   const removerItem = (idx: number) => setItens(itens.filter((_, i) => i !== idx))
+  const duplicarItem = (idx: number) => {
+    const item = itens[idx]
+    if (!item) return
+    // Insere duplicado logo abaixo do original
+    const novoItens = [...itens]
+    novoItens.splice(idx + 1, 0, { ...item, observacoes: '' })
+    setItens(novoItens)
+  }
   const atualizarQtd = (idx: number, qtd: number) => {
     if (qtd < 1) return
     setItens(itens.map((it, i) => i === idx ? { ...it, quantidade: qtd } : it))
@@ -393,6 +401,9 @@ export default function NovaVenda() {
                         value={it.observacoes}
                         onChange={e => atualizarObs(idx, e.target.value)}
                       />
+                      <button className="nv-p-item-dup" onClick={() => duplicarItem(idx)} type="button" aria-label="Duplicar" title="Duplicar produto">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                      </button>
                       <button className="nv-p-item-lixo" onClick={() => removerItem(idx)} type="button" aria-label="Remover">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
                       </button>
@@ -404,6 +415,12 @@ export default function NovaVenda() {
 
             <div className="nv-resumo-mini">
               <div className="nv-resumo-mini-lbl">Resumo da Venda</div>
+              {itens.length > 0 && (
+                <div className="nv-resumo-mini-sub">
+                  <span>Produtos ({itens.length} {itens.length === 1 ? 'item' : 'itens'})</span>
+                  <span>{formatMoney(subtotalProdutos)}</span>
+                </div>
+              )}
               <div className="nv-resumo-mini-row">
                 <span>Total</span>
                 <span className="nv-resumo-mini-val">{formatMoney(total)}</span>
@@ -975,6 +992,19 @@ export default function NovaVenda() {
       .nv-p-item-obs::placeholder { color: #B8ACB1; }
       .nv-p-item-lixo { all: unset; padding: 6px; color: #DC2626; cursor: pointer; border-radius: 5px; flex-shrink: 0; }
       .nv-p-item-lixo:hover { background: #FEE2E2; }
+      .nv-p-item-dup { all: unset; padding: 6px; color: #6B5D64; cursor: pointer; border-radius: 5px; flex-shrink: 0; }
+      .nv-p-item-dup:hover { background: #F0EBED; color: #E85A8C; }
+
+      /* Sub-linha resumo (Produtos xN) */
+      .nv-resumo-mini-sub {
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 12px; color: #6B5D64;
+        padding: 4px 0 6px;
+        border-bottom: 1px dashed #F0EBED;
+        margin-bottom: 6px;
+        font-family: var(--font-base) !important;
+      }
+      .nv-resumo-mini-sub span:last-child { font-weight: 700; color: #2D1F26; }
 
       /* Resumo mini (na etapa 1) */
       .nv-resumo-mini {
@@ -1467,9 +1497,9 @@ export default function NovaVenda() {
       }
       .nv-modal-item:hover { background: #FDFAFB; }
       .nv-modal-item-img {
-        width: 36px; height: 36px; border-radius: 7px;
+        width: 52px; height: 52px; border-radius: 8px;
         background: #F5EEF0; display: flex; align-items: center; justify-content: center;
-        font-size: 18px; overflow: hidden; flex-shrink: 0;
+        font-size: 24px; overflow: hidden; flex-shrink: 0;
       }
       .nv-modal-item-img img { width: 100%; height: 100%; object-fit: cover; }
       .nv-modal-item-avatar {
