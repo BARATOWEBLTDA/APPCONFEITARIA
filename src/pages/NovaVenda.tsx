@@ -549,10 +549,14 @@ export default function NovaVenda() {
 
       {/* Rodapé com total + botões */}
       <div className="nv-footer">
-        <div className="nv-footer-total">
-          <span className="nv-footer-lbl">Total</span>
-          <span className="nv-footer-val">{formatMoney(total)}</span>
-        </div>
+        {etapa > 1 ? (
+          <div className="nv-footer-total">
+            <span className="nv-footer-lbl">Total</span>
+            <span className="nv-footer-val">{formatMoney(total)}</span>
+          </div>
+        ) : (
+          <div />
+        )}
         <div className="nv-footer-btns">
           <button className="nv-btn nv-btn-voltar" onClick={voltarEtapa} type="button">
             {etapa === 1 ? '← Cancelar' : '← Voltar'}
