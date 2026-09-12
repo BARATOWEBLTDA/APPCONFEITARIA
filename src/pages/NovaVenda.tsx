@@ -901,7 +901,7 @@ export default function NovaVenda() {
         text-align: center;
         cursor: pointer;
         font-family: var(--font-base) !important;
-        margin-bottom: 10px;
+        margin-bottom: 18px;
         transition: filter 0.12s, transform 0.08s;
       }
       .nv-add-produto--ativo {
@@ -942,15 +942,15 @@ export default function NovaVenda() {
         background: #FAFAFA;
         border: 1.5px dashed #E5D8DE;
         border-radius: 10px;
-        padding: 14px;
-        display: flex; flex-direction: column; gap: 8px;
+        padding: 6px;
+        display: flex; flex-direction: column; gap: 6px;
         min-height: 180px;
       }
       .nv-p-item {
         background: #fff;
         border: 1px solid #F0EBED;
         border-radius: 8px;
-        padding: 10px;
+        padding: 12px;
       }
       .nv-p-item-topo {
         display: flex; align-items: center; gap: 10px;
