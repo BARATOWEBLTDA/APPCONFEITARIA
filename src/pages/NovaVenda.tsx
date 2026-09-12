@@ -382,27 +382,82 @@ export default function NovaVenda() {
             <p className="nv-sub">Opcional — pode registrar venda sem cliente</p>
 
             {clienteId && !modoNovoCli ? (
-              /* Cliente escolhido - card */
-              <div className="nv-cli-escolhido">
-                <div className="nv-cli-avatar">{initialsOf(clienteNome)}</div>
-                <div className="nv-cli-info">
-                  <div className="nv-cli-nome">{clienteNome}</div>
-                  {clienteTelefone && <div className="nv-cli-tel">{clienteTelefone}</div>}
-                </div>
-                <button
-                  className="nv-cli-x"
-                  onClick={() => {
-                    setClienteId(null); setClienteNome(''); setClienteTelefone('');
-                    // Limpa também endereço puxado
-                    setEnderecoRua(''); setEnderecoNumero(''); setEnderecoBairro('');
-                    setEnderecoComplemento('');
-                  }}
-                  type="button"
-                  aria-label="Remover cliente"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-              </div>
+              /* Cliente escolhido - card detalhado */
+              (() => {
+                const temEndereco = enderecoRua && enderecoRua.trim().length > 0
+                const enderecoLinha = [
+                  enderecoRua && `${enderecoRua}${enderecoNumero ? ', ' + enderecoNumero : ''}`,
+                  enderecoBairro,
+                ].filter(Boolean).join(' · ')
+                const mapsQuery = encodeURIComponent(
+                  [enderecoRua, enderecoNumero, enderecoBairro, enderecoCidade].filter(Boolean).join(' ')
+                )
+                return (
+                  <div className="nv-cli-card">
+                    <div className="nv-cli-card-topo">
+                      <div className="nv-cli-avatar">{initialsOf(clienteNome)}</div>
+                      <div className="nv-cli-nome-wrap">
+                        <div className="nv-cli-card-nome">{clienteNome}</div>
+                        <div className="nv-cli-card-badge">✓ Cliente cadastrado</div>
+                      </div>
+                      <button
+                        className="nv-cli-card-x"
+                        onClick={() => {
+                          setClienteId(null); setClienteNome(''); setClienteTelefone('');
+                          setEnderecoRua(''); setEnderecoNumero(''); setEnderecoBairro('');
+                          setEnderecoComplemento('');
+                        }}
+                        type="button"
+                        aria-label="Remover cliente"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+
+                    <div className="nv-cli-card-dados">
+                      <div className="nv-cli-card-linha">
+                        <div className="nv-cli-card-ico">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        </div>
+                        <div>
+                          <div className="nv-cli-card-lbl">Telefone</div>
+                          <div className="nv-cli-card-txt">{clienteTelefone || 'Não informado'}</div>
+                        </div>
+                      </div>
+
+                      <div className="nv-cli-card-linha">
+                        <div className="nv-cli-card-ico">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={temEndereco ? "currentColor" : "#9A8B93"} strokeWidth={2}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        </div>
+                        <div>
+                          <div className="nv-cli-card-lbl">Endereço</div>
+                          <div className={`nv-cli-card-txt ${!temEndereco ? 'nv-cli-card-txt--vazio' : ''}`}>
+                            {temEndereco ? enderecoLinha : 'Sem endereço cadastrado'}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {temEndereco && (
+                      <a
+                        className="nv-cli-mapa"
+                        href={`https://www.google.com/maps/search/?api=1&query=${mapsQuery}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <div className="nv-cli-mapa-bg" />
+                        <div className="nv-cli-mapa-pin">
+                          <svg width="30" height="38" viewBox="0 0 24 30"><path fill="#E85A8C" stroke="#fff" strokeWidth={1.5} d="M12 0C5.4 0 0 5.4 0 12c0 9 12 18 12 18s12-9 12-18c0-6.6-5.4-12-12-12z"/><circle cx={12} cy={12} r={4.5} fill="#fff"/></svg>
+                        </div>
+                        <div className="nv-cli-mapa-btn">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}><path d="M7 17L17 7M17 7H8M17 7V16"/></svg>
+                          Abrir Maps
+                        </div>
+                      </a>
+                    )}
+                  </div>
+                )
+              })()
             ) : (
               /* Seletor + botão + */
               <div className="nv-cli-row">
@@ -440,12 +495,9 @@ export default function NovaVenda() {
               </div>
             )}
 
-            {/* Hints */}
+            {/* Hint só quando vazio */}
             {!clienteId && !modoNovoCli && (
               <p className="nv-hint-centered">Sem cliente, será registrada como venda avulsa</p>
-            )}
-            {clienteId && enderecoRua && (
-              <p className="nv-hint-centered">✓ Endereço puxado do cadastro. Pode editar na próxima etapa.</p>
             )}
           </>
         )}
@@ -971,6 +1023,102 @@ export default function NovaVenda() {
         display: flex; align-items: center; justify-content: center;
       }
       .nv-cli-x:hover { background: rgba(0,0,0,0.05); color: #DC2626; }
+
+      /* Card cliente DETALHADO */
+      .nv-cli-card {
+        background: #fff;
+        border: 1.5px solid #E85A8C;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
+      .nv-cli-card-topo {
+        display: flex; align-items: center; gap: 12px;
+        padding: 14px;
+        background: linear-gradient(180deg, #FDF3F7 0%, #FAE8EF 100%);
+      }
+      .nv-cli-card .nv-cli-avatar {
+        width: 44px; height: 44px;
+        font-size: 14px;
+        box-shadow: 0 3px 8px rgba(232,90,140,0.25);
+      }
+      .nv-cli-nome-wrap { flex: 1; min-width: 0; }
+      .nv-cli-card-nome { font-size: 15px; font-weight: 800; color: #2D1F26; font-family: var(--font-base) !important; letter-spacing: -0.005em; }
+      .nv-cli-card-badge {
+        font-size: 10px; color: #E85A8C; font-weight: 800;
+        text-transform: uppercase; letter-spacing: 0.06em;
+        margin-top: 2px;
+        font-family: var(--font-base) !important;
+      }
+      .nv-cli-card-x {
+        all: unset;
+        padding: 6px; border-radius: 50%;
+        color: #6B5D64; cursor: pointer;
+        background: rgba(255,255,255,0.5);
+        display: flex; align-items: center; justify-content: center;
+      }
+      .nv-cli-card-x:hover { background: #fff; color: #DC2626; }
+
+      .nv-cli-card-dados {
+        padding: 10px 14px;
+        display: flex; flex-direction: column; gap: 8px;
+        background: #fff;
+      }
+      .nv-cli-card-linha {
+        display: flex; align-items: center; gap: 10px;
+      }
+      .nv-cli-card-ico {
+        width: 28px; height: 28px; border-radius: 6px;
+        background: #FDF3F7;
+        display: flex; align-items: center; justify-content: center;
+        color: #E85A8C; flex-shrink: 0;
+      }
+      .nv-cli-card-lbl {
+        color: #9A8B93; font-size: 10.5px;
+        text-transform: uppercase; letter-spacing: 0.05em;
+        font-weight: 700;
+        font-family: var(--font-base) !important;
+      }
+      .nv-cli-card-txt {
+        color: #2D1F26; font-size: 12.5px;
+        font-weight: 600;
+        margin-top: 1px;
+        font-family: var(--font-base) !important;
+      }
+      .nv-cli-card-txt--vazio { color: #9A8B93; font-style: italic; font-weight: 500; }
+
+      /* Mini mapa */
+      .nv-cli-mapa {
+        display: block;
+        height: 140px;
+        background: linear-gradient(135deg, #F0F7F2 0%, #E7F0EA 100%);
+        position: relative;
+        border-top: 1px solid #F0EBED;
+        overflow: hidden;
+        cursor: pointer;
+        text-decoration: none;
+      }
+      .nv-cli-mapa-bg {
+        position: absolute; inset: 0;
+        background-image:
+          linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px),
+          linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px);
+        background-size: 20px 20px;
+      }
+      .nv-cli-mapa-pin {
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -100%);
+        filter: drop-shadow(0 3px 6px rgba(0,0,0,0.25));
+      }
+      .nv-cli-mapa-btn {
+        position: absolute; bottom: 8px; right: 8px;
+        background: #fff; padding: 6px 10px; border-radius: 6px;
+        font-size: 10.5px; font-weight: 800;
+        color: #2D1F26; text-transform: uppercase; letter-spacing: 0.06em;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        display: flex; align-items: center; gap: 4px;
+        font-family: var(--font-base) !important;
+      }
 
       /* Form novo cliente */
       .nv-form-novo {
