@@ -47,8 +47,8 @@ const initialsOf = (name: string) => {
 }
 
 // ── Etapas ────────────────────────────────────────────────────────────────
-const ETAPAS_ENCOMENDA = ['Tipo', 'Produtos', 'Cliente', 'Entrega', 'Pagamento', 'Revisar']
-const ETAPAS_PRONTA    = ['Tipo', 'Produtos', 'Cliente', 'Pagamento', 'Revisar']
+const ETAPAS_ENCOMENDA = ['Venda', 'Cliente', 'Entrega', 'Pagamento', 'Revisar']
+const ETAPAS_PRONTA    = ['Venda', 'Cliente', 'Pagamento', 'Revisar']
 
 // ─────────────────────────────────────────────────────────────────────────
 export default function NovaVenda() {
@@ -127,10 +127,9 @@ export default function NovaVenda() {
 
   // ── Validação por etapa ────────────────────────────────────────────────
   const podeAvancar = (): boolean => {
-    if (etapa === 1) return tipo !== null
-    if (etapa === 2) return itens.length > 0
-    if (etapa === 3) return semCliente || clienteNome.trim().length > 0
-    if (tipo === 'encomenda' && etapa === 4) {
+    if (etapa === 1) return tipo !== null && itens.length > 0
+    if (etapa === 2) return semCliente || clienteNome.trim().length > 0
+    if (tipo === 'encomenda' && etapa === 3) {
       if (!dataEntrega) return false
       if (tipoEntrega === 'entrega' && !enderecoRua) return false
       return true
@@ -165,6 +164,9 @@ export default function NovaVenda() {
   const atualizarQtd = (idx: number, qtd: number) => {
     if (qtd < 1) return
     setItens(itens.map((it, i) => i === idx ? { ...it, quantidade: qtd } : it))
+  }
+  const atualizarObs = (idx: number, obs: string) => {
+    setItens(itens.map((it, i) => i === idx ? { ...it, observacoes: obs } : it))
   }
 
   // ── Selecionar cliente ─────────────────────────────────────────────────
@@ -275,11 +277,11 @@ export default function NovaVenda() {
       {/* Corpo da etapa */}
       <div className="nv-corpo">
 
-        {/* ═══ ETAPA 1: Tipo ═══ */}
-        {etapaLabelAtual === 'Tipo' && (
+        {/* ═══ ETAPA 1: Venda (Tipo + Produtos) ═══ */}
+        {etapaLabelAtual === 'Venda' && (
           <>
             <h2 className="nv-titulo">Que tipo de venda é essa?</h2>
-            <p className="nv-sub">Isso ajuda a organizar seu fluxo</p>
+            <p className="nv-sub">Escolha e depois adicione os produtos</p>
             <div className="nv-tipos">
               <button
                 type="button"
@@ -288,7 +290,7 @@ export default function NovaVenda() {
               >
                 <div className="nv-tipo-emoji">📅</div>
                 <div className="nv-tipo-nome">Encomenda</div>
-                <div className="nv-tipo-desc">Cliente vai buscar/receber em outra data</div>
+                <div className="nv-tipo-desc">Cliente busca depois</div>
               </button>
               <button
                 type="button"
@@ -297,51 +299,67 @@ export default function NovaVenda() {
               >
                 <div className="nv-tipo-emoji">⚡</div>
                 <div className="nv-tipo-nome">Pronta Entrega</div>
-                <div className="nv-tipo-desc">Levou agora (venda avulsa)</div>
+                <div className="nv-tipo-desc">Levou agora</div>
               </button>
             </div>
-          </>
-        )}
 
-        {/* ═══ ETAPA 2: Produtos ═══ */}
-        {etapaLabelAtual === 'Produtos' && (
-          <>
-            <h2 className="nv-titulo">O que o cliente pediu?</h2>
-            <p className="nv-sub">Adicione os produtos e quantidades</p>
+            <button
+              type="button"
+              className={`nv-add-produto ${tipo ? 'nv-add-produto--ativo' : 'nv-add-produto--dis'}`}
+              disabled={!tipo}
+              onClick={() => setModalProduto(true)}
+            >
+              + Adicionar Produto
+            </button>
 
             {itens.length === 0 ? (
-              <div className="nv-empty">
-                <div style={{ fontSize: 40, marginBottom: 8 }}>🎂</div>
-                <p>Nenhum produto adicionado ainda</p>
+              <div className="nv-area-vazia">
+                <div className="nv-area-vazia-1">Nenhum produto adicionado</div>
+                <div className="nv-area-vazia-2">Clique em <b>"Adicionar Produto"</b> para começar</div>
               </div>
             ) : (
-              <div className="nv-itens">
+              <div className="nv-area-produtos">
                 {itens.map((it, idx) => (
-                  <div key={idx} className="nv-item">
-                    <div className="nv-item-img">
-                      {it.imagem_url ? <img src={it.imagem_url} alt={it.nome_produto} /> : <span>🎂</span>}
+                  <div key={idx} className="nv-p-item">
+                    <div className="nv-p-item-topo">
+                      <div className="nv-p-item-img">
+                        {it.imagem_url ? <img src={it.imagem_url} alt={it.nome_produto} /> : <span>🎂</span>}
+                      </div>
+                      <div className="nv-p-item-info">
+                        <div className="nv-p-item-nome">{it.nome_produto}</div>
+                        <div className="nv-p-item-unit">{formatMoney(it.valor_unitario)}{it.forma_venda ? ` / ${it.forma_venda}` : ''}</div>
+                      </div>
+                      <div className="nv-p-item-preco">{formatMoney(it.valor_unitario * it.quantidade)}</div>
                     </div>
-                    <div className="nv-item-info">
-                      <div className="nv-item-nome">{it.nome_produto}</div>
-                      <div className="nv-item-qtd-row">
+                    <div className="nv-p-item-controls">
+                      <div className="nv-qtd">
                         <button className="nv-qtd-btn" onClick={() => atualizarQtd(idx, it.quantidade - 1)} type="button">−</button>
                         <span className="nv-qtd-num">{it.quantidade}</span>
                         <button className="nv-qtd-btn" onClick={() => atualizarQtd(idx, it.quantidade + 1)} type="button">+</button>
-                        <span className="nv-item-unit">× {formatMoney(it.valor_unitario)}</span>
                       </div>
+                      <input
+                        type="text"
+                        className="nv-p-item-obs"
+                        placeholder="Observação..."
+                        value={it.observacoes}
+                        onChange={e => atualizarObs(idx, e.target.value)}
+                      />
+                      <button className="nv-p-item-lixo" onClick={() => removerItem(idx)} type="button" aria-label="Remover">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                      </button>
                     </div>
-                    <div className="nv-item-preco">{formatMoney(it.valor_unitario * it.quantidade)}</div>
-                    <button className="nv-item-lixo" onClick={() => removerItem(idx)} type="button" aria-label="Remover">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-                    </button>
                   </div>
                 ))}
               </div>
             )}
 
-            <button className="nv-add-btn" onClick={() => setModalProduto(true)} type="button">
-              + Adicionar produto
-            </button>
+            <div className="nv-resumo-mini">
+              <div className="nv-resumo-mini-lbl">Resumo da Venda</div>
+              <div className="nv-resumo-mini-row">
+                <span>Total</span>
+                <span className="nv-resumo-mini-val">{formatMoney(total)}</span>
+              </div>
+            </div>
           </>
         )}
 
@@ -665,7 +683,130 @@ export default function NovaVenda() {
       .nv-sub { font-size: 13px; color: #6B5D64; margin: 0 0 18px; font-family: var(--font-base) !important; }
 
       /* Tipos venda */
-      .nv-tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .nv-tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+
+      /* Botão adicionar produto (largura total) */
+      .nv-add-produto {
+        all: unset;
+        display: block; box-sizing: border-box; width: 100%;
+        padding: 13px;
+        border-radius: 10px;
+        font-size: 13.5px; font-weight: 800;
+        letter-spacing: 0.01em;
+        text-align: center;
+        cursor: pointer;
+        font-family: var(--font-base) !important;
+        margin-bottom: 10px;
+        transition: filter 0.12s, transform 0.08s;
+      }
+      .nv-add-produto--ativo { background: #E85A8C; color: #fff; box-shadow: 0 3px 0 #C33A6E; }
+      .nv-add-produto--ativo:hover { filter: brightness(1.05); }
+      .nv-add-produto--ativo:active { transform: translateY(3px); box-shadow: 0 0 0 #C33A6E; }
+      .nv-add-produto--dis {
+        background: #F5F1F3; color: #B8ACB1;
+        cursor: not-allowed;
+      }
+
+      /* Área vazia (empty state) */
+      .nv-area-vazia {
+        background: #FAFAFA;
+        border: 1.5px dashed #E5D8DE;
+        border-radius: 10px;
+        padding: 30px 16px;
+        text-align: center;
+        min-height: 110px;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        font-family: var(--font-base) !important;
+      }
+      .nv-area-vazia-1 { font-size: 13px; font-weight: 700; color: #6B5D64; margin-bottom: 4px; font-family: var(--font-base) !important; }
+      .nv-area-vazia-2 { font-size: 12px; color: #9A8B93; font-family: var(--font-base) !important; }
+      .nv-area-vazia-2 b { font-weight: 700; color: #E85A8C; }
+
+      /* Área com produtos */
+      .nv-area-produtos {
+        background: #FAFAFA;
+        border: 1.5px dashed #E5D8DE;
+        border-radius: 10px;
+        padding: 10px;
+        display: flex; flex-direction: column; gap: 8px;
+      }
+      .nv-p-item {
+        background: #fff;
+        border: 1px solid #F0EBED;
+        border-radius: 8px;
+        padding: 10px;
+      }
+      .nv-p-item-topo {
+        display: flex; align-items: center; gap: 10px;
+        margin-bottom: 8px;
+      }
+      .nv-p-item-img {
+        width: 36px; height: 36px; border-radius: 7px;
+        background: #F5EEF0; display: flex; align-items: center; justify-content: center;
+        font-size: 18px; overflow: hidden; flex-shrink: 0;
+      }
+      .nv-p-item-img img { width: 100%; height: 100%; object-fit: cover; }
+      .nv-p-item-info { flex: 1; min-width: 0; }
+      .nv-p-item-nome { font-size: 13px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
+      .nv-p-item-unit { font-size: 11px; color: #9A8B93; margin-top: 1px; font-family: var(--font-base) !important; }
+      .nv-p-item-preco { font-size: 13.5px; font-weight: 800; letter-spacing: 0.01em; color: #2D1F26; white-space: nowrap; font-family: var(--font-base) !important; }
+      .nv-p-item-controls {
+        display: flex; align-items: center; gap: 6px;
+        flex-wrap: nowrap;
+      }
+      .nv-qtd {
+        display: inline-flex; align-items: center; gap: 4px;
+        background: #F5F1F3; border-radius: 6px; padding: 2px;
+        flex-shrink: 0;
+      }
+      .nv-qtd-btn { all: unset; width: 24px; height: 24px; border-radius: 5px; background: #fff; color: #2D1F26; font-weight: 800; text-align: center; cursor: pointer; font-family: var(--font-base); box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+      .nv-qtd-btn:hover { background: #EBE5E8; }
+      .nv-qtd-num { font-size: 12px; font-weight: 800; min-width: 20px; text-align: center; }
+      .nv-p-item-obs {
+        flex: 1;
+        min-width: 0;
+        padding: 6px 10px;
+        border: 1.5px solid #F0EBED;
+        border-radius: 6px;
+        font-size: 11.5px;
+        font-family: var(--font-base) !important;
+        background: #fff;
+        outline: none;
+        transition: border-color 0.12s;
+        color: #2D1F26;
+      }
+      .nv-p-item-obs:focus { border-color: #E85A8C; }
+      .nv-p-item-obs::placeholder { color: #B8ACB1; }
+      .nv-p-item-lixo { all: unset; padding: 6px; color: #DC2626; cursor: pointer; border-radius: 5px; flex-shrink: 0; }
+      .nv-p-item-lixo:hover { background: #FEE2E2; }
+
+      /* Resumo mini (na etapa 1) */
+      .nv-resumo-mini {
+        margin-top: 14px;
+        background: #FDFAFB;
+        border: 1.5px solid #F0EBED;
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-family: var(--font-base) !important;
+      }
+      .nv-resumo-mini-lbl {
+        font-size: 10.5px; font-weight: 800;
+        color: #9A8B93;
+        text-transform: uppercase; letter-spacing: 0.07em;
+        margin-bottom: 6px;
+        font-family: var(--font-base) !important;
+      }
+      .nv-resumo-mini-row {
+        display: flex; justify-content: space-between; align-items: center;
+      }
+      .nv-resumo-mini-row > span:first-child {
+        font-size: 13px; font-weight: 700; color: #2D1F26;
+      }
+      .nv-resumo-mini-val {
+        font-size: 20px; font-weight: 900; letter-spacing: -0.02em; color: #2D1F26;
+        font-family: var(--font-base) !important;
+      }
       .nv-tipo-card {
         all: unset;
         padding: 20px 14px; border-radius: 12px;
