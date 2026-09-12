@@ -114,6 +114,7 @@ export default function NovaVenda() {
   const [buscaCliente, setBuscaCliente] = useState('')
 
   const [salvando, setSalvando] = useState(false)
+  const [resumoAberto, setResumoAberto] = useState(false)
 
   // ── Load inicial ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -416,18 +417,32 @@ export default function NovaVenda() {
               </div>
             )}
 
-            <div className="nv-resumo-mini">
-              <div className="nv-resumo-mini-lbl">Resumo da Venda</div>
-              {itens.length > 0 && (
-                <div className="nv-resumo-mini-sub">
-                  <span>Produtos ({itens.length} {itens.length === 1 ? 'item' : 'itens'})</span>
-                  <span>{formatMoney(subtotalProdutos)}</span>
+            <div className={`nv-resumo-mini ${resumoAberto ? 'nv-resumo-mini--open' : ''}`}>
+              <button
+                type="button"
+                className="nv-resumo-header"
+                onClick={() => setResumoAberto(!resumoAberto)}
+              >
+                <div className="nv-resumo-header-info">
+                  <div className="nv-resumo-mini-lbl">Resumo da Venda</div>
+                  <div className="nv-resumo-header-total">{formatMoney(total)}</div>
+                </div>
+                <svg className="nv-resumo-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              {resumoAberto && (
+                <div className="nv-resumo-corpo">
+                  {itens.length > 0 && (
+                    <div className="nv-resumo-mini-sub">
+                      <span>Produtos ({itens.length} {itens.length === 1 ? 'item' : 'itens'})</span>
+                      <span>{formatMoney(subtotalProdutos)}</span>
+                    </div>
+                  )}
+                  <div className="nv-resumo-mini-row">
+                    <span>Total</span>
+                    <span className="nv-resumo-mini-val">{formatMoney(total)}</span>
+                  </div>
                 </div>
               )}
-              <div className="nv-resumo-mini-row">
-                <span>Total</span>
-                <span className="nv-resumo-mini-val">{formatMoney(total)}</span>
-              </div>
             </div>
           </>
         )}
@@ -1025,24 +1040,57 @@ export default function NovaVenda() {
       }
       .nv-resumo-mini-sub span:last-child { font-weight: 700; color: #2D1F26; }
 
-      /* Resumo mini (na etapa 1) */
+      /* Resumo mini (accordion na etapa 1) */
       .nv-resumo-mini {
-        margin-top: 14px;
+        margin-top: 20px;
         background: #FDFAFB;
         border: 1.5px solid #F0EBED;
         border-radius: 10px;
-        padding: 12px 16px;
+        font-family: var(--font-base) !important;
+        overflow: hidden;
+      }
+      .nv-resumo-header {
+        all: unset;
+        display: flex; align-items: center; justify-content: space-between;
+        width: 100%; box-sizing: border-box;
+        padding: 14px 18px;
+        cursor: pointer;
         font-family: var(--font-base) !important;
       }
+      .nv-resumo-header:hover { background: #FAF3F6; }
+      .nv-resumo-header-info { flex: 1; min-width: 0; }
       .nv-resumo-mini-lbl {
         font-size: 10.5px; font-weight: 800;
         color: #9A8B93;
         text-transform: uppercase; letter-spacing: 0.07em;
-        margin-bottom: 6px;
         font-family: var(--font-base) !important;
+      }
+      .nv-resumo-header-total {
+        font-size: 20px; font-weight: 900; letter-spacing: -0.02em;
+        color: #2D1F26;
+        margin-top: 3px;
+        font-family: var(--font-base) !important;
+      }
+      .nv-resumo-chevron {
+        color: #6B5D64;
+        flex-shrink: 0;
+        transition: transform 0.2s ease;
+      }
+      .nv-resumo-mini--open .nv-resumo-chevron { transform: rotate(180deg); color: #E85A8C; }
+
+      .nv-resumo-corpo {
+        padding: 0 18px 14px;
+        border-top: 1px dashed #F0EBED;
+        padding-top: 12px;
+        animation: nvResumoIn 0.2s ease;
+      }
+      @keyframes nvResumoIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
       }
       .nv-resumo-mini-row {
         display: flex; justify-content: space-between; align-items: center;
+        margin-top: 8px;
       }
       .nv-resumo-mini-row > span:first-child {
         font-size: 13px; font-weight: 700; color: #2D1F26;
