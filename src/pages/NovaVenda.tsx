@@ -897,15 +897,15 @@ export default function NovaVenda() {
         background: #FAFAFA;
         border: 1.5px dashed #E5D8DE;
         border-radius: 10px;
-        padding: 30px 16px;
+        padding: 50px 20px;
         text-align: center;
-        min-height: 110px;
+        min-height: 180px;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
         font-family: var(--font-base) !important;
       }
-      .nv-area-vazia-1 { font-size: 13px; font-weight: 700; color: #6B5D64; margin-bottom: 4px; font-family: var(--font-base) !important; }
-      .nv-area-vazia-2 { font-size: 12px; color: #9A8B93; font-family: var(--font-base) !important; }
+      .nv-area-vazia-1 { font-size: 14px; font-weight: 700; color: #6B5D64; margin-bottom: 6px; font-family: var(--font-base) !important; }
+      .nv-area-vazia-2 { font-size: 12.5px; color: #9A8B93; font-family: var(--font-base) !important; }
       .nv-area-vazia-2 b { font-weight: 700; color: #E85A8C; }
 
       /* Área com produtos */
@@ -913,8 +913,9 @@ export default function NovaVenda() {
         background: #FAFAFA;
         border: 1.5px dashed #E5D8DE;
         border-radius: 10px;
-        padding: 10px;
+        padding: 14px;
         display: flex; flex-direction: column; gap: 8px;
+        min-height: 180px;
       }
       .nv-p-item {
         background: #fff;
