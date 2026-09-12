@@ -6,7 +6,7 @@ import AppPageHeader from '@/components/AppPageHeader'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────
 type TipoVenda = 'encomenda' | 'pronta_entrega' | null
-type TipoEntrega = 'retirada' | 'entrega'
+type TipoEntrega = 'ja_pegou' | 'retirada' | 'entrega'
 type SituacaoPag = 'total' | 'parcial' | 'fiado'
 
 interface ItemVenda {
@@ -139,6 +139,12 @@ export default function NovaVenda() {
     }
   }, [modalProduto, modalCliente])
 
+  // Ajusta tipoEntrega default quando muda o tipo de venda
+  useEffect(() => {
+    if (tipo === 'pronta_entrega') setTipoEntrega('ja_pegou')
+    else if (tipo === 'encomenda') setTipoEntrega('retirada')
+  }, [tipo])
+
   // ── Cálculos ────────────────────────────────────────────────────────────
   const subtotalProdutos = useMemo(
     () => itens.reduce((acc, i) => acc + i.valor_unitario * i.quantidade, 0),
@@ -270,7 +276,7 @@ export default function NovaVenda() {
       desconto,
       taxa_entrega: tipoEntrega === 'entrega' ? taxaEntrega : 0,
       forma_pagamento: formaPagamento,
-      tipo_entrega: tipoEntrega,
+      tipo_entrega: tipoEntrega === 'ja_pegou' ? 'retirada' : tipoEntrega,
       data_entrega: tipo === 'encomenda' ? dataEntrega : new Date().toISOString().slice(0, 10),
       horario_entrega: tipo === 'encomenda' ? horarioEntrega : null,
       endereco_rua: enderecoRua,
@@ -573,13 +579,29 @@ export default function NovaVenda() {
           </>
         )}
 
-        {/* ═══ ETAPA 3: Entrega (encomenda: completa · pronta: simplificada) ═══ */}
+        {/* ═══ ETAPA 3: Entrega ═══ */}
         {etapaLabelAtual === 'Entrega' && (
           <>
             <h2 className="nv-titulo">Como será a entrega?</h2>
-            <p className="nv-sub">Retirada no local ou delivery até o cliente</p>
+            <p className="nv-sub">
+              {tipo === 'pronta_entrega'
+                ? 'Como o cliente vai receber o produto'
+                : 'Retirada no local ou delivery até o cliente'}
+            </p>
 
-            <div className="nv-ent-tipos">
+            <div className={`nv-ent-tipos ${tipo === 'pronta_entrega' ? 'nv-ent-tipos--3' : ''}`}>
+              {tipo === 'pronta_entrega' && (
+                <button
+                  type="button"
+                  data-modo="ja_pegou"
+                  className={`nv-ent-card ${tipoEntrega === 'ja_pegou' ? 'nv-ent-card--ativo' : ''}`}
+                  onClick={() => setTipoEntrega('ja_pegou')}
+                >
+                  <div className="nv-ent-emoji">✅</div>
+                  <div className="nv-ent-nome">Já pegou</div>
+                  <div className="nv-ent-desc">Cliente saiu com o produto</div>
+                </button>
+              )}
               <button
                 type="button"
                 data-modo="retirada"
@@ -587,8 +609,8 @@ export default function NovaVenda() {
                 onClick={() => setTipoEntrega('retirada')}
               >
                 <div className="nv-ent-emoji">🏪</div>
-                <div className="nv-ent-nome">Retirada</div>
-                <div className="nv-ent-desc">{tipo === 'pronta_entrega' ? 'Cliente já pegou' : 'Vem buscar aqui'}</div>
+                <div className="nv-ent-nome">{tipo === 'pronta_entrega' ? 'Vai retirar' : 'Retirada'}</div>
+                <div className="nv-ent-desc">{tipo === 'pronta_entrega' ? 'Vem buscar em breve' : 'Vem buscar aqui'}</div>
               </button>
               <button
                 type="button"
@@ -602,7 +624,7 @@ export default function NovaVenda() {
               </button>
             </div>
 
-            {/* Data + Horário — só encomenda */}
+            {/* Data + Horário — encomenda */}
             {tipo === 'encomenda' && (
               <div className="nv-grid-2" style={{ marginTop: 16 }}>
                 <div>
@@ -616,8 +638,17 @@ export default function NovaVenda() {
               </div>
             )}
 
-            {/* Mensagem confirmando pronta entrega + retirada */}
+            {/* Só Hora — Pronta + Vai retirar (sugere previsão) */}
             {tipo === 'pronta_entrega' && tipoEntrega === 'retirada' && (
+              <div style={{ marginTop: 16 }}>
+                <label className="nv-label">Horário previsto</label>
+                <input className="nv-input" type="time" value={horarioEntrega} onChange={e => setHorarioEntrega(e.target.value)} />
+                <p className="nv-hint-centered" style={{ textAlign: 'left', marginTop: 6 }}>Quando o cliente disse que vem buscar (opcional)</p>
+              </div>
+            )}
+
+            {/* Confirmação: Já pegou */}
+            {tipo === 'pronta_entrega' && tipoEntrega === 'ja_pegou' && (
               <div className="nv-ent-confirma">
                 <div className="nv-ent-confirma-ico">✓</div>
                 <div>
@@ -748,7 +779,9 @@ export default function NovaVenda() {
               <div className="nv-r-linha"><span>🎂 Produtos</span><b>{itens.length} {itens.length === 1 ? 'item' : 'itens'} · {formatMoney(subtotalProdutos)}</b></div>
               <div className="nv-r-linha"><span>👤 Cliente</span><b>{semCliente || !clienteNome ? 'Sem cliente' : toTitleCase(clienteNome)}</b></div>
               <div className="nv-r-linha">
-                <span>{tipoEntrega === 'entrega' ? '🛵 Delivery' : '🏪 Retirada'}</span>
+                <span>
+                  {tipoEntrega === 'entrega' ? '🛵 Delivery' : tipoEntrega === 'ja_pegou' ? '✅ Já pegou' : '🏪 Retirada'}
+                </span>
                 <b>
                   {tipo === 'encomenda' ? (
                     <>
@@ -758,7 +791,7 @@ export default function NovaVenda() {
                     </>
                   ) : (
                     <>
-                      Agora
+                      {tipoEntrega === 'ja_pegou' ? 'Cliente já saiu' : tipoEntrega === 'retirada' ? (horarioEntrega ? `Vem às ${horarioEntrega}` : 'Vem buscar') : 'Agora'}
                       {tipoEntrega === 'entrega' && taxaEntrega > 0 && ` · ${formatMoney(taxaEntrega)}`}
                     </>
                   )}
@@ -1436,9 +1469,10 @@ export default function NovaVenda() {
 
       /* ═══ Etapa Entrega ═══ */
       .nv-ent-tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .nv-ent-tipos--3 { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
       .nv-ent-card {
         all: unset;
-        padding: 20px 14px; border-radius: 14px;
+        padding: 20px 10px; border-radius: 14px;
         cursor: pointer;
         text-align: center; box-sizing: border-box;
         border: 2px solid transparent;
@@ -1446,7 +1480,21 @@ export default function NovaVenda() {
         transition: all 0.15s;
         font-family: var(--font-base) !important;
       }
+      .nv-ent-tipos--3 .nv-ent-card { padding: 16px 8px; }
       .nv-ent-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+
+      /* Já pegou — verde */
+      .nv-ent-card[data-modo="ja_pegou"] {
+        background: linear-gradient(160deg, #D1FAE5 0%, #A7F3D0 100%);
+      }
+      .nv-ent-card[data-modo="ja_pegou"] .nv-ent-nome,
+      .nv-ent-card[data-modo="ja_pegou"] .nv-ent-desc {
+        color: #065F46;
+      }
+      .nv-ent-card[data-modo="ja_pegou"].nv-ent-card--ativo {
+        border-color: #10B981;
+        box-shadow: 0 6px 20px rgba(16,185,129,0.25);
+      }
 
       /* Retirada — azul */
       .nv-ent-card[data-modo="retirada"] {
@@ -1474,9 +1522,12 @@ export default function NovaVenda() {
         box-shadow: 0 6px 20px rgba(234,88,12,0.25);
       }
 
-      .nv-ent-emoji { font-size: 36px; margin-bottom: 4px; display: block; line-height: 1; }
-      .nv-ent-nome { font-size: 14.5px; font-weight: 900; letter-spacing: -0.01em; font-family: var(--font-base) !important; }
-      .nv-ent-desc { font-size: 11.5px; margin-top: 4px; font-weight: 600; opacity: 0.8; font-family: var(--font-base) !important; }
+      .nv-ent-emoji { font-size: 32px; margin-bottom: 4px; display: block; line-height: 1; }
+      .nv-ent-tipos--3 .nv-ent-emoji { font-size: 26px; }
+      .nv-ent-nome { font-size: 14px; font-weight: 900; letter-spacing: -0.01em; font-family: var(--font-base) !important; }
+      .nv-ent-tipos--3 .nv-ent-nome { font-size: 12.5px; }
+      .nv-ent-desc { font-size: 11px; margin-top: 4px; font-weight: 600; opacity: 0.8; font-family: var(--font-base) !important; line-height: 1.3; }
+      .nv-ent-tipos--3 .nv-ent-desc { font-size: 10px; }
 
       /* Confirmação pronta entrega + retirada */
       .nv-ent-confirma {
