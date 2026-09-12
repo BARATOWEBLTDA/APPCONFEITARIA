@@ -875,7 +875,7 @@ export default function NovaVenda() {
       .nv-progress {
         display: flex;
         justify-content: center;
-        padding: 18px 20px 8px;
+        padding: 28px 20px 12px;
         background: #fff;
         border-radius: 12px 12px 0 0;
       }
@@ -893,7 +893,7 @@ export default function NovaVenda() {
         transition: width 0.35s ease;
       }
       @media (max-width: 767px) {
-        .nv-progress { padding: 14px 16px 12px; border-radius: 10px 10px 0 0; }
+        .nv-progress { padding: 22px 16px 10px; border-radius: 10px 10px 0 0; }
       }
 
       /* Corpo */
