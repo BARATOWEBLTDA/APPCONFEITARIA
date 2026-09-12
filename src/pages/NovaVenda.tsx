@@ -897,9 +897,9 @@ export default function NovaVenda() {
         background: #FAFAFA;
         border: 1.5px dashed #E5D8DE;
         border-radius: 10px;
-        padding: 50px 20px;
+        padding: 60px 20px;
         text-align: center;
-        min-height: 180px;
+        min-height: 220px;
         display: flex; flex-direction: column;
         align-items: center; justify-content: center;
         font-family: var(--font-base) !important;
