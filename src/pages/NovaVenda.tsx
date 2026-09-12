@@ -384,9 +384,11 @@ export default function NovaVenda() {
                       </div>
                       <div className="nv-p-item-info">
                         <div className="nv-p-item-nome">{toTitleCase(it.nome_produto)}</div>
-                        <div className="nv-p-item-unit">{formatMoney(it.valor_unitario)}{it.forma_venda ? ` / ${it.forma_venda}` : ''}</div>
+                        <div className="nv-p-item-linha-preco">
+                          <span className="nv-p-item-preco">{formatMoney(it.valor_unitario * it.quantidade)}</span>
+                          <span className="nv-p-item-unit">{formatMoney(it.valor_unitario)}{it.forma_venda ? ` / ${it.forma_venda}` : ' un.'}</span>
+                        </div>
                       </div>
-                      <div className="nv-p-item-preco">{formatMoney(it.valor_unitario * it.quantidade)}</div>
                     </div>
                     <div className="nv-p-item-controls">
                       <div className="nv-qtd">
@@ -955,21 +957,29 @@ export default function NovaVenda() {
         margin-bottom: 8px;
       }
       .nv-p-item-img {
-        width: 48px; height: 48px; border-radius: 8px;
+        width: 60px; height: 60px; border-radius: 9px;
         background: #F5EEF0; display: flex; align-items: center; justify-content: center;
-        font-size: 22px; overflow: hidden; flex-shrink: 0;
+        font-size: 28px; overflow: hidden; flex-shrink: 0;
       }
       .nv-p-item-img img { width: 100%; height: 100%; object-fit: cover; }
       .nv-p-item-info { flex: 1; min-width: 0; }
       .nv-p-item-nome {
-        font-size: 13.5px; font-weight: 700; color: #2D1F26;
+        font-size: 14px; font-weight: 700; color: #2D1F26;
         font-family: var(--font-base) !important;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      .nv-p-item-unit { font-size: 11px; color: #9A8B93; margin-top: 2px; font-family: var(--font-base) !important; }
-      .nv-p-item-preco { font-size: 13.5px; font-weight: 800; letter-spacing: 0.01em; color: #2D1F26; white-space: nowrap; font-family: var(--font-base) !important; }
+      .nv-p-item-linha-preco {
+        display: flex; align-items: baseline; gap: 8px;
+        margin-top: 4px;
+        flex-wrap: wrap;
+      }
+      .nv-p-item-preco {
+        font-size: 16px; font-weight: 900; letter-spacing: -0.01em;
+        color: #2D1F26; font-family: var(--font-base) !important;
+      }
+      .nv-p-item-unit { font-size: 11.5px; color: #9A8B93; font-family: var(--font-base) !important; }
       .nv-p-item-controls {
         display: flex; align-items: center; gap: 6px;
         flex-wrap: nowrap;
