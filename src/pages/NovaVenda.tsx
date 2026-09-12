@@ -961,7 +961,13 @@ export default function NovaVenda() {
       }
       .nv-p-item-img img { width: 100%; height: 100%; object-fit: cover; }
       .nv-p-item-info { flex: 1; min-width: 0; }
-      .nv-p-item-nome { font-size: 13.5px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
+      .nv-p-item-nome {
+        font-size: 13.5px; font-weight: 700; color: #2D1F26;
+        font-family: var(--font-base) !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       .nv-p-item-unit { font-size: 11px; color: #9A8B93; margin-top: 2px; font-family: var(--font-base) !important; }
       .nv-p-item-preco { font-size: 13.5px; font-weight: 800; letter-spacing: 0.01em; color: #2D1F26; white-space: nowrap; font-family: var(--font-base) !important; }
       .nv-p-item-controls {
@@ -1511,7 +1517,14 @@ export default function NovaVenda() {
         color: #fff; display: flex; align-items: center; justify-content: center;
         font-size: 12px; font-weight: 800; flex-shrink: 0;
       }
-      .nv-modal-item-nome { flex: 1; font-size: 13px; font-weight: 700; color: #2D1F26; }
+      .nv-modal-item-nome {
+        flex: 1;
+        min-width: 0;
+        font-size: 13px; font-weight: 700; color: #2D1F26;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       .nv-modal-item-sub { font-size: 11.5px; color: #6B5D64; margin-top: 2px; }
       .nv-modal-item-preco { font-size: 13px; font-weight: 800; color: #2D1F26; }
     `}</style>
