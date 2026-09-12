@@ -63,7 +63,7 @@ const toTitleCase = (str: string): string => {
 
 // ── Etapas ────────────────────────────────────────────────────────────────
 const ETAPAS_ENCOMENDA = ['Venda', 'Cliente', 'Entrega', 'Pagamento', 'Revisar']
-const ETAPAS_PRONTA    = ['Venda', 'Cliente', 'Pagamento', 'Revisar']
+const ETAPAS_PRONTA    = ['Venda', 'Cliente', 'Entrega', 'Pagamento', 'Revisar']
 
 // ─────────────────────────────────────────────────────────────────────────
 export default function NovaVenda() {
@@ -145,8 +145,8 @@ export default function NovaVenda() {
     [itens]
   )
   const total = useMemo(
-    () => Math.max(0, subtotalProdutos + (tipoEntrega === 'entrega' && tipo === 'encomenda' ? taxaEntrega : 0) - desconto + acrescimo),
-    [subtotalProdutos, taxaEntrega, desconto, acrescimo, tipoEntrega, tipo]
+    () => Math.max(0, subtotalProdutos + (tipoEntrega === 'entrega' ? taxaEntrega : 0) - desconto + acrescimo),
+    [subtotalProdutos, taxaEntrega, desconto, acrescimo, tipoEntrega]
   )
 
   // Lista de categorias com contagem (ordenada)
@@ -161,16 +161,17 @@ export default function NovaVenda() {
       .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
   }, [produtos])
 
-  // Etapas dinâmicas (pronta entrega pula "Entrega")
+  // Etapas dinâmicas
   const etapas = tipo === 'pronta_entrega' ? ETAPAS_PRONTA : ETAPAS_ENCOMENDA
   const totalEtapas = etapas.length
+  const etapaLabelAtual = etapas[etapa - 1]
 
   // ── Validação por etapa ────────────────────────────────────────────────
   const podeAvancar = (): boolean => {
-    if (etapa === 1) return tipo !== null && itens.length > 0
-    if (etapa === 2) return true // Cliente opcional
-    if (tipo === 'encomenda' && etapa === 3) {
-      if (!dataEntrega) return false
+    if (etapaLabelAtual === 'Venda') return tipo !== null && itens.length > 0
+    if (etapaLabelAtual === 'Cliente') return true // Cliente opcional
+    if (etapaLabelAtual === 'Entrega') {
+      if (tipo === 'encomenda' && !dataEntrega) return false
       if (tipoEntrega === 'entrega' && !enderecoRua) return false
       return true
     }
@@ -267,10 +268,10 @@ export default function NovaVenda() {
       valor_total: total,
       valor_produtos: subtotalProdutos,
       desconto,
-      taxa_entrega: tipo === 'encomenda' && tipoEntrega === 'entrega' ? taxaEntrega : 0,
+      taxa_entrega: tipoEntrega === 'entrega' ? taxaEntrega : 0,
       forma_pagamento: formaPagamento,
-      tipo_entrega: tipo === 'pronta_entrega' ? 'retirada' : tipoEntrega,
-      data_entrega: tipo === 'encomenda' ? dataEntrega : null,
+      tipo_entrega: tipoEntrega,
+      data_entrega: tipo === 'encomenda' ? dataEntrega : new Date().toISOString().slice(0, 10),
       horario_entrega: tipo === 'encomenda' ? horarioEntrega : null,
       endereco_rua: enderecoRua,
       endereco_numero: enderecoNumero,
@@ -303,7 +304,6 @@ export default function NovaVenda() {
   }
 
   // ── Render ─────────────────────────────────────────────────────────────
-  const etapaLabelAtual = etapas[etapa - 1]
   const isUltima = etapa === totalEtapas
 
   return (
@@ -573,62 +573,102 @@ export default function NovaVenda() {
           </>
         )}
 
-        {/* ═══ ETAPA 4: Entrega (só encomenda) ═══ */}
+        {/* ═══ ETAPA 3: Entrega (encomenda: completa · pronta: simplificada) ═══ */}
         {etapaLabelAtual === 'Entrega' && (
           <>
             <h2 className="nv-titulo">Como será a entrega?</h2>
             <p className="nv-sub">Retirada no local ou delivery até o cliente</p>
 
-            <div className="nv-radio-row">
-              <label className={`nv-radio ${tipoEntrega === 'retirada' ? 'nv-radio--ativo' : ''}`}>
-                <input type="radio" checked={tipoEntrega === 'retirada'} onChange={() => setTipoEntrega('retirada')} />
-                <span className="nv-radio-dot" />
-                <span>🛍 Retirada</span>
-              </label>
-              <label className={`nv-radio ${tipoEntrega === 'entrega' ? 'nv-radio--ativo' : ''}`}>
-                <input type="radio" checked={tipoEntrega === 'entrega'} onChange={() => setTipoEntrega('entrega')} />
-                <span className="nv-radio-dot" />
-                <span>🛵 Delivery</span>
-              </label>
+            <div className="nv-ent-tipos">
+              <button
+                type="button"
+                data-modo="retirada"
+                className={`nv-ent-card ${tipoEntrega === 'retirada' ? 'nv-ent-card--ativo' : ''}`}
+                onClick={() => setTipoEntrega('retirada')}
+              >
+                <div className="nv-ent-emoji">🏪</div>
+                <div className="nv-ent-nome">Retirada</div>
+                <div className="nv-ent-desc">{tipo === 'pronta_entrega' ? 'Cliente já pegou' : 'Vem buscar aqui'}</div>
+              </button>
+              <button
+                type="button"
+                data-modo="delivery"
+                className={`nv-ent-card ${tipoEntrega === 'entrega' ? 'nv-ent-card--ativo' : ''}`}
+                onClick={() => setTipoEntrega('entrega')}
+              >
+                <div className="nv-ent-emoji">🛵</div>
+                <div className="nv-ent-nome">Delivery</div>
+                <div className="nv-ent-desc">{tipo === 'pronta_entrega' ? 'Vai entregar agora' : 'Levamos até ele'}</div>
+              </button>
             </div>
 
-            <div className="nv-grid-2">
-              <div>
-                <label className="nv-label">Data</label>
-                <input className="nv-input" type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} />
+            {/* Data + Horário — só encomenda */}
+            {tipo === 'encomenda' && (
+              <div className="nv-grid-2" style={{ marginTop: 16 }}>
+                <div>
+                  <label className="nv-label">Data</label>
+                  <input className="nv-input" type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} />
+                </div>
+                <div>
+                  <label className="nv-label">Horário</label>
+                  <input className="nv-input" type="time" value={horarioEntrega} onChange={e => setHorarioEntrega(e.target.value)} />
+                </div>
               </div>
-              <div>
-                <label className="nv-label">Horário</label>
-                <input className="nv-input" type="time" value={horarioEntrega} onChange={e => setHorarioEntrega(e.target.value)} />
-              </div>
-            </div>
+            )}
 
+            {/* Mensagem confirmando pronta entrega + retirada */}
+            {tipo === 'pronta_entrega' && tipoEntrega === 'retirada' && (
+              <div className="nv-ent-confirma">
+                <div className="nv-ent-confirma-ico">✓</div>
+                <div>
+                  <div className="nv-ent-confirma-titulo">Tudo certo</div>
+                  <div className="nv-ent-confirma-sub">Cliente já saiu com o produto. Pode avançar.</div>
+                </div>
+              </div>
+            )}
+
+            {/* Endereço + Frete — só se delivery */}
             {tipoEntrega === 'entrega' && (
               <>
-                <div className="nv-grid-2" style={{ marginTop: 12 }}>
-                  <div>
-                    <label className="nv-label">Rua</label>
-                    <input className="nv-input" value={enderecoRua} onChange={e => setEnderecoRua(e.target.value)} placeholder="Rua Brigadeiro Franco" />
+                <div className="nv-ent-endereco">
+                  <div className="nv-ent-secao-lbl">📍 Endereço de entrega</div>
+                  <div className="nv-grid-2" style={{ marginBottom: 10 }}>
+                    <div>
+                      <label className="nv-label">Rua</label>
+                      <input className="nv-input" value={enderecoRua} onChange={e => setEnderecoRua(e.target.value)} placeholder="Rua Brigadeiro Franco" />
+                    </div>
+                    <div>
+                      <label className="nv-label">Número</label>
+                      <input className="nv-input" value={enderecoNumero} onChange={e => setEnderecoNumero(e.target.value)} placeholder="1234" />
+                    </div>
                   </div>
-                  <div>
-                    <label className="nv-label">Número</label>
-                    <input className="nv-input" value={enderecoNumero} onChange={e => setEnderecoNumero(e.target.value)} placeholder="1234" />
+                  <div className="nv-grid-2" style={{ marginBottom: 10 }}>
+                    <div>
+                      <label className="nv-label">Bairro</label>
+                      <input className="nv-input" value={enderecoBairro} onChange={e => setEnderecoBairro(e.target.value)} placeholder="Batel" />
+                    </div>
+                    <div>
+                      <label className="nv-label">Cidade</label>
+                      <input className="nv-input" value={enderecoCidade} onChange={e => setEnderecoCidade(e.target.value)} />
+                    </div>
+                  </div>
+                  <label className="nv-label">Complemento / Referência</label>
+                  <input className="nv-input" value={enderecoComplemento} onChange={e => setEnderecoComplemento(e.target.value)} placeholder="Apto 302, portão azul, etc" />
+                </div>
+
+                <div className="nv-ent-frete">
+                  <div className="nv-ent-frete-ico">💰</div>
+                  <div className="nv-ent-frete-info">
+                    <div className="nv-ent-frete-lbl">Valor do frete</div>
+                    <input
+                      className="nv-ent-frete-inp"
+                      inputMode="decimal"
+                      placeholder="R$ 0,00"
+                      value={taxaEntrega === 0 ? '' : taxaEntrega.toString().replace('.', ',')}
+                      onChange={e => setTaxaEntrega(parseMoney(e.target.value))}
+                    />
                   </div>
                 </div>
-                <div className="nv-grid-2" style={{ marginTop: 12 }}>
-                  <div>
-                    <label className="nv-label">Bairro</label>
-                    <input className="nv-input" value={enderecoBairro} onChange={e => setEnderecoBairro(e.target.value)} placeholder="Batel" />
-                  </div>
-                  <div>
-                    <label className="nv-label">Cidade</label>
-                    <input className="nv-input" value={enderecoCidade} onChange={e => setEnderecoCidade(e.target.value)} />
-                  </div>
-                </div>
-                <label className="nv-label" style={{ marginTop: 12 }}>Complemento / Referência</label>
-                <input className="nv-input" value={enderecoComplemento} onChange={e => setEnderecoComplemento(e.target.value)} placeholder="Apto 302, portão azul, etc" />
-                <label className="nv-label" style={{ marginTop: 12 }}>Valor do frete</label>
-                <input className="nv-input" inputMode="decimal" placeholder="R$ 0,00" value={taxaEntrega === 0 ? '' : taxaEntrega.toString().replace('.', ',')} onChange={e => setTaxaEntrega(parseMoney(e.target.value))} />
               </>
             )}
           </>
@@ -707,12 +747,23 @@ export default function NovaVenda() {
               <div className="nv-r-linha"><span>📦 Tipo</span><b>{tipo === 'encomenda' ? 'Encomenda' : 'Pronta Entrega'}</b></div>
               <div className="nv-r-linha"><span>🎂 Produtos</span><b>{itens.length} {itens.length === 1 ? 'item' : 'itens'} · {formatMoney(subtotalProdutos)}</b></div>
               <div className="nv-r-linha"><span>👤 Cliente</span><b>{semCliente || !clienteNome ? 'Sem cliente' : toTitleCase(clienteNome)}</b></div>
-              {tipo === 'encomenda' && (
-                <div className="nv-r-linha">
-                  <span>{tipoEntrega === 'entrega' ? '🛵 Delivery' : '🛍 Retirada'}</span>
-                  <b>{dataEntrega ? new Date(dataEntrega + 'T00:00').toLocaleDateString('pt-BR') : '—'}{horarioEntrega && ` · ${horarioEntrega}`}{tipoEntrega === 'entrega' && taxaEntrega > 0 && ` · ${formatMoney(taxaEntrega)}`}</b>
-                </div>
-              )}
+              <div className="nv-r-linha">
+                <span>{tipoEntrega === 'entrega' ? '🛵 Delivery' : '🏪 Retirada'}</span>
+                <b>
+                  {tipo === 'encomenda' ? (
+                    <>
+                      {dataEntrega ? new Date(dataEntrega + 'T00:00').toLocaleDateString('pt-BR') : '—'}
+                      {horarioEntrega && ` · ${horarioEntrega}`}
+                      {tipoEntrega === 'entrega' && taxaEntrega > 0 && ` · ${formatMoney(taxaEntrega)}`}
+                    </>
+                  ) : (
+                    <>
+                      Agora
+                      {tipoEntrega === 'entrega' && taxaEntrega > 0 && ` · ${formatMoney(taxaEntrega)}`}
+                    </>
+                  )}
+                </b>
+              </div>
               {(desconto > 0 || acrescimo > 0) && (
                 <div className="nv-r-linha">
                   <span>🎫 Ajustes</span>
@@ -1382,6 +1433,114 @@ export default function NovaVenda() {
       .nv-input:focus { border-color: #E85A8C; }
 
       .nv-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+      /* ═══ Etapa Entrega ═══ */
+      .nv-ent-tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .nv-ent-card {
+        all: unset;
+        padding: 20px 14px; border-radius: 14px;
+        cursor: pointer;
+        text-align: center; box-sizing: border-box;
+        border: 2px solid transparent;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+        transition: all 0.15s;
+        font-family: var(--font-base) !important;
+      }
+      .nv-ent-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+
+      /* Retirada — azul */
+      .nv-ent-card[data-modo="retirada"] {
+        background: linear-gradient(160deg, #DBEAFE 0%, #BFDBFE 100%);
+      }
+      .nv-ent-card[data-modo="retirada"] .nv-ent-nome,
+      .nv-ent-card[data-modo="retirada"] .nv-ent-desc {
+        color: #1E3A8A;
+      }
+      .nv-ent-card[data-modo="retirada"].nv-ent-card--ativo {
+        border-color: #3B82F6;
+        box-shadow: 0 6px 20px rgba(59,130,246,0.25);
+      }
+
+      /* Delivery — laranja */
+      .nv-ent-card[data-modo="delivery"] {
+        background: linear-gradient(160deg, #FED7AA 0%, #FDBA74 100%);
+      }
+      .nv-ent-card[data-modo="delivery"] .nv-ent-nome,
+      .nv-ent-card[data-modo="delivery"] .nv-ent-desc {
+        color: #7C2D12;
+      }
+      .nv-ent-card[data-modo="delivery"].nv-ent-card--ativo {
+        border-color: #EA580C;
+        box-shadow: 0 6px 20px rgba(234,88,12,0.25);
+      }
+
+      .nv-ent-emoji { font-size: 36px; margin-bottom: 4px; display: block; line-height: 1; }
+      .nv-ent-nome { font-size: 14.5px; font-weight: 900; letter-spacing: -0.01em; font-family: var(--font-base) !important; }
+      .nv-ent-desc { font-size: 11.5px; margin-top: 4px; font-weight: 600; opacity: 0.8; font-family: var(--font-base) !important; }
+
+      /* Confirmação pronta entrega + retirada */
+      .nv-ent-confirma {
+        display: flex; align-items: center; gap: 12px;
+        background: linear-gradient(160deg, #D1FAE5 0%, #A7F3D0 100%);
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-top: 16px;
+      }
+      .nv-ent-confirma-ico {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: #10B981; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; font-weight: 900;
+        flex-shrink: 0;
+      }
+      .nv-ent-confirma-titulo { font-size: 13.5px; font-weight: 900; color: #065F46; font-family: var(--font-base) !important; }
+      .nv-ent-confirma-sub { font-size: 11.5px; color: #047857; margin-top: 2px; font-family: var(--font-base) !important; }
+
+      /* Card endereço */
+      .nv-ent-endereco {
+        background: #FAFAFA;
+        border: 1.5px solid #F0EBED;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-top: 16px;
+      }
+      .nv-ent-secao-lbl {
+        font-size: 11px; font-weight: 800; color: #E85A8C;
+        text-transform: uppercase; letter-spacing: 0.06em;
+        margin-bottom: 12px;
+        font-family: var(--font-base) !important;
+      }
+
+      /* Card frete (amarelo destacado) */
+      .nv-ent-frete {
+        display: flex; align-items: center; gap: 12px;
+        background: linear-gradient(160deg, #FEF3C7 0%, #FDE68A 100%);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-top: 10px;
+      }
+      .nv-ent-frete-ico {
+        width: 40px; height: 40px; border-radius: 10px;
+        background: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+      .nv-ent-frete-info { flex: 1; min-width: 0; }
+      .nv-ent-frete-lbl {
+        font-size: 10.5px; font-weight: 800; color: #92400E;
+        text-transform: uppercase; letter-spacing: 0.05em;
+        font-family: var(--font-base) !important;
+      }
+      .nv-ent-frete-inp {
+        border: 0; background: transparent;
+        font-size: 18px; font-weight: 900; letter-spacing: -0.01em;
+        color: #78350F;
+        outline: none; width: 100%; margin-top: 2px;
+        font-family: var(--font-base) !important;
+        padding: 0;
+      }
+      .nv-ent-frete-inp::placeholder { color: #A16207; opacity: 0.6; }
 
       /* Radios entrega */
       .nv-radio-row { display: flex; gap: 8px; margin-bottom: 16px; }
