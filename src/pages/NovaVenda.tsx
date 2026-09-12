@@ -394,13 +394,7 @@ export default function NovaVenda() {
                         <span className="nv-qtd-num">{it.quantidade}</span>
                         <button className="nv-qtd-btn" onClick={() => atualizarQtd(idx, it.quantidade + 1)} type="button">+</button>
                       </div>
-                      <input
-                        type="text"
-                        className="nv-p-item-obs"
-                        placeholder="Observação..."
-                        value={it.observacoes}
-                        onChange={e => atualizarObs(idx, e.target.value)}
-                      />
+                      <div style={{ flex: 1 }} />
                       <button className="nv-p-item-dup" onClick={() => duplicarItem(idx)} type="button" aria-label="Duplicar" title="Duplicar produto">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                       </button>
@@ -408,6 +402,13 @@ export default function NovaVenda() {
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
                       </button>
                     </div>
+                    <input
+                      type="text"
+                      className="nv-p-item-obs"
+                      placeholder="Observação (opcional)..."
+                      value={it.observacoes}
+                      onChange={e => atualizarObs(idx, e.target.value)}
+                    />
                   </div>
                 ))}
               </div>
@@ -954,34 +955,36 @@ export default function NovaVenda() {
         margin-bottom: 8px;
       }
       .nv-p-item-img {
-        width: 36px; height: 36px; border-radius: 7px;
+        width: 48px; height: 48px; border-radius: 8px;
         background: #F5EEF0; display: flex; align-items: center; justify-content: center;
-        font-size: 18px; overflow: hidden; flex-shrink: 0;
+        font-size: 22px; overflow: hidden; flex-shrink: 0;
       }
       .nv-p-item-img img { width: 100%; height: 100%; object-fit: cover; }
       .nv-p-item-info { flex: 1; min-width: 0; }
-      .nv-p-item-nome { font-size: 13px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
-      .nv-p-item-unit { font-size: 11px; color: #9A8B93; margin-top: 1px; font-family: var(--font-base) !important; }
+      .nv-p-item-nome { font-size: 13.5px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
+      .nv-p-item-unit { font-size: 11px; color: #9A8B93; margin-top: 2px; font-family: var(--font-base) !important; }
       .nv-p-item-preco { font-size: 13.5px; font-weight: 800; letter-spacing: 0.01em; color: #2D1F26; white-space: nowrap; font-family: var(--font-base) !important; }
       .nv-p-item-controls {
         display: flex; align-items: center; gap: 6px;
         flex-wrap: nowrap;
+        margin-bottom: 8px;
       }
       .nv-qtd {
         display: inline-flex; align-items: center; gap: 4px;
         background: #F5F1F3; border-radius: 6px; padding: 2px;
         flex-shrink: 0;
       }
-      .nv-qtd-btn { all: unset; width: 24px; height: 24px; border-radius: 5px; background: #fff; color: #2D1F26; font-weight: 800; text-align: center; cursor: pointer; font-family: var(--font-base); box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+      .nv-qtd-btn { all: unset; width: 26px; height: 26px; border-radius: 5px; background: #fff; color: #2D1F26; font-weight: 800; text-align: center; cursor: pointer; font-family: var(--font-base); box-shadow: 0 1px 2px rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: center; }
       .nv-qtd-btn:hover { background: #EBE5E8; }
-      .nv-qtd-num { font-size: 12px; font-weight: 800; min-width: 20px; text-align: center; }
+      .nv-qtd-num { font-size: 12px; font-weight: 800; min-width: 22px; text-align: center; }
       .nv-p-item-obs {
-        flex: 1;
-        min-width: 0;
-        padding: 6px 10px;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px 12px;
         border: 1.5px solid #F0EBED;
         border-radius: 6px;
-        font-size: 11.5px;
+        font-size: 12px;
         font-family: var(--font-base) !important;
         background: #fff;
         outline: none;
@@ -989,7 +992,7 @@ export default function NovaVenda() {
         color: #2D1F26;
       }
       .nv-p-item-obs:focus { border-color: #E85A8C; }
-      .nv-p-item-obs::placeholder { color: #B8ACB1; }
+      .nv-p-item-obs::placeholder { color: #B8ACB1; font-style: italic; }
       .nv-p-item-lixo { all: unset; padding: 6px; color: #DC2626; cursor: pointer; border-radius: 5px; flex-shrink: 0; }
       .nv-p-item-lixo:hover { background: #FEE2E2; }
       .nv-p-item-dup { all: unset; padding: 6px; color: #6B5D64; cursor: pointer; border-radius: 5px; flex-shrink: 0; }
