@@ -267,25 +267,9 @@ export default function NovaVenda() {
 
       {/* Barra de progresso */}
       <div className="nv-progress">
-        {etapas.map((label, idx) => {
-          const num = idx + 1
-          const completo = num < etapa
-          const ativo = num === etapa
-          return (
-            <div key={label} className="nv-p-wrap">
-              <button
-                type="button"
-                className={`nv-p-step ${ativo ? 'nv-p-step--ativo' : ''} ${completo ? 'nv-p-step--completo' : ''}`}
-                onClick={() => { if (completo) setEtapa(num) }}
-                disabled={!completo && !ativo}
-              >
-                <span className="nv-p-num">{completo ? '✓' : num}</span>
-                <span className="nv-p-label">{label}</span>
-              </button>
-              {idx < etapas.length - 1 && <span className={`nv-p-line ${completo ? 'nv-p-line--completo' : ''}`} />}
-            </div>
-          )
-        })}
+        <div className="nv-pb-bar">
+          <div className="nv-pb-fill" style={{ width: `${(etapa / totalEtapas) * 100}%` }} />
+        </div>
       </div>
 
       {/* Corpo da etapa */}
@@ -643,44 +627,33 @@ export default function NovaVenda() {
         min-height: calc(100vh - 240px);
       }
       @media (max-width: 767px) {
-        .nv-root { margin: 0.5rem; border-radius: 10px; min-height: calc(100vh - 180px); }
+        .nv-root { margin: 0; border-radius: 0; min-height: calc(100vh - 180px); box-shadow: none; }
       }
 
       /* Barra de progresso */
       .nv-progress {
         display: flex;
-        align-items: flex-start;
-        padding: 16px 20px 12px;
+        justify-content: center;
+        padding: 18px 20px 14px;
         border-bottom: 1px solid #F0EBED;
-        background: #FDFAFB;
+        background: #fff;
         border-radius: 12px 12px 0 0;
-        overflow-x: auto;
       }
-      .nv-p-wrap { display: flex; align-items: center; gap: 4px; flex: 1; min-width: fit-content; }
-      .nv-p-step {
-        all: unset;
-        display: flex; flex-direction: column; align-items: center; gap: 4px;
-        cursor: default;
-        font-family: var(--font-base) !important;
-        min-width: 60px;
+      .nv-pb-bar {
+        width: 82%;
+        height: 10px;
+        background: #FCE0E9;
+        border-radius: 999px;
+        overflow: hidden;
       }
-      .nv-p-step--completo { cursor: pointer; }
-      .nv-p-num {
-        width: 24px; height: 24px; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 11px; font-weight: 800;
-        background: #D5CBCF; color: #fff;
-        transition: all 0.2s;
+      .nv-pb-fill {
+        height: 100%;
+        background: #E85A8C;
+        border-radius: 999px;
+        transition: width 0.35s ease;
       }
-      .nv-p-step--ativo .nv-p-num { background: #E85A8C; box-shadow: 0 0 0 4px rgba(232,90,140,0.15); }
-      .nv-p-step--completo .nv-p-num { background: #16A34A; }
-      .nv-p-label { font-size: 10.5px; color: #6B5D64; font-weight: 700; letter-spacing: 0.02em; white-space: nowrap; }
-      .nv-p-step--ativo .nv-p-label { color: #E85A8C; font-weight: 800; }
-      .nv-p-line { flex: 1; height: 2px; background: #D5CBCF; margin: 12px 0 0; min-width: 12px; }
-      .nv-p-line--completo { background: #16A34A; }
-      @media (max-width: 640px) {
-        .nv-p-label { display: none; }
-        .nv-p-step--ativo .nv-p-label { display: block; }
+      @media (max-width: 767px) {
+        .nv-progress { padding: 14px 16px 12px; border-radius: 10px 10px 0 0; }
       }
 
       /* Corpo */
