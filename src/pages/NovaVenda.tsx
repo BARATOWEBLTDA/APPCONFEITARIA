@@ -51,6 +51,15 @@ const initialsOf = (name: string) => {
   return name.trim().split(/\s+/).map(n => n[0]).slice(0, 2).join('').toUpperCase() || '?'
 }
 
+// "BOLO DE CHOCOLATE" -> "Bolo de Chocolate"
+const toTitleCase = (str: string): string => {
+  const preposicoes = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'com', 'para', 'a', 'o', 'em', 'na', 'no'])
+  return str.toLowerCase().split(/\s+/).map((word, i) => {
+    if (i > 0 && preposicoes.has(word)) return word
+    return word.charAt(0).toUpperCase() + word.slice(1)
+  }).join(' ')
+}
+
 // ── Etapas ────────────────────────────────────────────────────────────────
 const ETAPAS_ENCOMENDA = ['Venda', 'Cliente', 'Entrega', 'Pagamento', 'Revisar']
 const ETAPAS_PRONTA    = ['Venda', 'Cliente', 'Pagamento', 'Revisar']
@@ -338,7 +347,7 @@ export default function NovaVenda() {
                         {it.imagem_url ? <img src={it.imagem_url} alt={it.nome_produto} /> : <span>🎂</span>}
                       </div>
                       <div className="nv-p-item-info">
-                        <div className="nv-p-item-nome">{it.nome_produto}</div>
+                        <div className="nv-p-item-nome">{toTitleCase(it.nome_produto)}</div>
                         <div className="nv-p-item-unit">{formatMoney(it.valor_unitario)}{it.forma_venda ? ` / ${it.forma_venda}` : ''}</div>
                       </div>
                       <div className="nv-p-item-preco">{formatMoney(it.valor_unitario * it.quantidade)}</div>
@@ -397,7 +406,7 @@ export default function NovaVenda() {
                     <div className="nv-cli-card-topo">
                       <div className="nv-cli-avatar">{initialsOf(clienteNome)}</div>
                       <div className="nv-cli-nome-wrap">
-                        <div className="nv-cli-card-nome">{clienteNome}</div>
+                        <div className="nv-cli-card-nome">{toTitleCase(clienteNome)}</div>
                         <div className="nv-cli-card-badge">✓ Cliente cadastrado</div>
                       </div>
                       <button
@@ -635,7 +644,7 @@ export default function NovaVenda() {
             <div className="nv-resumo">
               <div className="nv-r-linha"><span>📦 Tipo</span><b>{tipo === 'encomenda' ? 'Encomenda' : 'Pronta Entrega'}</b></div>
               <div className="nv-r-linha"><span>🎂 Produtos</span><b>{itens.length} {itens.length === 1 ? 'item' : 'itens'} · {formatMoney(subtotalProdutos)}</b></div>
-              <div className="nv-r-linha"><span>👤 Cliente</span><b>{semCliente ? 'Sem cliente' : (clienteNome || 'Não informado')}</b></div>
+              <div className="nv-r-linha"><span>👤 Cliente</span><b>{semCliente || !clienteNome ? 'Sem cliente' : toTitleCase(clienteNome)}</b></div>
               {tipo === 'encomenda' && (
                 <div className="nv-r-linha">
                   <span>{tipoEntrega === 'entrega' ? '🛵 Delivery' : '🛍 Retirada'}</span>
@@ -701,7 +710,7 @@ export default function NovaVenda() {
             {produtos.filter(p => p.nome.toLowerCase().includes(buscaProduto.toLowerCase())).map(p => (
               <button key={p.id} type="button" className="nv-modal-item" onClick={() => addProduto(p)}>
                 <div className="nv-modal-item-img">{p.imagem_url ? <img src={p.imagem_url} alt={p.nome} /> : '🎂'}</div>
-                <div className="nv-modal-item-nome">{p.nome}</div>
+                <div className="nv-modal-item-nome">{toTitleCase(p.nome)}</div>
                 <div className="nv-modal-item-preco">{formatMoney(p.preco_normal)}</div>
               </button>
             ))}
@@ -723,7 +732,7 @@ export default function NovaVenda() {
               <button key={c.id} type="button" className="nv-modal-item" onClick={() => selecionarCliente(c)}>
                 <div className="nv-modal-item-avatar">{initialsOf(c.nome)}</div>
                 <div style={{ flex: 1, textAlign: 'left' }}>
-                  <div className="nv-modal-item-nome">{c.nome}</div>
+                  <div className="nv-modal-item-nome">{toTitleCase(c.nome)}</div>
                   {c.telefone && <div className="nv-modal-item-sub">{c.telefone}</div>}
                 </div>
               </button>
