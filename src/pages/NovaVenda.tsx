@@ -70,6 +70,7 @@ export default function NovaVenda() {
   const [clienteId, setClienteId] = useState<string | null>(null)
   const [clienteNome, setClienteNome] = useState('')
   const [clienteTelefone, setClienteTelefone] = useState('')
+  const [modoNovoCli, setModoNovoCli] = useState(false)
 
   const [tipoEntrega, setTipoEntrega] = useState<TipoEntrega>('retirada')
   const [dataEntrega, setDataEntrega] = useState('')
@@ -133,13 +134,12 @@ export default function NovaVenda() {
   // ── Validação por etapa ────────────────────────────────────────────────
   const podeAvancar = (): boolean => {
     if (etapa === 1) return tipo !== null && itens.length > 0
-    if (etapa === 2) return semCliente || clienteNome.trim().length > 0
+    if (etapa === 2) return true // Cliente opcional
     if (tipo === 'encomenda' && etapa === 3) {
       if (!dataEntrega) return false
       if (tipoEntrega === 'entrega' && !enderecoRua) return false
       return true
     }
-    // Pagamento é a penúltima
     return true
   }
 
@@ -180,6 +180,7 @@ export default function NovaVenda() {
     setClienteNome(c.nome)
     setClienteTelefone(c.telefone || c.whatsapp || '')
     setSemCliente(false)
+    setModoNovoCli(false)
     // Puxa endereço cadastrado (se tiver)
     if (c.rua) setEnderecoRua(c.rua)
     if (c.numero) setEnderecoNumero(c.numero)
@@ -374,45 +375,77 @@ export default function NovaVenda() {
           </>
         )}
 
-        {/* ═══ ETAPA 3: Cliente ═══ */}
+        {/* ═══ ETAPA 2: Cliente (opcional) ═══ */}
         {etapaLabelAtual === 'Cliente' && (
           <>
             <h2 className="nv-titulo">Quem é o cliente?</h2>
-            <p className="nv-sub">Selecione, cadastre ou registre sem cliente</p>
+            <p className="nv-sub">Opcional — pode registrar venda sem cliente</p>
 
-            <div className="nv-cli-opts">
-              <button className={`nv-cli-btn ${!semCliente && clienteId ? 'nv-cli-btn--ativo' : ''}`} onClick={() => setModalCliente(true)} type="button">
-                🔍 Cliente cadastrado
-              </button>
-              <button className={`nv-cli-btn ${!semCliente && !clienteId && clienteNome ? 'nv-cli-btn--ativo' : ''}`} onClick={() => { setClienteId(null); setSemCliente(false); setClienteNome(''); setClienteTelefone(''); }} type="button">
-                + Cadastrar novo cliente
-              </button>
-              {tipo === 'pronta_entrega' && (
-                <button className={`nv-cli-btn ${semCliente ? 'nv-cli-btn--ativo' : ''}`} onClick={() => { setSemCliente(true); setClienteId(null); setClienteNome(''); setClienteTelefone(''); }} type="button">
-                  Venda sem cliente identificado
+            {clienteId && !modoNovoCli ? (
+              /* Cliente escolhido - card */
+              <div className="nv-cli-escolhido">
+                <div className="nv-cli-avatar">{initialsOf(clienteNome)}</div>
+                <div className="nv-cli-info">
+                  <div className="nv-cli-nome">{clienteNome}</div>
+                  {clienteTelefone && <div className="nv-cli-tel">{clienteTelefone}</div>}
+                </div>
+                <button
+                  className="nv-cli-x"
+                  onClick={() => {
+                    setClienteId(null); setClienteNome(''); setClienteTelefone('');
+                    // Limpa também endereço puxado
+                    setEnderecoRua(''); setEnderecoNumero(''); setEnderecoBairro('');
+                    setEnderecoComplemento('');
+                  }}
+                  type="button"
+                  aria-label="Remover cliente"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
-              )}
-            </div>
-
-            {!semCliente && (
-              <div className="nv-cli-form">
-                <label className="nv-label">Nome</label>
-                <input className="nv-input" placeholder="Nome completo" value={clienteNome} onChange={e => { setClienteNome(e.target.value); if (clienteId) setClienteId(null); }} />
-                <label className="nv-label" style={{ marginTop: 12 }}>Telefone / WhatsApp</label>
-                <input className="nv-input" placeholder="(41) 99999-0000" value={clienteTelefone} onChange={e => setClienteTelefone(e.target.value)} />
-                {clienteId && enderecoRua && (
-                  <p className="nv-hint">✓ Endereço puxado do cadastro do cliente. Pode editar na próxima etapa.</p>
-                )}
-                {!clienteId && clienteNome && (
-                  <p className="nv-hint">💡 Este cliente será cadastrado automaticamente ao finalizar</p>
-                )}
+              </div>
+            ) : (
+              /* Seletor + botão + */
+              <div className="nv-cli-row">
+                <button className="nv-cli-selector" onClick={() => setModalCliente(true)} type="button">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <span>Selecionar cliente</span>
+                </button>
+                <button
+                  className={`nv-cli-add ${modoNovoCli ? 'nv-cli-add--cancel' : ''}`}
+                  onClick={() => {
+                    if (modoNovoCli) {
+                      // Cancelar novo cliente
+                      setModoNovoCli(false); setClienteNome(''); setClienteTelefone('');
+                    } else {
+                      setModoNovoCli(true); setClienteId(null); setClienteNome(''); setClienteTelefone('');
+                    }
+                  }}
+                  type="button"
+                  aria-label={modoNovoCli ? "Cancelar" : "Cadastrar novo"}
+                >
+                  {modoNovoCli ? '✕' : '+'}
+                </button>
               </div>
             )}
 
-            {semCliente && (
-              <div className="nv-empty" style={{ marginTop: 16 }}>
-                <p>Venda avulsa — sem cliente cadastrado</p>
+            {/* Form novo cliente */}
+            {modoNovoCli && (
+              <div className="nv-form-novo">
+                <div className="nv-form-novo-titulo">✚ Novo Cliente</div>
+                <label className="nv-label">Nome</label>
+                <input className="nv-input" placeholder="Nome completo" value={clienteNome} onChange={e => setClienteNome(e.target.value)} />
+                <label className="nv-label" style={{ marginTop: 12 }}>Telefone / WhatsApp</label>
+                <input className="nv-input" placeholder="(41) 99999-0000" value={clienteTelefone} onChange={e => setClienteTelefone(e.target.value)} />
+                <p className="nv-hint">💡 Será cadastrado automaticamente ao finalizar</p>
               </div>
+            )}
+
+            {/* Hints */}
+            {!clienteId && !modoNovoCli && (
+              <p className="nv-hint-centered">Sem cliente, será registrada como venda avulsa</p>
+            )}
+            {clienteId && enderecoRua && (
+              <p className="nv-hint-centered">✓ Endereço puxado do cadastro. Pode editar na próxima etapa.</p>
             )}
           </>
         )}
@@ -581,7 +614,7 @@ export default function NovaVenda() {
 
       {/* Rodapé com total + botões */}
       <div className="nv-footer">
-        {etapa > 1 ? (
+        {etapa > 1 && etapaLabelAtual !== 'Cliente' ? (
           <div className="nv-footer-total">
             <span className="nv-footer-lbl">Total</span>
             <span className="nv-footer-val">{formatMoney(total)}</span>
@@ -873,21 +906,94 @@ export default function NovaVenda() {
       }
       .nv-add-btn:hover { border-color: #E85A8C; background: #FDF3F7; }
 
-      /* Cliente */
-      .nv-cli-opts { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
-      .nv-cli-btn {
+      /* Cliente - Seletor + botão + */
+      .nv-cli-row {
+        display: flex; gap: 8px; align-items: stretch;
+        margin-bottom: 8px;
+      }
+      .nv-cli-selector {
         all: unset;
-        flex: 1; padding: 10px; border-radius: 8px;
-        border: 1.5px solid #F0EBED; background: #fff;
-        font-size: 12.5px; font-weight: 700; cursor: pointer;
-        color: #4A3540; text-align: center;
-        min-width: 120px; box-sizing: border-box;
+        flex: 1; min-width: 0;
+        display: flex; align-items: center; gap: 8px;
+        padding: 12px 14px;
+        border: 1.5px solid #E5D8DE; background: #fff;
+        border-radius: 10px; cursor: pointer;
+        font-size: 13px; color: #9A8B93;
+        box-sizing: border-box;
+        font-family: var(--font-base) !important;
+        transition: border-color 0.12s;
+      }
+      .nv-cli-selector:hover { border-color: #E85A8C; }
+      .nv-cli-selector svg { color: #9A8B93; flex-shrink: 0; }
+      .nv-cli-add {
+        all: unset;
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        background: #E85A8C; color: #fff;
+        cursor: pointer;
+        font-size: 20px; font-weight: 900;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 3px 0 #C33A6E;
+        flex-shrink: 0;
+        transition: filter 0.12s, transform 0.08s;
+        font-family: var(--font-base) !important;
+        box-sizing: border-box;
+      }
+      .nv-cli-add:hover { filter: brightness(1.05); }
+      .nv-cli-add:active { transform: translateY(3px); box-shadow: 0 0 0 #C33A6E; }
+      .nv-cli-add--cancel { background: #6B5D64; box-shadow: 0 3px 0 #4A3540; }
+      .nv-cli-add--cancel:active { box-shadow: 0 0 0 #4A3540; }
+
+      /* Card cliente escolhido */
+      .nv-cli-escolhido {
+        background: #FDF3F7;
+        border: 1.5px solid #E85A8C;
+        border-radius: 10px;
+        padding: 12px 14px;
+        display: flex; align-items: center; gap: 10px;
+        margin-bottom: 10px;
+      }
+      .nv-cli-avatar {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: linear-gradient(135deg, #E85A8C, #C33A6E);
+        color: #fff; display: flex; align-items: center; justify-content: center;
+        font-size: 12px; font-weight: 800;
+        flex-shrink: 0;
         font-family: var(--font-base) !important;
       }
-      .nv-cli-btn:hover { border-color: #E85A8C; }
-      .nv-cli-btn--ativo { border-color: #E85A8C; background: #FDF3F7; color: #E85A8C; }
-      .nv-cli-form { display: flex; flex-direction: column; }
-      .nv-hint { font-size: 11.5px; color: #6B5D64; margin-top: 6px; font-family: var(--font-base) !important; }
+      .nv-cli-info { flex: 1; min-width: 0; }
+      .nv-cli-nome { font-size: 13.5px; font-weight: 800; color: #2D1F26; font-family: var(--font-base) !important; }
+      .nv-cli-tel { font-size: 11.5px; color: #6B5D64; margin-top: 1px; font-family: var(--font-base) !important; }
+      .nv-cli-x {
+        all: unset;
+        padding: 6px; border-radius: 50%;
+        color: #6B5D64; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+      }
+      .nv-cli-x:hover { background: rgba(0,0,0,0.05); color: #DC2626; }
+
+      /* Form novo cliente */
+      .nv-form-novo {
+        background: #FAFAFA;
+        border: 1.5px solid #F0EBED;
+        border-radius: 10px;
+        padding: 14px;
+        margin-top: 8px;
+      }
+      .nv-form-novo-titulo {
+        font-size: 11px; font-weight: 800; color: #E85A8C;
+        text-transform: uppercase; letter-spacing: 0.06em;
+        margin-bottom: 10px;
+        font-family: var(--font-base) !important;
+      }
+
+      /* Hint centralizado */
+      .nv-hint-centered {
+        font-size: 11.5px; color: #9A8B93;
+        margin-top: 10px; text-align: center;
+        font-style: italic;
+        font-family: var(--font-base) !important;
+      }
 
       /* Inputs & Labels */
       .nv-label {
