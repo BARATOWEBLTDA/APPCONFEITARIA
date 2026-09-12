@@ -288,7 +288,7 @@ export default function Agenda() {
   };
 
   const duplicarPedido = (id: string) => {
-    navigate(`/pedidos/novo?duplicar=${id}`);
+    navigate(`/vendas/novo?duplicar=${id}`);
   };
 
   const excluirPedido = (id: string) => {

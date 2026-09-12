@@ -158,7 +158,7 @@ export default function App() {
           <Route path="/produtos/categorias" element={<Produtos />} />
           <Route path="/categorias" element={<Categorias />} />
           <Route path="/pedidos" element={<Pedidos />} />
-          <Route path="/pedidos/novo" element={<PedidoForm />} />
+          <Route path="/pedidos/novo" element={<Navigate to="/vendas/novo" replace />} />
           <Route path="/vendas/novo" element={<NovaVenda />} />
           <Route path="/pedidos/:id" element={<PedidoForm />} />
           <Route path="/agenda" element={<Agenda />} />
