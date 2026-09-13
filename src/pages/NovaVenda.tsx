@@ -366,7 +366,9 @@ export default function NovaVenda() {
                 className={`nv-tipo-card ${tipo === 'pronta_entrega' ? 'nv-tipo-card--ativo' : ''}`}
                 onClick={() => setTipo('pronta_entrega')}
               >
-                <div className="nv-tipo-emoji">⚡</div>
+                <div className="nv-tipo-emoji nv-tipo-emoji--img">
+                  <img src="/Sistema/prontaentrega.png" alt="Pronta Entrega" />
+                </div>
                 <div className="nv-tipo-nome">Pronta Entrega</div>
                 <div className="nv-tipo-desc">Cliente já está levando</div>
               </button>
