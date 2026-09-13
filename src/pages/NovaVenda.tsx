@@ -628,7 +628,7 @@ export default function NovaVenda() {
             </div>
 
             {/* Aviso contextual */}
-            <div className={`nv-ent-aviso nv-ent-aviso--${tipoEntrega}`}>
+            <div className="nv-ent-aviso">
               <div className="nv-ent-aviso-ico">
                 {tipoEntrega === 'retirada_local' && '🏠'}
                 {tipoEntrega === 'retirada_agendada' && '📅'}
@@ -1496,54 +1496,26 @@ export default function NovaVenda() {
       .nv-ent-tipos--3 { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
       .nv-ent-card {
         all: unset;
-        padding: 16px 8px; border-radius: 14px;
+        padding: 16px 8px; border-radius: 12px;
         cursor: pointer;
         text-align: center; box-sizing: border-box;
         border: 2px solid transparent;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+        background: #F5F1F3;
         transition: all 0.15s;
         font-family: var(--font-base) !important;
       }
-      .nv-ent-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+      .nv-ent-card:hover { background: #EBE5E8; }
+      .nv-ent-card .nv-ent-nome,
+      .nv-ent-card .nv-ent-desc { color: #4A3540; }
 
-      /* Retirada no local — verde */
-      .nv-ent-card[data-modo="local"] {
-        background: linear-gradient(160deg, #D1FAE5 0%, #A7F3D0 100%);
+      /* Ativo — padrão rosa do app */
+      .nv-ent-card--ativo {
+        background: #FDF3F7 !important;
+        border-color: #E85A8C;
+        box-shadow: 0 4px 12px rgba(232,90,140,0.15);
       }
-      .nv-ent-card[data-modo="local"] .nv-ent-nome,
-      .nv-ent-card[data-modo="local"] .nv-ent-desc {
-        color: #065F46;
-      }
-      .nv-ent-card[data-modo="local"].nv-ent-card--ativo {
-        border-color: #10B981;
-        box-shadow: 0 6px 20px rgba(16,185,129,0.25);
-      }
-
-      /* Retirada agendada — azul */
-      .nv-ent-card[data-modo="agendada"] {
-        background: linear-gradient(160deg, #DBEAFE 0%, #BFDBFE 100%);
-      }
-      .nv-ent-card[data-modo="agendada"] .nv-ent-nome,
-      .nv-ent-card[data-modo="agendada"] .nv-ent-desc {
-        color: #1E3A8A;
-      }
-      .nv-ent-card[data-modo="agendada"].nv-ent-card--ativo {
-        border-color: #3B82F6;
-        box-shadow: 0 6px 20px rgba(59,130,246,0.25);
-      }
-
-      /* Delivery — laranja */
-      .nv-ent-card[data-modo="delivery"] {
-        background: linear-gradient(160deg, #FED7AA 0%, #FDBA74 100%);
-      }
-      .nv-ent-card[data-modo="delivery"] .nv-ent-nome,
-      .nv-ent-card[data-modo="delivery"] .nv-ent-desc {
-        color: #7C2D12;
-      }
-      .nv-ent-card[data-modo="delivery"].nv-ent-card--ativo {
-        border-color: #EA580C;
-        box-shadow: 0 6px 20px rgba(234,88,12,0.25);
-      }
+      .nv-ent-card--ativo .nv-ent-nome,
+      .nv-ent-card--ativo .nv-ent-desc { color: #E85A8C !important; }
 
       .nv-ent-emoji { font-size: 26px; margin-bottom: 4px; display: block; line-height: 1; }
       .nv-ent-emoji--img {
@@ -1557,14 +1529,16 @@ export default function NovaVenda() {
         object-fit: contain;
       }
       .nv-ent-nome { font-size: 12.5px; font-weight: 900; letter-spacing: -0.01em; font-family: var(--font-base) !important; }
-      .nv-ent-desc { font-size: 10px; margin-top: 4px; font-weight: 600; opacity: 0.8; font-family: var(--font-base) !important; line-height: 1.3; }
+      .nv-ent-desc { font-size: 10px; margin-top: 4px; font-weight: 600; opacity: 0.85; font-family: var(--font-base) !important; line-height: 1.3; }
 
-      /* Card aviso */
+      /* Card aviso — também neutro rosa */
       .nv-ent-aviso {
         display: flex; align-items: center; gap: 12px;
-        border-radius: 12px;
+        border-radius: 10px;
         padding: 12px 14px;
         margin-top: 14px;
+        background: #FDF3F7;
+        color: #831843;
         font-family: var(--font-base) !important;
       }
       .nv-ent-aviso-ico {
@@ -1578,9 +1552,6 @@ export default function NovaVenda() {
         font-size: 12.5px; font-weight: 700; line-height: 1.35;
         font-family: var(--font-base) !important;
       }
-      .nv-ent-aviso--retirada_local { background: linear-gradient(160deg, #D1FAE5 0%, #A7F3D0 100%); color: #065F46; }
-      .nv-ent-aviso--retirada_agendada { background: linear-gradient(160deg, #DBEAFE 0%, #BFDBFE 100%); color: #1E3A8A; }
-      .nv-ent-aviso--entrega { background: linear-gradient(160deg, #FED7AA 0%, #FDBA74 100%); color: #7C2D12; }
 
       /* Confirmação pronta entrega + retirada */
       .nv-ent-confirma {
