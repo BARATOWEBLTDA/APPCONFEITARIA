@@ -354,7 +354,9 @@ export default function NovaVenda() {
                 className={`nv-tipo-card ${tipo === 'encomenda' ? 'nv-tipo-card--ativo' : ''}`}
                 onClick={() => setTipo('encomenda')}
               >
-                <div className="nv-tipo-emoji">📅</div>
+                <div className="nv-tipo-emoji nv-tipo-emoji--img">
+                  <img src="/Sistema/encomenda.png" alt="Encomenda" />
+                </div>
                 <div className="nv-tipo-nome">Encomenda</div>
                 <div className="nv-tipo-desc">Pra buscar ou entregar em outra data</div>
               </button>
@@ -1229,6 +1231,16 @@ export default function NovaVenda() {
       }
 
       .nv-tipo-emoji { font-size: 40px; margin-bottom: 6px; display: block; line-height: 1; }
+      .nv-tipo-emoji--img {
+        height: 44px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 6px;
+      }
+      .nv-tipo-emoji--img img {
+        height: 100%;
+        width: auto;
+        object-fit: contain;
+      }
       .nv-tipo-nome { font-size: 14.5px; font-weight: 900; letter-spacing: -0.01em; font-family: var(--font-base) !important; }
       .nv-tipo-desc { font-size: 11.5px; margin-top: 4px; line-height: 1.35; font-weight: 600; opacity: 0.8; font-family: var(--font-base) !important; }
 
