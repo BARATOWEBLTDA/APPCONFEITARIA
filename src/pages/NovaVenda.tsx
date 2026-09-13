@@ -619,7 +619,9 @@ export default function NovaVenda() {
                 className={`nv-ent-card ${tipoEntrega === 'entrega' ? 'nv-ent-card--ativo' : ''}`}
                 onClick={() => setTipoEntrega('entrega')}
               >
-                <div className="nv-ent-emoji">🛵</div>
+                <div className="nv-ent-emoji nv-ent-emoji--img">
+                  <img src="/Sistema/moto.png" alt="Delivery" />
+                </div>
                 <div className="nv-ent-nome">Delivery</div>
                 <div className="nv-ent-desc">Entregue no endereço do cliente</div>
               </button>
@@ -1544,6 +1546,16 @@ export default function NovaVenda() {
       }
 
       .nv-ent-emoji { font-size: 26px; margin-bottom: 4px; display: block; line-height: 1; }
+      .nv-ent-emoji--img {
+        height: 32px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 4px;
+      }
+      .nv-ent-emoji--img img {
+        height: 100%;
+        width: auto;
+        object-fit: contain;
+      }
       .nv-ent-nome { font-size: 12.5px; font-weight: 900; letter-spacing: -0.01em; font-family: var(--font-base) !important; }
       .nv-ent-desc { font-size: 10px; margin-top: 4px; font-weight: 600; opacity: 0.8; font-family: var(--font-base) !important; line-height: 1.3; }
 
