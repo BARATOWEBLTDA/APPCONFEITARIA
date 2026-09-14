@@ -160,6 +160,11 @@ export default function NovaVenda() {
     else if (tipo === 'encomenda') setTipoEntrega('retirada_agendada')
   }, [tipo])
 
+  // Scroll pro topo quando muda de etapa ou entra na tela de sucesso
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
+  }, [etapa, sucessoAberto])
+
   // ── Cálculos ────────────────────────────────────────────────────────────
   const subtotalProdutos = useMemo(
     () => itens.reduce((acc, i) => acc + i.valor_unitario * i.quantidade, 0),
@@ -397,9 +402,10 @@ export default function NovaVenda() {
                   <div className="nv-suc-prod-lista">
                     {pedidoCriado.itens.map((it: ItemVenda, idx: number) => (
                       <div key={idx} className="nv-suc-prod-linha">
-                        <div>
+                        <div style={{ flex: 1 }}>
                           <div className="nv-suc-prod-nome">{toTitleCase(it.nome_produto)}</div>
                           <div className="nv-suc-prod-qtd">Quantidade: {it.quantidade}</div>
+                          {it.observacoes && <div className="nv-suc-prod-obs">↳ {it.observacoes}</div>}
                         </div>
                         {pedidoCriado.dataEntrega && (
                           <div className="nv-suc-prod-data">
@@ -422,10 +428,10 @@ export default function NovaVenda() {
                 <span className="nv-suc-btn-em">📋</span>
                 Ver pedidos
               </button>
-              <button className="nv-suc-btn-ghost nv-suc-btn-ghost--disabled" disabled title="Em breve">
+              <button className="nv-suc-btn-ghost nv-suc-btn-ghost--pro" title="Recurso PRO">
                 <span className="nv-suc-btn-em">📄</span>
                 Exportar PDF
-                <span className="nv-suc-badge">em breve</span>
+                <span className="nv-suc-badge nv-suc-badge--pro">✨ PRO</span>
               </button>
             </div>
           </div>
@@ -520,6 +526,7 @@ export default function NovaVenda() {
           .nv-suc-prod-linha + .nv-suc-prod-linha { border-top: 1px dashed #F0EBED; }
           .nv-suc-prod-nome { color: #2D1F26; font-weight: 800; font-family: var(--font-base) !important; }
           .nv-suc-prod-qtd { color: #6B5D64; margin-top: 2px; font-family: var(--font-base) !important; }
+          .nv-suc-prod-obs { color: #E85A8C; margin-top: 3px; font-size: 11px; font-style: italic; font-family: var(--font-base) !important; }
           .nv-suc-prod-data { color: #E85A8C; font-weight: 800; font-size: 10.5px; text-align: right; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; font-family: var(--font-base) !important; }
           @keyframes nvSucIn { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 400px; } }
 
@@ -560,6 +567,11 @@ export default function NovaVenda() {
             opacity: 0.55;
             cursor: not-allowed;
           }
+          .nv-suc-btn-ghost--pro {
+            border-color: #E5C580;
+            background: linear-gradient(160deg, #FFFBEB 0%, #FEF3C7 100%);
+          }
+          .nv-suc-btn-ghost--pro:hover { border-color: #D4A855; }
           .nv-suc-badge {
             position: absolute;
             top: 4px; right: 4px;
@@ -568,6 +580,11 @@ export default function NovaVenda() {
             font-size: 8.5px; font-weight: 800;
             padding: 2px 5px; border-radius: 4px;
             text-transform: uppercase; letter-spacing: 0.05em;
+          }
+          .nv-suc-badge--pro {
+            background: linear-gradient(160deg, #F59E0B 0%, #D97706 100%);
+            color: #fff;
+            box-shadow: 0 2px 4px rgba(217,119,6,0.3);
           }
         `}</style>
       </>
@@ -1134,9 +1151,14 @@ export default function NovaVenda() {
               <div className="nv-cupom-secao">
                 <div className="nv-cupom-secao-lbl">Produtos</div>
                 {itens.map((it, idx) => (
-                  <div key={idx} className="nv-cupom-linha">
-                    <span>{it.quantidade}× {toTitleCase(it.nome_produto)}</span>
-                    <b>{formatMoney(it.valor_unitario * it.quantidade)}</b>
+                  <div key={idx}>
+                    <div className="nv-cupom-linha">
+                      <span>{it.quantidade}× {toTitleCase(it.nome_produto)}</span>
+                      <b>{formatMoney(it.valor_unitario * it.quantidade)}</b>
+                    </div>
+                    {it.observacoes && (
+                      <div className="nv-cupom-obs">↳ {it.observacoes}</div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1987,6 +2009,13 @@ export default function NovaVenda() {
       .nv-cupom-linha--dim b {
         color: #6B5D64 !important;
         font-weight: 600 !important;
+      }
+      .nv-cupom-obs {
+        font-size: 11px;
+        color: #E85A8C;
+        font-style: italic;
+        padding: 2px 0 4px 12px;
+        font-family: var(--font-base) !important;
       }
 
       .nv-cupom-total {
