@@ -602,7 +602,7 @@ export default function NovaVenda() {
                 <div className="nv-ent-emoji nv-ent-emoji--img">
                   <img src="/Sistema/retirada.png" alt="Retirada no local" />
                 </div>
-                <div className="nv-ent-nome">Retirada no local</div>
+                <div className="nv-ent-nome">Retirada<br />no local</div>
                 <div className="nv-ent-desc">Cliente vai buscar o produto</div>
               </button>
               <button
@@ -612,7 +612,7 @@ export default function NovaVenda() {
                 onClick={() => setTipoEntrega('retirada_agendada')}
               >
                 <div className="nv-ent-emoji">📅</div>
-                <div className="nv-ent-nome">Retirada agendada</div>
+                <div className="nv-ent-nome">Retirada<br />agendada</div>
                 <div className="nv-ent-desc">Cliente vai buscar depois</div>
               </button>
               <button
@@ -631,11 +631,6 @@ export default function NovaVenda() {
 
             {/* Aviso contextual */}
             <div className="nv-ent-aviso">
-              <div className="nv-ent-aviso-ico">
-                {tipoEntrega === 'retirada_local' && '🏠'}
-                {tipoEntrega === 'retirada_agendada' && '📅'}
-                {tipoEntrega === 'entrega' && '🛵'}
-              </div>
               <div className="nv-ent-aviso-txt">
                 {tipoEntrega === 'retirada_local' && 'O cliente buscará o produto com você.'}
                 {tipoEntrega === 'retirada_agendada' && 'O cliente buscará o produto em outro momento.'}
@@ -1530,28 +1525,21 @@ export default function NovaVenda() {
         width: auto;
         object-fit: contain;
       }
-      .nv-ent-nome { font-size: 12.5px; font-weight: 900; letter-spacing: -0.01em; font-family: var(--font-base) !important; }
-      .nv-ent-desc { font-size: 10px; margin-top: 4px; font-weight: 600; opacity: 0.85; font-family: var(--font-base) !important; line-height: 1.3; }
+      .nv-ent-nome { font-size: 12.5px; font-weight: 900; letter-spacing: -0.01em; line-height: 1.15; font-family: var(--font-base) !important; }
+      .nv-ent-desc { font-size: 10px; margin-top: 6px; font-weight: 600; opacity: 0.85; font-family: var(--font-base) !important; line-height: 1.3; }
 
-      /* Card aviso — também neutro rosa */
+      /* Card aviso — apenas texto centralizado */
       .nv-ent-aviso {
-        display: flex; align-items: center; gap: 12px;
         border-radius: 10px;
-        padding: 12px 14px;
+        padding: 14px 16px;
         margin-top: 14px;
         background: #FDF3F7;
         color: #831843;
+        text-align: center;
         font-family: var(--font-base) !important;
       }
-      .nv-ent-aviso-ico {
-        width: 32px; height: 32px; border-radius: 8px;
-        background: rgba(255,255,255,0.6);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 16px;
-        flex-shrink: 0;
-      }
       .nv-ent-aviso-txt {
-        font-size: 12.5px; font-weight: 700; line-height: 1.35;
+        font-size: 12.5px; font-weight: 700; line-height: 1.4;
         font-family: var(--font-base) !important;
       }
 
