@@ -1134,17 +1134,45 @@ export default function NovaVenda() {
             <p className="nv-sub">Última chance de ajustar</p>
 
             <div className="nv-cupom">
-              {/* Cabeçalho: tipo + cliente */}
+              {/* Cabeçalho: tipo + info organizada */}
               <div className="nv-cupom-head">
                 <div className="nv-cupom-tipo">
                   {tipo === 'encomenda' ? '📅 ENCOMENDA' : '⚡ PRONTA ENTREGA'}
                 </div>
-                <div className="nv-cupom-cliente">
-                  {semCliente || !clienteNome ? 'Venda avulsa' : toTitleCase(clienteNome)}
+                <div className="nv-cupom-linha nv-cupom-linha--head">
+                  <span>Cliente</span>
+                  <b>{semCliente || !clienteNome ? 'Venda avulsa' : toTitleCase(clienteNome)}</b>
                 </div>
                 {clienteTelefone && (
-                  <div className="nv-cupom-tel">{clienteTelefone}</div>
+                  <div className="nv-cupom-linha nv-cupom-linha--head">
+                    <span>Telefone</span>
+                    <b>{clienteTelefone}</b>
+                  </div>
                 )}
+                <div className="nv-cupom-linha nv-cupom-linha--head">
+                  <span>Data do pedido</span>
+                  <b>{new Date().toLocaleDateString('pt-BR')}</b>
+                </div>
+                {tipo === 'encomenda' && dataEntrega && (
+                  <div className="nv-cupom-linha nv-cupom-linha--head">
+                    <span>Data da entrega</span>
+                    <b>{new Date(dataEntrega + 'T00:00').toLocaleDateString('pt-BR')}</b>
+                  </div>
+                )}
+                {tipo === 'encomenda' && horarioEntrega && (
+                  <div className="nv-cupom-linha nv-cupom-linha--head">
+                    <span>Horário</span>
+                    <b>{horarioEntrega}</b>
+                  </div>
+                )}
+                <div className="nv-cupom-linha nv-cupom-linha--head">
+                  <span>Modalidade</span>
+                  <b>
+                    {tipoEntrega === 'retirada_local' && '🏠 Retirada no local'}
+                    {tipoEntrega === 'retirada_agendada' && '📅 Retirada agendada'}
+                    {tipoEntrega === 'entrega' && '🛵 Delivery'}
+                  </b>
+                </div>
               </div>
 
               {/* Produtos */}
@@ -1953,27 +1981,27 @@ export default function NovaVenda() {
         font-family: var(--font-base) !important;
       }
       .nv-cupom-head {
-        text-align: center;
         padding-bottom: 14px;
         border-bottom: 1px dashed #D5CBCF;
       }
       .nv-cupom-tipo {
+        text-align: center;
         font-size: 10.5px; font-weight: 800;
         color: #6B5D64;
         letter-spacing: 0.1em;
+        margin-bottom: 10px;
         font-family: var(--font-base) !important;
       }
-      .nv-cupom-cliente {
-        font-size: 15px; font-weight: 900;
-        margin-top: 6px;
-        color: #2D1F26;
-        letter-spacing: -0.01em;
-        font-family: var(--font-base) !important;
+      .nv-cupom-linha--head {
+        padding: 3px 0 !important;
       }
-      .nv-cupom-tel {
-        font-size: 11.5px;
-        color: #6B5D64; margin-top: 2px;
-        font-family: var(--font-base) !important;
+      .nv-cupom-linha--head span {
+        color: #6B5D64 !important;
+        font-weight: 600 !important;
+      }
+      .nv-cupom-linha--head b {
+        color: #2D1F26 !important;
+        font-weight: 800 !important;
       }
 
       .nv-cupom-secao {
