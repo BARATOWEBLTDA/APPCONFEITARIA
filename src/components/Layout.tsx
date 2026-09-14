@@ -554,7 +554,7 @@ export default function Layout() {
         /* ── Layout main ── */
         /* Desktop: margem lateral (esquerda vem do sidebar 220px) + respiro no topo.
            Aplica em TODAS as páginas: Início, Agenda, Pedidos, Clientes, Cardápio, etc. */
-        .layout-main { margin-left: 220px; flex: 1; padding: 3rem 2rem 2rem; min-height: 100vh; min-width: 0; overflow-x: clip; }
+        .layout-main { margin-left: 220px; flex: 1; padding: 3rem 2rem 2rem; min-height: 100vh; min-width: 0; }
         .desk-topbar { display: none; }
 
         @media (min-width: 900px) {
