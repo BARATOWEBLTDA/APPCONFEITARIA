@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -43,6 +43,13 @@ interface Produto {
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 const formatMoney = (v: number) => `R$ ${v.toFixed(2).replace('.', ',')}`
+
+// "2026-05-22" → "22/05/2026"
+const formatDataBR = (iso: string): string => {
+  if (!iso) return ''
+  const [y, m, d] = iso.split('-')
+  return `${d}/${m}/${y}`
+}
 
 const parseMoney = (s: string): number => {
   const clean = s.replace(/[^\d,.-]/g, '').replace(',', '.')
@@ -117,6 +124,7 @@ export default function NovaVenda() {
   const [salvando, setSalvando] = useState(false)
   const [resumoAberto, setResumoAberto] = useState(false)
   const [horaSheetAberto, setHoraSheetAberto] = useState(false)
+  const dataRef = useRef<HTMLInputElement>(null)
 
   // ── Load inicial ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -650,12 +658,17 @@ export default function NovaVenda() {
                 <div className="nv-grid-agend">
                   <div>
                     <label className="nv-label">Data</label>
-                    <input className="nv-input" type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} />
+                    <button type="button" className="nv-input nv-input-btn" onClick={() => { const el = dataRef.current; if (el?.showPicker) el.showPicker(); else el?.click() }}>
+                      {dataEntrega ? formatDataBR(dataEntrega) : <span className="nv-input-btn-ph">Definir data</span>}
+                      <svg className="nv-input-btn-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </button>
+                    <input ref={dataRef} type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} className="nv-hidden-date" />
                   </div>
                   <div>
                     <label className="nv-label">Hora</label>
                     <button type="button" className="nv-input nv-input-btn" onClick={() => setHoraSheetAberto(true)}>
-                      {horarioEntrega || <span className="nv-input-btn-ph">Selecionar</span>}
+                      {horarioEntrega || <span className="nv-input-btn-ph">Definir hora</span>}
+                      <svg className="nv-input-btn-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                     </button>
                   </div>
                 </div>
@@ -675,12 +688,17 @@ export default function NovaVenda() {
                     <div className="nv-grid-agend">
                       <div>
                         <label className="nv-label">Data</label>
-                        <input className="nv-input" type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} />
+                        <button type="button" className="nv-input nv-input-btn" onClick={() => { const el = dataRef.current; if (el?.showPicker) el.showPicker(); else el?.click() }}>
+                          {dataEntrega ? formatDataBR(dataEntrega) : <span className="nv-input-btn-ph">Definir data</span>}
+                          <svg className="nv-input-btn-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        </button>
+                        <input ref={dataRef} type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} className="nv-hidden-date" />
                       </div>
                       <div>
                         <label className="nv-label">Hora</label>
                         <button type="button" className="nv-input nv-input-btn" onClick={() => setHoraSheetAberto(true)}>
-                          {horarioEntrega || <span className="nv-input-btn-ph">Selecionar</span>}
+                          {horarioEntrega || <span className="nv-input-btn-ph">Definir hora</span>}
+                          <svg className="nv-input-btn-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         </button>
                       </div>
                     </div>
@@ -1546,9 +1564,22 @@ export default function NovaVenda() {
         cursor: pointer;
         text-align: left;
         font-family: var(--font-base) !important;
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 8px;
       }
       .nv-input-btn:hover { border-color: #E85A8C; }
       .nv-input-btn-ph { color: #9A8B93; font-style: italic; }
+      .nv-input-btn-ico { color: #9A8B93; flex-shrink: 0; }
+      .nv-input-btn:hover .nv-input-btn-ico { color: #E85A8C; }
+
+      /* Input date escondido (só usado pra abrir picker nativo) */
+      .nv-hidden-date {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+        width: 0;
+        height: 0;
+      }
 
       /* ═══ Etapa Entrega ═══ */
 
