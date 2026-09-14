@@ -86,6 +86,18 @@ function formatItemQuantidade(qtd: number, formaVenda?: string | null): string {
   return `${qtdStr} ${label}`
 }
 
+// Formato curto: "1x", "2kg", "500g", "1 fatia"
+function formatQtdCurta(qtd: number, formaVenda?: string | null): string {
+  const qtdStr = Number.isInteger(qtd) ? String(qtd) : String(qtd).replace('.', ',')
+  if (!formaVenda) return `${qtdStr}x`
+  if (formaVenda === 'kg') return `${qtdStr}kg`
+  if (formaVenda === 'fatia') return `${qtdStr} ${qtd === 1 ? 'fatia' : 'fatias'}`
+  if (formaVenda === 'cento') return `${qtdStr} ${qtd === 1 ? 'cento' : 'centos'}`
+  if (formaVenda === 'caixa') return `${qtdStr} ${qtd === 1 ? 'cx' : 'cxs'}`
+  if (formaVenda === 'kit-festa') return `${qtdStr} kit${qtd === 1 ? '' : 's'}`
+  return `${qtdStr}x`
+}
+
 function formatDate(d: string) {
   if (!d) return '—'
   const [y, m, day] = d.split('-')
@@ -389,11 +401,8 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
 
       {/* Info central */}
       <div className="pmob-info">
-        <div className="pmob-linha-topo">
-          <div className="pmob-cliente">
-            {p.cliente_nome ? toTitleCase(p.cliente_nome) : <span className="pmob-cliente-vazio">Cliente não informado</span>}
-          </div>
-          <div className="pmob-valor">{formatMoney(p.valor_total)}</div>
+        <div className="pmob-cliente">
+          {p.cliente_nome ? toTitleCase(p.cliente_nome) : <span className="pmob-cliente-vazio">Cliente não informado</span>}
         </div>
 
         <div className="pmob-tags">
@@ -424,8 +433,18 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
           {(primeiroItem?.imagem_url || primeiroItem?.produtos?.imagem_url) && (
             <img src={primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url || ''} alt="" className="pmob-produto-foto" />
           )}
-          <span>{nomeProdutoResumo}</span>
+          <span className="pmob-produto-txt">
+            {primeiroItem ? (
+              <>
+                <b>{formatQtdCurta(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</b>{' '}
+                {toTitleCase(primeiroItem.nome_produto)}
+                {outrosItens > 0 && ` + ${outrosItens} item${outrosItens > 1 ? 's' : ''}`}
+              </>
+            ) : 'Sem produtos'}
+          </span>
         </div>
+
+        <div className="pmob-valor">{formatMoney(p.valor_total)}</div>
       </div>
     </div>
   )
@@ -2349,10 +2368,7 @@ export default function Pedidos() {
           gap: 6px;
         }
         .pmob-linha-topo {
-          display: flex;
-          align-items: baseline;
-          justify-content: space-between;
-          gap: 10px;
+          display: none;
         }
         .pmob-cliente {
           font-size: 14px; font-weight: 900;
@@ -2362,7 +2378,6 @@ export default function Pedidos() {
           text-overflow: ellipsis;
           white-space: nowrap;
           min-width: 0;
-          flex: 1;
           font-family: var(--font-base) !important;
         }
         .pmob-cliente-vazio {
@@ -2374,8 +2389,8 @@ export default function Pedidos() {
           font-size: 15px; font-weight: 900;
           color: #831843;
           letter-spacing: -0.01em;
-          flex-shrink: 0;
           font-family: var(--font-base) !important;
+          margin-top: 2px;
         }
         .pmob-tags {
           display: flex;
@@ -2401,21 +2416,33 @@ export default function Pedidos() {
           color: #4A3540;
           font-weight: 600;
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           gap: 8px;
           overflow: hidden;
           font-family: var(--font-base) !important;
+          line-height: 1.35;
         }
-        .pmob-produto > span {
+        .pmob-produto-txt {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
           overflow: hidden;
           text-overflow: ellipsis;
-          white-space: nowrap;
+          font-family: var(--font-base) !important;
+        }
+        .pmob-produto-txt b {
+          font-weight: 900;
+          color: #2D1F26;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          margin-right: 2px;
         }
         .pmob-produto-foto {
           width: 22px; height: 22px;
           border-radius: 6px;
           object-fit: cover;
           flex-shrink: 0;
+          margin-top: 1px;
         }
 
         .plist-item {
