@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { useIsMobile } from '@/hooks/use-mobile'
 import AppPageHeader from '@/components/AppPageHeader'
+import HorarioSheet from '@/components/HorarioSheet'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────
 type TipoVenda = 'encomenda' | 'pronta_entrega' | null
@@ -115,6 +116,7 @@ export default function NovaVenda() {
 
   const [salvando, setSalvando] = useState(false)
   const [resumoAberto, setResumoAberto] = useState(false)
+  const [horaSheetAberto, setHoraSheetAberto] = useState(false)
 
   // ── Load inicial ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -640,14 +642,22 @@ export default function NovaVenda() {
 
             {/* Data + Hora — Retirada agendada */}
             {tipoEntrega === 'retirada_agendada' && (
-              <div className="nv-grid-2" style={{ marginTop: 14 }}>
-                <div>
-                  <label className="nv-label">Data</label>
-                  <input className="nv-input" type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} />
+              <div className="nv-agend-card">
+                <div className="nv-agend-header">
+                  <div className="nv-agend-header-ico">📅</div>
+                  <div className="nv-agend-header-txt">Agendamento</div>
                 </div>
-                <div>
-                  <label className="nv-label">Horário</label>
-                  <input className="nv-input" type="time" value={horarioEntrega} onChange={e => setHorarioEntrega(e.target.value)} />
+                <div className="nv-grid-agend">
+                  <div>
+                    <label className="nv-label">Data</label>
+                    <input className="nv-input" type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="nv-label">Hora</label>
+                    <button type="button" className="nv-input nv-input-btn" onClick={() => setHoraSheetAberto(true)}>
+                      {horarioEntrega || <span className="nv-input-btn-ph">Selecionar</span>}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -657,14 +667,22 @@ export default function NovaVenda() {
               <>
                 {/* Se encomenda, mostra data + hora também */}
                 {tipo === 'encomenda' && (
-                  <div className="nv-grid-2" style={{ marginTop: 14 }}>
-                    <div>
-                      <label className="nv-label">Data</label>
-                      <input className="nv-input" type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} />
+                  <div className="nv-agend-card">
+                    <div className="nv-agend-header">
+                      <div className="nv-agend-header-ico">📅</div>
+                      <div className="nv-agend-header-txt">Agendamento</div>
                     </div>
-                    <div>
-                      <label className="nv-label">Horário</label>
-                      <input className="nv-input" type="time" value={horarioEntrega} onChange={e => setHorarioEntrega(e.target.value)} />
+                    <div className="nv-grid-agend">
+                      <div>
+                        <label className="nv-label">Data</label>
+                        <input className="nv-input" type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="nv-label">Hora</label>
+                        <button type="button" className="nv-input nv-input-btn" onClick={() => setHoraSheetAberto(true)}>
+                          {horarioEntrega || <span className="nv-input-btn-ph">Selecionar</span>}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -948,6 +966,16 @@ export default function NovaVenda() {
           <button className="nv-btn nv-btn-voltar" style={{ marginTop: 12, width: '100%' }} onClick={() => setModalCliente(false)}>Fechar</button>
         </div>
       </div>
+    )}
+
+    {/* ═══ Bottom sheet horário ═══ */}
+    {horaSheetAberto && (
+      <HorarioSheet
+        value={horarioEntrega}
+        onChange={setHorarioEntrega}
+        onClose={() => setHoraSheetAberto(false)}
+        titulo="Horário de entrega"
+      />
     )}
 
     <style>{`
@@ -1488,7 +1516,42 @@ export default function NovaVenda() {
 
       .nv-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
+      /* Card agendamento (cinza) */
+      .nv-agend-card {
+        background: #FAFAFA;
+        border: 1.5px solid #F0EBED;
+        border-radius: 12px;
+        padding: 14px;
+        margin-top: 14px;
+      }
+      .nv-agend-header {
+        display: flex; align-items: center; gap: 8px;
+        margin-bottom: 12px;
+      }
+      .nv-agend-header-ico {
+        width: 32px; height: 32px; border-radius: 8px;
+        background: #FDF3F7;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 16px;
+      }
+      .nv-agend-header-txt {
+        font-size: 11px; font-weight: 800; color: #E85A8C;
+        text-transform: uppercase; letter-spacing: 0.06em;
+        font-family: var(--font-base) !important;
+      }
+      .nv-grid-agend { display: grid; grid-template-columns: 1fr 110px; gap: 10px; }
+
+      /* Botão que abre picker (input visual) */
+      .nv-input-btn {
+        cursor: pointer;
+        text-align: left;
+        font-family: var(--font-base) !important;
+      }
+      .nv-input-btn:hover { border-color: #E85A8C; }
+      .nv-input-btn-ph { color: #9A8B93; font-style: italic; }
+
       /* ═══ Etapa Entrega ═══ */
+
       .nv-ent-tipos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
       .nv-ent-tipos--3 { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
       .nv-ent-card {
