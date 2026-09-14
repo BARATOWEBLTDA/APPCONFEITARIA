@@ -96,6 +96,16 @@ function formatMoney(v: number) {
   return (v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 }
 
+// "BOLO DE CHOCOLATE" → "Bolo de Chocolate"
+function toTitleCase(s: string): string {
+  if (!s) return ''
+  const minusc = new Set(['de','da','do','das','dos','e','com','para','a','o','em','na','no'])
+  return s.toLowerCase().split(' ').map((w, i) => {
+    if (i > 0 && minusc.has(w)) return w
+    return w.charAt(0).toUpperCase() + w.slice(1)
+  }).join(' ')
+}
+
 function parseLocalDate(dateStr: string): Date {
   const [y, m, d] = dateStr.split('-').map(Number)
   return new Date(y, m - 1, d)
@@ -349,7 +359,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
 
   const totalItens = itens.length
   const nomeProdutoResumo = primeiroItem
-    ? `${primeiroItem.nome_produto}${outrosItens > 0 ? ` + ${outrosItens} item${outrosItens > 1 ? 's' : ''}` : ''}`
+    ? `${toTitleCase(primeiroItem.nome_produto)}${outrosItens > 0 ? ` + ${outrosItens} item${outrosItens > 1 ? 's' : ''}` : ''}`
     : 'Sem produtos'
 
   // Data de entrega formatada pra caixa calendário
@@ -359,8 +369,8 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
 
   return (
     <div className="pmob-card" onClick={() => onVerPedido(p)}>
-      {/* Caixa data à esquerda */}
-      <div className={`pmob-data ${atrasado ? 'pmob-data--atrasado' : dias === 0 ? 'pmob-data--hoje' : dias === 1 ? 'pmob-data--amanha' : ''}`}>
+      {/* Caixa data à esquerda — cinza pra todos */}
+      <div className="pmob-data">
         {dataEnt ? (
           <>
             <div className="pmob-data-mes">{MESES[dataEnt.getMonth()]}</div>
@@ -378,8 +388,13 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
 
       {/* Info central */}
       <div className="pmob-info">
-        <div className="pmob-cliente">{p.cliente_nome || 'Não informado'}</div>
-        <div className="pmob-produto">{nomeProdutoResumo}</div>
+        <div className="pmob-linha-topo">
+          <div className="pmob-cliente">
+            {p.cliente_nome ? toTitleCase(p.cliente_nome) : <span className="pmob-cliente-vazio">Cliente não informado</span>}
+          </div>
+          <div className="pmob-valor">{formatMoney(p.valor_total)}</div>
+        </div>
+
         <div className="pmob-tags">
           {p.origem === 'cardapio' && p.status === 'novo' && (
             <span className="plist-tag plist-tag--aprovar">
@@ -402,21 +417,16 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
             {p.status_pagamento === 'pago' ? 'Pago' : p.status_pagamento === 'parcial' ? 'Parcial' : 'Pendente'}
           </span>
           {p.tipo_entrega === 'entrega' && temEndereco && <span className="pmob-tag pmob-tag--neutral">🛵 Entrega</span>}
+          {p.horario_entrega && <span className="pmob-tag pmob-tag--neutral">🕐 {p.horario_entrega.slice(0, 5)}</span>}
+        </div>
+
+        <div className="pmob-produto">
+          {(primeiroItem?.imagem_url || primeiroItem?.produtos?.imagem_url) && (
+            <img src={primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url || ''} alt="" className="pmob-produto-foto" />
+          )}
+          <span>{nomeProdutoResumo}</span>
         </div>
       </div>
-
-      {/* Valor + hora à direita */}
-      <div className="pmob-valor-col">
-        <div className="pmob-valor">{formatMoney(p.valor_total)}</div>
-        {p.horario_entrega && <div className="pmob-hora">{p.horario_entrega.slice(0, 5)}</div>}
-      </div>
-
-      {/* Foto do produto em miniatura no canto (se tiver) */}
-      {(primeiroItem?.imagem_url || primeiroItem?.produtos?.imagem_url) && (
-        <div className="pmob-mini-foto">
-          <img src={primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url || ''} alt="" />
-        </div>
-      )}
     </div>
   )
 }
@@ -1991,7 +2001,7 @@ export default function Pedidos() {
             </div>
           )}
 
-          {/* Busca + Filtro + Registrar — na mesma linha */}
+          {/* Busca + Filtro (+ Novo no desktop) */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', paddingTop: isMobile ? '1.25rem' : 0, maxWidth: !isMobile ? 780 : 'none' }}>
             {/* Barra de busca */}
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '0.75rem 1rem' }}>
@@ -2018,9 +2028,16 @@ export default function Pedidos() {
               {filtrosAtivos && <span style={{ position: 'absolute', top: -4, right: -4, width: 10, height: 10, borderRadius: '50%', background: 'var(--primary)', border: '2px solid white' }} />}
             </button>
 
-            {/* Novo pedido */}
-            <BtnNovo label="Registrar pedido" onClick={handleNovoPedido} />
+            {/* Novo pedido — só desktop aqui */}
+            {!isMobile && <BtnNovo label="Registrar pedido" onClick={handleNovoPedido} />}
           </div>
+
+          {/* Botão Registrar pedido — linha separada largura total no mobile */}
+          {isMobile && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <BtnNovo label="Registrar pedido" onClick={handleNovoPedido} responsive={false} style={{ width: '100%', justifyContent: 'center', padding: '0.85rem 1rem' }} />
+            </div>
+          )}
 
           {/* Chip de filtro ativo "Aguardando aprovação" — vindo do alerta do Início */}
           {filtroAguardando && (
@@ -2273,7 +2290,7 @@ export default function Pedidos() {
           padding: 12px;
           margin-bottom: 8px;
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           gap: 12px;
           box-shadow: 0 1px 3px rgba(0,0,0,0.04);
           cursor: pointer;
@@ -2283,24 +2300,25 @@ export default function Pedidos() {
         .pmob-card:hover { border-color: #E5D8DE; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.06); }
         .pmob-card:active { transform: translateY(0); }
 
+        /* Data cinza clarinha pra todos */
         .pmob-data {
           width: 56px;
           text-align: center;
           padding: 8px 4px;
-          background: #FDF3F7;
+          background: #F5F1F3;
           border-radius: 10px;
           flex-shrink: 0;
         }
         .pmob-data-mes {
           font-size: 9.5px; font-weight: 900;
-          color: #E85A8C;
+          color: #6B5D64;
           text-transform: uppercase;
           letter-spacing: 0.08em;
           font-family: var(--font-base) !important;
         }
         .pmob-data-dia {
           font-size: 22px; font-weight: 900;
-          color: #831843;
+          color: #2D1F26;
           letter-spacing: -0.02em;
           line-height: 1;
           margin: 2px 0 3px;
@@ -2308,55 +2326,51 @@ export default function Pedidos() {
         }
         .pmob-data-sem {
           font-size: 8.5px; font-weight: 800;
-          color: #E85A8C;
+          color: #6B5D64;
           text-transform: uppercase;
           font-family: var(--font-base) !important;
         }
 
-        /* Data atrasada — vermelha */
-        .pmob-data--atrasado { background: #FEE2E2; }
-        .pmob-data--atrasado .pmob-data-mes,
-        .pmob-data--atrasado .pmob-data-sem { color: #dc2626; }
-        .pmob-data--atrasado .pmob-data-dia { color: #991B1B; }
-
-        /* Data hoje — laranja/amarelo */
-        .pmob-data--hoje { background: #FEF3C7; }
-        .pmob-data--hoje .pmob-data-mes,
-        .pmob-data--hoje .pmob-data-sem { color: #D97706; }
-        .pmob-data--hoje .pmob-data-dia { color: #92400E; }
-
-        /* Data amanhã — verde suave */
-        .pmob-data--amanha { background: #DCFCE7; }
-        .pmob-data--amanha .pmob-data-mes,
-        .pmob-data--amanha .pmob-data-sem { color: #16a34a; }
-        .pmob-data--amanha .pmob-data-dia { color: #14532D; }
-
+        /* Info central */
         .pmob-info {
           flex: 1;
           min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .pmob-linha-topo {
+          display: flex;
+          align-items: baseline;
+          justify-content: space-between;
+          gap: 10px;
         }
         .pmob-cliente {
-          font-size: 13.5px; font-weight: 900;
+          font-size: 14px; font-weight: 900;
           color: #2D1F26;
           letter-spacing: -0.01em;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          min-width: 0;
+          flex: 1;
           font-family: var(--font-base) !important;
         }
-        .pmob-produto {
-          font-size: 11.5px;
-          color: #6B5D64;
-          margin-top: 2px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+        .pmob-cliente-vazio {
+          color: #9A8B93;
+          font-weight: 700;
+          font-style: italic;
+        }
+        .pmob-valor {
+          font-size: 15px; font-weight: 900;
+          color: #831843;
+          letter-spacing: -0.01em;
+          flex-shrink: 0;
           font-family: var(--font-base) !important;
         }
         .pmob-tags {
           display: flex;
           gap: 4px;
-          margin-top: 6px;
           flex-wrap: wrap;
         }
         .pmob-tag {
@@ -2373,38 +2387,27 @@ export default function Pedidos() {
           color: #6B5D64;
           background: #F5F1F3;
         }
-
-        .pmob-valor-col {
-          text-align: right;
+        .pmob-produto {
+          font-size: 12px;
+          color: #4A3540;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          overflow: hidden;
+          font-family: var(--font-base) !important;
+        }
+        .pmob-produto > span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .pmob-produto-foto {
+          width: 22px; height: 22px;
+          border-radius: 6px;
+          object-fit: cover;
           flex-shrink: 0;
         }
-        .pmob-valor {
-          font-size: 15px; font-weight: 900;
-          color: #831843;
-          letter-spacing: -0.01em;
-          font-family: var(--font-base) !important;
-        }
-        .pmob-hora {
-          font-size: 10.5px;
-          color: #6B5D64;
-          margin-top: 2px;
-          font-weight: 700;
-          font-family: var(--font-base) !important;
-        }
-
-        /* Mini foto do produto (canto superior direito da caixa data) */
-        .pmob-mini-foto {
-          position: absolute;
-          top: 6px;
-          right: 6px;
-          width: 20px; height: 20px;
-          border-radius: 50%;
-          overflow: hidden;
-          border: 2px solid #fff;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-          background: #FDF3F7;
-        }
-        .pmob-mini-foto img { width: 100%; height: 100%; object-fit: cover; }
 
         .plist-item {
           display: flex;
