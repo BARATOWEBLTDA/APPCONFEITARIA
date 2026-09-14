@@ -125,6 +125,7 @@ export default function NovaVenda() {
   const [resumoAberto, setResumoAberto] = useState(false)
   const [horaSheetAberto, setHoraSheetAberto] = useState(false)
   const dataRef = useRef<HTMLInputElement>(null)
+  const dataPrevRef = useRef<HTMLInputElement>(null)
 
   // ── Load inicial ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -753,61 +754,110 @@ export default function NovaVenda() {
         {etapaLabelAtual === 'Pagamento' && (
           <>
             <h2 className="nv-titulo">Como o cliente pagou?</h2>
-            <p className="nv-sub">Descontos, acréscimos e situação do pagamento</p>
+            <p className="nv-sub">Forma, situação e ajustes de valor</p>
 
-            <div className="nv-grid-2">
-              <div>
-                <label className="nv-label">Desconto</label>
-                <input className="nv-input" inputMode="decimal" placeholder="R$ 0,00" value={desconto === 0 ? '' : desconto.toString().replace('.', ',')} onChange={e => setDesconto(parseMoney(e.target.value))} />
+            {/* Total em destaque */}
+            <div className="nv-pag-total">
+              <div className="nv-pag-total-lbl">Total da venda</div>
+              <div className="nv-pag-total-val">{formatMoney(total)}</div>
+            </div>
+
+            {/* Forma de pagamento */}
+            <div className="nv-agend-card">
+              <div className="nv-agend-header">
+                <div className="nv-agend-header-ico">💳</div>
+                <div className="nv-agend-header-txt">Forma de pagamento</div>
               </div>
-              <div>
-                <label className="nv-label">Acréscimo</label>
-                <input className="nv-input" inputMode="decimal" placeholder="R$ 0,00" value={acrescimo === 0 ? '' : acrescimo.toString().replace('.', ',')} onChange={e => setAcrescimo(parseMoney(e.target.value))} />
+              <div className="nv-pag-formas">
+                {[
+                  { key: 'PIX', emoji: '💠' },
+                  { key: 'Dinheiro', emoji: '💵' },
+                  { key: 'Cartão', emoji: '💳' },
+                  { key: 'Boleto', emoji: '📄' },
+                ].map(f => (
+                  <button
+                    key={f.key}
+                    type="button"
+                    className={`nv-pag-forma ${formaPagamento === f.key ? 'nv-pag-forma--ativo' : ''}`}
+                    onClick={() => setFormaPagamento(f.key)}
+                  >
+                    <span className="nv-pag-forma-em">{f.emoji}</span>
+                    {f.key}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <label className="nv-label" style={{ marginTop: 16 }}>Forma de pagamento</label>
-            <div className="nv-formas">
-              {['PIX', 'Dinheiro', 'Cartão', 'Boleto'].map(f => (
-                <button key={f} type="button" className={`nv-forma ${formaPagamento === f ? 'nv-forma--ativo' : ''}`} onClick={() => setFormaPagamento(f)}>
-                  {f}
-                </button>
-              ))}
+            {/* Situação */}
+            <div className="nv-agend-card">
+              <div className="nv-agend-header">
+                <div className="nv-agend-header-ico">✅</div>
+                <div className="nv-agend-header-txt">Situação do pagamento</div>
+              </div>
+              <div className="nv-pag-sit-cards">
+                <label className={`nv-pag-sit-card ${situacaoPag === 'total' ? 'nv-pag-sit-card--ativo' : ''}`}>
+                  <input type="radio" checked={situacaoPag === 'total'} onChange={() => setSituacaoPag('total')} />
+                  <span className="nv-pag-sit-radio" />
+                  <div className="nv-pag-sit-info">
+                    <div className="nv-pag-sit-nome">Pagamento completo</div>
+                    <div className="nv-pag-sit-desc">Recebi {formatMoney(total)} agora</div>
+                  </div>
+                </label>
+                <label className={`nv-pag-sit-card ${situacaoPag === 'parcial' ? 'nv-pag-sit-card--ativo' : ''}`}>
+                  <input type="radio" checked={situacaoPag === 'parcial'} onChange={() => setSituacaoPag('parcial')} />
+                  <span className="nv-pag-sit-radio" />
+                  <div className="nv-pag-sit-info">
+                    <div className="nv-pag-sit-nome">Pagamento parcial</div>
+                    <div className="nv-pag-sit-desc">Recebi só uma parte</div>
+                  </div>
+                </label>
+                {situacaoPag === 'parcial' && (
+                  <input
+                    className="nv-input"
+                    style={{ marginTop: 4 }}
+                    inputMode="decimal"
+                    placeholder="Valor recebido (R$)"
+                    value={valorParcial === 0 ? '' : valorParcial.toString().replace('.', ',')}
+                    onChange={e => setValorParcial(parseMoney(e.target.value))}
+                  />
+                )}
+                <label className={`nv-pag-sit-card ${situacaoPag === 'fiado' ? 'nv-pag-sit-card--ativo' : ''}`}>
+                  <input type="radio" checked={situacaoPag === 'fiado'} onChange={() => setSituacaoPag('fiado')} />
+                  <span className="nv-pag-sit-radio" />
+                  <div className="nv-pag-sit-info">
+                    <div className="nv-pag-sit-nome">Fiado</div>
+                    <div className="nv-pag-sit-desc">Cliente vai pagar depois</div>
+                  </div>
+                </label>
+                {situacaoPag === 'fiado' && (
+                  <div style={{ marginTop: 4 }}>
+                    <label className="nv-label">Data prevista pagamento</label>
+                    <button type="button" className="nv-input nv-input-btn" onClick={() => { const el = dataPrevRef.current; if (el?.showPicker) el.showPicker(); else el?.click() }}>
+                      {dataPrevistaPagamento ? formatDataBR(dataPrevistaPagamento) : <span className="nv-input-btn-ph">Definir data</span>}
+                      <svg className="nv-input-btn-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </button>
+                    <input ref={dataPrevRef} type="date" value={dataPrevistaPagamento} onChange={e => setDataPrevistaPagamento(e.target.value)} className="nv-hidden-date" />
+                  </div>
+                )}
+              </div>
             </div>
 
-            <label className="nv-label" style={{ marginTop: 20 }}>Situação</label>
-            <div className="nv-pag-opcoes">
-              <label className={`nv-pag-opcao ${situacaoPag === 'total' ? 'nv-pag-opcao--ativo' : ''}`}>
-                <input type="radio" checked={situacaoPag === 'total'} onChange={() => setSituacaoPag('total')} />
-                <span className="nv-radio-dot" />
-                <span>✅ Recebi total ({formatMoney(total)})</span>
-              </label>
-              <label className={`nv-pag-opcao ${situacaoPag === 'parcial' ? 'nv-pag-opcao--ativo' : ''}`}>
-                <input type="radio" checked={situacaoPag === 'parcial'} onChange={() => setSituacaoPag('parcial')} />
-                <span className="nv-radio-dot" />
-                <span>💵 Recebi só parte</span>
-              </label>
-              {situacaoPag === 'parcial' && (
-                <input
-                  className="nv-input"
-                  style={{ marginLeft: 28 }}
-                  inputMode="decimal"
-                  placeholder="Valor recebido"
-                  value={valorParcial === 0 ? '' : valorParcial.toString().replace('.', ',')}
-                  onChange={e => setValorParcial(parseMoney(e.target.value))}
-                />
-              )}
-              <label className={`nv-pag-opcao ${situacaoPag === 'fiado' ? 'nv-pag-opcao--ativo' : ''}`}>
-                <input type="radio" checked={situacaoPag === 'fiado'} onChange={() => setSituacaoPag('fiado')} />
-                <span className="nv-radio-dot" />
-                <span>📝 Fiado (cliente vai pagar depois)</span>
-              </label>
-              {situacaoPag === 'fiado' && (
-                <div style={{ marginLeft: 28 }}>
-                  <label className="nv-label" style={{ marginTop: 4 }}>Data prevista pagamento</label>
-                  <input className="nv-input" type="date" value={dataPrevistaPagamento} onChange={e => setDataPrevistaPagamento(e.target.value)} />
+            {/* Descontos e acréscimos */}
+            <div className="nv-agend-card">
+              <div className="nv-agend-header">
+                <div className="nv-agend-header-ico">🎫</div>
+                <div className="nv-agend-header-txt">Descontos e acréscimos (opcional)</div>
+              </div>
+              <div className="nv-grid-2">
+                <div>
+                  <label className="nv-label">Desconto</label>
+                  <input className="nv-input" inputMode="decimal" placeholder="R$ 0,00" value={desconto === 0 ? '' : desconto.toString().replace('.', ',')} onChange={e => setDesconto(parseMoney(e.target.value))} />
                 </div>
-              )}
+                <div>
+                  <label className="nv-label">Acréscimo</label>
+                  <input className="nv-input" inputMode="decimal" placeholder="R$ 0,00" value={acrescimo === 0 ? '' : acrescimo.toString().replace('.', ',')} onChange={e => setAcrescimo(parseMoney(e.target.value))} />
+                </div>
+              </div>
             </div>
           </>
         )}
@@ -1581,6 +1631,90 @@ export default function NovaVenda() {
         pointer-events: none;
         width: 0;
         height: 0;
+      }
+
+      /* ═══ Etapa Pagamento ═══ */
+      .nv-pag-total {
+        background: linear-gradient(160deg, #FDF3F7 0%, #FAE8EF 100%);
+        border-radius: 12px;
+        padding: 16px;
+        text-align: center;
+        margin-bottom: 4px;
+      }
+      .nv-pag-total-lbl {
+        font-size: 11px; font-weight: 800; color: #E85A8C;
+        text-transform: uppercase; letter-spacing: 0.07em;
+        font-family: var(--font-base) !important;
+      }
+      .nv-pag-total-val {
+        font-size: 30px; font-weight: 900; letter-spacing: -0.02em;
+        color: #831843; margin-top: 4px;
+        font-family: var(--font-base) !important;
+      }
+
+      /* Formas de pagamento (chips) */
+      .nv-pag-formas { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
+      .nv-pag-forma {
+        all: unset;
+        padding: 10px 6px;
+        border: 1.5px solid #F0EBED;
+        background: #fff;
+        border-radius: 8px;
+        font-size: 11.5px; font-weight: 700;
+        text-align: center;
+        cursor: pointer;
+        color: #4A3540;
+        box-sizing: border-box;
+        font-family: var(--font-base) !important;
+        transition: all 0.15s;
+      }
+      .nv-pag-forma:hover { border-color: #E5D8DE; }
+      .nv-pag-forma--ativo {
+        border-color: #E85A8C;
+        background: #FDF3F7;
+        color: #E85A8C;
+        font-weight: 800;
+      }
+      .nv-pag-forma-em {
+        font-size: 18px; display: block; margin-bottom: 2px; line-height: 1;
+      }
+
+      /* Situação — cards com radio */
+      .nv-pag-sit-cards { display: flex; flex-direction: column; gap: 8px; }
+      .nv-pag-sit-card {
+        padding: 12px 14px;
+        border: 1.5px solid #F0EBED;
+        background: #fff;
+        border-radius: 10px;
+        cursor: pointer;
+        display: flex; align-items: center; gap: 10px;
+        transition: all 0.15s;
+      }
+      .nv-pag-sit-card:hover { border-color: #E5D8DE; }
+      .nv-pag-sit-card--ativo {
+        border-color: #E85A8C;
+        background: #FDF3F7;
+      }
+      .nv-pag-sit-card input[type="radio"] { display: none; }
+      .nv-pag-sit-radio {
+        width: 18px; height: 18px; border-radius: 50%;
+        border: 2px solid #D5CBCF;
+        flex-shrink: 0;
+      }
+      .nv-pag-sit-card--ativo .nv-pag-sit-radio {
+        border-color: #E85A8C;
+        background: #E85A8C;
+        box-shadow: inset 0 0 0 3px #fff;
+      }
+      .nv-pag-sit-info { flex: 1; }
+      .nv-pag-sit-nome {
+        font-size: 13px; font-weight: 800; color: #2D1F26;
+        font-family: var(--font-base) !important;
+      }
+      .nv-pag-sit-card--ativo .nv-pag-sit-nome { color: #E85A8C; }
+      .nv-pag-sit-desc {
+        font-size: 11px; color: #6B5D64; margin-top: 2px;
+        font-family: var(--font-base) !important;
       }
 
       /* ═══ Etapa Entrega ═══ */
