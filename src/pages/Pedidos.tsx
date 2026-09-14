@@ -384,6 +384,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
             <div className="pmob-data-sem">data</div>
           </>
         )}
+        {p.horario_entrega && <div className="pmob-data-hora">{p.horario_entrega.slice(0, 5)}</div>}
       </div>
 
       {/* Info central */}
@@ -417,7 +418,6 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
             {p.status_pagamento === 'pago' ? 'Pago' : p.status_pagamento === 'parcial' ? 'Parcial' : 'Pendente'}
           </span>
           {p.tipo_entrega === 'entrega' && temEndereco && <span className="pmob-tag pmob-tag--neutral">🛵 Entrega</span>}
-          {p.horario_entrega && <span className="pmob-tag pmob-tag--neutral">🕐 {p.horario_entrega.slice(0, 5)}</span>}
         </div>
 
         <div className="pmob-produto">
@@ -2328,6 +2328,15 @@ export default function Pedidos() {
           font-size: 8.5px; font-weight: 800;
           color: #6B5D64;
           text-transform: uppercase;
+          font-family: var(--font-base) !important;
+        }
+        .pmob-data-hora {
+          font-size: 11px; font-weight: 900;
+          color: #E85A8C;
+          margin-top: 4px;
+          padding-top: 4px;
+          border-top: 1px dashed #E5D8DE;
+          letter-spacing: -0.01em;
           font-family: var(--font-base) !important;
         }
 
