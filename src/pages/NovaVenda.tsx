@@ -326,8 +326,13 @@ export default function NovaVenda() {
       quantidade: it.quantidade,
       valor_unitario: it.valor_unitario,
       observacoes: it.observacoes || '',
+      imagem_url: it.imagem_url || null,
     }))
-    await supabase.from('pedido_itens').insert(itensInsert)
+    const { error: errItens } = await supabase.from('pedido_itens').insert(itensInsert)
+    if (errItens) {
+      alert('Pedido salvo, mas os produtos falharam: ' + errItens.message)
+      console.error('Erro ao inserir itens:', errItens)
+    }
 
     // Salva dados do pedido pra mostrar na tela de sucesso
     setPedidoCriado({
