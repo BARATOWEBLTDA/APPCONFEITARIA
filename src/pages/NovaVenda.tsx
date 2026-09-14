@@ -865,51 +865,99 @@ export default function NovaVenda() {
         {/* ═══ ETAPA 6: Revisar ═══ */}
         {etapaLabelAtual === 'Revisar' && (
           <>
-            <h2 className="nv-titulo">Revisar antes de finalizar</h2>
-            <p className="nv-sub">Confira tudo — pode editar no menu do pedido depois</p>
+            <h2 className="nv-titulo">Confira antes de finalizar</h2>
+            <p className="nv-sub">Última chance de ajustar</p>
 
-            <div className="nv-resumo">
-              <div className="nv-r-linha"><span>📦 Tipo</span><b>{tipo === 'encomenda' ? 'Encomenda' : 'Pronta Entrega'}</b></div>
-              <div className="nv-r-linha"><span>🎂 Produtos</span><b>{itens.length} {itens.length === 1 ? 'item' : 'itens'} · {formatMoney(subtotalProdutos)}</b></div>
-              <div className="nv-r-linha"><span>👤 Cliente</span><b>{semCliente || !clienteNome ? 'Sem cliente' : toTitleCase(clienteNome)}</b></div>
-              <div className="nv-r-linha">
-                <span>
-                  {tipoEntrega === 'entrega' ? '🛵 Delivery' : tipoEntrega === 'retirada_local' ? '🏠 Retirada no local' : '📅 Retirada agendada'}
-                </span>
-                <b>
-                  {tipoEntrega === 'retirada_local' && 'Cliente busca com você'}
-                  {tipoEntrega === 'retirada_agendada' && (
-                    <>
-                      {dataEntrega ? new Date(dataEntrega + 'T00:00').toLocaleDateString('pt-BR') : '—'}
-                      {horarioEntrega && ` · ${horarioEntrega}`}
-                    </>
-                  )}
-                  {tipoEntrega === 'entrega' && (
-                    <>
-                      {tipo === 'encomenda' && dataEntrega && `${new Date(dataEntrega + 'T00:00').toLocaleDateString('pt-BR')}`}
-                      {tipo === 'encomenda' && horarioEntrega && ` · ${horarioEntrega}`}
-                      {taxaEntrega > 0 && ` · ${formatMoney(taxaEntrega)}`}
-                      {tipo !== 'encomenda' && taxaEntrega === 0 && 'Agora'}
-                    </>
-                  )}
-                </b>
-              </div>
-              {(desconto > 0 || acrescimo > 0) && (
-                <div className="nv-r-linha">
-                  <span>🎫 Ajustes</span>
-                  <b>{desconto > 0 && `−${formatMoney(desconto)}`}{acrescimo > 0 && ` +${formatMoney(acrescimo)}`}</b>
+            <div className="nv-cupom">
+              {/* Cabeçalho: tipo + cliente */}
+              <div className="nv-cupom-head">
+                <div className="nv-cupom-tipo">
+                  {tipo === 'encomenda' ? '📅 ENCOMENDA' : '⚡ PRONTA ENTREGA'}
                 </div>
-              )}
-              <div className="nv-r-linha">
-                <span>💰 Pagamento</span>
-                <b style={{ color: situacaoPag === 'total' ? '#14532D' : situacaoPag === 'parcial' ? '#92400E' : '#991B1B' }}>
-                  {situacaoPag === 'total' ? `✓ Pago ${formatMoney(total)}` : situacaoPag === 'parcial' ? `Parcial ${formatMoney(valorParcial)} / ${formatMoney(total)}` : `Fiado ${formatMoney(total)}`}
-                  {' · '}{formaPagamento}
-                </b>
+                <div className="nv-cupom-cliente">
+                  {semCliente || !clienteNome ? 'Venda avulsa' : toTitleCase(clienteNome)}
+                </div>
+                {clienteTelefone && (
+                  <div className="nv-cupom-tel">{clienteTelefone}</div>
+                )}
+              </div>
+
+              {/* Produtos */}
+              <div className="nv-cupom-secao">
+                <div className="nv-cupom-secao-lbl">Produtos</div>
+                {itens.map((it, idx) => (
+                  <div key={idx} className="nv-cupom-linha">
+                    <span>{it.quantidade}× {toTitleCase(it.nome_produto)}</span>
+                    <b>{formatMoney(it.valor_unitario * it.quantidade)}</b>
+                  </div>
+                ))}
+              </div>
+
+              {/* Breakdown */}
+              <div className="nv-cupom-secao">
+                <div className="nv-cupom-linha nv-cupom-linha--dim">
+                  <span>Subtotal</span>
+                  <b>{formatMoney(subtotalProdutos)}</b>
+                </div>
+                {tipoEntrega === 'entrega' && taxaEntrega > 0 && (
+                  <div className="nv-cupom-linha nv-cupom-linha--dim">
+                    <span>Frete</span>
+                    <b>{formatMoney(taxaEntrega)}</b>
+                  </div>
+                )}
+                {desconto > 0 && (
+                  <div className="nv-cupom-linha nv-cupom-linha--dim">
+                    <span>Desconto</span>
+                    <b>−{formatMoney(desconto)}</b>
+                  </div>
+                )}
+                {acrescimo > 0 && (
+                  <div className="nv-cupom-linha nv-cupom-linha--dim">
+                    <span>Acréscimo</span>
+                    <b>+{formatMoney(acrescimo)}</b>
+                  </div>
+                )}
+              </div>
+
+              {/* Total */}
+              <div className="nv-cupom-total">
+                <div className="nv-cupom-total-lbl">TOTAL</div>
+                <div className="nv-cupom-total-val">{formatMoney(total)}</div>
+              </div>
+
+              {/* Rodapé: entrega + pagamento */}
+              <div className="nv-cupom-secao nv-cupom-secao--foot">
+                <div className="nv-cupom-linha">
+                  <span>
+                    {tipoEntrega === 'entrega' && '🛵 '}
+                    {tipoEntrega === 'retirada_local' && '🏠 '}
+                    {tipoEntrega === 'retirada_agendada' && '📅 '}
+                    {tipoEntrega === 'entrega' && 'Delivery'}
+                    {tipoEntrega === 'retirada_local' && 'Retirada no local'}
+                    {tipoEntrega === 'retirada_agendada' && 'Retirada agendada'}
+                    {tipoEntrega === 'retirada_agendada' && dataEntrega && ` em ${new Date(dataEntrega + 'T00:00').toLocaleDateString('pt-BR')}`}
+                    {tipoEntrega === 'retirada_agendada' && horarioEntrega && ` · ${horarioEntrega}`}
+                    {tipoEntrega === 'entrega' && tipo === 'encomenda' && dataEntrega && ` em ${new Date(dataEntrega + 'T00:00').toLocaleDateString('pt-BR')}`}
+                    {tipoEntrega === 'entrega' && tipo === 'encomenda' && horarioEntrega && ` · ${horarioEntrega}`}
+                  </span>
+                </div>
+                {tipoEntrega === 'entrega' && enderecoRua && (
+                  <div className="nv-cupom-linha nv-cupom-linha--dim">
+                    <span>{enderecoRua}{enderecoNumero && `, ${enderecoNumero}`}</span>
+                  </div>
+                )}
+                <div className="nv-cupom-linha">
+                  <span>
+                    💳 {formaPagamento || 'Não definido'} · {' '}
+                    {situacaoPag === 'total' && 'Pago total'}
+                    {situacaoPag === 'parcial' && `Parcial (${formatMoney(valorParcial)})`}
+                    {situacaoPag === 'fiado' && `Fiado${dataPrevistaPagamento ? ` até ${new Date(dataPrevistaPagamento + 'T00:00').toLocaleDateString('pt-BR')}` : ''}`}
+                  </span>
+                </div>
               </div>
             </div>
 
-            <label className="nv-label" style={{ marginTop: 20 }}>Observações (opcional)</label>
+            <label className="nv-label" style={{ marginTop: 16 }}>📝 Observações (opcional)</label>
             <textarea className="nv-input" style={{ minHeight: 70 }} value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder="Cuidados especiais, alergias, decoração..." />
           </>
         )}
@@ -1631,6 +1679,90 @@ export default function NovaVenda() {
         pointer-events: none;
         width: 0;
         height: 0;
+      }
+
+      /* ═══ Etapa Revisar — cupom fiscal ═══ */
+      .nv-cupom {
+        border: 2px dashed #E5D8DE;
+        border-radius: 12px;
+        padding: 18px 16px;
+        background: #FAFAFA;
+        font-family: var(--font-base) !important;
+      }
+      .nv-cupom-head {
+        text-align: center;
+        padding-bottom: 14px;
+        border-bottom: 1px dashed #D5CBCF;
+      }
+      .nv-cupom-tipo {
+        font-size: 10.5px; font-weight: 800;
+        color: #6B5D64;
+        letter-spacing: 0.1em;
+        font-family: var(--font-base) !important;
+      }
+      .nv-cupom-cliente {
+        font-size: 15px; font-weight: 900;
+        margin-top: 6px;
+        color: #2D1F26;
+        letter-spacing: -0.01em;
+        font-family: var(--font-base) !important;
+      }
+      .nv-cupom-tel {
+        font-size: 11.5px;
+        color: #6B5D64; margin-top: 2px;
+        font-family: var(--font-base) !important;
+      }
+
+      .nv-cupom-secao {
+        padding: 12px 0;
+        border-bottom: 1px dashed #D5CBCF;
+      }
+      .nv-cupom-secao--foot { border-bottom: 0; padding-bottom: 0; }
+      .nv-cupom-secao-lbl {
+        font-size: 10px; font-weight: 800;
+        color: #9A8B93;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        margin-bottom: 8px;
+        font-family: var(--font-base) !important;
+      }
+      .nv-cupom-linha {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 12px;
+        padding: 4px 0;
+        font-size: 12.5px;
+        font-family: var(--font-base) !important;
+      }
+      .nv-cupom-linha span {
+        color: #2D1F26;
+        flex: 1; min-width: 0;
+        word-break: break-word;
+      }
+      .nv-cupom-linha b {
+        color: #2D1F26; font-weight: 800;
+        text-align: right;
+        white-space: nowrap;
+      }
+      .nv-cupom-linha--dim span,
+      .nv-cupom-linha--dim b {
+        color: #6B5D64 !important;
+        font-weight: 600 !important;
+      }
+
+      .nv-cupom-total {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 14px 0 4px;
+      }
+      .nv-cupom-total-lbl {
+        font-size: 11px; font-weight: 800;
+        color: #E85A8C;
+        letter-spacing: 0.08em;
+        font-family: var(--font-base) !important;
+      }
+      .nv-cupom-total-val {
+        font-size: 26px; font-weight: 900;
+        color: #831843;
+        letter-spacing: -0.02em;
+        font-family: var(--font-base) !important;
       }
 
       /* ═══ Etapa Pagamento ═══ */
