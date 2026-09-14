@@ -3,9 +3,37 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { refreshProfile } from "@/hooks/useProfile";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
+import { sonsHabilitados, setSonsHabilitados, tocarSom } from "@/hooks/useSom";
 
 
 // ── Componente inline: toggle de push notifications ──────────
+function SomToggle() {
+  const [ativo, setAtivo] = useState(sonsHabilitados());
+  return (
+    <div className="cfg-push-row">
+      <div style={{ flex: 1 }}>
+        <p className="cfg-notif-label">🔊 Sons do app</p>
+        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+          {ativo ? 'Ativado — toca um som ao registrar vendas.' : 'Desativado — sem efeitos sonoros.'}
+        </p>
+      </div>
+      <label className="toggle">
+        <input
+          type="checkbox"
+          checked={ativo}
+          onChange={() => {
+            const novo = !ativo;
+            setAtivo(novo);
+            setSonsHabilitados(novo);
+            if (novo) setTimeout(() => tocarSom('sucesso'), 100); // preview
+          }}
+        />
+        <span className="toggle-slider" />
+      </label>
+    </div>
+  );
+}
+
 function PushToggle() {
   const { isSupported, isSubscribed, permission, loading, error, subscribe, unsubscribe } = usePushSubscription();
 
@@ -395,6 +423,7 @@ export default function Configuracoes() {
           {openSection === "notificacoes" && (
             <div className="cfg-accordion-body">
               <PushToggle />
+              <SomToggle />
               {([
                 { key: "receitas" as keyof typeof notifs, label: "Novas receitas" },
                 { key: "comunidade" as keyof typeof notifs, label: "Comunidade" },
@@ -657,6 +686,7 @@ export default function Configuracoes() {
 
                 {/* Botão push real */}
                 <PushToggle />
+              <SomToggle />
 
                 <div style={{borderTop:"1px solid var(--border)", paddingTop:"0.75rem"}}>
                 {([

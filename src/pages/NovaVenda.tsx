@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase'
 import { useIsMobile } from '@/hooks/use-mobile'
 import AppPageHeader from '@/components/AppPageHeader'
 import HorarioSheet from '@/components/HorarioSheet'
+import { tocarSom } from '@/hooks/useSom'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────
 type TipoVenda = 'encomenda' | 'pronta_entrega' | null
@@ -337,6 +338,7 @@ export default function NovaVenda() {
     })
     setSucessoAberto(true)
     setSalvando(false)
+    tocarSom('sucesso')
   }
 
   // Reset completo pra nova venda
