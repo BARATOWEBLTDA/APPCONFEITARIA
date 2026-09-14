@@ -599,7 +599,9 @@ export default function NovaVenda() {
                 className={`nv-ent-card ${tipoEntrega === 'retirada_local' ? 'nv-ent-card--ativo' : ''}`}
                 onClick={() => setTipoEntrega('retirada_local')}
               >
-                <div className="nv-ent-emoji">🏠</div>
+                <div className="nv-ent-emoji nv-ent-emoji--img">
+                  <img src="/Sistema/retirada.png" alt="Retirada no local" />
+                </div>
                 <div className="nv-ent-nome">Retirada no local</div>
                 <div className="nv-ent-desc">Cliente vai buscar o produto</div>
               </button>
