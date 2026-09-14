@@ -918,7 +918,7 @@ export default function NovaVenda() {
 
       {/* Rodapé com total + botões */}
       <div className="nv-footer">
-        {etapa > 1 && etapaLabelAtual !== 'Cliente' && etapaLabelAtual !== 'Entrega' ? (
+        {etapaLabelAtual === 'Revisar' ? (
           <div className="nv-footer-total">
             <span className="nv-footer-lbl">Total</span>
             <span className="nv-footer-val">{formatMoney(total)}</span>
