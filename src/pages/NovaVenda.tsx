@@ -1557,7 +1557,7 @@ export default function NovaVenda() {
         text-transform: uppercase; letter-spacing: 0.06em;
         font-family: var(--font-base) !important;
       }
-      .nv-grid-agend { display: grid; grid-template-columns: 1fr 110px; gap: 10px; }
+      .nv-grid-agend { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
       /* Botão que abre picker (input visual) */
       .nv-input-btn {
@@ -1566,6 +1566,8 @@ export default function NovaVenda() {
         font-family: var(--font-base) !important;
         display: flex; align-items: center; justify-content: space-between;
         gap: 8px;
+        white-space: nowrap;
+        overflow: hidden;
       }
       .nv-input-btn:hover { border-color: #E85A8C; }
       .nv-input-btn-ph { color: #9A8B93; font-style: italic; }
