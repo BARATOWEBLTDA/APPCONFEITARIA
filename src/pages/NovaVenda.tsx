@@ -122,6 +122,9 @@ export default function NovaVenda() {
   const [buscaCliente, setBuscaCliente] = useState('')
 
   const [salvando, setSalvando] = useState(false)
+  const [sucessoAberto, setSucessoAberto] = useState(false)
+  const [pedidoCriado, setPedidoCriado] = useState<any>(null)
+  const [producaoExpandida, setProducaoExpandida] = useState(false)
   const [resumoAberto, setResumoAberto] = useState(false)
   const [horaSheetAberto, setHoraSheetAberto] = useState(false)
   const dataRef = useRef<HTMLInputElement>(null)
@@ -320,11 +323,254 @@ export default function NovaVenda() {
     }))
     await supabase.from('pedido_itens').insert(itensInsert)
 
-    navigate('/pedidos')
+    // Salva dados do pedido pra mostrar na tela de sucesso
+    setPedidoCriado({
+      id: novoPedido.id,
+      numero: novoPedido.numero || novoPedido.id.slice(0, 8),
+      itens: [...itens],
+      clienteNome: semCliente || !clienteNome ? '' : clienteNome,
+      clienteTelefone: semCliente ? '' : clienteTelefone,
+      total,
+      tipo,
+      dataEntrega,
+      horarioEntrega,
+    })
+    setSucessoAberto(true)
+    setSalvando(false)
+  }
+
+  // Reset completo pra nova venda
+  const resetVenda = () => {
+    setEtapa(1)
+    setTipo(null)
+    setItens([])
+    setClienteId(null); setClienteNome(''); setClienteTelefone(''); setSemCliente(false); setModoNovoCli(false)
+    setTipoEntrega('retirada_local')
+    setDataEntrega(''); setHorarioEntrega('')
+    setEnderecoRua(''); setEnderecoNumero(''); setEnderecoBairro(''); setEnderecoCidade('Curitiba'); setEnderecoComplemento(''); setTaxaEntrega(0)
+    setDesconto(0); setAcrescimo(0); setSituacaoPag('total'); setValorParcial(0); setDataPrevistaPagamento(''); setFormaPagamento('PIX')
+    setObservacoes('')
+    setPedidoCriado(null); setSucessoAberto(false); setProducaoExpandida(false)
   }
 
   // ── Render ─────────────────────────────────────────────────────────────
   const isUltima = etapa === totalEtapas
+
+  // ═══ Tela de sucesso ═══
+  if (sucessoAberto && pedidoCriado) {
+    return (
+      <>
+        <div className="nv-sucesso-wrap">
+          <div className="nv-sucesso-card">
+            <div className="nv-suc-ico-wrap">
+              <div className="nv-suc-check">✓</div>
+            </div>
+            <h1 className="nv-suc-titulo">Venda registrada!</h1>
+            <p className="nv-suc-sub">Pedido salvo com sucesso</p>
+
+            {/* Resumo cliente + total */}
+            <div className="nv-suc-resumo">
+              <div>
+                <div className="nv-suc-cliente">{pedidoCriado.clienteNome ? toTitleCase(pedidoCriado.clienteNome) : 'Venda avulsa'}</div>
+                {pedidoCriado.clienteTelefone && <div className="nv-suc-tel">{pedidoCriado.clienteTelefone}</div>}
+              </div>
+              <div>
+                <div className="nv-suc-total-lbl">Total</div>
+                <div className="nv-suc-total-val">{formatMoney(pedidoCriado.total)}</div>
+              </div>
+            </div>
+
+            {/* Accordion produção */}
+            {pedidoCriado.tipo === 'encomenda' && (
+              <div className="nv-suc-prod-card" onClick={() => setProducaoExpandida(v => !v)}>
+                <div className="nv-suc-prod-header">
+                  <div className="nv-suc-prod-ico">🎂</div>
+                  <div className="nv-suc-prod-info">
+                    <div className="nv-suc-prod-titulo">1 produção criada</div>
+                    <div className="nv-suc-prod-sub">{producaoExpandida ? 'Toque para esconder' : 'Toque para ver detalhes'}</div>
+                  </div>
+                  <span className={`nv-suc-chevron ${producaoExpandida ? 'nv-suc-chevron--open' : ''}`}>⌄</span>
+                </div>
+                {producaoExpandida && (
+                  <div className="nv-suc-prod-lista">
+                    {pedidoCriado.itens.map((it: ItemVenda, idx: number) => (
+                      <div key={idx} className="nv-suc-prod-linha">
+                        <div>
+                          <div className="nv-suc-prod-nome">{toTitleCase(it.nome_produto)}</div>
+                          <div className="nv-suc-prod-qtd">Quantidade: {it.quantidade}</div>
+                        </div>
+                        {pedidoCriado.dataEntrega && (
+                          <div className="nv-suc-prod-data">
+                            Agendado para<br />
+                            {new Date(pedidoCriado.dataEntrega + 'T00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' })}
+                            {pedidoCriado.horarioEntrega && ` · ${pedidoCriado.horarioEntrega}`}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Botões */}
+            <button className="nv-suc-btn-primary" onClick={resetVenda}>+ Nova Venda</button>
+            <div className="nv-suc-btns-sec">
+              <button className="nv-suc-btn-ghost" onClick={() => navigate('/pedidos')}>
+                <span className="nv-suc-btn-em">📋</span>
+                Ver pedidos
+              </button>
+              <button className="nv-suc-btn-ghost nv-suc-btn-ghost--disabled" disabled title="Em breve">
+                <span className="nv-suc-btn-em">📄</span>
+                Exportar PDF
+                <span className="nv-suc-badge">em breve</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <style>{`
+          .nv-sucesso-wrap {
+            min-height: 100vh;
+            padding: 20px 12px;
+            display: flex; align-items: flex-start; justify-content: center;
+            font-family: var(--font-base) !important;
+          }
+          .nv-sucesso-card {
+            background: #fff;
+            border-radius: 16px;
+            max-width: 480px;
+            width: 100%;
+            padding: 32px 22px 24px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.06);
+          }
+          @media (max-width: 640px) {
+            .nv-sucesso-wrap { padding: 0; }
+            .nv-sucesso-card { border-radius: 0; box-shadow: none; min-height: 100vh; padding: 28px 18px 24px; }
+          }
+
+          .nv-suc-ico-wrap {
+            width: 84px; height: 84px; border-radius: 50%;
+            background: linear-gradient(160deg, #D1FAE5 0%, #A7F3D0 100%);
+            display: flex; align-items: center; justify-content: center;
+            margin: 8px auto 16px;
+            box-shadow: 0 6px 20px rgba(16,185,129,0.25);
+          }
+          .nv-suc-check {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: #10B981; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 900;
+            font-family: var(--font-base) !important;
+          }
+          .nv-suc-titulo {
+            text-align: center;
+            font-size: 22px; font-weight: 900; letter-spacing: -0.02em;
+            color: #2D1F26; margin: 0;
+            font-family: var(--font-base) !important;
+          }
+          .nv-suc-sub {
+            text-align: center;
+            font-size: 13px; color: #6B5D64;
+            margin: 4px 0 20px;
+            font-family: var(--font-base) !important;
+          }
+
+          .nv-suc-resumo {
+            background: linear-gradient(160deg, #FDF3F7 0%, #FAE8EF 100%);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+          }
+          .nv-suc-cliente { font-size: 13px; font-weight: 800; color: #831843; font-family: var(--font-base) !important; }
+          .nv-suc-tel { font-size: 11px; color: #E85A8C; margin-top: 2px; font-family: var(--font-base) !important; }
+          .nv-suc-total-lbl { font-size: 10px; color: #E85A8C; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; text-align: right; font-family: var(--font-base) !important; }
+          .nv-suc-total-val { font-size: 20px; font-weight: 900; color: #831843; letter-spacing: -0.02em; text-align: right; font-family: var(--font-base) !important; }
+
+          .nv-suc-prod-card {
+            background: #FAFAFA;
+            border: 1.5px solid #F0EBED;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+            cursor: pointer;
+            transition: border-color 0.15s;
+          }
+          .nv-suc-prod-card:hover { border-color: #E5D8DE; }
+          .nv-suc-prod-header { display: flex; align-items: center; gap: 10px; }
+          .nv-suc-prod-ico { width: 36px; height: 36px; border-radius: 8px; background: #FDF3F7; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+          .nv-suc-prod-info { flex: 1; min-width: 0; }
+          .nv-suc-prod-titulo { font-size: 13.5px; font-weight: 900; color: #2D1F26; font-family: var(--font-base) !important; }
+          .nv-suc-prod-sub { font-size: 11px; color: #6B5D64; margin-top: 2px; font-family: var(--font-base) !important; }
+          .nv-suc-chevron { color: #E85A8C; transition: transform 0.2s; font-size: 16px; font-weight: 900; flex-shrink: 0; }
+          .nv-suc-chevron--open { transform: rotate(180deg); }
+          .nv-suc-prod-lista {
+            margin-top: 12px; padding-top: 12px;
+            border-top: 1px dashed #E5D8DE;
+            animation: nvSucIn 0.2s ease;
+          }
+          .nv-suc-prod-linha {
+            display: flex; justify-content: space-between; gap: 12px;
+            padding: 8px 0;
+            font-size: 12px;
+          }
+          .nv-suc-prod-linha + .nv-suc-prod-linha { border-top: 1px dashed #F0EBED; }
+          .nv-suc-prod-nome { color: #2D1F26; font-weight: 800; font-family: var(--font-base) !important; }
+          .nv-suc-prod-qtd { color: #6B5D64; margin-top: 2px; font-family: var(--font-base) !important; }
+          .nv-suc-prod-data { color: #E85A8C; font-weight: 800; font-size: 10.5px; text-align: right; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; font-family: var(--font-base) !important; }
+          @keyframes nvSucIn { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 400px; } }
+
+          .nv-suc-btn-primary {
+            all: unset;
+            width: 100%; box-sizing: border-box;
+            padding: 14px;
+            background: linear-gradient(180deg, #E85A8C 0%, #C33A6E 100%);
+            color: #fff;
+            border-radius: 10px;
+            font-size: 14px; font-weight: 900; letter-spacing: -0.01em;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #A02D5A;
+            margin-bottom: 10px;
+            font-family: var(--font-base) !important;
+          }
+          .nv-suc-btn-primary:active { transform: translateY(4px); box-shadow: 0 0 0 #A02D5A; }
+
+          .nv-suc-btns-sec { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+          .nv-suc-btn-ghost {
+            all: unset;
+            padding: 12px 8px;
+            background: #fff;
+            border: 1.5px solid #F0EBED;
+            color: #2D1F26;
+            border-radius: 10px;
+            font-size: 12.5px; font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            box-sizing: border-box;
+            position: relative;
+            font-family: var(--font-base) !important;
+          }
+          .nv-suc-btn-ghost:hover { border-color: #E5D8DE; }
+          .nv-suc-btn-em { font-size: 16px; display: block; margin-bottom: 2px; line-height: 1; }
+          .nv-suc-btn-ghost--disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+          }
+          .nv-suc-badge {
+            position: absolute;
+            top: 4px; right: 4px;
+            background: #FDF3F7;
+            color: #E85A8C;
+            font-size: 8.5px; font-weight: 800;
+            padding: 2px 5px; border-radius: 4px;
+            text-transform: uppercase; letter-spacing: 0.05em;
+          }
+        `}</style>
+      </>
+    )
+  }
 
   return (
     <>
@@ -958,22 +1204,15 @@ export default function NovaVenda() {
             </div>
 
             <label className="nv-label" style={{ marginTop: 16 }}>📝 Observações (opcional)</label>
-            <textarea className="nv-input" style={{ minHeight: 70 }} value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder="Cuidados especiais, alergias, decoração..." />
+            <textarea className="nv-input" style={{ minHeight: 140, resize: 'vertical' }} value={observacoes} onChange={e => setObservacoes(e.target.value)} placeholder="Cuidados especiais, alergias, decoração..." />
           </>
         )}
 
       </div>
 
-      {/* Rodapé com total + botões */}
+      {/* Rodapé só com botões */}
       <div className="nv-footer">
-        {etapaLabelAtual === 'Revisar' ? (
-          <div className="nv-footer-total">
-            <span className="nv-footer-lbl">Total</span>
-            <span className="nv-footer-val">{formatMoney(total)}</span>
-          </div>
-        ) : (
-          <div />
-        )}
+        <div />
         <div className="nv-footer-btns">
           <button className="nv-btn nv-btn-voltar" onClick={voltarEtapa} type="button">
             {etapa === 1 ? '← Cancelar' : '← Voltar'}
