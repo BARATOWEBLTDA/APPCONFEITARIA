@@ -190,11 +190,12 @@ function MapaModal({ endereco, onClose }: { endereco: string; onClose: () => voi
 }
 
 // ── Card de pedido (lista) ──────────────────────────────────────────────────
-function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
+function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida }: {
   p: Pedido
   isMobile: boolean
   onAbrirMapa: (endereco: string) => void
   onVerPedido: (p: Pedido) => void
+  onAcaoRapida?: (id: string, novoStatus: string) => void
 }) {
   const navigate = useNavigate()
   const atrasado = isAtrasado(p)
@@ -368,85 +369,171 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido }: {
     )
   }
 
-  // ── Mobile: card com data grande estilo calendário ──
+  // ── Mobile: card limpo estilo Dora ──
 
-  const totalItens = itens.length
-  const nomeProdutoResumo = primeiroItem
-    ? `${toTitleCase(primeiroItem.nome_produto)}${outrosItens > 0 ? ` + ${outrosItens} item${outrosItens > 1 ? 's' : ''}` : ''}`
-    : 'Sem produtos'
+  const MESES_LONGOS = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro']
 
-  // Data de entrega formatada pra caixa calendário
-  const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
-  const DIAS_SEM = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb']
-  const dataEnt = p.data_entrega ? new Date(p.data_entrega + 'T00:00') : null
+  const formatDataLonga = (dataStr?: string | null, horaStr?: string | null): string => {
+    if (!dataStr) return '—'
+    const d = new Date(dataStr + 'T00:00')
+    const dia = d.getDate()
+    const mes = MESES_LONGOS[d.getMonth()]
+    const hora = horaStr ? ` às ${horaStr.slice(0, 5)}` : ''
+    return `${dia} de ${mes}${hora}`
+  }
+
+  const formatDataPedido = (isoStr?: string): string => {
+    if (!isoStr) return '—'
+    const d = new Date(isoStr)
+    const dia = d.getDate()
+    const mes = MESES_LONGOS[d.getMonth()]
+    const hora = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    return `${dia} de ${mes} às ${hora}`
+  }
+
+  // Origem (Manual / Cardápio)
+  const origemLabel = p.origem === 'cardapio' ? 'Cardápio' : 'Manual'
+
+  // Cor da tag de status — semântica por grupo (mais leve que a config antiga)
+  const statusGroup = getStatusGroup(p.status)
+  const aguardandoAprovacao = p.origem === 'cardapio' && p.status === 'novo'
+  const STATUS_TAG_COLORS: Record<string, { bg: string; color: string; icon: string }> = {
+    aguardando_pagamento: { bg: '#FEF0DF', color: '#854F0B', icon: 'clock' },
+    aguardando_aceite:    { bg: '#FEF0DF', color: '#854F0B', icon: 'clock' },
+    agendado:             { bg: '#E6F1FB', color: '#185FA5', icon: 'calendar' },
+    em_producao:          { bg: '#FCE0E9', color: '#993556', icon: 'chef' },
+    finalizado:           { bg: '#E1F5EE', color: '#0F6E56', icon: 'check' },
+    aguardando_retirada:  { bg: '#E1F5EE', color: '#0F6E56', icon: 'bag' },
+    em_entrega:           { bg: '#E6F1FB', color: '#185FA5', icon: 'truck' },
+    entregue:             { bg: '#F1EFE8', color: '#5F5E5A', icon: 'check' },
+    cancelado:            { bg: '#FCEBEB', color: '#791F1F', icon: 'x' },
+  }
+  const statusTag = aguardandoAprovacao
+    ? { bg: '#FEF0DF', color: '#854F0B', icon: 'clock', label: 'Aguardando aprovação' }
+    : { ...(STATUS_TAG_COLORS[statusGroup] || STATUS_TAG_COLORS.agendado), label: grupo.label }
+
+  // Ação rápida por status — texto do CTA + próximo status
+  const ACAO_POR_STATUS: Record<string, { label: string; proximo: string } | null> = {
+    aguardando_pagamento: { label: 'Marcar como pago',     proximo: 'aguardando_aceite' },
+    aguardando_aceite:    { label: 'Aceitar pedido',       proximo: 'agendado' },
+    agendado:             { label: 'Iniciar produção',     proximo: 'em_producao' },
+    em_producao:          { label: 'Finalizar produção',   proximo: 'finalizado' },
+    finalizado:           { label: p.tipo_entrega === 'retirada' ? 'Marcar como retirado' : 'Marcar como entregue', proximo: p.tipo_entrega === 'retirada' ? 'aguardando_retirada' : 'em_entrega' },
+    aguardando_retirada:  { label: 'Confirmar retirada',   proximo: 'entregue' },
+    em_entrega:           { label: 'Confirmar entrega',    proximo: 'entregue' },
+    entregue:             null,
+    cancelado:            null,
+  }
+  const acao = aguardandoAprovacao
+    ? { label: 'Aceitar pedido', proximo: 'agendado' }
+    : ACAO_POR_STATUS[statusGroup]
+
+  // Ícones inline (SVG) — leves, sem emoji
+  const Icone = ({ nome }: { nome: string }) => {
+    const c = 'currentColor'
+    switch (nome) {
+      case 'clock':    return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      case 'calendar': return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      case 'chef':     return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/><line x1="6" y1="17" x2="18" y2="17"/></svg>
+      case 'check':    return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      case 'truck':    return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      case 'bag':      return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      case 'x':        return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      case 'hand':     return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 17V5a1.5 1.5 0 0 1 3 0v6"/><path d="M14 11a1.5 1.5 0 0 1 3 0v3"/><path d="M17 12a1.5 1.5 0 0 1 3 0v4a6 6 0 0 1-6 6h-2c-2 0-2.5-.4-4-2l-3.5-3.5C4 15.6 4.5 14 6 14h1"/><path d="M11 11V6a1.5 1.5 0 0 0-3 0v9"/></svg>
+      case 'menu':     return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      case 'home':     return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      case 'dots':     return <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+      default:         return null
+    }
+  }
+
+  const iconeEntrega = p.tipo_entrega === 'entrega' ? 'truck' : 'home'
+  const labelEntrega = p.tipo_entrega === 'entrega' ? 'Entrega' : 'Retirada'
+
+  const itensExibir = itens.slice(0, 3)
+  const itensRestantes = itens.length - itensExibir.length
 
   return (
-    <div className="pmob-card" onClick={() => onVerPedido(p)}>
-      {/* Caixa data à esquerda — cinza pra todos */}
-      <div className="pmob-data">
-        {dataEnt ? (
-          <>
-            <div className="pmob-data-mes">{MESES[dataEnt.getMonth()]}</div>
-            <div className="pmob-data-dia">{String(dataEnt.getDate()).padStart(2, '0')}</div>
-            <div className="pmob-data-sem">{DIAS_SEM[dataEnt.getDay()]}</div>
-          </>
-        ) : (
-          <>
-            <div className="pmob-data-mes">Sem</div>
-            <div className="pmob-data-dia">—</div>
-            <div className="pmob-data-sem">data</div>
-          </>
-        )}
-        {p.horario_entrega && <div className="pmob-data-hora">{p.horario_entrega.slice(0, 5)}</div>}
+    <div className="pnew-card" onClick={() => onVerPedido(p)}>
+      {/* Header: nome + #num + menu */}
+      <div className="pnew-header">
+        <div className="pnew-header-info">
+          <div className="pnew-cliente-row">
+            <span className="pnew-cliente">
+              {p.cliente_nome ? toTitleCase(p.cliente_nome) : <span className="pnew-cliente-vazio">Cliente não informado</span>}
+            </span>
+            <span className="pnew-num">#{p.numero || '—'}</span>
+          </div>
+          {p.cliente_telefone && <div className="pnew-telefone">{p.cliente_telefone}</div>}
+        </div>
+        <button type="button" className="pnew-menu" onClick={e => { e.stopPropagation(); onVerPedido(p) }} aria-label="Mais ações">
+          <Icone nome="dots" />
+        </button>
       </div>
 
-      {/* Info central */}
-      <div className="pmob-info">
-        <div className="pmob-cliente">
-          {p.cliente_nome ? toTitleCase(p.cliente_nome) : <span className="pmob-cliente-vazio">Cliente não informado</span>}
-        </div>
-
-        <div className="pmob-tags">
-          {p.origem === 'cardapio' && p.status === 'novo' && (
-            <span className="plist-tag plist-tag--aprovar">
-              <span className="plist-tag-pulse" />
-              Aguardando aprovação
-            </span>
-          )}
-          {!(p.origem === 'cardapio' && p.status === 'novo') && (
-            <span className="pmob-tag" style={{ color: grupo.color, background: grupo.bg }}>
-              {grupo.label}
-            </span>
-          )}
-          <span
-            className="pmob-tag"
-            style={{
-              color: pagamentoCor,
-              background: p.status_pagamento === 'pago' ? '#DCFCE7' : p.status_pagamento === 'parcial' ? '#FEF3C7' : '#FEE2E2'
-            }}
-          >
-            {p.status_pagamento === 'pago' ? 'Pago' : p.status_pagamento === 'parcial' ? 'Parcial' : 'Pendente'}
-          </span>
-          {p.tipo_entrega === 'entrega' && temEndereco && <span className="pmob-tag pmob-tag--neutral">🛵 Entrega</span>}
-        </div>
-
-        <div className="pmob-produto">
-          {(primeiroItem?.imagem_url || primeiroItem?.produtos?.imagem_url) && (
-            <img src={primeiroItem.imagem_url || primeiroItem.produtos?.imagem_url || ''} alt="" className="pmob-produto-foto" />
-          )}
-          <span className="pmob-produto-txt">
-            {primeiroItem ? (
-              <>
-                <b>{formatQtdCurta(primeiroItem.quantidade, primeiroItem.produtos?.forma_venda)}</b>{' '}
-                {toTitleCase(primeiroItem.nome_produto)}
-                {outrosItens > 0 && ` + ${outrosItens} item${outrosItens > 1 ? 's' : ''}`}
-              </>
-            ) : 'Sem produtos'}
-          </span>
-        </div>
-
-        <div className="pmob-valor">{formatMoney(p.valor_total)}</div>
+      {/* Tags: origem + status */}
+      <div className="pnew-tags">
+        <span className="pnew-tag pnew-tag--origem">
+          <Icone nome={p.origem === 'cardapio' ? 'menu' : 'hand'} />
+          {origemLabel}
+        </span>
+        <span className="pnew-tag" style={{ background: statusTag.bg, color: statusTag.color }}>
+          <Icone nome={statusTag.icon} />
+          {statusTag.label}
+        </span>
       </div>
+
+      {/* Datas */}
+      <div className="pnew-datas">
+        <div className="pnew-data-row">
+          <span className="pnew-data-ic"><Icone nome="calendar" /></span>
+          <span className="pnew-data-label">Pedido:</span>
+          <span className="pnew-data-val">{formatDataPedido(p.created_at)}</span>
+        </div>
+        <div className="pnew-data-row">
+          <span className="pnew-data-ic"><Icone nome={iconeEntrega} /></span>
+          <span className="pnew-data-label">{labelEntrega}:</span>
+          <span className="pnew-data-val">{formatDataLonga(p.data_entrega, p.horario_entrega)}</span>
+        </div>
+      </div>
+
+      {/* Divisor */}
+      <div className="pnew-divisor" />
+
+      {/* Itens */}
+      {itensExibir.length > 0 && (
+        <div className="pnew-itens">
+          {itensExibir.map((it, i) => (
+            <div key={i} className="pnew-item-row">
+              <span className="pnew-item-nome">
+                <span className="pnew-item-qtd">{formatQtdCurta(it.quantidade, it.produtos?.forma_venda)}</span>
+                {toTitleCase(it.nome_produto)}
+              </span>
+              <span className="pnew-item-val">{formatMoney((it.valor_unitario || 0) * (it.quantidade || 1))}</span>
+            </div>
+          ))}
+          {itensRestantes > 0 && (
+            <div className="pnew-item-mais">+{itensRestantes} outro{itensRestantes > 1 ? 's' : ''} item{itensRestantes > 1 ? 's' : ''}</div>
+          )}
+        </div>
+      )}
+
+      {/* Total */}
+      <div className="pnew-total-row">
+        <span>Total</span>
+        <span>{formatMoney(p.valor_total)}</span>
+      </div>
+
+      {/* CTA principal — cor primária, texto varia com status */}
+      {acao && onAcaoRapida && (
+        <button
+          type="button"
+          className="pnew-cta"
+          onClick={e => { e.stopPropagation(); onAcaoRapida(p.id, acao.proximo) }}
+        >
+          {acao.label}
+        </button>
+      )}
     </div>
   )
 }
@@ -2032,7 +2119,8 @@ export default function Pedidos() {
               className={`pedidos-aba ${abaAtiva === 'encomenda' ? 'pedidos-aba--ativa' : ''}`}
               onClick={() => setAbaAtiva('encomenda')}
             >
-              📅 Encomendas
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Encomendas
               <span className="pedidos-aba-count">
                 {pedidos.filter(p => (p.tipo_venda || 'encomenda') === 'encomenda').length}
               </span>
@@ -2041,7 +2129,8 @@ export default function Pedidos() {
               className={`pedidos-aba ${abaAtiva === 'pronta_entrega' ? 'pedidos-aba--ativa' : ''}`}
               onClick={() => setAbaAtiva('pronta_entrega')}
             >
-              ⚡ Pronta Entrega
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Pronta Entrega
               <span className="pedidos-aba-count">
                 {pedidos.filter(p => p.tipo_venda === 'pronta_entrega').length}
               </span>
@@ -2164,7 +2253,7 @@ export default function Pedidos() {
                   ) : (
                 <div className="plist-container">
                   {pedidosFiltrados.map(p => (
-                    <PedidoCard key={p.id} p={p} isMobile={true} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} />
+                    <PedidoCard key={p.id} p={p} isMobile={true} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} onAcaoRapida={updateStatus} />
                   ))}
                 </div>
               )}
@@ -2378,150 +2467,186 @@ export default function Pedidos() {
           color: #E85A8C;
         }
 
-        /* ═══ Card pedido mobile (Opção B — calendário) ═══ */
-        .pmob-card {
-          position: relative;
+        /* ═══ Card pedido novo — design limpo estilo Dora ═══ */
+        .pnew-card {
           background: #fff;
-          border: 1.5px solid #F0EBED;
-          border-radius: 12px;
-          padding: 12px;
-          margin-bottom: 8px;
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+          border: 1px solid #F0EBED;
+          border-radius: 14px;
+          padding: 16px;
+          margin-bottom: 12px;
           cursor: pointer;
-          transition: all 0.15s;
+          transition: border-color 0.15s, box-shadow 0.15s;
           font-family: var(--font-base) !important;
         }
-        .pmob-card:hover { border-color: #E5D8DE; transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.06); }
-        .pmob-card:active { transform: translateY(0); }
+        .pnew-card:hover { border-color: #E5D8DE; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
 
-        /* Data cinza clarinha pra todos */
-        .pmob-data {
-          width: 56px;
-          text-align: center;
-          padding: 8px 4px;
-          background: #F5F1F3;
-          border-radius: 10px;
+        .pnew-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 8px;
+        }
+        .pnew-header-info { flex: 1; min-width: 0; }
+        .pnew-cliente-row {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+          min-width: 0;
+        }
+        .pnew-cliente {
+          font-size: 16px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          font-family: var(--font-base) !important;
+        }
+        .pnew-cliente-vazio { color: #B4B2A9; font-style: italic; font-weight: 600; }
+        .pnew-num {
+          font-size: 13px;
+          font-weight: 600;
+          color: #B4B2A9;
           flex-shrink: 0;
         }
-        .pmob-data-mes {
-          font-size: 9.5px; font-weight: 900;
-          color: #6B5D64;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
+        .pnew-telefone {
+          font-size: 13px;
+          color: #888780;
+          margin-top: 2px;
           font-family: var(--font-base) !important;
         }
-        .pmob-data-dia {
-          font-size: 22px; font-weight: 900;
-          color: #2D1F26;
-          letter-spacing: -0.02em;
-          line-height: 1;
-          margin: 2px 0 3px;
-          font-family: var(--font-base) !important;
+        .pnew-menu {
+          all: unset;
+          padding: 4px;
+          border-radius: 6px;
+          color: #888780;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          transition: background 0.15s;
         }
-        .pmob-data-sem {
-          font-size: 8.5px; font-weight: 800;
-          color: #6B5D64;
-          text-transform: uppercase;
-          font-family: var(--font-base) !important;
+        .pnew-menu:hover { background: #F5F1F3; color: #5F5E5A; }
+
+        .pnew-tags {
+          display: flex;
+          gap: 6px;
+          flex-wrap: wrap;
+          margin: 12px 0 14px;
         }
-        .pmob-data-hora {
-          font-size: 11px; font-weight: 900;
-          color: #E85A8C;
-          margin-top: 4px;
-          padding-top: 4px;
-          border-top: 1px dashed #E5D8DE;
-          letter-spacing: -0.01em;
+        .pnew-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 12px;
+          font-weight: 600;
+          padding: 4px 10px;
+          border-radius: 999px;
+          letter-spacing: -0.005em;
           font-family: var(--font-base) !important;
+          white-space: nowrap;
+        }
+        .pnew-tag--origem {
+          background: #F1EFE8;
+          color: #5F5E5A;
         }
 
-        /* Info central */
-        .pmob-info {
-          flex: 1;
-          min-width: 0;
+        .pnew-datas {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .pnew-data-row {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          color: #5F5E5A;
+          line-height: 1.5;
+          font-family: var(--font-base) !important;
+        }
+        .pnew-data-ic {
+          color: #888780;
+          display: inline-flex;
+          align-items: center;
+        }
+        .pnew-data-label { color: #5F5E5A; }
+        .pnew-data-val { color: #2C2C2A; font-weight: 500; }
+
+        .pnew-divisor {
+          height: 1px;
+          background: #E8E5DC;
+          margin: 14px 0 12px;
+        }
+
+        .pnew-itens {
           display: flex;
           flex-direction: column;
           gap: 6px;
         }
-        .pmob-linha-topo {
-          display: none;
+        .pnew-item-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          font-size: 13px;
+          color: #2C2C2A;
+          font-family: var(--font-base) !important;
         }
-        .pmob-cliente {
-          font-size: 14px; font-weight: 900;
-          color: #2D1F26;
-          letter-spacing: -0.01em;
+        .pnew-item-nome {
+          min-width: 0;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          min-width: 0;
-          font-family: var(--font-base) !important;
         }
-        .pmob-cliente-vazio {
-          color: #9A8B93;
+        .pnew-item-qtd {
+          color: #888780;
           font-weight: 700;
+          margin-right: 6px;
+        }
+        .pnew-item-val {
+          flex-shrink: 0;
+          font-variant-numeric: tabular-nums;
+          color: #5F5E5A;
+        }
+        .pnew-item-mais {
+          font-size: 12px;
+          color: #888780;
           font-style: italic;
         }
-        .pmob-valor {
-          font-size: 15px; font-weight: 900;
-          color: #831843;
+
+        .pnew-total-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 14px;
+          font-weight: 700;
+          color: #2C2C2A;
+          margin-top: 12px;
           letter-spacing: -0.01em;
           font-family: var(--font-base) !important;
-          margin-top: 2px;
         }
-        .pmob-tags {
-          display: flex;
-          gap: 4px;
-          flex-wrap: wrap;
-        }
-        .pmob-tag {
-          padding: 2px 7px;
-          border-radius: 4px;
-          font-size: 10px;
-          font-weight: 800;
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
-          white-space: nowrap;
+        .pnew-total-row span:last-child { font-variant-numeric: tabular-nums; }
+
+        .pnew-cta {
+          all: unset;
+          box-sizing: border-box;
+          width: 100%;
+          text-align: center;
+          margin-top: 14px;
+          background: #E85A8C;
+          color: #fff;
+          border-radius: 10px;
+          padding: 12px 14px;
+          font-size: 14px;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          cursor: pointer;
+          transition: background 0.15s, transform 0.05s;
           font-family: var(--font-base) !important;
         }
-        .pmob-tag--neutral {
-          color: #6B5D64;
-          background: #F5F1F3;
-        }
-        .pmob-produto {
-          font-size: 12px;
-          color: #4A3540;
-          font-weight: 600;
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
-          overflow: hidden;
-          font-family: var(--font-base) !important;
-          line-height: 1.35;
-        }
-        .pmob-produto-txt {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          font-family: var(--font-base) !important;
-        }
-        .pmob-produto-txt b {
-          font-weight: 900;
-          color: #2D1F26;
-          text-transform: uppercase;
-          letter-spacing: 0.02em;
-          margin-right: 2px;
-        }
-        .pmob-produto-foto {
-          width: 22px; height: 22px;
-          border-radius: 6px;
-          object-fit: cover;
-          flex-shrink: 0;
-          margin-top: 1px;
-        }
+        .pnew-cta:hover { background: #C33A6E; }
+        .pnew-cta:active { transform: scale(0.99); }
 
         .plist-item {
           display: flex;
