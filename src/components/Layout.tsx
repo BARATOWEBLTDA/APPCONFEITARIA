@@ -320,7 +320,7 @@ export default function Layout() {
               onClick={() => setDooOpen(true)}
               aria-label="Abrir Doo IA"
             >
-              <img src="/Sistema/doo.png" alt="Doo" className="bn-doo-img" />
+              <img src="/Sistema/doo.png" alt="Doo" className="bn-doo-img" width={52} height={56} />
             </button>
           </div>
         </nav>
@@ -683,6 +683,7 @@ export default function Layout() {
             box-shadow: 0 -2px 16px rgba(61, 26, 36, 0.25);
             pointer-events: all;
             margin-bottom: 0;
+            overflow: hidden;
           }
           .bn-item {
             display: flex;
@@ -744,7 +745,11 @@ export default function Layout() {
             cursor: pointer;
             border-radius: 0;
             align-self: stretch;
+            flex: 0 0 52px;
+            width: 52px;
             min-width: 52px;
+            max-width: 52px;
+            height: 100%;
             margin: -6px -6px -6px 0;
             overflow: hidden;
             transition: transform 0.15s;
@@ -752,8 +757,11 @@ export default function Layout() {
           .bn-doo:hover { opacity: 0.9; }
           .bn-doo:active { transform: scale(0.95); }
           .bn-doo-img {
-            height: 100%;
+            display: block;
             width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
             object-fit: cover;
             object-position: top center;
           }
