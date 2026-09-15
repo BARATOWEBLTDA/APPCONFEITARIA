@@ -371,6 +371,14 @@ export default function NovaVenda() {
       console.error('Erro ao inserir itens:', errItens)
     }
 
+    // Registra criação no histórico (silencioso — não falha se tabela não existir)
+    supabase.from('pedido_historico').insert({
+      pedido_id: novoPedido.id,
+      user_id: userId,
+      evento: 'Pedido criado',
+      descricao: `Pedido ${tipo === 'pronta_entrega' ? 'de pronta entrega' : 'de encomenda'} registrado manualmente`,
+    }).then(() => {}, () => {})
+
     // Salva dados do pedido pra mostrar na tela de sucesso
     setPedidoCriado({
       id: novoPedido.id,

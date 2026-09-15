@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useProfile } from '@/hooks/useProfile'
 import { usePlano } from '@/hooks/usePlano'
@@ -1778,7 +1779,17 @@ export default function Pedidos() {
       return
     }
     if (acao === 'pdf') {
-      alert('🚀 Em breve: exportar PDF')
+      // Se o pedido já tem itens no objeto local, usa direto; senão busca
+      let pedidoCompleto: any = p
+      if (!p.pedido_itens || p.pedido_itens.length === 0) {
+        const { data, error } = await supabase.from('pedidos').select('*, pedido_itens(*)').eq('id', p.id).single()
+        if (error || !data) {
+          alert('Não foi possível carregar os itens do pedido.')
+          return
+        }
+        pedidoCompleto = data
+      }
+      await gerarPedidoPDF(pedidoCompleto)
       return
     }
     if (acao === 'excluir') {

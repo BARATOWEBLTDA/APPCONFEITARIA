@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import HorarioSheet from '@/components/HorarioSheet'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────
@@ -546,6 +547,41 @@ export default function EditarPedido() {
     setBuscaCliente('')
   }
 
+  // ── Handler de exportar PDF ───────────────────────────────────────────
+  const handleExportarPDF = async () => {
+    if (!pedido) return
+    // Usa o state atual (que pode ter mudanças não salvas) pra gerar o PDF
+    await gerarPedidoPDF({
+      id: pedido.id,
+      numero: pedido.numero,
+      cliente_nome: clienteNome,
+      cliente_telefone: clienteTelefone,
+      status: statusPedido,
+      status_pagamento: situacaoPag === 'total' ? 'pago' : situacaoPag === 'parcial' ? 'parcial' : 'pendente',
+      tipo_entrega: tipoEntrega,
+      tipo_venda: pedido.tipo_venda,
+      data_entrega: dataEntrega,
+      horario_entrega: horarioEntrega,
+      endereco_rua: enderecoRua,
+      endereco_numero: enderecoNumero,
+      endereco_bairro: enderecoBairro,
+      endereco_cidade: enderecoCidade,
+      endereco_complemento: enderecoComplemento,
+      valor_total: total,
+      valor_produtos: subtotalItens,
+      valor_recebido: situacaoPag === 'total' ? total : situacaoPag === 'parcial' ? valorParcial : 0,
+      desconto: desconto,
+      acrescimo: acrescimo,
+      taxa_entrega: tipoEntrega === 'entrega' ? taxaEntrega : 0,
+      forma_pagamento: formaPagamento,
+      observacoes: pedido.observacoes,
+      data_prevista_pagamento: situacaoPag === 'fiado' ? dataPrevistaPagamento : null,
+      origem: pedido.origem,
+      created_at: pedido.created_at,
+      pedido_itens: itens,
+    })
+  }
+
   // ── Handler de salvar (Fase 6) ────────────────────────────────────────
   const handleSalvar = async () => {
     if (salvando) return
@@ -761,7 +797,7 @@ export default function EditarPedido() {
             <button className="ep-icon-btn" onClick={() => setTimelineAberto(true)} aria-label="Timeline" title="Acompanhar pedido">
               <I.clock />
             </button>
-            <button className="ep-icon-btn" aria-label="Exportar PDF" title="Exportar PDF">
+            <button className="ep-icon-btn" onClick={handleExportarPDF} aria-label="Exportar PDF" title="Exportar PDF">
               <I.print />
             </button>
           </div>
