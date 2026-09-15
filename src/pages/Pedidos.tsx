@@ -190,12 +190,104 @@ function MapaModal({ endereco, onClose }: { endereco: string; onClose: () => voi
 }
 
 // ── Card de pedido (lista) ──────────────────────────────────────────────────
-function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida }: {
+// ── Menu dropdown do card de pedido ─────────────────────────────────────────
+function PedidoCardMenu({ p, onMenuAcao, onVerPedido }: {
+  p: Pedido
+  onMenuAcao?: (p: Pedido, acao: 'editar' | 'duplicar' | 'contatar' | 'compartilhar' | 'pdf' | 'excluir') => void
+  onVerPedido: (p: Pedido) => void
+}) {
+  const [aberto, setAberto] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!aberto) return
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setAberto(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    return () => document.removeEventListener('mousedown', onDoc)
+  }, [aberto])
+
+  const clique = (acao: 'editar' | 'duplicar' | 'contatar' | 'compartilhar' | 'pdf' | 'excluir') => (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setAberto(false)
+    if (onMenuAcao) onMenuAcao(p, acao)
+    else onVerPedido(p)
+  }
+
+  const temTelefone = !!(p.cliente_telefone && p.cliente_telefone.replace(/\D/g, '').length >= 10)
+
+  return (
+    <div className="pnew-menu-wrap" ref={ref}>
+      <button type="button" className="pnew-menu" onClick={e => { e.stopPropagation(); setAberto(o => !o) }} aria-label="Mais ações">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+      </button>
+      {aberto && (
+        <div className="pnew-menu-drop" onClick={e => e.stopPropagation()}>
+          <button type="button" className="pnew-menu-item" onClick={clique('editar')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+            <div>
+              <div className="pnew-menu-item-t">Editar Pedido</div>
+              <div className="pnew-menu-item-d">Modificar informações</div>
+            </div>
+          </button>
+
+          <button type="button" className="pnew-menu-item" onClick={clique('duplicar')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <div>
+              <div className="pnew-menu-item-t">Duplicar Pedido</div>
+              <div className="pnew-menu-item-d">Criar um novo pedido igual a este</div>
+            </div>
+          </button>
+
+          {temTelefone && (
+            <button type="button" className="pnew-menu-item" onClick={clique('contatar')}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2h-5l-4 4v-4H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <div>
+                <div className="pnew-menu-item-t">Contatar Cliente</div>
+                <div className="pnew-menu-item-d">Enviar mensagem pelo WhatsApp</div>
+              </div>
+            </button>
+          )}
+
+          <button type="button" className="pnew-menu-item" onClick={clique('compartilhar')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            <div>
+              <div className="pnew-menu-item-t">Compartilhar no WhatsApp</div>
+              <div className="pnew-menu-item-d">Enviar resumo do pedido</div>
+            </div>
+          </button>
+
+          <button type="button" className="pnew-menu-item" onClick={clique('pdf')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <div>
+              <div className="pnew-menu-item-t">Exportar PDF</div>
+              <div className="pnew-menu-item-d">Gerar e baixar comprovante</div>
+            </div>
+          </button>
+
+          <div className="pnew-menu-sep" />
+
+          <button type="button" className="pnew-menu-item pnew-menu-item--danger" onClick={clique('excluir')}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+            <div>
+              <div className="pnew-menu-item-t">Excluir Pedido</div>
+              <div className="pnew-menu-item-d">Remover do sistema</div>
+            </div>
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMenuAcao }: {
   p: Pedido
   isMobile: boolean
   onAbrirMapa: (endereco: string) => void
   onVerPedido: (p: Pedido) => void
   onAcaoRapida?: (id: string, novoStatus: string) => void
+  onMenuAcao?: (p: Pedido, acao: 'editar' | 'duplicar' | 'contatar' | 'compartilhar' | 'pdf' | 'excluir') => void
 }) {
   const navigate = useNavigate()
   const atrasado = isAtrasado(p)
@@ -466,9 +558,7 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida }: {
           </div>
           {p.cliente_telefone && <div className="pnew-telefone">{p.cliente_telefone}</div>}
         </div>
-        <button type="button" className="pnew-menu" onClick={e => { e.stopPropagation(); onVerPedido(p) }} aria-label="Mais ações">
-          <Icone nome="dots" />
-        </button>
+        <PedidoCardMenu p={p} onMenuAcao={onMenuAcao} onVerPedido={onVerPedido} />
       </div>
 
       {/* Tags: origem + status */}
@@ -1617,6 +1707,54 @@ export default function Pedidos() {
     setPedidos(prev => prev.filter(p => p.id !== id))
   }
 
+  // ── Handler central do menu ⋮ do card mobile ──────────────────────────────
+  const handleMenuAcao = async (p: Pedido, acao: 'editar' | 'duplicar' | 'contatar' | 'compartilhar' | 'pdf' | 'excluir') => {
+    if (acao === 'editar') {
+      navigate(`/pedidos/${p.id}`)
+      return
+    }
+    if (acao === 'duplicar') {
+      navigate(`/nova-venda?duplicar=${p.id}`)
+      return
+    }
+    if (acao === 'contatar') {
+      const tel = (p.cliente_telefone || '').replace(/\D/g, '')
+      if (!tel) return
+      const num = tel.startsWith('55') ? tel : `55${tel}`
+      const nome = p.cliente_nome ? toTitleCase(p.cliente_nome).split(' ')[0] : ''
+      const texto = encodeURIComponent(`Olá${nome ? ' ' + nome : ''}! Sobre o seu pedido #${p.numero || ''}, tudo certo?`)
+      window.open(`https://wa.me/${num}?text=${texto}`, '_blank')
+      return
+    }
+    if (acao === 'compartilhar') {
+      const itens = p.pedido_itens || []
+      const linhasItens = itens.map(it => `• ${it.quantidade}x ${toTitleCase(it.nome_produto)}`).join('\n')
+      const dataEnt = p.data_entrega ? formatDate(p.data_entrega) : '—'
+      const hora = p.horario_entrega ? ` às ${p.horario_entrega.slice(0, 5)}` : ''
+      const tipo = p.tipo_entrega === 'entrega' ? 'Entrega' : 'Retirada'
+      const resumo = [
+        `*Pedido #${p.numero || ''}*`,
+        p.cliente_nome ? `Cliente: ${toTitleCase(p.cliente_nome)}` : '',
+        `${tipo}: ${dataEnt}${hora}`,
+        '',
+        linhasItens ? `*Itens:*\n${linhasItens}` : '',
+        '',
+        `*Total: ${formatMoney(p.valor_total)}*`,
+      ].filter(Boolean).join('\n')
+      window.open(`https://wa.me/?text=${encodeURIComponent(resumo)}`, '_blank')
+      return
+    }
+    if (acao === 'pdf') {
+      alert('🚀 Em breve: exportar PDF')
+      return
+    }
+    if (acao === 'excluir') {
+      if (!confirm(`Excluir o pedido #${p.numero || ''} de ${p.cliente_nome ? toTitleCase(p.cliente_nome) : 'cliente não informado'}?\n\nEsta ação não pode ser desfeita.`)) return
+      await excluirPedido(p.id)
+      return
+    }
+  }
+
   // Aprova pedido vindo do cardápio público (muda status de 'novo' → 'confirmado')
   const aprovarPedido = async (id: string) => {
     const { error } = await supabase
@@ -2253,7 +2391,7 @@ export default function Pedidos() {
                   ) : (
                 <div className="plist-container">
                   {pedidosFiltrados.map(p => (
-                    <PedidoCard key={p.id} p={p} isMobile={true} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} onAcaoRapida={updateStatus} />
+                    <PedidoCard key={p.id} p={p} isMobile={true} onAbrirMapa={setMapaAberto} onVerPedido={setModalPedido} onAcaoRapida={updateStatus} onMenuAcao={handleMenuAcao} />
                   ))}
                 </div>
               )}
@@ -2529,6 +2667,69 @@ export default function Pedidos() {
           transition: background 0.15s;
         }
         .pnew-menu:hover { background: #F5F1F3; color: #5F5E5A; }
+
+        .pnew-menu-wrap {
+          position: relative;
+          flex-shrink: 0;
+        }
+        .pnew-menu-drop {
+          position: absolute;
+          top: calc(100% + 6px);
+          right: 0;
+          z-index: 40;
+          min-width: 260px;
+          background: #fff;
+          border: 1px solid #E8E5DC;
+          border-radius: 12px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.08);
+          padding: 6px;
+          animation: pnewMenuIn 0.12s ease-out;
+        }
+        @keyframes pnewMenuIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .pnew-menu-item {
+          all: unset;
+          width: 100%;
+          box-sizing: border-box;
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          padding: 10px 12px;
+          border-radius: 8px;
+          cursor: pointer;
+          color: #5F5E5A;
+          transition: background 0.12s, color 0.12s;
+          font-family: var(--font-base) !important;
+        }
+        .pnew-menu-item:hover { background: #F5F1F3; color: #2C2C2A; }
+        .pnew-menu-item svg { flex-shrink: 0; margin-top: 1px; }
+        .pnew-menu-item-t {
+          font-size: 13.5px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+          line-height: 1.3;
+          font-family: var(--font-base) !important;
+        }
+        .pnew-menu-item-d {
+          font-size: 11.5px;
+          color: #888780;
+          font-weight: 500;
+          margin-top: 2px;
+          line-height: 1.3;
+          font-family: var(--font-base) !important;
+        }
+        .pnew-menu-item--danger .pnew-menu-item-t { color: #B91C1C; }
+        .pnew-menu-item--danger { color: #B91C1C; }
+        .pnew-menu-item--danger:hover { background: #FEF2F2; }
+        .pnew-menu-item--danger:hover .pnew-menu-item-t { color: #991B1B; }
+        .pnew-menu-sep {
+          height: 1px;
+          background: #E8E5DC;
+          margin: 4px 6px;
+        }
 
         .pnew-tags {
           display: flex;
