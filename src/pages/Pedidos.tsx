@@ -197,15 +197,28 @@ function PedidoCardMenu({ p, onMenuAcao, onVerPedido }: {
   onVerPedido: (p: Pedido) => void
 }) {
   const [aberto, setAberto] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
 
+  // Trava o scroll do body enquanto o sheet estiver aberto
   useEffect(() => {
     if (!aberto) return
-    const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setAberto(false)
+    const scrollY = window.scrollY
+    const original = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
     }
-    document.addEventListener('mousedown', onDoc)
-    return () => document.removeEventListener('mousedown', onDoc)
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    return () => {
+      document.body.style.overflow = original.overflow
+      document.body.style.position = original.position
+      document.body.style.top = original.top
+      document.body.style.width = original.width
+      window.scrollTo(0, scrollY)
+    }
   }, [aberto])
 
   const clique = (acao: 'editar' | 'duplicar' | 'contatar' | 'compartilhar' | 'pdf' | 'excluir') => (e: React.MouseEvent) => {
@@ -218,66 +231,86 @@ function PedidoCardMenu({ p, onMenuAcao, onVerPedido }: {
   const temTelefone = !!(p.cliente_telefone && p.cliente_telefone.replace(/\D/g, '').length >= 10)
 
   return (
-    <div className="pnew-menu-wrap" ref={ref}>
-      <button type="button" className="pnew-menu" onClick={e => { e.stopPropagation(); setAberto(o => !o) }} aria-label="Mais ações">
+    <>
+      <button type="button" className="pnew-menu" onClick={e => { e.stopPropagation(); setAberto(true) }} aria-label="Mais ações">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
       </button>
-      {aberto && (
-        <div className="pnew-menu-drop" onClick={e => e.stopPropagation()}>
-          <button type="button" className="pnew-menu-item" onClick={clique('editar')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-            <div>
-              <div className="pnew-menu-item-t">Editar Pedido</div>
-              <div className="pnew-menu-item-d">Modificar informações</div>
-            </div>
-          </button>
 
-          <button type="button" className="pnew-menu-item" onClick={clique('duplicar')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            <div>
-              <div className="pnew-menu-item-t">Duplicar Pedido</div>
-              <div className="pnew-menu-item-d">Criar um novo pedido igual a este</div>
-            </div>
-          </button>
+      {aberto && createPortal(
+        <div className="pnew-sheet-overlay" onClick={e => { e.stopPropagation(); setAberto(false) }}>
+          <div className="pnew-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div className="pnew-sheet-handle" />
 
-          {temTelefone && (
-            <button type="button" className="pnew-menu-item" onClick={clique('contatar')}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2h-5l-4 4v-4H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <div className="pnew-sheet-header">
               <div>
-                <div className="pnew-menu-item-t">Contatar Cliente</div>
-                <div className="pnew-menu-item-d">Enviar mensagem pelo WhatsApp</div>
+                <div className="pnew-sheet-title">
+                  {p.cliente_nome ? toTitleCase(p.cliente_nome) : 'Cliente não informado'}
+                </div>
+                <div className="pnew-sheet-sub">Pedido #{p.numero || '—'}</div>
               </div>
-            </button>
-          )}
-
-          <button type="button" className="pnew-menu-item" onClick={clique('compartilhar')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-            <div>
-              <div className="pnew-menu-item-t">Compartilhar no WhatsApp</div>
-              <div className="pnew-menu-item-d">Enviar resumo do pedido</div>
+              <button type="button" className="pnew-sheet-close" onClick={() => setAberto(false)} aria-label="Fechar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
-          </button>
 
-          <button type="button" className="pnew-menu-item" onClick={clique('pdf')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <div>
-              <div className="pnew-menu-item-t">Exportar PDF</div>
-              <div className="pnew-menu-item-d">Gerar e baixar comprovante</div>
+            <div className="pnew-sheet-list">
+              <button type="button" className="pnew-menu-item" onClick={clique('editar')}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                <div>
+                  <div className="pnew-menu-item-t">Editar Pedido</div>
+                  <div className="pnew-menu-item-d">Modificar informações</div>
+                </div>
+              </button>
+
+              <button type="button" className="pnew-menu-item" onClick={clique('duplicar')}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <div>
+                  <div className="pnew-menu-item-t">Duplicar Pedido</div>
+                  <div className="pnew-menu-item-d">Criar um novo pedido igual a este</div>
+                </div>
+              </button>
+
+              {temTelefone && (
+                <button type="button" className="pnew-menu-item" onClick={clique('contatar')}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2h-5l-4 4v-4H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <div>
+                    <div className="pnew-menu-item-t">Contatar Cliente</div>
+                    <div className="pnew-menu-item-d">Enviar mensagem pelo WhatsApp</div>
+                  </div>
+                </button>
+              )}
+
+              <button type="button" className="pnew-menu-item" onClick={clique('compartilhar')}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <div>
+                  <div className="pnew-menu-item-t">Compartilhar no WhatsApp</div>
+                  <div className="pnew-menu-item-d">Enviar resumo do pedido</div>
+                </div>
+              </button>
+
+              <button type="button" className="pnew-menu-item" onClick={clique('pdf')}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <div>
+                  <div className="pnew-menu-item-t">Exportar PDF</div>
+                  <div className="pnew-menu-item-d">Gerar e baixar comprovante</div>
+                </div>
+              </button>
+
+              <div className="pnew-menu-sep" />
+
+              <button type="button" className="pnew-menu-item pnew-menu-item--danger" onClick={clique('excluir')}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
+                <div>
+                  <div className="pnew-menu-item-t">Excluir Pedido</div>
+                  <div className="pnew-menu-item-d">Remover do sistema</div>
+                </div>
+              </button>
             </div>
-          </button>
-
-          <div className="pnew-menu-sep" />
-
-          <button type="button" className="pnew-menu-item pnew-menu-item--danger" onClick={clique('excluir')}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>
-            <div>
-              <div className="pnew-menu-item-t">Excluir Pedido</div>
-              <div className="pnew-menu-item-d">Remover do sistema</div>
-            </div>
-          </button>
-        </div>
+          </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   )
 }
 
@@ -2668,45 +2701,106 @@ export default function Pedidos() {
         }
         .pnew-menu:hover { background: #F5F1F3; color: #5F5E5A; }
 
-        .pnew-menu-wrap {
-          position: relative;
+        /* Bottom sheet + backdrop escuro com blur */
+        .pnew-sheet-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 100;
+          background: rgba(20, 15, 18, 0.45);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          animation: pnewOverlayIn 0.18s ease-out;
+        }
+        @keyframes pnewOverlayIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        .pnew-sheet {
+          width: 100%;
+          max-width: 480px;
+          background: #fff;
+          border-radius: 20px 20px 0 0;
+          padding: 8px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+          box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
+          animation: pnewSheetIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+          max-height: 85vh;
+          overflow-y: auto;
+          overscroll-behavior: contain;
+        }
+        @keyframes pnewSheetIn {
+          from { transform: translateY(100%); }
+          to   { transform: translateY(0); }
+        }
+        .pnew-sheet-handle {
+          width: 40px;
+          height: 4px;
+          background: #E8E5DC;
+          border-radius: 999px;
+          margin: 4px auto 12px;
+        }
+        .pnew-sheet-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 0 4px 12px;
+          border-bottom: 1px solid #F1EFE8;
+          margin-bottom: 8px;
+        }
+        .pnew-sheet-title {
+          font-size: 15px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+          font-family: var(--font-base) !important;
+        }
+        .pnew-sheet-sub {
+          font-size: 12px;
+          color: #888780;
+          margin-top: 2px;
+          font-family: var(--font-base) !important;
+        }
+        .pnew-sheet-close {
+          all: unset;
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #5F5E5A;
+          cursor: pointer;
+          transition: background 0.15s;
           flex-shrink: 0;
         }
-        .pnew-menu-drop {
-          position: absolute;
-          top: calc(100% + 6px);
-          right: 0;
-          z-index: 40;
-          min-width: 260px;
-          background: #fff;
-          border: 1px solid #E8E5DC;
-          border-radius: 12px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.08);
-          padding: 6px;
-          animation: pnewMenuIn 0.12s ease-out;
+        .pnew-sheet-close:hover { background: #F5F1F3; }
+        .pnew-sheet-list {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
         }
-        @keyframes pnewMenuIn {
-          from { opacity: 0; transform: translateY(-4px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
+
         .pnew-menu-item {
           all: unset;
           width: 100%;
           box-sizing: border-box;
           display: flex;
           align-items: flex-start;
-          gap: 10px;
-          padding: 10px 12px;
-          border-radius: 8px;
+          gap: 12px;
+          padding: 12px;
+          border-radius: 10px;
           cursor: pointer;
           color: #5F5E5A;
           transition: background 0.12s, color 0.12s;
           font-family: var(--font-base) !important;
         }
-        .pnew-menu-item:hover { background: #F5F1F3; color: #2C2C2A; }
+        .pnew-menu-item:hover, .pnew-menu-item:active { background: #F5F1F3; color: #2C2C2A; }
         .pnew-menu-item svg { flex-shrink: 0; margin-top: 1px; }
         .pnew-menu-item-t {
-          font-size: 13.5px;
+          font-size: 14px;
           font-weight: 700;
           color: #2C2C2A;
           letter-spacing: -0.01em;
@@ -2714,7 +2808,7 @@ export default function Pedidos() {
           font-family: var(--font-base) !important;
         }
         .pnew-menu-item-d {
-          font-size: 11.5px;
+          font-size: 12px;
           color: #888780;
           font-weight: 500;
           margin-top: 2px;
@@ -2723,12 +2817,12 @@ export default function Pedidos() {
         }
         .pnew-menu-item--danger .pnew-menu-item-t { color: #B91C1C; }
         .pnew-menu-item--danger { color: #B91C1C; }
-        .pnew-menu-item--danger:hover { background: #FEF2F2; }
+        .pnew-menu-item--danger:hover, .pnew-menu-item--danger:active { background: #FEF2F2; }
         .pnew-menu-item--danger:hover .pnew-menu-item-t { color: #991B1B; }
         .pnew-menu-sep {
           height: 1px;
-          background: #E8E5DC;
-          margin: 4px 6px;
+          background: #F1EFE8;
+          margin: 6px 4px;
         }
 
         .pnew-tags {
