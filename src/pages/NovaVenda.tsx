@@ -8,7 +8,7 @@ import { tocarSom } from '@/hooks/useSom'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────
 type TipoVenda = 'encomenda' | 'pronta_entrega' | null
-type TipoEntrega = 'retirada_local' | 'retirada_agendada' | 'entrega'
+type TipoEntrega = 'retirada' | 'entrega'
 type SituacaoPag = 'total' | 'parcial' | 'fiado'
 
 interface ItemVenda {
@@ -102,7 +102,7 @@ export default function NovaVenda() {
   const [clienteTelefone, setClienteTelefone] = useState('')
   const [modoNovoCli, setModoNovoCli] = useState(false)
 
-  const [tipoEntrega, setTipoEntrega] = useState<TipoEntrega>('retirada_local')
+  const [tipoEntrega, setTipoEntrega] = useState<TipoEntrega>('retirada')
   const [dataEntrega, setDataEntrega] = useState('')
   const [horarioEntrega, setHorarioEntrega] = useState('')
   const [enderecoRua, setEnderecoRua] = useState('')
@@ -116,6 +116,7 @@ export default function NovaVenda() {
   const [acrescimo, setAcrescimo] = useState(0)
   const [situacaoPag, setSituacaoPag] = useState<SituacaoPag>('total')
   const [valorParcial, setValorParcial] = useState(0)
+  const [statusPedido, setStatusPedido] = useState<'aguardando_aceite' | 'agendado' | 'finalizado' | 'entregue'>('agendado')
   const [dataPrevistaPagamento, setDataPrevistaPagamento] = useState('')
   const [formaPagamento, setFormaPagamento] = useState('PIX')
 
@@ -141,6 +142,32 @@ export default function NovaVenda() {
   const [horaSheetAberto, setHoraSheetAberto] = useState(false)
   const dataRef = useRef<HTMLInputElement>(null)
   const dataPrevRef = useRef<HTMLInputElement>(null)
+  const [enderecoCep, setEnderecoCep] = useState('')
+  const [cepLoading, setCepLoading] = useState(false)
+
+  // Busca CEP via ViaCEP
+  const fetchCep = async (cep: string) => {
+    const digits = cep.replace(/\D/g, '')
+    if (digits.length !== 8) return
+    setCepLoading(true)
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`)
+      const data = await res.json()
+      if (!data.erro) {
+        if (data.logradouro) setEnderecoRua(data.logradouro)
+        if (data.bairro) setEnderecoBairro(data.bairro)
+        if (data.localidade) setEnderecoCidade(data.localidade)
+      }
+    } catch {}
+    setCepLoading(false)
+  }
+
+  // Formata CEP enquanto digita: "12345678" → "12345-678"
+  const formatCep = (v: string): string => {
+    const digits = v.replace(/\D/g, '').slice(0, 8)
+    if (digits.length > 5) return `${digits.slice(0, 5)}-${digits.slice(5)}`
+    return digits
+  }
 
   // ── Load inicial ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -167,8 +194,7 @@ export default function NovaVenda() {
 
   // Ajusta tipoEntrega default quando muda o tipo de venda
   useEffect(() => {
-    if (tipo === 'pronta_entrega') setTipoEntrega('retirada_local')
-    else if (tipo === 'encomenda') setTipoEntrega('retirada_agendada')
+    setTipoEntrega('retirada')
   }, [tipo])
 
   // Scroll pro topo quando muda de etapa ou entra na tela de sucesso
@@ -208,11 +234,8 @@ export default function NovaVenda() {
     if (etapaLabelAtual === 'Venda') return tipo !== null && itens.length > 0
     if (etapaLabelAtual === 'Cliente') return true
     if (etapaLabelAtual === 'Entrega') {
-      if (tipoEntrega === 'retirada_agendada' && !dataEntrega) return false
-      if (tipoEntrega === 'entrega') {
-        if (!enderecoRua) return false
-        if (tipo === 'encomenda' && !dataEntrega) return false
-      }
+      if (tipo === 'encomenda' && !dataEntrega) return false
+      if (tipoEntrega === 'entrega' && !enderecoRua) return false
       return true
     }
     return true
@@ -281,17 +304,19 @@ export default function NovaVenda() {
     if (!userId || salvando) return
     setSalvando(true)
 
-    // Status calculado
-    let status = 'agendado'
+    // Status escolhido pela confeiteira
+    let status: string = statusPedido
     let statusPag: string = 'pago'
     let valorRecebido = total
 
-    if (tipo === 'pronta_entrega') {
+    // Se pronta entrega + já saiu, força entregue
+    if (tipo === 'pronta_entrega' && tipoEntrega === 'retirada') {
       status = 'entregue'
-    } else if (situacaoPag === 'fiado') {
+    }
+
+    if (situacaoPag === 'fiado') {
       statusPag = 'pendente'
       valorRecebido = 0
-      status = 'aguardando_pagamento'
     } else if (situacaoPag === 'parcial') {
       statusPag = 'parcial'
       valorRecebido = valorParcial
@@ -310,7 +335,7 @@ export default function NovaVenda() {
       desconto,
       taxa_entrega: tipoEntrega === 'entrega' ? taxaEntrega : 0,
       forma_pagamento: formaPagamento,
-      tipo_entrega: tipoEntrega === 'entrega' ? 'entrega' : 'retirada',
+      tipo_entrega: tipoEntrega,
       data_entrega: tipo === 'encomenda' ? dataEntrega : new Date().toISOString().slice(0, 10),
       horario_entrega: tipo === 'encomenda' ? horarioEntrega : null,
       endereco_rua: enderecoRua,
@@ -368,10 +393,10 @@ export default function NovaVenda() {
     setTipo(null)
     setItens([])
     setClienteId(null); setClienteNome(''); setClienteTelefone(''); setSemCliente(false); setModoNovoCli(false)
-    setTipoEntrega('retirada_local')
+    setTipoEntrega('retirada')
     setDataEntrega(''); setHorarioEntrega('')
-    setEnderecoRua(''); setEnderecoNumero(''); setEnderecoBairro(''); setEnderecoCidade('Curitiba'); setEnderecoComplemento(''); setTaxaEntrega(0)
-    setDesconto(0); setAcrescimo(0); setSituacaoPag('total'); setValorParcial(0); setDataPrevistaPagamento(''); setFormaPagamento('PIX')
+    setEnderecoRua(''); setEnderecoNumero(''); setEnderecoBairro(''); setEnderecoCidade('Curitiba'); setEnderecoComplemento(''); setTaxaEntrega(0); setEnderecoCep('')
+    setDesconto(0); setAcrescimo(0); setSituacaoPag('total'); setValorParcial(0); setDataPrevistaPagamento(''); setFormaPagamento('PIX'); setStatusPedido('agendado')
     setObservacoes('')
     setPedidoCriado(null); setSucessoAberto(false); setProducaoExpandida(false)
   }
@@ -884,28 +909,18 @@ export default function NovaVenda() {
             <h2 className="nv-titulo">Como será a entrega?</h2>
             <p className="nv-sub">Escolha a modalidade de entrega</p>
 
-            <div className="nv-ent-tipos nv-ent-tipos--3">
+            <div className="nv-ent-tipos">
               <button
                 type="button"
-                data-modo="local"
-                className={`nv-ent-card ${tipoEntrega === 'retirada_local' ? 'nv-ent-card--ativo' : ''}`}
-                onClick={() => setTipoEntrega('retirada_local')}
+                data-modo="retirada"
+                className={`nv-ent-card ${tipoEntrega === 'retirada' ? 'nv-ent-card--ativo' : ''}`}
+                onClick={() => setTipoEntrega('retirada')}
               >
                 <div className="nv-ent-emoji nv-ent-emoji--img">
-                  <img src="/Sistema/retirada.png" alt="Retirada no local" />
+                  <img src="/Sistema/retirada.png" alt="Retirada na loja" />
                 </div>
-                <div className="nv-ent-nome">Retirada<br />no local</div>
+                <div className="nv-ent-nome">Retirada<br />na loja</div>
                 <div className="nv-ent-desc">Cliente vai buscar o produto</div>
-              </button>
-              <button
-                type="button"
-                data-modo="agendada"
-                className={`nv-ent-card ${tipoEntrega === 'retirada_agendada' ? 'nv-ent-card--ativo' : ''}`}
-                onClick={() => setTipoEntrega('retirada_agendada')}
-              >
-                <div className="nv-ent-emoji">📅</div>
-                <div className="nv-ent-nome">Retirada<br />agendada</div>
-                <div className="nv-ent-desc">Cliente vai buscar depois</div>
               </button>
               <button
                 type="button"
@@ -914,9 +929,9 @@ export default function NovaVenda() {
                 onClick={() => setTipoEntrega('entrega')}
               >
                 <div className="nv-ent-emoji nv-ent-emoji--img">
-                  <img src="/Sistema/moto.png" alt="Delivery" />
+                  <img src="/Sistema/moto.png" alt="Entrega" />
                 </div>
-                <div className="nv-ent-nome">Delivery</div>
+                <div className="nv-ent-nome">Entrega</div>
                 <div className="nv-ent-desc">Entregue no endereço do cliente</div>
               </button>
             </div>
@@ -924,18 +939,19 @@ export default function NovaVenda() {
             {/* Aviso contextual */}
             <div className="nv-ent-aviso">
               <div className="nv-ent-aviso-txt">
-                {tipoEntrega === 'retirada_local' && 'O cliente buscará o produto com você.'}
-                {tipoEntrega === 'retirada_agendada' && 'O cliente buscará o produto em outro momento.'}
+                {tipoEntrega === 'retirada' && 'O cliente buscará o produto com você.'}
                 {tipoEntrega === 'entrega' && 'O produto será entregue ao cliente.'}
               </div>
             </div>
 
-            {/* Data + Hora — Retirada agendada */}
-            {tipoEntrega === 'retirada_agendada' && (
+            {/* Data + Hora — encomenda sempre precisa */}
+            {tipo === 'encomenda' && (
               <div className="nv-agend-card">
                 <div className="nv-agend-header">
                   <div className="nv-agend-header-ico">📅</div>
-                  <div className="nv-agend-header-txt">Agendamento</div>
+                  <div className="nv-agend-header-txt">
+                    {tipoEntrega === 'entrega' ? 'Agendamento da entrega' : 'Agendamento da retirada'}
+                  </div>
                 </div>
                 <div className="nv-grid-agend">
                   <div>
@@ -957,38 +973,27 @@ export default function NovaVenda() {
               </div>
             )}
 
-            {/* Endereço + Frete — Delivery */}
+            {/* Endereço + Frete — Entrega */}
             {tipoEntrega === 'entrega' && (
               <>
-                {/* Se encomenda, mostra data + hora também */}
-                {tipo === 'encomenda' && (
-                  <div className="nv-agend-card">
-                    <div className="nv-agend-header">
-                      <div className="nv-agend-header-ico">📅</div>
-                      <div className="nv-agend-header-txt">Agendamento</div>
-                    </div>
-                    <div className="nv-grid-agend">
-                      <div>
-                        <label className="nv-label">Data</label>
-                        <button type="button" className="nv-input nv-input-btn" onClick={() => { const el = dataRef.current; if (el?.showPicker) el.showPicker(); else el?.click() }}>
-                          {dataEntrega ? formatDataBR(dataEntrega) : <span className="nv-input-btn-ph">Definir data</span>}
-                          <svg className="nv-input-btn-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                        </button>
-                        <input ref={dataRef} type="date" value={dataEntrega} onChange={e => setDataEntrega(e.target.value)} className="nv-hidden-date" />
-                      </div>
-                      <div>
-                        <label className="nv-label">Hora</label>
-                        <button type="button" className="nv-input nv-input-btn" onClick={() => setHoraSheetAberto(true)}>
-                          {horarioEntrega || <span className="nv-input-btn-ph">Definir hora</span>}
-                          <svg className="nv-input-btn-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 <div className="nv-ent-endereco">
                   <div className="nv-ent-secao-lbl">📍 Endereço de entrega</div>
+                  <div style={{ position: 'relative', marginBottom: 10 }}>
+                    <label className="nv-label">CEP</label>
+                    <input
+                      className="nv-input"
+                      inputMode="numeric"
+                      placeholder="00000-000"
+                      value={enderecoCep}
+                      maxLength={9}
+                      onChange={e => {
+                        const masked = formatCep(e.target.value)
+                        setEnderecoCep(masked)
+                        if (masked.replace(/\D/g, '').length === 8) fetchCep(masked)
+                      }}
+                    />
+                    {cepLoading && <span className="nv-cep-loading">🔍 Buscando…</span>}
+                  </div>
                   <div className="nv-grid-2" style={{ marginBottom: 10 }}>
                     <div>
                       <label className="nv-label">Rua</label>
@@ -1147,7 +1152,30 @@ export default function NovaVenda() {
         {etapaLabelAtual === 'Revisar' && (
           <>
             <h2 className="nv-titulo">Confira antes de finalizar</h2>
-            <p className="nv-sub">Última chance de ajustar</p>
+            <p className="nv-sub">Escolha o status inicial e revise os dados</p>
+
+            {/* Seletor de status inicial */}
+            <div className="nv-status-cards">
+              <div className="nv-status-lbl">Status do pedido</div>
+              <div className="nv-status-grid">
+                <button type="button" className={`nv-status-card ${statusPedido === 'aguardando_aceite' ? 'nv-status-card--ativo' : ''}`} onClick={() => setStatusPedido('aguardando_aceite')}>
+                  <div className="nv-status-emoji">📥</div>
+                  <div className="nv-status-nome">Aguardando<br />aprovação</div>
+                </button>
+                <button type="button" className={`nv-status-card ${statusPedido === 'agendado' ? 'nv-status-card--ativo' : ''}`} onClick={() => setStatusPedido('agendado')}>
+                  <div className="nv-status-emoji">📅</div>
+                  <div className="nv-status-nome">Agendado</div>
+                </button>
+                <button type="button" className={`nv-status-card ${statusPedido === 'finalizado' ? 'nv-status-card--ativo' : ''}`} onClick={() => setStatusPedido('finalizado')}>
+                  <div className="nv-status-emoji">✨</div>
+                  <div className="nv-status-nome">Finalizado</div>
+                </button>
+                <button type="button" className={`nv-status-card ${statusPedido === 'entregue' ? 'nv-status-card--ativo' : ''}`} onClick={() => setStatusPedido('entregue')}>
+                  <div className="nv-status-emoji">✅</div>
+                  <div className="nv-status-nome">Entregue</div>
+                </button>
+              </div>
+            </div>
 
             <div className="nv-cupom">
               {/* Cabeçalho: tipo + info organizada */}
@@ -1184,9 +1212,8 @@ export default function NovaVenda() {
                 <div className="nv-cupom-linha nv-cupom-linha--head">
                   <span>Modalidade</span>
                   <b>
-                    {tipoEntrega === 'retirada_local' && '🏠 Retirada no local'}
-                    {tipoEntrega === 'retirada_agendada' && '📅 Retirada agendada'}
-                    {tipoEntrega === 'entrega' && '🛵 Delivery'}
+                    {tipoEntrega === 'retirada' && '🏠 Retirada na loja'}
+                    {tipoEntrega === 'entrega' && '🛵 Entrega'}
                   </b>
                 </div>
               </div>
@@ -1280,16 +1307,9 @@ export default function NovaVenda() {
               <div className="nv-cupom-secao nv-cupom-secao--foot">
                 <div className="nv-cupom-linha">
                   <span>
-                    {tipoEntrega === 'entrega' && '🛵 '}
-                    {tipoEntrega === 'retirada_local' && '🏠 '}
-                    {tipoEntrega === 'retirada_agendada' && '📅 '}
-                    {tipoEntrega === 'entrega' && 'Delivery'}
-                    {tipoEntrega === 'retirada_local' && 'Retirada no local'}
-                    {tipoEntrega === 'retirada_agendada' && 'Retirada agendada'}
-                    {tipoEntrega === 'retirada_agendada' && dataEntrega && ` em ${new Date(dataEntrega + 'T00:00').toLocaleDateString('pt-BR')}`}
-                    {tipoEntrega === 'retirada_agendada' && horarioEntrega && ` · ${horarioEntrega}`}
-                    {tipoEntrega === 'entrega' && tipo === 'encomenda' && dataEntrega && ` em ${new Date(dataEntrega + 'T00:00').toLocaleDateString('pt-BR')}`}
-                    {tipoEntrega === 'entrega' && tipo === 'encomenda' && horarioEntrega && ` · ${horarioEntrega}`}
+                    {tipoEntrega === 'entrega' ? '🛵 Entrega' : '🏠 Retirada na loja'}
+                    {tipo === 'encomenda' && dataEntrega && ` em ${new Date(dataEntrega + 'T00:00').toLocaleDateString('pt-BR')}`}
+                    {tipo === 'encomenda' && horarioEntrega && ` · ${horarioEntrega}`}
                   </span>
                 </div>
                 {tipoEntrega === 'entrega' && enderecoRua && (
@@ -2025,6 +2045,57 @@ export default function NovaVenda() {
         height: 0;
       }
 
+      /* ═══ Etapa Revisar — Status cards ═══ */
+      .nv-status-cards {
+        margin-bottom: 16px;
+      }
+      .nv-status-lbl {
+        font-size: 11px; font-weight: 800; color: #E85A8C;
+        text-transform: uppercase; letter-spacing: 0.06em;
+        margin-bottom: 10px;
+        font-family: var(--font-base) !important;
+      }
+      .nv-status-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .nv-status-card {
+        all: unset;
+        padding: 12px 8px;
+        border: 1.5px solid #F0EBED;
+        background: #fff;
+        border-radius: 10px;
+        cursor: pointer;
+        text-align: center;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s;
+        font-family: var(--font-base) !important;
+      }
+      .nv-status-card:hover { border-color: #E5D8DE; }
+      .nv-status-card--ativo {
+        border-color: #E85A8C;
+        background: #FDF3F7;
+      }
+      .nv-status-emoji {
+        font-size: 22px;
+        line-height: 1;
+      }
+      .nv-status-nome {
+        font-size: 12px;
+        font-weight: 800;
+        color: #4A3540;
+        line-height: 1.2;
+        font-family: var(--font-base) !important;
+      }
+      .nv-status-card--ativo .nv-status-nome {
+        color: #E85A8C;
+      }
+
       /* ═══ Etapa Revisar — cupom fiscal ═══ */
       .nv-cupom {
         border: 2px dashed #E5D8DE;
@@ -2294,6 +2365,15 @@ export default function NovaVenda() {
         font-size: 11px; font-weight: 800; color: #E85A8C;
         text-transform: uppercase; letter-spacing: 0.06em;
         margin-bottom: 12px;
+        font-family: var(--font-base) !important;
+      }
+      .nv-cep-loading {
+        position: absolute;
+        right: 12px; top: 34px;
+        font-size: 11px;
+        color: #E85A8C;
+        font-weight: 700;
+        font-style: italic;
         font-family: var(--font-base) !important;
       }
 
