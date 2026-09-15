@@ -2114,7 +2114,7 @@ export default function Pedidos() {
           )}
 
           {/* Toggle Encomendas / Pronta Entrega */}
-          <div className="pedidos-abas" style={{ paddingTop: isMobile ? '1.25rem' : 0 }}>
+          <div className="pedidos-abas" style={{ marginTop: isMobile ? '1.25rem' : 0 }}>
             <button
               className={`pedidos-aba ${abaAtiva === 'encomenda' ? 'pedidos-aba--ativa' : ''}`}
               onClick={() => setAbaAtiva('encomenda')}
@@ -2444,6 +2444,8 @@ export default function Pedidos() {
           transition: all 0.15s;
           font-family: var(--font-base) !important;
           box-sizing: border-box;
+          white-space: nowrap;
+          min-width: 0;
         }
         .pedidos-aba:hover { color: #4A3540; }
         .pedidos-aba--ativa {
