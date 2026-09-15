@@ -1747,7 +1747,7 @@ export default function Pedidos() {
       return
     }
     if (acao === 'duplicar') {
-      navigate(`/nova-venda?duplicar=${p.id}`)
+      navigate(`/vendas/novo?duplicar=${p.id}`)
       return
     }
     if (acao === 'contatar') {
