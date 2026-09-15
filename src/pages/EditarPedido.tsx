@@ -123,6 +123,17 @@ function formatTelefone(v: string): string {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
 }
 
+// Máscara ao digitar: "150" → 1,50 / "1500" → 15,00
+const parseMaskMoney = (s: string): number => {
+  const digits = s.replace(/\D/g, '')
+  if (!digits) return 0
+  return parseInt(digits) / 100
+}
+const formatMaskMoney = (v: number): string => {
+  if (!v) return ''
+  return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 // Data de HOJE em ISO (YYYY-MM-DD) no fuso local
 function hojeISO(): string {
   const d = new Date()
@@ -198,6 +209,11 @@ export default function EditarPedido() {
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null)
   const [catDropdownAberto, setCatDropdownAberto] = useState(false)
 
+  // ── Valores (Fase 4) ──────────────────────────────────────────────────
+  const [desconto, setDesconto] = useState(0)
+  const [acrescimo, setAcrescimo] = useState(0)
+  const [taxaEntrega, setTaxaEntrega] = useState(0)
+
   // ── Modais ────────────────────────────────────────────────────────────
   const [modalCliente, setModalCliente] = useState(false)
   const [clientes, setClientes] = useState<Cliente[]>([])
@@ -235,6 +251,10 @@ export default function EditarPedido() {
       setEnderecoBairro(p.endereco_bairro || '')
       setEnderecoCidade(p.endereco_cidade || 'Curitiba')
       setEnderecoComplemento(p.endereco_complemento || '')
+      // Popular valores (Fase 4)
+      setDesconto(p.desconto || 0)
+      setTaxaEntrega(p.taxa_entrega || 0)
+      // acrescimo não é salvo separado na tabela hoje — se um dia for, popula aqui
       // Popular itens editáveis
       setItens((p.pedido_itens || []).map(it => ({
         id: it.id,
@@ -339,8 +359,8 @@ export default function EditarPedido() {
   // ── Derivados pro header ──────────────────────────────────────────────
   const subtotalItens = itens.reduce((acc, it) => acc + (it.valor_unitario || 0) * (it.quantidade || 1), 0)
   const totalItens = itens.length
-  // Total no footer ainda usa o valor original do pedido — Fase 4 recalcula com desconto/taxa/acrescimo
-  const total = pedido?.valor_total || subtotalItens
+  // Total calculado: subtotal + taxa (se entrega) − desconto + acréscimo
+  const total = Math.max(0, subtotalItens + (tipoEntrega === 'entrega' ? taxaEntrega : 0) - desconto + acrescimo)
   const origemLabel = pedido?.origem === 'cardapio' ? 'Cardápio' : 'Manual'
   const tipoEntregaIcon = tipoEntrega === 'entrega' ? I.truck : I.home
 
@@ -699,7 +719,111 @@ export default function EditarPedido() {
             </div>
           </div>
         )}
-        {tab === 'valores'  && <TabPlaceholder titulo="Valores" descricao="Desconto, acréscimo, taxa de entrega, total. (Fase 4)" />}
+        {tab === 'valores' && (
+          <div className="ep-tab-content">
+            <div className="ep-section">
+              <div className="ep-section-title">
+                <I.dollar />
+                Valores
+              </div>
+
+              {/* Subtotal — read-only vindo dos itens */}
+              <div className="ep-val-row ep-val-row--readonly">
+                <div className="ep-val-label">
+                  <span className="ep-val-label-t">Subtotal dos itens</span>
+                  <span className="ep-val-label-d">{totalItens} {totalItens === 1 ? 'item' : 'itens'} no pedido</span>
+                </div>
+                <span className="ep-val-num">{formatMoney(subtotalItens)}</span>
+              </div>
+
+              {/* Taxa de entrega — só se for entrega */}
+              {tipoEntrega === 'entrega' && (
+                <div className="ep-val-row">
+                  <div className="ep-val-label">
+                    <span className="ep-val-label-t">Taxa de entrega</span>
+                    <span className="ep-val-label-d">Adicionado ao total</span>
+                  </div>
+                  <div className="ep-val-input-wrap">
+                    <span className="ep-val-input-prefix">R$</span>
+                    <input
+                      className="ep-val-input"
+                      inputMode="numeric"
+                      placeholder="0,00"
+                      value={formatMaskMoney(taxaEntrega)}
+                      onChange={e => setTaxaEntrega(parseMaskMoney(e.target.value))}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Desconto */}
+              <div className="ep-val-row">
+                <div className="ep-val-label">
+                  <span className="ep-val-label-t">Desconto</span>
+                  <span className="ep-val-label-d">Subtraído do total</span>
+                </div>
+                <div className="ep-val-input-wrap ep-val-input-wrap--minus">
+                  <span className="ep-val-input-prefix">− R$</span>
+                  <input
+                    className="ep-val-input"
+                    inputMode="numeric"
+                    placeholder="0,00"
+                    value={formatMaskMoney(desconto)}
+                    onChange={e => setDesconto(parseMaskMoney(e.target.value))}
+                  />
+                </div>
+              </div>
+
+              {/* Acréscimo */}
+              <div className="ep-val-row">
+                <div className="ep-val-label">
+                  <span className="ep-val-label-t">Acréscimo</span>
+                  <span className="ep-val-label-d">Adicionado ao total</span>
+                </div>
+                <div className="ep-val-input-wrap ep-val-input-wrap--plus">
+                  <span className="ep-val-input-prefix">+ R$</span>
+                  <input
+                    className="ep-val-input"
+                    inputMode="numeric"
+                    placeholder="0,00"
+                    value={formatMaskMoney(acrescimo)}
+                    onChange={e => setAcrescimo(parseMaskMoney(e.target.value))}
+                  />
+                </div>
+              </div>
+
+              {/* Resumo do cálculo */}
+              <div className="ep-val-resumo">
+                <div className="ep-val-resumo-row">
+                  <span>Subtotal</span>
+                  <span>{formatMoney(subtotalItens)}</span>
+                </div>
+                {tipoEntrega === 'entrega' && taxaEntrega > 0 && (
+                  <div className="ep-val-resumo-row">
+                    <span>Taxa de entrega</span>
+                    <span>+ {formatMoney(taxaEntrega)}</span>
+                  </div>
+                )}
+                {desconto > 0 && (
+                  <div className="ep-val-resumo-row ep-val-resumo-row--neg">
+                    <span>Desconto</span>
+                    <span>− {formatMoney(desconto)}</span>
+                  </div>
+                )}
+                {acrescimo > 0 && (
+                  <div className="ep-val-resumo-row">
+                    <span>Acréscimo</span>
+                    <span>+ {formatMoney(acrescimo)}</span>
+                  </div>
+                )}
+                <div className="ep-val-resumo-total">
+                  <span>Total</span>
+                  <span>{formatMoney(total)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {tab === 'pagar'    && <TabPlaceholder titulo="Pagamento" descricao="Forma de pagamento e situação (total/parcial/fiado). (Fase 5)" />}
       </div>
 
@@ -1500,7 +1624,111 @@ export default function EditarPedido() {
           margin: 0;
         }
 
-        /* ── FASE 3: TAB ITENS ────────────────────────────────────── */
+        /* ── FASE 4: TAB VALORES ──────────────────────────────────── */
+        .ep-val-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 12px 0;
+          border-bottom: 1px solid #F1EFE8;
+        }
+        .ep-val-row:first-of-type { padding-top: 0; }
+        .ep-val-row--readonly { background: transparent; }
+        .ep-val-label { min-width: 0; }
+        .ep-val-label-t {
+          display: block;
+          font-size: 14px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+        }
+        .ep-val-label-d {
+          display: block;
+          font-size: 11.5px;
+          color: #888780;
+          font-weight: 500;
+          margin-top: 2px;
+        }
+        .ep-val-num {
+          font-size: 15px;
+          font-weight: 800;
+          color: #2C2C2A;
+          font-variant-numeric: tabular-nums;
+          letter-spacing: -0.01em;
+          flex-shrink: 0;
+        }
+        .ep-val-input-wrap {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 12px;
+          border: 1.5px solid #E8E5DC;
+          border-radius: 10px;
+          background: #fff;
+          transition: border-color 0.15s;
+          flex-shrink: 0;
+          width: 140px;
+          box-sizing: border-box;
+        }
+        .ep-val-input-wrap:focus-within { border-color: #E85A8C; }
+        .ep-val-input-wrap--minus { border-color: #F4C0D1; background: #FEF7FA; }
+        .ep-val-input-wrap--minus:focus-within { border-color: #E85A8C; }
+        .ep-val-input-wrap--plus { border-color: #B5D4F4; background: #F5FAFE; }
+        .ep-val-input-wrap--plus:focus-within { border-color: #378ADD; }
+        .ep-val-input-prefix {
+          font-size: 12.5px;
+          font-weight: 700;
+          color: #888780;
+          flex-shrink: 0;
+          letter-spacing: -0.01em;
+        }
+        .ep-val-input-wrap--minus .ep-val-input-prefix { color: #C33A6E; }
+        .ep-val-input-wrap--plus .ep-val-input-prefix { color: #185FA5; }
+        .ep-val-input {
+          width: 100%;
+          min-width: 0;
+          border: none;
+          outline: none;
+          text-align: right;
+          font-size: 14px;
+          font-weight: 700;
+          color: #2C2C2A;
+          background: transparent;
+          font-variant-numeric: tabular-nums;
+          font-family: var(--font-base) !important;
+          letter-spacing: -0.01em;
+        }
+
+        .ep-val-resumo {
+          margin-top: 16px;
+          padding: 14px;
+          background: #FAF8F5;
+          border: 1px solid #F0EBED;
+          border-radius: 12px;
+        }
+        .ep-val-resumo-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 13px;
+          color: #5F5E5A;
+          font-weight: 600;
+          margin-bottom: 6px;
+          font-variant-numeric: tabular-nums;
+        }
+        .ep-val-resumo-row--neg { color: #C33A6E; }
+        .ep-val-resumo-total {
+          display: flex;
+          justify-content: space-between;
+          font-size: 16px;
+          font-weight: 800;
+          color: #2C2C2A;
+          margin-top: 8px;
+          padding-top: 10px;
+          border-top: 1px solid #E8E5DC;
+          letter-spacing: -0.01em;
+          font-variant-numeric: tabular-nums;
+        }
         .ep-section-count {
           font-size: 13px;
           font-weight: 600;
