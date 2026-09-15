@@ -13,6 +13,9 @@ import { ensureServiceWorker } from './lib/notifications'
 // o usuário ativar no toggle "Ativar notificações".
 if (typeof window !== "undefined") {
   window.addEventListener("load", () => { ensureServiceWorker(); });
+
+  // Bloqueia menu de contexto (clique direito no desktop + long-press no mobile)
+  window.addEventListener("contextmenu", (e) => e.preventDefault());
 }
 
 createRoot(document.getElementById('root')!).render(
