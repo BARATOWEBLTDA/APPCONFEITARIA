@@ -5,6 +5,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import HorarioSheet from '@/components/HorarioSheet'
@@ -73,6 +74,13 @@ interface Produto {
 
 type Tab = 'cliente' | 'itens' | 'valores' | 'pagar'
 type SituacaoPag = 'total' | 'parcial' | 'fiado'
+
+interface HistoricoEvento {
+  id: string
+  evento: string
+  descricao?: string
+  created_at: string
+}
 
 // ── Config de status ──────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
@@ -173,6 +181,86 @@ const I = {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
+// TIMELINE HELPERS (Fase 7)
+// ═════════════════════════════════════════════════════════════════════════════
+
+// Mapa: status → evento(s) na tabela pedido_historico que indicam esse passo
+const EVENTO_MAP: Record<string, string[]> = {
+  criado: ['Pedido criado', 'criado'],
+  aguardando_pagamento: ['Aguardando pagamento', 'pagamento_pendente'],
+  aguardando_aceite: ['Aguardando aceite', 'aceite_pendente'],
+  agendado: ['Agendado', 'aceito', 'Pedido aprovado'],
+  em_producao: ['Em produção', 'producao_iniciada'],
+  finalizado: ['Finalizado', 'producao_finalizada'],
+  aguardando_retirada: ['Aguardando retirada', 'pronto'],
+  em_entrega: ['Em entrega', 'saiu_entrega'],
+  entregue: ['Entregue', 'concluido'],
+}
+
+// Ordem visual dos passos por tipo de entrega
+const PASSOS_RETIRADA = ['criado', 'aguardando_aceite', 'agendado', 'em_producao', 'finalizado', 'aguardando_retirada', 'entregue']
+const PASSOS_ENTREGA  = ['criado', 'aguardando_aceite', 'agendado', 'em_producao', 'finalizado', 'em_entrega', 'entregue']
+
+const LABEL_PASSO: Record<string, string> = {
+  criado: 'Pedido Criado',
+  aguardando_pagamento: 'Aguardando Pagamento',
+  aguardando_aceite: 'Aguardando Aceite',
+  agendado: 'Agendado',
+  em_producao: 'Em Produção',
+  finalizado: 'Finalizado',
+  aguardando_retirada: 'Pronto para Retirada',
+  em_entrega: 'Saiu para Entrega',
+  entregue: 'Entregue',
+}
+
+// Retorna a posição do status atual na sequência (pra saber o que já passou)
+function posicaoStatus(status: string, sequencia: string[]): number {
+  const map: Record<string, string> = {
+    aguardando_pagamento: 'aguardando_aceite', // colapsa se não tem aguardando_pagamento na sequência
+    novo: 'criado',
+    confirmado: 'agendado',
+  }
+  const chave = map[status] || status
+  return sequencia.indexOf(chave)
+}
+
+// Formata data completa dd/mm às HH:MM
+function formatDataCompleta(iso?: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const dia = String(d.getDate()).padStart(2, '0')
+  const mes = String(d.getMonth() + 1).padStart(2, '0')
+  const h = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  return `${dia}/${mes} às ${h}`
+}
+
+// "há 2 horas", "há 3 minutos", "há 5 dias"
+function tempoRelativo(iso?: string): string {
+  if (!iso) return ''
+  const agora = Date.now()
+  const t = new Date(iso).getTime()
+  const diff = agora - t
+  const min = Math.floor(diff / 60000)
+  if (min < 1) return 'agora mesmo'
+  if (min < 60) return `há ${min} ${min === 1 ? 'minuto' : 'minutos'}`
+  const h = Math.floor(min / 60)
+  if (h < 24) return `há cerca de ${h} ${h === 1 ? 'hora' : 'horas'}`
+  const d = Math.floor(h / 24)
+  if (d < 30) return `há ${d} ${d === 1 ? 'dia' : 'dias'}`
+  const m = Math.floor(d / 30)
+  return `há ${m} ${m === 1 ? 'mês' : 'meses'}`
+}
+
+// Pedido está atrasado? Data de entrega + hora já passou e não foi entregue
+function pedidoAtrasado(dataEntrega?: string, horaEntrega?: string, status?: string): boolean {
+  if (!dataEntrega) return false
+  if (status === 'entregue' || status === 'cancelado') return false
+  const dataStr = `${dataEntrega}T${(horaEntrega || '23:59').slice(0, 5)}`
+  const alvo = new Date(dataStr).getTime()
+  return Date.now() > alvo
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
 // ═════════════════════════════════════════════════════════════════════════════
 export default function EditarPedido() {
@@ -228,6 +316,11 @@ export default function EditarPedido() {
   const [buscaCliente, setBuscaCliente] = useState('')
   const [statusDropdownAberto, setStatusDropdownAberto] = useState(false)
   const [horaSheetAberto, setHoraSheetAberto] = useState(false)
+
+  // ── Timeline (Fase 7) ─────────────────────────────────────────────────
+  const [timelineAberto, setTimelineAberto] = useState(false)
+  const [historico, setHistorico] = useState<HistoricoEvento[]>([])
+  const [historicoCarregando, setHistoricoCarregando] = useState(false)
 
   // ── Load do pedido + lista de clientes ────────────────────────────────
   useEffect(() => {
@@ -310,6 +403,42 @@ export default function EditarPedido() {
     const t = setTimeout(() => document.addEventListener('click', onDoc), 0)
     return () => { clearTimeout(t); document.removeEventListener('click', onDoc) }
   }, [statusDropdownAberto])
+
+  // ── Timeline: trava scroll do body + carrega histórico ao abrir ───────
+  useEffect(() => {
+    if (!timelineAberto) return
+    // Trava scroll
+    const scrollY = window.scrollY
+    const original = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+    }
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    // Carrega histórico se ainda não carregou
+    ;(async () => {
+      if (!pedido?.id) return
+      setHistoricoCarregando(true)
+      const { data } = await supabase
+        .from('pedido_historico')
+        .select('id, evento, descricao, created_at')
+        .eq('pedido_id', pedido.id)
+        .order('created_at', { ascending: true })
+      setHistorico((data as HistoricoEvento[]) || [])
+      setHistoricoCarregando(false)
+    })()
+    return () => {
+      document.body.style.overflow = original.overflow
+      document.body.style.position = original.position
+      document.body.style.top = original.top
+      document.body.style.width = original.width
+      window.scrollTo(0, scrollY)
+    }
+  }, [timelineAberto, pedido?.id])
 
   // ── CEP ───────────────────────────────────────────────────────────────
   const fetchCep = async (cep: string) => {
@@ -529,7 +658,7 @@ export default function EditarPedido() {
             </div>
           </div>
           <div className="ep-header-actions">
-            <button className="ep-icon-btn" aria-label="Timeline" title="Acompanhar pedido">
+            <button className="ep-icon-btn" onClick={() => setTimelineAberto(true)} aria-label="Timeline" title="Acompanhar pedido">
               <I.clock />
             </button>
             <button className="ep-icon-btn" aria-label="Exportar PDF" title="Exportar PDF">
@@ -1248,6 +1377,121 @@ export default function EditarPedido() {
         )
       })()}
 
+      {/* ═══ TIMELINE SHEET (Fase 7) ═══ */}
+      {timelineAberto && createPortal(
+        (() => {
+          const seq = tipoEntrega === 'entrega' ? PASSOS_ENTREGA : PASSOS_RETIRADA
+          const posAtual = posicaoStatus(statusPedido, seq)
+          // Map de status → data do evento (do histórico)
+          const dataDoPasso: Record<string, string> = {}
+          historico.forEach(h => {
+            // Procura qual passo esse evento representa
+            for (const [passo, aliases] of Object.entries(EVENTO_MAP)) {
+              if (aliases.some(a => (h.evento || '').toLowerCase().includes(a.toLowerCase()))) {
+                if (!dataDoPasso[passo]) dataDoPasso[passo] = h.created_at
+              }
+            }
+          })
+          // Se não tem "criado" no histórico, usa created_at do pedido
+          if (!dataDoPasso.criado && pedido?.created_at) dataDoPasso.criado = pedido.created_at
+
+          const atrasado = pedidoAtrasado(dataEntrega, horarioEntrega, statusPedido)
+
+          return (
+            <div className="ep-tl-overlay" onClick={() => setTimelineAberto(false)}>
+              <div className="ep-tl-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+                <div className="ep-tl-handle" />
+
+                <div className="ep-tl-header">
+                  <div className="ep-tl-title-wrap">
+                    <I.clock />
+                    <h3 className="ep-tl-title">Acompanhar Pedido</h3>
+                  </div>
+                  <button className="ep-tl-close" onClick={() => setTimelineAberto(false)} aria-label="Fechar">
+                    <I.x />
+                  </button>
+                </div>
+
+                {/* Card do pedido */}
+                <div className="ep-tl-card">
+                  <div className="ep-tl-card-ic">
+                    <I.card />
+                  </div>
+                  <div>
+                    <div className="ep-tl-card-num">Pedido #{pedido?.numero || '—'}</div>
+                    {clienteNome && (
+                      <div className="ep-tl-card-cli">
+                        <I.user />
+                        {toTitleCase(clienteNome)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Status atual + previsão */}
+                <div className="ep-tl-info-grid">
+                  <div>
+                    <div className="ep-tl-info-label">Status atual</div>
+                    <div className="ep-tl-info-val">{(STATUS_CONFIG[statusPedido] || STATUS_CONFIG.agendado).label}</div>
+                    {dataDoPasso[seq[posAtual] || 'criado'] && (
+                      <div className="ep-tl-info-sub">{tempoRelativo(dataDoPasso[seq[posAtual] || 'criado'])}</div>
+                    )}
+                  </div>
+                  <div>
+                    <div className="ep-tl-info-label">{tipoEntrega === 'entrega' ? 'Entrega prevista' : 'Retirada prevista'}</div>
+                    <div className="ep-tl-info-val">{formatDataHora(dataEntrega, horarioEntrega)}</div>
+                    {atrasado && (
+                      <div className="ep-tl-info-alerta">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12" y2="16"/></svg>
+                        Atrasado
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Steps */}
+                {historicoCarregando ? (
+                  <div className="ep-tl-loading">
+                    <div className="ep-spinner" />
+                    <p>Carregando eventos...</p>
+                  </div>
+                ) : (
+                  <div className="ep-tl-steps">
+                    {seq.map((passo, i) => {
+                      const feito = i <= posAtual
+                      const atual = i === posAtual
+                      const dataPasso = dataDoPasso[passo]
+                      return (
+                        <div key={passo} className={`ep-tl-step ${feito ? 'ep-tl-step--feito' : 'ep-tl-step--pendente'} ${atual ? 'ep-tl-step--atual' : ''}`}>
+                          <div className="ep-tl-step-col">
+                            <div className="ep-tl-step-dot">
+                              {feito ? (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                              ) : null}
+                            </div>
+                            {i < seq.length - 1 && <div className="ep-tl-step-linha" />}
+                          </div>
+                          <div className="ep-tl-step-info">
+                            <div className="ep-tl-step-row">
+                              <div className="ep-tl-step-label">{LABEL_PASSO[passo]}</div>
+                              {dataPasso && <div className="ep-tl-step-data">{formatDataCompleta(dataPasso)}</div>}
+                            </div>
+                            {atual && !dataPasso && (
+                              <div className="ep-tl-step-sub">Status atual</div>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })(),
+        document.body
+      )}
+
       {/* ═══ HORARIO SHEET ═══ */}
       {horaSheetAberto && (
         <HorarioSheet
@@ -1919,6 +2163,244 @@ export default function EditarPedido() {
           font-size: 13px;
           color: #888780;
           margin: 0;
+        }
+
+        /* ── FASE 7: TIMELINE ─────────────────────────────────────── */
+        .ep-tl-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 100;
+          background: rgba(20, 15, 18, 0.45);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          animation: epFadeIn 0.18s ease-out;
+        }
+        .ep-tl-sheet {
+          width: 100%;
+          max-width: 480px;
+          background: #fff;
+          border-radius: 20px 20px 0 0;
+          padding: 8px 16px calc(24px + env(safe-area-inset-bottom, 0px));
+          max-height: 88vh;
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          animation: epSheetIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .ep-tl-handle {
+          width: 40px;
+          height: 4px;
+          background: #E8E5DC;
+          border-radius: 999px;
+          margin: 4px auto 12px;
+        }
+        .ep-tl-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 16px;
+        }
+        .ep-tl-title-wrap {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: #2C2C2A;
+        }
+        .ep-tl-title {
+          font-size: 17px;
+          font-weight: 800;
+          color: #2C2C2A;
+          margin: 0;
+          letter-spacing: -0.01em;
+        }
+        .ep-tl-close {
+          all: unset;
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #5F5E5A;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+        .ep-tl-close:hover { background: #F5F1F3; }
+
+        .ep-tl-card {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px;
+          background: #FAF8F5;
+          border: 1px solid #F0EBED;
+          border-radius: 12px;
+          margin-bottom: 12px;
+        }
+        .ep-tl-card-ic {
+          width: 42px;
+          height: 42px;
+          border-radius: 10px;
+          background: #F1EFE8;
+          color: #5F5E5A;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .ep-tl-card-num {
+          font-size: 15px;
+          font-weight: 800;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+        }
+        .ep-tl-card-cli {
+          font-size: 12.5px;
+          color: #888780;
+          font-weight: 600;
+          margin-top: 4px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+
+        .ep-tl-info-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          padding: 12px 4px;
+          border-top: 1px solid #F1EFE8;
+          border-bottom: 1px solid #F1EFE8;
+          margin-bottom: 20px;
+        }
+        .ep-tl-info-label {
+          font-size: 11.5px;
+          color: #888780;
+          font-weight: 600;
+          margin-bottom: 4px;
+        }
+        .ep-tl-info-val {
+          font-size: 14px;
+          font-weight: 800;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+          line-height: 1.25;
+        }
+        .ep-tl-info-sub {
+          font-size: 11.5px;
+          color: #888780;
+          font-weight: 500;
+          margin-top: 3px;
+        }
+        .ep-tl-info-alerta {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          margin-top: 4px;
+          font-size: 11.5px;
+          font-weight: 700;
+          color: #B91C1C;
+        }
+
+        .ep-tl-loading {
+          text-align: center;
+          padding: 20px;
+          color: #888780;
+          font-size: 13px;
+        }
+        .ep-tl-loading .ep-spinner {
+          margin: 0 auto 8px;
+        }
+
+        .ep-tl-steps {
+          display: flex;
+          flex-direction: column;
+        }
+        .ep-tl-step {
+          display: flex;
+          gap: 12px;
+          min-height: 56px;
+        }
+        .ep-tl-step-col {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          flex-shrink: 0;
+          padding-top: 2px;
+        }
+        .ep-tl-step-dot {
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          font-weight: 800;
+          transition: all 0.2s;
+        }
+        .ep-tl-step-linha {
+          width: 2px;
+          flex: 1;
+          background: #E8E5DC;
+          margin: 4px 0;
+        }
+        .ep-tl-step--feito .ep-tl-step-dot {
+          background: #E1F5EE;
+          color: #0F6E56;
+        }
+        .ep-tl-step--feito .ep-tl-step-linha {
+          background: #C0DEC9;
+        }
+        .ep-tl-step--atual .ep-tl-step-dot {
+          background: #FCE0E9;
+          color: #E85A8C;
+          box-shadow: 0 0 0 4px #FEF0F5;
+        }
+        .ep-tl-step--pendente .ep-tl-step-dot {
+          background: #fff;
+          border: 2px solid #E8E5DC;
+          color: transparent;
+        }
+
+        .ep-tl-step-info {
+          flex: 1;
+          padding-bottom: 20px;
+          min-width: 0;
+        }
+        .ep-tl-step:last-child .ep-tl-step-info {
+          padding-bottom: 0;
+        }
+        .ep-tl-step-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 8px;
+          align-items: flex-start;
+        }
+        .ep-tl-step-label {
+          font-size: 14px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+        }
+        .ep-tl-step--pendente .ep-tl-step-label {
+          color: #B4B2A9;
+          font-weight: 600;
+        }
+        .ep-tl-step-data {
+          font-size: 11.5px;
+          color: #888780;
+          font-weight: 600;
+          flex-shrink: 0;
+          margin-top: 2px;
+        }
+        .ep-tl-step-sub {
+          font-size: 11.5px;
+          color: #E85A8C;
+          font-weight: 700;
+          margin-top: 2px;
         }
 
         /* ── FASE 5: TAB PAGAR ────────────────────────────────────── */
