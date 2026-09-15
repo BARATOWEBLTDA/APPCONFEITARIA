@@ -1743,7 +1743,7 @@ export default function Pedidos() {
   // ── Handler central do menu ⋮ do card mobile ──────────────────────────────
   const handleMenuAcao = async (p: Pedido, acao: 'editar' | 'duplicar' | 'contatar' | 'compartilhar' | 'pdf' | 'excluir') => {
     if (acao === 'editar') {
-      navigate(`/pedidos/${p.id}`)
+      navigate(`/pedidos/${p.id}/editar`)
       return
     }
     if (acao === 'duplicar') {

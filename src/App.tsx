@@ -14,6 +14,7 @@ import Privacidade from "@/pages/Privacidade";
 import Layout from "@/components/Layout";
 import Pedidos from "@/pages/Pedidos";
 import PedidoForm from "@/pages/PedidoForm";
+import EditarPedido from "@/pages/EditarPedido";
 import NovaVenda from "@/pages/NovaVenda";
 import Dashboard from "@/pages/Dashboard";
 import Inicio from "@/pages/Inicio";
@@ -160,6 +161,7 @@ export default function App() {
           <Route path="/pedidos" element={<Pedidos />} />
           <Route path="/pedidos/novo" element={<Navigate to="/vendas/novo" replace />} />
           <Route path="/vendas/novo" element={<NovaVenda />} />
+          <Route path="/pedidos/:id/editar" element={<EditarPedido />} />
           <Route path="/pedidos/:id" element={<PedidoForm />} />
           <Route path="/agenda" element={<Agenda />} />
           <Route path="/insumos" element={<Insumos />} />
