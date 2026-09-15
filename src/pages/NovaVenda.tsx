@@ -57,6 +57,17 @@ const parseMoney = (s: string): number => {
   return parseFloat(clean) || 0
 }
 
+// Máscara ao digitar: "150" → "1,50" / "1500" → "15,00" / "150000" → "1.500,00"
+const parseMaskMoney = (s: string): number => {
+  const digits = s.replace(/\D/g, '')
+  if (!digits) return 0
+  return parseInt(digits) / 100
+}
+const formatMaskMoney = (v: number): string => {
+  if (!v) return ''
+  return v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 const initialsOf = (name: string) => {
   return name.trim().split(/\s+/).map(n => n[0]).slice(0, 2).join('').toUpperCase() || '?'
 }
@@ -1010,8 +1021,8 @@ export default function NovaVenda() {
                       className="nv-ent-frete-inp"
                       inputMode="decimal"
                       placeholder="R$ 0,00"
-                      value={taxaEntrega === 0 ? '' : taxaEntrega.toString().replace('.', ',')}
-                      onChange={e => setTaxaEntrega(parseMoney(e.target.value))}
+                      value={formatMaskMoney(taxaEntrega)}
+                      onChange={e => setTaxaEntrega(parseMaskMoney(e.target.value))}
                     />
                   </div>
                 </div>
@@ -1085,10 +1096,10 @@ export default function NovaVenda() {
                   <input
                     className="nv-input"
                     style={{ marginTop: 4 }}
-                    inputMode="decimal"
-                    placeholder="Valor recebido (R$)"
-                    value={valorParcial === 0 ? '' : valorParcial.toString().replace('.', ',')}
-                    onChange={e => setValorParcial(parseMoney(e.target.value))}
+                    inputMode="numeric"
+                    placeholder="R$ 0,00"
+                    value={formatMaskMoney(valorParcial)}
+                    onChange={e => setValorParcial(parseMaskMoney(e.target.value))}
                   />
                 )}
                 <label className={`nv-pag-sit-card ${situacaoPag === 'fiado' ? 'nv-pag-sit-card--ativo' : ''}`}>
@@ -1121,11 +1132,11 @@ export default function NovaVenda() {
               <div className="nv-grid-2">
                 <div>
                   <label className="nv-label">Desconto</label>
-                  <input className="nv-input" inputMode="decimal" placeholder="R$ 0,00" value={desconto === 0 ? '' : desconto.toString().replace('.', ',')} onChange={e => setDesconto(parseMoney(e.target.value))} />
+                  <input className="nv-input" inputMode="numeric" placeholder="R$ 0,00" value={formatMaskMoney(desconto)} onChange={e => setDesconto(parseMaskMoney(e.target.value))} />
                 </div>
                 <div>
                   <label className="nv-label">Acréscimo</label>
-                  <input className="nv-input" inputMode="decimal" placeholder="R$ 0,00" value={acrescimo === 0 ? '' : acrescimo.toString().replace('.', ',')} onChange={e => setAcrescimo(parseMoney(e.target.value))} />
+                  <input className="nv-input" inputMode="numeric" placeholder="R$ 0,00" value={formatMaskMoney(acrescimo)} onChange={e => setAcrescimo(parseMaskMoney(e.target.value))} />
                 </div>
               </div>
             </div>
@@ -1227,6 +1238,43 @@ export default function NovaVenda() {
                 <div className="nv-cupom-total-lbl">TOTAL</div>
                 <div className="nv-cupom-total-val">{formatMoney(total)}</div>
               </div>
+
+              {/* Pagamento — breakdown se parcial ou fiado */}
+              {(situacaoPag === 'parcial' || situacaoPag === 'fiado') && (
+                <div className="nv-cupom-secao">
+                  <div className="nv-cupom-secao-lbl">Pagamento</div>
+                  {situacaoPag === 'parcial' && (
+                    <>
+                      <div className="nv-cupom-linha nv-cupom-linha--dim">
+                        <span>Recebido</span>
+                        <b>{formatMoney(valorParcial)}</b>
+                      </div>
+                      <div className="nv-cupom-linha nv-cupom-linha--dev">
+                        <span>A receber</span>
+                        <b>{formatMoney(Math.max(0, total - valorParcial))}</b>
+                      </div>
+                    </>
+                  )}
+                  {situacaoPag === 'fiado' && (
+                    <>
+                      <div className="nv-cupom-linha nv-cupom-linha--dim">
+                        <span>Recebido</span>
+                        <b>R$ 0,00</b>
+                      </div>
+                      <div className="nv-cupom-linha nv-cupom-linha--dev">
+                        <span>A receber</span>
+                        <b>{formatMoney(total)}</b>
+                      </div>
+                      {dataPrevistaPagamento && (
+                        <div className="nv-cupom-linha nv-cupom-linha--dim">
+                          <span>Previsão de pagamento</span>
+                          <b>{new Date(dataPrevistaPagamento + 'T00:00').toLocaleDateString('pt-BR')}</b>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
 
               {/* Rodapé: entrega + pagamento */}
               <div className="nv-cupom-secao nv-cupom-secao--foot">
@@ -2042,6 +2090,14 @@ export default function NovaVenda() {
       .nv-cupom-linha--dim b {
         color: #6B5D64 !important;
         font-weight: 600 !important;
+      }
+      .nv-cupom-linha--dev span {
+        color: #991B1B !important;
+        font-weight: 700 !important;
+      }
+      .nv-cupom-linha--dev b {
+        color: #991B1B !important;
+        font-weight: 900 !important;
       }
       .nv-cupom-obs {
         font-size: 11px;
