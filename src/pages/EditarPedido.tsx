@@ -361,7 +361,10 @@ export default function EditarPedido() {
       // Popular valores (Fase 4)
       setDesconto(p.desconto || 0)
       setTaxaEntrega(p.taxa_entrega || 0)
-      // acrescimo não é salvo separado na tabela hoje — se um dia for, popula aqui
+      // Acréscimo: se a coluna existir na tabela, popula; senão fica 0
+      if (typeof (p as any).acrescimo === 'number') {
+        setAcrescimo((p as any).acrescimo)
+      }
       // Popular pagamento (Fase 5)
       setFormaPagamento(p.forma_pagamento || 'PIX')
       if (p.status_pagamento === 'pendente') {
@@ -578,38 +581,64 @@ export default function EditarPedido() {
       // Recalcular valor dos produtos (soma bruta dos itens)
       const valorProdutos = itens.reduce((acc, it) => acc + (it.valor_unitario || 0) * (it.quantidade || 1), 0)
 
+      // Detectar mudança de status pra registrar no histórico
+      const statusAntigo = pedido?.status
+      const statusMudou = statusAntigo && statusAntigo !== statusPedido
+
+      // Payload completo (com acrescimo — se coluna não existir, cai no fallback abaixo)
+      const payloadCompleto: any = {
+        cliente_id: clienteId,
+        cliente_nome: clienteNome,
+        cliente_telefone: clienteTelefone,
+        status: statusPedido,
+        status_pagamento: statusPag,
+        valor_recebido: valorRecebido,
+        valor_total: total,
+        valor_produtos: valorProdutos,
+        desconto: desconto,
+        acrescimo: acrescimo,
+        taxa_entrega: tipoEntrega === 'entrega' ? taxaEntrega : 0,
+        forma_pagamento: formaPagamento,
+        tipo_entrega: tipoEntrega,
+        data_entrega: dataEntrega,
+        horario_entrega: horarioEntrega || null,
+        endereco_rua: tipoEntrega === 'entrega' ? enderecoRua : '',
+        endereco_numero: tipoEntrega === 'entrega' ? enderecoNumero : '',
+        endereco_bairro: tipoEntrega === 'entrega' ? enderecoBairro : '',
+        endereco_cidade: tipoEntrega === 'entrega' ? enderecoCidade : '',
+        endereco_complemento: tipoEntrega === 'entrega' ? enderecoComplemento : '',
+        data_prevista_pagamento: situacaoPag === 'fiado' ? (dataPrevistaPagamento || null) : null,
+      }
+
       // ── 1) UPDATE do pedido ─────────────────────────────────────────
-      const { error: errPedido } = await supabase
+      let { error: errPedido } = await supabase
         .from('pedidos')
-        .update({
-          cliente_id: clienteId,
-          cliente_nome: clienteNome,
-          cliente_telefone: clienteTelefone,
-          status: statusPedido,
-          status_pagamento: statusPag,
-          valor_recebido: valorRecebido,
-          valor_total: total,
-          valor_produtos: valorProdutos,
-          desconto: desconto,
-          taxa_entrega: tipoEntrega === 'entrega' ? taxaEntrega : 0,
-          forma_pagamento: formaPagamento,
-          tipo_entrega: tipoEntrega,
-          data_entrega: dataEntrega,
-          horario_entrega: horarioEntrega || null,
-          endereco_rua: tipoEntrega === 'entrega' ? enderecoRua : '',
-          endereco_numero: tipoEntrega === 'entrega' ? enderecoNumero : '',
-          endereco_bairro: tipoEntrega === 'entrega' ? enderecoBairro : '',
-          endereco_cidade: tipoEntrega === 'entrega' ? enderecoCidade : '',
-          endereco_complemento: tipoEntrega === 'entrega' ? enderecoComplemento : '',
-          data_prevista_pagamento: situacaoPag === 'fiado' ? (dataPrevistaPagamento || null) : null,
-        })
+        .update(payloadCompleto)
         .eq('id', pedido!.id)
+
+      // Fallback: se a coluna "acrescimo" não existir, tenta sem ela
+      if (errPedido && String(errPedido.message || '').toLowerCase().includes('acrescimo')) {
+        console.warn('Fallback: coluna "acrescimo" não existe, salvando sem ela.')
+        const { acrescimo: _, ...payloadSemAcrescimo } = payloadCompleto
+        const r = await supabase.from('pedidos').update(payloadSemAcrescimo).eq('id', pedido!.id)
+        errPedido = r.error
+      }
 
       if (errPedido) {
         console.error('Erro ao atualizar pedido:', errPedido)
         alert('Não foi possível salvar as alterações do pedido: ' + errPedido.message)
         setSalvando(false)
         return
+      }
+
+      // Registra mudança de status no histórico (silencioso — não falha se tabela não existir)
+      if (statusMudou) {
+        const labelNovo = (STATUS_CONFIG[statusPedido] || {}).label || statusPedido
+        supabase.from('pedido_historico').insert({
+          pedido_id: pedido!.id,
+          evento: labelNovo,
+          descricao: `Status alterado manualmente para "${labelNovo}"`,
+        }).then(() => {}, () => {})
       }
 
       // ── 2) Substituir itens: DELETE tudo → INSERT tudo ──────────────
