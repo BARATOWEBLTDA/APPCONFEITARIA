@@ -2366,11 +2366,9 @@ export default function Pedidos() {
 
         /* ── Lista minimalista (mobile) — formato mensagens ── */
         .plist-container {
-          background: var(--bg-card);
-          border-radius: var(--radius-lg);
-          overflow: hidden;
-          border: 1px solid var(--border);
-          box-shadow: 0 2px 8px rgba(45, 31, 38, 0.04);
+          background: transparent;
+          border: none;
+          box-shadow: none;
         }
 
         /* Chip de filtro ativo (aguardando aprovação) */
