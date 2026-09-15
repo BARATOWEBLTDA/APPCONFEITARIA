@@ -72,6 +72,7 @@ interface Produto {
 }
 
 type Tab = 'cliente' | 'itens' | 'valores' | 'pagar'
+type SituacaoPag = 'total' | 'parcial' | 'fiado'
 
 // ── Config de status ──────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string }> = {
@@ -214,6 +215,12 @@ export default function EditarPedido() {
   const [acrescimo, setAcrescimo] = useState(0)
   const [taxaEntrega, setTaxaEntrega] = useState(0)
 
+  // ── Pagamento (Fase 5) ────────────────────────────────────────────────
+  const [formaPagamento, setFormaPagamento] = useState('PIX')
+  const [situacaoPag, setSituacaoPag] = useState<SituacaoPag>('total')
+  const [valorParcial, setValorParcial] = useState(0)
+  const [dataPrevistaPagamento, setDataPrevistaPagamento] = useState('')
+
   // ── Modais ────────────────────────────────────────────────────────────
   const [modalCliente, setModalCliente] = useState(false)
   const [clientes, setClientes] = useState<Cliente[]>([])
@@ -255,6 +262,19 @@ export default function EditarPedido() {
       setDesconto(p.desconto || 0)
       setTaxaEntrega(p.taxa_entrega || 0)
       // acrescimo não é salvo separado na tabela hoje — se um dia for, popula aqui
+      // Popular pagamento (Fase 5)
+      setFormaPagamento(p.forma_pagamento || 'PIX')
+      if (p.status_pagamento === 'pendente') {
+        setSituacaoPag('fiado')
+        setValorParcial(0)
+      } else if (p.status_pagamento === 'parcial') {
+        setSituacaoPag('parcial')
+        setValorParcial(p.valor_recebido || 0)
+      } else {
+        setSituacaoPag('total')
+        setValorParcial(0)
+      }
+      setDataPrevistaPagamento(p.data_prevista_pagamento || '')
       // Popular itens editáveis
       setItens((p.pedido_itens || []).map(it => ({
         id: it.id,
@@ -824,7 +844,158 @@ export default function EditarPedido() {
             </div>
           </div>
         )}
-        {tab === 'pagar'    && <TabPlaceholder titulo="Pagamento" descricao="Forma de pagamento e situação (total/parcial/fiado). (Fase 5)" />}
+        {tab === 'pagar' && (
+          <div className="ep-tab-content">
+
+            {/* ─── SEÇÃO: Forma de Pagamento ─── */}
+            <div className="ep-section">
+              <div className="ep-section-title">
+                <I.card />
+                Forma de Pagamento
+              </div>
+
+              <div className="ep-pag-formas">
+                {[
+                  { key: 'PIX',      label: 'PIX',      svg: (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15c1 0 3 0 5-2s3-3 4-3 2 0 4 2 4 3 5 3"/><path d="M4 9c1 0 3 0 5 2s3 3 4 3 2 0 4-2 4-3 5-3"/></svg>) },
+                  { key: 'Dinheiro', label: 'Dinheiro', svg: (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 6v.01M18 18v.01"/></svg>) },
+                  { key: 'Cartão',   label: 'Cartão',   svg: (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>) },
+                  { key: 'Boleto',   label: 'Boleto',   svg: (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="16" height="16" rx="1"/><line x1="8" y1="4" x2="8" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="16" y1="4" x2="16" y2="20"/></svg>) },
+                ].map(f => (
+                  <button
+                    key={f.key}
+                    type="button"
+                    className={`ep-pag-forma ${formaPagamento === f.key ? 'ep-pag-forma--sel' : ''}`}
+                    onClick={() => setFormaPagamento(f.key)}
+                  >
+                    <span className="ep-pag-forma-ic">{f.svg}</span>
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* ─── SEÇÃO: Situação do Pagamento ─── */}
+            <div className="ep-section">
+              <div className="ep-section-title">
+                <I.dollar />
+                Situação do Pagamento
+              </div>
+
+              <div className="ep-pag-sits">
+                {/* PAGO */}
+                <button
+                  type="button"
+                  className={`ep-pag-sit ${situacaoPag === 'total' ? 'ep-pag-sit--sel ep-pag-sit--sel-total' : ''}`}
+                  onClick={() => setSituacaoPag('total')}
+                >
+                  <div className="ep-pag-sit-radio" />
+                  <div className="ep-pag-sit-info">
+                    <div className="ep-pag-sit-t">Pago total</div>
+                    <div className="ep-pag-sit-d">Cliente já pagou o valor completo</div>
+                  </div>
+                  <div className="ep-pag-sit-badge ep-pag-sit-badge--green">Pago</div>
+                </button>
+
+                {/* PARCIAL */}
+                <button
+                  type="button"
+                  className={`ep-pag-sit ${situacaoPag === 'parcial' ? 'ep-pag-sit--sel ep-pag-sit--sel-parcial' : ''}`}
+                  onClick={() => setSituacaoPag('parcial')}
+                >
+                  <div className="ep-pag-sit-radio" />
+                  <div className="ep-pag-sit-info">
+                    <div className="ep-pag-sit-t">Pago parcial</div>
+                    <div className="ep-pag-sit-d">Cliente pagou uma parte, resto fica pendente</div>
+                  </div>
+                  <div className="ep-pag-sit-badge ep-pag-sit-badge--amber">Parcial</div>
+                </button>
+
+                {situacaoPag === 'parcial' && (
+                  <div className="ep-pag-sit-extra">
+                    <label className="ep-label">Valor recebido</label>
+                    <div className="ep-val-input-wrap">
+                      <span className="ep-val-input-prefix">R$</span>
+                      <input
+                        className="ep-val-input"
+                        inputMode="numeric"
+                        placeholder="0,00"
+                        value={formatMaskMoney(valorParcial)}
+                        onChange={e => {
+                          const v = parseMaskMoney(e.target.value)
+                          // Não deixa valor recebido passar do total
+                          setValorParcial(Math.min(v, total))
+                        }}
+                      />
+                    </div>
+                    {valorParcial > 0 && (
+                      <div className="ep-pag-sit-info-row">
+                        <span>Valor pendente</span>
+                        <span className="ep-pag-sit-pendente">{formatMoney(Math.max(0, total - valorParcial))}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* FIADO */}
+                <button
+                  type="button"
+                  className={`ep-pag-sit ${situacaoPag === 'fiado' ? 'ep-pag-sit--sel ep-pag-sit--sel-fiado' : ''}`}
+                  onClick={() => setSituacaoPag('fiado')}
+                >
+                  <div className="ep-pag-sit-radio" />
+                  <div className="ep-pag-sit-info">
+                    <div className="ep-pag-sit-t">Fiado</div>
+                    <div className="ep-pag-sit-d">Cliente vai pagar depois</div>
+                  </div>
+                  <div className="ep-pag-sit-badge ep-pag-sit-badge--red">Pendente</div>
+                </button>
+
+                {situacaoPag === 'fiado' && (
+                  <div className="ep-pag-sit-extra">
+                    <label className="ep-label">Data prevista de pagamento <span className="ep-label-opt">(opcional)</span></label>
+                    <input
+                      type="date"
+                      className="ep-input"
+                      value={dataPrevistaPagamento}
+                      onChange={e => setDataPrevistaPagamento(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ─── SEÇÃO: Resumo ─── */}
+            <div className="ep-section">
+              <div className="ep-section-title">
+                <I.card />
+                Resumo do Pagamento
+              </div>
+              <div className="ep-pag-resumo">
+                <div className="ep-pag-resumo-row">
+                  <span>Forma</span>
+                  <span className="ep-pag-resumo-val">{formaPagamento}</span>
+                </div>
+                <div className="ep-pag-resumo-row">
+                  <span>Total do pedido</span>
+                  <span className="ep-pag-resumo-val">{formatMoney(total)}</span>
+                </div>
+                <div className="ep-pag-resumo-row">
+                  <span>Valor recebido</span>
+                  <span className="ep-pag-resumo-val ep-pag-resumo-val--green">
+                    {formatMoney(situacaoPag === 'total' ? total : situacaoPag === 'parcial' ? valorParcial : 0)}
+                  </span>
+                </div>
+                <div className="ep-pag-resumo-row ep-pag-resumo-row--big">
+                  <span>Valor pendente</span>
+                  <span className="ep-pag-resumo-val ep-pag-resumo-val--pendente">
+                    {formatMoney(situacaoPag === 'total' ? 0 : situacaoPag === 'parcial' ? Math.max(0, total - valorParcial) : total)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        )}
       </div>
 
       {/* ═══ FOOTER STICKY ═══ */}
@@ -1138,6 +1309,7 @@ export default function EditarPedido() {
         }
         .ep-label--mt { margin-top: 14px; }
         .ep-label-req { color: #E85A8C; font-weight: 700; }
+        .ep-label-opt { color: #B4B2A9; font-weight: 500; }
 
         .ep-input {
           width: 100%;
@@ -1623,6 +1795,171 @@ export default function EditarPedido() {
           color: #888780;
           margin: 0;
         }
+
+        /* ── FASE 5: TAB PAGAR ────────────────────────────────────── */
+        .ep-pag-formas {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+        }
+        .ep-pag-forma {
+          all: unset;
+          box-sizing: border-box;
+          padding: 14px 10px;
+          border: 1.5px solid #E8E5DC;
+          border-radius: 12px;
+          text-align: center;
+          font-size: 13.5px;
+          font-weight: 700;
+          color: #5F5E5A;
+          cursor: pointer;
+          background: #fff;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          transition: all 0.15s;
+          letter-spacing: -0.01em;
+        }
+        .ep-pag-forma:hover { border-color: #B4B2A9; }
+        .ep-pag-forma-ic {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #888780;
+          transition: color 0.15s;
+        }
+        .ep-pag-forma--sel {
+          border-color: #E85A8C;
+          background: #FDF3F7;
+          color: #E85A8C;
+        }
+        .ep-pag-forma--sel .ep-pag-forma-ic { color: #E85A8C; }
+
+        .ep-pag-sits {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .ep-pag-sit {
+          all: unset;
+          box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px;
+          border: 1.5px solid #E8E5DC;
+          border-radius: 12px;
+          cursor: pointer;
+          background: #fff;
+          transition: all 0.15s;
+        }
+        .ep-pag-sit:hover { border-color: #B4B2A9; }
+        .ep-pag-sit-radio {
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          border: 2px solid #B4B2A9;
+          flex-shrink: 0;
+          position: relative;
+          transition: all 0.15s;
+        }
+        .ep-pag-sit--sel { border-color: #E85A8C; }
+        .ep-pag-sit--sel .ep-pag-sit-radio {
+          border-color: #E85A8C;
+        }
+        .ep-pag-sit--sel .ep-pag-sit-radio::after {
+          content: '';
+          position: absolute;
+          top: 3px;
+          left: 3px;
+          right: 3px;
+          bottom: 3px;
+          background: #E85A8C;
+          border-radius: 50%;
+        }
+        .ep-pag-sit--sel-total { background: #F5FCF8; }
+        .ep-pag-sit--sel-parcial { background: #FEFAEE; }
+        .ep-pag-sit--sel-fiado { background: #FEF7F7; }
+        .ep-pag-sit-info { flex: 1; min-width: 0; }
+        .ep-pag-sit-t {
+          font-size: 14px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+        }
+        .ep-pag-sit-d {
+          font-size: 12px;
+          color: #888780;
+          font-weight: 500;
+          margin-top: 2px;
+        }
+        .ep-pag-sit-badge {
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-size: 11.5px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+          flex-shrink: 0;
+        }
+        .ep-pag-sit-badge--green { background: #E1F5EE; color: #0F6E56; }
+        .ep-pag-sit-badge--amber { background: #FEF0DF; color: #854F0B; }
+        .ep-pag-sit-badge--red   { background: #FCEBEB; color: #791F1F; }
+
+        .ep-pag-sit-extra {
+          background: #FAF8F5;
+          border: 1px solid #F0EBED;
+          border-radius: 12px;
+          padding: 14px;
+          margin-top: -2px;
+        }
+        .ep-pag-sit-info-row {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 12px;
+          padding-top: 10px;
+          border-top: 1px solid #E8E5DC;
+          font-size: 13px;
+          color: #5F5E5A;
+          font-weight: 600;
+        }
+        .ep-pag-sit-pendente {
+          color: #B91C1C;
+          font-weight: 800;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .ep-pag-resumo {
+          background: #FAF8F5;
+          border: 1px solid #F0EBED;
+          border-radius: 12px;
+          padding: 14px;
+        }
+        .ep-pag-resumo-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          font-size: 13px;
+          color: #5F5E5A;
+          font-weight: 600;
+          margin-bottom: 8px;
+        }
+        .ep-pag-resumo-row:last-child { margin-bottom: 0; }
+        .ep-pag-resumo-row--big {
+          margin-top: 8px;
+          padding-top: 10px;
+          border-top: 1px solid #E8E5DC;
+          font-size: 14px;
+        }
+        .ep-pag-resumo-val {
+          color: #2C2C2A;
+          font-weight: 800;
+          font-variant-numeric: tabular-nums;
+          letter-spacing: -0.01em;
+        }
+        .ep-pag-resumo-val--green { color: #0F6E56; }
+        .ep-pag-resumo-val--pendente { color: #B91C1C; }
 
         /* ── FASE 4: TAB VALORES ──────────────────────────────────── */
         .ep-val-row {
