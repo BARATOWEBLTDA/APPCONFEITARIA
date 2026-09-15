@@ -344,6 +344,7 @@ export default function NovaVenda() {
       endereco_cidade: enderecoCidade,
       endereco_complemento: enderecoComplemento,
       origem: 'manual',
+      tipo_venda: tipo,
       observacoes,
       data_prevista_pagamento: situacaoPag === 'fiado' ? dataPrevistaPagamento : null,
     }).select().single()

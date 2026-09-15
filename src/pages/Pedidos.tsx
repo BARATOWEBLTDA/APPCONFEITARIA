@@ -24,6 +24,7 @@ type Pedido = {
   data_entrega: string; horario_entrega: string; valor_total: number
   valor_recebido: number; tipo_entrega: string; forma_pagamento: string
   etiquetas: string[]; origem: string; created_at: string
+  tipo_venda?: string
   endereco_rua?: string; endereco_numero?: string; endereco_complemento?: string
   endereco_bairro?: string; endereco_cidade?: string; endereco_cep?: string
   personalizacao_tema?: string; personalizacao_nome?: string; personalizacao_idade?: string
@@ -1446,6 +1447,7 @@ export default function Pedidos() {
   const [filtroAguardando, setFiltroAguardando] = useState(params.get('filtro') === 'aguardando')
 
   const [busca, setBusca] = useState('')
+  const [abaAtiva, setAbaAtiva] = useState<'encomenda' | 'pronta_entrega'>('encomenda')
   const [viewMode, setViewMode] = useState<'lista' | 'kanban'>('lista')
   // Modal "cliente pagou?" quando sai de aguardando_pagamento
   const [pendingPag, setPendingPag] = useState<{ pedido: Pedido; novoStatus: string } | null>(null)
@@ -1565,6 +1567,10 @@ export default function Pedidos() {
     if (filtroAguardando) {
       return p.origem === 'cardapio' && p.status === 'novo'
     }
+    // Filtro por aba (Encomendas / Pronta Entrega) — fallback: pedidos sem tipo_venda = encomenda
+    const tipoVenda = p.tipo_venda || 'encomenda'
+    if (tipoVenda !== abaAtiva) return false
+
     const matchStatus = statusSelecionados.includes(p.status)
     const matchBusca = !busca ||
       p.cliente_nome?.toLowerCase().includes(busca.toLowerCase()) ||
@@ -2020,8 +2026,30 @@ export default function Pedidos() {
             </div>
           )}
 
+          {/* Toggle Encomendas / Pronta Entrega */}
+          <div className="pedidos-abas" style={{ paddingTop: isMobile ? '1.25rem' : 0 }}>
+            <button
+              className={`pedidos-aba ${abaAtiva === 'encomenda' ? 'pedidos-aba--ativa' : ''}`}
+              onClick={() => setAbaAtiva('encomenda')}
+            >
+              📅 Encomendas
+              <span className="pedidos-aba-count">
+                {pedidos.filter(p => (p.tipo_venda || 'encomenda') === 'encomenda').length}
+              </span>
+            </button>
+            <button
+              className={`pedidos-aba ${abaAtiva === 'pronta_entrega' ? 'pedidos-aba--ativa' : ''}`}
+              onClick={() => setAbaAtiva('pronta_entrega')}
+            >
+              ⚡ Pronta Entrega
+              <span className="pedidos-aba-count">
+                {pedidos.filter(p => p.tipo_venda === 'pronta_entrega').length}
+              </span>
+            </button>
+          </div>
+
           {/* Busca + Filtro (+ Novo no desktop) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', paddingTop: isMobile ? '1.25rem' : 0, maxWidth: !isMobile ? 780 : 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', paddingTop: '0.75rem', maxWidth: !isMobile ? 780 : 'none' }}>
             {/* Barra de busca */}
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '0.75rem 1rem' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -2300,6 +2328,56 @@ export default function Pedidos() {
           transition: background var(--dur-fast), color var(--dur-fast);
         }
         .ped-filtro-ativo-close:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+        /* ═══ Toggle Encomendas / Pronta Entrega ═══ */
+        .pedidos-abas {
+          display: flex;
+          gap: 4px;
+          background: #F5F1F3;
+          padding: 4px;
+          border-radius: 12px;
+          margin-bottom: 0;
+          max-width: 780px;
+        }
+        .pedidos-aba {
+          all: unset;
+          flex: 1;
+          padding: 10px 14px;
+          text-align: center;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #6B5D64;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          transition: all 0.15s;
+          font-family: var(--font-base) !important;
+          box-sizing: border-box;
+        }
+        .pedidos-aba:hover { color: #4A3540; }
+        .pedidos-aba--ativa {
+          background: #fff;
+          color: #E85A8C;
+          font-weight: 800;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .pedidos-aba-count {
+          background: #F5F1F3;
+          color: #6B5D64;
+          font-size: 10.5px;
+          font-weight: 800;
+          padding: 2px 6px;
+          border-radius: 5px;
+          min-width: 20px;
+          text-align: center;
+        }
+        .pedidos-aba--ativa .pedidos-aba-count {
+          background: #FDF3F7;
+          color: #E85A8C;
+        }
+
         /* ═══ Card pedido mobile (Opção B — calendário) ═══ */
         .pmob-card {
           position: relative;
