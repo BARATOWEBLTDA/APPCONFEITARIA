@@ -98,8 +98,8 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         {slideIdx === 3 && <Slide3Ingredientes onReady={handleSlideReady} />}
         {slideIdx === 4 && <Slide4Precificacao onReady={handleSlideReady} />}
         {slideIdx === 5 && <SlideCardapio onReady={handleSlideReady} />}
-        {slideIdx === 6 && <SlidePlaceholder title="Sua receita já calcula tudo" subtitle="Ingredientes, embalagem, energia, lucro. Tudo preenchendo sozinho." emoji="📝" onReady={handleSlideReady} />}
-        {slideIdx === 7 && <SlidePlaceholder title="Seu negócio organizado" subtitle="Enquanto você faz bolos, o Doonly cuida da gestão." emoji="📊" onReady={handleSlideReady} />}
+        {slideIdx === 6 && <SlidePlaceholder eyebrow="Receitas que fazem as contas" title="MONTE A RECEITA. O DOONLY CALCULA." subtitle="Ingredientes, embalagem, custos e lucro reunidos automaticamente." emoji="📝" onReady={handleSlideReady} />}
+        {slideIdx === 7 && <SlidePlaceholder eyebrow="Tudo trabalhando junto" title="VOCÊ FAZ OS DOCES. O DOONLY ORGANIZA." subtitle="Sua rotina, seus números e seu negócio mais fáceis de acompanhar." emoji="📊" onReady={handleSlideReady} />}
         {slideIdx === 8 && <SlideFinal onStart={finish} />}
       </div>
 
@@ -1731,14 +1731,14 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
 
       <div className="ob-slide1-left">
         <div className="ob-welcome-anchor">
-          <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.15s" }}>
-            COM O DOONLY
-          </div>
-          <div className="ob-welcome-block" style={{ animationDelay: "0.35s" }}>
+          <div className="ob-welcome-block" style={{ animationDelay: "0.15s" }}>
             SUA CONFEITARIA<br/>
-            FICA <span className="ob-fill">ORGANIZADA</span><br/>
-            DO CARDÁPIO<br/>
+            <span className="ob-fill">ORGANIZADA</span><br/>
+            DO PEDIDO<br/>
             AO <span className="ob-fill">LUCRO</span>
+          </div>
+          <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.35s", marginTop: "0.9rem", textTransform: "none", letterSpacing: "0", opacity: 0.85 }}>
+            Tudo o que você precisa para cuidar do seu negócio em um só lugar.
           </div>
         </div>
       </div>
@@ -1747,7 +1747,7 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
 }
 
 /* ─── Slide Placeholder (será substituído nas próximas etapas) ─── */
-function SlidePlaceholder({ title, subtitle, emoji, onReady }: { title: string; subtitle: string; emoji: string; onReady: () => void }) {
+function SlidePlaceholder({ eyebrow, title, subtitle, emoji, onReady }: { eyebrow?: string; title: string; subtitle: string; emoji: string; onReady: () => void }) {
   useEffect(() => {
     const t = window.setTimeout(onReady, 500);
     return () => clearTimeout(t);
@@ -1755,9 +1755,9 @@ function SlidePlaceholder({ title, subtitle, emoji, onReady }: { title: string; 
   return (
     <>
       <div className="ob-placeholder-emoji">{emoji}</div>
+      {eyebrow && <p className="ob-slide-eyebrow" style={{ marginBottom: "0.35rem" }}>{eyebrow}</p>}
       <h2 className="ob-slide-title">{title}</h2>
       <p className="ob-slide-text">{subtitle}</p>
-      <span className="ob-placeholder-note">animação chegando em breve</span>
     </>
   );
 }
@@ -2077,13 +2077,13 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
 
   return (
     <div className="ob-slide-textabove">
-      <p className="ob-slide-eyebrow">Com o Doonly...</p>
+      <p className="ob-slide-eyebrow">Seus clientes, mais perto</p>
       <h2 className="ob-slide-title">
-        VOCÊ NUNCA MAIS
+        LEMBRE DE CADA CLIENTE
         <br />
-        ESQUECE UMA CLIENTE
+        E DE CADA DETALHE
       </h2>
-      <p className="ob-slide-subtitle-top">Tudo sobre elas, num só lugar</p>
+      <p className="ob-slide-subtitle-top">Histórico, pedidos e informações importantes sempre à mão.</p>
 
       <div className="ob-clientes-stack">
         {visiveis.map((c) => (
@@ -2208,8 +2208,9 @@ function SlideCardapio({ onReady }: { onReady: () => void }) {
   return (
     <>
       <div className="ob-slide-textabove">
-        <span className="ob-slide-eyebrow">Com o Doonly...</span>
-        <h2 className="ob-slide-title">CARDÁPIO DIGITAL<br/>QUE VENDE POR VOCÊ</h2>
+        <span className="ob-slide-eyebrow">Sua vitrine online</span>
+        <h2 className="ob-slide-title">UM CARDÁPIO BONITO<br/>E PRONTO PARA VENDER</h2>
+        <p className="ob-slide-subtitle-top">Mostre seus produtos e facilite o pedido das suas clientes.</p>
       </div>
 
       <div className="ob-cardapio-phone">
@@ -2404,9 +2405,9 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
   return (
     <>
       <div className="ob-slide-textabove">
-        <span className="ob-slide-eyebrow">Com o Doonly...</span>
-        <h2 className="ob-slide-title">SEUS PEDIDOS<br/>FICAM ORGANIZADOS</h2>
-        <p className="ob-slide-subtitle-top">E na palma da sua mão!</p>
+        <span className="ob-slide-eyebrow">Sua rotina mais leve</span>
+        <h2 className="ob-slide-title">TODOS OS PEDIDOS<br/>NO LUGAR CERTO</h2>
+        <p className="ob-slide-subtitle-top">Acompanhe cada encomenda sem depender de papel ou planilha.</p>
       </div>
 
       <div className="ob-pedidos-stack">
@@ -2729,8 +2730,9 @@ function Slide3Ingredientes({ onReady }: { onReady: () => void }) {
   return (
     <>
       <div className="ob-slide-textabove">
-        <span className="ob-slide-eyebrow">Com o Doonly...</span>
-        <h2 className="ob-slide-title">INGREDIENTES CADASTRADOS<br/>EM SEGUNDOS</h2>
+        <span className="ob-slide-eyebrow">Cadastre uma vez</span>
+        <h2 className="ob-slide-title">SEUS INGREDIENTES<br/>SEMPRE ATUALIZADOS</h2>
+        <p className="ob-slide-subtitle-top">Informe preço e quantidade para o Doonly usar nas suas receitas.</p>
       </div>
 
       <div className={`ob-ing-wrap ${wrapFull ? "ob-ing-wrap--full" : ""}`}>
@@ -2820,7 +2822,7 @@ function Slide3Ingredientes({ onReady }: { onReady: () => void }) {
         )}
       </div>
       {terminou && (
-        <p className="ob-slide-subtitle">COM PREÇO CERTO<br/>EM CADA RECEITA</p>
+        <p className="ob-slide-subtitle">O PREÇO CERTO<br/>EM CADA RECEITA</p>
       )}
     </>
   );
@@ -2916,11 +2918,12 @@ function Slide4Precificacao({ onReady }: { onReady: () => void }) {
   return (
     <>
       <div className="ob-slide-textabove">
-        <span className="ob-slide-eyebrow">Com o Doonly...</span>
+        <span className="ob-slide-eyebrow">Seu trabalho tem valor</span>
         <h2 className="ob-slide-title" style={{ fontSize: "clamp(1.05rem, 4.6vw, 1.45rem)" }}>
-          <span style={{ whiteSpace: "nowrap" }}>PRECIFICAÇÃO INTELIGENTE,</span><br/>
-          PARA LUCRAR DE VERDADE
+          PARE DE VENDER,<br/>
+          SEM SABER SE LUCROU
         </h2>
+        <p className="ob-slide-subtitle-top">O Doonly mostra quanto custa produzir e quanto sobra para você.</p>
       </div>
 
       <div className="ob-prec-card">
@@ -3014,10 +3017,11 @@ function SlideFinal({ onStart }: { onStart: () => void }) {
   return (
     <>
       <div className="ob-final-sparkle">🚀</div>
-      <h2 className="ob-final-title">Pronta?</h2>
-      <p className="ob-final-sub">Vamos configurar seu negócio.</p>
+      <p className="ob-slide-eyebrow" style={{ marginBottom: "0.35rem" }}>Tudo pronto para começar</p>
+      <h2 className="ob-final-title">AGORA É A SUA VEZ</h2>
+      <p className="ob-final-sub">Vamos deixar o Doonly com a cara da sua confeitaria.</p>
       <button className="ob-final-cta" onClick={onStart}>
-        Começar agora
+        Configurar minha confeitaria
       </button>
     </>
   );
