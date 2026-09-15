@@ -62,6 +62,15 @@ interface Cliente {
   complemento?: string
 }
 
+interface Produto {
+  id: string
+  nome: string
+  preco_normal: number
+  forma_venda?: string
+  imagem_url?: string
+  categoria?: string
+}
+
 type Tab = 'cliente' | 'itens' | 'valores' | 'pagar'
 
 // ── Config de status ──────────────────────────────────────────────────────
@@ -181,6 +190,14 @@ export default function EditarPedido() {
   const [enderecoComplemento, setEnderecoComplemento] = useState('')
   const [cepLoading, setCepLoading] = useState(false)
 
+  // ── Itens editáveis + produtos disponíveis ────────────────────────────
+  const [itens, setItens] = useState<PedidoItem[]>([])
+  const [produtos, setProdutos] = useState<Produto[]>([])
+  const [modalProduto, setModalProduto] = useState(false)
+  const [buscaProduto, setBuscaProduto] = useState('')
+  const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null)
+  const [catDropdownAberto, setCatDropdownAberto] = useState(false)
+
   // ── Modais ────────────────────────────────────────────────────────────
   const [modalCliente, setModalCliente] = useState(false)
   const [clientes, setClientes] = useState<Cliente[]>([])
@@ -218,14 +235,26 @@ export default function EditarPedido() {
       setEnderecoBairro(p.endereco_bairro || '')
       setEnderecoCidade(p.endereco_cidade || 'Curitiba')
       setEnderecoComplemento(p.endereco_complemento || '')
-      // Carregar lista de clientes
+      // Popular itens editáveis
+      setItens((p.pedido_itens || []).map(it => ({
+        id: it.id,
+        produto_id: it.produto_id,
+        nome_produto: it.nome_produto,
+        quantidade: it.quantidade,
+        valor_unitario: it.valor_unitario,
+        observacoes: it.observacoes || '',
+        imagem_url: it.imagem_url || null,
+      })))
+      // Carregar lista de clientes + produtos
       if (user?.user) {
-        const { data: cls } = await supabase
-          .from('clientes')
-          .select('id,nome,telefone,whatsapp,rua,numero,bairro,cidade,complemento')
-          .eq('user_id', user.user.id)
-          .order('nome')
-        if (!cancelado) setClientes(cls || [])
+        const [{ data: cls }, { data: prds }] = await Promise.all([
+          supabase.from('clientes').select('id,nome,telefone,whatsapp,rua,numero,bairro,cidade,complemento').eq('user_id', user.user.id).order('nome'),
+          supabase.from('produtos').select('id,nome,preco_normal,forma_venda,imagem_url,categoria').eq('user_id', user.user.id).order('nome'),
+        ])
+        if (!cancelado) {
+          setClientes(cls || [])
+          setProdutos(prds || [])
+        }
       }
       setCarregando(false)
     })()
@@ -280,11 +309,51 @@ export default function EditarPedido() {
     setSalvando(false)
   }
 
+  // ── Handlers de itens ─────────────────────────────────────────────────
+  const addItem = (p: Produto) => {
+    setItens(prev => [...prev, {
+      produto_id: p.id,
+      nome_produto: p.nome,
+      quantidade: 1,
+      valor_unitario: p.preco_normal || 0,
+      observacoes: '',
+      imagem_url: p.imagem_url || null,
+    }])
+    setModalProduto(false)
+    setBuscaProduto('')
+    setCatDropdownAberto(false)
+  }
+
+  const removerItem = (idx: number) => {
+    setItens(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  const updateQtd = (idx: number, delta: number) => {
+    setItens(prev => prev.map((it, i) => i === idx ? { ...it, quantidade: Math.max(1, it.quantidade + delta) } : it))
+  }
+
+  const setQtdManual = (idx: number, valor: number) => {
+    setItens(prev => prev.map((it, i) => i === idx ? { ...it, quantidade: Math.max(1, Math.floor(valor) || 1) } : it))
+  }
+
   // ── Derivados pro header ──────────────────────────────────────────────
-  const totalItens = pedido?.pedido_itens?.length || 0
-  const total = pedido?.valor_total || 0
+  const subtotalItens = itens.reduce((acc, it) => acc + (it.valor_unitario || 0) * (it.quantidade || 1), 0)
+  const totalItens = itens.length
+  // Total no footer ainda usa o valor original do pedido — Fase 4 recalcula com desconto/taxa/acrescimo
+  const total = pedido?.valor_total || subtotalItens
   const origemLabel = pedido?.origem === 'cardapio' ? 'Cardápio' : 'Manual'
   const tipoEntregaIcon = tipoEntrega === 'entrega' ? I.truck : I.home
+
+  // Categorias derivadas dos produtos
+  const categoriasComContagem: { nome: string; count: number }[] = (() => {
+    const map: Record<string, number> = {}
+    produtos.forEach(p => {
+      const c = (p.categoria || '').trim()
+      if (!c) return
+      map[c] = (map[c] || 0) + 1
+    })
+    return Object.entries(map).map(([nome, count]) => ({ nome, count })).sort((a, b) => a.nome.localeCompare(b.nome))
+  })()
 
   // ── Loading state ────────────────────────────────────────────────────
   if (carregando || !pedido) {
@@ -558,7 +627,78 @@ export default function EditarPedido() {
           </div>
         )}
 
-        {tab === 'itens'    && <TabPlaceholder titulo="Itens do Pedido" descricao="Aqui vai a lista de itens com adicionar/remover. (Fase 3)" />}
+        {tab === 'itens' && (
+          <div className="ep-tab-content">
+            <div className="ep-section">
+              <div className="ep-section-title">
+                <I.box />
+                Itens do Pedido {totalItens > 0 && <span className="ep-section-count">({totalItens})</span>}
+              </div>
+
+              {itens.length === 0 ? (
+                <div className="ep-itens-vazio">
+                  <div className="ep-itens-vazio-ic"><I.box /></div>
+                  <p className="ep-itens-vazio-t">Nenhum item ainda</p>
+                  <p className="ep-itens-vazio-d">Adicione produtos ao pedido tocando no botão abaixo.</p>
+                </div>
+              ) : (
+                <div className="ep-itens-lista">
+                  {itens.map((it, idx) => (
+                    <div key={idx} className="ep-item-card">
+                      <div className="ep-item-foto">
+                        {it.imagem_url ? <img src={it.imagem_url} alt={it.nome_produto} /> : <span>🎂</span>}
+                      </div>
+                      <div className="ep-item-info">
+                        <div className="ep-item-nome">{toTitleCase(it.nome_produto)}</div>
+                        <div className="ep-item-preco">{formatMoney(it.valor_unitario)} <span className="ep-item-x">×</span> {it.quantidade}</div>
+                        <div className="ep-item-subtotal">{formatMoney((it.valor_unitario || 0) * (it.quantidade || 1))}</div>
+                      </div>
+                      <div className="ep-item-acoes">
+                        <div className="ep-qtd-wrap">
+                          <button
+                            type="button"
+                            className="ep-qtd-btn"
+                            onClick={() => updateQtd(idx, -1)}
+                            disabled={it.quantidade <= 1}
+                            aria-label="Diminuir"
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            className="ep-qtd-input"
+                            value={it.quantidade}
+                            min={1}
+                            onChange={e => setQtdManual(idx, Number(e.target.value))}
+                          />
+                          <button type="button" className="ep-qtd-btn" onClick={() => updateQtd(idx, +1)} aria-label="Aumentar">
+                            +
+                          </button>
+                        </div>
+                        <button type="button" className="ep-item-remover" onClick={() => removerItem(idx)} aria-label="Remover item">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+                          Remover
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <button type="button" className="ep-add-item" onClick={() => setModalProduto(true)}>
+                <span className="ep-add-item-ic">+</span>
+                Adicionar item
+              </button>
+
+              {itens.length > 0 && (
+                <div className="ep-subtotal-row">
+                  <span>Subtotal dos itens</span>
+                  <span className="ep-subtotal-val">{formatMoney(subtotalItens)}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         {tab === 'valores'  && <TabPlaceholder titulo="Valores" descricao="Desconto, acréscimo, taxa de entrega, total. (Fase 4)" />}
         {tab === 'pagar'    && <TabPlaceholder titulo="Pagamento" descricao="Forma de pagamento e situação (total/parcial/fiado). (Fase 5)" />}
       </div>
@@ -617,6 +757,88 @@ export default function EditarPedido() {
           </div>
         </div>
       )}
+
+      {/* ═══ MODAL PRODUTO ═══ */}
+      {modalProduto && (() => {
+        const produtosFiltrados = produtos.filter(p => {
+          const matchBusca = p.nome.toLowerCase().includes(buscaProduto.toLowerCase())
+          const matchCat = !filtroCategoria || (p.categoria || '').trim() === filtroCategoria
+          return matchBusca && matchCat
+        })
+        const labelFiltro = filtroCategoria || 'Todas'
+        const temCategorias = categoriasComContagem.length > 0
+        return (
+          <div className="ep-modal-overlay" onClick={() => { setModalProduto(false); setCatDropdownAberto(false) }}>
+            <div className="ep-modal" onClick={e => e.stopPropagation()}>
+              <div className="ep-modal-header">
+                <h3 className="ep-modal-title">Escolher produto</h3>
+                <button className="ep-modal-close" onClick={() => setModalProduto(false)} aria-label="Fechar">
+                  <I.x />
+                </button>
+              </div>
+
+              <div className="ep-modal-search">
+                <I.search />
+                <input
+                  className="ep-modal-search-input"
+                  placeholder="Buscar produto..."
+                  value={buscaProduto}
+                  onChange={e => setBuscaProduto(e.target.value)}
+                  autoFocus
+                />
+              </div>
+
+              {temCategorias && (
+                <div className="ep-cat-dropdown-wrap">
+                  <button
+                    type="button"
+                    className={`ep-cat-dropdown-btn ${filtroCategoria ? 'ep-cat-dropdown-btn--ativo' : ''}`}
+                    onClick={() => setCatDropdownAberto(o => !o)}
+                  >
+                    <span>{labelFiltro}</span>
+                    <I.chevD />
+                  </button>
+                  {catDropdownAberto && (
+                    <div className="ep-cat-dropdown-menu">
+                      <button type="button" className={`ep-cat-dropdown-item ${!filtroCategoria ? 'ep-cat-dropdown-item--sel' : ''}`} onClick={() => { setFiltroCategoria(null); setCatDropdownAberto(false) }}>
+                        <span>Todas</span>
+                        <span className="ep-cat-dropdown-count">{produtos.length}</span>
+                      </button>
+                      {categoriasComContagem.map(c => (
+                        <button key={c.nome} type="button" className={`ep-cat-dropdown-item ${filtroCategoria === c.nome ? 'ep-cat-dropdown-item--sel' : ''}`} onClick={() => { setFiltroCategoria(c.nome); setCatDropdownAberto(false) }}>
+                          <span>{c.nome}</span>
+                          <span className="ep-cat-dropdown-count">{c.count}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="ep-modal-lista">
+                {produtosFiltrados.map(p => (
+                  <button key={p.id} type="button" className="ep-prod-item" onClick={() => addItem(p)}>
+                    <div className="ep-prod-item-img">
+                      {p.imagem_url ? <img src={p.imagem_url} alt={p.nome} /> : <span>🎂</span>}
+                    </div>
+                    <div className="ep-prod-item-info">
+                      <div className="ep-prod-item-nome">{toTitleCase(p.nome)}</div>
+                      {p.categoria && <div className="ep-prod-item-cat">{p.categoria}</div>}
+                    </div>
+                    <div className="ep-prod-item-preco">{formatMoney(p.preco_normal)}</div>
+                  </button>
+                ))}
+                {produtos.length === 0 && (
+                  <p className="ep-modal-empty">Nenhum produto cadastrado. <a href="/produtos" style={{ color: '#E85A8C', fontWeight: 700 }}>Cadastrar produto</a></p>
+                )}
+                {produtos.length > 0 && produtosFiltrados.length === 0 && (
+                  <p className="ep-modal-empty">Nenhum produto encontrado{buscaProduto ? ` com "${buscaProduto}"` : ''}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* ═══ HORARIO SHEET ═══ */}
       {horaSheetAberto && (
@@ -1276,6 +1498,330 @@ export default function EditarPedido() {
           font-size: 13px;
           color: #888780;
           margin: 0;
+        }
+
+        /* ── FASE 3: TAB ITENS ────────────────────────────────────── */
+        .ep-section-count {
+          font-size: 13px;
+          font-weight: 600;
+          color: #888780;
+          margin-left: 4px;
+        }
+        .ep-itens-vazio {
+          text-align: center;
+          padding: 24px 12px;
+          border: 1px dashed #E8E5DC;
+          border-radius: 12px;
+        }
+        .ep-itens-vazio-ic {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          background: #F5F1F3;
+          color: #888780;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 8px;
+        }
+        .ep-itens-vazio-t {
+          font-size: 14px;
+          font-weight: 700;
+          color: #2C2C2A;
+          margin: 0 0 4px;
+        }
+        .ep-itens-vazio-d {
+          font-size: 12.5px;
+          color: #888780;
+          margin: 0;
+        }
+        .ep-itens-lista {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .ep-item-card {
+          display: grid;
+          grid-template-columns: 48px 1fr;
+          gap: 12px;
+          padding: 12px;
+          border: 1px solid #F0EBED;
+          border-radius: 12px;
+          background: #FAF8F5;
+        }
+        .ep-item-foto {
+          width: 48px;
+          height: 48px;
+          border-radius: 10px;
+          background: #F5F1F3;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 22px;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+        .ep-item-foto img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .ep-item-info { min-width: 0; }
+        .ep-item-nome {
+          font-size: 14px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+          line-height: 1.3;
+        }
+        .ep-item-preco {
+          font-size: 12.5px;
+          color: #888780;
+          margin-top: 2px;
+          font-variant-numeric: tabular-nums;
+        }
+        .ep-item-x {
+          color: #B4B2A9;
+          margin: 0 2px;
+        }
+        .ep-item-subtotal {
+          font-size: 14px;
+          font-weight: 800;
+          color: #2C2C2A;
+          margin-top: 4px;
+          letter-spacing: -0.01em;
+          font-variant-numeric: tabular-nums;
+        }
+        .ep-item-acoes {
+          grid-column: 1 / -1;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          margin-top: 4px;
+        }
+        .ep-qtd-wrap {
+          display: flex;
+          align-items: center;
+          background: #fff;
+          border: 1px solid #E8E5DC;
+          border-radius: 10px;
+          overflow: hidden;
+        }
+        .ep-qtd-btn {
+          all: unset;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          font-weight: 700;
+          color: #5F5E5A;
+          cursor: pointer;
+          transition: background 0.12s, color 0.12s;
+        }
+        .ep-qtd-btn:hover:not(:disabled) { background: #F5F1F3; color: #E85A8C; }
+        .ep-qtd-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .ep-qtd-input {
+          width: 40px;
+          border: none;
+          outline: none;
+          text-align: center;
+          font-size: 14px;
+          font-weight: 700;
+          color: #2C2C2A;
+          background: transparent;
+          font-variant-numeric: tabular-nums;
+          font-family: var(--font-base) !important;
+          -moz-appearance: textfield;
+        }
+        .ep-qtd-input::-webkit-outer-spin-button,
+        .ep-qtd-input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+        .ep-item-remover {
+          all: unset;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          padding: 6px 10px;
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #B91C1C;
+          cursor: pointer;
+          border-radius: 8px;
+          transition: background 0.15s;
+        }
+        .ep-item-remover:hover { background: #FEF2F2; }
+
+        .ep-add-item {
+          all: unset;
+          box-sizing: border-box;
+          width: 100%;
+          margin-top: 12px;
+          padding: 12px;
+          border: 1.5px dashed #F4C0D1;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          font-size: 14px;
+          font-weight: 700;
+          color: #E85A8C;
+          cursor: pointer;
+          background: #FDF3F7;
+          transition: background 0.15s, border-color 0.15s;
+        }
+        .ep-add-item:hover { background: #FCE0E9; border-color: #E85A8C; }
+        .ep-add-item-ic {
+          font-size: 18px;
+          line-height: 1;
+        }
+
+        .ep-subtotal-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 14px;
+          padding-top: 12px;
+          border-top: 1px solid #F1EFE8;
+          font-size: 13px;
+          color: #5F5E5A;
+          font-weight: 600;
+        }
+        .ep-subtotal-val {
+          font-size: 15px;
+          font-weight: 800;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+          font-variant-numeric: tabular-nums;
+        }
+
+        /* Categoria dropdown (modal produto) */
+        .ep-cat-dropdown-wrap {
+          position: relative;
+          margin-bottom: 12px;
+        }
+        .ep-cat-dropdown-btn {
+          all: unset;
+          box-sizing: border-box;
+          width: 100%;
+          padding: 10px 14px;
+          border: 1.5px solid #E8E5DC;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-size: 13.5px;
+          font-weight: 600;
+          color: #5F5E5A;
+          cursor: pointer;
+          background: #fff;
+          transition: border-color 0.15s, color 0.15s;
+        }
+        .ep-cat-dropdown-btn:hover { border-color: #B4B2A9; }
+        .ep-cat-dropdown-btn--ativo {
+          border-color: #E85A8C;
+          color: #E85A8C;
+        }
+        .ep-cat-dropdown-menu {
+          position: absolute;
+          top: calc(100% + 4px);
+          left: 0;
+          right: 0;
+          z-index: 30;
+          background: #fff;
+          border: 1px solid #E8E5DC;
+          border-radius: 12px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+          padding: 6px;
+          max-height: 240px;
+          overflow-y: auto;
+        }
+        .ep-cat-dropdown-item {
+          all: unset;
+          box-sizing: border-box;
+          width: 100%;
+          padding: 10px 12px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #2C2C2A;
+          cursor: pointer;
+          transition: background 0.12s;
+        }
+        .ep-cat-dropdown-item:hover { background: #F5F1F3; }
+        .ep-cat-dropdown-item--sel { background: #FCE0E9; color: #993556; }
+        .ep-cat-dropdown-count {
+          font-size: 11.5px;
+          font-weight: 700;
+          color: #888780;
+          background: #F1EFE8;
+          padding: 2px 8px;
+          border-radius: 999px;
+        }
+        .ep-cat-dropdown-item--sel .ep-cat-dropdown-count {
+          background: #fff;
+          color: #993556;
+        }
+
+        /* Produto item no modal */
+        .ep-prod-item {
+          all: unset;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 10px 12px;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: background 0.12s;
+        }
+        .ep-prod-item:hover { background: #F5F1F3; }
+        .ep-prod-item-img {
+          width: 40px;
+          height: 40px;
+          border-radius: 8px;
+          background: #F5F1F3;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+        .ep-prod-item-img img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .ep-prod-item-info { flex: 1; min-width: 0; }
+        .ep-prod-item-nome {
+          font-size: 13.5px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .ep-prod-item-cat {
+          font-size: 11.5px;
+          color: #888780;
+          margin-top: 1px;
+        }
+        .ep-prod-item-preco {
+          font-size: 13.5px;
+          font-weight: 800;
+          color: #2C2C2A;
+          font-variant-numeric: tabular-nums;
+          letter-spacing: -0.01em;
+          flex-shrink: 0;
         }
       `}</style>
     </div>
