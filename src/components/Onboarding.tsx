@@ -1736,7 +1736,7 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
             <span className="ob-fill">ORGANIZADA</span><br/>
             DO PEDIDO AO <span className="ob-fill">LUCRO</span>
           </div>
-          <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.35s", marginTop: "0.9rem", textTransform: "none", letterSpacing: "0", opacity: 0.85 }}>
+          <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.35s", marginTop: "1.1rem", textTransform: "none", letterSpacing: "0", opacity: 0.9, fontSize: "1.05rem", fontWeight: 500, lineHeight: 1.45 }}>
             Tudo o que você precisa para cuidar do seu negócio em um só lugar.
           </div>
         </div>
