@@ -322,6 +322,12 @@ export default function EditarPedido() {
   const [historico, setHistorico] = useState<HistoricoEvento[]>([])
   const [historicoCarregando, setHistoricoCarregando] = useState(false)
 
+  // ── Cancelar pedido (Fase 8) ──────────────────────────────────────────
+  const [cancelarAberto, setCancelarAberto] = useState(false)
+  const [motivoCancelamento, setMotivoCancelamento] = useState('')
+  const [mostrarMotivoCliente, setMostrarMotivoCliente] = useState(false)
+  const [cancelando, setCancelando] = useState(false)
+
   // ── Load do pedido + lista de clientes ────────────────────────────────
   useEffect(() => {
     if (!id) return
@@ -403,6 +409,71 @@ export default function EditarPedido() {
     const t = setTimeout(() => document.addEventListener('click', onDoc), 0)
     return () => { clearTimeout(t); document.removeEventListener('click', onDoc) }
   }, [statusDropdownAberto])
+
+  // ── Cancelar sheet: trava scroll do body ──────────────────────────────
+  useEffect(() => {
+    if (!cancelarAberto) return
+    const scrollY = window.scrollY
+    const original = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+    }
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.width = '100%'
+    return () => {
+      document.body.style.overflow = original.overflow
+      document.body.style.position = original.position
+      document.body.style.top = original.top
+      document.body.style.width = original.width
+      window.scrollTo(0, scrollY)
+    }
+  }, [cancelarAberto])
+
+  // ── Handler de cancelar pedido (Fase 8) ───────────────────────────────
+  const handleConfirmarCancelamento = async () => {
+    if (!pedido || cancelando) return
+    setCancelando(true)
+    try {
+      const motivoLimpo = motivoCancelamento.trim()
+      // Tenta salvar com as colunas novas (motivo/mostrar); se der erro de coluna, cai pra fallback
+      const payloadCompleto: any = {
+        status: 'cancelado',
+        motivo_cancelamento: motivoLimpo || null,
+        mostrar_motivo_ao_cliente: motivoLimpo ? mostrarMotivoCliente : false,
+      }
+      let { error } = await supabase.from('pedidos').update(payloadCompleto).eq('id', pedido.id)
+
+      // Se der erro (provavelmente colunas não existem), tenta só com status
+      if (error) {
+        console.warn('Fallback: colunas motivo/mostrar não existem, salvando só status.', error.message)
+        const r = await supabase.from('pedidos').update({ status: 'cancelado' }).eq('id', pedido.id)
+        error = r.error
+      }
+
+      if (error) {
+        alert('Não foi possível cancelar o pedido: ' + error.message)
+        setCancelando(false)
+        return
+      }
+
+      // Registra no histórico (silencioso — não falha se tabela não existir)
+      supabase.from('pedido_historico').insert({
+        pedido_id: pedido.id,
+        evento: 'Pedido cancelado',
+        descricao: motivoLimpo || 'Sem motivo informado',
+      }).then(() => {}, () => {})
+
+      setCancelarAberto(false)
+      navigate('/pedidos')
+    } catch (err: any) {
+      alert('Erro ao cancelar: ' + (err?.message || 'desconhecido'))
+      setCancelando(false)
+    }
+  }
 
   // ── Timeline: trava scroll do body + carrega histórico ao abrir ───────
   useEffect(() => {
@@ -783,7 +854,7 @@ export default function EditarPedido() {
               <button
                 type="button"
                 className="ep-cancelar-btn"
-                onClick={() => alert('Cancelar pedido — Fase 8 (bottom sheet)')}
+                onClick={() => setCancelarAberto(true)}
               >
                 <span className="ep-cancelar-ic"><I.ban /></span>
                 <span className="ep-cancelar-txt">Cancelar pedido</span>
@@ -1376,6 +1447,118 @@ export default function EditarPedido() {
           </div>
         )
       })()}
+
+      {/* ═══ CANCELAR PEDIDO SHEET (Fase 8) ═══ */}
+      {cancelarAberto && createPortal(
+        (() => {
+          const motivosPreset = [
+            'Sem ingredientes para produzir',
+            'Não conseguimos entregar na data',
+            'Fora da área de entrega',
+            'Pagamento não confirmado',
+            'Cliente desistiu do pedido',
+          ]
+          const valorRecebidoAtual = pedido?.valor_recebido || 0
+          return (
+            <div className="ep-cnc-overlay" onClick={() => !cancelando && setCancelarAberto(false)}>
+              <div className="ep-cnc-sheet" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+                <div className="ep-tl-handle" />
+
+                <div className="ep-cnc-header">
+                  <div className="ep-cnc-title-wrap">
+                    <div className="ep-cnc-title-ic">
+                      <I.ban />
+                    </div>
+                    <h3 className="ep-cnc-title">Cancelar Pedido</h3>
+                  </div>
+                </div>
+
+                <p className="ep-cnc-aviso">
+                  Esta ação não pode ser desfeita. Deseja realmente cancelar este pedido?
+                </p>
+
+                {/* Card do pedido */}
+                <div className="ep-cnc-card">
+                  <div className="ep-cnc-card-ic">
+                    <I.card />
+                  </div>
+                  <div>
+                    <div className="ep-cnc-card-num">Pedido #{pedido?.numero || '—'}</div>
+                    <div className="ep-cnc-card-sub">
+                      {valorRecebidoAtual > 0
+                        ? `${formatMoney(valorRecebidoAtual)} já recebido`
+                        : 'Nenhum pagamento registrado'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Chips de motivo */}
+                <div className="ep-cnc-section">
+                  <div className="ep-cnc-section-header">
+                    <span className="ep-cnc-section-title">Motivo do cancelamento</span>
+                    <span className="ep-cnc-section-opt">opcional</span>
+                  </div>
+                  <div className="ep-cnc-chips">
+                    {motivosPreset.map(m => (
+                      <button
+                        key={m}
+                        type="button"
+                        className={`ep-cnc-chip ${motivoCancelamento === m ? 'ep-cnc-chip--sel' : ''}`}
+                        onClick={() => setMotivoCancelamento(motivoCancelamento === m ? '' : m)}
+                      >
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    className="ep-cnc-textarea"
+                    placeholder="Escreva o motivo ou escolha um acima"
+                    value={motivoCancelamento}
+                    onChange={e => setMotivoCancelamento(e.target.value)}
+                    rows={3}
+                  />
+
+                  {/* Toggle mostrar ao cliente */}
+                  <div className="ep-cnc-toggle-row">
+                    <div className="ep-cnc-toggle-info">
+                      <div className="ep-cnc-toggle-t">Mostrar ao cliente</div>
+                      <div className="ep-cnc-toggle-d">Escreva um motivo acima para poder mostrá-lo ao cliente.</div>
+                    </div>
+                    <button
+                      type="button"
+                      className={`ep-cnc-switch ${mostrarMotivoCliente ? 'ep-cnc-switch--on' : ''}`}
+                      onClick={() => motivoCancelamento.trim() && setMostrarMotivoCliente(v => !v)}
+                      disabled={!motivoCancelamento.trim()}
+                      aria-label="Mostrar motivo ao cliente"
+                    >
+                      <span className="ep-cnc-switch-dot" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Botões */}
+                <div className="ep-cnc-btns">
+                  <button
+                    className="ep-btn ep-btn--ghost"
+                    onClick={() => setCancelarAberto(false)}
+                    disabled={cancelando}
+                  >
+                    Voltar
+                  </button>
+                  <button
+                    className="ep-btn ep-cnc-btn-danger"
+                    onClick={handleConfirmarCancelamento}
+                    disabled={cancelando}
+                  >
+                    {cancelando ? 'Cancelando...' : 'Cancelar pedido'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        })(),
+        document.body
+      )}
 
       {/* ═══ TIMELINE SHEET (Fase 7) ═══ */}
       {timelineAberto && createPortal(
@@ -2164,6 +2347,224 @@ export default function EditarPedido() {
           color: #888780;
           margin: 0;
         }
+
+        /* ── FASE 8: CANCELAR PEDIDO SHEET ────────────────────────── */
+        .ep-cnc-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 110;
+          background: rgba(20, 15, 18, 0.5);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          animation: epFadeIn 0.18s ease-out;
+        }
+        .ep-cnc-sheet {
+          width: 100%;
+          max-width: 480px;
+          background: #fff;
+          border-radius: 20px 20px 0 0;
+          padding: 8px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+          max-height: 88vh;
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          animation: epSheetIn 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .ep-cnc-header {
+          margin-bottom: 12px;
+        }
+        .ep-cnc-title-wrap {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .ep-cnc-title-ic {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: #FCEBEB;
+          color: #B91C1C;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .ep-cnc-title {
+          font-size: 18px;
+          font-weight: 800;
+          color: #2C2C2A;
+          margin: 0;
+          letter-spacing: -0.01em;
+        }
+        .ep-cnc-aviso {
+          font-size: 13.5px;
+          color: #5F5E5A;
+          line-height: 1.5;
+          margin: 0 0 16px;
+        }
+        .ep-cnc-card {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px;
+          background: #FAF8F5;
+          border: 1px solid #F0EBED;
+          border-radius: 12px;
+          margin-bottom: 16px;
+        }
+        .ep-cnc-card-ic {
+          width: 42px;
+          height: 42px;
+          border-radius: 10px;
+          background: #F1EFE8;
+          color: #5F5E5A;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .ep-cnc-card-num {
+          font-size: 15px;
+          font-weight: 800;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+        }
+        .ep-cnc-card-sub {
+          font-size: 12.5px;
+          color: #888780;
+          margin-top: 4px;
+          font-weight: 600;
+        }
+
+        .ep-cnc-section {
+          background: #FAF8F5;
+          border: 1px solid #F0EBED;
+          border-radius: 12px;
+          padding: 14px;
+          margin-bottom: 16px;
+        }
+        .ep-cnc-section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+        }
+        .ep-cnc-section-title {
+          font-size: 13.5px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+        }
+        .ep-cnc-section-opt {
+          font-size: 12px;
+          color: #B4B2A9;
+          font-weight: 500;
+        }
+
+        .ep-cnc-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-bottom: 10px;
+        }
+        .ep-cnc-chip {
+          all: unset;
+          padding: 6px 12px;
+          border: 1px solid #E8E5DC;
+          border-radius: 999px;
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #5F5E5A;
+          cursor: pointer;
+          background: #fff;
+          transition: all 0.15s;
+        }
+        .ep-cnc-chip:hover { background: #F5F1F3; }
+        .ep-cnc-chip--sel {
+          background: #FCEBEB;
+          color: #B91C1C;
+          border-color: #F09595;
+        }
+
+        .ep-cnc-textarea {
+          width: 100%;
+          box-sizing: border-box;
+          padding: 10px 12px;
+          border: 1.5px solid #E8E5DC;
+          border-radius: 10px;
+          font-size: 13.5px;
+          color: #2C2C2A;
+          background: #fff;
+          font-family: var(--font-base) !important;
+          resize: vertical;
+          min-height: 68px;
+          outline: none;
+          transition: border-color 0.15s;
+        }
+        .ep-cnc-textarea:focus { border-color: #B91C1C; }
+        .ep-cnc-textarea::placeholder { color: #B4B2A9; }
+
+        .ep-cnc-toggle-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-top: 14px;
+          padding-top: 14px;
+          border-top: 1px solid #E8E5DC;
+        }
+        .ep-cnc-toggle-info { flex: 1; min-width: 0; }
+        .ep-cnc-toggle-t {
+          font-size: 13.5px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+        }
+        .ep-cnc-toggle-d {
+          font-size: 11.5px;
+          color: #888780;
+          font-weight: 500;
+          margin-top: 3px;
+          line-height: 1.35;
+        }
+        .ep-cnc-switch {
+          all: unset;
+          width: 42px;
+          height: 24px;
+          border-radius: 999px;
+          background: #E8E5DC;
+          position: relative;
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: background 0.2s;
+        }
+        .ep-cnc-switch:disabled { opacity: 0.5; cursor: not-allowed; }
+        .ep-cnc-switch-dot {
+          position: absolute;
+          top: 3px;
+          left: 3px;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #fff;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+          transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .ep-cnc-switch--on { background: #E85A8C; }
+        .ep-cnc-switch--on .ep-cnc-switch-dot { transform: translateX(18px); }
+
+        .ep-cnc-btns {
+          display: grid;
+          grid-template-columns: 1fr 1.4fr;
+          gap: 10px;
+        }
+        .ep-cnc-btn-danger {
+          background: #B91C1C;
+          color: #fff;
+        }
+        .ep-cnc-btn-danger:hover:not(:disabled) { background: #991B1B; }
 
         /* ── FASE 7: TIMELINE ─────────────────────────────────────── */
         .ep-tl-overlay {
