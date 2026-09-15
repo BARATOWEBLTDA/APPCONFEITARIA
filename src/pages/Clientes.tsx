@@ -29,6 +29,11 @@ interface Cliente {
   origem?: string;
   como_conheceu?: string;
   created_at: string;
+  // ── Métricas agregadas (calculadas em fetchClientes) ──
+  _totalPedidos?: number;
+  _totalGasto?: number;
+  _ticketMedio?: number;
+  _ultimaCompra?: string | null; // ISO
 }
 
 type FormMode = "rapido" | "completo";
@@ -110,6 +115,56 @@ function formatSince(created_at: string): string {
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yy = String(d.getFullYear()).slice(-2);
   return `Cliente desde ${dd}/${mm}/${yy}`;
+}
+
+// "Cliente há X" — tempo relativo compacto
+function formatClienteHa(created_at: string): string {
+  const d = new Date(created_at);
+  const diffMs = Date.now() - d.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays < 1) return "Cliente novo";
+  if (diffDays < 7) return `Cliente há ${diffDays} ${diffDays === 1 ? "dia" : "dias"}`;
+  if (diffDays < 30) {
+    const semanas = Math.floor(diffDays / 7);
+    return `Cliente há ${semanas} ${semanas === 1 ? "semana" : "semanas"}`;
+  }
+  if (diffDays < 365) {
+    const meses = Math.floor(diffDays / 30);
+    return `Cliente há ${meses} ${meses === 1 ? "mês" : "meses"}`;
+  }
+  const anos = Math.floor(diffDays / 365);
+  return `Cliente há ${anos} ${anos === 1 ? "ano" : "anos"}`;
+}
+
+// Última compra: "hoje", "ontem", "há X dias", ou data
+function formatUltimaCompra(isoStr?: string | null): string {
+  if (!isoStr) return "Sem pedidos";
+  const d = new Date(isoStr);
+  const diffMs = Date.now() - d.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return "hoje";
+  if (diffDays === 1) return "ontem";
+  if (diffDays < 7) return `há ${diffDays} dias`;
+  if (diffDays < 30) {
+    const semanas = Math.floor(diffDays / 7);
+    return `há ${semanas} ${semanas === 1 ? "semana" : "semanas"}`;
+  }
+  if (diffDays < 365) {
+    const meses = Math.floor(diffDays / 30);
+    return `há ${meses} ${meses === 1 ? "mês" : "meses"}`;
+  }
+  const anos = Math.floor(diffDays / 365);
+  return `há ${anos} ${anos === 1 ? "ano" : "anos"}`;
+}
+
+function formatMoneyCompacto(v?: number): string {
+  const n = v || 0;
+  if (n >= 1000) return `R$ ${(n / 1000).toFixed(1).replace(".", ",")}k`;
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function formatMoneyFull(v?: number): string {
+  return (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
@@ -216,8 +271,48 @@ export default function Clientes() {
 
   const fetchClientes = async (uid: string) => {
     setLoading(true);
-    const { data } = await supabase.from("clientes").select("*").eq("user_id", uid).order("nome");
-    if (data) setClientes(data);
+    // Busca clientes e pedidos em paralelo
+    const [{ data: cls }, { data: peds }] = await Promise.all([
+      supabase.from("clientes").select("*").eq("user_id", uid).order("nome"),
+      supabase.from("pedidos")
+        .select("cliente_id, valor_total, valor_recebido, data_entrega, created_at, status")
+        .eq("user_id", uid)
+    ]);
+
+    if (cls) {
+      // Agrupa métricas por cliente_id em memória (O(n) — 1 pass só)
+      type Agg = { total: number; totalValor: number; ultima: string | null };
+      const map = new Map<string, Agg>();
+      (peds || []).forEach((p: any) => {
+        if (!p.cliente_id) return;
+        if (p.status === "cancelado") return; // ignora cancelados
+        const agg = map.get(p.cliente_id) || { total: 0, totalValor: 0, ultima: null };
+        agg.total += 1;
+        agg.totalValor += Number(p.valor_total) || 0;
+        // Última compra = data_entrega mais recente (ou created_at se não tiver)
+        const dataRef = p.data_entrega || p.created_at;
+        if (dataRef && (!agg.ultima || dataRef > agg.ultima)) {
+          agg.ultima = dataRef;
+        }
+        map.set(p.cliente_id, agg);
+      });
+
+      // Enriquece cada cliente com as métricas
+      const enriquecidos: Cliente[] = cls.map((c: Cliente) => {
+        const a = map.get(c.id);
+        if (!a) {
+          return { ...c, _totalPedidos: 0, _totalGasto: 0, _ticketMedio: 0, _ultimaCompra: null };
+        }
+        return {
+          ...c,
+          _totalPedidos: a.total,
+          _totalGasto: a.totalValor,
+          _ticketMedio: a.total > 0 ? a.totalValor / a.total : 0,
+          _ultimaCompra: a.ultima,
+        };
+      });
+      setClientes(enriquecidos);
+    }
     setLoading(false);
   };
 
@@ -1535,18 +1630,58 @@ export default function Clientes() {
           </div>
         ) : (
           <div className="mob-list">
-            {filtered.map(c => (
-              <div key={c.id} className="mob-card" onClick={() => navigate(`/clientes/${c.id}`)}>
-                <div className="mob-avatar">
-                  {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
+            {filtered.map(c => {
+              const totalPed = c._totalPedidos || 0;
+              const totalGasto = c._totalGasto || 0;
+              const ticketMedio = c._ticketMedio || 0;
+              const ultimaCompra = c._ultimaCompra;
+              return (
+                <div key={c.id} className="mob-card" onClick={() => navigate(`/clientes/${c.id}`)}>
+                  <div className="mob-card-header">
+                    <div className="mob-avatar">
+                      {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
+                    </div>
+                    <div className="mob-info">
+                      <p className="mob-nome">{c.nome}</p>
+                      <p className="mob-since">{formatClienteHa(c.created_at)}</p>
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" style={{flexShrink:0}}><polyline points="9 18 15 12 9 6"/></svg>
+                  </div>
+
+                  {totalPed > 0 && (
+                    <>
+                      <div className="mob-card-divider" />
+                      <div className="mob-card-metricas">
+                        <div className="mob-metrica">
+                          <div className="mob-metrica-label">Pedidos</div>
+                          <div className="mob-metrica-valor">{totalPed}</div>
+                        </div>
+                        <div className="mob-metrica">
+                          <div className="mob-metrica-label">Total gasto</div>
+                          <div className="mob-metrica-valor">{formatMoneyCompacto(totalGasto)}</div>
+                        </div>
+                      </div>
+                      <div className="mob-card-inline">
+                        <span className="mob-inline-l">Ticket médio:</span>
+                        <strong>{formatMoneyFull(ticketMedio)}</strong>
+                      </div>
+                      {ultimaCompra && (
+                        <div className="mob-card-inline">
+                          <span className="mob-inline-l">⏱ Última compra:</span>
+                          <strong>{formatUltimaCompra(ultimaCompra)}</strong>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {totalPed === 0 && (
+                    <>
+                      <div className="mob-card-divider" />
+                      <div className="mob-card-empty">Nenhum pedido ainda</div>
+                    </>
+                  )}
                 </div>
-                <div className="mob-info">
-                  <p className="mob-nome">{c.nome}</p>
-                  <p className="mob-since">{formatSince(c.created_at)}</p>
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -1660,18 +1795,57 @@ export default function Clientes() {
               <div className="cli-empty"><p>Nenhum cliente encontrado</p></div>
             ) : (
               <div className="cli-list">
-                {filtered.map(c => (
-                  <div key={c.id} className="cli-card" onClick={() => navigate(`/clientes/${c.id}`)} style={{cursor:"pointer"}}>
-                    <div className="cli-avatar">
-                      {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
+                {filtered.map(c => {
+                  const totalPed = c._totalPedidos || 0;
+                  const totalGasto = c._totalGasto || 0;
+                  const ticketMedio = c._ticketMedio || 0;
+                  const ultimaCompra = c._ultimaCompra;
+                  return (
+                    <div key={c.id} className="cli-card" onClick={() => navigate(`/clientes/${c.id}`)} style={{cursor:"pointer"}}>
+                      <div className="cli-card-header">
+                        <div className="cli-avatar">
+                          {c.foto_url ? <img src={c.foto_url} alt={c.nome} /> : <span>{c.nome.charAt(0).toUpperCase()}</span>}
+                        </div>
+                        <div className="cli-info">
+                          <p className="cli-nome">{c.nome}</p>
+                          <p className="cli-since">{formatClienteHa(c.created_at)}</p>
+                        </div>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" style={{flexShrink: 0}}><polyline points="9 18 15 12 9 6"/></svg>
+                      </div>
+
+                      {totalPed > 0 ? (
+                        <>
+                          <div className="cli-card-divider" />
+                          <div className="cli-card-metricas">
+                            <div className="cli-metrica">
+                              <div className="cli-metrica-label">Pedidos</div>
+                              <div className="cli-metrica-valor">{totalPed}</div>
+                            </div>
+                            <div className="cli-metrica">
+                              <div className="cli-metrica-label">Total gasto</div>
+                              <div className="cli-metrica-valor">{formatMoneyCompacto(totalGasto)}</div>
+                            </div>
+                          </div>
+                          <div className="cli-card-inline">
+                            <span className="cli-inline-l">Ticket médio:</span>
+                            <strong>{formatMoneyFull(ticketMedio)}</strong>
+                          </div>
+                          {ultimaCompra && (
+                            <div className="cli-card-inline">
+                              <span className="cli-inline-l">⏱ Última compra:</span>
+                              <strong>{formatUltimaCompra(ultimaCompra)}</strong>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <div className="cli-card-divider" />
+                          <div className="cli-card-empty">Nenhum pedido ainda</div>
+                        </>
+                      )}
                     </div>
-                    <div className="cli-info">
-                      <p className="cli-nome">{c.nome}</p>
-                      <p className="cli-since">{formatSince(c.created_at)}</p>
-                    </div>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" style={{flexShrink: 0}}><polyline points="9 18 15 12 9 6"/></svg>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1909,14 +2083,26 @@ export default function Clientes() {
         .mob-search::placeholder { color: var(--text-muted); }
 
         .mob-empty   { text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-size: var(--font-button); }
-        .mob-list    { display: flex; flex-direction: column; gap: 0.5rem; padding-bottom: 7rem; }
+        .mob-list    { display: flex; flex-direction: column; gap: 0.6rem; padding-bottom: 7rem; }
 
-        .mob-card    { display: flex; align-items: center; gap: 0.85rem; background: var(--bg-card); border-radius: var(--radius-lg); padding: 0.75rem 1rem; border: 1px solid var(--border); cursor: pointer; }
+        .mob-card    { display: flex; flex-direction: column; background: var(--bg-card); border-radius: var(--radius-lg); padding: 0.85rem 1rem; border: 1px solid var(--border); cursor: pointer; transition: box-shadow 0.15s, border-color 0.15s; }
         .mob-card:active { background: var(--bg-body); }
+        .mob-card:hover { border-color: var(--primary-light); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .mob-card-header { display: flex; align-items: center; gap: 0.85rem; }
         .mob-avatar  { width: 44px; height: 44px; border-radius: var(--radius-md); flex-shrink: 0; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: var(--font-modal-title); font-weight: var(--fw-bold); color: var(--primary); overflow: hidden; }
         .mob-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .mob-info    { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
         .mob-nome    { font-size: var(--font-button); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .mob-card-divider { height: 1px; background: var(--border); margin: 0.7rem 0; }
+        .mob-card-metricas { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .mob-metrica { background: var(--bg-body); border-radius: 10px; padding: 0.55rem 0.7rem; }
+        .mob-metrica-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .mob-metrica-valor { font-size: 1.05rem; font-weight: 800; color: var(--text-title); letter-spacing: -0.01em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+        .mob-card-inline { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-secondary); padding: 0.15rem 0; }
+        .mob-card-inline strong { color: var(--text-title); font-weight: 700; font-variant-numeric: tabular-nums; }
+        .mob-inline-l { color: var(--text-muted); font-weight: 500; }
+        .mob-card-empty { font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 0.5rem 0; font-style: italic; }
         .mob-whatsapp { display: inline-flex; align-items: center; gap: 0.3rem; font-size: var(--font-helper); color: #25D366; font-weight: var(--fw-medium); text-decoration: none; }
         .mob-email   { font-size: var(--font-helper); color: var(--text-muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .mob-sem-tel { font-size: var(--font-helper); color: var(--text-muted); margin: 0; }
@@ -1942,12 +2128,23 @@ export default function Clientes() {
         .cli-empty   { text-align: center; padding: 3rem; color: var(--text-muted); }
         .cli-list    { display: flex; flex-direction: column; gap: 0.6rem; }
 
-        .cli-card    { display: flex; align-items: center; gap: 0.9rem; background: var(--bg-card); border-radius: var(--radius-lg); padding: 0.75rem 1rem; border: 1px solid var(--border); transition: box-shadow 0.2s; }
-        .cli-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .cli-card    { display: flex; flex-direction: column; background: var(--bg-card); border-radius: var(--radius-lg); padding: 0.85rem 1rem; border: 1px solid var(--border); transition: box-shadow 0.2s, border-color 0.15s; }
+        .cli-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); border-color: var(--primary-light); }
+        .cli-card-header { display: flex; align-items: center; gap: 0.9rem; }
         .cli-avatar  { width: 48px; height: 48px; border-radius: var(--radius-md); flex-shrink: 0; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: var(--font-modal-title); font-weight: var(--fw-bold); color: var(--primary); overflow: hidden; }
         .cli-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .cli-info    { flex: 1; min-width: 0; }
         .cli-nome    { font-size: var(--font-input); font-weight: var(--fw-semibold); color: var(--text-title); margin: 0; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .cli-card-divider { height: 1px; background: var(--border); margin: 0.75rem 0; }
+        .cli-card-metricas { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; margin-bottom: 0.5rem; }
+        .cli-metrica { background: var(--bg-body); border-radius: 10px; padding: 0.55rem 0.75rem; }
+        .cli-metrica-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+        .cli-metrica-valor { font-size: 1.1rem; font-weight: 800; color: var(--text-title); letter-spacing: -0.01em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+        .cli-card-inline { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-secondary); padding: 0.15rem 0; }
+        .cli-card-inline strong { color: var(--text-title); font-weight: 700; font-variant-numeric: tabular-nums; }
+        .cli-inline-l { color: var(--text-muted); font-weight: 500; }
+        .cli-card-empty { font-size: 0.82rem; color: var(--text-muted); text-align: center; padding: 0.5rem 0; font-style: italic; }
         .cli-whatsapp-link { display: inline-flex; align-items: center; gap: 0.3rem; font-size: var(--font-helper); color: #25D366; font-weight: var(--fw-medium); text-decoration: none; }
         .cli-whatsapp-link:hover { text-decoration: underline; }
 
