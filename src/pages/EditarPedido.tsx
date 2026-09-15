@@ -182,6 +182,7 @@ export default function EditarPedido() {
   const [pedido, setPedido] = useState<Pedido | null>(null)
   const [carregando, setCarregando] = useState(true)
   const [salvando, setSalvando] = useState(false)
+  const [salvouOk, setSalvouOk] = useState(false)
   const [tab, setTab] = useState<Tab>('cliente')
 
   // ── State editável (populated no load) ────────────────────────────────
@@ -344,9 +345,112 @@ export default function EditarPedido() {
 
   // ── Handler de salvar (Fase 6) ────────────────────────────────────────
   const handleSalvar = async () => {
+    if (salvando) return
     setSalvando(true)
-    alert('Salvar alterações — Fase 6')
-    setSalvando(false)
+
+    try {
+      // Validação básica
+      if (itens.length === 0) {
+        alert('Adicione pelo menos um item ao pedido antes de salvar.')
+        setSalvando(false)
+        return
+      }
+      if (!dataEntrega) {
+        alert('Informe a data de entrega antes de salvar.')
+        setSalvando(false)
+        return
+      }
+
+      // Derivar status_pagamento e valor_recebido a partir da situação escolhida
+      let statusPag: string
+      let valorRecebido: number
+      if (situacaoPag === 'fiado') {
+        statusPag = 'pendente'
+        valorRecebido = 0
+      } else if (situacaoPag === 'parcial') {
+        statusPag = 'parcial'
+        valorRecebido = Math.min(valorParcial, total)
+      } else {
+        statusPag = 'pago'
+        valorRecebido = total
+      }
+
+      // Recalcular valor dos produtos (soma bruta dos itens)
+      const valorProdutos = itens.reduce((acc, it) => acc + (it.valor_unitario || 0) * (it.quantidade || 1), 0)
+
+      // ── 1) UPDATE do pedido ─────────────────────────────────────────
+      const { error: errPedido } = await supabase
+        .from('pedidos')
+        .update({
+          cliente_id: clienteId,
+          cliente_nome: clienteNome,
+          cliente_telefone: clienteTelefone,
+          status: statusPedido,
+          status_pagamento: statusPag,
+          valor_recebido: valorRecebido,
+          valor_total: total,
+          valor_produtos: valorProdutos,
+          desconto: desconto,
+          taxa_entrega: tipoEntrega === 'entrega' ? taxaEntrega : 0,
+          forma_pagamento: formaPagamento,
+          tipo_entrega: tipoEntrega,
+          data_entrega: dataEntrega,
+          horario_entrega: horarioEntrega || null,
+          endereco_rua: tipoEntrega === 'entrega' ? enderecoRua : '',
+          endereco_numero: tipoEntrega === 'entrega' ? enderecoNumero : '',
+          endereco_bairro: tipoEntrega === 'entrega' ? enderecoBairro : '',
+          endereco_cidade: tipoEntrega === 'entrega' ? enderecoCidade : '',
+          endereco_complemento: tipoEntrega === 'entrega' ? enderecoComplemento : '',
+          data_prevista_pagamento: situacaoPag === 'fiado' ? (dataPrevistaPagamento || null) : null,
+        })
+        .eq('id', pedido!.id)
+
+      if (errPedido) {
+        console.error('Erro ao atualizar pedido:', errPedido)
+        alert('Não foi possível salvar as alterações do pedido: ' + errPedido.message)
+        setSalvando(false)
+        return
+      }
+
+      // ── 2) Substituir itens: DELETE tudo → INSERT tudo ──────────────
+      const { error: errDel } = await supabase.from('pedido_itens').delete().eq('pedido_id', pedido!.id)
+      if (errDel) {
+        console.error('Erro ao remover itens antigos:', errDel)
+        alert('O pedido foi salvo, mas houve problema ao atualizar os itens: ' + errDel.message)
+        setSalvando(false)
+        return
+      }
+
+      if (itens.length > 0) {
+        const itensInsert = itens.map(it => ({
+          pedido_id: pedido!.id,
+          produto_id: it.produto_id || null,
+          nome_produto: it.nome_produto,
+          quantidade: it.quantidade,
+          valor_unitario: it.valor_unitario,
+          observacoes: it.observacoes || '',
+          imagem_url: it.imagem_url || null,
+        }))
+        const { error: errIns } = await supabase.from('pedido_itens').insert(itensInsert)
+        if (errIns) {
+          console.error('Erro ao inserir itens:', errIns)
+          alert('O pedido foi salvo, mas houve problema ao gravar os itens: ' + errIns.message)
+          setSalvando(false)
+          return
+        }
+      }
+
+      // Sucesso
+      setSalvouOk(true)
+      // Volta pra listagem depois de mostrar o feedback
+      setTimeout(() => {
+        navigate('/pedidos')
+      }, 700)
+    } catch (err: any) {
+      console.error('Erro inesperado ao salvar:', err)
+      alert('Erro inesperado ao salvar: ' + (err?.message || 'desconhecido'))
+      setSalvando(false)
+    }
   }
 
   // ── Handlers de itens ─────────────────────────────────────────────────
@@ -1005,11 +1109,20 @@ export default function EditarPedido() {
           <span className="ep-footer-total-val">{formatMoney(total)}</span>
         </div>
         <div className="ep-footer-btns">
-          <button className="ep-btn ep-btn--ghost" onClick={() => navigate('/pedidos')} disabled={salvando}>
+          <button className="ep-btn ep-btn--ghost" onClick={() => navigate('/pedidos')} disabled={salvando || salvouOk}>
             Cancelar
           </button>
-          <button className="ep-btn ep-btn--primary" onClick={handleSalvar} disabled={salvando}>
-            {salvando ? 'Salvando...' : 'Salvar Alterações'}
+          <button
+            className={`ep-btn ${salvouOk ? 'ep-btn--success' : 'ep-btn--primary'}`}
+            onClick={handleSalvar}
+            disabled={salvando || salvouOk}
+          >
+            {salvouOk ? (
+              <span className="ep-btn-ok">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Salvo!
+              </span>
+            ) : salvando ? 'Salvando...' : 'Salvar Alterações'}
           </button>
         </div>
       </div>
@@ -1647,6 +1760,18 @@ export default function EditarPedido() {
         .ep-btn--ghost:hover:not(:disabled) { background: #E8E5DC; }
         .ep-btn--primary { background: #E85A8C; color: #fff; }
         .ep-btn--primary:hover:not(:disabled) { background: #C33A6E; }
+        .ep-btn--success {
+          background: #0F6E56;
+          color: #fff;
+          opacity: 1 !important;
+          cursor: default;
+        }
+        .ep-btn-ok {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          justify-content: center;
+        }
 
         /* ── MODAL CLIENTE ─────────────────────────────────────────── */
         .ep-modal-overlay {
