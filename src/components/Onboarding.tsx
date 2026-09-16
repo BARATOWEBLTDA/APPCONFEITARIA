@@ -1708,6 +1708,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
         /* Resultado */
         .ob-prec-resultado {
+          position: relative;
           margin-top: 0.55rem;
           padding: 0.65rem 0.75rem;
           border-radius: 12px;
@@ -1768,11 +1769,25 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
         .ob-prec-resultado--prejuizo .ob-prec-resultado-margem { color: #dc2626; }
         .ob-prec-resultado--lucro .ob-prec-resultado-margem { color: #15803d; }
-        .ob-prec-resultado-ideal {
-          font-size: 0.7rem;
-          font-weight: 600;
-          color: #6E3548;
-          margin-top: 1px;
+        .ob-prec-resultado-flag {
+          position: absolute;
+          top: -2px;
+          right: 14px;
+          background: #15803d;
+          color: #fff;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          padding: 5px 8px 10px;
+          clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+          filter: drop-shadow(0 2px 3px rgba(21, 128, 61, 0.25));
+          animation: obFlagDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+          transform-origin: top center;
+        }
+        @keyframes obFlagDown {
+          from { opacity: 0; transform: translateY(-8px) scale(0.7); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         /* ── Desktop: aumenta tipografia e centraliza melhor ── */
@@ -3210,6 +3225,7 @@ function Slide4Precificacao({ onReady }: { onReady: () => void }) {
         {/* Resultado */}
         {mostrandoResultado && (
           <div className={`ob-prec-resultado ${isPrejuizo ? "ob-prec-resultado--prejuizo" : "ob-prec-resultado--lucro"}`} key={rodadaIdx}>
+            {!isPrejuizo && <span className="ob-prec-resultado-flag">Ideal</span>}
             <span className="ob-prec-resultado-label">
               {isPrejuizo ? "Margem apertada" : "Lucro por caixa"}
             </span>
@@ -3222,7 +3238,6 @@ function Slide4Precificacao({ onReady }: { onReady: () => void }) {
                 {margem.toFixed(0)}% margem
               </span>
             </div>
-            {!isPrejuizo && <span className="ob-prec-resultado-ideal">Margem ideal!</span>}
           </div>
         )}
       </div>
