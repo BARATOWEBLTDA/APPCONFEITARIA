@@ -221,6 +221,7 @@ export default function Configuracoes() {
   const [senhaMsg, setSenhaMsg] = useState("");
   const [savingSenha, setSavingSenha] = useState(false);
   const [showExcluir, setShowExcluir] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [excluirConfirm, setExcluirConfirm] = useState("");
   const [copied, setCopied] = useState(false);
   const [ogPreview, setOgPreview] = useState<string | null>(null);
@@ -319,173 +320,200 @@ export default function Configuracoes() {
 
       {/* ─────────────── MOBILE ─────────────── */}
       <div className="cfg-mobile">
-        <div className="cfg-hero">
-          <div className="cfg-hero-left">
-            <p className="cfg-hero-saudacao">{getSaudacao()}, {nomeSalvo ? nomeSalvo.split(" ")[0] : "bem-vinda"}!</p>
-            {plano === "pro" && <span className="cfg-badge cfg-badge-pro">✨ Acesso PRO ativo</span>}
-            {plano === "trial" && <span className="cfg-badge cfg-badge-trial">Plano Grátis</span>}
-            {plano === "expirado" && <span className="cfg-badge cfg-badge-expirado">⚠️ Período expirado · <u style={{cursor:"pointer"}} onClick={() => navigate("/assinar")}>Assinar agora</u></span>}
-            <span style={{ fontSize: "0.6rem", color: "rgba(255,255,255,0.5)", marginTop: "2px" }}>Doonly v1.0.0</span>
+        {/* ── HERO USER ────────────────────────────────────── */}
+        <div className="cfgp-hero">
+          <div className="cfgp-hero-avatar" onClick={() => !uploading && fileRef.current?.click()}>
+            {preview
+              ? <img src={preview} alt="Perfil" />
+              : <span className="cfgp-hero-inicial">{(form.nome || "?").trim().charAt(0).toUpperCase()}</span>
+            }
+            <div className="cfgp-hero-cam">
+              {uploading
+                ? <span className="cfg-spinner-sm" />
+                : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>}
+            </div>
           </div>
-          <div className="cfg-hero-avatar" onClick={() => !uploading && fileRef.current?.click()}>
-            {preview ? <img src={preview} alt="foto" className="cfg-hero-img" /> : <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}
-            <div className="cfg-hero-cam">{uploading ? <span className="cfg-spinner-sm" /> : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>}</div>
+          <div className="cfgp-hero-info">
+            <div className="cfgp-hero-nome">{form.nome || "Bem-vinda"}</div>
+            <div className="cfgp-hero-email">{userEmail}</div>
           </div>
         </div>
 
-        <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
+        {/* ── CARD ASSINATURA ──────────────────────────────── */}
+        <div className="cfgp-card cfgp-sub">
+          <div className="cfgp-sub-top">
+            <div>
+              <div className="cfgp-sub-label">Sua assinatura</div>
+              <div className="cfgp-sub-plan">
+                {plano === "pro" && <span className="cfgp-sub-plan-name">Plano PRO</span>}
+                {plano === "trial" && <span className="cfgp-sub-plan-name">Plano Grátis</span>}
+                {plano === "expirado" && <span className="cfgp-sub-plan-name">Plano expirado</span>}
+                {plano === "pro" && <span className="cfgp-sub-badge cfgp-sub-badge--pro">ATIVO</span>}
+                {plano === "trial" && <span className="cfgp-sub-badge cfgp-sub-badge--trial">TRIAL</span>}
+                {plano === "expirado" && <span className="cfgp-sub-badge cfgp-sub-badge--exp">EXPIRADO</span>}
+              </div>
+            </div>
+            <span className="cfgp-sub-crown"><img src="/coroa.png" alt="" /></span>
+          </div>
 
-        {/* Atalho para Configurações da Loja */}
-        <button className="cfg-loja-shortcut" onClick={() => navigate("/cardapio-config")}>
-          <span className="cfg-loja-shortcut-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          </span>
-          <span className="cfg-loja-shortcut-info">
-            <span className="cfg-loja-shortcut-title">Configurações da Loja</span>
-            <span className="cfg-loja-shortcut-sub">Nome, foto, endereço, horários e entrega</span>
-          </span>
-          <svg className="cfg-loja-shortcut-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
+          {plano === "trial" && (
+            <div className="cfgp-sub-info">
+              Aproveite todas as funcionalidades no seu período grátis. Ative o PRO pra continuar sem interrupções.
+            </div>
+          )}
+          {plano === "expirado" && (
+            <div className="cfgp-sub-info cfgp-sub-info--danger">
+              Seu período grátis acabou. Ative o PRO pra reativar todas as funcionalidades.
+            </div>
+          )}
+          {plano === "pro" && (
+            <div className="cfgp-sub-info">
+              Você tem acesso a todas as funcionalidades. Obrigada por apoiar o Doonly! 💖
+            </div>
+          )}
 
-        {/* Minha Conta */}
-        <div className="cfg-accordion">
-          <button className="cfg-accordion-header" onClick={() => toggleSection("dados")}>
-            <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-            <span className="cfg-accordion-title">Configurações Pessoais</span>
-            <svg className={`cfg-accordion-chevron${openSection === "dados" ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          {openSection === "dados" && (
-            <div className="cfg-accordion-body">
+          {plano !== "pro" && (
+            <button className="cfgp-sub-cta" onClick={() => navigate("/assinar")}>
+              <img src="/coroa.png" alt="" />
+              <span>Ativar PRO por R$ 29,90/mês</span>
+            </button>
+          )}
+          {plano === "pro" && (
+            <button className="cfgp-sub-cta cfgp-sub-cta--manage" onClick={() => navigate("/assinar")}>
+              Gerenciar assinatura
+            </button>
+          )}
+        </div>
+
+        {/* ── DADOS PESSOAIS ──────────────────────────────── */}
+        <div className="cfgp-card">
+          <div className="cfgp-block-hdr">
+            <span>Dados pessoais</span>
+            <button
+              className="cfgp-edit-btn"
+              onClick={() => setEditMode(m => !m)}
+              type="button"
+            >
+              {editMode ? "Cancelar" : "Editar"}
+            </button>
+          </div>
+
+          {editMode ? (
+            <div className="cfgp-fields">
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} placeholder="Seu nome" value={form.nome} onChange={(e: any) => setForm({...form, nome: e.target.value})} />
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.73a16 16 0 0 0 6.29 6.29l1.62-1.62a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>} placeholder="WhatsApp" value={form.telefone} onChange={(e: any) => setForm({...form, telefone: formatPhone(e.target.value)})} type="tel" />
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>} placeholder="E-mail" value={userEmail} onChange={() => {}} disabled={true} />
               {error && <div className="cfg-toast cfg-toast-error">{error}</div>}
               {success && <div className="cfg-toast cfg-toast-success">✓ Salvo com sucesso!</div>}
-              <button className="cfg-btn-save" onClick={handleSave} disabled={saving || uploading}>
+              <button className="cfg-btn-save" onClick={async () => { await handleSave(); setEditMode(false); }} disabled={saving || uploading}>
                 {saving ? <span className="cfg-spinner" /> : "Salvar alterações"}
               </button>
             </div>
-          )}
-        </div>
-
-        {/* Avançado */}
-        <div className="cfg-accordion">
-          <button className="cfg-accordion-header" onClick={() => toggleSection("avancado")}>
-            <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
-            <span className="cfg-accordion-title">Avançado</span>
-            <svg className={`cfg-accordion-chevron${openSection === "avancado" ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          {openSection === "avancado" && (
-            <div className="cfg-accordion-body" style={{ gap: "0.5rem" }}>
-              {/* Alterar Senha */}
-              <button className="cfg-adv-item" onClick={() => setShowAlterarSenha(v => !v)}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                Alterar senha
-              </button>
-              {showAlterarSenha && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", padding: "0.5rem 0" }}>
-                  <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Nova senha" value={novaSenha} onChange={(e: any) => setNovaSenha(e.target.value)} type="password" />
-                  <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Confirmar nova senha" value={confirmSenha} onChange={(e: any) => setConfirmSenha(e.target.value)} type="password" />
-                  {senhaMsg && <p style={{ fontSize: "0.82rem", color: senhaMsg.startsWith("✓") ? "var(--success)" : "var(--error)", margin: 0 }}>{senhaMsg}</p>}
-                  <button className="cfg-btn-save" onClick={handleAlterarSenha} disabled={savingSenha}>
-                    {savingSenha ? <span className="cfg-spinner" /> : "Alterar senha"}
-                  </button>
-                </div>
-              )}
-
-              {/* Links */}
-              <button className="cfg-adv-item" onClick={() => navigate("/privacidade")}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                Política de privacidade
-              </button>
-              <button className="cfg-adv-item" onClick={() => navigate("/termos")}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                Termos de uso
-              </button>
-
-              {/* Ver tutorial novamente */}
-              <button
-                className="cfg-adv-item"
-                onClick={async () => {
-                  try {
-                    localStorage.removeItem("doonly_tutorial_visto");
-                    localStorage.removeItem("doonly_tutorial_auto_aberto");
-                    localStorage.removeItem("doonly_tour_inicio_visto");
-                  } catch {}
-                  // Reseta também no banco (cross-device). Silencioso se coluna não existir.
-                  try {
-                    const { data: userRes } = await supabase.auth.getUser();
-                    if (userRes?.user?.id) {
-                      await supabase
-                        .from("profiles")
-                        .update({ tutorial_visto: false, tour_visto: false })
-                        .eq("id", userRes.user.id);
-                    }
-                  } catch {}
-                  window.location.href = "/inicio";
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                Rever tutorial de boas-vindas
-              </button>
-
-              {/* Excluir Conta */}
-              <div style={{ borderTop: "1px solid var(--border)", marginTop: "0.5rem", paddingTop: "0.75rem" }}>
-                <button className="cfg-adv-item cfg-adv-item--danger" onClick={() => setShowExcluir(v => !v)}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                  Excluir conta
-                </button>
-                {showExcluir && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", padding: "0.5rem 0" }}>
-                    <p style={{ fontSize: "0.82rem", color: "var(--text-secondary)", margin: 0 }}>Esta ação é irreversível. Todos os seus dados serão removidos.</p>
-                    <p style={{ fontSize: "0.82rem", color: "var(--text-primary)", margin: 0 }}>Digite <strong>EXCLUIR</strong> para confirmar:</p>
-                    <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>} placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={(e: any) => setExcluirConfirm(e.target.value)} />
-                    <button onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"} style={{ padding: "0.75rem", background: excluirConfirm === "EXCLUIR" ? "var(--error)" : "var(--bg-body)", color: excluirConfirm === "EXCLUIR" ? "var(--text-inverse)" : "var(--text-muted)", border: "none", borderRadius: "12px", fontFamily: "Geist, sans-serif", fontSize: "0.88rem", fontWeight: 700, cursor: excluirConfirm === "EXCLUIR" ? "pointer" : "not-allowed" }}>
-                      Excluir minha conta
-                    </button>
-                  </div>
-                )}
+          ) : (
+            <div className="cfgp-rows">
+              <div className="cfgp-row">
+                <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Nome</span>
+                <span className="cfgp-row-v">{form.nome || "—"}</span>
+              </div>
+              <div className="cfgp-row">
+                <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.73a16 16 0 0 0 6.29 6.29l1.62-1.62a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>WhatsApp</span>
+                <span className="cfgp-row-v">{form.telefone || "—"}</span>
+              </div>
+              <div className="cfgp-row cfgp-row--last">
+                <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>E-mail</span>
+                <span className="cfgp-row-v cfgp-row-v--muted">{userEmail}</span>
               </div>
             </div>
           )}
         </div>
 
-        {/* ── Notificações (mobile, accordion colapsável) ── */}
-        <div className="cfg-accordion">
-          <button className="cfg-accordion-header" onClick={() => toggleSection("notificacoes")}>
-            <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
-            <span className="cfg-accordion-title">Notificações</span>
-            <svg className={`cfg-accordion-chevron${openSection === "notificacoes" ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
+        {/* ── SEGURANÇA ───────────────────────────────────── */}
+        <div className="cfgp-card">
+          <div className="cfgp-block-hdr"><span>Segurança</span></div>
+          <button className="cfgp-row-btn" onClick={() => setShowAlterarSenha(s => !s)}>
+            <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Alterar senha</span>
+            <svg className={showAlterarSenha ? "cfgp-chevron open" : "cfgp-chevron"} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
           </button>
-          {openSection === "notificacoes" && (
-            <div className="cfg-accordion-body">
+          {showAlterarSenha && (
+            <div className="cfgp-fields" style={{ paddingTop: 0 }}>
+              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Nova senha" value={novaSenha} onChange={(e: any) => setNovaSenha(e.target.value)} type="password" />
+              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Confirmar nova senha" value={confirmSenha} onChange={(e: any) => setConfirmSenha(e.target.value)} type="password" />
+              {senhaMsg && <div className={`cfg-toast ${senhaMsg.includes("sucesso") ? "cfg-toast-success" : "cfg-toast-error"}`}>{senhaMsg}</div>}
+              <button className="cfg-btn-save" onClick={handleAlterarSenha}>Alterar senha</button>
+            </div>
+          )}
+        </div>
+
+        {/* ── PREFERÊNCIAS ────────────────────────────────── */}
+        <div className="cfgp-card">
+          <div className="cfgp-block-hdr"><span>Preferências</span></div>
+          <div className="cfgp-rows">
+            <div className="cfgp-row">
+              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notificações push</span>
               <PushToggle />
+            </div>
+            <div className="cfgp-row cfgp-row--last">
+              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>Sons do app</span>
               <SomToggle />
-              {([
-                { key: "receitas" as keyof typeof notifs, label: "Novas receitas" },
-                { key: "comunidade" as keyof typeof notifs, label: "Comunidade" },
-                { key: "atualizacoes" as keyof typeof notifs, label: "Atualizações do app" },
-              ]).map(item => (
-                <div key={item.key} className="cfg-notif-row">
-                  <p className="cfg-notif-label" style={{ color: notifDesativar ? "var(--border)" : undefined }}>{item.label}</p>
-                  <label className="toggle">
-                    <input type="checkbox" checked={notifs[item.key]} disabled={notifDesativar} onChange={e => setNotifs(n => ({ ...n, [item.key]: e.target.checked }))} />
-                    <span className="toggle-slider" style={{ opacity: notifDesativar ? 0.4 : 1 }} />
-                  </label>
-                </div>
-              ))}
-              <div className="cfg-notif-row" style={{ paddingTop: '0.5rem', borderTop: '1px solid var(--border)' }}>
-                <p className="cfg-notif-label" style={{ color: 'var(--text-muted)', fontSize: '0.82rem' }}>Desativar todas</p>
-                <label className="toggle">
-                  <input type="checkbox" checked={notifDesativar} onChange={e => toggleNotifDesativar(e.target.checked)} />
-                  <span className="toggle-slider" />
-                </label>
-              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── SUPORTE ─────────────────────────────────────── */}
+        <div className="cfgp-card">
+          <div className="cfgp-block-hdr"><span>Suporte</span></div>
+          <div className="cfgp-rows">
+            <button className="cfgp-row cfgp-row-btn" onClick={() => alert("🚀 Central de ajuda em breve!")}>
+              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Central de ajuda</span>
+              <svg className="cfgp-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button className="cfgp-row cfgp-row-btn" onClick={async () => {
+              try {
+                localStorage.removeItem("doonly_tutorial_visto");
+                localStorage.removeItem("doonly_tutorial_auto_aberto");
+                localStorage.removeItem("doonly_tour_inicio_visto");
+              } catch {}
+              try {
+                const { data: userRes } = await supabase.auth.getUser();
+                if (userRes?.user?.id) {
+                  await supabase.from("profiles").update({ tutorial_visto: false, tour_visto: false }).eq("id", userRes.user.id);
+                }
+              } catch {}
+              window.location.href = "/inicio";
+            }}>
+              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Rever tutorial</span>
+              <svg className="cfgp-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button className="cfgp-row cfgp-row-btn cfgp-row--last" onClick={() => window.open("/termos", "_blank")}>
+              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Termos e privacidade</span>
+              <svg className="cfgp-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        {/* ── ZONA DE PERIGO ──────────────────────────────── */}
+        <div className="cfgp-card cfgp-danger">
+          <div className="cfgp-block-hdr cfgp-block-hdr--danger"><span>Zona de perigo</span></div>
+          <div className="cfgp-rows">
+            <button className="cfgp-row cfgp-row-btn cfgp-danger-btn" onClick={handleLogout}>
+              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair da conta</span>
+              <svg className="cfgp-chevron cfgp-chevron--danger" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+            <button className="cfgp-row cfgp-row-btn cfgp-danger-btn cfgp-row--last" onClick={() => setShowExcluir(s => !s)}>
+              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Excluir minha conta</span>
+              <svg className="cfgp-chevron cfgp-chevron--danger" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+          {showExcluir && (
+            <div className="cfgp-fields" style={{ paddingTop: 8 }}>
+              <p style={{ fontSize: 12, color: "var(--error)", margin: "0 0 8px" }}>⚠️ Esta ação é permanente. Digite <b>EXCLUIR</b> para confirmar.</p>
+              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>} placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={(e: any) => setExcluirConfirm(e.target.value)} />
+              <button className="cfg-btn-save" style={{ background: "var(--error)" }} onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"}>Excluir permanentemente</button>
             </div>
           )}
         </div>
 
-        <button className="cfg-btn-logout" onClick={handleLogout}>Sair</button>
+        <p className="cfgp-footer">Doonly · v1.0.0</p>
       </div>
 
       {/* ─────────────── DESKTOP ─────────────── */}
@@ -890,34 +918,70 @@ export default function Configuracoes() {
         .cfg-badge-trial { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
         .cfg-badge-expirado { background: rgba(239,68,68,0.3); color: var(--text-inverse); }
 
-        .cfg-loja-shortcut {
-          all: unset;
-          box-sizing: border-box;
-          width: 100%;
-          background: linear-gradient(135deg, #E85A8C 0%, #C33A6E 100%);
-          color: #fff;
-          border-radius: var(--radius-lg);
-          padding: 0.9rem 1rem;
-          display: flex;
-          align-items: center;
-          gap: 0.85rem;
-          cursor: pointer;
-          box-shadow: 0 4px 14px rgba(232, 90, 140, 0.25);
-          transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-        .cfg-loja-shortcut:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232, 90, 140, 0.35); }
-        .cfg-loja-shortcut:active { transform: translateY(0); }
-        .cfg-loja-shortcut-icon {
-          width: 40px; height: 40px;
-          border-radius: 12px;
-          background: rgba(255,255,255,0.2);
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-        .cfg-loja-shortcut-info { flex: 1; min-width: 0; display: flex; flex-direction: column; text-align: left; }
-        .cfg-loja-shortcut-title { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
-        .cfg-loja-shortcut-sub { font-size: 12px; font-weight: 500; opacity: 0.9; margin-top: 3px; line-height: 1.3; }
-        .cfg-loja-shortcut-chevron { flex-shrink: 0; opacity: 0.85; }
+        /* ====== NOVA CONFIGURAÇÕES PESSOAIS (mobile) ====== */
+        .cfg-mobile { padding: 12px; background: #F5F3EF; min-height: 100vh; box-sizing: border-box; }
+        .cfg-mobile .cfgp-card { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
+        .cfg-mobile .cfgp-card:last-of-type { margin-bottom: 8px; }
+
+        /* Hero */
+        .cfgp-hero { background: linear-gradient(135deg, #E85A8C 0%, #C33A6E 100%); border-radius: 14px; padding: 18px 16px; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; }
+        .cfgp-hero-avatar { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; overflow: hidden; position: relative; }
+        .cfgp-hero-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .cfgp-hero-inicial { font-size: 24px; font-weight: 900; letter-spacing: -0.02em; }
+        .cfgp-hero-cam { position: absolute; bottom: -2px; right: -2px; width: 22px; height: 22px; border-radius: 50%; background: #993556; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; }
+        .cfgp-hero-info { flex: 1; min-width: 0; }
+        .cfgp-hero-nome { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+        .cfgp-hero-email { font-size: 12.5px; opacity: 0.9; margin-top: 3px; word-break: break-all; }
+
+        /* Card assinatura */
+        .cfgp-sub { padding: 16px 18px; }
+        .cfgp-sub-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 12px; }
+        .cfgp-sub-label { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #888780; text-transform: uppercase; }
+        .cfgp-sub-plan { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+        .cfgp-sub-plan-name { font-size: 20px; font-weight: 900; color: #2C2C2A; letter-spacing: -0.02em; }
+        .cfgp-sub-badge { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 999px; letter-spacing: 0.04em; }
+        .cfgp-sub-badge--pro { background: #DCFCE7; color: #166534; }
+        .cfgp-sub-badge--trial { background: #FEF0DF; color: #854F0B; }
+        .cfgp-sub-badge--exp { background: #FEE2E2; color: #B91C1C; }
+        .cfgp-sub-crown { width: 40px; height: 40px; border-radius: 12px; background: #FCE0E9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .cfgp-sub-crown img { width: 22px; height: 22px; object-fit: contain; }
+        .cfgp-sub-info { background: #F8F5F1; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 12.5px; color: #5F5E5A; line-height: 1.5; }
+        .cfgp-sub-info--danger { background: #FEE2E2; color: #B91C1C; }
+        .cfgp-sub-cta { all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 12px; background: #2C1219; color: #fff; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: transform 0.12s ease, background 0.15s ease; }
+        .cfgp-sub-cta:hover { background: #3D1A24; transform: translateY(-1px); }
+        .cfgp-sub-cta:active { transform: translateY(0); }
+        .cfgp-sub-cta img { width: 16px; height: 16px; object-fit: contain; }
+        .cfgp-sub-cta--manage { background: transparent; color: #E85A8C; border: 1.5px solid #E85A8C; }
+        .cfgp-sub-cta--manage:hover { background: #FCE0E9; }
+
+        /* Blocos */
+        .cfgp-block-hdr { padding: 12px 18px 6px; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #888780; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+        .cfgp-block-hdr--danger { color: #B91C1C; }
+        .cfgp-edit-btn { all: unset; cursor: pointer; font-size: 11px; font-weight: 700; color: #E85A8C; letter-spacing: 0.04em; text-transform: uppercase; }
+        .cfgp-edit-btn:hover { color: #C33A6E; }
+
+        .cfgp-rows { padding: 0 18px 8px; }
+        .cfgp-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #F0EBED; gap: 12px; font-size: 13px; color: #2C2C2A; }
+        .cfgp-row--last { border-bottom: none; }
+        .cfgp-row-l { display: flex; align-items: center; gap: 8px; color: #5F5E5A; min-width: 0; }
+        .cfgp-row-l svg { color: #B4B2A9; flex-shrink: 0; }
+        .cfgp-row-v { font-weight: 600; color: #2C2C2A; text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cfgp-row-v--muted { color: #888780; font-weight: 500; font-size: 12px; }
+        .cfgp-row-btn { all: unset; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px 18px; cursor: pointer; }
+        .cfgp-row-btn:hover { background: #FAF8F5; }
+        .cfgp-rows .cfgp-row-btn { padding: 12px 0; }
+        .cfgp-chevron { color: #B4B2A9; transition: transform 0.2s ease; flex-shrink: 0; }
+        .cfgp-chevron.open { transform: rotate(90deg); }
+        .cfgp-chevron--danger { color: #F09595; }
+
+        .cfgp-fields { padding: 0 18px 14px; display: flex; flex-direction: column; gap: 8px; }
+        .cfgp-fields > *:first-child { margin-top: 4px; }
+
+        .cfgp-danger .cfgp-row-l { color: #B91C1C; font-weight: 600; }
+        .cfgp-danger .cfgp-row-l svg { color: #B91C1C; }
+        .cfgp-danger .cfgp-row-btn:hover { background: #FEF2F2; }
+
+        .cfgp-footer { text-align: center; font-size: 10.5px; color: #B4B2A9; margin: 12px 0 4px; }
 
         .cfg-accordion { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); overflow: hidden; }
         .cfg-accordion-header { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 1rem 1.15rem; background: none; border: none; cursor: pointer; font-family: 'Geist', sans-serif; text-align: left; }
