@@ -405,6 +405,7 @@ export default function Configuracoes() {
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} placeholder="Seu nome" value={form.nome} onChange={(e: any) => setForm({...form, nome: e.target.value})} />
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.73a16 16 0 0 0 6.29 6.29l1.62-1.62a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>} placeholder="WhatsApp" value={form.telefone} onChange={(e: any) => setForm({...form, telefone: formatPhone(e.target.value)})} type="tel" />
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>} placeholder="E-mail" value={userEmail} onChange={() => {}} disabled={true} />
+              <p className="cfgp-hint">Para alterar seu e-mail, entre em contato com o suporte.</p>
               {error && <div className="cfg-toast cfg-toast-error">{error}</div>}
               {success && <div className="cfg-toast cfg-toast-success">✓ Salvo com sucesso!</div>}
               <button className="cfg-btn-save" onClick={async () => { await handleSave(); setEditMode(false); }} disabled={saving || uploading}>
@@ -877,6 +878,9 @@ export default function Configuracoes() {
 
         .cfg-field { display: flex; align-items: center; gap: 0.7rem; border: 1.5px solid var(--border); border-radius: var(--radius-full); padding: 0.65rem 1.1rem; background: var(--bg-input); transition: border-color 0.2s; min-width: 0; }
         .cfg-field:focus-within { border-color: var(--border-focus); }
+        .cfg-field-disabled { background: #F0EBED; border-color: #E8E5DC; cursor: not-allowed; }
+        .cfg-field-disabled .cfg-field-icon { color: #B4B2A9; }
+        .cfg-field-disabled .cfg-field-input { color: #888780; cursor: not-allowed; }
         .cfg-field-icon { display: flex; align-items: center; flex-shrink: 0; color: var(--text-muted); }
         .cfg-field-input { flex: 1; border: none; outline: none; font-family: 'Geist', sans-serif; font-size: var(--font-button); color: var(--text-primary); background: transparent; min-width: 0; }
 
@@ -985,6 +989,7 @@ export default function Configuracoes() {
         .cfgp-danger .cfgp-row-btn:hover { background: #FEF2F2; }
 
         .cfgp-footer { text-align: center; font-size: 10.5px; color: #B4B2A9; margin: 12px 0 4px; }
+        .cfgp-hint { font-size: 11px; color: #888780; margin: -4px 0 0; padding: 0 4px; line-height: 1.4; font-style: italic; }
 
         .cfg-accordion { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); overflow: hidden; }
         .cfg-accordion-header { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 1rem 1.15rem; background: none; border: none; cursor: pointer; font-family: 'Geist', sans-serif; text-align: left; }
