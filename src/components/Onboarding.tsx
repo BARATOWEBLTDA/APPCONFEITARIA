@@ -657,7 +657,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           gap: 0.75rem;
           width: 100%;
           max-width: 360px;
-          margin-top: 1.5rem;
+          margin-top: 0.75rem;
         }
         @media (min-width: 900px) {
           .ob-clientes-stack {
@@ -665,6 +665,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
             grid-template-columns: repeat(3, 1fr);
             gap: 1rem;
             max-width: 900px;
+            margin-top: 1.25rem;
           }
         }
         .ob-cli-card {
@@ -830,6 +831,36 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-cli-inline-l {
           color: #888780;
           font-weight: 500;
+        }
+        .ob-cli-aniv-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
+          margin-top: 8px;
+          background: #FEF0DF;
+          border-radius: 10px;
+          font-size: 12px;
+          color: #854F0B;
+        }
+        .ob-cli-aniv-row strong {
+          color: #854F0B;
+          font-weight: 800;
+          font-variant-numeric: tabular-nums;
+        }
+        .ob-cli-aniv-row .ob-cli-inline-l {
+          color: #854F0B;
+          font-weight: 600;
+        }
+        .ob-cli-aniv-cta {
+          font-size: 11.5px;
+          font-weight: 700;
+          color: #E85A8C;
+          text-decoration: underline;
+          text-decoration-thickness: 1.5px;
+          text-underline-offset: 2px;
+          white-space: nowrap;
         }
 
         /* === CARDÁPIO — mockup fiel ao app === */
@@ -2189,6 +2220,7 @@ const CLIENTES_DEMO = [
     ticketMedio: "R$ 150",
     ultimaCompra: "há 3 dias",
     aniversario: "em 7 dias",
+    dataAniversario: "15/03",
     endereco: "Rua das Palmeiras, 342",
     enderecoSec: "Batel · Curitiba/PR",
   },
@@ -2363,6 +2395,12 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
               <span className="ob-cli-inline-l">⏱ Última compra:</span>
               <strong>{c.ultimaCompra}</strong>
             </div>
+            {(c as any).dataAniversario && (
+              <div className="ob-cli-aniv-row">
+                <span className="ob-cli-inline-l">🎂 Aniversário: <strong>{(c as any).dataAniversario}</strong></span>
+                <span className="ob-cli-aniv-cta">Enviar cardápio</span>
+              </div>
+            )}
           </div>
         ))}
       </div>
