@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  UserCircle, Storefront, Package,
+  Storefront, Package,
   ShoppingBag, ClipboardText,
   CaretRight, CaretUp, Lock, Check, Crown,
 } from "@phosphor-icons/react";
@@ -57,7 +57,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
   const checkSteps = async () => {
     try {
       const [profileRes, insumosRes, produtosRes, pedidosRes] = await Promise.all([
-        supabase.from("profiles").select("nome, nome_loja, foto_url, telefone").eq("id", userId).single(),
+        supabase.from("profiles").select("nome_loja").eq("id", userId).single(),
         supabase.from("insumos").select("id", { count: "exact", head: true }).eq("user_id", userId),
         supabase.from("produtos").select("id", { count: "exact", head: true }).eq("user_id", userId),
         supabase.from("pedidos").select("id", { count: "exact", head: true }).eq("user_id", userId),
@@ -67,13 +67,6 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
       const iconSize = 18;
 
       setSteps([
-        {
-          id: "perfil",
-          icon: <UserCircle size={iconSize} weight="duotone" />,
-          title: "Preencher perfil",
-          path: "/configuracoes",
-          done: !!(p?.nome && p?.foto_url),
-        },
         {
           id: "loja",
           icon: <Storefront size={iconSize} weight="duotone" />,
