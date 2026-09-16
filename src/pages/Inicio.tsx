@@ -1267,10 +1267,8 @@ export default function Inicio() {
           )}
         </aside>
 
-        {/* ── Últimas atualizações (mobile, fim) — só após onboarding ── */}
-        {checklistDone && (
-          <div className="ini-mobile-updates"><UpdatesFeed /></div>
-        )}
+        {/* ── Últimas atualizações (mobile) — sempre visível ── */}
+        <div className="ini-mobile-updates"><UpdatesFeed /></div>
 
         {/* ── Engajamento (mobile, rodapé) — só após onboarding ── */}
         {checklistDone && (
@@ -2583,7 +2581,7 @@ export default function Inicio() {
         .ini-mobile-updates { order: 3; }
         .ini-engaja         { order: 4; }
         /* Nível 2: seções dentro de .ini-main */
-        .ini-section--checklist-top { order: 0; }
+        .ini-section--checklist-top { order: 0; margin-top: var(--space-3); }
         .ini-section--alertas { order: 1; }
         .ini-section--nav     { order: 2; }
         .ini-section--resumo  { display: none; }
@@ -2592,7 +2590,7 @@ export default function Inicio() {
         .ini-section--chart   { display: none; }
         /* Menos espaço vazio entre MetricaDestaque e Acesso rápido no mobile */
         .ini-content { margin-top: var(--space-2); gap: var(--space-3); }
-        .ini-main > .ini-section:first-child { margin-top: 0; }
+        .ini-main > .ini-section:first-child { margin-top: var(--space-3); }
 
         /* ── Desktop ajustes ── */
         @media (min-width: 768px) {
