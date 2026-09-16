@@ -918,6 +918,13 @@ export default function Inicio() {
         {/* ── Coluna principal ── */}
         <div className="ini-main">
 
+      {/* ── WelcomeChecklist no topo (guia para novos usuários) ── */}
+      {profile?.id && !checklistDone && (
+        <section className="ini-section ini-section--checklist-top">
+          <WelcomeChecklist userId={profile.id} onAllDone={setChecklistDone} />
+        </section>
+      )}
+
       {/* ── Métricas (desktop only — dados reais) ── */}
       <section className="ini-section ini-section--metrics">
         <div className="ini-metrics-grid">
@@ -991,21 +998,6 @@ export default function Inicio() {
         </div>
       </section>
       <section className="ini-section ini-section--nav">
-        {/* Empty state contextual (mobile only, quando não tem produtos ainda) */}
-        {!onboarding.loading && onboarding.produtosCount === 0 && (
-          <button
-            className="ini-empty-hero"
-            onClick={() => navigate("/produtos")}
-            type="button"
-          >
-            <span className="ini-empty-hero-label">🎯 COMECE POR AQUI</span>
-            <span className="ini-empty-hero-icon" aria-hidden="true">🎂</span>
-            <span className="ini-empty-hero-title">Cadastre seu primeiro produto</span>
-            <span className="ini-empty-hero-sub">Bolos, doces, salgados… Depois use eles nos pedidos</span>
-            <span className="ini-empty-hero-btn">Adicionar produto →</span>
-          </button>
-        )}
-
         {/* Título da grade — muda de "Acesso rápido" pra "Explorar" durante onboarding */}
         <h2 className="ini-section-title">
           {!onboarding.loading && onboarding.produtosCount === 0 ? "Explorar" : "Acesso rápido"}
@@ -1268,11 +1260,8 @@ export default function Inicio() {
       </section>
         </div>
 
-        {/* ── Checklist lateral (desktop) / abaixo (mobile) ── */}
+        {/* ── Sidebar (desktop): DooIA depois do onboarding ── */}
         <aside className="ini-aside">
-          {profile?.id && !checklistDone && (
-            <WelcomeChecklist userId={profile.id} onAllDone={setChecklistDone} />
-          )}
           {checklistDone && (
             <div className="ini-aside-desktop"><DooIAPanel /></div>
           )}
@@ -2594,6 +2583,7 @@ export default function Inicio() {
         .ini-mobile-updates { order: 3; }
         .ini-engaja         { order: 4; }
         /* Nível 2: seções dentro de .ini-main */
+        .ini-section--checklist-top { order: 0; }
         .ini-section--alertas { order: 1; }
         .ini-section--nav     { order: 2; }
         .ini-section--resumo  { display: none; }
