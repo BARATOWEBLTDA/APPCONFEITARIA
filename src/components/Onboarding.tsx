@@ -3156,7 +3156,6 @@ function Slide4Precificacao({ onReady }: { onReady: () => void }) {
           PARE DE VENDER,<br/>
           SEM SABER SE <span className="ob-fill">LUCROU</span>
         </h2>
-        <p className="ob-slide-subtitle-top">O Doonly mostra quanto custa produzir e quanto sobra para você.</p>
       </div>
 
       <div className="ob-prec-card">
