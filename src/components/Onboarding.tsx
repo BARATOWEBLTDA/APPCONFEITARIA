@@ -1818,8 +1818,8 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-newped-card {
           background: #fff;
           border: 1px solid #F0EBED;
-          border-radius: 14px;
-          padding: 14px 16px;
+          border-radius: 16px;
+          padding: 18px 20px;
           font-family: var(--font-base), -apple-system, sans-serif;
           color: #2C2C2A;
           text-align: left;
@@ -1827,19 +1827,26 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-newped-header {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
         }
         .ob-newped-avatar {
-          width: 40px;
-          height: 40px;
+          width: 48px;
+          height: 48px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 13px;
+          font-size: 15px;
           font-weight: 800;
           letter-spacing: -0.01em;
           flex-shrink: 0;
+          overflow: hidden;
+        }
+        .ob-newped-avatar img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
         }
         .ob-newped-header-info { flex: 1; min-width: 0; }
         .ob-newped-cliente-row {
@@ -1848,18 +1855,18 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           gap: 8px;
         }
         .ob-newped-cliente {
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 700;
           color: #2C2C2A;
           letter-spacing: -0.01em;
         }
         .ob-newped-num {
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 600;
           color: #B4B2A9;
         }
         .ob-newped-tel {
-          font-size: 12px;
+          font-size: 13px;
           color: #888780;
           margin-top: 2px;
         }
@@ -1898,10 +1905,10 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-newped-data-row {
           display: flex;
           align-items: center;
-          gap: 6px;
-          font-size: 12px;
+          gap: 7px;
+          font-size: 13px;
           color: #5F5E5A;
-          line-height: 1.5;
+          line-height: 1.55;
         }
         .ob-newped-data-ic {
           color: #888780;
@@ -1924,7 +1931,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           display: flex;
           justify-content: space-between;
           gap: 12px;
-          font-size: 12px;
+          font-size: 13px;
           color: #2C2C2A;
         }
         .ob-newped-item-nome {
@@ -1946,10 +1953,10 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-newped-total-row {
           display: flex;
           justify-content: space-between;
-          font-size: 13px;
-          font-weight: 700;
+          font-size: 15px;
+          font-weight: 800;
           color: #2C2C2A;
-          margin-top: 10px;
+          margin-top: 12px;
           letter-spacing: -0.01em;
         }
         .ob-newped-total-row span:last-child {
@@ -1957,12 +1964,12 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
         .ob-newped-cta {
           text-align: center;
-          margin-top: 12px;
+          margin-top: 14px;
           background: #E85A8C;
           color: #fff;
-          border-radius: 10px;
-          padding: 10px 14px;
-          font-size: 13px;
+          border-radius: 12px;
+          padding: 12px 14px;
+          font-size: 14px;
           font-weight: 700;
           letter-spacing: -0.01em;
         }
@@ -2574,11 +2581,12 @@ const ONBOARDING_PEDIDOS = [
   {
     id: 1,
     numero: "5",
-    cliente: "Alanis Nunes",
+    cliente: "Ana Cristina Vieira",
     telefone: "(41) 99530-5803",
-    initials: "AN",
+    initials: "AC",
     avatarBg: "#FCE0E9",
     avatarColor: "#993556",
+    imagem: "/tutorial/cliente1.jpeg",
     origem: "manual" as const,
     statusKey: "aguardando_aceite",
     statusLabel: "Aguardando aprovação",
@@ -2640,7 +2648,14 @@ function CardPedidoNovo({ p }: { p: typeof ONBOARDING_PEDIDOS[0] }) {
     <div className="ob-newped-card">
       <div className="ob-newped-header">
         <div className="ob-newped-avatar" style={{ background: p.avatarBg, color: p.avatarColor }}>
-          {p.initials}
+          {(p as any).imagem
+            ? <img src={(p as any).imagem} alt={p.cliente} onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                img.style.display = 'none';
+                const parent = img.parentElement;
+                if (parent) parent.textContent = p.initials;
+              }} />
+            : p.initials}
         </div>
         <div className="ob-newped-header-info">
           <div className="ob-newped-cliente-row">
@@ -2717,11 +2732,9 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
       <div className="ob-slide-textabove">
         <span className="ob-slide-eyebrow">Sua rotina mais leve</span>
         <h2 className="ob-slide-title">TODOS OS PEDIDOS<br/>NO <span className="ob-fill">LUGAR CERTO</span></h2>
-        <p className="ob-slide-subtitle-top">Acompanhe cada encomenda sem depender de papel ou planilha.</p>
       </div>
 
       <div className="ob-newped-lista">
-        <p className="ob-newped-lista-label">PEDIDOS PENDENTES</p>
         {visivel && (
           <div
             className="ob-newped-wrap"
@@ -2731,6 +2744,8 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
           </div>
         )}
       </div>
+
+      <p className="ob-slide-subtitle-top" style={{ marginTop: "1rem" }}>Acompanhe cada encomenda sem depender de papel ou planilha.</p>
     </>
   );
 }
