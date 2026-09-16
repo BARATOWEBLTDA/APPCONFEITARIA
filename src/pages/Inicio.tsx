@@ -1802,17 +1802,26 @@ export default function Inicio() {
           color: #fff;
           cursor: default;
         }
-        /* Variante Upgrade (clicável) — branca com borda */
+        /* Variante Upgrade (clicável) — grafite com coroa dourada (premium) */
         .ini-plan-tag--upgrade {
-          background: #fff;
-          color: var(--primary);
+          background: #2C1219;
+          color: #fff;
           cursor: pointer;
-          transition: transform 0.12s ease, box-shadow 0.12s ease;
+          transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
           font-family: var(--font-base);
+          font-size: 9.5px;
+          padding: 3px 9px;
+          gap: 3px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+        }
+        .ini-plan-tag--upgrade img {
+          width: 11px;
+          height: 11px;
         }
         .ini-plan-tag--upgrade:hover {
           transform: translateY(-1px);
-          box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+          background: #3D1A24;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
         .ini-plan-tag--upgrade:active {
           transform: translateY(0);
@@ -1825,6 +1834,11 @@ export default function Inicio() {
             padding: 4px 11px;
           }
           .ini-plan-tag img { width: 14px; height: 14px; }
+          .ini-plan-tag--upgrade {
+            font-size: 10.5px;
+            padding: 3px 10px;
+          }
+          .ini-plan-tag--upgrade img { width: 12px; height: 12px; }
         }
 
         .ini-profile-cam:hover:not(:disabled) { transform: scale(1.12); background: var(--primary-dark); }
