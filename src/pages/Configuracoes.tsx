@@ -335,12 +335,23 @@ export default function Configuracoes() {
 
         <input ref={fileRef} type="file" accept="image/*" onChange={handleFileChange} style={{display:"none"}} />
 
+        {/* Atalho para Configurações da Loja */}
+        <button className="cfg-loja-shortcut" onClick={() => navigate("/cardapio-config")}>
+          <span className="cfg-loja-shortcut-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </span>
+          <span className="cfg-loja-shortcut-info">
+            <span className="cfg-loja-shortcut-title">Configurações da Loja</span>
+            <span className="cfg-loja-shortcut-sub">Nome, foto, endereço, horários e entrega</span>
+          </span>
+          <svg className="cfg-loja-shortcut-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
 
         {/* Minha Conta */}
         <div className="cfg-accordion">
           <button className="cfg-accordion-header" onClick={() => toggleSection("dados")}>
             <span className="cfg-accordion-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-            <span className="cfg-accordion-title">Minha Conta</span>
+            <span className="cfg-accordion-title">Configurações Pessoais</span>
             <svg className={`cfg-accordion-chevron${openSection === "dados" ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           {openSection === "dados" && (
@@ -878,6 +889,35 @@ export default function Configuracoes() {
         .cfg-badge-pro { background: rgba(255,255,255,0.25); color: var(--text-inverse); }
         .cfg-badge-trial { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); }
         .cfg-badge-expirado { background: rgba(239,68,68,0.3); color: var(--text-inverse); }
+
+        .cfg-loja-shortcut {
+          all: unset;
+          box-sizing: border-box;
+          width: 100%;
+          background: linear-gradient(135deg, #E85A8C 0%, #C33A6E 100%);
+          color: #fff;
+          border-radius: var(--radius-lg);
+          padding: 0.9rem 1rem;
+          display: flex;
+          align-items: center;
+          gap: 0.85rem;
+          cursor: pointer;
+          box-shadow: 0 4px 14px rgba(232, 90, 140, 0.25);
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .cfg-loja-shortcut:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(232, 90, 140, 0.35); }
+        .cfg-loja-shortcut:active { transform: translateY(0); }
+        .cfg-loja-shortcut-icon {
+          width: 40px; height: 40px;
+          border-radius: 12px;
+          background: rgba(255,255,255,0.2);
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .cfg-loja-shortcut-info { flex: 1; min-width: 0; display: flex; flex-direction: column; text-align: left; }
+        .cfg-loja-shortcut-title { font-size: 15px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+        .cfg-loja-shortcut-sub { font-size: 12px; font-weight: 500; opacity: 0.9; margin-top: 3px; line-height: 1.3; }
+        .cfg-loja-shortcut-chevron { flex-shrink: 0; opacity: 0.85; }
 
         .cfg-accordion { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); overflow: hidden; }
         .cfg-accordion-header { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 1rem 1.15rem; background: none; border: none; cursor: pointer; font-family: 'Geist', sans-serif; text-align: left; }

@@ -131,7 +131,8 @@ export default function Inicio() {
       await refetchProfile();
     } catch (err: any) {
       console.error("[foto] erro no upload:", err);
-      alert("Não foi possível trocar a foto. Tente novamente.");
+      const msg = err?.message || err?.error_description || "erro desconhecido";
+      alert(`Não foi possível trocar a foto:\n\n${msg}\n\nAbra o console (F12) pra ver detalhes.`);
     } finally {
       setUploadingFoto(false);
     }
@@ -723,7 +724,10 @@ export default function Inicio() {
           <button
             type="button"
             className="ini-profile-cam"
-            onClick={() => !uploadingFoto && fileInputRef.current?.click()}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!uploadingFoto) fileInputRef.current?.click();
+            }}
             aria-label="Adicionar foto de perfil"
             title="Adicionar foto"
             disabled={uploadingFoto}
@@ -817,18 +821,18 @@ export default function Inicio() {
                     <span>Solicitar recursos</span>
                   </button>
 
-                  <button className="ini-menu-novo-item" onClick={() => { setMenuOpen(false); navigate("/configuracoes"); }}>
-                    <span className="ini-menu-novo-icon">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    </span>
-                    <span>Minha conta</span>
-                  </button>
-
                   <button className="ini-menu-novo-item" onClick={() => { setMenuOpen(false); navigate("/cardapio-config"); }}>
                     <span className="ini-menu-novo-icon">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     </span>
-                    <span>Minha loja</span>
+                    <span>Configurações da Loja</span>
+                  </button>
+
+                  <button className="ini-menu-novo-item" onClick={() => { setMenuOpen(false); navigate("/configuracoes"); }}>
+                    <span className="ini-menu-novo-icon">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </span>
+                    <span>Configurações Pessoais</span>
                   </button>
 
                   <button className="ini-menu-novo-item" onClick={() => { setMenuOpen(false); alert("🤖 Assistente virtual em breve!"); }}>
