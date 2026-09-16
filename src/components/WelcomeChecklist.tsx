@@ -57,7 +57,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
   const checkSteps = async () => {
     try {
       const [profileRes, insumosRes, produtosRes, pedidosRes] = await Promise.all([
-        supabase.from("profiles").select("nome_loja").eq("id", userId).single(),
+        supabase.from("profiles").select("nome_loja, foto_url, og_image_url, telefone, endereco").eq("id", userId).single(),
         supabase.from("insumos").select("id", { count: "exact", head: true }).eq("user_id", userId),
         supabase.from("produtos").select("id", { count: "exact", head: true }).eq("user_id", userId),
         supabase.from("pedidos").select("id", { count: "exact", head: true }).eq("user_id", userId),
@@ -66,14 +66,20 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
       const p = profileRes.data;
       const iconSize = 18;
 
+      // "Configurar loja" — critério: mínimo pra cardápio digital funcionar
+      // Precisa de: nome_loja + foto (perfil OU logo do cardápio) + telefone + cidade/estado
+      let endereco: any = {};
+      try {
+        endereco = p?.endereco
+          ? (typeof p.endereco === "string" ? JSON.parse(p.endereco) : p.endereco)
+          : {};
+      } catch {}
+      const temFoto = !!(p?.foto_url || p?.og_image_url);
+      const temTelefone = !!(p?.telefone && p.telefone.replace(/\D/g, "").length >= 10);
+      const temLocalizacao = !!(endereco?.cidade && endereco?.estado);
+      const lojaConfigurada = !!(p?.nome_loja && temFoto && temTelefone && temLocalizacao);
+
       setSteps([
-        {
-          id: "loja",
-          icon: <Storefront size={iconSize} weight="duotone" />,
-          title: "Configurar loja",
-          path: "/cardapio-config",
-          done: !!(p?.nome_loja),
-        },
         {
           id: "insumos",
           icon: <Package size={iconSize} weight="duotone" />,
@@ -87,6 +93,13 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           title: "Montar cardápio",
           path: "/produtos",
           done: (produtosRes.count ?? 0) > 0,
+        },
+        {
+          id: "loja",
+          icon: <Storefront size={iconSize} weight="duotone" />,
+          title: "Configurar loja",
+          path: "/cardapio-config",
+          done: lojaConfigurada,
         },
         {
           id: "pedidos",
