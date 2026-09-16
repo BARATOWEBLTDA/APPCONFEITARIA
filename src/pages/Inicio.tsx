@@ -8,7 +8,7 @@ import {
 import {
   Share, Plus, ClipboardText, CalendarDots,
   TrendUp, TrendDown, CurrencyDollar, ShoppingBag,
-  Bell, User, Storefront, SignOut, Camera,
+  Bell, Storefront, SignOut, Camera,
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
   InstagramLogo, DotsThreeOutline, Clock, Heart,
 } from "@phosphor-icons/react";
@@ -715,7 +715,7 @@ export default function Inicio() {
           >
             {profile?.foto_url
               ? <img src={profile.foto_url} alt="Perfil" className="ini-profile-img" />
-              : <div className="ini-profile-placeholder"><User size={30} weight="bold" color="var(--accent)" /></div>
+              : <div className="ini-profile-placeholder"><span className="ini-profile-inicial">{(nome || "?").trim().charAt(0).toUpperCase()}</span></div>
             }
           </button>
 
@@ -1737,9 +1737,22 @@ export default function Inicio() {
           transition: border-color var(--dur-fast), transform var(--dur-fast), box-shadow var(--dur-fast);
           box-shadow: 0 6px 20px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.15);
         }
+        /* Quando NÃO tem foto, o botão inteiro vira rosa vinho */
+        .ini-profile-wrapper[data-has-photo="false"] .ini-profile-btn {
+          background: #993556;
+        }
         .ini-profile-btn:hover { transform: scale(1.04); box-shadow: 0 8px 24px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,0,0,0.2); }
         .ini-profile-img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-full); }
         .ini-profile-placeholder { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        .ini-profile-inicial {
+          font-family: var(--font-base);
+          font-size: 26px;
+          font-weight: 900;
+          color: #FCE0E9;
+          letter-spacing: -0.02em;
+          line-height: 1;
+          text-transform: uppercase;
+        }
 
         /* Badge de câmera — atalho pra trocar/adicionar foto */
         .ini-profile-cam {
