@@ -323,10 +323,12 @@ export default function Configuracoes() {
         {/* ── HERO USER ────────────────────────────────────── */}
         <div className="cfgp-hero">
           <div className="cfgp-hero-avatar" onClick={() => !uploading && fileRef.current?.click()}>
-            {preview
-              ? <img src={preview} alt="Perfil" />
-              : <span className="cfgp-hero-inicial">{(form.nome || "?").trim().charAt(0).toUpperCase()}</span>
-            }
+            <div className="cfgp-hero-avatar-inner">
+              {preview
+                ? <img src={preview} alt="Perfil" />
+                : <span className="cfgp-hero-inicial">{(form.nome || "?").trim().charAt(0).toUpperCase()}</span>
+              }
+            </div>
             <div className="cfgp-hero-cam">
               {uploading
                 ? <span className="cfg-spinner-sm" />
@@ -925,13 +927,14 @@ export default function Configuracoes() {
 
         /* Hero */
         .cfgp-hero { background: linear-gradient(135deg, #E85A8C 0%, #C33A6E 100%); border-radius: 14px; padding: 18px 16px; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 14px; }
-        .cfgp-hero-avatar { width: 60px; height: 60px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer; overflow: hidden; position: relative; }
+        .cfgp-hero-avatar { width: 60px; height: 60px; border-radius: 50%; flex-shrink: 0; cursor: pointer; position: relative; }
+        .cfgp-hero-avatar-inner { width: 100%; height: 100%; border-radius: 50%; overflow: hidden; background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.35); display: flex; align-items: center; justify-content: center; }
         .cfgp-hero-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .cfgp-hero-inicial { font-size: 24px; font-weight: 900; letter-spacing: -0.02em; }
-        .cfgp-hero-cam { position: absolute; bottom: -2px; right: -2px; width: 22px; height: 22px; border-radius: 50%; background: #993556; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; }
+        .cfgp-hero-inicial { font-size: 24px; font-weight: 900; letter-spacing: -0.02em; color: #fff; }
+        .cfgp-hero-cam { position: absolute; bottom: -2px; right: -2px; width: 24px; height: 24px; border-radius: 50%; background: #993556; border: 2px solid #fff; display: flex; align-items: center; justify-content: center; z-index: 2; }
         .cfgp-hero-info { flex: 1; min-width: 0; }
-        .cfgp-hero-nome { font-size: 17px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
-        .cfgp-hero-email { font-size: 12.5px; opacity: 0.9; margin-top: 3px; word-break: break-all; }
+        .cfgp-hero-nome { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+        .cfgp-hero-email { font-size: 13px; opacity: 0.9; margin-top: 4px; word-break: break-all; }
 
         /* Card assinatura */
         .cfgp-sub { padding: 16px 18px; }
