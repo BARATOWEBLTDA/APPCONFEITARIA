@@ -1700,6 +1700,166 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
             padding: 1rem 1.5rem 4rem;
           }
         }
+
+        /* ── Slide 2: Card de pedido novo (mesmo do Pedidos.tsx real) ── */
+        .ob-newped-lista {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          padding: 0 4px;
+        }
+        .ob-newped-lista-label {
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.1em;
+          color: rgba(255,255,255,0.72);
+          text-align: center;
+          margin: 0 0 6px;
+          text-transform: uppercase;
+        }
+        @keyframes obNewPedIn {
+          from { opacity: 0; transform: translateY(-14px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .ob-newped-card {
+          background: #fff;
+          border: 1px solid #F0EBED;
+          border-radius: 14px;
+          padding: 12px 14px;
+          font-family: var(--font-base), -apple-system, sans-serif;
+          color: #2C2C2A;
+        }
+        .ob-newped-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 8px;
+        }
+        .ob-newped-header-info { flex: 1; min-width: 0; }
+        .ob-newped-cliente-row {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+        }
+        .ob-newped-cliente {
+          font-size: 14px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+        }
+        .ob-newped-num {
+          font-size: 12px;
+          font-weight: 600;
+          color: #B4B2A9;
+        }
+        .ob-newped-tel {
+          font-size: 12px;
+          color: #888780;
+          margin-top: 2px;
+        }
+        .ob-newped-menu {
+          padding: 2px 4px;
+          color: #888780;
+          display: flex;
+          align-items: center;
+        }
+        .ob-newped-tags {
+          display: flex;
+          gap: 5px;
+          flex-wrap: wrap;
+          margin: 10px 0 12px;
+        }
+        .ob-newped-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 3px 9px;
+          border-radius: 999px;
+          letter-spacing: -0.005em;
+          white-space: nowrap;
+        }
+        .ob-newped-tag--origem {
+          background: #F1EFE8;
+          color: #5F5E5A;
+        }
+        .ob-newped-datas {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+        }
+        .ob-newped-data-row {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          color: #5F5E5A;
+          line-height: 1.5;
+        }
+        .ob-newped-data-ic {
+          color: #888780;
+          display: inline-flex;
+          align-items: center;
+        }
+        .ob-newped-data-label { color: #5F5E5A; }
+        .ob-newped-data-val { color: #2C2C2A; font-weight: 500; }
+        .ob-newped-divisor {
+          height: 1px;
+          background: #E8E5DC;
+          margin: 12px 0 10px;
+        }
+        .ob-newped-itens {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+        .ob-newped-item-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          font-size: 12px;
+          color: #2C2C2A;
+        }
+        .ob-newped-item-nome {
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .ob-newped-item-qtd {
+          color: #888780;
+          font-weight: 700;
+          margin-right: 6px;
+        }
+        .ob-newped-item-val {
+          flex-shrink: 0;
+          font-variant-numeric: tabular-nums;
+          color: #5F5E5A;
+        }
+        .ob-newped-total-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 13px;
+          font-weight: 700;
+          color: #2C2C2A;
+          margin-top: 10px;
+          letter-spacing: -0.01em;
+        }
+        .ob-newped-total-row span:last-child {
+          font-variant-numeric: tabular-nums;
+        }
+        .ob-newped-cta {
+          text-align: center;
+          margin-top: 12px;
+          background: #E85A8C;
+          color: #fff;
+          border-radius: 10px;
+          padding: 10px 14px;
+          font-size: 13px;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+        }
       `}</style>
     </div>
   );
@@ -2292,114 +2452,143 @@ function PedidoImg({ src, alt, emoji }: { src?: string; alt: string; emoji: stri
   );
 }
 
-function Slide2Pedidos({ onReady }: { onReady: () => void }) {
-  const [proximoIdx, setProximoIdx] = useState(0);
-  const [visiveis, setVisiveis] = useState<typeof PEDIDOS_DEMO>([]);
-  const [isDesktop] = useState(() =>
-    typeof window !== "undefined" ? window.matchMedia("(min-width: 900px)").matches : false
+// ── Slide 2: PEDIDOS (design novo, mesmo do Pedidos.tsx real) ──
+// 2 cards com status diferentes, entrando com fade+slide
+
+const ONBOARDING_PEDIDOS = [
+  {
+    id: 1,
+    numero: "5",
+    cliente: "Alanis Nunes",
+    telefone: "(41) 99530-5803",
+    origem: "manual" as const,
+    statusKey: "aguardando_aceite",
+    statusLabel: "Aguardando aprovação",
+    statusBg: "#FEF0DF",
+    statusColor: "#854F0B",
+    statusIcon: "clock",
+    tipoEntrega: "retirada" as const,
+    dataPedido: "15 de setembro às 09:45",
+    dataEntrega: "15 de setembro às 11:00",
+    itens: [{ qtd: 1, nome: "Bolo de Chocolate", valor: "R$ 40,00" }],
+    total: "R$ 40,00",
+    ctaLabel: "Aceitar pedido",
+  },
+  {
+    id: 2,
+    numero: "6",
+    cliente: "Marina Silva",
+    telefone: "(41) 98812-4471",
+    origem: "manual" as const,
+    statusKey: "em_producao",
+    statusLabel: "Em produção",
+    statusBg: "#FCE0E9",
+    statusColor: "#993556",
+    statusIcon: "chef",
+    tipoEntrega: "entrega" as const,
+    dataPedido: "14 de setembro às 18:30",
+    dataEntrega: "15 de setembro às 14:00",
+    itens: [
+      { qtd: 2, nome: "Brigadeiro gourmet", valor: "R$ 60,00" },
+      { qtd: 1, nome: "Bolo Red Velvet", valor: "R$ 90,00" },
+    ],
+    total: "R$ 150,00",
+    ctaLabel: "Finalizar produção",
+  },
+];
+
+// SVGs inline pequenos para as tags e datas
+function IconeNewPed({ nome }: { nome: string }) {
+  const c = "currentColor";
+  switch (nome) {
+    case "clock":    return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
+    case "chef":     return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/><line x1="6" y1="17" x2="18" y2="17"/></svg>;
+    case "hand":     return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 17V5a1.5 1.5 0 0 1 3 0v6"/><path d="M14 11a1.5 1.5 0 0 1 3 0v3"/><path d="M17 12a1.5 1.5 0 0 1 3 0v4a6 6 0 0 1-6 6h-2c-2 0-2.5-.4-4-2l-3.5-3.5C4 15.6 4.5 14 6 14h1"/><path d="M11 11V6a1.5 1.5 0 0 0-3 0v9"/></svg>;
+    case "calendar": return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
+    case "home":     return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+    case "truck":    return <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>;
+    case "dots":     return <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>;
+    default:         return null;
+  }
+}
+
+function CardPedidoNovo({ p }: { p: typeof ONBOARDING_PEDIDOS[0] }) {
+  const iconeEntrega = p.tipoEntrega === "entrega" ? "truck" : "home";
+  const labelEntrega = p.tipoEntrega === "entrega" ? "Entrega" : "Retirada";
+  return (
+    <div className="ob-newped-card">
+      <div className="ob-newped-header">
+        <div className="ob-newped-header-info">
+          <div className="ob-newped-cliente-row">
+            <span className="ob-newped-cliente">{p.cliente}</span>
+            <span className="ob-newped-num">#{p.numero}</span>
+          </div>
+          <div className="ob-newped-tel">{p.telefone}</div>
+        </div>
+        <div className="ob-newped-menu"><IconeNewPed nome="dots" /></div>
+      </div>
+
+      <div className="ob-newped-tags">
+        <span className="ob-newped-tag ob-newped-tag--origem">
+          <IconeNewPed nome="hand" />
+          Manual
+        </span>
+        <span className="ob-newped-tag" style={{ background: p.statusBg, color: p.statusColor }}>
+          <IconeNewPed nome={p.statusIcon} />
+          {p.statusLabel}
+        </span>
+      </div>
+
+      <div className="ob-newped-datas">
+        <div className="ob-newped-data-row">
+          <span className="ob-newped-data-ic"><IconeNewPed nome="calendar" /></span>
+          <span className="ob-newped-data-label">Pedido:</span>
+          <span className="ob-newped-data-val">{p.dataPedido}</span>
+        </div>
+        <div className="ob-newped-data-row">
+          <span className="ob-newped-data-ic"><IconeNewPed nome={iconeEntrega} /></span>
+          <span className="ob-newped-data-label">{labelEntrega}:</span>
+          <span className="ob-newped-data-val">{p.dataEntrega}</span>
+        </div>
+      </div>
+
+      <div className="ob-newped-divisor" />
+
+      <div className="ob-newped-itens">
+        {p.itens.map((it, i) => (
+          <div key={i} className="ob-newped-item-row">
+            <span className="ob-newped-item-nome">
+              <span className="ob-newped-item-qtd">{it.qtd}x</span>
+              {it.nome}
+            </span>
+            <span className="ob-newped-item-val">{it.valor}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="ob-newped-total-row">
+        <span>Total</span>
+        <span>{p.total}</span>
+      </div>
+
+      <div className="ob-newped-cta">{p.ctaLabel}</div>
+    </div>
   );
+}
 
-  // Trio de pedidos para a animação. Larissa é o mais novo, entra por último e fica no topo.
-  const pedidos = useMemo(() => {
-    const now = new Date();
-    const diasSemana = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-    const randomHour = 8 + Math.floor(Math.random() * 12);
-    const randomMin = Math.floor(Math.random() * 60);
-    const hh = String(randomHour).padStart(2, "0");
-    const mm = String(randomMin).padStart(2, "0");
-    const entregaLarissa = new Date(now);
-    entregaLarissa.setDate(entregaLarissa.getDate() + 2);
-    const diaEntregaLarissa = diasSemana[entregaLarissa.getDay()];
-    const retiradaCamila = new Date(now);
-    retiradaCamila.setDate(retiradaCamila.getDate() - 1);
-    const diaRetiradaCamila = diasSemana[retiradaCamila.getDay()];
-
-    return [
-      { ...PEDIDOS_DEMO[2], numero: "120" },
-      { ...PEDIDOS_DEMO[4], numero: "121", dataLabel: diaRetiradaCamila },
-      { ...PEDIDOS_DEMO[5], numero: "122", datetime: `Hoje · ${hh}:${mm}`, dataLabel: diaEntregaLarissa },
-    ];
-  }, []);
-
-  // Kanban: agrupamento por status (desktop)
-  const kanbanCols = useMemo(() => {
-    return [
-      {
-        titulo: "Novos",
-        color: "#1d4ed8",
-        bg: "#dbeafe",
-        pedidos: PEDIDOS_DEMO.filter(p => p.statusLabel === "Novo" || p.statusLabel === "Confirmado"),
-      },
-      {
-        titulo: "Em Produção",
-        color: "#d97706",
-        bg: "#FAEEDA",
-        pedidos: PEDIDOS_DEMO.filter(p => p.statusLabel === "Em Produção"),
-      },
-      {
-        titulo: "Finalizados",
-        color: "#15803d",
-        bg: "#dcfce7",
-        pedidos: PEDIDOS_DEMO.filter(p => p.statusLabel === "Entregue"),
-      },
-    ];
-  }, []);
+function Slide2Pedidos({ onReady }: { onReady: () => void }) {
+  const [visiveis, setVisiveis] = useState<number>(0);
 
   useEffect(() => {
     const timers: number[] = [];
-
-    // No desktop, o kanban é estático — libera o botão rápido
-    if (isDesktop) {
-      timers.push(window.setTimeout(onReady, 500));
-      return () => timers.forEach((t) => clearTimeout(t));
-    }
-
-    // Pré-carrega imagens antes de iniciar a animação (evita que a foto apareça
-    // depois do card)
-    const imagensPraCarregar = pedidos.map((p) => p.imagem).filter((s): s is string => !!s);
-
-    const preload = Promise.all(
-      imagensPraCarregar.map(
-        (src) =>
-          new Promise<void>((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve();
-            img.onerror = () => resolve();
-            img.src = src;
-          })
-      )
-    );
-
-    let cancelado = false;
-    preload.then(() => {
-      if (cancelado) return;
-
-      // Primeiro pedido entra rápido
-      timers.push(window.setTimeout(() => {
-        setVisiveis([pedidos[0]]);
-        setProximoIdx(1);
-      }, 300));
-
-      // Depois entra a cada 1.4s até o último
-      for (let i = 1; i < 3; i++) {
-        timers.push(window.setTimeout(() => {
-          setVisiveis((prev) => {
-            const next = [pedidos[i], ...prev];
-            return next.slice(0, 3);
-          });
-          setProximoIdx(i + 1);
-        }, 300 + i * 1400));
-      }
-
-      // Marca pronto depois do último
-      timers.push(window.setTimeout(onReady, 300 + 3 * 1400 + 500));
-    });
-
-    return () => {
-      cancelado = true;
-      timers.forEach((t) => clearTimeout(t));
-    };
-  }, [onReady, pedidos, isDesktop]);
+    // Card 1 entra rápido
+    timers.push(window.setTimeout(() => setVisiveis(1), 350));
+    // Card 2 entra depois
+    timers.push(window.setTimeout(() => setVisiveis(2), 350 + 1400));
+    // Libera o botão "Próximo"
+    timers.push(window.setTimeout(onReady, 350 + 1400 + 700));
+    return () => timers.forEach((t) => clearTimeout(t));
+  }, [onReady]);
 
   return (
     <>
@@ -2409,123 +2598,20 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
         <p className="ob-slide-subtitle-top">Acompanhe cada encomenda sem depender de papel ou planilha.</p>
       </div>
 
-      <div className="ob-pedidos-stack">
-        {isDesktop ? (
-          /* KANBAN DESKTOP: 3 colunas por status */
-          <>
-            {kanbanCols.map((col) => (
-              <div key={col.titulo} className="ob-ped-kanban-col">
-                <div className="ob-ped-kanban-header" style={{ color: col.color, background: col.bg }}>
-                  <span className="ob-ped-kanban-dot" style={{ background: col.color }} />
-                  {col.titulo}
-                  <span className="ob-ped-kanban-count">{col.pedidos.length}</span>
-                </div>
-                <div className="ob-ped-kanban-list">
-                  {col.pedidos.map((p) => (
-                    <div key={p.id} className="ob-ped-card ob-ped-card--kanban">
-                      <div className="ob-mob-card-topo">
-                        <div className="ob-ped-card-head-row">
-                          <span className="ob-ped-card-numero">Pedido #{p.numero}</span>
-                        </div>
-                        <p className="ob-mob-card-cliente">{p.cliente}</p>
-                        <span className="ob-mob-card-datetime">{p.datetime}</span>
-                      </div>
-                      <div className="ob-mob-card-divider" />
-                      <div className="ob-mob-card-produto">
-                        <div className="ob-mob-card-produto-img" style={{ position: "relative" }}>
-                          <PedidoImg src={p.imagem} alt={p.produto} emoji={p.emoji || "🎂"} />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p className="ob-mob-card-produto-nome">{p.produto}</p>
-                          <p className="ob-mob-card-produto-qtd">{p.qtd}</p>
-                        </div>
-                        <p className="ob-mob-card-valor">{p.valor}</p>
-                      </div>
-                      <div className="ob-mob-card-divider" />
-                      <div className="ob-mob-card-rodape">
-                        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                          <span className="ob-mob-card-info-label">Pgto:</span>
-                          <span style={{ fontSize: "0.7rem", color: p.pagamentoColor, fontWeight: 600 }}>{p.pagamento}</span>
-                        </div>
-                        <span style={{ fontSize: "0.7rem", color: "#6E3548", display: "flex", alignItems: "center", gap: 4 }}>
-                          {p.entregaIcon.startsWith("/")
-                            ? <img src={p.entregaIcon} alt="" style={{ width: 12, height: 12, objectFit: "contain" }} />
-                            : <span>{p.entregaIcon}</span>}
-                          <span style={{ color: "#431524", fontWeight: 600 }}>{p.dataLabel}</span>
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </>
-        ) : (
-          /* STACK MOBILE: comportamento original */
-          visiveis.map((p, idx) => {
-          const isPeek = idx === 2; // 3º card é o peek
-          const isOldest = idx === visiveis.length - 1 && visiveis.length === 3;
-          return (
-            <div
-              key={p.id}
-              className={`ob-ped-card ob-ped-card--flow ${isPeek ? "ob-ped-card--peek" : ""}`}
-            >
-              {/* Topo: número + status + cliente + datetime */}
-              <div className="ob-mob-card-topo">
-                <div className="ob-ped-card-head-row">
-                  <span className="ob-ped-card-numero">Pedido #{p.numero}</span>
-                  <span className="ob-ped-card-status" style={{ color: p.statusColor, background: p.statusBg }}>
-                    <span className="ob-ped-card-status-dot" style={{ background: p.statusDot }} />
-                    {p.statusLabel}
-                  </span>
-                </div>
-                <p className="ob-mob-card-cliente">{p.cliente}</p>
-                <span className="ob-mob-card-datetime">{p.datetime}</span>
-              </div>
-
-              {!isPeek && (
-                <>
-                  <div className="ob-mob-card-divider" />
-
-                  {/* Produto + valor */}
-                  <div className="ob-mob-card-produto">
-                    <div className="ob-mob-card-produto-img" style={{ position: "relative" }}>
-                      <PedidoImg src={p.imagem} alt={p.produto} emoji={p.emoji || "🎂"} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p className="ob-mob-card-produto-nome">{p.produto}</p>
-                      <p className="ob-mob-card-produto-qtd">{p.qtd}</p>
-                    </div>
-                    <p className="ob-mob-card-valor">{p.valor}</p>
-                  </div>
-
-                  <div className="ob-mob-card-divider" />
-
-                  {/* Rodapé: pagamento + entrega */}
-                  <div className="ob-mob-card-rodape">
-                    <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                      <span className="ob-mob-card-info-label">Pagamento:</span>
-                      <span style={{ fontSize: "0.7rem", color: p.pagamentoColor, fontWeight: 600 }}>{p.pagamento}</span>
-                      <span className="ob-ped-card-status" style={{ color: p.pagamentoColor, background: p.pagamentoBg, fontSize: "0.6rem", padding: "2px 6px" }}>
-                        {p.pagamentoStatus}
-                      </span>
-                    </div>
-                    <span style={{ fontSize: "0.7rem", color: "#6E3548", display: "flex", alignItems: "center", gap: 4 }}>
-                      {p.entregaIcon.startsWith("/")
-                        ? <img src={p.entregaIcon} alt="" style={{ width: 12, height: 12, objectFit: "contain" }} />
-                        : <span>{p.entregaIcon}</span>}
-                      {p.entregaLabel}
-                      <span style={{ color: "#431524", fontWeight: 600 }}>· {p.dataLabel}</span>
-                    </span>
-                  </div>
-                </>
-              )}
-
-              {isPeek && <div className="ob-ped-card-peek-fade" />}
-            </div>
-          );
-        })
-        )}
+      <div className="ob-newped-lista">
+        <p className="ob-newped-lista-label">PEDIDOS PENDENTES</p>
+        {ONBOARDING_PEDIDOS.slice(0, visiveis).map((p, idx) => (
+          <div
+            key={p.id}
+            className="ob-newped-wrap"
+            style={{
+              animation: "obNewPedIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both",
+              animationDelay: `${idx * 0.05}s`,
+            }}
+          >
+            <CardPedidoNovo p={p} />
+          </div>
+        ))}
       </div>
     </>
   );
