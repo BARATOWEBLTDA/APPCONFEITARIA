@@ -34,7 +34,7 @@ interface OnboardingProps {
   onClose: (slideAlcancada: number) => void;
 }
 
-const TOTAL_SLIDES = 9; // v2
+const TOTAL_SLIDES = 8; // v3 (removido "Monte a receita")
 
 export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const [slideIdx, setSlideIdx] = useState(0);
@@ -112,9 +112,8 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         {slideIdx === 3 && <Slide3Ingredientes onReady={handleSlideReady} />}
         {slideIdx === 4 && <Slide4Precificacao onReady={handleSlideReady} />}
         {slideIdx === 5 && <SlideCardapio onReady={handleSlideReady} />}
-        {slideIdx === 6 && <SlidePlaceholder eyebrow="Receitas que fazem as contas" title={<>MONTE A RECEITA.<br/>O DOONLY <span className="ob-fill">CALCULA</span>.</>} subtitle="Ingredientes, embalagem, custos e lucro reunidos automaticamente." emoji="📝" onReady={handleSlideReady} />}
-        {slideIdx === 7 && <SlidePlaceholder eyebrow="Tudo trabalhando junto" title={<>VOCÊ FAZ OS DOCES.<br/>O DOONLY <span className="ob-fill">ORGANIZA</span>.</>} subtitle="Sua rotina, seus números e seu negócio mais fáceis de acompanhar." emoji="📊" onReady={handleSlideReady} />}
-        {slideIdx === 8 && <SlideFinal onStart={finish} />}
+        {slideIdx === 6 && <SlidePlaceholder eyebrow="Tudo trabalhando junto" title={<>VOCÊ FAZ OS DOCES.<br/>O DOONLY <span className="ob-fill">ORGANIZA</span>.</>} subtitle="Sua rotina, seus números e seu negócio mais fáceis de acompanhar." emoji="📊" onReady={handleSlideReady} />}
+        {slideIdx === 7 && <SlideFinal onStart={finish} />}
       </div>
 
       {/* Navegação inferior — esconde os botões na última (CTA está na slide) */}
@@ -2506,7 +2505,6 @@ function SlideCardapio({ onReady }: { onReady: () => void }) {
       <div className="ob-slide-textabove">
         <span className="ob-slide-eyebrow">Sua vitrine online</span>
         <h2 className="ob-slide-title">UM CARDÁPIO BONITO<br/>E <span className="ob-fill">PRONTO PARA VENDER</span></h2>
-        <p className="ob-slide-subtitle-top">Mostre seus produtos e facilite o pedido das suas clientes.</p>
       </div>
 
       <div className="ob-cardapio-phone">
