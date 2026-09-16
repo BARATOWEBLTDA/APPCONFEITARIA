@@ -81,7 +81,6 @@ export default function Inicio() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmSair, setConfirmSair] = useState(false);
   const [email, setEmail] = useState("");
-  const menuRef = useRef<HTMLDivElement>(null);
 
   // Upload rápido de foto de perfil pelo ícone de câmera no header.
   // Fluxo: escolhe arquivo → abre cropper (círculo, com zoom) → confirma → upload.
@@ -790,18 +789,8 @@ export default function Inicio() {
           })()}
         </div>
 
-        {/* Sino de notificações à direita — abre o menu (conta + loja + ativar notif + sair) */}
-        <div className="ini-hero-bell-wrap" ref={menuRef}>
-          <button
-            className="ini-hero-bell"
-            onClick={() => setMenuOpen(o => !o)}
-            aria-label="Menu"
-            aria-expanded={menuOpen}
-            type="button"
-          >
-            <img src="/Sistema/sino.png" alt="" className="ini-hero-bell-img" />
-          </button>
-
+        {/* Menu (conta + loja + ativar notif + sair) — abre pelo avatar */}
+        <div>
           {menuOpen && createPortal(
             <>
               <div className="ini-menu-overlay" onClick={() => setMenuOpen(false)} aria-hidden="true" />
@@ -902,17 +891,6 @@ export default function Inicio() {
           )}
         </div>
       </div>
-
-      {/* Sino desktop — só aparece em ≥1100px (CSS controla) */}
-      <button
-        className="ini-desktop-bell"
-        onClick={() => setMenuOpen(o => !o)}
-        aria-label="Menu"
-        aria-expanded={menuOpen}
-        type="button"
-      >
-        <img src="/Sistema/sino.png" alt="" className="ini-desktop-bell-img" />
-      </button>
 
       <div className={`ini-content ${checklistDone ? "ini-content--done" : ""}`}>
         {/* ── Coluna principal ── */}
@@ -1312,9 +1290,6 @@ export default function Inicio() {
           position: relative;
         }
 
-        /* Sino desktop — só aparece em ≥1100px */
-        .ini-desktop-bell { display: none; }
-
         /* ── Layout 2 colunas ── */
         .ini-content {
           display: flex;
@@ -1681,24 +1656,6 @@ export default function Inicio() {
         }
 
         /* ── Sino de notificações no hero ── */
-        .ini-hero-bell-wrap { position: relative; flex-shrink: 0; z-index: 3; display: none; }
-        .ini-hero-bell {
-          width: 40px; height: 40px;
-          border-radius: 50%;
-          background: rgba(255,255,255,0.2);
-          border: 1.5px solid rgba(255,255,255,0.35);
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          padding: 0;
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          transition: background var(--dur-fast), transform var(--dur-fast);
-          position: relative;
-          color: #fff;
-        }
-        .ini-hero-bell:hover { background: rgba(255,255,255,0.3); transform: scale(1.05); }
-        .ini-hero-bell-img { width: 22px; height: 22px; object-fit: contain; }
-
         /* ── Wrap da métrica sobreposta ao hero ── */
         .ini-metrica-wrap {
           padding: 0 8px;
@@ -2606,7 +2563,6 @@ export default function Inicio() {
           .ini-hero-greeting h1 { font-size: var(--text-2xl); }
           .ini-hero-greeting p { font-size: var(--font-input); }
           .ini-hero-sparkles { display: none; }
-          .ini-hero-bell-wrap { display: block; }
           .ini-actions { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-resumo { grid-template-columns: 1fr 1fr; max-width: 720px; margin-left: auto; margin-right: auto; }
           .ini-alertas, .ini-tudo-ok, .ini-chart-card { max-width: 720px; margin-left: auto; margin-right: auto; }
@@ -2625,9 +2581,6 @@ export default function Inicio() {
 
           /* Hero escondido no desktop — saudação fica na sidebar */
           .ini-hero { display: none; }
-
-          /* Sino escondido no desktop — menu de conta fica na sidebar */
-          .ini-hero-bell-wrap { display: none; }
 
           /* ── Card de métrica em destaque: escondido no desktop
              (os 4 cards de métrica abaixo já mostram Faturamento — evita redundância) ── */
@@ -2734,17 +2687,7 @@ export default function Inicio() {
           .ini-aside-desktop { display: none; }
           .ini-aside-mobile { display: none; }
 
-          /* ── Sino desktop no canto superior direito — REMOVIDO ── */
-          .ini-desktop-bell {
-            display: none !important;
-          }
-          .ini-desktop-bell-img {
-            width: 22px;
-            height: 22px;
-            object-fit: contain;
-            filter: brightness(0) invert(1);
-          }
-          /* Empurra o conteúdo pra baixo pra não ficar atrás do sino */
+          /* Empurra o conteúdo pra baixo */
           .ini-main .ini-section--metrics {
             margin-top: 0;
           }
