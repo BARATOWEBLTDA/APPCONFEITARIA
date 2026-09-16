@@ -9,6 +9,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { CaretRight, Check, X } from "@phosphor-icons/react";
+import { supabase } from "@/lib/supabase";
 
 interface Step {
   selector: string;
@@ -34,30 +35,12 @@ const STEPS: Step[] = [
     cardPosition: "bottom",
   },
   {
-    selector: ".ini-hero-bell",
-    selectorDesktop: ".ini-desktop-bell",
-    title: "Suas notificações",
-    desc: "Toque no sino pra ver novidades, avisos e atualizações do app.",
-    shape: "circle",
-    padding: 6,
-    cardPosition: "bottom",
-  },
-  {
-    selector: ".ini-metrica-wrap",
-    selectorDesktop: ".ini-metrics-grid",
-    title: "Métricas em destaque",
-    desc: "Aqui você acompanha faturamento, pedidos e entregas em tempo real.",
-    shape: "rect",
-    padding: 8,
-    cardPosition: "bottom",
-  },
-  {
     selector: '[data-tour="recompensa"]',
     title: "Recompensa",
     desc: "Complete as etapas de configuração e ganhe 7 dias grátis no plano PRO!",
     shape: "rect",
     padding: 8,
-    cardPosition: "top",
+    cardPosition: "bottom",
     skipOnDesktop: true,
   },
   {
@@ -111,11 +94,40 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
       setVisible(true);
       return;
     }
+    // Fonte de verdade: Supabase (cross-device). LocalStorage é cache.
+    let cancelado = false;
     try {
       if (localStorage.getItem(LS_KEY) === "1") return;
     } catch {}
-    const t = setTimeout(() => setVisible(true), 1000);
-    return () => clearTimeout(t);
+
+    // Verifica no banco ANTES de agendar a exibição
+    (async () => {
+      try {
+        const { data: userRes } = await supabase.auth.getUser();
+        if (!userRes?.user?.id || cancelado) return;
+        const { data } = await supabase
+          .from("profiles")
+          .select("tour_visto")
+          .eq("id", userRes.user.id)
+          .single();
+        if (cancelado) return;
+        if (data?.tour_visto) {
+          // Banco diz que já viu — sincroniza localStorage e não mostra
+          try { localStorage.setItem(LS_KEY, "1"); } catch {}
+          return;
+        }
+        // Banco não marcou como visto — agenda exibição
+        const t = window.setTimeout(() => { if (!cancelado) setVisible(true); }, 1000);
+        // limpa timer se desmontar
+        return () => clearTimeout(t);
+      } catch {
+        // Erro (coluna não existe / rede) — cai no fallback: mostra normalmente
+        const t = window.setTimeout(() => { if (!cancelado) setVisible(true); }, 1000);
+        return () => clearTimeout(t);
+      }
+    })();
+
+    return () => { cancelado = true; };
   }, [forceOpen]);
 
   // Calcula o rect do elemento alvo — SEM fazer scroll.
@@ -189,6 +201,16 @@ export default function TourInicio({ forceOpen = false, onClose }: Props) {
 
   const fechar = () => {
     try { localStorage.setItem(LS_KEY, "1"); } catch {}
+    // Persiste no Supabase (cross-device). Silencioso se coluna não existir.
+    supabase.auth.getUser().then(({ data: userRes }) => {
+      if (userRes?.user?.id) {
+        supabase
+          .from("profiles")
+          .update({ tour_visto: true })
+          .eq("id", userRes.user.id)
+          .then(() => {}, () => {});
+      }
+    });
     setVisible(false);
     onClose?.();
   };

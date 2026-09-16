@@ -183,9 +183,9 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         (() => {
           const mostrarEtapas = started || pct > 0;
           return (
-            <div className="wc-root" data-tour="recompensa">
+            <div className="wc-root">
               {/* Cabeçalho grafite com o prêmio */}
-              <div className={`wc-prize ${mostrarEtapas ? "" : "wc-prize--intro"}`}>
+              <div className={`wc-prize ${mostrarEtapas ? "" : "wc-prize--intro"}`} data-tour="recompensa">
                 <span className="wc-prize-glow" aria-hidden="true" />
                 <span className="wc-prize-badge">
                   <Crown size={11} weight="fill" />

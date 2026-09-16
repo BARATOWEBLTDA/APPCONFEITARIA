@@ -395,11 +395,21 @@ export default function Configuracoes() {
               {/* Ver tutorial novamente */}
               <button
                 className="cfg-adv-item"
-                onClick={() => {
+                onClick={async () => {
                   try {
                     localStorage.removeItem("doonly_tutorial_visto");
                     localStorage.removeItem("doonly_tutorial_auto_aberto");
                     localStorage.removeItem("doonly_tour_inicio_visto");
+                  } catch {}
+                  // Reseta também no banco (cross-device). Silencioso se coluna não existir.
+                  try {
+                    const { data: userRes } = await supabase.auth.getUser();
+                    if (userRes?.user?.id) {
+                      await supabase
+                        .from("profiles")
+                        .update({ tutorial_visto: false, tour_visto: false })
+                        .eq("id", userRes.user.id);
+                    }
                   } catch {}
                   window.location.href = "/inicio";
                 }}

@@ -79,6 +79,36 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  // Ao logar, sincroniza estado do tutorial com Supabase (fonte de verdade cross-device).
+  // Se o banco diz "já viu", esconde o tutorial mesmo que o localStorage esteja vazio
+  // (ex: usuário que trocou de device, browser anônimo, cache limpo).
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    let cancelado = false;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("profiles")
+          .select("tutorial_visto")
+          .eq("id", session.user.id)
+          .single();
+        if (cancelado) return;
+        if (data?.tutorial_visto) {
+          // Banco diz que já viu — sincroniza localStorage e esconde
+          try {
+            localStorage.setItem("doonly_tutorial_visto", "1");
+            localStorage.setItem("doonly_tutorial_auto_aberto", "1");
+          } catch {}
+          setShowFirstTutorial(false);
+        }
+        // Se banco diz "não viu", respeita o estado local (que já foi calculado sync no init)
+      } catch {
+        // Coluna pode não existir ainda ou rede caiu — segue com localStorage
+      }
+    })();
+    return () => { cancelado = true; };
+  }, [session?.user?.id]);
+
   if (session === undefined) return null;
   if (!session) return <Navigate to="/login" replace />;
 
@@ -94,6 +124,14 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
             }
           } catch {
             // localStorage indisponível — segue o baile
+          }
+          // Persiste no Supabase (cross-device). Silencioso se coluna não existir.
+          if (session?.user?.id && slideAlcancada >= 5) {
+            supabase
+              .from("profiles")
+              .update({ tutorial_visto: true })
+              .eq("id", session.user.id)
+              .then(() => {}, () => {});
           }
           setShowFirstTutorial(false);
         }}
