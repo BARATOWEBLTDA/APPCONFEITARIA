@@ -1,5 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { CaretRight } from "@phosphor-icons/react";
+import { tocarSom } from "@/hooks/useSom";
+
+// Vibração leve (só mobile, ignora silenciosamente onde não tem suporte)
+const vibrarLeve = () => {
+  try {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      navigator.vibrate(15);
+    }
+  } catch {}
+};
 
 /**
  * Onboarding — Tela cheia, controlado pelo pai (isOpen + onClose).
@@ -62,6 +72,8 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
   const next = () => {
     if (slideIdx < TOTAL_SLIDES - 1) {
+      tocarSom('click');
+      vibrarLeve();
       setSlideReady(false);
       setSlideIdx((i) => i + 1);
     } else {
@@ -70,6 +82,8 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   };
 
   const finish = () => {
+    tocarSom('sucesso');
+    vibrarLeve();
     const alcancada = slideIdx;
     setSlideIdx(0); // reset pra próxima vez
     setSlideReady(false);
@@ -131,6 +145,10 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           width: 100vw;
           height: 100vh;
           height: 100dvh; /* mobile dynamic viewport */
+          -webkit-tap-highlight-color: transparent;
+          -webkit-touch-callout: none;
+          touch-action: pan-y;
+          overscroll-behavior: contain;
         }
         @keyframes obBgMove {
           0%   { background-position: 0% 50%; }
@@ -172,10 +190,11 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           justify-content: center;
           padding: 1.5rem 1.75rem;
           text-align: center;
-          animation: obFade 0.5s ease;
+          animation: obSlideIn 0.55s cubic-bezier(0.22, 1, 0.36, 1);
           overflow-y: auto;
           scrollbar-width: none; /* Firefox */
           -ms-overflow-style: none; /* IE/Edge antigo */
+          -webkit-overflow-scrolling: touch;
         }
         /* Quando tem textabove (telas com título fixo em cima), remove o centering
            e fixa o texto no topo — evita oscilação com conteúdo dinâmico */
@@ -186,9 +205,26 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-content::-webkit-scrollbar {
           display: none; /* Chrome/Safari/Opera */
         }
-        @keyframes obFade {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
+        @keyframes obSlideIn {
+          from {
+            opacity: 0;
+            transform: translateY(24px) scale(0.98);
+          }
+          60% {
+            opacity: 1;
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
+        /* Respeita usuário que pediu menos animação */
+        @media (prefers-reduced-motion: reduce) {
+          .ob-content { animation: obFadeSimple 0.2s ease; }
+        }
+        @keyframes obFadeSimple {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
         /* ── Navegação inferior ── */
@@ -209,6 +245,10 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           justify-content: center;
           gap: 6px;
           transition: transform 0.15s;
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: transparent;
+          user-select: none;
+          -webkit-user-select: none;
         }
         .ob-nav-btn:active { transform: scale(0.97); }
         .ob-nav-btn--next {
@@ -302,28 +342,27 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           pointer-events: none;
         }
         .ob-welcome-coroa {
-          width: 130px;
+          width: clamp(200px, 55vw, 280px);
           height: auto;
-          margin-bottom: 2rem;
+          margin-bottom: 1.5rem;
           opacity: 0;
           transform: scale(0.6);
-          filter: hue-rotate(-25deg) saturate(0.7);
           animation:
             obCoroaEntrada 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards,
             obCoroaPulse 4.5s ease-in-out 0.9s infinite;
         }
         @keyframes obCoroaEntrada {
-          from { opacity: 0; transform: scale(0.6); filter: hue-rotate(-25deg) saturate(0.7); }
-          to   { opacity: 1; transform: scale(1); filter: hue-rotate(-25deg) saturate(0.7); }
+          from { opacity: 0; transform: scale(0.6); }
+          to   { opacity: 1; transform: scale(1); }
         }
         @keyframes obCoroaPulse {
           0%, 100% {
             transform: scale(1);
-            filter: hue-rotate(-25deg) saturate(0.7) drop-shadow(0 0 14px rgba(244,196,160,0.4));
+            filter: drop-shadow(0 0 14px rgba(255,255,255,0.35));
           }
           50% {
-            transform: scale(1.05);
-            filter: hue-rotate(-25deg) saturate(0.7) drop-shadow(0 0 32px rgba(244,196,160,0.9)) drop-shadow(0 0 70px rgba(244,196,160,0.5));
+            transform: scale(1.04);
+            filter: drop-shadow(0 0 32px rgba(255,255,255,0.65)) drop-shadow(0 0 70px rgba(255,220,235,0.4));
           }
         }
 
@@ -348,19 +387,24 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           animation: obFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
         .ob-welcome-block {
-          font-size: 1.55rem;
+          font-size: clamp(1.25rem, 6.5vw, 1.7rem);
           font-weight: 800;
-          line-height: 1.18;
+          line-height: 1.22;
           letter-spacing: 0.005em;
           opacity: 0;
           transform: translateY(14px);
           animation: obFadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
         .ob-welcome-anchor .ob-fill {
+          display: inline-block;
           font-weight: 900;
           text-shadow: none;
-          color: #FFFFFF;
-          filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.85)) drop-shadow(0 0 28px rgba(255, 200, 220, 0.5));
+          color: #FFF8F0;
+          background: rgba(255, 255, 255, 0.14);
+          padding: 0.02em 0.35em;
+          border-radius: 0.35em;
+          backdrop-filter: blur(2px);
+          -webkit-backdrop-filter: blur(2px);
         }
 
         /* ── Slide 1: layout split (mobile = fluxo normal, desktop = 2 colunas) ── */
@@ -1893,7 +1937,7 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
         <div className="ob-slide1-orb ob-slide1-orb--b" aria-hidden="true" />
         <div className="ob-coroa-wrap">
           <img
-            src="/Sistema/TUTORIAL.png"
+            src="/log.png"
             alt=""
             className="ob-welcome-coroa"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
