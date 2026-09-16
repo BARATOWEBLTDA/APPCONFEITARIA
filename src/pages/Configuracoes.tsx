@@ -399,6 +399,7 @@ export default function Configuracoes() {
                   try {
                     localStorage.removeItem("doonly_tutorial_visto");
                     localStorage.removeItem("doonly_tutorial_auto_aberto");
+                    localStorage.removeItem("doonly_tour_inicio_visto");
                   } catch {}
                   window.location.href = "/inicio";
                 }}

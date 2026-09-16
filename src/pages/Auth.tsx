@@ -268,6 +268,14 @@ export default function Auth() {
       });
 
       // ── 4) Redireciona para o app ───────────────────────────
+      // Limpa flags de tutorial (garante que cliente novo vê tudo, mesmo
+      // se o navegador já tinha visitado o site com outra conta)
+      try {
+        localStorage.removeItem("doonly_tutorial_visto");
+        localStorage.removeItem("doonly_tutorial_auto_aberto");
+        localStorage.removeItem("doonly_tour_inicio_visto");
+      } catch {}
+
       setFading(true);
       setTimeout(() => navigate("/inicio"), 700);
     } catch (err: any) {
