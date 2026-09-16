@@ -1706,7 +1706,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           display: flex;
           flex-direction: column;
           gap: 10px;
-          padding: 0 4px;
+          padding: 0;
         }
         .ob-newped-lista-label {
           font-size: 10px;
@@ -1725,16 +1725,27 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           background: #fff;
           border: 1px solid #F0EBED;
           border-radius: 14px;
-          padding: 12px 14px;
+          padding: 14px 16px;
           font-family: var(--font-base), -apple-system, sans-serif;
           color: #2C2C2A;
           text-align: left;
         }
         .ob-newped-header {
           display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 8px;
+          align-items: center;
+          gap: 10px;
+        }
+        .ob-newped-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 13px;
+          font-weight: 800;
+          letter-spacing: -0.01em;
+          flex-shrink: 0;
         }
         .ob-newped-header-info { flex: 1; min-width: 0; }
         .ob-newped-cliente-row {
@@ -2223,7 +2234,6 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
         <br />
         E DE CADA DETALHE
       </h2>
-      <p className="ob-slide-subtitle-top">Histórico, pedidos e informações importantes sempre à mão.</p>
 
       <div className="ob-clientes-stack">
         {visiveis.map((c) => (
@@ -2274,6 +2284,8 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
           </div>
         ))}
       </div>
+
+      <p className="ob-slide-subtitle-top" style={{ marginTop: "1rem" }}>Histórico, pedidos e informações importantes sempre à mão.</p>
     </div>
   );
 }
@@ -2442,6 +2454,9 @@ const ONBOARDING_PEDIDOS = [
     numero: "5",
     cliente: "Alanis Nunes",
     telefone: "(41) 99530-5803",
+    initials: "AN",
+    avatarBg: "#FCE0E9",
+    avatarColor: "#993556",
     origem: "manual" as const,
     statusKey: "aguardando_aceite",
     statusLabel: "Aguardando aprovação",
@@ -2460,6 +2475,9 @@ const ONBOARDING_PEDIDOS = [
     numero: "6",
     cliente: "Marina Silva",
     telefone: "(41) 98812-4471",
+    initials: "MS",
+    avatarBg: "#E6F1FB",
+    avatarColor: "#185FA5",
     origem: "manual" as const,
     statusKey: "em_producao",
     statusLabel: "Em produção",
@@ -2499,6 +2517,9 @@ function CardPedidoNovo({ p }: { p: typeof ONBOARDING_PEDIDOS[0] }) {
   return (
     <div className="ob-newped-card">
       <div className="ob-newped-header">
+        <div className="ob-newped-avatar" style={{ background: p.avatarBg, color: p.avatarColor }}>
+          {p.initials}
+        </div>
         <div className="ob-newped-header-info">
           <div className="ob-newped-cliente-row">
             <span className="ob-newped-cliente">{p.cliente}</span>
