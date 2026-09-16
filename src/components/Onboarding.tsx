@@ -669,49 +669,39 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         }
         .ob-cli-card {
           background: #fff;
-          color: #431524;
+          color: #2C2C2A;
           border-radius: 14px;
-          border: 1.5px solid #ECC2D0;
-          padding: 0.85rem;
-          box-shadow: 0 12px 30px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
-          animation: obClienteFlowIn 0.6s cubic-bezier(0.22, 1.2, 0.36, 1) both;
+          border: 1px solid #F0EBED;
+          padding: 14px 16px;
+          text-align: left;
+          animation: obClienteFlowIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
           transform-origin: center top;
         }
         @keyframes obClienteFlowIn {
-          0% {
+          from {
             opacity: 0;
-            transform: translateY(-30px) scale(0.85);
-            max-height: 0;
-            margin-top: 0;
-            margin-bottom: 0;
-            padding-top: 0;
-            padding-bottom: 0;
+            transform: translateY(-14px) scale(0.97);
           }
-          50% {
-            opacity: 1;
-            max-height: 300px;
-          }
-          100% {
+          to {
             opacity: 1;
             transform: translateY(0) scale(1);
-            max-height: 300px;
           }
         }
         .ob-cli-header {
           display: flex;
           align-items: center;
-          gap: 0.65rem;
+          gap: 12px;
         }
         .ob-cli-avatar {
           width: 44px;
           height: 44px;
-          border-radius: 50%;
+          border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #fff;
+          color: #993556;
           font-weight: 700;
-          font-size: 0.95rem;
+          font-size: 14px;
           flex-shrink: 0;
           overflow: hidden;
         }
@@ -726,93 +716,72 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           min-width: 0;
         }
         .ob-cli-nome {
-          font-size: 0.9rem;
+          font-size: 14px;
           font-weight: 700;
-          color: #431524;
-          line-height: 1.2;
+          color: #2C2C2A;
+          line-height: 1.25;
+          letter-spacing: -0.01em;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .ob-cli-sub {
-          font-size: 0.7rem;
-          color: #6E3548;
+          font-size: 12px;
+          color: #888780;
           margin-top: 2px;
-        }
-        .ob-cli-badge-aniv {
-          background: #FEF3C7;
-          color: #B45309;
-          border: 1px solid #FCD34D;
-          font-size: 0.62rem;
-          font-weight: 600;
-          padding: 3px 7px;
-          border-radius: 999px;
-          white-space: nowrap;
-          display: flex;
-          align-items: center;
-          gap: 3px;
-          flex-shrink: 0;
+          font-weight: 500;
         }
         .ob-cli-divider {
           height: 1px;
-          background: linear-gradient(90deg, transparent, #ECC2D0, transparent);
-          margin: 0.65rem 0;
+          background: #E8E5DC;
+          margin: 12px 0;
         }
         .ob-cli-metricas {
-          display: flex;
-          gap: 0.55rem;
-          font-size: 0.72rem;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          margin-bottom: 8px;
         }
         .ob-cli-metrica {
-          flex: 1;
-          background: #FBF6F3;
-          border-radius: 8px;
-          padding: 0.5rem 0.6rem;
+          background: #F8F5F1;
+          border-radius: 10px;
+          padding: 8px 12px;
           min-width: 0;
         }
         .ob-cli-metrica-label {
-          color: #6E3548;
-          font-size: 0.6rem;
+          color: #888780;
+          font-size: 10px;
+          font-weight: 600;
           text-transform: uppercase;
-          letter-spacing: 0.03em;
+          letter-spacing: 0.04em;
           white-space: nowrap;
         }
         .ob-cli-metrica-valor {
-          color: #431524;
-          font-weight: 700;
-          font-size: 0.88rem;
-          margin-top: 3px;
+          color: #2C2C2A;
+          font-weight: 800;
+          font-size: 16px;
+          letter-spacing: -0.01em;
+          margin-top: 2px;
           white-space: nowrap;
+          font-variant-numeric: tabular-nums;
         }
         .ob-cli-inline {
-          margin-top: 0.5rem;
-          font-size: 0.72rem;
-          color: #6E3548;
+          font-size: 12px;
+          color: #5F5E5A;
           display: flex;
           justify-content: space-between;
           align-items: center;
           gap: 6px;
+          padding: 2px 0;
         }
         .ob-cli-inline strong {
-          color: #431524;
+          color: #2C2C2A;
           font-weight: 700;
+          font-variant-numeric: tabular-nums;
         }
-        .ob-cli-aniv {
-          margin-top: 0.6rem;
-          background: #FEF3C7;
-          border: 1px solid #FCD34D;
-          color: #92400E;
-          border-radius: 8px;
-          padding: 0.45rem 0.6rem;
-          font-size: 0.72rem;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          flex-wrap: wrap;
-        }
-        .ob-cli-acao {
-          color: #B45309;
-          text-decoration: underline;
-          font-weight: 700;
-          cursor: pointer;
+        .ob-cli-inline-l {
+          color: #888780;
+          font-weight: 500;
         }
 
         /* === CARDÁPIO — mockup fiel ao app === */
@@ -2297,6 +2266,7 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
                 <div className="ob-cli-nome">{c.nome}</div>
                 <div className="ob-cli-sub">Cliente há {c.tempo}</div>
               </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B4B2A9" strokeWidth="2" style={{flexShrink:0}}><polyline points="9 18 15 12 9 6"/></svg>
             </div>
 
             <div className="ob-cli-divider" />
@@ -2313,18 +2283,13 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
             </div>
 
             <div className="ob-cli-inline">
-              <span>Ticket médio:</span>
+              <span className="ob-cli-inline-l">Ticket médio:</span>
               <strong>{c.ticketMedio}</strong>
             </div>
             <div className="ob-cli-inline">
-              <span>⏱ Última compra:</span>
+              <span className="ob-cli-inline-l">⏱ Última compra:</span>
               <strong>{c.ultimaCompra}</strong>
             </div>
-            {c.aniversario && (
-              <div className="ob-cli-aniv">
-                🎂 Aniversário {c.aniversario} — <span className="ob-cli-acao">Enviar Cardápio</span>
-              </div>
-            )}
           </div>
         ))}
       </div>
