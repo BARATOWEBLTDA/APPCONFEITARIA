@@ -450,15 +450,9 @@ export default function Configuracoes() {
         {/* ── PREFERÊNCIAS ────────────────────────────────── */}
         <div className="cfgp-card">
           <div className="cfgp-block-hdr"><span>Preferências</span></div>
-          <div className="cfgp-rows">
-            <div className="cfgp-row">
-              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notificações push</span>
-              <PushToggle />
-            </div>
-            <div className="cfgp-row cfgp-row--last">
-              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>Sons do app</span>
-              <SomToggle />
-            </div>
+          <div className="cfgp-toggles">
+            <PushToggle />
+            <SomToggle />
           </div>
         </div>
 
@@ -990,6 +984,10 @@ export default function Configuracoes() {
 
         .cfgp-footer { text-align: center; font-size: 10.5px; color: #B4B2A9; margin: 12px 0 4px; }
         .cfgp-hint { font-size: 11px; color: #888780; margin: -4px 0 0; padding: 0 4px; line-height: 1.4; font-style: italic; }
+        .cfgp-toggles { padding: 4px 18px 12px; }
+        .cfgp-toggles .cfg-push-row { padding: 12px 0; border-bottom: 1px solid #F0EBED; gap: 12px; }
+        .cfgp-toggles .cfg-push-row:last-child { border-bottom: none; }
+        .cfgp-toggles .cfg-notif-label { font-size: 13px; font-weight: 600; color: #2C2C2A; margin: 0 0 2px; }
 
         .cfg-accordion { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); overflow: hidden; }
         .cfg-accordion-header { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 1rem 1.15rem; background: none; border: none; cursor: pointer; font-family: 'Geist', sans-serif; text-align: left; }
