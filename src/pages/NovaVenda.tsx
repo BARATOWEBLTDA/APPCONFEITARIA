@@ -393,7 +393,7 @@ export default function NovaVenda() {
     })
     setSucessoAberto(true)
     setSalvando(false)
-    tocarSom('sucesso')
+    tocarSom('pedido')
   }
 
   // Reset completo pra nova venda

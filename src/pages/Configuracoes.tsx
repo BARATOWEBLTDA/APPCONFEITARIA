@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { refreshProfile } from "@/hooks/useProfile";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
-import { sonsHabilitados, setSonsHabilitados, tocarSom } from "@/hooks/useSom";
+import { sonsHabilitados, setSonsHabilitados, tocarSom, somNotificacaoHabilitado, setSomNotificacaoHabilitado, somPedidoHabilitado, setSomPedidoHabilitado } from "@/hooks/useSom";
 
 
 // ── Componente inline: toggle de push notifications ──────────
@@ -29,6 +29,64 @@ function SomToggle() {
           }}
         />
         <span className="toggle-slider" />
+      </label>
+    </div>
+  );
+}
+
+function SomNotificacaoToggle() {
+  const [ativo, setAtivo] = useState(somNotificacaoHabilitado());
+  const mestre = sonsHabilitados();
+  return (
+    <div className="cfg-push-row">
+      <div style={{ flex: 1 }}>
+        <p className="cfg-notif-label">🔔 Som de notificação</p>
+        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+          {!mestre ? 'Desative "Sons do app" acima primeiro' : (ativo ? 'Ativado — toca ao chegar novidades.' : 'Desativado — notificações em silêncio.')}
+        </p>
+      </div>
+      <label className="toggle">
+        <input
+          type="checkbox"
+          checked={ativo && mestre}
+          disabled={!mestre}
+          onChange={() => {
+            const novo = !ativo;
+            setAtivo(novo);
+            setSomNotificacaoHabilitado(novo);
+            if (novo) setTimeout(() => tocarSom('notificacao'), 100);
+          }}
+        />
+        <span className="toggle-slider" style={{ opacity: !mestre ? 0.4 : 1 }} />
+      </label>
+    </div>
+  );
+}
+
+function SomPedidoToggle() {
+  const [ativo, setAtivo] = useState(somPedidoHabilitado());
+  const mestre = sonsHabilitados();
+  return (
+    <div className="cfg-push-row">
+      <div style={{ flex: 1 }}>
+        <p className="cfg-notif-label">🛎️ Som de pedido novo</p>
+        <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+          {!mestre ? 'Desative "Sons do app" acima primeiro' : (ativo ? 'Ativado — toca ao registrar pedidos.' : 'Desativado — pedidos em silêncio.')}
+        </p>
+      </div>
+      <label className="toggle">
+        <input
+          type="checkbox"
+          checked={ativo && mestre}
+          disabled={!mestre}
+          onChange={() => {
+            const novo = !ativo;
+            setAtivo(novo);
+            setSomPedidoHabilitado(novo);
+            if (novo) setTimeout(() => tocarSom('pedido'), 100);
+          }}
+        />
+        <span className="toggle-slider" style={{ opacity: !mestre ? 0.4 : 1 }} />
       </label>
     </div>
   );
@@ -453,6 +511,8 @@ export default function Configuracoes() {
           <div className="cfgp-toggles">
             <PushToggle />
             <SomToggle />
+            <SomNotificacaoToggle />
+            <SomPedidoToggle />
           </div>
         </div>
 
