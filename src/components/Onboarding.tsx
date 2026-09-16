@@ -672,7 +672,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           color: #2C2C2A;
           border-radius: 14px;
           border: 1px solid #F0EBED;
-          padding: 14px 16px;
+          padding: 18px 16px;
           text-align: left;
           animation: obClienteFlowIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
           transform-origin: center top;
@@ -690,18 +690,18 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-cli-header {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 14px;
         }
         .ob-cli-avatar {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #993556;
-          font-weight: 700;
-          font-size: 14px;
+          font-weight: 800;
+          font-size: 20px;
+          letter-spacing: -0.02em;
           flex-shrink: 0;
           overflow: hidden;
         }
@@ -716,55 +716,103 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           min-width: 0;
         }
         .ob-cli-nome {
-          font-size: 14px;
-          font-weight: 700;
+          font-size: 17px;
+          font-weight: 800;
           color: #2C2C2A;
-          line-height: 1.25;
-          letter-spacing: -0.01em;
+          line-height: 1.15;
+          letter-spacing: -0.015em;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
         .ob-cli-sub {
-          font-size: 12px;
+          font-size: 13px;
           color: #888780;
-          margin-top: 2px;
+          margin-top: 3px;
           font-weight: 500;
         }
         .ob-cli-divider {
           height: 1px;
-          background: #E8E5DC;
-          margin: 12px 0;
+          background: #F0EBED;
+          margin: 14px 0;
         }
-        .ob-cli-metricas {
+        .ob-cli-stats {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 8px;
-          margin-bottom: 8px;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 6px;
+          margin-bottom: 12px;
         }
-        .ob-cli-metrica {
+        .ob-cli-stat {
           background: #F8F5F1;
           border-radius: 10px;
-          padding: 8px 12px;
+          padding: 10px 8px;
+          text-align: center;
           min-width: 0;
         }
-        .ob-cli-metrica-label {
+        .ob-cli-stat-label {
+          font-size: 9.5px;
           color: #888780;
-          font-size: 10px;
-          font-weight: 600;
+          font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.04em;
-          white-space: nowrap;
+          letter-spacing: 0.05em;
         }
-        .ob-cli-metrica-valor {
-          color: #2C2C2A;
+        .ob-cli-stat-valor {
+          font-size: 18px;
           font-weight: 800;
-          font-size: 16px;
-          letter-spacing: -0.01em;
-          margin-top: 2px;
-          white-space: nowrap;
+          color: #2C2C2A;
+          margin-top: 3px;
+          letter-spacing: -0.02em;
           font-variant-numeric: tabular-nums;
         }
+        .ob-cli-stat-valor--money {
+          font-size: 15px;
+        }
+        .ob-cli-end-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 10px 12px;
+          background: #FAF8F5;
+          border-radius: 10px;
+          margin-bottom: 8px;
+        }
+        .ob-cli-end-info {
+          min-width: 0;
+          flex: 1;
+        }
+        .ob-cli-end-label {
+          font-size: 10px;
+          color: #888780;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          margin-bottom: 3px;
+        }
+        .ob-cli-end-rua {
+          font-size: 13px;
+          font-weight: 700;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+          line-height: 1.3;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .ob-cli-end-sec {
+          font-size: 11.5px;
+          color: #888780;
+          margin-top: 2px;
+          font-weight: 500;
+        }
+        .ob-cli-mapa {
+          width: 54px;
+          height: 54px;
+          border-radius: 10px;
+          overflow: hidden;
+          border: 1px solid #E0E5DC;
+          flex-shrink: 0;
+        }
+        .ob-cli-mapa svg { display: block; }
         .ob-cli-inline {
           font-size: 12px;
           color: #5F5E5A;
@@ -772,7 +820,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           justify-content: space-between;
           align-items: center;
           gap: 6px;
-          padding: 2px 0;
+          padding: 4px 2px;
         }
         .ob-cli-inline strong {
           color: #2C2C2A;
@@ -2130,15 +2178,19 @@ const CLIENTES_DEMO = [
   {
     id: 1,
     nome: "Ana Cristina Vieira",
+    telefone: "(41) 99530-5803",
     initials: "AC",
-    avatarBg: "#F97316", // laranja
+    avatarBg: "#FCE0E9",
+    avatarColor: "#993556",
     imagem: "/tutorial/cliente1.jpeg",
     tempo: "8 meses",
-    totalPedidos: 3,
-    totalGasto: "R$ 279,90",
-    ticketMedio: "R$ 93,30",
-    ultimaCompra: "há 1 mês",
+    totalPedidos: 12,
+    totalGasto: "R$ 1.800",
+    ticketMedio: "R$ 150",
+    ultimaCompra: "há 3 dias",
     aniversario: "em 7 dias",
+    endereco: "Rua das Palmeiras, 342",
+    enderecoSec: "Batel · Curitiba/PR",
   },
   {
     id: 2,
@@ -2252,7 +2304,7 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
         {visiveis.map((c) => (
           <div key={c.id} className="ob-cli-card">
             <div className="ob-cli-header">
-              <div className="ob-cli-avatar" style={{ background: c.avatarBg }}>
+              <div className="ob-cli-avatar" style={{ background: c.avatarBg, color: (c as any).avatarColor || '#993556' }}>
                 {c.imagem
                   ? <img src={c.imagem} alt={c.nome} onError={(e) => {
                       const img = e.target as HTMLImageElement;
@@ -2264,28 +2316,49 @@ function SlideClientes({ onReady }: { onReady: () => void }) {
               </div>
               <div className="ob-cli-nome-bloco">
                 <div className="ob-cli-nome">{c.nome}</div>
-                <div className="ob-cli-sub">Cliente há {c.tempo}</div>
+                <div className="ob-cli-sub">{(c as any).telefone || `Cliente há ${c.tempo}`}</div>
               </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#B4B2A9" strokeWidth="2" style={{flexShrink:0}}><polyline points="9 18 15 12 9 6"/></svg>
             </div>
 
             <div className="ob-cli-divider" />
 
-            <div className="ob-cli-metricas">
-              <div className="ob-cli-metrica">
-                <div className="ob-cli-metrica-label">Pedidos</div>
-                <div className="ob-cli-metrica-valor">{c.totalPedidos}</div>
+            <div className="ob-cli-stats">
+              <div className="ob-cli-stat">
+                <div className="ob-cli-stat-label">Pedidos</div>
+                <div className="ob-cli-stat-valor">{c.totalPedidos}</div>
               </div>
-              <div className="ob-cli-metrica">
-                <div className="ob-cli-metrica-label">Total gasto</div>
-                <div className="ob-cli-metrica-valor">{c.totalGasto}</div>
+              <div className="ob-cli-stat">
+                <div className="ob-cli-stat-label">Total</div>
+                <div className="ob-cli-stat-valor ob-cli-stat-valor--money">{c.totalGasto}</div>
+              </div>
+              <div className="ob-cli-stat">
+                <div className="ob-cli-stat-label">Ticket</div>
+                <div className="ob-cli-stat-valor ob-cli-stat-valor--money">{c.ticketMedio}</div>
               </div>
             </div>
 
-            <div className="ob-cli-inline">
-              <span className="ob-cli-inline-l">Ticket médio:</span>
-              <strong>{c.ticketMedio}</strong>
-            </div>
+            {(c as any).endereco && (
+              <div className="ob-cli-end-row">
+                <div className="ob-cli-end-info">
+                  <div className="ob-cli-end-label">Endereço</div>
+                  <div className="ob-cli-end-rua">{(c as any).endereco}</div>
+                  <div className="ob-cli-end-sec">{(c as any).enderecoSec}</div>
+                </div>
+                <div className="ob-cli-mapa" aria-hidden="true">
+                  <svg width="54" height="54" viewBox="0 0 54 54" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="54" height="54" fill="#EDEBE0"/>
+                    <path d="M0 18 L54 22" stroke="#CFD3C0" strokeWidth="4" fill="none"/>
+                    <path d="M0 36 L54 40" stroke="#CFD3C0" strokeWidth="3" fill="none"/>
+                    <path d="M18 0 L22 54" stroke="#D8DCC9" strokeWidth="2.5" fill="none"/>
+                    <path d="M38 0 L40 54" stroke="#D8DCC9" strokeWidth="2" fill="none"/>
+                    <path d="M0 8 L54 6" stroke="#DCE0CD" strokeWidth="1.5" fill="none" opacity="0.7"/>
+                    <circle cx="28" cy="26" r="8" fill="#E85A8C" opacity="0.95"/>
+                    <circle cx="28" cy="26" r="3" fill="#fff"/>
+                  </svg>
+                </div>
+              </div>
+            )}
+
             <div className="ob-cli-inline">
               <span className="ob-cli-inline-l">⏱ Última compra:</span>
               <strong>{c.ultimaCompra}</strong>
