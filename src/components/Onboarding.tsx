@@ -1728,6 +1728,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           padding: 12px 14px;
           font-family: var(--font-base), -apple-system, sans-serif;
           color: #2C2C2A;
+          text-align: left;
         }
         .ob-newped-header {
           display: flex;
@@ -2183,56 +2184,36 @@ const CLIENTES_DEMO = [
 ];
 
 function SlideClientes({ onReady }: { onReady: () => void }) {
-  const [visiveis, setVisiveis] = useState<typeof CLIENTES_DEMO>([]);
-  const [isDesktop] = useState(() =>
-    typeof window !== "undefined" ? window.matchMedia("(min-width: 900px)").matches : false
-  );
+  const [visivel, setVisivel] = useState(false);
 
   useEffect(() => {
     const timers: number[] = [];
 
-    const imagensPraCarregar = CLIENTES_DEMO.map((c) => c.imagem).filter((s): s is string => !!s);
-    const preload = Promise.all(
-      imagensPraCarregar.map(
-        (src) =>
-          new Promise<void>((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve();
-            img.onerror = () => resolve();
-            img.src = src;
-          })
-      )
-    );
+    // Pré-carrega a imagem do primeiro cliente
+    const primeiroImg = CLIENTES_DEMO[0]?.imagem;
+    const preload = primeiroImg
+      ? new Promise<void>((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+          img.src = primeiroImg;
+        })
+      : Promise.resolve();
 
     let cancelado = false;
     preload.then(() => {
       if (cancelado) return;
-
-      if (isDesktop) {
-        // Desktop: mostra os 6 em cascata rápida
-        CLIENTES_DEMO.forEach((_, idx) => {
-          timers.push(window.setTimeout(() => {
-            setVisiveis(CLIENTES_DEMO.slice(0, idx + 1));
-          }, 200 + idx * 220));
-        });
-        timers.push(window.setTimeout(onReady, 200 + CLIENTES_DEMO.length * 220 + 400));
-      } else {
-        // Mobile: apenas 2 clientes (comportamento original)
-        timers.push(window.setTimeout(() => {
-          setVisiveis([CLIENTES_DEMO[0]]);
-        }, 300));
-        timers.push(window.setTimeout(() => {
-          setVisiveis([CLIENTES_DEMO[1], CLIENTES_DEMO[0]]);
-        }, 1700));
-        timers.push(window.setTimeout(onReady, 3000));
-      }
+      timers.push(window.setTimeout(() => setVisivel(true), 300));
+      timers.push(window.setTimeout(onReady, 900));
     });
 
     return () => {
       cancelado = true;
       timers.forEach((t) => clearTimeout(t));
     };
-  }, [onReady, isDesktop]);
+  }, [onReady]);
+
+  const visiveis = visivel ? [CLIENTES_DEMO[0]] : [];
 
   return (
     <div className="ob-slide-textabove">
@@ -2577,16 +2558,14 @@ function CardPedidoNovo({ p }: { p: typeof ONBOARDING_PEDIDOS[0] }) {
 }
 
 function Slide2Pedidos({ onReady }: { onReady: () => void }) {
-  const [visiveis, setVisiveis] = useState<number>(0);
+  const [visivel, setVisivel] = useState(false);
 
   useEffect(() => {
     const timers: number[] = [];
-    // Card 1 entra rápido
-    timers.push(window.setTimeout(() => setVisiveis(1), 350));
-    // Card 2 entra depois
-    timers.push(window.setTimeout(() => setVisiveis(2), 350 + 1400));
+    // Card entra rápido
+    timers.push(window.setTimeout(() => setVisivel(true), 350));
     // Libera o botão "Próximo"
-    timers.push(window.setTimeout(onReady, 350 + 1400 + 700));
+    timers.push(window.setTimeout(onReady, 900));
     return () => timers.forEach((t) => clearTimeout(t));
   }, [onReady]);
 
@@ -2600,18 +2579,14 @@ function Slide2Pedidos({ onReady }: { onReady: () => void }) {
 
       <div className="ob-newped-lista">
         <p className="ob-newped-lista-label">PEDIDOS PENDENTES</p>
-        {ONBOARDING_PEDIDOS.slice(0, visiveis).map((p, idx) => (
+        {visivel && (
           <div
-            key={p.id}
             className="ob-newped-wrap"
-            style={{
-              animation: "obNewPedIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both",
-              animationDelay: `${idx * 0.05}s`,
-            }}
+            style={{ animation: "obNewPedIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both" }}
           >
-            <CardPedidoNovo p={p} />
+            <CardPedidoNovo p={ONBOARDING_PEDIDOS[0]} />
           </div>
-        ))}
+        )}
       </div>
     </>
   );
