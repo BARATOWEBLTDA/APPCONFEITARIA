@@ -30,6 +30,8 @@ self.addEventListener("push", (event) => {
     vibrate: [120, 60, 120],
     tag: data.tag,
     requireInteraction: false,
+    silent: false,
+    renotify: !!data.tag,
   };
 
   event.waitUntil(self.registration.showNotification(data.title, options));
