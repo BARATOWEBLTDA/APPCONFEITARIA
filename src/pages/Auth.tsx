@@ -82,9 +82,6 @@ export default function Auth() {
     try {
       const params = new URLSearchParams(window.location.search);
       const ref = params.get("ref");
-      console.log("[REF DEBUG] URL atual:", window.location.href);
-      console.log("[REF DEBUG] search:", window.location.search);
-      console.log("[REF DEBUG] ref extraido:", ref);
       // Aceita ?ref= vindo da URL OU um código já salvo em localStorage
       // (caso a pessoa saia e volte, o banner continua aparecendo)
       let refCode: string | null = null;
@@ -95,9 +92,7 @@ export default function Auth() {
         veioViaURL = true;
       } else {
         refCode = localStorage.getItem("doonly_ref_code");
-        console.log("[REF DEBUG] ref não veio pela URL, tentando localStorage:", refCode);
       }
-      console.log("[REF DEBUG] refCode final:", refCode);
 
       // Busca nome + foto do indicador (fallback silencioso se código não existe)
       if (refCode) {
@@ -106,25 +101,23 @@ export default function Auth() {
           .select("nome, foto_url")
           .eq("codigo_indicacao", refCode)
           .maybeSingle()
-          .then(({ data, error }) => {
-            console.log("[REF DEBUG] resultado busca:", { data, error });
+          .then(({ data }) => {
             if (data?.nome) setIndicadorNome(data.nome);
             if (data?.foto_url) setIndicadorFoto(data.foto_url);
           });
       }
 
-      // Auto-scroll pro form de cadastro (só se veio via URL agora — não incomoda
-      // se a pessoa já visitou antes e voltou)
+      // Se veio via URL: abre a aba de CADASTRO automaticamente
+      // (a pessoa entrou por convite = é nova, faz sentido cadastrar)
+      // e faz scroll até o form.
       if (veioViaURL) {
+        setShowCadastro(true);
         setTimeout(() => {
           const el = document.querySelector(".cadastro-form");
-          console.log("[REF DEBUG] elemento cadastro-form encontrado:", !!el);
           if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 300);
+        }, 400);
       }
-    } catch (err) {
-      console.error("[REF DEBUG] erro:", err);
-    }
+    } catch {}
   }, []);
 
   // ── Login: validação inline (só email) ─────────────────────
