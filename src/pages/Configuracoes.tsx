@@ -12,7 +12,7 @@ function SomToggle() {
   return (
     <div className="cfg-push-row">
       <div style={{ flex: 1 }}>
-        <p className="cfg-notif-label">🔊 Sons do app</p>
+        <p className="cfg-notif-label">Sons do app</p>
         <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
           {ativo ? 'Ativado — toca um som ao registrar vendas.' : 'Desativado — sem efeitos sonoros.'}
         </p>
@@ -40,7 +40,7 @@ function SomNotificacaoToggle() {
   return (
     <div className="cfg-push-row">
       <div style={{ flex: 1 }}>
-        <p className="cfg-notif-label">🔔 Som de notificação</p>
+        <p className="cfg-notif-label">Som de notificação</p>
         <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
           {!mestre ? 'Desative "Sons do app" acima primeiro' : (ativo ? 'Ativado — toca ao chegar novidades.' : 'Desativado — notificações em silêncio.')}
         </p>
@@ -69,7 +69,7 @@ function SomPedidoToggle() {
   return (
     <div className="cfg-push-row">
       <div style={{ flex: 1 }}>
-        <p className="cfg-notif-label">🛎️ Som de pedido novo</p>
+        <p className="cfg-notif-label">Som de pedido novo</p>
         <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
           {!mestre ? 'Desative "Sons do app" acima primeiro' : (ativo ? 'Ativado — toca ao registrar pedidos.' : 'Desativado — pedidos em silêncio.')}
         </p>
