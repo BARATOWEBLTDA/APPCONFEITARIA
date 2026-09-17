@@ -1048,7 +1048,19 @@ export default function Configuracoes() {
         .cfg-badge-expirado { background: rgba(239,68,68,0.3); color: var(--text-inverse); }
 
         /* ====== NOVA CONFIGURAÇÕES PESSOAIS (mobile) ====== */
-        .cfg-mobile { padding: 12px; background: #F5F3EF; min-height: 100vh; box-sizing: border-box; }
+        .cfg-mobile {
+          padding: 12px;
+          background: #F5F3EF;
+          min-height: 100vh;
+          box-sizing: border-box;
+          /* Estende até as bordas do parent (compensa padding do .layout-main) */
+          margin: calc(-1 * var(--space-2, 8px));
+          /* Compensa também padding-top e padding-bottom pra ir do topo ao bottom nav */
+          margin-top: calc(-1 * (var(--pad-page-top, 1rem) + env(safe-area-inset-top, 0px)));
+          margin-bottom: -6.5rem;
+          padding-top: calc(12px + var(--pad-page-top, 1rem) + env(safe-area-inset-top, 0px));
+          padding-bottom: calc(12px + 6.5rem);
+        }
         .cfg-mobile .cfgp-card { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
         .cfg-mobile .cfgp-card:last-of-type { margin-bottom: 8px; }
 
