@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { CaretRight } from "@phosphor-icons/react";
 import { tocarSom } from "@/hooks/useSom";
 
@@ -41,6 +41,33 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
   const [slideReady, setSlideReady] = useState(false);
 
   const handleSlideReady = useCallback(() => setSlideReady(true), []);
+
+  // ── Efeito glow que segue o mouse (mesmo do Auth) ─────────────
+  // Só ativa em desktop. Usa easing suave (0.06) pra dar sensação premium.
+  const glowRef = useRef<HTMLDivElement>(null);
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const currentRef = useRef({ x: 0, y: 0 });
+  const rafRef = useRef<number>(0);
+  useEffect(() => {
+    if (!isOpen) return;
+    if (window.innerWidth < 900) return;
+    const onMove = (e: MouseEvent) => { mouseRef.current = { x: e.clientX, y: e.clientY }; };
+    window.addEventListener("mousemove", onMove);
+    const animate = () => {
+      currentRef.current.x += (mouseRef.current.x - currentRef.current.x) * 0.06;
+      currentRef.current.y += (mouseRef.current.y - currentRef.current.y) * 0.06;
+      if (glowRef.current) {
+        glowRef.current.style.left = `${currentRef.current.x}px`;
+        glowRef.current.style.top = `${currentRef.current.y}px`;
+      }
+      rafRef.current = requestAnimationFrame(animate);
+    };
+    animate();
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [isOpen]);
 
   // Pré-carrega TODAS as imagens do tutorial assim que ele abre.
   // Enquanto o usuário lê o Welcome, o browser baixa tudo em background,
@@ -92,6 +119,9 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
 
   return (
     <div className="ob-root" role="dialog" aria-modal="true" aria-label="Boas-vindas ao Doonly">
+      {/* Glow que segue o mouse (desktop) */}
+      <div ref={glowRef} className="ob-mouse-glow" aria-hidden="true" />
+
       {/* Indicador de progresso (bolinhas) */}
       <div className="ob-dots" role="tablist" aria-label="Progresso do onboarding">
         {Array.from({ length: TOTAL_SLIDES }).map((_, i) => (
@@ -131,9 +161,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           position: fixed;
           inset: 0;
           z-index: 9999;
-          background: linear-gradient(160deg, #FF9AC1 0%, #E85A8C 40%, #A8235A 70%, #E85A8C 100%);
-          background-size: 200% 200%;
-          animation: obBgMove 18s ease infinite;
+          background: linear-gradient(135deg, #FF9AC1 0%, #E85A8C 50%, #A8235A 100%);
           color: #fff;
           font-family: var(--font-base);
           display: flex;
@@ -148,11 +176,6 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           -webkit-touch-callout: none;
           touch-action: pan-y;
           overscroll-behavior: contain;
-        }
-        @keyframes obBgMove {
-          0%   { background-position: 0% 50%; }
-          50%  { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
         }
 
         /* ── Botão pular (X canto direito) ── */
@@ -418,12 +441,28 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
         .ob-slide1-orb { display: none; }
         /* Por padrão (mobile), esconde as quebras específicas de desktop */
         .ob-br-desktop { display: none; }
+        /* Glow do mouse — só aparece em desktop */
+        .ob-mouse-glow {
+          position: fixed;
+          z-index: 1;
+          width: 350px;
+          height: 350px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+          transform: translate(-50%, -50%);
+          pointer-events: none;
+          will-change: transform;
+          display: none;
+        }
+        @media (min-width: 900px) {
+          .ob-mouse-glow { display: block; }
+        }
 
         @media (min-width: 900px) {
           .ob-slide1-split {
             display: grid;
             grid-template-columns: auto auto;
-            gap: 3rem;
+            gap: 1rem;
             max-width: 900px;
             width: 100%;
             align-items: center;
