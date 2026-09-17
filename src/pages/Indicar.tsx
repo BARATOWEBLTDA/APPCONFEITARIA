@@ -161,16 +161,27 @@ export default function Indicar() {
         )}
       </div>
 
-      {/* ── CONTADOR DESTAQUE ─────────────────────────── */}
-      <div className="ind-contador">
-        <div className="ind-contador-label">Você já tem</div>
-        <div className="ind-contador-num">{conversoes}</div>
-        <div className="ind-contador-desc">
-          {conversoes === 0 && "assinantes. Comece a compartilhar e ganhe prêmios!"}
-          {conversoes > 0 && proximoIdx !== -1 && `assinantes. Faltam ${PREMIOS[proximoIdx].meta - conversoes} para o próximo prêmio!`}
-          {conversoes > 0 && proximoIdx === -1 && "assinantes. Você conquistou todos os prêmios! 🎉"}
+      {/* ── CONTADOR DESTAQUE (dinâmico) ────────────── */}
+      {conversoes === 0 ? (
+        <div className="ind-contador ind-contador--zero">
+          <div className="ind-contador-emoji">🎁</div>
+          <div className="ind-contador-title-zero">Comece agora sua jornada!</div>
+          <div className="ind-contador-desc-zero">
+            Compartilhe seu link e ganhe seu 1º prêmio:<br/>
+            <b>1 mês PRO grátis</b> com apenas 3 assinantes.
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="ind-contador">
+          <div className="ind-contador-label">Você já tem</div>
+          <div className="ind-contador-num">{conversoes}</div>
+          <div className="ind-contador-desc">
+            {proximoIdx !== -1
+              ? `assinantes. Faltam ${PREMIOS[proximoIdx].meta - conversoes} para o próximo prêmio!`
+              : "assinantes. Você conquistou todos os prêmios! 🎉"}
+          </div>
+        </div>
+      )}
 
       {/* ── ROADMAP DE PRÊMIOS ────────────────────────── */}
       <div className="ind-card">
@@ -433,6 +444,33 @@ export default function Indicar() {
           font-weight: 600;
           color: #993556;
           line-height: 1.4;
+        }
+
+        /* Estado zero — motivacional, sem número gigante */
+        .ind-contador--zero {
+          padding: 22px 20px;
+        }
+        .ind-contador-emoji {
+          font-size: 44px;
+          line-height: 1;
+          margin-bottom: 8px;
+        }
+        .ind-contador-title-zero {
+          font-size: 19px;
+          font-weight: 900;
+          color: #993556;
+          letter-spacing: -0.02em;
+          margin-bottom: 6px;
+          line-height: 1.2;
+        }
+        .ind-contador-desc-zero {
+          font-size: 13px;
+          font-weight: 500;
+          color: #993556;
+          line-height: 1.5;
+        }
+        .ind-contador-desc-zero b {
+          font-weight: 800;
         }
 
         /* Roadmap */
