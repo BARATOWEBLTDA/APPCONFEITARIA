@@ -292,9 +292,9 @@ export default function Indicar() {
         }
         .ind-root * { font-family: var(--font-base) !important; }
 
-        /* Banner — colado no topo e nas laterais, sem cantos arredondados */
+        /* Banner — colado no topo (respeitando safe-area do notch/status bar) e nas laterais, sem cantos arredondados */
         .ind-banner-wrap {
-          margin: calc(-1 * (12px + var(--pad-page-top, 1rem) + env(safe-area-inset-top, 0px))) -12px 12px;
+          margin: calc(-1 * (12px + var(--pad-page-top, 1rem))) -12px 12px;
           overflow: hidden;
           line-height: 0;
         }
