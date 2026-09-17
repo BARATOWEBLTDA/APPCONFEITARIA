@@ -281,15 +281,15 @@ export default function Indicar() {
         <div className="ind-passos">
           <div className="ind-passo">
             <div className="ind-passo-num">1</div>
-            <div className="ind-passo-txt">Compartilhe seu link com uma pessoa que tem confeitaria</div>
+            <div className="ind-passo-txt">Compartilhe seu link com quem trabalha com confeitaria.</div>
           </div>
           <div className="ind-passo">
             <div className="ind-passo-num">2</div>
-            <div className="ind-passo-txt">Ela se cadastra pelo seu link e ganha 50% OFF no 1º mês PRO</div>
+            <div className="ind-passo-txt">Quem se cadastrar pelo seu link ganha 50% OFF no 1º mês PRO.</div>
           </div>
           <div className="ind-passo">
             <div className="ind-passo-num">3</div>
-            <div className="ind-passo-txt">Quando ela ativar o PRO, você ganha 1 conversão. A cada meta, um prêmio!</div>
+            <div className="ind-passo-txt">Assim que a pessoa assinar o PRO, você soma 1 indicação válida. Alcance as metas e desbloqueie seus prêmios!</div>
           </div>
         </div>
       </div>
