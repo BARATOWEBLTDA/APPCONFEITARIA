@@ -92,6 +92,14 @@ function ensureRealtimeChannel() {
       notifyListeners(payload.new as Profile);
     })
     .subscribe();
+
+  // Ao deslogar, limpa cache e reseta o profile global.
+  // Sem isso, o próximo login abriria com dados da sessão anterior.
+  supabase.auth.onAuthStateChange((event) => {
+    if (event === "SIGNED_OUT") {
+      notifyListeners(null);
+    }
+  });
 }
 
 export function useProfile() {

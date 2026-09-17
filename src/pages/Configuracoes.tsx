@@ -272,7 +272,13 @@ export default function Configuracoes() {
     return `(${d.slice(0,2)}) ${d.slice(2,3)} ${d.slice(3,7)}-${d.slice(7)}`;
   };
 
-  const handleLogout = async () => { await supabase.auth.signOut(); navigate("/login"); };
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    try {
+      localStorage.removeItem("doonly_profile_cache_v1");
+    } catch {}
+    navigate("/login");
+  };
 
   const [showAlterarSenha, setShowAlterarSenha] = useState(false);
   const [novaSenha, setNovaSenha] = useState("");
@@ -339,7 +345,14 @@ export default function Configuracoes() {
     if (entrega.observacoes_entrega !== undefined) payload.observacoes_entrega = entrega.observacoes_entrega;
     payload.ocultar_categorias = ocultarCategorias;
     const { error: err } = await supabase.from("profiles").upsert(payload, { onConflict: "id" });
-    if (err) { setError("Erro ao salvar. Tente novamente."); } else { setSuccess(true); setNomeSalvo(form.nome); await refreshProfile(); setTimeout(() => setSuccess(false), 3000); }
+    if (err) { setError("Erro ao salvar. Tente novamente."); }
+    else {
+      // Sincroniza tb no user_metadata (usado pelo Supabase Auth Admin)
+      try {
+        await supabase.auth.updateUser({ data: { nome: form.nome, telefone: form.telefone } });
+      } catch {}
+      setSuccess(true); setNomeSalvo(form.nome); await refreshProfile(); setTimeout(() => setSuccess(false), 3000);
+    }
     setSaving(false);
   };
 
