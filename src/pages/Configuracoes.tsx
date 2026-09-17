@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import { refreshProfile } from "@/hooks/useProfile";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { sonsHabilitados, setSonsHabilitados, tocarSom, somNotificacaoHabilitado, setSomNotificacaoHabilitado, somPedidoHabilitado, setSomPedidoHabilitado } from "@/hooks/useSom";
+import SugestaoWizard from "@/components/SugestaoWizard";
 
 
 // ── Componente inline: toggle de push notifications ──────────
@@ -280,6 +281,7 @@ export default function Configuracoes() {
   const [savingSenha, setSavingSenha] = useState(false);
   const [showExcluir, setShowExcluir] = useState(false);
   const [editMode, setEditMode] = useState(false);
+  const [sugestaoOpen, setSugestaoOpen] = useState(false);
   const [excluirConfirm, setExcluirConfirm] = useState("");
   const [copied, setCopied] = useState(false);
   const [ogPreview, setOgPreview] = useState<string | null>(null);
@@ -463,7 +465,7 @@ export default function Configuracoes() {
               <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
 
-            <button className="cfgp-quick-item" onClick={() => alert("🚀 Em breve! Estamos preparando essa página.")}>
+            <button className="cfgp-quick-item" onClick={() => setSugestaoOpen(true)}>
               <span className="cfgp-quick-ico cfgp-quick-ico--amber">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
               </span>
@@ -1428,6 +1430,12 @@ export default function Configuracoes() {
         }
         .mob-resgatar-btn:disabled { opacity: 0.6; cursor: not-allowed; }
       `}</style>
+
+      <SugestaoWizard
+        open={sugestaoOpen}
+        onClose={() => setSugestaoOpen(false)}
+        perfil={{ nome: form.nome, telefone: form.telefone, email: userEmail }}
+      />
     </div>
   );
 }
