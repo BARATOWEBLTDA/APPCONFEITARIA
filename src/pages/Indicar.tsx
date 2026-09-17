@@ -25,10 +25,10 @@ interface Amiga {
 }
 
 const PREMIOS = [
-  { meta: 3, emoji: "👑", titulo: "1 mês grátis no Doonly", desc: "Uma mensalidade completa por sua conta" },
-  { meta: 10, emoji: "🎁", titulo: "3 meses grátis + mimo Doonly", desc: "Caneca, ecobag ou item personalizado" },
-  { meta: 25, emoji: "👕", titulo: "Kit Exclusivo + 6 meses grátis", desc: "Avental + faixa + Confeiteira Destaque" },
-  { meta: 50, emoji: "🎂", titulo: "Batedeira Planetária + 1 ano grátis", desc: "O grande prêmio Doonly" },
+  { meta: 3, emoji: "👑", imagem: null as string | null, titulo: "1 mês grátis no Doonly", desc: "Uma mensalidade completa por sua conta" },
+  { meta: 10, emoji: "🎁", imagem: "/Sistema/camiseta.png", titulo: "3 meses grátis + camiseta", desc: "Camiseta personalizada com a marca da sua confeitaria" },
+  { meta: 25, emoji: "👕", imagem: null as string | null, titulo: "Kit Exclusivo + 6 meses grátis", desc: "Avental + faixa + Confeiteira Destaque" },
+  { meta: 50, emoji: "🎂", imagem: null as string | null, titulo: "Batedeira Planetária + 1 ano grátis", desc: "O grande prêmio Doonly" },
 ];
 
 export default function Indicar() {
@@ -211,8 +211,17 @@ export default function Indicar() {
                     {eProximo && <span className="ind-premio-tag ind-premio-tag--next">PRÓXIMO</span>}
                     {desbloqueado && <span className="ind-premio-tag ind-premio-tag--won">CONQUISTADO</span>}
                   </div>
-                  <div className="ind-premio-title">{p.titulo}</div>
-                  <div className="ind-premio-desc">{p.desc}</div>
+                  <div className="ind-premio-body">
+                    <div className="ind-premio-body-txt">
+                      <div className="ind-premio-title">{p.titulo}</div>
+                      <div className="ind-premio-desc">{p.desc}</div>
+                    </div>
+                    {p.imagem && (
+                      <div className="ind-premio-foto-wrap">
+                        <img src={p.imagem} alt={p.titulo} className="ind-premio-foto" />
+                      </div>
+                    )}
+                  </div>
 
                   {eProximo && (
                     <div className="ind-premio-prog">
@@ -550,6 +559,36 @@ export default function Indicar() {
         }
         .ind-premio-card--next .ind-premio-meta-txt { color: #993556; }
         .ind-premio-card--won .ind-premio-meta-txt { color: #166534; }
+
+        /* Body do card: texto à esquerda + foto opcional à direita */
+        .ind-premio-body {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+        }
+        .ind-premio-body-txt {
+          flex: 1;
+          min-width: 0;
+        }
+        .ind-premio-foto-wrap {
+          width: 60px;
+          height: 60px;
+          border-radius: 10px;
+          background: #FAF8F5;
+          border: 1px solid #F0EBED;
+          flex-shrink: 0;
+          overflow: hidden;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .ind-premio-card--next .ind-premio-foto-wrap { background: #fff; border-color: #F4C0D1; }
+        .ind-premio-card--won .ind-premio-foto-wrap { background: #fff; border-color: #86EFAC; }
+        .ind-premio-foto {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          padding: 4px;
+          box-sizing: border-box;
+        }
 
         /* Título — sempre 1 linha, com ellipsis se ultrapassar */
         .ind-premio-title {
