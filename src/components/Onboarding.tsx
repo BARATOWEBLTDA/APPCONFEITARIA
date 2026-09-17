@@ -493,7 +493,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           .ob-slide1-left .ob-welcome-anchor {
             text-align: left;
             padding: 0;
-            max-width: none;
+            max-width: 380px;
           }
           .ob-slide1-left .ob-welcome-block {
             font-size: 2.6rem;
