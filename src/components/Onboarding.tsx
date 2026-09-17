@@ -493,7 +493,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           .ob-slide1-left .ob-welcome-anchor {
             text-align: left;
             padding: 0;
-            max-width: 380px;
+            max-width: none;
           }
           .ob-slide1-left .ob-welcome-block {
             font-size: 2.6rem;
@@ -502,6 +502,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           .ob-slide1-left .ob-welcome-eyebrow {
             font-size: 1.2rem !important;
             line-height: 1.5 !important;
+            max-width: 420px;
           }
           /* Quebras condicionais no desktop:
              - Esconde a quebra que só serve pro mobile
