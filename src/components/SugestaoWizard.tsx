@@ -312,7 +312,7 @@ export default function SugestaoWizard({ open, onClose, perfil }: Props) {
           display: flex; align-items: center; justify-content: center;
           transition: all 0.2s ease;
         }
-        .sug-step--active .sug-step-dot { background: #2C1219; color: #fff; }
+        .sug-step--active .sug-step-dot { background: #E85A8C; color: #fff; }
         .sug-step-label { font-size: 11px; font-weight: 700; color: #2C2C2A; letter-spacing: -0.01em; }
         .sug-step-line {
           width: 32px; height: 2px;
@@ -379,11 +379,11 @@ export default function SugestaoWizard({ open, onClose, perfil }: Props) {
         }
         .sug-area:hover { background: #FCE0E9; border-color: #F4C0D1; }
         .sug-area--sel {
-          background: #2C1219;
+          background: #E85A8C;
           color: #fff;
-          border-color: #2C1219;
+          border-color: #E85A8C;
         }
-        .sug-area--sel:hover { background: #3D1A24; }
+        .sug-area--sel:hover { background: #C33A6E; }
 
         .sug-review {
           background: #FAF8F5;
@@ -464,7 +464,7 @@ export default function SugestaoWizard({ open, onClose, perfil }: Props) {
           flex: 1;
           text-align: center;
           padding: 13px;
-          background: #2C1219;
+          background: #E85A8C;
           color: #fff;
           border-radius: 12px;
           font-size: 14px;
@@ -472,7 +472,7 @@ export default function SugestaoWizard({ open, onClose, perfil }: Props) {
           cursor: pointer;
           transition: background 0.15s ease;
         }
-        .sug-btn-primary:hover:not(:disabled) { background: #3D1A24; }
+        .sug-btn-primary:hover:not(:disabled) { background: #C33A6E; }
         .sug-btn-primary:disabled {
           background: #E8E5DC;
           color: #B4B2A9;
