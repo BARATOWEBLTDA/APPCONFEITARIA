@@ -241,10 +241,20 @@ export default function Indicar() {
         })}
       </div>
 
-      {/* ── AMIGAS QUE ENTRARAM ───────────────────────── */}
-      {amigas.length > 0 && (
-        <div className="ind-card">
-          <div className="ind-hdr">Quem entrou pelo seu link <span className="ind-hdr-count">({amigas.length})</span></div>
+      {/* ── QUEM ENTROU PELO SEU LINK (sempre visível) ── */}
+      <div className="ind-card">
+        <div className="ind-hdr">
+          Quem entrou pelo seu link
+          {amigas.length > 0 && <span className="ind-hdr-count">({amigas.length})</span>}
+        </div>
+
+        {amigas.length === 0 ? (
+          <div className="ind-empty">
+            <div className="ind-empty-emoji">👥</div>
+            <div className="ind-empty-title">Ninguém ainda</div>
+            <div className="ind-empty-desc">Compartilhe seu link e acompanhe por aqui quem entra no Doonly através dele.</div>
+          </div>
+        ) : (
           <div className="ind-amigas">
             {amigas.map(a => {
               const isPro = a.status === "pro" || a.status === "premio_resgatado";
@@ -264,8 +274,8 @@ export default function Indicar() {
               );
             })}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* ── COMO FUNCIONA ─────────────────────────────── */}
       <div className="ind-card">
@@ -609,6 +619,29 @@ export default function Indicar() {
         .ind-pcard-resgatar:hover { background: #14532D; }
 
         /* Amigas */
+        .ind-empty {
+          text-align: center;
+          padding: 20px 12px 8px;
+        }
+        .ind-empty-emoji {
+          font-size: 40px;
+          margin-bottom: 8px;
+          filter: grayscale(0.3);
+          opacity: 0.85;
+        }
+        .ind-empty-title {
+          font-size: 14px;
+          font-weight: 800;
+          color: #5F5E5A;
+          margin-bottom: 4px;
+        }
+        .ind-empty-desc {
+          font-size: 12px;
+          color: #888780;
+          line-height: 1.45;
+          max-width: 260px;
+          margin: 0 auto;
+        }
         .ind-amigas { display: flex; flex-direction: column; gap: 8px; }
         .ind-amiga { display: flex; align-items: center; gap: 12px; padding: 4px 0; }
         .ind-amiga-avatar {
