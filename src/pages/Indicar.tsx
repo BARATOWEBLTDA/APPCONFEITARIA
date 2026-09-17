@@ -203,6 +203,10 @@ export default function Indicar() {
                 </div>
 
                 <div className={`ind-premio-card ${eProximo ? "ind-premio-card--next" : ""} ${desbloqueado ? "ind-premio-card--won" : ""}`}>
+                  <div className="ind-premio-meta">
+                    <span className="ind-premio-meta-num">{p.meta}</span>
+                    <span className="ind-premio-meta-txt">{p.meta === 1 ? "assinante" : "assinantes"}</span>
+                  </div>
                   <div className="ind-premio-top">
                     <div>
                       <div className="ind-premio-title">{p.titulo}</div>
@@ -506,6 +510,37 @@ export default function Indicar() {
         }
         .ind-premio-card--next { background: #FEF3F7; border: 2px solid #E85A8C; }
         .ind-premio-card--won { background: #F0FDF4; border: 2px solid #166534; }
+
+        /* Badge da meta (aparece em todos os cards) */
+        .ind-premio-meta {
+          display: inline-flex;
+          align-items: baseline;
+          gap: 4px;
+          padding: 3px 10px;
+          background: #F0EBED;
+          border-radius: 999px;
+          margin-bottom: 8px;
+          font-family: var(--font-base) !important;
+        }
+        .ind-premio-card--next .ind-premio-meta { background: #FCE0E9; }
+        .ind-premio-card--won .ind-premio-meta { background: #DCFCE7; }
+        .ind-premio-meta-num {
+          font-size: 14px;
+          font-weight: 900;
+          color: #5F5E5A;
+          letter-spacing: -0.02em;
+        }
+        .ind-premio-card--next .ind-premio-meta-num { color: #993556; }
+        .ind-premio-card--won .ind-premio-meta-num { color: #166534; }
+        .ind-premio-meta-txt {
+          font-size: 10.5px;
+          font-weight: 700;
+          color: #888780;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .ind-premio-card--next .ind-premio-meta-txt { color: #993556; }
+        .ind-premio-card--won .ind-premio-meta-txt { color: #166534; }
         .ind-premio-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
         .ind-premio-title { font-size: 14px; font-weight: 800; color: #2C2C2A; letter-spacing: -0.01em; line-height: 1.2; }
         .ind-premio-card--next .ind-premio-title,
