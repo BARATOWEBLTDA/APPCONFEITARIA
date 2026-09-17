@@ -497,11 +497,11 @@ export default function Indicar() {
         .ind-premio-badge--lock { opacity: 0.55; }
         .ind-premio-badge--next { border-color: #E85A8C; box-shadow: 0 0 0 2px rgba(232, 90, 140, 0.15); }
         .ind-premio-badge--won { background: #166534; border-color: #166534; color: #fff; }
-        /* Quando tem imagem, fundo branco pra foto se destacar */
-        .ind-premio-badge--img { background: #fff; border-color: #F0EBED; padding: 3px; }
+        /* Quando tem imagem, imagem preenche 100% do badge */
+        .ind-premio-badge--img { background: #fff; border-color: #F0EBED; padding: 0; }
         .ind-premio-badge--img.ind-premio-badge--next { border-color: #E85A8C; }
         .ind-premio-badge--img.ind-premio-badge--won { background: #F0FDF4; border-color: #166534; }
-        .ind-premio-badge-img { width: 100%; height: 100%; object-fit: contain; }
+        .ind-premio-badge-img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .ind-premio-line {
           flex: 1;
           width: 3px;
