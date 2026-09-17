@@ -489,6 +489,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           .ob-slide1-right .ob-welcome-coroa {
             width: 240px;
             margin-bottom: 0;
+            transform: translateY(-30px);
           }
           .ob-slide1-left .ob-welcome-anchor {
             text-align: left;
