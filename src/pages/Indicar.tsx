@@ -25,10 +25,10 @@ interface Amiga {
 }
 
 const PREMIOS = [
-  { meta: 3, emoji: "👑", imagem: null as string | null, titulo: "1 mês grátis no Doonly", desc: "Uma mensalidade completa por sua conta" },
-  { meta: 10, emoji: "🎁", imagem: "/Sistema/camiseta.png", titulo: "3 meses grátis + camiseta", desc: "Camiseta personalizada com a marca da sua confeitaria" },
-  { meta: 25, emoji: "👕", imagem: "/Sistema/avental.png", titulo: "Kit Exclusivo + 6 meses grátis", desc: "Avental + faixa + Confeiteira Destaque" },
-  { meta: 50, emoji: "🎂", imagem: "/Sistema/batedeira.png", titulo: "Batedeira Planetária + 1 ano grátis", desc: "O grande prêmio Doonly" },
+  { meta: 3, emoji: "👑", imagem: "/Sistema/brinde1.png", titulo: "1 mês grátis no Doonly", desc: "Uma mensalidade completa por sua conta" },
+  { meta: 10, emoji: "🎁", imagem: "/Sistema/brinde2.png", titulo: "3 meses grátis + camiseta", desc: "Camiseta personalizada com a marca da sua confeitaria" },
+  { meta: 25, emoji: "👕", imagem: "/Sistema/brinde3.png", titulo: "Kit Exclusivo + 6 meses grátis", desc: "Avental + faixa + Confeiteira Destaque" },
+  { meta: 50, emoji: "🎂", imagem: "/Sistema/brinde4.png", titulo: "Batedeira Planetária + 1 ano grátis", desc: "O grande prêmio Doonly" },
 ];
 
 export default function Indicar() {
@@ -183,70 +183,62 @@ export default function Indicar() {
         </div>
       )}
 
-      {/* ── ROADMAP DE PRÊMIOS ────────────────────────── */}
-      <div className="ind-card">
-        <div className="ind-hdr">Seus prêmios</div>
+      {/* ── ROADMAP DE PRÊMIOS (cards grandes com foto) ── */}
+      <div className="ind-premios-hdr">Seus prêmios</div>
+      <div className="ind-premios">
+        {PREMIOS.map((p, idx) => {
+          const desbloqueado = conversoes >= p.meta;
+          const eProximo = idx === proximoIdx;
 
-        <div className="ind-roadmap">
-          {PREMIOS.map((p, idx) => {
-            const desbloqueado = conversoes >= p.meta;
-            const eProximo = idx === proximoIdx;
-            const isUltimo = idx === PREMIOS.length - 1;
+          return (
+            <div key={p.meta} className={`ind-pcard ${eProximo ? "ind-pcard--next" : ""} ${desbloqueado ? "ind-pcard--won" : ""} ${!eProximo && !desbloqueado ? "ind-pcard--lock" : ""}`}>
+              {/* Foto do prêmio (topo do card) */}
+              <div className="ind-pcard-foto">
+                {p.imagem
+                  ? <img src={p.imagem} alt={p.titulo} />
+                  : <span className="ind-pcard-emoji">{p.emoji}</span>}
 
-            return (
-              <div key={p.meta} className="ind-premio">
-                <div className="ind-premio-side">
-                  <div className={`ind-premio-badge ${desbloqueado ? "ind-premio-badge--won" : eProximo ? "ind-premio-badge--next" : "ind-premio-badge--lock"} ${p.imagem ? "ind-premio-badge--img" : ""}`}>
-                    {desbloqueado
-                      ? <Trophy size={24} weight="fill" />
-                      : p.imagem
-                        ? <img src={p.imagem} alt="" className="ind-premio-badge-img" />
-                        : <span>{p.emoji}</span>}
-                  </div>
-                  {!isUltimo && <div className={`ind-premio-line ${desbloqueado ? "ind-premio-line--won" : ""}`} />}
-                </div>
-
-                <div className={`ind-premio-card ${eProximo ? "ind-premio-card--next" : ""} ${desbloqueado ? "ind-premio-card--won" : ""}`}>
-                  <div className="ind-premio-meta-row">
-                    <div className="ind-premio-meta">
-                      <span className="ind-premio-meta-num">{p.meta}</span>
-                      <span className="ind-premio-meta-txt">{p.meta === 1 ? "assinante" : "assinantes"}</span>
-                    </div>
-                    {eProximo && <span className="ind-premio-tag ind-premio-tag--next">PRÓXIMO</span>}
-                    {desbloqueado && <span className="ind-premio-tag ind-premio-tag--won">CONQUISTADO</span>}
-                  </div>
-                  <div className="ind-premio-title">{p.titulo}</div>
-                  <div className="ind-premio-desc">{p.desc}</div>
-
-                  {eProximo && (
-                    <div className="ind-premio-prog">
-                      <div className="ind-premio-prog-labels">
-                        <span>Progresso</span>
-                        <span className="ind-premio-prog-num">{conversoes} / {p.meta}</span>
-                      </div>
-                      <div className="ind-premio-prog-bar">
-                        <div className="ind-premio-prog-fill" style={{ width: `${Math.min(100, (conversoes / p.meta) * 100)}%` }} />
-                      </div>
-                    </div>
-                  )}
-
-                  {!eProximo && !desbloqueado && (
-                    <div className="ind-premio-faltam">
-                      <Lock size={11} weight="bold" /> Faltam <b>{p.meta - conversoes}</b> assinantes PRO
-                    </div>
-                  )}
-
-                  {desbloqueado && (
-                    <a href="https://wa.me/554199999999?text=Oi! Quero resgatar meu pr%C3%AAmio de indica%C3%A7%C3%A3o do Doonly." target="_blank" rel="noopener" className="ind-premio-resgatar">
-                      <WhatsappLogo size={14} weight="fill" />
-                      Resgatar pelo WhatsApp
-                    </a>
-                  )}
-                </div>
+                {/* Tags flutuantes sobre a foto */}
+                {eProximo && <span className="ind-pcard-flag ind-pcard-flag--next">PRÓXIMO</span>}
+                {desbloqueado && <span className="ind-pcard-flag ind-pcard-flag--won"><Trophy size={11} weight="fill" /> CONQUISTADO</span>}
+                <span className={`ind-pcard-meta ${eProximo ? "ind-pcard-meta--next" : desbloqueado ? "ind-pcard-meta--won" : ""}`}>
+                  {p.meta} {p.meta === 1 ? "assinante" : "assinantes"}
+                </span>
               </div>
-            );
-          })}
-        </div>
+
+              {/* Info embaixo */}
+              <div className="ind-pcard-body">
+                <div className="ind-pcard-title">{p.titulo}</div>
+                <div className="ind-pcard-desc">{p.desc}</div>
+
+                {eProximo && (
+                  <div className="ind-pcard-prog">
+                    <div className="ind-pcard-prog-labels">
+                      <span>{conversoes} / {p.meta}</span>
+                      <span className="ind-pcard-prog-faltam">Faltam {p.meta - conversoes}</span>
+                    </div>
+                    <div className="ind-pcard-prog-bar">
+                      <div className="ind-pcard-prog-fill" style={{ width: `${Math.min(100, (conversoes / p.meta) * 100)}%` }} />
+                    </div>
+                  </div>
+                )}
+
+                {!eProximo && !desbloqueado && (
+                  <div className="ind-pcard-faltam">
+                    <Lock size={11} weight="bold" /> Faltam <b>{p.meta - conversoes}</b> assinantes PRO
+                  </div>
+                )}
+
+                {desbloqueado && (
+                  <a href="https://wa.me/554199999999?text=Oi! Quero resgatar meu pr%C3%AAmio de indica%C3%A7%C3%A3o do Doonly." target="_blank" rel="noopener" className="ind-pcard-resgatar">
+                    <WhatsappLogo size={14} weight="fill" />
+                    Resgatar pelo WhatsApp
+                  </a>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* ── AMIGAS QUE ENTRARAM ───────────────────────── */}
@@ -479,130 +471,133 @@ export default function Indicar() {
           font-weight: 800;
         }
 
-        /* Roadmap */
-        .ind-roadmap { display: flex; flex-direction: column; }
-        .ind-premio { display: flex; gap: 14px; }
-        .ind-premio-side { position: relative; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
-        .ind-premio-badge {
-          width: 56px; height: 56px;
-          border-radius: 14px;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 28px;
-          flex-shrink: 0;
-          background: #1A1A1A;
-          border: 3px solid #1A1A1A;
-          color: #fff;
-          overflow: hidden;
-        }
-        .ind-premio-badge--lock { opacity: 0.55; }
-        .ind-premio-badge--next { border-color: #E85A8C; box-shadow: 0 0 0 2px rgba(232, 90, 140, 0.15); }
-        .ind-premio-badge--won { background: #166534; border-color: #166534; color: #fff; }
-        /* Quando tem imagem, imagem preenche 100% do badge */
-        .ind-premio-badge--img { background: #fff; border-color: #F0EBED; padding: 0; }
-        .ind-premio-badge--img.ind-premio-badge--next { border-color: #E85A8C; }
-        .ind-premio-badge--img.ind-premio-badge--won { background: #F0FDF4; border-color: #166534; }
-        .ind-premio-badge-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .ind-premio-line {
-          flex: 1;
-          width: 3px;
-          min-height: 40px;
-          background: #F0EBED;
-          margin: 4px 0;
-        }
-        .ind-premio-line--won { background: linear-gradient(180deg, #166534 0%, #F0EBED 100%); }
-
-        .ind-premio-card {
-          flex: 1;
-          padding: 12px 14px;
-          background: #FAF8F5;
-          border: 1.5px solid #F0EBED;
-          border-radius: 12px;
-          margin-bottom: 16px;
-        }
-        .ind-premio-card--next { background: #FEF3F7; border: 2px solid #E85A8C; }
-        .ind-premio-card--won { background: #F0FDF4; border: 2px solid #166534; }
-
-        /* Linha da meta + tag (mesma altura) */
-        .ind-premio-meta-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 8px;
-          margin-bottom: 10px;
-        }
-
-        /* Badge da meta (aparece em todos os cards) */
-        .ind-premio-meta {
-          display: inline-flex;
-          align-items: baseline;
-          gap: 4px;
-          padding: 3px 10px;
-          background: #F0EBED;
-          border-radius: 999px;
-          font-family: var(--font-base) !important;
-        }
-        .ind-premio-card--next .ind-premio-meta { background: #FCE0E9; }
-        .ind-premio-card--won .ind-premio-meta { background: #DCFCE7; }
-        .ind-premio-meta-num {
-          font-size: 14px;
-          font-weight: 900;
-          color: #5F5E5A;
-          letter-spacing: -0.02em;
-        }
-        .ind-premio-card--next .ind-premio-meta-num { color: #993556; }
-        .ind-premio-card--won .ind-premio-meta-num { color: #166534; }
-        .ind-premio-meta-txt {
-          font-size: 10.5px;
-          font-weight: 700;
+        /* Roadmap — Opção B (cards grandes com foto) */
+        .ind-premios-hdr {
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
           color: #888780;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
+          margin: 0 4px 10px;
         }
-        .ind-premio-card--next .ind-premio-meta-txt { color: #993556; }
-        .ind-premio-card--won .ind-premio-meta-txt { color: #166534; }
+        .ind-premios { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
 
-        /* Título — sempre 1 linha, com ellipsis se ultrapassar */
-        .ind-premio-title {
-          font-size: 14px;
+        .ind-pcard {
+          background: #fff;
+          border: 1px solid #F0EBED;
+          border-radius: 14px;
+          overflow: hidden;
+        }
+        .ind-pcard--next { border: 2px solid #E85A8C; box-shadow: 0 4px 14px rgba(232, 90, 140, 0.12); }
+        .ind-pcard--won { border: 2px solid #166534; }
+        .ind-pcard--lock { opacity: 0.85; }
+
+        /* Foto do prêmio (topo do card) */
+        .ind-pcard-foto {
+          position: relative;
+          width: 100%;
+          height: 160px;
+          background: #FAF8F5;
+          display: flex; align-items: center; justify-content: center;
+          overflow: hidden;
+        }
+        .ind-pcard-foto img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .ind-pcard--lock .ind-pcard-foto img { filter: grayscale(0.3) opacity(0.8); }
+        .ind-pcard-emoji { font-size: 72px; }
+
+        /* Flags flutuantes sobre a foto */
+        .ind-pcard-flag {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          font-size: 9.5px;
+          font-weight: 800;
+          padding: 4px 9px;
+          border-radius: 999px;
+          letter-spacing: 0.04em;
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+        }
+        .ind-pcard-flag--next { background: #E85A8C; color: #fff; }
+        .ind-pcard-flag--won { background: #166534; color: #fff; }
+
+        .ind-pcard-meta {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          color: #5F5E5A;
+          font-size: 10px;
+          font-weight: 800;
+          padding: 4px 10px;
+          border-radius: 999px;
+          letter-spacing: 0.03em;
+          text-transform: uppercase;
+        }
+        .ind-pcard-meta--next { color: #993556; }
+        .ind-pcard-meta--won { color: #166534; }
+
+        /* Body abaixo da foto */
+        .ind-pcard-body { padding: 12px 16px 14px; }
+        .ind-pcard-title {
+          font-size: 15px;
           font-weight: 800;
           color: #2C2C2A;
           letter-spacing: -0.01em;
-          line-height: 1.3;
-          min-height: calc(1.3em);
+          line-height: 1.25;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
-        .ind-premio-card--next .ind-premio-title,
-        .ind-premio-card--won .ind-premio-title { color: #2C2C2A; }
-        .ind-premio-card:not(.ind-premio-card--next):not(.ind-premio-card--won) .ind-premio-title { color: #5F5E5A; }
-
-        /* Descrição — sempre 2 linhas fixas */
-        .ind-premio-desc {
+        .ind-pcard-desc {
           font-size: 11.5px;
           color: #888780;
-          margin-top: 2px;
+          margin-top: 3px;
           line-height: 1.4;
-          min-height: calc(1.4em * 2);
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
+          min-height: calc(1.4em * 2);
         }
-        .ind-premio-tag { font-size: 9.5px; font-weight: 800; padding: 3px 7px; border-radius: 999px; letter-spacing: 0.03em; white-space: nowrap; flex-shrink: 0; }
-        .ind-premio-tag--next { background: #E85A8C; color: #fff; }
-        .ind-premio-tag--won { background: #166534; color: #fff; }
-        .ind-premio-prog { margin-top: 10px; }
-        .ind-premio-prog-labels { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 10.5px; font-weight: 600; color: #888780; }
-        .ind-premio-prog-num { color: #993556; font-weight: 800; }
-        .ind-premio-prog-bar { height: 6px; background: #F0EBED; border-radius: 999px; overflow: hidden; }
-        .ind-premio-prog-fill { height: 100%; background: linear-gradient(90deg, #E85A8C 0%, #C33A6E 100%); border-radius: 999px; transition: width 0.4s ease; }
-        .ind-premio-faltam { margin-top: 8px; display: flex; align-items: center; gap: 4px; font-size: 11px; color: #888780; font-weight: 600; }
-        .ind-premio-faltam b { color: #5F5E5A; }
-        .ind-premio-resgatar {
+
+        /* Barra de progresso — só no PRÓXIMO */
+        .ind-pcard-prog { margin-top: 10px; }
+        .ind-pcard-prog-labels {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 5px;
+          font-size: 11px;
+          font-weight: 700;
+          color: #888780;
+        }
+        .ind-pcard-prog-faltam { color: #993556; font-weight: 800; }
+        .ind-pcard-prog-bar { height: 7px; background: #F0EBED; border-radius: 999px; overflow: hidden; }
+        .ind-pcard-prog-fill { height: 100%; background: linear-gradient(90deg, #E85A8C 0%, #C33A6E 100%); border-radius: 999px; transition: width 0.4s ease; }
+
+        /* Info faltam (bloqueado) */
+        .ind-pcard-faltam {
           margin-top: 10px;
+          display: flex; align-items: center; gap: 5px;
+          font-size: 11px;
+          color: #888780;
+          font-weight: 600;
+        }
+        .ind-pcard-faltam b { color: #5F5E5A; }
+
+        /* Resgatar (conquistado) */
+        .ind-pcard-resgatar {
+          margin-top: 12px;
           display: inline-flex; align-items: center; gap: 6px;
-          padding: 8px 14px;
+          padding: 9px 14px;
           background: #166534;
           color: #fff;
           border-radius: 8px;
@@ -611,7 +606,7 @@ export default function Indicar() {
           text-decoration: none;
           transition: background 0.15s ease;
         }
-        .ind-premio-resgatar:hover { background: #14532D; }
+        .ind-pcard-resgatar:hover { background: #14532D; }
 
         /* Amigas */
         .ind-amigas { display: flex; flex-direction: column; gap: 8px; }
