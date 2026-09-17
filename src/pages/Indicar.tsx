@@ -27,8 +27,8 @@ interface Amiga {
 const PREMIOS = [
   { meta: 3, emoji: "👑", imagem: null as string | null, titulo: "1 mês grátis no Doonly", desc: "Uma mensalidade completa por sua conta" },
   { meta: 10, emoji: "🎁", imagem: "/Sistema/camiseta.png", titulo: "3 meses grátis + camiseta", desc: "Camiseta personalizada com a marca da sua confeitaria" },
-  { meta: 25, emoji: "👕", imagem: null as string | null, titulo: "Kit Exclusivo + 6 meses grátis", desc: "Avental + faixa + Confeiteira Destaque" },
-  { meta: 50, emoji: "🎂", imagem: null as string | null, titulo: "Batedeira Planetária + 1 ano grátis", desc: "O grande prêmio Doonly" },
+  { meta: 25, emoji: "👕", imagem: "/Sistema/avental.png", titulo: "Kit Exclusivo + 6 meses grátis", desc: "Avental + faixa + Confeiteira Destaque" },
+  { meta: 50, emoji: "🎂", imagem: "/Sistema/batedeira.png", titulo: "Batedeira Planetária + 1 ano grátis", desc: "O grande prêmio Doonly" },
 ];
 
 export default function Indicar() {
