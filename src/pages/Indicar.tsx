@@ -345,6 +345,12 @@ export default function Indicar() {
           text-overflow: ellipsis;
           white-space: nowrap;
           font-family: monospace !important;
+          user-select: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          -webkit-touch-callout: none;
+          pointer-events: none;
         }
         .ind-link-input b { color: #993556; }
         .ind-copy-btn {
