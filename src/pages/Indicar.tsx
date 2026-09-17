@@ -81,7 +81,7 @@ export default function Indicar() {
 
   const link = codigo ? `https://doonly.com.br/?ref=${codigo}` : "https://doonly.com.br";
   const mensagemWpp = encodeURIComponent(
-    `Amiga, tô usando o Doonly pra organizar minha confeitaria — recomendo demais! 💖\n\n` +
+    `Oi! Tô usando o Doonly pra organizar minha confeitaria — recomendo demais! 💖\n\n` +
     `Se você entrar pelo meu link ganha:\n` +
     `🎁 Kit grátis de precificação\n` +
     `💰 50% OFF no 1º mês PRO\n\n` +
@@ -107,7 +107,7 @@ export default function Indicar() {
       try {
         await navigator.share({
           title: "Doonly - Gestão pra confeiteiras",
-          text: `Amiga, tô usando o Doonly! Entra pelo meu link e ganha 50% OFF no 1º mês PRO`,
+          text: `Tô usando o Doonly! Entra pelo meu link e ganha 50% OFF no 1º mês PRO`,
           url: link,
         });
       } catch {}
@@ -125,7 +125,7 @@ export default function Indicar() {
       <div className="ind-banner-wrap">
         <img
           src="/Sistema/bannerindica.png"
-          alt="Indique amigas confeiteiras e ganhe prêmios exclusivos"
+          alt="Convide para o Doonly e ganhe prêmios exclusivos"
           className="ind-banner-img"
         />
       </div>
@@ -166,9 +166,9 @@ export default function Indicar() {
         <div className="ind-contador-label">Você já tem</div>
         <div className="ind-contador-num">{conversoes}</div>
         <div className="ind-contador-desc">
-          {conversoes === 0 && "amigas assinantes. Comece a compartilhar e ganhe prêmios!"}
-          {conversoes > 0 && proximoIdx !== -1 && `amigas assinantes. Faltam ${PREMIOS[proximoIdx].meta - conversoes} para o próximo prêmio!`}
-          {conversoes > 0 && proximoIdx === -1 && "amigas assinantes. Você conquistou todos os prêmios! 🎉"}
+          {conversoes === 0 && "assinantes. Comece a compartilhar e ganhe prêmios!"}
+          {conversoes > 0 && proximoIdx !== -1 && `assinantes. Faltam ${PREMIOS[proximoIdx].meta - conversoes} para o próximo prêmio!`}
+          {conversoes > 0 && proximoIdx === -1 && "assinantes. Você conquistou todos os prêmios! 🎉"}
         </div>
       </div>
 
@@ -215,7 +215,7 @@ export default function Indicar() {
 
                   {!eProximo && !desbloqueado && (
                     <div className="ind-premio-faltam">
-                      <Lock size={11} weight="bold" /> Faltam <b>{p.meta - conversoes}</b> amigas PRO
+                      <Lock size={11} weight="bold" /> Faltam <b>{p.meta - conversoes}</b> assinantes PRO
                     </div>
                   )}
 
@@ -235,7 +235,7 @@ export default function Indicar() {
       {/* ── AMIGAS QUE ENTRARAM ───────────────────────── */}
       {amigas.length > 0 && (
         <div className="ind-card">
-          <div className="ind-hdr">Amigas que entraram <span className="ind-hdr-count">({amigas.length})</span></div>
+          <div className="ind-hdr">Quem entrou pelo seu link <span className="ind-hdr-count">({amigas.length})</span></div>
           <div className="ind-amigas">
             {amigas.map(a => {
               const isPro = a.status === "pro" || a.status === "premio_resgatado";
@@ -245,7 +245,7 @@ export default function Indicar() {
                 <div key={a.id} className="ind-amiga">
                   <div className="ind-amiga-avatar">{(a.nome || "?").trim().charAt(0).toUpperCase()}</div>
                   <div className="ind-amiga-info">
-                    <div className="ind-amiga-nome">{a.nome || "Amiga"}</div>
+                    <div className="ind-amiga-nome">{a.nome || "Colega"}</div>
                     <div className="ind-amiga-tempo">{tempoTxt}</div>
                   </div>
                   {isPro
@@ -264,7 +264,7 @@ export default function Indicar() {
         <div className="ind-passos">
           <div className="ind-passo">
             <div className="ind-passo-num">1</div>
-            <div className="ind-passo-txt">Compartilhe seu link único com uma amiga confeiteira</div>
+            <div className="ind-passo-txt">Compartilhe seu link com uma pessoa que tem confeitaria</div>
           </div>
           <div className="ind-passo">
             <div className="ind-passo-num">2</div>
