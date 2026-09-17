@@ -1074,6 +1074,7 @@ export default function Configuracoes() {
           background: #F5F3EF;
           min-height: 100vh;
           box-sizing: border-box;
+          font-family: var(--font-base) !important;
           /* Estende até as bordas do parent (compensa padding do .layout-main) */
           margin: calc(-1 * var(--space-2, 8px));
           /* Compensa também padding-top e padding-bottom pra ir do topo ao bottom nav */
@@ -1082,6 +1083,7 @@ export default function Configuracoes() {
           padding-top: calc(12px + var(--pad-page-top, 1rem) + env(safe-area-inset-top, 0px));
           padding-bottom: calc(12px + 6.5rem);
         }
+        .cfg-mobile * { font-family: var(--font-base) !important; }
         .cfg-mobile .cfgp-card { background: #fff; border: 1px solid #F0EBED; border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
         .cfg-mobile .cfgp-card:last-of-type { margin-bottom: 8px; }
 
@@ -1110,16 +1112,37 @@ export default function Configuracoes() {
         .cfgp-sub-crown img { width: 22px; height: 22px; object-fit: contain; }
         .cfgp-sub-info { background: #F8F5F1; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 12.5px; color: #5F5E5A; line-height: 1.5; }
         .cfgp-sub-info--danger { background: #FEE2E2; color: #B91C1C; }
-        .cfgp-sub-cta { all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 12px; background: #2C1219; color: #fff; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: transform 0.12s ease, background 0.15s ease; }
-        .cfgp-sub-cta:hover { background: #3D1A24; transform: translateY(-1px); }
-        .cfgp-sub-cta:active { transform: translateY(0); }
+        .cfgp-sub-cta {
+          all: unset;
+          box-sizing: border-box;
+          display: flex; align-items: center; justify-content: center; gap: 6px;
+          width: 100%;
+          padding: 13px;
+          background: #E85A8C;
+          color: #fff;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 700;
+          letter-spacing: -0.01em;
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+          box-shadow: 0 4px 14px rgba(232, 90, 140, 0.28), inset 0 -2px 0 rgba(0,0,0,0.08);
+          transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
+        }
+        .cfgp-sub-cta:hover { background: #C33A6E; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(232, 90, 140, 0.35), inset 0 -2px 0 rgba(0,0,0,0.08); }
+        .cfgp-sub-cta:active { transform: translateY(1px); box-shadow: 0 2px 6px rgba(232, 90, 140, 0.25), inset 0 -1px 0 rgba(0,0,0,0.06); }
         .cfgp-sub-cta img { width: 16px; height: 16px; object-fit: contain; }
-        .cfgp-sub-cta--manage { background: transparent; color: #E85A8C; border: 1.5px solid #E85A8C; }
-        .cfgp-sub-cta--manage:hover { background: #FCE0E9; }
+        .cfgp-sub-cta--manage {
+          background: transparent;
+          color: #E85A8C;
+          border: 1.5px solid #E85A8C;
+          box-shadow: none;
+        }
+        .cfgp-sub-cta--manage:hover { background: #FCE0E9; box-shadow: 0 4px 10px rgba(232, 90, 140, 0.18); }
 
         /* Blocos */
         .cfgp-block-hdr { padding: 12px 18px 6px; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #888780; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
-        .cfgp-edit-btn { all: unset; cursor: pointer; font-size: 11px; font-weight: 700; color: #E85A8C; letter-spacing: 0.04em; text-transform: uppercase; }
+        .cfgp-edit-btn { all: unset; cursor: pointer; font-size: 11px; font-weight: 700; color: #E85A8C; letter-spacing: 0.04em; text-transform: uppercase; font-family: var(--font-base) !important; transition: color 0.15s ease; }
         .cfgp-edit-btn:hover { color: #C33A6E; }
 
         .cfgp-rows { padding: 0 0 8px; }
@@ -1129,7 +1152,7 @@ export default function Configuracoes() {
         .cfgp-row-l svg { color: #B4B2A9; flex-shrink: 0; }
         .cfgp-row-v { font-weight: 600; color: #2C2C2A; text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .cfgp-row-v--muted { color: #888780; font-weight: 500; font-size: 12px; }
-        .cfgp-row-btn { all: unset; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px 18px; cursor: pointer; transition: background 0.15s ease; }
+        .cfgp-row-btn { all: unset; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px 18px; cursor: pointer; transition: background 0.15s ease; font-family: var(--font-base) !important; font-size: 13px; color: #2C2C2A; }
         .cfgp-row-btn:hover { background: #FAF8F5; }
         .cfgp-rows .cfgp-row-btn { padding: 12px 18px; }
         .cfgp-chevron { color: #B4B2A9; transition: transform 0.2s ease; flex-shrink: 0; }
@@ -1161,6 +1184,7 @@ export default function Configuracoes() {
           width: 100%;
           padding: 12px 18px;
           cursor: pointer;
+          font-family: var(--font-base) !important;
           transition: background 0.15s ease;
         }
         .cfgp-quick-item:hover { background: #FAF8F5; }
@@ -1179,7 +1203,7 @@ export default function Configuracoes() {
         .cfgp-quick-desc { font-size: 12px; color: #888780; margin-top: 3px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
         .cfgp-quick-arrow { color: #B4B2A9; flex-shrink: 0; }
 
-        /* Sair da conta — botão grafite neutro */
+        /* Sair da conta — botão neutro 3D */
         .cfgp-logout {
           all: unset;
           box-sizing: border-box;
@@ -1196,10 +1220,13 @@ export default function Configuracoes() {
           font-size: 14px;
           color: #2C2C2A;
           font-weight: 700;
+          font-family: var(--font-base) !important;
           margin-bottom: 12px;
-          transition: background 0.15s ease, border-color 0.15s ease;
+          box-shadow: 0 3px 10px rgba(20, 12, 18, 0.08), inset 0 -2px 0 rgba(0,0,0,0.03);
+          transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease;
         }
-        .cfgp-logout:hover { background: #FAF8F5; border-color: #E8E5DC; }
+        .cfgp-logout:hover { background: #FAF8F5; border-color: #E8E5DC; transform: translateY(-1px); box-shadow: 0 5px 14px rgba(20, 12, 18, 0.12), inset 0 -2px 0 rgba(0,0,0,0.03); }
+        .cfgp-logout:active { transform: translateY(1px); box-shadow: 0 1px 4px rgba(20, 12, 18, 0.08), inset 0 -1px 0 rgba(0,0,0,0.03); }
         .cfgp-logout svg { color: #5F5E5A; }
 
         /* Excluir conta — link discreto */
@@ -1212,6 +1239,7 @@ export default function Configuracoes() {
           cursor: pointer;
           font-size: 11.5px;
           color: #B4B2A9;
+          font-family: var(--font-base) !important;
           transition: color 0.15s ease;
         }
         .cfgp-delete-link-btn:hover { color: #888780; }
@@ -1246,32 +1274,42 @@ export default function Configuracoes() {
           all: unset;
           flex: 1;
           text-align: center;
-          padding: 10px;
+          padding: 11px;
           border-radius: 10px;
           font-size: 13px;
           font-weight: 700;
           color: #5F5E5A;
           background: #F5F3EF;
           cursor: pointer;
+          font-family: var(--font-base) !important;
+          box-shadow: 0 2px 6px rgba(20, 12, 18, 0.06);
+          transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
         }
-        .cfgp-delete-cancel:hover { background: #E8E5DC; }
+        .cfgp-delete-cancel:hover { background: #E8E5DC; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(20, 12, 18, 0.1); }
+        .cfgp-delete-cancel:active { transform: translateY(1px); box-shadow: 0 1px 3px rgba(20, 12, 18, 0.06); }
         .cfgp-delete-confirm {
           all: unset;
           flex: 1;
           text-align: center;
-          padding: 10px;
+          padding: 11px;
           border-radius: 10px;
           font-size: 13px;
           font-weight: 700;
           color: #fff;
           background: #B91C1C;
           cursor: pointer;
+          font-family: var(--font-base) !important;
+          box-shadow: 0 4px 12px rgba(185, 28, 28, 0.28), inset 0 -2px 0 rgba(0,0,0,0.1);
+          transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
         }
-        .cfgp-delete-confirm:hover { background: #991616; }
+        .cfgp-delete-confirm:hover { background: #991616; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(185, 28, 28, 0.35), inset 0 -2px 0 rgba(0,0,0,0.1); }
+        .cfgp-delete-confirm:active { transform: translateY(1px); box-shadow: 0 2px 6px rgba(185, 28, 28, 0.25), inset 0 -1px 0 rgba(0,0,0,0.08); }
         .cfgp-delete-confirm:disabled {
           background: #F0EBED;
           color: #B4B2A9;
           cursor: not-allowed;
+          box-shadow: none;
+          transform: none;
         }
 
         .cfg-accordion { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); overflow: hidden; }
