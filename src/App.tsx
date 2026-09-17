@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { supabase } from "@/lib/supabase";
@@ -58,6 +58,17 @@ const Promocoes = () => <div style={{padding:"2rem"}}><h2>🏷️ Promoções</h
 const Estoque = () => <div style={{padding:"2rem"}}><h2>📦 Estoque</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
 const Arquivos = () => <div style={{padding:"2rem"}}><h2>🗂️ Arquivos</h2><p style={{color:"var(--text-muted)",marginTop:"0.5rem"}}>Em breve...</p></div>;
 
+/**
+ * NavigateWithSearch — Wrapper de Navigate que PRESERVA a query string.
+ *
+ * Sem isso, `<Navigate to="/login" />` descarta `?ref=CODIGO` da URL
+ * quando alguém abre um link de indicação (doonly.com.br/?ref=DOCE347).
+ */
+function NavigateWithSearch({ to, replace }: { to: string; replace?: boolean }) {
+  const location = useLocation();
+  return <Navigate to={{ pathname: to, search: location.search }} replace={replace} />;
+}
+
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<any>(undefined);
 
@@ -111,7 +122,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   }, [session?.user?.id]);
 
   if (session === undefined) return null;
-  if (!session) return <Navigate to="/login" replace />;
+  if (!session) return <NavigateWithSearch to="/login" replace />;
 
   if (showFirstTutorial) {
     return (
@@ -237,8 +248,8 @@ export default function App() {
           <Route path="relatorios" element={<AdminRelatorios />} />
         </Route>
 
-        <Route path="/" element={<Navigate to="/inicio" replace />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<NavigateWithSearch to="/inicio" replace />} />
+        <Route path="*" element={<NavigateWithSearch to="/login" replace />} />
       </Routes>
       <Analytics />
     </BrowserRouter>
