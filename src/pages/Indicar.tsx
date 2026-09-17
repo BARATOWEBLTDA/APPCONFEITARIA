@@ -196,8 +196,12 @@ export default function Indicar() {
             return (
               <div key={p.meta} className="ind-premio">
                 <div className="ind-premio-side">
-                  <div className={`ind-premio-badge ${desbloqueado ? "ind-premio-badge--won" : eProximo ? "ind-premio-badge--next" : "ind-premio-badge--lock"}`}>
-                    {desbloqueado ? <Trophy size={20} weight="fill" /> : <span>{p.emoji}</span>}
+                  <div className={`ind-premio-badge ${desbloqueado ? "ind-premio-badge--won" : eProximo ? "ind-premio-badge--next" : "ind-premio-badge--lock"} ${p.imagem ? "ind-premio-badge--img" : ""}`}>
+                    {desbloqueado
+                      ? <Trophy size={24} weight="fill" />
+                      : p.imagem
+                        ? <img src={p.imagem} alt="" className="ind-premio-badge-img" />
+                        : <span>{p.emoji}</span>}
                   </div>
                   {!isUltimo && <div className={`ind-premio-line ${desbloqueado ? "ind-premio-line--won" : ""}`} />}
                 </div>
@@ -211,17 +215,8 @@ export default function Indicar() {
                     {eProximo && <span className="ind-premio-tag ind-premio-tag--next">PRÓXIMO</span>}
                     {desbloqueado && <span className="ind-premio-tag ind-premio-tag--won">CONQUISTADO</span>}
                   </div>
-                  <div className="ind-premio-body">
-                    <div className="ind-premio-body-txt">
-                      <div className="ind-premio-title">{p.titulo}</div>
-                      <div className="ind-premio-desc">{p.desc}</div>
-                    </div>
-                    {p.imagem && (
-                      <div className="ind-premio-foto-wrap">
-                        <img src={p.imagem} alt={p.titulo} className="ind-premio-foto" />
-                      </div>
-                    )}
-                  </div>
+                  <div className="ind-premio-title">{p.titulo}</div>
+                  <div className="ind-premio-desc">{p.desc}</div>
 
                   {eProximo && (
                     <div className="ind-premio-prog">
@@ -489,18 +484,24 @@ export default function Indicar() {
         .ind-premio { display: flex; gap: 14px; }
         .ind-premio-side { position: relative; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
         .ind-premio-badge {
-          width: 44px; height: 44px;
-          border-radius: 50%;
+          width: 56px; height: 56px;
+          border-radius: 14px;
           display: flex; align-items: center; justify-content: center;
-          font-size: 22px;
+          font-size: 28px;
           flex-shrink: 0;
           background: #1A1A1A;
           border: 3px solid #1A1A1A;
           color: #fff;
+          overflow: hidden;
         }
         .ind-premio-badge--lock { opacity: 0.55; }
         .ind-premio-badge--next { border-color: #E85A8C; box-shadow: 0 0 0 2px rgba(232, 90, 140, 0.15); }
         .ind-premio-badge--won { background: #166534; border-color: #166534; color: #fff; }
+        /* Quando tem imagem, fundo branco pra foto se destacar */
+        .ind-premio-badge--img { background: #fff; border-color: #F0EBED; padding: 3px; }
+        .ind-premio-badge--img.ind-premio-badge--next { border-color: #E85A8C; }
+        .ind-premio-badge--img.ind-premio-badge--won { background: #F0FDF4; border-color: #166534; }
+        .ind-premio-badge-img { width: 100%; height: 100%; object-fit: contain; }
         .ind-premio-line {
           flex: 1;
           width: 3px;
@@ -559,36 +560,6 @@ export default function Indicar() {
         }
         .ind-premio-card--next .ind-premio-meta-txt { color: #993556; }
         .ind-premio-card--won .ind-premio-meta-txt { color: #166534; }
-
-        /* Body do card: texto à esquerda + foto opcional à direita */
-        .ind-premio-body {
-          display: flex;
-          align-items: flex-start;
-          gap: 12px;
-        }
-        .ind-premio-body-txt {
-          flex: 1;
-          min-width: 0;
-        }
-        .ind-premio-foto-wrap {
-          width: 60px;
-          height: 60px;
-          border-radius: 10px;
-          background: #FAF8F5;
-          border: 1px solid #F0EBED;
-          flex-shrink: 0;
-          overflow: hidden;
-          display: flex; align-items: center; justify-content: center;
-        }
-        .ind-premio-card--next .ind-premio-foto-wrap { background: #fff; border-color: #F4C0D1; }
-        .ind-premio-card--won .ind-premio-foto-wrap { background: #fff; border-color: #86EFAC; }
-        .ind-premio-foto {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          padding: 4px;
-          box-sizing: border-box;
-        }
 
         /* Título — sempre 1 linha, com ellipsis se ultrapassar */
         .ind-premio-title {
