@@ -340,6 +340,19 @@ export default function Auth() {
                 status: "cadastrou",
               }).select();
               console.log("[REF SIGNUP] insert indicacao:", insData, "erro:", errInsert);
+
+              // Dispara push pra quem indicou (template configurado no admin)
+              // Fire-and-forget — não bloqueia o fluxo se falhar
+              if (!errInsert) {
+                supabase.functions.invoke("notif-indicacao", {
+                  body: {
+                    evento: "indicacao_cadastro",
+                    indicador_id: indicador.id,
+                    nome_indicada: cadastroForm.nome,
+                    codigo: refCode,
+                  }
+                }).catch((err) => console.warn("[notif] falha:", err));
+              }
             }
           }
           // Limpa após usar (evita re-aplicar)

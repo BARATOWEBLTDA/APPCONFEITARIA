@@ -23,7 +23,7 @@ export default function AdminUsuarios() {
     // Mescla plano e pro_expira_em vindos de profiles (caso a view admin_users não inclua)
     const ids = (data || []).map(u => u.id).filter(Boolean);
     if (ids.length) {
-      const { data: planos } = await supabase.from("profiles").select("id, plano, pro_expira_em").in("id", ids);
+      const { data: planos } = await supabase.from("profiles").select("id, plano, pro_expira_em, indicado_por").in("id", ids);
       const mapa = new Map((planos || []).map(p => [p.id, p]));
       setUsers((data || []).map(u => ({ ...u, ...(mapa.get(u.id) || {}) })));
     } else {
@@ -38,12 +38,18 @@ export default function AdminUsuarios() {
    */
   const handleTogglePRO = async (u: any) => {
     const isPROAtivo = u.plano === "pro" && (!u.pro_expira_em || new Date(u.pro_expira_em) > new Date());
+    console.log("[PRO] Iniciando toggle:", { userId: u.id, email: u.email, isPROAtivo });
+
     if (isPROAtivo) {
       if (!confirm(`Desativar PRO de ${u.nome || u.email}? A conta voltará a ser gratuita.`)) return;
-      const { error } = await supabase.from("profiles")
+      const { data, error } = await supabase.from("profiles")
         .update({ plano: null, pro_expira_em: null })
-        .eq("id", u.id);
-      if (error) return alert("Erro ao desativar PRO: " + error.message);
+        .eq("id", u.id)
+        .select();
+      console.log("[PRO] Desativar resposta:", { data, error });
+      if (error) return alert("Erro ao desativar PRO:\n" + error.message + "\n\nDetalhes: " + JSON.stringify(error));
+      if (!data || data.length === 0) return alert("⚠️ Nenhuma linha foi atualizada.\n\nProvável causa: policy RLS bloqueando (você não tem permissão de admin em profiles).\n\nSolução: rodar o SQL de policy admin.");
+      alert("✓ PRO desativado com sucesso!");
     } else {
       const diasStr = prompt(`Ativar PRO para ${u.nome || u.email} por quantos dias?\n\nExemplos:\n  30 = 30 dias (padrão)\n  365 = 1 ano\n  36500 = vitalício`, "30");
       if (!diasStr) return;
@@ -51,12 +57,30 @@ export default function AdminUsuarios() {
       if (isNaN(dias) || dias < 1) return alert("Número inválido.");
       const expira = new Date();
       expira.setDate(expira.getDate() + dias);
-      const { error } = await supabase.from("profiles")
+      const { data, error } = await supabase.from("profiles")
         .update({ plano: "pro", pro_expira_em: expira.toISOString() })
-        .eq("id", u.id);
-      if (error) return alert("Erro ao ativar PRO: " + error.message);
+        .eq("id", u.id)
+        .select();
+      console.log("[PRO] Ativar resposta:", { data, error, expira: expira.toISOString() });
+      if (error) return alert("Erro ao ativar PRO:\n" + error.message + "\n\nDetalhes: " + JSON.stringify(error));
+      if (!data || data.length === 0) return alert("⚠️ Nenhuma linha foi atualizada.\n\nProvável causa: policy RLS bloqueando (você não tem permissão de admin em profiles).\n\nSolução: rodar o SQL de policy admin (envio no chat).");
+
+      // Se a pessoa foi indicada, dispara push pra quem indicou.
+      // O trigger PostgreSQL registrar_conversao_pro já atualiza a tabela indicacoes.
+      // Aqui só notificamos o indicador. Fire-and-forget.
+      if (u.indicado_por) {
+        supabase.functions.invoke("notif-indicacao", {
+          body: {
+            evento: "indicacao_pro",
+            indicador_id: u.indicado_por,
+            nome_indicada: u.nome || "Alguém",
+          }
+        }).catch((err) => console.warn("[notif PRO] falha:", err));
+      }
+
+      alert(`✓ PRO ativado por ${dias} dias! Expira em ${expira.toLocaleDateString("pt-BR")}`);
     }
-    load();
+    await load();
   };
 
   const callEdge = async (body: object) => {

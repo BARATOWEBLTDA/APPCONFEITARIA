@@ -9,6 +9,7 @@ const menuItems = [
   { path: "/admin/receitas-doonly", label: "Receitas Doonly", emoji: "🏅" },
   { path: "/admin/pdfs", label: "Biblioteca PDF", emoji: "📄" },
   { path: "/admin/notificacoes", label: "Notificações", emoji: "🔔" },
+  { path: "/admin/notif-templates", label: "Templates auto", emoji: "⚡" },
   { path: "/admin/relatorios", label: "Relatórios", emoji: "📈" },
 ];
 
