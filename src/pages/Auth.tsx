@@ -310,31 +310,36 @@ export default function Auth() {
 
       // ── 3) Vincula indicação (se veio via ?ref=CODIGO) ──────
       // Busca o profile do indicador pelo código e faz UPDATE
-      // no profile novo. Fallback silencioso se código não existir.
+      // no profile novo. Se falhar, loga mas não bloqueia o cadastro.
       try {
         const refCode = localStorage.getItem("doonly_ref_code");
+        console.log("[REF SIGNUP] refCode:", refCode);
         if (refCode) {
           const { data: userRes } = await supabase.auth.getUser();
           const novoId = userRes?.user?.id;
+          console.log("[REF SIGNUP] novoId:", novoId);
           if (novoId) {
-            const { data: indicador } = await supabase
+            const { data: indicador, error: errBuscar } = await supabase
               .from("profiles")
               .select("id")
               .eq("codigo_indicacao", refCode)
               .maybeSingle();
+            console.log("[REF SIGNUP] indicador:", indicador, "erro:", errBuscar);
 
             if (indicador?.id && indicador.id !== novoId) {
-              await supabase.from("profiles").update({
+              const { error: errUpdate } = await supabase.from("profiles").update({
                 indicado_por: indicador.id,
                 desconto_primeiro_mes: true,
               }).eq("id", novoId);
+              console.log("[REF SIGNUP] update profile erro:", errUpdate);
 
               // Registra na tabela de indicações com status "cadastrou"
-              await supabase.from("indicacoes").insert({
+              const { data: insData, error: errInsert } = await supabase.from("indicacoes").insert({
                 indicador_id: indicador.id,
                 indicada_id: novoId,
                 status: "cadastrou",
-              });
+              }).select();
+              console.log("[REF SIGNUP] insert indicacao:", insData, "erro:", errInsert);
             }
           }
           // Limpa após usar (evita re-aplicar)
