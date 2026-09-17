@@ -491,12 +491,9 @@ export default function Auth() {
       <div className="auth-card">
         {/* Mascote do cadastro (mobile e desktop) */}
         <div className="cad-mascote" aria-hidden="true">
-          <img src="/cadastrofoto.png" alt="Doonly" />
+          <img src="/cadastro.png" alt="Doonly" />
         </div>
 
-        <div className="cad-header">
-          <p className="cad-subtitle">Tenha seus produtos, receitas, clientes e pedidos em um só lugar.</p>
-        </div>
         <form onSubmit={handleCadastro} className="cadastro-form" noValidate>
           {/* Banner de indicação — só aparece se veio via ?ref= */}
           {indicadorNome && (
