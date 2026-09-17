@@ -28,7 +28,6 @@ const AREAS = [
   { id: "insumos", label: "Insumos e estoque" },
   { id: "financeiro", label: "Financeiro" },
   { id: "clientes", label: "Clientes" },
-  { id: "agenda", label: "Agenda" },
   { id: "app", label: "Aplicativo em geral" },
   { id: "outro", label: "Outro" },
 ];
@@ -54,12 +53,28 @@ export default function SugestaoWizard({ open, onClose, perfil }: Props) {
     }
   }, [open]);
 
-  // Bloqueia scroll do body quando aberto
+  // Bloqueia scroll do body quando aberto (funciona em iOS Safari)
   useEffect(() => {
     if (open) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => { document.body.style.overflow = prev; };
+      const scrollY = window.scrollY;
+      const bodyStyle = document.body.style;
+      const prev = {
+        overflow: bodyStyle.overflow,
+        position: bodyStyle.position,
+        top: bodyStyle.top,
+        width: bodyStyle.width,
+      };
+      bodyStyle.overflow = "hidden";
+      bodyStyle.position = "fixed";
+      bodyStyle.top = `-${scrollY}px`;
+      bodyStyle.width = "100%";
+      return () => {
+        bodyStyle.overflow = prev.overflow;
+        bodyStyle.position = prev.position;
+        bodyStyle.top = prev.top;
+        bodyStyle.width = prev.width;
+        window.scrollTo(0, scrollY);
+      };
     }
   }, [open]);
 
@@ -145,7 +160,6 @@ export default function SugestaoWizard({ open, onClose, perfil }: Props) {
                 onChange={e => setDescricao(e.target.value)}
                 rows={6}
                 maxLength={2000}
-                autoFocus
               />
               <div className="sug-chars">{descricao.length}/2000</div>
             </>
@@ -225,6 +239,8 @@ export default function SugestaoWizard({ open, onClose, perfil }: Props) {
           -webkit-backdrop-filter: blur(4px);
           z-index: 100000;
           animation: sugFade 0.2s ease;
+          touch-action: none;
+          overscroll-behavior: contain;
         }
         @keyframes sugFade { from { opacity: 0; } to { opacity: 1; } }
         .sug-sheet {
