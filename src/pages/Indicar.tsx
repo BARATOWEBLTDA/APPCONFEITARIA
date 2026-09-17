@@ -203,18 +203,16 @@ export default function Indicar() {
                 </div>
 
                 <div className={`ind-premio-card ${eProximo ? "ind-premio-card--next" : ""} ${desbloqueado ? "ind-premio-card--won" : ""}`}>
-                  <div className="ind-premio-meta">
-                    <span className="ind-premio-meta-num">{p.meta}</span>
-                    <span className="ind-premio-meta-txt">{p.meta === 1 ? "assinante" : "assinantes"}</span>
-                  </div>
-                  <div className="ind-premio-top">
-                    <div>
-                      <div className="ind-premio-title">{p.titulo}</div>
-                      <div className="ind-premio-desc">{p.desc}</div>
+                  <div className="ind-premio-meta-row">
+                    <div className="ind-premio-meta">
+                      <span className="ind-premio-meta-num">{p.meta}</span>
+                      <span className="ind-premio-meta-txt">{p.meta === 1 ? "assinante" : "assinantes"}</span>
                     </div>
                     {eProximo && <span className="ind-premio-tag ind-premio-tag--next">PRÓXIMO</span>}
                     {desbloqueado && <span className="ind-premio-tag ind-premio-tag--won">CONQUISTADO</span>}
                   </div>
+                  <div className="ind-premio-title">{p.titulo}</div>
+                  <div className="ind-premio-desc">{p.desc}</div>
 
                   {eProximo && (
                     <div className="ind-premio-prog">
@@ -487,10 +485,13 @@ export default function Indicar() {
           display: flex; align-items: center; justify-content: center;
           font-size: 22px;
           flex-shrink: 0;
+          background: #1A1A1A;
+          border: 3px solid #1A1A1A;
+          color: #fff;
         }
-        .ind-premio-badge--lock { background: #F5F3EF; border: 3px solid #D3D1C7; filter: grayscale(0.5); opacity: 0.7; }
-        .ind-premio-badge--next { background: #FCE0E9; border: 3px solid #E85A8C; }
-        .ind-premio-badge--won { background: #DCFCE7; border: 3px solid #166534; color: #166534; }
+        .ind-premio-badge--lock { opacity: 0.55; }
+        .ind-premio-badge--next { border-color: #E85A8C; box-shadow: 0 0 0 2px rgba(232, 90, 140, 0.15); }
+        .ind-premio-badge--won { background: #166534; border-color: #166534; color: #fff; }
         .ind-premio-line {
           flex: 1;
           width: 3px;
@@ -511,6 +512,15 @@ export default function Indicar() {
         .ind-premio-card--next { background: #FEF3F7; border: 2px solid #E85A8C; }
         .ind-premio-card--won { background: #F0FDF4; border: 2px solid #166534; }
 
+        /* Linha da meta + tag (mesma altura) */
+        .ind-premio-meta-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          margin-bottom: 10px;
+        }
+
         /* Badge da meta (aparece em todos os cards) */
         .ind-premio-meta {
           display: inline-flex;
@@ -519,7 +529,6 @@ export default function Indicar() {
           padding: 3px 10px;
           background: #F0EBED;
           border-radius: 999px;
-          margin-bottom: 8px;
           font-family: var(--font-base) !important;
         }
         .ind-premio-card--next .ind-premio-meta { background: #FCE0E9; }
@@ -541,12 +550,35 @@ export default function Indicar() {
         }
         .ind-premio-card--next .ind-premio-meta-txt { color: #993556; }
         .ind-premio-card--won .ind-premio-meta-txt { color: #166534; }
-        .ind-premio-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-        .ind-premio-title { font-size: 14px; font-weight: 800; color: #2C2C2A; letter-spacing: -0.01em; line-height: 1.2; }
+
+        /* Título — sempre 1 linha, com ellipsis se ultrapassar */
+        .ind-premio-title {
+          font-size: 14px;
+          font-weight: 800;
+          color: #2C2C2A;
+          letter-spacing: -0.01em;
+          line-height: 1.3;
+          min-height: calc(1.3em);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
         .ind-premio-card--next .ind-premio-title,
         .ind-premio-card--won .ind-premio-title { color: #2C2C2A; }
         .ind-premio-card:not(.ind-premio-card--next):not(.ind-premio-card--won) .ind-premio-title { color: #5F5E5A; }
-        .ind-premio-desc { font-size: 11.5px; color: #888780; margin-top: 2px; line-height: 1.35; }
+
+        /* Descrição — sempre 2 linhas fixas */
+        .ind-premio-desc {
+          font-size: 11.5px;
+          color: #888780;
+          margin-top: 2px;
+          line-height: 1.4;
+          min-height: calc(1.4em * 2);
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
         .ind-premio-tag { font-size: 9.5px; font-weight: 800; padding: 3px 7px; border-radius: 999px; letter-spacing: 0.03em; white-space: nowrap; flex-shrink: 0; }
         .ind-premio-tag--next { background: #E85A8C; color: #fff; }
         .ind-premio-tag--won { background: #166534; color: #fff; }
