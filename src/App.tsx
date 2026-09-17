@@ -33,6 +33,7 @@ import AdminPDFs from "@/pages/admin/AdminPDFs";
 import AdminNotificacoes from "@/pages/admin/AdminNotificacoes";
 import AdminRelatorios from "@/pages/admin/AdminRelatorios";
 import Configuracoes from "@/pages/Configuracoes";
+import Indicar from "@/pages/Indicar";
 import Personalizacao from "@/pages/Personalizacao";
 import CardapioPrevia from "@/pages/CardapioPrevia";
 import CardapioResumo from "@/pages/CardapioResumo";
@@ -221,6 +222,7 @@ export default function App() {
           <Route path="/estoque" element={<Estoque />} />
           <Route path="/arquivos" element={<Arquivos />} />
           <Route path="/configuracoes" element={<Configuracoes />} />
+          <Route path="/indicar" element={<Indicar />} />
           <Route path="/personalizacao" element={<Personalizacao />} />
         </Route>
 

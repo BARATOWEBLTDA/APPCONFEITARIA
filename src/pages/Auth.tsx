@@ -71,6 +71,19 @@ export default function Auth() {
     return () => mq.removeEventListener("change", handler);
   }, []);
 
+  // ── Captura código de indicação da URL (?ref=XXX) ──────────
+  // Salva em localStorage pra persistir caso a visitante navegue antes de cadastrar.
+  // Consumido no signup pra vincular indicador → indicada.
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get("ref");
+      if (ref && ref.trim().length >= 4 && ref.trim().length <= 12) {
+        localStorage.setItem("doonly_ref_code", ref.trim().toUpperCase());
+      }
+    } catch {}
+  }, []);
+
   // ── Login: validação inline (só email) ─────────────────────
   const [loginEmailError, setLoginEmailError] = useState("");
   const [loginEmailTouched, setLoginEmailTouched] = useState(false);
@@ -259,7 +272,43 @@ export default function Auth() {
         if (signInError) throw signInError;
       }
 
-      // ── 3) Dispara e-mail de boas-vindas (fire-and-forget) ──
+      // ── 3) Vincula indicação (se veio via ?ref=CODIGO) ──────
+      // Busca o profile do indicador pelo código e faz UPDATE
+      // no profile novo. Fallback silencioso se código não existir.
+      try {
+        const refCode = localStorage.getItem("doonly_ref_code");
+        if (refCode) {
+          const { data: userRes } = await supabase.auth.getUser();
+          const novoId = userRes?.user?.id;
+          if (novoId) {
+            const { data: indicador } = await supabase
+              .from("profiles")
+              .select("id")
+              .eq("codigo_indicacao", refCode)
+              .maybeSingle();
+
+            if (indicador?.id && indicador.id !== novoId) {
+              await supabase.from("profiles").update({
+                indicado_por: indicador.id,
+                desconto_primeiro_mes: true,
+              }).eq("id", novoId);
+
+              // Registra na tabela de indicações com status "cadastrou"
+              await supabase.from("indicacoes").insert({
+                indicador_id: indicador.id,
+                indicada_id: novoId,
+                status: "cadastrou",
+              });
+            }
+          }
+          // Limpa após usar (evita re-aplicar)
+          localStorage.removeItem("doonly_ref_code");
+        }
+      } catch (err) {
+        console.warn("[ref] falha ao vincular indicação:", err);
+      }
+
+      // ── 4) Dispara e-mail de boas-vindas (fire-and-forget) ──
       // Não bloqueia a UX. Se falhar, o cadastro segue normal.
       // A Edge Function tem dedup, então chamadas duplicadas são seguras.
       supabase.functions.invoke("send-welcome-email").catch((err) => {
@@ -267,7 +316,7 @@ export default function Auth() {
         console.warn("welcome email failed:", err);
       });
 
-      // ── 4) Redireciona para o app ───────────────────────────
+      // ── 5) Redireciona para o app ───────────────────────────
       // Limpa flags de tutorial (garante que cliente novo vê tudo, mesmo
       // se o navegador já tinha visitado o site com outra conta)
       try {
