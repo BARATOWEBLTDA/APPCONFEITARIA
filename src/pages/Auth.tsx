@@ -507,9 +507,9 @@ export default function Auth() {
       </div>
       ) : (
       <div className="auth-card">
-        {/* Mascote do cadastro (mobile e desktop) */}
-        <div className="cad-mascote" aria-hidden="true">
-          <img src="/cadastro.png" alt="Doonly" />
+        {/* Logo — mesma classe/tamanho do login */}
+        <div className="auth-logo-wrap">
+          <img src="/cadastro.png" alt="Doonly" className="auth-logo-img" />
         </div>
 
         <form onSubmit={handleCadastro} className="cadastro-form" noValidate>
@@ -1021,21 +1021,6 @@ export default function Auth() {
         .cad-btn:hover:not(:disabled) { opacity: 0.9; }
         .cad-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
-        /* ── Cabeçalho do cadastro ────────────────────────── */
-        /* ── Mascote do cadastro (mobile e desktop) ─── */
-        .cad-mascote {
-          display: flex;
-          justify-content: center;
-          margin-bottom: var(--space-2, 0.5rem);
-        }
-        .cad-mascote img {
-          width: 120px;
-          height: 120px;
-          object-fit: contain;
-          filter: drop-shadow(0 8px 20px rgba(232, 90, 140, 0.3));
-          -webkit-filter: drop-shadow(0 8px 20px rgba(232, 90, 140, 0.3));
-        }
-
         .cad-header {
           text-align: center;
           margin-bottom: 1rem;
@@ -1173,11 +1158,6 @@ export default function Auth() {
           .cad-mobile-login-link { display: none; }
           /* Restaura o topbar no desktop */
           .auth-topbar-login { display: inline-flex !important; }
-          /* Mascote do cadastro no mesmo tamanho do logo do login */
-          .cad-mascote img {
-            width: 120px;
-            height: 120px;
-          }
         }
             text-transform: none;
           }
