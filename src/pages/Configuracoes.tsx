@@ -445,6 +445,59 @@ export default function Configuracoes() {
           )}
         </div>
 
+        {/* ── AÇÕES RÁPIDAS ──────────────────────────────── */}
+        <div className="cfgp-card cfgp-quick">
+          <div className="cfgp-quick-hdr">
+            <div className="cfgp-quick-title">Ações rápidas</div>
+            <div className="cfgp-quick-sub">Suporte, sugestões e indicações</div>
+          </div>
+          <div className="cfgp-quick-list">
+            <button className="cfgp-quick-item" onClick={() => alert("🚀 Em breve! Estamos preparando o programa de indicação.")}>
+              <span className="cfgp-quick-ico cfgp-quick-ico--pink">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </span>
+              <div className="cfgp-quick-info">
+                <div className="cfgp-quick-name">Indique uma amiga</div>
+                <div className="cfgp-quick-desc">Compartilhe o Doonly com outras confeiteiras</div>
+              </div>
+              <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
+            <button className="cfgp-quick-item" onClick={() => alert("🚀 Em breve! Estamos preparando essa página.")}>
+              <span className="cfgp-quick-ico cfgp-quick-ico--amber">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+              </span>
+              <div className="cfgp-quick-info">
+                <div className="cfgp-quick-name">Enviar uma sugestão</div>
+                <div className="cfgp-quick-desc">Conte o que falta ou o que melhoraria</div>
+              </div>
+              <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
+            <button className="cfgp-quick-item" onClick={() => alert("🚀 Em breve! Você poderá relatar problemas por aqui.")}>
+              <span className="cfgp-quick-ico cfgp-quick-ico--red">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M19 7l-3 2"/><path d="M5 7l3 2"/><path d="M19 13h-3"/><path d="M8 13H5"/><path d="M19 19l-3-2"/><path d="M5 19l3-2"/><path d="M12 6V3"/><path d="M10 3h4"/></svg>
+              </span>
+              <div className="cfgp-quick-info">
+                <div className="cfgp-quick-name">Relatar um problema</div>
+                <div className="cfgp-quick-desc">Algo não funcionou? Conte para a equipe</div>
+              </div>
+              <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+
+            <button className="cfgp-quick-item cfgp-quick-item--last" onClick={() => alert("💬 Em breve! Chat de suporte a caminho.")}>
+              <span className="cfgp-quick-ico cfgp-quick-ico--blue">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg>
+              </span>
+              <div className="cfgp-quick-info">
+                <div className="cfgp-quick-name">Fale com o suporte</div>
+                <div className="cfgp-quick-desc">Abra uma conversa com a equipe</div>
+              </div>
+              <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
         {/* ── DADOS PESSOAIS ──────────────────────────────── */}
         <div className="cfgp-card">
           <div className="cfgp-block-hdr">
@@ -548,24 +601,25 @@ export default function Configuracoes() {
           </div>
         </div>
 
-        {/* ── ZONA DE PERIGO ──────────────────────────────── */}
-        <div className="cfgp-card cfgp-danger">
-          <div className="cfgp-block-hdr cfgp-block-hdr--danger"><span>Zona de perigo</span></div>
-          <div className="cfgp-rows">
-            <button className="cfgp-row cfgp-row-btn cfgp-danger-btn" onClick={handleLogout}>
-              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sair da conta</span>
-              <svg className="cfgp-chevron cfgp-chevron--danger" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+        {/* ── SAIR + EXCLUIR ──────────────────────────────── */}
+        <button className="cfgp-logout" onClick={handleLogout}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sair da conta
+        </button>
+
+        <div className="cfgp-delete-link">
+          {!showExcluir ? (
+            <button className="cfgp-delete-link-btn" onClick={() => setShowExcluir(true)}>
+              Não quer mais usar? <span>Excluir minha conta</span>
             </button>
-            <button className="cfgp-row cfgp-row-btn cfgp-danger-btn cfgp-row--last" onClick={() => setShowExcluir(s => !s)}>
-              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Excluir minha conta</span>
-              <svg className="cfgp-chevron cfgp-chevron--danger" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          </div>
-          {showExcluir && (
-            <div className="cfgp-fields" style={{ paddingTop: 8 }}>
-              <p style={{ fontSize: 12, color: "var(--error)", margin: "0 0 8px" }}>⚠️ Esta ação é permanente. Digite <b>EXCLUIR</b> para confirmar.</p>
+          ) : (
+            <div className="cfgp-delete-panel">
+              <p className="cfgp-delete-warn">⚠️ Esta ação é permanente. Digite <b>EXCLUIR</b> para confirmar.</p>
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--error)" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>} placeholder="Digite EXCLUIR" value={excluirConfirm} onChange={(e: any) => setExcluirConfirm(e.target.value)} />
-              <button className="cfg-btn-save" style={{ background: "var(--error)" }} onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"}>Excluir permanentemente</button>
+              <div className="cfgp-delete-actions">
+                <button className="cfgp-delete-cancel" onClick={() => { setShowExcluir(false); setExcluirConfirm(""); }}>Cancelar</button>
+                <button className="cfgp-delete-confirm" onClick={handleExcluirConta} disabled={excluirConfirm !== "EXCLUIR"}>Excluir permanentemente</button>
+              </div>
             </div>
           )}
         </div>
@@ -1017,7 +1071,6 @@ export default function Configuracoes() {
 
         /* Blocos */
         .cfgp-block-hdr { padding: 12px 18px 6px; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; color: #888780; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
-        .cfgp-block-hdr--danger { color: #B91C1C; }
         .cfgp-edit-btn { all: unset; cursor: pointer; font-size: 11px; font-weight: 700; color: #E85A8C; letter-spacing: 0.04em; text-transform: uppercase; }
         .cfgp-edit-btn:hover { color: #C33A6E; }
 
@@ -1038,16 +1091,141 @@ export default function Configuracoes() {
         .cfgp-fields { padding: 0 18px 14px; display: flex; flex-direction: column; gap: 8px; }
         .cfgp-fields > *:first-child { margin-top: 4px; }
 
-        .cfgp-danger .cfgp-row-l { color: #B91C1C; font-weight: 600; }
-        .cfgp-danger .cfgp-row-l svg { color: #B91C1C; }
-        .cfgp-danger .cfgp-row-btn:hover { background: #FEF2F2; }
-
         .cfgp-footer { text-align: center; font-size: 10.5px; color: #B4B2A9; margin: 12px 0 4px; }
         .cfgp-hint { font-size: 11px; color: #888780; margin: -4px 0 0; padding: 0 4px; line-height: 1.4; font-style: italic; }
         .cfgp-toggles { padding: 4px 18px 12px; }
         .cfgp-toggles .cfg-push-row { padding: 12px 0; border-bottom: 1px solid #F0EBED; gap: 12px; }
         .cfgp-toggles .cfg-push-row:last-child { border-bottom: none; }
         .cfgp-toggles .cfg-notif-label { font-size: 13px; font-weight: 600; color: #2C2C2A; margin: 0 0 2px; }
+
+        /* ─── Ações rápidas ─── */
+        .cfgp-quick { padding: 4px 0 4px; }
+        .cfgp-quick-hdr { padding: 14px 18px 10px; }
+        .cfgp-quick-title { font-size: 17px; font-weight: 800; color: #2C2C2A; letter-spacing: -0.01em; }
+        .cfgp-quick-sub { font-size: 12.5px; color: #888780; margin-top: 3px; }
+        .cfgp-quick-list { display: flex; flex-direction: column; }
+        .cfgp-quick-item {
+          all: unset;
+          box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          width: 100%;
+          padding: 12px 18px;
+          cursor: pointer;
+          border-top: 1px solid #F0EBED;
+          transition: background 0.15s ease;
+        }
+        .cfgp-quick-item:hover { background: #FAF8F5; }
+        .cfgp-quick-ico {
+          width: 40px; height: 40px;
+          border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .cfgp-quick-ico--pink  { background: #FCE0E9; color: #993556; }
+        .cfgp-quick-ico--amber { background: #FEF0DF; color: #854F0B; }
+        .cfgp-quick-ico--red   { background: #FEE2E2; color: #B91C1C; }
+        .cfgp-quick-ico--blue  { background: #E6F1FB; color: #185FA5; }
+        .cfgp-quick-info { flex: 1; min-width: 0; text-align: left; }
+        .cfgp-quick-name { font-size: 14px; font-weight: 700; color: #2C2C2A; letter-spacing: -0.01em; line-height: 1.2; }
+        .cfgp-quick-desc { font-size: 12px; color: #888780; margin-top: 3px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+        .cfgp-quick-arrow { color: #B4B2A9; flex-shrink: 0; }
+
+        /* Sair da conta — botão grafite neutro */
+        .cfgp-logout {
+          all: unset;
+          box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          width: 100%;
+          padding: 13px;
+          background: #fff;
+          border: 1px solid #F0EBED;
+          border-radius: 12px;
+          cursor: pointer;
+          font-size: 14px;
+          color: #2C2C2A;
+          font-weight: 700;
+          margin-bottom: 12px;
+          transition: background 0.15s ease, border-color 0.15s ease;
+        }
+        .cfgp-logout:hover { background: #FAF8F5; border-color: #E8E5DC; }
+        .cfgp-logout svg { color: #5F5E5A; }
+
+        /* Excluir conta — link discreto */
+        .cfgp-delete-link {
+          text-align: center;
+          padding: 4px 0 8px;
+        }
+        .cfgp-delete-link-btn {
+          all: unset;
+          cursor: pointer;
+          font-size: 11.5px;
+          color: #B4B2A9;
+          transition: color 0.15s ease;
+        }
+        .cfgp-delete-link-btn:hover { color: #888780; }
+        .cfgp-delete-link-btn span {
+          color: #B91C1C;
+          font-weight: 600;
+          text-decoration: underline;
+          text-decoration-color: #F09595;
+          text-underline-offset: 2px;
+        }
+
+        /* Painel de confirmação de exclusão */
+        .cfgp-delete-panel {
+          background: #fff;
+          border: 1px solid #FCEBEB;
+          border-radius: 12px;
+          padding: 14px;
+          text-align: left;
+        }
+        .cfgp-delete-warn {
+          font-size: 12px;
+          color: #B91C1C;
+          margin: 0 0 10px;
+          line-height: 1.4;
+        }
+        .cfgp-delete-actions {
+          display: flex;
+          gap: 8px;
+          margin-top: 10px;
+        }
+        .cfgp-delete-cancel {
+          all: unset;
+          flex: 1;
+          text-align: center;
+          padding: 10px;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #5F5E5A;
+          background: #F5F3EF;
+          cursor: pointer;
+        }
+        .cfgp-delete-cancel:hover { background: #E8E5DC; }
+        .cfgp-delete-confirm {
+          all: unset;
+          flex: 1;
+          text-align: center;
+          padding: 10px;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #fff;
+          background: #B91C1C;
+          cursor: pointer;
+        }
+        .cfgp-delete-confirm:hover { background: #991616; }
+        .cfgp-delete-confirm:disabled {
+          background: #F0EBED;
+          color: #B4B2A9;
+          cursor: not-allowed;
+        }
 
         .cfg-accordion { background: var(--bg-card); border-radius: var(--radius-lg); box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,0.06)); overflow: hidden; }
         .cfg-accordion-header { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 1rem 1.15rem; background: none; border: none; cursor: pointer; font-family: 'Geist', sans-serif; text-align: left; }
