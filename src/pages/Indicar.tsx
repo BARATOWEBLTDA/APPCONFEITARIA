@@ -121,8 +121,8 @@ export default function Indicar() {
 
   return (
     <div className="ind-root">
-      {/* ── HERO — Banner 100% largura, colado no topo ── */}
-      <div className="ind-banner-wrap">
+      {/* ── HERO — Banner dentro de card ─────────────── */}
+      <div className="ind-banner-card">
         <img
           src="/Sistema/bannerindica.png"
           alt="Convide para o Doonly e ganhe prêmios exclusivos"
@@ -292,18 +292,20 @@ export default function Indicar() {
         }
         .ind-root * { font-family: var(--font-base) !important; }
 
-        /* Banner — colado no topo (respeitando safe-area do notch/status bar) e nas laterais, sem cantos arredondados */
-        .ind-banner-wrap {
-          margin: calc(-1 * (12px + var(--pad-page-top, 1rem))) -12px 12px;
+        /* Banner — dentro de card com bordas arredondadas */
+        .ind-banner-card {
+          border-radius: 14px;
           overflow: hidden;
+          margin-bottom: 12px;
           line-height: 0;
+          background: #fff;
+          border: 1px solid #F0EBED;
         }
         .ind-banner-img {
           display: block;
           width: 100%;
           height: auto;
           object-fit: cover;
-          border-radius: 0;
         }
 
         /* Card genérico */
