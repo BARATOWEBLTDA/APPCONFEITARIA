@@ -459,7 +459,12 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
             line-height: 1.15;
           }
           .ob-slide1-left .ob-welcome-eyebrow {
-            font-size: 0.95rem;
+            font-size: 1.2rem !important;
+            line-height: 1.5 !important;
+          }
+          /* Junta "SUA CONFEITARIA" e "ORGANIZADA" numa linha só no desktop */
+          .ob-slide1-left .ob-br-mobile {
+            display: none;
           }
           /* Orbs decorativos atrás do mascote */
           .ob-slide1-orb {
@@ -2019,10 +2024,10 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
       <div className="ob-slide1-left">
         <div className="ob-welcome-anchor">
           <div className="ob-welcome-block" style={{ animationDelay: "0.15s" }}>
-            SUA CONFEITARIA <span className="ob-fill">ORGANIZADA</span><br/>
+            SUA CONFEITARIA<br className="ob-br-mobile"/> <span className="ob-fill">ORGANIZADA</span><br/>
             DO PEDIDO AO <span className="ob-fill">LUCRO</span>
           </div>
-          <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.35s", marginTop: "1.1rem", textTransform: "none", letterSpacing: "0", opacity: 0.9, fontSize: "1.2rem", fontWeight: 500, lineHeight: 1.5 }}>
+          <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.35s", marginTop: "1.1rem", textTransform: "none", letterSpacing: "0", opacity: 0.9, fontSize: "1.05rem", fontWeight: 500, lineHeight: 1.45 }}>
             Tudo o que você precisa para cuidar do seu negócio em um só lugar.
           </div>
         </div>
