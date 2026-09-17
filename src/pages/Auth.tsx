@@ -74,12 +74,46 @@ export default function Auth() {
   // ── Captura código de indicação da URL (?ref=XXX) ──────────
   // Salva em localStorage pra persistir caso a visitante navegue antes de cadastrar.
   // Consumido no signup pra vincular indicador → indicada.
+  // Também busca nome/foto do indicador pra mostrar banner de boas-vindas
+  // e faz auto-scroll até o form de cadastro (assume que a pessoa é nova).
+  const [indicadorNome, setIndicadorNome] = useState<string | null>(null);
+  const [indicadorFoto, setIndicadorFoto] = useState<string | null>(null);
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const ref = params.get("ref");
+      // Aceita ?ref= vindo da URL OU um código já salvo em localStorage
+      // (caso a pessoa saia e volte, o banner continua aparecendo)
+      let refCode: string | null = null;
+      let veioViaURL = false;
       if (ref && ref.trim().length >= 4 && ref.trim().length <= 12) {
-        localStorage.setItem("doonly_ref_code", ref.trim().toUpperCase());
+        refCode = ref.trim().toUpperCase();
+        localStorage.setItem("doonly_ref_code", refCode);
+        veioViaURL = true;
+      } else {
+        refCode = localStorage.getItem("doonly_ref_code");
+      }
+
+      // Busca nome + foto do indicador (fallback silencioso se código não existe)
+      if (refCode) {
+        supabase
+          .from("profiles")
+          .select("nome, foto_url")
+          .eq("codigo_indicacao", refCode)
+          .maybeSingle()
+          .then(({ data }) => {
+            if (data?.nome) setIndicadorNome(data.nome);
+            if (data?.foto_url) setIndicadorFoto(data.foto_url);
+          });
+      }
+
+      // Auto-scroll pro form de cadastro (só se veio via URL agora — não incomoda
+      // se a pessoa já visitou antes e voltou)
+      if (veioViaURL) {
+        setTimeout(() => {
+          const el = document.querySelector(".cadastro-form");
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 300);
       }
     } catch {}
   }, []);
@@ -462,6 +496,25 @@ export default function Auth() {
           <p className="cad-subtitle">Tenha seus produtos, receitas, clientes e pedidos em um só lugar.</p>
         </div>
         <form onSubmit={handleCadastro} className="cadastro-form" noValidate>
+          {/* Banner de indicação — só aparece se veio via ?ref= */}
+          {indicadorNome && (
+            <div className="ref-banner">
+              <div className="ref-banner-avatar">
+                {indicadorFoto
+                  ? <img src={indicadorFoto} alt={indicadorNome} />
+                  : <span>{indicadorNome.trim().charAt(0).toUpperCase()}</span>}
+              </div>
+              <div className="ref-banner-info">
+                <div className="ref-banner-title">
+                  🎉 <b>{indicadorNome.split(" ")[0]}</b> indicou você para o Doonly!
+                </div>
+                <div className="ref-banner-desc">
+                  Comece de graça em segundos
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Nome */}
           <div className="cad-field-wrap">
             <div className={`cad-field ${cadastroTouched.nome && cadastroErrors.nome ? "has-error" : ""}`}>
@@ -857,6 +910,57 @@ export default function Auth() {
 
         /* ── Cadastro ─────────────────────────────────────── */
         .cadastro-form { display: flex; flex-direction: column; gap: 0.75rem; padding-top: 0.5rem; }
+
+        /* Banner de indicação (aparece na aba Cadastro se veio via ?ref=) */
+        .ref-banner {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 14px;
+          background: linear-gradient(135deg, #FCE0E9 0%, #F4C0D1 100%);
+          border: 1.5px solid #E85A8C;
+          border-radius: 12px;
+          margin-bottom: 4px;
+          animation: refPop 0.4s cubic-bezier(0.34, 1.4, 0.64, 1);
+        }
+        @keyframes refPop {
+          from { opacity: 0; transform: translateY(-6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .ref-banner-avatar {
+          width: 44px; height: 44px;
+          border-radius: 50%;
+          background: #993556;
+          color: #FCE0E9;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 18px;
+          font-weight: 900;
+          flex-shrink: 0;
+          overflow: hidden;
+          border: 2px solid #fff;
+          box-shadow: 0 2px 8px rgba(153, 53, 86, 0.3);
+        }
+        .ref-banner-avatar img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
+        .ref-banner-info { flex: 1; min-width: 0; }
+        .ref-banner-title {
+          font-size: 13px;
+          color: #4B1528;
+          line-height: 1.3;
+          font-weight: 500;
+        }
+        .ref-banner-title b { font-weight: 800; color: #72243E; }
+        .ref-banner-desc {
+          font-size: 11.5px;
+          color: #993556;
+          margin-top: 2px;
+          line-height: 1.35;
+        }
+        .ref-banner-desc b { font-weight: 800; }
         .cad-field-wrap { display: flex; flex-direction: column; gap: 0.3rem; }
         .cad-field { position: relative; display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--radius-full); overflow: hidden; background: var(--bg-card); transition: border-color 0.2s; }
         .cad-field:focus-within { border-color: var(--border-focus); }
