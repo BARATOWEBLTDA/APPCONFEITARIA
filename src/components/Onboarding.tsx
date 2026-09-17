@@ -416,6 +416,8 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           display: contents;
         }
         .ob-slide1-orb { display: none; }
+        /* Por padrão (mobile), esconde as quebras específicas de desktop */
+        .ob-br-desktop { display: none; }
 
         @media (min-width: 900px) {
           .ob-slide1-split {
@@ -446,7 +448,7 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
             z-index: 2;
           }
           .ob-slide1-right .ob-welcome-coroa {
-            width: 280px;
+            width: 240px;
             margin-bottom: 0;
           }
           .ob-slide1-left .ob-welcome-anchor {
@@ -462,10 +464,11 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
             font-size: 1.2rem !important;
             line-height: 1.5 !important;
           }
-          /* Junta "SUA CONFEITARIA" e "ORGANIZADA" numa linha só no desktop */
-          .ob-slide1-left .ob-br-mobile {
-            display: none;
-          }
+          /* Quebras condicionais no desktop:
+             - Esconde a quebra que só serve pro mobile
+             - Mostra a quebra específica do desktop (junta ORGANIZADA + DO) */
+          .ob-slide1-left .ob-br-mobile { display: none; }
+          .ob-slide1-left .ob-br-desktop { display: inline; }
           /* Orbs decorativos atrás do mascote */
           .ob-slide1-orb {
             display: block;
@@ -2024,8 +2027,10 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
       <div className="ob-slide1-left">
         <div className="ob-welcome-anchor">
           <div className="ob-welcome-block" style={{ animationDelay: "0.15s" }}>
-            SUA CONFEITARIA<br className="ob-br-mobile"/> <span className="ob-fill">ORGANIZADA</span><br/>
-            DO PEDIDO AO <span className="ob-fill">LUCRO</span>
+            SUA CONFEITARIA<br/>
+            <span className="ob-fill">ORGANIZADA</span><br className="ob-br-mobile"/>{" "}
+            DO<br className="ob-br-desktop"/>{" "}
+            PEDIDO AO <span className="ob-fill">LUCRO</span>
           </div>
           <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.35s", marginTop: "1.1rem", textTransform: "none", letterSpacing: "0", opacity: 0.9, fontSize: "1.05rem", fontWeight: 500, lineHeight: 1.45 }}>
             Tudo o que você precisa para cuidar do seu negócio em um só lugar.
