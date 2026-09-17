@@ -13,9 +13,8 @@
  */
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
-import { CaretLeft, ShareNetwork, Copy, WhatsappLogo, Check, Trophy, Lock } from "@phosphor-icons/react";
+import { ShareNetwork, Copy, WhatsappLogo, Check, Trophy, Lock } from "@phosphor-icons/react";
 
 interface Amiga {
   id: string;
@@ -33,7 +32,6 @@ const PREMIOS = [
 ];
 
 export default function Indicar() {
-  const navigate = useNavigate();
   const [nome, setNome] = useState("");
   const [codigo, setCodigo] = useState("");
   const [conversoes, setConversoes] = useState(0);
@@ -123,11 +121,7 @@ export default function Indicar() {
 
   return (
     <div className="ind-root">
-      <button className="ind-back" onClick={() => navigate(-1)} aria-label="Voltar">
-        <CaretLeft size={20} weight="bold" />
-      </button>
-
-      {/* ── HERO — Banner 100% largura ─────────────── */}
+      {/* ── HERO — Banner 100% largura, colado no topo ── */}
       <div className="ind-banner-wrap">
         <img
           src="/Sistema/bannerindica.png"
@@ -298,22 +292,9 @@ export default function Indicar() {
         }
         .ind-root * { font-family: var(--font-base) !important; }
 
-        .ind-back {
-          all: unset;
-          cursor: pointer;
-          width: 36px; height: 36px;
-          border-radius: 10px;
-          background: #fff;
-          border: 1px solid #F0EBED;
-          display: flex; align-items: center; justify-content: center;
-          color: #2C2C2A;
-          margin-bottom: 10px;
-        }
-        .ind-back:hover { background: #FAF8F5; }
-
-        /* Banner — largura 100% da tela, colado nas laterais */
+        /* Banner — colado no topo e nas laterais, sem cantos arredondados */
         .ind-banner-wrap {
-          margin: 0 -12px 12px;
+          margin: calc(-1 * (12px + var(--pad-page-top, 1rem) + env(safe-area-inset-top, 0px))) -12px 12px;
           overflow: hidden;
           line-height: 0;
         }
@@ -322,6 +303,7 @@ export default function Indicar() {
           width: 100%;
           height: auto;
           object-fit: cover;
+          border-radius: 0;
         }
 
         /* Card genérico */
