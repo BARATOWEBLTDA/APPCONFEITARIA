@@ -6,6 +6,7 @@ import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { sonsHabilitados, setSonsHabilitados, tocarSom, somNotificacaoHabilitado, setSomNotificacaoHabilitado, somPedidoHabilitado, setSomPedidoHabilitado } from "@/hooks/useSom";
 import SugestaoWizard from "@/components/SugestaoWizard";
 import TermosModal from "@/components/TermosModal";
+import EditarPerfilModal from "@/components/EditarPerfilModal";
 
 
 // ── Componente inline: toggle de push notifications ──────────
@@ -291,6 +292,7 @@ export default function Configuracoes() {
   const [editMode, setEditMode] = useState(false);
   const [sugestaoOpen, setSugestaoOpen] = useState(false);
   const [termosOpen, setTermosOpen] = useState(false);
+  const [editarOpen, setEditarOpen] = useState(false);
   const [excluirConfirm, setExcluirConfirm] = useState("");
   const [copied, setCopied] = useState(false);
   const [ogPreview, setOgPreview] = useState<string | null>(null);
@@ -443,6 +445,9 @@ export default function Configuracoes() {
             <div className="cfgp-hero-nome">{form.nome || "Bem-vinda"}</div>
             <div className="cfgp-hero-email">{userEmail}</div>
           </div>
+          <button className="cfgp-hero-edit" onClick={() => setEditarOpen(true)} aria-label="Editar perfil">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
         </div>
 
         {/* ── CARD ASSINATURA ──────────────────────────────── */}
@@ -531,7 +536,7 @@ export default function Configuracoes() {
               <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
 
-            <button className="cfgp-quick-item cfgp-quick-item--last" onClick={() => alert("💬 Em breve! Chat de suporte a caminho.")}>
+            <button className="cfgp-quick-item" onClick={() => alert("💬 Em breve! Chat de suporte a caminho.")}>
               <span className="cfgp-quick-ico cfgp-quick-ico--blue">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1v-6h3zM3 19a2 2 0 0 0 2 2h1v-6H3z"/></svg>
               </span>
@@ -541,94 +546,27 @@ export default function Configuracoes() {
               </div>
               <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
-          </div>
-        </div>
 
-        {/* ── DADOS PESSOAIS ──────────────────────────────── */}
-        <div className="cfgp-card">
-          <div className="cfgp-block-hdr">
-            <span>Dados pessoais</span>
-            <button
-              className="cfgp-edit-btn"
-              onClick={() => setEditMode(m => !m)}
-              type="button"
-            >
-              {editMode ? "Cancelar" : "Editar"}
+            <button className="cfgp-quick-item" onClick={() => alert("🚀 Central de ajuda em breve!")}>
+              <span className="cfgp-quick-ico cfgp-quick-ico--gray">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </span>
+              <div className="cfgp-quick-info">
+                <div className="cfgp-quick-name">Central de ajuda</div>
+                <div className="cfgp-quick-desc">Perguntas frequentes e tutoriais</div>
+              </div>
+              <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
-          </div>
 
-          {editMode ? (
-            <div className="cfgp-fields">
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>} placeholder="Seu nome" value={form.nome} onChange={(e: any) => setForm({...form, nome: e.target.value})} />
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.73a16 16 0 0 0 6.29 6.29l1.62-1.62a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>} placeholder="WhatsApp" value={form.telefone} onChange={(e: any) => setForm({...form, telefone: formatPhone(e.target.value)})} type="tel" />
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>} placeholder="E-mail" value={userEmail} onChange={() => {}} disabled={true} />
-              <p className="cfgp-hint">Para alterar seu e-mail, entre em contato com o suporte.</p>
-              {error && <div className="cfg-toast cfg-toast-error">{error}</div>}
-              {success && <div className="cfg-toast cfg-toast-success">✓ Salvo com sucesso!</div>}
-              <button className="cfg-btn-save" onClick={async () => { await handleSave(); setEditMode(false); }} disabled={saving || uploading}>
-                {saving ? <span className="cfg-spinner" /> : "Salvar alterações"}
-              </button>
-            </div>
-          ) : (
-            <div className="cfgp-rows">
-              <div className="cfgp-row">
-                <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Nome</span>
-                <span className="cfgp-row-v">{form.nome || "—"}</span>
+            <button className="cfgp-quick-item cfgp-quick-item--last" onClick={() => setTermosOpen(true)}>
+              <span className="cfgp-quick-ico cfgp-quick-ico--gray">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </span>
+              <div className="cfgp-quick-info">
+                <div className="cfgp-quick-name">Termos e privacidade</div>
+                <div className="cfgp-quick-desc">Nossos termos de uso e políticas</div>
               </div>
-              <div className="cfgp-row">
-                <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.73a16 16 0 0 0 6.29 6.29l1.62-1.62a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>WhatsApp</span>
-                <span className="cfgp-row-v">{form.telefone || "—"}</span>
-              </div>
-              <div className="cfgp-row cfgp-row--last">
-                <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>E-mail</span>
-                <span className="cfgp-row-v cfgp-row-v--muted">{userEmail}</span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* ── SEGURANÇA ───────────────────────────────────── */}
-        <div className="cfgp-card">
-          <div className="cfgp-block-hdr"><span>Segurança</span></div>
-          <button className="cfgp-row-btn" onClick={() => setShowAlterarSenha(s => !s)}>
-            <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Alterar senha</span>
-            <svg className={showAlterarSenha ? "cfgp-chevron open" : "cfgp-chevron"} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-          </button>
-          {showAlterarSenha && (
-            <div className="cfgp-fields" style={{ paddingTop: 0 }}>
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Senha atual" value={senhaAtual} onChange={(e: any) => setSenhaAtual(e.target.value)} type="password" />
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Nova senha" value={novaSenha} onChange={(e: any) => setNovaSenha(e.target.value)} type="password" />
-              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Confirmar nova senha" value={confirmSenha} onChange={(e: any) => setConfirmSenha(e.target.value)} type="password" />
-              {senhaMsg && <div className={`cfg-toast ${senhaMsg.includes("sucesso") ? "cfg-toast-success" : "cfg-toast-error"}`}>{senhaMsg}</div>}
-              <button className="cfg-btn-save" onClick={handleAlterarSenha} disabled={savingSenha}>
-                {savingSenha ? <span className="cfg-spinner" /> : "Alterar senha"}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* ── PREFERÊNCIAS ────────────────────────────────── */}
-        <div className="cfgp-card">
-          <div className="cfgp-block-hdr"><span>Preferências</span></div>
-          <div className="cfgp-toggles">
-            <PushToggle />
-            <SomToggle />
-            <SomNotificacaoToggle />
-            <SomPedidoToggle />
-          </div>
-        </div>
-
-        {/* ── SUPORTE ─────────────────────────────────────── */}
-        <div className="cfgp-card">
-          <div className="cfgp-block-hdr"><span>Suporte</span></div>
-          <div className="cfgp-rows">
-            <button className="cfgp-row cfgp-row-btn" onClick={() => alert("🚀 Central de ajuda em breve!")}>
-              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Central de ajuda</span>
-              <svg className="cfgp-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <button className="cfgp-row cfgp-row-btn cfgp-row--last" onClick={() => setTermosOpen(true)}>
-              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Termos e privacidade</span>
-              <svg className="cfgp-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
+              <svg className="cfgp-quick-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
         </div>
@@ -656,7 +594,6 @@ export default function Configuracoes() {
           )}
         </div>
 
-        <p className="cfgp-footer">Doonly · v1.0.0</p>
       </div>
 
       {/* ─────────────── DESKTOP ─────────────── */}
@@ -1097,6 +1034,19 @@ export default function Configuracoes() {
         .cfgp-hero-info { flex: 1; min-width: 0; }
         .cfgp-hero-nome { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
         .cfgp-hero-email { font-size: 13px; opacity: 0.9; margin-top: 4px; word-break: break-all; }
+        .cfgp-hero-edit {
+          all: unset;
+          cursor: pointer;
+          width: 36px; height: 36px;
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.18);
+          color: #fff;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          transition: background 0.15s ease, transform 0.12s ease;
+        }
+        .cfgp-hero-edit:hover { background: rgba(255, 255, 255, 0.28); transform: translateY(-1px); }
+        .cfgp-hero-edit:active { transform: translateY(1px); }
 
         /* Card assinatura */
         .cfgp-sub { padding: 16px 18px; }
@@ -1198,6 +1148,7 @@ export default function Configuracoes() {
         .cfgp-quick-ico--amber { background: #FEF0DF; color: #854F0B; }
         .cfgp-quick-ico--red   { background: #FEE2E2; color: #B91C1C; }
         .cfgp-quick-ico--blue  { background: #E6F1FB; color: #185FA5; }
+        .cfgp-quick-ico--gray  { background: #F0EBED; color: #5F5E5A; }
         .cfgp-quick-info { flex: 1; min-width: 0; text-align: left; }
         .cfgp-quick-name { font-size: 14px; font-weight: 700; color: #2C2C2A; letter-spacing: -0.01em; line-height: 1.2; }
         .cfgp-quick-desc { font-size: 12px; color: #888780; margin-top: 3px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
@@ -1523,6 +1474,33 @@ export default function Configuracoes() {
       <TermosModal
         open={termosOpen}
         onClose={() => setTermosOpen(false)}
+      />
+
+      <EditarPerfilModal
+        open={editarOpen}
+        onClose={() => setEditarOpen(false)}
+        nome={form.nome}
+        telefone={form.telefone}
+        email={userEmail}
+        fotoPreview={preview}
+        inicial={(form.nome || "?").trim().charAt(0).toUpperCase()}
+        onNomeChange={v => setForm({...form, nome: v})}
+        onTelefoneChange={v => setForm({...form, telefone: formatPhone(v)})}
+        onFotoClick={() => fileRef.current?.click()}
+        onSave={async () => { await handleSave(); }}
+        saving={saving}
+        uploading={uploading}
+        senhaAtual={senhaAtual}
+        novaSenha={novaSenha}
+        confirmSenha={confirmSenha}
+        senhaMsg={senhaMsg}
+        savingSenha={savingSenha}
+        onSenhaAtualChange={setSenhaAtual}
+        onNovaSenhaChange={setNovaSenha}
+        onConfirmSenhaChange={setConfirmSenha}
+        onAlterarSenha={handleAlterarSenha}
+        saveError={error}
+        saveSuccess={success}
       />
     </div>
   );
