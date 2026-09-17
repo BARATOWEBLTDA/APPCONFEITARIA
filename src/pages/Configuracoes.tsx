@@ -281,6 +281,7 @@ export default function Configuracoes() {
   };
 
   const [showAlterarSenha, setShowAlterarSenha] = useState(false);
+  const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmSenha, setConfirmSenha] = useState("");
   const [senhaMsg, setSenhaMsg] = useState("");
@@ -295,13 +296,41 @@ export default function Configuracoes() {
   const ogFileRef = useRef<HTMLInputElement>(null);
 
   const handleAlterarSenha = async () => {
-    if (novaSenha.length < 6) return setSenhaMsg("Senha deve ter ao menos 6 caracteres.");
-    if (novaSenha !== confirmSenha) return setSenhaMsg("Senhas não coincidem.");
+    if (!senhaAtual) return setSenhaMsg("Digite sua senha atual.");
+    if (novaSenha.length < 6) return setSenhaMsg("A nova senha deve ter ao menos 6 caracteres.");
+    if (novaSenha !== confirmSenha) return setSenhaMsg("As senhas não coincidem.");
+    if (novaSenha === senhaAtual) return setSenhaMsg("A nova senha deve ser diferente da atual.");
+    if (!userEmail) return setSenhaMsg("Sessão inválida. Faça login novamente.");
     setSavingSenha(true);
+
+    // 1) Valida senha atual (reautenticação)
+    const { error: reauthErr } = await supabase.auth.signInWithPassword({
+      email: userEmail,
+      password: senhaAtual,
+    });
+    if (reauthErr) {
+      setSavingSenha(false);
+      return setSenhaMsg("Senha atual incorreta.");
+    }
+
+    // 2) Troca a senha
     const { error } = await supabase.auth.updateUser({ password: novaSenha });
+    if (error) {
+      setSavingSenha(false);
+      return setSenhaMsg("Erro ao alterar senha. Tente novamente.");
+    }
+
+    // 3) Desloga as outras sessões (mantém só a atual). Silencioso se falhar.
+    try {
+      await supabase.auth.signOut({ scope: "others" });
+    } catch {}
+
     setSavingSenha(false);
-    if (error) setSenhaMsg("Erro ao alterar senha. Tente novamente.");
-    else { setSenhaMsg("✓ Senha alterada com sucesso!"); setNovaSenha(""); setConfirmSenha(""); setTimeout(() => { setSenhaMsg(""); setShowAlterarSenha(false); }, 2000); }
+    setSenhaMsg("✓ Senha alterada com sucesso! Outros dispositivos foram deslogados.");
+    setSenhaAtual("");
+    setNovaSenha("");
+    setConfirmSenha("");
+    setTimeout(() => { setSenhaMsg(""); setShowAlterarSenha(false); }, 3000);
   };
 
   const handleExcluirConta = async () => {
@@ -565,10 +594,13 @@ export default function Configuracoes() {
           </button>
           {showAlterarSenha && (
             <div className="cfgp-fields" style={{ paddingTop: 0 }}>
+              <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Senha atual" value={senhaAtual} onChange={(e: any) => setSenhaAtual(e.target.value)} type="password" />
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Nova senha" value={novaSenha} onChange={(e: any) => setNovaSenha(e.target.value)} type="password" />
               <Field icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>} placeholder="Confirmar nova senha" value={confirmSenha} onChange={(e: any) => setConfirmSenha(e.target.value)} type="password" />
               {senhaMsg && <div className={`cfg-toast ${senhaMsg.includes("sucesso") ? "cfg-toast-success" : "cfg-toast-error"}`}>{senhaMsg}</div>}
-              <button className="cfg-btn-save" onClick={handleAlterarSenha}>Alterar senha</button>
+              <button className="cfg-btn-save" onClick={handleAlterarSenha} disabled={savingSenha}>
+                {savingSenha ? <span className="cfg-spinner" /> : "Alterar senha"}
+              </button>
             </div>
           )}
         </div>
@@ -731,6 +763,10 @@ export default function Configuracoes() {
                 <p className="cfg-desk-inline-label">🔒 Alterar Senha</p>
                 <div className="cfg-desk-fields">
                   <div className="cfg-desk-field">
+                    <label>Senha atual</label>
+                    <input type="password" placeholder="Sua senha atual" value={senhaAtual} onChange={e => setSenhaAtual(e.target.value)} />
+                  </div>
+                  <div className="cfg-desk-field">
                     <label>Nova senha</label>
                     <input type="password" placeholder="Mínimo 6 caracteres" value={novaSenha} onChange={e => setNovaSenha(e.target.value)} />
                   </div>
@@ -741,7 +777,7 @@ export default function Configuracoes() {
                 </div>
                 {senhaMsg && <p style={{fontSize:"0.82rem",color:senhaMsg.startsWith("✓")?"var(--success)":"var(--error)",margin:0}}>{senhaMsg}</p>}
                 <div style={{display:"flex",gap:"8px"}}>
-                  <button onClick={() => {setShowAlterarSenha(false);setNovaSenha("");setConfirmSenha("");setSenhaMsg("");}} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
+                  <button onClick={() => {setShowAlterarSenha(false);setSenhaAtual("");setNovaSenha("");setConfirmSenha("");setSenhaMsg("");}} className="cfg-btn-ghost" style={{flex:1}}>Cancelar</button>
                   <button onClick={handleAlterarSenha} disabled={savingSenha} className="cfg-btn-save" style={{flex:2,minHeight:"38px",fontSize:"0.85rem",borderRadius:"10px"}}>
                     {savingSenha ? <span className="cfg-spinner" /> : "Confirmar alteração"}
                   </button>
@@ -1102,8 +1138,8 @@ export default function Configuracoes() {
         .cfgp-edit-btn:hover { color: #C33A6E; }
 
         .cfgp-rows { padding: 0 18px 8px; }
-        .cfgp-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #F0EBED; gap: 12px; font-size: 13px; color: #2C2C2A; }
-        .cfgp-row--last { border-bottom: none; }
+        .cfgp-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; gap: 12px; font-size: 13px; color: #2C2C2A; }
+        .cfgp-row--last { }
         .cfgp-row-l { display: flex; align-items: center; gap: 8px; color: #5F5E5A; min-width: 0; }
         .cfgp-row-l svg { color: #B4B2A9; flex-shrink: 0; }
         .cfgp-row-v { font-weight: 600; color: #2C2C2A; text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1121,8 +1157,8 @@ export default function Configuracoes() {
         .cfgp-footer { text-align: center; font-size: 10.5px; color: #B4B2A9; margin: 12px 0 4px; }
         .cfgp-hint { font-size: 11px; color: #888780; margin: -4px 0 0; padding: 0 4px; line-height: 1.4; font-style: italic; }
         .cfgp-toggles { padding: 4px 18px 12px; }
-        .cfgp-toggles .cfg-push-row { padding: 12px 0; border-bottom: 1px solid #F0EBED; gap: 12px; }
-        .cfgp-toggles .cfg-push-row:last-child { border-bottom: none; }
+        .cfgp-toggles .cfg-push-row { padding: 12px 0; gap: 12px; }
+        .cfgp-toggles .cfg-push-row:last-child { }
         .cfgp-toggles .cfg-notif-label { font-size: 13px; font-weight: 600; color: #2C2C2A; margin: 0 0 2px; }
 
         /* ─── Ações rápidas ─── */
@@ -1140,7 +1176,6 @@ export default function Configuracoes() {
           width: 100%;
           padding: 12px 18px;
           cursor: pointer;
-          border-top: 1px solid #F0EBED;
           transition: background 0.15s ease;
         }
         .cfgp-quick-item:hover { background: #FAF8F5; }
