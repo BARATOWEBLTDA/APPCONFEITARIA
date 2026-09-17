@@ -2019,11 +2019,10 @@ function Slide1Welcome({ onReady }: { onReady: () => void }) {
       <div className="ob-slide1-left">
         <div className="ob-welcome-anchor">
           <div className="ob-welcome-block" style={{ animationDelay: "0.15s" }}>
-            SUA CONFEITARIA<br/>
-            <span className="ob-fill">ORGANIZADA</span><br/>
+            SUA CONFEITARIA <span className="ob-fill">ORGANIZADA</span><br/>
             DO PEDIDO AO <span className="ob-fill">LUCRO</span>
           </div>
-          <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.35s", marginTop: "1.1rem", textTransform: "none", letterSpacing: "0", opacity: 0.9, fontSize: "1.05rem", fontWeight: 500, lineHeight: 1.45 }}>
+          <div className="ob-welcome-eyebrow" style={{ animationDelay: "0.35s", marginTop: "1.1rem", textTransform: "none", letterSpacing: "0", opacity: 0.9, fontSize: "1.2rem", fontWeight: 500, lineHeight: 1.5 }}>
             Tudo o que você precisa para cuidar do seu negócio em um só lugar.
           </div>
         </div>
