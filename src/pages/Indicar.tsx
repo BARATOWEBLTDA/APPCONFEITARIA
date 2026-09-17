@@ -127,13 +127,13 @@ export default function Indicar() {
         <CaretLeft size={20} weight="bold" />
       </button>
 
-      {/* ── HERO (placeholder até ter banner) ─────────── */}
-      <div className="ind-hero">
-        <div className="ind-hero-emoji">💖</div>
-        <h1 className="ind-hero-title">Indique amigas confeiteiras<br/>e ganhe prêmios exclusivos</h1>
-        <p className="ind-hero-desc">
-          Cada amiga que assinar o PRO pelo seu link te aproxima de recompensas incríveis. Ela ainda ganha kit de boas-vindas + 50% OFF no 1º mês!
-        </p>
+      {/* ── HERO — Banner 100% largura ─────────────── */}
+      <div className="ind-banner-wrap">
+        <img
+          src="/Sistema/bannerindica.png"
+          alt="Indique amigas confeiteiras e ganhe prêmios exclusivos"
+          className="ind-banner-img"
+        />
       </div>
 
       {/* ── SEU LINK ────────────────────────────────── */}
@@ -311,28 +311,17 @@ export default function Indicar() {
         }
         .ind-back:hover { background: #FAF8F5; }
 
-        /* Hero */
-        .ind-hero {
-          background: linear-gradient(135deg, #E85A8C 0%, #C33A6E 100%);
-          border-radius: 16px;
-          padding: 22px 20px;
-          color: #fff;
-          text-align: center;
-          margin-bottom: 12px;
+        /* Banner — largura 100% da tela, colado nas laterais */
+        .ind-banner-wrap {
+          margin: 0 -12px 12px;
+          overflow: hidden;
+          line-height: 0;
         }
-        .ind-hero-emoji { font-size: 40px; margin-bottom: 4px; }
-        .ind-hero-title {
-          font-size: 20px;
-          font-weight: 800;
-          letter-spacing: -0.02em;
-          margin: 0 0 8px;
-          line-height: 1.25;
-        }
-        .ind-hero-desc {
-          font-size: 13px;
-          opacity: 0.95;
-          line-height: 1.5;
-          margin: 0;
+        .ind-banner-img {
+          display: block;
+          width: 100%;
+          height: auto;
+          object-fit: cover;
         }
 
         /* Card genérico */
