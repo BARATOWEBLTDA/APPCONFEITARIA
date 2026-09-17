@@ -503,7 +503,8 @@ export default function Onboarding({ isOpen, onClose }: OnboardingProps) {
           .ob-slide1-left .ob-welcome-eyebrow {
             font-size: 1.2rem !important;
             line-height: 1.5 !important;
-            max-width: 420px;
+            max-width: 360px;
+            text-wrap: balance;
           }
           /* Quebras condicionais no desktop:
              - Esconde a quebra que só serve pro mobile
