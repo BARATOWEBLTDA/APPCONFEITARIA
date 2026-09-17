@@ -5,6 +5,7 @@ import { refreshProfile } from "@/hooks/useProfile";
 import { usePushSubscription } from "@/hooks/usePushSubscription";
 import { sonsHabilitados, setSonsHabilitados, tocarSom, somNotificacaoHabilitado, setSomNotificacaoHabilitado, somPedidoHabilitado, setSomPedidoHabilitado } from "@/hooks/useSom";
 import SugestaoWizard from "@/components/SugestaoWizard";
+import TermosModal from "@/components/TermosModal";
 
 
 // ── Componente inline: toggle de push notifications ──────────
@@ -289,6 +290,7 @@ export default function Configuracoes() {
   const [showExcluir, setShowExcluir] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [sugestaoOpen, setSugestaoOpen] = useState(false);
+  const [termosOpen, setTermosOpen] = useState(false);
   const [excluirConfirm, setExcluirConfirm] = useState("");
   const [copied, setCopied] = useState(false);
   const [ogPreview, setOgPreview] = useState<string | null>(null);
@@ -624,24 +626,7 @@ export default function Configuracoes() {
               <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Central de ajuda</span>
               <svg className="cfgp-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
-            <button className="cfgp-row cfgp-row-btn" onClick={async () => {
-              try {
-                localStorage.removeItem("doonly_tutorial_visto");
-                localStorage.removeItem("doonly_tutorial_auto_aberto");
-                localStorage.removeItem("doonly_tour_inicio_visto");
-              } catch {}
-              try {
-                const { data: userRes } = await supabase.auth.getUser();
-                if (userRes?.user?.id) {
-                  await supabase.from("profiles").update({ tutorial_visto: false, tour_visto: false }).eq("id", userRes.user.id);
-                }
-              } catch {}
-              window.location.href = "/inicio";
-            }}>
-              <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Rever tutorial</span>
-              <svg className="cfgp-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-            <button className="cfgp-row cfgp-row-btn cfgp-row--last" onClick={() => window.open("/termos", "_blank")}>
+            <button className="cfgp-row cfgp-row-btn cfgp-row--last" onClick={() => setTermosOpen(true)}>
               <span className="cfgp-row-l"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Termos e privacidade</span>
               <svg className="cfgp-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
@@ -1137,16 +1122,16 @@ export default function Configuracoes() {
         .cfgp-edit-btn { all: unset; cursor: pointer; font-size: 11px; font-weight: 700; color: #E85A8C; letter-spacing: 0.04em; text-transform: uppercase; }
         .cfgp-edit-btn:hover { color: #C33A6E; }
 
-        .cfgp-rows { padding: 0 18px 8px; }
-        .cfgp-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; gap: 12px; font-size: 13px; color: #2C2C2A; }
+        .cfgp-rows { padding: 0 0 8px; }
+        .cfgp-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 18px; gap: 12px; font-size: 13px; color: #2C2C2A; }
         .cfgp-row--last { }
         .cfgp-row-l { display: flex; align-items: center; gap: 8px; color: #5F5E5A; min-width: 0; }
         .cfgp-row-l svg { color: #B4B2A9; flex-shrink: 0; }
         .cfgp-row-v { font-weight: 600; color: #2C2C2A; text-align: right; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .cfgp-row-v--muted { color: #888780; font-weight: 500; font-size: 12px; }
-        .cfgp-row-btn { all: unset; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px 18px; cursor: pointer; }
+        .cfgp-row-btn { all: unset; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 12px 18px; cursor: pointer; transition: background 0.15s ease; }
         .cfgp-row-btn:hover { background: #FAF8F5; }
-        .cfgp-rows .cfgp-row-btn { padding: 12px 0; }
+        .cfgp-rows .cfgp-row-btn { padding: 12px 18px; }
         .cfgp-chevron { color: #B4B2A9; transition: transform 0.2s ease; flex-shrink: 0; }
         .cfgp-chevron.open { transform: rotate(90deg); }
         .cfgp-chevron--danger { color: #F09595; }
@@ -1495,6 +1480,11 @@ export default function Configuracoes() {
         open={sugestaoOpen}
         onClose={() => setSugestaoOpen(false)}
         perfil={{ nome: form.nome, telefone: form.telefone, email: userEmail }}
+      />
+
+      <TermosModal
+        open={termosOpen}
+        onClose={() => setTermosOpen(false)}
       />
     </div>
   );
