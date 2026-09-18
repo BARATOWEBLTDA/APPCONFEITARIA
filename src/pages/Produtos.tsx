@@ -1119,12 +1119,23 @@ export default function Produtos() {
                               {!isLocked && <button className="prod-img-remove" onClick={e => { e.stopPropagation(); removeImage(slot); }}>✕</button>}
                             </>
                           ) : isLocked ? (
-                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", gap: "6px", padding: "4px" }}>
-                              <span className="prod-pro-badge">
+                            <>
+                              {/* Selinho PRO no canto superior direito */}
+                              <span className="prod-slot-pro-corner">
                                 <img src="/coroa.png" alt="" />
                                 PRO
                               </span>
-                            </div>
+                              {/* Conteúdo central: cadeado + texto */}
+                              <div className="prod-slot-locked-body">
+                                <div className="prod-slot-lock-icon">
+                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B5D64" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                  </svg>
+                                </div>
+                                <div className="prod-slot-locked-txt">Recurso PRO</div>
+                              </div>
+                            </>
                           ) : (
                             <div className="prod-img-placeholder">
                               {uploading ? <span className="prod-spinner" /> : (
@@ -4589,6 +4600,56 @@ export default function Produtos() {
           color: #9A8B93;
           margin: 6px 0 0;
           font-style: italic;
+        }
+
+        /* ═══ Slot de foto bloqueado (PRO) ═══ */
+        .prod-slot-pro-corner {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 8px;
+          background: #1A1A1A;
+          color: #fff;
+          font-family: var(--font-base);
+          font-size: 10px;
+          font-weight: 800;
+          border-radius: 6px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          z-index: 2;
+          letter-spacing: 0.03em;
+        }
+        .prod-slot-pro-corner img {
+          width: 11px;
+          height: 11px;
+          object-fit: contain;
+        }
+        .prod-slot-locked-body {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          height: 100%;
+          gap: 8px;
+        }
+        .prod-slot-lock-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 999px;
+          background: #F0EBED;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .prod-slot-locked-txt {
+          font-size: 11px;
+          color: #6B5D64;
+          font-weight: 700;
+          font-family: var(--font-base);
+          letter-spacing: 0.01em;
         }
 
         /* Labels rosa (legado — mantidos pra outros steps) */
