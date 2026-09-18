@@ -2897,7 +2897,9 @@ export default function Produtos() {
                           if (w) { w.document.write(html); w.document.close(); }
                         }}
                       >
-                        <span className="prod-preview-menu-ico">📄</span>
+                        <span className="prod-preview-menu-ico">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
+                        </span>
                         <span>
                           <div className="prod-preview-menu-title">Ficha técnica (PDF)</div>
                           <div className="prod-preview-menu-sub">Detalhes em uma folha</div>
@@ -2916,7 +2918,9 @@ export default function Produtos() {
                           setModal(true);
                         }}
                       >
-                        <span className="prod-preview-menu-ico" style={{color: "#3B82F6"}}>📋</span>
+                        <span className="prod-preview-menu-ico" style={{color: "#3B82F6"}}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </span>
                         <span>
                           <div className="prod-preview-menu-title">Duplicar</div>
                           <div className="prod-preview-menu-sub">Criar uma cópia deste produto</div>
@@ -2931,7 +2935,9 @@ export default function Produtos() {
                           catch { alert(url); }
                         }}
                       >
-                        <span className="prod-preview-menu-ico" style={{color: "#059669"}}>🔗</span>
+                        <span className="prod-preview-menu-ico" style={{color: "#059669"}}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        </span>
                         <span>
                           <div className="prod-preview-menu-title">Compartilhar link</div>
                           <div className="prod-preview-menu-sub">Copia o link do cardápio</div>
@@ -2947,7 +2953,9 @@ export default function Produtos() {
                           setPreviewProduto({ ...previewProduto, disponivel: novoDisponivel });
                         }}
                       >
-                        <span className="prod-preview-menu-ico" style={{color: "#F59E0B"}}>📦</span>
+                        <span className="prod-preview-menu-ico" style={{color: "#F59E0B"}}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                        </span>
                         <span>
                           <div className="prod-preview-menu-title">
                             {previewProduto.disponivel !== false ? "Arquivar" : "Reativar"}
@@ -2962,7 +2970,9 @@ export default function Produtos() {
                         className="prod-preview-menu-item prod-preview-menu-item--del"
                         onClick={() => { setPreviewMenu(false); setPreviewProduto(null); setDeleteConfirm(previewProduto.id!); }}
                       >
-                        <span className="prod-preview-menu-ico">🗑</span>
+                        <span className="prod-preview-menu-ico">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                        </span>
                         <span>
                           <div className="prod-preview-menu-title">Excluir</div>
                           <div className="prod-preview-menu-sub">Remove permanentemente</div>
@@ -3776,8 +3786,8 @@ export default function Produtos() {
         @media (min-width: 720px) {
           .prod-preview-overlay { justify-content: center; align-items: center; padding: 24px; }
           .prod-preview-modal {
-            max-width: 520px;
-            max-height: 88vh;
+            max-width: 620px;
+            max-height: 92vh;
             border-radius: 20px;
             animation: prodModalFadeIn 0.22s ease;
           }
@@ -3800,7 +3810,7 @@ export default function Produtos() {
         .prod-preview-close:hover { background: var(--text-title); color: #fff; border-color: var(--text-title); }
         .prod-preview-img {
           width: 100%;
-          height: 200px;
+          height: 260px;
           overflow: hidden;
           background: var(--bg-subtle);
           flex-shrink: 0;
@@ -3814,7 +3824,7 @@ export default function Produtos() {
           font-size: var(--font-helper);
         }
         .prod-preview-body {
-          padding: 18px 16px 16px;
+          padding: 22px 22px 20px;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
           overscroll-behavior: contain;
@@ -3995,10 +4005,11 @@ export default function Produtos() {
           bottom: calc(100% + 8px);
           right: 0;
           background: #fff;
-          border-radius: 12px;
-          box-shadow: 0 12px 32px rgba(0,0,0,0.18);
-          padding: 6px;
-          min-width: 260px;
+          border-radius: 14px;
+          box-shadow: 0 16px 40px rgba(0,0,0,0.16);
+          border: 1px solid #F0EBED;
+          padding: 8px;
+          min-width: 300px;
           z-index: 100;
           animation: prodMenuIn 0.14s ease;
         }
@@ -4009,10 +4020,10 @@ export default function Produtos() {
         .prod-preview-menu-item {
           all: unset;
           display: flex;
-          align-items: flex-start;
-          gap: 12px;
-          padding: 10px 12px;
-          border-radius: 8px;
+          align-items: center;
+          gap: 14px;
+          padding: 12px 14px;
+          border-radius: 10px;
           cursor: pointer;
           width: 100%;
           box-sizing: border-box;
@@ -4021,30 +4032,36 @@ export default function Produtos() {
         .prod-preview-menu-item:hover { background: #FAF8F5; }
         .prod-preview-menu-item--del:hover { background: #FEE2E2; }
         .prod-preview-menu-item--del .prod-preview-menu-title { color: #DC2626; }
+        .prod-preview-menu-item--del .prod-preview-menu-ico { color: #DC2626; }
         .prod-preview-menu-ico {
-          font-size: 16px;
-          line-height: 1;
-          margin-top: 2px;
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: #FAF8F5;
+          color: #6B5D64;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
           flex-shrink: 0;
         }
         .prod-preview-menu-title {
-          font-size: 13px;
+          font-size: 13.5px;
           font-weight: 800;
           color: #2D1F26;
           font-family: inherit;
           line-height: 1.2;
         }
         .prod-preview-menu-sub {
-          font-size: 11px;
+          font-size: 11.5px;
           color: #6B5D64;
           font-family: inherit;
-          margin-top: 2px;
+          margin-top: 3px;
           line-height: 1.3;
         }
         .prod-preview-menu-divider {
           height: 1px;
           background: #F0EBED;
-          margin: 4px 8px;
+          margin: 6px 8px;
         }
 
         /* ── Modal de Produto ── */
