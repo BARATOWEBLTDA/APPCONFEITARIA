@@ -68,6 +68,7 @@ type Produto = {
   coberturas_disponiveis?: string[];
   tamanhos_disponiveis?: Tamanho[];
   precos_variacoes?: Record<string, number>;
+  fotos_variacoes?: Record<string, string>;
   usar_foto_variacao?: boolean;
   oferece_pacote?: boolean;
   pronta_entrega?: boolean;
@@ -129,6 +130,9 @@ function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChang
   const [listaModeManual, setListaModeManual] = useState<boolean | null>(null);
   const listaMode = listaModeManual !== null ? listaModeManual : (sabores.length * tamanhos.length > 12);
   const setListaMode = (v: boolean) => setListaModeManual(v);
+  // Máscara BRL
+  const formatPreco = (v: number) => v > 0 ? v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "";
+  const parsePreco = (s: string) => (parseInt(s.replace(/\D/g, "")) || 0) / 100;
 
   const addSabor = () => {
     const s = novoSabor.trim();
@@ -319,12 +323,11 @@ function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChang
                       <div className="st-preco-input-wrap">
                         <span className="st-grid-rs">R$</span>
                         <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={val || ""}
+                          type="text"
+                          inputMode="numeric"
+                          value={formatPreco(val)}
                           placeholder="0,00"
-                          onChange={e => setPrecoCombo(s, t.label, parseFloat(e.target.value) || 0)}
+                          onChange={e => setPrecoCombo(s, t.label, parsePreco(e.target.value))}
                           className="st-preco-input"
                         />
                       </div>
@@ -355,12 +358,11 @@ function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChang
                             <div className="st-grid-cell">
                               <span className="st-grid-rs">R$</span>
                               <input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={val || ""}
+                                type="text"
+                                inputMode="numeric"
+                                value={formatPreco(val)}
                                 placeholder="0,00"
-                                onChange={e => setPrecoCombo(s, t.label, parseFloat(e.target.value) || 0)}
+                                onChange={e => setPrecoCombo(s, t.label, parsePreco(e.target.value))}
                                 className="st-grid-input"
                               />
                             </div>
@@ -387,7 +389,7 @@ function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChang
                 <span className="st-preco-label">{s}</span>
                 <div className="st-preco-input-wrap">
                   <span className="st-grid-rs">R$</span>
-                  <input type="number" min="0" step="0.01" value={precos[key] || ""} placeholder="0,00" onChange={e => onPrecosChange({ ...precos, [key]: parseFloat(e.target.value) || 0 })} className="st-preco-input" />
+                  <input type="text" inputMode="numeric" value={formatPreco(precos[key] || 0)} placeholder="0,00" onChange={e => onPrecosChange({ ...precos, [key]: parsePreco(e.target.value) })} className="st-preco-input" />
                 </div>
               </div>
             );
@@ -406,7 +408,7 @@ function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChang
                 <span className="st-preco-label">{t.label}</span>
                 <div className="st-preco-input-wrap">
                   <span className="st-grid-rs">R$</span>
-                  <input type="number" min="0" step="0.01" value={precos[key] || ""} placeholder="0,00" onChange={e => onPrecosChange({ ...precos, [key]: parseFloat(e.target.value) || 0 })} className="st-preco-input" />
+                  <input type="text" inputMode="numeric" value={formatPreco(precos[key] || 0)} placeholder="0,00" onChange={e => onPrecosChange({ ...precos, [key]: parsePreco(e.target.value) })} className="st-preco-input" />
                 </div>
               </div>
             );
@@ -449,7 +451,7 @@ const EMPTY: Produto = {
   disponivel: true, promocao: false,
   permite_personalizacao: false,
   massas_disponiveis: [], recheios_disponiveis: [], coberturas_disponiveis: [],
-  tamanhos_disponiveis: [], precos_variacoes: {}, usar_foto_variacao: false, oferece_pacote: false, pronta_entrega: true,
+  tamanhos_disponiveis: [], precos_variacoes: {}, fotos_variacoes: {}, usar_foto_variacao: false, oferece_pacote: false, pronta_entrega: true,
   kit_itens: [], kit_serve_pessoas: "", kit_prazo_encomenda: "",
   zero_acucar: false,
   tem_vela: false, valor_vela: 0,
@@ -755,14 +757,41 @@ export default function Produtos() {
     const reader = new FileReader();
     reader.onload = () => { setCropSrc(reader.result as string); setCropVariacaoIdx(idx); };
     reader.readAsDataURL(file);
-    e.target.value = "";
-  };
+    e.target.value = "";  };
 
   const removeVariacaoFoto = (idx: number) => {
     setForm(f => {
       const arr = [...(f.tamanhos_disponiveis || [])];
       if (arr[idx]) arr[idx] = { ...arr[idx], foto_url: undefined };
       return { ...f, tamanhos_disponiveis: arr };
+    });
+  };
+
+  // Novo: upload de foto pra variação por chave (sabor|tamanho / sabor| / |tamanho)
+  const uploadFotoVariacaoKey = async (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+    setUploading(true);
+    const safeName = key.replace(/[^a-zA-Z0-9]/g, "_");
+    const path = `produtos/${userId}-${Date.now()}-v-${safeName}.jpg`;
+    const { error } = await supabase.storage.from("products").upload(path, file, { upsert: true, contentType: file.type });
+    if (!error) {
+      const { data } = supabase.storage.from("products").getPublicUrl(path);
+      const url = `${data.publicUrl}?t=${Date.now()}`;
+      setForm(f => ({
+        ...f,
+        fotos_variacoes: { ...(f.fotos_variacoes || {}), [key]: url }
+      }));
+    }
+    setUploading(false);
+    e.target.value = "";
+  };
+
+  const removeFotoVariacaoKey = (key: string) => {
+    setForm(f => {
+      const fotos = { ...(f.fotos_variacoes || {}) };
+      delete fotos[key];
+      return { ...f, fotos_variacoes: fotos };
     });
   };
 
@@ -1229,7 +1258,7 @@ export default function Produtos() {
                     if (wizardStep === 2) return "Informações do produto";
                     if (wizardStep === 3 && wizardTipo === "variacoes") return "Sabores e tamanhos";
                     if (wizardStep === 3) return "Visual e preço";
-                    if (wizardStep === 4 && wizardTipo === "variacoes") return "Visual e preço";
+                    if (wizardStep === 4 && wizardTipo === "variacoes") return "Fotos do produto";
                     if (wizardStep === 4) return "Extras";
                     if (wizardStep === 5) return "Extras";
                     return "Cadastrar produto";
@@ -1582,6 +1611,74 @@ export default function Produtos() {
                   })}
                 </div>
               </div>
+
+              {/* Fotos das variações — só quando variações */}
+              {wizardTipo === "variacoes" && (() => {
+                const sabores = form.recheios_disponiveis || [];
+                const tamanhos = form.tamanhos_disponiveis || [];
+                // Determina o modo pelo que tem
+                const temSabores = sabores.length > 0;
+                const temTamanhos = tamanhos.length > 0;
+                if (!temSabores && !temTamanhos) return null;
+
+                // Monta lista de variações com suas chaves
+                const variacoes: { key: string; label: string }[] = [];
+                if (temSabores && temTamanhos) {
+                  // Combinações
+                  sabores.forEach(s => tamanhos.forEach(t => {
+                    variacoes.push({ key: `${s}|${t.label}`, label: `${s} × ${t.label}` });
+                  }));
+                } else if (temSabores) {
+                  sabores.forEach(s => variacoes.push({ key: `${s}|`, label: s }));
+                } else {
+                  tamanhos.forEach(t => variacoes.push({ key: `|${t.label}`, label: t.label }));
+                }
+
+                const fotos = form.fotos_variacoes || {};
+
+                return (
+                  <div className="prod-section">
+                    <p className="prod-section-label prod-section-label--novo">
+                      Fotos das variações <span style={{fontSize: 11, fontWeight: 500, color: "#6B5D64", marginLeft: 6}}>(opcional)</span>
+                    </p>
+                    <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
+                      Adicione uma foto pra cada variação (mostrada no cardápio quando o cliente escolher).
+                    </p>
+
+                    {!isPro ? (
+                      <div className="prod-var-fotos-lock">
+                        <div className="prod-slot-lock-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B5D64" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+                        <div>
+                          <div style={{fontSize: 13, fontWeight: 800, color: "#2D1F26"}}>Recurso PRO <img src="/coroa.png" alt="" style={{width: 12, height: 12, verticalAlign: "middle", marginLeft: 4}} /></div>
+                          <div style={{fontSize: 12, color: "#6B5D64", marginTop: 2}}>Fotos personalizadas por variação — venda muito mais com fotos que valorizam cada opção.</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="prod-var-fotos-lista">
+                        {variacoes.map(({ key, label }) => (
+                          <div key={key} className="prod-var-foto-row">
+                            <div className="prod-var-foto-thumb">
+                              {fotos[key] ? (
+                                <>
+                                  <img src={fotos[key]} alt={label} />
+                                  <button type="button" className="prod-var-foto-remove" onClick={() => removeFotoVariacaoKey(key)} aria-label="Remover">✕</button>
+                                </>
+                              ) : (
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B4A9AE" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                              )}
+                            </div>
+                            <div className="prod-var-foto-label">{label}</div>
+                            <label className="prod-var-foto-btn">
+                              {fotos[key] ? "Trocar" : "Adicionar"}
+                              <input type="file" accept="image/*" style={{display: "none"}} onChange={e => uploadFotoVariacaoKey(e, key)} />
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Preço e Venda — oculto se variações + criação (já foi no step 3) */}
               {!(wizardTipo === "variacoes" && !form.id) && (
@@ -5765,6 +5862,87 @@ export default function Produtos() {
           font-family: var(--font-base);
           letter-spacing: 0.01em;
         }
+
+        /* ═══ Fotos das variações (step 4) ═══ */
+        .prod-var-fotos-lock {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 14px 16px;
+          background: #FAF8F5;
+          border: 1.5px dashed #E5D8DE;
+          border-radius: 12px;
+        }
+        .prod-var-fotos-lista {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .prod-var-foto-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 8px 12px;
+          background: #FAF8F5;
+          border: 1px solid #F0EBED;
+          border-radius: 10px;
+        }
+        .prod-var-foto-thumb {
+          width: 52px;
+          height: 52px;
+          border-radius: 8px;
+          background: #F0EBED;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          position: relative;
+          flex-shrink: 0;
+        }
+        .prod-var-foto-thumb img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        .prod-var-foto-remove {
+          all: unset;
+          position: absolute;
+          top: 2px;
+          right: 2px;
+          background: rgba(0,0,0,0.6);
+          color: #fff;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          font-size: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+        }
+        .prod-var-foto-label {
+          flex: 1;
+          font-size: 13px;
+          font-weight: 700;
+          color: #2D1F26;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .prod-var-foto-btn {
+          padding: 6px 12px;
+          background: #1A1A1A;
+          color: #fff;
+          font-family: var(--font-base);
+          font-size: 11.5px;
+          font-weight: 700;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: filter 0.12s;
+          flex-shrink: 0;
+        }
+        .prod-var-foto-btn:hover { filter: brightness(1.15); }
 
         /* Labels rosa (legado — mantidos pra outros steps) */
         .prod-field-label--rosa {
