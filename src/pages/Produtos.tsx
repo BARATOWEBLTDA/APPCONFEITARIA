@@ -3362,8 +3362,11 @@ export default function Produtos() {
 
         /* ═══ PROPOSTA A: Espaçamento + fontes maiores ═══ */
         .prod-modal-body {
-          padding: 20px 18px !important;
+          padding: 8px 32px 24px !important;
           gap: 22px !important;
+        }
+        @media (max-width: 640px) {
+          .prod-modal-body { padding: 8px 16px 20px !important; }
         }
         /* Divisores entre seções */
         .prod-section + .prod-section {
@@ -4374,12 +4377,14 @@ export default function Produtos() {
         /* Modal com cantos menos arredondados */
         .prod-modal--novo {
           border-radius: 18px !important;
-          max-width: 640px !important;
+          max-width: 780px !important;
+          min-height: 620px !important;
         }
         @media (max-width: 640px) {
           .prod-modal--novo {
             border-radius: 14px !important;
             max-width: 100% !important;
+            min-height: 0 !important;
           }
         }
 
@@ -4387,7 +4392,7 @@ export default function Produtos() {
         .prod-modal-header-novo {
           display: flex;
           align-items: center;
-          padding: 20px 24px 8px;
+          padding: 28px 32px 12px;
           background: #fff;
           font-family: var(--font-base);
           gap: 12px;
@@ -4452,7 +4457,7 @@ export default function Produtos() {
           height: 4px;
           background: #F0EBED;
           border-radius: 999px;
-          margin: 12px 24px 20px;
+          margin: 12px 32px 24px;
           overflow: hidden;
           font-family: var(--font-base);
         }
@@ -4469,8 +4474,8 @@ export default function Produtos() {
         /* ═══ Rodapé — botões 3D estilo NovaVenda ═══ */
         .prod-modal-footer--novo {
           background: #fff !important;
-          padding: 12px 24px 20px !important;
-          padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+          padding: 16px 32px 24px !important;
+          padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
           border-top: none !important;
           display: flex !important;
           gap: 12px !important;
