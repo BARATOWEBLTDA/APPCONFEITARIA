@@ -4306,8 +4306,6 @@ export default function Produtos() {
         /* Simples — gradiente rosa */
         .wiz-step1-card[data-tipo="simples"] {
           background: linear-gradient(160deg, #FDF3F7 0%, #FAE8EF 100%);
-          border-color: #E85A8C;
-          box-shadow: 0 6px 20px rgba(232,90,140,0.22);
         }
         .wiz-step1-card[data-tipo="simples"] .wiz-step1-card-title,
         .wiz-step1-card[data-tipo="simples"] .wiz-step1-card-desc { color: #831843; }
