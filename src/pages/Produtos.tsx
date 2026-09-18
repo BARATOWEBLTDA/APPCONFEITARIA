@@ -4219,46 +4219,27 @@ export default function Produtos() {
            ═══════════════════════════════════════════════════════════ */
 
         /* Modal em modo step 1: sem overlay escuro, sem cantos, tela cheia */
-        .prod-modal-overlay:has(.wiz-step1-full) {
-          background: transparent !important;
-          padding: 0 !important;
-        }
-        .prod-modal:has(.wiz-step1-full) {
-          border-radius: 0 !important;
-          max-width: 100vw !important;
-          width: 100vw !important;
-          max-height: 100vh !important;
-          height: 100vh !important;
-          box-shadow: none !important;
-        }
-
         .wiz-step1-full {
           background: #FAF8F5;
           color: #2D1F26;
-          position: fixed;
-          inset: 0;
-          width: 100vw;
-          height: 100vh;
-          height: 100dvh;
+          width: 100%;
           display: flex;
           flex-direction: column;
-          overflow: hidden;
           font-family: var(--font-base);
-          z-index: 1;
+          border-radius: inherit;
         }
 
         /* X escuro discreto no canto */
         .wiz-step1-x {
           position: absolute;
-          top: 20px; right: 20px;
-          top: calc(20px + env(safe-area-inset-top, 0px));
-          width: 40px; height: 40px;
+          top: 16px; right: 16px;
+          width: 36px; height: 36px;
           border-radius: 50%;
           background: #FFFFFF;
           color: #2D1F26;
           border: 1.5px solid #E5D8DE;
           display: flex; align-items: center; justify-content: center;
-          font-size: 15px;
+          font-size: 14px;
           font-weight: 900;
           cursor: pointer;
           z-index: 3;
@@ -4269,46 +4250,42 @@ export default function Produtos() {
         .wiz-step1-x:hover { background: #F5F1F3; }
         .wiz-step1-x:active { transform: scale(0.94); }
 
-        /* Hero — título e subtítulo */
+        /* Hero — título e subtítulo (próximo dos cards) */
         .wiz-step1-hero {
-          padding: 100px 32px 32px;
+          padding: 32px 24px 20px;
           text-align: center;
           position: relative;
-          z-index: 2;
         }
         .wiz-step1-title {
-          font-size: 26px;
+          font-size: 22px;
           font-weight: 900;
           color: #2D1F26;
           letter-spacing: -0.02em;
           line-height: 1.15;
-          margin-bottom: 8px;
+          margin-bottom: 6px;
         }
         .wiz-step1-sub {
-          font-size: 14px;
+          font-size: 13.5px;
           color: #6B5D64;
           line-height: 1.4;
           margin: 0;
         }
 
-        /* Cards — estilo NovaVenda */
+        /* Cards */
         .wiz-step1-cards {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 14px;
-          padding: 0 24px 20px;
-          position: relative;
-          z-index: 2;
-          flex: 1;
-          align-content: center;
-          max-width: 560px;
+          gap: 12px;
+          padding: 0 24px 8px;
+          max-width: 480px;
           margin: 0 auto;
           width: 100%;
+          box-sizing: border-box;
         }
         .wiz-step1-card {
           all: unset;
-          padding: 32px 16px;
-          border-radius: 18px;
+          padding: 28px 14px;
+          border-radius: 16px;
           text-align: center;
           box-sizing: border-box;
           border: 2px solid transparent;
@@ -4318,8 +4295,8 @@ export default function Produtos() {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 14px;
-          min-height: 240px;
+          gap: 12px;
+          min-height: 220px;
           box-shadow: 0 3px 10px rgba(0,0,0,0.06);
           transition: transform 0.15s, box-shadow 0.15s;
         }
@@ -4346,12 +4323,12 @@ export default function Produtos() {
         .wiz-step1-card[data-tipo="variacoes"] .wiz-step1-card-desc { color: #78350F; }
 
         .wiz-step1-card-icon {
-          width: 68px;
-          height: 68px;
+          width: 62px;
+          height: 62px;
           object-fit: contain;
         }
         .wiz-step1-card-title {
-          font-size: 16px;
+          font-size: 15.5px;
           font-weight: 900;
           letter-spacing: -0.01em;
           line-height: 1.2;
@@ -4366,34 +4343,26 @@ export default function Produtos() {
         /* Hint no fim */
         .wiz-step1-hint {
           text-align: center;
-          padding: 4px 32px 32px;
-          padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+          padding: 12px 24px 24px;
           font-size: 12px;
           color: #9A8B93;
           font-style: italic;
-          position: relative;
-          z-index: 2;
           margin: 0;
         }
 
         /* Responsivo mobile */
         @media (max-width: 640px) {
-          .wiz-step1-hero {
-            padding: 80px 20px 24px;
-          }
-          .wiz-step1-title { font-size: 22px; }
+          .wiz-step1-hero { padding: 24px 16px 16px; }
+          .wiz-step1-title { font-size: 20px; }
           .wiz-step1-sub { font-size: 13px; }
-          .wiz-step1-cards {
-            padding: 0 16px 12px;
-            gap: 12px;
-          }
+          .wiz-step1-cards { padding: 0 16px 8px; gap: 10px; }
           .wiz-step1-card {
-            padding: 24px 12px;
-            min-height: 200px;
+            padding: 22px 10px;
+            min-height: 190px;
             border-radius: 14px;
-            gap: 12px;
+            gap: 10px;
           }
-          .wiz-step1-card-icon { width: 56px; height: 56px; }
+          .wiz-step1-card-icon { width: 52px; height: 52px; }
           .wiz-step1-card-title { font-size: 14px; }
           .wiz-step1-card-desc { font-size: 11.5px; }
         }
