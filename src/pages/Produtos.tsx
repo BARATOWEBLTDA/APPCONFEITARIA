@@ -5900,6 +5900,7 @@ export default function Produtos() {
         }
 
         /* Cards */
+        /* v3.1 — 3 colunas alinhadas (força redeploy) */
         .wiz-step1-cards {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
