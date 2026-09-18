@@ -875,34 +875,31 @@ export default function Produtos() {
             <div className="prod-modal-header-novo">
               {wizardStep > 1 && !form.id ? (
                 <button className="prod-modal-back-novo" onClick={() => setWizardStep(s => Math.max(1, s - 1) as 1 | 2 | 3 | 4)} aria-label="Voltar">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
-              ) : <div style={{width: 32}} />}
-              <div className="prod-modal-title-novo">
-                {form.id ? "Editar produto" : (() => {
-                  if (wizardStep === 2) return "Informações";
-                  if (wizardStep === 3) return "Visual e preço";
-                  if (wizardStep === 4) return "Extras";
-                  return "Cadastrar produto";
-                })()}
+              ) : <div style={{width: 36}} />}
+              <div className="prod-modal-title-wrap">
+                {!form.id && <div className="prod-modal-eyebrow">Passo {wizardStep - 1} de 3</div>}
+                <div className="prod-modal-title-novo">
+                  {form.id ? "Editar produto" : (() => {
+                    if (wizardStep === 2) return "Informações do produto";
+                    if (wizardStep === 3) return "Visual e preço";
+                    if (wizardStep === 4) return "Extras";
+                    return "Cadastrar produto";
+                  })()}
+                </div>
               </div>
               <button className="prod-modal-close-novo" onClick={handleTryClose} aria-label="Fechar">✕</button>
             </div>
             )}
 
-            {/* Progresso — bolinhas conectadas (só nos passos 2, 3, 4) */}
-            {wizardStep >= 2 && (
-              <div className="prod-progresso">
-                {[2, 3, 4].map(n => (
-                  <div key={n} className="prod-progresso-item">
-                    <div className={`prod-progresso-dot${wizardStep === n ? " prod-progresso-dot--ativo" : ""}${wizardStep > n ? " prod-progresso-dot--feito" : ""}`}>
-                      {wizardStep > n ? (
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                      ) : n - 1}
-                    </div>
-                    {n < 4 && <div className={`prod-progresso-line${wizardStep > n ? " prod-progresso-line--feito" : ""}`} />}
-                  </div>
-                ))}
+            {/* Progresso — barra fina rosa (só nos passos 2, 3, 4) */}
+            {wizardStep >= 2 && !form.id && (
+              <div className="prod-progresso-bar-wrap">
+                <div
+                  className="prod-progresso-bar-fill"
+                  style={{ width: `${((wizardStep - 1) / 3) * 100}%` }}
+                />
               </div>
             )}
 
@@ -969,13 +966,13 @@ export default function Produtos() {
               <div className="prod-section">
                 {/* 1. Nome */}
                 <div className="prod-field">
-                  <label className="prod-field-label--rosa">Nome do produto <em className="prod-field-obrig">(Obrigatório)</em></label>
+                  <label className="prod-field-label-novo">Nome do produto <span className="prod-field-star">*</span></label>
                   <input type="text" placeholder="Ex: Bolo de Morango" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
                 </div>
 
                 {/* 2. Categoria */}
                 <div className="prod-field">
-                  <label className="prod-field-label--rosa">Categoria <em className="prod-field-obrig">(Obrigatório)</em></label>
+                  <label className="prod-field-label-novo">Categoria <span className="prod-field-star">*</span></label>
                   {!showCatInput ? (
                     <select
                       value={form.categoria}
@@ -1037,7 +1034,7 @@ export default function Produtos() {
 
                 {/* 3. Descrição — com CTA IA (V3) */}
                 <div className="prod-field">
-                  <label className="prod-field-label--rosa">Descrição</label>
+                  <label className="prod-field-label-novo">Descrição</label>
                   {!form.descricao ? (
                     /* Textarea vazio → CTA IA convidativo */
                     <div className="prod-desc-empty-cta">
@@ -4376,167 +4373,145 @@ export default function Produtos() {
 
         /* Modal com cantos menos arredondados */
         .prod-modal--novo {
-          border-radius: 16px !important;
+          border-radius: 18px !important;
+          max-width: 640px !important;
         }
         @media (max-width: 640px) {
           .prod-modal--novo {
-            border-radius: 12px !important;
+            border-radius: 14px !important;
+            max-width: 100% !important;
           }
         }
 
-        /* Header limpo */
+        /* ═══ Header limpo com eyebrow ═══ */
         .prod-modal-header-novo {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          padding: 12px 16px;
+          padding: 20px 24px 8px;
           background: #fff;
           font-family: var(--font-base);
-          gap: 8px;
+          gap: 12px;
+        }
+        @media (max-width: 640px) {
+          .prod-modal-header-novo { padding: 16px 16px 8px; }
         }
         .prod-modal-back-novo {
-          width: 32px; height: 32px;
-          border-radius: 8px;
+          width: 36px; height: 36px;
+          border-radius: 10px;
           background: transparent;
           color: #6B5D64;
           border: none;
           display: flex; align-items: center; justify-content: center;
           cursor: pointer;
           transition: background 0.12s;
+          flex-shrink: 0;
         }
         .prod-modal-back-novo:hover {
           background: #F5EEF0;
           color: #E85A8C;
         }
-        .prod-modal-title-novo {
+        .prod-modal-title-wrap {
           flex: 1;
           text-align: center;
-          font-size: 14px;
+          font-family: var(--font-base);
+        }
+        .prod-modal-eyebrow {
+          font-size: 11px;
+          font-weight: 800;
+          color: #9A8B93;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          margin-bottom: 2px;
+        }
+        .prod-modal-title-novo {
+          font-size: 18px;
           font-weight: 900;
           color: #2D1F26;
-          letter-spacing: 0.15em;
-          text-transform: uppercase;
+          letter-spacing: -0.01em;
+        }
+        @media (max-width: 640px) {
+          .prod-modal-title-novo { font-size: 16px; }
         }
         .prod-modal-close-novo {
-          width: 32px; height: 32px;
+          width: 36px; height: 36px;
           border-radius: 50%;
-          background: #E85A8C;
-          color: #fff;
+          background: #F5F1F3;
+          color: #6B5D64;
           border: none;
           display: flex; align-items: center; justify-content: center;
           font-size: 13px; font-weight: 900;
           cursor: pointer;
-          transition: background 0.12s;
+          transition: background 0.12s, color 0.12s;
           font-family: var(--font-base);
-        }
-        .prod-modal-close-novo:hover { background: #C33A6E; }
-
-        /* Progresso — bolinhas conectadas */
-        .prod-progresso {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 4px 20px 12px;
-          background: #fff;
-          gap: 0;
-        }
-        .prod-progresso-item {
-          display: flex;
-          align-items: center;
-        }
-        .prod-progresso-dot {
-          width: 26px; height: 26px;
-          border-radius: 999px;
-          background: #F0EBED;
-          color: #9A8B93;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 12px;
-          font-weight: 900;
-          font-family: var(--font-base);
-          transition: all 0.2s ease;
           flex-shrink: 0;
         }
-        .prod-progresso-dot--ativo {
-          background: #E85A8C;
-          color: #fff;
-          box-shadow: 0 0 0 4px #FCE7F3;
-        }
-        .prod-progresso-dot--feito {
-          background: #16A34A;
-          color: #fff;
-        }
-        .prod-progresso-line {
-          width: 48px;
-          height: 2px;
+        .prod-modal-close-novo:hover { background: #E5D8DE; color: #2D1F26; }
+
+        /* ═══ Progresso — barra fina gradient ═══ */
+        .prod-progresso-bar-wrap {
+          height: 4px;
           background: #F0EBED;
-          transition: background 0.2s ease;
-        }
-        .prod-progresso-line--feito {
-          background: #16A34A;
+          border-radius: 999px;
+          margin: 12px 24px 20px;
+          overflow: hidden;
+          font-family: var(--font-base);
         }
         @media (max-width: 640px) {
-          .prod-progresso-line {
-            width: 32px;
-          }
+          .prod-progresso-bar-wrap { margin: 12px 16px 18px; }
+        }
+        .prod-progresso-bar-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #E85A8C 0%, #C33A6E 100%);
+          border-radius: 999px;
+          transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Labels de seção — SEM barrinha rosa */
-        .prod-section-label--novo {
-          font-size: 12px !important;
-          font-weight: 900 !important;
-          color: #6B5D64 !important;
-          letter-spacing: 0.08em !important;
-          text-transform: uppercase !important;
-          margin: 0 0 10px !important;
-          display: block !important;
-        }
-        .prod-section-label--novo::before {
-          display: none !important;
-        }
-
-        /* Rodapé novo */
+        /* ═══ Rodapé — botões 3D estilo NovaVenda ═══ */
         .prod-modal-footer--novo {
           background: #fff !important;
-          padding: 12px 16px 16px !important;
-          padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
-          border-top: 1px solid #F5EEF0 !important;
+          padding: 12px 24px 20px !important;
+          padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+          border-top: none !important;
           display: flex !important;
-          gap: 8px !important;
+          gap: 12px !important;
+          align-items: center;
+        }
+        @media (max-width: 640px) {
+          .prod-modal-footer--novo { padding: 12px 16px 16px !important; }
         }
         .prod-btn-cancelar-novo {
-          flex: 1;
-          padding: 12px 20px;
-          background: #F5F1F3;
+          all: unset;
+          padding: 13px 18px;
+          background: transparent;
           color: #6B5D64;
-          border: 1.5px solid #E5DFE1;
-          border-radius: 8px;
           font-family: var(--font-base) !important;
-          font-size: 13px;
-          font-weight: 900;
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
+          font-size: 13.5px;
+          font-weight: 700;
+          border-radius: 10px;
           cursor: pointer;
           transition: background 0.12s;
+          text-align: center;
+          box-sizing: border-box;
         }
-        .prod-btn-cancelar-novo:hover { background: #EBE5E8; }
+        .prod-btn-cancelar-novo:hover { background: #F5F1F3; }
+
         .prod-btn-avancar-novo {
-          flex: 1.5;
-          padding: 12px 20px;
+          all: unset;
+          flex: 1;
+          padding: 14px 20px;
           background: #E85A8C;
           color: #fff;
-          border: none;
-          border-radius: 8px;
+          border-radius: 10px;
           font-family: var(--font-base) !important;
-          font-size: 13px;
-          font-weight: 900;
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
+          font-size: 14px;
+          font-weight: 800;
+          letter-spacing: 0.01em;
+          text-align: center;
           box-shadow: 0 3px 0 #C33A6E;
           cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          transition: transform 0.08s, filter 0.08s;
+          box-sizing: border-box;
+          transition: transform 0.08s, filter 0.08s, box-shadow 0.08s;
         }
         .prod-btn-avancar-novo:hover:not(:disabled) { filter: brightness(1.05); }
         .prod-btn-avancar-novo:active:not(:disabled) {
@@ -4544,14 +4519,36 @@ export default function Produtos() {
           box-shadow: 0 0 0 #C33A6E;
         }
         .prod-btn-avancar-novo:disabled {
-          background: #E85A8C;
+          background: #F5DCE6;
           color: #fff;
-          box-shadow: 0 3px 0 #C33A6E;
-          opacity: 0.4;
+          box-shadow: 0 3px 0 #E8C4D2;
           cursor: not-allowed;
         }
 
-        /* Labels rosa */
+        /* ═══ Labels novo estilo ═══ */
+        .prod-field-label-novo {
+          display: flex !important;
+          align-items: center;
+          gap: 4px !important;
+          font-size: 12px !important;
+          font-weight: 700 !important;
+          color: #2D1F26 !important;
+          margin-bottom: 6px !important;
+          font-family: var(--font-base) !important;
+          text-transform: none !important;
+          letter-spacing: 0 !important;
+        }
+        .prod-field-label-novo::before {
+          display: none !important;
+        }
+        .prod-field-star {
+          color: #E85A8C;
+          font-weight: 900;
+          font-size: 14px;
+          line-height: 1;
+        }
+
+        /* Labels rosa (legado — mantidos pra outros steps) */
         .prod-field-label--rosa {
           color: #E85A8C !important;
           font-weight: 800 !important;
