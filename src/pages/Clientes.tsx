@@ -2062,6 +2062,9 @@ export default function Clientes() {
       <style>{`
         * { box-sizing: border-box; }
         .cli-root { font-family: var(--font-base, 'Geist', sans-serif); }
+        @media (min-width: 900px) {
+          .cli-root { padding-top: 40px; }
+        }
 
         .cli-mobile  { display: flex; flex-direction: column; gap: 0.75rem; }
         .cli-desktop { display: none; }

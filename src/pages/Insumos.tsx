@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import EmptyDoo from "@/components/EmptyDoo";
 import BtnNovo from "@/components/BtnNovo";
 import QuickAddInsumo, { InsumoQuick } from "@/components/QuickAddInsumo";
+import AppPageHeader from "@/components/AppPageHeader";
 
 interface Insumo {
   id: string;
@@ -141,6 +142,19 @@ export default function Insumos() {
   // ── Empty state ──
   if (!loading && insumos.length === 0) {
     return (
+      <>
+      <AppPageHeader
+        title="Meus Insumos"
+        subtitle="Ingredientes, embalagens e materiais"
+        infoIcon="📦"
+        infoContent={
+          <>
+            <p>Cadastre <strong>tudo que você usa</strong> pra produzir: ingredientes, embalagens, decorações, descartáveis.</p>
+            <p>Com os insumos cadastrados, você calcula o <strong>custo real dos seus produtos</strong> e sabe quanto está lucrando de verdade.</p>
+          </>
+        }
+        infoTip={<>Registre a marca e o valor da embalagem — o Doonly calcula o custo por unidade automaticamente.</>}
+      />
       <div className="ins-root">
         <div className="ins-header">
           <div className="ins-header-text">
@@ -171,10 +185,24 @@ export default function Insumos() {
 
         <Styles />
       </div>
+      </>
     );
   }
 
   return (
+    <>
+    <AppPageHeader
+      title="Meus Insumos"
+      subtitle="Ingredientes, embalagens e materiais"
+      infoIcon="📦"
+      infoContent={
+        <>
+          <p>Cadastre <strong>tudo que você usa</strong> pra produzir: ingredientes, embalagens, decorações, descartáveis.</p>
+          <p>Com os insumos cadastrados, você calcula o <strong>custo real dos seus produtos</strong> e sabe quanto está lucrando de verdade.</p>
+        </>
+      }
+      infoTip={<>Registre a marca e o valor da embalagem — o Doonly calcula o custo por unidade automaticamente.</>}
+    />
     <div className="ins-root">
       {/* Header */}
       <div className="ins-header">
@@ -330,6 +358,7 @@ export default function Insumos() {
 
       <Styles />
     </div>
+    </>
   );
 }
 
