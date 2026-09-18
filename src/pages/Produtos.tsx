@@ -51,6 +51,40 @@ type Tamanho = { label: string; preco: number; foto_url?: string };
 
 type KitItem = { nome: string; quantidade: string };
 
+// ═══ ARQUITETURA V3 ═══════════════════════════════════════════════
+// Tipos pra novo sistema Produto + Variações + Personalização
+type Variacao = { id: string; nome: string; preco: number; foto?: string };
+type OpcaoPersonalizacao = { id: string; nome: string; adicional: number };
+type OpcaoTamanho = { id: string; nome: string; preco: number };
+type DistribuicaoModo = "nenhuma" | "igual" | "livre";
+type GrupoPersonalizacao = {
+  ativo: boolean;
+  min: number;
+  max: number;
+  distribuicao: DistribuicaoModo;
+  opcoes: OpcaoPersonalizacao[];
+};
+type GrupoTamanhos = {
+  ativo: boolean;
+  min: number;
+  max: number;
+  distribuicao: DistribuicaoModo;
+  opcoes: OpcaoTamanho[];
+};
+type TipoProduto = "simples" | "variacao" | "personalizavel" | "variacao_e_personalizavel";
+
+const gerarId = () =>
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `id_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
+const GRUPO_VAZIO: GrupoPersonalizacao = {
+  ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [],
+};
+const GRUPO_TAMANHOS_VAZIO: GrupoTamanhos = {
+  ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [],
+};
+
 type Produto = {
   id?: string;
   user_id?: string;
@@ -64,6 +98,7 @@ type Produto = {
   disponivel: boolean;
   promocao: boolean;
   permite_personalizacao?: boolean;
+  // ── Campos ANTIGOS (mantidos por compatibilidade) ─────────────
   massas_disponiveis?: string[];
   recheios_disponiveis?: string[];
   coberturas_disponiveis?: string[];
@@ -71,6 +106,17 @@ type Produto = {
   precos_variacoes?: Record<string, number>;
   fotos_variacoes?: Record<string, string>;
   usar_foto_variacao?: boolean;
+  // ── V3: NOVOS campos ──────────────────────────────────────────
+  tipo_produto?: TipoProduto;
+  quantidade_base?: number | null;
+  usar_variacoes?: boolean;
+  variacoes?: Variacao[];
+  label_variacao?: string;
+  grupo_massas?: GrupoPersonalizacao;
+  grupo_recheios?: GrupoPersonalizacao;
+  grupo_coberturas?: GrupoPersonalizacao;
+  grupo_tamanhos?: GrupoTamanhos;
+  // ── Restante ──────────────────────────────────────────────────
   oferece_pacote?: boolean;
   pronta_entrega?: boolean;
   kit_itens?: KitItem[];
@@ -90,6 +136,7 @@ type Produto = {
   adicionais?: Adicional[];
   tipo_promocao?: 'fixo' | 'percentual';
   desconto_percentual?: number;
+  updated_at?: string;
   created_at?: string;
 };
 
@@ -434,6 +481,517 @@ function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChang
   );
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// PersonalizacaoStep (V3) — 4 grupos colapsáveis com min/max/adicional
+// ═══════════════════════════════════════════════════════════════════
+interface PersonalizacaoStepProps {
+  grupoMassas: GrupoPersonalizacao;
+  grupoRecheios: GrupoPersonalizacao;
+  grupoCoberturas: GrupoPersonalizacao;
+  grupoTamanhos: GrupoTamanhos;
+  precoBase: number;
+  quantidadeBase: number | null;
+  onChange: (patch: Partial<Produto>) => void;
+}
+
+function PersonalizacaoStep({
+  grupoMassas, grupoRecheios, grupoCoberturas, grupoTamanhos,
+  precoBase, quantidadeBase, onChange,
+}: PersonalizacaoStepProps) {
+  const [expandido, setExpandido] = useState<string | null>(null);
+
+  const formatPreco = (v: number) =>
+    (v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const parsePreco = (s: string): number => {
+    const digits = s.replace(/\D/g, "");
+    if (!digits) return 0;
+    return parseInt(digits, 10) / 100;
+  };
+
+  const toggleAtivo = (grupo: "massas" | "recheios" | "coberturas" | "tamanhos", ativo: boolean) => {
+    const key = `grupo_${grupo}` as const;
+    const atual = grupo === "tamanhos" ? grupoTamanhos : (
+      grupo === "massas" ? grupoMassas :
+      grupo === "recheios" ? grupoRecheios : grupoCoberturas
+    );
+    onChange({ [key]: { ...atual, ativo } } as any);
+    if (ativo) setExpandido(grupo);
+  };
+
+  const addOpcao = (grupo: "massas" | "recheios" | "coberturas", nome: string) => {
+    const nomeLimpo = nome.trim();
+    if (!nomeLimpo) return;
+    const key = `grupo_${grupo}` as const;
+    const atual = grupo === "massas" ? grupoMassas : grupo === "recheios" ? grupoRecheios : grupoCoberturas;
+    onChange({
+      [key]: {
+        ...atual,
+        opcoes: [...atual.opcoes, { id: gerarId(), nome: nomeLimpo, adicional: 0 }],
+      },
+    } as any);
+  };
+
+  const removeOpcao = (grupo: "massas" | "recheios" | "coberturas", id: string) => {
+    const key = `grupo_${grupo}` as const;
+    const atual = grupo === "massas" ? grupoMassas : grupo === "recheios" ? grupoRecheios : grupoCoberturas;
+    onChange({ [key]: { ...atual, opcoes: atual.opcoes.filter(o => o.id !== id) } } as any);
+  };
+
+  const updateAdicional = (grupo: "massas" | "recheios" | "coberturas", id: string, valor: number) => {
+    const key = `grupo_${grupo}` as const;
+    const atual = grupo === "massas" ? grupoMassas : grupo === "recheios" ? grupoRecheios : grupoCoberturas;
+    onChange({
+      [key]: {
+        ...atual,
+        opcoes: atual.opcoes.map(o => o.id === id ? { ...o, adicional: valor } : o),
+      },
+    } as any);
+  };
+
+  const updateMinMax = (
+    grupo: "massas" | "recheios" | "coberturas" | "tamanhos",
+    campo: "min" | "max",
+    valor: number
+  ) => {
+    const key = `grupo_${grupo}` as const;
+    const atual = grupo === "tamanhos" ? grupoTamanhos : (
+      grupo === "massas" ? grupoMassas :
+      grupo === "recheios" ? grupoRecheios : grupoCoberturas
+    );
+    onChange({ [key]: { ...atual, [campo]: valor } } as any);
+  };
+
+  const updateDistribuicao = (grupo: "recheios", modo: DistribuicaoModo) => {
+    onChange({ grupo_recheios: { ...grupoRecheios, distribuicao: modo } } as any);
+  };
+
+  // Tamanhos
+  const addTamanho = (nome: string, preco: number) => {
+    if (!nome.trim() || preco <= 0) return;
+    onChange({
+      grupo_tamanhos: {
+        ...grupoTamanhos,
+        opcoes: [...grupoTamanhos.opcoes, { id: gerarId(), nome: nome.trim(), preco }],
+      },
+    });
+  };
+
+  const removeTamanho = (id: string) => {
+    onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.filter(o => o.id !== id) } });
+  };
+
+  // ── State pra inputs de "adicionar nova opção" ─────────────────
+  const [novoMassa, setNovoMassa] = useState("");
+  const [novoRecheio, setNovoRecheio] = useState("");
+  const [novoCobertura, setNovoCobertura] = useState("");
+  const [novoTamanhoNome, setNovoTamanhoNome] = useState("");
+  const [novoTamanhoPreco, setNovoTamanhoPreco] = useState("");
+
+  const grupos: Array<{
+    key: "massas" | "recheios" | "coberturas" | "tamanhos";
+    icone: string;
+    titulo: string;
+    subtitulo: string;
+    dados: GrupoPersonalizacao | GrupoTamanhos;
+  }> = [
+    { key: "massas",     icone: "🎂", titulo: "Massas",     subtitulo: "Baunilha, chocolate, red velvet...",         dados: grupoMassas },
+    { key: "recheios",   icone: "🍯", titulo: "Recheios",   subtitulo: "Brigadeiro, ninho, doce de leite...",         dados: grupoRecheios },
+    { key: "coberturas", icone: "✨", titulo: "Coberturas", subtitulo: "Chantilly, ganache, pasta americana...",      dados: grupoCoberturas },
+    { key: "tamanhos",   icone: "📏", titulo: "Tamanhos",   subtitulo: "P, M, G — cada um com seu preço",             dados: grupoTamanhos },
+  ];
+
+  return (
+    <div className="pv3-root">
+      <div className="pv3-header">
+        <div className="pv3-eyebrow">Personalização</div>
+        <div className="pv3-title">O que o cliente vai poder escolher?</div>
+        <div className="pv3-subtitle">
+          Ative as categorias que fazem sentido pro seu produto. Cada opção pode ter um adicional (padrão R$ 0,00).
+        </div>
+        <div className="pv3-preco-base">
+          Preço base do produto: <b>R$ {formatPreco(precoBase)}</b>
+          {quantidadeBase ? <> · Vem com <b>{quantidadeBase} unidades</b></> : null}
+        </div>
+      </div>
+
+      {grupos.map(g => {
+        const aberto = expandido === g.key;
+        const ativo = g.dados.ativo;
+        const qtdOpcoes = g.dados.opcoes.length;
+
+        return (
+          <div key={g.key} className={`pv3-card ${ativo ? "pv3-card--ativo" : ""}`}>
+            {/* Header do card com toggle */}
+            <div className="pv3-card-head">
+              <button
+                type="button"
+                className="pv3-card-head-btn"
+                onClick={() => setExpandido(aberto ? null : g.key)}
+              >
+                <span className="pv3-card-ico">{g.icone}</span>
+                <div className="pv3-card-info">
+                  <div className="pv3-card-titulo">{g.titulo}</div>
+                  <div className="pv3-card-sub">
+                    {ativo && qtdOpcoes > 0
+                      ? `${qtdOpcoes} ${qtdOpcoes === 1 ? "opção" : "opções"}`
+                      : g.subtitulo}
+                  </div>
+                </div>
+                {ativo && (
+                  <svg className={`pv3-chevron ${aberto ? "pv3-chevron--up" : ""}`} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                )}
+              </button>
+              <label className="pv3-toggle" onClick={e => e.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  checked={ativo}
+                  onChange={e => toggleAtivo(g.key, e.target.checked)}
+                />
+                <span className="pv3-toggle-slider"></span>
+              </label>
+            </div>
+
+            {/* Corpo do card (só se ativo E aberto) */}
+            {ativo && aberto && (
+              <div className="pv3-card-body">
+                {/* Regras de escolha */}
+                <div className="pv3-regras">
+                  <div className="pv3-regras-label">Regras de escolha:</div>
+                  <div className="pv3-regras-row">
+                    <label>Mínimo</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={g.dados.opcoes.length}
+                      value={g.dados.min}
+                      onChange={e => updateMinMax(g.key, "min", Math.max(0, parseInt(e.target.value) || 0))}
+                    />
+                    <label>Máximo</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={g.dados.max}
+                      onChange={e => updateMinMax(g.key, "max", Math.max(1, parseInt(e.target.value) || 1))}
+                    />
+                  </div>
+
+                  {/* Distribuição — só pra recheios se for kit (quantidade_base > 1) */}
+                  {g.key === "recheios" && quantidadeBase && quantidadeBase > 1 && (
+                    <div className="pv3-distribuicao">
+                      <div className="pv3-regras-label">Como dividir as {quantidadeBase} unidades?</div>
+                      <div className="pv3-dist-opts">
+                        {(["nenhuma", "igual", "livre"] as DistribuicaoModo[]).map(modo => (
+                          <button
+                            key={modo}
+                            type="button"
+                            className={`pv3-dist-btn ${grupoRecheios.distribuicao === modo ? "pv3-dist-btn--ativo" : ""}`}
+                            onClick={() => updateDistribuicao("recheios", modo)}
+                          >
+                            {modo === "nenhuma" && "Não dividir"}
+                            {modo === "igual" && "Dividir igual"}
+                            {modo === "livre" && "Cliente decide"}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Lista de opções */}
+                {g.key !== "tamanhos" ? (
+                  <>
+                    <div className="pv3-opcoes-list">
+                      {(g.dados as GrupoPersonalizacao).opcoes.map((op, idx) => (
+                        <div key={op.id} className="pv3-opcao-row">
+                          <span className="pv3-opcao-num">{idx + 1}</span>
+                          <span className="pv3-opcao-nome">{op.nome}</span>
+                          <div className="pv3-opcao-preco-wrap">
+                            <span className="pv3-opcao-preco-label">+R$</span>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={op.adicional > 0 ? formatPreco(op.adicional) : "0,00"}
+                              onChange={e => updateAdicional(g.key as any, op.id, parsePreco(e.target.value))}
+                              className="pv3-opcao-preco-input"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            className="pv3-opcao-del"
+                            onClick={() => removeOpcao(g.key as any, op.id)}
+                            aria-label="Remover"
+                          >✕</button>
+                        </div>
+                      ))}
+                      {(g.dados as GrupoPersonalizacao).opcoes.length === 0 && (
+                        <div className="pv3-empty">Nenhuma opção ainda. Adicione abaixo:</div>
+                      )}
+                    </div>
+
+                    <div className="pv3-add-row">
+                      <input
+                        type="text"
+                        placeholder={`Nome da ${g.titulo.slice(0, -1).toLowerCase()}...`}
+                        value={g.key === "massas" ? novoMassa : g.key === "recheios" ? novoRecheio : novoCobertura}
+                        onChange={e => {
+                          if (g.key === "massas") setNovoMassa(e.target.value);
+                          else if (g.key === "recheios") setNovoRecheio(e.target.value);
+                          else setNovoCobertura(e.target.value);
+                        }}
+                        onKeyDown={e => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            const nome = g.key === "massas" ? novoMassa : g.key === "recheios" ? novoRecheio : novoCobertura;
+                            addOpcao(g.key as any, nome);
+                            if (g.key === "massas") setNovoMassa("");
+                            else if (g.key === "recheios") setNovoRecheio("");
+                            else setNovoCobertura("");
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="pv3-add-btn"
+                        onClick={() => {
+                          const nome = g.key === "massas" ? novoMassa : g.key === "recheios" ? novoRecheio : novoCobertura;
+                          addOpcao(g.key as any, nome);
+                          if (g.key === "massas") setNovoMassa("");
+                          else if (g.key === "recheios") setNovoRecheio("");
+                          else setNovoCobertura("");
+                        }}
+                      >+</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Tamanhos — tem preço próprio, não adicional */}
+                    <div className="pv3-tamanho-info">
+                      💡 O preço do tamanho <b>substitui</b> o preço base
+                    </div>
+                    <div className="pv3-opcoes-list">
+                      {grupoTamanhos.opcoes.map((op, idx) => (
+                        <div key={op.id} className="pv3-opcao-row">
+                          <span className="pv3-opcao-num">{idx + 1}</span>
+                          <span className="pv3-opcao-nome">{op.nome}</span>
+                          <div className="pv3-opcao-preco-wrap">
+                            <span className="pv3-opcao-preco-label" style={{color: "#059669"}}>R$</span>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={formatPreco(op.preco)}
+                              onChange={e => {
+                                const preco = parsePreco(e.target.value);
+                                onChange({
+                                  grupo_tamanhos: {
+                                    ...grupoTamanhos,
+                                    opcoes: grupoTamanhos.opcoes.map(o => o.id === op.id ? { ...o, preco } : o),
+                                  },
+                                });
+                              }}
+                              className="pv3-opcao-preco-input"
+                              style={{color: "#059669", fontWeight: 800}}
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            className="pv3-opcao-del"
+                            onClick={() => removeTamanho(op.id)}
+                            aria-label="Remover"
+                          >✕</button>
+                        </div>
+                      ))}
+                      {grupoTamanhos.opcoes.length === 0 && (
+                        <div className="pv3-empty">Nenhum tamanho ainda. Adicione abaixo:</div>
+                      )}
+                    </div>
+
+                    <div className="pv3-add-row pv3-add-row--tamanho">
+                      <input
+                        type="text"
+                        placeholder="Nome (P, M, G, 1kg...)"
+                        value={novoTamanhoNome}
+                        onChange={e => setNovoTamanhoNome(e.target.value)}
+                        style={{flex: 2}}
+                      />
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="R$ 0,00"
+                        value={novoTamanhoPreco}
+                        onChange={e => setNovoTamanhoPreco(e.target.value)}
+                        style={{flex: 1}}
+                      />
+                      <button
+                        type="button"
+                        className="pv3-add-btn"
+                        onClick={() => {
+                          addTamanho(novoTamanhoNome, parsePreco(novoTamanhoPreco));
+                          setNovoTamanhoNome("");
+                          setNovoTamanhoPreco("");
+                        }}
+                      >+</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      <style>{`
+        .pv3-root { display: flex; flex-direction: column; gap: 12px; }
+        .pv3-header { margin-bottom: 4px; }
+        .pv3-eyebrow {
+          font-size: 11px; color: #E85A8C; font-weight: 900;
+          text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        .pv3-title { font-size: 20px; font-weight: 900; color: #2D1F26; margin-top: 4px; line-height: 1.2; }
+        .pv3-subtitle { font-size: 13px; color: #6B5D64; margin-top: 6px; line-height: 1.4; }
+        .pv3-preco-base {
+          margin-top: 10px; padding: 10px 12px; background: #FDF3F7; border-radius: 8px;
+          font-size: 12.5px; color: #831843; border: 1px solid #FCE0E9;
+        }
+        .pv3-card {
+          background: #fff;
+          border: 1.5px solid #F0EBED;
+          border-radius: 14px;
+          overflow: hidden;
+          transition: border-color 0.15s;
+        }
+        .pv3-card--ativo { border-color: #E85A8C; }
+        .pv3-card-head {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 14px 16px;
+        }
+        .pv3-card-head-btn {
+          all: unset;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex: 1;
+          cursor: pointer;
+          font-family: inherit;
+        }
+        .pv3-card-ico { font-size: 24px; line-height: 1; }
+        .pv3-card-info { flex: 1; }
+        .pv3-card-titulo { font-size: 15px; font-weight: 900; color: #2D1F26; }
+        .pv3-card-sub { font-size: 12px; color: #6B5D64; margin-top: 2px; }
+        .pv3-chevron { color: #6B5D64; transition: transform 0.2s; }
+        .pv3-chevron--up { transform: rotate(180deg); }
+
+        /* Toggle switch */
+        .pv3-toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+        .pv3-toggle input { opacity: 0; width: 0; height: 0; }
+        .pv3-toggle-slider {
+          position: absolute; cursor: pointer;
+          inset: 0; background: #E5D8DE; border-radius: 999px;
+          transition: 0.2s;
+        }
+        .pv3-toggle-slider:before {
+          content: ""; position: absolute;
+          width: 18px; height: 18px; left: 3px; bottom: 3px;
+          background: #fff; border-radius: 50%;
+          transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .pv3-toggle input:checked + .pv3-toggle-slider { background: #E85A8C; }
+        .pv3-toggle input:checked + .pv3-toggle-slider:before { transform: translateX(20px); }
+
+        .pv3-card-body {
+          padding: 0 16px 16px;
+          border-top: 1px solid #F5F1F3;
+          padding-top: 14px;
+        }
+
+        /* Regras */
+        .pv3-regras {
+          background: #FAF8F5; border-radius: 8px; padding: 12px; margin-bottom: 12px;
+        }
+        .pv3-regras-label {
+          font-size: 11px; color: #6B5D64; font-weight: 700;
+          text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;
+        }
+        .pv3-regras-row {
+          display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+        }
+        .pv3-regras-row label { font-size: 12.5px; color: #2D1F26; font-weight: 700; }
+        .pv3-regras-row input {
+          width: 60px; padding: 6px 8px; border: 1.5px solid #E5D8DE;
+          border-radius: 6px; font-size: 13px; font-family: inherit; text-align: center;
+        }
+
+        /* Distribuição */
+        .pv3-distribuicao { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #E5D8DE; }
+        .pv3-dist-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+        .pv3-dist-btn {
+          all: unset;
+          padding: 6px 12px; background: #fff; border: 1.5px solid #E5D8DE;
+          border-radius: 6px; font-size: 12px; font-weight: 700; color: #6B5D64;
+          cursor: pointer;
+        }
+        .pv3-dist-btn--ativo { background: #FDF3F7; color: #831843; border-color: #E85A8C; }
+
+        /* Lista de opções */
+        .pv3-opcoes-list { display: flex; flex-direction: column; gap: 6px; }
+        .pv3-opcao-row {
+          display: flex; align-items: center; gap: 10px;
+          padding: 8px 10px; background: #FAF8F5; border: 1px solid #F0EBED;
+          border-radius: 8px;
+        }
+        .pv3-opcao-num {
+          width: 20px; height: 20px; border-radius: 50%; background: #FCE0E9;
+          color: #E85A8C; font-size: 10px; font-weight: 800;
+          display: inline-flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .pv3-opcao-nome { flex: 1; font-size: 13px; font-weight: 700; color: #2D1F26; }
+        .pv3-opcao-preco-wrap {
+          display: flex; align-items: center; gap: 4px;
+          background: #fff; border: 1.5px solid #E5D8DE; border-radius: 6px;
+          padding: 4px 8px;
+        }
+        .pv3-opcao-preco-label { font-size: 11px; color: #6B5D64; font-weight: 700; }
+        .pv3-opcao-preco-input {
+          width: 60px; border: none; outline: none;
+          font-size: 13px; font-family: inherit; text-align: right; background: transparent;
+        }
+        .pv3-opcao-del {
+          all: unset; cursor: pointer; color: #9A8B93;
+          padding: 4px 8px; font-size: 14px; font-weight: 700;
+        }
+        .pv3-opcao-del:hover { color: #DC2626; }
+        .pv3-empty {
+          padding: 12px; text-align: center; color: #9A8B93;
+          font-size: 12px; font-style: italic;
+        }
+
+        /* Adicionar */
+        .pv3-add-row { display: flex; gap: 6px; margin-top: 10px; }
+        .pv3-add-row input {
+          flex: 1; padding: 10px 12px; border: 1.5px solid #E5D8DE;
+          border-radius: 8px; font-size: 13px; font-family: inherit;
+        }
+        .pv3-add-btn {
+          all: unset;
+          width: 40px; height: 40px; background: #1A1A1A; color: #fff;
+          border-radius: 8px; font-size: 20px; font-weight: 700;
+          cursor: pointer; text-align: center; line-height: 40px;
+        }
+
+        .pv3-tamanho-info {
+          background: #EFF6FF; color: #1E40AF; padding: 8px 12px; border-radius: 6px;
+          font-size: 12px; margin-bottom: 10px; border-left: 3px solid #2563EB;
+        }
+      `}</style>
+    </div>
+  );
+}
+
 const FORMAS_VENDA = [
   { value: "unidade", label: "Por Unidade" },
   { value: "fatia", label: "Por Fatia" },
@@ -462,6 +1020,16 @@ const EMPTY: Produto = {
   tem_adicionais: false,
   adicionais: [],
   tipo_promocao: 'fixo' as const, desconto_percentual: 0,
+  // V3
+  tipo_produto: "simples",
+  quantidade_base: null,
+  usar_variacoes: false,
+  variacoes: [],
+  label_variacao: "Sabor",
+  grupo_massas: { ...GRUPO_VAZIO },
+  grupo_recheios: { ...GRUPO_VAZIO },
+  grupo_coberturas: { ...GRUPO_VAZIO },
+  grupo_tamanhos: { ...GRUPO_TAMANHOS_VAZIO },
 };
 
 export default function Produtos() {
@@ -480,7 +1048,7 @@ export default function Produtos() {
   const [uploading, setUploading] = useState(false);
   const [modal, setModal] = useState(false);
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes">("simples");
+  const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes" | "personalizavel">("simples");
   const [wizardSubtipo, setWizardSubtipo] = useState<"sabores_e_tamanhos" | "so_sabores" | "so_tamanhos" | null>(null);
   const [editTab, setEditTab] = useState<"info" | "variacoes" | "fotos" | "extras">("info");
   const [confirmMudaSubtipo, setConfirmMudaSubtipo] = useState<{
@@ -680,9 +1248,13 @@ export default function Produtos() {
     setForm(migrarAdicionaisLegacy({ ...EMPTY, ...p }));
     setFichaTecnica([]);
     // Detecta tipo baseado nos dados salvos
-    const temVariacoes = (p.tamanhos_disponiveis && p.tamanhos_disponiveis.length > 0) ||
-                        (p.kit_itens && p.kit_itens.length > 0);
-    setWizardTipo(temVariacoes ? "variacoes" : "simples");
+    if (p.tipo_produto === "personalizavel") {
+      setWizardTipo("personalizavel");
+    } else {
+      const temVariacoes = (p.tamanhos_disponiveis && p.tamanhos_disponiveis.length > 0) ||
+                          (p.kit_itens && p.kit_itens.length > 0);
+      setWizardTipo(temVariacoes ? "variacoes" : "simples");
+    }
     setWizardOpts({
       complementos: !!p.tem_adicionais || !!(p.adicionais && p.adicionais.length > 0),
       personalizacao: !!p.permite_personalizacao,
@@ -823,6 +1395,7 @@ export default function Produtos() {
 
     // Validação específica pra variações
     const isVariacoes = wizardTipo === "variacoes" && !form.id;
+    const isPersonalizavel = wizardTipo === "personalizavel" && !form.id;
     let precoBase = form.preco_normal;
 
     if (isVariacoes) {
@@ -831,12 +1404,25 @@ export default function Produtos() {
       if (valores.length === 0) return alert("Adicione ao menos 1 preço nas variações");
       // preco_normal vira o MENOR preço (pra aparecer no cardápio como "a partir de")
       precoBase = Math.min(...valores);
+    } else if (isPersonalizavel) {
+      if (!form.preco_normal || form.preco_normal <= 0) return alert("Preço base deve ser maior que zero");
+      const grupos = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_tamanhos];
+      const algumAtivo = grupos.some(g => g?.ativo && (g.opcoes?.length || 0) > 0);
+      if (!algumAtivo) return alert("Ative ao menos uma categoria de personalização com opções");
     } else {
       if (!form.preco_normal || form.preco_normal <= 0) return alert("Preço deve ser maior que zero");
     }
 
+    // Define tipo_produto
+    let tipoProduto: TipoProduto = form.tipo_produto || "simples";
+    if (!form.id) {
+      if (isPersonalizavel) tipoProduto = "personalizavel";
+      else if (isVariacoes) tipoProduto = "variacao";
+      else tipoProduto = "simples";
+    }
+
     setSaving(true);
-    const payload = { ...form, preco_normal: precoBase, updated_at: new Date().toISOString() };
+    const payload = { ...form, preco_normal: precoBase, tipo_produto: tipoProduto, updated_at: new Date().toISOString() };
     let produtoId = form.id;
     if (form.id) {
       await supabase.from("produtos").update(payload).eq("id", form.id);
@@ -1266,13 +1852,15 @@ export default function Produtos() {
                 </button>
               ) : <div style={{width: 36}} />}
               <div className="prod-modal-title-wrap">
-                {!form.id && <div className="prod-modal-eyebrow">Passo {wizardStep - 1} de {wizardTipo === "variacoes" ? 4 : 3}</div>}
+                {!form.id && <div className="prod-modal-eyebrow">Passo {wizardStep - 1} de {wizardTipo === "simples" ? 3 : 4}</div>}
                 <div className="prod-modal-title-novo">
                   {form.id ? "Editar produto" : (() => {
                     if (wizardStep === 2) return "Informações do produto";
                     if (wizardStep === 3 && wizardTipo === "variacoes") return "Sabores e tamanhos";
+                    if (wizardStep === 3 && wizardTipo === "personalizavel") return "Personalização";
                     if (wizardStep === 3) return "Visual e preço";
                     if (wizardStep === 4 && wizardTipo === "variacoes") return "Fotos do produto";
+                    if (wizardStep === 4 && wizardTipo === "personalizavel") return "Foto e finalização";
                     if (wizardStep === 4) return "Extras";
                     if (wizardStep === 5) return "Extras";
                     return "Cadastrar produto";
@@ -1291,7 +1879,7 @@ export default function Produtos() {
               <div className="prod-progresso-bar-wrap">
                 <div
                   className="prod-progresso-bar-fill"
-                  style={{ width: `${((wizardStep - 1) / (wizardTipo === "variacoes" ? 4 : 3)) * 100}%` }}
+                  style={{ width: `${((wizardStep - 1) / (wizardTipo === "simples" ? 3 : 4)) * 100}%` }}
                 />
               </div>
             )}
@@ -1365,7 +1953,20 @@ export default function Produtos() {
                   >
                     <img src={`/categoriaicones/${encodeURIComponent("icone (26).png")}`} alt="" className="wiz-step1-card-icon" />
                     <div className="wiz-step1-card-title">Com variações</div>
-                    <div className="wiz-step1-card-desc">Tamanhos<br/>ou opções</div>
+                    <div className="wiz-step1-card-desc">Sabores com<br/>foto e preço</div>
+                  </button>
+                  <button
+                    type="button"
+                    data-tipo="personalizavel"
+                    className={`wiz-step1-card ${wizardTipo === "personalizavel" ? "wiz-step1-card--ativo" : ""}`}
+                    onClick={() => setWizardTipo("personalizavel")}
+                  >
+                    <div className="wiz-step1-card-icon" style={{fontSize: 40, lineHeight: 1}}>🎂</div>
+                    <div className="wiz-step1-card-title">
+                      Personalizável
+                      <span style={{background: "#E85A8C", color: "#fff", fontSize: 9, padding: "2px 6px", borderRadius: 4, marginLeft: 6, letterSpacing: "0.03em", fontWeight: 800}}>NOVO</span>
+                    </div>
+                    <div className="wiz-step1-card-desc">Cliente monta<br/>o produto</div>
                   </button>
                 </div>
 
@@ -1592,6 +2193,21 @@ export default function Produtos() {
                 precos={form.precos_variacoes || {}}
                 onPrecosChange={(mapa) => setForm(f => ({ ...f, precos_variacoes: mapa }))}
               />
+            )}
+
+            {/* ══════ WIZARD STEP 3 (PERSONALIZAVEL V3) ══════ */}
+            {((wizardStep === 3 && wizardTipo === "personalizavel" && !form.id) || (form.id && form.tipo_produto === "personalizavel" && editTab === "variacoes")) && (
+              <div className="prod-modal-body">
+                <PersonalizacaoStep
+                  grupoMassas={form.grupo_massas || GRUPO_VAZIO}
+                  grupoRecheios={form.grupo_recheios || GRUPO_VAZIO}
+                  grupoCoberturas={form.grupo_coberturas || GRUPO_VAZIO}
+                  grupoTamanhos={form.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO}
+                  precoBase={form.preco_normal || 0}
+                  quantidadeBase={form.quantidade_base ?? null}
+                  onChange={(patch) => setForm(f => ({ ...f, ...patch }))}
+                />
+              </div>
             )}
 
             {/* ══════ WIZARD STEP 3 (SIMPLES) — VISUAL E PREÇO ══════ */}
@@ -2485,11 +3101,20 @@ export default function Produtos() {
                     }
                     return false;
                   }
+                  // Step 3 quando PERSONALIZAVEL = preço base > 0 E pelo menos 1 grupo ativo com opcoes
+                  if (wizardStep === 3 && wizardTipo === "personalizavel") {
+                    if ((form.preco_normal || 0) <= 0) return false;
+                    const gm = form.grupo_massas, gr = form.grupo_recheios, gc = form.grupo_coberturas, gt = form.grupo_tamanhos;
+                    const algum = [gm, gr, gc, gt].some(g => g?.ativo && g.opcoes.length > 0);
+                    return algum;
+                  }
                   // Step 4 quando VARIAÇÕES (visual+preço, mas preço já foi no 3)
                   if (wizardStep === 4 && wizardTipo === "variacoes") return true;
+                  // Step 4 quando PERSONALIZAVEL = fotos (opcional)
+                  if (wizardStep === 4 && wizardTipo === "personalizavel") return true;
                   return true;
                 })();
-                const isLast = (wizardStep === 4 && wizardTipo === "simples") || (wizardStep === 5 && wizardTipo === "variacoes");
+                const isLast = (wizardStep === 4 && wizardTipo === "simples") || (wizardStep === 5 && wizardTipo === "variacoes") || (wizardStep === 4 && wizardTipo === "personalizavel");
                 const isEdit = !!form.id;
 
                 if (isEdit) {
