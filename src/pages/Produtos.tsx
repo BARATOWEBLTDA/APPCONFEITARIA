@@ -654,21 +654,41 @@ function PersonalizacaoStep({
         <div className="pv3-subtitle">
           Ative as categorias que fazem sentido pro seu produto. Cada opção pode ter um adicional (padrão R$ 0,00).
         </div>
-        <div className="pv3-preco-base">
+        <div className={`pv3-preco-base ${grupoTamanhos.ativo && grupoTamanhos.opcoes.length > 0 ? "pv3-preco-base--tamanho" : ""}`}>
           <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8}}>
             <div style={{display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap"}}>
-              <span>Preço base:</span>
-              <div style={{display: "inline-flex", alignItems: "center", gap: 4, background: "#fff", border: "1.5px solid #E85A8C", borderRadius: 8, padding: "4px 10px"}}>
-                <span style={{fontSize: 12, color: "#831843", fontWeight: 700}}>R$</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={formatPreco(precoBase)}
-                  onChange={e => onPrecoBaseChange(parsePreco(e.target.value))}
-                  style={{width: 70, border: "none", outline: "none", background: "transparent", fontSize: 14, fontWeight: 800, color: "#E85A8C", textAlign: "right", fontFamily: "inherit"}}
-                  placeholder="0,00"
-                />
-              </div>
+              {grupoTamanhos.ativo && grupoTamanhos.opcoes.length > 0 ? (
+                <div style={{display: "flex", alignItems: "center", gap: 6}}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span style={{fontSize: 12.5, color: "#166534", fontWeight: 700}}>
+                    Preço definido pelo <b>Tamanho</b> escolhido
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div style={{display: "flex", alignItems: "center", gap: 4}}>
+                    <span>Preço base</span>
+                    <span
+                      className="pv3-info-tip"
+                      title="Preço padrão do produto quando o cliente não escolhe um tamanho. Se você ativar Tamanhos, cada tamanho terá o próprio preço e este campo desaparece."
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    </span>
+                    <span>:</span>
+                  </div>
+                  <div style={{display: "inline-flex", alignItems: "center", gap: 4, background: "#fff", border: "1.5px solid #E85A8C", borderRadius: 8, padding: "4px 10px"}}>
+                    <span style={{fontSize: 12, color: "#831843", fontWeight: 700}}>R$</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={formatPreco(precoBase)}
+                      onChange={e => onPrecoBaseChange(parsePreco(e.target.value))}
+                      style={{width: 70, border: "none", outline: "none", background: "transparent", fontSize: 14, fontWeight: 800, color: "#E85A8C", textAlign: "right", fontFamily: "inherit"}}
+                      placeholder="0,00"
+                    />
+                  </div>
+                </>
+              )}
               {quantidadeBase ? <span style={{fontSize: 11.5, color: "#6B5D64"}}>· <b>{quantidadeBase} unidades</b></span> : null}
             </div>
             {algumGrupoAtivo && faixa.max > faixa.min && (
@@ -926,7 +946,22 @@ function PersonalizacaoStep({
         .pv3-preco-base {
           margin-top: 10px; padding: 10px 12px; background: #FDF3F7; border-radius: 8px;
           font-size: 12.5px; color: #831843; border: 1px solid #FCE0E9;
+          transition: all 0.2s;
         }
+        .pv3-preco-base--tamanho {
+          background: #F0FDF4;
+          border-color: #BBF7D0;
+          color: #166534;
+        }
+        .pv3-info-tip {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: #E85A8C;
+          cursor: help;
+          margin: 0 2px;
+        }
+        .pv3-info-tip:hover { color: #831843; }
         .pv3-card {
           background: #fff;
           border: 1.5px solid #F0EBED;
@@ -1488,10 +1523,18 @@ export default function Produtos() {
       // preco_normal vira o MENOR preço (pra aparecer no cardápio como "a partir de")
       precoBase = Math.min(...valores);
     } else if (isPersonalizavel) {
-      if (!form.preco_normal || form.preco_normal <= 0) return alert("Preço base deve ser maior que zero");
       const grupos = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_tamanhos];
       const algumAtivo = grupos.some(g => g?.ativo && (g.opcoes?.length || 0) > 0);
       if (!algumAtivo) return alert("Ative ao menos uma categoria de personalização com opções");
+      // Se tem Tamanhos ativos, preço base vem do MENOR tamanho
+      const gt = form.grupo_tamanhos;
+      if (gt?.ativo && gt.opcoes.length > 0) {
+        const precosT = gt.opcoes.map(o => o.preco).filter(p => p > 0);
+        if (precosT.length === 0) return alert("Adicione ao menos 1 preço nos tamanhos");
+        precoBase = Math.min(...precosT);
+      } else {
+        if (!form.preco_normal || form.preco_normal <= 0) return alert("Preço base deve ser maior que zero");
+      }
     } else {
       if (!form.preco_normal || form.preco_normal <= 0) return alert("Preço deve ser maior que zero");
     }
@@ -3185,12 +3228,21 @@ export default function Produtos() {
                     }
                     return false;
                   }
-                  // Step 3 quando PERSONALIZAVEL = preço base > 0 E pelo menos 1 grupo ativo com opcoes
+                  // Step 3 quando PERSONALIZAVEL = pelo menos 1 grupo ativo com opções +
+                  //   se Tamanhos ativo, precisa pelo menos 1 tamanho com preço > 0
+                  //   se Tamanhos NÃO ativo, preço base > 0
                   if (wizardStep === 3 && wizardTipo === "personalizavel") {
-                    if ((form.preco_normal || 0) <= 0) return false;
                     const gm = form.grupo_massas, gr = form.grupo_recheios, gc = form.grupo_coberturas, gt = form.grupo_tamanhos;
                     const algum = [gm, gr, gc, gt].some(g => g?.ativo && g.opcoes.length > 0);
-                    return algum;
+                    if (!algum) return false;
+                    const temTamanhoAtivo = gt?.ativo && gt.opcoes.length > 0;
+                    if (temTamanhoAtivo) {
+                      const temPrecoTamanho = gt!.opcoes.some(o => o.preco > 0);
+                      if (!temPrecoTamanho) return false;
+                    } else {
+                      if ((form.preco_normal || 0) <= 0) return false;
+                    }
+                    return true;
                   }
                   // Step 4 quando VARIAÇÕES (visual+preço, mas preço já foi no 3)
                   if (wizardStep === 4 && wizardTipo === "variacoes") return true;
