@@ -5949,6 +5949,13 @@ export default function Produtos() {
         .wiz-step1-card[data-tipo="variacoes"] .wiz-step1-card-title,
         .wiz-step1-card[data-tipo="variacoes"] .wiz-step1-card-desc { color: #78350F; }
 
+        /* Personalizável — gradiente rosa escuro */
+        .wiz-step1-card[data-tipo="personalizavel"] {
+          background: linear-gradient(160deg, #F5F3EF 0%, #E8E5DC 100%);
+        }
+        .wiz-step1-card[data-tipo="personalizavel"] .wiz-step1-card-title,
+        .wiz-step1-card[data-tipo="personalizavel"] .wiz-step1-card-desc { color: #2D1F26; }
+
         /* Ativo — borda + halo colorido */
         .wiz-step1-card[data-tipo="simples"].wiz-step1-card--ativo {
           border-color: #E85A8C;
@@ -5958,6 +5965,13 @@ export default function Produtos() {
           border-color: #D97706;
           box-shadow: 0 6px 20px rgba(217,119,6,0.28);
         }
+        .wiz-step1-card[data-tipo="personalizavel"].wiz-step1-card--ativo {
+          border-color: #E85A8C;
+          box-shadow: 0 6px 20px rgba(232,90,140,0.28);
+          background: linear-gradient(160deg, #FDF3F7 0%, #FAE8EF 100%);
+        }
+        .wiz-step1-card[data-tipo="personalizavel"].wiz-step1-card--ativo .wiz-step1-card-title,
+        .wiz-step1-card[data-tipo="personalizavel"].wiz-step1-card--ativo .wiz-step1-card-desc { color: #831843; }
 
         /* ─── Label subtipo ─── */
         .wiz-step1-sub-label {
