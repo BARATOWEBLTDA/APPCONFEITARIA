@@ -3770,6 +3770,8 @@ export default function Produtos() {
           box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
           animation: prodModalSlideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
           position: relative;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
         }
         .prod-preview-modal::before {
           content: '';
@@ -3815,6 +3817,8 @@ export default function Produtos() {
           background: var(--bg-subtle);
           flex-shrink: 0;
           border-radius: 20px 20px 0 0;
+          position: relative;
+          z-index: 1;
         }
         .prod-preview-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .prod-preview-img--placeholder {
@@ -3825,10 +3829,10 @@ export default function Produtos() {
         }
         .prod-preview-body {
           padding: 22px 22px 20px;
-          overflow-y: auto;
-          -webkit-overflow-scrolling: touch;
-          overscroll-behavior: contain;
+          overflow-y: visible;
           flex: 1;
+          position: relative;
+          z-index: 2;
         }
 
         /* Carousel dots na foto */
@@ -3946,6 +3950,8 @@ export default function Produtos() {
         .prod-preview-actions {
           display: flex;
           gap: 8px;
+          position: relative;
+          z-index: 500;
         }
         .prod-preview-btn-editar {
           flex: 1;
@@ -3999,7 +4005,7 @@ export default function Produtos() {
         .prod-preview-btn-del:hover { background: #FECACA; }
 
         /* Menu dropdown ⋯ (lista suspensa) */
-        .prod-preview-menu-wrap { position: relative; }
+        .prod-preview-menu-wrap { position: relative; z-index: 1000; }
         .prod-preview-menu {
           position: absolute;
           bottom: calc(100% + 8px);
@@ -4010,7 +4016,7 @@ export default function Produtos() {
           border: 1px solid #F0EBED;
           padding: 8px;
           min-width: 300px;
-          z-index: 100;
+          z-index: 1001;
           animation: prodMenuIn 0.14s ease;
         }
         @keyframes prodMenuIn {
