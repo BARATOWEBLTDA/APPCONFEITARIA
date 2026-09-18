@@ -67,6 +67,7 @@ type Produto = {
   recheios_disponiveis?: string[];
   coberturas_disponiveis?: string[];
   tamanhos_disponiveis?: Tamanho[];
+  precos_variacoes?: Record<string, number>;
   usar_foto_variacao?: boolean;
   oferece_pacote?: boolean;
   pronta_entrega?: boolean;
@@ -107,6 +108,259 @@ type BibliotecaExtra = {
 
 const SYSTEM_ICONS = Array.from({ length: 42 }, (_, i) => `/categoriaicones/icone (${i + 1}).png`);
 
+// ═══════════════════════════════════════════════════════════════════
+// Componente do STEP 3 (variações): Sabores e Tamanhos com grid de preços
+// ═══════════════════════════════════════════════════════════════════
+type Subtipo = "sabores_e_tamanhos" | "so_sabores" | "so_tamanhos";
+interface SaboresTamanhosStepProps {
+  subtipo: Subtipo | null;
+  onSubtipoChange: (s: Subtipo) => void;
+  sabores: string[];
+  onSaboresChange: (s: string[]) => void;
+  tamanhos: Tamanho[];
+  onTamanhosChange: (t: Tamanho[]) => void;
+  precos: Record<string, number>;
+  onPrecosChange: (p: Record<string, number>) => void;
+}
+function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChange, tamanhos, onTamanhosChange, precos, onPrecosChange }: SaboresTamanhosStepProps) {
+  const [novoSabor, setNovoSabor] = useState("");
+  const [novoTamanho, setNovoTamanho] = useState("");
+
+  const addSabor = () => {
+    const s = novoSabor.trim();
+    if (!s || sabores.includes(s) || sabores.length >= 30) return;
+    onSaboresChange([...sabores, s]);
+    setNovoSabor("");
+  };
+  const removeSabor = (idx: number) => {
+    const s = sabores[idx];
+    // remove todos os preços associados a esse sabor
+    const novosPrecos = { ...precos };
+    Object.keys(novosPrecos).forEach(k => { if (k.startsWith(`${s}|`)) delete novosPrecos[k]; });
+    onSaboresChange(sabores.filter((_, i) => i !== idx));
+    onPrecosChange(novosPrecos);
+  };
+  const addTamanho = () => {
+    const t = novoTamanho.trim();
+    if (!t || tamanhos.some(x => x.label === t) || tamanhos.length >= 12) return;
+    onTamanhosChange([...tamanhos, { label: t, preco: 0 }]);
+    setNovoTamanho("");
+  };
+  const removeTamanho = (idx: number) => {
+    const t = tamanhos[idx].label;
+    const novosPrecos = { ...precos };
+    Object.keys(novosPrecos).forEach(k => { if (k.endsWith(`|${t}`)) delete novosPrecos[k]; });
+    onTamanhosChange(tamanhos.filter((_, i) => i !== idx));
+    onPrecosChange(novosPrecos);
+  };
+
+  const setPrecoCombo = (sabor: string, tamanho: string, valor: number) => {
+    const key = `${sabor}|${tamanho}`;
+    onPrecosChange({ ...precos, [key]: valor });
+  };
+
+  const mostraSabores = subtipo === "sabores_e_tamanhos" || subtipo === "so_sabores";
+  const mostraTamanhos = subtipo === "sabores_e_tamanhos" || subtipo === "so_tamanhos";
+  const mostraGrid = subtipo === "sabores_e_tamanhos" && sabores.length > 0 && tamanhos.length > 0;
+  const mostraListaSabores = subtipo === "so_sabores" && sabores.length > 0;
+  const mostraListaTamanhos = subtipo === "so_tamanhos" && tamanhos.length > 0;
+
+  return (
+    <div className="prod-modal-body">
+      <p className="st-hint-topo">Configure sabores, tamanhos e preços de cada combinação.</p>
+
+      {/* Selector de subtipo (3 cards) */}
+      <div className="st-subtipo-wrap">
+        <div className="st-subtipo-label">Este produto terá</div>
+        <div className="st-subcards">
+          <button type="button" className={`st-subcard ${subtipo === "sabores_e_tamanhos" ? "st-subcard--ativo" : ""}`} onClick={() => onSubtipoChange("sabores_e_tamanhos")}>
+            <div className="st-subcard-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/><line x1="12" y1="22" x2="12" y2="15.5"/><polyline points="22 8.5 12 15.5 2 8.5"/></svg>
+            </div>
+            <div className="st-subcard-title">Sabores e tamanhos</div>
+            <div className="st-subcard-desc">Ex.: bolo (sabor + P/M/G)</div>
+          </button>
+          <button type="button" className={`st-subcard ${subtipo === "so_sabores" ? "st-subcard--ativo" : ""}`} onClick={() => onSubtipoChange("so_sabores")}>
+            <div className="st-subcard-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2C6 8 6 13 6 16a6 6 0 0 0 12 0c0-3 0-8-6-14z"/></svg>
+            </div>
+            <div className="st-subcard-title">Só sabores</div>
+            <div className="st-subcard-desc">Ex.: brigadeiro (ninho, morango)</div>
+          </button>
+          <button type="button" className={`st-subcard ${subtipo === "so_tamanhos" ? "st-subcard--ativo" : ""}`} onClick={() => onSubtipoChange("so_tamanhos")}>
+            <div className="st-subcard-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v-3H3v3M21 12V9H3v3M21 9V6H3v3"/></svg>
+            </div>
+            <div className="st-subcard-title">Só tamanhos</div>
+            <div className="st-subcard-desc">Ex.: torta (fatia, inteira)</div>
+          </button>
+        </div>
+      </div>
+
+      {/* Seção de SABORES */}
+      {mostraSabores && (
+        <div className="st-secao">
+          <div className="st-secao-header">
+            <div className="st-secao-title">
+              <span className="st-secao-dot st-secao-dot--rosa"></span>
+              Sabores <span className="st-secao-count">{sabores.length}/30</span>
+            </div>
+          </div>
+          <div className="st-add-row">
+            <input type="text" placeholder="Digite o sabor..." value={novoSabor} onChange={e => setNovoSabor(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSabor(); }}} className="st-add-input" />
+            <button type="button" className="st-add-btn" onClick={addSabor} disabled={!novoSabor.trim() || sabores.length >= 30}>+</button>
+          </div>
+          {sabores.length === 0 ? (
+            <div className="st-empty">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B4A9AE" strokeWidth="1.5"><path d="M12 2C6 8 6 13 6 16a6 6 0 0 0 12 0c0-3 0-8-6-14z"/></svg>
+              <div>Nenhum sabor adicionado</div>
+            </div>
+          ) : (
+            <div className="st-lista">
+              {sabores.map((s, i) => (
+                <div key={i} className="st-item">
+                  <span className="st-item-num">{i + 1}</span>
+                  <span className="st-item-label">{s}</span>
+                  <button type="button" className="st-item-remove" onClick={() => removeSabor(i)} aria-label="Remover">✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+          <p className="st-hint">* Exatamente 1 sabor por item.</p>
+        </div>
+      )}
+
+      {/* Seção de TAMANHOS */}
+      {mostraTamanhos && (
+        <div className="st-secao">
+          <div className="st-secao-header">
+            <div className="st-secao-title">
+              <span className="st-secao-dot st-secao-dot--azul"></span>
+              Tamanhos <span className="st-secao-count">{tamanhos.length}/12</span>
+            </div>
+          </div>
+          <div className="st-add-row">
+            <input type="text" placeholder="Digite o tamanho..." value={novoTamanho} onChange={e => setNovoTamanho(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addTamanho(); }}} className="st-add-input" />
+            <button type="button" className="st-add-btn" onClick={addTamanho} disabled={!novoTamanho.trim() || tamanhos.length >= 12}>+</button>
+          </div>
+          {tamanhos.length === 0 ? (
+            <div className="st-empty">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#B4A9AE" strokeWidth="1.5"><path d="M21 15v-3H3v3M21 12V9H3v3M21 9V6H3v3"/></svg>
+              <div>Nenhum tamanho adicionado</div>
+            </div>
+          ) : subtipo === "so_tamanhos" ? null : (
+            <div className="st-lista">
+              {tamanhos.map((t, i) => (
+                <div key={i} className="st-item">
+                  <span className="st-item-num">{i + 1}</span>
+                  <span className="st-item-label">{t.label}</span>
+                  <button type="button" className="st-item-remove" onClick={() => removeTamanho(i)} aria-label="Remover">✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* GRID de preços — Sabores × Tamanhos */}
+      {mostraGrid && (
+        <div className="st-secao">
+          <div className="st-secao-title" style={{marginBottom: 10}}>💰 Preços por combinação</div>
+          <div className="st-grid-wrap">
+            <table className="st-grid">
+              <thead>
+                <tr>
+                  <th className="st-grid-corner">Sabor</th>
+                  {tamanhos.map((t, i) => <th key={i}>{t.label}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {sabores.map((s, i) => (
+                  <tr key={i}>
+                    <td className="st-grid-sabor">{s}</td>
+                    {tamanhos.map((t, j) => {
+                      const key = `${s}|${t.label}`;
+                      const val = precos[key] || 0;
+                      return (
+                        <td key={j}>
+                          <div className="st-grid-cell">
+                            <span className="st-grid-rs">R$</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={val || ""}
+                              placeholder="0,00"
+                              onChange={e => setPrecoCombo(s, t.label, parseFloat(e.target.value) || 0)}
+                              className="st-grid-input"
+                            />
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Só sabores com lista de preços */}
+      {mostraListaSabores && (
+        <div className="st-secao">
+          <div className="st-secao-title" style={{marginBottom: 10}}>💰 Preço de cada sabor</div>
+          {sabores.map((s, i) => {
+            const key = `${s}|`;
+            return (
+              <div key={i} className="st-preco-row">
+                <span className="st-preco-label">{s}</span>
+                <div className="st-preco-input-wrap">
+                  <span className="st-grid-rs">R$</span>
+                  <input type="number" min="0" step="0.01" value={precos[key] || ""} placeholder="0,00" onChange={e => onPrecosChange({ ...precos, [key]: parseFloat(e.target.value) || 0 })} className="st-preco-input" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Só tamanhos com lista de preços */}
+      {mostraListaTamanhos && (
+        <div className="st-secao">
+          <div className="st-secao-title" style={{marginBottom: 10}}>💰 Preço de cada tamanho</div>
+          {tamanhos.map((t, i) => {
+            const key = `|${t.label}`;
+            return (
+              <div key={i} className="st-preco-row">
+                <span className="st-preco-label">{t.label}</span>
+                <div className="st-preco-input-wrap">
+                  <span className="st-grid-rs">R$</span>
+                  <input type="number" min="0" step="0.01" value={precos[key] || ""} placeholder="0,00" onChange={e => onPrecosChange({ ...precos, [key]: parseFloat(e.target.value) || 0 })} className="st-preco-input" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Empty state cruzado — quando só tem 1 lado no modo "sabores_e_tamanhos" */}
+      {subtipo === "sabores_e_tamanhos" && sabores.length > 0 && tamanhos.length === 0 && (
+        <div className="st-cross-empty">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B4A9AE" strokeWidth="1.5"><path d="M21 15v-3H3v3M21 12V9H3v3M21 9V6H3v3"/></svg>
+          <div>Adicione ao menos 1 tamanho pra montar o grid de preços</div>
+        </div>
+      )}
+      {subtipo === "sabores_e_tamanhos" && tamanhos.length > 0 && sabores.length === 0 && (
+        <div className="st-cross-empty">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B4A9AE" strokeWidth="1.5"><path d="M12 2C6 8 6 13 6 16a6 6 0 0 0 12 0c0-3 0-8-6-14z"/></svg>
+          <div>Adicione ao menos 1 sabor pra montar o grid de preços</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const FORMAS_VENDA = [
   { value: "unidade", label: "Por Unidade" },
   { value: "fatia", label: "Por Fatia" },
@@ -125,7 +379,7 @@ const EMPTY: Produto = {
   disponivel: true, promocao: false,
   permite_personalizacao: false,
   massas_disponiveis: [], recheios_disponiveis: [], coberturas_disponiveis: [],
-  tamanhos_disponiveis: [], usar_foto_variacao: false, oferece_pacote: false, pronta_entrega: true,
+  tamanhos_disponiveis: [], precos_variacoes: {}, usar_foto_variacao: false, oferece_pacote: false, pronta_entrega: true,
   kit_itens: [], kit_serve_pessoas: "", kit_prazo_encomenda: "",
   zero_acucar: false,
   tem_vela: false, valor_vela: 0,
@@ -155,6 +409,11 @@ export default function Produtos() {
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes">("simples");
   const [wizardSubtipo, setWizardSubtipo] = useState<"sabores_e_tamanhos" | "so_sabores" | "so_tamanhos" | null>(null);
+  const [confirmMudaSubtipo, setConfirmMudaSubtipo] = useState<{
+    novoSubtipo: "sabores_e_tamanhos" | "so_sabores" | "so_tamanhos";
+    quantidade: number;
+    oQuePerde: "sabor" | "tamanho";
+  } | null>(null);
   const [wizardOpts, setWizardOpts] = useState({ complementos: false, personalizacao: false, promocao: false });
   const [form, setForm] = useState<Produto>(EMPTY);
   const [confirmDiscardProd, setConfirmDiscardProd] = useState(false);
@@ -448,9 +707,23 @@ export default function Produtos() {
   const handleSalvar = async () => {
     if (!form.nome.trim()) return alert("Nome é obrigatório");
     if (!form.categoria.trim()) return alert("Categoria é obrigatória");
-    if (!form.preco_normal || form.preco_normal <= 0) return alert("Preço deve ser maior que zero");
+
+    // Validação específica pra variações
+    const isVariacoes = wizardTipo === "variacoes" && !form.id;
+    let precoBase = form.preco_normal;
+
+    if (isVariacoes) {
+      const precos = form.precos_variacoes || {};
+      const valores = Object.values(precos).filter(v => v > 0);
+      if (valores.length === 0) return alert("Adicione ao menos 1 preço nas variações");
+      // preco_normal vira o MENOR preço (pra aparecer no cardápio como "a partir de")
+      precoBase = Math.min(...valores);
+    } else {
+      if (!form.preco_normal || form.preco_normal <= 0) return alert("Preço deve ser maior que zero");
+    }
+
     setSaving(true);
-    const payload = { ...form, updated_at: new Date().toISOString() };
+    const payload = { ...form, preco_normal: precoBase, updated_at: new Date().toISOString() };
     let produtoId = form.id;
     if (form.id) {
       await supabase.from("produtos").update(payload).eq("id", form.id);
@@ -1135,7 +1408,38 @@ export default function Produtos() {
             )}
 
             {/* ══════ WIZARD STEP 3 — VISUAL E PREÇO (fotos, preço, variações) ══════ */}
-            {wizardStep === 3 && (
+            {/* ══════ WIZARD STEP 3 (VARIAÇÕES) — SABORES E TAMANHOS ══════ */}
+            {wizardStep === 3 && wizardTipo === "variacoes" && (
+              <SaboresTamanhosStep
+                subtipo={wizardSubtipo}
+                onSubtipoChange={(novo) => {
+                  // Detecta se vai perder dados ao trocar
+                  const sabores = form.recheios_disponiveis || [];
+                  const tamanhos = form.tamanhos_disponiveis || [];
+                  const vaiperderSabores = novo === "so_tamanhos" && sabores.length > 0;
+                  const vaiperderTamanhos = novo === "so_sabores" && tamanhos.length > 0;
+                  if (vaiperderSabores || vaiperderTamanhos) {
+                    setConfirmMudaSubtipo({
+                      novoSubtipo: novo,
+                      quantidade: vaiperderSabores ? sabores.length : tamanhos.length,
+                      oQuePerde: vaiperderSabores ? "sabor" : "tamanho",
+                    });
+                  } else {
+                    setWizardSubtipo(novo);
+                  }
+                }}
+                sabores={form.recheios_disponiveis || []}
+                onSaboresChange={(list) => setForm(f => ({ ...f, recheios_disponiveis: list }))}
+                tamanhos={form.tamanhos_disponiveis || []}
+                onTamanhosChange={(list) => setForm(f => ({ ...f, tamanhos_disponiveis: list }))}
+                precos={form.precos_variacoes || {}}
+                onPrecosChange={(mapa) => setForm(f => ({ ...f, precos_variacoes: mapa }))}
+              />
+            )}
+
+            {/* ══════ WIZARD STEP 3 (SIMPLES) — VISUAL E PREÇO ══════ */}
+            {/* Ou STEP 4 quando variações (visual + preço só de fotos) */}
+            {((wizardStep === 3 && wizardTipo === "simples") || (wizardStep === 4 && wizardTipo === "variacoes")) && (
             <div className="prod-modal-body">
 
               {/* Foto */}
@@ -1209,7 +1513,8 @@ export default function Produtos() {
                 </div>
               </div>
 
-              {/* Preço e Venda */}
+              {/* Preço e Venda — oculto se variações + criação (já foi no step 3) */}
+              {!(wizardTipo === "variacoes" && !form.id) && (
               <div className="prod-section">
                 <p className="prod-section-label prod-section-label--novo">Preço e Venda</p>
 
@@ -1640,6 +1945,7 @@ export default function Produtos() {
                   </button>
                 )}
               </div>
+              )}
 
               {/* Kit Festa */}
               {form.forma_venda === "kit-festa" && (
@@ -1733,7 +2039,7 @@ export default function Produtos() {
             )}
 
             {/* ══════ WIZARD STEP 4 — EXTRAS E CONFIGURAÇÕES ══════ */}
-            {wizardStep === 4 && (
+            {((wizardStep === 4 && wizardTipo === "simples") || (wizardStep === 5 && wizardTipo === "variacoes")) && (
             <div className="prod-modal-body">
 
               {/* Adicionais */}
@@ -1933,10 +2239,33 @@ export default function Produtos() {
                 // Validações por passo
                 const canAdvance = (() => {
                   if (wizardStep === 2) return form.nome.trim().length > 0 && form.categoria.trim().length > 0;
-                  if (wizardStep === 3) return form.preco_normal > 0;
+                  // Step 3 quando SIMPLES = preço > 0
+                  if (wizardStep === 3 && wizardTipo === "simples") return form.preco_normal > 0;
+                  // Step 3 quando VARIAÇÕES = valida sabores/tamanhos por subtipo
+                  if (wizardStep === 3 && wizardTipo === "variacoes") {
+                    const sabores = form.recheios_disponiveis || [];
+                    const tamanhos = form.tamanhos_disponiveis || [];
+                    const precos = form.precos_variacoes || {};
+                    if (wizardSubtipo === "sabores_e_tamanhos") {
+                      if (sabores.length === 0 || tamanhos.length === 0) return false;
+                      // pelo menos 1 preço > 0
+                      return Object.values(precos).some(v => v > 0);
+                    }
+                    if (wizardSubtipo === "so_sabores") {
+                      if (sabores.length === 0) return false;
+                      return sabores.some(s => (precos[`${s}|`] || 0) > 0);
+                    }
+                    if (wizardSubtipo === "so_tamanhos") {
+                      if (tamanhos.length === 0) return false;
+                      return tamanhos.some(t => (precos[`|${t.label}`] || 0) > 0);
+                    }
+                    return false;
+                  }
+                  // Step 4 quando VARIAÇÕES (visual+preço, mas preço já foi no 3)
+                  if (wizardStep === 4 && wizardTipo === "variacoes") return true;
                   return true;
                 })();
-                const isLast = wizardStep === 4;
+                const isLast = (wizardStep === 4 && wizardTipo === "simples") || (wizardStep === 5 && wizardTipo === "variacoes");
                 const isEdit = !!form.id;
 
                 if (isEdit) {
@@ -2250,6 +2579,46 @@ export default function Produtos() {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Modal aviso troca de subtipo (perde dados) ═══ */}
+      {confirmMudaSubtipo && (
+        <div className="st-confirm-overlay" onClick={() => setConfirmMudaSubtipo(null)}>
+          <div className="st-confirm-modal" onClick={e => e.stopPropagation()}>
+            <h3 className="st-confirm-title">
+              <span className="st-confirm-icon">⚠</span>
+              Confirmar alteração
+            </h3>
+            <p className="st-confirm-body">
+              Ao mudar para <strong>{confirmMudaSubtipo.novoSubtipo === "so_sabores" ? "Só sabores" : confirmMudaSubtipo.novoSubtipo === "so_tamanhos" ? "Só tamanhos" : "Sabores e tamanhos"}</strong>, <strong>{confirmMudaSubtipo.quantidade} {confirmMudaSubtipo.oQuePerde}{confirmMudaSubtipo.quantidade !== 1 ? "s" : ""}</strong> {confirmMudaSubtipo.quantidade !== 1 ? "serão removidos" : "será removido"} ao salvar, incluindo os preços associados.
+            </p>
+            <p className="st-confirm-warning">Esta ação não pode ser desfeita após salvar.</p>
+            <div className="st-confirm-btns">
+              <button className="st-confirm-btn-cancel" onClick={() => setConfirmMudaSubtipo(null)}>Cancelar</button>
+              <button className="st-confirm-btn-ok" onClick={() => {
+                const novo = confirmMudaSubtipo.novoSubtipo;
+                // Limpa dados do lado que vai ser oculto
+                if (novo === "so_sabores") {
+                  setForm(f => ({ ...f, tamanhos_disponiveis: [] }));
+                } else if (novo === "so_tamanhos") {
+                  setForm(f => ({ ...f, recheios_disponiveis: [] }));
+                }
+                // Limpa preços associados
+                setForm(f => {
+                  const precos = { ...(f.precos_variacoes || {}) };
+                  if (novo === "so_sabores") {
+                    Object.keys(precos).forEach(k => { if (!k.endsWith("|")) delete precos[k]; });
+                  } else if (novo === "so_tamanhos") {
+                    Object.keys(precos).forEach(k => { if (!k.startsWith("|")) delete precos[k]; });
+                  }
+                  return { ...f, precos_variacoes: precos };
+                });
+                setWizardSubtipo(novo);
+                setConfirmMudaSubtipo(null);
+              }}>Continuar</button>
             </div>
           </div>
         </div>
@@ -4779,6 +5148,419 @@ export default function Produtos() {
           margin: 6px 0 0;
           font-style: italic;
         }
+
+        /* ═══ SABORES E TAMANHOS STEP (variações) ═══ */
+        .st-hint-topo {
+          font-size: 12.5px;
+          color: #6B5D64;
+          margin: 0 0 16px;
+          line-height: 1.4;
+        }
+        .st-subtipo-wrap {
+          background: #FAF8F5;
+          border: 1px solid #F0EBED;
+          border-radius: 12px;
+          padding: 14px;
+          margin-bottom: 20px;
+        }
+        .st-subtipo-label {
+          font-size: 12px;
+          font-weight: 800;
+          color: #2D1F26;
+          margin-bottom: 10px;
+        }
+        .st-subcards {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 8px;
+        }
+        @media (max-width: 640px) {
+          .st-subcards { grid-template-columns: 1fr; gap: 6px; }
+        }
+        .st-subcard {
+          all: unset;
+          padding: 12px 8px;
+          border-radius: 10px;
+          text-align: center;
+          box-sizing: border-box;
+          border: 1.5px solid #E5D8DE;
+          background: #fff;
+          cursor: pointer;
+          font-family: var(--font-base);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+        }
+        .st-subcard:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.06); }
+        .st-subcard--ativo {
+          border-color: #E85A8C;
+          background: #FDF3F7;
+          box-shadow: 0 3px 10px rgba(232,90,140,0.18);
+        }
+        .st-subcard-icon {
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          background: #F0EBED;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #6B5D64;
+          transition: background 0.12s, color 0.12s;
+        }
+        .st-subcard--ativo .st-subcard-icon {
+          background: #FCE0E9;
+          color: #E85A8C;
+        }
+        .st-subcard-title { font-size: 11.5px; font-weight: 800; color: #2D1F26; line-height: 1.2; }
+        .st-subcard-desc { font-size: 10px; color: #6B5D64; line-height: 1.3; }
+
+        /* Seções (Sabores / Tamanhos) */
+        .st-secao {
+          background: #fff;
+          border: 1px solid #F0EBED;
+          border-radius: 12px;
+          padding: 14px;
+          margin-bottom: 14px;
+        }
+        .st-secao-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 10px;
+        }
+        .st-secao-title {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 13.5px;
+          font-weight: 800;
+          color: #2D1F26;
+        }
+        .st-secao-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+        .st-secao-dot--rosa { background: #E85A8C; }
+        .st-secao-dot--azul { background: #3B82F6; }
+        .st-secao-count {
+          font-size: 10.5px;
+          font-weight: 700;
+          color: #E85A8C;
+          background: #FCE0E9;
+          padding: 2px 7px;
+          border-radius: 999px;
+          margin-left: 6px;
+        }
+
+        .st-add-row {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 10px;
+        }
+        .st-add-input {
+          flex: 1;
+          padding: 10px 12px;
+          border: 1.5px solid #E5D8DE;
+          border-radius: 8px;
+          font-family: var(--font-base);
+          font-size: 13px;
+          outline: none;
+          transition: border-color 0.12s;
+        }
+        .st-add-input:focus { border-color: #E85A8C; }
+        .st-add-btn {
+          all: unset;
+          width: 40px;
+          height: 40px;
+          background: #1A1A1A;
+          color: #fff;
+          border-radius: 8px;
+          font-size: 20px;
+          font-weight: 700;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: filter 0.12s;
+          flex-shrink: 0;
+        }
+        .st-add-btn:hover:not(:disabled) { filter: brightness(1.15); }
+        .st-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .st-empty {
+          text-align: center;
+          padding: 24px 16px;
+          background: #FAF8F5;
+          border: 1.5px dashed #E5D8DE;
+          border-radius: 10px;
+          color: #9A8B93;
+          font-size: 12px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .st-lista {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .st-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 12px;
+          background: #FAF8F5;
+          border: 1px solid #F0EBED;
+          border-radius: 8px;
+        }
+        .st-item-num {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: #FCE0E9;
+          color: #E85A8C;
+          font-size: 11px;
+          font-weight: 800;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .st-item-label {
+          flex: 1;
+          font-size: 13px;
+          font-weight: 600;
+          color: #2D1F26;
+        }
+        .st-item-remove {
+          all: unset;
+          cursor: pointer;
+          width: 26px;
+          height: 26px;
+          border-radius: 6px;
+          color: #9A8B93;
+          font-size: 13px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background 0.12s, color 0.12s;
+        }
+        .st-item-remove:hover { background: #FEE2E2; color: #DC2626; }
+
+        .st-hint {
+          font-size: 10.5px;
+          color: #9A8B93;
+          margin: 8px 0 0;
+          font-style: italic;
+        }
+
+        /* Grid de preços */
+        .st-grid-wrap {
+          overflow-x: auto;
+          border: 1px solid #F0EBED;
+          border-radius: 10px;
+        }
+        .st-grid {
+          width: 100%;
+          border-collapse: collapse;
+          font-family: var(--font-base);
+        }
+        .st-grid thead th {
+          background: #FAF8F5;
+          padding: 10px 8px;
+          font-size: 11.5px;
+          font-weight: 800;
+          color: #2D1F26;
+          text-align: center;
+          border-bottom: 1px solid #F0EBED;
+        }
+        .st-grid-corner {
+          text-align: left !important;
+          padding-left: 14px !important;
+          color: #6B5D64 !important;
+        }
+        .st-grid tbody td {
+          padding: 8px;
+          border-bottom: 1px solid #F5F1F3;
+        }
+        .st-grid tbody tr:last-child td { border-bottom: none; }
+        .st-grid-sabor {
+          padding-left: 14px !important;
+          font-size: 12.5px;
+          font-weight: 700;
+          color: #2D1F26;
+          white-space: nowrap;
+        }
+        .st-grid-cell {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 8px;
+          border: 1px solid #E5D8DE;
+          border-radius: 6px;
+          background: #fff;
+          transition: border-color 0.12s;
+        }
+        .st-grid-cell:focus-within { border-color: #E85A8C; }
+        .st-grid-rs {
+          font-size: 10.5px;
+          font-weight: 700;
+          color: #059669;
+        }
+        .st-grid-input {
+          all: unset;
+          width: 60px;
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #2D1F26;
+          text-align: right;
+        }
+        .st-grid-input::-webkit-outer-spin-button,
+        .st-grid-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        /* Lista de preços simples (só sabores ou só tamanhos) */
+        .st-preco-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 10px 12px;
+          background: #FAF8F5;
+          border: 1px solid #F0EBED;
+          border-radius: 8px;
+          margin-bottom: 6px;
+        }
+        .st-preco-label {
+          flex: 1;
+          font-size: 13px;
+          font-weight: 700;
+          color: #2D1F26;
+        }
+        .st-preco-input-wrap {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          padding: 6px 10px;
+          border: 1.5px solid #E5D8DE;
+          border-radius: 8px;
+          background: #fff;
+          transition: border-color 0.12s;
+        }
+        .st-preco-input-wrap:focus-within { border-color: #E85A8C; }
+        .st-preco-input {
+          all: unset;
+          width: 80px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #2D1F26;
+          text-align: right;
+        }
+        .st-preco-input::-webkit-outer-spin-button,
+        .st-preco-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        .st-cross-empty {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          padding: 16px;
+          background: #FEF3C7;
+          border: 1px solid #FDE68A;
+          border-radius: 10px;
+          color: #78350F;
+          font-size: 12.5px;
+          font-weight: 600;
+          margin-bottom: 14px;
+        }
+
+        /* ═══ Modal aviso troca subtipo ═══ */
+        .st-confirm-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.5);
+          z-index: 1000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          font-family: var(--font-base);
+        }
+        .st-confirm-modal {
+          background: #fff;
+          border-radius: 14px;
+          max-width: 420px;
+          width: 100%;
+          padding: 24px;
+          box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+        }
+        .st-confirm-title {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 16px;
+          font-weight: 900;
+          color: #78350F;
+          margin: 0 0 12px;
+        }
+        .st-confirm-icon {
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          background: #FEF3C7;
+          color: #D97706;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+        .st-confirm-body {
+          font-size: 13.5px;
+          color: #2D1F26;
+          line-height: 1.5;
+          margin: 0 0 8px;
+        }
+        .st-confirm-warning {
+          font-size: 12px;
+          color: #6B5D64;
+          margin: 0 0 20px;
+        }
+        .st-confirm-btns {
+          display: flex;
+          gap: 10px;
+          justify-content: flex-end;
+        }
+        .st-confirm-btn-cancel {
+          all: unset;
+          padding: 10px 18px;
+          border-radius: 8px;
+          border: 1.5px solid #E5D8DE;
+          background: #fff;
+          color: #2D1F26;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: background 0.12s;
+        }
+        .st-confirm-btn-cancel:hover { background: #FAF8F5; }
+        .st-confirm-btn-ok {
+          all: unset;
+          padding: 10px 20px;
+          border-radius: 8px;
+          background: #D97706;
+          color: #fff;
+          font-size: 13px;
+          font-weight: 800;
+          cursor: pointer;
+          transition: filter 0.12s;
+        }
+        .st-confirm-btn-ok:hover { filter: brightness(1.1); }
 
         /* ═══ Slot de foto bloqueado (PRO) ═══ */
         .prod-slot-pro-corner {
