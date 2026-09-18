@@ -15,6 +15,53 @@ type Categoria = {
 
 const SYSTEM_ICONS = Array.from({ length: 42 }, (_, i) => `/categoriaicones/icone (${i + 1}).png`);
 
+// Gradientes rotativos pros cards — cada categoria pega um baseado no nome
+const CAT_GRADIENTS = [
+  { bg: "linear-gradient(160deg, #FDF3F7 0%, #FAE8EF 100%)", badgeBg: "#FCE0E9", badgeColor: "#993556" }, // rosa
+  { bg: "linear-gradient(160deg, #FEF3C7 0%, #FDE68A 100%)", badgeBg: "#FEF3C7", badgeColor: "#78350F" }, // amarelo
+  { bg: "linear-gradient(160deg, #E0F2FE 0%, #BAE6FD 100%)", badgeBg: "#DBEAFE", badgeColor: "#1E40AF" }, // azul
+  { bg: "linear-gradient(160deg, #FFEDD5 0%, #FED7AA 100%)", badgeBg: "#FFEDD5", badgeColor: "#9A3412" }, // laranja
+  { bg: "linear-gradient(160deg, #F3E8FF 0%, #E9D5FF 100%)", badgeBg: "#F3E8FF", badgeColor: "#6B21A8" }, // roxo
+  { bg: "linear-gradient(160deg, #DCFCE7 0%, #BBF7D0 100%)", badgeBg: "#DCFCE7", badgeColor: "#166534" }, // verde
+  { bg: "linear-gradient(160deg, #FFE4E6 0%, #FECDD3 100%)", badgeBg: "#FFE4E6", badgeColor: "#9F1239" }, // rose
+  { bg: "linear-gradient(160deg, #FEF9C3 0%, #FEF08A 100%)", badgeBg: "#FEF9C3", badgeColor: "#854D0E" }, // dourado
+];
+const getGradient = (nome: string, idx: number) => CAT_GRADIENTS[idx % CAT_GRADIENTS.length];
+
+// Toggle grid/lista
+function ViewToggle({ viewMode, onChange }: { viewMode: "grid" | "lista"; onChange: (m: "grid" | "lista") => void }) {
+  return (
+    <div className="cat-view-toggle" role="tablist" aria-label="Modo de visualização">
+      <button
+        role="tab"
+        aria-selected={viewMode === "grid"}
+        className={`cat-view-toggle-btn ${viewMode === "grid" ? "cat-view-toggle-btn--ativo" : ""}`}
+        onClick={() => onChange("grid")}
+        aria-label="Visualização em grade"
+        title="Grade"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+      </button>
+      <button
+        role="tab"
+        aria-selected={viewMode === "lista"}
+        className={`cat-view-toggle-btn ${viewMode === "lista" ? "cat-view-toggle-btn--ativo" : ""}`}
+        onClick={() => onChange("lista")}
+        aria-label="Visualização em lista"
+        title="Lista"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+          <circle cx="4" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.2" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 export default function Categorias() {
   const location = useLocation();
   const isStandalone = location.pathname === "/categorias";
@@ -28,7 +75,25 @@ export default function Categorias() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [showGaleria, setShowGaleria] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "lista">(() => {
+    try { return (localStorage.getItem("doonly_categorias_view") as any) || "grid"; }
+    catch { return "grid"; }
+  });
+  const [menuAberto, setMenuAberto] = useState<string | null>(null);
   const imgRef = useRef<HTMLInputElement>(null);
+
+  // Salva preferência de visualização
+  useEffect(() => {
+    try { localStorage.setItem("doonly_categorias_view", viewMode); } catch {}
+  }, [viewMode]);
+
+  // Fecha menu ao clicar fora
+  useEffect(() => {
+    if (!menuAberto) return;
+    const close = () => setMenuAberto(null);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [menuAberto]);
 
   useEffect(() => {
     const load = async () => {
@@ -128,7 +193,8 @@ export default function Categorias() {
     )}
     <div className="cat-root">
       {isStandalone ? (
-        <div className="cat-header" style={{ justifyContent: 'flex-end' }}>
+        <div className="cat-header-novo">
+          <ViewToggle viewMode={viewMode} onChange={setViewMode} />
           <BtnNovo label="Nova categoria" onClick={openNova} />
         </div>
       ) : (
@@ -149,30 +215,76 @@ export default function Categorias() {
           actionLabel="Criar primeira categoria"
           onAction={openNova}
         />
+      ) : viewMode === "grid" ? (
+        <div className="cat-grid">
+          {categorias.map((cat, idx) => {
+            const count = contarProdutos(cat.nome);
+            const grad = getGradient(cat.nome, idx);
+            return (
+              <button
+                key={cat.id}
+                className="cat-grid-card"
+                onClick={() => openEditar(cat)}
+              >
+                {count > 0 && (
+                  <div className="cat-grid-badge" style={{ background: grad.badgeBg, color: grad.badgeColor }}>
+                    {count}
+                  </div>
+                )}
+                <div className="cat-grid-icon" style={{ background: cat.imagem_url ? grad.bg : "#F5F1F3" }}>
+                  {cat.imagem_url
+                    ? <img src={cat.imagem_url} alt={cat.nome} />
+                    : <span className="cat-grid-icon-placeholder">📦</span>
+                  }
+                </div>
+                <div className="cat-grid-nome">{cat.nome}</div>
+                <button
+                  className="cat-grid-menu"
+                  onClick={e => { e.stopPropagation(); setMenuAberto(menuAberto === cat.id ? null : cat.id!); }}
+                  aria-label="Opções"
+                >⋮</button>
+                {menuAberto === cat.id && (
+                  <div className="cat-menu-drop" onClick={e => e.stopPropagation()}>
+                    <button onClick={() => { openEditar(cat); setMenuAberto(null); }}>✏️ Editar</button>
+                    <button onClick={() => { moverOrdem(cat.id!, -1); setMenuAberto(null); }} disabled={idx === 0}>↑ Subir</button>
+                    <button onClick={() => { moverOrdem(cat.id!, 1); setMenuAberto(null); }} disabled={idx === categorias.length - 1}>↓ Descer</button>
+                    <button onClick={() => { setDeleteConfirm(cat.id!); setMenuAberto(null); }} className="cat-menu-del">🗑️ Excluir</button>
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
       ) : (
         <div className="cat-list">
           {categorias.map((cat, idx) => {
             const count = contarProdutos(cat.nome);
+            const grad = getGradient(cat.nome, idx);
             return (
-              <div key={cat.id} className="cat-item">
-                <div className="cat-item-icon">
+              <div key={cat.id} className="cat-list-item" onClick={() => openEditar(cat)}>
+                <div className="cat-list-icon" style={{ background: cat.imagem_url ? grad.bg : "#F5F1F3", borderStyle: cat.imagem_url ? "solid" : "dashed" }}>
                   {cat.imagem_url
-                    ? <img src={cat.imagem_url} alt={cat.nome} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-                    : <span style={{ fontSize: "1.5rem" }}>🏷️</span>
+                    ? <img src={cat.imagem_url} alt={cat.nome} />
+                    : <span style={{ fontSize: "1.5rem", color: "#B4A9AE" }}>📦</span>
                   }
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p className="cat-item-nome">{cat.nome}</p>
-                  <p className="cat-item-sub">{count} produto{count !== 1 ? "s" : ""}</p>
+                  <p className="cat-list-nome">{cat.nome}</p>
+                  <p className="cat-list-sub">{count} produto{count !== 1 ? "s" : ""}</p>
                 </div>
-                <div className="cat-item-actions">
-                  <button className="cat-order-btn" onClick={() => moverOrdem(cat.id!, -1)} disabled={idx === 0}>↑</button>
-                  <button className="cat-order-btn" onClick={() => moverOrdem(cat.id!, 1)} disabled={idx === categorias.length - 1}>↓</button>
-                  <button className="cat-edit-btn" onClick={() => openEditar(cat)}>Editar</button>
-                  <button className="cat-del-btn" onClick={() => setDeleteConfirm(cat.id!)}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-                  </button>
-                </div>
+                <button
+                  className="cat-list-menu"
+                  onClick={e => { e.stopPropagation(); setMenuAberto(menuAberto === cat.id ? null : cat.id!); }}
+                  aria-label="Opções"
+                >⋮</button>
+                {menuAberto === cat.id && (
+                  <div className="cat-menu-drop cat-menu-drop--lista" onClick={e => e.stopPropagation()}>
+                    <button onClick={() => { openEditar(cat); setMenuAberto(null); }}>✏️ Editar</button>
+                    <button onClick={() => { moverOrdem(cat.id!, -1); setMenuAberto(null); }} disabled={idx === 0}>↑ Subir</button>
+                    <button onClick={() => { moverOrdem(cat.id!, 1); setMenuAberto(null); }} disabled={idx === categorias.length - 1}>↓ Descer</button>
+                    <button onClick={() => { setDeleteConfirm(cat.id!); setMenuAberto(null); }} className="cat-menu-del">🗑️ Excluir</button>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -278,17 +390,168 @@ export default function Categorias() {
       <style>{`
         @keyframes catspin { to { transform:rotate(360deg); } }
         @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
-        .cat-root { font-family:'Geist', sans-serif; max-width:600px; display:flex; flex-direction:column; gap:1rem; }
+        .cat-root { font-family:'Geist', sans-serif; max-width:900px; display:flex; flex-direction:column; gap:1rem; }
         .cat-spinner { width:32px; height:32px; border:3px solid var(--primary-light); border-top-color:var(--primary); border-radius:50%; animation:catspin 0.7s linear infinite; display:inline-block; }
         .cat-spinner-sm { width:18px; height:18px; border:2px solid rgba(255,111,169,0.3); border-top-color:var(--primary); border-radius:50%; animation:catspin 0.7s linear infinite; display:inline-block; }
         .cat-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+        .cat-header-novo { display:flex; align-items:center; justify-content:space-between; gap:1rem; }
         .cat-title { font-size: var(--font-page-title); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.15rem; }
         .cat-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0; }
-        .cat-btn-novo { display:none; /* legacy, substituído por BtnNovo */ }
-        .cat-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.75rem; padding:3rem 1rem; text-align:center; }
-        .cat-empty-title { font-size: var(--font-input); font-weight: var(--fw-bold); color:var(--text-title); margin:0; }
-        .cat-empty-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0; }
-        .cat-list { display:flex; flex-direction:column; gap:0.5rem; }
+        .cat-btn-novo { display:none; }
+
+        /* ── Toggle Grid/Lista ────────────────────────────── */
+        .cat-view-toggle { display: inline-flex; background: #F5F1F3; border-radius: 10px; padding: 3px; gap: 2px; }
+        .cat-view-toggle-btn {
+          all: unset; cursor: pointer;
+          width: 34px; height: 32px;
+          display: flex; align-items: center; justify-content: center;
+          border-radius: 8px;
+          color: #9A8B93;
+          transition: background 0.15s, color 0.15s;
+        }
+        .cat-view-toggle-btn:hover { color: #6B5D64; }
+        .cat-view-toggle-btn--ativo {
+          background: #fff;
+          color: #E85A8C;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        /* ── GRID VIEW ───────────────────────────────────── */
+        .cat-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 12px;
+        }
+        @media (max-width: 480px) {
+          .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        }
+        .cat-grid-card {
+          all: unset;
+          cursor: pointer;
+          background: #fff;
+          border-radius: 14px;
+          padding: 16px 12px 14px;
+          text-align: center;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          transition: transform 0.12s, box-shadow 0.12s;
+          box-sizing: border-box;
+        }
+        .cat-grid-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+        .cat-grid-card:active { transform: translateY(0); }
+        .cat-grid-badge {
+          position: absolute;
+          top: 8px; left: 8px;
+          font-size: 10px; font-weight: 900;
+          padding: 3px 8px;
+          border-radius: 999px;
+          min-width: 20px;
+          text-align: center;
+          line-height: 1.2;
+        }
+        .cat-grid-menu {
+          all: unset; cursor: pointer;
+          position: absolute;
+          top: 4px; right: 4px;
+          width: 28px; height: 28px;
+          border-radius: 8px;
+          color: #9A8B93;
+          font-size: 18px; font-weight: 900;
+          display: flex; align-items: center; justify-content: center;
+          line-height: 1;
+          transition: background 0.12s, color 0.12s;
+        }
+        .cat-grid-menu:hover { background: #F5F1F3; color: #2D1F26; }
+        .cat-grid-icon {
+          width: 72px; height: 72px;
+          border-radius: 16px;
+          display: flex; align-items: center; justify-content: center;
+          overflow: hidden;
+        }
+        .cat-grid-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .cat-grid-icon-placeholder { font-size: 32px; opacity: 0.4; }
+        .cat-grid-nome {
+          font-size: 13px; font-weight: 800; color: #2D1F26;
+          line-height: 1.25;
+          overflow: hidden; text-overflow: ellipsis;
+          white-space: nowrap;
+          width: 100%;
+        }
+
+        /* ── LISTA VIEW ──────────────────────────────────── */
+        .cat-list { display:flex; flex-direction:column; gap:8px; }
+        .cat-list-item {
+          background: #fff;
+          border-radius: 12px;
+          padding: 12px 14px;
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+          cursor: pointer;
+          transition: transform 0.12s, box-shadow 0.12s;
+          position: relative;
+        }
+        .cat-list-item:hover { transform: translateX(2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .cat-list-icon {
+          width: 56px; height: 56px;
+          border-radius: 12px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          overflow: hidden;
+          border: 1.5px solid transparent;
+        }
+        .cat-list-icon img { width: 100%; height: 100%; object-fit: contain; }
+        .cat-list-nome { font-size: 14.5px; font-weight: 800; color: #2D1F26; margin: 0 0 2px; }
+        .cat-list-sub { font-size: 12px; color: #6B5D64; margin: 0; }
+        .cat-list-menu {
+          all: unset; cursor: pointer;
+          width: 32px; height: 32px;
+          border-radius: 8px;
+          color: #6B5D64;
+          font-size: 20px;
+          display: flex; align-items: center; justify-content: center;
+          line-height: 1;
+          transition: background 0.12s;
+        }
+        .cat-list-menu:hover { background: #F5F1F3; color: #2D1F26; }
+
+        /* ── Menu drop (grid + lista) ───────────────────── */
+        .cat-menu-drop {
+          position: absolute;
+          top: 36px; right: 4px;
+          background: #fff;
+          border-radius: 10px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+          padding: 4px;
+          display: flex;
+          flex-direction: column;
+          min-width: 140px;
+          z-index: 10;
+          font-family: 'Geist', sans-serif;
+        }
+        .cat-menu-drop--lista { top: auto; right: 12px; bottom: 60px; }
+        .cat-menu-drop button {
+          all: unset;
+          padding: 10px 12px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #2D1F26;
+          border-radius: 6px;
+          cursor: pointer;
+          text-align: left;
+          transition: background 0.1s;
+        }
+        .cat-menu-drop button:hover:not(:disabled) { background: #F5F1F3; }
+        .cat-menu-drop button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .cat-menu-drop button.cat-menu-del { color: #DC2626; }
+        .cat-menu-drop button.cat-menu-del:hover { background: #FEE2E2; }
+
+        /* ── Item antigo (mantido pra compat) ── */
         .cat-item { background:var(--bg-card); border-radius: var(--radius-lg); padding:0.85rem 1rem; display:flex; align-items:center; gap:1rem; box-shadow:var(--shadow-card, 0 2px 8px rgba(0,0,0,0.06)); }
         .cat-item-icon { width:52px; height:52px; border-radius:50%; background:var(--primary-light); border:3px solid var(--primary-light); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; }
         .cat-item-nome { font-size: var(--font-button); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
