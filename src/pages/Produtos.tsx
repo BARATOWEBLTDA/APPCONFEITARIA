@@ -492,11 +492,12 @@ interface PersonalizacaoStepProps {
   precoBase: number;
   quantidadeBase: number | null;
   onChange: (patch: Partial<Produto>) => void;
+  onPrecoBaseChange: (v: number) => void;
 }
 
 function PersonalizacaoStep({
   grupoMassas, grupoRecheios, grupoCoberturas, grupoTamanhos,
-  precoBase, quantidadeBase, onChange,
+  precoBase, quantidadeBase, onChange, onPrecoBaseChange,
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
 
@@ -655,9 +656,20 @@ function PersonalizacaoStep({
         </div>
         <div className="pv3-preco-base">
           <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8}}>
-            <div>
-              Preço base: <b>R$ {formatPreco(precoBase)}</b>
-              {quantidadeBase ? <> · <b>{quantidadeBase} unidades</b></> : null}
+            <div style={{display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap"}}>
+              <span>Preço base:</span>
+              <div style={{display: "inline-flex", alignItems: "center", gap: 4, background: "#fff", border: "1.5px solid #E85A8C", borderRadius: 8, padding: "4px 10px"}}>
+                <span style={{fontSize: 12, color: "#831843", fontWeight: 700}}>R$</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={formatPreco(precoBase)}
+                  onChange={e => onPrecoBaseChange(parsePreco(e.target.value))}
+                  style={{width: 70, border: "none", outline: "none", background: "transparent", fontSize: 14, fontWeight: 800, color: "#E85A8C", textAlign: "right", fontFamily: "inherit"}}
+                  placeholder="0,00"
+                />
+              </div>
+              {quantidadeBase ? <span style={{fontSize: 11.5, color: "#6B5D64"}}>· <b>{quantidadeBase} unidades</b></span> : null}
             </div>
             {algumGrupoAtivo && faixa.max > faixa.min && (
               <div style={{fontSize: 12, color: "#059669", fontWeight: 800}}>
@@ -2277,6 +2289,7 @@ export default function Produtos() {
                   precoBase={form.preco_normal || 0}
                   quantidadeBase={form.quantidade_base ?? null}
                   onChange={(patch) => setForm(f => ({ ...f, ...patch }))}
+                  onPrecoBaseChange={(v) => setForm(f => ({ ...f, preco_normal: v }))}
                 />
               </div>
             )}
