@@ -601,6 +601,50 @@ function PersonalizacaoStep({
     { key: "tamanhos",   icone: "📏", titulo: "Tamanhos",   subtitulo: "P, M, G — cada um com seu preço",             dados: grupoTamanhos },
   ];
 
+  // ── Preview do preço mínimo e máximo ────────────────────────────
+  const calcularFaixaPreco = (): { min: number; max: number } => {
+    let base = precoBase;
+    // Se tamanhos ativos, o menor preço vira o base
+    if (grupoTamanhos.ativo && grupoTamanhos.opcoes.length > 0) {
+      const precos = grupoTamanhos.opcoes.map(o => o.preco).filter(p => p > 0);
+      if (precos.length > 0) base = Math.min(...precos);
+    }
+    let precoMin = base;
+    let precoMax = grupoTamanhos.ativo && grupoTamanhos.opcoes.length > 0
+      ? Math.max(...grupoTamanhos.opcoes.map(o => o.preco).filter(p => p > 0), base)
+      : base;
+    // Massa e Cobertura: escolhe 1, então adicional = min do menor até max do maior
+    [grupoMassas, grupoCoberturas].forEach(g => {
+      if (g.ativo && g.opcoes.length > 0) {
+        const adicionais = g.opcoes.map(o => o.adicional);
+        precoMin += Math.min(...adicionais);
+        precoMax += Math.max(...adicionais);
+      }
+    });
+    // Recheios: multiplo, min = min * min_escolhas, max = max * max_escolhas
+    if (grupoRecheios.ativo && grupoRecheios.opcoes.length > 0) {
+      const adicionais = grupoRecheios.opcoes.map(o => o.adicional).sort((a, b) => a - b);
+      const min = grupoRecheios.min || 0;
+      const max = Math.min(grupoRecheios.max || 1, adicionais.length);
+      if (min > 0) precoMin += adicionais.slice(0, min).reduce((s, v) => s + v, 0);
+      precoMax += adicionais.slice(-max).reduce((s, v) => s + v, 0);
+    }
+    return { min: precoMin, max: precoMax };
+  };
+
+  const faixa = calcularFaixaPreco();
+  const algumGrupoAtivo = [grupoMassas, grupoRecheios, grupoCoberturas, grupoTamanhos].some(g => g.ativo && g.opcoes.length > 0);
+
+  // Calcula adicional máximo de um grupo (pra badge)
+  const adicionalMaxGrupo = (g: GrupoPersonalizacao | GrupoTamanhos, isTamanho: boolean): number => {
+    if (g.opcoes.length === 0) return 0;
+    if (isTamanho) {
+      const precos = (g as GrupoTamanhos).opcoes.map(o => o.preco).filter(p => p > 0);
+      return precos.length > 0 ? Math.max(...precos) : 0;
+    }
+    return Math.max(...(g as GrupoPersonalizacao).opcoes.map(o => o.adicional));
+  };
+
   return (
     <div className="pv3-root">
       <div className="pv3-header">
@@ -610,8 +654,17 @@ function PersonalizacaoStep({
           Ative as categorias que fazem sentido pro seu produto. Cada opção pode ter um adicional (padrão R$ 0,00).
         </div>
         <div className="pv3-preco-base">
-          Preço base do produto: <b>R$ {formatPreco(precoBase)}</b>
-          {quantidadeBase ? <> · Vem com <b>{quantidadeBase} unidades</b></> : null}
+          <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8}}>
+            <div>
+              Preço base: <b>R$ {formatPreco(precoBase)}</b>
+              {quantidadeBase ? <> · <b>{quantidadeBase} unidades</b></> : null}
+            </div>
+            {algumGrupoAtivo && faixa.max > faixa.min && (
+              <div style={{fontSize: 12, color: "#059669", fontWeight: 800}}>
+                Faixa: R$ {formatPreco(faixa.min)} – R$ {formatPreco(faixa.max)}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -619,6 +672,8 @@ function PersonalizacaoStep({
         const aberto = expandido === g.key;
         const ativo = g.dados.ativo;
         const qtdOpcoes = g.dados.opcoes.length;
+        const isTamanho = g.key === "tamanhos";
+        const adicMax = ativo ? adicionalMaxGrupo(g.dados, isTamanho) : 0;
 
         return (
           <div key={g.key} className={`pv3-card ${ativo ? "pv3-card--ativo" : ""}`}>
@@ -638,6 +693,11 @@ function PersonalizacaoStep({
                       : g.subtitulo}
                   </div>
                 </div>
+                {ativo && qtdOpcoes > 0 && adicMax > 0 && (
+                  <span className="pv3-badge-preco">
+                    {isTamanho ? `até R$ ${formatPreco(adicMax)}` : `+até R$ ${formatPreco(adicMax)}`}
+                  </span>
+                )}
                 {ativo && (
                   <svg className={`pv3-chevron ${aberto ? "pv3-chevron--up" : ""}`} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="6 9 12 15 18 9"/>
@@ -884,6 +944,17 @@ function PersonalizacaoStep({
         .pv3-card-sub { font-size: 12px; color: #6B5D64; margin-top: 2px; }
         .pv3-chevron { color: #6B5D64; transition: transform 0.2s; }
         .pv3-chevron--up { transform: rotate(180deg); }
+        .pv3-badge-preco {
+          background: #F0FDF4;
+          color: #059669;
+          border: 1px solid #BBF7D0;
+          font-size: 10.5px;
+          font-weight: 800;
+          padding: 3px 8px;
+          border-radius: 999px;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
 
         /* Toggle switch */
         .pv3-toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
