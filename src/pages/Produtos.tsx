@@ -909,19 +909,20 @@ export default function Produtos() {
             {/* ══════ WIZARD STEP 1 — Escolha do tipo (TELA CHEIA ROSA) ══════ */}
             {wizardStep === 1 && (
               <div className="wiz-step1-full">
-                {/* Botão X translúcido */}
+                {/* Botão X */}
                 <button className="wiz-step1-x" onClick={handleTryClose} aria-label="Fechar">✕</button>
 
-                {/* Hero — pergunta grande */}
+                {/* Hero — pergunta */}
                 <div className="wiz-step1-hero">
                   <h1 className="wiz-step1-title">Como é o seu produto?</h1>
-                  <p className="wiz-step1-sub">Você pode mudar isso depois se precisar.</p>
+                  <p className="wiz-step1-sub">Você pode mudar isso depois se precisar</p>
                 </div>
 
-                {/* 2 cards centralizados */}
+                {/* 2 cards no estilo NovaVenda (rosa + amarelo) */}
                 <div className="wiz-step1-cards">
                   <button
                     type="button"
+                    data-tipo="simples"
                     className="wiz-step1-card"
                     onClick={() => {
                       setWizardTipo("simples");
@@ -930,17 +931,17 @@ export default function Produtos() {
                     }}
                   >
                     <img
-                      src={`/categoriaicones/${encodeURIComponent("icone (29).png")}`}
+                      src={`/categoriaicones/${encodeURIComponent("icone (3).png")}`}
                       alt=""
                       className="wiz-step1-card-icon"
                     />
                     <div className="wiz-step1-card-title">Produto simples</div>
-                    <div className="wiz-step1-card-desc">Um produto, um preço</div>
-                    <div className="wiz-step1-card-ex">Ex.: Brownie, cookie</div>
+                    <div className="wiz-step1-card-desc">Um produto,<br/>um preço</div>
                   </button>
 
                   <button
                     type="button"
+                    data-tipo="variacoes"
                     className="wiz-step1-card"
                     onClick={() => {
                       setWizardTipo("variacoes");
@@ -953,12 +954,11 @@ export default function Produtos() {
                       className="wiz-step1-card-icon"
                     />
                     <div className="wiz-step1-card-title">Com variações</div>
-                    <div className="wiz-step1-card-desc">Um produto com diferentes opções</div>
-                    <div className="wiz-step1-card-ex">Ex.: Bolo P, M ou G</div>
+                    <div className="wiz-step1-card-desc">Tamanhos<br/>ou opções</div>
                   </button>
                 </div>
 
-                <p className="wiz-step1-hint">Toque na opção que combina com o seu produto</p>
+                <p className="wiz-step1-hint">Ex.: brownie, cookie · bolo P/M/G</p>
               </div>
             )}
 
@@ -4233,8 +4233,8 @@ export default function Produtos() {
         }
 
         .wiz-step1-full {
-          background: #E85A8C;
-          color: #fff;
+          background: #FAF8F5;
+          color: #2D1F26;
           position: fixed;
           inset: 0;
           width: 100vw;
@@ -4247,146 +4247,155 @@ export default function Produtos() {
           z-index: 1;
         }
 
-        /* X translúcido no canto */
+        /* X escuro discreto no canto */
         .wiz-step1-x {
           position: absolute;
           top: 20px; right: 20px;
           top: calc(20px + env(safe-area-inset-top, 0px));
           width: 40px; height: 40px;
           border-radius: 50%;
-          background: rgba(255,255,255,0.18);
-          color: #fff;
-          border: 1px solid rgba(255,255,255,0.25);
+          background: #FFFFFF;
+          color: #2D1F26;
+          border: 1.5px solid #E5D8DE;
           display: flex; align-items: center; justify-content: center;
           font-size: 15px;
           font-weight: 900;
           cursor: pointer;
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
           z-index: 3;
           font-family: var(--font-base);
-          transition: background 0.15s;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          transition: background 0.15s, transform 0.1s;
         }
-        .wiz-step1-x:hover { background: rgba(255,255,255,0.3); }
+        .wiz-step1-x:hover { background: #F5F1F3; }
+        .wiz-step1-x:active { transform: scale(0.94); }
 
-        /* Hero — pergunta grande */
+        /* Hero — título e subtítulo */
         .wiz-step1-hero {
-          padding: 100px 32px 40px;
+          padding: 100px 32px 32px;
           text-align: center;
           position: relative;
           z-index: 2;
         }
         .wiz-step1-title {
-          font-size: 32px;
+          font-size: 26px;
           font-weight: 900;
-          color: #fff;
-          letter-spacing: -0.01em;
+          color: #2D1F26;
+          letter-spacing: -0.02em;
           line-height: 1.15;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
         }
         .wiz-step1-sub {
-          font-size: 15px;
-          color: rgba(255,255,255,0.85);
+          font-size: 14px;
+          color: #6B5D64;
           line-height: 1.4;
           margin: 0;
         }
 
-        /* Cards */
+        /* Cards — estilo NovaVenda */
         .wiz-step1-cards {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 16px;
-          padding: 0 32px 20px;
+          gap: 14px;
+          padding: 0 24px 20px;
           position: relative;
           z-index: 2;
           flex: 1;
           align-content: center;
-          max-width: 720px;
+          max-width: 560px;
           margin: 0 auto;
           width: 100%;
         }
         .wiz-step1-card {
-          background: #fff;
+          all: unset;
+          padding: 32px 16px;
           border-radius: 18px;
-          padding: 32px 20px 26px;
           text-align: center;
+          box-sizing: border-box;
+          border: 2px solid transparent;
           cursor: pointer;
-          transition: transform 0.15s ease, box-shadow 0.15s ease;
-          border: none;
-          color: #2D1F26;
           font-family: var(--font-base);
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 8px;
-          min-height: 220px;
           justify-content: center;
+          gap: 14px;
+          min-height: 240px;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+          transition: transform 0.15s, box-shadow 0.15s;
         }
         .wiz-step1-card:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 16px 32px rgba(0,0,0,0.2);
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
-        .wiz-step1-card:active {
-          transform: translateY(-2px);
+        .wiz-step1-card:active { transform: translateY(0); }
+
+        /* Simples — gradiente rosa */
+        .wiz-step1-card[data-tipo="simples"] {
+          background: linear-gradient(160deg, #FDF3F7 0%, #FAE8EF 100%);
+          border-color: #E85A8C;
+          box-shadow: 0 6px 20px rgba(232,90,140,0.22);
         }
+        .wiz-step1-card[data-tipo="simples"] .wiz-step1-card-title,
+        .wiz-step1-card[data-tipo="simples"] .wiz-step1-card-desc { color: #831843; }
+
+        /* Variações — gradiente amarelo */
+        .wiz-step1-card[data-tipo="variacoes"] {
+          background: linear-gradient(160deg, #FEF3C7 0%, #FDE68A 100%);
+        }
+        .wiz-step1-card[data-tipo="variacoes"] .wiz-step1-card-title,
+        .wiz-step1-card[data-tipo="variacoes"] .wiz-step1-card-desc { color: #78350F; }
+
         .wiz-step1-card-icon {
-          width: 72px;
-          height: 72px;
+          width: 68px;
+          height: 68px;
           object-fit: contain;
-          margin-bottom: 8px;
         }
         .wiz-step1-card-title {
-          font-size: 17px;
+          font-size: 16px;
           font-weight: 900;
-          color: #2D1F26;
+          letter-spacing: -0.01em;
           line-height: 1.2;
         }
         .wiz-step1-card-desc {
-          font-size: 13px;
-          color: #6B5D64;
-          line-height: 1.35;
+          font-size: 12.5px;
           font-weight: 600;
-        }
-        .wiz-step1-card-ex {
-          font-size: 12px;
-          color: #9A8B93;
-          line-height: 1.35;
-          margin-top: 4px;
-          font-style: italic;
+          line-height: 1.4;
+          opacity: 0.85;
         }
 
         /* Hint no fim */
         .wiz-step1-hint {
           text-align: center;
-          padding: 8px 32px 32px;
+          padding: 4px 32px 32px;
           padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
           font-size: 12px;
-          color: rgba(255,255,255,0.75);
+          color: #9A8B93;
+          font-style: italic;
           position: relative;
           z-index: 2;
           margin: 0;
         }
 
-        /* Responsivo */
+        /* Responsivo mobile */
         @media (max-width: 640px) {
           .wiz-step1-hero {
-            padding: 80px 20px 28px;
+            padding: 80px 20px 24px;
           }
-          .wiz-step1-title { font-size: 25px; }
-          .wiz-step1-sub { font-size: 13.5px; }
+          .wiz-step1-title { font-size: 22px; }
+          .wiz-step1-sub { font-size: 13px; }
           .wiz-step1-cards {
             padding: 0 16px 12px;
             gap: 12px;
           }
           .wiz-step1-card {
-            padding: 22px 12px 18px;
-            min-height: 180px;
+            padding: 24px 12px;
+            min-height: 200px;
             border-radius: 14px;
+            gap: 12px;
           }
           .wiz-step1-card-icon { width: 56px; height: 56px; }
-          .wiz-step1-card-title { font-size: 15px; }
-          .wiz-step1-card-desc { font-size: 12px; }
-          .wiz-step1-card-ex { font-size: 11px; }
+          .wiz-step1-card-title { font-size: 14px; }
+          .wiz-step1-card-desc { font-size: 11.5px; }
         }
 
 
