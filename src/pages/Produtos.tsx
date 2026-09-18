@@ -481,6 +481,7 @@ export default function Produtos() {
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes">("simples");
   const [wizardSubtipo, setWizardSubtipo] = useState<"sabores_e_tamanhos" | "so_sabores" | "so_tamanhos" | null>(null);
+  const [editTab, setEditTab] = useState<"info" | "variacoes" | "fotos" | "extras">("info");
   const [confirmMudaSubtipo, setConfirmMudaSubtipo] = useState<{
     novoSubtipo: "sabores_e_tamanhos" | "so_sabores" | "so_tamanhos";
     quantidade: number;
@@ -676,6 +677,7 @@ export default function Produtos() {
       promocao: !!p.promocao,
     });
     setWizardStep(2);
+    setEditTab("info");
     setModal(true);
     if (p.id && userId) {
       const { data } = await supabase
@@ -1264,6 +1266,9 @@ export default function Produtos() {
                     return "Cadastrar produto";
                   })()}
                 </div>
+                {form.id && form.nome && (
+                  <div className="prod-modal-edit-nome">{form.nome}</div>
+                )}
               </div>
               <button className="prod-modal-close-novo" onClick={handleTryClose} aria-label="Fechar">✕</button>
             </div>
@@ -1276,6 +1281,38 @@ export default function Produtos() {
                   className="prod-progresso-bar-fill"
                   style={{ width: `${((wizardStep - 1) / (wizardTipo === "variacoes" ? 4 : 3)) * 100}%` }}
                 />
+              </div>
+            )}
+
+            {/* ══════ Tabs do MODO EDIÇÃO ══════ */}
+            {form.id && (
+              <div className="prod-edit-tabs">
+                <button
+                  className={`prod-edit-tab ${editTab === "info" ? "prod-edit-tab--ativo" : ""}`}
+                  onClick={() => setEditTab("info")}
+                >
+                  <span className="prod-edit-tab-icon">📝</span> Info
+                </button>
+                {wizardTipo === "variacoes" && (
+                  <button
+                    className={`prod-edit-tab ${editTab === "variacoes" ? "prod-edit-tab--ativo" : ""}`}
+                    onClick={() => setEditTab("variacoes")}
+                  >
+                    <span className="prod-edit-tab-icon">🎨</span> Variações
+                  </button>
+                )}
+                <button
+                  className={`prod-edit-tab ${editTab === "fotos" ? "prod-edit-tab--ativo" : ""}`}
+                  onClick={() => setEditTab("fotos")}
+                >
+                  <span className="prod-edit-tab-icon">📷</span> {wizardTipo === "variacoes" ? "Fotos" : "Fotos e preço"}
+                </button>
+                <button
+                  className={`prod-edit-tab ${editTab === "extras" ? "prod-edit-tab--ativo" : ""}`}
+                  onClick={() => setEditTab("extras")}
+                >
+                  <span className="prod-edit-tab-icon">⚙</span> Extras
+                </button>
               </div>
             )}
 
@@ -1388,7 +1425,7 @@ export default function Produtos() {
 
             {/* ══════ WIZARD STEP 2 (FORMULÁRIO) ══════ */}
             {/* ══════ WIZARD STEP 2 — IDENTIDADE (nome, categoria, descrição) ══════ */}
-            {(wizardStep === 2 || form.id) && (
+            {((wizardStep === 2 && !form.id) || (form.id && editTab === "info")) && (
             <div className="prod-modal-body">
               <div className="prod-section">
                 {/* 1. Nome */}
@@ -1508,9 +1545,18 @@ export default function Produtos() {
 
             {/* ══════ WIZARD STEP 3 — VISUAL E PREÇO (fotos, preço, variações) ══════ */}
             {/* ══════ WIZARD STEP 3 (VARIAÇÕES) — SABORES E TAMANHOS ══════ */}
-            {((wizardStep === 3 && wizardTipo === "variacoes") || (form.id && wizardTipo === "variacoes")) && (
+            {((wizardStep === 3 && wizardTipo === "variacoes" && !form.id) || (form.id && wizardTipo === "variacoes" && editTab === "variacoes")) && (
               <SaboresTamanhosStep
-                subtipo={wizardSubtipo}
+                subtipo={(() => {
+                  // Auto-detect na edição baseado nos dados
+                  if (wizardSubtipo) return wizardSubtipo;
+                  const sabs = (form.recheios_disponiveis || []).length;
+                  const tams = (form.tamanhos_disponiveis || []).length;
+                  if (sabs > 0 && tams > 0) return "sabores_e_tamanhos";
+                  if (sabs > 0) return "so_sabores";
+                  if (tams > 0) return "so_tamanhos";
+                  return "sabores_e_tamanhos";
+                })()}
                 onSubtipoChange={(novo) => {
                   // Detecta se vai perder dados ao trocar
                   const sabores = form.recheios_disponiveis || [];
@@ -1538,7 +1584,7 @@ export default function Produtos() {
 
             {/* ══════ WIZARD STEP 3 (SIMPLES) — VISUAL E PREÇO ══════ */}
             {/* Ou STEP 4 quando variações (visual + preço só de fotos) */}
-            {((wizardStep === 3 && wizardTipo === "simples") || (wizardStep === 4 && wizardTipo === "variacoes") || form.id) && (
+            {((wizardStep === 3 && wizardTipo === "simples" && !form.id) || (wizardStep === 4 && wizardTipo === "variacoes" && !form.id) || (form.id && editTab === "fotos")) && (
             <div className="prod-modal-body">
 
               {/* Foto */}
@@ -2209,7 +2255,7 @@ export default function Produtos() {
             )}
 
             {/* ══════ WIZARD STEP 4 — EXTRAS E CONFIGURAÇÕES ══════ */}
-            {((wizardStep === 4 && wizardTipo === "simples") || (wizardStep === 5 && wizardTipo === "variacoes") || form.id) && (
+            {((wizardStep === 4 && wizardTipo === "simples" && !form.id) || (wizardStep === 5 && wizardTipo === "variacoes" && !form.id) || (form.id && editTab === "extras")) && (
             <div className="prod-modal-body">
 
               {/* Adicionais */}
@@ -5322,6 +5368,56 @@ export default function Produtos() {
         }
         @media (max-width: 640px) {
           .prod-progresso-bar-wrap { margin: 12px 16px 18px; }
+        }
+
+        /* ═══ Nome do produto na edição (sob o título) ═══ */
+        .prod-modal-edit-nome {
+          font-size: 12.5px;
+          color: #6B5D64;
+          font-weight: 600;
+          margin-top: 2px;
+        }
+
+        /* ═══ Tabs do modo edição ═══ */
+        .prod-edit-tabs {
+          display: flex;
+          gap: 4px;
+          padding: 0 24px;
+          margin: 8px 0 0;
+          border-bottom: 1px solid #F0EBED;
+          overflow-x: auto;
+        }
+        @media (max-width: 720px) {
+          .prod-edit-tabs { padding: 0 16px; }
+        }
+        .prod-edit-tab {
+          all: unset;
+          padding: 10px 14px;
+          font-family: var(--font-base);
+          font-size: 12.5px;
+          font-weight: 700;
+          color: #6B5D64;
+          cursor: pointer;
+          border-radius: 8px 8px 0 0;
+          white-space: nowrap;
+          border-bottom: 2px solid transparent;
+          transition: color 0.12s, border-color 0.12s, background 0.12s;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          margin-bottom: -1px;
+        }
+        .prod-edit-tab:hover:not(.prod-edit-tab--ativo) {
+          color: #2D1F26;
+          background: #FAF8F5;
+        }
+        .prod-edit-tab--ativo {
+          color: #E85A8C;
+          border-bottom-color: #E85A8C;
+          font-weight: 900;
+        }
+        .prod-edit-tab-icon {
+          font-size: 14px;
         }
         .prod-progresso-bar-fill {
           height: 100%;
