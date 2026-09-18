@@ -134,6 +134,10 @@ export async function gerarFichaProduto(produto: Produto, userId: string) {
     doc.setFillColor(...COR.rosaFundo);
     doc.roundedRect(margin, y, 26, 26, 3, 3, "F");
   }
+  // Borda arredondada por cima (garante que sempre aparece)
+  doc.setDrawColor(...COR.bordaClara);
+  doc.setLineWidth(0.4);
+  doc.roundedRect(margin, y, 26, 26, 3, 3, "S");
 
   // Info do produto (à direita da foto)
   const textX = margin + 32;
@@ -159,20 +163,23 @@ export async function gerarFichaProduto(produto: Produto, userId: string) {
     doc.text(catText, chipX + 3, y + 18);
     chipX += catWidth + 4;
   }
-  // Status ativo/inativo
   const ativo = produto.disponivel !== false;
+  // Status ativo/inativo — círculo desenhado + texto (evita bug de encoding do bullet)
+  const statusColor: [number, number, number] = ativo ? [16, 185, 129] : [220, 38, 38];
+  doc.setFillColor(...statusColor);
+  doc.circle(chipX + 1.3, y + 17.2, 0.9, "F");
   doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(ativo ? 16 : 220, ativo ? 185 : 38, ativo ? 129 : 38);
-  doc.text(ativo ? "● Ativo" : "● Inativo", chipX, y + 18);
+  doc.setTextColor(...statusColor);
+  doc.text(ativo ? "Ativo" : "Inativo", chipX + 3, y + 18);
 
   // Meta info
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(...COR.cinzaClaro);
-  const codigoStr = produto.id ? ` · Código #${String(produto.id).slice(0, 8)}` : "";
-  const dataStr = produto.updated_at ? ` · Atualizado em ${formatData(produto.updated_at)}` : (produto.created_at ? ` · Criado em ${formatData(produto.created_at)}` : "");
-  doc.text(`${nomeConfeitaria}${codigoStr}${dataStr}`, textX, y + 24);
+  const dataStr = produto.updated_at ? `Atualizado em ${formatData(produto.updated_at)}` : (produto.created_at ? `Criado em ${formatData(produto.created_at)}` : "");
+  const metaStr = [nomeConfeitaria, dataStr].filter(Boolean).join("  -  ");
+  doc.text(metaStr, textX, y + 24);
 
   y += headerHeight;
 
@@ -183,7 +190,7 @@ export async function gerarFichaProduto(produto: Produto, userId: string) {
   y += 6;
 
   // ── KPIs (4 cards) ─────────────────────────────────────────────────
-  const kpiHeight = 18;
+  const kpiHeight = 15;
   const kpiGap = 3;
   const kpiWidth = (contentWidth - kpiGap * 3) / 4;
 
@@ -198,10 +205,10 @@ export async function gerarFichaProduto(produto: Produto, userId: string) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(6.5);
     doc.setTextColor(...opts.corLabel);
-    doc.text(label.toUpperCase(), x + 3, y + 5);
-    doc.setFontSize(13);
+    doc.text(label.toUpperCase(), x + 3, y + 4.5);
+    doc.setFontSize(12);
     doc.setTextColor(...opts.corValor);
-    doc.text(valor, x + 3, y + 13);
+    doc.text(valor, x + 3, y + 11);
   };
 
   // Preço (sempre colorido)
@@ -230,9 +237,9 @@ export async function gerarFichaProduto(produto: Produto, userId: string) {
   const sabores = (produto.recheios_disponiveis || []).length;
   const tamanhos = (produto.tamanhos_disponiveis || []).length;
   let varStr = "—";
-  if (sabores > 0 && tamanhos > 0) varStr = `${sabores}×${tamanhos}`;
-  else if (sabores > 0) varStr = `${sabores} sab.`;
-  else if (tamanhos > 0) varStr = `${tamanhos} tam.`;
+  if (sabores > 0 && tamanhos > 0) varStr = `${sabores}x${tamanhos}`;
+  else if (sabores > 0) varStr = `${sabores} ${sabores === 1 ? "sabor" : "sabores"}`;
+  else if (tamanhos > 0) varStr = `${tamanhos} ${tamanhos === 1 ? "tamanho" : "tamanhos"}`;
   const temVar = sabores > 0 || tamanhos > 0;
   drawKpi(margin + (kpiWidth + kpiGap) * 3, "Variações", varStr, {
     bg: temVar ? COR.amareloFundo : COR.cinzaFundo,
@@ -422,8 +429,8 @@ export async function gerarFichaProduto(produto: Produto, userId: string) {
     doc.text("Doonly", margin, footerY + 5);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(...COR.cinzaClaro);
-    doc.text("· confeitaria inteligente", margin + 10, footerY + 5);
-    doc.text(`Página ${i} de ${totalPages}  ·  ${new Date().toLocaleDateString("pt-BR")}`, pageWidth - margin, footerY + 5, { align: "right" });
+    doc.text("Confeitaria Inteligente", margin + 11, footerY + 5);
+    doc.text(`Página ${i} de ${totalPages}  -  ${new Date().toLocaleDateString("pt-BR")}`, pageWidth - margin, footerY + 5, { align: "right" });
   }
 
   // ── DOWNLOAD ───────────────────────────────────────────────────────
