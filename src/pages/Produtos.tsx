@@ -2851,9 +2851,7 @@ export default function Produtos() {
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
                   </button>
                   {previewMenu && (
-                    <>
-                      <div className="prod-preview-menu-backdrop" onClick={() => setPreviewMenu(false)} />
-                      <div className="prod-preview-menu" onClick={e => e.stopPropagation()}>
+                    <div className="prod-preview-menu" onClick={e => e.stopPropagation()}>
                       <button
                         className="prod-preview-menu-item"
                         onClick={() => {
@@ -2971,7 +2969,6 @@ export default function Produtos() {
                         </span>
                       </button>
                     </div>
-                    </>
                   )}
                 </div>
               </div>
@@ -3760,7 +3757,6 @@ export default function Produtos() {
           max-height: 92vh;
           display: flex; flex-direction: column;
           border-radius: 20px 20px 0 0;
-          overflow: hidden;
           box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.18);
           animation: prodModalSlideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
           position: relative;
@@ -3808,6 +3804,7 @@ export default function Produtos() {
           overflow: hidden;
           background: var(--bg-subtle);
           flex-shrink: 0;
+          border-radius: 20px 20px 0 0;
         }
         .prod-preview-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .prod-preview-img--placeholder {
@@ -3991,41 +3988,22 @@ export default function Produtos() {
         }
         .prod-preview-btn-del:hover { background: #FECACA; }
 
-        /* Menu dropdown ⋯ (bottom sheet dentro do modal) */
-        .prod-preview-menu-wrap { position: static; }
-        .prod-preview-menu-backdrop {
-          position: absolute;
-          inset: 0;
-          background: rgba(0,0,0,0.4);
-          z-index: 15;
-          animation: prodMenuBdIn 0.15s ease;
-        }
-        @keyframes prodMenuBdIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Menu dropdown ⋯ (lista suspensa) */
+        .prod-preview-menu-wrap { position: relative; }
         .prod-preview-menu {
           position: absolute;
-          left: 0;
+          bottom: calc(100% + 8px);
           right: 0;
-          bottom: 0;
           background: #fff;
-          border-radius: 20px 20px 0 0;
-          padding: 12px;
-          padding-bottom: 20px;
-          box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
-          z-index: 20;
-          animation: prodMenuIn 0.22s cubic-bezier(0.32, 0.72, 0, 1);
-          max-height: 70%;
-          overflow-y: auto;
-        }
-        .prod-preview-menu::before {
-          content: '';
-          display: block;
-          width: 36px; height: 4px;
-          border-radius: 2px;
-          background: #E5D8DE;
-          margin: 0 auto 8px;
+          border-radius: 12px;
+          box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+          padding: 6px;
+          min-width: 260px;
+          z-index: 100;
+          animation: prodMenuIn 0.14s ease;
         }
         @keyframes prodMenuIn {
-          from { opacity: 0; transform: translateY(20px); }
+          from { opacity: 0; transform: translateY(4px); }
           to { opacity: 1; transform: translateY(0); }
         }
         .prod-preview-menu-item {
@@ -4033,8 +4011,8 @@ export default function Produtos() {
           display: flex;
           align-items: flex-start;
           gap: 12px;
-          padding: 12px 14px;
-          border-radius: 10px;
+          padding: 10px 12px;
+          border-radius: 8px;
           cursor: pointer;
           width: 100%;
           box-sizing: border-box;
