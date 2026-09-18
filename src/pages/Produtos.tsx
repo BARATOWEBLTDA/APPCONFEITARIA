@@ -152,8 +152,9 @@ export default function Produtos() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [modal, setModal] = useState(false);
-  const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4>(1);
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes">("simples");
+  const [wizardSubtipo, setWizardSubtipo] = useState<"sabores_e_tamanhos" | "so_sabores" | "so_tamanhos" | null>(null);
   const [wizardOpts, setWizardOpts] = useState({ complementos: false, personalizacao: false, promocao: false });
   const [form, setForm] = useState<Produto>(EMPTY);
   const [confirmDiscardProd, setConfirmDiscardProd] = useState(false);
@@ -330,7 +331,7 @@ export default function Produtos() {
     if (data) setCategorias(data.map((c: any) => c.nome));
   };
 
-  const openNovo = () => { setForm(EMPTY); setFichaTecnica([]); setWizardStep(1); setWizardTipo("simples"); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setModal(true); };
+  const openNovo = () => { setForm(EMPTY); setFichaTecnica([]); setWizardStep(1); setWizardTipo("simples"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setModal(true); };
   const openEditar = async (p: Produto) => {
     setForm(migrarAdicionaisLegacy({ ...EMPTY, ...p }));
     setFichaTecnica([]);
@@ -360,7 +361,7 @@ export default function Produtos() {
       }
     }
   };
-  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(1); setWizardTipo("simples"); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setConfirmDiscardProd(false); };
+  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(1); setWizardTipo("simples"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setConfirmDiscardProd(false); };
 
   // Guard: verifica se o produto tem dados preenchidos (pra decidir se avisa antes de fechar)
   const hasProdData = (): boolean => {
@@ -874,17 +875,20 @@ export default function Produtos() {
             {wizardStep >= 2 && (
             <div className="prod-modal-header-novo">
               {wizardStep > 1 && !form.id ? (
-                <button className="prod-modal-back-novo" onClick={() => setWizardStep(s => Math.max(1, s - 1) as 1 | 2 | 3 | 4)} aria-label="Voltar">
+                <button className="prod-modal-back-novo" onClick={() => setWizardStep(s => Math.max(1, s - 1) as 1 | 2 | 3 | 4 | 5)} aria-label="Voltar">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
               ) : <div style={{width: 36}} />}
               <div className="prod-modal-title-wrap">
-                {!form.id && <div className="prod-modal-eyebrow">Passo {wizardStep - 1} de 3</div>}
+                {!form.id && <div className="prod-modal-eyebrow">Passo {wizardStep - 1} de {wizardTipo === "variacoes" ? 4 : 3}</div>}
                 <div className="prod-modal-title-novo">
                   {form.id ? "Editar produto" : (() => {
                     if (wizardStep === 2) return "Informações do produto";
+                    if (wizardStep === 3 && wizardTipo === "variacoes") return "Sabores e tamanhos";
                     if (wizardStep === 3) return "Visual e preço";
+                    if (wizardStep === 4 && wizardTipo === "variacoes") return "Visual e preço";
                     if (wizardStep === 4) return "Extras";
+                    if (wizardStep === 5) return "Extras";
                     return "Cadastrar produto";
                   })()}
                 </div>
@@ -893,12 +897,12 @@ export default function Produtos() {
             </div>
             )}
 
-            {/* Progresso — barra fina rosa (só nos passos 2, 3, 4) */}
+            {/* Progresso — barra fina rosa (só nos passos 2, 3, 4, 5) */}
             {wizardStep >= 2 && !form.id && (
               <div className="prod-progresso-bar-wrap">
                 <div
                   className="prod-progresso-bar-fill"
-                  style={{ width: `${((wizardStep - 1) / 3) * 100}%` }}
+                  style={{ width: `${((wizardStep - 1) / (wizardTipo === "variacoes" ? 4 : 3)) * 100}%` }}
                 />
               </div>
             )}
@@ -915,23 +919,19 @@ export default function Produtos() {
                   <p className="wiz-step1-sub">Você pode mudar isso depois se precisar</p>
                 </div>
 
-                {/* 2 cards no estilo NovaVenda (rosa + amarelo) */}
+                {/* 2 cards principais */}
                 <div className="wiz-step1-cards">
                   <button
                     type="button"
                     data-tipo="simples"
-                    className="wiz-step1-card"
+                    className={`wiz-step1-card ${wizardTipo === "simples" ? "wiz-step1-card--ativo" : ""}`}
                     onClick={() => {
                       setWizardTipo("simples");
+                      setWizardSubtipo(null);
                       setForm(f => ({ ...f, forma_venda: "unidade" }));
-                      setWizardStep(2);
                     }}
                   >
-                    <img
-                      src={`/categoriaicones/${encodeURIComponent("icone (3).png")}`}
-                      alt=""
-                      className="wiz-step1-card-icon"
-                    />
+                    <img src={`/categoriaicones/${encodeURIComponent("icone (3).png")}`} alt="" className="wiz-step1-card-icon" />
                     <div className="wiz-step1-card-title">Produto simples</div>
                     <div className="wiz-step1-card-desc">Um produto,<br/>um preço</div>
                   </button>
@@ -939,23 +939,78 @@ export default function Produtos() {
                   <button
                     type="button"
                     data-tipo="variacoes"
-                    className="wiz-step1-card"
-                    onClick={() => {
-                      setWizardTipo("variacoes");
-                      setWizardStep(2);
-                    }}
+                    className={`wiz-step1-card ${wizardTipo === "variacoes" ? "wiz-step1-card--ativo" : ""}`}
+                    onClick={() => setWizardTipo("variacoes")}
                   >
-                    <img
-                      src={`/categoriaicones/${encodeURIComponent("icone (26).png")}`}
-                      alt=""
-                      className="wiz-step1-card-icon"
-                    />
+                    <img src={`/categoriaicones/${encodeURIComponent("icone (26).png")}`} alt="" className="wiz-step1-card-icon" />
                     <div className="wiz-step1-card-title">Com variações</div>
                     <div className="wiz-step1-card-desc">Tamanhos<br/>ou opções</div>
                   </button>
                 </div>
 
-                <p className="wiz-step1-hint">Ex.: brownie, cookie · bolo P/M/G</p>
+                {/* 3 subtipos — só aparecem se "Com variações" */}
+                {wizardTipo === "variacoes" && (
+                  <>
+                    <div className="wiz-step1-sub-label">
+                      Que tipo de variação? <span className="wiz-step1-sub-star">*</span>
+                    </div>
+                    <div className="wiz-step1-subcards">
+                      <button
+                        type="button"
+                        className={`wiz-step1-subcard ${wizardSubtipo === "sabores_e_tamanhos" ? "wiz-step1-subcard--ativo" : ""}`}
+                        onClick={() => setWizardSubtipo("sabores_e_tamanhos")}
+                      >
+                        <div className="wiz-step1-subcard-icon">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/>
+                            <line x1="12" y1="22" x2="12" y2="15.5"/>
+                            <polyline points="22 8.5 12 15.5 2 8.5"/>
+                          </svg>
+                        </div>
+                        <div className="wiz-step1-subcard-title">Sabores e tamanhos</div>
+                        <div className="wiz-step1-subcard-desc">Ex.: bolo (sabor + P/M/G)</div>
+                      </button>
+                      <button
+                        type="button"
+                        className={`wiz-step1-subcard ${wizardSubtipo === "so_sabores" ? "wiz-step1-subcard--ativo" : ""}`}
+                        onClick={() => setWizardSubtipo("so_sabores")}
+                      >
+                        <div className="wiz-step1-subcard-icon">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 2C6 8 6 13 6 16a6 6 0 0 0 12 0c0-3 0-8-6-14z"/>
+                          </svg>
+                        </div>
+                        <div className="wiz-step1-subcard-title">Só sabores</div>
+                        <div className="wiz-step1-subcard-desc">Ex.: brigadeiro (ninho, morango)</div>
+                      </button>
+                      <button
+                        type="button"
+                        className={`wiz-step1-subcard ${wizardSubtipo === "so_tamanhos" ? "wiz-step1-subcard--ativo" : ""}`}
+                        onClick={() => setWizardSubtipo("so_tamanhos")}
+                      >
+                        <div className="wiz-step1-subcard-icon">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v-3H3v3M21 12V9H3v3M21 9V6H3v3"/>
+                          </svg>
+                        </div>
+                        <div className="wiz-step1-subcard-title">Só tamanhos</div>
+                        <div className="wiz-step1-subcard-desc">Ex.: torta (fatia, inteira)</div>
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {/* Botão avançar */}
+                <div className="wiz-step1-footer">
+                  <button
+                    type="button"
+                    className="wiz-step1-avancar"
+                    disabled={wizardTipo === "variacoes" && !wizardSubtipo}
+                    onClick={() => setWizardStep(2)}
+                  >
+                    Avançar <span style={{marginLeft: 6}}>→</span>
+                  </button>
+                </div>
               </div>
             )}
 
@@ -1912,7 +1967,7 @@ export default function Produtos() {
                     disabled={!canAdvance}
                     onClick={() => {
                       if (!canAdvance) return;
-                      setWizardStep(s => (s + 1) as 1 | 2 | 3 | 4);
+                      setWizardStep(s => (s + 1) as 1 | 2 | 3 | 4 | 5);
                     }}
                   >
                     Avançar
@@ -4316,6 +4371,131 @@ export default function Produtos() {
         }
         .wiz-step1-card[data-tipo="variacoes"] .wiz-step1-card-title,
         .wiz-step1-card[data-tipo="variacoes"] .wiz-step1-card-desc { color: #78350F; }
+
+        /* Ativo — borda + halo colorido */
+        .wiz-step1-card[data-tipo="simples"].wiz-step1-card--ativo {
+          border-color: #E85A8C;
+          box-shadow: 0 6px 20px rgba(232,90,140,0.28);
+        }
+        .wiz-step1-card[data-tipo="variacoes"].wiz-step1-card--ativo {
+          border-color: #D97706;
+          box-shadow: 0 6px 20px rgba(217,119,6,0.28);
+        }
+
+        /* ─── Label subtipo ─── */
+        .wiz-step1-sub-label {
+          text-align: center;
+          font-size: 11.5px;
+          font-weight: 800;
+          color: #6B5D64;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          margin: 22px 0 12px;
+        }
+        .wiz-step1-sub-star {
+          color: #E85A8C;
+          font-weight: 900;
+          font-size: 13px;
+        }
+
+        /* ─── Subcards (3 subtipos) ─── */
+        .wiz-step1-subcards {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 10px;
+          padding: 0 24px 8px;
+          max-width: 560px;
+          margin: 0 auto;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        @media (max-width: 640px) {
+          .wiz-step1-subcards { padding: 0 16px 8px; gap: 8px; }
+        }
+        .wiz-step1-subcard {
+          all: unset;
+          padding: 16px 10px;
+          border-radius: 12px;
+          text-align: center;
+          box-sizing: border-box;
+          border: 1.5px solid #E5D8DE;
+          background: #FAF8F5;
+          cursor: pointer;
+          font-family: var(--font-base);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
+        }
+        .wiz-step1-subcard:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .wiz-step1-subcard--ativo {
+          border-color: #E85A8C;
+          background: #FDF3F7;
+          box-shadow: 0 4px 14px rgba(232,90,140,0.2);
+        }
+        .wiz-step1-subcard-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          background: #F0EBED;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #6B5D64;
+          transition: background 0.12s, color 0.12s;
+        }
+        .wiz-step1-subcard--ativo .wiz-step1-subcard-icon {
+          background: #FCE0E9;
+          color: #E85A8C;
+        }
+        .wiz-step1-subcard-title {
+          font-size: 12px;
+          font-weight: 800;
+          color: #2D1F26;
+          line-height: 1.25;
+        }
+        .wiz-step1-subcard-desc {
+          font-size: 10.5px;
+          color: #6B5D64;
+          line-height: 1.3;
+          font-weight: 500;
+        }
+
+        /* ─── Footer com botão avançar ─── */
+        .wiz-step1-footer {
+          padding: 20px 24px 24px;
+          display: flex;
+          justify-content: center;
+        }
+        .wiz-step1-avancar {
+          all: unset;
+          padding: 14px 32px;
+          background: #E85A8C;
+          color: #fff;
+          font-family: var(--font-base) !important;
+          font-size: 14px;
+          font-weight: 800;
+          border-radius: 10px;
+          cursor: pointer;
+          box-shadow: 0 3px 0 #C33A6E;
+          transition: transform 0.08s, filter 0.08s, box-shadow 0.08s;
+          display: inline-flex;
+          align-items: center;
+          min-width: 180px;
+          justify-content: center;
+        }
+        .wiz-step1-avancar:hover:not(:disabled) { filter: brightness(1.05); }
+        .wiz-step1-avancar:active:not(:disabled) {
+          transform: translateY(3px);
+          box-shadow: 0 0 0 #C33A6E;
+        }
+        .wiz-step1-avancar:disabled {
+          background: #F5DCE6;
+          box-shadow: 0 3px 0 #E8C4D2;
+          cursor: not-allowed;
+        }
 
         .wiz-step1-card-icon {
           width: 62px;
