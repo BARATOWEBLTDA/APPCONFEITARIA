@@ -2685,65 +2685,145 @@ export default function Produtos() {
           <div className="prod-preview-modal" onClick={e => e.stopPropagation()}>
             <button className="prod-preview-close" onClick={() => setPreviewProduto(null)} aria-label="Fechar">✕</button>
 
-            {/* Imagem do produto (hero) */}
-            {previewProduto.imagem_url ? (
-              <div className="prod-preview-img">
-                <img src={previewProduto.imagem_url.split(",")[0]} alt={previewProduto.nome} />
-              </div>
-            ) : (
-              <div className="prod-preview-img prod-preview-img--placeholder">Sem imagem</div>
-            )}
-
-            <div className="prod-preview-body">
-              {/* Header: nome + preço */}
-              <div className="prod-preview-head">
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  {previewProduto.categoria && <p className="prod-preview-cat">{previewProduto.categoria}</p>}
-                  <h3 className="prod-preview-nome">{previewProduto.nome}</h3>
-                </div>
-                <div className="prod-preview-preco-wrap">
-                  {previewProduto.promocao && previewProduto.preco_promocional && previewProduto.preco_promocional > 0 ? (
-                    <>
-                      <p className="prod-preview-preco-old">R$ {formatPreco(previewProduto.preco_normal)}</p>
-                      <p className="prod-preview-preco">R$ {formatPreco(previewProduto.preco_promocional)}</p>
-                    </>
-                  ) : (
-                    <p className="prod-preview-preco">R$ {formatPreco(previewProduto.preco_normal)}</p>
+            {/* Foto hero (com carousel dots se tiver mais) */}
+            {(() => {
+              const fotos = (previewProduto.imagem_url || "").split(",").map(s => s.trim()).filter(Boolean);
+              return fotos.length > 0 ? (
+                <div className="prod-preview-img">
+                  <img src={fotos[0]} alt={previewProduto.nome} />
+                  {fotos.length > 1 && (
+                    <div className="prod-preview-dots">
+                      {fotos.map((_, i) => (
+                        <span key={i} className={`prod-preview-dot ${i === 0 ? "prod-preview-dot--ativo" : ""}`}></span>
+                      ))}
+                    </div>
                   )}
                 </div>
+              ) : (
+                <div className="prod-preview-img prod-preview-img--placeholder">Sem imagem</div>
+              );
+            })()}
+
+            <div className="prod-preview-body">
+              {/* Categoria + Status */}
+              <div className="prod-preview-eyebrow">
+                {previewProduto.categoria && <span>{previewProduto.categoria}</span>}
+                <span className="prod-preview-eyebrow-dot">·</span>
+                <span className={previewProduto.disponivel !== false ? "prod-preview-status-on" : "prod-preview-status-off"}>
+                  {previewProduto.disponivel !== false ? "Ativo" : "Inativo"}
+                </span>
+                {previewProduto.promocao && <>
+                  <span className="prod-preview-eyebrow-dot">·</span>
+                  <span className="prod-preview-status-promo">Promoção</span>
+                </>}
               </div>
 
+              {/* Nome grande */}
+              <h3 className="prod-preview-nome">{previewProduto.nome}</h3>
+
+              {/* Descrição */}
               {previewProduto.descricao && (
                 <p className="prod-preview-desc">{previewProduto.descricao}</p>
               )}
 
-              <div className="prod-preview-tags">
-                {previewProduto.forma_venda && (
-                  <span className="prod-preview-tag">
-                    {FORMAS_VENDA.find(f => f.value === previewProduto.forma_venda)?.label || previewProduto.forma_venda}
-                  </span>
-                )}
-                {!previewProduto.disponivel && <span className="prod-preview-tag prod-preview-tag--error">Indisponível</span>}
-                {previewProduto.promocao && <span className="prod-preview-tag prod-preview-tag--promo">Promoção</span>}
-                {previewProduto.zero_acucar && <span className="prod-preview-tag">Zero açúcar</span>}
+              {/* Card destaque preço + vendas */}
+              <div className="prod-preview-destaque">
+                <div className="prod-preview-destaque-preco">
+                  <div className="prod-preview-destaque-label">Preço</div>
+                  {previewProduto.promocao && previewProduto.preco_promocional && previewProduto.preco_promocional > 0 ? (
+                    <>
+                      <div className="prod-preview-destaque-valor">R$ {formatPreco(previewProduto.preco_promocional)}</div>
+                      <div className="prod-preview-destaque-sub" style={{textDecoration: "line-through"}}>R$ {formatPreco(previewProduto.preco_normal)}</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="prod-preview-destaque-valor">R$ {formatPreco(previewProduto.preco_normal)}</div>
+                      <div className="prod-preview-destaque-sub">
+                        {(() => {
+                          const label = FORMAS_VENDA.find(f => f.value === previewProduto.forma_venda)?.label;
+                          const temVariacoes = (previewProduto.tamanhos_disponiveis || []).length > 0 || (previewProduto.recheios_disponiveis || []).length > 0;
+                          return `${label || "Por unidade"}${temVariacoes ? " · a partir de" : ""}`;
+                        })()}
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
 
-              {previewProduto.created_at && (
-                <p className="prod-preview-created">
-                  Cadastrado em {new Date(previewProduto.created_at).toLocaleDateString("pt-BR")}
-                </p>
-              )}
+              {/* Grid 2 colunas: variações + cadastrado */}
+              <div className="prod-preview-info-grid">
+                <div className="prod-preview-info-box">
+                  <div className="prod-preview-info-label">VARIAÇÕES</div>
+                  <div className="prod-preview-info-valor">
+                    {(() => {
+                      const sabores = (previewProduto.recheios_disponiveis || []).length;
+                      const tamanhos = (previewProduto.tamanhos_disponiveis || []).length;
+                      if (sabores > 0 && tamanhos > 0) return `${sabores} sabores × ${tamanhos}`;
+                      if (sabores > 0) return `${sabores} sabor${sabores > 1 ? "es" : ""}`;
+                      if (tamanhos > 0) return `${tamanhos} tamanho${tamanhos > 1 ? "s" : ""}`;
+                      return "Nenhuma";
+                    })()}
+                  </div>
+                </div>
+                <div className="prod-preview-info-box">
+                  <div className="prod-preview-info-label">CADASTRADO</div>
+                  <div className="prod-preview-info-valor">
+                    {(() => {
+                      if (!previewProduto.created_at) return "—";
+                      const dias = Math.floor((Date.now() - new Date(previewProduto.created_at).getTime()) / (86400000));
+                      if (dias === 0) return "hoje";
+                      if (dias === 1) return "ontem";
+                      if (dias < 30) return `há ${dias} dias`;
+                      const meses = Math.floor(dias / 30);
+                      if (meses < 12) return `há ${meses} ${meses === 1 ? "mês" : "meses"}`;
+                      return new Date(previewProduto.created_at).toLocaleDateString("pt-BR");
+                    })()}
+                  </div>
+                </div>
+              </div>
 
+              {/* Ações */}
               <div className="prod-preview-actions">
-                <button
-                  className="prod-preview-btn-editar"
-                  onClick={() => { setPreviewProduto(null); openEditar(previewProduto); }}
-                >
-                  Editar produto
+                <button className="prod-preview-btn-editar" onClick={() => { setPreviewProduto(null); openEditar(previewProduto); }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{marginRight: 6}}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  Editar
                 </button>
                 <button
-                  className="prod-preview-btn-excluir"
+                  className="prod-preview-btn-icon"
+                  onClick={() => {
+                    // Duplicar
+                    const clone = { ...previewProduto };
+                    delete clone.id;
+                    clone.nome = `${clone.nome} (cópia)`;
+                    setForm({ ...EMPTY, ...clone });
+                    setPreviewProduto(null);
+                    setWizardStep(2);
+                    setModal(true);
+                  }}
+                  title="Duplicar"
+                  aria-label="Duplicar"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                </button>
+                <button
+                  className="prod-preview-btn-icon"
+                  onClick={async () => {
+                    // Copiar link do cardápio pra clipboard
+                    const url = `${window.location.origin}/c/${userId}`;
+                    try {
+                      await navigator.clipboard.writeText(url);
+                      alert("Link do cardápio copiado!");
+                    } catch { alert(url); }
+                  }}
+                  title="Compartilhar link"
+                  aria-label="Compartilhar"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                </button>
+                <button
+                  className="prod-preview-btn-del"
                   onClick={() => { setPreviewProduto(null); setDeleteConfirm(previewProduto.id!); }}
+                  title="Excluir"
                   aria-label="Excluir"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
@@ -3578,7 +3658,7 @@ export default function Produtos() {
         .prod-preview-close:hover { background: var(--text-title); color: #fff; border-color: var(--text-title); }
         .prod-preview-img {
           width: 100%;
-          aspect-ratio: 16/10;
+          height: 200px;
           overflow: hidden;
           background: var(--bg-subtle);
           flex-shrink: 0;
@@ -3591,111 +3671,179 @@ export default function Produtos() {
           font-size: var(--font-helper);
         }
         .prod-preview-body {
-          padding: var(--space-4);
+          padding: 18px 16px 16px;
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
           overscroll-behavior: contain;
           flex: 1;
         }
-        .prod-preview-head {
-          display: flex; align-items: flex-start; justify-content: space-between;
-          gap: var(--space-3);
+
+        /* Carousel dots na foto */
+        .prod-preview-img { position: relative; }
+        .prod-preview-dots {
+          position: absolute;
+          bottom: 10px;
+          left: 12px;
+          display: flex;
+          gap: 4px;
+          z-index: 3;
         }
-        .prod-preview-cat {
-          margin: 0 0 3px;
-          font-size: var(--font-caption);
-          color: var(--text-muted);
-          font-weight: var(--fw-medium);
-          font-family: inherit;
+        .prod-preview-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.5);
         }
+        .prod-preview-dot--ativo { background: #fff; }
+
+        /* Eyebrow (categoria · status · promo) */
+        .prod-preview-eyebrow {
+          font-size: 11px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: #E85A8C;
+          margin-bottom: 6px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex-wrap: wrap;
+        }
+        .prod-preview-eyebrow-dot { color: #B4A9AE; font-weight: 400; }
+        .prod-preview-status-on { color: #10B981; }
+        .prod-preview-status-off { color: #DC2626; }
+        .prod-preview-status-promo { color: #F59E0B; }
+
+        /* Nome */
         .prod-preview-nome {
-          margin: 0;
-          font-size: var(--font-section-title);
-          font-weight: var(--fw-bold);
-          color: var(--text-title);
+          margin: 0 0 6px;
+          font-size: 22px;
+          font-weight: 900;
+          color: #2D1F26;
           font-family: inherit;
-          line-height: var(--lh-tight);
+          line-height: 1.15;
           letter-spacing: -0.01em;
         }
-        .prod-preview-preco-wrap {
-          text-align: right;
-          white-space: nowrap;
-          flex-shrink: 0;
-        }
-        .prod-preview-preco {
-          margin: 0;
-          font-size: var(--font-input);
-          font-weight: var(--fw-black);
-          color: var(--primary);
-          font-family: inherit;
-          letter-spacing: -0.01em;
-        }
-        .prod-preview-preco-old {
-          margin: 0 0 2px;
-          font-size: 12px;
-          color: var(--text-muted);
-          text-decoration: line-through;
-          font-family: inherit;
-        }
+
+        /* Descrição */
         .prod-preview-desc {
-          margin: var(--space-3) 0 0;
-          font-size: var(--font-body);
-          color: var(--text-secondary);
-          line-height: 1.5;
+          margin: 0 0 14px;
+          font-size: 13px;
+          color: #6B5D64;
+          line-height: 1.4;
           font-family: inherit;
         }
-        .prod-preview-tags {
-          display: flex; flex-wrap: wrap;
-          gap: var(--space-2);
-          margin-top: var(--space-3);
+
+        /* Card destaque preço */
+        .prod-preview-destaque {
+          background: #FDF3F7;
+          border-radius: 12px;
+          padding: 14px;
+          margin-bottom: 12px;
         }
-        .prod-preview-tag {
-          font-size: var(--font-caption);
-          color: var(--text-secondary);
-          background: var(--bg-subtle);
-          padding: 4px 10px;
-          border-radius: 999px;
+        .prod-preview-destaque-label {
+          font-size: 10.5px;
+          color: #6B5D64;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .prod-preview-destaque-valor {
+          font-size: 24px;
+          font-weight: 900;
+          color: #E85A8C;
+          margin-top: 2px;
           font-family: inherit;
-          font-weight: var(--fw-medium);
+          line-height: 1.1;
         }
-        .prod-preview-tag--error { color: var(--error); background: #fee2e2; font-weight: var(--fw-semibold); }
-        .prod-preview-tag--promo { color: var(--primary); background: var(--primary-light); font-weight: var(--fw-semibold); }
-        .prod-preview-created {
-          margin: var(--space-3) 0 0;
-          font-size: var(--font-caption);
-          color: var(--text-muted);
+        .prod-preview-destaque-sub {
+          font-size: 10.5px;
+          color: #9A8B93;
+          margin-top: 2px;
+        }
+
+        /* Grid info (variações + cadastrado) */
+        .prod-preview-info-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          margin-bottom: 14px;
+        }
+        .prod-preview-info-box {
+          background: #FAF8F5;
+          padding: 10px 12px;
+          border-radius: 10px;
+          border: 1px solid #F0EBED;
+        }
+        .prod-preview-info-label {
+          font-size: 10px;
+          color: #6B5D64;
+          font-weight: 700;
+          letter-spacing: 0.03em;
+        }
+        .prod-preview-info-valor {
+          font-size: 13px;
+          font-weight: 800;
+          color: #2D1F26;
+          margin-top: 2px;
           font-family: inherit;
         }
+
+        /* Ações */
         .prod-preview-actions {
-          display: flex; gap: var(--space-2);
-          margin-top: var(--space-4);
+          display: flex;
+          gap: 8px;
         }
         .prod-preview-btn-editar {
           flex: 1;
-          padding: 12px;
-          background: var(--text-title);
+          padding: 13px;
+          background: #E85A8C;
           color: #fff;
           border: none;
-          border-radius: var(--radius-md);
+          border-radius: 10px;
           font-family: inherit;
-          font-size: var(--font-button);
-          font-weight: var(--fw-bold);
+          font-size: 13px;
+          font-weight: 900;
           cursor: pointer;
-          transition: opacity 0.15s;
+          box-shadow: 0 3px 0 #C33A6E;
+          transition: transform 0.08s, filter 0.08s, box-shadow 0.08s;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
         }
-        .prod-preview-btn-editar:hover { opacity: 0.9; }
-        .prod-preview-btn-excluir {
-          width: 44px;
-          background: #fff1f2;
-          color: var(--error);
+        .prod-preview-btn-editar:hover { filter: brightness(1.05); }
+        .prod-preview-btn-editar:active {
+          transform: translateY(3px);
+          box-shadow: 0 0 0 #C33A6E;
+        }
+        .prod-preview-btn-icon {
+          padding: 13px 14px;
+          background: #F5F1F3;
+          color: #6B5D64;
           border: none;
-          border-radius: var(--radius-md);
+          border-radius: 10px;
           font-family: inherit;
           cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          transition: background 0.15s;
+          transition: background 0.12s, color 0.12s;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
         }
-        .prod-preview-btn-excluir:hover { background: #fee2e2; }
+        .prod-preview-btn-icon:hover { background: #EBE6E9; color: #2D1F26; }
+        .prod-preview-btn-del {
+          padding: 13px 14px;
+          background: #FEE2E2;
+          color: #DC2626;
+          border: none;
+          border-radius: 10px;
+          font-family: inherit;
+          cursor: pointer;
+          transition: background 0.12s;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .prod-preview-btn-del:hover { background: #FECACA; }
 
         /* ── Modal de Produto ── */
         .prod-modal-overlay {
