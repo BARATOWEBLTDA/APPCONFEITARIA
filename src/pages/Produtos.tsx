@@ -1034,61 +1034,45 @@ export default function Produtos() {
 
                 {/* 3. Descrição — com CTA IA (V3) */}
                 <div className="prod-field">
-                  <label className="prod-field-label-novo">Descrição</label>
-                  {!form.descricao ? (
-                    /* Textarea vazio → CTA IA convidativo */
-                    <div className="prod-desc-empty-cta">
-                      <div className="prod-desc-empty-icon">✨</div>
-                      <div className="prod-desc-empty-txt">
-                        Escreva a descrição ou <b>deixe a IA fazer pra você</b>
-                      </div>
-                      <div style={{display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap'}}>
-                        <button
-                          type="button"
-                          className="prod-desc-btn-write"
-                          onClick={() => { setForm(f => ({ ...f, descricao: " " })); setTimeout(() => setForm(f => ({...f, descricao: ""})), 0); document.getElementById("prod-desc-input")?.focus(); }}
-                        >
-                          Escrever eu mesma
-                        </button>
-                        <button
-                          type="button"
-                          className={`prod-desc-btn-ia ${(form.nome.trim() && isPro) ? "" : "prod-desc-btn-ia--locked"}`}
-                          disabled={!form.nome.trim() || !isPro}
-                          onClick={async () => {
-                            if (!form.nome.trim() || !isPro) return;
-                            setForm(f => ({ ...f, descricao: "Gerando..." }));
-                            try {
-                              const res = await fetch("/api/gerar-descricao", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ prompt: `Crie uma descrição MUITO curta e atraente para um produto de confeitaria chamado "${form.nome}". MÁXIMO 2 frases curtas (até 100 caracteres no total). Português brasileiro, transmita qualidade e sabor. Retorne APENAS a descrição, sem aspas, sem emojis.` })
-                              });
-                              const data = await res.json();
-                              const desc = data.content?.[0]?.text?.trim() || "";
-                              setForm(f => ({ ...f, descricao: desc }));
-                            } catch {
-                              setForm(f => ({ ...f, descricao: "" }));
-                            }
-                          }}
-                          title={!form.nome.trim() ? "Preencha o nome primeiro" : !isPro ? "Disponível no plano PRO" : ""}
-                        >
-                          Gerar com IA
-                          <img src="/coroa.png" alt="" className="prod-desc-btn-ia-crown" />
-                        </button>
-                      </div>
-                      {!form.nome.trim() && (
-                        <div className="prod-desc-empty-hint">Preencha o nome primeiro pra IA gerar</div>
-                      )}
-                    </div>
-                  ) : (
-                    <textarea
-                      id="prod-desc-input"
-                      placeholder="Fale sobre o produto..."
-                      value={form.descricao}
-                      onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
-                      rows={3}
-                      style={{fontFamily: 'inherit', resize: 'vertical'}}
-                    />
+                  <div className="prod-desc-header">
+                    <label className="prod-field-label-novo">Descrição</label>
+                    <button
+                      type="button"
+                      className={`prod-btn-ia-novo ${!form.nome.trim() || !isPro ? "prod-btn-ia-novo--locked" : ""}`}
+                      disabled={!form.nome.trim() || !isPro || form.descricao === "Gerando..."}
+                      onClick={async () => {
+                        if (!form.nome.trim() || !isPro) return;
+                        setForm(f => ({ ...f, descricao: "Gerando..." }));
+                        try {
+                          const res = await fetch("/api/gerar-descricao", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ prompt: `Crie uma descrição MUITO curta e atraente para um produto de confeitaria chamado "${form.nome}". MÁXIMO 2 frases curtas (até 100 caracteres no total). Português brasileiro, transmita qualidade e sabor. Retorne APENAS a descrição, sem aspas, sem emojis.` })
+                          });
+                          const data = await res.json();
+                          const desc = data.content?.[0]?.text?.trim() || "";
+                          setForm(f => ({ ...f, descricao: desc }));
+                        } catch {
+                          setForm(f => ({ ...f, descricao: "" }));
+                        }
+                      }}
+                      title={!form.nome.trim() ? "Preencha o nome primeiro" : !isPro ? "Disponível no plano PRO" : "Gerar descrição automaticamente"}
+                    >
+                      {form.descricao === "Gerando..." ? "Gerando..." : "Gerar com IA"}
+                      <img src="/coroa.png" alt="" className="prod-btn-ia-novo-crown" />
+                    </button>
+                  </div>
+                  <textarea
+                    id="prod-desc-input"
+                    placeholder="Fale sobre o produto..."
+                    value={form.descricao === "Gerando..." ? "" : form.descricao}
+                    onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
+                    rows={3}
+                    disabled={form.descricao === "Gerando..."}
+                    style={{fontFamily: 'inherit', resize: 'vertical'}}
+                  />
+                  {!form.nome.trim() && (
+                    <p className="prod-desc-ia-hint">💡 Preencha o nome do produto pra IA gerar</p>
                   )}
                 </div>
               </div>
@@ -4550,6 +4534,62 @@ export default function Produtos() {
           font-weight: 900;
           font-size: 14px;
           line-height: 1;
+        }
+
+        /* ═══ Header da descrição (label + botão IA) ═══ */
+        .prod-desc-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 6px;
+        }
+        .prod-desc-header .prod-field-label-novo {
+          margin-bottom: 0 !important;
+        }
+
+        /* ═══ Botão Gerar com IA — preto com coroa ═══ */
+        .prod-btn-ia-novo {
+          all: unset;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px 6px 14px;
+          background: #1A1A1A;
+          color: #fff;
+          font-family: var(--font-base) !important;
+          font-size: 11.5px;
+          font-weight: 800;
+          border-radius: 999px;
+          cursor: pointer;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          transition: transform 0.08s, box-shadow 0.12s, filter 0.12s;
+          white-space: nowrap;
+        }
+        .prod-btn-ia-novo:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+          filter: brightness(1.15);
+        }
+        .prod-btn-ia-novo:active:not(:disabled) {
+          transform: translateY(0);
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .prod-btn-ia-novo--locked {
+          opacity: 0.5;
+          cursor: not-allowed !important;
+        }
+        .prod-btn-ia-novo-crown {
+          width: 16px;
+          height: 16px;
+          object-fit: contain;
+          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+        }
+        .prod-desc-ia-hint {
+          font-size: 11px;
+          color: #9A8B93;
+          margin: 6px 0 0;
+          font-style: italic;
         }
 
         /* Labels rosa (legado — mantidos pra outros steps) */
