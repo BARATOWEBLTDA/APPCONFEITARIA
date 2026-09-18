@@ -499,6 +499,7 @@ export default function Produtos() {
   const [savingCat, setSavingCat] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [previewProduto, setPreviewProduto] = useState<Produto | null>(null);
+  const [previewMenu, setPreviewMenu] = useState(false);
   const [novaOpcao, setNovaOpcao] = useState<{ massa: string; recheio: string; cobertura: string }>({ massa: "", recheio: "", cobertura: "" });
   const [novoTamanho, setNovoTamanho] = useState({ label: "", preco: "" });
   const [novoKitItem, setNovoKitItem] = useState({ nome: "", quantidade: "" });
@@ -567,6 +568,16 @@ export default function Produtos() {
     }
   }, [modal, previewProduto]);
 
+  // Fecha menu do preview quando preview fecha
+  useEffect(() => { if (!previewProduto) setPreviewMenu(false); }, [previewProduto]);
+
+  // Fecha menu ao clicar fora
+  useEffect(() => {
+    if (!previewMenu) return;
+    const handler = () => setPreviewMenu(false);
+    window.addEventListener("click", handler);
+    return () => window.removeEventListener("click", handler);
+  }, [previewMenu]);
   useEffect(() => {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -2830,46 +2841,136 @@ export default function Produtos() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{marginRight: 6}}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                   Editar
                 </button>
-                <button
-                  className="prod-preview-btn-icon"
-                  onClick={() => {
-                    // Duplicar
-                    const clone = { ...previewProduto };
-                    delete clone.id;
-                    clone.nome = `${clone.nome} (cópia)`;
-                    setForm({ ...EMPTY, ...clone });
-                    setPreviewProduto(null);
-                    setWizardStep(2);
-                    setModal(true);
-                  }}
-                  title="Duplicar"
-                  aria-label="Duplicar"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                </button>
-                <button
-                  className="prod-preview-btn-icon"
-                  onClick={async () => {
-                    // Copiar link do cardápio pra clipboard
-                    const url = `${window.location.origin}/c/${userId}`;
-                    try {
-                      await navigator.clipboard.writeText(url);
-                      alert("Link do cardápio copiado!");
-                    } catch { alert(url); }
-                  }}
-                  title="Compartilhar link"
-                  aria-label="Compartilhar"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                </button>
-                <button
-                  className="prod-preview-btn-del"
-                  onClick={() => { setPreviewProduto(null); setDeleteConfirm(previewProduto.id!); }}
-                  title="Excluir"
-                  aria-label="Excluir"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-                </button>
+                <div className="prod-preview-menu-wrap">
+                  <button
+                    className="prod-preview-btn-icon"
+                    onClick={e => { e.stopPropagation(); setPreviewMenu(v => !v); }}
+                    title="Mais ações"
+                    aria-label="Mais ações"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                  </button>
+                  {previewMenu && (
+                    <div className="prod-preview-menu" onClick={e => e.stopPropagation()}>
+                      <button
+                        className="prod-preview-menu-item"
+                        onClick={() => {
+                          setPreviewMenu(false);
+                          // Ficha técnica PDF — abre em nova aba, user imprime/salva
+                          const p = previewProduto;
+                          const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Ficha Técnica — ${p.nome}</title><style>
+                            @page { size: A4; margin: 20mm; }
+                            body { font-family: -apple-system, sans-serif; color: #2D1F26; margin: 0; padding: 30px; max-width: 700px; }
+                            h1 { font-size: 22px; margin: 0 0 4px; }
+                            .cat { color: #E85A8C; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+                            .desc { color: #6B5D64; font-size: 13px; margin: 8px 0 20px; }
+                            .section { margin: 18px 0; }
+                            .section h2 { font-size: 13px; text-transform: uppercase; color: #6B5D64; margin: 0 0 8px; letter-spacing: 0.05em; }
+                            .row { display: flex; padding: 6px 0; border-bottom: 1px solid #F0EBED; font-size: 13px; }
+                            .row strong { min-width: 180px; }
+                            .price { font-size: 24px; color: #E85A8C; font-weight: 900; }
+                            .foot { margin-top: 30px; font-size: 10px; color: #9A8B93; text-align: center; padding-top: 12px; border-top: 1px solid #F0EBED; }
+                            img.hero { width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 16px; }
+                          </style></head><body>
+                            ${p.imagem_url ? `<img class="hero" src="${p.imagem_url.split(",")[0]}" />` : ""}
+                            <div class="cat">${p.categoria || ""}</div>
+                            <h1>${p.nome}</h1>
+                            ${p.descricao ? `<p class="desc">${p.descricao}</p>` : ""}
+                            <div class="price">R$ ${formatPreco(p.preco_normal)}</div>
+                            <div class="section">
+                              <h2>Informações</h2>
+                              <div class="row"><strong>Forma de venda</strong><span>${FORMAS_VENDA.find(f => f.value === p.forma_venda)?.label || "-"}</span></div>
+                              <div class="row"><strong>Status</strong><span>${p.disponivel !== false ? "Ativo" : "Inativo"}</span></div>
+                              ${p.created_at ? `<div class="row"><strong>Cadastrado em</strong><span>${new Date(p.created_at).toLocaleDateString("pt-BR")}</span></div>` : ""}
+                            </div>
+                            ${(p.recheios_disponiveis || []).length > 0 || (p.tamanhos_disponiveis || []).length > 0 ? `
+                              <div class="section">
+                                <h2>Variações</h2>
+                                ${(p.recheios_disponiveis || []).length > 0 ? `<div class="row"><strong>Sabores</strong><span>${p.recheios_disponiveis!.join(", ")}</span></div>` : ""}
+                                ${(p.tamanhos_disponiveis || []).length > 0 ? `<div class="row"><strong>Tamanhos</strong><span>${p.tamanhos_disponiveis!.map(t => t.label).join(", ")}</span></div>` : ""}
+                              </div>
+                            ` : ""}
+                            <div class="foot">Gerado por Doonly · ${new Date().toLocaleDateString("pt-BR")}</div>
+                            <script>window.onload = () => setTimeout(() => window.print(), 500);</script>
+                          </body></html>`;
+                          const w = window.open("", "_blank");
+                          if (w) { w.document.write(html); w.document.close(); }
+                        }}
+                      >
+                        <span className="prod-preview-menu-ico">📄</span>
+                        <span>
+                          <div className="prod-preview-menu-title">Ficha técnica (PDF)</div>
+                          <div className="prod-preview-menu-sub">Detalhes em uma folha</div>
+                        </span>
+                      </button>
+                      <button
+                        className="prod-preview-menu-item"
+                        onClick={() => {
+                          setPreviewMenu(false);
+                          const clone = { ...previewProduto };
+                          delete clone.id;
+                          clone.nome = `${clone.nome} (cópia)`;
+                          setForm({ ...EMPTY, ...clone });
+                          setPreviewProduto(null);
+                          setWizardStep(2);
+                          setModal(true);
+                        }}
+                      >
+                        <span className="prod-preview-menu-ico" style={{color: "#3B82F6"}}>📋</span>
+                        <span>
+                          <div className="prod-preview-menu-title">Duplicar</div>
+                          <div className="prod-preview-menu-sub">Criar uma cópia deste produto</div>
+                        </span>
+                      </button>
+                      <button
+                        className="prod-preview-menu-item"
+                        onClick={async () => {
+                          setPreviewMenu(false);
+                          const url = `${window.location.origin}/c/${userId}`;
+                          try { await navigator.clipboard.writeText(url); alert("Link do cardápio copiado!"); }
+                          catch { alert(url); }
+                        }}
+                      >
+                        <span className="prod-preview-menu-ico" style={{color: "#059669"}}>🔗</span>
+                        <span>
+                          <div className="prod-preview-menu-title">Compartilhar link</div>
+                          <div className="prod-preview-menu-sub">Copia o link do cardápio</div>
+                        </span>
+                      </button>
+                      <button
+                        className="prod-preview-menu-item"
+                        onClick={async () => {
+                          setPreviewMenu(false);
+                          const novoDisponivel = !(previewProduto.disponivel !== false);
+                          await supabase.from("produtos").update({ disponivel: novoDisponivel }).eq("id", previewProduto.id!);
+                          await loadProdutos(userId);
+                          setPreviewProduto({ ...previewProduto, disponivel: novoDisponivel });
+                        }}
+                      >
+                        <span className="prod-preview-menu-ico" style={{color: "#F59E0B"}}>📦</span>
+                        <span>
+                          <div className="prod-preview-menu-title">
+                            {previewProduto.disponivel !== false ? "Arquivar" : "Reativar"}
+                          </div>
+                          <div className="prod-preview-menu-sub">
+                            {previewProduto.disponivel !== false ? "Ocultar do cardápio" : "Voltar a exibir no cardápio"}
+                          </div>
+                        </span>
+                      </button>
+                      <div className="prod-preview-menu-divider"></div>
+                      <button
+                        className="prod-preview-menu-item prod-preview-menu-item--del"
+                        onClick={() => { setPreviewMenu(false); setPreviewProduto(null); setDeleteConfirm(previewProduto.id!); }}
+                      >
+                        <span className="prod-preview-menu-ico">🗑</span>
+                        <span>
+                          <div className="prod-preview-menu-title">Excluir</div>
+                          <div className="prod-preview-menu-sub">Remove permanentemente</div>
+                        </span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -3886,6 +3987,65 @@ export default function Produtos() {
           justify-content: center;
         }
         .prod-preview-btn-del:hover { background: #FECACA; }
+
+        /* Menu dropdown ⋯ */
+        .prod-preview-menu-wrap { position: relative; }
+        .prod-preview-menu {
+          position: absolute;
+          bottom: calc(100% + 8px);
+          right: 0;
+          background: #fff;
+          border-radius: 12px;
+          box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+          padding: 6px;
+          min-width: 260px;
+          z-index: 20;
+          animation: prodMenuIn 0.14s ease;
+        }
+        @keyframes prodMenuIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .prod-preview-menu-item {
+          all: unset;
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          padding: 10px 12px;
+          border-radius: 8px;
+          cursor: pointer;
+          width: 100%;
+          box-sizing: border-box;
+          transition: background 0.1s;
+        }
+        .prod-preview-menu-item:hover { background: #FAF8F5; }
+        .prod-preview-menu-item--del:hover { background: #FEE2E2; }
+        .prod-preview-menu-item--del .prod-preview-menu-title { color: #DC2626; }
+        .prod-preview-menu-ico {
+          font-size: 16px;
+          line-height: 1;
+          margin-top: 2px;
+          flex-shrink: 0;
+        }
+        .prod-preview-menu-title {
+          font-size: 13px;
+          font-weight: 800;
+          color: #2D1F26;
+          font-family: inherit;
+          line-height: 1.2;
+        }
+        .prod-preview-menu-sub {
+          font-size: 11px;
+          color: #6B5D64;
+          font-family: inherit;
+          margin-top: 2px;
+          line-height: 1.3;
+        }
+        .prod-preview-menu-divider {
+          height: 1px;
+          background: #F0EBED;
+          margin: 4px 8px;
+        }
 
         /* ── Modal de Produto ── */
         .prod-modal-overlay {
