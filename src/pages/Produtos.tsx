@@ -3364,9 +3364,10 @@ export default function Produtos() {
         .prod-modal-body {
           padding: 8px 32px 24px !important;
           gap: 22px !important;
+          min-height: 440px !important;
         }
         @media (max-width: 640px) {
-          .prod-modal-body { padding: 8px 16px 20px !important; }
+          .prod-modal-body { padding: 8px 16px 20px !important; min-height: 0 !important; }
         }
         /* Divisores entre seções */
         .prod-section + .prod-section {
@@ -4378,13 +4379,11 @@ export default function Produtos() {
         .prod-modal--novo {
           border-radius: 18px !important;
           max-width: 780px !important;
-          min-height: 620px !important;
         }
         @media (max-width: 640px) {
           .prod-modal--novo {
             border-radius: 14px !important;
             max-width: 100% !important;
-            min-height: 0 !important;
           }
         }
 
