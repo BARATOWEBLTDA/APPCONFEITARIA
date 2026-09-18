@@ -4227,6 +4227,7 @@ export default function Produtos() {
           flex-direction: column;
           font-family: var(--font-base);
           border-radius: inherit;
+          position: relative;
         }
 
         /* X escuro discreto no canto */
