@@ -390,7 +390,7 @@ export default function Categorias() {
       <style>{`
         @keyframes catspin { to { transform:rotate(360deg); } }
         @keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
-        .cat-root { font-family:'Geist', sans-serif; max-width:900px; display:flex; flex-direction:column; gap:1rem; }
+        .cat-root { font-family:'Geist', sans-serif; max-width:900px; margin: 0 auto; padding-top: 20px; display:flex; flex-direction:column; gap:1rem; }
         .cat-spinner { width:32px; height:32px; border:3px solid var(--primary-light); border-top-color:var(--primary); border-radius:50%; animation:catspin 0.7s linear infinite; display:inline-block; }
         .cat-spinner-sm { width:18px; height:18px; border:2px solid rgba(255,111,169,0.3); border-top-color:var(--primary); border-radius:50%; animation:catspin 0.7s linear infinite; display:inline-block; }
         .cat-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
@@ -483,7 +483,14 @@ export default function Categorias() {
         }
 
         /* ── LISTA VIEW ──────────────────────────────────── */
-        .cat-list { display:flex; flex-direction:column; gap:8px; }
+        .cat-list {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+        }
+        @media (max-width: 640px) {
+          .cat-list { grid-template-columns: 1fr; }
+        }
         .cat-list-item {
           background: #fff;
           border-radius: 12px;
