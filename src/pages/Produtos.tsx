@@ -2771,11 +2771,11 @@ export default function Produtos() {
                     {(() => {
                       if (!previewProduto.created_at) return "—";
                       const dias = Math.floor((Date.now() - new Date(previewProduto.created_at).getTime()) / (86400000));
-                      if (dias === 0) return "hoje";
-                      if (dias === 1) return "ontem";
-                      if (dias < 30) return `há ${dias} dias`;
+                      if (dias === 0) return "Hoje";
+                      if (dias === 1) return "Ontem";
+                      if (dias < 30) return `Há ${dias} dias`;
                       const meses = Math.floor(dias / 30);
-                      if (meses < 12) return `há ${meses} ${meses === 1 ? "mês" : "meses"}`;
+                      if (meses < 12) return `Há ${meses} ${meses === 1 ? "mês" : "meses"}`;
                       return new Date(previewProduto.created_at).toLocaleDateString("pt-BR");
                     })()}
                   </div>
