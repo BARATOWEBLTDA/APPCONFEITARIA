@@ -1034,17 +1034,8 @@ export default function Produtos() {
 
                 {/* 3. Descrição — com CTA IA (V3) */}
                 <div className="prod-field">
-                  <label className="prod-field-label-novo">Descrição</label>
-                  <div className="prod-desc-wrap">
-                    <textarea
-                      id="prod-desc-input"
-                      placeholder="Fale sobre o produto..."
-                      value={form.descricao === "Gerando..." ? "" : form.descricao}
-                      onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
-                      rows={4}
-                      disabled={form.descricao === "Gerando..."}
-                      style={{fontFamily: 'inherit', resize: 'vertical', paddingTop: '42px'}}
-                    />
+                  <div className="prod-desc-header">
+                    <label className="prod-field-label-novo">Descrição</label>
                     <button
                       type="button"
                       className={`prod-btn-ia-novo ${!form.nome.trim() || !isPro ? "prod-btn-ia-novo--locked" : ""}`}
@@ -1071,6 +1062,15 @@ export default function Produtos() {
                       {form.descricao === "Gerando..." ? "Gerando..." : "Gerar com IA"}
                     </button>
                   </div>
+                  <textarea
+                    id="prod-desc-input"
+                    placeholder="Fale sobre o produto..."
+                    value={form.descricao === "Gerando..." ? "" : form.descricao}
+                    onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
+                    rows={4}
+                    disabled={form.descricao === "Gerando..."}
+                    style={{fontFamily: 'inherit', resize: 'vertical'}}
+                  />
                   {!form.nome.trim() && (
                     <p className="prod-desc-ia-hint">💡 Preencha o nome do produto pra IA gerar</p>
                   )}
@@ -4536,21 +4536,24 @@ export default function Produtos() {
           line-height: 1;
         }
 
-        /* ═══ Wrap da descrição (pra ancorar botão IA absoluto) ═══ */
-        .prod-desc-wrap {
-          position: relative;
+        /* ═══ Header da descrição (label + botão IA colados) ═══ */
+        .prod-desc-header {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-bottom: 6px;
+        }
+        .prod-desc-header .prod-field-label-novo {
+          margin-bottom: 0 !important;
         }
 
-        /* ═══ Botão Gerar com IA — preto, border discreta ═══ */
+        /* ═══ Botão Gerar com IA — preto discreto ═══ */
         .prod-btn-ia-novo {
           all: unset;
-          position: absolute;
-          top: 8px;
-          right: 8px;
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 6px 12px 6px 10px;
+          padding: 5px 10px;
           background: #1A1A1A;
           color: #fff;
           font-family: var(--font-base) !important;
@@ -4561,7 +4564,6 @@ export default function Produtos() {
           box-shadow: 0 2px 6px rgba(0,0,0,0.2);
           transition: transform 0.08s, box-shadow 0.12s, filter 0.12s;
           white-space: nowrap;
-          z-index: 2;
         }
         .prod-btn-ia-novo:hover:not(:disabled) {
           transform: translateY(-1px);
@@ -4577,8 +4579,8 @@ export default function Produtos() {
           cursor: not-allowed !important;
         }
         .prod-btn-ia-novo-crown {
-          width: 16px;
-          height: 16px;
+          width: 15px;
+          height: 15px;
           object-fit: contain;
           filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
         }
