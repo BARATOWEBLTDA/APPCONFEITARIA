@@ -2207,7 +2207,6 @@ export default function Produtos() {
               )}
 
               {/* Personalização */}
-              {(form.id || wizardOpts.personalizacao) && (
               <div className="prod-section">
                 <p className="prod-section-label">Personalização</p>
                 <Toggle label="Permitir personalização" value={form.permite_personalizacao || false} onChange={(v: boolean) => setForm(f => ({ ...f, permite_personalizacao: v }))} colorClass="active-pink" />
@@ -2249,7 +2248,6 @@ export default function Produtos() {
                   </>
                 )}
               </div>
-              )}
 
             </div>
             )}
@@ -2259,7 +2257,6 @@ export default function Produtos() {
             <div className="prod-modal-body">
 
               {/* Adicionais */}
-              {(form.id || wizardOpts.complementos) && (
               <div className="prod-section">
                 <p className="prod-section-label prod-section-label--novo">Extras pagos</p>
                 <Toggle label="Oferecer extras" value={form.tem_adicionais || false} onChange={(v: boolean) => setForm(f => ({ ...f, tem_adicionais: v }))} colorClass="active-pink" />
@@ -2359,7 +2356,6 @@ export default function Produtos() {
                   </>
                 )}
               </div>
-              )}
 
               {/* Promoção */}
               <div className="prod-section">
