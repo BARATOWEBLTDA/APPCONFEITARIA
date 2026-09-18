@@ -1388,7 +1388,7 @@ export default function Produtos() {
 
             {/* ══════ WIZARD STEP 2 (FORMULÁRIO) ══════ */}
             {/* ══════ WIZARD STEP 2 — IDENTIDADE (nome, categoria, descrição) ══════ */}
-            {wizardStep === 2 && (
+            {(wizardStep === 2 || form.id) && (
             <div className="prod-modal-body">
               <div className="prod-section">
                 {/* 1. Nome */}
@@ -1508,7 +1508,7 @@ export default function Produtos() {
 
             {/* ══════ WIZARD STEP 3 — VISUAL E PREÇO (fotos, preço, variações) ══════ */}
             {/* ══════ WIZARD STEP 3 (VARIAÇÕES) — SABORES E TAMANHOS ══════ */}
-            {wizardStep === 3 && wizardTipo === "variacoes" && (
+            {((wizardStep === 3 && wizardTipo === "variacoes") || (form.id && wizardTipo === "variacoes")) && (
               <SaboresTamanhosStep
                 subtipo={wizardSubtipo}
                 onSubtipoChange={(novo) => {
@@ -1538,7 +1538,7 @@ export default function Produtos() {
 
             {/* ══════ WIZARD STEP 3 (SIMPLES) — VISUAL E PREÇO ══════ */}
             {/* Ou STEP 4 quando variações (visual + preço só de fotos) */}
-            {((wizardStep === 3 && wizardTipo === "simples") || (wizardStep === 4 && wizardTipo === "variacoes")) && (
+            {((wizardStep === 3 && wizardTipo === "simples") || (wizardStep === 4 && wizardTipo === "variacoes") || form.id) && (
             <div className="prod-modal-body">
 
               {/* Foto */}
@@ -2209,7 +2209,7 @@ export default function Produtos() {
             )}
 
             {/* ══════ WIZARD STEP 4 — EXTRAS E CONFIGURAÇÕES ══════ */}
-            {((wizardStep === 4 && wizardTipo === "simples") || (wizardStep === 5 && wizardTipo === "variacoes")) && (
+            {((wizardStep === 4 && wizardTipo === "simples") || (wizardStep === 5 && wizardTipo === "variacoes") || form.id) && (
             <div className="prod-modal-body">
 
               {/* Adicionais */}
@@ -6371,7 +6371,8 @@ export default function Produtos() {
           }
         }
 
-
+        .prod-discard-ov {
+          position: fixed; inset: 0; z-index: 2500;
           background: rgba(45, 31, 38, 0.75);
           backdrop-filter: blur(8px);
           display: flex; align-items: center; justify-content: center;
