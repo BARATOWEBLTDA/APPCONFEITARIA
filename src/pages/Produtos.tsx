@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { gerarFichaProduto } from "@/lib/gerarFichaProduto";
 import { usePlano } from "@/hooks/usePlano";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import EmptyDoo from "@/components/EmptyDoo";
@@ -2854,47 +2855,14 @@ export default function Produtos() {
                     <div className="prod-preview-menu" onClick={e => e.stopPropagation()}>
                       <button
                         className="prod-preview-menu-item"
-                        onClick={() => {
+                        onClick={async () => {
                           setPreviewMenu(false);
-                          // Ficha técnica PDF — abre em nova aba, user imprime/salva
-                          const p = previewProduto;
-                          const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Ficha Técnica — ${p.nome}</title><style>
-                            @page { size: A4; margin: 20mm; }
-                            body { font-family: -apple-system, sans-serif; color: #2D1F26; margin: 0; padding: 30px; max-width: 700px; }
-                            h1 { font-size: 22px; margin: 0 0 4px; }
-                            .cat { color: #E85A8C; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-                            .desc { color: #6B5D64; font-size: 13px; margin: 8px 0 20px; }
-                            .section { margin: 18px 0; }
-                            .section h2 { font-size: 13px; text-transform: uppercase; color: #6B5D64; margin: 0 0 8px; letter-spacing: 0.05em; }
-                            .row { display: flex; padding: 6px 0; border-bottom: 1px solid #F0EBED; font-size: 13px; }
-                            .row strong { min-width: 180px; }
-                            .price { font-size: 24px; color: #E85A8C; font-weight: 900; }
-                            .foot { margin-top: 30px; font-size: 10px; color: #9A8B93; text-align: center; padding-top: 12px; border-top: 1px solid #F0EBED; }
-                            img.hero { width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 16px; }
-                          </style></head><body>
-                            ${p.imagem_url ? `<img class="hero" src="${p.imagem_url.split(",")[0]}" />` : ""}
-                            <div class="cat">${p.categoria || ""}</div>
-                            <h1>${p.nome}</h1>
-                            ${p.descricao ? `<p class="desc">${p.descricao}</p>` : ""}
-                            <div class="price">R$ ${formatPreco(p.preco_normal)}</div>
-                            <div class="section">
-                              <h2>Informações</h2>
-                              <div class="row"><strong>Forma de venda</strong><span>${FORMAS_VENDA.find(f => f.value === p.forma_venda)?.label || "-"}</span></div>
-                              <div class="row"><strong>Status</strong><span>${p.disponivel !== false ? "Ativo" : "Inativo"}</span></div>
-                              ${p.created_at ? `<div class="row"><strong>Cadastrado em</strong><span>${new Date(p.created_at).toLocaleDateString("pt-BR")}</span></div>` : ""}
-                            </div>
-                            ${(p.recheios_disponiveis || []).length > 0 || (p.tamanhos_disponiveis || []).length > 0 ? `
-                              <div class="section">
-                                <h2>Variações</h2>
-                                ${(p.recheios_disponiveis || []).length > 0 ? `<div class="row"><strong>Sabores</strong><span>${p.recheios_disponiveis!.join(", ")}</span></div>` : ""}
-                                ${(p.tamanhos_disponiveis || []).length > 0 ? `<div class="row"><strong>Tamanhos</strong><span>${p.tamanhos_disponiveis!.map(t => t.label).join(", ")}</span></div>` : ""}
-                              </div>
-                            ` : ""}
-                            <div class="foot">Gerado por Doonly · ${new Date().toLocaleDateString("pt-BR")}</div>
-                            <script>window.onload = () => setTimeout(() => window.print(), 500);</script>
-                          </body></html>`;
-                          const w = window.open("", "_blank");
-                          if (w) { w.document.write(html); w.document.close(); }
+                          try {
+                            await gerarFichaProduto(previewProduto, userId);
+                          } catch (err) {
+                            console.error("Erro ao gerar PDF:", err);
+                            alert("Não foi possível gerar o PDF. Tente novamente.");
+                          }
                         }}
                       >
                         <span className="prod-preview-menu-ico">
@@ -2902,7 +2870,7 @@ export default function Produtos() {
                         </span>
                         <span>
                           <div className="prod-preview-menu-title">Ficha técnica (PDF)</div>
-                          <div className="prod-preview-menu-sub">Detalhes em uma folha</div>
+                          <div className="prod-preview-menu-sub">Baixa o PDF completo do produto</div>
                         </span>
                       </button>
                       <button
