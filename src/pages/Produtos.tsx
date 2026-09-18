@@ -1647,9 +1647,12 @@ export default function Produtos() {
 
                     {!isPro ? (
                       <div className="prod-var-fotos-lock">
-                        <div className="prod-slot-lock-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B5D64" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+                        <img src="/log.png" alt="Doonly" className="prod-var-fotos-lock-logo" />
                         <div>
-                          <div style={{fontSize: 13, fontWeight: 800, color: "#2D1F26"}}>Recurso PRO <img src="/coroa.png" alt="" style={{width: 12, height: 12, verticalAlign: "middle", marginLeft: 4}} /></div>
+                          <div style={{fontSize: 13, fontWeight: 800, color: "#2D1F26", display: "inline-flex", alignItems: "center", gap: 6}}>
+                            Recurso PRO
+                            <img src="/coroa.png" alt="" style={{width: 14, height: 14, objectFit: "contain"}} />
+                          </div>
                           <div style={{fontSize: 12, color: "#6B5D64", marginTop: 2}}>Fotos personalizadas por variação — venda muito mais com fotos que valorizam cada opção.</div>
                         </div>
                       </div>
@@ -5872,6 +5875,12 @@ export default function Produtos() {
           background: #FAF8F5;
           border: 1.5px dashed #E5D8DE;
           border-radius: 12px;
+        }
+        .prod-var-fotos-lock-logo {
+          width: 44px;
+          height: 44px;
+          object-fit: contain;
+          flex-shrink: 0;
         }
         .prod-var-fotos-lista {
           display: flex;
