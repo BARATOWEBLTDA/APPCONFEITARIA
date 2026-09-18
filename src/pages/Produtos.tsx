@@ -125,6 +125,10 @@ interface SaboresTamanhosStepProps {
 function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChange, tamanhos, onTamanhosChange, precos, onPrecosChange }: SaboresTamanhosStepProps) {
   const [novoSabor, setNovoSabor] = useState("");
   const [novoTamanho, setNovoTamanho] = useState("");
+  // Modo lista automático quando combinações > 12
+  const [listaModeManual, setListaModeManual] = useState<boolean | null>(null);
+  const listaMode = listaModeManual !== null ? listaModeManual : (sabores.length * tamanhos.length > 12);
+  const setListaMode = (v: boolean) => setListaModeManual(v);
 
   const addSabor = () => {
     const s = novoSabor.trim();
@@ -265,44 +269,110 @@ function SaboresTamanhosStep({ subtipo, onSubtipoChange, sabores, onSaboresChang
       {/* GRID de preços — Sabores × Tamanhos */}
       {mostraGrid && (
         <div className="st-secao">
-          <div className="st-secao-title" style={{marginBottom: 10}}>💰 Preços por combinação</div>
-          <div className="st-grid-wrap">
-            <table className="st-grid">
-              <thead>
-                <tr>
-                  <th className="st-grid-corner">Sabor</th>
-                  {tamanhos.map((t, i) => <th key={i}>{t.label}</th>)}
-                </tr>
-              </thead>
-              <tbody>
-                {sabores.map((s, i) => (
-                  <tr key={i}>
-                    <td className="st-grid-sabor">{s}</td>
-                    {tamanhos.map((t, j) => {
-                      const key = `${s}|${t.label}`;
-                      const val = precos[key] || 0;
-                      return (
-                        <td key={j}>
-                          <div className="st-grid-cell">
-                            <span className="st-grid-rs">R$</span>
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={val || ""}
-                              placeholder="0,00"
-                              onChange={e => setPrecoCombo(s, t.label, parseFloat(e.target.value) || 0)}
-                              className="st-grid-input"
-                            />
-                          </div>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="st-precos-header">
+            <div className="st-secao-title" style={{marginBottom: 0}}>💰 Preços por combinação</div>
+            <div className="st-precos-toggle">
+              <button
+                type="button"
+                className={`st-precos-toggle-btn ${!listaMode ? "st-precos-toggle-btn--ativo" : ""}`}
+                onClick={() => setListaMode(false)}
+                aria-label="Ver como grade"
+                title="Grade"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                  <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+                </svg>
+              </button>
+              <button
+                type="button"
+                className={`st-precos-toggle-btn ${listaMode ? "st-precos-toggle-btn--ativo" : ""}`}
+                onClick={() => setListaMode(true)}
+                aria-label="Ver como lista"
+                title="Lista"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+                  <circle cx="4" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.2" fill="currentColor" stroke="none"/>
+                </svg>
+              </button>
+            </div>
           </div>
+          {sabores.length * tamanhos.length > 12 && !listaMode && (
+            <div className="st-precos-tip">💡 Muitas combinações — modo lista é mais fácil de preencher</div>
+          )}
+
+          {listaMode ? (
+            /* MODO LISTA — 1 linha por combinação */
+            <div className="st-combo-lista">
+              {sabores.map((s) => (
+                tamanhos.map((t) => {
+                  const key = `${s}|${t.label}`;
+                  const val = precos[key] || 0;
+                  return (
+                    <div key={key} className="st-combo-row">
+                      <div className="st-combo-labels">
+                        <span className="st-combo-sabor">{s}</span>
+                        <span className="st-combo-sep">×</span>
+                        <span className="st-combo-tam">{t.label}</span>
+                      </div>
+                      <div className="st-preco-input-wrap">
+                        <span className="st-grid-rs">R$</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={val || ""}
+                          placeholder="0,00"
+                          onChange={e => setPrecoCombo(s, t.label, parseFloat(e.target.value) || 0)}
+                          className="st-preco-input"
+                        />
+                      </div>
+                    </div>
+                  );
+                })
+              )).flat()}
+            </div>
+          ) : (
+            /* MODO GRID — tabela */
+            <div className="st-grid-wrap">
+              <table className="st-grid">
+                <thead>
+                  <tr>
+                    <th className="st-grid-corner">Sabor</th>
+                    {tamanhos.map((t, i) => <th key={i}>{t.label}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sabores.map((s, i) => (
+                    <tr key={i}>
+                      <td className="st-grid-sabor">{s}</td>
+                      {tamanhos.map((t, j) => {
+                        const key = `${s}|${t.label}`;
+                        const val = precos[key] || 0;
+                        return (
+                          <td key={j}>
+                            <div className="st-grid-cell">
+                              <span className="st-grid-rs">R$</span>
+                              <input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={val || ""}
+                                placeholder="0,00"
+                                onChange={e => setPrecoCombo(s, t.label, parseFloat(e.target.value) || 0)}
+                                className="st-grid-input"
+                              />
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
@@ -5478,6 +5548,90 @@ export default function Produtos() {
           font-size: 12.5px;
           font-weight: 600;
           margin-bottom: 14px;
+        }
+
+        /* ═══ Header preços com toggle grid/lista ═══ */
+        .st-precos-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 10px;
+        }
+        .st-precos-toggle {
+          display: inline-flex;
+          background: #F5F1F3;
+          border-radius: 8px;
+          padding: 2px;
+          gap: 2px;
+        }
+        .st-precos-toggle-btn {
+          all: unset;
+          cursor: pointer;
+          width: 30px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 6px;
+          color: #9A8B93;
+          transition: background 0.12s, color 0.12s;
+        }
+        .st-precos-toggle-btn:hover { color: #6B5D64; }
+        .st-precos-toggle-btn--ativo {
+          background: #fff;
+          color: #E85A8C;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .st-precos-tip {
+          font-size: 11px;
+          color: #78350F;
+          background: #FEF9C3;
+          border: 1px solid #FEF08A;
+          border-radius: 6px;
+          padding: 6px 10px;
+          margin-bottom: 10px;
+        }
+
+        /* ═══ Modo lista de combinações ═══ */
+        .st-combo-lista {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .st-combo-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 10px 12px;
+          background: #FAF8F5;
+          border: 1px solid #F0EBED;
+          border-radius: 8px;
+        }
+        .st-combo-labels {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          min-width: 0;
+        }
+        .st-combo-sabor {
+          font-size: 13px;
+          font-weight: 700;
+          color: #2D1F26;
+        }
+        .st-combo-sep {
+          font-size: 12px;
+          color: #B4A9AE;
+          font-weight: 600;
+        }
+        .st-combo-tam {
+          font-size: 12.5px;
+          font-weight: 600;
+          color: #6B5D64;
+          padding: 2px 8px;
+          background: #F0EBED;
+          border-radius: 6px;
         }
 
         /* ═══ Modal aviso troca subtipo ═══ */
