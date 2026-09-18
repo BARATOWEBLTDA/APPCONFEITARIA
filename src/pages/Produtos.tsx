@@ -5902,17 +5902,17 @@ export default function Produtos() {
         /* Cards */
         .wiz-step1-cards {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 10px;
           padding: 0 24px 8px;
-          max-width: 480px;
+          max-width: 640px;
           margin: 0 auto;
           width: 100%;
           box-sizing: border-box;
         }
         .wiz-step1-card {
           all: unset;
-          padding: 28px 14px;
+          padding: 22px 10px;
           border-radius: 16px;
           text-align: center;
           box-sizing: border-box;
@@ -6106,16 +6106,16 @@ export default function Produtos() {
           .wiz-step1-hero { padding: 24px 16px 16px; }
           .wiz-step1-title { font-size: 20px; }
           .wiz-step1-sub { font-size: 13px; }
-          .wiz-step1-cards { padding: 0 16px 8px; gap: 10px; }
+          .wiz-step1-cards { padding: 0 16px 8px; gap: 8px; }
           .wiz-step1-card {
-            padding: 22px 10px;
-            min-height: 190px;
-            border-radius: 14px;
-            gap: 10px;
+            padding: 16px 6px;
+            min-height: 170px;
+            border-radius: 12px;
+            gap: 8px;
           }
-          .wiz-step1-card-icon { width: 52px; height: 52px; }
-          .wiz-step1-card-title { font-size: 14px; }
-          .wiz-step1-card-desc { font-size: 11.5px; }
+          .wiz-step1-card-icon { width: 42px; height: 42px; }
+          .wiz-step1-card-title { font-size: 12.5px; }
+          .wiz-step1-card-desc { font-size: 10.5px; }
         }
 
 
