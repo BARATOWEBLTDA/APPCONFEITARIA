@@ -1332,6 +1332,7 @@ export default function Produtos() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [previewProduto, setPreviewProduto] = useState<Produto | null>(null);
   const [previewMenu, setPreviewMenu] = useState(false);
+  const [showProIaModal, setShowProIaModal] = useState(false);
   const [novaOpcao, setNovaOpcao] = useState<{ massa: string; recheio: string; cobertura: string }>({ massa: "", recheio: "", cobertura: "" });
   const [novoTamanho, setNovoTamanho] = useState({ label: "", preco: "" });
   const [novoKitItem, setNovoKitItem] = useState({ nome: "", quantidade: "" });
@@ -2123,12 +2124,13 @@ export default function Produtos() {
                 </button>
               ) : <div style={{width: 36}} />}
               <div className="prod-modal-title-wrap">
-                {!form.id && <div className="prod-modal-eyebrow">Passo {wizardStep - 1} de 3</div>}
+                {!form.id && <div className="prod-modal-eyebrow">Passo {wizardStep - 1} de 4</div>}
                 <div className="prod-modal-title-novo">
                   {form.id ? "Editar produto" : (() => {
                     if (wizardStep === 2) return "Informações do produto";
                     if (wizardStep === 3) return "Opções do produto";
-                    if (wizardStep === 4) return "Fotos e finalização";
+                    if (wizardStep === 4) return "Preço e venda";
+                    if (wizardStep === 5) return "Fotos e finalização";
                     return "";
                   })()}
                 </div>
@@ -2145,7 +2147,7 @@ export default function Produtos() {
               <div className="prod-progresso-bar-wrap">
                 <div
                   className="prod-progresso-bar-fill"
-                  style={{ width: `${((wizardStep - 1) / 3) * 100}%` }}
+                  style={{ width: `${((wizardStep - 1) / 4) * 100}%` }}
                 />
               </div>
             )}
@@ -2410,12 +2412,25 @@ export default function Produtos() {
                     placeholder="Fale sobre o produto..."
                     value={form.descricao === "Gerando..." ? "" : form.descricao}
                     onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
-                    rows={4}
+                    rows={3}
                     disabled={form.descricao === "Gerando..."}
                     style={{fontFamily: 'inherit', resize: 'vertical'}}
                   />
-                  {!form.nome.trim() && (
-                    <p className="prod-desc-ia-hint">💡 Preencha o nome do produto pra IA gerar</p>
+                  {!isPro && (
+                    <div className="prod-cta-pro-ia">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E85A8C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.75V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.25A7 7 0 0 0 12 2z"/></svg>
+                      <span className="prod-cta-pro-ia-txt">
+                        Com o <b>Doonly PRO</b>, você gera descrições que vendem com <b>IA em 1 clique</b>
+                      </span>
+                      <button
+                        type="button"
+                        className="prod-cta-pro-ia-info"
+                        onClick={() => setShowProIaModal(true)}
+                        aria-label="Saiba mais"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -2442,10 +2457,12 @@ export default function Produtos() {
 
             {/* ══════ WIZARD STEP 3 (SIMPLES) — VISUAL E PREÇO ══════ */}
             {/* Ou STEP 4 quando variações (visual + preço só de fotos) */}
-            {((wizardStep === 4 && !form.id) || (form.id && editTab === "fotos")) && (
+            {(((wizardStep === 4 || wizardStep === 5) && !form.id) || (form.id && editTab === "fotos")) && (
             <div className="prod-modal-body">
 
-              {/* Foto */}
+              {/* Foto — só em step 5 (Fotos e finalização) ou edição */}
+              {(wizardStep === 5 || form.id) && (
+              <>
               <div className="prod-section">
                 <p className="prod-section-label prod-section-label--novo">Fotos do Produto</p>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
@@ -2586,9 +2603,11 @@ export default function Produtos() {
                   </div>
                 );
               })()}
+              </>
+              )}
 
-              {/* Preço e Venda — oculto se variações + criação (já foi no step 3) */}
-              {!(wizardTipo === "variacoes" && !form.id) && (
+              {/* Preço e Venda — só em step 4 (Preço e venda) ou edição */}
+              {(wizardStep === 4 || form.id) && !(wizardTipo === "variacoes" && !form.id) && (
               <div className="prod-section">
                 <p className="prod-section-label prod-section-label--novo">Preço e Venda</p>
 
@@ -3215,7 +3234,8 @@ export default function Produtos() {
                 )}
               </div>
 
-              {/* Promoção */}
+              {/* Promoção — só em step 4 (Preço) ou edição */}
+              {(wizardStep === 4 || form.id) && (
               <div className="prod-section">
                 <p className="prod-section-label">Promoção</p>
                 <Toggle label="Produto em promoção" value={form.promocao} onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v }))} colorClass="active-pink" />
@@ -3287,8 +3307,10 @@ export default function Produtos() {
                   </>
                 )}
               </div>
+              )}
 
-              {/* Status */}
+              {/* Status — só em step 5 (Fotos) ou edição */}
+              {(wizardStep === 5 || form.id) && (
               <div className="prod-section">
                 <p className="prod-section-label">Status</p>
                 <div className="prod-toggles" style={{ flexDirection: "column", gap: "0.5rem" }}>
@@ -3296,6 +3318,7 @@ export default function Produtos() {
                   <Toggle label="Pronta entrega" value={form.pronta_entrega !== false} onChange={(v: boolean) => setForm(f => ({ ...f, pronta_entrega: v }))} colorClass="active-green" />
                 </div>
               </div>
+              )}
 
             </div>
             )}
@@ -3795,6 +3818,68 @@ export default function Produtos() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Modal empty-state PRO (IA descrições) ═══ */}
+      {showProIaModal && (
+        <div className="prod-pro-modal-ov" onClick={() => setShowProIaModal(false)}>
+          <div className="prod-pro-modal" onClick={e => e.stopPropagation()}>
+            <button className="prod-pro-modal-close" onClick={() => setShowProIaModal(false)} aria-label="Fechar">✕</button>
+            <img src="/log.png" alt="Doonly" className="prod-pro-modal-logo" />
+            <div className="prod-pro-modal-eyebrow">
+              <img src="/coroa.png" alt="" style={{width: 14, height: 14, objectFit: "contain"}} />
+              Doonly PRO
+            </div>
+            <div className="prod-pro-modal-title">Descrições que vendem, feitas em 1 clique</div>
+            <p className="prod-pro-modal-sub">
+              A IA do Doonly cria descrições profissionais pros seus produtos automaticamente, no tom certo pra confeitaria.
+            </p>
+            <div className="prod-pro-modal-beneficios">
+              <div className="prod-pro-modal-item">
+                <span className="prod-pro-modal-item-check">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <div className="prod-pro-modal-item-txt">
+                  <b>Descrições instantâneas</b> — digita o nome, IA gera o resto
+                </div>
+              </div>
+              <div className="prod-pro-modal-item">
+                <span className="prod-pro-modal-item-check">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <div className="prod-pro-modal-item-txt">
+                  <b>Fotos ilimitadas</b> por produto e por variação
+                </div>
+              </div>
+              <div className="prod-pro-modal-item">
+                <span className="prod-pro-modal-item-check">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <div className="prod-pro-modal-item-txt">
+                  <b>Ficha técnica em PDF</b> com custo, margem e ingredientes
+                </div>
+              </div>
+              <div className="prod-pro-modal-item">
+                <span className="prod-pro-modal-item-check">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <div className="prod-pro-modal-item-txt">
+                  <b>Cardápio ilimitado</b> e recursos avançados
+                </div>
+              </div>
+            </div>
+            <button
+              className="prod-pro-modal-cta"
+              onClick={() => { setShowProIaModal(false); navigate("/configuracoes"); }}
+            >
+              <img src="/coroa.png" alt="" style={{width: 16, height: 16, objectFit: "contain"}} />
+              Quero conhecer o PRO
+            </button>
+            <button className="prod-pro-modal-later" onClick={() => setShowProIaModal(false)}>
+              Agora não
+            </button>
           </div>
         </div>
       )}
@@ -6589,6 +6674,173 @@ export default function Produtos() {
           font-style: italic;
         }
 
+        /* CTA PRO IA — banner discreto abaixo da descrição */
+        .prod-cta-pro-ia {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 12px;
+          background: linear-gradient(135deg, #FDF3F7 0%, #FCE0E9 100%);
+          border: 1px solid #FCE0E9;
+          border-radius: 10px;
+          margin-top: 10px;
+        }
+        .prod-cta-pro-ia-txt {
+          flex: 1;
+          font-size: 12.5px;
+          color: #831843;
+          line-height: 1.35;
+        }
+        .prod-cta-pro-ia-txt b { color: #E85A8C; font-weight: 800; }
+        .prod-cta-pro-ia-info {
+          all: unset;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 26px; height: 26px;
+          border-radius: 50%;
+          color: #E85A8C;
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: all 0.15s;
+        }
+        .prod-cta-pro-ia-info:hover {
+          background: #E85A8C;
+          color: #fff;
+        }
+
+        /* Modal empty-state PRO */
+        .prod-pro-modal-ov {
+          position: fixed; inset: 0;
+          background: rgba(0,0,0,0.55);
+          z-index: 3000;
+          display: flex; align-items: center; justify-content: center;
+          padding: 20px;
+          animation: prodProModalFadeIn 0.2s ease;
+        }
+        @keyframes prodProModalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .prod-pro-modal {
+          background: #fff;
+          border-radius: 20px;
+          padding: 32px 28px 24px;
+          max-width: 440px;
+          width: 100%;
+          text-align: center;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+          animation: prodProModalIn 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+          position: relative;
+        }
+        @keyframes prodProModalIn {
+          from { opacity: 0; transform: translateY(20px) scale(0.96); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .prod-pro-modal-close {
+          all: unset;
+          position: absolute;
+          top: 14px; right: 14px;
+          width: 32px; height: 32px;
+          border-radius: 50%;
+          background: #FAF8F5;
+          color: #6B5D64;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          font-size: 16px;
+          font-weight: 700;
+          transition: all 0.15s;
+        }
+        .prod-pro-modal-close:hover { background: #E5D8DE; color: #2D1F26; }
+        .prod-pro-modal-logo {
+          width: 72px; height: 72px;
+          margin: 0 auto 14px;
+          display: block;
+          object-fit: contain;
+          filter: drop-shadow(0 4px 12px rgba(232,90,140,0.25));
+        }
+        .prod-pro-modal-eyebrow {
+          font-size: 11px;
+          font-weight: 900;
+          color: #E85A8C;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          margin-bottom: 4px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          justify-content: center;
+        }
+        .prod-pro-modal-title {
+          font-size: 22px;
+          font-weight: 900;
+          color: #2D1F26;
+          margin: 4px 0 8px;
+          line-height: 1.2;
+        }
+        .prod-pro-modal-sub {
+          font-size: 13.5px;
+          color: #6B5D64;
+          line-height: 1.5;
+          margin: 0 0 20px;
+        }
+        .prod-pro-modal-beneficios {
+          background: #FAF8F5;
+          border-radius: 12px;
+          padding: 16px;
+          margin-bottom: 20px;
+          text-align: left;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .prod-pro-modal-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+        }
+        .prod-pro-modal-item-check {
+          width: 22px; height: 22px;
+          border-radius: 50%;
+          background: #FCE0E9;
+          color: #E85A8C;
+          display: inline-flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .prod-pro-modal-item-txt {
+          font-size: 12.5px;
+          color: #2D1F26;
+          line-height: 1.4;
+        }
+        .prod-pro-modal-item-txt b { color: #831843; }
+        .prod-pro-modal-cta {
+          display: block;
+          width: 100%;
+          padding: 14px;
+          background: #1A1A1A;
+          color: #fff;
+          border: none;
+          border-radius: 12px;
+          font-size: 15px;
+          font-weight: 800;
+          cursor: pointer;
+          font-family: inherit;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          box-sizing: border-box;
+        }
+        .prod-pro-modal-cta:hover { background: #E85A8C; }
+        .prod-pro-modal-later {
+          all: unset;
+          display: block;
+          text-align: center;
+          margin-top: 10px;
+          font-size: 12px;
+          color: #6B5D64;
+          cursor: pointer;
+          padding: 6px;
+          font-family: inherit;
+        }
+        .prod-pro-modal-later:hover { color: #2D1F26; }
         /* ═══ SABORES E TAMANHOS STEP (variações) ═══ */
         .st-hint-topo {
           font-size: 12.5px;
