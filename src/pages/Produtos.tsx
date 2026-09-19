@@ -592,15 +592,61 @@ function PersonalizacaoStep({
 
   const grupos: Array<{
     key: "massas" | "recheios" | "coberturas" | "tamanhos";
-    icone: string;
+    icone: React.ReactNode;
     titulo: string;
     subtitulo: string;
     dados: GrupoPersonalizacao | GrupoTamanhos;
   }> = [
-    { key: "massas",     icone: "🎂", titulo: "Massas",     subtitulo: "Baunilha, chocolate, red velvet...",         dados: grupoMassas },
-    { key: "recheios",   icone: "🍯", titulo: "Recheios",   subtitulo: "Brigadeiro, ninho, doce de leite...",         dados: grupoRecheios },
-    { key: "coberturas", icone: "✨", titulo: "Coberturas", subtitulo: "Chantilly, ganache, pasta americana...",      dados: grupoCoberturas },
-    { key: "tamanhos",   icone: "📏", titulo: "Tamanhos",   subtitulo: "P, M, G — cada um com seu preço",             dados: grupoTamanhos },
+    {
+      key: "massas",
+      icone: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 10h16v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V10z"/>
+          <path d="M4 14h16"/>
+          <path d="M8 10V6a4 4 0 0 1 8 0v4"/>
+        </svg>
+      ),
+      titulo: "Massas",
+      subtitulo: "Baunilha, chocolate, red velvet...",
+      dados: grupoMassas,
+    },
+    {
+      key: "recheios",
+      icone: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+        </svg>
+      ),
+      titulo: "Recheios",
+      subtitulo: "Brigadeiro, ninho, doce de leite...",
+      dados: grupoRecheios,
+    },
+    {
+      key: "coberturas",
+      icone: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5L12 3z"/>
+        </svg>
+      ),
+      titulo: "Coberturas",
+      subtitulo: "Chantilly, ganache, pasta americana...",
+      dados: grupoCoberturas,
+    },
+    {
+      key: "tamanhos",
+      icone: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M2 12h20"/>
+          <path d="M6 8v8"/>
+          <path d="M10 6v12"/>
+          <path d="M14 8v8"/>
+          <path d="M18 10v4"/>
+        </svg>
+      ),
+      titulo: "Tamanhos",
+      subtitulo: "P, M, G — cada um com seu preço",
+      dados: grupoTamanhos,
+    },
   ];
 
   // ── Preview do preço mínimo e máximo ────────────────────────────
@@ -1032,7 +1078,22 @@ function PersonalizacaoStep({
           cursor: pointer;
           font-family: inherit;
         }
-        .pv3-card-ico { font-size: 24px; line-height: 1; }
+        .pv3-card-ico {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          background: #FAF8F5;
+          color: #6B5D64;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          transition: all 0.15s;
+        }
+        .pv3-card--ativo .pv3-card-ico {
+          background: #FCE0E9;
+          color: #E85A8C;
+        }
         .pv3-card-info { flex: 1; }
         .pv3-card-titulo { font-size: 15px; font-weight: 900; color: #2D1F26; }
         .pv3-card-sub { font-size: 12px; color: #6B5D64; margin-top: 2px; }
