@@ -2026,6 +2026,7 @@ export default function Produtos() {
   const [previewProduto, setPreviewProduto] = useState<Produto | null>(null);
   const [previewMenu, setPreviewMenu] = useState(false);
   const [showProIaModal, setShowProIaModal] = useState(false);
+  const [showProFotosModal, setShowProFotosModal] = useState(false);
   const [novaOpcao, setNovaOpcao] = useState<{ massa: string; recheio: string; cobertura: string }>({ massa: "", recheio: "", cobertura: "" });
   const [novoTamanho, setNovoTamanho] = useState({ label: "", preco: "" });
   const [novoKitItem, setNovoKitItem] = useState({ nome: "", quantidade: "" });
@@ -3168,17 +3169,20 @@ export default function Produtos() {
                         {slot === 0 && <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, display: "block", marginBottom: "6px", textAlign: "center" }}>Principal</span>}
                         <div
                           className="prod-img-upload"
+                          onClick={() => {
+                            if (isLocked) { setShowProFotosModal(true); return; }
+                            if (!uploading) ref.current?.click();
+                          }}
                           style={{
                             width: "100%",
                             height: "130px",
                             borderRadius: "14px",
-                            cursor: isLocked ? "default" : "pointer",
+                            cursor: isLocked ? "pointer" : "pointer",
                             position: "relative",
                             overflow: "hidden",
                             background: isLocked ? bgExtra : (slot > 0 ? bgExtra : undefined),
                             border: isLocked ? borderExtra : (slot > 0 ? borderExtra : undefined),
                           }}
-                          onClick={() => !isLocked && !uploading && ref.current?.click()}
                         >
                           {imgUrl ? (
                             <>
@@ -3240,7 +3244,7 @@ export default function Produtos() {
 
                 const toggleFotoPorOpcao = (grupoKey: string, atual: any) => {
                   if (!isPro) {
-                    setShowProIaModal(true);
+                    setShowProFotosModal(true);
                     return;
                   }
                   const key = `grupo_${grupoKey}` as keyof Produto;
@@ -4356,6 +4360,68 @@ export default function Produtos() {
               Quero conhecer o PRO
             </button>
             <button className="prod-pro-modal-later" onClick={() => setShowProIaModal(false)}>
+              Agora não
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ═══ Modal empty-state PRO (Fotos por opção) ═══ */}
+      {showProFotosModal && (
+        <div className="prod-pro-modal-ov" onClick={() => setShowProFotosModal(false)}>
+          <div className="prod-pro-modal" onClick={e => e.stopPropagation()}>
+            <button className="prod-pro-modal-close" onClick={() => setShowProFotosModal(false)} aria-label="Fechar">✕</button>
+            <img src="/log.png" alt="Doonly" className="prod-pro-modal-logo" />
+            <div className="prod-pro-modal-eyebrow">
+              <img src="/coroa.png" alt="" style={{width: 14, height: 14, objectFit: "contain"}} />
+              Doonly PRO
+            </div>
+            <div className="prod-pro-modal-title">Encante o cliente com fotos profissionais</div>
+            <p className="prod-pro-modal-sub">
+              No Doonly PRO, cada opção do seu produto pode ter foto própria. Cliente vê exatamente o que vai receber.
+            </p>
+            <div className="prod-pro-modal-beneficios">
+              <div className="prod-pro-modal-item">
+                <span className="prod-pro-modal-item-check">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <div className="prod-pro-modal-item-txt">
+                  <b>Foto por opção</b> — cada massa, sabor ou tamanho com foto própria
+                </div>
+              </div>
+              <div className="prod-pro-modal-item">
+                <span className="prod-pro-modal-item-check">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <div className="prod-pro-modal-item-txt">
+                  <b>Fotos ilimitadas</b> por produto e por variação
+                </div>
+              </div>
+              <div className="prod-pro-modal-item">
+                <span className="prod-pro-modal-item-check">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <div className="prod-pro-modal-item-txt">
+                  <b>Galeria de fotos</b> — até 5 fotos principais por produto
+                </div>
+              </div>
+              <div className="prod-pro-modal-item">
+                <span className="prod-pro-modal-item-check">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
+                <div className="prod-pro-modal-item-txt">
+                  <b>Vitrine profissional</b> no cardápio digital
+                </div>
+              </div>
+            </div>
+            <button
+              className="prod-pro-modal-cta"
+              onClick={() => { setShowProFotosModal(false); navigate("/configuracoes"); }}
+            >
+              <img src="/coroa.png" alt="" style={{width: 16, height: 16, objectFit: "contain"}} />
+              Quero conhecer o PRO
+            </button>
+            <button className="prod-pro-modal-later" onClick={() => setShowProFotosModal(false)}>
               Agora não
             </button>
           </div>
