@@ -597,11 +597,11 @@ function PersonalizacaoStep({
 
   // Tamanhos
   const addTamanho = (nome: string, preco: number) => {
-    if (!nome.trim() || preco <= 0) return;
+    if (!nome.trim()) return;
     onChange({
       grupo_tamanhos: {
         ...grupoTamanhos,
-        opcoes: [...grupoTamanhos.opcoes, { id: gerarId(), nome: nome.trim(), preco }],
+        opcoes: [...grupoTamanhos.opcoes, { id: gerarId(), nome: nome.trim(), preco: preco || 0 }],
       },
     });
   };
