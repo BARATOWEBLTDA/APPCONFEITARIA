@@ -55,8 +55,8 @@ type KitItem = { nome: string; quantidade: string };
 // ═══ ARQUITETURA V3 ═══════════════════════════════════════════════
 // Tipos pra novo sistema Produto + Variações + Personalização
 type Variacao = { id: string; nome: string; preco: number; foto?: string };
-type OpcaoPersonalizacao = { id: string; nome: string; adicional: number };
-type OpcaoTamanho = { id: string; nome: string; preco: number };
+type OpcaoPersonalizacao = { id: string; nome: string; adicional: number; foto?: string };
+type OpcaoTamanho = { id: string; nome: string; preco: number; foto?: string };
 type DistribuicaoModo = "nenhuma" | "igual" | "livre";
 type GrupoPersonalizacao = {
   ativo: boolean;
@@ -64,6 +64,7 @@ type GrupoPersonalizacao = {
   max: number;
   distribuicao: DistribuicaoModo;
   opcoes: OpcaoPersonalizacao[];
+  foto_por_opcao?: boolean;
 };
 type GrupoTamanhos = {
   ativo: boolean;
@@ -71,6 +72,7 @@ type GrupoTamanhos = {
   max: number;
   distribuicao: DistribuicaoModo;
   opcoes: OpcaoTamanho[];
+  foto_por_opcao?: boolean;
 };
 type TipoProduto = "simples" | "variacao" | "personalizavel" | "variacao_e_personalizavel";
 
@@ -496,6 +498,8 @@ interface PersonalizacaoStepProps {
   onChange: (patch: Partial<Produto>) => void;
   onPrecoBaseChange: (v: number) => void;
   onFormaVendaChange: (v: string) => void;
+  isPro: boolean;
+  onOpenProModal: () => void;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -843,7 +847,7 @@ function SelectDoonly({
 
 function PersonalizacaoStep({
   grupoMassas, grupoRecheios, grupoCoberturas, grupoTamanhos,
-  precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange, onFormaVendaChange,
+  precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange, onFormaVendaChange, isPro, onOpenProModal,
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(false);
@@ -1431,6 +1435,40 @@ function PersonalizacaoStep({
                     </div>
                   </>
                 )}
+
+                {/* Sub-toggle: Foto por opção (recurso PRO) */}
+                {g.dados.opcoes.length > 0 && (
+                  <button
+                    type="button"
+                    className={`pv3-sub-toggle ${g.dados.foto_por_opcao ? "pv3-sub-toggle--on" : ""} ${!isPro ? "pv3-sub-toggle--locked" : ""}`}
+                    onClick={() => {
+                      if (!isPro) {
+                        onOpenProModal();
+                        return;
+                      }
+                      const key = `grupo_${g.key}` as const;
+                      onChange({ [key]: { ...g.dados, foto_por_opcao: !g.dados.foto_por_opcao } } as any);
+                    }}
+                  >
+                    <div className="pv3-sub-toggle-ico">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    </div>
+                    <div className="pv3-sub-toggle-txt">
+                      <div className="pv3-sub-toggle-titulo">
+                        Cada {g.titulo.slice(0, -1).toLowerCase()} tem foto própria
+                        {!isPro && <img src="/coroa.png" alt="PRO" className="pv3-sub-toggle-crown" />}
+                      </div>
+                      <div className="pv3-sub-toggle-desc">
+                        {g.dados.foto_por_opcao
+                          ? "✓ Ativo — configure as fotos no passo de Fotos"
+                          : "Cliente vê a foto de cada opção no cardápio"}
+                      </div>
+                    </div>
+                    <div className={`pv3-mini-switch ${g.dados.foto_por_opcao ? "pv3-mini-switch--on" : ""}`}>
+                      <div className="pv3-mini-switch-thumb" />
+                    </div>
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -1810,6 +1848,78 @@ function PersonalizacaoStep({
           background: #EFF6FF; color: #1E40AF; padding: 8px 12px; border-radius: 6px;
           font-size: 12px; margin-bottom: 10px; border-left: 3px solid #2563EB;
         }
+
+        /* Sub-toggle "Foto por opção" (PRO) */
+        .pv3-sub-toggle {
+          all: unset;
+          margin-top: 14px;
+          padding: 12px 14px;
+          background: linear-gradient(135deg, #FEF3C7 0%, #FEF9E7 100%);
+          border: 1.5px solid #FDE68A;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          cursor: pointer;
+          transition: all 0.15s;
+          font-family: inherit;
+          box-sizing: border-box;
+          width: 100%;
+        }
+        .pv3-sub-toggle:hover {
+          border-color: #F59E0B;
+        }
+        .pv3-sub-toggle--on {
+          background: linear-gradient(135deg, #FDF3F7 0%, #FCE0E9 100%);
+          border-color: #E85A8C;
+        }
+        .pv3-sub-toggle-ico {
+          width: 34px; height: 34px;
+          background: #fff;
+          color: #92400E;
+          border-radius: 8px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .pv3-sub-toggle--on .pv3-sub-toggle-ico {
+          color: #E85A8C;
+        }
+        .pv3-sub-toggle-txt { flex: 1; min-width: 0; }
+        .pv3-sub-toggle-titulo {
+          font-size: 13px;
+          font-weight: 800;
+          color: #2D1F26;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .pv3-sub-toggle-crown {
+          width: 14px; height: 14px; object-fit: contain;
+        }
+        .pv3-sub-toggle-desc {
+          font-size: 11.5px;
+          color: #6B5D64;
+          margin-top: 2px;
+        }
+        .pv3-mini-switch {
+          width: 36px; height: 20px;
+          background: #E5D8DE;
+          border-radius: 999px;
+          position: relative;
+          transition: background 0.2s;
+          flex-shrink: 0;
+        }
+        .pv3-mini-switch--on { background: #E85A8C; }
+        .pv3-mini-switch-thumb {
+          width: 14px; height: 14px;
+          background: #fff;
+          border-radius: 50%;
+          position: absolute;
+          top: 3px; left: 3px;
+          transition: left 0.2s;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+        .pv3-mini-switch--on .pv3-mini-switch-thumb { left: 19px; }
 
         /* Sugestões da biblioteca */
         .pv3-sugestoes {
@@ -3048,6 +3158,8 @@ export default function Produtos() {
                   onChange={(patch) => setForm(f => ({ ...f, ...patch }))}
                   onPrecoBaseChange={(v) => setForm(f => ({ ...f, preco_normal: v }))}
                   onFormaVendaChange={(v) => setForm(f => ({ ...f, forma_venda: v }))}
+                  isPro={isPro}
+                  onOpenProModal={() => setShowProIaModal(true)}
                 />
               </div>
             )}
@@ -3129,6 +3241,97 @@ export default function Produtos() {
                   })}
                 </div>
               </div>
+
+              {/* Fotos por opção (V3 unificado — PRO) */}
+              {(() => {
+                const gruposComFoto: Array<{ key: string; label: string; opcoes: any[] }> = [];
+                if (form.grupo_massas?.foto_por_opcao && (form.grupo_massas.opcoes.length || 0) > 0) {
+                  gruposComFoto.push({ key: "massas", label: "Massas", opcoes: form.grupo_massas.opcoes });
+                }
+                if (form.grupo_recheios?.foto_por_opcao && (form.grupo_recheios.opcoes.length || 0) > 0) {
+                  gruposComFoto.push({ key: "recheios", label: "Recheios", opcoes: form.grupo_recheios.opcoes });
+                }
+                if (form.grupo_coberturas?.foto_por_opcao && (form.grupo_coberturas.opcoes.length || 0) > 0) {
+                  gruposComFoto.push({ key: "coberturas", label: "Coberturas", opcoes: form.grupo_coberturas.opcoes });
+                }
+                if (form.grupo_tamanhos?.foto_por_opcao && (form.grupo_tamanhos.opcoes.length || 0) > 0) {
+                  gruposComFoto.push({ key: "tamanhos", label: "Tamanhos", opcoes: form.grupo_tamanhos.opcoes });
+                }
+                if (gruposComFoto.length === 0) return null;
+
+                const uploadOpcaoFoto = async (grupoKey: string, opcaoId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const { data: userData } = await supabase.auth.getUser();
+                  if (!userData.user) return;
+                  const ext = file.name.split(".").pop();
+                  const path = `${userData.user.id}/produto-opcao-${opcaoId}-${Date.now()}.${ext}`;
+                  const { error: upErr } = await supabase.storage.from("produtos").upload(path, file, { upsert: true });
+                  if (upErr) { alert("Erro ao enviar foto: " + upErr.message); return; }
+                  const { data: pub } = supabase.storage.from("produtos").getPublicUrl(path);
+                  const campo = `grupo_${grupoKey}` as keyof Produto;
+                  setForm(f => ({
+                    ...f,
+                    [campo]: {
+                      ...(f[campo] as any),
+                      opcoes: (f[campo] as any).opcoes.map((o: any) => o.id === opcaoId ? { ...o, foto: pub.publicUrl } : o),
+                    },
+                  }));
+                };
+
+                const removeOpcaoFoto = (grupoKey: string, opcaoId: string) => {
+                  const campo = `grupo_${grupoKey}` as keyof Produto;
+                  setForm(f => ({
+                    ...f,
+                    [campo]: {
+                      ...(f[campo] as any),
+                      opcoes: (f[campo] as any).opcoes.map((o: any) => o.id === opcaoId ? { ...o, foto: undefined } : o),
+                    },
+                  }));
+                };
+
+                return (
+                  <div className="prod-section">
+                    <p className="prod-section-label prod-section-label--novo">
+                      Fotos por opção <span style={{fontSize: 11, fontWeight: 500, color: "#6B5D64", marginLeft: 6}}>
+                        <img src="/coroa.png" alt="" style={{width: 12, height: 12, objectFit: "contain", verticalAlign: "middle"}} /> Recurso PRO
+                      </span>
+                    </p>
+                    <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 14px"}}>
+                      Suas opções ativas com foto própria — cliente verá a foto de cada uma no cardápio.
+                    </p>
+
+                    {gruposComFoto.map(({ key, label, opcoes }) => (
+                      <div key={key} style={{marginBottom: 18}}>
+                        <div style={{fontSize: 12, fontWeight: 800, color: "#831843", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8}}>{label}</div>
+                        <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 10}}>
+                          {opcoes.map(op => (
+                            <label key={op.id} className="prod-opcao-foto-card">
+                              <div className="prod-opcao-foto-slot">
+                                {op.foto ? (
+                                  <>
+                                    <img src={op.foto} alt={op.nome} />
+                                    <button
+                                      type="button"
+                                      className="prod-opcao-foto-remove"
+                                      onClick={e => { e.preventDefault(); removeOpcaoFoto(key, op.id); }}
+                                      aria-label="Remover"
+                                    >✕</button>
+                                  </>
+                                ) : (
+                                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B4A9AE" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                )}
+                              </div>
+                              <div className="prod-opcao-foto-nome">{op.nome}</div>
+                              <input type="file" accept="image/*" style={{display: "none"}} onChange={e => uploadOpcaoFoto(key, op.id, e)} />
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* Fotos das variações — só quando variações */}
               {wizardTipo === "variacoes" && (() => {
@@ -7652,6 +7855,57 @@ export default function Produtos() {
           font-weight: 700;
           font-family: var(--font-base);
           letter-spacing: 0.01em;
+        }
+
+        /* ═══ Cards de foto por opção (V3 PRO) ═══ */
+        .prod-opcao-foto-card {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          cursor: pointer;
+        }
+        .prod-opcao-foto-slot {
+          width: 100%;
+          aspect-ratio: 1;
+          border-radius: 12px;
+          background: #FAF8F5;
+          border: 2px dashed #E5D8DE;
+          display: flex; align-items: center; justify-content: center;
+          overflow: hidden;
+          position: relative;
+          transition: all 0.15s;
+        }
+        .prod-opcao-foto-card:hover .prod-opcao-foto-slot {
+          border-color: #E85A8C;
+          background: #FDF3F7;
+        }
+        .prod-opcao-foto-slot img {
+          width: 100%; height: 100%; object-fit: cover;
+        }
+        .prod-opcao-foto-remove {
+          position: absolute;
+          top: 6px; right: 6px;
+          width: 24px; height: 24px;
+          background: rgba(0,0,0,0.7);
+          color: #fff;
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          font-size: 12px;
+          font-weight: 700;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .prod-opcao-foto-remove:hover { background: #DC2626; }
+        .prod-opcao-foto-nome {
+          font-size: 12.5px;
+          font-weight: 700;
+          color: #2D1F26;
+          margin-top: 6px;
+          text-align: center;
+          max-width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         /* ═══ Fotos das variações (step 4) ═══ */
