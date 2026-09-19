@@ -3192,7 +3192,7 @@ export default function Produtos() {
                                 <img src="/coroa.png" alt="" />
                                 PRO
                               </span>
-                              {/* Conteúdo central: cadeado + texto */}
+                              {/* Conteúdo central: só cadeado pequeno */}
                               <div className="prod-slot-locked-body">
                                 <div className="prod-slot-lock-icon">
                                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B5D64" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -3200,7 +3200,6 @@ export default function Produtos() {
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                                   </svg>
                                 </div>
-                                <div className="prod-slot-locked-txt">Recurso PRO</div>
                               </div>
                             </>
                           ) : (
@@ -3302,7 +3301,7 @@ export default function Produtos() {
                           <div className="pv3-sub-toggle-txt">
                             <div className="pv3-sub-toggle-titulo">
                               Foto por {label.toLowerCase().slice(0, -1)}
-                              {!isPro && <img src="/coroa.png" alt="PRO" className="pv3-sub-toggle-crown" />}
+                              {!isPro && <img src="/coroa.png" alt="PRO" className="pv3-sub-toggle-crown" style={{width: 14, height: 14, objectFit: "contain"}} />}
                             </div>
                             <div className="pv3-sub-toggle-desc">
                               {grupo.foto_por_opcao ? "✓ Ativo — adicione as fotos abaixo" : `${grupo.opcoes.length} opções cadastradas`}
@@ -3313,27 +3312,30 @@ export default function Produtos() {
                           </div>
                         </button>
 
-                        {/* Cards de foto — só se ativo E é PRO */}
+                        {/* Lista horizontal: cada opção com quadradinho de foto à esquerda */}
                         {grupo.foto_por_opcao && isPro && (
-                          <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 10, marginTop: 12, padding: "12px", background: "#FAF8F5", borderRadius: 10}}>
+                          <div style={{marginTop: 10, display: "flex", flexDirection: "column", gap: 8}}>
                             {grupo.opcoes.map((op: any) => (
-                              <label key={op.id} className="prod-opcao-foto-card">
-                                <div className="prod-opcao-foto-slot">
+                              <label key={op.id} className="prod-opcao-foto-linha">
+                                <div className="prod-opcao-foto-mini">
                                   {op.foto ? (
                                     <>
                                       <img src={op.foto} alt={op.nome} />
                                       <button
                                         type="button"
-                                        className="prod-opcao-foto-remove"
+                                        className="prod-opcao-foto-mini-remove"
                                         onClick={e => { e.preventDefault(); removeOpcaoFoto(key, op.id); }}
                                         aria-label="Remover"
                                       >✕</button>
                                     </>
                                   ) : (
-                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B4A9AE" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B4A9AE" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                                   )}
                                 </div>
-                                <div className="prod-opcao-foto-nome">{op.nome}</div>
+                                <span className="prod-opcao-foto-linha-nome">{op.nome}</span>
+                                <span className="prod-opcao-foto-linha-cta">
+                                  {op.foto ? "Trocar foto" : "Adicionar foto"}
+                                </span>
                                 <input type="file" accept="image/*" style={{display: "none"}} onChange={e => uploadOpcaoFoto(key, op.id, e)} />
                               </label>
                             ))}
@@ -7836,25 +7838,25 @@ export default function Produtos() {
         /* ═══ Slot de foto bloqueado (PRO) ═══ */
         .prod-slot-pro-corner {
           position: absolute;
-          top: 8px;
-          right: 8px;
+          top: 6px;
+          right: 6px;
           display: inline-flex;
           align-items: center;
-          gap: 4px;
-          padding: 4px 8px;
+          gap: 3px;
+          padding: 2px 6px;
           background: #1A1A1A;
           color: #fff;
           font-family: var(--font-base);
-          font-size: 10px;
+          font-size: 9px;
           font-weight: 800;
-          border-radius: 6px;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          border-radius: 4px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
           z-index: 2;
           letter-spacing: 0.03em;
         }
         .prod-slot-pro-corner img {
-          width: 11px;
-          height: 11px;
+          width: 9px;
+          height: 9px;
           object-fit: contain;
         }
         .prod-slot-locked-body {
@@ -7883,6 +7885,137 @@ export default function Produtos() {
           font-family: var(--font-base);
           letter-spacing: 0.02em;
           text-transform: uppercase;
+        }
+
+        /* ═══ Sub-toggle "Foto por opção" (global — usado no step 4) ═══ */
+        .pv3-sub-toggle {
+          all: unset;
+          padding: 12px 14px;
+          background: linear-gradient(135deg, #FEF3C7 0%, #FEF9E7 100%);
+          border: 1.5px solid #FDE68A;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          cursor: pointer;
+          transition: all 0.15s;
+          font-family: inherit;
+          box-sizing: border-box;
+          width: 100%;
+        }
+        .pv3-sub-toggle:hover { border-color: #F59E0B; }
+        .pv3-sub-toggle--on {
+          background: linear-gradient(135deg, #FDF3F7 0%, #FCE0E9 100%);
+          border-color: #E85A8C;
+        }
+        .pv3-sub-toggle-ico {
+          width: 34px !important; height: 34px !important;
+          background: #fff;
+          color: #92400E;
+          border-radius: 8px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .pv3-sub-toggle-ico svg { width: 18px; height: 18px; }
+        .pv3-sub-toggle--on .pv3-sub-toggle-ico { color: #E85A8C; }
+        .pv3-sub-toggle-txt { flex: 1; min-width: 0; text-align: left; }
+        .pv3-sub-toggle-titulo {
+          font-size: 13px;
+          font-weight: 800;
+          color: #2D1F26;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .pv3-sub-toggle-crown {
+          width: 14px !important;
+          height: 14px !important;
+          object-fit: contain;
+          display: inline-block;
+          flex-shrink: 0;
+        }
+        .pv3-sub-toggle-desc {
+          font-size: 11.5px;
+          color: #6B5D64;
+          margin-top: 2px;
+        }
+        .pv3-mini-switch {
+          width: 36px !important; height: 20px !important;
+          background: #E5D8DE;
+          border-radius: 999px;
+          position: relative;
+          transition: background 0.2s;
+          flex-shrink: 0;
+        }
+        .pv3-mini-switch--on { background: #E85A8C; }
+        .pv3-mini-switch-thumb {
+          width: 14px; height: 14px;
+          background: #fff;
+          border-radius: 50%;
+          position: absolute;
+          top: 3px; left: 3px;
+          transition: left 0.2s;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+        .pv3-mini-switch--on .pv3-mini-switch-thumb { left: 19px; }
+
+        /* Linha de foto por opção (quadradinho + nome + CTA) */
+        .prod-opcao-foto-linha {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 8px 12px;
+          background: #fff;
+          border: 1.5px solid #F0EBED;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .prod-opcao-foto-linha:hover {
+          border-color: #E85A8C;
+          box-shadow: 0 2px 8px rgba(232, 90, 140, 0.08);
+        }
+        .prod-opcao-foto-mini {
+          width: 44px;
+          height: 44px;
+          border-radius: 8px;
+          background: #FAF8F5;
+          border: 2px dashed #E5D8DE;
+          display: flex; align-items: center; justify-content: center;
+          overflow: hidden;
+          position: relative;
+          flex-shrink: 0;
+        }
+        .prod-opcao-foto-mini img {
+          width: 100%; height: 100%; object-fit: cover;
+        }
+        .prod-opcao-foto-mini-remove {
+          position: absolute;
+          top: 2px; right: 2px;
+          width: 18px; height: 18px;
+          background: rgba(0,0,0,0.75);
+          color: #fff;
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          font-size: 9px;
+          font-weight: 700;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .prod-opcao-foto-linha-nome {
+          flex: 1;
+          font-size: 14px;
+          font-weight: 700;
+          color: #2D1F26;
+        }
+        .prod-opcao-foto-linha-cta {
+          font-size: 12px;
+          font-weight: 700;
+          color: #E85A8C;
+          background: #FDF3F7;
+          padding: 6px 10px;
+          border-radius: 6px;
+          flex-shrink: 0;
         }
 
         /* ═══ Cards de foto por opção (V3 PRO) ═══ */
