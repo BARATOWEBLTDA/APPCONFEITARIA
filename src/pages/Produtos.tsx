@@ -491,13 +491,14 @@ interface PersonalizacaoStepProps {
   grupoTamanhos: GrupoTamanhos;
   precoBase: number;
   quantidadeBase: number | null;
+  formaVenda: string;
   onChange: (patch: Partial<Produto>) => void;
   onPrecoBaseChange: (v: number) => void;
 }
 
 function PersonalizacaoStep({
   grupoMassas, grupoRecheios, grupoCoberturas, grupoTamanhos,
-  precoBase, quantidadeBase, onChange, onPrecoBaseChange,
+  precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange,
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(false);
@@ -517,6 +518,23 @@ function PersonalizacaoStep({
     if (!digits) return 0;
     return parseInt(digits, 10) / 100;
   };
+
+  // Mapeia forma_venda pra sufixo curto (/kg, /un, /cento, etc)
+  const unidadeCurta = (fv: string): string => {
+    const map: Record<string, string> = {
+      "unidade": "un",
+      "fatia": "fatia",
+      "kg": "kg",
+      "cento": "cento",
+      "tamanho": "",
+      "caixa": "caixa",
+      "kit-festa": "kit",
+      "sob-encomenda": "",
+      "outros": "",
+    };
+    return map[fv] ?? "";
+  };
+  const sufixo = unidadeCurta(formaVenda);
 
   const toggleAtivo = (grupo: "massas" | "recheios" | "coberturas" | "tamanhos", ativo: boolean) => {
     const key = `grupo_${grupo}` as const;
@@ -749,6 +767,11 @@ function PersonalizacaoStep({
                       placeholder="0,00"
                     />
                   </div>
+                  {sufixo && (
+                    <span style={{fontSize: 13, color: "#831843", fontWeight: 800, marginLeft: -2}}>
+                      /{sufixo}
+                    </span>
+                  )}
                 </>
               )}
               {quantidadeBase ? <span style={{fontSize: 11.5, color: "#6B5D64"}}>· <b>{quantidadeBase} unidades</b></span> : null}
@@ -2442,6 +2465,7 @@ export default function Produtos() {
                   grupoTamanhos={form.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO}
                   precoBase={form.preco_normal || 0}
                   quantidadeBase={form.quantidade_base ?? null}
+                  formaVenda={form.forma_venda || "unidade"}
                   onChange={(patch) => setForm(f => ({ ...f, ...patch }))}
                   onPrecoBaseChange={(v) => setForm(f => ({ ...f, preco_normal: v }))}
                 />
