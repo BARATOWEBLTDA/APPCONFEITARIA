@@ -500,6 +500,14 @@ function PersonalizacaoStep({
   precoBase, quantidadeBase, onChange, onPrecoBaseChange,
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
+  const [showInfo, setShowInfo] = useState(false);
+
+  useEffect(() => {
+    if (!showInfo) return;
+    const handler = () => setShowInfo(false);
+    window.addEventListener("click", handler);
+    return () => window.removeEventListener("click", handler);
+  }, [showInfo]);
 
   const formatPreco = (v: number) =>
     (v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -666,14 +674,29 @@ function PersonalizacaoStep({
                 </div>
               ) : (
                 <>
-                  <div style={{display: "flex", alignItems: "center", gap: 4}}>
+                  <div style={{display: "flex", alignItems: "center", gap: 4, position: "relative"}}>
                     <span>Preço base</span>
-                    <span
+                    <button
+                      type="button"
                       className="pv3-info-tip"
-                      title="Preço padrão do produto quando o cliente não escolhe um tamanho. Se você ativar Tamanhos, cada tamanho terá o próprio preço e este campo desaparece."
+                      onClick={e => { e.stopPropagation(); setShowInfo(v => !v); }}
+                      onMouseEnter={() => setShowInfo(true)}
+                      onMouseLeave={() => setShowInfo(false)}
+                      aria-label="O que é preço base"
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                    </span>
+                    </button>
+                    {showInfo && (
+                      <div className="pv3-tooltip">
+                        <div className="pv3-tooltip-arrow"></div>
+                        <div className="pv3-tooltip-title">O que é preço base?</div>
+                        <div className="pv3-tooltip-body">
+                          É o preço padrão do produto quando o cliente <b>não escolhe um tamanho</b>.
+                          <br /><br />
+                          Se você ativar <b>Tamanhos</b>, cada um terá o próprio preço e este campo desaparece automaticamente.
+                        </div>
+                      </div>
+                    )}
                     <span>:</span>
                   </div>
                   <div style={{display: "inline-flex", alignItems: "center", gap: 4, background: "#fff", border: "1.5px solid #E85A8C", borderRadius: 8, padding: "4px 10px"}}>
@@ -954,14 +977,67 @@ function PersonalizacaoStep({
           color: #166534;
         }
         .pv3-info-tip {
+          all: unset;
           display: inline-flex;
           align-items: center;
           justify-content: center;
           color: #E85A8C;
-          cursor: help;
+          cursor: pointer;
           margin: 0 2px;
+          padding: 2px;
+          border-radius: 50%;
+          transition: all 0.15s;
         }
-        .pv3-info-tip:hover { color: #831843; }
+        .pv3-info-tip:hover {
+          color: #fff;
+          background: #E85A8C;
+        }
+
+        /* Tooltip estilo Doonly — dark, cara de app */
+        .pv3-tooltip {
+          position: absolute;
+          top: calc(100% + 12px);
+          left: -8px;
+          background: #1A1A1A;
+          color: #fff;
+          padding: 12px 14px;
+          border-radius: 10px;
+          font-size: 12px;
+          line-height: 1.5;
+          width: 260px;
+          z-index: 100;
+          box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+          animation: pv3TooltipIn 0.18s cubic-bezier(0.32, 0.72, 0, 1);
+          font-family: inherit;
+        }
+        @keyframes pv3TooltipIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .pv3-tooltip-arrow {
+          position: absolute;
+          top: -6px;
+          left: 20px;
+          width: 12px; height: 12px;
+          background: #1A1A1A;
+          transform: rotate(45deg);
+          border-radius: 2px;
+        }
+        .pv3-tooltip-title {
+          font-weight: 800;
+          font-size: 12.5px;
+          margin-bottom: 4px;
+          color: #E85A8C;
+          position: relative;
+          z-index: 1;
+        }
+        .pv3-tooltip-body {
+          color: #E5D8DE;
+          font-weight: 400;
+          position: relative;
+          z-index: 1;
+        }
+        .pv3-tooltip-body b { color: #fff; font-weight: 700; }
         .pv3-card {
           background: #fff;
           border: 1.5px solid #F0EBED;
