@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import { listarBiblioteca, salvarNaBiblioteca, type BibliotecaOpcao } from "@/lib/biblioteca";
 import { gerarFichaProduto } from "@/lib/gerarFichaProduto";
 import { usePlano } from "@/hooks/usePlano";
 import { ImageCropper } from "@/components/ui/ImageCropper";
@@ -504,6 +505,22 @@ function PersonalizacaoStep({
   const [expandido, setExpandido] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(false);
   const [showUnidade, setShowUnidade] = useState(false);
+  const [biblioteca, setBiblioteca] = useState<Record<string, BibliotecaOpcao[]>>({
+    massas: [], recheios: [], coberturas: [], tamanhos: []
+  });
+
+  // Carrega biblioteca ao ativar uma categoria pela primeira vez
+  useEffect(() => {
+    const carregarCategoria = async (cat: string, ativo: boolean) => {
+      if (!ativo || biblioteca[cat].length > 0) return;
+      const opcoes = await listarBiblioteca(cat);
+      setBiblioteca(prev => ({ ...prev, [cat]: opcoes }));
+    };
+    carregarCategoria("massas", grupoMassas.ativo);
+    carregarCategoria("recheios", grupoRecheios.ativo);
+    carregarCategoria("coberturas", grupoCoberturas.ativo);
+    carregarCategoria("tamanhos", grupoTamanhos.ativo);
+  }, [grupoMassas.ativo, grupoRecheios.ativo, grupoCoberturas.ativo, grupoTamanhos.ativo]);
 
   useEffect(() => {
     if (!showInfo) return;
@@ -566,12 +583,19 @@ function PersonalizacaoStep({
     if (!nomeLimpo) return;
     const key = `grupo_${grupo}` as const;
     const atual = grupo === "massas" ? grupoMassas : grupo === "recheios" ? grupoRecheios : grupoCoberturas;
+    // Evita duplicata dentro do produto
+    if (atual.opcoes.some(o => o.nome.toLowerCase() === nomeLimpo.toLowerCase())) return;
     onChange({
       [key]: {
         ...atual,
         opcoes: [...atual.opcoes, { id: gerarId(), nome: nomeLimpo, adicional: 0 }],
       },
     } as any);
+    // Salva na biblioteca (fire-and-forget)
+    salvarNaBiblioteca(grupo, nomeLimpo, 0).then(async () => {
+      const opcoes = await listarBiblioteca(grupo);
+      setBiblioteca(prev => ({ ...prev, [grupo]: opcoes }));
+    });
   };
 
   const removeOpcao = (grupo: "massas" | "recheios" | "coberturas", id: string) => {
@@ -597,12 +621,20 @@ function PersonalizacaoStep({
 
   // Tamanhos
   const addTamanho = (nome: string, preco: number) => {
-    if (!nome.trim()) return;
+    const nomeLimpo = nome.trim();
+    if (!nomeLimpo) return;
+    // Evita duplicata
+    if (grupoTamanhos.opcoes.some(o => o.nome.toLowerCase() === nomeLimpo.toLowerCase())) return;
     onChange({
       grupo_tamanhos: {
         ...grupoTamanhos,
-        opcoes: [...grupoTamanhos.opcoes, { id: gerarId(), nome: nome.trim(), preco: preco || 0 }],
+        opcoes: [...grupoTamanhos.opcoes, { id: gerarId(), nome: nomeLimpo, preco: preco || 0 }],
       },
+    });
+    // Salva na biblioteca
+    salvarNaBiblioteca("tamanhos", nomeLimpo, 0).then(async () => {
+      const opcoes = await listarBiblioteca("tamanhos");
+      setBiblioteca(prev => ({ ...prev, tamanhos: opcoes }));
     });
   };
 
@@ -808,6 +840,35 @@ function PersonalizacaoStep({
                 {/* Lista de opções */}
                 {g.key !== "tamanhos" ? (
                   <>
+                    {/* Sugestões da biblioteca — só as que ainda não estão no produto */}
+                    {(() => {
+                      const bibl = biblioteca[g.key] || [];
+                      const opcoesAtuais = (g.dados as GrupoPersonalizacao).opcoes.map(o => o.nome.toLowerCase());
+                      const sugestoes = bibl.filter(b => !opcoesAtuais.includes(b.nome.toLowerCase()));
+                      if (sugestoes.length === 0) return null;
+                      return (
+                        <div className="pv3-sugestoes">
+                          <div className="pv3-sugestoes-label">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                            Da sua biblioteca — clique pra adicionar
+                          </div>
+                          <div className="pv3-sugestoes-chips">
+                            {sugestoes.map(sug => (
+                              <button
+                                key={sug.id}
+                                type="button"
+                                className="pv3-sugestao-chip"
+                                onClick={() => addOpcao(g.key as any, sug.nome)}
+                              >
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                {sug.nome}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     <div className="pv3-opcoes-list">
                       {(g.dados as GrupoPersonalizacao).opcoes.map((op, idx) => (
                         <div key={op.id} className="pv3-opcao-row">
@@ -883,6 +944,35 @@ function PersonalizacaoStep({
                     <div className="pv3-tamanho-info">
                       💡 O preço de cada tamanho é definido na próxima etapa
                     </div>
+
+                    {/* Sugestões da biblioteca */}
+                    {(() => {
+                      const bibl = biblioteca.tamanhos || [];
+                      const nomesAtuais = grupoTamanhos.opcoes.map(o => o.nome.toLowerCase());
+                      const sugestoes = bibl.filter(b => !nomesAtuais.includes(b.nome.toLowerCase()));
+                      if (sugestoes.length === 0) return null;
+                      return (
+                        <div className="pv3-sugestoes">
+                          <div className="pv3-sugestoes-label">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                            Da sua biblioteca — clique pra adicionar
+                          </div>
+                          <div className="pv3-sugestoes-chips">
+                            {sugestoes.map(sug => (
+                              <button
+                                key={sug.id}
+                                type="button"
+                                className="pv3-sugestao-chip"
+                                onClick={() => addTamanho(sug.nome, 0)}
+                              >
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                {sug.nome}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
                     <div className="pv3-opcoes-list">
                       {grupoTamanhos.opcoes.map((op, idx) => (
                         <div key={op.id} className="pv3-opcao-row">
@@ -1281,6 +1371,53 @@ function PersonalizacaoStep({
           background: #EFF6FF; color: #1E40AF; padding: 8px 12px; border-radius: 6px;
           font-size: 12px; margin-bottom: 10px; border-left: 3px solid #2563EB;
         }
+
+        /* Sugestões da biblioteca */
+        .pv3-sugestoes {
+          margin-bottom: 12px;
+          padding: 12px;
+          background: linear-gradient(135deg, #FEF3C7 0%, #FEF9E7 100%);
+          border: 1px solid #FDE68A;
+          border-radius: 10px;
+        }
+        .pv3-sugestoes-label {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11px;
+          font-weight: 800;
+          color: #92400E;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 8px;
+        }
+        .pv3-sugestoes-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        .pv3-sugestao-chip {
+          all: unset;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 6px 10px;
+          background: #fff;
+          border: 1px solid #FDE68A;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: 700;
+          color: #92400E;
+          cursor: pointer;
+          transition: all 0.15s;
+          font-family: inherit;
+        }
+        .pv3-sugestao-chip:hover {
+          background: #92400E;
+          border-color: #92400E;
+          color: #fff;
+        }
+        .pv3-sugestao-chip:active { transform: scale(0.95); }
       `}</style>
     </div>
   );
