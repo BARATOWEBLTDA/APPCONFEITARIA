@@ -494,14 +494,16 @@ interface PersonalizacaoStepProps {
   formaVenda: string;
   onChange: (patch: Partial<Produto>) => void;
   onPrecoBaseChange: (v: number) => void;
+  onFormaVendaChange: (v: string) => void;
 }
 
 function PersonalizacaoStep({
   grupoMassas, grupoRecheios, grupoCoberturas, grupoTamanhos,
-  precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange,
+  precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange, onFormaVendaChange,
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(false);
+  const [showUnidade, setShowUnidade] = useState(false);
 
   useEffect(() => {
     if (!showInfo) return;
@@ -509,6 +511,13 @@ function PersonalizacaoStep({
     window.addEventListener("click", handler);
     return () => window.removeEventListener("click", handler);
   }, [showInfo]);
+
+  useEffect(() => {
+    if (!showUnidade) return;
+    const handler = () => setShowUnidade(false);
+    window.addEventListener("click", handler);
+    return () => window.removeEventListener("click", handler);
+  }, [showUnidade]);
 
   const formatPreco = (v: number) =>
     (v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -767,11 +776,33 @@ function PersonalizacaoStep({
                       placeholder="0,00"
                     />
                   </div>
-                  {sufixo && (
-                    <span style={{fontSize: 13, color: "#831843", fontWeight: 800, marginLeft: -2}}>
-                      /{sufixo}
-                    </span>
-                  )}
+                  <div style={{position: "relative"}}>
+                    <button
+                      type="button"
+                      className="pv3-unidade-btn"
+                      onClick={e => { e.stopPropagation(); setShowUnidade(v => !v); }}
+                    >
+                      /{sufixo || "escolher"}
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft: 2}}><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    {showUnidade && (
+                      <div className="pv3-unidade-menu" onClick={e => e.stopPropagation()}>
+                        {FORMAS_VENDA.map(fv => (
+                          <button
+                            key={fv.value}
+                            type="button"
+                            className={`pv3-unidade-item ${formaVenda === fv.value ? "pv3-unidade-item--ativo" : ""}`}
+                            onClick={() => { onFormaVendaChange(fv.value); setShowUnidade(false); }}
+                          >
+                            {fv.label}
+                            {formaVenda === fv.value && (
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
               {quantidadeBase ? <span style={{fontSize: 11.5, color: "#6B5D64"}}>· <b>{quantidadeBase} unidades</b></span> : null}
@@ -1078,6 +1109,61 @@ function PersonalizacaoStep({
           z-index: 1;
         }
         .pv3-tooltip-body b { color: #fff; font-weight: 700; }
+
+        /* Dropdown de unidade de venda */
+        .pv3-unidade-btn {
+          all: unset;
+          display: inline-flex;
+          align-items: center;
+          gap: 2px;
+          font-size: 13px;
+          color: #831843;
+          font-weight: 800;
+          cursor: pointer;
+          padding: 6px 10px;
+          border-radius: 8px;
+          background: transparent;
+          border: 1.5px dashed transparent;
+          transition: all 0.15s;
+          font-family: inherit;
+        }
+        .pv3-unidade-btn:hover {
+          background: #FCE0E9;
+          border-color: #E85A8C;
+        }
+        .pv3-unidade-menu {
+          position: absolute;
+          top: calc(100% + 6px);
+          left: 0;
+          background: #fff;
+          border-radius: 10px;
+          border: 1px solid #F0EBED;
+          box-shadow: 0 12px 32px rgba(0,0,0,0.14);
+          padding: 6px;
+          min-width: 190px;
+          z-index: 50;
+          animation: pv3TooltipIn 0.15s ease;
+        }
+        .pv3-unidade-item {
+          all: unset;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          padding: 8px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 13px;
+          color: #2D1F26;
+          font-family: inherit;
+          font-weight: 600;
+        }
+        .pv3-unidade-item:hover { background: #FAF8F5; }
+        .pv3-unidade-item--ativo {
+          background: #FDF3F7;
+          color: #831843;
+          font-weight: 800;
+        }
         .pv3-card {
           background: #fff;
           border: 1.5px solid #F0EBED;
@@ -2468,6 +2554,7 @@ export default function Produtos() {
                   formaVenda={form.forma_venda || "unidade"}
                   onChange={(patch) => setForm(f => ({ ...f, ...patch }))}
                   onPrecoBaseChange={(v) => setForm(f => ({ ...f, preco_normal: v }))}
+                  onFormaVendaChange={(v) => setForm(f => ({ ...f, forma_venda: v }))}
                 />
               </div>
             )}
