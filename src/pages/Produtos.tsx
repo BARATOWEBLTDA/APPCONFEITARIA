@@ -515,9 +515,10 @@ interface SelectDoonlyProps {
   title?: string;
   extraOptionLabel?: string;
   onExtraOption?: () => void;
+  big?: boolean;
 }
 function SelectDoonly({
-  value, onChange, options, placeholder = "Selecione...", title = "Escolha uma opção", extraOptionLabel, onExtraOption
+  value, onChange, options, placeholder = "Selecione...", title = "Escolha uma opção", extraOptionLabel, onExtraOption, big = false
 }: SelectDoonlyProps) {
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -547,7 +548,7 @@ function SelectDoonly({
       <button
         ref={btnRef}
         type="button"
-        className={`sd-trigger ${open ? "sd-trigger--open" : ""}`}
+        className={`sd-trigger ${open ? "sd-trigger--open" : ""} ${big ? "sd-trigger--big" : ""}`}
         onClick={() => setOpen(v => !v)}
       >
         <span className={`sd-trigger-text ${!selected ? "sd-trigger-text--placeholder" : ""}`}>
@@ -662,6 +663,10 @@ function SelectDoonly({
         .sd-trigger--open {
           border-color: #E85A8C;
           box-shadow: 0 0 0 3px rgba(232, 90, 140, 0.1);
+        }
+        .sd-trigger--big {
+          padding: 20px 14px;
+          font-size: 16px;
         }
         .sd-trigger-text {
           display: inline-flex;
@@ -3253,6 +3258,7 @@ export default function Produtos() {
                         onChange={v => setForm(f => ({ ...f, forma_venda: v }))}
                         options={FORMAS_VENDA.map(fv => ({ value: fv.value, label: fv.label }))}
                         title="Como esse produto é vendido?"
+                        big
                       />
                     </div>
                   </div>
