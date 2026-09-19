@@ -720,15 +720,15 @@ function SelectDoonly({
         .sd-sheet-list {
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 0;
         }
         .sd-sheet-item {
           all: unset;
           display: flex;
           align-items: center;
-          gap: 12px;
-          padding: 14px 12px;
-          border-radius: 10px;
+          gap: 10px;
+          padding: 10px 10px;
+          border-radius: 8px;
           cursor: pointer;
           font-family: inherit;
           transition: background 0.12s;
@@ -776,8 +776,8 @@ function SelectDoonly({
           all: unset;
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 10px 12px;
+          gap: 8px;
+          padding: 7px 10px;
           border-radius: 6px;
           cursor: pointer;
           font-family: inherit;
@@ -809,10 +809,10 @@ function SelectDoonly({
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 32px; height: 32px;
+          width: 26px; height: 26px;
           background: #FAF8F5;
           color: #6B5D64;
-          border-radius: 8px;
+          border-radius: 6px;
           flex-shrink: 0;
         }
         .sd-item-label {
