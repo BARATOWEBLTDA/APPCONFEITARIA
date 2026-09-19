@@ -81,6 +81,16 @@ const gerarId = () =>
     ? crypto.randomUUID()
     : `id_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 
+// Title Case pt-BR — "bolo de chocolate" → "Bolo de Chocolate"
+const MINUSCULAS_TITLE = new Set(["de", "da", "do", "das", "dos", "e", "a", "o", "os", "as", "com", "sem", "à", "ao", "aos", "às", "em", "para", "por"]);
+function titleCase(str: string): string {
+  if (!str) return str;
+  return str.toLowerCase().trim().split(/\s+/).map((p, i) => {
+    if (i > 0 && MINUSCULAS_TITLE.has(p)) return p;
+    return p.charAt(0).toUpperCase() + p.slice(1);
+  }).join(" ");
+}
+
 const GRUPO_VAZIO: GrupoPersonalizacao = {
   ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [],
 };
@@ -498,8 +508,6 @@ interface PersonalizacaoStepProps {
   onChange: (patch: Partial<Produto>) => void;
   onPrecoBaseChange: (v: number) => void;
   onFormaVendaChange: (v: string) => void;
-  isPro: boolean;
-  onOpenProModal: () => void;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -847,7 +855,7 @@ function SelectDoonly({
 
 function PersonalizacaoStep({
   grupoMassas, grupoRecheios, grupoCoberturas, grupoTamanhos,
-  precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange, onFormaVendaChange, isPro, onOpenProModal,
+  precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange, onFormaVendaChange,
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(false);
@@ -926,7 +934,7 @@ function PersonalizacaoStep({
   };
 
   const addOpcao = (grupo: "massas" | "recheios" | "coberturas", nome: string) => {
-    const nomeLimpo = nome.trim();
+    const nomeLimpo = titleCase(nome.trim());
     if (!nomeLimpo) return;
     const key = `grupo_${grupo}` as const;
     const atual = grupo === "massas" ? grupoMassas : grupo === "recheios" ? grupoRecheios : grupoCoberturas;
@@ -991,8 +999,10 @@ function PersonalizacaoStep({
 
   // Tamanhos
   const addTamanho = (nome: string, preco: number) => {
-    const nomeLimpo = nome.trim();
-    if (!nomeLimpo) return;
+    // Tamanho preserva UPPERCASE curto (P, M, G) mas title case pra palavras longas
+    const nomeTrim = nome.trim();
+    if (!nomeTrim) return;
+    const nomeLimpo = nomeTrim.length <= 3 ? nomeTrim.toUpperCase() : titleCase(nomeTrim);
     // Evita duplicata
     if (grupoTamanhos.opcoes.some(o => o.nome.toLowerCase() === nomeLimpo.toLowerCase())) return;
     onChange({
@@ -1434,40 +1444,6 @@ function PersonalizacaoStep({
                       </button>
                     </div>
                   </>
-                )}
-
-                {/* Sub-toggle: Foto por opção (recurso PRO) */}
-                {g.dados.opcoes.length > 0 && (
-                  <button
-                    type="button"
-                    className={`pv3-sub-toggle ${g.dados.foto_por_opcao ? "pv3-sub-toggle--on" : ""} ${!isPro ? "pv3-sub-toggle--locked" : ""}`}
-                    onClick={() => {
-                      if (!isPro) {
-                        onOpenProModal();
-                        return;
-                      }
-                      const key = `grupo_${g.key}` as const;
-                      onChange({ [key]: { ...g.dados, foto_por_opcao: !g.dados.foto_por_opcao } } as any);
-                    }}
-                  >
-                    <div className="pv3-sub-toggle-ico">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                    </div>
-                    <div className="pv3-sub-toggle-txt">
-                      <div className="pv3-sub-toggle-titulo">
-                        Cada {g.titulo.slice(0, -1).toLowerCase()} tem foto própria
-                        {!isPro && <img src="/coroa.png" alt="PRO" className="pv3-sub-toggle-crown" />}
-                      </div>
-                      <div className="pv3-sub-toggle-desc">
-                        {g.dados.foto_por_opcao
-                          ? "✓ Ativo — configure as fotos no passo de Fotos"
-                          : "Cliente vê a foto de cada opção no cardápio"}
-                      </div>
-                    </div>
-                    <div className={`pv3-mini-switch ${g.dados.foto_por_opcao ? "pv3-mini-switch--on" : ""}`}>
-                      <div className="pv3-mini-switch-thumb" />
-                    </div>
-                  </button>
                 )}
               </div>
             )}
@@ -3028,13 +3004,19 @@ export default function Produtos() {
               <div className="prod-section">
                 {/* 1. Nome */}
                 <div className="prod-field">
-                  <label className="prod-field-label-novo">Nome do produto <span className="prod-field-star">*</span></label>
-                  <input type="text" placeholder="Ex: Bolo de Morango" value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
+                  <label className="prod-field-label-novo">Nome do produto <span className="prod-field-req">obrigatório</span></label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Bolo de Morango"
+                    value={form.nome}
+                    onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
+                    onBlur={e => setForm(f => ({ ...f, nome: titleCase(e.target.value) }))}
+                  />
                 </div>
 
                 {/* 2. Categoria */}
                 <div className="prod-field">
-                  <label className="prod-field-label-novo">Categoria <span className="prod-field-star">*</span></label>
+                  <label className="prod-field-label-novo">Categoria <span className="prod-field-req">obrigatório</span></label>
                   {!showCatInput ? (
                     <SelectDoonly
                       value={form.categoria}
@@ -3125,18 +3107,17 @@ export default function Produtos() {
                   />
                   {!isPro && (
                     <div className="prod-cta-pro-ia">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E85A8C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.75V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.25A7 7 0 0 0 12 2z"/></svg>
                       <span className="prod-cta-pro-ia-txt">
                         Com o <b>Doonly PRO</b>, você gera descrições que vendem com <b>IA em 1 clique</b>
+                        <button
+                          type="button"
+                          className="prod-cta-pro-ia-info"
+                          onClick={() => setShowProIaModal(true)}
+                          aria-label="Saiba mais"
+                        >
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        </button>
                       </span>
-                      <button
-                        type="button"
-                        className="prod-cta-pro-ia-info"
-                        onClick={() => setShowProIaModal(true)}
-                        aria-label="Saiba mais"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                      </button>
                     </div>
                   )}
                 </div>
@@ -3158,8 +3139,6 @@ export default function Produtos() {
                   onChange={(patch) => setForm(f => ({ ...f, ...patch }))}
                   onPrecoBaseChange={(v) => setForm(f => ({ ...f, preco_normal: v }))}
                   onFormaVendaChange={(v) => setForm(f => ({ ...f, forma_venda: v }))}
-                  isPro={isPro}
-                  onOpenProModal={() => setShowProIaModal(true)}
                 />
               </div>
             )}
@@ -3244,20 +3223,30 @@ export default function Produtos() {
 
               {/* Fotos por opção (V3 unificado — PRO) */}
               {(() => {
-                const gruposComFoto: Array<{ key: string; label: string; opcoes: any[] }> = [];
-                if (form.grupo_massas?.foto_por_opcao && (form.grupo_massas.opcoes.length || 0) > 0) {
-                  gruposComFoto.push({ key: "massas", label: "Massas", opcoes: form.grupo_massas.opcoes });
+                // Lista todos os grupos ativos com opções (pra oferecer o toggle)
+                const gruposAtivos: Array<{ key: string; label: string; grupo: any }> = [];
+                if (form.grupo_massas?.ativo && (form.grupo_massas.opcoes.length || 0) > 0) {
+                  gruposAtivos.push({ key: "massas", label: "Massas", grupo: form.grupo_massas });
                 }
-                if (form.grupo_recheios?.foto_por_opcao && (form.grupo_recheios.opcoes.length || 0) > 0) {
-                  gruposComFoto.push({ key: "recheios", label: "Recheios", opcoes: form.grupo_recheios.opcoes });
+                if (form.grupo_recheios?.ativo && (form.grupo_recheios.opcoes.length || 0) > 0) {
+                  gruposAtivos.push({ key: "recheios", label: "Recheios", grupo: form.grupo_recheios });
                 }
-                if (form.grupo_coberturas?.foto_por_opcao && (form.grupo_coberturas.opcoes.length || 0) > 0) {
-                  gruposComFoto.push({ key: "coberturas", label: "Coberturas", opcoes: form.grupo_coberturas.opcoes });
+                if (form.grupo_coberturas?.ativo && (form.grupo_coberturas.opcoes.length || 0) > 0) {
+                  gruposAtivos.push({ key: "coberturas", label: "Coberturas", grupo: form.grupo_coberturas });
                 }
-                if (form.grupo_tamanhos?.foto_por_opcao && (form.grupo_tamanhos.opcoes.length || 0) > 0) {
-                  gruposComFoto.push({ key: "tamanhos", label: "Tamanhos", opcoes: form.grupo_tamanhos.opcoes });
+                if (form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) {
+                  gruposAtivos.push({ key: "tamanhos", label: "Tamanhos", grupo: form.grupo_tamanhos });
                 }
-                if (gruposComFoto.length === 0) return null;
+                if (gruposAtivos.length === 0) return null;
+
+                const toggleFotoPorOpcao = (grupoKey: string, atual: any) => {
+                  if (!isPro) {
+                    setShowProIaModal(true);
+                    return;
+                  }
+                  const key = `grupo_${grupoKey}` as keyof Produto;
+                  setForm(f => ({ ...f, [key]: { ...(f[key] as any), foto_por_opcao: !atual.foto_por_opcao } }));
+                };
 
                 const uploadOpcaoFoto = async (grupoKey: string, opcaoId: string, e: React.ChangeEvent<HTMLInputElement>) => {
                   const file = e.target.files?.[0];
@@ -3293,40 +3282,63 @@ export default function Produtos() {
                 return (
                   <div className="prod-section">
                     <p className="prod-section-label prod-section-label--novo">
-                      Fotos por opção <span style={{fontSize: 11, fontWeight: 500, color: "#6B5D64", marginLeft: 6}}>
-                        <img src="/coroa.png" alt="" style={{width: 12, height: 12, objectFit: "contain", verticalAlign: "middle"}} /> Recurso PRO
-                      </span>
+                      Fotos por opção
+                      {!isPro && <img src="/coroa.png" alt="PRO" style={{width: 12, height: 12, objectFit: "contain", marginLeft: 6, verticalAlign: "middle"}} />}
                     </p>
                     <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 14px"}}>
-                      Suas opções ativas com foto própria — cliente verá a foto de cada uma no cardápio.
+                      Ative pra ter uma foto de cada opção. Cliente verá a foto ao escolher no cardápio.
                     </p>
 
-                    {gruposComFoto.map(({ key, label, opcoes }) => (
-                      <div key={key} style={{marginBottom: 18}}>
-                        <div style={{fontSize: 12, fontWeight: 800, color: "#831843", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8}}>{label}</div>
-                        <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 10}}>
-                          {opcoes.map(op => (
-                            <label key={op.id} className="prod-opcao-foto-card">
-                              <div className="prod-opcao-foto-slot">
-                                {op.foto ? (
-                                  <>
-                                    <img src={op.foto} alt={op.nome} />
-                                    <button
-                                      type="button"
-                                      className="prod-opcao-foto-remove"
-                                      onClick={e => { e.preventDefault(); removeOpcaoFoto(key, op.id); }}
-                                      aria-label="Remover"
-                                    >✕</button>
-                                  </>
-                                ) : (
-                                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B4A9AE" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                                )}
-                              </div>
-                              <div className="prod-opcao-foto-nome">{op.nome}</div>
-                              <input type="file" accept="image/*" style={{display: "none"}} onChange={e => uploadOpcaoFoto(key, op.id, e)} />
-                            </label>
-                          ))}
-                        </div>
+                    {gruposAtivos.map(({ key, label, grupo }) => (
+                      <div key={key} style={{marginBottom: 14}}>
+                        <button
+                          type="button"
+                          className={`pv3-sub-toggle ${grupo.foto_por_opcao ? "pv3-sub-toggle--on" : ""}`}
+                          onClick={() => toggleFotoPorOpcao(key, grupo)}
+                        >
+                          <div className="pv3-sub-toggle-ico">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                          </div>
+                          <div className="pv3-sub-toggle-txt">
+                            <div className="pv3-sub-toggle-titulo">
+                              Foto por {label.toLowerCase().slice(0, -1)}
+                              {!isPro && <img src="/coroa.png" alt="PRO" className="pv3-sub-toggle-crown" />}
+                            </div>
+                            <div className="pv3-sub-toggle-desc">
+                              {grupo.foto_por_opcao ? "✓ Ativo — adicione as fotos abaixo" : `${grupo.opcoes.length} opções cadastradas`}
+                            </div>
+                          </div>
+                          <div className={`pv3-mini-switch ${grupo.foto_por_opcao ? "pv3-mini-switch--on" : ""}`}>
+                            <div className="pv3-mini-switch-thumb" />
+                          </div>
+                        </button>
+
+                        {/* Cards de foto — só se ativo E é PRO */}
+                        {grupo.foto_por_opcao && isPro && (
+                          <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 10, marginTop: 12, padding: "12px", background: "#FAF8F5", borderRadius: 10}}>
+                            {grupo.opcoes.map((op: any) => (
+                              <label key={op.id} className="prod-opcao-foto-card">
+                                <div className="prod-opcao-foto-slot">
+                                  {op.foto ? (
+                                    <>
+                                      <img src={op.foto} alt={op.nome} />
+                                      <button
+                                        type="button"
+                                        className="prod-opcao-foto-remove"
+                                        onClick={e => { e.preventDefault(); removeOpcaoFoto(key, op.id); }}
+                                        aria-label="Remover"
+                                      >✕</button>
+                                    </>
+                                  ) : (
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#B4A9AE" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                  )}
+                                </div>
+                                <div className="prod-opcao-foto-nome">{op.nome}</div>
+                                <input type="file" accept="image/*" style={{display: "none"}} onChange={e => uploadOpcaoFoto(key, op.id, e)} />
+                              </label>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -3410,7 +3422,7 @@ export default function Produtos() {
               {(wizardStep === 4 || form.id) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
-                    Preço por tamanho <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em>
+                    Preço por tamanho <span className="prod-field-req">obrigatório</span>
                   </p>
                   <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
                     Defina o preço de cada tamanho. O menor vira o "a partir de" no cardápio.
@@ -3449,7 +3461,7 @@ export default function Produtos() {
               {/* ══════ SEÇÃO 1: Preço base + Forma de venda ══════ */}
               {(wizardStep === 4 || form.id) && !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) && (
                 <div className="prod-section">
-                  <p className="prod-section-label prod-section-label--novo">Preço base <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></p>
+                  <p className="prod-section-label prod-section-label--novo">Preço base <span className="prod-field-req">obrigatório</span></p>
                   <div className="prod-row-2">
                     <div className="prod-field">
                       <label>Preço</label>
@@ -3483,7 +3495,7 @@ export default function Produtos() {
 
                 return (
                   <div className="prod-section">
-                    <p className="prod-section-label prod-section-label--novo">Adicionais das opções <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>opcional</em></p>
+                    <p className="prod-section-label prod-section-label--novo">Adicionais das opções <span className="prod-field-req prod-field-req--opt">opcional</span></p>
                     <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
                       Deixe R$ 0,00 se a opção não custa a mais. Ex: "Ninho +R$ 5" cobra extra pelo recheio.
                     </p>
@@ -7087,6 +7099,23 @@ export default function Produtos() {
           font-size: 14px;
           line-height: 1;
         }
+        .prod-field-req {
+          display: inline-block;
+          margin-left: 6px;
+          color: #E85A8C;
+          background: #FCE0E9;
+          font-size: 10px;
+          font-weight: 700;
+          padding: 2px 7px;
+          border-radius: 6px;
+          text-transform: lowercase;
+          letter-spacing: 0.02em;
+          vertical-align: middle;
+        }
+        .prod-field-req--opt {
+          color: #6B5D64;
+          background: #F0EBED;
+        }
 
         /* ═══ Header da descrição (label + botão IA colados) ═══ */
         .prod-desc-header {
@@ -7145,20 +7174,16 @@ export default function Produtos() {
 
         /* CTA PRO IA — banner discreto abaixo da descrição */
         .prod-cta-pro-ia {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 12px;
+          padding: 10px 14px;
           background: linear-gradient(135deg, #FDF3F7 0%, #FCE0E9 100%);
           border: 1px solid #FCE0E9;
           border-radius: 10px;
           margin-top: 10px;
         }
         .prod-cta-pro-ia-txt {
-          flex: 1;
           font-size: 12.5px;
           color: #831843;
-          line-height: 1.35;
+          line-height: 1.4;
         }
         .prod-cta-pro-ia-txt b { color: #E85A8C; font-weight: 800; }
         .prod-cta-pro-ia-info {
@@ -7166,11 +7191,12 @@ export default function Produtos() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 26px; height: 26px;
+          width: 20px; height: 20px;
           border-radius: 50%;
           color: #E85A8C;
           cursor: pointer;
-          flex-shrink: 0;
+          margin-left: 6px;
+          vertical-align: middle;
           transition: all 0.15s;
         }
         .prod-cta-pro-ia-info:hover {
@@ -7833,28 +7859,30 @@ export default function Produtos() {
         }
         .prod-slot-locked-body {
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           align-items: center;
           justify-content: center;
           width: 100%;
           height: 100%;
-          gap: 8px;
+          gap: 6px;
         }
         .prod-slot-lock-icon {
-          width: 40px;
-          height: 40px;
+          width: 22px;
+          height: 22px;
           border-radius: 999px;
           background: #F0EBED;
           display: flex;
           align-items: center;
           justify-content: center;
         }
+        .prod-slot-lock-icon svg { width: 12px; height: 12px; }
         .prod-slot-locked-txt {
-          font-size: 11px;
+          font-size: 10px;
           color: #6B5D64;
           font-weight: 700;
           font-family: var(--font-base);
-          letter-spacing: 0.01em;
+          letter-spacing: 0.02em;
+          text-transform: uppercase;
         }
 
         /* ═══ Cards de foto por opção (V3 PRO) ═══ */
