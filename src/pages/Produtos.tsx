@@ -2876,18 +2876,24 @@ export default function Produtos() {
     setDeleteConfirm(null);
   };
 
-  const handleAdicionarCategoria = async () => {
-    if (!novaCategoria.trim() || !userId) return;
-    if (!novaCategoriaIcone) return alert("Selecione um ícone para a categoria");
+  const handleAdicionarCategoria = async (iconeOverride?: string) => {
+    const nome = novaCategoria.trim();
+    if (!nome || !userId) return;
+    const icone = iconeOverride || novaCategoriaIcone || SYSTEM_ICONS[0];
+    // Proteção: não deixa salvar nomes suspeitos (usuário deve ter colado o alerta)
+    const nomeLower = nome.toLowerCase();
+    if (nomeLower.includes("selecione") || nomeLower.includes("ícone") || nomeLower.includes("icone")) {
+      return alert("Nome inválido. Digite o nome da sua categoria (ex: Pudins, Bolos, Doces)");
+    }
     setSavingCat(true);
     await supabase.from("categorias").insert({
-      nome: novaCategoria.trim(),
-      imagem_url: novaCategoriaIcone,
+      nome,
+      imagem_url: icone,
       ordem: categorias.length,
       user_id: userId
     });
-    setCategorias(prev => [...prev, novaCategoria.trim()].sort());
-    setForm(f => ({ ...f, categoria: novaCategoria.trim() }));
+    setCategorias(prev => [...prev, nome].sort());
+    setForm(f => ({ ...f, categoria: nome }));
     setNovaCategoria(""); setNovaCategoriaIcone(""); setShowCatInput(false);
     setSavingCat(false);
   };
@@ -3489,8 +3495,9 @@ export default function Produtos() {
                         autoFocus
                         onKeyDown={e => {
                           if (e.key === "Enter" && novaCategoria.trim()) {
-                            if (!novaCategoriaIcone) setNovaCategoriaIcone(SYSTEM_ICONS[0]);
-                            handleAdicionarCategoria();
+                            const icone = novaCategoriaIcone || SYSTEM_ICONS[0];
+                            if (!novaCategoriaIcone) setNovaCategoriaIcone(icone);
+                            handleAdicionarCategoria(icone);
                           }
                         }}
                       />
@@ -3504,8 +3511,9 @@ export default function Produtos() {
                           type="button"
                           onClick={() => {
                             if (!novaCategoria.trim()) return;
-                            if (!novaCategoriaIcone) setNovaCategoriaIcone(SYSTEM_ICONS[0]);
-                            handleAdicionarCategoria();
+                            const icone = novaCategoriaIcone || SYSTEM_ICONS[0];
+                            if (!novaCategoriaIcone) setNovaCategoriaIcone(icone);
+                            handleAdicionarCategoria(icone);
                           }}
                           disabled={!novaCategoria.trim() || savingCat}
                           className="prod-cat-criar-btn"
