@@ -1370,7 +1370,7 @@ function PersonalizacaoStep({
                       <div className="pv3-sabor-modo-titulo">Cada sabor tem preço próprio?</div>
                       <div className="pv3-sabor-modo-sub">
                         {grupoSabores.sabor_tem_preco_proprio
-                          ? "Cada sabor terá seu próprio preço (ex: Pudim de Chocolate R$ 45)"
+                          ? "Cada sabor terá seu próprio preço (ex: Pudim de Chocolate R$ 45). Preços definidos na próxima etapa."
                           : "Sabores custam o preço base + adicional opcional"}
                       </div>
                     </div>
@@ -1465,19 +1465,6 @@ function PersonalizacaoStep({
                             </div>
                             <span className="pv3-opcao-num">{idx + 1}</span>
                             <span className="pv3-opcao-nome">{op.nome}</span>
-                            {/* Input de preço próprio pra Sabores quando toggle ativo */}
-                            {g.key === "sabores" && grupoSabores.sabor_tem_preco_proprio && (
-                              <div className="pv3-opcao-preco-wrap">
-                                <span className="pv3-opcao-preco-prefix">R$</span>
-                                <input
-                                  type="text"
-                                  className="pv3-opcao-preco-inp"
-                                  placeholder="0,00"
-                                  value={(op as any).preco ? formatPreco((op as any).preco) : ""}
-                                  onChange={e => updateSaborPreco(op.id, parsePreco(e.target.value))}
-                                />
-                              </div>
-                            )}
                             <button
                               type="button"
                               className="pv3-opcao-del"
@@ -3917,6 +3904,45 @@ export default function Produtos() {
                                 grupo_tamanhos: {
                                   ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO),
                                   opcoes: (f.grupo_tamanhos?.opcoes || []).map(o => o.id === op.id ? { ...o, preco } : o),
+                                },
+                              }));
+                            }}
+                            placeholder="0,00"
+                            style={{width: 80, border: "none", outline: "none", background: "transparent", fontSize: 15, fontWeight: 800, color: "#E85A8C", textAlign: "right", fontFamily: "inherit"}}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Preços por Sabor — só se tem sabores ativos E sabor_tem_preco_proprio */}
+              {(wizardStep === 4 || form.id) && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
+                <div className="prod-section">
+                  <p className="prod-section-label prod-section-label--novo">
+                    Preço por sabor <span className="prod-field-req">obrigatório</span>
+                  </p>
+                  <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
+                    Defina o preço de cada sabor. Ex: Pudim de Chocolate R$ 45.
+                  </p>
+                  <div style={{display: "flex", flexDirection: "column", gap: 8}}>
+                    {form.grupo_sabores.opcoes.map((op: any) => (
+                      <div key={op.id} style={{display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", background: "#FAF8F5", border: "1px solid #F0EBED", borderRadius: 10}}>
+                        <span style={{flex: 1, fontSize: 14, fontWeight: 800, color: "#2D1F26"}}>{op.nome}</span>
+                        <div style={{display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "1.5px solid #E85A8C", borderRadius: 8, padding: "6px 12px"}}>
+                          <span style={{fontSize: 13, color: "#831843", fontWeight: 800}}>R$</span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={op.preco ? formatPreco(op.preco) : ""}
+                            onChange={e => {
+                              const preco = parsePreco(e.target.value);
+                              setForm(f => ({
+                                ...f,
+                                grupo_sabores: {
+                                  ...(f.grupo_sabores as GrupoSabores),
+                                  opcoes: (f.grupo_sabores?.opcoes || []).map((o: any) => o.id === op.id ? { ...o, preco } : o),
                                 },
                               }));
                             }}
