@@ -728,92 +728,11 @@ function PersonalizacaoStep({
         <div className="pv3-subtitle">
           Ative as categorias que fazem sentido pro seu produto. Cada opção pode ter um adicional (padrão R$ 0,00).
         </div>
-        <div className={`pv3-preco-base ${grupoTamanhos.ativo && grupoTamanhos.opcoes.length > 0 ? "pv3-preco-base--tamanho" : ""}`}>
-          <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8}}>
-            <div style={{display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap"}}>
-              {grupoTamanhos.ativo && grupoTamanhos.opcoes.length > 0 ? (
-                <div style={{display: "flex", alignItems: "center", gap: 6}}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  <span style={{fontSize: 12.5, color: "#166534", fontWeight: 700}}>
-                    Preço definido pelo <b>Tamanho</b> escolhido
-                  </span>
-                </div>
-              ) : (
-                <>
-                  <div style={{display: "flex", alignItems: "center", gap: 4, position: "relative"}}>
-                    <span>Preço base</span>
-                    <button
-                      type="button"
-                      className="pv3-info-tip"
-                      onClick={e => { e.stopPropagation(); setShowInfo(v => !v); }}
-                      onMouseEnter={() => setShowInfo(true)}
-                      onMouseLeave={() => setShowInfo(false)}
-                      aria-label="O que é preço base"
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                    </button>
-                    {showInfo && (
-                      <div className="pv3-tooltip">
-                        <div className="pv3-tooltip-arrow"></div>
-                        <div className="pv3-tooltip-title">O que é preço base?</div>
-                        <div className="pv3-tooltip-body">
-                          É o preço padrão do produto quando o cliente <b>não escolhe um tamanho</b>.
-                          <br /><br />
-                          Se você ativar <b>Tamanhos</b>, cada um terá o próprio preço e este campo desaparece automaticamente.
-                        </div>
-                      </div>
-                    )}
-                    <span>:</span>
-                  </div>
-                  <div style={{display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "2px solid #E85A8C", borderRadius: 10, padding: "8px 14px", minWidth: 140}}>
-                    <span style={{fontSize: 14, color: "#831843", fontWeight: 800}}>R$</span>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={formatPreco(precoBase)}
-                      onChange={e => onPrecoBaseChange(parsePreco(e.target.value))}
-                      style={{width: 100, border: "none", outline: "none", background: "transparent", fontSize: 18, fontWeight: 900, color: "#E85A8C", textAlign: "right", fontFamily: "inherit"}}
-                      placeholder="0,00"
-                    />
-                  </div>
-                  <div style={{position: "relative"}}>
-                    <button
-                      type="button"
-                      className="pv3-unidade-btn"
-                      onClick={e => { e.stopPropagation(); setShowUnidade(v => !v); }}
-                    >
-                      /{sufixo || "escolher"}
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginLeft: 2}}><polyline points="6 9 12 15 18 9"/></svg>
-                    </button>
-                    {showUnidade && (
-                      <div className="pv3-unidade-menu" onClick={e => e.stopPropagation()}>
-                        {FORMAS_VENDA.map(fv => (
-                          <button
-                            key={fv.value}
-                            type="button"
-                            className={`pv3-unidade-item ${formaVenda === fv.value ? "pv3-unidade-item--ativo" : ""}`}
-                            onClick={() => { onFormaVendaChange(fv.value); setShowUnidade(false); }}
-                          >
-                            {fv.label}
-                            {formaVenda === fv.value && (
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-              {quantidadeBase ? <span style={{fontSize: 11.5, color: "#6B5D64"}}>· <b>{quantidadeBase} unidades</b></span> : null}
-            </div>
-            {algumGrupoAtivo && faixa.max > faixa.min && (
-              <div style={{fontSize: 12, color: "#059669", fontWeight: 800}}>
-                Faixa: R$ {formatPreco(faixa.min)} – R$ {formatPreco(faixa.max)}
-              </div>
-            )}
+        {algumGrupoAtivo && faixa.max > faixa.min && (
+          <div className="pv3-faixa-info">
+            💰 Faixa de adicionais: <b>R$ {formatPreco(faixa.min - precoBase)} – R$ {formatPreco(faixa.max - precoBase)}</b> além do preço base
           </div>
-        </div>
+        )}
       </div>
 
       {grupos.map(g => {
@@ -1042,6 +961,12 @@ function PersonalizacaoStep({
           font-size: 12.5px; color: #831843; border: 1px solid #FCE0E9;
           transition: all 0.2s;
         }
+        .pv3-faixa-info {
+          margin-top: 12px; padding: 10px 12px;
+          background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 8px;
+          font-size: 12.5px; color: #166534;
+        }
+        .pv3-faixa-info b { color: #059669; font-weight: 800; }
         .pv3-preco-base--tamanho {
           background: #F0FDF4;
           border-color: #BBF7D0;
@@ -3385,25 +3310,27 @@ export default function Produtos() {
                 const canAdvance = (() => {
                   // Step 2: Informações — nome + categoria obrigatórios
                   if (wizardStep === 2) return form.nome.trim().length > 0 && form.categoria.trim().length > 0;
-                  // Step 3: Opções — se nada ativado, é produto simples e precisa preço base > 0
-                  //   Se tem Personalização com Tamanhos, tamanho tem preço
-                  //   Se não, preço base > 0 sempre
+                  // Step 3: Opções — valida só as personalizações
+                  //   Se ativou algum grupo, precisa ter pelo menos 1 opção nele
+                  //   Se Tamanhos ativo, precisa pelo menos 1 tamanho com preço
+                  //   Preço base é validado no step 4 (Fotos e finalização)
                   if (wizardStep === 3) {
                     const gm = form.grupo_massas, gr = form.grupo_recheios, gc = form.grupo_coberturas, gt = form.grupo_tamanhos;
-                    const temTamanhoAtivo = gt?.ativo && gt.opcoes.length > 0;
-                    if (temTamanhoAtivo) {
-                      const temPrecoTamanho = gt!.opcoes.some(o => o.preco > 0);
-                      if (!temPrecoTamanho) return false;
-                    } else {
-                      if ((form.preco_normal || 0) <= 0) return false;
-                    }
-                    // Se ativou algum grupo, precisa ter pelo menos 1 opção nele
                     const gruposAtivos = [gm, gr, gc, gt].filter(g => g?.ativo);
                     if (gruposAtivos.some(g => (g?.opcoes.length || 0) === 0)) return false;
+                    if (gt?.ativo && gt.opcoes.length > 0) {
+                      const temPrecoTamanho = gt.opcoes.some(o => o.preco > 0);
+                      if (!temPrecoTamanho) return false;
+                    }
                     return true;
                   }
-                  // Step 4: Fotos — sempre pode avançar (fotos opcionais)
-                  if (wizardStep === 4) return true;
+                  // Step 4: Fotos e preço final — valida preço se não tem tamanhos
+                  if (wizardStep === 4) {
+                    const gt = form.grupo_tamanhos;
+                    const temTamanhoAtivo = gt?.ativo && gt.opcoes.length > 0;
+                    if (temTamanhoAtivo) return true; // preço vem do tamanho
+                    return (form.preco_normal || 0) > 0;
+                  }
                   return true;
                 })();
                 const isLast = wizardStep === 4;
