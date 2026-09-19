@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { listarBiblioteca, salvarNaBiblioteca, type BibliotecaOpcao } from "@/lib/biblioteca";
+import { carregarGruposDoBanco, salvarGruposParaBanco } from "@/lib/produto-grupos";
 import { gerarFichaProduto } from "@/lib/gerarFichaProduto";
 import { usePlano } from "@/hooks/usePlano";
 import { ImageCropper } from "@/components/ui/ImageCropper";
@@ -2388,7 +2389,20 @@ export default function Produtos() {
     }
 
     setSaving(true);
-    const payload = { ...form, preco_normal: precoBase, tipo_produto: tipoProduto, updated_at: new Date().toISOString() };
+
+    // ─── Adapter Passo 1: converte state antigo (grupo_massas/recheios/etc)
+    // pra formato genérico `grupos_opcoes[]` e salva em ambos formatos
+    // pra manter compatibilidade durante a transição.
+    const gruposArray = carregarGruposDoBanco(form);
+    const gruposPayload = salvarGruposParaBanco(gruposArray);
+
+    const payload = {
+      ...form,
+      ...gruposPayload,
+      preco_normal: precoBase,
+      tipo_produto: tipoProduto,
+      updated_at: new Date().toISOString(),
+    };
     let produtoId = form.id;
     if (form.id) {
       await supabase.from("produtos").update(payload).eq("id", form.id);
