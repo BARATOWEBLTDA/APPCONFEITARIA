@@ -2431,7 +2431,7 @@ export default function Produtos() {
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes" | "personalizavel">("simples");
   const [wizardSubtipo, setWizardSubtipo] = useState<"sabores_e_tamanhos" | "so_sabores" | "so_tamanhos" | null>(null);
-  const [editTab, setEditTab] = useState<"info" | "variacoes" | "fotos" | "extras">("info");
+  const [editTab, setEditTab] = useState<"info" | "opcoes" | "preco" | "fotos">("info");
   const [confirmMudaSubtipo, setConfirmMudaSubtipo] = useState<{
     novoSubtipo: "sabores_e_tamanhos" | "so_sabores" | "so_tamanhos";
     quantidade: number;
@@ -3302,7 +3302,7 @@ export default function Produtos() {
               </div>
             )}
 
-            {/* ══════ Tabs do MODO EDIÇÃO ══════ */}
+            {/* ══════ Tabs do MODO EDIÇÃO (V3 — 4 tabs espelhando o wizard) ══════ */}
             {form.id && (
               <div className="prod-edit-tabs">
                 <button
@@ -3311,25 +3311,23 @@ export default function Produtos() {
                 >
                   <span className="prod-edit-tab-icon">📝</span> Info
                 </button>
-                {wizardTipo === "variacoes" && (
-                  <button
-                    className={`prod-edit-tab ${editTab === "variacoes" ? "prod-edit-tab--ativo" : ""}`}
-                    onClick={() => setEditTab("variacoes")}
-                  >
-                    <span className="prod-edit-tab-icon">🎨</span> Variações
-                  </button>
-                )}
+                <button
+                  className={`prod-edit-tab ${editTab === "opcoes" ? "prod-edit-tab--ativo" : ""}`}
+                  onClick={() => setEditTab("opcoes")}
+                >
+                  <span className="prod-edit-tab-icon">🎨</span> Opções
+                </button>
+                <button
+                  className={`prod-edit-tab ${editTab === "preco" ? "prod-edit-tab--ativo" : ""}`}
+                  onClick={() => setEditTab("preco")}
+                >
+                  <span className="prod-edit-tab-icon">💰</span> Preço
+                </button>
                 <button
                   className={`prod-edit-tab ${editTab === "fotos" ? "prod-edit-tab--ativo" : ""}`}
                   onClick={() => setEditTab("fotos")}
                 >
-                  <span className="prod-edit-tab-icon">📷</span> {wizardTipo === "variacoes" ? "Fotos" : "Fotos e preço"}
-                </button>
-                <button
-                  className={`prod-edit-tab ${editTab === "extras" ? "prod-edit-tab--ativo" : ""}`}
-                  onClick={() => setEditTab("extras")}
-                >
-                  <span className="prod-edit-tab-icon">⚙</span> Extras
+                  <span className="prod-edit-tab-icon">📷</span> Fotos
                 </button>
               </div>
             )}
@@ -3585,7 +3583,7 @@ export default function Produtos() {
             )}
 
             {/* ══════ WIZARD STEP 3 (UNIFICADO — PERSONALIZAÇÃO V3) ══════ */}
-            {((wizardStep === 3 && !form.id) || (form.id && editTab === "variacoes")) && (
+            {((wizardStep === 3 && !form.id) || (form.id && editTab === "opcoes")) && (
               <div className="prod-modal-body">
                 <PersonalizacaoStep
                   grupoMassas={form.grupo_massas || GRUPO_VAZIO}
@@ -3605,11 +3603,11 @@ export default function Produtos() {
 
             {/* ══════ WIZARD STEP 3 (SIMPLES) — VISUAL E PREÇO ══════ */}
             {/* Ou STEP 4 quando variações (visual + preço só de fotos) */}
-            {(((wizardStep === 4 || wizardStep === 5) && !form.id) || (form.id && editTab === "fotos")) && (
+            {(((wizardStep === 4 || wizardStep === 5) && !form.id) || (form.id && (editTab === "fotos" || editTab === "preco"))) && (
             <div className="prod-modal-body">
 
-              {/* Foto — só em step 5 (Fotos e finalização) ou edição */}
-              {(wizardStep === 5 || form.id) && (
+              {/* Fotos — só em step 5 (Fotos e finalização) ou tab Fotos na edição */}
+              {((wizardStep === 5 && !form.id) || (form.id && editTab === "fotos")) && (
               <>
               <div className="prod-section">
                 <p className="prod-section-label prod-section-label--novo">Fotos do Produto</p>
@@ -3887,7 +3885,7 @@ export default function Produtos() {
               )}
 
               {/* Preços por Tamanho — só se tem tamanhos ativos */}
-              {(wizardStep === 4 || form.id) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
                     Preço por {(form.grupo_tamanhos.nome_exibicao || "Tamanhos").toLowerCase().slice(0, -1)} <span className="prod-field-req">obrigatório</span>
@@ -3926,7 +3924,7 @@ export default function Produtos() {
               )}
 
               {/* Preços por Sabor — só se tem sabores ativos E sabor_tem_preco_proprio */}
-              {(wizardStep === 4 || form.id) && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
                     Preço por sabor <span className="prod-field-req">obrigatório</span>
@@ -3966,7 +3964,7 @@ export default function Produtos() {
 
               {/* Preço e Venda — só em step 4 (Preço e venda) ou edição */}
               {/* ══════ SEÇÃO 1: Preço base + Forma de venda ══════ */}
-              {(wizardStep === 4 || form.id) && !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) && (
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">Preço base <span className="prod-field-req">obrigatório</span></p>
                   <div className="prod-row-2">
@@ -3992,7 +3990,7 @@ export default function Produtos() {
               )}
 
               {/* ══════ SEÇÃO 2: Adicionais das opções ══════ */}
-              {(wizardStep === 4 || form.id) && (() => {
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (() => {
                 const gruposComOpcoes = [
                   { key: "massas", label: "Massas", grupo: form.grupo_massas },
                   { key: "recheios", label: "Recheios", grupo: form.grupo_recheios },
@@ -4065,7 +4063,7 @@ export default function Produtos() {
 
               {/* ══════ SEÇÃO 3: Regra de conflito Sabor × Tamanho ══════
                   Aparece SÓ quando há conflito real de preço (Passo 4) */}
-              {(wizardStep === 4 || form.id) && (() => {
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (() => {
                 const gs = form.grupo_sabores;
                 const gt = form.grupo_tamanhos;
                 const conflito = existeConflitoSaborTamanho({
@@ -4202,8 +4200,8 @@ export default function Produtos() {
             </div>
             )}
 
-            {/* ══════ WIZARD STEP 4 — EXTRAS E CONFIGURAÇÕES ══════ */}
-            {(form.id && editTab === "extras") && (
+            {/* ══════ Extras pagos — agora dentro da tab Preço (V3) ══════ */}
+            {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
             <div className="prod-modal-body">
 
               {/* Adicionais */}
@@ -4308,7 +4306,7 @@ export default function Produtos() {
               </div>
 
               {/* Promoção — só em step 4 (Preço) ou edição */}
-              {(wizardStep === 4 || form.id) && (
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
               <div className="prod-section">
                 <p className="prod-section-label">Promoção</p>
                 <Toggle label="Produto em promoção" value={form.promocao} onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v }))} colorClass="active-pink" />
@@ -4382,8 +4380,8 @@ export default function Produtos() {
               </div>
               )}
 
-              {/* Status — só em step 5 (Fotos) ou edição */}
-              {(wizardStep === 5 || form.id) && (
+              {/* Status — só em step 5 (Fotos) ou tab Fotos na edição */}
+              {((wizardStep === 5 && !form.id) || (form.id && editTab === "fotos")) && (
               <div className="prod-section">
                 <p className="prod-section-label">Status</p>
                 <div className="prod-toggles" style={{ flexDirection: "column", gap: "0.5rem" }}>
