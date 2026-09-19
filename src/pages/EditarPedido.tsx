@@ -10,6 +10,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { gerarPedidoPDF } from '@/lib/gerarPedidoPDF'
 import HorarioSheet from '@/components/HorarioSheet'
+import { criarBreakdownV1, criarPersonalizacoesV1, SNAPSHOT_VERSION_ATUAL } from '@/lib/pedido-snapshot'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────
 type PedidoItem = {
@@ -695,6 +696,12 @@ export default function EditarPedido() {
           valor_unitario: it.valor_unitario,
           observacoes: it.observacoes || '',
           imagem_url: it.imagem_url || null,
+          // ─── Snapshot Passo 0A ─────────────────────────────────────
+          // EditarPedido preserva o snapshot original de cada item se existir,
+          // e cria snapshot básico pra itens novos adicionados na edição
+          personalizacoes: criarPersonalizacoesV1((it as any).personalizacoes || {}),
+          preco_breakdown: (it as any).preco_breakdown || criarBreakdownV1({ final: it.valor_unitario }),
+          snapshot_version: SNAPSHOT_VERSION_ATUAL,
         }))
         const { error: errIns } = await supabase.from('pedido_itens').insert(itensInsert)
         if (errIns) {

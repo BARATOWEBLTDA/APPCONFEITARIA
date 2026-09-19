@@ -7,6 +7,7 @@ import { formatCurrency } from '@/utils/helpers'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { PerfilTab } from './PerfilTab'
 import { PedidosTab } from './PedidosTab'
+import { criarBreakdownV1, criarPersonalizacoesV1, SNAPSHOT_VERSION_ATUAL } from '@/lib/pedido-snapshot'
 
 interface CheckoutConfig {
   formas_pagamento: string[]
@@ -323,7 +324,14 @@ function CartContent({
                 pedido_id: pedidoSalvo.id, user_id: confeteiraUserId, produto_id: item.id,
                 nome_produto: item.name, quantidade: item.quantity, valor_unitario: item.price,
                 desconto: 0, observacoes: item.observations || null,
-                personalizacoes: { massa: item.selectedMassa||null, recheio: item.selectedRecheio||null, cobertura: item.selectedCobertura||null },
+                // ─── Snapshot Passo 0A ─────────────────────────────────
+                personalizacoes: criarPersonalizacoesV1({
+                  massa: item.selectedMassa || null,
+                  recheio: item.selectedRecheio || null,
+                  cobertura: item.selectedCobertura || null,
+                }),
+                preco_breakdown: criarBreakdownV1({ final: item.price }),
+                snapshot_version: SNAPSHOT_VERSION_ATUAL,
               }))
             )
             await supabase.from('pedido_historico').insert({

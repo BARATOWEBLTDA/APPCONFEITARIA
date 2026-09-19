@@ -6,6 +6,7 @@ import { type Pedido, type PedidoItem, EMPTY_PEDIDO, EMPTY_ITEM } from '@/pages/
 import StepCliente from '@/pages/PedidoFormCliente'
 import StepProdutos from '@/pages/PedidoFormProdutos'
 import StepPagamento from '@/pages/PedidoFormPagamento'
+import { criarBreakdownV1, criarPersonalizacoesV1, SNAPSHOT_VERSION_ATUAL } from '@/lib/pedido-snapshot'
 
 // ─── Labels das etapas ────────────────────────────────────────────────────────
 const STEPS = [
@@ -204,8 +205,14 @@ export default function PedidoForm() {
             valor_unitario: item.valor_unitario || 0,
             desconto: item.desconto || 0,
             observacoes: item.observacoes || null,
-            personalizacoes: item.personalizacoes || {},
             imagem_url: item.imagem_url || null,
+            // ─── Snapshot Passo 0A ─────────────────────────────────────
+            personalizacoes: criarPersonalizacoesV1(item.personalizacoes || {}),
+            preco_breakdown: criarBreakdownV1({
+              final: item.valor_unitario || 0,
+              desconto: item.desconto || 0,
+            }),
+            snapshot_version: SNAPSHOT_VERSION_ATUAL,
           }))
         )
       }

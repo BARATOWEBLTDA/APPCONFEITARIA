@@ -5,6 +5,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import AppPageHeader from '@/components/AppPageHeader'
 import HorarioSheet from '@/components/HorarioSheet'
 import { tocarSom } from '@/hooks/useSom'
+import { criarBreakdownV1, criarPersonalizacoesV1, SNAPSHOT_VERSION_ATUAL } from '@/lib/pedido-snapshot'
 
 // ── Tipos ─────────────────────────────────────────────────────────────────
 type TipoVenda = 'encomenda' | 'pronta_entrega' | null
@@ -355,7 +356,7 @@ export default function NovaVenda() {
       return
     }
 
-    // Inserir itens
+    // Inserir itens (com snapshot v1 — Passo 0A)
     const itensInsert = itens.map(it => ({
       pedido_id: novoPedido.id,
       produto_id: it.produto_id,
@@ -364,6 +365,12 @@ export default function NovaVenda() {
       valor_unitario: it.valor_unitario,
       observacoes: it.observacoes || '',
       imagem_url: it.imagem_url || null,
+      // ─── Snapshot Passo 0A ─────────────────────────────────────────
+      // NovaVenda hoje não coleta massa/recheio/cobertura/sabor/tamanho
+      // Salva estrutura vazia. Passo 1 (GRUPO_OPCOES) vai enriquecer.
+      personalizacoes: criarPersonalizacoesV1({}),
+      preco_breakdown: criarBreakdownV1({ final: it.valor_unitario }),
+      snapshot_version: SNAPSHOT_VERSION_ATUAL,
     }))
     const { error: errItens } = await supabase.from('pedido_itens').insert(itensInsert)
     if (errItens) {
