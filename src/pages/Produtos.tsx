@@ -737,6 +737,8 @@ function SelectDoonly({
           cursor: pointer;
           font-family: inherit;
           transition: background 0.12s;
+          width: 100%;
+          box-sizing: border-box;
         }
         .sd-sheet-item:hover { background: #FAF8F5; }
         .sd-sheet-item--ativo {
@@ -789,6 +791,8 @@ function SelectDoonly({
           font-size: 13.5px;
           color: #2D1F26;
           transition: background 0.12s;
+          width: 100%;
+          box-sizing: border-box;
         }
         .sd-pop-item:hover { background: #FAF8F5; }
         .sd-pop-item--ativo {
