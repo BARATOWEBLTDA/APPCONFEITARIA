@@ -5977,17 +5977,18 @@ export default function Produtos() {
           border: 1px solid #F0EBED;
         }
         .prod-preview-info-label {
-          font-size: 10px;
-          color: #6B5D64;
-          font-weight: 700;
+          font-family: var(--font-base);
+          font-size: var(--font-caption);
+          color: var(--text-secondary);
+          font-weight: var(--fw-semibold);
           letter-spacing: 0.03em;
         }
         .prod-preview-info-valor {
-          font-size: 13px;
-          font-weight: 800;
-          color: #2D1F26;
+          font-family: var(--font-base);
+          font-size: var(--font-body);
+          font-weight: var(--fw-medium);
+          color: var(--text-primary);
           margin-top: 2px;
-          font-family: inherit;
         }
 
         /* Ações */
