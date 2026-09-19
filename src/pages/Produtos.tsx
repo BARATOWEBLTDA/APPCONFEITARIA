@@ -1581,7 +1581,7 @@ export default function Produtos() {
     if (data) setCategorias(data.map((c: any) => c.nome));
   };
 
-  const openNovo = () => { setForm(EMPTY); setFichaTecnica([]); setWizardStep(1); setWizardTipo("simples"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setModal(true); };
+  const openNovo = () => { setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setModal(true); };
   const openEditar = async (p: Produto) => {
     setForm(migrarAdicionaisLegacy({ ...EMPTY, ...p }));
     setFichaTecnica([]);
@@ -1616,7 +1616,7 @@ export default function Produtos() {
       }
     }
   };
-  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(1); setWizardTipo("simples"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setConfirmDiscardProd(false); };
+  const fecharModal = () => { setModal(false); setForm(EMPTY); setFichaTecnica([]); setFichaModalOpen(false); setShowQuickAdd(false); setBuscaInsumo(""); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setConfirmDiscardProd(false); };
 
   // Guard: verifica se o produto tem dados preenchidos (pra decidir se avisa antes de fechar)
   const hasProdData = (): boolean => {
@@ -2192,24 +2192,19 @@ export default function Produtos() {
           <div className="prod-modal prod-modal--novo" onClick={e => e.stopPropagation()}>
             {wizardStep >= 2 && (
             <div className="prod-modal-header-novo">
-              {wizardStep > 1 && !form.id ? (
-                <button className="prod-modal-back-novo" onClick={() => setWizardStep(s => Math.max(1, s - 1) as 1 | 2 | 3 | 4 | 5)} aria-label="Voltar">
+              {wizardStep > 2 && !form.id ? (
+                <button className="prod-modal-back-novo" onClick={() => setWizardStep(s => Math.max(2, s - 1) as 1 | 2 | 3 | 4 | 5)} aria-label="Voltar">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
               ) : <div style={{width: 36}} />}
               <div className="prod-modal-title-wrap">
-                {!form.id && <div className="prod-modal-eyebrow">Passo {wizardStep - 1} de {wizardTipo === "simples" ? 3 : 4}</div>}
+                {!form.id && <div className="prod-modal-eyebrow">Passo {wizardStep - 1} de 3</div>}
                 <div className="prod-modal-title-novo">
                   {form.id ? "Editar produto" : (() => {
                     if (wizardStep === 2) return "Informações do produto";
-                    if (wizardStep === 3 && wizardTipo === "variacoes") return "Sabores e tamanhos";
-                    if (wizardStep === 3 && wizardTipo === "personalizavel") return "Personalização";
-                    if (wizardStep === 3) return "Visual e preço";
-                    if (wizardStep === 4 && wizardTipo === "variacoes") return "Fotos do produto";
-                    if (wizardStep === 4 && wizardTipo === "personalizavel") return "Foto e finalização";
-                    if (wizardStep === 4) return "Extras";
-                    if (wizardStep === 5) return "Extras";
-                    return "Cadastrar produto";
+                    if (wizardStep === 3) return "Opções do produto";
+                    if (wizardStep === 4) return "Fotos e finalização";
+                    return "";
                   })()}
                 </div>
                 {form.id && form.nome && (
@@ -2225,7 +2220,7 @@ export default function Produtos() {
               <div className="prod-progresso-bar-wrap">
                 <div
                   className="prod-progresso-bar-fill"
-                  style={{ width: `${((wizardStep - 1) / (wizardTipo === "simples" ? 3 : 4)) * 100}%` }}
+                  style={{ width: `${((wizardStep - 1) / 3) * 100}%` }}
                 />
               </div>
             )}
@@ -2502,47 +2497,8 @@ export default function Produtos() {
             </div>
             )}
 
-            {/* ══════ WIZARD STEP 3 — VISUAL E PREÇO (fotos, preço, variações) ══════ */}
-            {/* ══════ WIZARD STEP 3 (VARIAÇÕES) — SABORES E TAMANHOS ══════ */}
-            {((wizardStep === 3 && wizardTipo === "variacoes" && !form.id) || (form.id && wizardTipo === "variacoes" && editTab === "variacoes")) && (
-              <SaboresTamanhosStep
-                subtipo={(() => {
-                  // Auto-detect na edição baseado nos dados
-                  if (wizardSubtipo) return wizardSubtipo;
-                  const sabs = (form.recheios_disponiveis || []).length;
-                  const tams = (form.tamanhos_disponiveis || []).length;
-                  if (sabs > 0 && tams > 0) return "sabores_e_tamanhos";
-                  if (sabs > 0) return "so_sabores";
-                  if (tams > 0) return "so_tamanhos";
-                  return "sabores_e_tamanhos";
-                })()}
-                onSubtipoChange={(novo) => {
-                  // Detecta se vai perder dados ao trocar
-                  const sabores = form.recheios_disponiveis || [];
-                  const tamanhos = form.tamanhos_disponiveis || [];
-                  const vaiperderSabores = novo === "so_tamanhos" && sabores.length > 0;
-                  const vaiperderTamanhos = novo === "so_sabores" && tamanhos.length > 0;
-                  if (vaiperderSabores || vaiperderTamanhos) {
-                    setConfirmMudaSubtipo({
-                      novoSubtipo: novo,
-                      quantidade: vaiperderSabores ? sabores.length : tamanhos.length,
-                      oQuePerde: vaiperderSabores ? "sabor" : "tamanho",
-                    });
-                  } else {
-                    setWizardSubtipo(novo);
-                  }
-                }}
-                sabores={form.recheios_disponiveis || []}
-                onSaboresChange={(list) => setForm(f => ({ ...f, recheios_disponiveis: list }))}
-                tamanhos={form.tamanhos_disponiveis || []}
-                onTamanhosChange={(list) => setForm(f => ({ ...f, tamanhos_disponiveis: list }))}
-                precos={form.precos_variacoes || {}}
-                onPrecosChange={(mapa) => setForm(f => ({ ...f, precos_variacoes: mapa }))}
-              />
-            )}
-
-            {/* ══════ WIZARD STEP 3 (PERSONALIZAVEL V3) ══════ */}
-            {((wizardStep === 3 && wizardTipo === "personalizavel" && !form.id) || (form.id && form.tipo_produto === "personalizavel" && editTab === "variacoes")) && (
+            {/* ══════ WIZARD STEP 3 (UNIFICADO — PERSONALIZAÇÃO V3) ══════ */}
+            {((wizardStep === 3 && !form.id) || (form.id && editTab === "variacoes")) && (
               <div className="prod-modal-body">
                 <PersonalizacaoStep
                   grupoMassas={form.grupo_massas || GRUPO_VAZIO}
@@ -2561,7 +2517,7 @@ export default function Produtos() {
 
             {/* ══════ WIZARD STEP 3 (SIMPLES) — VISUAL E PREÇO ══════ */}
             {/* Ou STEP 4 quando variações (visual + preço só de fotos) */}
-            {((wizardStep === 3 && wizardTipo === "simples" && !form.id) || (wizardStep === 4 && wizardTipo === "variacoes" && !form.id) || (form.id && editTab === "fotos")) && (
+            {((wizardStep === 4 && !form.id) || (form.id && editTab === "fotos")) && (
             <div className="prod-modal-body">
 
               {/* Foto */}
@@ -3230,7 +3186,7 @@ export default function Produtos() {
             )}
 
             {/* ══════ WIZARD STEP 4 — EXTRAS E CONFIGURAÇÕES ══════ */}
-            {((wizardStep === 4 && wizardTipo === "simples" && !form.id) || (wizardStep === 5 && wizardTipo === "variacoes" && !form.id) || (form.id && editTab === "extras")) && (
+            {(form.id && editTab === "extras") && (
             <div className="prod-modal-body">
 
               {/* Adicionais */}
@@ -3427,36 +3383,13 @@ export default function Produtos() {
               {(() => {
                 // Validações por passo
                 const canAdvance = (() => {
+                  // Step 2: Informações — nome + categoria obrigatórios
                   if (wizardStep === 2) return form.nome.trim().length > 0 && form.categoria.trim().length > 0;
-                  // Step 3 quando SIMPLES = preço > 0
-                  if (wizardStep === 3 && wizardTipo === "simples") return form.preco_normal > 0;
-                  // Step 3 quando VARIAÇÕES = valida sabores/tamanhos por subtipo
-                  if (wizardStep === 3 && wizardTipo === "variacoes") {
-                    const sabores = form.recheios_disponiveis || [];
-                    const tamanhos = form.tamanhos_disponiveis || [];
-                    const precos = form.precos_variacoes || {};
-                    if (wizardSubtipo === "sabores_e_tamanhos") {
-                      if (sabores.length === 0 || tamanhos.length === 0) return false;
-                      // pelo menos 1 preço > 0
-                      return Object.values(precos).some(v => v > 0);
-                    }
-                    if (wizardSubtipo === "so_sabores") {
-                      if (sabores.length === 0) return false;
-                      return sabores.some(s => (precos[`${s}|`] || 0) > 0);
-                    }
-                    if (wizardSubtipo === "so_tamanhos") {
-                      if (tamanhos.length === 0) return false;
-                      return tamanhos.some(t => (precos[`|${t.label}`] || 0) > 0);
-                    }
-                    return false;
-                  }
-                  // Step 3 quando PERSONALIZAVEL = pelo menos 1 grupo ativo com opções +
-                  //   se Tamanhos ativo, precisa pelo menos 1 tamanho com preço > 0
-                  //   se Tamanhos NÃO ativo, preço base > 0
-                  if (wizardStep === 3 && wizardTipo === "personalizavel") {
+                  // Step 3: Opções — se nada ativado, é produto simples e precisa preço base > 0
+                  //   Se tem Personalização com Tamanhos, tamanho tem preço
+                  //   Se não, preço base > 0 sempre
+                  if (wizardStep === 3) {
                     const gm = form.grupo_massas, gr = form.grupo_recheios, gc = form.grupo_coberturas, gt = form.grupo_tamanhos;
-                    const algum = [gm, gr, gc, gt].some(g => g?.ativo && g.opcoes.length > 0);
-                    if (!algum) return false;
                     const temTamanhoAtivo = gt?.ativo && gt.opcoes.length > 0;
                     if (temTamanhoAtivo) {
                       const temPrecoTamanho = gt!.opcoes.some(o => o.preco > 0);
@@ -3464,15 +3397,16 @@ export default function Produtos() {
                     } else {
                       if ((form.preco_normal || 0) <= 0) return false;
                     }
+                    // Se ativou algum grupo, precisa ter pelo menos 1 opção nele
+                    const gruposAtivos = [gm, gr, gc, gt].filter(g => g?.ativo);
+                    if (gruposAtivos.some(g => (g?.opcoes.length || 0) === 0)) return false;
                     return true;
                   }
-                  // Step 4 quando VARIAÇÕES (visual+preço, mas preço já foi no 3)
-                  if (wizardStep === 4 && wizardTipo === "variacoes") return true;
-                  // Step 4 quando PERSONALIZAVEL = fotos (opcional)
-                  if (wizardStep === 4 && wizardTipo === "personalizavel") return true;
+                  // Step 4: Fotos — sempre pode avançar (fotos opcionais)
+                  if (wizardStep === 4) return true;
                   return true;
                 })();
-                const isLast = (wizardStep === 4 && wizardTipo === "simples") || (wizardStep === 5 && wizardTipo === "variacoes") || (wizardStep === 4 && wizardTipo === "personalizavel");
+                const isLast = wizardStep === 4;
                 const isEdit = !!form.id;
 
                 if (isEdit) {
@@ -6408,16 +6342,36 @@ export default function Produtos() {
           .wiz-step1-hero { padding: 24px 16px 16px; }
           .wiz-step1-title { font-size: 20px; }
           .wiz-step1-sub { font-size: 13px; }
-          .wiz-step1-cards { padding: 0 16px 8px; gap: 8px; }
-          .wiz-step1-card {
-            padding: 16px 6px;
-            min-height: 170px;
-            border-radius: 12px;
-            gap: 8px;
+          .wiz-step1-cards {
+            padding: 0 16px 8px;
+            gap: 10px;
+            grid-template-columns: 1fr 1fr;
           }
-          .wiz-step1-card-icon { width: 42px; height: 42px; }
-          .wiz-step1-card-title { font-size: 12.5px; }
-          .wiz-step1-card-desc { font-size: 10.5px; }
+          .wiz-step1-card[data-tipo="personalizavel"] {
+            grid-column: 1 / -1;
+          }
+          .wiz-step1-card {
+            padding: 20px 12px;
+            min-height: 170px;
+            border-radius: 14px;
+            gap: 10px;
+          }
+          .wiz-step1-card[data-tipo="personalizavel"] {
+            min-height: auto;
+            padding: 18px 16px;
+            flex-direction: row;
+            text-align: left;
+            gap: 14px;
+          }
+          .wiz-step1-card[data-tipo="personalizavel"] .wiz-step1-card-icon {
+            width: 44px; height: 44px;
+            flex-shrink: 0;
+          }
+          .wiz-step1-card[data-tipo="personalizavel"] .wiz-step1-card-title { font-size: 14px; }
+          .wiz-step1-card[data-tipo="personalizavel"] .wiz-step1-card-desc { font-size: 11.5px; margin-top: 2px; }
+          .wiz-step1-card-icon { width: 48px; height: 48px; }
+          .wiz-step1-card-title { font-size: 13.5px; }
+          .wiz-step1-card-desc { font-size: 11.5px; }
         }
 
 
