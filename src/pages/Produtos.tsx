@@ -2832,8 +2832,12 @@ export default function Produtos() {
     const gruposArray = carregarGruposDoBanco(form);
     const gruposPayload = salvarGruposParaBanco(gruposArray);
 
+    // ─── Limpar campos que NÃO pertencem à tabela produtos ───
+    // (evita Supabase rejeitar silenciosamente o update inteiro)
+    const { produto_insumos, created_at, ...formLimpo } = form as any;
+
     const payload = {
-      ...form,
+      ...formLimpo,
       ...gruposPayload,
       preco_normal: precoBase,
       tipo_produto: tipoProduto,
@@ -2841,9 +2845,21 @@ export default function Produtos() {
     };
     let produtoId = form.id;
     if (form.id) {
-      await supabase.from("produtos").update(payload).eq("id", form.id);
+      const { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
+      if (error) {
+        console.error("Erro ao atualizar produto:", error);
+        alert(`Erro ao salvar: ${error.message}`);
+        setSaving(false);
+        return;
+      }
     } else {
-      const { data: novo } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
+      const { data: novo, error } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
+      if (error) {
+        console.error("Erro ao criar produto:", error);
+        alert(`Erro ao criar: ${error.message}`);
+        setSaving(false);
+        return;
+      }
       produtoId = novo?.id;
     }
 
