@@ -4748,15 +4748,26 @@ export default function Produtos() {
               {/* Grid 2 colunas: variações + cadastrado */}
               <div className="prod-preview-info-grid">
                 <div className="prod-preview-info-box">
-                  <div className="prod-preview-info-label">VARIAÇÕES</div>
+                  <div className="prod-preview-info-label">OPÇÕES</div>
                   <div className="prod-preview-info-valor">
                     {(() => {
-                      const sabores = (previewProduto.recheios_disponiveis || []).length;
-                      const tamanhos = (previewProduto.tamanhos_disponiveis || []).length;
-                      if (sabores > 0 && tamanhos > 0) return `${sabores} sabores × ${tamanhos}`;
-                      if (sabores > 0) return `${sabores} sabor${sabores > 1 ? "es" : ""}`;
-                      if (tamanhos > 0) return `${tamanhos} tamanho${tamanhos > 1 ? "s" : ""}`;
-                      return "Nenhuma";
+                      // V3: lê dos grupos ativos
+                      const partes: string[] = [];
+                      const contar = (grupo: any, label: string, labelPlural: string) => {
+                        if (grupo?.ativo && (grupo.opcoes?.length || 0) > 0) {
+                          const n = grupo.opcoes.length;
+                          partes.push(`${n} ${n === 1 ? label : labelPlural}`);
+                        }
+                      };
+                      contar(previewProduto.grupo_massas, "massa", "massas");
+                      contar(previewProduto.grupo_recheios, "recheio", "recheios");
+                      contar(previewProduto.grupo_coberturas, "cobertura", "coberturas");
+                      contar(previewProduto.grupo_sabores, "sabor", "sabores");
+                      contar((previewProduto as any).grupo_tamanhos, "tamanho", "tamanhos");
+                      if (partes.length === 0) return "Nenhuma";
+                      if (partes.length === 1) return partes[0];
+                      if (partes.length === 2) return partes.join(" + ");
+                      return `${partes.length} categorias`;
                     })()}
                   </div>
                 </div>
