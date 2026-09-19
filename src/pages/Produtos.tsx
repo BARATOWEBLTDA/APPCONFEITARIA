@@ -3,6 +3,14 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { listarBiblioteca, salvarNaBiblioteca, type BibliotecaOpcao } from "@/lib/biblioteca";
 import { carregarGruposDoBanco, salvarGruposParaBanco } from "@/lib/produto-grupos";
+import {
+  existeConflitoSaborTamanho,
+  REGRA_CONFLITO_LABEL,
+  REGRA_CONFLITO_HINT,
+  REGRA_CONFLITO_DEFAULT,
+  TIPO_ADICIONAL_DEFAULT,
+  type RegraConflitoTamanho,
+} from "@/lib/produto-precificacao";
 import { gerarFichaProduto } from "@/lib/gerarFichaProduto";
 import { usePlano } from "@/hooks/usePlano";
 import { ImageCropper } from "@/components/ui/ImageCropper";
@@ -56,7 +64,7 @@ type KitItem = { nome: string; quantidade: string };
 // ═══ ARQUITETURA V3 ═══════════════════════════════════════════════
 // Tipos pra novo sistema Produto + Variações + Personalização
 type Variacao = { id: string; nome: string; preco: number; foto?: string };
-type OpcaoPersonalizacao = { id: string; nome: string; adicional: number; foto?: string };
+type OpcaoPersonalizacao = { id: string; nome: string; adicional: number; foto?: string; tipo_adicional?: "fixo" | "por_kg" | "por_unidade" | "por_quantidade" };
 type OpcaoTamanho = { id: string; nome: string; preco: number; foto?: string };
 type DistribuicaoModo = "nenhuma" | "igual" | "livre";
 type GrupoPersonalizacao = {
@@ -75,7 +83,7 @@ type GrupoTamanhos = {
   opcoes: OpcaoTamanho[];
   foto_por_opcao?: boolean;
 };
-type OpcaoSabor = { id: string; nome: string; adicional: number; preco?: number; foto?: string };
+type OpcaoSabor = { id: string; nome: string; adicional: number; preco?: number; foto?: string; tipo_adicional?: "fixo" | "por_kg" | "por_unidade" | "por_quantidade" };
 type GrupoSabores = {
   ativo: boolean;
   min: number;
@@ -84,6 +92,7 @@ type GrupoSabores = {
   opcoes: OpcaoSabor[];
   foto_por_opcao?: boolean;
   sabor_tem_preco_proprio?: boolean;
+  regra_conflito_tamanho?: "preco_tamanho" | "preco_sabor" | "tamanho_base_sabor_adicional";
 };
 type TipoProduto = "simples" | "variacao" | "personalizavel" | "variacao_e_personalizavel";
 
@@ -3735,11 +3744,117 @@ export default function Produtos() {
                                   style={{width: 60, border: "none", outline: "none", background: "transparent", fontSize: 13.5, fontWeight: 800, color: op.adicional > 0 ? "#E85A8C" : "#9A8B93", textAlign: "right", fontFamily: "inherit"}}
                                 />
                               </div>
+                              {/* Mini-badge tipo_adicional — só quando adicional > 0. Por enquanto só "Fixo" (motor suporta 4, UI libera quando cardápio V3 estiver pronto) */}
+                              {op.adicional > 0 && (
+                                <span
+                                  title="Tipo de cobrança: soma uma vez no pedido"
+                                  style={{
+                                    fontSize: 10.5,
+                                    fontWeight: 800,
+                                    color: "#6B5D64",
+                                    background: "#F0EBED",
+                                    padding: "4px 8px",
+                                    borderRadius: 6,
+                                    letterSpacing: "0.02em",
+                                    textTransform: "uppercase",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  Fixo
+                                </span>
+                              )}
                             </div>
                           ))}
                         </div>
                       </div>
                     ))}
+                  </div>
+                );
+              })()}
+
+              {/* ══════ SEÇÃO 3: Regra de conflito Sabor × Tamanho ══════
+                  Aparece SÓ quando há conflito real de preço (Passo 4) */}
+              {(wizardStep === 4 || form.id) && (() => {
+                const gs = form.grupo_sabores;
+                const gt = form.grupo_tamanhos;
+                const conflito = existeConflitoSaborTamanho({
+                  sabor_ativo: !!gs?.ativo,
+                  sabor_tem_preco_proprio: !!gs?.sabor_tem_preco_proprio,
+                  sabor_tem_opcao_com_preco: !!gs?.opcoes?.some((o: any) => (o.preco || 0) > 0),
+                  tamanho_ativo: !!gt?.ativo,
+                  tamanho_tem_opcao_com_preco: !!gt?.opcoes?.some(o => (o.preco || 0) > 0),
+                });
+                if (!conflito) return null;
+
+                const regraAtual = (gs?.regra_conflito_tamanho || REGRA_CONFLITO_DEFAULT) as RegraConflitoTamanho;
+                const setRegra = (nova: RegraConflitoTamanho) => {
+                  setForm(f => ({
+                    ...f,
+                    grupo_sabores: { ...(f.grupo_sabores as GrupoSabores), regra_conflito_tamanho: nova },
+                  }));
+                };
+
+                return (
+                  <div className="prod-section">
+                    <div style={{
+                      background: "linear-gradient(135deg, #FEF3C7 0%, #FEF9E7 100%)",
+                      border: "1.5px solid #FCD34D",
+                      borderRadius: 12,
+                      padding: 16,
+                    }}>
+                      <div style={{display: "flex", alignItems: "center", gap: 8, marginBottom: 6}}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                          <line x1="12" y1="9" x2="12" y2="13"/>
+                          <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <div style={{fontSize: 12, fontWeight: 800, color: "#92400E", textTransform: "uppercase", letterSpacing: "0.05em"}}>
+                          Conflito de preço detectado
+                        </div>
+                      </div>
+                      <div style={{fontSize: 13.5, fontWeight: 700, color: "#2D1F26", marginBottom: 4}}>
+                        Sabor e Tamanho estão com preço próprio
+                      </div>
+                      <div style={{fontSize: 12.5, color: "#6B5D64", marginBottom: 14, lineHeight: 1.4}}>
+                        Como o preço deve ser calculado quando o cliente escolher ambos?
+                      </div>
+                      <div style={{display: "flex", flexDirection: "column", gap: 8}}>
+                        {(["preco_tamanho", "preco_sabor", "tamanho_base_sabor_adicional"] as RegraConflitoTamanho[]).map(regra => {
+                          const ativo = regraAtual === regra;
+                          return (
+                            <label
+                              key={regra}
+                              style={{
+                                display: "flex",
+                                gap: 10,
+                                padding: 12,
+                                background: ativo ? "#fff" : "rgba(255,255,255,0.5)",
+                                border: `1.5px solid ${ativo ? "#E85A8C" : "#E5D8DE"}`,
+                                borderRadius: 10,
+                                cursor: "pointer",
+                                transition: "all 0.15s",
+                              }}
+                            >
+                              <input
+                                type="radio"
+                                name="regra_conflito_st"
+                                checked={ativo}
+                                onChange={() => setRegra(regra)}
+                                style={{marginTop: 2, accentColor: "#E85A8C"}}
+                              />
+                              <div style={{flex: 1}}>
+                                <div style={{fontSize: 13.5, fontWeight: 700, color: "#2D1F26"}}>
+                                  {REGRA_CONFLITO_LABEL[regra]}
+                                </div>
+                                <div style={{fontSize: 12, color: "#6B5D64", marginTop: 2, lineHeight: 1.35}}>
+                                  {REGRA_CONFLITO_HINT[regra]}
+                                </div>
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
                   </div>
                 );
               })()}
