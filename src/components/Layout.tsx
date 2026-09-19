@@ -386,20 +386,20 @@ export default function Layout() {
         }
 
         .sidebar-badge {
-          position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
-          font-size: 9px;
+          position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%);
+          font-size: 10px;
           font-weight: var(--fw-bold);
-          padding: 3px 7px;
+          padding: 4px 8px;
           white-space: nowrap;
           letter-spacing: 0.04em;
           text-transform: uppercase;
           color: #fff;
           background: #2D1F26;
-          border-radius: 5px;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+          border-radius: 6px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
           display: inline-flex;
           align-items: center;
-          gap: 3px;
+          gap: 4px;
           line-height: 1;
           border: none;
           font-family: inherit;
@@ -421,8 +421,8 @@ export default function Layout() {
           transform: translateX(-50%) translateY(0);
         }
         .sidebar-badge-coroa {
-          width: 9px;
-          height: 9px;
+          width: 10px;
+          height: 10px;
           object-fit: contain;
           display: block;
           flex-shrink: 0;
