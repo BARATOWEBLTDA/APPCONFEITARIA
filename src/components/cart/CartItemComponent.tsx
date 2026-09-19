@@ -108,7 +108,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
 
         {/* Preço + stepper */}
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginTop:'6px'}}>
-          <span style={{fontWeight:800, fontSize:'16px', color:'var(--text-primary)'}}>
+          <span style={{fontWeight: 700, fontSize:'16px', color:'var(--text-primary)'}}>
             {formatCurrency(item.price * item.quantity)}
           </span>
 
@@ -127,7 +127,7 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
             </button>
             <span style={{
               minWidth:'38px', textAlign:'center',
-              fontSize:'14px', fontWeight:800, color:'#ea1d2c',
+              fontSize:'14px', fontWeight: 700, color:'#ea1d2c',
               borderLeft:'1.5px solid #fecaca', borderRight:'1.5px solid #fecaca',
               padding:'6px 0', background:'#fff5f5',
             }}>

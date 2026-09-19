@@ -323,7 +323,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
                 </span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   {precoLabel && (
-                    <span style={{ fontSize: 13, fontWeight: 800, color: ativo ? corBotao : 'var(--text-secondary)' }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: ativo ? corBotao : 'var(--text-secondary)' }}>
                       {precoLabel}
                     </span>
                   )}
@@ -391,7 +391,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
         {/* Nome + descrição */}
         <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text-title)', margin: 0 }}>{product.nome}</h2>
+            <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-title)', margin: 0 }}>{product.nome}</h2>
             {product.descricao && (
               <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '6px 0 0', lineHeight: 1.4 }}>
                 {product.descricao}
@@ -405,7 +405,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             padding: '10px 14px', background: '#FDF3F7', borderRadius: 10, border: '1px solid #FCE0E9',
           }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: '#6B5D64' }}>Preço unitário</span>
-            <span style={{ fontSize: 18, fontWeight: 900, color: corBotao }}>
+            <span style={{ fontSize: 18, fontWeight: 800, color: corBotao }}>
               {formatCurrency(calculo.final)} <span style={{ fontSize: 12, color: '#6B5D64', fontWeight: 700 }}>/{FORMA_LABEL[product.forma_venda] || 'un'}</span>
             </span>
           </div>
@@ -470,7 +470,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               }}>
                 <Minus size={16} />
               </button>
-              <span style={{ fontSize: 16, fontWeight: 800, minWidth: 40, textAlign: 'center' }}>
+              <span style={{ fontSize: 16, fontWeight: 700, minWidth: 40, textAlign: 'center' }}>
                 {isKg ? `${quantity.toFixed(1).replace('.', ',')} kg` : quantity}
               </span>
               <button onClick={inc} style={{
@@ -489,7 +489,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             style={{
               padding: '14px', borderRadius: 12, border: 'none', cursor: podeAdicionar ? 'pointer' : 'not-allowed',
               background: podeAdicionar ? corBotao : '#E5D8DE', color: '#fff',
-              fontSize: 15, fontWeight: 800, fontFamily: 'inherit',
+              fontSize: 15, fontWeight: 700, fontFamily: 'inherit',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               transition: 'all 0.15s',
             }}

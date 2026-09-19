@@ -2232,7 +2232,7 @@ export default function EditarPedido() {
         }
         .ep-footer-total-val {
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C2C2A;
           letter-spacing: -0.01em;
           font-variant-numeric: tabular-nums;
@@ -2465,7 +2465,7 @@ export default function EditarPedido() {
         }
         .ep-cnc-title {
           font-size: 18px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C2C2A;
           margin: 0;
           letter-spacing: -0.01em;
@@ -2499,7 +2499,7 @@ export default function EditarPedido() {
         }
         .ep-cnc-card-num {
           font-size: 15px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C2C2A;
           letter-spacing: -0.01em;
         }
@@ -2683,7 +2683,7 @@ export default function EditarPedido() {
         }
         .ep-tl-title {
           font-size: 17px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C2C2A;
           margin: 0;
           letter-spacing: -0.01em;
@@ -2725,7 +2725,7 @@ export default function EditarPedido() {
         }
         .ep-tl-card-num {
           font-size: 15px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C2C2A;
           letter-spacing: -0.01em;
         }
@@ -2756,7 +2756,7 @@ export default function EditarPedido() {
         }
         .ep-tl-info-val {
           font-size: 14px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C2C2A;
           letter-spacing: -0.01em;
           line-height: 1.25;
@@ -2811,7 +2811,7 @@ export default function EditarPedido() {
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          font-weight: 800;
+          font-weight: 700;
           transition: all 0.2s;
         }
         .ep-tl-step-linha {
@@ -3006,7 +3006,7 @@ export default function EditarPedido() {
         }
         .ep-pag-sit-pendente {
           color: #B91C1C;
-          font-weight: 800;
+          font-weight: 700;
           font-variant-numeric: tabular-nums;
         }
 
@@ -3034,7 +3034,7 @@ export default function EditarPedido() {
         }
         .ep-pag-resumo-val {
           color: #2C2C2A;
-          font-weight: 800;
+          font-weight: 700;
           font-variant-numeric: tabular-nums;
           letter-spacing: -0.01em;
         }
@@ -3069,7 +3069,7 @@ export default function EditarPedido() {
         }
         .ep-val-num {
           font-size: 15px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C2C2A;
           font-variant-numeric: tabular-nums;
           letter-spacing: -0.01em;
@@ -3138,7 +3138,7 @@ export default function EditarPedido() {
           display: flex;
           justify-content: space-between;
           font-size: 16px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C2C2A;
           margin-top: 8px;
           padding-top: 10px;
@@ -3231,7 +3231,7 @@ export default function EditarPedido() {
         }
         .ep-item-subtotal {
           font-size: 14px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C2C2A;
           margin-top: 4px;
           letter-spacing: -0.01em;
@@ -3339,7 +3339,7 @@ export default function EditarPedido() {
         }
         .ep-subtotal-val {
           font-size: 15px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C2C2A;
           letter-spacing: -0.01em;
           font-variant-numeric: tabular-nums;
@@ -3462,7 +3462,7 @@ export default function EditarPedido() {
         }
         .ep-prod-item-preco {
           font-size: 13.5px;
-          font-weight: 800;
+          font-weight: 700;
           color: #2C2C2A;
           font-variant-numeric: tabular-nums;
           letter-spacing: -0.01em;

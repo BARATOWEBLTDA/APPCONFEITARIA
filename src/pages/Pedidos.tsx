@@ -953,7 +953,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(900px, calc(100vw - 40px)); max-height: calc(100vh - 40px); background: #fff; border-radius: 16px; box-shadow: 0 24px 60px rgba(0,0,0,0.35); z-index: 9999; display: flex; flex-direction: column; overflow: hidden; font-family: var(--font-base) !important; }
             .mpd-header { padding: 18px 24px; background: #FAFAFA; border-bottom: 1px solid #F0EBED; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-shrink: 0; position: relative; }
             .mpd-num-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
-            .mpd-num { font-size: 22px; font-weight: 900; color: #2D1F26; letter-spacing: -0.02em; font-family: var(--font-base) !important; }
+            .mpd-num { font-size: 22px; font-weight: 800; color: #2D1F26; letter-spacing: -0.02em; font-family: var(--font-base) !important; }
             .mpd-meta { font-size: 12.5px; color: #9A8B93; line-height: 1.5; font-family: var(--font-base) !important; margin: 0; }
             .mpd-close, .mpd-menu-btn { all: unset; background: #F5F1F3; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; color: #6B5D64; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.12s; }
             .mpd-close:hover, .mpd-menu-btn:hover { background: #EBE5E8; color: #2D1F26; }
@@ -970,7 +970,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-body { display: grid; grid-template-columns: 1fr 300px; flex: 1; min-height: 0; overflow: hidden; }
             .mpd-col-left { padding: 22px 24px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; min-height: 0; }
             .mpd-col-right { padding: 22px 24px; background: #fff; border-left: 1px solid #F0EBED; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; min-height: 0; }
-            .mpd-sec-titulo { font-size: 11px; font-weight: 800; color: #9A8B93; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; font-family: var(--font-base) !important; }
+            .mpd-sec-titulo { font-size: 11px; font-weight: 700; color: #9A8B93; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; font-family: var(--font-base) !important; }
             .mpd-sec-val { font-size: 15px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
             .mpd-cli-linha { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #6B5D64; margin-top: 4px; font-family: var(--font-base) !important; }
             .mpd-btn-whats { display: inline-flex; align-items: center; gap: 4px; background: #25D366; color: #fff; padding: 4px 10px; border-radius: 5px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.01em; text-decoration: none; cursor: pointer; border: 0; font-family: var(--font-base) !important; transition: filter 0.12s; }
@@ -985,7 +985,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
               background: linear-gradient(135deg, #E85A8C, #C33A6E);
               color: #fff;
               display: flex; align-items: center; justify-content: center;
-              font-size: 15px; font-weight: 800;
+              font-size: 15px; font-weight: 700;
               flex-shrink: 0;
               overflow: hidden;
               font-family: var(--font-base) !important;
@@ -1014,7 +1014,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-entrega { background: #F1F5F9; border-radius: 10px; padding: 14px; }
             .mpd-entrega--com-mapa { display: grid; grid-template-columns: 1fr 120px; gap: 14px; align-items: stretch; min-height: 110px; }
             .mpd-entrega-info { display: flex; flex-direction: column; justify-content: center; }
-            .mpd-entrega-topo { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11.5px; font-weight: 800; color: #6B5D64; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: var(--font-base) !important; }
+            .mpd-entrega-topo { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 11.5px; font-weight: 700; color: #6B5D64; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; font-family: var(--font-base) !important; }
             .mpd-entrega-sep { color: #B8A5AD; font-weight: 600; }
             .mpd-entrega-val { font-size: 15px; font-weight: 700; letter-spacing: 0.01em; color: #2D1F26; line-height: 1.35; font-family: var(--font-base) !important; }
             .mpd-entrega-end { font-size: 12.5px; color: #4A3540; margin-top: 4px; line-height: 1.4; font-family: var(--font-base) !important; }
@@ -1023,7 +1023,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-mapa-rua-h { position: absolute; left: 0; right: 0; height: 3px; background: #F0EBE0; }
             .mpd-mapa-rua-v { position: absolute; top: 0; bottom: 0; width: 3px; background: #F0EBE0; }
             .mpd-mapa-pin { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -70%); color: #E85A8C; }
-            .mpd-mapa-abrir { position: absolute; bottom: 4px; left: 4px; right: 4px; background: rgba(255,255,255,0.95); color: #2D1F26; border-radius: 4px; padding: 3px 6px; font-size: 9px; font-weight: 800; text-align: center; letter-spacing: 0.03em; font-family: var(--font-base) !important; }
+            .mpd-mapa-abrir { position: absolute; bottom: 4px; left: 4px; right: 4px; background: rgba(255,255,255,0.95); color: #2D1F26; border-radius: 4px; padding: 3px 6px; font-size: 9px; font-weight: 700; text-align: center; letter-spacing: 0.03em; font-family: var(--font-base) !important; }
             .mpd-produto-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #F5EEF0; }
             .mpd-produto-row:last-child { border-bottom: 0; }
             .mpd-produto-img { width: 44px; height: 44px; border-radius: 8px; background: #F5EEF0; display: flex; align-items: center; justify-content: center; color: #B8ACB1; flex-shrink: 0; overflow: hidden; }
@@ -1037,7 +1037,7 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
             .mpd-pers-lbl { font-weight: 700; color: #6B5D64; min-width: 76px; }
             .mpd-fin-total { text-align: right; padding-bottom: 16px; border-bottom: 2px solid #F0EBED; }
             .mpd-fin-total-lbl { font-size: 11px; color: #9A8B93; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--font-base) !important; }
-            .mpd-fin-total-val { font-size: 28px; font-weight: 900; color: #2D1F26; letter-spacing: -0.02em; margin-top: 4px; font-family: var(--font-base) !important; }
+            .mpd-fin-total-val { font-size: 28px; font-weight: 800; color: #2D1F26; letter-spacing: -0.02em; margin-top: 4px; font-family: var(--font-base) !important; }
             .mpd-fin-row { display: flex; justify-content: space-between; font-size: 13px; align-items: center; font-family: var(--font-base) !important; }
             .mpd-fin-row-lbl { color: #6B5D64; }
             .mpd-fin-row-val { font-weight: 700; color: #2D1F26; }
@@ -1646,12 +1646,12 @@ function ModalPagouOuNao({ pedido, novoStatus, onConfirmar, onCancelar }: {
           @keyframes mpagModalIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
           .mpag-header { text-align: center; margin-bottom: 16px; }
           .mpag-icon { font-size: 40px; margin-bottom: 6px; }
-          .mpag-title { font-size: 18px; font-weight: 900; color: #2D1F26; margin: 0 0 8px; letter-spacing: -0.01em; font-family: var(--font-base) !important; }
+          .mpag-title { font-size: 18px; font-weight: 800; color: #2D1F26; margin: 0 0 8px; letter-spacing: -0.01em; font-family: var(--font-base) !important; }
           .mpag-sub { font-size: 12.5px; color: #6B5D64; line-height: 1.5; margin: 0; font-family: var(--font-base) !important; }
           .mpag-sub b { color: #2D1F26; font-weight: 700; }
           .mpag-total { display: flex; justify-content: space-between; align-items: center; background: #F1F5F9; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
-          .mpag-total-lbl { font-size: 11px; font-weight: 800; color: #9A8B93; text-transform: uppercase; letter-spacing: 0.06em; }
-          .mpag-total-val { font-size: 18px; font-weight: 900; color: #2D1F26; letter-spacing: -0.02em; font-family: var(--font-base) !important; }
+          .mpag-total-lbl { font-size: 11px; font-weight: 700; color: #9A8B93; text-transform: uppercase; letter-spacing: 0.06em; }
+          .mpag-total-val { font-size: 18px; font-weight: 800; color: #2D1F26; letter-spacing: -0.02em; font-family: var(--font-base) !important; }
           .mpag-opcoes { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
           .mpag-opcao { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1.5px solid #F0EBED; border-radius: 10px; cursor: pointer; transition: border-color 0.12s, background 0.12s; }
           .mpag-opcao:hover { border-color: #E5D8DE; background: #FDFAFB; }
@@ -2542,7 +2542,7 @@ export default function Pedidos() {
             </div>
 
             <h3 style={{
-              fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-title)',
+              fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-title)',
               margin: '0 0 8px', letterSpacing: '-0.02em',
             }}>
               Ainda não temos produtos!
@@ -2613,7 +2613,7 @@ export default function Pedidos() {
         .ped-filtro-ativo-title {
           margin: 0;
           font-size: 13px;
-          font-weight: 800;
+          font-weight: 700;
           color: var(--text-title);
           letter-spacing: -0.01em;
         }
@@ -2671,14 +2671,14 @@ export default function Pedidos() {
         .pedidos-aba--ativa {
           background: #fff;
           color: #E85A8C;
-          font-weight: 800;
+          font-weight: 700;
           box-shadow: 0 2px 6px rgba(0,0,0,0.08);
         }
         .pedidos-aba-count {
           background: #F5F1F3;
           color: #6B5D64;
           font-size: 10.5px;
-          font-weight: 800;
+          font-weight: 700;
           padding: 2px 6px;
           border-radius: 5px;
           min-width: 20px;
@@ -3036,7 +3036,7 @@ export default function Pedidos() {
           background: var(--primary);
           color: #fff;
           font-size: 10px;
-          font-weight: 800;
+          font-weight: 700;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -3088,7 +3088,7 @@ export default function Pedidos() {
         }
         .plist-valor {
           font-size: 13px;
-          font-weight: 800;
+          font-weight: 700;
           color: var(--primary);
           flex-shrink: 0;
           letter-spacing: -0.01em;
@@ -3313,7 +3313,7 @@ export default function Pedidos() {
         .mp-banner-title {
           margin: 0;
           font-size: 13px;
-          font-weight: 800;
+          font-weight: 700;
           color: var(--text-title);
           letter-spacing: -0.01em;
         }
@@ -3425,7 +3425,7 @@ export default function Pedidos() {
         @keyframes hsSlideRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .fd-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 10px auto 0; flex-shrink: 0; }
         .fd-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .fd-title { font-size: 15px; font-weight: 800; color: var(--text-title); font-family: var(--font-base); letter-spacing: -0.01em; }
+        .fd-title { font-size: 15px; font-weight: 700; color: var(--text-title); font-family: var(--font-base); letter-spacing: -0.01em; }
         .fd-limpar { background: none; border: none; font-size: 12px; color: var(--text-secondary); font-weight: 600; cursor: pointer; font-family: var(--font-base); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: rgba(45,31,38,0.2); }
         .fd-limpar:hover { color: var(--text-title); text-decoration-color: currentColor; }
         .fd-body { overflow-y: auto; flex: 1; padding: 14px 16px 20px; display: flex; flex-direction: column; gap: 12px; background: var(--bg-body); }
@@ -3447,7 +3447,7 @@ export default function Pedidos() {
           color: rgba(255,255,255,0.6);
         }
         .fd-preview-txt { margin: 2px 0 0; display: flex; align-items: baseline; gap: 5px; }
-        .fd-preview-num { font-size: 24px; font-weight: 900; letter-spacing: -0.02em; line-height: 1; }
+        .fd-preview-num { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
         .fd-preview-unit { font-size: 13px; font-weight: 600; opacity: 0.85; }
         .fd-preview-hint { font-size: 11px; color: rgba(255,255,255,0.6); text-align: right; max-width: 100px; line-height: 1.3; }
 
@@ -3465,7 +3465,7 @@ export default function Pedidos() {
         .fd-card-title {
           margin: 0;
           font-size: 11px;
-          font-weight: 800;
+          font-weight: 700;
           letter-spacing: 0.06em;
           text-transform: uppercase;
           color: var(--text-secondary);
@@ -3713,7 +3713,7 @@ export default function Pedidos() {
         }
         .kb-card-num {
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 700;
           color: #E85A8C;
           letter-spacing: -0.01em;
           font-family: var(--font-base) !important;
@@ -3941,7 +3941,7 @@ export default function Pedidos() {
       .ped-header-info { flex: 1; min-width: 0; }
       .ped-header-title-row { display: flex; align-items: center; gap: 8px; }
       .ped-header-title {
-        font-size: 22px; font-weight: 900;
+        font-size: 22px; font-weight: 800;
         letter-spacing: -0.02em; line-height: 1.15;
         color: #fff; margin: 0;
         font-family: var(--font-base) !important;
@@ -3953,7 +3953,7 @@ export default function Pedidos() {
         background: rgba(255,255,255,0.22);
         color: #fff;
         display: inline-flex; align-items: center; justify-content: center;
-        font-size: 11px; font-weight: 900; font-style: italic;
+        font-size: 11px; font-weight: 800; font-style: italic;
         cursor: pointer;
         border: 1.5px solid rgba(255,255,255,0.5);
         flex-shrink: 0;
@@ -4034,13 +4034,13 @@ export default function Pedidos() {
         width: 28px; height: 28px; border-radius: 50%;
         background: #F5F1F3; color: #6B5D64;
         display: flex; align-items: center; justify-content: center;
-        cursor: pointer; font-size: 12px; font-weight: 900;
+        cursor: pointer; font-size: 12px; font-weight: 800;
         transition: background 0.12s;
       }
       .ped-info-close:hover { background: #EBE5E8; color: #2D1F26; }
       .ped-info-icon { font-size: 42px; margin-bottom: 6px; line-height: 1; }
       .ped-info-title {
-        font-size: 20px; font-weight: 900; color: #2D1F26;
+        font-size: 20px; font-weight: 800; color: #2D1F26;
         margin: 0 0 12px; letter-spacing: -0.01em;
         font-family: var(--font-base) !important;
       }
@@ -4049,7 +4049,7 @@ export default function Pedidos() {
         margin: 0 0 12px; text-align: left;
         font-family: var(--font-base) !important;
       }
-      .ped-info-txt strong { color: #2D1F26; font-weight: 800; }
+      .ped-info-txt strong { color: #2D1F26; font-weight: 700; }
       .ped-info-tip {
         display: flex; gap: 8px; align-items: flex-start;
         background: #FEF3C7; border-radius: 10px;
@@ -4058,7 +4058,7 @@ export default function Pedidos() {
         font-size: 12.5px; color: #4A3540; line-height: 1.5;
         font-family: var(--font-base) !important;
       }
-      .ped-info-tip strong { color: #2D1F26; font-weight: 800; }
+      .ped-info-tip strong { color: #2D1F26; font-weight: 700; }
       .ped-info-tip-emoji { font-size: 14px; flex-shrink: 0; }
       .ped-info-ok {
         all: unset;
@@ -4066,7 +4066,7 @@ export default function Pedidos() {
         padding: 12px;
         background: #E85A8C; color: #fff;
         border-radius: 10px;
-        font-size: 13.5px; font-weight: 800;
+        font-size: 13.5px; font-weight: 700;
         cursor: pointer;
         box-shadow: 0 3px 0 #C33A6E;
         text-align: center; box-sizing: border-box;
@@ -4099,7 +4099,7 @@ export default function Pedidos() {
       @media (min-width: 768px) { .ped-menu-novo { top: 96px; right: 24px; } }
       .ped-menu-novo-hdr { background: #F5F1F3; padding: 12px 16px 10px; }
       .ped-menu-novo-hdr-name {
-        font-size: 13px; font-weight: 900; color: #2D1F26;
+        font-size: 13px; font-weight: 800; color: #2D1F26;
         letter-spacing: -0.01em; line-height: 1.2; margin: 0;
         font-family: var(--font-base) !important;
       }
@@ -4176,7 +4176,7 @@ export default function Pedidos() {
         margin: 0 auto 14px;
       }
       .ped-sair-title {
-        font-size: 18px; font-weight: 900; color: #2D1F26;
+        font-size: 18px; font-weight: 800; color: #2D1F26;
         margin: 0 0 6px; letter-spacing: -0.01em;
         font-family: var(--font-base) !important;
       }
@@ -4190,7 +4190,7 @@ export default function Pedidos() {
         flex: 1;
         padding: 12px;
         border-radius: 10px;
-        font-size: 13.5px; font-weight: 800;
+        font-size: 13.5px; font-weight: 700;
         cursor: pointer; text-align: center;
         box-sizing: border-box;
         font-family: var(--font-base) !important;

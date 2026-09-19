@@ -410,7 +410,7 @@ function CartContent({
             <div style={{width:'80px',height:'80px',borderRadius:'50%',background:'#22c55e',display:'flex',alignItems:'center',justifyContent:'center',marginBottom:'4px',animation:'checkPop 0.5s 0.2s both cubic-bezier(0.34,1.56,0.64,1)'}}>
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
-            <p style={{margin:0,fontWeight:800,fontSize:'24px',color:'#3e3e3e'}}>Pedido Enviado!</p>
+            <p style={{margin:0,fontWeight: 700,fontSize:'24px',color:'#3e3e3e'}}>Pedido Enviado!</p>
             <p style={{margin:0,fontSize:'14px',color:'#a0a0a0'}}>Agradecemos sua preferência!</p>
             {pedidoConfirmado.numero > 0 && (
               <p style={{margin:0,fontWeight:700,fontSize:'17px',color:accent}}>Pedido #{pedidoConfirmado.numero}</p>
@@ -507,14 +507,14 @@ function CartContent({
           {items.length > 0 && (
             <div style={{borderTop:'1px solid #f0f0f0',padding:'16px 20px',display:'flex',flexDirection:'column',gap:'10px'}}>
               <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-                <span style={{fontSize:'17px',fontWeight:800,color:'#3e3e3e'}}>Total</span>
-                <span style={{fontSize:'20px',fontWeight:800,color:'#3e3e3e'}}>{formatCurrency(totalPrice)}</span>
+                <span style={{fontSize:'17px',fontWeight: 700,color:'#3e3e3e'}}>Total</span>
+                <span style={{fontSize:'20px',fontWeight: 700,color:'#3e3e3e'}}>{formatCurrency(totalPrice)}</span>
               </div>
               <button
                 onClick={() => setStep(clienteLogado ? 'entrega' : 'dados')}
                 style={{
                   width:'100%',padding:'15px',background:accent,color:'white',
-                  border:'none',borderRadius:'14px',fontWeight:800,fontSize:'16px',
+                  border:'none',borderRadius:'14px',fontWeight: 700,fontSize:'16px',
                   cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',
                   boxShadow:`0 4px 16px ${accent}44`,fontFamily:'inherit',
                 }}
@@ -568,7 +568,7 @@ function CartContent({
                 if (!telefone.trim() || telefone.replace(/\D/g,'').length < 10) return alert('Preencha seu WhatsApp')
                 setStep('entrega')
               }}
-              style={{width:'100%',padding:'16px',background:accent,color:'white',border:'none',borderRadius:'14px',fontWeight:800,fontSize:'16px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit'}}>
+              style={{width:'100%',padding:'16px',background:accent,color:'white',border:'none',borderRadius:'14px',fontWeight: 700,fontSize:'16px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit'}}>
               Continuar <ChevronRight size={18} />
             </button>
           </div>
@@ -709,7 +709,7 @@ function CartContent({
                 if (!formaEntrega) return alert('Selecione a forma de entrega')
                 setStep('checkout')
               }}
-              style={{width:'100%',padding:'15px',background:accent,color:'white',border:'none',borderRadius:'14px',fontWeight:800,fontSize:'16px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit'}}>
+              style={{width:'100%',padding:'15px',background:accent,color:'white',border:'none',borderRadius:'14px',fontWeight: 700,fontSize:'16px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px',fontFamily:'inherit'}}>
               Continuar <ChevronRight size={18} />
             </button>
           </div>
@@ -794,13 +794,13 @@ function CartContent({
                 </div>
               )}
               <div style={{display:'flex',justifyContent:'space-between',marginTop:'4px',paddingTop:'6px',borderTop:'1px solid #f0f0f0'}}>
-                <span style={{fontSize:'17px',fontWeight:800,color:'#3e3e3e'}}>Total</span>
-                <span style={{fontSize:'20px',fontWeight:800,color:'#3e3e3e'}}>{formatCurrency(totalFinal)}</span>
+                <span style={{fontSize:'17px',fontWeight: 700,color:'#3e3e3e'}}>Total</span>
+                <span style={{fontSize:'20px',fontWeight: 700,color:'#3e3e3e'}}>{formatCurrency(totalFinal)}</span>
               </div>
             </div>
 
             <button onClick={enviarPedido}
-              style={{width:'100%',padding:'16px',background:accent,color:'white',border:'none',borderRadius:'14px',fontWeight:800,fontSize:'16px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',fontFamily:'inherit'}}>
+              style={{width:'100%',padding:'16px',background:accent,color:'white',border:'none',borderRadius:'14px',fontWeight: 700,fontSize:'16px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',fontFamily:'inherit'}}>
               Finalizar Pedido
             </button>
           </div>
@@ -919,7 +919,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                 </div>
               </div>
               <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
-                <span style={{color:'white',fontWeight:800,fontSize:'16px'}}>{formatCurrency(totalPrice)}</span>
+                <span style={{color:'white',fontWeight: 700,fontSize:'16px'}}>{formatCurrency(totalPrice)}</span>
                 <ChevronRight size={18} color="rgba(255,255,255,0.7)" />
               </div>
             </div>
@@ -1006,7 +1006,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                       <ShoppingBag size={20} color="#fff" />
                     </div>
                     <div>
-                      <h3 style={{margin:0,fontWeight:800,fontSize:'18px',color:'#3e3e3e'}}>
+                      <h3 style={{margin:0,fontWeight: 700,fontSize:'18px',color:'#3e3e3e'}}>
                         {step === 'cart' ? 'Sacola' : step === 'dados' ? 'Seus dados' : step === 'entrega' ? 'Entrega' : 'Pagamento'}
                       </h3>
                       <p style={{margin:0,fontSize:'13px',color:'#a0a0a0'}}>
@@ -1056,7 +1056,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                   <ShoppingBag size={20} color="#fff" />
                 </div>
                 <div>
-                  <h3 style={{margin:0,fontWeight:800,fontSize:'17px',color:'#1f2937',fontFamily:'inherit'}}>
+                  <h3 style={{margin:0,fontWeight: 700,fontSize:'17px',color:'#1f2937',fontFamily:'inherit'}}>
                     {step === 'cart' ? 'Sacola' : step === 'dados' ? 'Seus dados' : step === 'entrega' ? 'Entrega' : 'Pagamento'}
                   </h3>
                   <p style={{margin:0,fontSize:'12px',color:'#9ca3af'}}>

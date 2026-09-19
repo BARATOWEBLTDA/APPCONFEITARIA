@@ -525,12 +525,12 @@ export default function NovaVenda() {
             width: 40px; height: 40px; border-radius: 50%;
             background: #10B981; color: #fff;
             display: flex; align-items: center; justify-content: center;
-            font-size: 22px; font-weight: 900;
+            font-size: 22px; font-weight: 800;
             font-family: var(--font-base) !important;
           }
           .nv-suc-titulo {
             text-align: center;
-            font-size: 22px; font-weight: 900; letter-spacing: -0.02em;
+            font-size: 22px; font-weight: 800; letter-spacing: -0.02em;
             color: #2D1F26; margin: 0;
             font-family: var(--font-base) !important;
           }
@@ -548,10 +548,10 @@ export default function NovaVenda() {
             margin-bottom: 12px;
             display: flex; align-items: center; justify-content: space-between; gap: 10px;
           }
-          .nv-suc-cliente { font-size: 13px; font-weight: 800; color: #831843; font-family: var(--font-base) !important; }
+          .nv-suc-cliente { font-size: 13px; font-weight: 700; color: #831843; font-family: var(--font-base) !important; }
           .nv-suc-tel { font-size: 11px; color: #E85A8C; margin-top: 2px; font-family: var(--font-base) !important; }
-          .nv-suc-total-lbl { font-size: 10px; color: #E85A8C; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; text-align: right; font-family: var(--font-base) !important; }
-          .nv-suc-total-val { font-size: 20px; font-weight: 900; color: #831843; letter-spacing: -0.02em; text-align: right; font-family: var(--font-base) !important; }
+          .nv-suc-total-lbl { font-size: 10px; color: #E85A8C; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; text-align: right; font-family: var(--font-base) !important; }
+          .nv-suc-total-val { font-size: 20px; font-weight: 800; color: #831843; letter-spacing: -0.02em; text-align: right; font-family: var(--font-base) !important; }
 
           .nv-suc-prod-card {
             background: #FAFAFA;
@@ -566,9 +566,9 @@ export default function NovaVenda() {
           .nv-suc-prod-header { display: flex; align-items: center; gap: 10px; }
           .nv-suc-prod-ico { width: 36px; height: 36px; border-radius: 8px; background: #FDF3F7; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
           .nv-suc-prod-info { flex: 1; min-width: 0; }
-          .nv-suc-prod-titulo { font-size: 13.5px; font-weight: 900; color: #2D1F26; font-family: var(--font-base) !important; }
+          .nv-suc-prod-titulo { font-size: 13.5px; font-weight: 800; color: #2D1F26; font-family: var(--font-base) !important; }
           .nv-suc-prod-sub { font-size: 11px; color: #6B5D64; margin-top: 2px; font-family: var(--font-base) !important; }
-          .nv-suc-chevron { color: #E85A8C; transition: transform 0.2s; font-size: 16px; font-weight: 900; flex-shrink: 0; }
+          .nv-suc-chevron { color: #E85A8C; transition: transform 0.2s; font-size: 16px; font-weight: 800; flex-shrink: 0; }
           .nv-suc-chevron--open { transform: rotate(180deg); }
           .nv-suc-prod-lista {
             margin-top: 12px; padding-top: 12px;
@@ -581,10 +581,10 @@ export default function NovaVenda() {
             font-size: 12px;
           }
           .nv-suc-prod-linha + .nv-suc-prod-linha { border-top: 1px dashed #F0EBED; }
-          .nv-suc-prod-nome { color: #2D1F26; font-weight: 800; font-family: var(--font-base) !important; }
+          .nv-suc-prod-nome { color: #2D1F26; font-weight: 700; font-family: var(--font-base) !important; }
           .nv-suc-prod-qtd { color: #6B5D64; margin-top: 2px; font-family: var(--font-base) !important; }
           .nv-suc-prod-obs { color: #E85A8C; margin-top: 3px; font-size: 11px; font-style: italic; font-family: var(--font-base) !important; }
-          .nv-suc-prod-data { color: #E85A8C; font-weight: 800; font-size: 10.5px; text-align: right; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; font-family: var(--font-base) !important; }
+          .nv-suc-prod-data { color: #E85A8C; font-weight: 700; font-size: 10.5px; text-align: right; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap; font-family: var(--font-base) !important; }
           @keyframes nvSucIn { from { opacity: 0; max-height: 0; } to { opacity: 1; max-height: 400px; } }
 
           .nv-suc-btn-primary {
@@ -594,7 +594,7 @@ export default function NovaVenda() {
             background: linear-gradient(180deg, #E85A8C 0%, #C33A6E 100%);
             color: #fff;
             border-radius: 10px;
-            font-size: 14px; font-weight: 900; letter-spacing: -0.01em;
+            font-size: 14px; font-weight: 800; letter-spacing: -0.01em;
             text-align: center;
             cursor: pointer;
             box-shadow: 0 4px 0 #A02D5A;
@@ -634,7 +634,7 @@ export default function NovaVenda() {
             top: 4px; right: 4px;
             background: #FDF3F7;
             color: #E85A8C;
-            font-size: 8.5px; font-weight: 800;
+            font-size: 8.5px; font-weight: 700;
             padding: 2px 5px; border-radius: 4px;
             text-transform: uppercase; letter-spacing: 0.05em;
           }
@@ -1517,7 +1517,7 @@ export default function NovaVenda() {
       /* Corpo */
       .nv-corpo { padding: 24px 28px; flex: 1; }
       @media (max-width: 767px) { .nv-corpo { padding: 20px; } }
-      .nv-titulo { font-size: 18px; font-weight: 900; letter-spacing: -0.01em; color: #2D1F26; margin: 0 0 4px; font-family: var(--font-base) !important; }
+      .nv-titulo { font-size: 18px; font-weight: 800; letter-spacing: -0.01em; color: #2D1F26; margin: 0 0 4px; font-family: var(--font-base) !important; }
       .nv-sub { font-size: 13px; color: #6B5D64; margin: 0 0 18px; font-family: var(--font-base) !important; }
 
       /* Tipos venda */
@@ -1529,7 +1529,7 @@ export default function NovaVenda() {
         display: block; box-sizing: border-box; width: 100%;
         padding: 13px;
         border-radius: 10px;
-        font-size: 13.5px; font-weight: 800;
+        font-size: 13.5px; font-weight: 700;
         letter-spacing: 0.01em;
         text-align: center;
         cursor: pointer;
@@ -1609,7 +1609,7 @@ export default function NovaVenda() {
         flex-wrap: wrap;
       }
       .nv-p-item-preco {
-        font-size: 16px; font-weight: 900; letter-spacing: -0.01em;
+        font-size: 16px; font-weight: 800; letter-spacing: -0.01em;
         color: #2D1F26; font-family: var(--font-base) !important;
       }
       .nv-p-item-unit { font-size: 11.5px; color: #9A8B93; font-family: var(--font-base) !important; }
@@ -1623,9 +1623,9 @@ export default function NovaVenda() {
         background: #F5F1F3; border-radius: 6px; padding: 2px;
         flex-shrink: 0;
       }
-      .nv-qtd-btn { all: unset; width: 26px; height: 26px; border-radius: 5px; background: #fff; color: #2D1F26; font-weight: 800; text-align: center; cursor: pointer; font-family: var(--font-base); box-shadow: 0 1px 2px rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: center; }
+      .nv-qtd-btn { all: unset; width: 26px; height: 26px; border-radius: 5px; background: #fff; color: #2D1F26; font-weight: 700; text-align: center; cursor: pointer; font-family: var(--font-base); box-shadow: 0 1px 2px rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: center; }
       .nv-qtd-btn:hover { background: #EBE5E8; }
-      .nv-qtd-num { font-size: 12px; font-weight: 800; min-width: 22px; text-align: center; }
+      .nv-qtd-num { font-size: 12px; font-weight: 700; min-width: 22px; text-align: center; }
       .nv-p-item-obs {
         display: block;
         width: 100%;
@@ -1678,13 +1678,13 @@ export default function NovaVenda() {
       .nv-resumo-header:hover { background: #FAF3F6; }
       .nv-resumo-header-info { flex: 1; min-width: 0; }
       .nv-resumo-mini-lbl {
-        font-size: 10.5px; font-weight: 800;
+        font-size: 10.5px; font-weight: 700;
         color: #9A8B93;
         text-transform: uppercase; letter-spacing: 0.07em;
         font-family: var(--font-base) !important;
       }
       .nv-resumo-header-total {
-        font-size: 20px; font-weight: 900; letter-spacing: -0.02em;
+        font-size: 20px; font-weight: 800; letter-spacing: -0.02em;
         color: #2D1F26;
         margin-top: 3px;
         font-family: var(--font-base) !important;
@@ -1714,7 +1714,7 @@ export default function NovaVenda() {
         font-size: 13px; font-weight: 700; color: #2D1F26;
       }
       .nv-resumo-mini-val {
-        font-size: 20px; font-weight: 900; letter-spacing: -0.02em; color: #2D1F26;
+        font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: #2D1F26;
         font-family: var(--font-base) !important;
       }
       .nv-tipo-card {
@@ -1766,7 +1766,7 @@ export default function NovaVenda() {
         width: auto;
         object-fit: contain;
       }
-      .nv-tipo-nome { font-size: 14.5px; font-weight: 900; letter-spacing: -0.01em; font-family: var(--font-base) !important; }
+      .nv-tipo-nome { font-size: 14.5px; font-weight: 800; letter-spacing: -0.01em; font-family: var(--font-base) !important; }
       .nv-tipo-desc { font-size: 11.5px; margin-top: 4px; line-height: 1.35; font-weight: 600; opacity: 0.8; font-family: var(--font-base) !important; }
 
       /* Itens da venda */
@@ -1788,11 +1788,11 @@ export default function NovaVenda() {
       .nv-item-info { flex: 1; min-width: 0; }
       .nv-item-nome { font-size: 13.5px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
       .nv-item-qtd-row { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
-      .nv-qtd-btn { all: unset; width: 22px; height: 22px; border-radius: 5px; background: #F5F1F3; color: #2D1F26; font-weight: 800; text-align: center; cursor: pointer; font-family: var(--font-base); }
+      .nv-qtd-btn { all: unset; width: 22px; height: 22px; border-radius: 5px; background: #F5F1F3; color: #2D1F26; font-weight: 700; text-align: center; cursor: pointer; font-family: var(--font-base); }
       .nv-qtd-btn:hover { background: #EBE5E8; }
       .nv-qtd-num { font-size: 12.5px; font-weight: 700; min-width: 22px; text-align: center; }
       .nv-item-unit { font-size: 11.5px; color: #9A8B93; margin-left: 6px; }
-      .nv-item-preco { font-size: 13.5px; font-weight: 800; color: #2D1F26; white-space: nowrap; font-family: var(--font-base) !important; }
+      .nv-item-preco { font-size: 13.5px; font-weight: 700; color: #2D1F26; white-space: nowrap; font-family: var(--font-base) !important; }
       .nv-item-lixo { all: unset; padding: 6px; color: #DC2626; cursor: pointer; border-radius: 5px; }
       .nv-item-lixo:hover { background: #FEE2E2; }
 
@@ -1802,7 +1802,7 @@ export default function NovaVenda() {
         padding: 14px; border-radius: 8px;
         text-align: center; color: #E85A8C;
         font-size: 13px; cursor: pointer;
-        margin-top: 12px; font-weight: 800;
+        margin-top: 12px; font-weight: 700;
         display: block; box-sizing: border-box; width: 100%;
         font-family: var(--font-base) !important;
       }
@@ -1833,7 +1833,7 @@ export default function NovaVenda() {
         border-radius: 10px;
         background: #E85A8C; color: #fff;
         cursor: pointer;
-        font-size: 20px; font-weight: 900;
+        font-size: 20px; font-weight: 800;
         display: flex; align-items: center; justify-content: center;
         box-shadow: 0 3px 0 #C33A6E;
         flex-shrink: 0;
@@ -1859,12 +1859,12 @@ export default function NovaVenda() {
         width: 36px; height: 36px; border-radius: 50%;
         background: linear-gradient(135deg, #E85A8C, #C33A6E);
         color: #fff; display: flex; align-items: center; justify-content: center;
-        font-size: 12px; font-weight: 800;
+        font-size: 12px; font-weight: 700;
         flex-shrink: 0;
         font-family: var(--font-base) !important;
       }
       .nv-cli-info { flex: 1; min-width: 0; }
-      .nv-cli-nome { font-size: 13.5px; font-weight: 800; color: #2D1F26; font-family: var(--font-base) !important; }
+      .nv-cli-nome { font-size: 13.5px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; }
       .nv-cli-tel { font-size: 11.5px; color: #6B5D64; margin-top: 1px; font-family: var(--font-base) !important; }
       .nv-cli-x {
         all: unset;
@@ -1893,9 +1893,9 @@ export default function NovaVenda() {
         box-shadow: 0 3px 8px rgba(232,90,140,0.25);
       }
       .nv-cli-nome-wrap { flex: 1; min-width: 0; }
-      .nv-cli-card-nome { font-size: 15px; font-weight: 800; color: #2D1F26; font-family: var(--font-base) !important; letter-spacing: -0.005em; }
+      .nv-cli-card-nome { font-size: 15px; font-weight: 700; color: #2D1F26; font-family: var(--font-base) !important; letter-spacing: -0.005em; }
       .nv-cli-card-badge {
-        font-size: 10px; color: #E85A8C; font-weight: 800;
+        font-size: 10px; color: #E85A8C; font-weight: 700;
         text-transform: uppercase; letter-spacing: 0.06em;
         margin-top: 2px;
         font-family: var(--font-base) !important;
@@ -1963,7 +1963,7 @@ export default function NovaVenda() {
       .nv-cli-mapa-btn {
         position: absolute; bottom: 8px; right: 8px;
         background: #fff; padding: 6px 10px; border-radius: 6px;
-        font-size: 10.5px; font-weight: 800;
+        font-size: 10.5px; font-weight: 700;
         color: #2D1F26; text-transform: uppercase; letter-spacing: 0.06em;
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         display: flex; align-items: center; gap: 4px;
@@ -1979,7 +1979,7 @@ export default function NovaVenda() {
         margin-top: 8px;
       }
       .nv-form-novo-titulo {
-        font-size: 11px; font-weight: 800; color: #E85A8C;
+        font-size: 11px; font-weight: 700; color: #E85A8C;
         text-transform: uppercase; letter-spacing: 0.06em;
         margin-bottom: 10px;
         font-family: var(--font-base) !important;
@@ -1995,7 +1995,7 @@ export default function NovaVenda() {
 
       /* Inputs & Labels */
       .nv-label {
-        font-size: 11px; font-weight: 800; color: #6B5D64;
+        font-size: 11px; font-weight: 700; color: #6B5D64;
         text-transform: uppercase; letter-spacing: 0.05em;
         display: block; margin-bottom: 4px;
         font-family: var(--font-base) !important;
@@ -2031,7 +2031,7 @@ export default function NovaVenda() {
         font-size: 16px;
       }
       .nv-agend-header-txt {
-        font-size: 11px; font-weight: 800; color: #E85A8C;
+        font-size: 11px; font-weight: 700; color: #E85A8C;
         text-transform: uppercase; letter-spacing: 0.06em;
         font-family: var(--font-base) !important;
       }
@@ -2066,7 +2066,7 @@ export default function NovaVenda() {
         margin-bottom: 16px;
       }
       .nv-status-lbl {
-        font-size: 11px; font-weight: 800; color: #E85A8C;
+        font-size: 11px; font-weight: 700; color: #E85A8C;
         text-transform: uppercase; letter-spacing: 0.06em;
         margin-bottom: 10px;
         font-family: var(--font-base) !important;
@@ -2103,7 +2103,7 @@ export default function NovaVenda() {
       }
       .nv-status-nome {
         font-size: 12px;
-        font-weight: 800;
+        font-weight: 700;
         color: #4A3540;
         line-height: 1.2;
         font-family: var(--font-base) !important;
@@ -2126,7 +2126,7 @@ export default function NovaVenda() {
       }
       .nv-cupom-tipo {
         text-align: center;
-        font-size: 10.5px; font-weight: 800;
+        font-size: 10.5px; font-weight: 700;
         color: #6B5D64;
         letter-spacing: 0.1em;
         margin-bottom: 10px;
@@ -2141,7 +2141,7 @@ export default function NovaVenda() {
       }
       .nv-cupom-linha--head b {
         color: #2D1F26 !important;
-        font-weight: 800 !important;
+        font-weight: 700 !important;
       }
 
       .nv-cupom-secao {
@@ -2150,7 +2150,7 @@ export default function NovaVenda() {
       }
       .nv-cupom-secao--foot { border-bottom: 0; padding-bottom: 0; }
       .nv-cupom-secao-lbl {
-        font-size: 10px; font-weight: 800;
+        font-size: 10px; font-weight: 700;
         color: #9A8B93;
         text-transform: uppercase; letter-spacing: 0.08em;
         margin-bottom: 8px;
@@ -2169,7 +2169,7 @@ export default function NovaVenda() {
         word-break: break-word;
       }
       .nv-cupom-linha b {
-        color: #2D1F26; font-weight: 800;
+        color: #2D1F26; font-weight: 700;
         text-align: right;
         white-space: nowrap;
       }
@@ -2184,7 +2184,7 @@ export default function NovaVenda() {
       }
       .nv-cupom-linha--dev b {
         color: #991B1B !important;
-        font-weight: 900 !important;
+        font-weight: 800 !important;
       }
       .nv-cupom-obs {
         font-size: 11px;
@@ -2199,13 +2199,13 @@ export default function NovaVenda() {
         padding: 14px 0 4px;
       }
       .nv-cupom-total-lbl {
-        font-size: 11px; font-weight: 800;
+        font-size: 11px; font-weight: 700;
         color: #E85A8C;
         letter-spacing: 0.08em;
         font-family: var(--font-base) !important;
       }
       .nv-cupom-total-val {
-        font-size: 26px; font-weight: 900;
+        font-size: 26px; font-weight: 800;
         color: #831843;
         letter-spacing: -0.02em;
         font-family: var(--font-base) !important;
@@ -2220,12 +2220,12 @@ export default function NovaVenda() {
         margin-bottom: 4px;
       }
       .nv-pag-total-lbl {
-        font-size: 11px; font-weight: 800; color: #E85A8C;
+        font-size: 11px; font-weight: 700; color: #E85A8C;
         text-transform: uppercase; letter-spacing: 0.07em;
         font-family: var(--font-base) !important;
       }
       .nv-pag-total-val {
-        font-size: 30px; font-weight: 900; letter-spacing: -0.02em;
+        font-size: 30px; font-weight: 800; letter-spacing: -0.02em;
         color: #831843; margin-top: 4px;
         font-family: var(--font-base) !important;
       }
@@ -2251,7 +2251,7 @@ export default function NovaVenda() {
         border-color: #E85A8C;
         background: #FDF3F7;
         color: #E85A8C;
-        font-weight: 800;
+        font-weight: 700;
       }
       .nv-pag-forma-em {
         font-size: 18px; display: block; margin-bottom: 2px; line-height: 1;
@@ -2286,7 +2286,7 @@ export default function NovaVenda() {
       }
       .nv-pag-sit-info { flex: 1; }
       .nv-pag-sit-nome {
-        font-size: 13px; font-weight: 800; color: #2D1F26;
+        font-size: 13px; font-weight: 700; color: #2D1F26;
         font-family: var(--font-base) !important;
       }
       .nv-pag-sit-card--ativo .nv-pag-sit-nome { color: #E85A8C; }
@@ -2333,7 +2333,7 @@ export default function NovaVenda() {
         width: auto;
         object-fit: contain;
       }
-      .nv-ent-nome { font-size: 12.5px; font-weight: 900; letter-spacing: -0.01em; line-height: 1.15; font-family: var(--font-base) !important; }
+      .nv-ent-nome { font-size: 12.5px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; font-family: var(--font-base) !important; }
       .nv-ent-desc { font-size: 10px; margin-top: 6px; font-weight: 600; opacity: 0.85; font-family: var(--font-base) !important; line-height: 1.3; }
 
       /* Card aviso — apenas texto centralizado */
@@ -2363,10 +2363,10 @@ export default function NovaVenda() {
         width: 36px; height: 36px; border-radius: 50%;
         background: #10B981; color: #fff;
         display: flex; align-items: center; justify-content: center;
-        font-size: 18px; font-weight: 900;
+        font-size: 18px; font-weight: 800;
         flex-shrink: 0;
       }
-      .nv-ent-confirma-titulo { font-size: 13.5px; font-weight: 900; color: #065F46; font-family: var(--font-base) !important; }
+      .nv-ent-confirma-titulo { font-size: 13.5px; font-weight: 800; color: #065F46; font-family: var(--font-base) !important; }
       .nv-ent-confirma-sub { font-size: 11.5px; color: #047857; margin-top: 2px; font-family: var(--font-base) !important; }
 
       /* Card endereço */
@@ -2378,7 +2378,7 @@ export default function NovaVenda() {
         margin-top: 16px;
       }
       .nv-ent-secao-lbl {
-        font-size: 11px; font-weight: 800; color: #E85A8C;
+        font-size: 11px; font-weight: 700; color: #E85A8C;
         text-transform: uppercase; letter-spacing: 0.06em;
         margin-bottom: 12px;
         font-family: var(--font-base) !important;
@@ -2410,13 +2410,13 @@ export default function NovaVenda() {
       }
       .nv-ent-frete-info { flex: 1; min-width: 0; }
       .nv-ent-frete-lbl {
-        font-size: 10.5px; font-weight: 800; color: #92400E;
+        font-size: 10.5px; font-weight: 700; color: #92400E;
         text-transform: uppercase; letter-spacing: 0.05em;
         font-family: var(--font-base) !important;
       }
       .nv-ent-frete-inp {
         border: 0; background: transparent;
-        font-size: 18px; font-weight: 900; letter-spacing: -0.01em;
+        font-size: 18px; font-weight: 800; letter-spacing: -0.01em;
         color: #78350F;
         outline: none; width: 100%; margin-top: 2px;
         font-family: var(--font-base) !important;
@@ -2488,13 +2488,13 @@ export default function NovaVenda() {
         gap: 12px; border-radius: 0 0 12px 12px;
       }
       .nv-footer-total { display: flex; flex-direction: column; }
-      .nv-footer-lbl { font-size: 10.5px; text-transform: uppercase; color: #9A8B93; font-weight: 800; letter-spacing: 0.06em; }
-      .nv-footer-val { font-size: 22px; font-weight: 900; color: #2D1F26; letter-spacing: -0.02em; margin-top: -2px; font-family: var(--font-base) !important; }
+      .nv-footer-lbl { font-size: 10.5px; text-transform: uppercase; color: #9A8B93; font-weight: 700; letter-spacing: 0.06em; }
+      .nv-footer-val { font-size: 22px; font-weight: 800; color: #2D1F26; letter-spacing: -0.02em; margin-top: -2px; font-family: var(--font-base) !important; }
       .nv-footer-btns { display: flex; gap: 8px; flex-shrink: 0; }
       .nv-btn {
         all: unset;
         padding: 10px 18px; border-radius: 8px;
-        font-size: 13px; font-weight: 800; cursor: pointer;
+        font-size: 13px; font-weight: 700; cursor: pointer;
         letter-spacing: 0.01em; box-sizing: border-box;
         text-align: center;
         font-family: var(--font-base) !important;
@@ -2529,7 +2529,7 @@ export default function NovaVenda() {
         box-shadow: 0 20px 60px rgba(0,0,0,0.35);
         font-family: var(--font-base) !important;
       }
-      .nv-modal-title { font-size: 16px; font-weight: 900; color: #2D1F26; margin: 0 0 12px; font-family: var(--font-base) !important; }
+      .nv-modal-title { font-size: 16px; font-weight: 800; color: #2D1F26; margin: 0 0 12px; font-family: var(--font-base) !important; }
 
       /* Filtro row (busca + dropdown) */
       .nv-filtro-row {
@@ -2558,7 +2558,7 @@ export default function NovaVenda() {
         transition: border-color 0.12s;
       }
       .nv-dropdown-btn:hover { border-color: #E85A8C; }
-      .nv-dropdown-btn--ativo { border-color: #E85A8C; background: #FDF3F7; color: #E85A8C; font-weight: 800; }
+      .nv-dropdown-btn--ativo { border-color: #E85A8C; background: #FDF3F7; color: #E85A8C; font-weight: 700; }
       .nv-caret { color: #9A8B93; transition: transform 0.15s; flex-shrink: 0; }
       .nv-dropdown--open .nv-caret { transform: rotate(180deg); color: #E85A8C; }
 
@@ -2613,7 +2613,7 @@ export default function NovaVenda() {
         width: 36px; height: 36px; border-radius: 50%;
         background: linear-gradient(135deg, #E85A8C, #C33A6E);
         color: #fff; display: flex; align-items: center; justify-content: center;
-        font-size: 12px; font-weight: 800; flex-shrink: 0;
+        font-size: 12px; font-weight: 700; flex-shrink: 0;
       }
       .nv-modal-item-nome {
         flex: 1;
@@ -2624,7 +2624,7 @@ export default function NovaVenda() {
         text-overflow: ellipsis;
       }
       .nv-modal-item-sub { font-size: 11.5px; color: #6B5D64; margin-top: 2px; }
-      .nv-modal-item-preco { font-size: 13px; font-weight: 800; color: #2D1F26; }
+      .nv-modal-item-preco { font-size: 13px; font-weight: 700; color: #2D1F26; }
     `}</style>
     </>
   )
