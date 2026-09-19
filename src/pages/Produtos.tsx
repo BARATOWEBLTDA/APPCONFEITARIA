@@ -872,34 +872,15 @@ function PersonalizacaoStep({
                   </>
                 ) : (
                   <>
-                    {/* Tamanhos — tem preço próprio, não adicional */}
+                    {/* Tamanhos — só nome. Preço vai no step 4 */}
                     <div className="pv3-tamanho-info">
-                      💡 O preço do tamanho <b>substitui</b> o preço base
+                      💡 O preço de cada tamanho é definido na próxima etapa
                     </div>
                     <div className="pv3-opcoes-list">
                       {grupoTamanhos.opcoes.map((op, idx) => (
                         <div key={op.id} className="pv3-opcao-row">
                           <span className="pv3-opcao-num">{idx + 1}</span>
                           <span className="pv3-opcao-nome">{op.nome}</span>
-                          <div className="pv3-opcao-preco-wrap">
-                            <span className="pv3-opcao-preco-label" style={{color: "#059669"}}>R$</span>
-                            <input
-                              type="text"
-                              inputMode="numeric"
-                              value={formatPreco(op.preco)}
-                              onChange={e => {
-                                const preco = parsePreco(e.target.value);
-                                onChange({
-                                  grupo_tamanhos: {
-                                    ...grupoTamanhos,
-                                    opcoes: grupoTamanhos.opcoes.map(o => o.id === op.id ? { ...o, preco } : o),
-                                  },
-                                });
-                              }}
-                              className="pv3-opcao-preco-input"
-                              style={{color: "#059669", fontWeight: 800}}
-                            />
-                          </div>
                           <button
                             type="button"
                             className="pv3-opcao-del"
@@ -913,29 +894,26 @@ function PersonalizacaoStep({
                       )}
                     </div>
 
-                    <div className="pv3-add-row pv3-add-row--tamanho">
+                    <div className="pv3-add-row">
                       <input
                         type="text"
-                        placeholder="Nome (P, M, G, 1kg...)"
+                        placeholder="Nome do tamanho (P, M, G, 1kg...)"
                         value={novoTamanhoNome}
                         onChange={e => setNovoTamanhoNome(e.target.value)}
-                        style={{flex: 2}}
-                      />
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="R$ 0,00"
-                        value={novoTamanhoPreco}
-                        onChange={e => setNovoTamanhoPreco(e.target.value)}
-                        style={{flex: 1}}
+                        onKeyDown={e => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addTamanho(novoTamanhoNome, 0);
+                            setNovoTamanhoNome("");
+                          }
+                        }}
                       />
                       <button
                         type="button"
                         className="pv3-add-btn"
                         onClick={() => {
-                          addTamanho(novoTamanhoNome, parsePreco(novoTamanhoPreco));
+                          addTamanho(novoTamanhoNome, 0);
                           setNovoTamanhoNome("");
-                          setNovoTamanhoPreco("");
                         }}
                       >+</button>
                     </div>
@@ -2606,20 +2584,65 @@ export default function Produtos() {
               </>
               )}
 
+              {/* Preços por Tamanho — só se tem tamanhos ativos */}
+              {(wizardStep === 4 || form.id) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && (
+                <div className="prod-section">
+                  <p className="prod-section-label prod-section-label--novo">
+                    Preço por tamanho <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em>
+                  </p>
+                  <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
+                    Defina o preço de cada tamanho. O menor vira o "a partir de" no cardápio.
+                  </p>
+                  <div style={{display: "flex", flexDirection: "column", gap: 8}}>
+                    {form.grupo_tamanhos.opcoes.map((op) => (
+                      <div key={op.id} style={{display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", background: "#FAF8F5", border: "1px solid #F0EBED", borderRadius: 10}}>
+                        <span style={{flex: 1, fontSize: 14, fontWeight: 800, color: "#2D1F26"}}>{op.nome}</span>
+                        <div style={{display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "1.5px solid #E85A8C", borderRadius: 8, padding: "6px 12px"}}>
+                          <span style={{fontSize: 13, color: "#831843", fontWeight: 800}}>R$</span>
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            value={formatPreco(op.preco)}
+                            onChange={e => {
+                              const preco = parsePreco(e.target.value);
+                              setForm(f => ({
+                                ...f,
+                                grupo_tamanhos: {
+                                  ...(f.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO),
+                                  opcoes: (f.grupo_tamanhos?.opcoes || []).map(o => o.id === op.id ? { ...o, preco } : o),
+                                },
+                              }));
+                            }}
+                            placeholder="0,00"
+                            style={{width: 80, border: "none", outline: "none", background: "transparent", fontSize: 15, fontWeight: 800, color: "#E85A8C", textAlign: "right", fontFamily: "inherit"}}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Preço e Venda — só em step 4 (Preço e venda) ou edição */}
               {(wizardStep === 4 || form.id) && !(wizardTipo === "variacoes" && !form.id) && (
               <div className="prod-section">
                 <p className="prod-section-label prod-section-label--novo">Preço e Venda</p>
 
-                {wizardTipo === "simples" ? (
-                  /* MODO SIMPLES: 1 preço só */
-                  <div className="prod-field">
-                    <label>Preço <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
-                    <div className="prod-preco-input prod-preco-input--big">
-                      <span>R$</span>
-                      <input type="text" placeholder="0,00" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => setForm(f => ({ ...f, preco_normal: parsePreco(e.target.value) }))} />
+                {(!form.id || wizardTipo !== "variacoes") ? (
+                  /* MODO SIMPLES/PERSONALIZAVEL: 1 preço só — MAS esconde se tem tamanhos ativos (preço vem do tamanho) */
+                  form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 ? (
+                    <div style={{padding: "10px 12px", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 8, fontSize: 12.5, color: "#166534"}}>
+                      ✓ Preço definido pelos tamanhos acima
                     </div>
-                  </div>
+                  ) : (
+                    <div className="prod-field">
+                      <label>Preço <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
+                      <div className="prod-preco-input prod-preco-input--big">
+                        <span>R$</span>
+                        <input type="text" placeholder="0,00" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => setForm(f => ({ ...f, preco_normal: parsePreco(e.target.value) }))} />
+                      </div>
+                    </div>
+                  )
                 ) : (
                   /* MODO VARIAÇÕES: forma + tabela */
                   <>
@@ -3341,17 +3364,16 @@ export default function Produtos() {
                     const gm = form.grupo_massas, gr = form.grupo_recheios, gc = form.grupo_coberturas, gt = form.grupo_tamanhos;
                     const gruposAtivos = [gm, gr, gc, gt].filter(g => g?.ativo);
                     if (gruposAtivos.some(g => (g?.opcoes.length || 0) === 0)) return false;
-                    if (gt?.ativo && gt.opcoes.length > 0) {
-                      const temPrecoTamanho = gt.opcoes.some(o => o.preco > 0);
-                      if (!temPrecoTamanho) return false;
-                    }
                     return true;
                   }
-                  // Step 4: Fotos e preço final — valida preço se não tem tamanhos
+                  // Step 4: Preço e venda — valida preço base OU preços dos tamanhos
                   if (wizardStep === 4) {
                     const gt = form.grupo_tamanhos;
                     const temTamanhoAtivo = gt?.ativo && gt.opcoes.length > 0;
-                    if (temTamanhoAtivo) return true; // preço vem do tamanho
+                    if (temTamanhoAtivo) {
+                      // Precisa que TODOS os tamanhos tenham preço > 0
+                      return gt!.opcoes.every(o => o.preco > 0);
+                    }
                     return (form.preco_normal || 0) > 0;
                   }
                   return true;
