@@ -6515,41 +6515,47 @@ export default function Produtos() {
 
         /* ═══ Tabs do modo edição ═══ */
         .prod-edit-tabs {
-          display: flex;
-          gap: 4px;
-          padding: 0 24px;
-          margin: 8px 0 0;
-          border-bottom: 1px solid #F0EBED;
+          display: inline-flex;
+          gap: 2px;
+          padding: 4px;
+          margin: 12px 24px 4px;
+          background: #FAF8F5;
+          border: 1px solid #F0EBED;
+          border-radius: 12px;
           overflow-x: auto;
+          align-self: flex-start;
+          max-width: calc(100% - 48px);
         }
         @media (max-width: 720px) {
-          .prod-edit-tabs { padding: 0 16px; }
+          .prod-edit-tabs {
+            margin: 10px 16px 4px;
+            max-width: calc(100% - 32px);
+          }
         }
         .prod-edit-tab {
           all: unset;
-          padding: 10px 14px;
+          padding: 8px 14px;
           font-family: var(--font-base);
           font-size: 12.5px;
           font-weight: 700;
           color: #6B5D64;
           cursor: pointer;
-          border-radius: 8px 8px 0 0;
+          border-radius: 8px;
           white-space: nowrap;
-          border-bottom: 2px solid transparent;
-          transition: color 0.12s, border-color 0.12s, background 0.12s;
+          transition: all 0.15s;
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          margin-bottom: -1px;
+          gap: 6px;
         }
         .prod-edit-tab:hover:not(.prod-edit-tab--ativo) {
           color: #2D1F26;
-          background: #FAF8F5;
+          background: #F0EBED;
         }
         .prod-edit-tab--ativo {
-          color: #E85A8C;
-          border-bottom-color: #E85A8C;
-          font-weight: 900;
+          color: #fff;
+          background: #E85A8C;
+          font-weight: 800;
+          box-shadow: 0 2px 6px rgba(232, 90, 140, 0.25);
         }
         .prod-edit-tab-icon {
           font-size: 14px;
