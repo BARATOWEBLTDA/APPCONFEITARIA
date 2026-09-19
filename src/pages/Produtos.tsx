@@ -3376,9 +3376,11 @@ export default function Produtos() {
                     }
                     return (form.preco_normal || 0) > 0;
                   }
+                  // Step 5: Fotos — sempre pode avançar (fotos opcionais)
+                  if (wizardStep === 5) return true;
                   return true;
                 })();
-                const isLast = wizardStep === 4;
+                const isLast = wizardStep === 5;
                 const isEdit = !!form.id;
 
                 if (isEdit) {
