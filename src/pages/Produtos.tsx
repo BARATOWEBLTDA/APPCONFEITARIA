@@ -4194,26 +4194,10 @@ export default function Produtos() {
                 </div>
               )}
 
-              {/* Personalização */}
-              <div className="prod-section">
-                <p className="prod-section-label">Personalização</p>
-                <Toggle label="Permitir personalização" value={form.permite_personalizacao || false} onChange={(v: boolean) => setForm(f => ({ ...f, permite_personalizacao: v }))} colorClass="active-pink" />
-
-                {form.permite_personalizacao && (
-                  <>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 12px", background: "var(--bg-body)", borderRadius: "12px", border: "1px solid var(--border)" }}>
-                      <div>
-                        <p style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 2px" }}>🚫 Zero Açúcar</p>
-                        <p style={{ fontSize: "0.72rem", color: "var(--text-muted)", margin: 0 }}>Disponível versão sem açúcar</p>
-                      </div>
-                      <button onClick={() => setForm(f => ({ ...f, zero_acucar: !f.zero_acucar }))}
-                        style={{ width: "44px", height: "24px", borderRadius: "12px", border: "none", cursor: "pointer", background: form.zero_acucar ? "var(--primary)" : "var(--border)", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
-                        <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: form.zero_acucar ? "23px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+              {/* [Removido V3] Bloco "Personalização" legado + Zero Açúcar
+                  A etapa 2 (Opções do produto) já cobre toda personalização.
+                  Restrições alimentares (sem açúcar/glúten/lactose/vegano)
+                  virão na Fase 2 futura como chips. */}
 
             </div>
             )}
