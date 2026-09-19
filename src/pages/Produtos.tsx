@@ -2910,444 +2910,80 @@ export default function Produtos() {
               )}
 
               {/* Preço e Venda — só em step 4 (Preço e venda) ou edição */}
-              {(wizardStep === 4 || form.id) && !(wizardTipo === "variacoes" && !form.id) && (
-              <div className="prod-section">
-                <p className="prod-section-label prod-section-label--novo">Preço e Venda</p>
-
-                {(!form.id || wizardTipo !== "variacoes") ? (
-                  /* MODO SIMPLES/PERSONALIZAVEL: 1 preço só — MAS esconde se tem tamanhos ativos (preço vem do tamanho) */
-                  form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 ? (
-                    <div style={{padding: "10px 12px", background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 8, fontSize: 12.5, color: "#166534"}}>
-                      ✓ Preço definido pelos tamanhos acima
-                    </div>
-                  ) : (
+              {/* ══════ SEÇÃO 1: Preço base + Forma de venda ══════ */}
+              {(wizardStep === 4 || form.id) && !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) && (
+                <div className="prod-section">
+                  <p className="prod-section-label prod-section-label--novo">Preço base <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></p>
+                  <div className="prod-row-2">
                     <div className="prod-field">
-                      <label>Preço <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em></label>
+                      <label>Preço</label>
                       <div className="prod-preco-input prod-preco-input--big">
                         <span>R$</span>
                         <input type="text" placeholder="0,00" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => setForm(f => ({ ...f, preco_normal: parsePreco(e.target.value) }))} />
                       </div>
                     </div>
-                  )
-                ) : (
-                  /* MODO VARIAÇÕES: forma + tabela */
-                  <>
-                    <div className="prod-row-2">
-                      <div className="prod-field">
-                        <label>
-                          {(() => {
-                            const labels: Record<string, string> = {
-                              unidade: "Preço por unidade",
-                              fatia:   "Preço por fatia",
-                              kg:      "Preço por kg",
-                              cento:   "Preço por cento (100 un)",
-                              caixa:   "Preço por caixa",
-                              tamanho: "Preço base",
-                              outros:  "Preço base",
-                              "kit-festa": "Preço do kit",
-                              "sob-encomenda": "Preço base",
-                            };
-                            return labels[form.forma_venda] || "Preço base";
-                          })()}
-                          <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>obrigatório</em>
-                        </label>
-                        <div className="prod-preco-input prod-preco-input--taginline">
-                          <span>R$</span>
-                          <input type="text" placeholder="0,00" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => setForm(f => ({ ...f, preco_normal: parsePreco(e.target.value) }))} />
-                          {(() => {
-                            const tags: Record<string, string> = {
-                              unidade: "/ UNIDADE",
-                              fatia:   "/ FATIA",
-                              kg:      "/ KG",
-                              cento:   "/ CENTO",
-                              caixa:   "/ CAIXA",
-                            };
-                            const tag = tags[form.forma_venda];
-                            return tag ? <span className="prod-preco-input-tag">{tag}</span> : null;
-                          })()}
-                        </div>
-                      </div>
-                      <div className="prod-field">
-                        <label>Vendido por</label>
-                        <select value={form.forma_venda} onChange={e => setForm(f => ({ ...f, forma_venda: e.target.value }))}>
-                          {FORMAS_VENDA.map(fv => <option key={fv.value} value={fv.value}>{fv.label}</option>)}
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* ══ Toggle "Ofereço desconto por pacote?" — só pra unidade/fatia/kg/cento/caixa ══ */}
-                    {["unidade", "fatia", "kg", "cento", "caixa"].includes(form.forma_venda) && (
-                      <div
-                        className={`prod-pacote-toggle${form.oferece_pacote ? " prod-pacote-toggle--on" : ""}`}
-                        onClick={() => setForm(f => ({ ...f, oferece_pacote: !f.oferece_pacote }))}
-                      >
-                        <div className="prod-pacote-toggle-icon">💰</div>
-                        <div className="prod-pacote-toggle-info">
-                          <div className="prod-pacote-toggle-title">
-                            {form.oferece_pacote ? "✓ Desconto por pacote ativo" : "Ofereço desconto por pacote?"}
-                          </div>
-                          <div className="prod-pacote-toggle-desc">
-                            {form.oferece_pacote
-                              ? "Cadastre os pacotes e o valor promocional abaixo"
-                              : (() => {
-                                  const exs: Record<string, string> = {
-                                    unidade: "Ex: 6 unidades por R$ 25 (em vez de R$ 30)",
-                                    fatia: "Ex: 4 fatias por R$ 30 (em vez de R$ 40)",
-                                    kg: "Ex: 2 kg por R$ 100 (em vez de R$ 120)",
-                                    cento: "Ex: 2 centos por R$ 400 (em vez de R$ 500)",
-                                    caixa: "Ex: 3 caixas por R$ 250 (em vez de R$ 300)",
-                                  };
-                                  return exs[form.forma_venda] || "";
-                                })()}
-                          </div>
-                        </div>
-                        <div className={`prod-pacote-switch${form.oferece_pacote ? " prod-pacote-switch--on" : ""}`}>
-                          <div className="prod-pacote-switch-thumb" />
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Variações: aparece sempre pra tamanho/outros; só se toggle ON pros outros */}
-                    {(
-                      (!["unidade", "fatia", "kg", "cento", "caixa"].includes(form.forma_venda))
-                      || form.oferece_pacote
-                    ) && !["kit-festa", "sob-encomenda"].includes(form.forma_venda) && (() => {
-                  const config: Record<string, { label: string; sub: string; placeholder: string; placeholderPreco: string; suffix?: string }> = {
-                    unidade:  { label: "Opções de quantidade", sub: "Ex: 6 unidades, 12 unidades, 24 unidades", placeholder: "Ex: 6, 12, 24...", placeholderPreco: "Preço", suffix: "un" },
-                    fatia:    { label: "Opções de fatias", sub: "Ex: 1 fatia, 2 fatias, 4 fatias", placeholder: "Ex: 1, 2, 4...", placeholderPreco: "Preço", suffix: "fatia(s)" },
-                    kg:       { label: "Opções de peso", sub: "Digite em kg: 0.5 → 500g · 1 → 1kg · 1.5 → 1,5kg", placeholder: "Ex: 0.5, 1, 1.5...", placeholderPreco: "Preço por opção" },
-                    cento:    { label: "Opções de cento", sub: "Ex: meio cento (50 un), 1 cento (100 un)", placeholder: "Ex: 0.5, 1, 2...", placeholderPreco: "Preço", suffix: "cento(s)" },
-                    tamanho:  { label: "Tamanhos disponíveis", sub: "Ex: P, M, G, XG", placeholder: "Ex: P, M, G, XG...", placeholderPreco: "Preço" },
-                    caixa:    { label: "Opções de caixa", sub: "Ex: Caixa 6 un, Caixa 12 un", placeholder: "Ex: Caixa 6, Caixa 12...", placeholderPreco: "Preço" },
-                    outros:   { label: "Opções disponíveis", sub: "Defina as opções e preços", placeholder: "Ex: Mini, Normal, Grande...", placeholderPreco: "Preço" },
-                  };
-                  const cfg = config[form.forma_venda];
-                  if (!cfg) return null;
-
-                  const formatLabel = (raw: string) => {
-                    if (form.forma_venda === "kg") {
-                      const num = parseFloat(raw.replace(",", "."));
-                      if (isNaN(num)) return raw;
-                      return num < 1 ? `${Math.round(num * 1000)}g` : num === Math.floor(num) ? `${num}kg` : `${num.toString().replace(".", ",")}kg`;
-                    }
-                    if (form.forma_venda === "unidade" || form.forma_venda === "fatia") {
-                      const num = parseInt(raw);
-                      if (!isNaN(num)) return `${num} ${cfg.suffix}`;
-                      return raw;
-                    }
-                    if (form.forma_venda === "cento") {
-                      const num = parseFloat(raw.replace(",", "."));
-                      if (!isNaN(num)) return num === 0.5 ? "Meio cento (50 un)" : `${num} ${cfg.suffix}`;
-                      return raw;
-                    }
-                    return raw;
-                  };
-
-                  return (
                     <div className="prod-field">
-                      <label>{cfg.label} <span style={{ color: "var(--text-muted)", fontWeight: 400 }}>(opcional)</span></label>
-                      <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", margin: "0 0 10px" }}>{cfg.sub}</p>
-
-                      {/* ══ Toggle PRO — Foto personalizada por variação (só pra unidade/fatia/cento/caixa) ══ */}
-                      {["unidade", "fatia", "cento", "caixa"].includes(form.forma_venda) && (
-                        <div
-                          className={`prod-var-toggle${form.usar_foto_variacao && isPro ? " prod-var-toggle--on" : ""}${!isPro ? " prod-var-toggle--locked" : ""}`}
-                          onClick={() => { if (isPro) setForm(f => ({ ...f, usar_foto_variacao: !f.usar_foto_variacao })); }}
-                        >
-                          <div className="prod-var-toggle-icon">📷</div>
-                          <div className="prod-var-toggle-info">
-                            <div className="prod-var-toggle-title">
-                              Foto personalizada por variação
-                              {!isPro && <span className="prod-var-toggle-pro">👑 PRO</span>}
-                            </div>
-                            <div className="prod-var-toggle-desc">
-                              Personalize cada variação do seu produto e venda muito mais
-                            </div>
-                          </div>
-                          <div className={`prod-var-switch${form.usar_foto_variacao && isPro ? " prod-var-switch--on" : ""}${!isPro ? " prod-var-switch--locked" : ""}`}>
-                            <div className="prod-var-switch-thumb" />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* ══ Lista de variações cadastradas (ordenadas crescente) ══ */}
-                      {(form.tamanhos_disponiveis || [])
-                        .map((t, originalIdx) => ({ ...t, originalIdx }))
-                        .sort((a, b) => {
-                          // Extrai números pra ordenar (funciona pra "6 un", "12 fatias", "500g", etc)
-                          const numA = parseFloat(String(a.label).replace(/[^\d,.-]/g, "").replace(",", ".")) || 0;
-                          const numB = parseFloat(String(b.label).replace(/[^\d,.-]/g, "").replace(",", ".")) || 0;
-                          return numA - numB;
-                        })
-                        .map(t => {
-                          const i = t.originalIdx;
-                          const numQtd = parseFloat(String(t.label).replace(/[^\d,.-]/g, "").replace(",", ".")) || 0;
-                          const precoUnit = numQtd > 0 ? t.preco / numQtd : null;
-                          // Cálculo de economia: quanto sairia pelo preço base × qtd
-                          const precoSemDesconto = numQtd > 0 && form.preco_normal > 0 ? form.preco_normal * numQtd : null;
-                          const economia = precoSemDesconto && precoSemDesconto > t.preco
-                            ? Math.round(((precoSemDesconto - t.preco) / precoSemDesconto) * 100)
-                            : null;
-                          const isEditando = editandoVariacao === i;
-                          const useFoto = form.usar_foto_variacao && isPro;
-
-                          // Extrai só o número (ex: "6 unidades" → "6")
-                          const num = String(t.label).replace(/[^\d,.-]/g, "") || t.label;
-                          // Tag da unidade (ex: "6 unidades" → "UNIDADES")
-                          const unLabel = String(t.label).replace(/[\d,.-]+\s*/g, "").trim().toUpperCase() || cfg.suffix?.toUpperCase() || "";
-
-                          // Modo COM foto (V3 - avatar circular)
-                          if (useFoto) {
-                            return (
-                              <div key={i} className="prod-var-item prod-var-item--v3">
-                                <div
-                                  className={`prod-var-avatar${!t.foto_url ? " prod-var-avatar--empty" : ""}`}
-                                  onClick={() => { setCropVariacaoIdx(i); cropVariacaoRef.current?.click(); }}
-                                  title={t.foto_url ? "Trocar foto" : "Adicionar foto"}
-                                >
-                                  {t.foto_url ? (
-                                    <>
-                                      <img src={t.foto_url} alt="" />
-                                      <button
-                                        type="button"
-                                        className="prod-var-avatar-x"
-                                        onClick={e => { e.stopPropagation(); removeVariacaoFoto(i); }}
-                                        title="Remover foto"
-                                      >✕</button>
-                                    </>
-                                  ) : (
-                                    <span className="prod-var-avatar-icon">📸</span>
-                                  )}
-                                  <span className="prod-var-avatar-cam">📷</span>
-                                </div>
-                                <div className="prod-var-info">
-                                  <div className="prod-var-info-top">
-                                    <span className="prod-var-num-inline">{num}</span>
-                                    <span className="prod-var-tag-inline">{unLabel}</span>
-                                  </div>
-                                  {isEditando ? (
-                                    <div className="prod-var-edit-row">
-                                      <span className="prod-var-edit-rs">R$</span>
-                                      <input
-                                        type="text"
-                                        inputMode="decimal"
-                                        autoFocus
-                                        className="prod-var-edit-input"
-                                        value={editVariacaoValor ? formatPreco(parsePreco(editVariacaoValor)) : editVariacaoValor}
-                                        onChange={e => {
-                                          const raw = e.target.value;
-                                          if (!raw) { setEditVariacaoValor(""); return; }
-                                          const n = parsePreco(raw);
-                                          setEditVariacaoValor(n ? formatPreco(n) : raw);
-                                        }}
-                                        onBlur={() => {
-                                          const p = parsePreco(editVariacaoValor);
-                                          if (p > 0) {
-                                            setForm(f => {
-                                              const arr = [...(f.tamanhos_disponiveis || [])];
-                                              if (arr[i]) arr[i] = { ...arr[i], preco: p };
-                                              return { ...f, tamanhos_disponiveis: arr };
-                                            });
-                                          }
-                                          setEditandoVariacao(null); setEditVariacaoValor("");
-                                        }}
-                                        onKeyDown={e => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") { setEditandoVariacao(null); setEditVariacaoValor(""); } }}
-                                      />
-                                    </div>
-                                  ) : (
-                                    <>
-                                      <div className="prod-var-preco-row">
-                                        <span className="prod-var-preco">R$ {formatPreco(t.preco)}</span>
-                                        {economia !== null && economia > 0 && (
-                                          <span className="prod-var-eco">💰 -{economia}%</span>
-                                        )}
-                                      </div>
-                                      <div className="prod-var-preco-un-row">
-                                        {precoUnit && <span className="prod-var-preco-un">R$ {formatPreco(precoUnit)}/un</span>}
-                                        {precoSemDesconto && economia !== null && economia > 0 && (
-                                          <span className="prod-var-preco-tachado">· sem desconto R$ {formatPreco(precoSemDesconto)}</span>
-                                        )}
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
-                                <div className="prod-var-actions">
-                                  <button
-                                    type="button"
-                                    className="prod-var-btn-mini"
-                                    onClick={() => { setEditandoVariacao(i); setEditVariacaoValor(formatPreco(t.preco)); }}
-                                    title="Editar preço"
-                                  >✏️</button>
-                                  <button
-                                    type="button"
-                                    className="prod-var-btn-mini prod-var-btn-mini--del"
-                                    onClick={() => removeTamanho(i)}
-                                    title="Excluir"
-                                  >🗑️</button>
-                                </div>
-                              </div>
-                            );
-                          }
-
-                          // Modo SEM foto (Design D - etiqueta rosa)
-                          return (
-                            <div key={i} className="prod-var-item prod-var-item--d">
-                              <div className="prod-var-tag-side">
-                                <div className="prod-var-tag-num">{num}</div>
-                                <div className="prod-var-tag-un">{unLabel}</div>
-                              </div>
-                              <div className="prod-var-body">
-                                <div className="prod-var-body-info">
-                                  {isEditando ? (
-                                    <div className="prod-var-edit-row">
-                                      <span className="prod-var-edit-rs">R$</span>
-                                      <input
-                                        type="text"
-                                        inputMode="decimal"
-                                        autoFocus
-                                        className="prod-var-edit-input"
-                                        value={editVariacaoValor ? formatPreco(parsePreco(editVariacaoValor)) : editVariacaoValor}
-                                        onChange={e => {
-                                          const raw = e.target.value;
-                                          if (!raw) { setEditVariacaoValor(""); return; }
-                                          const n = parsePreco(raw);
-                                          setEditVariacaoValor(n ? formatPreco(n) : raw);
-                                        }}
-                                        onBlur={() => {
-                                          const p = parsePreco(editVariacaoValor);
-                                          if (p > 0) {
-                                            setForm(f => {
-                                              const arr = [...(f.tamanhos_disponiveis || [])];
-                                              if (arr[i]) arr[i] = { ...arr[i], preco: p };
-                                              return { ...f, tamanhos_disponiveis: arr };
-                                            });
-                                          }
-                                          setEditandoVariacao(null); setEditVariacaoValor("");
-                                        }}
-                                        onKeyDown={e => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); if (e.key === "Escape") { setEditandoVariacao(null); setEditVariacaoValor(""); } }}
-                                      />
-                                    </div>
-                                  ) : (
-                                    <>
-                                      <div className="prod-var-preco-row">
-                                        <div className="prod-var-preco-big">R$ {formatPreco(t.preco)}</div>
-                                        {economia !== null && economia > 0 && (
-                                          <span className="prod-var-eco">💰 -{economia}%</span>
-                                        )}
-                                      </div>
-                                      <div className="prod-var-preco-un-row">
-                                        {precoUnit && <span className="prod-var-preco-un-mini">R$ {formatPreco(precoUnit)} por {cfg.suffix?.replace(/\(|\)|s$/g, "") || "un"}</span>}
-                                        {precoSemDesconto && economia !== null && economia > 0 && (
-                                          <span className="prod-var-preco-tachado">· sem desconto R$ {formatPreco(precoSemDesconto)}</span>
-                                        )}
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
-                                <div className="prod-var-actions">
-                                  <button
-                                    type="button"
-                                    className="prod-var-btn-mini"
-                                    onClick={() => { setEditandoVariacao(i); setEditVariacaoValor(formatPreco(t.preco)); }}
-                                    title="Editar preço"
-                                  >✏️</button>
-                                  <button
-                                    type="button"
-                                    className="prod-var-btn-mini prod-var-btn-mini--del"
-                                    onClick={() => removeTamanho(i)}
-                                    title="Excluir"
-                                  >🗑️</button>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-
-                      {/* Input file oculto pra upload de foto de variação */}
-                      <input
-                        ref={cropVariacaoRef}
-                        type="file"
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        onChange={e => { if (cropVariacaoIdx !== null) handleVariacaoFotoUpload(e, cropVariacaoIdx); }}
-                      />
-
-                      {/* Form pra adicionar novo (V1 aprovado - tag "UNIDADES" colada) */}
-                      <div className="prod-var-add-row">
-                        <div className="prod-var-input-group">
-                          <input
-                            type="text"
-                            inputMode={form.forma_venda === "kg" || form.forma_venda === "cento" ? "decimal" : "numeric"}
-                            placeholder={cfg.placeholder}
-                            value={novoTamanho.label}
-                            onChange={e => setNovoTamanho(t => ({ ...t, label: e.target.value }))}
-                            className="prod-var-input"
-                          />
-                          <span className="prod-var-input-tag">
-                            {(cfg.suffix || (form.forma_venda === "kg" ? "kg" : form.forma_venda === "tamanho" ? "" : "un")).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="prod-var-preco-input">
-                          <span>R$</span>
-                          <input
-                            type="text"
-                            inputMode="decimal"
-                            placeholder="0,00"
-                            value={novoTamanho.preco ? formatPreco(parsePreco(novoTamanho.preco)) : novoTamanho.preco}
-                            onChange={e => {
-                              const raw = e.target.value;
-                              if (!raw) { setNovoTamanho(t => ({ ...t, preco: "" })); return; }
-                              const numero = parsePreco(raw);
-                              setNovoTamanho(t => ({ ...t, preco: numero ? formatPreco(numero) : raw }));
-                            }}
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          className="prod-var-btn-add"
-                          onClick={() => {
-                            if (!novoTamanho.label.trim()) return;
-                            const preco = parsePreco(novoTamanho.preco);
-                            if (preco <= 0) return;
-                            const label = formatLabel(novoTamanho.label.trim());
-                            setForm(f => ({ ...f, tamanhos_disponiveis: [...(f.tamanhos_disponiveis || []), { label, preco }] }));
-                            setNovoTamanho({ label: "", preco: "" });
-                          }}
-                        >
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                          <span>Adicionar</span>
-                        </button>
-                      </div>
+                      <label>Vendido por</label>
+                      <select value={form.forma_venda} onChange={e => setForm(f => ({ ...f, forma_venda: e.target.value }))}>
+                        {FORMAS_VENDA.map(fv => <option key={fv.value} value={fv.value}>{fv.label}</option>)}
+                      </select>
                     </div>
-                  );
-                })()}
-                  </>
-                )}
-
-                {/* Botão "+ Adicionar variação" — só aparece no modo Simples */}
-                {wizardTipo === "simples" && (
-                  <button
-                    className="prod-btn-add-variacao"
-                    onClick={() => setWizardTipo("variacoes")}
-                    type="button"
-                  >
-                    <span style={{fontSize: 18, marginRight: 6}}>➕</span>
-                    Adicionar variações (P/M/G, sabores...)
-                  </button>
-                )}
-
-                {/* Botão "Voltar pra simples" — só aparece se está em variações E sem variações cadastradas */}
-                {wizardTipo === "variacoes" && (form.tamanhos_disponiveis || []).length === 0 && !form.kit_itens?.length && (
-                  <button
-                    className="prod-btn-back-simples"
-                    onClick={() => setWizardTipo("simples")}
-                    type="button"
-                  >
-                    ← Voltar para produto simples
-                  </button>
-                )}
-              </div>
+                  </div>
+                </div>
               )}
+
+              {/* ══════ SEÇÃO 2: Adicionais das opções ══════ */}
+              {(wizardStep === 4 || form.id) && (() => {
+                const gruposComOpcoes = [
+                  { key: "massas", label: "Massas", grupo: form.grupo_massas },
+                  { key: "recheios", label: "Recheios", grupo: form.grupo_recheios },
+                  { key: "coberturas", label: "Coberturas", grupo: form.grupo_coberturas },
+                ].filter(g => g.grupo?.ativo && (g.grupo.opcoes.length || 0) > 0);
+                if (gruposComOpcoes.length === 0) return null;
+
+                return (
+                  <div className="prod-section">
+                    <p className="prod-section-label prod-section-label--novo">Adicionais das opções <em style={{ fontSize: "0.65rem", color: "var(--text-muted)", fontWeight: 400 }}>opcional</em></p>
+                    <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
+                      Deixe R$ 0,00 se a opção não custa a mais. Ex: "Ninho +R$ 5" cobra extra pelo recheio.
+                    </p>
+
+                    {gruposComOpcoes.map(({ key, label, grupo }) => (
+                      <div key={key} style={{marginBottom: 16}}>
+                        <div style={{fontSize: 12, fontWeight: 800, color: "#831843", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8}}>{label}</div>
+                        <div style={{display: "flex", flexDirection: "column", gap: 6}}>
+                          {grupo!.opcoes.map(op => (
+                            <div key={op.id} style={{display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "#FAF8F5", border: "1px solid #F0EBED", borderRadius: 10}}>
+                              <span style={{flex: 1, fontSize: 13.5, fontWeight: 700, color: "#2D1F26"}}>{op.nome}</span>
+                              <div style={{display: "inline-flex", alignItems: "center", gap: 4, background: "#fff", border: "1.5px solid #E5D8DE", borderRadius: 8, padding: "6px 10px"}}>
+                                <span style={{fontSize: 12, color: "#6B5D64", fontWeight: 700}}>+ R$</span>
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  value={op.adicional > 0 ? formatPreco(op.adicional) : "0,00"}
+                                  onChange={e => {
+                                    const adicional = parsePreco(e.target.value);
+                                    const campo = `grupo_${key}` as keyof Produto;
+                                    setForm(f => ({
+                                      ...f,
+                                      [campo]: {
+                                        ...(f[campo] as any),
+                                        opcoes: (f[campo] as any).opcoes.map((o: any) => o.id === op.id ? { ...o, adicional } : o),
+                                      },
+                                    }));
+                                  }}
+                                  style={{width: 60, border: "none", outline: "none", background: "transparent", fontSize: 13.5, fontWeight: 800, color: op.adicional > 0 ? "#E85A8C" : "#9A8B93", textAlign: "right", fontFamily: "inherit"}}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
 
               {/* Kit Festa */}
               {form.forma_venda === "kit-festa" && (
