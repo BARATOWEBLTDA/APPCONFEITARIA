@@ -699,14 +699,14 @@ function PersonalizacaoStep({
                     )}
                     <span>:</span>
                   </div>
-                  <div style={{display: "inline-flex", alignItems: "center", gap: 4, background: "#fff", border: "1.5px solid #E85A8C", borderRadius: 8, padding: "4px 10px"}}>
-                    <span style={{fontSize: 12, color: "#831843", fontWeight: 700}}>R$</span>
+                  <div style={{display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "2px solid #E85A8C", borderRadius: 10, padding: "8px 14px", minWidth: 140}}>
+                    <span style={{fontSize: 14, color: "#831843", fontWeight: 800}}>R$</span>
                     <input
                       type="text"
                       inputMode="numeric"
                       value={formatPreco(precoBase)}
                       onChange={e => onPrecoBaseChange(parsePreco(e.target.value))}
-                      style={{width: 70, border: "none", outline: "none", background: "transparent", fontSize: 14, fontWeight: 800, color: "#E85A8C", textAlign: "right", fontFamily: "inherit"}}
+                      style={{width: 100, border: "none", outline: "none", background: "transparent", fontSize: 18, fontWeight: 900, color: "#E85A8C", textAlign: "right", fontFamily: "inherit"}}
                       placeholder="0,00"
                     />
                   </div>
