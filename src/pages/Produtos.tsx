@@ -103,9 +103,46 @@ const gerarId = () =>
 
 // Title Case pt-BR — "bolo de chocolate" → "Bolo de Chocolate"
 const MINUSCULAS_TITLE = new Set(["de", "da", "do", "das", "dos", "e", "a", "o", "os", "as", "com", "sem", "à", "ao", "aos", "às", "em", "para", "por"]);
+/**
+ * Title Case inteligente — preserva capitalização intencional.
+ *
+ * REGRA: só normaliza quando a string está TODA em minúsculo ou TODA em
+ * maiúsculo (indica que o usuário não formatou). Se tem capitalização
+ * mista (M&M's, iFood, KitKat, Nutella, Kinder Bueno), preserva como
+ * foi digitado.
+ *
+ * Exemplos:
+ * - "bolo de chocolate" → "Bolo de Chocolate"    (tudo minúsculo → normaliza)
+ * - "BOLO DE CHOCOLATE" → "Bolo de Chocolate"    (tudo maiúsculo → normaliza)
+ * - "M&M's Chocolate"   → "M&M's Chocolate"      (mista → preserva)
+ * - "iFood Special"     → "iFood Special"        (mista → preserva)
+ * - "KitKat"            → "KitKat"               (mista → preserva)
+ */
 function titleCase(str: string): string {
   if (!str) return str;
-  return str.toLowerCase().trim().split(/\s+/).map((p, i) => {
+  const trimmed = str.trim();
+  if (!trimmed) return trimmed;
+
+  // Se tem alguma capitalização mista (letra maiúscula NÃO no começo, ou
+  // letra minúscula NÃO seguindo espaço), preserva tudo como veio.
+  // Detecção: se, ao remover espaços/pontuação, existe alguma letra
+  // maiúscula que não é a primeira letra da palavra, considera "mista".
+  const palavras = trimmed.split(/\s+/);
+  const temCapitalizacaoIntencional = palavras.some(palavra => {
+    // Se a palavra tem UPPERCASE no meio (não no começo), é intencional
+    // Ex: "iFood" (F maiúsculo no meio), "KitKat" (K maiúsculo), "M&M's"
+    for (let i = 1; i < palavra.length; i++) {
+      const c = palavra[i];
+      // Ignora ' e outros pontuação que não são letra
+      if (/[A-ZÀ-Ý]/.test(c)) return true;
+    }
+    return false;
+  });
+
+  if (temCapitalizacaoIntencional) return trimmed;
+
+  // Caso "tudo minúsculo" ou "tudo maiúsculo": normaliza
+  return trimmed.toLowerCase().split(/\s+/).map((p, i) => {
     if (i > 0 && MINUSCULAS_TITLE.has(p)) return p;
     return p.charAt(0).toUpperCase() + p.slice(1);
   }).join(" ");
@@ -883,6 +920,7 @@ function PersonalizacaoStep({
   precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange, onFormaVendaChange,
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
+  const [avancadoOpen, setAvancadoOpen] = useState<Record<string, boolean>>({});
   const [showInfo, setShowInfo] = useState(false);
   const [showUnidade, setShowUnidade] = useState(false);
   const [biblioteca, setBiblioteca] = useState<Record<string, BibliotecaOpcao[]>>({
@@ -1158,6 +1196,16 @@ function PersonalizacaoStep({
   ];
 
   // ── Preview do preço mínimo e máximo ────────────────────────────
+  /**
+   * Calcula faixa de preço (min-max) que o cliente pode pagar.
+   * Considera:
+   * - Preço base ou tamanhos (o menor vira base)
+   * - Promoção percentual (aplicada no final)
+   * - Regra de conflito Sabor × Tamanho
+   * - Adicionais obrigatórios (Massa=1, Cobertura=1) somam min
+   * - Recheios respeitam min/max de seleção
+   * - Sabores obrigatórios (padrão: min=1) somam pelo menos o menor
+   */
   const calcularFaixaPreco = (): { min: number; max: number } => {
     let base = precoBase;
     // Se tamanhos ativos, o menor preço vira o base
@@ -1169,7 +1217,8 @@ function PersonalizacaoStep({
     let precoMax = grupoTamanhos.ativo && grupoTamanhos.opcoes.length > 0
       ? Math.max(...grupoTamanhos.opcoes.map(o => o.preco).filter(p => p > 0), base)
       : base;
-    // Massa e Cobertura: escolhe 1, então adicional = min do menor até max do maior
+
+    // Massa e Cobertura: sempre 1 (obrigatório) — soma min e max
     [grupoMassas, grupoCoberturas].forEach(g => {
       if (g.ativo && g.opcoes.length > 0) {
         const adicionais = g.opcoes.map(o => o.adicional);
@@ -1177,22 +1226,42 @@ function PersonalizacaoStep({
         precoMax += Math.max(...adicionais);
       }
     });
-    // Sabores: depende de sabor_tem_preco_proprio
+
+    // Sabores: 3 comportamentos possíveis
     if (grupoSabores.ativo && grupoSabores.opcoes.length > 0) {
-      if (grupoSabores.sabor_tem_preco_proprio) {
-        // Preço próprio substitui a base
+      const temPrecoProprio = !!grupoSabores.sabor_tem_preco_proprio;
+      const temConflito = temPrecoProprio && grupoTamanhos.ativo &&
+        grupoTamanhos.opcoes.some(o => o.preco > 0);
+
+      if (temConflito) {
+        // Aplica regra de conflito Sabor × Tamanho
+        const regra = grupoSabores.regra_conflito_tamanho || "preco_tamanho";
+        const precosT = grupoTamanhos.opcoes.map(o => o.preco).filter(p => p > 0);
+        const precosS = grupoSabores.opcoes.map((o: any) => o.preco || 0).filter((p: number) => p > 0);
+
+        if (regra === "preco_sabor" && precosS.length > 0) {
+          precoMin = Math.min(...precosS);
+          precoMax = Math.max(...precosS);
+        } else if (regra === "tamanho_base_sabor_adicional" && precosT.length > 0 && precosS.length > 0) {
+          precoMin = Math.min(...precosT) + Math.min(...precosS);
+          precoMax = Math.max(...precosT) + Math.max(...precosS);
+        }
+        // "preco_tamanho" (default): mantém o cálculo do tamanho já feito
+      } else if (temPrecoProprio) {
+        // Sabor com preço próprio, sem conflito com tamanho — substitui base
         const precos = grupoSabores.opcoes.map((o: any) => o.preco || 0).filter((p: number) => p > 0);
         if (precos.length > 0) {
           precoMin = Math.min(...precos);
           precoMax = Math.max(...precos);
         }
       } else {
-        // Adicional
+        // Adicional (sabor é obrigatório: min=1, então soma pelo menos o menor)
         const adicionais = grupoSabores.opcoes.map(o => o.adicional);
         precoMin += Math.min(...adicionais);
         precoMax += Math.max(...adicionais);
       }
     }
+
     // Recheios: multiplo, min = min * min_escolhas, max = max * max_escolhas
     if (grupoRecheios.ativo && grupoRecheios.opcoes.length > 0) {
       const adicionais = grupoRecheios.opcoes.map(o => o.adicional).sort((a, b) => a - b);
@@ -1201,6 +1270,7 @@ function PersonalizacaoStep({
       if (min > 0) precoMin += adicionais.slice(0, min).reduce((s, v) => s + v, 0);
       precoMax += adicionais.slice(-max).reduce((s, v) => s + v, 0);
     }
+
     return { min: precoMin, max: precoMax };
   };
 
@@ -1579,6 +1649,94 @@ function PersonalizacaoStep({
                       </button>
                     </div>
                   </>
+                )}
+
+                {/* ═══ Configurações avançadas — só quando confeiteira quer configurar min/max ═══ */}
+                {g.dados.opcoes.length > 0 && (
+                  <div style={{marginTop: 14, borderTop: "1px dashed #E5D8DE", paddingTop: 10}}>
+                    <button
+                      type="button"
+                      onClick={() => setAvancadoOpen(prev => ({ ...prev, [g.key]: !prev[g.key] }))}
+                      style={{
+                        all: "unset",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 6,
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: "#6B5D64",
+                        cursor: "pointer",
+                        padding: "6px 8px",
+                        borderRadius: 6,
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                      </svg>
+                      {avancadoOpen[g.key] ? "Ocultar avançado" : "Configurações avançadas"}
+                    </button>
+
+                    {avancadoOpen[g.key] && (
+                      <div style={{
+                        marginTop: 10,
+                        padding: 12,
+                        background: "#FAF8F5",
+                        border: "1px solid #F0EBED",
+                        borderRadius: 10,
+                      }}>
+                        <div style={{fontSize: 12.5, fontWeight: 700, color: "#2D1F26", marginBottom: 8}}>
+                          Quantas opções o cliente pode escolher?
+                        </div>
+                        <div style={{display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap"}}>
+                          <label style={{display: "inline-flex", flexDirection: "column", gap: 4}}>
+                            <span style={{fontSize: 11, color: "#6B5D64", fontWeight: 700}}>Mínimo</span>
+                            <input
+                              type="number"
+                              min={0}
+                              max={g.dados.opcoes.length}
+                              value={g.dados.min ?? 1}
+                              onChange={e => {
+                                const min = Math.max(0, Math.min(parseInt(e.target.value) || 0, g.dados.opcoes.length));
+                                const campoKey = `grupo_${g.key}`;
+                                onChange({ [campoKey]: { ...g.dados, min } } as any);
+                              }}
+                              style={{
+                                width: 60, padding: "6px 8px", border: "1.5px solid #E5D8DE",
+                                borderRadius: 6, fontSize: 13, fontWeight: 700, color: "#2D1F26",
+                                textAlign: "center", fontFamily: "inherit", outline: "none",
+                              }}
+                            />
+                          </label>
+                          <label style={{display: "inline-flex", flexDirection: "column", gap: 4}}>
+                            <span style={{fontSize: 11, color: "#6B5D64", fontWeight: 700}}>Máximo</span>
+                            <input
+                              type="number"
+                              min={1}
+                              max={g.dados.opcoes.length || 99}
+                              value={g.dados.max ?? 1}
+                              onChange={e => {
+                                const max = Math.max(1, Math.min(parseInt(e.target.value) || 1, g.dados.opcoes.length || 99));
+                                const campoKey = `grupo_${g.key}`;
+                                onChange({ [campoKey]: { ...g.dados, max } } as any);
+                              }}
+                              style={{
+                                width: 60, padding: "6px 8px", border: "1.5px solid #E5D8DE",
+                                borderRadius: 6, fontSize: 13, fontWeight: 700, color: "#2D1F26",
+                                textAlign: "center", fontFamily: "inherit", outline: "none",
+                              }}
+                            />
+                          </label>
+                          <span style={{fontSize: 11.5, color: "#6B5D64", flex: 1, minWidth: 120}}>
+                            {g.dados.min === g.dados.max
+                              ? `Cliente escolhe exatamente ${g.dados.min} ${g.dados.min === 1 ? "opção" : "opções"}`
+                              : `Cliente escolhe de ${g.dados.min} a ${g.dados.max} opções`}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             )}
@@ -2143,9 +2301,10 @@ const FORMAS_VENDA = [
   { value: "tamanho", label: "Por Tamanho (P/M/G)" },
   { value: "caixa", label: "Por Caixa" },
   { value: "kit-festa", label: "Kit Festa" },
-  { value: "sob-encomenda", label: "Sob Encomenda" },
   { value: "outros", label: "Outros" },
 ];
+// Nota: "sob-encomenda" foi removido daqui — agora é controlado pelo toggle
+// "Pronta entrega" (modo de produção separado da unidade de venda)
 
 const EMPTY: Produto = {
   nome: "", descricao: "", preco_normal: 0,
@@ -2391,7 +2550,14 @@ export default function Produtos() {
 
   const openNovo = () => { setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setModal(true); };
   const openEditar = async (p: Produto) => {
-    setForm(migrarAdicionaisLegacy({ ...EMPTY, ...p }));
+    // Migração silenciosa: "sob-encomenda" era misturado no forma_venda,
+    // agora é modo de produção separado (pronta_entrega=false)
+    const pMigrado = { ...p };
+    if (pMigrado.forma_venda === "sob-encomenda") {
+      pMigrado.forma_venda = "unidade";
+      pMigrado.pronta_entrega = false;
+    }
+    setForm(migrarAdicionaisLegacy({ ...EMPTY, ...pMigrado }));
     setFichaTecnica([]);
     // Detecta tipo baseado nos dados salvos
     if (p.tipo_produto === "personalizavel") {
