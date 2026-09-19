@@ -498,6 +498,340 @@ interface PersonalizacaoStepProps {
   onFormaVendaChange: (v: string) => void;
 }
 
+// ═══════════════════════════════════════════════════════════════
+// SelectDoonly — Seletor custom (mobile: bottom sheet, desktop: popover)
+// ═══════════════════════════════════════════════════════════════
+interface SelectDoonlyOption {
+  value: string;
+  label: string;
+  icon?: React.ReactNode;
+  hint?: string;
+}
+interface SelectDoonlyProps {
+  value: string;
+  onChange: (v: string) => void;
+  options: SelectDoonlyOption[];
+  placeholder?: string;
+  title?: string;
+  extraOptionLabel?: string;
+  onExtraOption?: () => void;
+}
+function SelectDoonly({
+  value, onChange, options, placeholder = "Selecione...", title = "Escolha uma opção", extraOptionLabel, onExtraOption
+}: SelectDoonlyProps) {
+  const [open, setOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 720);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (!btnRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    // Delay pra não capturar o próprio click de abrir
+    const t = setTimeout(() => window.addEventListener("click", handler), 10);
+    return () => { clearTimeout(t); window.removeEventListener("click", handler); };
+  }, [open]);
+
+  const selected = options.find(o => o.value === value);
+
+  return (
+    <div className="sd-wrap">
+      <button
+        ref={btnRef}
+        type="button"
+        className={`sd-trigger ${open ? "sd-trigger--open" : ""}`}
+        onClick={() => setOpen(v => !v)}
+      >
+        <span className={`sd-trigger-text ${!selected ? "sd-trigger-text--placeholder" : ""}`}>
+          {selected ? (
+            <>
+              {selected.icon && <span className="sd-trigger-icon">{selected.icon}</span>}
+              {selected.label}
+            </>
+          ) : placeholder}
+        </span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{transition: "transform 0.15s", transform: open ? "rotate(180deg)" : "none"}}>
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+
+      {open && isMobile && (
+        <div className="sd-sheet-ov" onClick={() => setOpen(false)}>
+          <div className="sd-sheet" onClick={e => e.stopPropagation()}>
+            <div className="sd-sheet-handle" />
+            <div className="sd-sheet-title">{title}</div>
+            <div className="sd-sheet-list">
+              {options.map(op => (
+                <button
+                  key={op.value}
+                  type="button"
+                  className={`sd-sheet-item ${op.value === value ? "sd-sheet-item--ativo" : ""}`}
+                  onClick={() => { onChange(op.value); setOpen(false); }}
+                >
+                  {op.icon && <span className="sd-item-icon">{op.icon}</span>}
+                  <span className="sd-item-label">
+                    {op.label}
+                    {op.hint && <span className="sd-item-hint">{op.hint}</span>}
+                  </span>
+                  {op.value === value && (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  )}
+                </button>
+              ))}
+              {extraOptionLabel && onExtraOption && (
+                <button
+                  type="button"
+                  className="sd-sheet-item sd-sheet-item--extra"
+                  onClick={() => { onExtraOption(); setOpen(false); }}
+                >
+                  <span className="sd-item-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  </span>
+                  <span className="sd-item-label">{extraOptionLabel}</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {open && !isMobile && (
+        <div className="sd-popover" onClick={e => e.stopPropagation()}>
+          {options.map(op => (
+            <button
+              key={op.value}
+              type="button"
+              className={`sd-pop-item ${op.value === value ? "sd-pop-item--ativo" : ""}`}
+              onClick={() => { onChange(op.value); setOpen(false); }}
+            >
+              {op.icon && <span className="sd-item-icon">{op.icon}</span>}
+              <span className="sd-item-label">
+                {op.label}
+                {op.hint && <span className="sd-item-hint">{op.hint}</span>}
+              </span>
+              {op.value === value && (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              )}
+            </button>
+          ))}
+          {extraOptionLabel && onExtraOption && (
+            <button
+              type="button"
+              className="sd-pop-item sd-pop-item--extra"
+              onClick={() => { onExtraOption(); setOpen(false); }}
+            >
+              <span className="sd-item-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </span>
+              <span className="sd-item-label">{extraOptionLabel}</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      <style>{`
+        .sd-wrap { position: relative; width: 100%; }
+        .sd-trigger {
+          all: unset;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          width: 100%;
+          box-sizing: border-box;
+          padding: 14px 14px;
+          background: #fff;
+          border: 1.5px solid #E5D8DE;
+          border-radius: 10px;
+          font-size: 15px;
+          font-weight: 700;
+          color: #2D1F26;
+          cursor: pointer;
+          transition: all 0.15s;
+          font-family: inherit;
+        }
+        .sd-trigger:hover { border-color: #E85A8C; }
+        .sd-trigger--open {
+          border-color: #E85A8C;
+          box-shadow: 0 0 0 3px rgba(232, 90, 140, 0.1);
+        }
+        .sd-trigger-text {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          flex: 1;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .sd-trigger-text--placeholder { color: #9A8B93; font-weight: 500; }
+        .sd-trigger-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px; height: 24px;
+          background: #FCE0E9;
+          color: #E85A8C;
+          border-radius: 6px;
+          flex-shrink: 0;
+        }
+
+        /* Bottom sheet (mobile) */
+        .sd-sheet-ov {
+          position: fixed; inset: 0;
+          background: rgba(0,0,0,0.5);
+          z-index: 4000;
+          display: flex;
+          align-items: flex-end;
+          animation: sdFadeIn 0.2s ease;
+        }
+        @keyframes sdFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .sd-sheet {
+          width: 100%;
+          background: #fff;
+          border-radius: 20px 20px 0 0;
+          padding: 8px 16px 24px;
+          max-height: 70vh;
+          overflow-y: auto;
+          animation: sdSlideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+        @keyframes sdSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .sd-sheet-handle {
+          width: 40px; height: 4px;
+          background: #E5D8DE;
+          border-radius: 2px;
+          margin: 8px auto 12px;
+        }
+        .sd-sheet-title {
+          font-size: 15px;
+          font-weight: 900;
+          color: #2D1F26;
+          text-align: center;
+          margin-bottom: 12px;
+        }
+        .sd-sheet-list {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .sd-sheet-item {
+          all: unset;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 12px;
+          border-radius: 10px;
+          cursor: pointer;
+          font-family: inherit;
+          transition: background 0.12s;
+        }
+        .sd-sheet-item:hover { background: #FAF8F5; }
+        .sd-sheet-item--ativo {
+          background: #FDF3F7;
+          color: #831843;
+        }
+        .sd-sheet-item--ativo .sd-item-label { font-weight: 800; }
+        .sd-sheet-item--ativo svg { color: #E85A8C; }
+        .sd-sheet-item--extra {
+          border-top: 1px solid #F0EBED;
+          margin-top: 4px;
+          padding-top: 14px;
+          color: #E85A8C;
+        }
+        .sd-sheet-item--extra .sd-item-label { font-weight: 800; }
+        .sd-sheet-item--extra .sd-item-icon {
+          background: #FCE0E9;
+          color: #E85A8C;
+        }
+
+        /* Popover (desktop) */
+        .sd-popover {
+          position: absolute;
+          top: calc(100% + 6px);
+          left: 0;
+          right: 0;
+          background: #fff;
+          border: 1px solid #F0EBED;
+          border-radius: 10px;
+          box-shadow: 0 12px 32px rgba(0,0,0,0.14);
+          padding: 6px;
+          z-index: 100;
+          max-height: 320px;
+          overflow-y: auto;
+          animation: sdPopIn 0.15s ease;
+        }
+        @keyframes sdPopIn {
+          from { opacity: 0; transform: translateY(-4px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .sd-pop-item {
+          all: unset;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 13.5px;
+          color: #2D1F26;
+          transition: background 0.12s;
+        }
+        .sd-pop-item:hover { background: #FAF8F5; }
+        .sd-pop-item--ativo {
+          background: #FDF3F7;
+          color: #831843;
+        }
+        .sd-pop-item--ativo .sd-item-label { font-weight: 800; }
+        .sd-pop-item--ativo svg { color: #E85A8C; }
+        .sd-pop-item--extra {
+          border-top: 1px solid #F0EBED;
+          margin-top: 4px;
+          padding-top: 10px;
+          color: #E85A8C;
+        }
+        .sd-pop-item--extra .sd-item-label { font-weight: 800; }
+        .sd-pop-item--extra .sd-item-icon {
+          background: #FCE0E9;
+          color: #E85A8C;
+        }
+
+        /* Item shared */
+        .sd-item-icon {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px; height: 32px;
+          background: #FAF8F5;
+          color: #6B5D64;
+          border-radius: 8px;
+          flex-shrink: 0;
+        }
+        .sd-item-label {
+          flex: 1;
+          font-size: 14px;
+          display: flex;
+          flex-direction: column;
+        }
+        .sd-item-hint {
+          font-size: 11.5px;
+          color: #9A8B93;
+          font-weight: 500;
+          margin-top: 2px;
+        }
+      `}</style>
+    </div>
+  );
+}
+
 function PersonalizacaoStep({
   grupoMassas, grupoRecheios, grupoCoberturas, grupoTamanhos,
   precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange, onFormaVendaChange,
@@ -2583,25 +2917,15 @@ export default function Produtos() {
                 <div className="prod-field">
                   <label className="prod-field-label-novo">Categoria <span className="prod-field-star">*</span></label>
                   {!showCatInput ? (
-                    <select
+                    <SelectDoonly
                       value={form.categoria}
-                      onChange={e => {
-                        if (e.target.value === "__nova__") {
-                          setShowCatInput(true);
-                          return;
-                        }
-                        setForm(f => ({ ...f, categoria: e.target.value }));
-                      }}
-                    >
-                      <option value="">
-                        {todasCategorias.length > 0 ? "Selecione uma categoria..." : "Nenhuma categoria cadastrada"}
-                      </option>
-                      {todasCategorias.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                      {todasCategorias.length > 0 && <option disabled>─────────────</option>}
-                      <option value="__nova__">
-                        {todasCategorias.length > 0 ? "+ Criar nova categoria" : "+ Criar primeira categoria"}
-                      </option>
-                    </select>
+                      onChange={v => setForm(f => ({ ...f, categoria: v }))}
+                      options={todasCategorias.map(cat => ({ value: cat, label: cat }))}
+                      placeholder={todasCategorias.length > 0 ? "Selecione uma categoria..." : "Nenhuma categoria cadastrada"}
+                      title="Escolha a categoria"
+                      extraOptionLabel={todasCategorias.length > 0 ? "Criar nova categoria" : "Criar primeira categoria"}
+                      onExtraOption={() => setShowCatInput(true)}
+                    />
                   ) : (
                     <div className="prod-cat-nova-form">
                       <p className="prod-cat-nova-hint">✨ Criar nova categoria</p>
@@ -2924,13 +3248,12 @@ export default function Produtos() {
                     </div>
                     <div className="prod-field">
                       <label>Vendido por</label>
-                      <select
+                      <SelectDoonly
                         value={form.forma_venda}
-                        onChange={e => setForm(f => ({ ...f, forma_venda: e.target.value }))}
-                        style={{padding: "14px 12px", fontSize: 15, fontWeight: 700, height: 58}}
-                      >
-                        {FORMAS_VENDA.map(fv => <option key={fv.value} value={fv.value}>{fv.label}</option>)}
-                      </select>
+                        onChange={v => setForm(f => ({ ...f, forma_venda: v }))}
+                        options={FORMAS_VENDA.map(fv => ({ value: fv.value, label: fv.label }))}
+                        title="Como esse produto é vendido?"
+                      />
                     </div>
                   </div>
                 </div>
