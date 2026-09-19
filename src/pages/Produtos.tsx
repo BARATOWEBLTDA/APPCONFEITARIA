@@ -65,7 +65,7 @@ type KitItem = { nome: string; quantidade: string };
 // Tipos pra novo sistema Produto + Variações + Personalização
 type Variacao = { id: string; nome: string; preco: number; foto?: string };
 type OpcaoPersonalizacao = { id: string; nome: string; adicional: number; foto?: string; tipo_adicional?: "fixo" | "por_kg" | "por_unidade" | "por_quantidade" };
-type OpcaoTamanho = { id: string; nome: string; preco: number; foto?: string };
+type OpcaoTamanho = { id: string; nome: string; preco: number; peso_kg?: number | null; foto?: string };
 type DistribuicaoModo = "nenhuma" | "igual" | "livre";
 type GrupoPersonalizacao = {
   ativo: boolean;
@@ -82,6 +82,14 @@ type GrupoTamanhos = {
   distribuicao: DistribuicaoModo;
   opcoes: OpcaoTamanho[];
   foto_por_opcao?: boolean;
+  // Fase 3: modo explícito de precificação por tamanho
+  // "preco_fixo"      → cada tamanho tem seu preço (default clássico)
+  // "por_peso"        → preco_base × peso_kg (calcula automático)
+  // "herdar_base"     → todos usam preco_normal do produto
+  // "sob_consulta"    → sem preço, vira "consulte-nos"
+  modo_preco_tamanho?: "preco_fixo" | "por_peso" | "herdar_base" | "sob_consulta";
+  // Fase 3: label dinâmico — "Tamanhos" (bolo) vs "Quantidades" (brigadeiro/salgado)
+  nome_exibicao?: "Tamanhos" | "Quantidades";
 };
 type OpcaoSabor = { id: string; nome: string; adicional: number; preco?: number; foto?: string; tipo_adicional?: "fixo" | "por_kg" | "por_unidade" | "por_quantidade" };
 type GrupoSabores = {
@@ -153,6 +161,8 @@ const GRUPO_VAZIO: GrupoPersonalizacao = {
 };
 const GRUPO_TAMANHOS_VAZIO: GrupoTamanhos = {
   ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [],
+  modo_preco_tamanho: "preco_fixo",  // Fase 3 — default clássico
+  nome_exibicao: "Tamanhos",          // Fase 3 — default
 };
 const GRUPO_SABORES_VAZIO: GrupoSabores = {
   ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [], sabor_tem_preco_proprio: false,
@@ -1189,8 +1199,10 @@ function PersonalizacaoStep({
           <path d="M18 10v4"/>
         </svg>
       ),
-      titulo: "Tamanhos",
-      subtitulo: "P, M, G — cada um com seu preço",
+      titulo: grupoTamanhos.nome_exibicao || "Tamanhos",
+      subtitulo: (grupoTamanhos.nome_exibicao === "Quantidades")
+        ? "50 un, 100 un, 200 un — cada um com seu preço"
+        : "P, M, G — cada um com seu preço",
       dados: grupoTamanhos,
     },
   ];
@@ -1541,9 +1553,88 @@ function PersonalizacaoStep({
                   </>
                 ) : (
                   <>
-                    {/* Tamanhos — só nome. Preço vai no step 4 */}
+                    {/* Fase 3: Como você quer chamar este grupo? */}
+                    <div style={{marginBottom: 12}}>
+                      <div style={{fontSize: 12, fontWeight: 700, color: "#6B5D64", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.03em"}}>
+                        Como chamar este grupo?
+                      </div>
+                      <div style={{display: "flex", gap: 6}}>
+                        {(["Tamanhos", "Quantidades"] as const).map(nome => {
+                          const ativo = (grupoTamanhos.nome_exibicao || "Tamanhos") === nome;
+                          return (
+                            <button
+                              key={nome}
+                              type="button"
+                              onClick={() => onChange({ grupo_tamanhos: { ...grupoTamanhos, nome_exibicao: nome } })}
+                              style={{
+                                flex: 1,
+                                padding: "8px 10px",
+                                background: ativo ? "#FDF3F7" : "#fff",
+                                border: `1.5px solid ${ativo ? "#E85A8C" : "#E5D8DE"}`,
+                                borderRadius: 8,
+                                fontSize: 13,
+                                fontWeight: 700,
+                                color: ativo ? "#831843" : "#6B5D64",
+                                cursor: "pointer",
+                                fontFamily: "inherit",
+                                transition: "all 0.15s",
+                              }}
+                            >
+                              {nome === "Tamanhos" ? "Tamanhos (bolo P/M/G)" : "Quantidades (100 un, cento)"}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Fase 3: Modo de preço */}
+                    <div style={{marginBottom: 12}}>
+                      <div style={{fontSize: 12, fontWeight: 700, color: "#6B5D64", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.03em"}}>
+                        Como calcular o preço?
+                      </div>
+                      <div style={{display: "flex", flexDirection: "column", gap: 6}}>
+                        {([
+                          { valor: "preco_fixo", label: "Preço fixo por opção", hint: "Cada tamanho tem seu próprio preço" },
+                          { valor: "por_peso", label: "Calcular pelo peso × preço base", hint: "Preço base R$/kg × peso do tamanho" },
+                          { valor: "sob_consulta", label: "Sob consulta", hint: "Cliente entra em contato pra saber preço" },
+                        ] as const).map(({ valor, label, hint }) => {
+                          const ativo = (grupoTamanhos.modo_preco_tamanho || "preco_fixo") === valor;
+                          return (
+                            <label
+                              key={valor}
+                              style={{
+                                display: "flex",
+                                gap: 8,
+                                padding: "8px 10px",
+                                background: ativo ? "#FDF3F7" : "#fff",
+                                border: `1.5px solid ${ativo ? "#E85A8C" : "#E5D8DE"}`,
+                                borderRadius: 8,
+                                cursor: "pointer",
+                                transition: "all 0.15s",
+                              }}
+                            >
+                              <input
+                                type="radio"
+                                name="modo_preco_tamanho"
+                                checked={ativo}
+                                onChange={() => onChange({ grupo_tamanhos: { ...grupoTamanhos, modo_preco_tamanho: valor } })}
+                                style={{marginTop: 2, accentColor: "#E85A8C"}}
+                              />
+                              <div style={{flex: 1}}>
+                                <div style={{fontSize: 13, fontWeight: 700, color: "#2D1F26"}}>{label}</div>
+                                <div style={{fontSize: 11.5, color: "#6B5D64", marginTop: 1, lineHeight: 1.3}}>{hint}</div>
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Info do preço — muda conforme modo */}
                     <div className="pv3-tamanho-info">
-                      💡 O preço de cada tamanho é definido na próxima etapa
+                      {(grupoTamanhos.modo_preco_tamanho || "preco_fixo") === "preco_fixo" && "💡 O preço de cada opção é definido na próxima etapa"}
+                      {grupoTamanhos.modo_preco_tamanho === "por_peso" && "💡 O preço será calculado: peso da opção × preço base do produto (R$/kg)"}
+                      {grupoTamanhos.modo_preco_tamanho === "sob_consulta" && "💡 Cliente verá 'Consulte-nos' — sem preço automático"}
                     </div>
 
                     {/* Sugestões da biblioteca */}
@@ -3614,7 +3705,7 @@ export default function Produtos() {
                   gruposAtivos.push({ key: "sabores", label: "Sabores", grupo: form.grupo_sabores });
                 }
                 if (form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) {
-                  gruposAtivos.push({ key: "tamanhos", label: "Tamanhos", grupo: form.grupo_tamanhos });
+                  gruposAtivos.push({ key: "tamanhos", label: form.grupo_tamanhos.nome_exibicao || "Tamanhos", grupo: form.grupo_tamanhos });
                 }
                 if (gruposAtivos.length === 0) return null;
 
@@ -3801,13 +3892,13 @@ export default function Produtos() {
               )}
 
               {/* Preços por Tamanho — só se tem tamanhos ativos */}
-              {(wizardStep === 4 || form.id) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && (
+              {(wizardStep === 4 || form.id) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
-                    Preço por tamanho <span className="prod-field-req">obrigatório</span>
+                    Preço por {(form.grupo_tamanhos.nome_exibicao || "Tamanhos").toLowerCase().slice(0, -1)} <span className="prod-field-req">obrigatório</span>
                   </p>
                   <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
-                    Defina o preço de cada tamanho. O menor vira o "a partir de" no cardápio.
+                    Defina o preço de cada opção. O menor vira o "a partir de" no cardápio.
                   </p>
                   <div style={{display: "flex", flexDirection: "column", gap: 8}}>
                     {form.grupo_tamanhos.opcoes.map((op) => (

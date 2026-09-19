@@ -1,8 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { X, Plus, Minus } from 'lucide-react'
 import { useCart } from '@/hooks/useCart'
 import { Produto } from '@/types/database'
 import { formatCurrency } from '@/utils/helpers'
+import type { EscolhasV3, EscolhaOpcao, PrecoBreakdownCarrinho } from '@/types/cart'
+import { carregarGruposDoBanco, type GrupoOpcoes, type TipoGrupo } from '@/lib/produto-grupos'
+import {
+  calcularAdicionalOpcao,
+  existeConflitoSaborTamanho,
+  aplicarRegraConflito,
+  REGRA_CONFLITO_DEFAULT,
+} from '@/lib/produto-precificacao'
 
 interface Props {
   isOpen: boolean
@@ -15,25 +23,41 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [observations, setObservations] = useState('')
-  const [selectedMassa, setSelectedMassa] = useState('')
-  const [selectedRecheio, setSelectedRecheio] = useState('')
-  const [selectedCobertura, setSelectedCobertura] = useState('')
-  const [selectedTamanho, setSelectedTamanho] = useState<any>(null)
   const [showObs, setShowObs] = useState(false)
   const [imgIndex, setImgIndex] = useState(0)
-  const [touchStart, setTouchStart] = useState<number | null>(null)
-  const [touchDelta, setTouchDelta] = useState(0)
-  const [dragging, setDragging] = useState(false)
 
+  // ═══ V3 — escolhas por tipo de grupo ═══════════════════════════════
+  // massa: id única, cobertura: id única, sabor: id única, tamanho: id única
+  // recheios: array de ids (múltiplos)
+  const [escolhaMassa, setEscolhaMassa] = useState<string | null>(null)
+  const [escolhasRecheio, setEscolhasRecheio] = useState<string[]>([])
+  const [escolhaCobertura, setEscolhaCobertura] = useState<string | null>(null)
+  const [escolhaSabor, setEscolhaSabor] = useState<string | null>(null)
+  const [escolhaTamanho, setEscolhaTamanho] = useState<string | null>(null)
 
+  // ═══ Carrega grupos usando o helper (V3 ou fallback antigo) ═══════
+  const grupos = useMemo<GrupoOpcoes[]>(() => {
+    if (!product) return []
+    return carregarGruposDoBanco(product)
+  }, [product])
+
+  const grupoAtivo = (tipo: TipoGrupo): GrupoOpcoes | null => {
+    const g = grupos.find(x => x.tipo === tipo)
+    return g && g.ativo && g.opcoes.length > 0 ? g : null
+  }
+
+  const gMassa = grupoAtivo('massa')
+  const gRecheio = grupoAtivo('recheio')
+  const gCobertura = grupoAtivo('cobertura')
+  const gSabor = grupoAtivo('sabor')
+  const gTamanho = grupoAtivo('tamanho')
+
+  // Reset ao abrir/trocar produto
   useEffect(() => {
     if (product) {
-      setQuantity(1); setObservations(''); setSelectedMassa('')
-      setSelectedRecheio(''); setSelectedCobertura(''); setShowObs(false)
-      const imgs = product.imagem_url?.split(',').map((s: string) => s.trim()).filter(Boolean) || []
-      setImgIndex(0)
-      const tamanhos = (product as any).tamanhos_disponiveis
-      setSelectedTamanho(tamanhos?.length > 0 ? tamanhos[0] : null)
+      setQuantity(1); setObservations(''); setShowObs(false); setImgIndex(0)
+      setEscolhaMassa(null); setEscolhasRecheio([]); setEscolhaCobertura(null)
+      setEscolhaSabor(null); setEscolhaTamanho(null)
     }
   }, [product])
 
@@ -54,276 +78,429 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
   const isKg = product.forma_venda === 'kg'
   const step = isKg ? 0.5 : 1
-  const min = isKg ? 0.5 : 1
+  const minQtd = isKg ? 0.5 : 1
   const inc = () => setQuantity(q => Math.min(q + step, 50))
-  const dec = () => setQuantity(q => Math.max(q - step, min))
+  const dec = () => setQuantity(q => Math.max(q - step, minQtd))
 
-  const basePrice = product.promocao && product.preco_promocional ? product.preco_promocional : product.preco_normal
+  // Preço base do produto (com promoção aplicada, se houver)
+  const basePrice = product.promocao && product.preco_promocional
+    ? product.preco_promocional
+    : product.preco_normal
+
   const descPct = (product as any).tipo_promocao === 'percentual' && product.promocao
     ? ((product as any).desconto_percentual || 0) / 100
     : product.promocao && product.preco_promocional && product.preco_normal > 0
       ? 1 - (product.preco_promocional / product.preco_normal)
       : 0
-  const applyDiscount = (price: number) => descPct > 0 ? parseFloat((price * (1 - descPct)).toFixed(2)) : price
-  const unitPrice = selectedTamanho ? applyDiscount(selectedTamanho.preco) : basePrice
-  const adicionais = 0
-  const total = (unitPrice * quantity) + adicionais
 
-  const tamanhos: any[] = (product as any).tamanhos_disponiveis || []
-  const prontaEntrega = (product as any).pronta_entrega !== false
-  const images = product.imagem_url?.split(',').map((s: string) => s.trim()).filter(Boolean) || []
-
-  const FORMA_LABEL: Record<string, string> = {
-    unidade: 'unidade', fatia: 'fatia', kg: 'kg', cento: 'cento',
-    'tamanho': 'unidade', 'kit-caixa': 'kit', 'sob-encomenda': 'encomenda', outros: 'un'
+  // ═══ Helpers de opção ═════════════════════════════════════════════
+  const acharOpcao = (g: GrupoOpcoes | null, id: string | null): any => {
+    if (!g || !id) return null
+    return g.opcoes.find((o: any) => o.id === id) || null
   }
 
-  const SelectGroup = ({ label, options, value, onChange }: any) => (
-    <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-        <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-title)' }}>{label}</span>
-        <span style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'var(--border)', padding: '2px 8px', borderRadius: '50px' }}>Opcional</span>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-        {options.map((opt: string) => (
-          <button key={opt} onClick={() => onChange(value === opt ? '' : opt)} style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '10px 14px', borderRadius: '10px',
-            border: `2px solid ${value === opt ? corBotao : 'var(--border)'}`,
-            background: value === opt ? `${corBotao}15` : 'var(--bg-card)', cursor: 'pointer', transition: 'all 0.15s',
-          }}>
-            <span style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 500 }}>{opt}</span>
-            <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: `2px solid ${value === opt ? corBotao : '#d1d5db'}`, background: value === opt ? corBotao : 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              {value === opt && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'white' }} />}
-            </div>
-          </button>
-        ))}
-      </div>
-    </div>
-  )
+  const opMassa = acharOpcao(gMassa, escolhaMassa)
+  const opCobertura = acharOpcao(gCobertura, escolhaCobertura)
+  const opSabor = acharOpcao(gSabor, escolhaSabor)
+  const opTamanho = acharOpcao(gTamanho, escolhaTamanho)
+  const opsRecheios = escolhasRecheio.map(id => acharOpcao(gRecheio, id)).filter(Boolean)
 
+  // ═══ Cálculo do preço em tempo real ═══════════════════════════════
+  const calculo = useMemo<PrecoBreakdownCarrinho>(() => {
+    let baseEfetivo = basePrice
+
+    // Se tamanho ativo e escolhido, considera preço/peso do tamanho
+    if (opTamanho) {
+      const gt = grupos.find(x => x.tipo === 'tamanho') as any
+      const modo = gt?.modo_preco_tamanho || 'preco_fixo'
+      if (modo === 'preco_fixo' && opTamanho.preco > 0) {
+        baseEfetivo = opTamanho.preco
+      } else if (modo === 'por_peso' && opTamanho.peso_kg) {
+        baseEfetivo = basePrice * opTamanho.peso_kg
+      }
+    }
+
+    // Se Sabor tem preço próprio: pode ser conflito ou não
+    let adicionalSaborForcado = 0
+    if (opSabor && gSabor) {
+      const gs = grupos.find(x => x.tipo === 'sabor') as any
+      const temPrecoProprio = !!gs?.sabor_tem_preco_proprio
+      if (temPrecoProprio && opSabor.preco > 0) {
+        // Verifica conflito com tamanho
+        const conflito = existeConflitoSaborTamanho({
+          sabor_ativo: true,
+          sabor_tem_preco_proprio: true,
+          sabor_tem_opcao_com_preco: true,
+          tamanho_ativo: !!gTamanho,
+          tamanho_tem_opcao_com_preco: !!gTamanho?.opcoes.some((o: any) => (o.preco || 0) > 0),
+        })
+        if (conflito && opTamanho) {
+          const regra = gs?.regra_conflito_tamanho || REGRA_CONFLITO_DEFAULT
+          const resultado = aplicarRegraConflito(regra, opTamanho.preco || 0, opSabor.preco || 0)
+          baseEfetivo = resultado.base_efetivo
+          adicionalSaborForcado = resultado.adicional_sabor
+        } else {
+          // Sem conflito — sabor substitui base
+          baseEfetivo = opSabor.preco
+        }
+      }
+    }
+
+    // Soma adicionais das opções escolhidas
+    let adicionaisTotal = 0
+    const ctx = {
+      quantidade_pedido: quantity,
+      quantidade_base: (product as any).quantidade_base || null,
+      forma_venda: product.forma_venda,
+      tamanho_escolhido_peso_kg: opTamanho?.peso_kg || null,
+    }
+    if (opMassa) adicionaisTotal += calcularAdicionalOpcao(opMassa, ctx)
+    if (opCobertura) adicionaisTotal += calcularAdicionalOpcao(opCobertura, ctx)
+    if (opsRecheios.length > 0) {
+      opsRecheios.forEach(r => adicionaisTotal += calcularAdicionalOpcao(r, ctx))
+    }
+    // Sabor adicional (quando NÃO tem preço próprio) OU adicional do conflito
+    if (adicionalSaborForcado > 0) {
+      adicionaisTotal += adicionalSaborForcado
+    } else if (opSabor) {
+      const gs = grupos.find(x => x.tipo === 'sabor') as any
+      if (!gs?.sabor_tem_preco_proprio) {
+        adicionaisTotal += calcularAdicionalOpcao(opSabor, ctx)
+      }
+    }
+
+    const subtotal = baseEfetivo + adicionaisTotal
+    const desconto = descPct > 0 ? parseFloat((subtotal * descPct).toFixed(2)) : 0
+    const final = parseFloat((subtotal - desconto).toFixed(2))
+
+    return {
+      preco_base_original: product.preco_normal || 0,
+      base_efetivo: parseFloat(baseEfetivo.toFixed(2)),
+      adicionais_total: parseFloat(adicionaisTotal.toFixed(2)),
+      subtotal: parseFloat(subtotal.toFixed(2)),
+      desconto,
+      final,
+    }
+  }, [product, grupos, quantity, opMassa, opCobertura, opSabor, opTamanho, opsRecheios.length, basePrice, descPct])
+
+  // ═══ Validação: obrigatórios preenchidos ═══════════════════════════
+  const podeAdicionar = useMemo(() => {
+    if (gMassa && gMassa.min_selecionavel > 0 && !escolhaMassa) return false
+    if (gCobertura && gCobertura.min_selecionavel > 0 && !escolhaCobertura) return false
+    if (gSabor && gSabor.min_selecionavel > 0 && !escolhaSabor) return false
+    if (gTamanho && gTamanho.min_selecionavel > 0 && !escolhaTamanho) return false
+    if (gRecheio && gRecheio.min_selecionavel > 0 && escolhasRecheio.length < gRecheio.min_selecionavel) return false
+    return true
+  }, [gMassa, gCobertura, gSabor, gTamanho, gRecheio, escolhaMassa, escolhaCobertura, escolhaSabor, escolhaTamanho, escolhasRecheio.length])
+
+  const totalDisplay = calculo.final * quantity
+
+  // ═══ Handler pra adicionar no carrinho ═════════════════════════════
   const handleAdd = () => {
+    if (!podeAdicionar) return
+
+    const escolhas: EscolhasV3 = {}
+    if (opMassa) escolhas.massa = { id: opMassa.id, nome: opMassa.nome, adicional: opMassa.adicional || 0 }
+    if (opCobertura) escolhas.cobertura = { id: opCobertura.id, nome: opCobertura.nome, adicional: opCobertura.adicional || 0 }
+    if (opsRecheios.length > 0) {
+      escolhas.recheios = opsRecheios.map(r => ({ id: r.id, nome: r.nome, adicional: r.adicional || 0 }))
+    }
+    if (opSabor) {
+      const gs = grupos.find(x => x.tipo === 'sabor') as any
+      const e: EscolhaOpcao = { id: opSabor.id, nome: opSabor.nome, adicional: opSabor.adicional || 0 }
+      if (gs?.sabor_tem_preco_proprio && opSabor.preco) e.preco_proprio = opSabor.preco
+      escolhas.sabor = e
+    }
+    if (opTamanho) {
+      const e: EscolhaOpcao = { id: opTamanho.id, nome: opTamanho.nome }
+      if (opTamanho.preco) e.preco_fixo = opTamanho.preco
+      if (opTamanho.peso_kg) e.peso_kg = opTamanho.peso_kg
+      escolhas.tamanho = e
+    }
+
     addItem({
       id: product.id, name: product.nome, description: product.descricao || '',
-      price: unitPrice, imageUrl: product.imagem_url,
-      saleType: product.forma_venda, quantity, observations,
-      selectedMassa, selectedRecheio, selectedCobertura,
+      price: calculo.final,
+      imageUrl: product.imagem_url,
+      saleType: product.forma_venda,
+      quantity, observations,
+      // Legado
+      selectedMassa: opMassa?.nome || '',
+      selectedRecheio: opsRecheios.length > 0 ? opsRecheios.map(r => r.nome).join(', ') : '',
+      selectedCobertura: opCobertura?.nome || '',
+      // V3
+      escolhas: Object.keys(escolhas).length > 0 ? escolhas : undefined,
+      precoBreakdown: calculo,
     })
     onClose()
   }
 
-  const isDesktop = window.innerWidth >= 768
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768
+  const images = product.imagem_url?.split(',').map((s: string) => s.trim()).filter(Boolean) || []
 
-  return (
-    <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'var(--bg-overlay)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', zIndex: 50 }} />
+  const FORMA_LABEL: Record<string, string> = {
+    unidade: 'unidade', fatia: 'fatia', kg: 'kg', cento: 'cento',
+    'tamanho': 'unidade', 'kit-caixa': 'kit', 'kit-festa': 'kit', outros: 'un'
+  }
 
-      <div style={{
-        position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 51,
-        background: 'var(--bg-card)', borderRadius: '24px',
-        width: isDesktop ? '90vw' : '92vw',
-        maxWidth: isDesktop ? '960px' : '400px',
-        maxHeight: '88vh',
-        display: 'flex', flexDirection: isDesktop ? 'row' : 'column',
-        boxShadow: 'var(--shadow-lg)',
-        animation: 'popIn 0.25s ease',
-        overflow: 'hidden',
-      }}>
+  // ═══ Render de grupo (radio / checkbox) ═══════════════════════════
+  const RenderGrupo = ({ g, tipoEscolha, valorAtual, onChange }: {
+    g: GrupoOpcoes
+    tipoEscolha: 'single' | 'multi'
+    valorAtual: string | string[] | null
+    onChange: (v: any) => void
+  }) => {
+    const eh = (id: string) => tipoEscolha === 'multi'
+      ? Array.isArray(valorAtual) && valorAtual.includes(id)
+      : valorAtual === id
 
-        {/* ── Coluna Esquerda: Imagem ── */}
-        <div style={{
-          width: isDesktop ? '45%' : '100%',
-          flexShrink: 0,
-          display: 'flex', flexDirection: 'column',
-          background: '#f3f4f6',
-          borderRadius: isDesktop ? '24px 0 0 24px' : '24px 24px 0 0',
-          overflow: 'hidden',
-          position: 'relative',
-        }}>
-          {/* Imagem principal */}
-          <div style={{ flex: 1, position: 'relative', minHeight: isDesktop ? '360px' : '200px', overflow: 'hidden' }}
-            onTouchStart={e => { setTouchStart(e.touches[0].clientX); setTouchDelta(0); setDragging(true); }}
-            onTouchMove={e => { if (touchStart === null) return; setTouchDelta(e.touches[0].clientX - touchStart); }}
-            onTouchEnd={() => {
-              if (Math.abs(touchDelta) > 40) {
-                if (touchDelta < 0) setImgIndex(i => (i + 1) % images.length);
-                if (touchDelta > 0) setImgIndex(i => (i - 1 + images.length) % images.length);
-              }
-              setTouchStart(null); setTouchDelta(0); setDragging(false);
-            }}
-          >
-            {images.length > 0 ? (
-              <img
-                src={images[imgIndex]}
-                alt={product.nome}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'all 0.3s ease' }}
-              />
-            ) : (
-              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '64px' }}>🧁</div>
-            )}
+    const gs = grupos.find(x => x.tipo === g.tipo) as any
+    const saborTemPrecoProprio = g.tipo === 'sabor' && !!gs?.sabor_tem_preco_proprio
 
-            {/* Faixa diagonal promoção */}
-            {product.promocao && (
-              <div style={{ position: 'absolute', top: '22px', left: '-32px', background: `linear-gradient(135deg, ${corBotao}, ${corBotao}cc)`, color: 'white', fontSize: '10px', fontWeight: 800, padding: '5px 40px', transform: 'rotate(-45deg)', zIndex: 4, letterSpacing: '0.05em', boxShadow: `0 2px 8px ${corBotao}66` }}>PROMOÇÃO</div>
-            )}
-          </div>
+    const toggle = (id: string) => {
+      if (tipoEscolha === 'multi') {
+        const arr = Array.isArray(valorAtual) ? [...valorAtual] : []
+        const idx = arr.indexOf(id)
+        if (idx >= 0) {
+          arr.splice(idx, 1)
+        } else if (arr.length < (g.max_selecionavel || 1)) {
+          arr.push(id)
+        }
+        onChange(arr)
+      } else {
+        onChange(valorAtual === id ? null : id)
+      }
+    }
 
-          {/* Miniaturas */}
-          {images.length > 1 && (
-            <div style={{ display: 'flex', gap: '6px', padding: '8px', background: 'rgba(0,0,0,0.04)', flexShrink: 0, overflowX: 'auto' }}>
-              {images.map((img, i) => (
-                <button key={i} onClick={() => setImgIndex(i)} style={{
-                  width: '52px', height: '52px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0,
-                  border: `2px solid ${i === imgIndex ? corBotao : 'transparent'}`,
-                  cursor: 'pointer', padding: 0, transition: 'all 0.2s',
-                  opacity: i === imgIndex ? 1 : 0.6,
-                }}>
-                  <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+    const hintObrigatoriedade = g.min_selecionavel > 0
+      ? (g.min_selecionavel === g.max_selecionavel
+          ? `Escolha ${g.min_selecionavel}`
+          : `Escolha ${g.min_selecionavel} a ${g.max_selecionavel}`)
+      : 'Opcional'
 
-        {/* ── Coluna Direita: Conteúdo ── */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-
-          {/* Botão fechar */}
-          <button onClick={onClose} style={{
-            position: 'absolute', top: '12px', right: '12px',
-            width: '32px', height: '32px', borderRadius: '50%',
-            background: 'var(--bg-body)', border: '1px solid var(--border)',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5,
+    return (
+      <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-title)' }}>
+            {g.nome_exibicao}
+          </span>
+          <span style={{
+            fontSize: '11px', color: g.min_selecionavel > 0 ? '#831843' : 'var(--text-muted)',
+            background: g.min_selecionavel > 0 ? '#FCE0E9' : 'var(--border)',
+            padding: '2px 8px', borderRadius: '50px', fontWeight: 700,
           }}>
-            <X size={16} color="var(--text-secondary)" strokeWidth={2.5} />
-          </button>
+            {hintObrigatoriedade}
+          </span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {g.opcoes.map((op: any) => {
+            const ativo = eh(op.id)
+            // Rótulo de preço/adicional na direita
+            let precoLabel = ''
+            if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) {
+              precoLabel = formatCurrency(op.preco)
+            } else if (g.tipo === 'tamanho' && op.preco > 0) {
+              precoLabel = formatCurrency(op.preco)
+            } else if ((op.adicional || 0) > 0) {
+              precoLabel = `+${formatCurrency(op.adicional)}`
+            }
+            const pesoLabel = (g.tipo === 'tamanho' && op.peso_kg) ? ` (~${op.peso_kg.toString().replace('.', ',')} kg)` : ''
 
-          {/* Conteúdo scrollável */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: isDesktop ? '24px 24px 0' : '16px 16px 0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-
-            {/* Nome, badge e preço */}
-            <div>
-              <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-title)', margin: '0 0 8px', paddingRight: '36px', textTransform: 'capitalize', letterSpacing: '-0.01em' }}>{product.nome.toLowerCase()}</h3>
-              {prontaEntrega ? (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--border)', color: 'var(--text-secondary)', fontSize: '10px', fontWeight: 600, padding: '4px 10px', borderRadius: '6px', lineHeight: 1, marginBottom: '8px' }}>✓ Pronta entrega</span>
-              ) : (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'var(--border)', color: 'var(--text-secondary)', fontSize: '10px', fontWeight: 600, padding: '4px 10px', borderRadius: '6px', lineHeight: 1, marginBottom: '8px' }}>⏱ Sob encomenda</span>
-              )}
-              {product.descricao && <p style={{ fontSize: '13px', color: 'var(--text-primary)', lineHeight: '1.5', margin: '0 0 10px', fontWeight: 400 }}>{product.descricao}</p>}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                {product.promocao && unitPrice < product.preco_normal ? (
-                  <>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', textDecoration: 'line-through' }}>{formatCurrency(product.preco_normal)}</span>
-                    <span style={{ fontSize: '16px', fontWeight: 600, color: corBotao }}>{formatCurrency(unitPrice)}</span>
-                  </>
-                ) : (
-                  <span style={{ fontSize: '16px', fontWeight: 600, color: corBotao }}>{formatCurrency(basePrice)}</span>
-                )}
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 400 }}>/ {FORMA_LABEL[product.forma_venda] || product.forma_venda}</span>
-              </div>
-            </div>
-
-            {/* Kit Festa */}
-            {product.forma_venda === 'kit-festa' && (product as any).kit_itens?.length > 0 && (
-              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-title)' }}>🎉 O que está incluso</span>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    {(product as any).kit_serve_pessoas && (
-                      <span style={{ fontSize: '11px', background: `${corBotao}15`, color: corBotao, fontWeight: 700, padding: '3px 8px', borderRadius: '50px' }}>👥 {(product as any).kit_serve_pessoas}</span>
+            return (
+              <button
+                key={op.id}
+                onClick={() => toggle(op.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '10px 14px', borderRadius: '10px',
+                  border: `2px solid ${ativo ? corBotao : 'var(--border)'}`,
+                  background: ativo ? `${corBotao}15` : 'var(--bg-card)',
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}
+              >
+                <span style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 500, textAlign: 'left' }}>
+                  {op.nome}{pesoLabel}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {precoLabel && (
+                    <span style={{ fontSize: 13, fontWeight: 800, color: ativo ? corBotao : 'var(--text-secondary)' }}>
+                      {precoLabel}
+                    </span>
+                  )}
+                  <div style={{
+                    width: '18px', height: '18px',
+                    borderRadius: tipoEscolha === 'multi' ? '4px' : '50%',
+                    border: `2px solid ${ativo ? corBotao : '#d1d5db'}`,
+                    background: ativo ? corBotao : 'var(--bg-card)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                  }}>
+                    {ativo && tipoEscolha === 'single' && (
+                      <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'white' }} />
                     )}
-                    {(product as any).kit_prazo_encomenda && (
-                      <span style={{ fontSize: '11px', background: '#fef3c7', color: '#92400e', fontWeight: 700, padding: '3px 8px', borderRadius: '50px' }}>⏱ {(product as any).kit_prazo_encomenda}</span>
+                    {ativo && tipoEscolha === 'multi' && (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
                     )}
                   </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {(product as any).kit_itens.map((item: any, i: number) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'var(--bg-body)', borderRadius: '10px', border: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>✓ {item.nome}</span>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: corBotao }}>× {item.quantidade}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
 
-            {/* Tamanhos */}
-            {tamanhos.length > 0 && (
-              <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-title)', display: 'block', marginBottom: '8px' }}>Escolha o tamanho</span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                  {tamanhos.map((t: any, i: number) => (
-                    <button key={i} onClick={() => setSelectedTamanho(t)} style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '7px 12px', borderRadius: '8px',
-                      border: `1.5px solid ${selectedTamanho?.label === t.label ? corBotao : 'var(--border)'}`,
-                      background: selectedTamanho?.label === t.label ? `${corBotao}10` : 'var(--bg-card)', cursor: 'pointer',
-                    }}>
-                      <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{t.label}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div style={{ textAlign: 'right' }}>
-                          {descPct > 0 && <span style={{ fontSize: '11px', color: 'var(--text-muted)', textDecoration: 'line-through', display: 'block' }}>{formatCurrency(t.preco)}</span>}
-                          <span style={{ fontSize: '13px', fontWeight: 600, color: '#22c55e' }}>{formatCurrency(applyDiscount(t.preco))}</span>
-                        </div>
-                        <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: `2px solid ${selectedTamanho?.label === t.label ? corBotao : '#d1d5db'}`, background: selectedTamanho?.label === t.label ? corBotao : 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {selectedTamanho?.label === t.label && <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'white' }} />}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Personalizações */}
-            {product.permite_personalizacao && product.massas_disponiveis?.length > 0 && (
-              <SelectGroup label="Massa" options={product.massas_disponiveis} value={selectedMassa} onChange={setSelectedMassa} />
-            )}
-            {product.permite_personalizacao && product.recheios_disponiveis?.length > 0 && (
-              <SelectGroup label="Sabor / Recheio" options={product.recheios_disponiveis} value={selectedRecheio} onChange={setSelectedRecheio} />
-            )}
-            {product.permite_personalizacao && product.coberturas_disponiveis?.length > 0 && (
-              <SelectGroup label="Cobertura" options={product.coberturas_disponiveis} value={selectedCobertura} onChange={setSelectedCobertura} />
-            )}
-
-            {/* Observações */}
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: '6px' }}>Alguma observação?</span>
-              <textarea value={observations} onChange={e => setObservations(e.target.value)} placeholder="Ex: sem cereja, embalagem para presente..." style={{ width: '100%', padding: '10px 12px', border: '1.5px solid var(--border)', borderRadius: '12px', fontSize: '13px', color: 'var(--text-primary)', resize: 'none', minHeight: '64px', boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none' }} />
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: 'rgba(0,0,0,0.55)',
+      display: 'flex', alignItems: isDesktop ? 'center' : 'flex-end', justifyContent: 'center',
+    }}
+      onClick={onClose}
+    >
+      <div style={{
+        background: 'var(--bg-card)', width: '100%', maxWidth: '500px',
+        maxHeight: '95vh', overflowY: 'auto',
+        borderRadius: isDesktop ? '20px' : '20px 20px 0 0',
+        display: 'flex', flexDirection: 'column',
+      }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header com foto */}
+        <div style={{ position: 'relative', height: '260px', background: '#F5F3EF', overflow: 'hidden' }}>
+          {images[imgIndex] ? (
+            <img src={images[imgIndex]} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#B4A9AE' }}>
+              Sem foto
             </div>
+          )}
+          <button onClick={onClose} style={{
+            position: 'absolute', top: 12, right: 12,
+            width: 36, height: 36, borderRadius: '50%',
+            background: 'rgba(0,0,0,0.65)', color: '#fff',
+            border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <X size={20} />
+          </button>
+        </div>
 
-            <div style={{ height: '4px' }} />
+        {/* Nome + descrição */}
+        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <h2 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text-title)', margin: 0 }}>{product.nome}</h2>
+            {product.descricao && (
+              <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '6px 0 0', lineHeight: 1.4 }}>
+                {product.descricao}
+              </p>
+            )}
           </div>
 
-          {/* Rodapé */}
-          <div style={{ padding: isDesktop ? '12px 24px 24px' : '12px 16px 20px', borderTop: '1px solid var(--border)', background: 'var(--bg-card)', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
-                <button onClick={dec} style={{ width: '40px', height: '44px', background: 'var(--bg-card)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Minus size={16} color="var(--text-primary)" />
-                </button>
-                <span style={{ minWidth: '36px', textAlign: 'center', fontSize: '15px', fontWeight: 700, color: 'var(--text-title)' }}>
-                  {isKg ? `${quantity}kg` : quantity}
-                </span>
-                <button onClick={inc} style={{ width: '40px', height: '44px', background: 'var(--bg-card)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Plus size={16} color="var(--text-primary)" />
-                </button>
-              </div>
-              <button onClick={handleAdd} style={{ flex: 1, height: '44px', background: corBotao, color: 'white', border: 'none', borderRadius: '12px', fontWeight: 800, fontSize: '15px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', fontFamily: 'inherit' }}>
-                <span>Adicionar</span>
-                <span>{formatCurrency(total)}</span>
+          {/* Preço em destaque */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '10px 14px', background: '#FDF3F7', borderRadius: 10, border: '1px solid #FCE0E9',
+          }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#6B5D64' }}>Preço unitário</span>
+            <span style={{ fontSize: 18, fontWeight: 900, color: corBotao }}>
+              {formatCurrency(calculo.final)} <span style={{ fontSize: 12, color: '#6B5D64', fontWeight: 700 }}>/{FORMA_LABEL[product.forma_venda] || 'un'}</span>
+            </span>
+          </div>
+
+          {/* Grupos V3 (renderiza os ativos) */}
+          {gTamanho && (
+            <RenderGrupo g={gTamanho} tipoEscolha="single" valorAtual={escolhaTamanho} onChange={setEscolhaTamanho} />
+          )}
+          {gSabor && (
+            <RenderGrupo g={gSabor} tipoEscolha="single" valorAtual={escolhaSabor} onChange={setEscolhaSabor} />
+          )}
+          {gMassa && (
+            <RenderGrupo g={gMassa} tipoEscolha="single" valorAtual={escolhaMassa} onChange={setEscolhaMassa} />
+          )}
+          {gRecheio && (
+            <RenderGrupo
+              g={gRecheio}
+              tipoEscolha={gRecheio.max_selecionavel > 1 ? 'multi' : 'single'}
+              valorAtual={gRecheio.max_selecionavel > 1 ? escolhasRecheio : (escolhasRecheio[0] || null)}
+              onChange={(v: any) => {
+                if (Array.isArray(v)) setEscolhasRecheio(v)
+                else setEscolhasRecheio(v ? [v] : [])
+              }}
+            />
+          )}
+          {gCobertura && (
+            <RenderGrupo g={gCobertura} tipoEscolha="single" valorAtual={escolhaCobertura} onChange={setEscolhaCobertura} />
+          )}
+
+          {/* Observações */}
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14 }}>
+            {!showObs ? (
+              <button onClick={() => setShowObs(true)} style={{
+                background: 'none', border: '1px dashed #E5D8DE', color: '#6B5D64',
+                fontSize: 13, fontWeight: 700, padding: '10px 12px', borderRadius: 8,
+                cursor: 'pointer', width: '100%', fontFamily: 'inherit',
+              }}>
+                + Adicionar observação (opcional)
+              </button>
+            ) : (
+              <textarea
+                autoFocus
+                placeholder="Ex: sem lactose, escrever 'Feliz Aniversário Ana'..."
+                value={observations}
+                onChange={e => setObservations(e.target.value)}
+                style={{
+                  width: '100%', minHeight: 60, padding: 10,
+                  border: '1.5px solid #E5D8DE', borderRadius: 8, resize: 'vertical',
+                  fontFamily: 'inherit', fontSize: 13, outline: 'none', boxSizing: 'border-box',
+                }}
+              />
+            )}
+          </div>
+
+          {/* Quantidade */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0' }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-title)' }}>Quantidade</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button onClick={dec} style={{
+                width: 36, height: 36, borderRadius: '50%', border: '1.5px solid #E5D8DE',
+                background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Minus size={16} />
+              </button>
+              <span style={{ fontSize: 16, fontWeight: 800, minWidth: 40, textAlign: 'center' }}>
+                {isKg ? `${quantity.toFixed(1).replace('.', ',')} kg` : quantity}
+              </span>
+              <button onClick={inc} style={{
+                width: 36, height: 36, borderRadius: '50%', border: `1.5px solid ${corBotao}`,
+                background: corBotao, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Plus size={16} />
               </button>
             </div>
           </div>
 
+          {/* Botão adicionar */}
+          <button
+            onClick={handleAdd}
+            disabled={!podeAdicionar}
+            style={{
+              padding: '14px', borderRadius: 12, border: 'none', cursor: podeAdicionar ? 'pointer' : 'not-allowed',
+              background: podeAdicionar ? corBotao : '#E5D8DE', color: '#fff',
+              fontSize: 15, fontWeight: 800, fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              transition: 'all 0.15s',
+            }}
+          >
+            <span>
+              {podeAdicionar ? 'Adicionar ao carrinho' : 'Escolha as opções obrigatórias'}
+            </span>
+            {podeAdicionar && <span>{formatCurrency(totalDisplay)}</span>}
+          </button>
         </div>
       </div>
-
-      <style>{`
-        @keyframes popIn { from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
-        @keyframes pulse { 0%, 100% { box-shadow: 0 2px 8px rgba(249,115,22,0.5); } 50% { box-shadow: 0 2px 16px rgba(249,115,22,0.9); } }
-      `}</style>
-    </>
+    </div>
   )
 }
