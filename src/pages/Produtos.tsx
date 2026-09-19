@@ -2924,7 +2924,11 @@ export default function Produtos() {
                     </div>
                     <div className="prod-field">
                       <label>Vendido por</label>
-                      <select value={form.forma_venda} onChange={e => setForm(f => ({ ...f, forma_venda: e.target.value }))}>
+                      <select
+                        value={form.forma_venda}
+                        onChange={e => setForm(f => ({ ...f, forma_venda: e.target.value }))}
+                        style={{padding: "14px 12px", fontSize: 15, fontWeight: 700, height: 58}}
+                      >
                         {FORMAS_VENDA.map(fv => <option key={fv.value} value={fv.value}>{fv.label}</option>)}
                       </select>
                     </div>
@@ -5176,7 +5180,6 @@ export default function Produtos() {
         }
         /* Divisores entre seções */
         .prod-section + .prod-section {
-          border-top: 1px solid #F0EBED;
           padding-top: 22px;
         }
         /* Label de seção com barrinha rosa lateral */
