@@ -233,9 +233,26 @@ function CartContent({
       const qty = item.saleType === 'kg' ? `${item.quantity}kg` : `${item.quantity} un`
       msg += `*${i + 1}. ${item.name}*\n`
       msg += `   Qtd: ${qty} × ${formatCurrency(item.price)} = *${formatCurrency(item.price * item.quantity)}*\n`
-      if (item.selectedMassa) msg += `   🎂 Massa: ${item.selectedMassa}\n`
-      if (item.selectedRecheio) msg += `   🥄 Recheio: ${item.selectedRecheio}\n`
-      if (item.selectedCobertura) msg += `   ✨ Cobertura: ${item.selectedCobertura}\n`
+
+      // V3: escolhas ricas (se existir)
+      const e = item.escolhas
+      if (e) {
+        if (e.tamanho?.nome) {
+          const peso = e.tamanho.peso_kg ? ` (~${e.tamanho.peso_kg}kg)` : ''
+          msg += `   📏 Tamanho: ${e.tamanho.nome}${peso}\n`
+        }
+        if (e.sabor?.nome) msg += `   🍨 Sabor: ${e.sabor.nome}\n`
+        if (e.massa?.nome) msg += `   🎂 Massa: ${e.massa.nome}\n`
+        if (e.recheios && e.recheios.length > 0) {
+          msg += `   🥄 Recheio${e.recheios.length > 1 ? 's' : ''}: ${e.recheios.map((r: any) => r.nome).join(', ')}\n`
+        }
+        if (e.cobertura?.nome) msg += `   ✨ Cobertura: ${e.cobertura.nome}\n`
+      } else {
+        // Legado
+        if (item.selectedMassa) msg += `   🎂 Massa: ${item.selectedMassa}\n`
+        if (item.selectedRecheio) msg += `   🥄 Recheio: ${item.selectedRecheio}\n`
+        if (item.selectedCobertura) msg += `   ✨ Cobertura: ${item.selectedCobertura}\n`
+      }
       msg += `\n`
     })
 
@@ -320,19 +337,37 @@ function CartContent({
           numeroPedido = pedidoSalvo.numero
           if (items.length > 0) {
             await supabase.from('pedido_itens').insert(
-              items.map((item: any) => ({
-                pedido_id: pedidoSalvo.id, user_id: confeteiraUserId, produto_id: item.id,
-                nome_produto: item.name, quantidade: item.quantity, valor_unitario: item.price,
-                desconto: 0, observacoes: item.observations || null,
-                // ─── Snapshot Passo 0A ─────────────────────────────────
-                personalizacoes: criarPersonalizacoesV1({
-                  massa: item.selectedMassa || null,
-                  recheio: item.selectedRecheio || null,
-                  cobertura: item.selectedCobertura || null,
-                }),
-                preco_breakdown: criarBreakdownV1({ final: item.price }),
-                snapshot_version: SNAPSHOT_VERSION_ATUAL,
-              }))
+              items.map((item: any) => {
+                // ─── Snapshot v1 RICO (Cardápio V3) ─────────────────
+                // Prioriza item.escolhas (V3) — se ausente, cai no legado
+                const escolhas = item.escolhas || {}
+                const personalizacoes = escolhas.massa || escolhas.recheios || escolhas.cobertura || escolhas.sabor || escolhas.tamanho
+                  ? {
+                      massa: escolhas.massa || null,
+                      recheios: escolhas.recheios || undefined,
+                      cobertura: escolhas.cobertura || null,
+                      sabor: escolhas.sabor || null,
+                      tamanho: escolhas.tamanho || null,
+                    }
+                  : criarPersonalizacoesV1({
+                      massa: item.selectedMassa || null,
+                      recheio: item.selectedRecheio || null,
+                      cobertura: item.selectedCobertura || null,
+                    })
+
+                const breakdown = item.precoBreakdown
+                  ? item.precoBreakdown
+                  : criarBreakdownV1({ final: item.price })
+
+                return {
+                  pedido_id: pedidoSalvo.id, user_id: confeteiraUserId, produto_id: item.id,
+                  nome_produto: item.name, quantidade: item.quantity, valor_unitario: item.price,
+                  desconto: 0, observacoes: item.observations || null,
+                  personalizacoes,
+                  preco_breakdown: breakdown,
+                  snapshot_version: SNAPSHOT_VERSION_ATUAL,
+                }
+              })
             )
             await supabase.from('pedido_historico').insert({
               pedido_id: pedidoSalvo.id, user_id: confeteiraUserId,

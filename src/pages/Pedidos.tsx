@@ -345,9 +345,30 @@ function PedidoCard({ p, isMobile, onAbrirMapa, onVerPedido, onAcaoRapida, onMen
   if (p.personalizacao_obs) extras.push(`Decoração: ${p.personalizacao_obs}`)
   if (p.observacoes) extras.push(`Obs: ${p.observacoes}`)
   itens.forEach(item => {
-    if (item.personalizacoes?.massa) extras.push(item.personalizacoes.massa)
-    if (item.personalizacoes?.recheio) extras.push(item.personalizacoes.recheio)
-    if (item.personalizacoes?.cobertura) extras.push(item.personalizacoes.cobertura)
+    const p = item.personalizacoes as any
+    if (!p) { if (item.observacoes) extras.push(item.observacoes); return }
+    // Helper: aceita tanto string legado quanto objeto V3 { nome, adicional }
+    const nomeDe = (v: any): string | null => {
+      if (!v) return null
+      if (typeof v === 'string') return v
+      if (typeof v === 'object' && v.nome) return v.nome
+      return null
+    }
+    const tamanho = nomeDe(p.tamanho)
+    const sabor = nomeDe(p.sabor)
+    const massa = nomeDe(p.massa)
+    const cobertura = nomeDe(p.cobertura)
+    // Recheios: pode ser string (legado) ou array [{nome}] (V3)
+    let recheios: string | null = null
+    if (Array.isArray(p.recheios)) recheios = p.recheios.map((r: any) => r.nome).join(', ')
+    else if (typeof p.recheio === 'string') recheios = p.recheio
+    else if (p.recheio && typeof p.recheio === 'object' && p.recheio.nome) recheios = p.recheio.nome
+
+    if (tamanho) extras.push(`Tamanho: ${tamanho}`)
+    if (sabor) extras.push(`Sabor: ${sabor}`)
+    if (massa) extras.push(`Massa: ${massa}`)
+    if (recheios) extras.push(`Recheio: ${recheios}`)
+    if (cobertura) extras.push(`Cobertura: ${cobertura}`)
     if (item.observacoes) extras.push(item.observacoes)
   })
 
@@ -1114,9 +1135,28 @@ function ModalPedido({ p, onClose, onEditar, onExcluir, onAprovar }: { p: Pedido
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p className="mp-item-nome">{item.nome_produto}</p>
                       <p className="mp-item-qtd">{formatItemQuantidade(item.quantidade, item.produtos?.forma_venda)} · {formatMoney(item.valor_unitario)}</p>
-                      {item.personalizacoes?.massa && <p className="mp-item-extra">Massa: {item.personalizacoes.massa}</p>}
-                      {item.personalizacoes?.recheio && <p className="mp-item-extra">Recheio: {item.personalizacoes.recheio}</p>}
-                      {item.personalizacoes?.cobertura && <p className="mp-item-extra">Cobertura: {item.personalizacoes.cobertura}</p>}
+                      {(() => {
+                        const p = item.personalizacoes as any
+                        if (!p) return null
+                        const nomeDe = (v: any) => !v ? null : (typeof v === 'string' ? v : (v.nome || null))
+                        const tamanho = nomeDe(p.tamanho)
+                        const sabor = nomeDe(p.sabor)
+                        const massa = nomeDe(p.massa)
+                        const cobertura = nomeDe(p.cobertura)
+                        let recheios: string | null = null
+                        if (Array.isArray(p.recheios)) recheios = p.recheios.map((r: any) => r.nome).join(', ')
+                        else if (typeof p.recheio === 'string') recheios = p.recheio
+                        else if (p.recheio?.nome) recheios = p.recheio.nome
+                        return (
+                          <>
+                            {tamanho && <p className="mp-item-extra">Tamanho: {tamanho}</p>}
+                            {sabor && <p className="mp-item-extra">Sabor: {sabor}</p>}
+                            {massa && <p className="mp-item-extra">Massa: {massa}</p>}
+                            {recheios && <p className="mp-item-extra">Recheio: {recheios}</p>}
+                            {cobertura && <p className="mp-item-extra">Cobertura: {cobertura}</p>}
+                          </>
+                        )
+                      })()}
                       {item.observacoes && <p className="mp-item-extra">Obs: {item.observacoes}</p>}
                     </div>
                     <p className="mp-item-total">{formatMoney(item.quantidade * item.valor_unitario)}</p>
@@ -1824,7 +1864,7 @@ export default function Pedidos() {
     setLoading(true)
     const { data } = await supabase
       .from('pedidos')
-      .select('*, clientes(foto_url), pedido_itens(nome_produto, quantidade, valor_unitario, observacoes, personalizacoes, imagem_url, produtos(imagem_url, forma_venda))')
+      .select('*, clientes(foto_url), pedido_itens(nome_produto, quantidade, valor_unitario, observacoes, personalizacoes, preco_breakdown, snapshot_version, imagem_url, produtos(imagem_url, forma_venda))')
       .eq('user_id', uid)
       .order('numero', { ascending: false })
     setPedidos(data || [])

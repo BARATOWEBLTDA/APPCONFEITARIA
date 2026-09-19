@@ -61,14 +61,45 @@ export function CartItemComponent({ item, onUpdateQuantity, onRemove }: Props) {
           {item.name}
         </h4>
 
-        {/* Opcionais */}
-        {(item.selectedMassa || item.selectedRecheio || item.selectedCobertura) && (
-          <div style={{display:'flex',flexWrap:'wrap',gap:'4px',marginTop:'2px'}}>
-            {item.selectedMassa && <span style={{fontSize:'11px',color:'var(--text-secondary)',background:'var(--bg-body)',padding:'1px 6px',borderRadius:'4px'}}>🎂 {item.selectedMassa}</span>}
-            {item.selectedRecheio && <span style={{fontSize:'11px',color:'var(--text-secondary)',background:'var(--bg-body)',padding:'1px 6px',borderRadius:'4px'}}>🥄 {item.selectedRecheio}</span>}
-            {item.selectedCobertura && <span style={{fontSize:'11px',color:'var(--text-secondary)',background:'var(--bg-body)',padding:'1px 6px',borderRadius:'4px'}}>✨ {item.selectedCobertura}</span>}
-          </div>
-        )}
+        {/* Opcionais — V3 (escolhas ricas) ou legado (strings) */}
+        {(() => {
+          const escolhas = item.escolhas
+          const chips: Array<{ label: string; valor: string }> = []
+
+          if (escolhas) {
+            // V3 — dados ricos
+            if (escolhas.tamanho?.nome) {
+              const peso = escolhas.tamanho.peso_kg ? ` (~${escolhas.tamanho.peso_kg.toString().replace('.', ',')}kg)` : ''
+              chips.push({ label: 'Tamanho', valor: escolhas.tamanho.nome + peso })
+            }
+            if (escolhas.sabor?.nome) chips.push({ label: 'Sabor', valor: escolhas.sabor.nome })
+            if (escolhas.massa?.nome) chips.push({ label: 'Massa', valor: escolhas.massa.nome })
+            if (escolhas.recheios && escolhas.recheios.length > 0) {
+              chips.push({
+                label: escolhas.recheios.length > 1 ? 'Recheios' : 'Recheio',
+                valor: escolhas.recheios.map(r => r.nome).join(', ')
+              })
+            }
+            if (escolhas.cobertura?.nome) chips.push({ label: 'Cobertura', valor: escolhas.cobertura.nome })
+          } else {
+            // Legado — strings antigas
+            if (item.selectedMassa) chips.push({ label: 'Massa', valor: item.selectedMassa })
+            if (item.selectedRecheio) chips.push({ label: 'Recheio', valor: item.selectedRecheio })
+            if (item.selectedCobertura) chips.push({ label: 'Cobertura', valor: item.selectedCobertura })
+          }
+
+          if (chips.length === 0) return null
+
+          return (
+            <div style={{display:'flex',flexWrap:'wrap',gap:'4px',marginTop:'2px'}}>
+              {chips.map((c, i) => (
+                <span key={i} style={{fontSize:'11px',color:'var(--text-secondary)',background:'var(--bg-body)',padding:'1px 6px',borderRadius:'4px'}}>
+                  <b style={{color:'#831843'}}>{c.label}:</b> {c.valor}
+                </span>
+              ))}
+            </div>
+          )
+        })()}
 
         {/* Peso/Tamanho */}
         <span style={{fontSize:'11px',color:'var(--text-muted)',marginTop:'2px'}}>
