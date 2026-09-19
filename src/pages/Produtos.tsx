@@ -726,7 +726,7 @@ function PersonalizacaoStep({
         <div className="pv3-eyebrow">Personalização</div>
         <div className="pv3-title">O que o cliente vai poder escolher?</div>
         <div className="pv3-subtitle">
-          Ative as categorias que fazem sentido pro seu produto. Cada opção pode ter um adicional (padrão R$ 0,00).
+          Ative as categorias que fazem sentido pro seu produto. Cada opção pode ter um adicional.
         </div>
         {algumGrupoAtivo && faixa.max > faixa.min && (
           <div className="pv3-faixa-info">
