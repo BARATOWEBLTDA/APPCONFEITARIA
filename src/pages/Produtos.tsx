@@ -75,6 +75,16 @@ type GrupoTamanhos = {
   opcoes: OpcaoTamanho[];
   foto_por_opcao?: boolean;
 };
+type OpcaoSabor = { id: string; nome: string; adicional: number; preco?: number; foto?: string };
+type GrupoSabores = {
+  ativo: boolean;
+  min: number;
+  max: number;
+  distribuicao: DistribuicaoModo;
+  opcoes: OpcaoSabor[];
+  foto_por_opcao?: boolean;
+  sabor_tem_preco_proprio?: boolean;
+};
 type TipoProduto = "simples" | "variacao" | "personalizavel" | "variacao_e_personalizavel";
 
 const gerarId = () =>
@@ -97,6 +107,9 @@ const GRUPO_VAZIO: GrupoPersonalizacao = {
 };
 const GRUPO_TAMANHOS_VAZIO: GrupoTamanhos = {
   ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [],
+};
+const GRUPO_SABORES_VAZIO: GrupoSabores = {
+  ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [], sabor_tem_preco_proprio: false,
 };
 
 type Produto = {
@@ -129,6 +142,7 @@ type Produto = {
   grupo_massas?: GrupoPersonalizacao;
   grupo_recheios?: GrupoPersonalizacao;
   grupo_coberturas?: GrupoPersonalizacao;
+  grupo_sabores?: GrupoSabores;
   grupo_tamanhos?: GrupoTamanhos;
   // ── Restante ──────────────────────────────────────────────────
   oferece_pacote?: boolean;
@@ -502,6 +516,7 @@ interface PersonalizacaoStepProps {
   grupoMassas: GrupoPersonalizacao;
   grupoRecheios: GrupoPersonalizacao;
   grupoCoberturas: GrupoPersonalizacao;
+  grupoSabores: GrupoSabores;
   grupoTamanhos: GrupoTamanhos;
   precoBase: number;
   quantidadeBase: number | null;
@@ -855,14 +870,14 @@ function SelectDoonly({
 }
 
 function PersonalizacaoStep({
-  grupoMassas, grupoRecheios, grupoCoberturas, grupoTamanhos,
+  grupoMassas, grupoRecheios, grupoCoberturas, grupoSabores, grupoTamanhos,
   precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange, onFormaVendaChange,
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
   const [showInfo, setShowInfo] = useState(false);
   const [showUnidade, setShowUnidade] = useState(false);
   const [biblioteca, setBiblioteca] = useState<Record<string, BibliotecaOpcao[]>>({
-    massas: [], recheios: [], coberturas: [], tamanhos: []
+    massas: [], recheios: [], coberturas: [], sabores: [], tamanhos: []
   });
 
   // Carrega biblioteca ao ativar uma categoria pela primeira vez
@@ -875,8 +890,9 @@ function PersonalizacaoStep({
     carregarCategoria("massas", grupoMassas.ativo);
     carregarCategoria("recheios", grupoRecheios.ativo);
     carregarCategoria("coberturas", grupoCoberturas.ativo);
+    carregarCategoria("sabores", grupoSabores.ativo);
     carregarCategoria("tamanhos", grupoTamanhos.ativo);
-  }, [grupoMassas.ativo, grupoRecheios.ativo, grupoCoberturas.ativo, grupoTamanhos.ativo]);
+  }, [grupoMassas.ativo, grupoRecheios.ativo, grupoCoberturas.ativo, grupoSabores.ativo, grupoTamanhos.ativo]);
 
   useEffect(() => {
     if (!showInfo) return;
@@ -918,27 +934,32 @@ function PersonalizacaoStep({
   };
   const sufixo = unidadeCurta(formaVenda);
 
-  const toggleAtivo = (grupo: "massas" | "recheios" | "coberturas" | "tamanhos", ativo: boolean) => {
+  const toggleAtivo = (grupo: "massas" | "recheios" | "coberturas" | "sabores" | "tamanhos", ativo: boolean) => {
     const key = `grupo_${grupo}` as const;
     const atual = grupo === "tamanhos" ? grupoTamanhos : (
       grupo === "massas" ? grupoMassas :
-      grupo === "recheios" ? grupoRecheios : grupoCoberturas
+      grupo === "recheios" ? grupoRecheios :
+      grupo === "sabores" ? grupoSabores :
+      grupoCoberturas
     );
     // Defaults inteligentes por categoria ao ativar
     let min = atual.min, max = atual.max;
     if (ativo) {
       if (grupo === "recheios") { min = 1; max = 99; } // Recheios permite múltiplos
-      else { min = 1; max = 1; } // Massa/Cobertura/Tamanho — sempre 1
+      else { min = 1; max = 1; } // Massa/Cobertura/Sabor/Tamanho — sempre 1
     }
     onChange({ [key]: { ...atual, ativo, min, max } } as any);
     if (ativo) setExpandido(grupo);
   };
 
-  const addOpcao = (grupo: "massas" | "recheios" | "coberturas", nome: string) => {
+  const addOpcao = (grupo: "massas" | "recheios" | "coberturas" | "sabores", nome: string) => {
     const nomeLimpo = titleCase(nome.trim());
     if (!nomeLimpo) return;
     const key = `grupo_${grupo}` as const;
-    const atual = grupo === "massas" ? grupoMassas : grupo === "recheios" ? grupoRecheios : grupoCoberturas;
+    const atual = grupo === "massas" ? grupoMassas
+      : grupo === "recheios" ? grupoRecheios
+      : grupo === "sabores" ? grupoSabores
+      : grupoCoberturas;
     // Evita duplicata dentro do produto
     if (atual.opcoes.some(o => o.nome.toLowerCase() === nomeLimpo.toLowerCase())) return;
     onChange({
@@ -954,16 +975,22 @@ function PersonalizacaoStep({
     });
   };
 
-  const removeOpcao = (grupo: "massas" | "recheios" | "coberturas", id: string) => {
+  const removeOpcao = (grupo: "massas" | "recheios" | "coberturas" | "sabores", id: string) => {
     const key = `grupo_${grupo}` as const;
-    const atual = grupo === "massas" ? grupoMassas : grupo === "recheios" ? grupoRecheios : grupoCoberturas;
+    const atual = grupo === "massas" ? grupoMassas
+      : grupo === "recheios" ? grupoRecheios
+      : grupo === "sabores" ? grupoSabores
+      : grupoCoberturas;
     onChange({ [key]: { ...atual, opcoes: atual.opcoes.filter(o => o.id !== id) } } as any);
   };
 
   // Reordenar opções (mover pra cima ou baixo)
-  const moveOpcao = (grupo: "massas" | "recheios" | "coberturas", id: string, dir: -1 | 1) => {
+  const moveOpcao = (grupo: "massas" | "recheios" | "coberturas" | "sabores", id: string, dir: -1 | 1) => {
     const key = `grupo_${grupo}` as const;
-    const atual = grupo === "massas" ? grupoMassas : grupo === "recheios" ? grupoRecheios : grupoCoberturas;
+    const atual = grupo === "massas" ? grupoMassas
+      : grupo === "recheios" ? grupoRecheios
+      : grupo === "sabores" ? grupoSabores
+      : grupoCoberturas;
     const idx = atual.opcoes.findIndex(o => o.id === id);
     if (idx === -1) return;
     const newIdx = idx + dir;
@@ -983,14 +1010,34 @@ function PersonalizacaoStep({
     onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes } });
   };
 
-  const updateAdicional = (grupo: "massas" | "recheios" | "coberturas", id: string, valor: number) => {
+  const updateAdicional = (grupo: "massas" | "recheios" | "coberturas" | "sabores", id: string, valor: number) => {
     const key = `grupo_${grupo}` as const;
-    const atual = grupo === "massas" ? grupoMassas : grupo === "recheios" ? grupoRecheios : grupoCoberturas;
+    const atual = grupo === "massas" ? grupoMassas
+      : grupo === "recheios" ? grupoRecheios
+      : grupo === "sabores" ? grupoSabores
+      : grupoCoberturas;
     onChange({
       [key]: {
         ...atual,
         opcoes: atual.opcoes.map(o => o.id === id ? { ...o, adicional: valor } : o),
       },
+    } as any);
+  };
+
+  // Sabor específico: atualizar preço próprio
+  const updateSaborPreco = (id: string, preco: number) => {
+    onChange({
+      grupo_sabores: {
+        ...grupoSabores,
+        opcoes: grupoSabores.opcoes.map(o => o.id === id ? { ...o, preco } : o),
+      },
+    } as any);
+  };
+
+  // Sabor específico: toggle preço próprio
+  const toggleSaborPrecoProprio = (val: boolean) => {
+    onChange({
+      grupo_sabores: { ...grupoSabores, sabor_tem_preco_proprio: val },
     } as any);
   };
 
@@ -1027,15 +1074,16 @@ function PersonalizacaoStep({
   const [novoMassa, setNovoMassa] = useState("");
   const [novoRecheio, setNovoRecheio] = useState("");
   const [novoCobertura, setNovoCobertura] = useState("");
+  const [novoSaborInput, setNovoSaborInput] = useState("");
   const [novoTamanhoNome, setNovoTamanhoNome] = useState("");
   const [novoTamanhoPreco, setNovoTamanhoPreco] = useState("");
 
   const grupos: Array<{
-    key: "massas" | "recheios" | "coberturas" | "tamanhos";
+    key: "massas" | "recheios" | "coberturas" | "sabores" | "tamanhos";
     icone: React.ReactNode;
     titulo: string;
     subtitulo: string;
-    dados: GrupoPersonalizacao | GrupoTamanhos;
+    dados: GrupoPersonalizacao | GrupoTamanhos | GrupoSabores;
   }> = [
     {
       key: "massas",
@@ -1071,6 +1119,17 @@ function PersonalizacaoStep({
       titulo: "Coberturas",
       subtitulo: "Chantilly, ganache, pasta americana...",
       dados: grupoCoberturas,
+    },
+    {
+      key: "sabores",
+      icone: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2C10 6 6 8 6 12a6 6 0 0 0 12 0c0-4-4-6-6-10z"/>
+        </svg>
+      ),
+      titulo: "Sabores",
+      subtitulo: "Tradicional, chocolate, ninho...",
+      dados: grupoSabores,
     },
     {
       key: "tamanhos",
@@ -1109,6 +1168,22 @@ function PersonalizacaoStep({
         precoMax += Math.max(...adicionais);
       }
     });
+    // Sabores: depende de sabor_tem_preco_proprio
+    if (grupoSabores.ativo && grupoSabores.opcoes.length > 0) {
+      if (grupoSabores.sabor_tem_preco_proprio) {
+        // Preço próprio substitui a base
+        const precos = grupoSabores.opcoes.map((o: any) => o.preco || 0).filter((p: number) => p > 0);
+        if (precos.length > 0) {
+          precoMin = Math.min(...precos);
+          precoMax = Math.max(...precos);
+        }
+      } else {
+        // Adicional
+        const adicionais = grupoSabores.opcoes.map(o => o.adicional);
+        precoMin += Math.min(...adicionais);
+        precoMax += Math.max(...adicionais);
+      }
+    }
     // Recheios: multiplo, min = min * min_escolhas, max = max * max_escolhas
     if (grupoRecheios.ativo && grupoRecheios.opcoes.length > 0) {
       const adicionais = grupoRecheios.opcoes.map(o => o.adicional).sort((a, b) => a - b);
@@ -1121,10 +1196,10 @@ function PersonalizacaoStep({
   };
 
   const faixa = calcularFaixaPreco();
-  const algumGrupoAtivo = [grupoMassas, grupoRecheios, grupoCoberturas, grupoTamanhos].some(g => g.ativo && g.opcoes.length > 0);
+  const algumGrupoAtivo = [grupoMassas, grupoRecheios, grupoCoberturas, grupoSabores, grupoTamanhos].some(g => g.ativo && g.opcoes.length > 0);
 
   // Calcula adicional máximo de um grupo (pra badge)
-  const adicionalMaxGrupo = (g: GrupoPersonalizacao | GrupoTamanhos, isTamanho: boolean): number => {
+  const adicionalMaxGrupo = (g: GrupoPersonalizacao | GrupoTamanhos | GrupoSabores, isTamanho: boolean): number => {
     if (g.opcoes.length === 0) return 0;
     if (isTamanho) {
       const precos = (g as GrupoTamanhos).opcoes.map(o => o.preco).filter(p => p > 0);
@@ -1137,7 +1212,7 @@ function PersonalizacaoStep({
     <div className="pv3-root">
       <div className="pv3-header">
         <div className="pv3-eyebrow">Personalização</div>
-        <div className="pv3-title">O que o cliente vai poder escolher?</div>
+        <div className="pv3-title">Quais opções o cliente poderá escolher?</div>
         <div className="pv3-subtitle">
           Ative as categorias que fazem sentido pro seu produto. Cada opção pode ter um adicional.
         </div>
@@ -1197,6 +1272,27 @@ function PersonalizacaoStep({
             {/* Corpo do card (só se ativo E aberto) */}
             {ativo && aberto && (
               <div className="pv3-card-body">
+                {/* Toggle Sabor — cada sabor tem preço próprio? */}
+                {g.key === "sabores" && (
+                  <div className="pv3-sabor-modo">
+                    <div className="pv3-sabor-modo-info">
+                      <div className="pv3-sabor-modo-titulo">Cada sabor tem preço próprio?</div>
+                      <div className="pv3-sabor-modo-sub">
+                        {grupoSabores.sabor_tem_preco_proprio
+                          ? "Cada sabor terá seu próprio preço (ex: Pudim de Chocolate R$ 45)"
+                          : "Sabores custam o preço base + adicional opcional"}
+                      </div>
+                    </div>
+                    <label className="pv3-toggle" onClick={e => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={!!grupoSabores.sabor_tem_preco_proprio}
+                        onChange={e => toggleSaborPrecoProprio(e.target.checked)}
+                      />
+                      <span className="pv3-toggle-slider"></span>
+                    </label>
+                  </div>
+                )}
                 {/* Distribuição — só pra recheios se for kit (quantidade_base > 1) */}
                 {g.key === "recheios" && quantidadeBase && quantidadeBase > 1 && (
                   <div className="pv3-distribuicao pv3-distribuicao--standalone">
@@ -1278,6 +1374,19 @@ function PersonalizacaoStep({
                             </div>
                             <span className="pv3-opcao-num">{idx + 1}</span>
                             <span className="pv3-opcao-nome">{op.nome}</span>
+                            {/* Input de preço próprio pra Sabores quando toggle ativo */}
+                            {g.key === "sabores" && grupoSabores.sabor_tem_preco_proprio && (
+                              <div className="pv3-opcao-preco-wrap">
+                                <span className="pv3-opcao-preco-prefix">R$</span>
+                                <input
+                                  type="text"
+                                  className="pv3-opcao-preco-inp"
+                                  placeholder="0,00"
+                                  value={(op as any).preco ? formatPreco((op as any).preco) : ""}
+                                  onChange={e => updateSaborPreco(op.id, parsePreco(e.target.value))}
+                                />
+                              </div>
+                            )}
                             <button
                               type="button"
                               className="pv3-opcao-del"
@@ -1302,19 +1411,30 @@ function PersonalizacaoStep({
                       <input
                         type="text"
                         placeholder={`Digite o nome...`}
-                        value={g.key === "massas" ? novoMassa : g.key === "recheios" ? novoRecheio : novoCobertura}
+                        value={
+                          g.key === "massas" ? novoMassa
+                          : g.key === "recheios" ? novoRecheio
+                          : g.key === "sabores" ? novoSaborInput
+                          : novoCobertura
+                        }
                         onChange={e => {
                           if (g.key === "massas") setNovoMassa(e.target.value);
                           else if (g.key === "recheios") setNovoRecheio(e.target.value);
+                          else if (g.key === "sabores") setNovoSaborInput(e.target.value);
                           else setNovoCobertura(e.target.value);
                         }}
                         onKeyDown={e => {
                           if (e.key === "Enter") {
                             e.preventDefault();
-                            const nome = g.key === "massas" ? novoMassa : g.key === "recheios" ? novoRecheio : novoCobertura;
+                            const nome =
+                              g.key === "massas" ? novoMassa
+                              : g.key === "recheios" ? novoRecheio
+                              : g.key === "sabores" ? novoSaborInput
+                              : novoCobertura;
                             addOpcao(g.key as any, nome);
                             if (g.key === "massas") setNovoMassa("");
                             else if (g.key === "recheios") setNovoRecheio("");
+                            else if (g.key === "sabores") setNovoSaborInput("");
                             else setNovoCobertura("");
                           }
                         }}
@@ -1323,10 +1443,15 @@ function PersonalizacaoStep({
                         type="button"
                         className="pv3-add-btn"
                         onClick={() => {
-                          const nome = g.key === "massas" ? novoMassa : g.key === "recheios" ? novoRecheio : novoCobertura;
+                          const nome =
+                            g.key === "massas" ? novoMassa
+                            : g.key === "recheios" ? novoRecheio
+                            : g.key === "sabores" ? novoSaborInput
+                            : novoCobertura;
                           addOpcao(g.key as any, nome);
                           if (g.key === "massas") setNovoMassa("");
                           else if (g.key === "recheios") setNovoRecheio("");
+                          else if (g.key === "sabores") setNovoSaborInput("");
                           else setNovoCobertura("");
                         }}
                       >
@@ -1694,6 +1819,58 @@ function PersonalizacaoStep({
         .pv3-distribuicao--standalone {
           background: #FAF8F5; border-radius: 8px; padding: 12px; margin-bottom: 12px;
         }
+        /* ═══ Toggle "Cada sabor tem preço próprio?" ═══ */
+        .pv3-sabor-modo {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px;
+          background: linear-gradient(135deg, #FDF3F7 0%, #FCE0E9 100%);
+          border: 1.5px solid #F0D0DC;
+          border-radius: 10px;
+          margin-bottom: 14px;
+        }
+        .pv3-sabor-modo-info { flex: 1; min-width: 0; }
+        .pv3-sabor-modo-titulo {
+          font-size: 14px;
+          font-weight: 800;
+          color: #2D1F26;
+          margin-bottom: 3px;
+        }
+        .pv3-sabor-modo-sub {
+          font-size: 12px;
+          color: #6B5D64;
+          line-height: 1.35;
+        }
+        /* ═══ Input de preço próprio (Sabor) inline na linha da opção ═══ */
+        .pv3-opcao-preco-wrap {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: #fff;
+          border: 1.5px solid #E5D8DE;
+          border-radius: 7px;
+          padding: 4px 8px;
+          margin-right: 6px;
+        }
+        .pv3-opcao-preco-wrap:focus-within {
+          border-color: #E85A8C;
+          box-shadow: 0 0 0 2px rgba(232, 90, 140, 0.1);
+        }
+        .pv3-opcao-preco-prefix {
+          font-size: 11px;
+          font-weight: 700;
+          color: #6B5D64;
+        }
+        .pv3-opcao-preco-inp {
+          all: unset;
+          width: 60px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #2D1F26;
+          text-align: right;
+          font-family: inherit;
+        }
         .pv3-distribuicao { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #E5D8DE; }
         .pv3-dist-opts { display: flex; gap: 6px; flex-wrap: wrap; }
         .pv3-dist-btn {
@@ -1986,6 +2163,7 @@ const EMPTY: Produto = {
   grupo_massas: { ...GRUPO_VAZIO },
   grupo_recheios: { ...GRUPO_VAZIO },
   grupo_coberturas: { ...GRUPO_VAZIO },
+  grupo_sabores: { ...GRUPO_SABORES_VAZIO },
   grupo_tamanhos: { ...GRUPO_TAMANHOS_VAZIO },
 };
 
@@ -2364,15 +2542,20 @@ export default function Produtos() {
       // preco_normal vira o MENOR preço (pra aparecer no cardápio como "a partir de")
       precoBase = Math.min(...valores);
     } else if (isPersonalizavel) {
-      const grupos = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_tamanhos];
+      const grupos = [form.grupo_massas, form.grupo_recheios, form.grupo_coberturas, form.grupo_sabores, form.grupo_tamanhos];
       const algumAtivo = grupos.some(g => g?.ativo && (g.opcoes?.length || 0) > 0);
       if (!algumAtivo) return alert("Ative ao menos uma categoria de personalização com opções");
       // Se tem Tamanhos ativos, preço base vem do MENOR tamanho
       const gt = form.grupo_tamanhos;
+      const gs = form.grupo_sabores;
       if (gt?.ativo && gt.opcoes.length > 0) {
         const precosT = gt.opcoes.map(o => o.preco).filter(p => p > 0);
         if (precosT.length === 0) return alert("Adicione ao menos 1 preço nos tamanhos");
         precoBase = Math.min(...precosT);
+      } else if (gs?.ativo && gs.opcoes.length > 0 && gs.sabor_tem_preco_proprio) {
+        const precosS = gs.opcoes.map((o: any) => o.preco || 0).filter((p: number) => p > 0);
+        if (precosS.length === 0) return alert("Adicione ao menos 1 preço nos sabores");
+        precoBase = Math.min(...precosS);
       } else {
         if (!form.preco_normal || form.preco_normal <= 0) return alert("Preço base deve ser maior que zero");
       }
@@ -3147,6 +3330,7 @@ export default function Produtos() {
                   grupoMassas={form.grupo_massas || GRUPO_VAZIO}
                   grupoRecheios={form.grupo_recheios || GRUPO_VAZIO}
                   grupoCoberturas={form.grupo_coberturas || GRUPO_VAZIO}
+                  grupoSabores={form.grupo_sabores || GRUPO_SABORES_VAZIO}
                   grupoTamanhos={form.grupo_tamanhos || GRUPO_TAMANHOS_VAZIO}
                   precoBase={form.preco_normal || 0}
                   quantidadeBase={form.quantidade_base ?? null}
@@ -3250,6 +3434,9 @@ export default function Produtos() {
                 }
                 if (form.grupo_coberturas?.ativo && (form.grupo_coberturas.opcoes.length || 0) > 0) {
                   gruposAtivos.push({ key: "coberturas", label: "Coberturas", grupo: form.grupo_coberturas });
+                }
+                if (form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0) {
+                  gruposAtivos.push({ key: "sabores", label: "Sabores", grupo: form.grupo_sabores });
                 }
                 if (form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) {
                   gruposAtivos.push({ key: "tamanhos", label: "Tamanhos", grupo: form.grupo_tamanhos });
@@ -3510,6 +3697,7 @@ export default function Produtos() {
                   { key: "massas", label: "Massas", grupo: form.grupo_massas },
                   { key: "recheios", label: "Recheios", grupo: form.grupo_recheios },
                   { key: "coberturas", label: "Coberturas", grupo: form.grupo_coberturas },
+                  { key: "sabores", label: "Sabores", grupo: form.grupo_sabores },
                 ].filter(g => g.grupo?.ativo && (g.grupo.opcoes.length || 0) > 0);
                 if (gruposComOpcoes.length === 0) return null;
 
