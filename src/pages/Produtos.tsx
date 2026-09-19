@@ -832,14 +832,18 @@ function PersonalizacaoStep({
                         </div>
                       ))}
                       {(g.dados as GrupoPersonalizacao).opcoes.length === 0 && (
-                        <div className="pv3-empty">Nenhuma opção ainda. Adicione abaixo:</div>
+                        <div className="pv3-empty">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{display: "block", margin: "0 auto"}}><path d="M20 7h-3V4a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v3H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+                          <div className="pv3-empty-txt">Nenhuma opção cadastrada</div>
+                          <div className="pv3-empty-sub">Digite o nome abaixo e clique em Cadastrar</div>
+                        </div>
                       )}
                     </div>
 
                     <div className="pv3-add-row">
                       <input
                         type="text"
-                        placeholder={`Nome da ${g.titulo.slice(0, -1).toLowerCase()}...`}
+                        placeholder={`Digite o nome...`}
                         value={g.key === "massas" ? novoMassa : g.key === "recheios" ? novoRecheio : novoCobertura}
                         onChange={e => {
                           if (g.key === "massas") setNovoMassa(e.target.value);
@@ -867,7 +871,10 @@ function PersonalizacaoStep({
                           else if (g.key === "recheios") setNovoRecheio("");
                           else setNovoCobertura("");
                         }}
-                      >+</button>
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Cadastrar
+                      </button>
                     </div>
                   </>
                 ) : (
@@ -890,14 +897,18 @@ function PersonalizacaoStep({
                         </div>
                       ))}
                       {grupoTamanhos.opcoes.length === 0 && (
-                        <div className="pv3-empty">Nenhum tamanho ainda. Adicione abaixo:</div>
+                        <div className="pv3-empty">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{display: "block", margin: "0 auto"}}><path d="M2 12h20"/><path d="M6 8v8"/><path d="M10 6v12"/><path d="M14 8v8"/><path d="M18 10v4"/></svg>
+                          <div className="pv3-empty-txt">Nenhum tamanho cadastrado</div>
+                          <div className="pv3-empty-sub">Digite o nome (P, M, G, 1kg...) e clique em Cadastrar</div>
+                        </div>
                       )}
                     </div>
 
                     <div className="pv3-add-row">
                       <input
                         type="text"
-                        placeholder="Nome do tamanho (P, M, G, 1kg...)"
+                        placeholder="Ex: P, M, G, 1kg..."
                         value={novoTamanhoNome}
                         onChange={e => setNovoTamanhoNome(e.target.value)}
                         onKeyDown={e => {
@@ -915,7 +926,10 @@ function PersonalizacaoStep({
                           addTamanho(novoTamanhoNome, 0);
                           setNovoTamanhoNome("");
                         }}
-                      >+</button>
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Cadastrar
+                      </button>
                     </div>
                   </>
                 )}
@@ -1207,22 +1221,61 @@ function PersonalizacaoStep({
         }
         .pv3-opcao-del:hover { color: #DC2626; }
         .pv3-empty {
-          padding: 12px; text-align: center; color: #9A8B93;
-          font-size: 12px; font-style: italic;
+          padding: 20px 12px;
+          text-align: center;
+          color: #6B5D64;
+          font-size: 12.5px;
+          background: #FAF8F5;
+          border-radius: 8px;
+          border: 1px dashed #E5D8DE;
         }
+        .pv3-empty svg { margin-bottom: 6px; opacity: 0.6; }
+        .pv3-empty-txt { font-weight: 600; }
+        .pv3-empty-sub { font-size: 11.5px; color: #9A8B93; margin-top: 2px; }
 
         /* Adicionar */
-        .pv3-add-row { display: flex; gap: 6px; margin-top: 10px; }
+        .pv3-add-row {
+          display: flex;
+          gap: 8px;
+          margin-top: 10px;
+          padding: 8px;
+          background: #FAF8F5;
+          border-radius: 10px;
+          border: 1px dashed #E5D8DE;
+        }
         .pv3-add-row input {
-          flex: 1; padding: 10px 12px; border: 1.5px solid #E5D8DE;
-          border-radius: 8px; font-size: 13px; font-family: inherit;
+          flex: 1;
+          padding: 8px 12px;
+          border: 1px solid #F0EBED;
+          border-radius: 8px;
+          font-size: 13px;
+          background: #fff;
+          font-family: inherit;
+          outline: none;
+          min-width: 0;
+        }
+        .pv3-add-row input:focus {
+          border-color: #E85A8C;
         }
         .pv3-add-btn {
           all: unset;
-          width: 40px; height: 40px; background: #1A1A1A; color: #fff;
-          border-radius: 8px; font-size: 20px; font-weight: 700;
-          cursor: pointer; text-align: center; line-height: 40px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 14px;
+          background: #E85A8C;
+          color: #fff;
+          font-size: 12.5px;
+          font-weight: 800;
+          border-radius: 8px;
+          cursor: pointer;
+          box-shadow: 0 2px 0 #C33A6E;
+          transition: transform 0.1s;
+          white-space: nowrap;
+          font-family: inherit;
         }
+        .pv3-add-btn:hover { transform: translateY(-1px); }
+        .pv3-add-btn:active { transform: translateY(1px); box-shadow: 0 0 0 #C33A6E; }
 
         .pv3-tamanho-info {
           background: #EFF6FF; color: #1E40AF; padding: 8px 12px; border-radius: 6px;
