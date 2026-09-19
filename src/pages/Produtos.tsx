@@ -524,7 +524,13 @@ function PersonalizacaoStep({
       grupo === "massas" ? grupoMassas :
       grupo === "recheios" ? grupoRecheios : grupoCoberturas
     );
-    onChange({ [key]: { ...atual, ativo } } as any);
+    // Defaults inteligentes por categoria ao ativar
+    let min = atual.min, max = atual.max;
+    if (ativo) {
+      if (grupo === "recheios") { min = 1; max = 99; } // Recheios permite múltiplos
+      else { min = 1; max = 1; } // Massa/Cobertura/Tamanho — sempre 1
+    }
+    onChange({ [key]: { ...atual, ativo, min, max } } as any);
     if (ativo) setExpandido(grupo);
   };
 
@@ -556,19 +562,6 @@ function PersonalizacaoStep({
         opcoes: atual.opcoes.map(o => o.id === id ? { ...o, adicional: valor } : o),
       },
     } as any);
-  };
-
-  const updateMinMax = (
-    grupo: "massas" | "recheios" | "coberturas" | "tamanhos",
-    campo: "min" | "max",
-    valor: number
-  ) => {
-    const key = `grupo_${grupo}` as const;
-    const atual = grupo === "tamanhos" ? grupoTamanhos : (
-      grupo === "massas" ? grupoMassas :
-      grupo === "recheios" ? grupoRecheios : grupoCoberturas
-    );
-    onChange({ [key]: { ...atual, [campo]: valor } } as any);
   };
 
   const updateDistribuicao = (grupo: "recheios", modo: DistribuicaoModo) => {
@@ -772,48 +765,26 @@ function PersonalizacaoStep({
             {/* Corpo do card (só se ativo E aberto) */}
             {ativo && aberto && (
               <div className="pv3-card-body">
-                {/* Regras de escolha */}
-                <div className="pv3-regras">
-                  <div className="pv3-regras-label">Regras de escolha:</div>
-                  <div className="pv3-regras-row">
-                    <label>Mínimo</label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={g.dados.opcoes.length}
-                      value={g.dados.min}
-                      onChange={e => updateMinMax(g.key, "min", Math.max(0, parseInt(e.target.value) || 0))}
-                    />
-                    <label>Máximo</label>
-                    <input
-                      type="number"
-                      min={1}
-                      value={g.dados.max}
-                      onChange={e => updateMinMax(g.key, "max", Math.max(1, parseInt(e.target.value) || 1))}
-                    />
-                  </div>
-
-                  {/* Distribuição — só pra recheios se for kit (quantidade_base > 1) */}
-                  {g.key === "recheios" && quantidadeBase && quantidadeBase > 1 && (
-                    <div className="pv3-distribuicao">
-                      <div className="pv3-regras-label">Como dividir as {quantidadeBase} unidades?</div>
-                      <div className="pv3-dist-opts">
-                        {(["nenhuma", "igual", "livre"] as DistribuicaoModo[]).map(modo => (
-                          <button
-                            key={modo}
-                            type="button"
-                            className={`pv3-dist-btn ${grupoRecheios.distribuicao === modo ? "pv3-dist-btn--ativo" : ""}`}
-                            onClick={() => updateDistribuicao("recheios", modo)}
-                          >
-                            {modo === "nenhuma" && "Não dividir"}
-                            {modo === "igual" && "Dividir igual"}
-                            {modo === "livre" && "Cliente decide"}
-                          </button>
-                        ))}
-                      </div>
+                {/* Distribuição — só pra recheios se for kit (quantidade_base > 1) */}
+                {g.key === "recheios" && quantidadeBase && quantidadeBase > 1 && (
+                  <div className="pv3-distribuicao pv3-distribuicao--standalone">
+                    <div className="pv3-regras-label">Como dividir as {quantidadeBase} unidades?</div>
+                    <div className="pv3-dist-opts">
+                      {(["nenhuma", "igual", "livre"] as DistribuicaoModo[]).map(modo => (
+                        <button
+                          key={modo}
+                          type="button"
+                          className={`pv3-dist-btn ${grupoRecheios.distribuicao === modo ? "pv3-dist-btn--ativo" : ""}`}
+                          onClick={() => updateDistribuicao("recheios", modo)}
+                        >
+                          {modo === "nenhuma" && "Não dividir"}
+                          {modo === "igual" && "Dividir igual"}
+                          {modo === "livre" && "Cliente decide"}
+                        </button>
+                      ))}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Lista de opções */}
                 {g.key !== "tamanhos" ? (
@@ -1120,6 +1091,9 @@ function PersonalizacaoStep({
         }
 
         /* Distribuição */
+        .pv3-distribuicao--standalone {
+          background: #FAF8F5; border-radius: 8px; padding: 12px; margin-bottom: 12px;
+        }
         .pv3-distribuicao { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #E5D8DE; }
         .pv3-dist-opts { display: flex; gap: 6px; flex-wrap: wrap; }
         .pv3-dist-btn {
