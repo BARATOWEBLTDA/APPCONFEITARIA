@@ -604,6 +604,29 @@ function PersonalizacaoStep({
     onChange({ [key]: { ...atual, opcoes: atual.opcoes.filter(o => o.id !== id) } } as any);
   };
 
+  // Reordenar opções (mover pra cima ou baixo)
+  const moveOpcao = (grupo: "massas" | "recheios" | "coberturas", id: string, dir: -1 | 1) => {
+    const key = `grupo_${grupo}` as const;
+    const atual = grupo === "massas" ? grupoMassas : grupo === "recheios" ? grupoRecheios : grupoCoberturas;
+    const idx = atual.opcoes.findIndex(o => o.id === id);
+    if (idx === -1) return;
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= atual.opcoes.length) return;
+    const opcoes = [...atual.opcoes];
+    [opcoes[idx], opcoes[newIdx]] = [opcoes[newIdx], opcoes[idx]];
+    onChange({ [key]: { ...atual, opcoes } } as any);
+  };
+
+  const moveTamanho = (id: string, dir: -1 | 1) => {
+    const idx = grupoTamanhos.opcoes.findIndex(o => o.id === id);
+    if (idx === -1) return;
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= grupoTamanhos.opcoes.length) return;
+    const opcoes = [...grupoTamanhos.opcoes];
+    [opcoes[idx], opcoes[newIdx]] = [opcoes[newIdx], opcoes[idx]];
+    onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes } });
+  };
+
   const updateAdicional = (grupo: "massas" | "recheios" | "coberturas", id: string, valor: number) => {
     const key = `grupo_${grupo}` as const;
     const atual = grupo === "massas" ? grupoMassas : grupo === "recheios" ? grupoRecheios : grupoCoberturas;
@@ -870,18 +893,44 @@ function PersonalizacaoStep({
                     })()}
 
                     <div className="pv3-opcoes-list">
-                      {(g.dados as GrupoPersonalizacao).opcoes.map((op, idx) => (
-                        <div key={op.id} className="pv3-opcao-row">
-                          <span className="pv3-opcao-num">{idx + 1}</span>
-                          <span className="pv3-opcao-nome">{op.nome}</span>
-                          <button
-                            type="button"
-                            className="pv3-opcao-del"
-                            onClick={() => removeOpcao(g.key as any, op.id)}
-                            aria-label="Remover"
-                          >✕</button>
-                        </div>
-                      ))}
+                      {(g.dados as GrupoPersonalizacao).opcoes.map((op, idx) => {
+                        const isFirst = idx === 0;
+                        const isLast = idx === (g.dados as GrupoPersonalizacao).opcoes.length - 1;
+                        return (
+                          <div key={op.id} className="pv3-opcao-row">
+                            <div className="pv3-opcao-move">
+                              <button
+                                type="button"
+                                className="pv3-opcao-move-btn"
+                                disabled={isFirst}
+                                onClick={() => moveOpcao(g.key as any, op.id, -1)}
+                                aria-label="Mover pra cima"
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                              </button>
+                              <button
+                                type="button"
+                                className="pv3-opcao-move-btn"
+                                disabled={isLast}
+                                onClick={() => moveOpcao(g.key as any, op.id, 1)}
+                                aria-label="Mover pra baixo"
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                              </button>
+                            </div>
+                            <span className="pv3-opcao-num">{idx + 1}</span>
+                            <span className="pv3-opcao-nome">{op.nome}</span>
+                            <button
+                              type="button"
+                              className="pv3-opcao-del"
+                              onClick={() => removeOpcao(g.key as any, op.id)}
+                              aria-label="Remover"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+                            </button>
+                          </div>
+                        );
+                      })}
                       {(g.dados as GrupoPersonalizacao).opcoes.length === 0 && (
                         <div className="pv3-empty">
                           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{display: "block", margin: "0 auto"}}><path d="M20 7h-3V4a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v3H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
@@ -964,18 +1013,44 @@ function PersonalizacaoStep({
                       );
                     })()}
                     <div className="pv3-opcoes-list">
-                      {grupoTamanhos.opcoes.map((op, idx) => (
-                        <div key={op.id} className="pv3-opcao-row">
-                          <span className="pv3-opcao-num">{idx + 1}</span>
-                          <span className="pv3-opcao-nome">{op.nome}</span>
-                          <button
-                            type="button"
-                            className="pv3-opcao-del"
-                            onClick={() => removeTamanho(op.id)}
-                            aria-label="Remover"
-                          >✕</button>
-                        </div>
-                      ))}
+                      {grupoTamanhos.opcoes.map((op, idx) => {
+                        const isFirst = idx === 0;
+                        const isLast = idx === grupoTamanhos.opcoes.length - 1;
+                        return (
+                          <div key={op.id} className="pv3-opcao-row">
+                            <div className="pv3-opcao-move">
+                              <button
+                                type="button"
+                                className="pv3-opcao-move-btn"
+                                disabled={isFirst}
+                                onClick={() => moveTamanho(op.id, -1)}
+                                aria-label="Mover pra cima"
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                              </button>
+                              <button
+                                type="button"
+                                className="pv3-opcao-move-btn"
+                                disabled={isLast}
+                                onClick={() => moveTamanho(op.id, 1)}
+                                aria-label="Mover pra baixo"
+                              >
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                              </button>
+                            </div>
+                            <span className="pv3-opcao-num">{idx + 1}</span>
+                            <span className="pv3-opcao-nome">{op.nome}</span>
+                            <button
+                              type="button"
+                              className="pv3-opcao-del"
+                              onClick={() => removeTamanho(op.id)}
+                              aria-label="Remover"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/></svg>
+                            </button>
+                          </div>
+                        );
+                      })}
                       {grupoTamanhos.opcoes.length === 0 && (
                         <div className="pv3-empty">
                           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{display: "block", margin: "0 auto"}}><path d="M2 12h20"/><path d="M6 8v8"/><path d="M10 6v12"/><path d="M14 8v8"/><path d="M18 10v4"/></svg>
@@ -1272,34 +1347,65 @@ function PersonalizacaoStep({
         .pv3-dist-btn--ativo { background: #FDF3F7; color: #831843; border-color: #E85A8C; }
 
         /* Lista de opções */
-        .pv3-opcoes-list { display: flex; flex-direction: column; gap: 6px; }
+        .pv3-opcoes-list { display: flex; flex-direction: column; gap: 8px; }
         .pv3-opcao-row {
-          display: flex; align-items: center; gap: 10px;
-          padding: 8px 10px; background: #FAF8F5; border: 1px solid #F0EBED;
-          border-radius: 8px;
+          display: flex; align-items: center; gap: 12px;
+          padding: 14px 14px; background: #fff; border: 1.5px solid #F0EBED;
+          border-radius: 12px;
+          transition: all 0.15s;
+        }
+        .pv3-opcao-row:hover {
+          border-color: #E85A8C;
+          box-shadow: 0 2px 8px rgba(232, 90, 140, 0.08);
+        }
+        .pv3-opcao-move {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          flex-shrink: 0;
+        }
+        .pv3-opcao-move-btn {
+          all: unset;
+          width: 22px;
+          height: 20px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 5px;
+          color: #6B5D64;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .pv3-opcao-move-btn:hover:not(:disabled) {
+          background: #FCE0E9;
+          color: #E85A8C;
+        }
+        .pv3-opcao-move-btn:disabled {
+          opacity: 0.25;
+          cursor: not-allowed;
         }
         .pv3-opcao-num {
-          width: 20px; height: 20px; border-radius: 50%; background: #FCE0E9;
-          color: #E85A8C; font-size: 10px; font-weight: 800;
+          width: 26px; height: 26px; border-radius: 50%; background: #FCE0E9;
+          color: #E85A8C; font-size: 12px; font-weight: 900;
           display: inline-flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
-        .pv3-opcao-nome { flex: 1; font-size: 13px; font-weight: 700; color: #2D1F26; }
-        .pv3-opcao-preco-wrap {
-          display: flex; align-items: center; gap: 4px;
-          background: #fff; border: 1.5px solid #E5D8DE; border-radius: 6px;
-          padding: 4px 8px;
-        }
-        .pv3-opcao-preco-label { font-size: 11px; color: #6B5D64; font-weight: 700; }
-        .pv3-opcao-preco-input {
-          width: 60px; border: none; outline: none;
-          font-size: 13px; font-family: inherit; text-align: right; background: transparent;
-        }
+        .pv3-opcao-nome { flex: 1; font-size: 14.5px; font-weight: 700; color: #2D1F26; }
         .pv3-opcao-del {
-          all: unset; cursor: pointer; color: #9A8B93;
-          padding: 4px 8px; font-size: 14px; font-weight: 700;
+          all: unset;
+          cursor: pointer;
+          color: #9A8B93;
+          width: 32px; height: 32px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 8px;
+          transition: all 0.15s;
         }
-        .pv3-opcao-del:hover { color: #DC2626; }
+        .pv3-opcao-del:hover {
+          color: #DC2626;
+          background: #FEE2E2;
+        }
         .pv3-empty {
           padding: 20px 12px;
           text-align: center;
