@@ -3378,28 +3378,6 @@ export default function Produtos() {
                         <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "white", position: "absolute", top: "3px", transition: "left 0.2s", left: form.zero_acucar ? "23px" : "3px", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
                       </button>
                     </div>
-
-                    {[
-                      { label: "Tipos de Massa", campo: "massas_disponiveis" as const, key: "massa" as const, placeholder: "Ex: Chocolate, Baunilha..." },
-                      { label: "Sabores / Recheios", campo: "recheios_disponiveis" as const, key: "recheio" as const, placeholder: "Ex: Morango, Brigadeiro..." },
-                      { label: "Coberturas", campo: "coberturas_disponiveis" as const, key: "cobertura" as const, placeholder: "Ex: Ganache, Chantilly..." },
-                    ].map(({ label, campo, key, placeholder }) => (
-                      <div key={campo} style={{ background: "var(--bg-body)", borderRadius: "12px", padding: "10px 12px", border: "1px solid var(--border)" }}>
-                        <p style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--text-primary)", margin: "0 0 8px" }}>{label}</p>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", padding: "8px 10px", border: "1.5px solid var(--border)", borderRadius: "10px", background: "var(--bg-card)", cursor: "text" }}
-                          onClick={() => (document.getElementById(`input-${key}`) as HTMLInputElement)?.focus()}>
-                          {(form[campo] || []).map((item: string, i: number) => (
-                            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "3px", padding: "2px 8px 2px 10px", background: "var(--primary-light)", border: "1px solid var(--primary-light)", color: "var(--primary-dark)", borderRadius: "50px", fontSize: "0.78rem", fontWeight: 600, whiteSpace: "nowrap" }}>
-                              {item}
-                              <button onClick={e => { e.stopPropagation(); removeOpcao(campo, i); }} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--primary-dark)", padding: "0 2px", lineHeight: 1, fontSize: "0.85rem" }}>×</button>
-                            </span>
-                          ))}
-                          <input id={`input-${key}`} type="text" placeholder={(form[campo] || []).length === 0 ? placeholder : "Adicionar..."} value={novaOpcao[key]} onChange={e => setNovaOpcao(o => ({ ...o, [key]: e.target.value }))} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addOpcao(campo, key); } }} style={{ border: "none", outline: "none", fontSize: "0.82rem", fontFamily: "inherit", flex: 1, minWidth: "100px", background: "transparent", padding: "2px 0" }} />
-                        </div>
-                        <p style={{ fontSize: "0.68rem", color: "var(--text-muted)", margin: "4px 0 0" }}>Pressione Enter ou clique em Adicionar</p>
-                        <button onClick={() => addOpcao(campo, key)} className="prod-btn-3d" style={{ marginTop: "8px", alignSelf: "flex-start" }}>Adicionar</button>
-                      </div>
-                    ))}
                   </>
                 )}
               </div>
