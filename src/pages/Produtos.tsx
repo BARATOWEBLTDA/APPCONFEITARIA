@@ -931,12 +931,6 @@ function PersonalizacaoStep({
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
   const [avancadoOpen, setAvancadoOpen] = useState<Record<string, boolean>>({});
-  // Toast Doonly (substitui alerts nativos)
-  const [toast, setToast] = useState<{ tipo: "success" | "error" | "info"; titulo: string; sub?: string } | null>(null);
-  const showToast = (tipo: "success" | "error" | "info", titulo: string, sub?: string) => {
-    setToast({ tipo, titulo, sub });
-    // Modal com botão "Entendi" — não fecha sozinho, user precisa confirmar leitura
-  };
   const [showInfo, setShowInfo] = useState(false);
   const [showUnidade, setShowUnidade] = useState(false);
   const [biblioteca, setBiblioteca] = useState<Record<string, BibliotecaOpcao[]>>({
@@ -2430,6 +2424,11 @@ export default function Produtos() {
   const [userId, setUserId] = useState("");
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [categorias, setCategorias] = useState<string[]>([]);
+  // Toast Doonly (substitui alerts nativos)
+  const [toast, setToast] = useState<{ tipo: "success" | "error" | "info"; titulo: string; sub?: string } | null>(null);
+  const showToast = (tipo: "success" | "error" | "info", titulo: string, sub?: string) => {
+    setToast({ tipo, titulo, sub });
+  };
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
