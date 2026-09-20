@@ -902,7 +902,7 @@ export default function CardapioConfigPage() {
         .ccc-outer {
           width:calc(100% + 4rem); display:flex; justify-content:center;
           margin: -2rem -2rem 0;
-          padding-top:1.25rem; padding-bottom:3rem; background:var(--bg-body);
+          padding-top: 2.5rem; padding-bottom:3rem; background:var(--bg-body);
           overflow-x:hidden;
         }
         .ccc-root {
@@ -961,7 +961,7 @@ export default function CardapioConfigPage() {
             width: 100%;
             padding: 8px;
             position: sticky;
-            top: 1rem;
+            top: 90px;
             gap: 3px;
           }
           .ccc-tab {
