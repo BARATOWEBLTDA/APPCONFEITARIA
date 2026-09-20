@@ -586,6 +586,7 @@ export default function CardapioConfigPage() {
       {/* ── Tab Design ── */}
       {/* ══════ Tab DESIGN: Identidade → Layout/Banners/Cores → Avaliações ══════ */}
       {activeTab === "design" && <>
+        <CardapioDesign identityCard={
         <div className="ccc-card">
           <SectionLabel
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7h-7L9 3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>}
@@ -643,9 +644,7 @@ export default function CardapioConfigPage() {
             </div>
           </div>
         </div>
-
-        {/* Card 4 — Avaliações */}
-        <CardapioDesign />
+        } />
         <div className="ccc-card">
           <SectionLabel
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>}

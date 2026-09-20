@@ -16,7 +16,7 @@ const SectionLabel = ({ children, icon, sub, variant }: any) => (
   </div>
 );
 
-export default function CardapioDesign() {
+export default function CardapioDesign({ identityCard }: { identityCard?: React.ReactNode } = {}) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -175,6 +175,9 @@ export default function CardapioDesign() {
     <div className="cd-root">
       {/* Header removido — a página pai (CardapioConfigPage) já mostra "Meu Cardápio" acima */}
 
+      {/* Card Identidade (vindo por prop do CardapioConfigPage) — col 1 row 1 */}
+      {identityCard}
+
       {/* ── Seletor de Layout ─────────────────────────────── */}
       <div className="cd-card">
         <SectionLabel
@@ -314,7 +317,7 @@ export default function CardapioDesign() {
       </div>
 
       {/* Cores */}
-      <div className="cd-card" style={isMobile ? {} : { gridColumn:'2', gridRow:'2/4' }}>
+      <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
         <SectionLabel
           variant="azul"
           icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2a10 10 0 0 0 0 20 2 2 0 0 0 0-4 2 2 0 0 1 0-4h2.5a4.5 4.5 0 0 0 4.5-4.5A10 10 0 0 0 12 2z"/></svg>}
@@ -486,7 +489,17 @@ export default function CardapioDesign() {
         @keyframes cdspin { to { transform:rotate(360deg); } }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
-        .cd-root { font-family:'Geist', sans-serif; max-width:960px; width:100%; box-sizing:border-box; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto auto 1fr; gap:1rem; align-items:start; padding-top: 24px; }
+        .cd-root {
+          font-family: 'Geist', sans-serif;
+          max-width: 960px; width: 100%;
+          box-sizing: border-box;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+          align-items: start;
+          padding-top: 24px;
+        }
+        /* Card Identidade (via prop) fica na coluna 1 linha 1 automaticamente (primeiro filho) */
         .cd-page-header { grid-column:1/-1; padding-bottom:0.5rem; }
         @media (max-width: 768px) {
           .cd-root { display:flex; flex-direction:column; max-width:100%; }
