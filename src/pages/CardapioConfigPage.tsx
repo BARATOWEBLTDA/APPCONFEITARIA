@@ -588,22 +588,22 @@ export default function CardapioConfigPage() {
       {/* ── Tab Geral ── */}
       {/* ══════ Tab GERAL: dados operacionais (localização, horários) ══════ */}
       {activeTab === "geral" && <>
-      <div className="ccc-row-top">
-        {/* Card 0 — Nome da loja (Geral) */}
-        <div className="ccc-card">
-          <SectionLabel
-            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
-            sub="Como sua confeitaria vai aparecer no cardápio"
-          >Nome da loja</SectionLabel>
-          <Field
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
-            placeholder="Ex: Doce Formiga"
-            value={form.nome_loja}
-            onChange={(e: any) => setForm({...form, nome_loja: e.target.value})}
-          />
-        </div>
 
-        {/* Card 2 — Localização */}
+      {/* Card Nome — fora do grid pra ter altura natural */}
+      <div className="ccc-card ccc-card--compacto">
+        <SectionLabel
+          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
+          sub="Como sua confeitaria vai aparecer no cardápio"
+        >Nome da loja</SectionLabel>
+        <Field
+          icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
+          placeholder="Ex: Doce Formiga"
+          value={form.nome_loja}
+          onChange={(e: any) => setForm({...form, nome_loja: e.target.value})}
+        />
+      </div>
+
+      <div className="ccc-row-top">
         <div className="ccc-card">
           <SectionLabel
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
@@ -1089,6 +1089,13 @@ export default function CardapioConfigPage() {
           width:100%; box-sizing:border-box; height:100%;
           transition: box-shadow var(--dur-normal) var(--ease-out), border-color 0.2s ease, transform 0.2s ease;
           position:relative; overflow:hidden;
+        }
+        /* Variação compacta — card com pouco conteúdo, sem esticar */
+        .ccc-card--compacto {
+          height: auto;
+          padding: 1.15rem 1.25rem;
+          gap: 0.7rem;
+          margin-bottom: 1.25rem;
         }
         .ccc-card::before {
           content:""; position:absolute; top:-60px; right:-60px;
