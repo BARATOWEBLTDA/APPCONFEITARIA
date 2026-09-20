@@ -248,7 +248,10 @@ export default function CardapioDesign() {
             </div>
             <div className="cd-layout-info">
               <span className="cd-layout-name">Modelo 1</span>
-              <span className="cd-layout-tag cd-layout-tag-pro">{isPro ? 'PRO' : '🔒 PRO'}</span>
+              <span className="cd-layout-tag cd-layout-tag-pro">
+                <img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />
+                PRO
+              </span>
             </div>
             {cardapioModelo === 'modelo1' && <div className="cd-layout-check">✓</div>}
           </button>
@@ -293,9 +296,11 @@ export default function CardapioDesign() {
 
           {!isPro && [1, 2, 3].map((i) => (
             <div key={i} className="cd-pro-slot" onClick={() => navigate("/assinar")}>
-              <div className="cd-pro-slot-bg" aria-hidden="true" />
               <div className="cd-pro-shine" aria-hidden="true" />
-              <div className="cd-pro-badge">PRO</div>
+              <div className="cd-pro-badge">
+                <img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />
+                PRO
+              </div>
               <div className="cd-pro-icon-mini">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="4" y="11" width="16" height="10" rx="2.5"/>
@@ -521,14 +526,30 @@ export default function CardapioDesign() {
           transform: translateY(-2px);
           border-color: rgba(232,90,140,0.55);
         }
-        /* Logo do app como fundo apagadinho */
-        .cd-pro-slot-bg {
-          position: absolute; inset: 0;
-          background: url('/log.png') center / 55% no-repeat;
-          opacity: 0.08;
-          filter: blur(0.5px);
-          pointer-events: none;
-          z-index: 0;
+        /* Tag PRO — mesmo padrão do sidebar (fundo preto + coroa) */
+        .cd-pro-badge {
+          position: absolute;
+          top: 6px; right: 6px;
+          background: #2D1F26;
+          color: #fff;
+          padding: 3px 8px;
+          border-radius: 6px;
+          font-size: 9px;
+          font-weight: 800;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          line-height: 1;
+          z-index: 2;
+        }
+        .cd-pro-badge-coroa {
+          width: 10px; height: 10px;
+          object-fit: contain;
+          display: block;
+          flex-shrink: 0;
         }
         .cd-pro-shine {
           position: absolute; inset: 0;
@@ -536,19 +557,6 @@ export default function CardapioDesign() {
           background-size: 200% 100%;
           animation: cd-pro-shine 4s linear infinite;
           pointer-events: none;
-        }
-        .cd-pro-badge {
-          position: absolute;
-          top: 6px; right: 6px;
-          background: linear-gradient(90deg, #E85A8C, #FF6FA9);
-          color: #fff;
-          padding: 2px 8px;
-          border-radius: 999px;
-          font-size: 9px;
-          font-weight: 900;
-          letter-spacing: 0.12em;
-          box-shadow: 0 0 10px rgba(232,90,140,0.6);
-          z-index: 2;
         }
         .cd-pro-icon-mini {
           width: 36px; height: 36px;
@@ -792,7 +800,21 @@ export default function CardapioDesign() {
         }
         .cd-layout-name { font-size: var(--font-caption); font-weight: var(--fw-semibold); color: var(--text-primary); }
         .cd-layout-tag { font-size: var(--text-xs); font-weight: var(--fw-semibold); color: var(--text-muted); background: var(--bg-subtle); padding: 2px 8px; border-radius: var(--radius-full); }
-        .cd-layout-tag-pro { color: var(--primary); background: var(--primary-light); }
+        .cd-layout-tag-pro {
+          background: #2D1F26;
+          color: #fff;
+          font-weight: 800;
+          font-size: 9px;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          padding: 3px 8px;
+          border-radius: 6px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          line-height: 1;
+        }
         .cd-layout-check {
           position: absolute; top: var(--space-2); right: var(--space-2); width: 22px; height: 22px;
           border-radius: 50%; background: var(--primary); color: var(--text-inverse);
