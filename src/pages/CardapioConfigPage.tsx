@@ -551,12 +551,12 @@ export default function CardapioConfigPage() {
     <div className="ccc-outer">
     <div className="ccc-root">
 
-      {/* Autosave indicator — altura reservada pra não pular ao aparecer/sumir */}
-      <div className="ccc-autosave-slot">
-        {autoSaved && activeTab === "geral" && (
+      {/* Autosave indicator */}
+      {autoSaved && activeTab === "geral" && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
           <span className="ccc-autosave">✓ Salvo automaticamente</span>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── Tabs ── */}
       <div className="ccc-tabs">
@@ -582,79 +582,9 @@ export default function CardapioConfigPage() {
       {activeTab === "checkout" && <CheckoutConfigPage />}
 
       {/* ── Tab Geral ── */}
+      {/* ══════ Tab GERAL: dados operacionais (localização, horários) ══════ */}
       {activeTab === "geral" && <>
-
-      {/* LINHA 1: 4 cards */}
       <div className="ccc-row-top">
-
-        {/* Card 1 — Identidade */}
-        <div className="ccc-card">
-          <SectionLabel
-            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7h-7L9 3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>}
-            sub="Logo, nome e descrição da sua confeitaria"
-          >Identidade da loja</SectionLabel>
-          <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleFileChange} />
-
-          <div className="ccc-logo-row">
-            <div className="ccc-logo-preview" onClick={() => fileRef.current?.click()}>
-              {preview || form.foto_url
-                ? <img src={preview || form.foto_url} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}} />
-                : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              }
-              <div className="ccc-logo-cam">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              </div>
-            </div>
-            <div style={{flex:1,minWidth:0}}>
-              <p className="ccc-logo-label">Logo da loja</p>
-              <p className="ccc-logo-sub">Aparece no topo do cardápio</p>
-              <button
-                style={{marginTop:"0.5rem",padding:"0.3rem 0.85rem",background:"var(--primary-light)",border:"1.5px solid var(--primary-light)",borderRadius:"50px",fontFamily:"Geist,sans-serif",fontSize:"0.75rem",fontWeight:700,color:"var(--primary-dark)",cursor:"pointer"}}
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-              >
-                {uploading ? <span className="ccc-spinner-xs" /> : "Trocar foto"}
-              </button>
-            </div>
-          </div>
-
-          <Field
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
-            placeholder="Nome da loja" value={form.nome_loja}
-            onChange={(e: any) => setForm({...form, nome_loja: e.target.value})}
-          />
-          <Field
-            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>}
-            placeholder="WhatsApp" value={form.telefone} type="tel"
-            onChange={(e: any) => setForm({...form, telefone: formatPhone(e.target.value)})}
-          />
-          <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1rem"}}>
-            <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            </span>
-            <div style={{flex:1,display:"flex",flexDirection:"column",gap:"0.4rem"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                <span style={{fontSize:"0.75rem",color:"var(--text-muted)"}}>Descrição</span>
-                <button type="button" className="ccc-btn-ia" onClick={gerarDescricaoLoja} disabled={gerandoDescricao || !form.nome_loja.trim()}>
-                  {gerandoDescricao
-                    ? <><span className="ccc-spinner-ia" /> Gerando...</>
-                    : <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Gerar com IA</>
-                  }
-                </button>
-              </div>
-              <textarea
-                className="ccc-field-input"
-                placeholder="Descreva sua confeitaria..."
-                value={form.descricao_loja}
-                onChange={e => setForm({...form, descricao_loja: e.target.value.slice(0,200)})}
-                rows={3}
-                style={{resize:"none"}}
-              />
-              <p className="ccc-char-count">{form.descricao_loja.length}/200</p>
-            </div>
-          </div>
-        </div>
-
         {/* Card 2 — Localização */}
         <div className="ccc-card">
           <SectionLabel
@@ -742,6 +672,87 @@ export default function CardapioConfigPage() {
           )}
         </div>
 
+      </div>{/* fim linha 1 */}
+
+      {/* Botão salvar */}
+      <button className="ccc-btn-save" onClick={handleSave} disabled={saving || uploading}>
+        {saving ? <span className="ccc-spinner-sm" /> : "Salvar alterações"}
+      </button>
+
+      </>
+      }
+
+      {/* ══════ Tab DESIGN: cards de aparência (identidade, avaliações) — vêm depois do <CardapioDesign /> ══════ */}
+      {activeTab === "design" && <>
+      <div className="ccc-row-top">
+        {/* Card 1 — Identidade */}
+        <div className="ccc-card">
+          <SectionLabel
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7h-7L9 3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>}
+            sub="Logo, nome e descrição da sua confeitaria"
+          >Identidade da loja</SectionLabel>
+          <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleFileChange} />
+
+          <div className="ccc-logo-row">
+            <div className="ccc-logo-preview" onClick={() => fileRef.current?.click()}>
+              {preview || form.foto_url
+                ? <img src={preview || form.foto_url} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              }
+              <div className="ccc-logo-cam">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <p className="ccc-logo-label">Logo da loja</p>
+              <p className="ccc-logo-sub">Aparece no topo do cardápio</p>
+              <button
+                style={{marginTop:"0.5rem",padding:"0.3rem 0.85rem",background:"var(--primary-light)",border:"1.5px solid var(--primary-light)",borderRadius:"50px",fontFamily:"Geist,sans-serif",fontSize:"0.75rem",fontWeight:700,color:"var(--primary-dark)",cursor:"pointer"}}
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? <span className="ccc-spinner-xs" /> : "Trocar foto"}
+              </button>
+            </div>
+          </div>
+
+          <Field
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
+            placeholder="Nome da loja" value={form.nome_loja}
+            onChange={(e: any) => setForm({...form, nome_loja: e.target.value})}
+          />
+          <Field
+            icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>}
+            placeholder="WhatsApp" value={form.telefone} type="tel"
+            onChange={(e: any) => setForm({...form, telefone: formatPhone(e.target.value)})}
+          />
+          <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1rem"}}>
+            <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </span>
+            <div style={{flex:1,display:"flex",flexDirection:"column",gap:"0.4rem"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span style={{fontSize:"0.75rem",color:"var(--text-muted)"}}>Descrição</span>
+                <button type="button" className="ccc-btn-ia" onClick={gerarDescricaoLoja} disabled={gerandoDescricao || !form.nome_loja.trim()}>
+                  {gerandoDescricao
+                    ? <><span className="ccc-spinner-ia" /> Gerando...</>
+                    : <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Gerar com IA</>
+                  }
+                </button>
+              </div>
+              <textarea
+                className="ccc-field-input"
+                placeholder="Descreva sua confeitaria..."
+                value={form.descricao_loja}
+                onChange={e => setForm({...form, descricao_loja: e.target.value.slice(0,200)})}
+                rows={3}
+                style={{resize:"none"}}
+              />
+              <p className="ccc-char-count">{form.descricao_loja.length}/200</p>
+            </div>
+          </div>
+        </div>
+
         {/* Card 4 — Avaliações */}
         <div className="ccc-card">
           <SectionLabel
@@ -769,16 +780,10 @@ export default function CardapioConfigPage() {
         </div>
 
       </div>{/* fim linha 1 */}
-
-      {/* Botão salvar */}
-      <button className="ccc-btn-save" onClick={handleSave} disabled={saving || uploading}>
-        {saving ? <span className="ccc-spinner-sm" /> : "Salvar alterações"}
-      </button>
-
-      {success && <div className="ccc-toast">✓ Salvo com sucesso!</div>}
-
       </>
       }
+
+      {success && <div className="ccc-toast">✓ Salvo com sucesso!</div>}
       </div>{/* fim .ccc-geral-main */}
 
       {/* ── Preview do cardápio (só desktop) — visível em TODAS as abas ── */}
@@ -831,7 +836,7 @@ export default function CardapioConfigPage() {
         @keyframes ccspin { to { transform:rotate(360deg); } }
 
         /* ── Tabs ── */
-        .ccc-tabs { display:flex; gap:0.3rem; background:var(--bg-card); border:1px solid var(--border); border-radius: var(--radius-lg); padding:5px; width:fit-content; margin: 4px 0 12px; box-shadow:0 1px 4px rgba(0,0,0,0.03); }
+        .ccc-tabs { display:flex; gap:0.3rem; background:var(--bg-card); border:1px solid var(--border); border-radius: var(--radius-lg); padding:5px; width:fit-content; margin-bottom:0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); }
         .ccc-tab { display:flex; align-items:center; gap:0.4rem; padding:0.55rem 1.25rem; border-radius: var(--radius-md); border:none; background:transparent; font-family:'Geist',sans-serif; font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-secondary); cursor:pointer; transition:all 0.2s; white-space:nowrap; }
         .ccc-tab:hover { color:var(--primary); background:var(--primary-light); }
         .ccc-tab--active { background:var(--primary-gradient); color:#ffffff; box-shadow:0 3px 10px rgba(255,111,169,0.32); }
@@ -869,14 +874,6 @@ export default function CardapioConfigPage() {
         }
         .ccc-page-title { font-size: var(--text-xl); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.3rem; letter-spacing:-0.02em; }
         .ccc-page-sub { font-size: var(--font-button); color:var(--text-secondary); margin:0; }
-        /* Slot de altura fixa pro autosave — evita jump quando aparece/some */
-        .ccc-autosave-slot {
-          min-height: 28px;
-          display: flex;
-          justify-content: flex-end;
-          align-items: center;
-          margin-top: 8px;
-        }
         .ccc-autosave {
           font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--success);
           display:inline-flex; align-items:center; gap:0.35rem;
