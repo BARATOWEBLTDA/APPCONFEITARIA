@@ -551,12 +551,7 @@ export default function CardapioConfigPage() {
     <div className="ccc-outer">
     <div className="ccc-root">
 
-      {/* Autosave indicator — slot com altura fixa pra não pular ao aparecer/sumir */}
-      <div className="ccc-autosave-slot">
-        {autoSaved && activeTab === "geral" && (
-          <span className="ccc-autosave">✓ Salvo automaticamente</span>
-        )}
-      </div>
+      {/* Autosave silencioso — sem indicador visual */}
 
       {/* ── Wrapper com preview lateral (aplica em TODAS as tabs) ── */}
       <div className={`ccc-geral-wrap${activeTab === "design" ? " ccc-geral-wrap--com-preview" : ""}`}>
