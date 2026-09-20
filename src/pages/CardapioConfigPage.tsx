@@ -551,12 +551,12 @@ export default function CardapioConfigPage() {
     <div className="ccc-outer">
     <div className="ccc-root">
 
-      {/* Autosave indicator */}
-      {autoSaved && activeTab === "geral" && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+      {/* Autosave indicator — altura reservada pra não pular ao aparecer/sumir */}
+      <div className="ccc-autosave-slot">
+        {autoSaved && activeTab === "geral" && (
           <span className="ccc-autosave">✓ Salvo automaticamente</span>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* ── Tabs ── */}
       <div className="ccc-tabs">
@@ -831,7 +831,7 @@ export default function CardapioConfigPage() {
         @keyframes ccspin { to { transform:rotate(360deg); } }
 
         /* ── Tabs ── */
-        .ccc-tabs { display:flex; gap:0.3rem; background:var(--bg-card); border:1px solid var(--border); border-radius: var(--radius-lg); padding:5px; width:fit-content; margin: 20px 0 12px; box-shadow:0 1px 4px rgba(0,0,0,0.03); }
+        .ccc-tabs { display:flex; gap:0.3rem; background:var(--bg-card); border:1px solid var(--border); border-radius: var(--radius-lg); padding:5px; width:fit-content; margin: 4px 0 12px; box-shadow:0 1px 4px rgba(0,0,0,0.03); }
         .ccc-tab { display:flex; align-items:center; gap:0.4rem; padding:0.55rem 1.25rem; border-radius: var(--radius-md); border:none; background:transparent; font-family:'Geist',sans-serif; font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-secondary); cursor:pointer; transition:all 0.2s; white-space:nowrap; }
         .ccc-tab:hover { color:var(--primary); background:var(--primary-light); }
         .ccc-tab--active { background:var(--primary-gradient); color:#ffffff; box-shadow:0 3px 10px rgba(255,111,169,0.32); }
@@ -869,6 +869,14 @@ export default function CardapioConfigPage() {
         }
         .ccc-page-title { font-size: var(--text-xl); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.3rem; letter-spacing:-0.02em; }
         .ccc-page-sub { font-size: var(--font-button); color:var(--text-secondary); margin:0; }
+        /* Slot de altura fixa pro autosave — evita jump quando aparece/some */
+        .ccc-autosave-slot {
+          min-height: 28px;
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+          margin-top: 8px;
+        }
         .ccc-autosave {
           font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--success);
           display:inline-flex; align-items:center; gap:0.35rem;
