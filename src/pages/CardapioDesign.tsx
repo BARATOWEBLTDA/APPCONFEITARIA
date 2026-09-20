@@ -272,13 +272,13 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
               <span className="cd-banner-slot-label">{bannerLabels[i]}</span>
               {bannerValues[i] ? (
                 <div className="cd-banner-thumb" style={{ position: 'relative', overflow: 'hidden' }}>
-                  {i > 0 && <div className="cd-pro-corner">PRO</div>}
+                  {i > 0 && <div className="cd-pro-corner"><img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />PRO</div>}
                   <img src={bannerValues[i]} alt={bannerLabels[i]} />
                   <button className="cd-remove-btn" onClick={() => handleRemoveBanner(i)}>✕</button>
                 </div>
               ) : (
                 <div className="cd-upload-box cd-upload-slot" style={{ position: 'relative', overflow: 'hidden' }} onClick={() => !uploading && bannerRefs[i].current?.click()}>
-                  {i > 0 && <div className="cd-pro-corner">PRO</div>}
+                  {i > 0 && <div className="cd-pro-corner"><img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />PRO</div>}
                   {uploading === `banner${i}` ? <span className="cd-spinner-sm" /> : (
                     <>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -708,24 +708,15 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
           box-shadow:0 3px 10px rgba(255,111,169,0.35);
         }
 
-        /* ── Badge PRO (rosa, não amarelo) ── */
-        .cd-pro-badge {
-          display:inline-flex; align-items:center; gap:3px;
-          background:var(--primary-gradient);
-          color:white; font-size: var(--font-caption); font-weight: var(--fw-black);
-          padding:3px 9px; border-radius: var(--radius-full); letter-spacing:0.06em;
-          white-space:nowrap; flex-shrink:0;
-          box-shadow:0 2px 6px rgba(255,111,169,0.32);
-        }
-
-        /* ── Cantinho PRO no banner (substitui ribbon diagonal) ── */
+        /* ── Cantinho PRO no banner (padrão preto + coroa) ── */
         .cd-pro-corner {
           position:absolute; top:6px; left:6px; z-index:10;
           display:inline-flex; align-items:center; gap:4px;
-          background: var(--primary-dark);
-          color:#fff; font-size: 9px; font-weight: var(--fw-black); letter-spacing:0.1em; text-transform: uppercase;
-          padding:4px 8px; border-radius: var(--radius-full);
-          box-shadow: var(--shadow-sm);
+          background: #2D1F26;
+          color:#fff; font-size: 9px; font-weight: 800; letter-spacing:0.1em; text-transform: uppercase;
+          padding:3px 8px; border-radius: 6px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          line-height: 1;
         }
 
         /* ── Cores ── */
