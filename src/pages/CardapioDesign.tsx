@@ -165,11 +165,7 @@ export default function CardapioDesign() {
       />
     )}
     <div className="cd-root">
-      <div className="cd-page-header">
-        <h1 className="cd-page-title">Design do Cardápio</h1>
-        <p className="cd-page-sub">Personalize a aparência visual do seu cardápio</p>
-        {success && <span className="cd-autosave">✓ Salvo automaticamente</span>}
-      </div>
+      {/* Header removido — a página pai (CardapioConfigPage) já mostra "Meu Cardápio" acima */}
 
       {/* ── Seletor de Layout ─────────────────────────────── */}
       <div className="cd-card">
