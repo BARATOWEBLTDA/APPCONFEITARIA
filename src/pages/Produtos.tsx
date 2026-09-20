@@ -2445,6 +2445,30 @@ export default function Produtos() {
   };
   const clearSelection = () => setSelectedIds(new Set());
   const selecionados = produtos.filter(p => p.id && selectedIds.has(p.id));
+
+  /**
+   * Gera o próximo nome pra cópia sem acumular "(cópia)".
+   * - "Pudim"                → "Pudim (cópia)"
+   * - "Pudim (cópia)"        → "Pudim (cópia 2)"
+   * - "Pudim (cópia 2)"      → "Pudim (cópia 3)"
+   */
+  const proximoNomeCopia = (nome: string): string => {
+    const semTag = nome.replace(/\s*\(cópia(?:\s*\d+)?\)\s*$/i, "").trim();
+    // Procura maior N já usado nas cópias existentes
+    const regex = new RegExp(`^${semTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\(cópia(?:\\s*(\\d+))?\\)\\s*$`, "i");
+    let maiorN = 0;
+    let temCopiaSimples = false;
+    produtos.forEach(p => {
+      const m = p.nome.match(regex);
+      if (m) {
+        if (m[1]) maiorN = Math.max(maiorN, parseInt(m[1]));
+        else temCopiaSimples = true;
+      }
+    });
+    if (!temCopiaSimples && maiorN === 0) return `${semTag} (cópia)`;
+    const proximo = Math.max(maiorN, temCopiaSimples ? 1 : 0) + 1;
+    return `${semTag} (cópia ${proximo})`;
+  };
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -2648,13 +2672,19 @@ export default function Produtos() {
   };
 
   const openNovo = () => { setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setModal(true); };
-  const openEditar = async (p: Produto) => {
+  const openEditar = async (p: Produto, limparCopiaTag = false) => {
     // Migração silenciosa: "sob-encomenda" era misturado no forma_venda,
     // agora é modo de produção separado (pronta_entrega=false)
     const pMigrado = { ...p };
     if (pMigrado.forma_venda === "sob-encomenda") {
       pMigrado.forma_venda = "unidade";
       pMigrado.pronta_entrega = false;
+    }
+    // Ao clicar em "Revisar e Publicar" (produto despublicado), remove a
+    // tag "(cópia)" ou "(cópia N)" do nome pra a confeiteira digitar
+    // o nome final antes de publicar.
+    if (limparCopiaTag) {
+      pMigrado.nome = pMigrado.nome.replace(/\s*\(cópia(?:\s*\d+)?\)\s*$/i, "").trim();
     }
     setForm(migrarAdicionaisLegacy({ ...EMPTY, ...pMigrado }));
     setFichaTecnica([]);
@@ -2827,7 +2857,7 @@ export default function Produtos() {
     let ok = 0, falhas = 0;
     for (const p of selecionados) {
       const { id, created_at, updated_at, produto_insumos, user_id, ...limpo } = p as any;
-      const novo = { ...limpo, nome: `${p.nome} (cópia)`, user_id: userId, disponivel: false };
+      const novo = { ...limpo, nome: proximoNomeCopia(p.nome), user_id: userId, disponivel: false };
       const { data, error } = await supabase.from("produtos").insert(novo).select("id").single();
       if (error) { falhas++; continue; }
       // Duplica ficha técnica também
@@ -4918,7 +4948,11 @@ export default function Produtos() {
 
               {/* Ações */}
               <div className="prod-preview-actions">
-                <button className="prod-preview-btn-editar" onClick={() => { setPreviewProduto(null); openEditar(previewProduto); }}>
+                <button className="prod-preview-btn-editar" onClick={() => {
+                  const ehRevisar = previewProduto.disponivel === false;
+                  setPreviewProduto(null);
+                  openEditar(previewProduto, ehRevisar);
+                }}>
                   {previewProduto.disponivel !== false ? (
                     // Publicado → ícone lápis
                     <>
@@ -4975,7 +5009,7 @@ export default function Produtos() {
                           } = previewProduto as any;
                           const novo = {
                             ...limpo,
-                            nome: `${previewProduto.nome} (cópia)`,
+                            nome: proximoNomeCopia(previewProduto.nome),
                             user_id: userId,
                             disponivel: false, // Cópia começa despublicada pra revisar antes
                           };
