@@ -551,12 +551,12 @@ export default function CardapioConfigPage() {
     <div className="ccc-outer">
     <div className="ccc-root">
 
-      {/* Autosave indicator */}
-      {autoSaved && activeTab === "geral" && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+      {/* Autosave indicator — slot com altura fixa pra não pular ao aparecer/sumir */}
+      <div className="ccc-autosave-slot">
+        {autoSaved && activeTab === "geral" && (
           <span className="ccc-autosave">✓ Salvo automaticamente</span>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* ── Wrapper com preview lateral (aplica em TODAS as tabs) ── */}
       <div className="ccc-geral-wrap">
@@ -911,6 +911,15 @@ export default function CardapioConfigPage() {
         }
         .ccc-page-title { font-size: var(--text-xl); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.3rem; letter-spacing:-0.02em; }
         .ccc-page-sub { font-size: var(--font-button); color:var(--text-secondary); margin:0; }
+        /* Slot de altura fixa pro autosave — reserva espaço mesmo quando invisível
+           pra evitar layout shift quando aparece/some */
+        .ccc-autosave-slot {
+          min-height: 28px;
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+          margin-bottom: 8px;
+        }
         .ccc-autosave {
           font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--success);
           display:inline-flex; align-items:center; gap:0.35rem;
