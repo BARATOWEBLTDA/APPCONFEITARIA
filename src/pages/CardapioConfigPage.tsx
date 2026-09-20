@@ -1115,8 +1115,7 @@ export default function CardapioConfigPage() {
         /* ── Section header (V2 moderno: ícone grande gradient) ── */
         .ccc-section-header {
           display:flex; align-items:flex-start; gap:14px;
-          padding-bottom:1rem; margin-bottom:0.1rem;
-          border-bottom:1px solid #F5F1F3;
+          padding-bottom: 0.35rem; margin-bottom: 0;
           position:relative; z-index:1;
         }
         .ccc-section-icon {
@@ -1216,7 +1215,7 @@ export default function CardapioConfigPage() {
         .ccc-char-count { font-size: var(--font-caption); color:var(--text-muted); text-align:right; margin:0; }
         .ccc-cep-hint { font-size: var(--font-helper); color:var(--text-secondary); margin:0; }
         .ccc-row-2 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0.6rem; }
-        .ccc-divider { border:none; margin:0.25rem 0; }
+        .ccc-divider { display: none; }
 
         /* ── Toggle ── */
         .ccc-toggle-row { display:flex; justify-content:space-between; align-items:center; gap:1rem; }

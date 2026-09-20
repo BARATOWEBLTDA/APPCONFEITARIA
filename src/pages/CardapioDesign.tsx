@@ -610,8 +610,7 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
         /* ── Section header (V2: ícone grande gradient) ── */
         .cd-section-header {
           display: flex; align-items: flex-start; gap: 14px;
-          padding-bottom: 1rem;
-          border-bottom: 1px solid #F5F1F3;
+          padding-bottom: 0.35rem;
         }
         .cd-section-icon {
           width: 44px; height: 44px; flex-shrink: 0;
