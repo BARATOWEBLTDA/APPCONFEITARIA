@@ -251,10 +251,7 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
             </div>
             <div className="cd-layout-info">
               <span className="cd-layout-name">Modelo 1</span>
-              <span className="cd-layout-tag cd-layout-tag-pro">
-                <img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />
-                PRO
-              </span>
+              <span className="cd-layout-tag">Grátis</span>
             </div>
             {cardapioModelo === 'modelo1' && <div className="cd-layout-check">✓</div>}
           </button>
