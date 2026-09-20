@@ -201,9 +201,9 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
             disabled={salvandoModelo}
           >
             <div className="cd-layout-preview cd-layout-preview-padrao">
-              <div className="cd-lp-header" style={{ background: corBorda }} />
-              <div className="cd-lp-logo-circle" style={{ borderColor: corBorda }}>
-                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: `${corBorda}33` }} />
+              <div className="cd-lp-header" style={{ background: '#C7CAD1' }} />
+              <div className="cd-lp-logo-circle" style={{ borderColor: '#C7CAD1' }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: '#E5E7EB' }} />
               </div>
               <div className="cd-lp-lines">
                 <div style={{ width: '60%', height: 6, borderRadius: 3, background: '#e5e7eb' }} />
@@ -234,11 +234,11 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
             disabled={salvandoModelo}
           >
             <div className="cd-layout-preview cd-layout-preview-modelo1">
-              <div className="cd-lp-hero" style={{ background: `linear-gradient(135deg, ${corBorda}cc, ${corBorda})` }}>
+              <div className="cd-lp-hero" style={{ background: 'linear-gradient(135deg, #C7CAD1cc, #C7CAD1)' }}>
                 <div className="cd-lp-hero-overlay" />
               </div>
-              <div className="cd-lp-m1-logo" style={{ borderColor: corBorda }}>
-                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: `linear-gradient(135deg, ${corBorda}dd, ${corBorda})` }} />
+              <div className="cd-lp-m1-logo" style={{ borderColor: '#C7CAD1' }}>
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'linear-gradient(135deg, #C7CAD1dd, #C7CAD1)' }} />
               </div>
               <div className="cd-lp-m1-badge" />
               <div className="cd-lp-lines" style={{ marginTop: 18 }}>
@@ -343,6 +343,30 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                   <input type="text" value={corBorda} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_borda', e.target.value, setCorBorda) }} className="cd-hex-input" />
                   <button className="cd-restore-btn" onClick={() => handleColorChange('cor_borda', '#FF6FA9', setCorBorda)}>↺</button>
+                  <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Cor de fundo do cardápio */}
+          <div>
+            <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_background' ? null : 'cor_background')}>
+              <div className="cd-color-info">
+                <span className="cd-color-label">Fundo do cardápio</span>
+                <span className="cd-color-value">{corBackground}</span>
+              </div>
+              <div className="cd-color-swatch" style={{ background: corBackground }} />
+            </div>
+            {activePicker === 'cor_background' && (
+              <div className="cd-picker-wrap">
+                <div style={{ marginBottom: '12px', padding: '20px', background: corBackground, borderRadius: '10px', textAlign: 'center', border: '1px solid #F0EBED' }}>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#6B5D64', fontWeight: 600 }}>Pré-visualização do fundo</p>
+                </div>
+                <HexColorPicker color={corBackground} onChange={v => handleColorChange('cor_background', v, setCorBackground)} style={{ width: '100%', height: '160px' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                  <input type="text" value={corBackground} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_background', e.target.value, setCorBackground) }} className="cd-hex-input" />
+                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_background', '#FFF1F7', setCorBackground)}>↺</button>
                   <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
                 </div>
               </div>
