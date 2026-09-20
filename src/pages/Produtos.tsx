@@ -606,7 +606,9 @@ function SelectDoonly({
 }: SelectDoonlyProps) {
   const [open, setOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [pop, setPop] = useState<{ top: number; left: number; width: number } | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
+  const popRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 720);
@@ -617,13 +619,34 @@ function SelectDoonly({
 
   useEffect(() => {
     if (!open) return;
+    // Calcula posição do popover (position: fixed baseado no trigger)
+    if (!isMobile && btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      const espacoAbaixo = window.innerHeight - r.bottom;
+      const alturaEstimada = Math.min(320, options.length * 34 + 30);
+      // Se não cabe embaixo, abre pra cima
+      const abrePraCima = espacoAbaixo < alturaEstimada + 20 && r.top > alturaEstimada;
+      setPop({
+        top: abrePraCima ? r.top - alturaEstimada - 6 : r.bottom + 6,
+        left: r.left,
+        width: r.width,
+      });
+    }
     const handler = (e: MouseEvent) => {
-      if (!btnRef.current?.contains(e.target as Node)) setOpen(false);
+      const target = e.target as Node;
+      if (!btnRef.current?.contains(target) && !popRef.current?.contains(target)) setOpen(false);
     };
-    // Delay pra não capturar o próprio click de abrir
-    const t = setTimeout(() => window.addEventListener("click", handler), 10);
-    return () => { clearTimeout(t); window.removeEventListener("click", handler); };
-  }, [open]);
+    const onScroll = () => setOpen(false);
+    const t = setTimeout(() => {
+      window.addEventListener("click", handler);
+      window.addEventListener("scroll", onScroll, true);
+    }, 10);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("click", handler);
+      window.removeEventListener("scroll", onScroll, true);
+    };
+  }, [open, isMobile, options.length]);
 
   const selected = options.find(o => o.value === value);
 
@@ -688,8 +711,13 @@ function SelectDoonly({
         </div>
       )}
 
-      {open && !isMobile && (
-        <div className="sd-popover" onClick={e => e.stopPropagation()}>
+      {open && !isMobile && pop && (
+        <div
+          ref={popRef}
+          className="sd-popover"
+          style={{ top: pop.top, left: pop.left, width: pop.width }}
+          onClick={e => e.stopPropagation()}
+        >
           {options.map(op => (
             <button
               key={op.value}
@@ -845,16 +873,13 @@ function SelectDoonly({
 
         /* Popover (desktop) */
         .sd-popover {
-          position: absolute;
-          top: calc(100% + 6px);
-          left: 0;
-          right: 0;
+          position: fixed;
           background: #fff;
           border: 1px solid #F0EBED;
           border-radius: 10px;
-          box-shadow: 0 12px 32px rgba(0,0,0,0.14);
+          box-shadow: 0 12px 32px rgba(0,0,0,0.18), 0 4px 10px rgba(0,0,0,0.08);
           padding: 6px;
-          z-index: 100;
+          z-index: 10050;
           max-height: 320px;
           overflow-y: auto;
           animation: sdPopIn 0.15s ease;
@@ -6588,10 +6613,11 @@ export default function Produtos() {
         .prod-modal-body {
           padding: 8px 32px 24px !important;
           gap: 22px !important;
-          min-height: 440px !important;
+          /* min-height REMOVIDO — estava empurrando o footer pra fora
+             do overflow:hidden do modal quando conteúdo era grande */
         }
         @media (max-width: 640px) {
-          .prod-modal-body { padding: 8px 16px 20px !important; min-height: 0 !important; }
+          .prod-modal-body { padding: 8px 16px 20px !important; }
         }
         /* Divisores entre seções */
         .prod-section + .prod-section {
@@ -7776,6 +7802,7 @@ export default function Produtos() {
           background: #fff;
           font-family: var(--font-base);
           gap: 12px;
+          flex-shrink: 0;
         }
         @media (max-width: 640px) {
           .prod-modal-header-novo { padding: 16px 16px 8px; }
@@ -7865,6 +7892,7 @@ export default function Produtos() {
           align-self: flex-start;
           max-width: calc(100% - 48px);
           box-sizing: border-box;
+          flex-shrink: 0;
         }
         @media (max-width: 720px) {
           .prod-edit-tabs {
@@ -7936,10 +7964,11 @@ export default function Produtos() {
           background: #fff !important;
           padding: 16px 32px 24px !important;
           padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
-          border-top: none !important;
+          border-top: 1px solid #F0EBED !important;
           display: flex !important;
           gap: 12px !important;
           align-items: center;
+          flex-shrink: 0 !important;
         }
         @media (max-width: 640px) {
           .prod-modal-footer--novo { padding: 12px 16px 16px !important; }
