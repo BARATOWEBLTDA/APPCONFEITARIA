@@ -558,21 +558,25 @@ export default function CardapioConfigPage() {
         </div>
       )}
 
-      {/* ── Tabs ── */}
-      <div className="ccc-tabs">
-        <button className={`ccc-tab${activeTab==="geral"?" ccc-tab--active":""}`} onClick={()=>setActiveTab("geral")}>
-          Geral
-        </button>
-        <button className={`ccc-tab${activeTab==="design"?" ccc-tab--active":""}`} onClick={()=>setActiveTab("design")}>
-          Design
-        </button>
-        <button className={`ccc-tab${activeTab==="checkout"?" ccc-tab--active":""}`} onClick={()=>setActiveTab("checkout")}>
-          Checkout
-        </button>
-      </div>
-
       {/* ── Wrapper com preview lateral (aplica em TODAS as tabs) ── */}
       <div className="ccc-geral-wrap">
+
+      {/* ── Sidebar (desktop) / Tabs (mobile) ── */}
+      <nav className="ccc-sidebar" aria-label="Seções da configuração">
+        <button className={`ccc-tab${activeTab==="geral"?" ccc-tab--active":""}`} onClick={()=>setActiveTab("geral")}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Geral</span>
+        </button>
+        <button className={`ccc-tab${activeTab==="design"?" ccc-tab--active":""}`} onClick={()=>setActiveTab("design")}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+          <span>Design</span>
+        </button>
+        <button className={`ccc-tab${activeTab==="checkout"?" ccc-tab--active":""}`} onClick={()=>setActiveTab("checkout")}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span>Checkout</span>
+        </button>
+      </nav>
+
       <div className="ccc-geral-main">
 
       {/* ── Tab Design ── */}
@@ -835,13 +839,46 @@ export default function CardapioConfigPage() {
       <style>{`
         @keyframes ccspin { to { transform:rotate(360deg); } }
 
-        /* ── Tabs ── */
-        .ccc-tabs { display:flex; gap:0.3rem; background:var(--bg-card); border:1px solid var(--border); border-radius: var(--radius-lg); padding:5px; width:fit-content; margin-bottom:0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); }
-        .ccc-tab { display:flex; align-items:center; gap:0.4rem; padding:0.55rem 1.25rem; border-radius: var(--radius-md); border:none; background:transparent; font-family:'Geist',sans-serif; font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-secondary); cursor:pointer; transition:all 0.2s; white-space:nowrap; }
-        .ccc-tab:hover { color:var(--primary); background:var(--primary-light); }
-        .ccc-tab--active { background:var(--primary-gradient); color:#ffffff; box-shadow:0 3px 10px rgba(255,111,169,0.32); }
-        .ccc-tab--active:hover { color:#ffffff; background:var(--primary-gradient); }
-        @media(max-width:640px) { .ccc-tabs { width:100%; } .ccc-tab { flex:1; justify-content:center; padding:0.55rem 0.25rem; font-size: var(--font-helper); } }
+        /* ═══ SIDEBAR / TABS ═══
+           Mobile: horizontal como antes
+           Desktop (≥900px): sidebar vertical à esquerda (definido no grid) */
+        .ccc-sidebar {
+          display: flex;
+          gap: 0.3rem;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          padding: 5px;
+          width: fit-content;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+        }
+        .ccc-tab {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.55rem 1.1rem;
+          border-radius: var(--radius-md);
+          border: none;
+          background: transparent;
+          font-family: var(--font-base);
+          font-size: var(--font-button);
+          font-weight: var(--fw-semibold);
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: background 0.15s, color 0.15s;
+          white-space: nowrap;
+          line-height: 1;
+        }
+        .ccc-tab svg { flex-shrink: 0; }
+        .ccc-tab:hover { color: var(--primary); background: var(--primary-light); }
+        .ccc-tab--active { background: var(--primary-gradient); color: #ffffff; box-shadow: 0 3px 10px rgba(255,111,169,0.32); }
+        .ccc-tab--active:hover { color: #ffffff; background: var(--primary-gradient); }
+        @media(max-width: 640px) {
+          .ccc-sidebar { width: 100%; }
+          .ccc-tab { flex: 1; justify-content: center; padding: 0.55rem 0.25rem; font-size: var(--font-helper); }
+          .ccc-tab span { display: none; }
+          .ccc-tab svg { width: 18px; height: 18px; }
+        }
         @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
         @keyframes toastIn { from{opacity:0;transform:translate(-50%,12px)} to{opacity:1;transform:translate(-50%,0)} }
 
@@ -892,14 +929,37 @@ export default function CardapioConfigPage() {
         @media (min-width: 900px) {
           .ccc-geral-wrap {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 340px;
+            grid-template-columns: 200px minmax(0, 1fr);
             gap: 1.5rem;
             align-items: start;
+          }
+          /* Sidebar vira coluna vertical à esquerda */
+          .ccc-sidebar {
+            flex-direction: column;
+            width: 100%;
+            padding: 8px;
+            position: sticky;
+            top: 1rem;
+            gap: 3px;
+          }
+          .ccc-tab {
+            justify-content: flex-start;
+            padding: 0.7rem 0.9rem;
+            width: 100%;
           }
           .ccc-geral-main {
             display: flex; flex-direction: column;
             gap: 1.25rem;
             min-width: 0;
+          }
+          .ccc-preview {
+            display: none; /* Preview escondido em telas médias */
+          }
+        }
+        /* Preview volta em telas maiores (≥1200px) — grid vira 3 colunas */
+        @media (min-width: 1200px) {
+          .ccc-geral-wrap {
+            grid-template-columns: 200px minmax(0, 1fr) 340px;
           }
           .ccc-preview {
             display: flex;
