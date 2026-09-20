@@ -935,7 +935,7 @@ function PersonalizacaoStep({
   const [toast, setToast] = useState<{ tipo: "success" | "error" | "info"; titulo: string; sub?: string } | null>(null);
   const showToast = (tipo: "success" | "error" | "info", titulo: string, sub?: string) => {
     setToast({ tipo, titulo, sub });
-    setTimeout(() => setToast(null), 3800);
+    // Modal com botão "Entendi" — não fecha sozinho, user precisa confirmar leitura
   };
   const [showInfo, setShowInfo] = useState(false);
   const [showUnidade, setShowUnidade] = useState(false);
@@ -4894,7 +4894,7 @@ export default function Produtos() {
                           }
                           setPreviewProduto(null);
                           await loadProdutos(userId);
-                          showToast("success", "Produto duplicado", `Cópia criada como "${novo.nome}" — despublicada`);
+                          showToast("success", "Produto Duplicado.", "Revise as informações antes de publicar no cardápio público.");
                         }}
                       >
                         <span className="prod-preview-menu-ico" style={{color: "#3B82F6"}}>
@@ -10105,85 +10105,132 @@ export default function Produtos() {
           justify-content: center;
           pointer-events: none;
           padding: 20px;
+          background: rgba(30, 15, 20, 0.35);
+          backdrop-filter: blur(3px);
+          -webkit-backdrop-filter: blur(3px);
+          animation: doonly-overlay-in 0.2s ease;
+        }
+        @keyframes doonly-overlay-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
         .doonly-toast {
           background: #fff;
-          border-radius: 16px;
-          padding: 22px 24px;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.08);
-          min-width: 280px;
-          max-width: 380px;
-          display: flex;
-          gap: 14px;
-          align-items: flex-start;
-          animation: doonly-toast-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
-          border: 1px solid rgba(0,0,0,0.04);
+          border-radius: 20px;
+          padding: 28px 24px 24px;
+          box-shadow: 0 24px 60px rgba(153, 53, 86, 0.22), 0 6px 16px rgba(0,0,0,0.10);
+          width: 100%;
+          max-width: 360px;
+          text-align: center;
+          animation: doonly-toast-in 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+          border: 1px solid rgba(232, 90, 140, 0.08);
+          position: relative;
+          pointer-events: auto;
         }
         @keyframes doonly-toast-in {
-          from { opacity: 0; transform: translateY(-20px) scale(0.94); }
+          from { opacity: 0; transform: translateY(-12px) scale(0.92); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .doonly-toast-icon {
-          width: 44px; height: 44px;
+        .doonly-toast-brand {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          margin-bottom: 18px;
+          padding-bottom: 14px;
+          border-bottom: 1px dashed #F0EBED;
+        }
+        .doonly-toast-brand img {
+          width: 26px;
+          height: 26px;
+          object-fit: contain;
+        }
+        .doonly-toast-brand-name {
+          font-family: var(--font-base);
+          font-size: 13px;
+          font-weight: 700;
+          color: #993556;
+          letter-spacing: 0.02em;
+        }
+        .doonly-toast-icon-wrap {
+          width: 56px;
+          height: 56px;
           border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 14px;
         }
-        .doonly-toast-icon--success { background: linear-gradient(135deg, #FDF3F7 0%, #FCE0E9 100%); color: #E85A8C; }
-        .doonly-toast-icon--error   { background: #FEF2F2; color: #DC2626; }
-        .doonly-toast-icon--info    { background: #EFF6FF; color: #2563EB; }
-        .doonly-toast-body {
-          flex: 1;
-          min-width: 0;
-          padding-top: 4px;
-        }
+        .doonly-toast-icon-wrap--success { background: linear-gradient(135deg, #FDF3F7 0%, #FCE0E9 100%); color: #E85A8C; }
+        .doonly-toast-icon-wrap--error   { background: #FEF2F2; color: #DC2626; }
+        .doonly-toast-icon-wrap--info    { background: #EFF6FF; color: #2563EB; }
         .doonly-toast-titulo {
           font-family: var(--font-base);
-          font-size: 15px;
-          font-weight: var(--fw-bold);
+          font-size: 17px;
+          font-weight: 700;
           color: #2D1F26;
-          line-height: 1.25;
-          margin: 0;
+          line-height: 1.3;
+          margin: 0 0 6px;
         }
         .doonly-toast-sub {
           font-family: var(--font-base);
-          font-size: 13px;
+          font-size: 13.5px;
           color: #6B5D64;
-          margin: 4px 0 0;
-          line-height: 1.4;
+          margin: 0;
+          line-height: 1.5;
+          padding: 0 6px;
         }
+        .doonly-toast-btn {
+          margin-top: 18px;
+          padding: 10px 24px;
+          border: none;
+          background: #E85A8C;
+          color: #fff;
+          border-radius: 10px;
+          font-family: var(--font-base);
+          font-size: 13.5px;
+          font-weight: 700;
+          cursor: pointer;
+          box-shadow: 0 3px 0 #C33A6E;
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        .doonly-toast-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 #C33A6E; }
+        .doonly-toast-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #C33A6E; }
 
       `}</style>
 
       {/* ═══ Toast Doonly ═══ */}
       {toast && (
         <div className="doonly-toast-overlay" onClick={() => setToast(null)}>
-          <div className={`doonly-toast`}>
-            <div className={`doonly-toast-icon doonly-toast-icon--${toast.tipo}`}>
+          <div className="doonly-toast" onClick={e => e.stopPropagation()}>
+            <div className="doonly-toast-brand">
+              <img src="/logoapp.png" alt="Doonly" />
+              <span className="doonly-toast-brand-name">DOONLY</span>
+            </div>
+            <div className={`doonly-toast-icon-wrap doonly-toast-icon-wrap--${toast.tipo}`}>
               {toast.tipo === "success" && (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12"/>
                 </svg>
               )}
               {toast.tipo === "error" && (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"/>
                   <line x1="15" y1="9" x2="9" y2="15"/>
                   <line x1="9" y1="9" x2="15" y2="15"/>
                 </svg>
               )}
               {toast.tipo === "info" && (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"/>
                   <line x1="12" y1="16" x2="12" y2="12"/>
                   <line x1="12" y1="8" x2="12.01" y2="8"/>
                 </svg>
               )}
             </div>
-            <div className="doonly-toast-body">
-              <p className="doonly-toast-titulo">{toast.titulo}</p>
-              {toast.sub && <p className="doonly-toast-sub">{toast.sub}</p>}
-            </div>
+            <p className="doonly-toast-titulo">{toast.titulo}</p>
+            {toast.sub && <p className="doonly-toast-sub">{toast.sub}</p>}
+            <button className="doonly-toast-btn" onClick={() => setToast(null)}>Entendi</button>
           </div>
         </div>
       )}
