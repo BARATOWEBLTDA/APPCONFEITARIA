@@ -7652,37 +7652,61 @@ export default function Produtos() {
 
         /* ═══ Tabs do modo edição ═══ */
         .prod-edit-tabs {
-          display: inline-flex;
-          gap: 2px;
+          display: flex;
+          gap: 4px;
           padding: 4px;
           margin: 12px 24px 4px;
           background: #FAF8F5;
           border: 1px solid #F0EBED;
           border-radius: 12px;
-          overflow-x: auto;
           align-self: flex-start;
           max-width: calc(100% - 48px);
+          box-sizing: border-box;
         }
         @media (max-width: 720px) {
           .prod-edit-tabs {
             margin: 10px 16px 4px;
             max-width: calc(100% - 32px);
+            width: calc(100% - 32px);
           }
         }
         .prod-edit-tab {
-          all: unset;
-          padding: 8px 14px;
+          /* Reset controlado do botão nativo (sem 'all: unset') */
+          appearance: none;
+          border: none;
+          background: transparent;
+          box-sizing: border-box;
+
+          /* Layout estável — altura fixa evita jump */
+          min-height: 34px;
+          padding: 0 14px;
+          flex-shrink: 0;
+
+          /* Tipografia */
           font-family: var(--font-base);
           font-size: 12.5px;
           font-weight: 700;
           color: #6B5D64;
+          line-height: 1;
+
           cursor: pointer;
           border-radius: 8px;
           white-space: nowrap;
-          transition: all 0.15s;
+          transition: background 0.15s ease, color 0.15s ease;
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 6px;
+
+          /* Sombra transparente reservada — evita jump quando fica ativo */
+          box-shadow: 0 2px 6px rgba(232, 90, 140, 0);
+        }
+        .prod-edit-tab:focus {
+          outline: none;
+        }
+        .prod-edit-tab:focus-visible {
+          outline: 2px solid rgba(232, 90, 140, 0.4);
+          outline-offset: 1px;
         }
         .prod-edit-tab:hover:not(.prod-edit-tab--ativo) {
           color: #2D1F26;
@@ -7691,11 +7715,11 @@ export default function Produtos() {
         .prod-edit-tab--ativo {
           color: #fff;
           background: #E85A8C;
-          font-weight: 700;
           box-shadow: 0 2px 6px rgba(232, 90, 140, 0.25);
         }
         .prod-edit-tab-icon {
           font-size: 14px;
+          line-height: 1;
         }
         .prod-progresso-bar-fill {
           height: 100%;
