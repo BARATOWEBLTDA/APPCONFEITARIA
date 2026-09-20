@@ -2812,8 +2812,12 @@ export default function Produtos() {
     clearSelection();
     showToast(
       "success",
-      publicar ? `${ids.length} produto${ids.length > 1 ? "s" : ""} Publicado${ids.length > 1 ? "s" : ""}.` : `${ids.length} produto${ids.length > 1 ? "s" : ""} Despublicado${ids.length > 1 ? "s" : ""}.`,
-      publicar ? "Já aparecem no seu cardápio público." : "Ficaram ocultos do cardápio público."
+      publicar
+        ? `${ids.length} ${ids.length > 1 ? "produtos publicados" : "produto publicado"}`
+        : `${ids.length} ${ids.length > 1 ? "produtos despublicados" : "produto despublicado"}`,
+      publicar
+        ? "Já aparecem no seu cardápio público."
+        : "Ficaram ocultos do cardápio. Você pode publicar novamente quando quiser."
     );
   };
 
@@ -2843,9 +2847,9 @@ export default function Produtos() {
     await loadProdutos(userId);
     clearSelection();
     if (falhas > 0) {
-      showToast("error", `${ok} duplicados, ${falhas} falharam`, "Revise as cópias criadas antes de publicar.");
+      showToast("error", `${ok} ${ok > 1 ? "cópias criadas" : "cópia criada"}, ${falhas} ${falhas > 1 ? "falharam" : "falhou"}`, "As cópias que deram certo estão despublicadas — revise antes de publicar no cardápio.");
     } else {
-      showToast("success", `${ok} produto${ok > 1 ? "s" : ""} Duplicado${ok > 1 ? "s" : ""}.`, "Revise as cópias antes de publicar no cardápio público.");
+      showToast("success", `${ok} ${ok > 1 ? "cópias criadas" : "cópia criada"}`, "As cópias estão despublicadas. Revise as informações antes de publicar no cardápio.");
     }
   };
 
@@ -2859,7 +2863,7 @@ export default function Produtos() {
     if (error) { showToast("error", "Erro ao excluir", error.message); return; }
     await loadProdutos(userId);
     clearSelection();
-    showToast("success", `${ids.length} produto${ids.length > 1 ? "s" : ""} Excluído${ids.length > 1 ? "s" : ""}.`, "A operação não pode ser desfeita.");
+    showToast("success", `${ids.length} ${ids.length > 1 ? "produtos removidos" : "produto removido"}`, "Essa ação é definitiva. Se precisar novamente, cadastre outra vez.");
   };
 
   const handleSalvar = async () => {
@@ -4998,7 +5002,7 @@ export default function Produtos() {
                           }
                           setPreviewProduto(null);
                           await loadProdutos(userId);
-                          showToast("success", "Produto Duplicado.", "Revise as informações antes de publicar no cardápio público.");
+                          showToast("success", "Cópia criada", "Está despublicada. Revise as informações antes de publicar no cardápio.");
                         }}
                       >
                         <span className="prod-preview-menu-ico" style={{color: "#3B82F6"}}>
@@ -5035,7 +5039,13 @@ export default function Produtos() {
                           if (error) { showToast("error", "Erro", error.message); return; }
                           await loadProdutos(userId);
                           setPreviewProduto({ ...previewProduto, disponivel: novoDisponivel });
-                          showToast("success", novoDisponivel ? "Produto publicado" : "Produto despublicado", novoDisponivel ? "Já aparece no seu cardápio" : "Ficou oculto do cardápio");
+                          showToast(
+                            "success",
+                            novoDisponivel ? "Produto publicado" : "Produto despublicado",
+                            novoDisponivel
+                              ? "Já aparece no seu cardápio público."
+                              : "Ficou oculto do cardápio. Você pode publicar novamente quando quiser."
+                          );
                         }}
                       >
                         <span className="prod-preview-menu-ico" style={{color: previewProduto.disponivel !== false ? "#F59E0B" : "#059669"}}>
@@ -10414,27 +10424,6 @@ export default function Produtos() {
           from { opacity: 0; transform: translateY(-12px) scale(0.92); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .doonly-toast-brand {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          margin-bottom: 18px;
-          padding-bottom: 14px;
-          border-bottom: 1px dashed #F0EBED;
-        }
-        .doonly-toast-brand img {
-          width: 26px;
-          height: 26px;
-          object-fit: contain;
-        }
-        .doonly-toast-brand-name {
-          font-family: var(--font-base);
-          font-size: 13px;
-          font-weight: 700;
-          color: #993556;
-          letter-spacing: 0.02em;
-        }
         .doonly-toast-icon-wrap {
           width: 56px;
           height: 56px;
@@ -10553,10 +10542,6 @@ export default function Produtos() {
       {toast && (
         <div className="doonly-toast-overlay" onClick={() => setToast(null)}>
           <div className="doonly-toast" onClick={e => e.stopPropagation()}>
-            <div className="doonly-toast-brand">
-              <img src="/logoapp.png" alt="Doonly" />
-              <span className="doonly-toast-brand-name">DOONLY</span>
-            </div>
             <div className={`doonly-toast-icon-wrap doonly-toast-icon-wrap--${toast.tipo}`}>
               {toast.tipo === "success" && (
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
