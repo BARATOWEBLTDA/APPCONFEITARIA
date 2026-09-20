@@ -902,7 +902,7 @@ export default function CardapioConfigPage() {
         .ccc-outer {
           width:calc(100% + 4rem); display:flex; justify-content:center;
           margin: -2rem -2rem 0;
-          padding-top: 2.5rem; padding-bottom:3rem; background:var(--bg-body);
+          padding-top: 2rem; padding-bottom:3rem; background:var(--bg-body);
           overflow-x:hidden;
         }
         .ccc-root {
