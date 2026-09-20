@@ -4357,12 +4357,11 @@ export default function Produtos() {
                   Restrições alimentares (sem açúcar/glúten/lactose/vegano)
                   virão na Fase 2 futura como chips. */}
 
-            </div>
-            )}
-
-            {/* ══════ Extras pagos — agora dentro da tab Preço (V3) ══════ */}
-            {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
-            <div className="prod-modal-body">
+              {/* ══════ Extras pagos (V3) — dentro do MESMO prod-modal-body
+                  pra não quebrar layout flex (bug: 2 bodies empilhados
+                  faziam o footer sumir sem scroll) ══════ */}
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
+              <>
 
               {/* Adicionais */}
               <div className="prod-section">
@@ -4539,6 +4538,9 @@ export default function Produtos() {
                 )}
               </div>
               )}
+
+            </>
+            )}
 
               {/* Status — só em step 5 (Fotos) ou tab Fotos na edição */}
               {((wizardStep === 5 && !form.id) || (form.id && editTab === "fotos")) && (
