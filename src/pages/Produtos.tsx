@@ -2429,6 +2429,22 @@ export default function Produtos() {
   const showToast = (tipo: "success" | "error" | "info", titulo: string, sub?: string) => {
     setToast({ tipo, titulo, sub });
   };
+
+  // ═══ Bulk selection (desktop) ═══
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const isSelected = (id: string) => selectedIds.has(id);
+  const toggleSelect = (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const clearSelection = () => setSelectedIds(new Set());
+  const selecionados = produtos.filter(p => p.id && selectedIds.has(p.id));
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -2782,6 +2798,68 @@ export default function Produtos() {
       imgs[slot] = "";
       return { ...f, imagem_url: imgs.filter(Boolean).join(",") };
     });
+  };
+
+  // ═══ AÇÕES EM MASSA (bulk) ═══
+  const handleBulkPublicar = async (publicar: boolean) => {
+    if (selecionados.length === 0) return;
+    setBulkLoading(true);
+    const ids = selecionados.map(p => p.id!).filter(Boolean);
+    const { error } = await supabase.from("produtos").update({ disponivel: publicar }).in("id", ids);
+    setBulkLoading(false);
+    if (error) { showToast("error", "Erro", error.message); return; }
+    await loadProdutos(userId);
+    clearSelection();
+    showToast(
+      "success",
+      publicar ? `${ids.length} produto${ids.length > 1 ? "s" : ""} Publicado${ids.length > 1 ? "s" : ""}.` : `${ids.length} produto${ids.length > 1 ? "s" : ""} Despublicado${ids.length > 1 ? "s" : ""}.`,
+      publicar ? "Já aparecem no seu cardápio público." : "Ficaram ocultos do cardápio público."
+    );
+  };
+
+  const handleBulkDuplicar = async () => {
+    if (selecionados.length === 0 || !userId) return;
+    setBulkLoading(true);
+    let ok = 0, falhas = 0;
+    for (const p of selecionados) {
+      const { id, created_at, updated_at, produto_insumos, user_id, ...limpo } = p as any;
+      const novo = { ...limpo, nome: `${p.nome} (cópia)`, user_id: userId, disponivel: false };
+      const { data, error } = await supabase.from("produtos").insert(novo).select("id").single();
+      if (error) { falhas++; continue; }
+      // Duplica ficha técnica também
+      if (id && data?.id) {
+        const { data: insumos } = await supabase.from("produto_insumos")
+          .select("insumo_id, quantidade, unidade_utilizada, quantidade_base")
+          .eq("produto_id", id);
+        if (insumos && insumos.length > 0) {
+          await supabase.from("produto_insumos").insert(
+            insumos.map((i: any) => ({ ...i, produto_id: data.id, user_id: userId }))
+          );
+        }
+      }
+      ok++;
+    }
+    setBulkLoading(false);
+    await loadProdutos(userId);
+    clearSelection();
+    if (falhas > 0) {
+      showToast("error", `${ok} duplicados, ${falhas} falharam`, "Revise as cópias criadas antes de publicar.");
+    } else {
+      showToast("success", `${ok} produto${ok > 1 ? "s" : ""} Duplicado${ok > 1 ? "s" : ""}.`, "Revise as cópias antes de publicar no cardápio público.");
+    }
+  };
+
+  const handleBulkExcluir = async () => {
+    if (selecionados.length === 0) return;
+    setBulkLoading(true);
+    const ids = selecionados.map(p => p.id!).filter(Boolean);
+    const { error } = await supabase.from("produtos").delete().in("id", ids);
+    setBulkLoading(false);
+    setConfirmBulkDelete(false);
+    if (error) { showToast("error", "Erro ao excluir", error.message); return; }
+    await loadProdutos(userId);
+    clearSelection();
+    showToast("success", `${ids.length} produto${ids.length > 1 ? "s" : ""} Excluído${ids.length > 1 ? "s" : ""}.`, "A operação não pode ser desfeita.");
   };
 
   const handleSalvar = async () => {
@@ -3221,7 +3299,34 @@ export default function Produtos() {
           ).map(p => {
             const catInvalida = p.categoria && !categorias.includes(p.categoria);
             return (
-            <div key={p.id} className="prod-card" style={{ outline: catInvalida ? "2px solid #fcd34d" : "none", cursor: "pointer" }} onClick={() => setPreviewProduto(p)}>
+            <div
+              key={p.id}
+              className={`prod-card ${p.id && isSelected(p.id) ? "prod-card--selected" : ""}`}
+              style={{ outline: catInvalida ? "2px solid #fcd34d" : "none", cursor: "pointer", position: "relative" }}
+              onClick={() => {
+                // Se tem produtos selecionados, o clique adiciona/remove; senão, abre preview
+                if (selectedIds.size > 0 && p.id) {
+                  toggleSelect(p.id);
+                } else {
+                  setPreviewProduto(p);
+                }
+              }}
+            >
+              {/* Checkbox bulk — só desktop, canto sup esquerdo */}
+              {p.id && (
+                <div
+                  className="prod-card-check"
+                  onClick={e => toggleSelect(p.id!, e)}
+                  role="checkbox"
+                  aria-checked={isSelected(p.id)}
+                >
+                  {isSelected(p.id) ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  ) : null}
+                </div>
+              )}
               <div className="prod-card-img">
                 {p.imagem_url ? (
                   <img src={p.imagem_url.split(",")[0]} alt={p.nome} />
@@ -10094,6 +10199,185 @@ export default function Produtos() {
         }
         .ficha-modal-concluir:hover { opacity: 0.88; }
 
+        /* ═══ BULK SELECTION (Desktop only) ═══ */
+        .prod-card-check {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          width: 22px;
+          height: 22px;
+          border-radius: 6px;
+          background: rgba(255, 255, 255, 0.92);
+          border: 1.8px solid rgba(153, 53, 86, 0.35);
+          display: none;
+          align-items: center;
+          justify-content: center;
+          z-index: 5;
+          cursor: pointer;
+          transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        }
+        .prod-card-check:hover {
+          border-color: #E85A8C;
+          transform: scale(1.05);
+        }
+        /* Só aparece em desktop */
+        @media (min-width: 900px) {
+          .prod-card:hover .prod-card-check { display: flex; }
+          /* Se algum selecionado, todos ficam com checkbox visível */
+          body:has(.prod-card--selected) .prod-card-check { display: flex; }
+          .prod-card--selected .prod-card-check {
+            background: #E85A8C;
+            border-color: #E85A8C;
+            display: flex;
+          }
+          .prod-card--selected {
+            outline: 2px solid #E85A8C !important;
+            outline-offset: -2px;
+            border-radius: var(--radius-md, 12px);
+          }
+        }
+
+        /* ═══ BARRA FLUTUANTE (Desktop only) ═══ */
+        .bulk-bar {
+          position: fixed;
+          bottom: 24px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #1F1418;
+          color: #fff;
+          border-radius: 16px;
+          padding: 10px 12px 10px 20px;
+          display: none;
+          align-items: center;
+          gap: 16px;
+          z-index: 9500;
+          box-shadow: 0 12px 32px rgba(0,0,0,0.35), 0 4px 10px rgba(0,0,0,0.15);
+          animation: bulk-bar-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+          font-family: var(--font-base);
+        }
+        @keyframes bulk-bar-in {
+          from { opacity: 0; transform: translate(-50%, 20px); }
+          to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        @media (min-width: 900px) {
+          .bulk-bar.bulk-bar--visible { display: flex; }
+        }
+        .bulk-bar-count {
+          font-size: 13.5px;
+          font-weight: 700;
+          padding-right: 12px;
+          border-right: 1px solid rgba(255,255,255,0.15);
+          white-space: nowrap;
+        }
+        .bulk-bar-actions {
+          display: flex;
+          gap: 4px;
+        }
+        .bulk-bar-btn {
+          background: transparent;
+          border: none;
+          color: #fff;
+          font-family: inherit;
+          font-size: 13px;
+          font-weight: 600;
+          padding: 8px 14px;
+          border-radius: 8px;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          transition: background 0.15s ease;
+        }
+        .bulk-bar-btn:hover { background: rgba(255,255,255,0.10); }
+        .bulk-bar-btn--danger { color: #FCA5A5; }
+        .bulk-bar-btn--danger:hover { background: rgba(220, 38, 38, 0.20); }
+        .bulk-bar-close {
+          margin-left: 4px;
+          padding-left: 12px;
+          border-left: 1px solid rgba(255,255,255,0.15);
+        }
+        .bulk-bar-close .bulk-bar-btn {
+          padding: 6px 10px;
+          color: rgba(255,255,255,0.7);
+        }
+
+        /* ═══ MODAL CONFIRMAÇÃO EXCLUIR ═══ */
+        .bulk-confirm-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(30, 15, 20, 0.55);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          z-index: 10001;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          animation: doonly-overlay-in 0.2s ease;
+        }
+        .bulk-confirm-modal {
+          background: #fff;
+          border-radius: 20px;
+          padding: 28px 24px 24px;
+          max-width: 380px;
+          width: 100%;
+          text-align: center;
+          box-shadow: 0 24px 60px rgba(220, 38, 38, 0.20);
+          animation: doonly-toast-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+          font-family: var(--font-base);
+        }
+        .bulk-confirm-icon {
+          width: 60px; height: 60px;
+          border-radius: 50%;
+          background: #FEF2F2;
+          color: #DC2626;
+          display: flex; align-items: center; justify-content: center;
+          margin: 0 auto 14px;
+        }
+        .bulk-confirm-titulo {
+          font-size: 18px;
+          font-weight: 700;
+          color: #2D1F26;
+          margin: 0 0 8px;
+        }
+        .bulk-confirm-sub {
+          font-size: 13.5px;
+          color: #6B5D64;
+          line-height: 1.5;
+          margin: 0 0 22px;
+        }
+        .bulk-confirm-actions {
+          display: flex;
+          gap: 10px;
+        }
+        .bulk-confirm-btn {
+          flex: 1;
+          padding: 12px;
+          border: none;
+          border-radius: 10px;
+          font-family: inherit;
+          font-size: 13.5px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.1s ease;
+        }
+        .bulk-confirm-btn--cancelar {
+          background: #F0EBED;
+          color: #6B5D64;
+        }
+        .bulk-confirm-btn--cancelar:hover { background: #E5D8DE; }
+        .bulk-confirm-btn--excluir {
+          background: #DC2626;
+          color: #fff;
+          box-shadow: 0 3px 0 #991B1B;
+        }
+        .bulk-confirm-btn--excluir:hover { transform: translateY(-1px); box-shadow: 0 4px 0 #991B1B; }
+        .bulk-confirm-btn--excluir:active { transform: translateY(2px); box-shadow: 0 1px 0 #991B1B; }
+        .bulk-confirm-btn:disabled { opacity: 0.6; cursor: wait; }
+
         /* ═══ TOAST DOONLY ═══ */
         .doonly-toast-overlay {
           position: fixed;
@@ -10197,6 +10481,73 @@ export default function Produtos() {
         .doonly-toast-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #C33A6E; }
 
       `}</style>
+
+      {/* ═══ Barra flutuante de ações em massa (Desktop) ═══ */}
+      <div className={`bulk-bar ${selectedIds.size > 0 ? "bulk-bar--visible" : ""}`}>
+        <div className="bulk-bar-count">
+          {selectedIds.size} {selectedIds.size === 1 ? "selecionado" : "selecionados"}
+        </div>
+        <div className="bulk-bar-actions">
+          <button className="bulk-bar-btn" onClick={() => handleBulkPublicar(true)} disabled={bulkLoading}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            Publicar
+          </button>
+          <button className="bulk-bar-btn" onClick={() => handleBulkPublicar(false)} disabled={bulkLoading}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+            </svg>
+            Despublicar
+          </button>
+          <button className="bulk-bar-btn" onClick={handleBulkDuplicar} disabled={bulkLoading}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Duplicar
+          </button>
+          <button className="bulk-bar-btn bulk-bar-btn--danger" onClick={() => setConfirmBulkDelete(true)} disabled={bulkLoading}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/>
+            </svg>
+            Excluir
+          </button>
+        </div>
+        <div className="bulk-bar-close">
+          <button className="bulk-bar-btn" onClick={clearSelection} title="Fechar seleção">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* ═══ Modal confirmação excluir em massa ═══ */}
+      {confirmBulkDelete && (
+        <div className="bulk-confirm-overlay" onClick={() => !bulkLoading && setConfirmBulkDelete(false)}>
+          <div className="bulk-confirm-modal" onClick={e => e.stopPropagation()}>
+            <div className="bulk-confirm-icon">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <p className="bulk-confirm-titulo">Excluir {selectedIds.size} produto{selectedIds.size > 1 ? "s" : ""}?</p>
+            <p className="bulk-confirm-sub">
+              Esta ação é <b>permanente</b> e não pode ser desfeita. Os produtos serão removidos do cardápio público imediatamente.
+            </p>
+            <div className="bulk-confirm-actions">
+              <button className="bulk-confirm-btn bulk-confirm-btn--cancelar" onClick={() => setConfirmBulkDelete(false)} disabled={bulkLoading}>
+                Cancelar
+              </button>
+              <button className="bulk-confirm-btn bulk-confirm-btn--excluir" onClick={handleBulkExcluir} disabled={bulkLoading}>
+                {bulkLoading ? "Excluindo..." : "Sim, excluir"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ═══ Toast Doonly ═══ */}
       {toast && (
