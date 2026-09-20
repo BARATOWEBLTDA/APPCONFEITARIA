@@ -636,7 +636,12 @@ function SelectDoonly({
       const target = e.target as Node;
       if (!btnRef.current?.contains(target) && !popRef.current?.contains(target)) setOpen(false);
     };
-    const onScroll = () => setOpen(false);
+    // Só fecha se scroll for FORA do popover (permite rolar categorias por dentro)
+    const onScroll = (e: Event) => {
+      const target = e.target as Node;
+      if (popRef.current?.contains(target)) return;
+      setOpen(false);
+    };
     const t = setTimeout(() => {
       window.addEventListener("click", handler);
       window.addEventListener("scroll", onScroll, true);
