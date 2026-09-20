@@ -302,14 +302,14 @@ export default function CardapioDesign() {
                 </svg>
               </div>
               <p className="cd-pro-title">
-                Desbloqueie <span className="cd-pro-highlight">3 banners extras</span>
+                <span className="cd-pro-highlight">+3 banners</span> no PRO
               </p>
               <p className="cd-pro-sub">
-                Monte um <b>carrossel completo</b> no topo do seu cardápio<br/>e destaque suas promoções
+                Monte um <b>carrossel</b> no topo do cardápio
               </p>
               <button className="cd-pro-cta" onClick={(e) => { e.stopPropagation(); navigate("/assinar"); }}>
-                <span>Fazer upgrade agora</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <span>Fazer upgrade</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12"/>
                   <polyline points="12 5 19 12 12 19"/>
                 </svg>
@@ -509,71 +509,76 @@ export default function CardapioDesign() {
 
         /* ═══ Card PRO impactante (banners 2,3,4 quando bloqueado) ═══ */
         @keyframes cd-pro-glow {
-          0%, 100% { box-shadow: 0 0 30px rgba(232,90,140,0.35), inset 0 0 40px rgba(232,90,140,0.08); }
-          50% { box-shadow: 0 0 50px rgba(232,90,140,0.6), inset 0 0 40px rgba(232,90,140,0.15); }
+          0%, 100% { box-shadow: 0 0 20px rgba(232,90,140,0.25), inset 0 0 30px rgba(232,90,140,0.05); }
+          50% { box-shadow: 0 0 35px rgba(232,90,140,0.45), inset 0 0 30px rgba(232,90,140,0.10); }
         }
         @keyframes cd-pro-float {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-4px); }
+          50% { transform: translateY(-3px); }
         }
         @keyframes cd-pro-shine {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
         }
         .cd-pro-showcase {
-          grid-column: 1 / -1;
-          background: linear-gradient(135deg, #1F0F17 0%, #3D1428 60%, #5D1A3C 100%);
+          background: linear-gradient(135deg, #1F1F23 0%, #2B2B32 60%, #3A3A42 100%);
           color: #fff;
-          border-radius: 16px;
-          padding: 32px 28px;
+          border-radius: 12px;
+          padding: 18px 16px;
           text-align: center;
           position: relative;
           animation: cd-pro-glow 3s ease-in-out infinite;
-          border: 1px solid rgba(232,90,140,0.3);
+          border: 1px solid rgba(232,90,140,0.25);
           overflow: hidden;
           cursor: pointer;
           transition: transform 0.2s ease;
           font-family: 'Geist', sans-serif;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          gap: 6px;
+          min-height: 100%;
         }
         .cd-pro-showcase:hover { transform: translateY(-2px); }
         .cd-pro-shine {
           position: absolute; inset: 0;
-          background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%);
+          background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.05) 50%, transparent 60%);
           background-size: 200% 100%;
           animation: cd-pro-shine 4s linear infinite;
           pointer-events: none;
         }
         .cd-pro-badge {
           position: absolute;
-          top: 14px; right: 14px;
+          top: 10px; right: 10px;
           background: linear-gradient(90deg, #E85A8C, #FF6FA9);
           color: #fff;
-          padding: 6px 14px;
+          padding: 3px 9px;
           border-radius: 999px;
-          font-size: 11px;
+          font-size: 9.5px;
           font-weight: 900;
-          letter-spacing: 0.15em;
-          box-shadow: 0 0 20px rgba(232,90,140,0.7);
+          letter-spacing: 0.12em;
+          box-shadow: 0 0 14px rgba(232,90,140,0.6);
           z-index: 2;
         }
         .cd-pro-icon {
-          width: 76px; height: 76px;
-          margin: 4px auto 18px;
-          background: rgba(232,90,140,0.12);
-          border: 2px solid rgba(232,90,140,0.5);
-          border-radius: 20px;
+          width: 44px; height: 44px;
+          margin: 6px 0 6px;
+          background: rgba(232,90,140,0.14);
+          border: 1.5px solid rgba(232,90,140,0.5);
+          border-radius: 12px;
           display: flex; align-items: center; justify-content: center;
           animation: cd-pro-float 2.8s ease-in-out infinite;
           position: relative; z-index: 1;
           color: #FF6FA9;
+          flex-shrink: 0;
         }
+        .cd-pro-icon svg { width: 22px; height: 22px; }
         .cd-pro-title {
-          font-size: 22px;
-          font-weight: 900;
+          font-size: 14px;
+          font-weight: 800;
           color: #fff;
-          margin: 0 0 8px;
-          line-height: 1.15;
-          letter-spacing: -0.02em;
+          margin: 0;
+          line-height: 1.2;
+          letter-spacing: -0.01em;
           position: relative; z-index: 1;
         }
         .cd-pro-highlight {
@@ -583,10 +588,10 @@ export default function CardapioDesign() {
           background-clip: text;
         }
         .cd-pro-sub {
-          font-size: 14.5px;
-          color: #F5B8CD;
-          margin: 0 0 22px;
-          line-height: 1.45;
+          font-size: 11.5px;
+          color: #C5C5CE;
+          margin: 0 0 8px;
+          line-height: 1.35;
           font-weight: 500;
           position: relative; z-index: 1;
         }
@@ -595,43 +600,28 @@ export default function CardapioDesign() {
           background: linear-gradient(135deg, #E85A8C 0%, #FF6FA9 100%);
           color: #fff;
           border: none;
-          padding: 14px 32px;
+          padding: 9px 18px;
           border-radius: 999px;
-          font-size: 15px;
+          font-size: 12px;
           font-weight: 800;
           cursor: pointer;
           font-family: inherit;
-          box-shadow: 0 6px 24px rgba(232,90,140,0.5);
+          box-shadow: 0 4px 14px rgba(232,90,140,0.4);
           position: relative; z-index: 1;
-          display: inline-flex; align-items: center; gap: 8px;
+          display: inline-flex; align-items: center; gap: 5px;
           transition: transform 0.15s ease, box-shadow 0.15s ease;
+          white-space: nowrap;
         }
         .cd-pro-cta:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 28px rgba(232,90,140,0.65);
+          transform: translateY(-1px);
+          box-shadow: 0 6px 18px rgba(232,90,140,0.55);
         }
+        .cd-pro-cta svg { width: 14px; height: 14px; }
         .cd-pro-cta:active { transform: translateY(0); }
-        .cd-pro-benefits {
-          display: flex;
-          justify-content: center;
-          gap: 18px;
-          margin-top: 22px;
-          flex-wrap: wrap;
-          position: relative; z-index: 1;
-        }
-        .cd-pro-benefits span {
-          display: flex; align-items: center; gap: 5px;
-          font-size: 12px;
-          color: #F5B8CD;
-        }
+        /* Benefícios escondidos no modo compacto — economiza espaço */
+        .cd-pro-benefits { display: none; }
         @media (max-width: 640px) {
-          .cd-pro-showcase { padding: 24px 18px; }
-          .cd-pro-title { font-size: 18px; }
-          .cd-pro-sub { font-size: 13px; }
-          .cd-pro-sub br { display: none; }
-          .cd-pro-cta { padding: 12px 24px; font-size: 13.5px; }
-          .cd-pro-benefits { gap: 10px; margin-top: 16px; }
-          .cd-pro-benefits span { font-size: 11px; }
+          .cd-pro-showcase { padding: 20px 16px; }
         }
 
         /* ── Card base (V2 moderno) ── */
