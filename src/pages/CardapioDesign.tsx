@@ -496,9 +496,12 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 1rem;
-          align-items: start;
+          align-items: stretch;
           padding-top: 24px;
         }
+        /* Cards no grid principal esticam pra altura da linha (Identidade usa .ccc-card, resto usa .cd-card) */
+        .cd-root > .cd-card,
+        .cd-root > .ccc-card { height: 100%; }
         /* Card Identidade (via prop) fica na coluna 1 linha 1 automaticamente (primeiro filho) */
         .cd-page-header { grid-column:1/-1; padding-bottom:0.5rem; }
         @media (max-width: 768px) {
