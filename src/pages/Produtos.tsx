@@ -4186,7 +4186,14 @@ export default function Produtos() {
                   { key: "recheios", label: "Recheios", grupo: form.grupo_recheios },
                   { key: "coberturas", label: "Coberturas", grupo: form.grupo_coberturas },
                   { key: "sabores", label: "Sabores", grupo: form.grupo_sabores },
-                ].filter(g => g.grupo?.ativo && (g.grupo.opcoes.length || 0) > 0);
+                ].filter(g => {
+                  // Grupo precisa estar ativo com opções
+                  if (!g.grupo?.ativo || (g.grupo.opcoes.length || 0) === 0) return false;
+                  // Se sabor tem preço próprio, NÃO aparece em "Adicionais das opções"
+                  // (já é tratado em "Preço por sabor" logo acima)
+                  if (g.key === "sabores" && (g.grupo as GrupoSabores).sabor_tem_preco_proprio) return false;
+                  return true;
+                });
                 if (gruposComOpcoes.length === 0) return null;
 
                 return (
