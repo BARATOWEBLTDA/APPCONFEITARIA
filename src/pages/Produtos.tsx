@@ -4841,15 +4841,43 @@ export default function Produtos() {
                       </button>
                       <button
                         className="prod-preview-menu-item"
-                        onClick={() => {
+                        onClick={async () => {
                           setPreviewMenu(false);
-                          const clone = { ...previewProduto };
-                          delete clone.id;
-                          clone.nome = `${clone.nome} (cópia)`;
-                          setForm({ ...EMPTY, ...clone });
+                          if (!userId) return;
+                          // Limpa TODOS os campos que não pertencem à tabela produtos
+                          const {
+                            id, created_at, updated_at, produto_insumos, user_id, ...limpo
+                          } = previewProduto as any;
+                          const novo = {
+                            ...limpo,
+                            nome: `${previewProduto.nome} (cópia)`,
+                            user_id: userId,
+                            disponivel: false, // Cópia começa despublicada pra revisar antes
+                          };
+                          const { data, error } = await supabase
+                            .from("produtos")
+                            .insert(novo)
+                            .select("id")
+                            .single();
+                          if (error) {
+                            alert(`Erro ao duplicar: ${error.message}`);
+                            return;
+                          }
+                          // Se tinha ficha técnica, clona também
+                          if (id && data?.id) {
+                            const { data: insumos } = await supabase
+                              .from("produto_insumos")
+                              .select("insumo_id, quantidade, unidade_utilizada, quantidade_base")
+                              .eq("produto_id", id);
+                            if (insumos && insumos.length > 0) {
+                              await supabase.from("produto_insumos").insert(
+                                insumos.map((i: any) => ({ ...i, produto_id: data.id, user_id: userId }))
+                              );
+                            }
+                          }
                           setPreviewProduto(null);
-                          setWizardStep(2);
-                          setModal(true);
+                          await loadProdutos(userId);
+                          alert(`Produto duplicado! Cópia criada como "${novo.nome}" (despublicada)`);
                         }}
                       >
                         <span className="prod-preview-menu-ico" style={{color: "#3B82F6"}}>
@@ -4857,7 +4885,7 @@ export default function Produtos() {
                         </span>
                         <span>
                           <div className="prod-preview-menu-title">Duplicar</div>
-                          <div className="prod-preview-menu-sub">Criar uma cópia deste produto</div>
+                          <div className="prod-preview-menu-sub">Cria cópia idêntica (fica despublicada)</div>
                         </span>
                       </button>
                       <button
@@ -4882,17 +4910,24 @@ export default function Produtos() {
                         onClick={async () => {
                           setPreviewMenu(false);
                           const novoDisponivel = !(previewProduto.disponivel !== false);
-                          await supabase.from("produtos").update({ disponivel: novoDisponivel }).eq("id", previewProduto.id!);
+                          const { error } = await supabase.from("produtos").update({ disponivel: novoDisponivel }).eq("id", previewProduto.id!);
+                          if (error) { alert(`Erro: ${error.message}`); return; }
                           await loadProdutos(userId);
                           setPreviewProduto({ ...previewProduto, disponivel: novoDisponivel });
                         }}
                       >
-                        <span className="prod-preview-menu-ico" style={{color: "#F59E0B"}}>
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                        <span className="prod-preview-menu-ico" style={{color: previewProduto.disponivel !== false ? "#F59E0B" : "#059669"}}>
+                          {previewProduto.disponivel !== false ? (
+                            // Ícone olho fechado (despublicar)
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                          ) : (
+                            // Ícone olho (publicar)
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          )}
                         </span>
                         <span>
                           <div className="prod-preview-menu-title">
-                            {previewProduto.disponivel !== false ? "Arquivar" : "Reativar"}
+                            {previewProduto.disponivel !== false ? "Despublicar" : "Publicar"}
                           </div>
                           <div className="prod-preview-menu-sub">
                             {previewProduto.disponivel !== false ? "Ocultar do cardápio" : "Voltar a exibir no cardápio"}
