@@ -831,7 +831,7 @@ export default function CardapioConfigPage() {
         @keyframes ccspin { to { transform:rotate(360deg); } }
 
         /* ── Tabs ── */
-        .ccc-tabs { display:flex; gap:0.3rem; background:var(--bg-card); border:1px solid var(--border); border-radius: var(--radius-lg); padding:5px; width:fit-content; margin-bottom:0.5rem; box-shadow:0 1px 4px rgba(0,0,0,0.03); }
+        .ccc-tabs { display:flex; gap:0.3rem; background:var(--bg-card); border:1px solid var(--border); border-radius: var(--radius-lg); padding:5px; width:fit-content; margin: 20px 0 12px; box-shadow:0 1px 4px rgba(0,0,0,0.03); }
         .ccc-tab { display:flex; align-items:center; gap:0.4rem; padding:0.55rem 1.25rem; border-radius: var(--radius-md); border:none; background:transparent; font-family:'Geist',sans-serif; font-size: var(--font-button); font-weight: var(--fw-semibold); color:var(--text-secondary); cursor:pointer; transition:all 0.2s; white-space:nowrap; }
         .ccc-tab:hover { color:var(--primary); background:var(--primary-light); }
         .ccc-tab--active { background:var(--primary-gradient); color:#ffffff; box-shadow:0 3px 10px rgba(255,111,169,0.32); }
