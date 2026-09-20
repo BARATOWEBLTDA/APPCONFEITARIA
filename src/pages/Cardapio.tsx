@@ -7,6 +7,7 @@ import {
   CaretRight,
 } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
+import { validarCardapio } from "@/lib/cardapio-validacao";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
 
@@ -64,6 +65,13 @@ export default function Cardapio() {
   // Display: mostra sem "https://" para ficar mais limpo
   const linkDisplay = linkCardapio ? linkCardapio.replace(/^https?:\/\//, "") : "Configure seu cardápio";
   const publicado = !!codigo;
+
+  // Cardápio só é considerado "pronto" pra compartilhar se tem essenciais
+  const validacao = validarCardapio(profile);
+  const podeCompartilhar = publicado && validacao.completo;
+  const tooltipBloqueio = validacao.completo
+    ? ""
+    : validacao.mensagem + " nas configurações do cardápio.";
 
   // ─── Carregar métricas + alertas ───
   useEffect(() => {
@@ -350,15 +358,75 @@ export default function Cardapio() {
         </div>
         <p className="ch-link-url">{linkDisplay}</p>
 
+        {publicado && !validacao.completo && (
+          <div style={{
+            display: "flex", alignItems: "flex-start", gap: 8,
+            padding: "10px 12px", marginTop: 8,
+            background: "#FEF3C7", border: "1px solid #FDE68A",
+            borderRadius: 10, fontSize: 12.5, color: "#78350F",
+            lineHeight: 1.4
+          }}>
+            <Warning size={16} weight="fill" style={{ flexShrink: 0, marginTop: 1 }} />
+            <div>
+              <b>Complete pra publicar:</b> {validacao.faltando.join(", ")}.
+              {" "}
+              <span
+                style={{ textDecoration: "underline", cursor: "pointer", fontWeight: 700 }}
+                onClick={() => navigate("/configuracoes/cardapio")}
+              >
+                Ajustar agora
+              </span>
+            </div>
+          </div>
+        )}
+
         <div className="ch-actions">
-          <button className="ch-btn-primary" onClick={handleShare} disabled={!publicado}>
+          <button
+            className="ch-btn-primary"
+            onClick={() => {
+              if (!validacao.completo) {
+                alert(tooltipBloqueio);
+                navigate("/configuracoes/cardapio");
+                return;
+              }
+              handleShare();
+            }}
+            disabled={!podeCompartilhar}
+            title={podeCompartilhar ? "" : tooltipBloqueio}
+          >
             <Share size={16} weight="bold" />
             Compartilhar
           </button>
-          <button className="ch-btn-ghost" onClick={handleVerComoCliente} disabled={!publicado} aria-label="Visualizar">
+          <button
+            className="ch-btn-ghost"
+            onClick={() => {
+              if (!validacao.completo) {
+                alert(tooltipBloqueio);
+                navigate("/configuracoes/cardapio");
+                return;
+              }
+              handleVerComoCliente();
+            }}
+            disabled={!podeCompartilhar}
+            aria-label="Visualizar"
+            title={podeCompartilhar ? "" : tooltipBloqueio}
+          >
             <Eye size={16} weight="bold" />
           </button>
-          <button className="ch-btn-ghost" onClick={handleCopiar} disabled={!publicado} aria-label="Copiar link">
+          <button
+            className="ch-btn-ghost"
+            onClick={() => {
+              if (!validacao.completo) {
+                alert(tooltipBloqueio);
+                navigate("/configuracoes/cardapio");
+                return;
+              }
+              handleCopiar();
+            }}
+            disabled={!podeCompartilhar}
+            aria-label="Copiar link"
+            title={podeCompartilhar ? "" : tooltipBloqueio}
+          >
             {copiado ? <CheckCircle size={16} weight="bold" /> : <Copy size={16} weight="bold" />}
           </button>
         </div>
