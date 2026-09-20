@@ -253,8 +253,8 @@ export default function CardapioDesign() {
         </div>
       </div>
 
-      {/* Banners */}
-      <div className="cd-card">
+      {/* Banners — ocupa largura total do grid */}
+      <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
         <SectionLabel
           variant="verde"
           icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 12h20"/></svg>}
