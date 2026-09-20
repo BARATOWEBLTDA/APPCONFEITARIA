@@ -559,7 +559,7 @@ export default function CardapioConfigPage() {
       </div>
 
       {/* ── Wrapper com preview lateral (aplica em TODAS as tabs) ── */}
-      <div className="ccc-geral-wrap">
+      <div className={`ccc-geral-wrap${activeTab === "design" ? " ccc-geral-wrap--com-preview" : ""}`}>
 
       {/* ── Sidebar (desktop) / Tabs (mobile) ── */}
       <nav className="ccc-sidebar" aria-label="Seções da configuração">
@@ -790,7 +790,8 @@ export default function CardapioConfigPage() {
       {success && <div className="ccc-toast">✓ Salvo com sucesso!</div>}
       </div>{/* fim .ccc-geral-main */}
 
-      {/* ── Preview do cardápio (só desktop) — visível em TODAS as abas ── */}
+      {/* ── Preview do cardápio (só desktop, só aba Design) ── */}
+      {activeTab === "design" && (
       <aside className="ccc-preview" aria-label="Prévia do cardápio">
         <div className="ccc-preview-head">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -834,6 +835,7 @@ export default function CardapioConfigPage() {
           </a>
         )}
       </aside>
+      )}
       </div>{/* fim .ccc-geral-wrap */}
 
       <style>{`
@@ -965,12 +967,13 @@ export default function CardapioConfigPage() {
             display: none; /* Preview escondido em telas médias */
           }
         }
-        /* Preview volta em telas maiores (≥1200px) — grid vira 3 colunas */
+        /* Preview volta em telas maiores (>=1200px) — grid vira 3 colunas
+           APENAS quando a aba Design está ativa (classe --com-preview) */
         @media (min-width: 1200px) {
-          .ccc-geral-wrap {
+          .ccc-geral-wrap.ccc-geral-wrap--com-preview {
             grid-template-columns: 200px minmax(0, 1fr) 340px;
           }
-          .ccc-preview {
+          .ccc-geral-wrap--com-preview .ccc-preview {
             display: flex;
             flex-direction: column;
             align-items: center;
