@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { usePlano } from "@/hooks/usePlano";
 import { HexColorPicker } from "react-colorful";
@@ -16,6 +17,7 @@ const SectionLabel = ({ children, icon, sub, variant }: any) => (
 );
 
 export default function CardapioDesign() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState("");
@@ -290,9 +292,33 @@ export default function CardapioDesign() {
           ))}
 
           {!isPro && (
-            <div className="cd-banner-slot cd-slot-locked">
-              <div className="cd-lock-icon" style={{ marginBottom: "6px" }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
-              <span className="cd-upload-hint" style={{ textAlign: "center", fontSize: "0.7rem" }}>Banners 2, 3 e 4<br/>disponíveis no PRO</span>
+            <div className="cd-pro-showcase" onClick={() => navigate("/assinar")}>
+              <div className="cd-pro-shine" aria-hidden="true" />
+              <div className="cd-pro-badge">✨ PRO</div>
+              <div className="cd-pro-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="4" y="11" width="16" height="10" rx="2.5"/>
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                </svg>
+              </div>
+              <p className="cd-pro-title">
+                Desbloqueie <span className="cd-pro-highlight">3 banners extras</span>
+              </p>
+              <p className="cd-pro-sub">
+                Monte um <b>carrossel completo</b> no topo do seu cardápio<br/>e destaque suas promoções
+              </p>
+              <button className="cd-pro-cta" onClick={(e) => { e.stopPropagation(); navigate("/assinar"); }}>
+                <span>Fazer upgrade agora</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12"/>
+                  <polyline points="12 5 19 12 12 19"/>
+                </svg>
+              </button>
+              <div className="cd-pro-benefits">
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Carrossel automático</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Sem anúncios</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Cancele quando quiser</span>
+              </div>
             </div>
           )}
         </div>
@@ -480,6 +506,133 @@ export default function CardapioDesign() {
         .cd-page-title { font-size: var(--font-page-title); font-weight: var(--fw-bold); color:var(--text-title); margin:0 0 0.3rem; letter-spacing:-0.02em; }
         .cd-page-sub { font-size: var(--font-button); color:var(--text-secondary); margin:0; }
         .cd-autosave { display:inline-flex; align-items:center; gap:0.35rem; font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--success); background:#f0fdf4; padding:0.32rem 0.8rem; border-radius: var(--radius-full); border:1px solid #dcfce7; margin-top:0.5rem; animation:fadeIn 0.3s ease; }
+
+        /* ═══ Card PRO impactante (banners 2,3,4 quando bloqueado) ═══ */
+        @keyframes cd-pro-glow {
+          0%, 100% { box-shadow: 0 0 30px rgba(232,90,140,0.35), inset 0 0 40px rgba(232,90,140,0.08); }
+          50% { box-shadow: 0 0 50px rgba(232,90,140,0.6), inset 0 0 40px rgba(232,90,140,0.15); }
+        }
+        @keyframes cd-pro-float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-4px); }
+        }
+        @keyframes cd-pro-shine {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        .cd-pro-showcase {
+          grid-column: 1 / -1;
+          background: linear-gradient(135deg, #1F0F17 0%, #3D1428 60%, #5D1A3C 100%);
+          color: #fff;
+          border-radius: 16px;
+          padding: 32px 28px;
+          text-align: center;
+          position: relative;
+          animation: cd-pro-glow 3s ease-in-out infinite;
+          border: 1px solid rgba(232,90,140,0.3);
+          overflow: hidden;
+          cursor: pointer;
+          transition: transform 0.2s ease;
+          font-family: 'Geist', sans-serif;
+        }
+        .cd-pro-showcase:hover { transform: translateY(-2px); }
+        .cd-pro-shine {
+          position: absolute; inset: 0;
+          background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%);
+          background-size: 200% 100%;
+          animation: cd-pro-shine 4s linear infinite;
+          pointer-events: none;
+        }
+        .cd-pro-badge {
+          position: absolute;
+          top: 14px; right: 14px;
+          background: linear-gradient(90deg, #E85A8C, #FF6FA9);
+          color: #fff;
+          padding: 6px 14px;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 900;
+          letter-spacing: 0.15em;
+          box-shadow: 0 0 20px rgba(232,90,140,0.7);
+          z-index: 2;
+        }
+        .cd-pro-icon {
+          width: 76px; height: 76px;
+          margin: 4px auto 18px;
+          background: rgba(232,90,140,0.12);
+          border: 2px solid rgba(232,90,140,0.5);
+          border-radius: 20px;
+          display: flex; align-items: center; justify-content: center;
+          animation: cd-pro-float 2.8s ease-in-out infinite;
+          position: relative; z-index: 1;
+          color: #FF6FA9;
+        }
+        .cd-pro-title {
+          font-size: 22px;
+          font-weight: 900;
+          color: #fff;
+          margin: 0 0 8px;
+          line-height: 1.15;
+          letter-spacing: -0.02em;
+          position: relative; z-index: 1;
+        }
+        .cd-pro-highlight {
+          background: linear-gradient(90deg, #FF6FA9, #FFA8CE);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .cd-pro-sub {
+          font-size: 14.5px;
+          color: #F5B8CD;
+          margin: 0 0 22px;
+          line-height: 1.45;
+          font-weight: 500;
+          position: relative; z-index: 1;
+        }
+        .cd-pro-sub b { color: #fff; font-weight: 700; }
+        .cd-pro-cta {
+          background: linear-gradient(135deg, #E85A8C 0%, #FF6FA9 100%);
+          color: #fff;
+          border: none;
+          padding: 14px 32px;
+          border-radius: 999px;
+          font-size: 15px;
+          font-weight: 800;
+          cursor: pointer;
+          font-family: inherit;
+          box-shadow: 0 6px 24px rgba(232,90,140,0.5);
+          position: relative; z-index: 1;
+          display: inline-flex; align-items: center; gap: 8px;
+          transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .cd-pro-cta:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 28px rgba(232,90,140,0.65);
+        }
+        .cd-pro-cta:active { transform: translateY(0); }
+        .cd-pro-benefits {
+          display: flex;
+          justify-content: center;
+          gap: 18px;
+          margin-top: 22px;
+          flex-wrap: wrap;
+          position: relative; z-index: 1;
+        }
+        .cd-pro-benefits span {
+          display: flex; align-items: center; gap: 5px;
+          font-size: 12px;
+          color: #F5B8CD;
+        }
+        @media (max-width: 640px) {
+          .cd-pro-showcase { padding: 24px 18px; }
+          .cd-pro-title { font-size: 18px; }
+          .cd-pro-sub { font-size: 13px; }
+          .cd-pro-sub br { display: none; }
+          .cd-pro-cta { padding: 12px 24px; font-size: 13.5px; }
+          .cd-pro-benefits { gap: 10px; margin-top: 16px; }
+          .cd-pro-benefits span { font-size: 11px; }
+        }
 
         /* ── Card base (V2 moderno) ── */
         .cd-card {
