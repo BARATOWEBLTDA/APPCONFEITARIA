@@ -7655,7 +7655,7 @@ export default function Produtos() {
           display: flex;
           gap: 4px;
           padding: 4px;
-          margin: 12px 24px 4px;
+          margin: 12px 24px 16px;
           background: #FAF8F5;
           border: 1px solid #F0EBED;
           border-radius: 12px;
@@ -7665,7 +7665,7 @@ export default function Produtos() {
         }
         @media (max-width: 720px) {
           .prod-edit-tabs {
-            margin: 10px 16px 4px;
+            margin: 10px 16px 14px;
             max-width: calc(100% - 32px);
             width: calc(100% - 32px);
           }
