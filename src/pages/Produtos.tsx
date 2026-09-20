@@ -3227,7 +3227,7 @@ export default function Produtos() {
                     <div className="prod-card-sem-foto-cta">toque pra adicionar</div>
                   </div>
                 )}
-                {!p.disponivel && <div className="prod-card-indisponivel">Indisponível</div>}
+                {!p.disponivel && <div className="prod-card-indisponivel">Despublicado</div>}
                 {p.promocao && <div className="prod-card-promo">🔥 Promoção</div>}
                 {(p.tamanhos_disponiveis && p.tamanhos_disponiveis.length > 0) && (
                   <div className="prod-card-badge-var">
