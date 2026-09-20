@@ -7,9 +7,9 @@ import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 
-const SectionLabel = ({ children, icon, sub }: any) => (
+const SectionLabel = ({ children, icon, sub, variant }: any) => (
   <div className="ccc-section-header">
-    {icon && <div className="ccc-section-icon">{icon}</div>}
+    {icon && <div className={`ccc-section-icon${variant ? ` ccc-section-icon--${variant}` : ""}`}>{icon}</div>}
     <div style={{ flex: 1, minWidth: 0 }}>
       <p className="ccc-section-label">{children}</p>
       {sub && <p className="ccc-section-sub">{sub}</p>}
@@ -593,6 +593,7 @@ export default function CardapioConfigPage() {
       <div className="ccc-card ccc-card--compacto">
         <SectionLabel
           icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
+          variant="roxo"
           sub="Como sua confeitaria vai aparecer no cardápio"
         >Sobre a loja</SectionLabel>
         <Field
@@ -614,6 +615,7 @@ export default function CardapioConfigPage() {
         <div className="ccc-card">
           <SectionLabel
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>}
+            variant="azul"
             sub="Onde sua confeitaria está localizada"
           >Localização da loja</SectionLabel>
 
@@ -661,6 +663,7 @@ export default function CardapioConfigPage() {
         <div className="ccc-card">
           <SectionLabel
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}
+            variant="verde"
             sub="Quando você está disponível"
           >Horários de funcionamento</SectionLabel>
           <div className="ccc-dias-grid">
@@ -714,6 +717,7 @@ export default function CardapioConfigPage() {
         <div className="ccc-card">
           <SectionLabel
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7h-7L9 3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>}
+            variant="rosa"
             sub="Logo, nome e descrição da sua confeitaria"
           >Identidade da loja</SectionLabel>
           <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleFileChange} />
@@ -772,6 +776,7 @@ export default function CardapioConfigPage() {
         <div className="ccc-card">
           <SectionLabel
             icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>}
+            variant="amarelo"
             sub="Como sua nota aparece para os clientes"
           >Avaliações</SectionLabel>
           <div className="ccc-toggle-row">
@@ -1084,13 +1089,15 @@ export default function CardapioConfigPage() {
 
         /* ── Card base ── */
         .ccc-card {
-          background:var(--bg-card); border-radius: var(--radius-xl); padding:1.5rem;
-          box-shadow:var(--shadow-card, 0 2px 12px rgba(0,0,0,0.05));
-          border:1px solid var(--border);
-          display:flex; flex-direction:column; gap:0.95rem;
-          width:100%; box-sizing:border-box; height:100%;
-          transition: box-shadow var(--dur-normal) var(--ease-out), border-color 0.2s ease, transform 0.2s ease;
-          position:relative; overflow:hidden;
+          background: var(--bg-card);
+          border-radius: 16px;
+          padding: 22px 24px;
+          box-shadow: 0 2px 8px rgba(153, 53, 86, 0.04);
+          border: 1px solid #F0EBED;
+          display: flex; flex-direction: column; gap: 1rem;
+          width: 100%; box-sizing: border-box; height: 100%;
+          transition: box-shadow 0.2s ease, border-color 0.2s ease;
+          position: relative; overflow: hidden;
         }
         /* Variação compacta — card com pouco conteúdo, sem esticar */
         .ccc-card--compacto {
@@ -1099,39 +1106,55 @@ export default function CardapioConfigPage() {
           gap: 0.7rem;
           margin-bottom: 1.25rem;
         }
-        .ccc-card::before {
-          content:""; position:absolute; top:-60px; right:-60px;
-          width:140px; height:140px;
-          background:radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
-          pointer-events:none; opacity:0.7;
-        }
+        /* Blob rosa decorativo removido — visual mais limpo no V2 */
         .ccc-card:hover {
-          box-shadow:0 4px 24px rgba(255,111,169,0.08), 0 1px 2px rgba(16,24,40,0.04);
-          border-color:rgba(255,111,169,0.18);
+          box-shadow: 0 4px 16px rgba(232, 90, 140, 0.08);
+          border-color: rgba(232, 90, 140, 0.15);
         }
 
-        /* ── Section header (com ícone) ── */
+        /* ── Section header (V2 moderno: ícone grande gradient) ── */
         .ccc-section-header {
-          display:flex; align-items:center; gap:0.7rem;
+          display:flex; align-items:flex-start; gap:14px;
           padding-bottom:1rem; margin-bottom:0.1rem;
-          border-bottom:1px solid var(--border);
+          border-bottom:1px solid #F5F1F3;
           position:relative; z-index:1;
         }
         .ccc-section-icon {
-          width:36px; height:36px; flex-shrink:0;
-          border-radius: var(--radius-md);
-          background:var(--primary-light);
-          color:var(--primary);
+          width:44px; height:44px; flex-shrink:0;
+          border-radius: 12px;
+          background: linear-gradient(135deg, #FDF3F7 0%, #FCE0E9 100%);
+          color: #993556;
           display:flex; align-items:center; justify-content:center;
+          transition: transform 0.2s ease;
         }
+        .ccc-card:hover .ccc-section-icon { transform: scale(1.05); }
+        /* Variações de cor por seção */
+        .ccc-section-icon--azul {
+          background: linear-gradient(135deg, #E0F2FE 0%, #7DD3FC 100%);
+          color: #075985;
+        }
+        .ccc-section-icon--amarelo {
+          background: linear-gradient(135deg, #FEF3C7 0%, #FBBF24 100%);
+          color: #78350F;
+        }
+        .ccc-section-icon--verde {
+          background: linear-gradient(135deg, #D1FAE5 0%, #34D399 100%);
+          color: #065F46;
+        }
+        .ccc-section-icon--roxo {
+          background: linear-gradient(135deg, #EDE9FE 0%, #A78BFA 100%);
+          color: #4C1D95;
+        }
+        .ccc-section-icon svg { width: 22px; height: 22px; }
         .ccc-section-label {
-          font-size: var(--font-input); font-weight: var(--fw-bold);
-          color:var(--text-title); margin:0;
-          letter-spacing:-0.01em;
+          font-size: 15px; font-weight: 700;
+          color: #2D1F26; margin: 0 0 3px;
+          letter-spacing: -0.01em;
+          line-height: 1.2;
         }
         .ccc-section-sub {
-          font-size: var(--font-helper); color:var(--text-muted);
-          margin:0.1rem 0 0; line-height:1.3;
+          font-size: 12.5px; color: #6B5D64;
+          margin: 0; line-height: 1.35;
         }
         .ccc-hint { font-size: var(--font-helper); color:var(--text-muted); margin:0; }
 
