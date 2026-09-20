@@ -664,7 +664,7 @@ export default function CardapioDesign() {
         .cd-logo-preview img { width:100%; height:100%; object-fit:cover; }
 
         /* ── Banners ── */
-        .cd-banners-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:0.75rem; }
+        .cd-banners-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:0.75rem; align-items: end; }
         @media (max-width: 640px) {
           .cd-banners-grid { grid-template-columns: 1fr 1fr; }
         }
