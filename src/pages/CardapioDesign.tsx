@@ -293,6 +293,7 @@ export default function CardapioDesign() {
 
           {!isPro && [1, 2, 3].map((i) => (
             <div key={i} className="cd-pro-slot" onClick={() => navigate("/assinar")}>
+              <div className="cd-pro-slot-bg" aria-hidden="true" />
               <div className="cd-pro-shine" aria-hidden="true" />
               <div className="cd-pro-badge">PRO</div>
               <div className="cd-pro-icon-mini">
@@ -519,6 +520,15 @@ export default function CardapioDesign() {
         .cd-pro-slot:hover {
           transform: translateY(-2px);
           border-color: rgba(232,90,140,0.55);
+        }
+        /* Logo do app como fundo apagadinho */
+        .cd-pro-slot-bg {
+          position: absolute; inset: 0;
+          background: url('/log.png') center / 55% no-repeat;
+          opacity: 0.08;
+          filter: blur(0.5px);
+          pointer-events: none;
+          z-index: 0;
         }
         .cd-pro-shine {
           position: absolute; inset: 0;
