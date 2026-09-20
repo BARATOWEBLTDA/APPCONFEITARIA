@@ -931,6 +931,12 @@ function PersonalizacaoStep({
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
   const [avancadoOpen, setAvancadoOpen] = useState<Record<string, boolean>>({});
+  // Toast Doonly (substitui alerts nativos)
+  const [toast, setToast] = useState<{ tipo: "success" | "error" | "info"; titulo: string; sub?: string } | null>(null);
+  const showToast = (tipo: "success" | "error" | "info", titulo: string, sub?: string) => {
+    setToast({ tipo, titulo, sub });
+    setTimeout(() => setToast(null), 3800);
+  };
   const [showInfo, setShowInfo] = useState(false);
   const [showUnidade, setShowUnidade] = useState(false);
   const [biblioteca, setBiblioteca] = useState<Record<string, BibliotecaOpcao[]>>({
@@ -2848,7 +2854,7 @@ export default function Produtos() {
       const { error } = await supabase.from("produtos").update(payload).eq("id", form.id);
       if (error) {
         console.error("Erro ao atualizar produto:", error);
-        alert(`Erro ao salvar: ${error.message}`);
+        showToast("error", "Erro ao salvar", error.message);
         setSaving(false);
         return;
       }
@@ -2856,7 +2862,7 @@ export default function Produtos() {
       const { data: novo, error } = await supabase.from("produtos").insert({ ...payload, user_id: userId }).select("id").single();
       if (error) {
         console.error("Erro ao criar produto:", error);
-        alert(`Erro ao criar: ${error.message}`);
+        showToast("error", "Erro ao criar", error.message);
         setSaving(false);
         return;
       }
@@ -4805,8 +4811,19 @@ export default function Produtos() {
               {/* Ações */}
               <div className="prod-preview-actions">
                 <button className="prod-preview-btn-editar" onClick={() => { setPreviewProduto(null); openEditar(previewProduto); }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{marginRight: 6}}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                  Editar
+                  {previewProduto.disponivel !== false ? (
+                    // Publicado → ícone lápis
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{marginRight: 6}}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                      Editar
+                    </>
+                  ) : (
+                    // Despublicado → ícone olho + call-to-action pra publicar
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: 6}}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      Revisar e Publicar
+                    </>
+                  )}
                 </button>
                 <div className="prod-preview-menu-wrap">
                   <button
@@ -4860,7 +4877,7 @@ export default function Produtos() {
                             .select("id")
                             .single();
                           if (error) {
-                            alert(`Erro ao duplicar: ${error.message}`);
+                            showToast("error", "Erro ao duplicar", error.message);
                             return;
                           }
                           // Se tinha ficha técnica, clona também
@@ -4877,7 +4894,7 @@ export default function Produtos() {
                           }
                           setPreviewProduto(null);
                           await loadProdutos(userId);
-                          alert(`Produto duplicado! Cópia criada como "${novo.nome}" (despublicada)`);
+                          showToast("success", "Produto duplicado", `Cópia criada como "${novo.nome}" — despublicada`);
                         }}
                       >
                         <span className="prod-preview-menu-ico" style={{color: "#3B82F6"}}>
@@ -4911,9 +4928,10 @@ export default function Produtos() {
                           setPreviewMenu(false);
                           const novoDisponivel = !(previewProduto.disponivel !== false);
                           const { error } = await supabase.from("produtos").update({ disponivel: novoDisponivel }).eq("id", previewProduto.id!);
-                          if (error) { alert(`Erro: ${error.message}`); return; }
+                          if (error) { showToast("error", "Erro", error.message); return; }
                           await loadProdutos(userId);
                           setPreviewProduto({ ...previewProduto, disponivel: novoDisponivel });
+                          showToast("success", novoDisponivel ? "Produto publicado" : "Produto despublicado", novoDisponivel ? "Já aparece no seu cardápio" : "Ficou oculto do cardápio");
                         }}
                       >
                         <span className="prod-preview-menu-ico" style={{color: previewProduto.disponivel !== false ? "#F59E0B" : "#059669"}}>
@@ -10077,7 +10095,98 @@ export default function Produtos() {
         }
         .ficha-modal-concluir:hover { opacity: 0.88; }
 
+        /* ═══ TOAST DOONLY ═══ */
+        .doonly-toast-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 10000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          pointer-events: none;
+          padding: 20px;
+        }
+        .doonly-toast {
+          background: #fff;
+          border-radius: 16px;
+          padding: 22px 24px;
+          box-shadow: 0 20px 50px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.08);
+          min-width: 280px;
+          max-width: 380px;
+          display: flex;
+          gap: 14px;
+          align-items: flex-start;
+          animation: doonly-toast-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+          border: 1px solid rgba(0,0,0,0.04);
+        }
+        @keyframes doonly-toast-in {
+          from { opacity: 0; transform: translateY(-20px) scale(0.94); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .doonly-toast-icon {
+          width: 44px; height: 44px;
+          border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .doonly-toast-icon--success { background: linear-gradient(135deg, #FDF3F7 0%, #FCE0E9 100%); color: #E85A8C; }
+        .doonly-toast-icon--error   { background: #FEF2F2; color: #DC2626; }
+        .doonly-toast-icon--info    { background: #EFF6FF; color: #2563EB; }
+        .doonly-toast-body {
+          flex: 1;
+          min-width: 0;
+          padding-top: 4px;
+        }
+        .doonly-toast-titulo {
+          font-family: var(--font-base);
+          font-size: 15px;
+          font-weight: var(--fw-bold);
+          color: #2D1F26;
+          line-height: 1.25;
+          margin: 0;
+        }
+        .doonly-toast-sub {
+          font-family: var(--font-base);
+          font-size: 13px;
+          color: #6B5D64;
+          margin: 4px 0 0;
+          line-height: 1.4;
+        }
+
       `}</style>
+
+      {/* ═══ Toast Doonly ═══ */}
+      {toast && (
+        <div className="doonly-toast-overlay" onClick={() => setToast(null)}>
+          <div className={`doonly-toast`}>
+            <div className={`doonly-toast-icon doonly-toast-icon--${toast.tipo}`}>
+              {toast.tipo === "success" && (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              )}
+              {toast.tipo === "error" && (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="15" y1="9" x2="9" y2="15"/>
+                  <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+              )}
+              {toast.tipo === "info" && (
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+              )}
+            </div>
+            <div className="doonly-toast-body">
+              <p className="doonly-toast-titulo">{toast.titulo}</p>
+              {toast.sub && <p className="doonly-toast-sub">{toast.sub}</p>}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </>
   );
