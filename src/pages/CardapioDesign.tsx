@@ -83,7 +83,13 @@ export default function CardapioDesign() {
     return `${data.publicUrl}?t=${Date.now()}`;
   };
 
-  const showSuccess = () => { setSuccess(true); setTimeout(() => setSuccess(false), 2000); };
+  const showSuccess = () => {
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 2000);
+    // Notifica outros componentes (ex: preview do cardápio no CardapioConfigPage)
+    // pra recarregar após save do Design
+    window.dispatchEvent(new CustomEvent("cardapio-design-saved"));
+  };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;

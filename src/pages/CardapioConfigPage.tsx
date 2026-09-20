@@ -74,6 +74,15 @@ export default function CardapioConfigPage() {
     return () => clearTimeout(t);
   }, [autoSaved]);
 
+  // Também recarrega quando o CardapioDesign salva (Layout/Banners/Cores)
+  useEffect(() => {
+    const handler = () => {
+      setTimeout(() => setPreviewKey(k => k + 1), 800);
+    };
+    window.addEventListener("cardapio-design-saved", handler);
+    return () => window.removeEventListener("cardapio-design-saved", handler);
+  }, []);
+
   // Auto-save com debounce de 2 segundos
   useEffect(() => {
     if (loading) return;
@@ -575,7 +584,96 @@ export default function CardapioConfigPage() {
       <div className="ccc-geral-main">
 
       {/* ── Tab Design ── */}
-      {activeTab === "design" && <CardapioDesign />}
+      {/* ══════ Tab DESIGN: Identidade → Layout/Banners/Cores → Avaliações ══════ */}
+      {activeTab === "design" && <>
+        <div className="ccc-card">
+          <SectionLabel
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7h-7L9 3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>}
+            variant="rosa"
+            sub="Logo, nome e descrição da sua confeitaria"
+          >Identidade da loja</SectionLabel>
+          <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleFileChange} />
+
+          <div className="ccc-logo-row">
+            <div className="ccc-logo-preview" onClick={() => fileRef.current?.click()}>
+              {preview || form.foto_url
+                ? <img src={preview || form.foto_url} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}} />
+                : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              }
+              <div className="ccc-logo-cam">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <p className="ccc-logo-label">Logo da loja</p>
+              <p className="ccc-logo-sub">Aparece no topo do cardápio</p>
+              <button
+                style={{marginTop:"0.5rem",padding:"0.3rem 0.85rem",background:"var(--primary-light)",border:"1.5px solid var(--primary-light)",borderRadius:"50px",fontFamily:"Geist,sans-serif",fontSize:"0.75rem",fontWeight:700,color:"var(--primary-dark)",cursor:"pointer"}}
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? <span className="ccc-spinner-xs" /> : "Trocar foto"}
+              </button>
+            </div>
+          </div>
+
+          <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1rem"}}>
+            <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </span>
+            <div style={{flex:1,display:"flex",flexDirection:"column",gap:"0.4rem"}}>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                <span style={{fontSize:"0.75rem",color:"var(--text-muted)"}}>Descrição</span>
+                <button type="button" className="ccc-btn-ia" onClick={gerarDescricaoLoja} disabled={gerandoDescricao || !form.nome_loja.trim()}>
+                  {gerandoDescricao
+                    ? <><span className="ccc-spinner-ia" /> Gerando...</>
+                    : <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Gerar com IA</>
+                  }
+                </button>
+              </div>
+              <textarea
+                className="ccc-field-input"
+                placeholder="Descreva sua confeitaria..."
+                value={form.descricao_loja}
+                onChange={e => setForm({...form, descricao_loja: e.target.value.slice(0,200)})}
+                rows={3}
+                style={{resize:"none"}}
+              />
+              <p className="ccc-char-count">{form.descricao_loja.length}/200</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4 — Avaliações */}
+        <CardapioDesign />
+        <div className="ccc-card">
+          <SectionLabel
+            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>}
+            variant="amarelo"
+            sub="Como sua nota aparece para os clientes"
+          >Avaliações</SectionLabel>
+          <div className="ccc-toggle-row">
+            <div><p className="ccc-toggle-label">Exibir estrelas de avaliação</p><p className="ccc-toggle-sub">Mostra a avaliação média no cardápio</p></div>
+            <label className="ccc-toggle"><input type="checkbox" checked={!form.hide_stars} onChange={e => setForm({...form, hide_stars: !e.target.checked})} /><span className="ccc-toggle-slider" /></label>
+          </div>
+          {!form.hide_stars && (
+            <>
+              <div className="ccc-divider" />
+              <p className="ccc-hint">Selecione a nota que aparecerá no cardápio</p>
+              <div className="ccc-notas-grid">
+                {[5.0, 4.9, 4.8].map(nota => (
+                  <button key={nota} className={`ccc-nota-btn${form.avaliacao_media === nota ? " active" : ""}`} onClick={() => setForm({...form, avaliacao_media: nota})}>
+                    <span style={{fontSize:"1.1rem"}}>⭐</span>
+                    <span>{nota.toFixed(1)}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+      </>
+      }
 
       {/* ── Tab Checkout ── */}
       {activeTab === "checkout" && <CheckoutConfigPage />}
@@ -706,98 +804,6 @@ export default function CardapioConfigPage() {
       }
 
       {/* ══════ Tab DESIGN: cards de aparência (identidade, avaliações) — vêm depois do <CardapioDesign /> ══════ */}
-      {activeTab === "design" && <>
-      <div className="ccc-row-top">
-        {/* Card 1 — Identidade */}
-        <div className="ccc-card">
-          <SectionLabel
-            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7h-7L9 3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>}
-            variant="rosa"
-            sub="Logo, nome e descrição da sua confeitaria"
-          >Identidade da loja</SectionLabel>
-          <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleFileChange} />
-
-          <div className="ccc-logo-row">
-            <div className="ccc-logo-preview" onClick={() => fileRef.current?.click()}>
-              {preview || form.foto_url
-                ? <img src={preview || form.foto_url} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}} />
-                : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              }
-              <div className="ccc-logo-cam">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              </div>
-            </div>
-            <div style={{flex:1,minWidth:0}}>
-              <p className="ccc-logo-label">Logo da loja</p>
-              <p className="ccc-logo-sub">Aparece no topo do cardápio</p>
-              <button
-                style={{marginTop:"0.5rem",padding:"0.3rem 0.85rem",background:"var(--primary-light)",border:"1.5px solid var(--primary-light)",borderRadius:"50px",fontFamily:"Geist,sans-serif",fontSize:"0.75rem",fontWeight:700,color:"var(--primary-dark)",cursor:"pointer"}}
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-              >
-                {uploading ? <span className="ccc-spinner-xs" /> : "Trocar foto"}
-              </button>
-            </div>
-          </div>
-
-          <div className="ccc-field" style={{alignItems:"flex-start",borderRadius:"10px",padding:"0.75rem 1rem"}}>
-            <span className="ccc-field-icon" style={{marginTop:"0.15rem"}}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-            </span>
-            <div style={{flex:1,display:"flex",flexDirection:"column",gap:"0.4rem"}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-                <span style={{fontSize:"0.75rem",color:"var(--text-muted)"}}>Descrição</span>
-                <button type="button" className="ccc-btn-ia" onClick={gerarDescricaoLoja} disabled={gerandoDescricao || !form.nome_loja.trim()}>
-                  {gerandoDescricao
-                    ? <><span className="ccc-spinner-ia" /> Gerando...</>
-                    : <><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Gerar com IA</>
-                  }
-                </button>
-              </div>
-              <textarea
-                className="ccc-field-input"
-                placeholder="Descreva sua confeitaria..."
-                value={form.descricao_loja}
-                onChange={e => setForm({...form, descricao_loja: e.target.value.slice(0,200)})}
-                rows={3}
-                style={{resize:"none"}}
-              />
-              <p className="ccc-char-count">{form.descricao_loja.length}/200</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 4 — Avaliações */}
-        <div className="ccc-card">
-          <SectionLabel
-            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>}
-            variant="amarelo"
-            sub="Como sua nota aparece para os clientes"
-          >Avaliações</SectionLabel>
-          <div className="ccc-toggle-row">
-            <div><p className="ccc-toggle-label">Exibir estrelas de avaliação</p><p className="ccc-toggle-sub">Mostra a avaliação média no cardápio</p></div>
-            <label className="ccc-toggle"><input type="checkbox" checked={!form.hide_stars} onChange={e => setForm({...form, hide_stars: !e.target.checked})} /><span className="ccc-toggle-slider" /></label>
-          </div>
-          {!form.hide_stars && (
-            <>
-              <div className="ccc-divider" />
-              <p className="ccc-hint">Selecione a nota que aparecerá no cardápio</p>
-              <div className="ccc-notas-grid">
-                {[5.0, 4.9, 4.8].map(nota => (
-                  <button key={nota} className={`ccc-nota-btn${form.avaliacao_media === nota ? " active" : ""}`} onClick={() => setForm({...form, avaliacao_media: nota})}>
-                    <span style={{fontSize:"1.1rem"}}>⭐</span>
-                    <span>{nota.toFixed(1)}</span>
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-
-      </div>{/* fim linha 1 */}
-      </>
-      }
-
       {success && <div className="ccc-toast">✓ Salvo com sucesso!</div>}
       </div>{/* fim .ccc-geral-main */}
 
