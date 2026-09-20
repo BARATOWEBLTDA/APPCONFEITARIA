@@ -291,36 +291,19 @@ export default function CardapioDesign() {
             </div>
           ))}
 
-          {!isPro && (
-            <div className="cd-pro-showcase" onClick={() => navigate("/assinar")}>
+          {!isPro && [1, 2, 3].map((i) => (
+            <div key={i} className="cd-pro-slot" onClick={() => navigate("/assinar")}>
               <div className="cd-pro-shine" aria-hidden="true" />
-              <div className="cd-pro-badge">✨ PRO</div>
-              <div className="cd-pro-icon">
-                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="cd-pro-badge">PRO</div>
+              <div className="cd-pro-icon-mini">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="4" y="11" width="16" height="10" rx="2.5"/>
                   <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
                 </svg>
               </div>
-              <p className="cd-pro-title">
-                <span className="cd-pro-highlight">+3 banners</span> no PRO
-              </p>
-              <p className="cd-pro-sub">
-                Monte um <b>carrossel</b> no topo do cardápio
-              </p>
-              <button className="cd-pro-cta" onClick={(e) => { e.stopPropagation(); navigate("/assinar"); }}>
-                <span>Fazer upgrade</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                  <polyline points="12 5 19 12 12 19"/>
-                </svg>
-              </button>
-              <div className="cd-pro-benefits">
-                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Carrossel automático</span>
-                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Sem anúncios</span>
-                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Cancele quando quiser</span>
-              </div>
+              <p className="cd-pro-slot-label">Banner {i + 1}</p>
             </div>
-          )}
+          ))}
         </div>
       </div>
 
@@ -507,28 +490,23 @@ export default function CardapioDesign() {
         .cd-page-sub { font-size: var(--font-button); color:var(--text-secondary); margin:0; }
         .cd-autosave { display:inline-flex; align-items:center; gap:0.35rem; font-size: var(--font-helper); font-weight: var(--fw-semibold); color:var(--success); background:#f0fdf4; padding:0.32rem 0.8rem; border-radius: var(--radius-full); border:1px solid #dcfce7; margin-top:0.5rem; animation:fadeIn 0.3s ease; }
 
-        /* ═══ Card PRO impactante (banners 2,3,4 quando bloqueado) ═══ */
+        /* ═══ Slot bloqueado PRO (compacto, mesma proporção do banner) ═══ */
         @keyframes cd-pro-glow {
-          0%, 100% { box-shadow: 0 0 20px rgba(232,90,140,0.25), inset 0 0 30px rgba(232,90,140,0.05); }
-          50% { box-shadow: 0 0 35px rgba(232,90,140,0.45), inset 0 0 30px rgba(232,90,140,0.10); }
-        }
-        @keyframes cd-pro-float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-3px); }
+          0%, 100% { box-shadow: 0 0 14px rgba(232,90,140,0.20), inset 0 0 20px rgba(232,90,140,0.04); }
+          50% { box-shadow: 0 0 24px rgba(232,90,140,0.40), inset 0 0 20px rgba(232,90,140,0.08); }
         }
         @keyframes cd-pro-shine {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
         }
-        .cd-pro-showcase {
+        .cd-pro-slot {
           background: linear-gradient(135deg, #1F1F23 0%, #2B2B32 60%, #3A3A42 100%);
           color: #fff;
-          border-radius: 12px;
-          padding: 18px 16px;
-          text-align: center;
+          border-radius: 10px;
+          aspect-ratio: 16/9;
           position: relative;
           animation: cd-pro-glow 3s ease-in-out infinite;
-          border: 1px solid rgba(232,90,140,0.25);
+          border: 1px solid rgba(232,90,140,0.30);
           overflow: hidden;
           cursor: pointer;
           transition: transform 0.2s ease;
@@ -536,92 +514,49 @@ export default function CardapioDesign() {
           display: flex; flex-direction: column;
           align-items: center; justify-content: center;
           gap: 6px;
-          min-height: 100%;
+          padding: 8px;
         }
-        .cd-pro-showcase:hover { transform: translateY(-2px); }
+        .cd-pro-slot:hover {
+          transform: translateY(-2px);
+          border-color: rgba(232,90,140,0.55);
+        }
         .cd-pro-shine {
           position: absolute; inset: 0;
-          background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.05) 50%, transparent 60%);
+          background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.06) 50%, transparent 60%);
           background-size: 200% 100%;
           animation: cd-pro-shine 4s linear infinite;
           pointer-events: none;
         }
         .cd-pro-badge {
           position: absolute;
-          top: 10px; right: 10px;
+          top: 6px; right: 6px;
           background: linear-gradient(90deg, #E85A8C, #FF6FA9);
           color: #fff;
-          padding: 3px 9px;
+          padding: 2px 8px;
           border-radius: 999px;
-          font-size: 9.5px;
+          font-size: 9px;
           font-weight: 900;
           letter-spacing: 0.12em;
-          box-shadow: 0 0 14px rgba(232,90,140,0.6);
+          box-shadow: 0 0 10px rgba(232,90,140,0.6);
           z-index: 2;
         }
-        .cd-pro-icon {
-          width: 44px; height: 44px;
-          margin: 6px 0 6px;
+        .cd-pro-icon-mini {
+          width: 36px; height: 36px;
           background: rgba(232,90,140,0.14);
-          border: 1.5px solid rgba(232,90,140,0.5);
-          border-radius: 12px;
+          border: 1.5px solid rgba(232,90,140,0.45);
+          border-radius: 10px;
           display: flex; align-items: center; justify-content: center;
-          animation: cd-pro-float 2.8s ease-in-out infinite;
           position: relative; z-index: 1;
           color: #FF6FA9;
-          flex-shrink: 0;
         }
-        .cd-pro-icon svg { width: 22px; height: 22px; }
-        .cd-pro-title {
-          font-size: 14px;
-          font-weight: 800;
-          color: #fff;
-          margin: 0;
-          line-height: 1.2;
-          letter-spacing: -0.01em;
-          position: relative; z-index: 1;
-        }
-        .cd-pro-highlight {
-          background: linear-gradient(90deg, #FF6FA9, #FFA8CE);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .cd-pro-sub {
-          font-size: 11.5px;
+        .cd-pro-slot-label {
+          font-size: 11px;
+          font-weight: 700;
           color: #C5C5CE;
-          margin: 0 0 8px;
-          line-height: 1.35;
-          font-weight: 500;
+          margin: 0;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
           position: relative; z-index: 1;
-        }
-        .cd-pro-sub b { color: #fff; font-weight: 700; }
-        .cd-pro-cta {
-          background: linear-gradient(135deg, #E85A8C 0%, #FF6FA9 100%);
-          color: #fff;
-          border: none;
-          padding: 9px 18px;
-          border-radius: 999px;
-          font-size: 12px;
-          font-weight: 800;
-          cursor: pointer;
-          font-family: inherit;
-          box-shadow: 0 4px 14px rgba(232,90,140,0.4);
-          position: relative; z-index: 1;
-          display: inline-flex; align-items: center; gap: 5px;
-          transition: transform 0.15s ease, box-shadow 0.15s ease;
-          white-space: nowrap;
-        }
-        .cd-pro-cta:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 6px 18px rgba(232,90,140,0.55);
-        }
-        .cd-pro-cta svg { width: 14px; height: 14px; }
-        .cd-pro-cta:active { transform: translateY(0); }
-        /* Benefícios escondidos no modo compacto — economiza espaço */
-        .cd-pro-benefits { display: none; }
-        @media (max-width: 640px) {
-          .cd-pro-showcase { padding: 20px 16px; }
         }
 
         /* ── Card base (V2 moderno) ── */
@@ -711,7 +646,10 @@ export default function CardapioDesign() {
         .cd-logo-preview img { width:100%; height:100%; object-fit:cover; }
 
         /* ── Banners ── */
-        .cd-banners-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; }
+        .cd-banners-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:0.75rem; }
+        @media (max-width: 640px) {
+          .cd-banners-grid { grid-template-columns: 1fr 1fr; }
+        }
         .cd-banner-slot { display:flex; flex-direction:column; gap:0.35rem; }
         .cd-banner-slot-label { font-size: var(--font-caption); font-weight: var(--fw-bold); color:var(--text-muted); text-transform:uppercase; letter-spacing:0.08em; }
         .cd-banner-thumb { position:relative; width:100%; aspect-ratio:16/9; border-radius: var(--radius-md); overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
