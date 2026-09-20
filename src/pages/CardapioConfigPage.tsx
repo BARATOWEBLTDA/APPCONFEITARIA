@@ -908,7 +908,7 @@ export default function CardapioConfigPage() {
         .ccc-root {
           font-family:'Geist', sans-serif; width:100%; max-width:1500px;
           display:flex; flex-direction:column; gap:1.5rem;
-          box-sizing:border-box; padding:0 2rem;
+          box-sizing:border-box; padding: 36px 2rem 0;
           overflow-x:hidden;
         }
         /* Desktop: overflow visible nos ancestrais pra position:sticky funcionar */
