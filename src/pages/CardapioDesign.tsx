@@ -465,7 +465,7 @@ export default function CardapioDesign() {
         @keyframes cdspin { to { transform:rotate(360deg); } }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
-        .cd-root { font-family:'Geist', sans-serif; max-width:960px; width:100%; box-sizing:border-box; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto auto 1fr; gap:1rem; align-items:start; }
+        .cd-root { font-family:'Geist', sans-serif; max-width:960px; width:100%; box-sizing:border-box; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto auto 1fr; gap:1rem; align-items:start; padding-top: 12px; }
         .cd-page-header { grid-column:1/-1; padding-bottom:0.5rem; }
         @media (max-width: 768px) {
           .cd-root { display:flex; flex-direction:column; max-width:100%; }
