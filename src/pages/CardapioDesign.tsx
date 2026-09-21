@@ -37,7 +37,7 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
   const [corBackground, setCorBackground] = useState("#FFF1F7");
   const [corNome, setCorNome] = useState("#1f2937");
   const [corBotao, setCorBotao] = useState("#FF6FA9");
-  const [corNavbar, setCorNavbar] = useState("#F5F5F5");
+  const [corNavbar, setCorNavbar] = useState("#FF6FA9");
   const [corSacola, setCorSacola] = useState("#FF6FA9");
   const [corRodape, setCorRodape] = useState("#FF6FA9");
   const [activePicker, setActivePicker] = useState<string | null>(null);
@@ -66,7 +66,7 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
         setCorBackground(data.cor_background || "#FFF1F7");
         setCorNome(data.cor_nome || "#1f2937");
         setCorBotao(data.cor_botao || "#FF6FA9");
-        setCorNavbar(data.cor_navbar || "#F5F5F5");
+        setCorNavbar(data.cor_navbar || "#FF6FA9");
         setCorSacola(data.cor_sacola || "#FF6FA9");
         setCorRodape(data.cor_rodape || "#FF6FA9");
         setCardapioModelo(data.cardapio_modelo || "padrao");
@@ -428,7 +428,7 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
                 <HexColorPicker color={corNavbar} onChange={v => handleColorChange('cor_navbar', v, setCorNavbar)} style={{ width: '100%', height: '160px' }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
                   <input type="text" value={corNavbar} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_navbar', e.target.value, setCorNavbar) }} className="cd-hex-input" />
-                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_navbar', '#F5F5F5', setCorNavbar)}>↺</button>
+                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_navbar', '#FF6FA9', setCorNavbar)}>↺</button>
                   <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
                 </div>
               </div>
