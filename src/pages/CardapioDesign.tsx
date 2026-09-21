@@ -381,7 +381,7 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
               <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_botao' ? null : 'cor_botao')}>
                 <div className="cd-color-info">
                   <span className="cd-color-label">Cor dos botões de comprar</span>
-                  <div className="cd-color-meta"><span className="cd-color-value">{corBotao}</span><span className="cd-pro-badge">PRO</span></div>
+                  <div className="cd-color-meta"><span className="cd-color-value">{corBotao}</span><span className="cd-pro-badge"><img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />PRO</span></div>
                 </div>
                 <div className="cd-color-swatch" style={{ background: corBotao }} />
               </div>
@@ -411,29 +411,39 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
             </div>
           )}
 
-          {/* Cor de background (fica atrás da logo/nome) — livre pra todos */}
-          <div>
-            <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_navbar' ? null : 'cor_navbar')}>
-              <div className="cd-color-info">
-                <span className="cd-color-label">Cor de background</span>
-                <span className="cd-color-value">{corNavbar}</span>
+          {/* Cor de background (fica atrás da logo/nome) — PRO */}
+          {isPro ? (
+            <div>
+              <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_navbar' ? null : 'cor_navbar')}>
+                <div className="cd-color-info">
+                  <span className="cd-color-label">Cor de background</span>
+                  <div className="cd-color-meta"><span className="cd-color-value">{corNavbar}</span><span className="cd-pro-badge"><img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />PRO</span></div>
+                </div>
+                <div className="cd-color-swatch" style={{ background: corNavbar }} />
               </div>
-              <div className="cd-color-swatch" style={{ background: corNavbar }} />
+              {activePicker === 'cor_navbar' && (
+                <div className="cd-picker-wrap">
+                  <div style={{ padding: '12px', borderRadius: '10px', background: corNavbar, marginBottom: '12px', height: '40px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>Pré-visualização (atrás da logo/nome)</span>
+                  </div>
+                  <HexColorPicker color={corNavbar} onChange={v => handleColorChange('cor_navbar', v, setCorNavbar)} style={{ width: '100%', height: '160px' }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                    <input type="text" value={corNavbar} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_navbar', e.target.value, setCorNavbar) }} className="cd-hex-input" />
+                    <button className="cd-restore-btn" onClick={() => handleColorChange('cor_navbar', '#FF6FA9', setCorNavbar)}>↺</button>
+                    <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
+                  </div>
+                </div>
+              )}
             </div>
-            {activePicker === 'cor_navbar' && (
-              <div className="cd-picker-wrap">
-                <div style={{ padding: '12px', borderRadius: '10px', background: corNavbar, marginBottom: '12px', height: '40px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>Pré-visualização (atrás da logo/nome)</span>
-                </div>
-                <HexColorPicker color={corNavbar} onChange={v => handleColorChange('cor_navbar', v, setCorNavbar)} style={{ width: '100%', height: '160px' }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                  <input type="text" value={corNavbar} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_navbar', e.target.value, setCorNavbar) }} className="cd-hex-input" />
-                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_navbar', '#FF6FA9', setCorNavbar)}>↺</button>
-                  <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
-                </div>
+          ) : (
+            <div className="cd-upgrade-box" style={{ marginTop: '4px' }}>
+              <div className="cd-lock-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+              <div>
+                <p className="cd-upgrade-title">Cor de background</p>
+                <p className="cd-upgrade-sub">Personalize o fundo atrás da logo/nome com o plano PRO</p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
         </div>
       </div>
