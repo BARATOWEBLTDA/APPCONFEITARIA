@@ -1904,7 +1904,7 @@ function PersonalizacaoStep({
       })}
 
       <style>{`
-        .pv3-root { display: flex; flex-direction: column; gap: 12px; }
+        .pv3-root { display: flex; flex-direction: column; gap: 12px; min-height: 420px; }
         .pv3-header { margin-bottom: 4px; }
         .pv3-eyebrow {
           font-size: 11px; color: #E85A8C; font-weight: 800;
@@ -2053,6 +2053,11 @@ function PersonalizacaoStep({
           transition: border-color 0.15s;
         }
         .pv3-card--ativo { border-color: #E85A8C; }
+        /* Card ativo E aberto: garante altura mínima confortável */
+        .pv3-card--ativo:has(.pv3-card-body) { min-height: 340px; }
+        @media (max-width: 720px) {
+          .pv3-card--ativo:has(.pv3-card-body) { min-height: 300px; }
+        }
         .pv3-card-head {
           display: flex;
           align-items: center;
@@ -3602,7 +3607,7 @@ export default function Produtos() {
                 <div className="prod-modal-title-novo">
                   {form.id ? "Editar produto" : (() => {
                     if (wizardStep === 2) return "Informações do produto";
-                    if (wizardStep === 3) return "Opções do produto";
+                    if (wizardStep === 3) return "";
                     if (wizardStep === 4) return "Preço e venda";
                     if (wizardStep === 5) return "Fotos e finalização";
                     return "";
