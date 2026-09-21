@@ -3599,7 +3599,6 @@ export default function Produtos() {
                 </button>
               ) : <div style={{width: 36}} />}
               <div className="prod-modal-title-wrap">
-                {!form.id && <div className="prod-modal-eyebrow">Passo {wizardStep - 1} de 4</div>}
                 <div className="prod-modal-title-novo">
                   {form.id ? "Editar produto" : (() => {
                     if (wizardStep === 2) return "Informações do produto";
@@ -3615,16 +3614,6 @@ export default function Produtos() {
               </div>
               <button className="prod-modal-close-novo" onClick={handleTryClose} aria-label="Fechar">✕</button>
             </div>
-            )}
-
-            {/* Progresso — barra fina rosa (só nos passos 2, 3, 4, 5) */}
-            {wizardStep >= 2 && !form.id && (
-              <div className="prod-progresso-bar-wrap">
-                <div
-                  className="prod-progresso-bar-fill"
-                  style={{ width: `${((wizardStep - 1) / 4) * 100}%` }}
-                />
-              </div>
             )}
 
             {/* ══════ Tabs do MODO EDIÇÃO (V3 — 4 tabs espelhando o wizard) ══════ */}
