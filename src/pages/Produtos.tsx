@@ -4092,7 +4092,7 @@ export default function Produtos() {
                   {form.id ? "Editar produto" : (() => {
                     if (wizardStep === 2) return "Informações do produto";
                     if (wizardStep === 3) return "";
-                    if (wizardStep === 4) return "Preço e venda";
+                    if (wizardStep === 4) return "";
                     if (wizardStep === 5) return "Fotos e finalização";
                     return "";
                   })()}
@@ -4788,6 +4788,16 @@ export default function Produtos() {
                 </div>
               )}
 
+              {/* Título e subtítulo (mesmo estilo do step 3) */}
+              {wizardStep === 4 && !form.id && (
+                <div className="prod-step-header">
+                  <div className="prod-step-title">Preço e venda</div>
+                  <div className="prod-step-sub">
+                    Define quanto seu produto vai custar. Preço cheio, promoção, extras. Simples e direto.
+                  </div>
+                </div>
+              )}
+
               {/* ══════ SEÇÃO 1: Preço base + Forma de venda ══════ */}
               {/* Aparece quando: (a) não tem tamanho, OU (b) modo é por_peso (precisa do R$/kg) */}
               {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
@@ -4831,12 +4841,14 @@ export default function Produtos() {
                   {/* Preview do preço no cardápio */}
                   {form.preco_normal > 0 && form.preco_promocional && form.preco_promocional > 0 && form.preco_promocional < form.preco_normal && (
                     <div className="prod-promo-preview">
-                      <span className="prod-promo-preview-label">Cliente verá:</span>
-                      <span className="prod-promo-preview-riscado">R$ {formatPreco(form.preco_normal)}</span>
-                      <span className="prod-promo-preview-final">R$ {formatPreco(form.preco_promocional)}</span>
-                      <span className="prod-promo-preview-desconto">
-                        -{Math.round((1 - form.preco_promocional / form.preco_normal) * 100)}%
-                      </span>
+                      <span className="prod-promo-preview-label">Cliente verá no cardápio</span>
+                      <div className="prod-promo-preview-precos">
+                        <span className="prod-promo-preview-riscado">R$ {formatPreco(form.preco_normal)}</span>
+                        <span className="prod-promo-preview-final">R$ {formatPreco(form.preco_promocional)}</span>
+                        <span className="prod-promo-preview-desconto">
+                          -{Math.round((1 - form.preco_promocional / form.preco_normal) * 100)}%
+                        </span>
+                      </div>
                     </div>
                   )}
 
@@ -7602,16 +7614,42 @@ export default function Produtos() {
           font-size: 18px !important;
           font-weight: var(--fw-black) !important;
         }
-        /* Input de preço promocional — bordado verde discreto */
+        /* Título e subtítulo dos steps (mesmo padrão do Vamos montar as opções) */
+        .prod-step-header {
+          margin-bottom: 20px;
+          text-align: center;
+        }
+        .prod-step-title {
+          font-size: 20px;
+          font-weight: 800;
+          color: #4B5563;
+          line-height: 1.2;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+        }
+        .prod-step-sub {
+          font-size: 13px;
+          color: #6B5D64;
+          margin-top: 6px;
+          line-height: 1.5;
+          max-width: 480px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        /* Input de preço promocional — usa paleta rosa Doonly */
         .prod-preco-input--promo {
-          border-color: #86EFAC !important;
-          background: #F0FDF4 !important;
+          border-color: #E85A8C !important;
+          background: #FFF5F9 !important;
         }
         .prod-preco-input--promo:focus-within {
-          border-color: #22C55E !important;
+          border-color: #C33A6E !important;
         }
         .prod-preco-input--promo span, .prod-preco-input--promo input {
-          color: #15803D !important;
+          color: #C33A6E !important;
+        }
+        .prod-preco-input--promo input::placeholder {
+          color: #F5B8CD !important;
         }
         .prod-field-hint {
           font-size: 11px;
@@ -7621,42 +7659,48 @@ export default function Produtos() {
         }
         /* Preview de como o cliente vê o preço no cardápio */
         .prod-promo-preview {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-top: 10px;
-          padding: 12px 14px;
-          background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
-          border: 1.5px solid #86EFAC;
-          border-radius: 10px;
-          flex-wrap: wrap;
+          margin-top: 12px;
+          padding: 16px 18px;
+          background: #FFF5F9;
+          border: 1.5px solid #F5B8CD;
+          border-radius: 12px;
         }
         .prod-promo-preview-label {
-          font-size: 11.5px;
+          display: block;
+          font-size: 11px;
           font-weight: 700;
-          color: #15803D;
+          color: #831843;
           text-transform: uppercase;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.08em;
+          margin-bottom: 8px;
+        }
+        .prod-promo-preview-precos {
+          display: flex;
+          align-items: baseline;
+          gap: 12px;
+          flex-wrap: wrap;
         }
         .prod-promo-preview-riscado {
-          font-size: 13px;
+          font-size: 15px;
           color: #9CA3AF;
           text-decoration: line-through;
-          font-weight: 600;
+          font-weight: 500;
         }
         .prod-promo-preview-final {
-          font-size: 17px;
+          font-size: 26px;
           font-weight: 900;
-          color: #15803D;
+          color: #E85A8C;
+          letter-spacing: -0.02em;
         }
         .prod-promo-preview-desconto {
           margin-left: auto;
-          padding: 3px 10px;
-          background: #16A34A;
+          padding: 4px 10px;
+          background: #E85A8C;
           color: #fff;
           border-radius: 6px;
           font-size: 12px;
           font-weight: 800;
+          letter-spacing: 0.03em;
         }
         /* ═══ Botão "+ Adicionar variação" (dentro da seção simples) ═══ */
         .prod-btn-add-variacao {
