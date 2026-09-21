@@ -7643,6 +7643,9 @@ export default function Produtos() {
           border-color: #E85A8C !important;
           background: #FFF5F9 !important;
         }
+        .prod-preco-input--promo input {
+          background: transparent !important;
+        }
         .prod-preco-input--promo:focus-within {
           border-color: #C33A6E !important;
         }
