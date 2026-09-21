@@ -4741,11 +4741,21 @@ export default function Produtos() {
                 </div>
               )}
 
-              {/* Preço e Venda — só em step 4 (Preço e venda) ou edição */}
               {/* ══════ SEÇÃO 1: Preço base + Forma de venda ══════ */}
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) && (
+              {/* Aparece quando: (a) não tem tamanho, OU (b) modo é por_peso (precisa do R$/kg) */}
+              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
+                !(form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0) ||
+                form.grupo_tamanhos?.modo_preco_tamanho === "por_peso"
+              ) && (
                 <div className="prod-section">
-                  <p className="prod-section-label prod-section-label--novo">Preço base <span className="prod-field-req">obrigatório</span></p>
+                  <p className="prod-section-label prod-section-label--novo">
+                    {form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? "Preço por kg" : "Preço base"} <span className="prod-field-req">obrigatório</span>
+                  </p>
+                  {form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (
+                    <p style={{margin:"0 0 10px", fontSize:12.5, color:"#6B5D64", lineHeight:1.5}}>
+                      Define o preço de <b>1 kg</b>. Cada tamanho vai ser calculado automaticamente: <b>peso × preço</b>.
+                    </p>
+                  )}
                   <div className="prod-row-2">
                     <div className="prod-field">
                       <label>Preço</label>
