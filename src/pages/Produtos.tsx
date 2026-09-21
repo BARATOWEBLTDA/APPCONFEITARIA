@@ -4840,12 +4840,11 @@ export default function Produtos() {
 
                   {/* Preview do preço no cardápio */}
                   {form.preco_normal > 0 && form.preco_promocional && form.preco_promocional > 0 && form.preco_promocional < form.preco_normal && (() => {
-                    // Sufixo da unidade (só se fizer sentido pro cliente)
-                    const isKgPorPeso = form.grupo_tamanhos?.modo_preco_tamanho === "por_peso";
+                    // Sufixo vem do "Vendido por" — é a fonte de verdade da unidade
                     const sufixoMap: Record<string, string> = {
                       kg: "/kg", fatia: "/fatia", cento: "/cento", caixa: "/cx",
                     };
-                    const sufixo = isKgPorPeso ? "/kg" : (sufixoMap[form.forma_venda] || "");
+                    const sufixo = sufixoMap[form.forma_venda] || "";
                     return (
                       <div className="prod-promo-preview">
                         <span className="prod-promo-preview-label">Cliente verá no cardápio</span>
