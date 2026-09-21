@@ -59,7 +59,7 @@ function NavLink({ label, icon, defaultActive, navBg, onClick }: any) {
 function DeskNav({ design, searchTerm, onSearchChange }: any) {
   const { items } = useCart()
   const count = items.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
-  const navBg = design.cor_navbar || design.cor_borda || '#ec4899'
+  const navBg = design.cor_navbar || '#F5F5F5'
   const corBorda = design.cor_borda || '#ec4899'
   const [showConta, setShowConta] = useState(false)
   const [contaAba, setContaAba] = useState<'pedidos'|'perfil'>('pedidos')
@@ -84,8 +84,8 @@ function DeskNav({ design, searchTerm, onSearchChange }: any) {
               </div>
           }
           <div>
-            <p style={{ margin:0, fontWeight:800, fontSize:'18px', color: design.cor_nome || '#ffffff', lineHeight:1.2 }}>{design.nome_loja}</p>
-            <p style={{ margin:'3px 0 0', fontSize:'13px', color:'rgba(255,255,255,0.75)', fontWeight:500 }}>{design.cidade_estado || 'Doces que encantam'}</p>
+            <p style={{ margin:0, fontWeight:800, fontSize:'18px', color: design.cor_nome || '#1f2937', lineHeight:1.2 }}>{design.nome_loja}</p>
+            <p style={{ margin:'3px 0 0', fontSize:'13px', color: (design.cor_nome && design.cor_nome !== '#1f2937') ? design.cor_nome + 'cc' : 'rgba(31,41,55,0.65)', fontWeight:500 }}>{design.cidade_estado || 'Doces que encantam'}</p>
           </div>
         </div>
 
@@ -462,7 +462,7 @@ function DeskFooterBar({ design, config }: any) {
   } catch {}
   if (config?.telefone) telefone = config.telefone
 
-  const cor = design?.cor_rodape || design?.cor_navbar || design?.cor_borda || '#ec4899'
+  const cor = design?.cor_rodape || design?.cor_navbar || '#F5F5F5'
 
   const linha2Parts = []
   if (cnpj) linha2Parts.push(`CNPJ: ${cnpj}`)
@@ -641,7 +641,7 @@ function CardapioContent() {
   /* ═══ MOBILE ═══ */
   if (!isDesktop) {
     return (
-      <div className="min-h-screen relative" style={{ backgroundColor: design.cor_background || '#f8f8f8' }}>
+      <div className="min-h-screen relative" style={{ backgroundColor: '#f8f8f8' }}>
         <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
 
         {cardapioModelo === 'modelo1' ? (
@@ -672,7 +672,7 @@ function CardapioContent() {
 
   /* ═══ DESKTOP ═══ */
   return (
-    <div style={{ minHeight:'100vh', background: design.cor_background || 'var(--bg-body)', fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
+    <div style={{ minHeight:'100vh', background:'var(--bg-body)', fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
       <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
       <DeskNav design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
@@ -688,7 +688,7 @@ function CardapioContent() {
               selectedCategory={selectedCategory}
               onSelectCategory={setSelectedCategory}
               corBotao={design.cor_botao || '#ec4899'}
-              navBg={design.cor_navbar || design.cor_borda || '#ec4899'}
+              navBg={design.cor_navbar || '#F5F5F5'}
             />
           </div>
 
@@ -696,12 +696,12 @@ function CardapioContent() {
           <div>
             {/* Busca */}
             <div style={{ position:'relative', marginBottom:'16px', display:'flex', alignItems:'stretch', borderRadius:'10px', overflow:'hidden', border:'1.5px solid var(--border)', background:'var(--bg-card)', transition:'border-color 0.2s' }}
-              onFocusCapture={e => (e.currentTarget.style.borderColor = design.cor_navbar || design.cor_borda || '#ec4899')}
+              onFocusCapture={e => (e.currentTarget.style.borderColor = design.cor_navbar || '#F5F5F5')}
               onBlurCapture={e => (e.currentTarget.style.borderColor = 'var(--border)')}
             >
               {/* Fundo colorido com ícone na esquerda */}
-              <div style={{ width:'46px', background: design.cor_navbar || design.cor_borda || '#ec4899', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                <MagnifyingGlass size={20} weight="bold" color="#ffffff" />
+              <div style={{ width:'46px', background: design.cor_navbar || '#F5F5F5', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                <MagnifyingGlass size={20} weight="bold" color="#6B7280" />
               </div>
               <input
                 value={searchTerm}
