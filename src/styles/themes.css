@@ -524,3 +524,14 @@ input[type="checkbox"]:not(.no-square-check):focus-visible {
   outline: 2px solid #E85A8C;
   outline-offset: 2px;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Balanceamento de linha — evita última palavra sozinha em títulos/subtítulos
+   ══════════════════════════════════════════════════════════════════════
+   Aplicado em h1-h6 e em elementos com classe utilitária `.balance-text`.
+   text-wrap: balance funciona em Chrome 114+, Safari 17.4+, Firefox 121+.
+   Fallback: navegadores antigos ignoram e quebram normalmente.
+*/
+h1, h2, h3, h4, h5, h6, .balance-text {
+  text-wrap: balance;
+}

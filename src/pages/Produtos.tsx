@@ -2075,7 +2075,7 @@ function PersonalizacaoStep({
           text-transform: uppercase;
           letter-spacing: 0.02em;
         }
-        .pv3-subtitle { font-size: 13px; color: #6B5D64; margin-top: 6px; line-height: 1.5; max-width: 480px; margin-left: auto; margin-right: auto; }
+        .pv3-subtitle { font-size: 13px; color: #6B5D64; margin-top: 6px; line-height: 1.5; max-width: 480px; margin-left: auto; margin-right: auto; text-wrap: balance; }
 
         /* Modal do (i) tooltip — popover custom personalizado */
         .pv3-info-ov {
@@ -7635,6 +7635,7 @@ export default function Produtos() {
           max-width: 480px;
           margin-left: auto;
           margin-right: auto;
+          text-wrap: balance;
         }
 
         /* Input de preço promocional — usa paleta rosa Doonly */
