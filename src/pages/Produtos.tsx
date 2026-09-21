@@ -4248,10 +4248,10 @@ export default function Produtos() {
                   </div>
                   <textarea
                     id="prod-desc-input"
-                    placeholder="Fale sobre o produto..."
+                    placeholder={"Descreva como é seu produto\n\nExemplo:\n2 camadas de Mousse de chocolate (massa pão de ló de chocolate)\nCobertura Mousse Branco (tipo chantilly)"}
                     value={form.descricao === "Gerando..." ? "" : form.descricao}
                     onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
-                    rows={3}
+                    rows={5}
                     disabled={form.descricao === "Gerando..."}
                     style={{fontFamily: 'inherit', resize: 'vertical'}}
                   />
