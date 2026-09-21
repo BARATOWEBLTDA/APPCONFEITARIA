@@ -1396,27 +1396,7 @@ function PersonalizacaoStep({
               );
             })}
           </div>
-          <button
-            type="button"
-            className="prod-mchk-continue"
-            disabled={!grupos.some(g => g.dados.ativo)}
-            onClick={() => onGoToFill?.()}
-          >
-            Continuar →
-          </button>
-          {!grupos.some(g => g.dados.ativo) && (
-            <p className="prod-mchk-hint">Marque pelo menos 1 opção</p>
-          )}
         </div>
-      )}
-
-      {mobileMode === "fill" && (
-        <button type="button" className="prod-mchk-back" onClick={() => onBackToChecklist?.()}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          Voltar e editar categorias
-        </button>
       )}
 
       {/* Desktop OU mobileMode === "fill": renderiza os grupos. No fill filtra só ativos */}
@@ -3612,7 +3592,14 @@ export default function Produtos() {
             {wizardStep >= 2 && (
             <div className="prod-modal-header-novo">
               {wizardStep > 2 && !form.id ? (
-                <button className="prod-modal-back-novo" onClick={() => setWizardStep(s => Math.max(2, s - 1) as 1 | 2 | 3 | 4 | 5)} aria-label="Voltar">
+                <button className="prod-modal-back-novo" onClick={() => {
+                  // Mobile: se está preenchendo personalização, volta pro checklist ao invés do step anterior
+                  if (isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "fill") {
+                    setMobilePersonaStep("checklist");
+                    return;
+                  }
+                  setWizardStep(s => Math.max(2, s - 1) as 1 | 2 | 3 | 4 | 5);
+                }} aria-label="Voltar">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                 </button>
               ) : <div style={{width: 36}} />}
@@ -4782,6 +4769,11 @@ export default function Produtos() {
                   //   Preço base é validado no step 4 (Fotos e finalização)
                   if (wizardStep === 3) {
                     const gm = form.grupo_massas, gr = form.grupo_recheios, gc = form.grupo_coberturas, gt = form.grupo_tamanhos;
+                    // Mobile na etapa checklist: basta ter 1 grupo marcado (opcoes vem depois)
+                    if (isMobileMain && !form.id && mobilePersonaStep === "checklist") {
+                      const anyAtivo = [gm, gr, gc, gt, form.grupo_sabores].some(g => g?.ativo);
+                      return anyAtivo;
+                    }
                     const gruposAtivos = [gm, gr, gc, gt].filter(g => g?.ativo);
                     if (gruposAtivos.some(g => (g?.opcoes.length || 0) === 0)) return false;
                     return true;
@@ -4831,6 +4823,11 @@ export default function Produtos() {
                     disabled={!canAdvance}
                     onClick={() => {
                       if (!canAdvance) return;
+                      // Mobile: se está no checklist da personalização, primeiro avança pra fill (não pro próximo step)
+                      if (isMobileMain && !form.id && wizardStep === 3 && mobilePersonaStep === "checklist") {
+                        setMobilePersonaStep("fill");
+                        return;
+                      }
                       setWizardStep(s => (s + 1) as 1 | 2 | 3 | 4 | 5);
                     }}
                   >
