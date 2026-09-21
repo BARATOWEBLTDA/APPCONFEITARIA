@@ -981,13 +981,37 @@ function PersonalizacaoStep({
   };
   const confirmarBibSheet = () => {
     if (!bibSheetGrupo) return;
-    Array.from(bibSheetSelected).forEach(nome => {
-      if (bibSheetGrupo === "tamanhos") {
-        addTamanho(nome, 0);
-      } else {
-        addOpcao(bibSheetGrupo as any, nome);
+    const selecionados = Array.from(bibSheetSelected);
+    if (selecionados.length === 0) { setBibSheetGrupo(null); return; }
+
+    if (bibSheetGrupo === "tamanhos") {
+      // Constrói novos tamanhos evitando duplicatas
+      const existentes = new Set(grupoTamanhos.opcoes.map((o: any) => o.nome.toLowerCase()));
+      const novos = selecionados
+        .map(n => titleCase(n.trim()))
+        .filter(n => n && !existentes.has(n.toLowerCase()))
+        .map(n => ({ id: gerarId(), nome: n, preco: 0 }));
+      if (novos.length > 0) {
+        onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: [...grupoTamanhos.opcoes, ...novos] } } as any);
       }
-    });
+    } else {
+      const grupo = bibSheetGrupo as "massas" | "recheios" | "coberturas" | "sabores";
+      const key = `grupo_${grupo}` as const;
+      const atual = grupo === "massas" ? grupoMassas
+        : grupo === "recheios" ? grupoRecheios
+        : grupo === "sabores" ? grupoSabores
+        : grupoCoberturas;
+      const existentes = new Set(atual.opcoes.map(o => o.nome.toLowerCase()));
+      const novos = selecionados
+        .map(n => titleCase(n.trim()))
+        .filter(n => n && !existentes.has(n.toLowerCase()))
+        .map(n => ({ id: gerarId(), nome: n, adicional: 0 }));
+      if (novos.length > 0) {
+        onChange({ [key]: { ...atual, opcoes: [...atual.opcoes, ...novos] } } as any);
+        // Salva cada um na biblioteca em paralelo (fire-and-forget)
+        novos.forEach(n => { salvarNaBiblioteca(grupo, n.nome, 0); });
+      }
+    }
     setBibSheetGrupo(null);
     setBibSheetSelected(new Set());
   };
