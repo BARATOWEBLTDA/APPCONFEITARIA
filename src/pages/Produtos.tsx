@@ -6542,7 +6542,8 @@ export default function Produtos() {
         .prod-modal {
           background: var(--bg-card);
           width: 100%;
-          max-height: 92vh;
+          height: 90vh;
+          max-height: 90vh;
           display: flex;
           flex-direction: column;
           font-family: var(--font-base);
@@ -6567,6 +6568,7 @@ export default function Produtos() {
           .prod-modal-overlay { justify-content: center; align-items: center; padding: 24px; }
           .prod-modal {
             max-width: 640px;
+            height: 88vh;
             max-height: 88vh;
             border-radius: 20px;
             animation: prodModalFadeIn 0.22s ease;
