@@ -1208,6 +1208,24 @@ function PersonalizacaoStep({
     });
   };
 
+  // Gera tamanhos em intervalo (0,5 a 10 de 0,5 em 0,5 = 20 tamanhos) — pra modo por_peso
+  const gerarTamanhosPadrao = () => {
+    const existentes = new Set(grupoTamanhos.opcoes.map(o => o.nome.toLowerCase()));
+    const novos: { id: string; nome: string; preco: number }[] = [];
+    for (let peso = 0.5; peso <= 10; peso += 0.5) {
+      const nome = peso % 1 === 0 ? `${peso}kg` : `${peso.toString().replace(".", ",")}kg`;
+      if (existentes.has(nome.toLowerCase())) continue;
+      novos.push({ id: gerarId(), nome, preco: 0 });
+    }
+    if (novos.length === 0) return;
+    onChange({
+      grupo_tamanhos: {
+        ...grupoTamanhos,
+        opcoes: [...grupoTamanhos.opcoes, ...novos],
+      },
+    });
+  };
+
   const removeTamanho = (id: string) => {
     onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.filter(o => o.id !== id) } });
   };
@@ -1574,6 +1592,22 @@ function PersonalizacaoStep({
                               </button>
                             </div>
                             <span className="pv3-opcao-nome">{op.nome}</span>
+                            {g.key !== "sabores" && (
+                              <div className="pv3-opcao-preco">
+                                <span className="pv3-opcao-preco-prefix">+ R$</span>
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  placeholder="0,00"
+                                  value={op.adicional > 0 ? op.adicional.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ""}
+                                  onChange={e => {
+                                    const digits = e.target.value.replace(/\D/g, "");
+                                    const valor = digits ? parseInt(digits, 10) / 100 : 0;
+                                    updateAdicional(g.key as any, op.id, valor);
+                                  }}
+                                />
+                              </div>
+                            )}
                             <button
                               type="button"
                               className="pv3-opcao-del"
@@ -1729,12 +1763,25 @@ function PersonalizacaoStep({
                       </div>
                     </div>
 
-                    {/* Info do preço — muda conforme modo */}
+                    {/* Info do preço — muda conforme modo (não mostra pra modo_preco_fixo pq agora tem input inline) */}
+                    {(grupoTamanhos.modo_preco_tamanho === "por_peso" || grupoTamanhos.modo_preco_tamanho === "sob_consulta") && (
                     <div className="pv3-tamanho-info">
-                      {(grupoTamanhos.modo_preco_tamanho || "preco_fixo") === "preco_fixo" && "💡 O preço de cada opção é definido na próxima etapa"}
                       {grupoTamanhos.modo_preco_tamanho === "por_peso" && "💡 O preço será calculado: peso da opção × preço base do produto (R$/kg)"}
                       {grupoTamanhos.modo_preco_tamanho === "sob_consulta" && "💡 Cliente verá 'Consulte-nos' — sem preço automático"}
                     </div>
+                    )}
+
+                    {/* Botão gerar tamanhos padrão (só no modo por_peso) */}
+                    {grupoTamanhos.modo_preco_tamanho === "por_peso" && (
+                      <button
+                        type="button"
+                        className="pv3-gerar-tamanhos"
+                        onClick={gerarTamanhosPadrao}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M14 3l7 7-11 11-7-7 11-11z"/></svg>
+                        Gerar tamanhos padrão (0,5kg a 10kg)
+                      </button>
+                    )}
 
                     {/* Sugestões da biblioteca */}
                     {(() => {
@@ -1783,6 +1830,22 @@ function PersonalizacaoStep({
                               </button>
                             </div>
                             <span className="pv3-opcao-nome">{op.nome}</span>
+                            {(grupoTamanhos.modo_preco_tamanho || "preco_fixo") === "preco_fixo" && (
+                              <div className="pv3-opcao-preco">
+                                <span className="pv3-opcao-preco-prefix">R$</span>
+                                <input
+                                  type="text"
+                                  inputMode="numeric"
+                                  placeholder="0,00"
+                                  value={op.preco > 0 ? op.preco.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : ""}
+                                  onChange={e => {
+                                    const digits = e.target.value.replace(/\D/g, "");
+                                    const valor = digits ? parseInt(digits, 10) / 100 : 0;
+                                    onChange({ grupo_tamanhos: { ...grupoTamanhos, opcoes: grupoTamanhos.opcoes.map(o => o.id === op.id ? { ...o, preco: valor } : o) } } as any);
+                                  }}
+                                />
+                              </div>
+                            )}
                             <button
                               type="button"
                               className="pv3-opcao-del"
@@ -2337,7 +2400,26 @@ function PersonalizacaoStep({
           display: inline-flex; align-items: center; justify-content: center;
           flex-shrink: 0;
         }
-        .pv3-opcao-nome { flex: 1; font-size: 14.5px; font-weight: 700; color: #2D1F26; }
+        .pv3-opcao-nome { flex: 1; font-size: 14.5px; font-weight: 700; color: #2D1F26; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .pv3-opcao-preco {
+          display: inline-flex; align-items: center; gap: 4px;
+          background: #FDF3F7;
+          border: 1.5px solid #F5B8CD;
+          border-radius: 8px;
+          padding: 4px 8px;
+          flex-shrink: 0;
+        }
+        .pv3-opcao-preco:focus-within { border-color: #E85A8C; }
+        .pv3-opcao-preco-prefix { font-size: 11.5px; font-weight: 800; color: #E85A8C; white-space: nowrap; }
+        .pv3-opcao-preco input {
+          all: unset;
+          width: 62px;
+          font-size: 13.5px; font-weight: 700;
+          color: #2D1F26;
+          text-align: right;
+          font-family: inherit;
+        }
+        .pv3-opcao-preco input::placeholder { color: #C7B5BE; font-weight: 500; }
         .pv3-opcao-del {
           all: unset;
           cursor: pointer;
@@ -2435,6 +2517,24 @@ function PersonalizacaoStep({
           background: #EFF6FF; color: #1E40AF; padding: 8px 12px; border-radius: 6px;
           font-size: 12px; margin-bottom: 10px; border-left: 3px solid #2563EB;
         }
+        .pv3-gerar-tamanhos {
+          all: unset;
+          box-sizing: border-box;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 14px;
+          background: #2C2C2A;
+          color: #fff;
+          border-radius: 10px;
+          font-weight: 700;
+          font-size: 12.5px;
+          cursor: pointer;
+          font-family: inherit;
+          margin-bottom: 10px;
+          transition: background 0.15s ease;
+        }
+        .pv3-gerar-tamanhos:hover { background: #1A1A1A; }
 
         /* Sub-toggle "Foto por opção" (PRO) */
         .pv3-sub-toggle {
