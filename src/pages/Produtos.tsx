@@ -1686,40 +1686,6 @@ function PersonalizacaoStep({
                   </>
                 ) : (
                   <>
-                    {/* Fase 3: Como você quer chamar este grupo? */}
-                    <div style={{marginBottom: 12}}>
-                      <div style={{fontSize: 12, fontWeight: 700, color: "#6B5D64", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.03em"}}>
-                        Como chamar este grupo?
-                      </div>
-                      <div style={{display: "flex", gap: 6}}>
-                        {(["Tamanhos e Pesos", "Quantidades"] as const).map(nome => {
-                          const ativo = (grupoTamanhos.nome_exibicao || "Tamanhos e Pesos") === nome;
-                          return (
-                            <button
-                              key={nome}
-                              type="button"
-                              onClick={() => onChange({ grupo_tamanhos: { ...grupoTamanhos, nome_exibicao: nome } })}
-                              style={{
-                                flex: 1,
-                                padding: "8px 10px",
-                                background: ativo ? "#FDF3F7" : "#fff",
-                                border: `1.5px solid ${ativo ? "#E85A8C" : "#E5D8DE"}`,
-                                borderRadius: 8,
-                                fontSize: 13,
-                                fontWeight: 700,
-                                color: ativo ? "#831843" : "#6B5D64",
-                                cursor: "pointer",
-                                fontFamily: "inherit",
-                                transition: "all 0.15s",
-                              }}
-                            >
-                              {nome === "Tamanhos e Pesos" ? "Tamanhos e Pesos (0,5kg, P/M/G)" : "Quantidades (100 un, cento)"}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
                     {/* Fase 3: Modo de preço */}
                     <div style={{marginBottom: 16, marginTop: 4}}>
                       <div style={{fontSize: 12, fontWeight: 700, color: "#6B5D64", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.03em"}}>
@@ -1728,9 +1694,9 @@ function PersonalizacaoStep({
                       <div style={{display: "flex", flexDirection: "column", gap: 10}}>
                         {([
                           { valor: "preco_fixo", label: "Preço fixo por opção", hint: "Cada tamanho tem seu próprio preço" },
-                          { valor: "por_peso", label: "Calcular pelo peso × preço base", hint: "Preço base R$/kg × peso do tamanho" },
-                          { valor: "sob_consulta", label: "Sob consulta", hint: "Cliente entra em contato pra saber preço" },
-                        ] as const).map(({ valor, label, hint }) => {
+                          { valor: "por_peso", label: "Calcular pelo peso × preço base", hint: "Preço base R$/kg × peso do tamanho", tooltip: "O preço será calculado: peso da opção × preço base do produto (R$/kg). Ex: 1kg = R$80, 2kg = R$160" },
+                          { valor: "sob_consulta", label: "Sob consulta", hint: "Cliente entra em contato pra saber preço", tooltip: "Cliente verá 'Consulte-nos' — sem preço automático no cardápio" },
+                        ] as const).map(({ valor, label, hint, tooltip }: any) => {
                           const ativo = grupoTamanhos.modo_preco_tamanho === valor;
                           return (
                             <label
@@ -1755,7 +1721,19 @@ function PersonalizacaoStep({
                                 style={{marginTop: 3, accentColor: "#E85A8C", flexShrink: 0}}
                               />
                               <div style={{flex: 1, minWidth: 0}}>
-                                <div style={{fontSize: 14, fontWeight: 700, color: "#2D1F26", lineHeight: 1.25}}>{label}</div>
+                                <div style={{fontSize: 14, fontWeight: 700, color: "#2D1F26", lineHeight: 1.25, display: "inline-flex", alignItems: "center", gap: 6}}>
+                                  {label}
+                                  {tooltip && (
+                                    <span
+                                      className="pv3-info-tip"
+                                      title={tooltip}
+                                      onClick={e => { e.preventDefault(); e.stopPropagation(); alert(tooltip); }}
+                                      aria-label={tooltip}
+                                    >
+                                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                    </span>
+                                  )}
+                                </div>
                                 <div style={{fontSize: 12.5, color: "#6B5D64", marginTop: 4, lineHeight: 1.4}}>{hint}</div>
                               </div>
                             </label>
@@ -1763,14 +1741,6 @@ function PersonalizacaoStep({
                         })}
                       </div>
                     </div>
-
-                    {/* Info do preço — muda conforme modo (não mostra pra modo_preco_fixo pq agora tem input inline) */}
-                    {(grupoTamanhos.modo_preco_tamanho === "por_peso" || grupoTamanhos.modo_preco_tamanho === "sob_consulta") && (
-                    <div className="pv3-tamanho-info">
-                      {grupoTamanhos.modo_preco_tamanho === "por_peso" && "💡 O preço será calculado: peso da opção × preço base do produto (R$/kg)"}
-                      {grupoTamanhos.modo_preco_tamanho === "sob_consulta" && "💡 Cliente verá 'Consulte-nos' — sem preço automático"}
-                    </div>
-                    )}
 
                     {/* Botão gerar tamanhos padrão (só no modo por_peso) */}
                     {grupoTamanhos.modo_preco_tamanho === "por_peso" && (
@@ -2528,10 +2498,6 @@ function PersonalizacaoStep({
         .pv3-add-btn:hover { transform: translateY(-1px); }
         .pv3-add-btn:active { transform: translateY(1px); box-shadow: 0 0 0 #C33A6E; }
 
-        .pv3-tamanho-info {
-          background: #EFF6FF; color: #1E40AF; padding: 8px 12px; border-radius: 6px;
-          font-size: 12px; margin-bottom: 10px; border-left: 3px solid #2563EB;
-        }
         .pv3-gerar-tamanhos {
           all: unset;
           box-sizing: border-box;
@@ -2551,6 +2517,26 @@ function PersonalizacaoStep({
           transition: all 0.15s ease;
         }
         .pv3-gerar-tamanhos:hover { background: #E85A8C; color: #fff; }
+
+        /* Ícone (i) de info inline — abre alert com explicação ao clicar */
+        .pv3-info-tip {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: #E85A8C;
+          background: #FCE0E9;
+          border-radius: 50%;
+          width: 18px;
+          height: 18px;
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: all 0.15s ease;
+        }
+        .pv3-info-tip:hover {
+          background: #E85A8C;
+          color: #fff;
+        }
+        .pv3-info-tip svg { width: 12px; height: 12px; }
 
         /* Sub-toggle "Foto por opção" (PRO) */
         .pv3-sub-toggle {
