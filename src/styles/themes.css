@@ -440,3 +440,87 @@
 
   --font-base: 'Geist', sans-serif;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Radio buttons quadradinhos — padrão global Doonly (igual aos checkboxes)
+   ══════════════════════════════════════════════════════════════════════
+   Style aplicado nativamente. Componentes que usam <input type="radio">
+   viram quadradinhos rosa com check quando marcados.
+   Opt-out: adicione classe "no-square-radio" no input pra manter redondo.
+*/
+input[type="radio"]:not(.no-square-radio) {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #D1D5DB;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  margin: 0;
+  padding: 0;
+}
+input[type="radio"]:not(.no-square-radio):hover {
+  border-color: #E85A8C;
+}
+input[type="radio"]:not(.no-square-radio):checked {
+  background: #E85A8C;
+  border-color: #E85A8C;
+}
+input[type="radio"]:not(.no-square-radio):checked::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border-radius: 2px;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+input[type="radio"]:not(.no-square-radio):focus-visible {
+  outline: 2px solid #E85A8C;
+  outline-offset: 2px;
+}
+
+/* Checkboxes — padrão global quadradinho rosa (unificado com radio) */
+input[type="checkbox"]:not(.no-square-check) {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #D1D5DB;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  margin: 0;
+  padding: 0;
+}
+input[type="checkbox"]:not(.no-square-check):hover {
+  border-color: #E85A8C;
+}
+input[type="checkbox"]:not(.no-square-check):checked {
+  background: #E85A8C;
+  border-color: #E85A8C;
+}
+input[type="checkbox"]:not(.no-square-check):checked::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border-radius: 2px;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+input[type="checkbox"]:not(.no-square-check):focus-visible {
+  outline: 2px solid #E85A8C;
+  outline-offset: 2px;
+}
