@@ -584,6 +584,8 @@ interface PersonalizacaoStepProps {
   onGoToFill?: () => void;
   onBackToChecklist?: () => void;
   primeiroNome?: string;
+  produtoNome?: string;
+  produtoCategoria?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -963,12 +965,31 @@ function SelectDoonly({
 function PersonalizacaoStep({
   grupoMassas, grupoRecheios, grupoCoberturas, grupoSabores, grupoTamanhos,
   precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange, onFormaVendaChange,
-  mobileMode, onGoToFill, onBackToChecklist, primeiroNome,
+  mobileMode, onGoToFill, onBackToChecklist, primeiroNome, produtoNome, produtoCategoria,
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
   // Bottom sheet "Escolher da biblioteca"
   const [bibSheetGrupo, setBibSheetGrupo] = useState<"massas" | "recheios" | "coberturas" | "sabores" | "tamanhos" | null>(null);
   const [infoTip, setInfoTip] = useState<string | null>(null);
+
+  // Sugere modo de preço baseado em categoria + nome do produto
+  const modoSugerido: "preco_fixo" | "por_peso" = (() => {
+    const nome = (produtoNome || "").toLowerCase();
+    const cat = (produtoCategoria || "").toLowerCase();
+    // Regras "por peso" (categoria/nome forte pra kg)
+    if (cat.includes("bolo") || cat.includes("torta")) return "por_peso";
+    if (/\b(bolo|torta|pão|panetone|rocambole)\b/.test(nome)) return "por_peso";
+    // Padrão seguro
+    return "preco_fixo";
+  })();
+
+  // Auto-marca a sugestão quando o card está ativo e usuário ainda não escolheu
+  useEffect(() => {
+    if (!grupoTamanhos.ativo) return;
+    if (grupoTamanhos.modo_preco_tamanho) return; // já escolheu
+    onChange({ grupo_tamanhos: { ...grupoTamanhos, modo_preco_tamanho: modoSugerido } } as any);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [grupoTamanhos.ativo, modoSugerido]);
   const [bibSheetSelected, setBibSheetSelected] = useState<Set<string>>(new Set());
   const abrirBibSheet = (grupo: "massas" | "recheios" | "coberturas" | "sabores" | "tamanhos") => {
     setBibSheetSelected(new Set());
@@ -1722,8 +1743,14 @@ function PersonalizacaoStep({
                                 style={{marginTop: 3, accentColor: "#E85A8C", flexShrink: 0}}
                               />
                               <div style={{flex: 1, minWidth: 0}}>
-                                <div style={{fontSize: 14, fontWeight: 700, color: "#2D1F26", lineHeight: 1.25, display: "inline-flex", alignItems: "center", gap: 6}}>
+                                <div style={{fontSize: 14, fontWeight: 700, color: "#2D1F26", lineHeight: 1.25, display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap"}}>
                                   {label}
+                                  {valor === modoSugerido && (
+                                    <span className="pv3-sugerido-badge">
+                                      <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.5 6.5L21 9l-5 4.5 1.5 6.5L12 16.5 6.5 20 8 13.5 3 9l6.5-.5L12 2z"/></svg>
+                                      Sugerido
+                                    </span>
+                                  )}
                                   {tooltip && (
                                     <span
                                       className="pv3-info-tip"
@@ -2593,6 +2620,24 @@ function PersonalizacaoStep({
           transition: all 0.15s ease;
         }
         .pv3-gerar-tamanhos:hover { background: #E85A8C; color: #fff; }
+
+        /* Badge "Sugerido" — pra opção que o sistema recomenda */
+        .pv3-sugerido-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          padding: 2px 7px;
+          background: linear-gradient(135deg, #F59E0B, #D97706);
+          color: #fff;
+          border-radius: 4px;
+          font-size: 9.5px;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          box-shadow: 0 2px 6px rgba(245,158,11,0.35);
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
 
         /* Ícone (i) de info inline — abre alert com explicação ao clicar */
         .pv3-info-tip {
@@ -4376,6 +4421,8 @@ export default function Produtos() {
                   onGoToFill={() => setMobilePersonaStep("fill")}
                   onBackToChecklist={() => setMobilePersonaStep("checklist")}
                   primeiroNome={primeiroNome}
+                  produtoNome={form.nome}
+                  produtoCategoria={form.categoria}
                 />
               </div>
             )}
