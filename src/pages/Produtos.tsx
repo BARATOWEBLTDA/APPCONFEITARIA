@@ -583,6 +583,7 @@ interface PersonalizacaoStepProps {
   mobileMode?: "checklist" | "fill";
   onGoToFill?: () => void;
   onBackToChecklist?: () => void;
+  primeiroNome?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -962,11 +963,12 @@ function SelectDoonly({
 function PersonalizacaoStep({
   grupoMassas, grupoRecheios, grupoCoberturas, grupoSabores, grupoTamanhos,
   precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange, onFormaVendaChange,
-  mobileMode, onGoToFill, onBackToChecklist,
+  mobileMode, onGoToFill, onBackToChecklist, primeiroNome,
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
   // Bottom sheet "Escolher da biblioteca"
   const [bibSheetGrupo, setBibSheetGrupo] = useState<"massas" | "recheios" | "coberturas" | "sabores" | "tamanhos" | null>(null);
+  const [infoTip, setInfoTip] = useState<string | null>(null);
   const [bibSheetSelected, setBibSheetSelected] = useState<Set<string>>(new Set());
   const abrirBibSheet = (grupo: "massas" | "recheios" | "coberturas" | "sabores" | "tamanhos") => {
     setBibSheetSelected(new Set());
@@ -1407,7 +1409,7 @@ function PersonalizacaoStep({
       <div className="pv3-header">
         <div className="pv3-title">Vamos montar as opções</div>
         <div className="pv3-subtitle">
-          Marque o que seu produto tem — sabores, tamanhos, coberturas — e preencha em seguida.
+          Marque o que seu produto tem. Sabores, tamanhos, coberturas. Depois é só preencher.
         </div>
         {algumGrupoAtivo && faixa.max > faixa.min && (
           <div className="pv3-faixa-info">
@@ -1693,9 +1695,8 @@ function PersonalizacaoStep({
                       </div>
                       <div style={{display: "flex", flexDirection: "column", gap: 10}}>
                         {([
-                          { valor: "preco_fixo", label: "Preço fixo por opção", hint: "Cada tamanho tem seu próprio preço" },
-                          { valor: "por_peso", label: "Calcular pelo peso × preço base", hint: "Preço base R$/kg × peso do tamanho", tooltip: "O preço será calculado: peso da opção × preço base do produto (R$/kg). Ex: 1kg = R$80, 2kg = R$160" },
-                          { valor: "sob_consulta", label: "Sob consulta", hint: "Cliente entra em contato pra saber preço", tooltip: "Cliente verá 'Consulte-nos' — sem preço automático no cardápio" },
+                          { valor: "preco_fixo", label: "Preço fixo por opção", hint: "Cada tamanho tem seu próprio preço", tooltip: `${primeiroNome ? primeiroNome + ", " : ""}você define um preço específico pra cada tamanho. Por exemplo: 1kg = R$ 80, 2kg = R$ 150, 3kg = R$ 220. Ideal quando o preço não é proporcional ao peso.` },
+                          { valor: "por_peso", label: "Calcular pelo peso × preço base", hint: "Preço base R$/kg × peso do tamanho", tooltip: `${primeiroNome ? primeiroNome + ", o" : "O"} preço do seu produto será calculado assim: peso da opção × preço base (R$/kg). Se você definir R$ 80/kg, o cliente vê 1kg = R$ 80, 2kg = R$ 160, e assim vai. Ideal pra bolos onde o preço cresce proporcional ao peso.` },
                         ] as const).map(({ valor, label, hint, tooltip }: any) => {
                           const ativo = grupoTamanhos.modo_preco_tamanho === valor;
                           return (
@@ -1727,7 +1728,7 @@ function PersonalizacaoStep({
                                     <span
                                       className="pv3-info-tip"
                                       title={tooltip}
-                                      onClick={e => { e.preventDefault(); e.stopPropagation(); alert(tooltip); }}
+                                      onClick={e => { e.preventDefault(); e.stopPropagation(); setInfoTip(tooltip); }}
                                       aria-label={tooltip}
                                     >
                                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -1964,6 +1965,19 @@ function PersonalizacaoStep({
         );
       })}
 
+      {/* Modal info (i) tooltip personalizado */}
+      {infoTip && (
+        <div className="pv3-info-ov" onClick={() => setInfoTip(null)}>
+          <div className="pv3-info-modal" onClick={e => e.stopPropagation()}>
+            <div className="pv3-info-modal-ico">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </div>
+            <p className="pv3-info-modal-txt">{infoTip}</p>
+            <button className="pv3-info-modal-btn" onClick={() => setInfoTip(null)}>Entendi</button>
+          </div>
+        </div>
+      )}
+
       {/* Bottom sheet: escolher da biblioteca */}
       {bibSheetGrupo && (() => {
         const bibl = biblioteca[bibSheetGrupo] || [];
@@ -2025,8 +2039,70 @@ function PersonalizacaoStep({
           font-size: 11px; color: #E85A8C; font-weight: 800;
           text-transform: uppercase; letter-spacing: 0.08em;
         }
-        .pv3-title { font-size: 20px; font-weight: 800; color: #2D1F26; margin-top: 4px; line-height: 1.2; }
-        .pv3-subtitle { font-size: 13px; color: #6B5D64; margin-top: 6px; line-height: 1.4; max-width: 480px; margin-left: auto; margin-right: auto; }
+        .pv3-title {
+          font-size: 20px;
+          font-weight: 800;
+          color: #4B5563;
+          margin-top: 4px;
+          line-height: 1.2;
+          text-transform: uppercase;
+          letter-spacing: 0.02em;
+        }
+        .pv3-subtitle { font-size: 13px; color: #6B5D64; margin-top: 6px; line-height: 1.5; max-width: 480px; margin-left: auto; margin-right: auto; }
+
+        /* Modal do (i) tooltip — popover custom personalizado */
+        .pv3-info-ov {
+          position: fixed; inset: 0;
+          background: rgba(0,0,0,0.5);
+          z-index: 10200;
+          display: flex; align-items: center; justify-content: center;
+          padding: 20px;
+          animation: pv3InfoOv 0.2s ease-out;
+        }
+        @keyframes pv3InfoOv { from { opacity: 0; } to { opacity: 1; } }
+        .pv3-info-modal {
+          background: #fff;
+          max-width: 380px;
+          width: 100%;
+          border-radius: 14px;
+          padding: 24px 20px 20px;
+          text-align: center;
+          box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+          animation: pv3InfoIn 0.25s cubic-bezier(0.32,0.72,0,1);
+          font-family: 'Geist', sans-serif;
+        }
+        @keyframes pv3InfoIn { from { opacity: 0; transform: scale(0.9) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .pv3-info-modal-ico {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 48px; height: 48px;
+          background: #FCE0E9;
+          color: #E85A8C;
+          border-radius: 50%;
+          margin: 0 auto 12px;
+        }
+        .pv3-info-modal-txt {
+          margin: 0 0 20px;
+          font-size: 14px;
+          color: #2D1F26;
+          line-height: 1.55;
+          font-weight: 500;
+        }
+        .pv3-info-modal-btn {
+          background: #E85A8C;
+          color: #fff;
+          border: none;
+          padding: 11px 28px;
+          border-radius: 10px;
+          font-size: 13.5px;
+          font-weight: 800;
+          cursor: pointer;
+          font-family: inherit;
+          box-shadow: 0 4px 12px rgba(232,90,140,0.35);
+          transition: background 0.15s;
+        }
+        .pv3-info-modal-btn:hover { background: #d54a7a; }
         .pv3-preco-base {
           margin-top: 10px; padding: 10px 12px; background: #FDF3F7; border-radius: 8px;
           font-size: 12.5px; color: #831843; border: 1px solid #FCE0E9;
@@ -2867,6 +2943,7 @@ export default function Produtos() {
     navigate(tab === "categorias" ? "/produtos/categorias" : "/produtos");
   };
   const [userId, setUserId] = useState("");
+  const [primeiroNome, setPrimeiroNome] = useState<string>("");
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [categorias, setCategorias] = useState<string[]>([]);
   // Toast Doonly (substitui alerts nativos)
@@ -3037,6 +3114,9 @@ export default function Produtos() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
+      // Buscar nome pra personalizar tooltips
+      const { data: profile } = await supabase.from("profiles").select("nome").eq("id", user.id).single();
+      if (profile?.nome) setPrimeiroNome(profile.nome.trim().split(/\s+/)[0]);
       await loadProdutos(user.id);
       await loadCategorias(user.id);
       await loadInsumos(user.id);
@@ -4295,6 +4375,7 @@ export default function Produtos() {
                   mobileMode={isMobileMain && !form.id ? mobilePersonaStep : undefined}
                   onGoToFill={() => setMobilePersonaStep("fill")}
                   onBackToChecklist={() => setMobilePersonaStep("checklist")}
+                  primeiroNome={primeiroNome}
                 />
               </div>
             )}
