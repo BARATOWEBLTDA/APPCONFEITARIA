@@ -1403,7 +1403,7 @@ function PersonalizacaoStep({
         const adicMax = ativo ? adicionalMaxGrupo(g.dados, isTamanho) : 0;
 
         return (
-          <div key={g.key} className={`pv3-card ${ativo ? "pv3-card--ativo" : ""}`}>
+          <div key={g.key} className={`pv3-card ${ativo ? "pv3-card--ativo" : ""} ${ativo && aberto ? "pv3-card--aberto" : ""}`}>
             {/* Header do card com toggle */}
             <div className="pv3-card-head">
               <button
@@ -1904,7 +1904,7 @@ function PersonalizacaoStep({
       })}
 
       <style>{`
-        .pv3-root { display: flex; flex-direction: column; gap: 12px; min-height: 420px; }
+        .pv3-root { display: flex; flex-direction: column; gap: 12px; }
         .pv3-header { margin-bottom: 4px; text-align: center; }
         .pv3-eyebrow {
           font-size: 11px; color: #E85A8C; font-weight: 800;
@@ -2053,10 +2053,9 @@ function PersonalizacaoStep({
           transition: border-color 0.15s;
         }
         .pv3-card--ativo { border-color: #E85A8C; }
-        /* Card ativo E aberto: garante altura mínima confortável */
-        .pv3-card--ativo:has(.pv3-card-body) { min-height: 340px; }
+        .pv3-card--aberto { min-height: 340px; }
         @media (max-width: 720px) {
-          .pv3-card--ativo:has(.pv3-card-body) { min-height: 300px; }
+          .pv3-card--aberto { min-height: 260px; }
         }
         .pv3-card-head {
           display: flex;
