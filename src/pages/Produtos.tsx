@@ -1573,7 +1573,6 @@ function PersonalizacaoStep({
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                               </button>
                             </div>
-                            <span className="pv3-opcao-num">{idx + 1}</span>
                             <span className="pv3-opcao-nome">{op.nome}</span>
                             <button
                               type="button"
@@ -1783,7 +1782,6 @@ function PersonalizacaoStep({
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                               </button>
                             </div>
-                            <span className="pv3-opcao-num">{idx + 1}</span>
                             <span className="pv3-opcao-nome">{op.nome}</span>
                             <button
                               type="button"
@@ -2309,6 +2307,9 @@ function PersonalizacaoStep({
           flex-direction: column;
           gap: 2px;
           flex-shrink: 0;
+        }
+        @media (max-width: 720px) {
+          .pv3-opcao-move { display: none; }
         }
         .pv3-opcao-move-btn {
           all: unset;
