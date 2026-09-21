@@ -7958,11 +7958,15 @@ export default function Produtos() {
         .prod-modal--novo {
           border-radius: 18px !important;
           max-width: 780px !important;
+          height: 90vh !important;
+          max-height: 90vh !important;
         }
         @media (max-width: 640px) {
           .prod-modal--novo {
             border-radius: 14px !important;
             max-width: 100% !important;
+            height: 92vh !important;
+            max-height: 92vh !important;
           }
         }
 
