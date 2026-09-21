@@ -89,7 +89,7 @@ type GrupoTamanhos = {
   // "sob_consulta"    → sem preço, vira "consulte-nos"
   modo_preco_tamanho?: "preco_fixo" | "por_peso" | "herdar_base" | "sob_consulta";
   // Fase 3: label dinâmico — "Tamanhos" (bolo) vs "Quantidades" (brigadeiro/salgado)
-  nome_exibicao?: "Tamanhos" | "Quantidades";
+  nome_exibicao?: "Tamanhos e Pesos" | "Quantidades";
 };
 type OpcaoSabor = { id: string; nome: string; adicional: number; preco?: number; foto?: string; tipo_adicional?: "fixo" | "por_kg" | "por_unidade" | "por_quantidade" };
 type GrupoSabores = {
@@ -162,7 +162,7 @@ const GRUPO_VAZIO: GrupoPersonalizacao = {
 const GRUPO_TAMANHOS_VAZIO: GrupoTamanhos = {
   ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [],
   modo_preco_tamanho: undefined,  // Sem seleção — usuário escolhe qual
-  nome_exibicao: "Tamanhos",          // Fase 3 — default
+  nome_exibicao: "Tamanhos e Pesos",          // Fase 3 — default
 };
 const GRUPO_SABORES_VAZIO: GrupoSabores = {
   ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [], sabor_tem_preco_proprio: false,
@@ -1302,7 +1302,7 @@ function PersonalizacaoStep({
           <path d="M18 10v4"/>
         </svg>
       ),
-      titulo: grupoTamanhos.nome_exibicao || "Tamanhos",
+      titulo: grupoTamanhos.nome_exibicao || "Tamanhos e Pesos",
       subtitulo: (grupoTamanhos.nome_exibicao === "Quantidades")
         ? "50 un, 100 un, 200 un — cada um com seu preço"
         : "P, M, G — cada um com seu preço",
@@ -1692,8 +1692,8 @@ function PersonalizacaoStep({
                         Como chamar este grupo?
                       </div>
                       <div style={{display: "flex", gap: 6}}>
-                        {(["Tamanhos", "Quantidades"] as const).map(nome => {
-                          const ativo = (grupoTamanhos.nome_exibicao || "Tamanhos") === nome;
+                        {(["Tamanhos e Pesos", "Quantidades"] as const).map(nome => {
+                          const ativo = (grupoTamanhos.nome_exibicao || "Tamanhos e Pesos") === nome;
                           return (
                             <button
                               key={nome}
@@ -1713,7 +1713,7 @@ function PersonalizacaoStep({
                                 transition: "all 0.15s",
                               }}
                             >
-                              {nome === "Tamanhos" ? "Tamanhos (bolo P/M/G)" : "Quantidades (100 un, cento)"}
+                              {nome === "Tamanhos e Pesos" ? "Tamanhos e Pesos (0,5kg, P/M/G)" : "Quantidades (100 un, cento)"}
                             </button>
                           );
                         })}
@@ -1784,8 +1784,8 @@ function PersonalizacaoStep({
                       </button>
                     )}
 
-                    {/* Sugestões da biblioteca */}
-                    {(() => {
+                    {/* Sugestões da biblioteca — só se modo escolhido */}
+                    {grupoTamanhos.modo_preco_tamanho && (() => {
                       const bibl = biblioteca.tamanhos || [];
                       const nomesAtuais = grupoTamanhos.opcoes.map(o => o.nome.toLowerCase());
                       const sugestoes = bibl.filter(b => !nomesAtuais.includes(b.nome.toLowerCase()));
@@ -1858,7 +1858,7 @@ function PersonalizacaoStep({
                           </div>
                         );
                       })}
-                      {grupoTamanhos.opcoes.length === 0 && (
+                      {grupoTamanhos.modo_preco_tamanho && grupoTamanhos.opcoes.length === 0 && (
                         <div className="pv3-empty" onClick={e => {
                           const input = (e.currentTarget.closest(".pv3-card-body")?.querySelector(".pv3-add-row input") as HTMLInputElement | null);
                           input?.focus();
@@ -1870,6 +1870,7 @@ function PersonalizacaoStep({
                       )}
                     </div>
 
+                    {grupoTamanhos.modo_preco_tamanho && (
                     <div className="pv3-add-row">
                       <input
                         type="text"
@@ -1896,6 +1897,7 @@ function PersonalizacaoStep({
                         Cadastrar
                       </button>
                     </div>
+                    )}
                   </>
                 )}
 
