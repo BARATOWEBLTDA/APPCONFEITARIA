@@ -580,6 +580,9 @@ interface PersonalizacaoStepProps {
   onChange: (patch: Partial<Produto>) => void;
   onPrecoBaseChange: (v: number) => void;
   onFormaVendaChange: (v: string) => void;
+  mobileMode?: "checklist" | "fill";
+  onGoToFill?: () => void;
+  onBackToChecklist?: () => void;
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -959,8 +962,22 @@ function SelectDoonly({
 function PersonalizacaoStep({
   grupoMassas, grupoRecheios, grupoCoberturas, grupoSabores, grupoTamanhos,
   precoBase, quantidadeBase, formaVenda, onChange, onPrecoBaseChange, onFormaVendaChange,
+  mobileMode, onGoToFill, onBackToChecklist,
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
+
+  // Mobile: ao entrar na etapa "fill", auto-expande o 1º grupo ativo pra evitar clique extra
+  useEffect(() => {
+    if (mobileMode !== "fill") return;
+    if (expandido) return;
+    const primeiro = [grupoMassas, grupoRecheios, grupoCoberturas, grupoSabores, grupoTamanhos]
+      .findIndex(g => g?.ativo);
+    if (primeiro >= 0) {
+      const keys = ["massas", "recheios", "coberturas", "sabores", "tamanhos"] as const;
+      setExpandido(keys[primeiro]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mobileMode]);
   const [avancadoOpen, setAvancadoOpen] = useState<Record<string, boolean>>({});
   const [showInfo, setShowInfo] = useState(false);
   const [showUnidade, setShowUnidade] = useState(false);
@@ -1345,7 +1362,65 @@ function PersonalizacaoStep({
         )}
       </div>
 
-      {grupos.map(g => {
+      {/* MOBILE — Etapa 1: Checklist (marcar categorias). Etapa 2: mostrar botão voltar */}
+      {mobileMode === "checklist" && (
+        <div className="prod-mchk-wrap">
+          <div className="prod-mchk-head">
+            <p className="prod-mchk-title">O que seu produto tem?</p>
+            <p className="prod-mchk-sub">Marque as opções que se aplicam. Você vai preencher em seguida.</p>
+          </div>
+          <div className="prod-mchk-list">
+            {grupos.map(g => {
+              const ativo = g.dados.ativo;
+              return (
+                <label key={g.key} className={`prod-mchk-item ${ativo ? "prod-mchk-item--on" : ""}`}>
+                  <input
+                    type="checkbox"
+                    checked={ativo}
+                    onChange={e => toggleAtivo(g.key, e.target.checked)}
+                    className="prod-mchk-checkbox"
+                  />
+                  <div className="prod-mchk-check-visual">
+                    {ativo && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    )}
+                  </div>
+                  <span className="prod-mchk-ico">{g.icone}</span>
+                  <div className="prod-mchk-text">
+                    <p className="prod-mchk-item-title">{g.titulo}</p>
+                    <p className="prod-mchk-item-sub">{g.subtitulo}</p>
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            className="prod-mchk-continue"
+            disabled={!grupos.some(g => g.dados.ativo)}
+            onClick={() => onGoToFill?.()}
+          >
+            Continuar →
+          </button>
+          {!grupos.some(g => g.dados.ativo) && (
+            <p className="prod-mchk-hint">Marque pelo menos 1 opção</p>
+          )}
+        </div>
+      )}
+
+      {mobileMode === "fill" && (
+        <button type="button" className="prod-mchk-back" onClick={() => onBackToChecklist?.()}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          Voltar e editar categorias
+        </button>
+      )}
+
+      {/* Desktop OU mobileMode === "fill": renderiza os grupos. No fill filtra só ativos */}
+      {mobileMode !== "checklist" && grupos.filter(g => mobileMode === "fill" ? g.dados.ativo : true).map(g => {
         const aberto = expandido === g.key;
         const ativo = g.dados.ativo;
         const qtdOpcoes = g.dados.opcoes.length;
@@ -2505,6 +2580,15 @@ export default function Produtos() {
   const [uploading, setUploading] = useState(false);
   const [modal, setModal] = useState(false);
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  // Mobile: divide step 3 (personalização) em 2 sub-etapas: 'checklist' (só marca as categorias) → 'fill' (preenche)
+  const [mobilePersonaStep, setMobilePersonaStep] = useState<"checklist" | "fill">("checklist");
+  const [isMobileMain, setIsMobileMain] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobileMain(window.innerWidth <= 720);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
   const [wizardTipo, setWizardTipo] = useState<"simples" | "variacoes" | "personalizavel">("simples");
   const [wizardSubtipo, setWizardSubtipo] = useState<"sabores_e_tamanhos" | "so_sabores" | "so_tamanhos" | null>(null);
   const [editTab, setEditTab] = useState<"info" | "opcoes" | "preco" | "fotos">("info");
@@ -2764,11 +2848,11 @@ export default function Produtos() {
   const openNovo = () => {
     // Se tem rascunho, abre o modal vazio + mostra banner pra escolher
     if (hasDraft()) {
-      setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setModal(true);
+      setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setMobilePersonaStep("checklist"); setModal(true);
       setShowDraftBanner(true);
       return;
     }
-    setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setModal(true);
+    setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setMobilePersonaStep("checklist"); setModal(true);
   };
   const openEditar = async (p: Produto, limparCopiaTag = false) => {
     // Migração silenciosa: "sob-encomenda" era misturado no forma_venda,
@@ -3873,6 +3957,9 @@ export default function Produtos() {
                   onChange={(patch) => setForm(f => ({ ...f, ...patch }))}
                   onPrecoBaseChange={(v) => setForm(f => ({ ...f, preco_normal: v }))}
                   onFormaVendaChange={(v) => setForm(f => ({ ...f, forma_venda: v }))}
+                  mobileMode={isMobileMain && !form.id ? mobilePersonaStep : undefined}
+                  onGoToFill={() => setMobilePersonaStep("fill")}
+                  onBackToChecklist={() => setMobilePersonaStep("checklist")}
                 />
               </div>
             )}
@@ -9532,6 +9619,140 @@ export default function Produtos() {
           transform: translateY(4px);
           box-shadow: 0 0 0 var(--primary-dark);
         }
+        /* ═══ Mobile Checklist (Etapa 1 Personalização) ═══ */
+        .prod-mchk-wrap {
+          padding: 6px 4px 20px;
+          animation: prod-mchk-in 0.3s ease-out;
+        }
+        @keyframes prod-mchk-in {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .prod-mchk-head { margin-bottom: 16px; }
+        .prod-mchk-title {
+          margin: 0 0 4px;
+          font-size: 17px;
+          font-weight: 800;
+          color: #1F1F23;
+          letter-spacing: -0.01em;
+        }
+        .prod-mchk-sub {
+          margin: 0;
+          font-size: 13px;
+          color: #6B7280;
+          line-height: 1.4;
+        }
+        .prod-mchk-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          margin-bottom: 20px;
+        }
+        .prod-mchk-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px;
+          background: #fff;
+          border: 2px solid #E5E7EB;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          user-select: none;
+        }
+        .prod-mchk-item:hover { border-color: #E85A8C; }
+        .prod-mchk-item--on {
+          border-color: #E85A8C;
+          background: #FFF5F9;
+          box-shadow: 0 2px 8px rgba(232, 90, 140, 0.15);
+        }
+        .prod-mchk-checkbox { display: none; }
+        .prod-mchk-check-visual {
+          width: 22px; height: 22px;
+          border-radius: 6px;
+          border: 2px solid #D1D5DB;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          transition: all 0.15s ease;
+        }
+        .prod-mchk-item--on .prod-mchk-check-visual {
+          background: #E85A8C;
+          border-color: #E85A8C;
+        }
+        .prod-mchk-ico {
+          width: 36px; height: 36px;
+          background: #F3F4F6;
+          border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          color: #6B7280;
+          flex-shrink: 0;
+        }
+        .prod-mchk-item--on .prod-mchk-ico {
+          background: #FCE0E9;
+          color: #E85A8C;
+        }
+        .prod-mchk-text { flex: 1; min-width: 0; }
+        .prod-mchk-item-title {
+          margin: 0 0 2px;
+          font-size: 14px;
+          font-weight: 700;
+          color: #1F1F23;
+        }
+        .prod-mchk-item-sub {
+          margin: 0;
+          font-size: 11.5px;
+          color: #6B7280;
+          line-height: 1.3;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .prod-mchk-continue {
+          width: 100%;
+          padding: 14px 20px;
+          background: #E85A8C;
+          color: #fff;
+          border: none;
+          border-radius: 12px;
+          font-size: 15px;
+          font-weight: 800;
+          cursor: pointer;
+          font-family: inherit;
+          box-shadow: 0 4px 14px rgba(232, 90, 140, 0.4);
+          transition: all 0.15s ease;
+        }
+        .prod-mchk-continue:hover { background: #d54a7a; transform: translateY(-1px); }
+        .prod-mchk-continue:disabled {
+          background: #E5E7EB;
+          color: #9CA3AF;
+          cursor: not-allowed;
+          box-shadow: none;
+          transform: none;
+        }
+        .prod-mchk-hint {
+          text-align: center;
+          font-size: 12px;
+          color: #9CA3AF;
+          margin: 8px 0 0;
+        }
+        .prod-mchk-back {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 14px;
+          background: #F3F4F6;
+          color: #4B5563;
+          border: none;
+          border-radius: 8px;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: inherit;
+          margin-bottom: 14px;
+          transition: background 0.15s ease;
+        }
+        .prod-mchk-back:hover { background: #E5E7EB; }
+
         /* ═══ Banner Rascunho Salvo (mobile) ═══ */
         .prod-draft-banner {
           display: flex; align-items: center; gap: 12px;
