@@ -7676,23 +7676,22 @@ export default function Produtos() {
         .prod-promo-preview {
           margin-top: 12px;
           padding: 16px 18px;
-          background: #FFF5F9;
-          border: 1.5px solid #F5B8CD;
+          background: #2C1219;
           border-radius: 12px;
         }
         .prod-promo-preview-label {
           display: block;
           font-size: 11px;
           font-weight: 700;
-          color: #831843;
+          color: #F5B8CD;
           text-transform: uppercase;
           letter-spacing: 0.08em;
-          margin-bottom: 8px;
+          margin-bottom: 10px;
         }
         .prod-promo-preview-precos {
           display: flex;
           align-items: baseline;
-          gap: 12px;
+          gap: 10px;
           flex-wrap: wrap;
         }
         .prod-promo-preview-riscado {
@@ -7704,7 +7703,7 @@ export default function Produtos() {
         .prod-promo-preview-final {
           font-size: 26px;
           font-weight: 900;
-          color: #E85A8C;
+          color: #fff;
           letter-spacing: -0.02em;
           display: inline-flex;
           align-items: baseline;
@@ -7713,11 +7712,10 @@ export default function Produtos() {
         .prod-promo-preview-sufixo {
           font-size: 13px;
           font-weight: 700;
-          color: #C33A6E;
+          color: #F5B8CD;
           letter-spacing: 0;
         }
         .prod-promo-preview-desconto {
-          margin-left: auto;
           padding: 4px 10px;
           background: #E85A8C;
           color: #fff;
@@ -7725,6 +7723,7 @@ export default function Produtos() {
           font-size: 12px;
           font-weight: 800;
           letter-spacing: 0.03em;
+          align-self: center;
         }
         /* ═══ Botão "+ Adicionar variação" (dentro da seção simples) ═══ */
         .prod-btn-add-variacao {
