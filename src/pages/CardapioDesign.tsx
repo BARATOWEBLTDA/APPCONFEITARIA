@@ -326,7 +326,7 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
           <div>
             <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_borda' ? null : 'cor_borda')}>
               <div className="cd-color-info">
-                <span className="cd-color-label">Borda da logo</span>
+                <span className="cd-color-label">Cor da borda da logotipo</span>
                 <span className="cd-color-value">{corBorda}</span>
               </div>
               <div className="cd-color-swatch" style={{ background: corBorda }} />
@@ -353,7 +353,7 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
           <div>
             <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_nome' ? null : 'cor_nome')}>
               <div className="cd-color-info">
-                <span className="cd-color-label">Nome da loja</span>
+                <span className="cd-color-label">Cor do nome da confeitaria</span>
                 <span className="cd-color-value">{corNome}</span>
               </div>
               <div className="cd-color-swatch" style={{ background: corNome }} />
@@ -380,7 +380,7 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
             <div>
               <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_botao' ? null : 'cor_botao')}>
                 <div className="cd-color-info">
-                  <span className="cd-color-label">Botão "Adicionar ao carrinho"</span>
+                  <span className="cd-color-label">Cor dos botões de comprar</span>
                   <div className="cd-color-meta"><span className="cd-color-value">{corBotao}</span><span className="cd-pro-badge">PRO</span></div>
                 </div>
                 <div className="cd-color-swatch" style={{ background: corBotao }} />
@@ -411,73 +411,29 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
             </div>
           )}
 
-          {/* Cor do navbar — PRO */}
-          {isPro ? (
-            <div>
-              <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_navbar' ? null : 'cor_navbar')}>
-                <div className="cd-color-info">
-                  <span className="cd-color-label">Fundo da barra de navegação</span>
-                  <div className="cd-color-meta"><span className="cd-color-value">{corNavbar}</span><span className="cd-pro-badge">PRO</span></div>
-                </div>
-                <div className="cd-color-swatch" style={{ background: corNavbar }} />
+          {/* Cor de background (fica atrás da logo/nome) — livre pra todos */}
+          <div>
+            <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_navbar' ? null : 'cor_navbar')}>
+              <div className="cd-color-info">
+                <span className="cd-color-label">Cor de background</span>
+                <span className="cd-color-value">{corNavbar}</span>
               </div>
-              {activePicker === 'cor_navbar' && (
-                <div className="cd-picker-wrap">
-                  <div style={{ padding: '12px', borderRadius: '10px', background: corNavbar, marginBottom: '12px', height: '40px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>Prévia da barra</span>
-                  </div>
-                  <HexColorPicker color={corNavbar} onChange={v => handleColorChange('cor_navbar', v, setCorNavbar)} style={{ width: '100%', height: '160px' }} />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                    <input type="text" value={corNavbar} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_navbar', e.target.value, setCorNavbar) }} className="cd-hex-input" />
-                    <button className="cd-restore-btn" onClick={() => handleColorChange('cor_navbar', '#F5F5F5', setCorNavbar)}>↺</button>
-                    <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
-                  </div>
+              <div className="cd-color-swatch" style={{ background: corNavbar }} />
+            </div>
+            {activePicker === 'cor_navbar' && (
+              <div className="cd-picker-wrap">
+                <div style={{ padding: '12px', borderRadius: '10px', background: corNavbar, marginBottom: '12px', height: '40px', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>Pré-visualização (atrás da logo/nome)</span>
                 </div>
-              )}
-            </div>
-          ) : (
-            <div className="cd-upgrade-box" style={{ marginTop: '4px' }}>
-              <div className="cd-lock-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
-              <div>
-                <p className="cd-upgrade-title">Cor da barra de navegação</p>
-                <p className="cd-upgrade-sub">Personalize o fundo da barra de navegação com o plano PRO</p>
-              </div>
-            </div>
-          )}
-
-          {/* Cor do rodapé — PRO */}
-          {isPro ? (
-            <div>
-              <div className="cd-color-row" onClick={() => setActivePicker(activePicker === 'cor_rodape' ? null : 'cor_rodape')}>
-                <div className="cd-color-info">
-                  <span className="cd-color-label">Rodapé do cardápio</span>
-                  <div className="cd-color-meta"><span className="cd-color-value">{corRodape}</span><span className="cd-pro-badge">PRO</span></div>
+                <HexColorPicker color={corNavbar} onChange={v => handleColorChange('cor_navbar', v, setCorNavbar)} style={{ width: '100%', height: '160px' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                  <input type="text" value={corNavbar} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_navbar', e.target.value, setCorNavbar) }} className="cd-hex-input" />
+                  <button className="cd-restore-btn" onClick={() => handleColorChange('cor_navbar', '#F5F5F5', setCorNavbar)}>↺</button>
+                  <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
                 </div>
-                <div className="cd-color-swatch" style={{ background: corRodape }} />
               </div>
-              {activePicker === 'cor_rodape' && (
-                <div className="cd-picker-wrap">
-                  <div style={{ padding: '12px', borderRadius: '10px', background: corRodape, marginBottom: '12px', textAlign: 'center' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }}>Prévia do rodapé</span>
-                  </div>
-                  <HexColorPicker color={corRodape} onChange={v => handleColorChange('cor_rodape', v, setCorRodape)} style={{ width: '100%', height: '160px' }} />
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-                    <input type="text" value={corRodape} onChange={e => { if (/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) handleColorChange('cor_rodape', e.target.value, setCorRodape) }} className="cd-hex-input" />
-                    <button className="cd-restore-btn" onClick={() => handleColorChange('cor_rodape', '#FF6FA9', setCorRodape)}>↺</button>
-                    <button className="cd-picker-close" onClick={() => setActivePicker(null)}>✓ Pronto</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="cd-upgrade-box" style={{ marginTop: '4px' }}>
-              <div className="cd-lock-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
-              <div>
-                <p className="cd-upgrade-title">Cor do rodapé</p>
-                <p className="cd-upgrade-sub">Personalize a cor do rodapé do seu cardápio com o plano PRO</p>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
 
         </div>
       </div>
