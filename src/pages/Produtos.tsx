@@ -1721,11 +1721,11 @@ function PersonalizacaoStep({
                     </div>
 
                     {/* Fase 3: Modo de preço */}
-                    <div style={{marginBottom: 12}}>
-                      <div style={{fontSize: 12, fontWeight: 700, color: "#6B5D64", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.03em"}}>
+                    <div style={{marginBottom: 16, marginTop: 4}}>
+                      <div style={{fontSize: 12, fontWeight: 700, color: "#6B5D64", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.03em"}}>
                         Como calcular o preço?
                       </div>
-                      <div style={{display: "flex", flexDirection: "column", gap: 6}}>
+                      <div style={{display: "flex", flexDirection: "column", gap: 10}}>
                         {([
                           { valor: "preco_fixo", label: "Preço fixo por opção", hint: "Cada tamanho tem seu próprio preço" },
                           { valor: "por_peso", label: "Calcular pelo peso × preço base", hint: "Preço base R$/kg × peso do tamanho" },
@@ -1737,11 +1737,12 @@ function PersonalizacaoStep({
                               key={valor}
                               style={{
                                 display: "flex",
-                                gap: 8,
-                                padding: "8px 10px",
+                                alignItems: "flex-start",
+                                gap: 12,
+                                padding: "14px 14px",
                                 background: ativo ? "#FDF3F7" : "#fff",
                                 border: `1.5px solid ${ativo ? "#E85A8C" : "#E5D8DE"}`,
-                                borderRadius: 8,
+                                borderRadius: 10,
                                 cursor: "pointer",
                                 transition: "all 0.15s",
                               }}
@@ -1751,11 +1752,11 @@ function PersonalizacaoStep({
                                 name="modo_preco_tamanho"
                                 checked={ativo}
                                 onChange={() => onChange({ grupo_tamanhos: { ...grupoTamanhos, modo_preco_tamanho: valor } })}
-                                style={{marginTop: 2, accentColor: "#E85A8C"}}
+                                style={{marginTop: 3, accentColor: "#E85A8C", flexShrink: 0}}
                               />
-                              <div style={{flex: 1}}>
-                                <div style={{fontSize: 13, fontWeight: 700, color: "#2D1F26"}}>{label}</div>
-                                <div style={{fontSize: 11.5, color: "#6B5D64", marginTop: 1, lineHeight: 1.3}}>{hint}</div>
+                              <div style={{flex: 1, minWidth: 0}}>
+                                <div style={{fontSize: 14, fontWeight: 700, color: "#2D1F26", lineHeight: 1.25}}>{label}</div>
+                                <div style={{fontSize: 12.5, color: "#6B5D64", marginTop: 4, lineHeight: 1.4}}>{hint}</div>
                               </div>
                             </label>
                           );
