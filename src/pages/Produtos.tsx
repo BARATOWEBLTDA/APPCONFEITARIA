@@ -965,19 +965,6 @@ function PersonalizacaoStep({
   mobileMode, onGoToFill, onBackToChecklist,
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
-
-  // Mobile: ao entrar na etapa "fill", auto-expande o 1º grupo ativo pra evitar clique extra
-  useEffect(() => {
-    if (mobileMode !== "fill") return;
-    if (expandido) return;
-    const primeiro = [grupoMassas, grupoRecheios, grupoCoberturas, grupoSabores, grupoTamanhos]
-      .findIndex(g => g?.ativo);
-    if (primeiro >= 0) {
-      const keys = ["massas", "recheios", "coberturas", "sabores", "tamanhos"] as const;
-      setExpandido(keys[primeiro]);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mobileMode]);
   const [avancadoOpen, setAvancadoOpen] = useState<Record<string, boolean>>({});
   const [showInfo, setShowInfo] = useState(false);
   const [showUnidade, setShowUnidade] = useState(false);
@@ -1396,7 +1383,7 @@ function PersonalizacaoStep({
 
       {/* Desktop OU mobileMode === "fill": renderiza os grupos. No fill filtra só ativos */}
       {mobileMode !== "checklist" && grupos.filter(g => mobileMode === "fill" ? g.dados.ativo : true).map(g => {
-        const aberto = expandido === g.key;
+        const aberto = expandido === g.key || mobileMode === "fill";
         const ativo = g.dados.ativo;
         const qtdOpcoes = g.dados.opcoes.length;
         const isTamanho = g.key === "tamanhos";
@@ -1558,10 +1545,13 @@ function PersonalizacaoStep({
                         );
                       })}
                       {(g.dados as GrupoPersonalizacao).opcoes.length === 0 && (
-                        <div className="pv3-empty">
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{display: "block", margin: "0 auto"}}><path d="M20 7h-3V4a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v3H4a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
-                          <div className="pv3-empty-txt">Nenhuma opção cadastrada</div>
-                          <div className="pv3-empty-sub">Digite o nome abaixo e clique em Cadastrar</div>
+                        <div className="pv3-empty" onClick={e => {
+                          const input = (e.currentTarget.closest(".pv3-card-body")?.querySelector(".pv3-add-row input") as HTMLInputElement | null);
+                          input?.focus();
+                        }}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                          <div className="pv3-empty-txt">Cadastrar 1º {g.titulo.replace(/s$/i, "").toLowerCase()}</div>
+                          <div className="pv3-empty-sub">{g.subtitulo}</div>
                         </div>
                       )}
                     </div>
@@ -1773,10 +1763,13 @@ function PersonalizacaoStep({
                         );
                       })}
                       {grupoTamanhos.opcoes.length === 0 && (
-                        <div className="pv3-empty">
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{display: "block", margin: "0 auto"}}><path d="M2 12h20"/><path d="M6 8v8"/><path d="M10 6v12"/><path d="M14 8v8"/><path d="M18 10v4"/></svg>
-                          <div className="pv3-empty-txt">Nenhum tamanho cadastrado</div>
-                          <div className="pv3-empty-sub">Digite o nome (P, M, G, 1kg...) e clique em Cadastrar</div>
+                        <div className="pv3-empty" onClick={e => {
+                          const input = (e.currentTarget.closest(".pv3-card-body")?.querySelector(".pv3-add-row input") as HTMLInputElement | null);
+                          input?.focus();
+                        }}>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                          <div className="pv3-empty-txt">Cadastrar 1º tamanho</div>
+                          <div className="pv3-empty-sub">Ex: P, M, G, 1kg, 2kg</div>
                         </div>
                       )}
                     </div>
@@ -2272,17 +2265,38 @@ function PersonalizacaoStep({
           background: #FEE2E2;
         }
         .pv3-empty {
-          padding: 20px 12px;
+          padding: 24px 16px;
           text-align: center;
-          color: #6B5D64;
-          font-size: 12.5px;
-          background: #FAF8F5;
-          border-radius: 8px;
-          border: 1px dashed #E5D8DE;
+          background: #FFF5F9;
+          border-radius: 12px;
+          border: 2px dashed #E85A8C;
+          cursor: pointer;
+          transition: all 0.15s ease;
         }
-        .pv3-empty svg { margin-bottom: 6px; opacity: 0.6; }
-        .pv3-empty-txt { font-weight: 600; }
-        .pv3-empty-sub { font-size: 11.5px; color: #9A8B93; margin-top: 2px; }
+        .pv3-empty:hover { background: #FCE0E9; }
+        .pv3-empty svg {
+          margin: 0 auto 10px;
+          color: #E85A8C;
+          background: #FCE0E9;
+          border-radius: 50%;
+          padding: 10px;
+          width: 44px !important;
+          height: 44px !important;
+          opacity: 1;
+          box-sizing: border-box;
+        }
+        .pv3-empty-txt {
+          font-weight: 800;
+          font-size: 14px;
+          color: #E85A8C;
+          margin-bottom: 4px;
+        }
+        .pv3-empty-sub {
+          font-size: 11.5px;
+          color: #6B5D64;
+          margin-top: 2px;
+          font-weight: 500;
+        }
 
         /* Adicionar */
         .pv3-add-row {
