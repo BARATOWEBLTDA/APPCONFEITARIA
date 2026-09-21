@@ -1350,10 +1350,9 @@ function PersonalizacaoStep({
   return (
     <div className="pv3-root">
       <div className="pv3-header">
-        <div className="pv3-eyebrow">Personalização</div>
-        <div className="pv3-title">Quais opções o cliente poderá escolher?</div>
+        <div className="pv3-title">Vamos montar as opções</div>
         <div className="pv3-subtitle">
-          Ative as categorias que fazem sentido pro seu produto. Cada opção pode ter um adicional.
+          Marque o que seu produto tem — sabores, tamanhos, coberturas — e preencha em seguida.
         </div>
         {algumGrupoAtivo && faixa.max > faixa.min && (
           <div className="pv3-faixa-info">
@@ -1365,10 +1364,6 @@ function PersonalizacaoStep({
       {/* MOBILE — Etapa 1: Checklist (marcar categorias). Etapa 2: mostrar botão voltar */}
       {mobileMode === "checklist" && (
         <div className="prod-mchk-wrap">
-          <div className="prod-mchk-head">
-            <p className="prod-mchk-title">O que seu produto tem?</p>
-            <p className="prod-mchk-sub">Marque as opções que se aplicam. Você vai preencher em seguida.</p>
-          </div>
           <div className="prod-mchk-list">
             {grupos.map(g => {
               const ativo = g.dados.ativo;
