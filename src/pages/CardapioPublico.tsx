@@ -641,7 +641,7 @@ function CardapioContent() {
   /* ═══ MOBILE ═══ */
   if (!isDesktop) {
     return (
-      <div className="min-h-screen relative" style={{ backgroundColor: '#f8f8f8' }}>
+      <div className="min-h-screen relative" style={{ backgroundColor: design.cor_background || '#f8f8f8' }}>
         <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
 
         {cardapioModelo === 'modelo1' ? (
@@ -672,7 +672,7 @@ function CardapioContent() {
 
   /* ═══ DESKTOP ═══ */
   return (
-    <div style={{ minHeight:'100vh', background:'var(--bg-body)', fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
+    <div style={{ minHeight:'100vh', background: design.cor_background || 'var(--bg-body)', fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
       <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
       <DeskNav design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
