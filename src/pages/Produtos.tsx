@@ -2493,10 +2493,10 @@ function PersonalizacaoStep({
           justify-content: space-between;
           width: 100%;
           padding: 11px 14px;
-          background: #FFF5F9;
-          border: 1.5px dashed #E85A8C;
+          background: #2C2C2A;
+          border: none;
           border-radius: 10px;
-          color: #E85A8C;
+          color: #fff;
           font-family: inherit;
           font-weight: 700;
           font-size: 13px;
@@ -2504,13 +2504,13 @@ function PersonalizacaoStep({
           transition: all 0.15s ease;
           margin-bottom: 10px;
         }
-        .pv3-bib-btn:hover { background: #FCE0E9; }
+        .pv3-bib-btn:hover { background: #1A1A1A; }
         .pv3-bib-btn-txt { display: inline-flex; align-items: center; gap: 8px; }
         .pv3-bib-btn-count {
           background: #E85A8C;
           color: #fff;
-          padding: 2px 9px;
-          border-radius: 999px;
+          padding: 2px 8px;
+          border-radius: 4px;
           font-size: 11px;
           font-weight: 800;
           min-width: 22px;
