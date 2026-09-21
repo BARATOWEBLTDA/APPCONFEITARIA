@@ -186,6 +186,12 @@ export default function Layout() {
                 <span className="nav-subicon" aria-hidden="true"><Package size={14} weight="duotone" /></span>
                 Ingredientes
               </NavLink>
+              <NavLink to="/complementos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
+                <span className="nav-subicon" aria-hidden="true">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L20 7v10l-8 5-8-5V7z"/><path d="M12 22V12"/><path d="M20 7l-8 5-8-5"/></svg>
+                </span>
+                Complementos
+              </NavLink>
               <NavLink to="/clientes" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
                 <span className="nav-subicon" aria-hidden="true"><Users size={14} weight="duotone" /></span>
                 Clientes
