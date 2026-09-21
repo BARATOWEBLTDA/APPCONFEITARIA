@@ -161,7 +161,7 @@ const GRUPO_VAZIO: GrupoPersonalizacao = {
 };
 const GRUPO_TAMANHOS_VAZIO: GrupoTamanhos = {
   ativo: false, min: 1, max: 1, distribuicao: "nenhuma", opcoes: [],
-  modo_preco_tamanho: "preco_fixo",  // Fase 3 — default clássico
+  modo_preco_tamanho: undefined,  // Sem seleção — usuário escolhe qual
   nome_exibicao: "Tamanhos",          // Fase 3 — default
 };
 const GRUPO_SABORES_VAZIO: GrupoSabores = {
@@ -1731,7 +1731,7 @@ function PersonalizacaoStep({
                           { valor: "por_peso", label: "Calcular pelo peso × preço base", hint: "Preço base R$/kg × peso do tamanho" },
                           { valor: "sob_consulta", label: "Sob consulta", hint: "Cliente entra em contato pra saber preço" },
                         ] as const).map(({ valor, label, hint }) => {
-                          const ativo = (grupoTamanhos.modo_preco_tamanho || "preco_fixo") === valor;
+                          const ativo = grupoTamanhos.modo_preco_tamanho === valor;
                           return (
                             <label
                               key={valor}
@@ -1831,7 +1831,7 @@ function PersonalizacaoStep({
                               </button>
                             </div>
                             <span className="pv3-opcao-nome">{op.nome}</span>
-                            {(grupoTamanhos.modo_preco_tamanho || "preco_fixo") === "preco_fixo" && (
+                            {grupoTamanhos.modo_preco_tamanho === "preco_fixo" && (
                               <div className="pv3-opcao-preco">
                                 <span className="pv3-opcao-preco-prefix">R$</span>
                                 <input
