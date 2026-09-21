@@ -637,6 +637,7 @@ function SelectDoonly({
       if (!btnRef.current?.contains(target) && !popRef.current?.contains(target)) setOpen(false);
     };
     // Só fecha se scroll for FORA do popover (permite rolar categorias por dentro)
+    // No mobile o dropdown vira bottom sheet fixed — não deve fechar em nenhum scroll
     const onScroll = (e: Event) => {
       const target = e.target as Node;
       if (popRef.current?.contains(target)) return;
@@ -644,12 +645,12 @@ function SelectDoonly({
     };
     const t = setTimeout(() => {
       window.addEventListener("click", handler);
-      window.addEventListener("scroll", onScroll, true);
+      if (!isMobile) window.addEventListener("scroll", onScroll, true);
     }, 10);
     return () => {
       clearTimeout(t);
       window.removeEventListener("click", handler);
-      window.removeEventListener("scroll", onScroll, true);
+      if (!isMobile) window.removeEventListener("scroll", onScroll, true);
     };
   }, [open, isMobile, options.length]);
 
