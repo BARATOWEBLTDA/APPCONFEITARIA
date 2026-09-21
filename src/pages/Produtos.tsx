@@ -2515,6 +2515,9 @@ export default function Produtos() {
   } | null>(null);
   const [wizardOpts, setWizardOpts] = useState({ complementos: false, personalizacao: false, promocao: false });
   const [form, setForm] = useState<Produto>(EMPTY);
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
+  const draftSaveTimer = useRef<any>(null);
+  const DRAFT_KEY = "doonly_produto_draft_v1";
   const [confirmDiscardProd, setConfirmDiscardProd] = useState(false);
   const [ordenarPor, setOrdenarPor] = useState<"recentes"|"alfabetica"|"categoria"|"preco">("recentes");
   const [showOrdenar, setShowOrdenar] = useState(false);
@@ -2702,7 +2705,71 @@ export default function Produtos() {
     if (data) setCategorias(data.map((c: any) => c.nome));
   };
 
-  const openNovo = () => { setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setModal(true); };
+  // ═══ Draft de produto (mobile - autosave em localStorage) ═══
+  const hasDraft = (): boolean => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return false;
+      const d = JSON.parse(raw);
+      return !!(d?.form?.nome?.trim() || d?.form?.descricao?.trim());
+    } catch { return false; }
+  };
+
+  const salvarDraft = () => {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        form,
+        wizardStep,
+        wizardTipo,
+        wizardSubtipo,
+        wizardOpts,
+        ts: Date.now(),
+      }));
+    } catch {}
+  };
+
+  const limparDraft = () => {
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    setShowDraftBanner(false);
+  };
+
+  const restaurarDraft = () => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d?.form) setForm(d.form);
+      if (typeof d?.wizardStep === "number") setWizardStep(d.wizardStep);
+      if (d?.wizardTipo) setWizardTipo(d.wizardTipo);
+      if (d?.wizardSubtipo !== undefined) setWizardSubtipo(d.wizardSubtipo);
+      if (d?.wizardOpts) setWizardOpts(d.wizardOpts);
+      setShowDraftBanner(false);
+    } catch {}
+  };
+
+  // Autosave: salva o form no localStorage enquanto o modal está aberto e é NOVO produto (sem id)
+  useEffect(() => {
+    if (!modal || form.id) return;
+    if (draftSaveTimer.current) clearTimeout(draftSaveTimer.current);
+    draftSaveTimer.current = setTimeout(() => {
+      // Só salva se tem conteúdo minimamente relevante
+      if (form.nome?.trim() || form.descricao?.trim() || form.preco_normal > 0) {
+        salvarDraft();
+      }
+    }, 400);
+    return () => { if (draftSaveTimer.current) clearTimeout(draftSaveTimer.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form, wizardStep, wizardTipo, wizardSubtipo, wizardOpts, modal]);
+
+  const openNovo = () => {
+    // Se tem rascunho, abre o modal vazio + mostra banner pra escolher
+    if (hasDraft()) {
+      setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setModal(true);
+      setShowDraftBanner(true);
+      return;
+    }
+    setForm(EMPTY); setFichaTecnica([]); setWizardStep(2); setWizardTipo("personalizavel"); setWizardSubtipo(null); setWizardOpts({ complementos: false, personalizacao: false, promocao: false }); setModal(true);
+  };
   const openEditar = async (p: Produto, limparCopiaTag = false) => {
     // Migração silenciosa: "sob-encomenda" era misturado no forma_venda,
     // agora é modo de produção separado (pronta_entrega=false)
@@ -3031,6 +3098,7 @@ export default function Produtos() {
 
     await loadProdutos(userId);
     setSaving(false);
+    limparDraft();
     fecharModal();
   };
 
@@ -3647,6 +3715,23 @@ export default function Produtos() {
             {/* ══════ WIZARD STEP 2 — IDENTIDADE (nome, categoria, descrição) ══════ */}
             {((wizardStep === 2 && !form.id) || (form.id && editTab === "info")) && (
             <div className="prod-modal-body">
+              {showDraftBanner && !form.id && (
+                <div className="prod-draft-banner">
+                  <div className="prod-draft-banner-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/>
+                    </svg>
+                  </div>
+                  <div className="prod-draft-banner-text">
+                    <p className="prod-draft-banner-title">Você tem um rascunho salvo</p>
+                    <p className="prod-draft-banner-sub">Quer continuar de onde parou?</p>
+                  </div>
+                  <div className="prod-draft-banner-actions">
+                    <button type="button" className="prod-draft-btn prod-draft-btn--secondary" onClick={limparDraft}>Descartar</button>
+                    <button type="button" className="prod-draft-btn prod-draft-btn--primary" onClick={restaurarDraft}>Continuar</button>
+                  </div>
+                </div>
+              )}
               <div className="prod-section">
                 {/* 1. Nome */}
                 <div className="prod-field">
@@ -5337,7 +5422,7 @@ export default function Produtos() {
               <button className="prod-discard-btn prod-discard-btn--stay" onClick={() => setConfirmDiscardProd(false)}>
                 Continuar preenchendo
               </button>
-              <button className="prod-discard-btn prod-discard-btn--go" onClick={() => { setConfirmDiscardProd(false); fecharModal(); }}>
+              <button className="prod-discard-btn prod-discard-btn--go" onClick={() => { limparDraft(); setConfirmDiscardProd(false); fecharModal(); }}>
                 Descartar
               </button>
             </div>
@@ -9447,6 +9532,76 @@ export default function Produtos() {
           transform: translateY(4px);
           box-shadow: 0 0 0 var(--primary-dark);
         }
+        /* ═══ Banner Rascunho Salvo (mobile) ═══ */
+        .prod-draft-banner {
+          display: flex; align-items: center; gap: 12px;
+          padding: 14px 14px;
+          margin: 0 0 16px;
+          background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+          border-left: 4px solid #F59E0B;
+          border-radius: 10px;
+          animation: prod-draft-in 0.35s ease-out;
+        }
+        @keyframes prod-draft-in {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .prod-draft-banner-icon {
+          color: #B45309;
+          flex-shrink: 0;
+        }
+        .prod-draft-banner-text { flex: 1; min-width: 0; }
+        .prod-draft-banner-title {
+          margin: 0;
+          font-size: 13.5px;
+          font-weight: 800;
+          color: #78350F;
+          line-height: 1.2;
+        }
+        .prod-draft-banner-sub {
+          margin: 2px 0 0;
+          font-size: 11.5px;
+          font-weight: 500;
+          color: #92400E;
+          line-height: 1.3;
+        }
+        .prod-draft-banner-actions {
+          display: flex;
+          gap: 6px;
+          flex-shrink: 0;
+        }
+        .prod-draft-btn {
+          padding: 7px 12px;
+          border-radius: 8px;
+          border: none;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: inherit;
+          white-space: nowrap;
+          transition: all 0.15s ease;
+        }
+        .prod-draft-btn--secondary {
+          background: rgba(120, 53, 15, 0.1);
+          color: #78350F;
+        }
+        .prod-draft-btn--secondary:hover { background: rgba(120, 53, 15, 0.18); }
+        .prod-draft-btn--primary {
+          background: #F59E0B;
+          color: #fff;
+          box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+        }
+        .prod-draft-btn--primary:hover { background: #D97706; }
+        @media (max-width: 480px) {
+          .prod-draft-banner {
+            flex-wrap: wrap;
+          }
+          .prod-draft-banner-actions {
+            width: 100%;
+            justify-content: flex-end;
+          }
+        }
+
         .prod-discard-btn--go {
           background: transparent;
           color: #DC2626;
