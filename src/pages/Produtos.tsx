@@ -1905,13 +1905,13 @@ function PersonalizacaoStep({
 
       <style>{`
         .pv3-root { display: flex; flex-direction: column; gap: 12px; min-height: 420px; }
-        .pv3-header { margin-bottom: 4px; }
+        .pv3-header { margin-bottom: 4px; text-align: center; }
         .pv3-eyebrow {
           font-size: 11px; color: #E85A8C; font-weight: 800;
           text-transform: uppercase; letter-spacing: 0.08em;
         }
         .pv3-title { font-size: 20px; font-weight: 800; color: #2D1F26; margin-top: 4px; line-height: 1.2; }
-        .pv3-subtitle { font-size: 13px; color: #6B5D64; margin-top: 6px; line-height: 1.4; }
+        .pv3-subtitle { font-size: 13px; color: #6B5D64; margin-top: 6px; line-height: 1.4; max-width: 480px; margin-left: auto; margin-right: auto; }
         .pv3-preco-base {
           margin-top: 10px; padding: 10px 12px; background: #FDF3F7; border-radius: 8px;
           font-size: 12.5px; color: #831843; border: 1px solid #FCE0E9;
