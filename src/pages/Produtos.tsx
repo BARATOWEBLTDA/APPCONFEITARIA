@@ -4805,22 +4805,50 @@ export default function Produtos() {
                   )}
                   <div className="prod-row-2">
                     <div className="prod-field">
-                      <label>Preço</label>
+                      <label>Preço cheio</label>
                       <div className="prod-preco-input prod-preco-input--big">
                         <span>R$</span>
                         <input type="text" placeholder="0,00" value={form.preco_normal ? formatPreco(form.preco_normal) : ""} onChange={e => setForm(f => ({ ...f, preco_normal: parsePreco(e.target.value) }))} />
                       </div>
                     </div>
                     <div className="prod-field">
-                      <label>Vendido por</label>
-                      <SelectDoonly
-                        value={form.forma_venda}
-                        onChange={v => setForm(f => ({ ...f, forma_venda: v }))}
-                        options={FORMAS_VENDA.map(fv => ({ value: fv.value, label: fv.label }))}
-                        title="Como esse produto é vendido?"
-                        big
-                      />
+                      <label>Preço promocional <span className="prod-field-hint">(opcional)</span></label>
+                      <div className="prod-preco-input prod-preco-input--big prod-preco-input--promo">
+                        <span>R$</span>
+                        <input
+                          type="text"
+                          placeholder="0,00"
+                          value={form.preco_promocional && form.preco_promocional > 0 ? formatPreco(form.preco_promocional) : ""}
+                          onChange={e => {
+                            const v = parsePreco(e.target.value);
+                            setForm(f => ({ ...f, preco_promocional: v, promocao: v > 0 && v < f.preco_normal, tipo_promocao: 'fixo' }));
+                          }}
+                        />
+                      </div>
                     </div>
+                  </div>
+
+                  {/* Preview do preço no cardápio */}
+                  {form.preco_normal > 0 && form.preco_promocional && form.preco_promocional > 0 && form.preco_promocional < form.preco_normal && (
+                    <div className="prod-promo-preview">
+                      <span className="prod-promo-preview-label">Cliente verá:</span>
+                      <span className="prod-promo-preview-riscado">R$ {formatPreco(form.preco_normal)}</span>
+                      <span className="prod-promo-preview-final">R$ {formatPreco(form.preco_promocional)}</span>
+                      <span className="prod-promo-preview-desconto">
+                        -{Math.round((1 - form.preco_promocional / form.preco_normal) * 100)}%
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="prod-field" style={{marginTop: 14}}>
+                    <label>Vendido por</label>
+                    <SelectDoonly
+                      value={form.forma_venda}
+                      onChange={v => setForm(f => ({ ...f, forma_venda: v }))}
+                      options={FORMAS_VENDA.map(fv => ({ value: fv.value, label: fv.label }))}
+                      title="Como esse produto é vendido?"
+                      big
+                    />
                   </div>
                 </div>
               )}
@@ -5147,8 +5175,8 @@ export default function Produtos() {
                 )}
               </div>
 
-              {/* Promoção — só em step 4 (Preço) ou edição */}
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
+              {/* Promoção — DESATIVADA: agora está inline no bloco "Preço cheio / Preço promocional" acima */}
+              {false && ((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
               <div className="prod-section">
                 <p className="prod-section-label">Promoção</p>
                 <Toggle label="Produto em promoção" value={form.promocao} onChange={(v: boolean) => setForm(f => ({ ...f, promocao: v }))} colorClass="active-pink" />
@@ -7573,6 +7601,62 @@ export default function Produtos() {
         .prod-preco-input--big span {
           font-size: 18px !important;
           font-weight: var(--fw-black) !important;
+        }
+        /* Input de preço promocional — bordado verde discreto */
+        .prod-preco-input--promo {
+          border-color: #86EFAC !important;
+          background: #F0FDF4 !important;
+        }
+        .prod-preco-input--promo:focus-within {
+          border-color: #22C55E !important;
+        }
+        .prod-preco-input--promo span, .prod-preco-input--promo input {
+          color: #15803D !important;
+        }
+        .prod-field-hint {
+          font-size: 11px;
+          font-weight: 500;
+          color: #9CA3AF;
+          margin-left: 4px;
+        }
+        /* Preview de como o cliente vê o preço no cardápio */
+        .prod-promo-preview {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-top: 10px;
+          padding: 12px 14px;
+          background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+          border: 1.5px solid #86EFAC;
+          border-radius: 10px;
+          flex-wrap: wrap;
+        }
+        .prod-promo-preview-label {
+          font-size: 11.5px;
+          font-weight: 700;
+          color: #15803D;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .prod-promo-preview-riscado {
+          font-size: 13px;
+          color: #9CA3AF;
+          text-decoration: line-through;
+          font-weight: 600;
+        }
+        .prod-promo-preview-final {
+          font-size: 17px;
+          font-weight: 900;
+          color: #15803D;
+        }
+        .prod-promo-preview-desconto {
+          margin-left: auto;
+          padding: 3px 10px;
+          background: #16A34A;
+          color: #fff;
+          border-radius: 6px;
+          font-size: 12px;
+          font-weight: 800;
         }
         /* ═══ Botão "+ Adicionar variação" (dentro da seção simples) ═══ */
         .prod-btn-add-variacao {
