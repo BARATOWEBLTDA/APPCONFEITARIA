@@ -965,6 +965,32 @@ function PersonalizacaoStep({
   mobileMode, onGoToFill, onBackToChecklist,
 }: PersonalizacaoStepProps) {
   const [expandido, setExpandido] = useState<string | null>(null);
+  // Bottom sheet "Escolher da biblioteca"
+  const [bibSheetGrupo, setBibSheetGrupo] = useState<"massas" | "recheios" | "coberturas" | "sabores" | "tamanhos" | null>(null);
+  const [bibSheetSelected, setBibSheetSelected] = useState<Set<string>>(new Set());
+  const abrirBibSheet = (grupo: "massas" | "recheios" | "coberturas" | "sabores" | "tamanhos") => {
+    setBibSheetSelected(new Set());
+    setBibSheetGrupo(grupo);
+  };
+  const toggleBibSelected = (nome: string) => {
+    setBibSheetSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(nome)) next.delete(nome); else next.add(nome);
+      return next;
+    });
+  };
+  const confirmarBibSheet = () => {
+    if (!bibSheetGrupo) return;
+    Array.from(bibSheetSelected).forEach(nome => {
+      if (bibSheetGrupo === "tamanhos") {
+        addTamanho(nome, 0);
+      } else {
+        addOpcao(bibSheetGrupo as any, nome);
+      }
+    });
+    setBibSheetGrupo(null);
+    setBibSheetSelected(new Set());
+  };
   const [avancadoOpen, setAvancadoOpen] = useState<Record<string, boolean>>({});
   const [showInfo, setShowInfo] = useState(false);
   const [showUnidade, setShowUnidade] = useState(false);
@@ -1476,32 +1502,24 @@ function PersonalizacaoStep({
                 {/* Lista de opções */}
                 {g.key !== "tamanhos" ? (
                   <>
-                    {/* Sugestões da biblioteca — só as que ainda não estão no produto */}
+                    {/* Botão pra abrir bottom sheet da biblioteca */}
                     {(() => {
                       const bibl = biblioteca[g.key] || [];
                       const opcoesAtuais = (g.dados as GrupoPersonalizacao).opcoes.map(o => o.nome.toLowerCase());
                       const sugestoes = bibl.filter(b => !opcoesAtuais.includes(b.nome.toLowerCase()));
                       if (sugestoes.length === 0) return null;
                       return (
-                        <div className="pv3-sugestoes">
-                          <div className="pv3-sugestoes-label">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                            Da sua biblioteca — clique pra adicionar
-                          </div>
-                          <div className="pv3-sugestoes-chips">
-                            {sugestoes.map(sug => (
-                              <button
-                                key={sug.id}
-                                type="button"
-                                className="pv3-sugestao-chip"
-                                onClick={() => addOpcao(g.key as any, sug.nome)}
-                              >
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                {sug.nome}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
+                        <button
+                          type="button"
+                          className="pv3-bib-btn"
+                          onClick={() => abrirBibSheet(g.key as any)}
+                        >
+                          <span className="pv3-bib-btn-txt">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            Escolher da minha biblioteca
+                          </span>
+                          <span className="pv3-bib-btn-count">{sugestoes.length}</span>
+                        </button>
                       );
                     })()}
 
@@ -1702,25 +1720,17 @@ function PersonalizacaoStep({
                       const sugestoes = bibl.filter(b => !nomesAtuais.includes(b.nome.toLowerCase()));
                       if (sugestoes.length === 0) return null;
                       return (
-                        <div className="pv3-sugestoes">
-                          <div className="pv3-sugestoes-label">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
-                            Da sua biblioteca — clique pra adicionar
-                          </div>
-                          <div className="pv3-sugestoes-chips">
-                            {sugestoes.map(sug => (
-                              <button
-                                key={sug.id}
-                                type="button"
-                                className="pv3-sugestao-chip"
-                                onClick={() => addTamanho(sug.nome, 0)}
-                              >
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                                {sug.nome}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
+                        <button
+                          type="button"
+                          className="pv3-bib-btn"
+                          onClick={() => abrirBibSheet("tamanhos")}
+                        >
+                          <span className="pv3-bib-btn-txt">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            Escolher da minha biblioteca
+                          </span>
+                          <span className="pv3-bib-btn-count">{sugestoes.length}</span>
+                        </button>
                       );
                     })()}
                     <div className="pv3-opcoes-list">
@@ -1895,6 +1905,60 @@ function PersonalizacaoStep({
           </div>
         );
       })}
+
+      {/* Bottom sheet: escolher da biblioteca */}
+      {bibSheetGrupo && (() => {
+        const bibl = biblioteca[bibSheetGrupo] || [];
+        const opcoesAtuais = bibSheetGrupo === "tamanhos"
+          ? grupoTamanhos.opcoes.map((o: any) => o.nome.toLowerCase())
+          : bibSheetGrupo === "sabores"
+          ? grupoSabores.opcoes.map((o: any) => o.nome.toLowerCase())
+          : (({ massas: grupoMassas, recheios: grupoRecheios, coberturas: grupoCoberturas } as any)[bibSheetGrupo]).opcoes.map((o: any) => o.nome.toLowerCase());
+        const sugestoes = bibl.filter(b => !opcoesAtuais.includes(b.nome.toLowerCase()));
+        const gTitulo = ({ massas: "Massas", recheios: "Recheios", coberturas: "Coberturas", sabores: "Sabores", tamanhos: "Tamanhos" } as any)[bibSheetGrupo];
+        const count = bibSheetSelected.size;
+        return (
+          <div className="pv3-bib-overlay" onClick={() => setBibSheetGrupo(null)}>
+            <div className="pv3-bib-sheet" onClick={e => e.stopPropagation()}>
+              <div className="pv3-bib-handle" />
+              <div className="pv3-bib-header">
+                <div>
+                  <p className="pv3-bib-title">Da sua biblioteca</p>
+                  <p className="pv3-bib-sub">Marque as que quer adicionar em {gTitulo}</p>
+                </div>
+                <button type="button" className="pv3-bib-close" onClick={() => setBibSheetGrupo(null)} aria-label="Fechar">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div className="pv3-bib-list">
+                {sugestoes.length === 0 && (
+                  <p className="pv3-bib-empty">Nenhuma opção nova disponível na biblioteca</p>
+                )}
+                {sugestoes.map(sug => {
+                  const sel = bibSheetSelected.has(sug.nome);
+                  return (
+                    <label key={sug.id} className={`pv3-bib-item ${sel ? "pv3-bib-item--on" : ""}`}>
+                      <input type="checkbox" checked={sel} onChange={() => toggleBibSelected(sug.nome)} className="pv3-bib-checkbox" />
+                      <div className="pv3-bib-check-visual">
+                        {sel && (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        )}
+                      </div>
+                      <p className="pv3-bib-item-name">{sug.nome}</p>
+                    </label>
+                  );
+                })}
+              </div>
+              <div className="pv3-bib-footer">
+                <button type="button" className="pv3-bib-btn-cancel" onClick={() => setBibSheetGrupo(null)}>Cancelar</button>
+                <button type="button" className="pv3-bib-btn-add" onClick={confirmarBibSheet} disabled={count === 0}>
+                  {count === 0 ? "Adicionar" : count === 1 ? "Adicionar 1 opção" : `Adicionar ${count} opções`}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <style>{`
         .pv3-root { display: flex; flex-direction: column; gap: 12px; }
@@ -2420,49 +2484,204 @@ function PersonalizacaoStep({
         .pv3-mini-switch--on .pv3-mini-switch-thumb { left: 19px; }
 
         /* Sugestões da biblioteca */
-        .pv3-sugestoes {
-          margin-bottom: 12px;
-          padding: 12px;
-          background: linear-gradient(135deg, #FEF3C7 0%, #FEF9E7 100%);
-          border: 1px solid #FDE68A;
-          border-radius: 10px;
-        }
-        .pv3-sugestoes-label {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 11px;
-          font-weight: 700;
-          color: #92400E;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          margin-bottom: 8px;
-        }
-        .pv3-sugestoes-chips {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-        }
-        .pv3-sugestao-chip {
+        /* Botão da biblioteca */
+        .pv3-bib-btn {
           all: unset;
-          display: inline-flex;
+          box-sizing: border-box;
+          display: flex;
           align-items: center;
-          gap: 4px;
-          padding: 6px 10px;
-          background: #fff;
-          border: 1px solid #FDE68A;
-          border-radius: 999px;
-          font-size: 12px;
+          justify-content: space-between;
+          width: 100%;
+          padding: 11px 14px;
+          background: #FFF5F9;
+          border: 1.5px dashed #E85A8C;
+          border-radius: 10px;
+          color: #E85A8C;
+          font-family: inherit;
           font-weight: 700;
-          color: #92400E;
+          font-size: 13px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          margin-bottom: 10px;
+        }
+        .pv3-bib-btn:hover { background: #FCE0E9; }
+        .pv3-bib-btn-txt { display: inline-flex; align-items: center; gap: 8px; }
+        .pv3-bib-btn-count {
+          background: #E85A8C;
+          color: #fff;
+          padding: 2px 9px;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 800;
+          min-width: 22px;
+          text-align: center;
+        }
+
+        /* Bottom sheet biblioteca */
+        .pv3-bib-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 10100;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          animation: pv3BibOverlayIn 0.2s ease-out;
+        }
+        @keyframes pv3BibOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+        .pv3-bib-sheet {
+          background: #fff;
+          width: 100%;
+          max-width: 480px;
+          max-height: 85vh;
+          border-radius: 20px 20px 0 0;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          animation: pv3BibSheetIn 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+          font-family: 'Geist', sans-serif;
+        }
+        @media (min-width: 720px) {
+          .pv3-bib-overlay { align-items: center; padding: 24px; }
+          .pv3-bib-sheet { border-radius: 16px; max-height: 80vh; }
+        }
+        @keyframes pv3BibSheetIn { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .pv3-bib-handle {
+          width: 40px; height: 4px;
+          background: #D1D5DB;
+          border-radius: 2px;
+          margin: 8px auto 4px;
+          flex-shrink: 0;
+        }
+        .pv3-bib-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 8px 20px 14px;
+          border-bottom: 1px solid #F3F4F6;
+          flex-shrink: 0;
+        }
+        .pv3-bib-title {
+          margin: 0;
+          font-size: 15px;
+          font-weight: 800;
+          color: #1F1F23;
+        }
+        .pv3-bib-sub {
+          margin: 2px 0 0;
+          font-size: 11.5px;
+          color: #6B7280;
+          font-weight: 500;
+        }
+        .pv3-bib-close {
+          background: #F3F4F6;
+          border: none;
+          width: 32px; height: 32px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #6B7280;
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: background 0.15s;
+        }
+        .pv3-bib-close:hover { background: #E5E7EB; }
+        .pv3-bib-list {
+          padding: 12px 14px;
+          overflow-y: auto;
+          flex: 1;
+          -webkit-overflow-scrolling: touch;
+        }
+        .pv3-bib-empty {
+          text-align: center;
+          color: #9CA3AF;
+          font-size: 13px;
+          padding: 32px 12px;
+          margin: 0;
+        }
+        .pv3-bib-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px;
+          background: #fff;
+          border: 1.5px solid #E5E7EB;
+          border-radius: 10px;
+          margin-bottom: 6px;
           cursor: pointer;
           transition: all 0.15s;
+        }
+        .pv3-bib-item:hover { border-color: #F5B8CD; }
+        .pv3-bib-item--on {
+          background: #FFF5F9;
+          border-color: #E85A8C;
+        }
+        .pv3-bib-checkbox { display: none; }
+        .pv3-bib-check-visual {
+          width: 22px; height: 22px;
+          border-radius: 6px;
+          border: 2px solid #D1D5DB;
+          background: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          transition: all 0.15s;
+        }
+        .pv3-bib-item--on .pv3-bib-check-visual {
+          background: #E85A8C;
+          border-color: #E85A8C;
+        }
+        .pv3-bib-item-name {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 700;
+          color: #1F1F23;
+          flex: 1;
+        }
+        .pv3-bib-footer {
+          padding: 14px 16px;
+          padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+          border-top: 1px solid #F3F4F6;
+          display: flex;
+          gap: 8px;
+          flex-shrink: 0;
+        }
+        .pv3-bib-btn-cancel {
+          flex: 1;
+          padding: 12px;
+          background: #F3F4F6;
+          color: #4B5563;
+          border: none;
+          border-radius: 10px;
+          font-weight: 700;
+          font-size: 13px;
+          cursor: pointer;
           font-family: inherit;
         }
-        .pv3-sugestao-chip:hover {
-          background: #92400E;
-          border-color: #92400E;
+        .pv3-bib-btn-cancel:hover { background: #E5E7EB; }
+        .pv3-bib-btn-add {
+          flex: 2;
+          padding: 12px;
+          background: #E85A8C;
           color: #fff;
+          border: none;
+          border-radius: 10px;
+          font-weight: 800;
+          font-size: 13px;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(232,90,140,0.4);
+          font-family: inherit;
+          transition: all 0.15s;
+        }
+        .pv3-bib-btn-add:hover:not(:disabled) { background: #d54a7a; }
+        .pv3-bib-btn-add:disabled {
+          background: #E5E7EB;
+          color: #9CA3AF;
+          box-shadow: none;
+          cursor: not-allowed;
         }
         .pv3-sugestao-chip:active { transform: scale(0.95); }
       `}</style>
