@@ -4839,18 +4839,29 @@ export default function Produtos() {
                   </div>
 
                   {/* Preview do preço no cardápio */}
-                  {form.preco_normal > 0 && form.preco_promocional && form.preco_promocional > 0 && form.preco_promocional < form.preco_normal && (
-                    <div className="prod-promo-preview">
-                      <span className="prod-promo-preview-label">Cliente verá no cardápio</span>
-                      <div className="prod-promo-preview-precos">
-                        <span className="prod-promo-preview-riscado">R$ {formatPreco(form.preco_normal)}</span>
-                        <span className="prod-promo-preview-final">R$ {formatPreco(form.preco_promocional)}</span>
-                        <span className="prod-promo-preview-desconto">
-                          -{Math.round((1 - form.preco_promocional / form.preco_normal) * 100)}%
-                        </span>
+                  {form.preco_normal > 0 && form.preco_promocional && form.preco_promocional > 0 && form.preco_promocional < form.preco_normal && (() => {
+                    // Sufixo da unidade (só se fizer sentido pro cliente)
+                    const isKgPorPeso = form.grupo_tamanhos?.modo_preco_tamanho === "por_peso";
+                    const sufixoMap: Record<string, string> = {
+                      kg: "/kg", fatia: "/fatia", cento: "/cento", caixa: "/cx",
+                    };
+                    const sufixo = isKgPorPeso ? "/kg" : (sufixoMap[form.forma_venda] || "");
+                    return (
+                      <div className="prod-promo-preview">
+                        <span className="prod-promo-preview-label">Cliente verá no cardápio</span>
+                        <div className="prod-promo-preview-precos">
+                          <span className="prod-promo-preview-riscado">R$ {formatPreco(form.preco_normal)}</span>
+                          <span className="prod-promo-preview-final">
+                            R$ {formatPreco(form.preco_promocional)}
+                            {sufixo && <span className="prod-promo-preview-sufixo">{sufixo}</span>}
+                          </span>
+                          <span className="prod-promo-preview-desconto">
+                            -{Math.round((1 - form.preco_promocional / form.preco_normal) * 100)}%
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   <div className="prod-field" style={{marginTop: 14}}>
                     <label>Vendido por</label>
@@ -7695,6 +7706,15 @@ export default function Produtos() {
           font-weight: 900;
           color: #E85A8C;
           letter-spacing: -0.02em;
+          display: inline-flex;
+          align-items: baseline;
+          gap: 4px;
+        }
+        .prod-promo-preview-sufixo {
+          font-size: 13px;
+          font-weight: 700;
+          color: #C33A6E;
+          letter-spacing: 0;
         }
         .prod-promo-preview-desconto {
           margin-left: auto;
