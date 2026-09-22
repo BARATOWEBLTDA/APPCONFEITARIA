@@ -15,7 +15,7 @@ const SectionLabel = ({ children, sub }: any) => (
   </div>
 );
 
-export default function CardapioDesign({ identityCard }: { identityCard?: React.ReactNode } = {}) {
+export default function CardapioDesign({ identityCard, avaliacoesCard }: { identityCard?: React.ReactNode; avaliacoesCard?: React.ReactNode } = {}) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
@@ -311,6 +311,8 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
         </div>
       </div>
 
+      {/* Card Avaliações (via prop) — fica lado a lado com Layout no grid 1fr 1fr */}
+      {avaliacoesCard}
 
       {/* Cores */}
       <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
