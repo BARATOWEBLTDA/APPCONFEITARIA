@@ -34,6 +34,9 @@ export default function Complementos() {
   const [busca, setBusca] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Complemento | null>(null);
+  const [modalStep, setModalStep] = useState<1 | 2>(1);
+  const [showInfo, setShowInfo] = useState(false);
+  const [primeiroNome, setPrimeiroNome] = useState<string>("");
   const [form, setForm] = useState<{ nome: string; valor: number; categorias: string[] }>({ nome: "", valor: 0, categorias: [] });
   const [saving, setSaving] = useState(false);
   const [confirmDel, setConfirmDel] = useState<Complemento | null>(null);
@@ -44,6 +47,9 @@ export default function Complementos() {
       const uid = userData.user?.id;
       if (!uid) { setLoading(false); return; }
       setUserId(uid);
+      // Buscar nome pra personalizar tooltips
+      const { data: profile } = await supabase.from("profiles").select("nome").eq("id", uid).single();
+      if (profile?.nome) setPrimeiroNome(profile.nome.trim().split(/\s+/)[0]);
       const { data } = await supabase.from("biblioteca_extras").select("*").eq("user_id", uid).order("nome");
       if (data) setItems(data as Complemento[]);
       const { data: prods } = await supabase.from("produtos").select("id, nome, categoria").eq("user_id", uid).order("nome");
@@ -55,14 +61,16 @@ export default function Complementos() {
   const abrirNovo = () => {
     setEditing(null);
     setForm({ nome: "", valor: 0, categorias: [] });
+    setModalStep(1);
     setModalOpen(true);
   };
   const abrirEditar = (c: Complemento) => {
     setEditing(c);
     setForm({ nome: c.nome, valor: c.valor, categorias: c.categorias || [] });
+    setModalStep(1);
     setModalOpen(true);
   };
-  const fechar = () => { setModalOpen(false); setEditing(null); };
+  const fechar = () => { setModalOpen(false); setEditing(null); setModalStep(1); };
 
   const salvar = async () => {
     const nomeLimpo = form.nome.trim();
@@ -191,61 +199,130 @@ export default function Complementos() {
           <div className="cpl-modal" onClick={e => e.stopPropagation()}>
             <div className="cpl-modal-handle" />
             <div className="cpl-modal-head">
-              <h3 className="cpl-modal-title">{editing ? "Editar personalização" : "Nova personalização"}</h3>
+              <div style={{display:"flex", alignItems:"center", gap:8, flex:1, minWidth:0}}>
+                <h3 className="cpl-modal-title">{editing ? "Editar personalização" : "Nova personalização"}</h3>
+                {!editing && (
+                  <button
+                    type="button"
+                    className="cpl-info-tip"
+                    onClick={() => setShowInfo(true)}
+                    aria-label="Sobre personalização"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  </button>
+                )}
+                <span className="cpl-step-badge">Etapa {modalStep} de 2</span>
+              </div>
               <button className="cpl-modal-close" onClick={fechar}><X size={16} weight="bold" /></button>
             </div>
+
             <div className="cpl-modal-body">
-              <div className="cpl-field">
-                <label>Nome da personalização *</label>
-                <input
-                  type="text"
-                  placeholder="Ex: Topo de bolo, Escrita, Papel de arroz..."
-                  value={form.nome}
-                  onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-                  autoFocus={!editing}
-                />
-              </div>
-              <div className="cpl-field">
-                <label>Valor *</label>
-                <div className="cpl-field-input-wrap">
-                  <span className="cpl-field-prefix">R$</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="0,00"
-                    value={formatBRL(form.valor)}
-                    onChange={e => setForm(f => ({ ...f, valor: parsePreco(e.target.value) }))}
-                  />
-                </div>
-              </div>
-              <div className="cpl-field">
-                <label>Aparece em quais produtos? <span className="cpl-field-hint">(opcional — deixe vazio pra aparecer em todos)</span></label>
-                {produtos.length === 0 ? (
-                  <p style={{ margin: 0, fontSize: 12.5, color: "#9CA3AF" }}>Você ainda não tem produtos cadastrados.</p>
-                ) : (
-                  <div className="cpl-prods-list">
-                    {produtos.map(p => (
-                      <label key={p.id} className={`cpl-prod-item ${form.categorias.includes(p.id) ? "cpl-prod-item--on" : ""}`}>
-                        <input type="checkbox" checked={form.categorias.includes(p.id)} onChange={() => toggleProduto(p.id)} />
-                        <div className="cpl-prod-check">
-                          {form.categorias.includes(p.id) && (
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                          )}
-                        </div>
-                        <span className="cpl-prod-nome">{p.nome}</span>
-                        {p.categoria && <span className="cpl-prod-cat">{p.categoria}</span>}
-                      </label>
-                    ))}
+              {modalStep === 1 ? (
+                <>
+                  <div className="cpl-field">
+                    <label>
+                      Nome da personalização
+                      <span className="cpl-req-tag">obrigatório</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Topo de bolo, Escrita, Papel de arroz..."
+                      value={form.nome}
+                      onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
+                      autoFocus={!editing}
+                    />
                   </div>
-                )}
-              </div>
+                  <div className="cpl-field">
+                    <label>
+                      Quanto custa essa personalização
+                      <span className="cpl-req-tag">obrigatório</span>
+                    </label>
+                    <div className="cpl-field-input-wrap">
+                      <span className="cpl-field-prefix">R$</span>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="0,00"
+                        value={formatBRL(form.valor)}
+                        onChange={e => setForm(f => ({ ...f, valor: parsePreco(e.target.value) }))}
+                      />
+                    </div>
+                    <p className="cpl-field-explain">Se for grátis, deixe R$ 0,00.</p>
+                  </div>
+                </>
+              ) : (
+                <div className="cpl-field">
+                  <label>Aparece em quais produtos? <span className="cpl-field-hint">(opcional — deixe vazio pra aparecer em todos)</span></label>
+                  {produtos.length === 0 ? (
+                    <p style={{ margin: 0, fontSize: 12.5, color: "#9CA3AF" }}>Você ainda não tem produtos cadastrados.</p>
+                  ) : (
+                    <div className="cpl-prods-list">
+                      {produtos.map(p => (
+                        <label key={p.id} className={`cpl-prod-item ${form.categorias.includes(p.id) ? "cpl-prod-item--on" : ""}`}>
+                          <input type="checkbox" checked={form.categorias.includes(p.id)} onChange={() => toggleProduto(p.id)} />
+                          <div className="cpl-prod-check">
+                            {form.categorias.includes(p.id) && (
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            )}
+                          </div>
+                          <span className="cpl-prod-nome">{p.nome}</span>
+                          {p.categoria && <span className="cpl-prod-cat">{p.categoria}</span>}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
+
             <div className="cpl-modal-foot">
-              <button className="cpl-modal-btn cpl-modal-btn--sec" onClick={fechar}>Cancelar</button>
-              <button className="cpl-modal-btn cpl-modal-btn--pri" onClick={salvar} disabled={saving}>
-                {saving ? "Salvando..." : (editing ? "Salvar" : "Criar personalização")}
-              </button>
+              {modalStep === 1 ? (
+                <>
+                  <button className="cpl-modal-btn cpl-modal-btn--sec" onClick={fechar}>Cancelar</button>
+                  <button
+                    className="cpl-modal-btn cpl-modal-btn--pri"
+                    onClick={() => {
+                      if (!form.nome.trim()) return alert("Digite o nome da personalização");
+                      setModalStep(2);
+                    }}
+                  >
+                    Avançar
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button className="cpl-modal-btn cpl-modal-btn--sec" onClick={() => setModalStep(1)}>Voltar</button>
+                  <button className="cpl-modal-btn cpl-modal-btn--pri" onClick={salvar} disabled={saving}>
+                    {saving ? "Salvando..." : (editing ? "Salvar" : "Criar personalização")}
+                  </button>
+                </>
+              )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal info personalizado */}
+      {showInfo && (
+        <div className="cpl-modal-ov" onClick={() => setShowInfo(false)} style={{ zIndex: 10001 }}>
+          <div className="cpl-info-card" onClick={e => e.stopPropagation()}>
+            <div className="cpl-info-ico">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.5 6.5L21 9l-5 4.5 1.5 6.5L12 16.5 6.5 20 8 13.5 3 9l6.5-.5L12 2z"/></svg>
+            </div>
+            <h4 className="cpl-info-title">
+              {primeiroNome ? `${primeiroNome}, `: ""}
+              como sua personalização vai aparecer?
+            </h4>
+            <p className="cpl-info-txt">
+              Cada personalização que você cria aparece pro cliente <b>na hora dele escolher o produto</b> no cardápio.
+            </p>
+            <p className="cpl-info-txt">
+              Ele vê as opções ativadas pra aquele produto e escolhe qual quer. Se tiver valor, soma no total do pedido.
+            </p>
+            <p className="cpl-info-example">
+              <b>Exemplo:</b> "Topo de bolo — R$ 15,00" aparece só nos produtos onde você marcou.
+            </p>
+            <button className="cpl-info-btn" onClick={() => setShowInfo(false)}>Entendi</button>
           </div>
         </div>
       )}
@@ -370,4 +447,78 @@ const styles = `
   .cpl-prod-item--on .cpl-prod-check { background: #E85A8C; border-color: #E85A8C; }
   .cpl-prod-nome { flex: 1; font-size: 13.5px; font-weight: 700; color: #1F1F23; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cpl-prod-cat { font-size: 10.5px; padding: 2px 8px; background: #F5F3EF; border-radius: 6px; color: #6B7280; font-weight: 600; flex-shrink: 0; }
+
+  /* Info tip (i) ao lado do título */
+  .cpl-info-tip {
+    all: unset; box-sizing: border-box; cursor: pointer;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #FCE0E9; color: #E85A8C;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.15s; flex-shrink: 0;
+  }
+  .cpl-info-tip:hover { background: #E85A8C; color: #fff; }
+
+  /* Badge da etapa */
+  .cpl-step-badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 8px; background: #F5F3EF; color: #6B7280;
+    font-size: 10.5px; font-weight: 800; border-radius: 6px;
+    letter-spacing: 0.03em; text-transform: uppercase;
+    margin-left: auto; flex-shrink: 0;
+  }
+
+  /* Tag "obrigatório" ao lado do label */
+  .cpl-req-tag {
+    display: inline-block; margin-left: 6px;
+    padding: 2px 7px; background: #F5F3EF; color: #9CA3AF;
+    font-size: 9.5px; font-weight: 800; border-radius: 5px;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    vertical-align: middle;
+  }
+
+  /* Explicação sob o campo */
+  .cpl-field-explain {
+    margin: 6px 0 0; font-size: 11.5px; color: #9CA3AF; font-weight: 500;
+  }
+
+  /* Modal info personalizado */
+  .cpl-info-card {
+    background: #fff; border-radius: 14px;
+    padding: 24px 22px 20px; width: 92%; max-width: 380px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    display: flex; flex-direction: column; gap: 12px;
+    animation: cplInfoIn 0.2s ease-out;
+  }
+  @keyframes cplInfoIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .cpl-info-ico {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: linear-gradient(135deg, #FCE0E9, #F5B8CD);
+    color: #E85A8C;
+    display: flex; align-items: center; justify-content: center;
+    align-self: center;
+    box-shadow: 0 4px 12px rgba(232,90,140,0.2);
+  }
+  .cpl-info-title {
+    margin: 4px 0 0; font-size: 18px; font-weight: 800; color: #1F1F23;
+    text-align: center; line-height: 1.3;
+  }
+  .cpl-info-txt {
+    margin: 0; font-size: 13px; color: #4B5563; line-height: 1.5;
+  }
+  .cpl-info-example {
+    margin: 4px 0 0; padding: 10px 12px;
+    background: #FCE0E9; border-radius: 8px;
+    font-size: 12.5px; color: #831843; line-height: 1.4;
+  }
+  .cpl-info-btn {
+    margin-top: 8px; padding: 11px 16px;
+    background: #E85A8C; color: #fff;
+    border: none; border-radius: 10px;
+    font-family: 'Geist', sans-serif; font-size: 13.5px; font-weight: 700;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .cpl-info-btn:hover { background: #d54a7a; }
 `;
