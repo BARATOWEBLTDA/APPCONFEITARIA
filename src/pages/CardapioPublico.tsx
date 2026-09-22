@@ -598,8 +598,10 @@ function CardapioContent() {
 
   const toggleFavorite = (id: string) => setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
   const getCategories = () => {
+    // Só mostra categorias que TÊM ao menos 1 produto cadastrado e visível
+    const catsComProduto = new Set(produtos.map(p => p.categoria).filter(Boolean));
     const cats = [{ name: 'Todos', icon: '' }]
-    categoriasList.forEach(c => cats.push({ name: c, icon: '' }))
+    categoriasList.forEach(c => { if (catsComProduto.has(c)) cats.push({ name: c, icon: '' }) })
     return cats
   }
   const filteredProdutos = produtos.filter(p => {
