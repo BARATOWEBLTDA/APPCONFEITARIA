@@ -516,31 +516,6 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
             <RenderGrupo g={gCobertura} tipoEscolha="single" valorAtual={escolhaCobertura} onChange={setEscolhaCobertura} />
           )}
 
-          {/* Observações */}
-          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14 }}>
-            {!showObs ? (
-              <button onClick={() => setShowObs(true)} style={{
-                background: 'none', border: '1px dashed #E5D8DE', color: '#6B5D64',
-                fontSize: 13, fontWeight: 700, padding: '10px 12px', borderRadius: 8,
-                cursor: 'pointer', width: '100%', fontFamily: 'inherit',
-              }}>
-                + Adicionar observação (opcional)
-              </button>
-            ) : (
-              <textarea
-                autoFocus
-                placeholder="Ex: sem lactose, escrever 'Feliz Aniversário Ana'..."
-                value={observations}
-                onChange={e => setObservations(e.target.value)}
-                style={{
-                  width: '100%', minHeight: 60, padding: 10,
-                  border: '1.5px solid #E5D8DE', borderRadius: 8, resize: 'vertical',
-                  fontFamily: 'inherit', fontSize: 13, outline: 'none', boxSizing: 'border-box',
-                }}
-              />
-            )}
-          </div>
-
           {/* Quantidade */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0' }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-title)' }}>Quantidade</span>
