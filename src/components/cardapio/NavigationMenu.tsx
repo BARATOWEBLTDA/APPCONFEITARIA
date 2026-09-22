@@ -925,7 +925,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
             </div>
           )}
 
-          <div className="fixed bottom-0 left-0 right-0 z-30" style={{background: accent, paddingBottom:'env(safe-area-inset-bottom)', boxShadow:'0 -2px 12px rgba(0,0,0,0.15)'}}>
+          <div className="fixed bottom-0 left-0 right-0 z-30" style={{background: '#3E2A32', paddingBottom:'env(safe-area-inset-bottom)', boxShadow:'0 -2px 12px rgba(0,0,0,0.15)'}}>
             <div style={{display:'flex', alignItems:'center', justifyContent:'space-around', padding:'6px 8px 7px'}}>
               {[
                 { id: 'inicio',   label: 'Início',  icon: <Home size={19} /> },
@@ -941,8 +941,8 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
                       border: 'none', cursor: 'pointer', fontFamily: 'inherit',
                       padding: '5px 24px', borderRadius: '8px',
-                      background: active ? '#ffffff' : 'transparent',
-                      color: active ? accent : 'rgba(255,255,255,0.75)',
+                      background: active ? 'rgba(255,255,255,0.15)' : 'transparent',
+                      color: active ? '#fff' : 'rgba(255,255,255,0.6)',
                       transition: 'background 0.15s, color 0.15s',
                     }}
                   >
