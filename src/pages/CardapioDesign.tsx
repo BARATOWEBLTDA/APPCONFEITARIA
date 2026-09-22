@@ -178,6 +178,61 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
       {/* Card Identidade (vindo por prop do CardapioConfigPage) — col 1 row 1 */}
       {identityCard}
 
+      {/* Banners — ocupa largura total do grid */}
+      <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
+        <SectionLabel
+          variant="verde"
+          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 12h20"/></svg>}
+          sub={isPro ? "Até 4 banners — aparecem em carrossel no cardápio" : "1 banner disponível. Assine o PRO para até 4 em carrossel"}
+        >Banners</SectionLabel>
+
+        <div className="cd-banners-grid">
+          {(isPro ? [0, 1, 2, 3] : [0]).map(i => (
+            <div key={i} className="cd-banner-slot">
+              <span className="cd-banner-slot-label">{bannerLabels[i]}</span>
+              {bannerValues[i] ? (
+                <div className="cd-banner-thumb" style={{ position: 'relative', overflow: 'hidden' }}>
+                  {i > 0 && <div className="cd-pro-corner"><img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />PRO</div>}
+                  <img src={bannerValues[i]} alt={bannerLabels[i]} />
+                  <button className="cd-remove-btn" onClick={() => handleRemoveBanner(i)}>✕</button>
+                </div>
+              ) : (
+                <div className="cd-upload-box cd-upload-slot" style={{ position: 'relative', overflow: 'hidden' }} onClick={() => !uploading && bannerRefs[i].current?.click()}>
+                  {i > 0 && <div className="cd-pro-corner"><img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />PRO</div>}
+                  {uploading === `banner${i}` ? <span className="cd-spinner-sm" /> : (
+                    <>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      <span className="cd-upload-hint">Adicionar</span>
+                    </>
+                  )}
+                </div>
+              )}
+              <input ref={bannerRefs[i]} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleBannerUpload(e, i)} />
+              {bannerValues[i] && (
+                <button className="cd-change-btn-sm" onClick={() => bannerRefs[i].current?.click()}>Trocar</button>
+              )}
+            </div>
+          ))}
+
+          {!isPro && [1, 2, 3].map((i) => (
+            <div key={i} className="cd-pro-slot" onClick={() => navigate("/assinar")}>
+              <div className="cd-pro-shine" aria-hidden="true" />
+              <div className="cd-pro-badge">
+                <img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />
+                PRO
+              </div>
+              <div className="cd-pro-icon-mini">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="4" y="11" width="16" height="10" rx="2.5"/>
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                </svg>
+              </div>
+              <p className="cd-pro-slot-label">Banner {i + 1}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* ── Seletor de Layout ─────────────────────────────── */}
       <div className="cd-card">
         <SectionLabel
@@ -258,60 +313,6 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
         </div>
       </div>
 
-      {/* Banners — ocupa largura total do grid */}
-      <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
-        <SectionLabel
-          variant="verde"
-          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 12h20"/></svg>}
-          sub={isPro ? "Até 4 banners — aparecem em carrossel no cardápio" : "1 banner disponível. Assine o PRO para até 4 em carrossel"}
-        >Banners</SectionLabel>
-
-        <div className="cd-banners-grid">
-          {(isPro ? [0, 1, 2, 3] : [0]).map(i => (
-            <div key={i} className="cd-banner-slot">
-              <span className="cd-banner-slot-label">{bannerLabels[i]}</span>
-              {bannerValues[i] ? (
-                <div className="cd-banner-thumb" style={{ position: 'relative', overflow: 'hidden' }}>
-                  {i > 0 && <div className="cd-pro-corner"><img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />PRO</div>}
-                  <img src={bannerValues[i]} alt={bannerLabels[i]} />
-                  <button className="cd-remove-btn" onClick={() => handleRemoveBanner(i)}>✕</button>
-                </div>
-              ) : (
-                <div className="cd-upload-box cd-upload-slot" style={{ position: 'relative', overflow: 'hidden' }} onClick={() => !uploading && bannerRefs[i].current?.click()}>
-                  {i > 0 && <div className="cd-pro-corner"><img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />PRO</div>}
-                  {uploading === `banner${i}` ? <span className="cd-spinner-sm" /> : (
-                    <>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                      <span className="cd-upload-hint">Adicionar</span>
-                    </>
-                  )}
-                </div>
-              )}
-              <input ref={bannerRefs[i]} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleBannerUpload(e, i)} />
-              {bannerValues[i] && (
-                <button className="cd-change-btn-sm" onClick={() => bannerRefs[i].current?.click()}>Trocar</button>
-              )}
-            </div>
-          ))}
-
-          {!isPro && [1, 2, 3].map((i) => (
-            <div key={i} className="cd-pro-slot" onClick={() => navigate("/assinar")}>
-              <div className="cd-pro-shine" aria-hidden="true" />
-              <div className="cd-pro-badge">
-                <img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />
-                PRO
-              </div>
-              <div className="cd-pro-icon-mini">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="4" y="11" width="16" height="10" rx="2.5"/>
-                  <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
-                </svg>
-              </div>
-              <p className="cd-pro-slot-label">Banner {i + 1}</p>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* Cores */}
       <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
