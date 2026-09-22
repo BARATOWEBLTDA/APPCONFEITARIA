@@ -3574,9 +3574,15 @@ export default function Produtos() {
       const gt = form.grupo_tamanhos;
       const gs = form.grupo_sabores;
       if (gt?.ativo && gt.opcoes.length > 0) {
-        const precosT = gt.opcoes.map(o => o.preco).filter(p => p > 0);
-        if (precosT.length === 0) return alert("Adicione ao menos 1 preço nos tamanhos");
-        precoBase = Math.min(...precosT);
+        // Modo por_peso: preço vem do preco_normal (R$/kg), não dos tamanhos individuais
+        if (gt.modo_preco_tamanho === "por_peso") {
+          if (!form.preco_normal || form.preco_normal <= 0) return alert("Defina o preço por kg");
+          precoBase = form.preco_normal;
+        } else {
+          const precosT = gt.opcoes.map(o => o.preco).filter(p => p > 0);
+          if (precosT.length === 0) return alert("Adicione ao menos 1 preço nos tamanhos");
+          precoBase = Math.min(...precosT);
+        }
       } else if (gs?.ativo && gs.opcoes.length > 0 && gs.sabor_tem_preco_proprio) {
         const precosS = gs.opcoes.map((o: any) => o.preco || 0).filter((p: number) => p > 0);
         if (precosS.length === 0) return alert("Adicione ao menos 1 preço nos sabores");
