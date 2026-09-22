@@ -19,6 +19,7 @@ import BtnNovo from "@/components/BtnNovo";
 import Categorias from "@/pages/Categorias";
 import QuickAddInsumo from "@/components/QuickAddInsumo";
 import AppPageHeader from "@/components/AppPageHeader";
+import ReqTag from "@/components/ReqTag";
 
 // ── Helpers de conversão de unidades (ficha técnica) ──
 const UNIT_FAMILIES_MAP: Record<string, { family: string; base: string; toBase: number }> = {
@@ -4208,7 +4209,7 @@ export default function Produtos() {
                 {wizardTipo === "variacoes" && (
                   <>
                     <div className="wiz-step1-sub-label">
-                      Que tipo de variação? <span className="wiz-step1-sub-star">*</span>
+                      Que tipo de variação? <ReqTag />
                     </div>
                     <div className="wiz-step1-subcards">
                       <button
@@ -4294,7 +4295,7 @@ export default function Produtos() {
               <div className="prod-section">
                 {/* 1. Nome */}
                 <div className="prod-field">
-                  <label className="prod-field-label-novo">Nome do produto <span className="prod-field-req">obrigatório</span></label>
+                  <label className="prod-field-label-novo">Nome do produto <ReqTag /></label>
                   <input
                     type="text"
                     placeholder="Ex: Bolo de Morango"
@@ -4306,7 +4307,7 @@ export default function Produtos() {
 
                 {/* 2. Categoria */}
                 <div className="prod-field">
-                  <label className="prod-field-label-novo">Categoria <span className="prod-field-req">obrigatório</span></label>
+                  <label className="prod-field-label-novo">Categoria <ReqTag /></label>
                   {!showCatInput ? (
                     <SelectDoonly
                       value={form.categoria}
@@ -4752,7 +4753,7 @@ export default function Produtos() {
               {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && form.grupo_tamanhos?.ativo && (form.grupo_tamanhos.opcoes.length || 0) > 0 && form.grupo_tamanhos.modo_preco_tamanho !== "sob_consulta" && form.grupo_tamanhos.modo_preco_tamanho !== "por_peso" && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
-                    Preço por {(form.grupo_tamanhos.nome_exibicao || "Tamanhos").toLowerCase().slice(0, -1)} <span className="prod-field-req">obrigatório</span>
+                    Preço por {(form.grupo_tamanhos.nome_exibicao || "Tamanhos").toLowerCase().slice(0, -1)} <ReqTag />
                   </p>
                   <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
                     Defina o preço de cada opção. O menor vira o "a partir de" no cardápio.
@@ -4791,7 +4792,7 @@ export default function Produtos() {
               {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && form.grupo_sabores?.ativo && (form.grupo_sabores.opcoes.length || 0) > 0 && form.grupo_sabores.sabor_tem_preco_proprio && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
-                    Preço por sabor <span className="prod-field-req">obrigatório</span>
+                    Preço por sabor <ReqTag />
                   </p>
                   <p style={{fontSize: 12, color: "#6B5D64", margin: "0 0 12px"}}>
                     Defina o preço de cada sabor. Ex: Pudim de Chocolate R$ 45.
@@ -4844,7 +4845,7 @@ export default function Produtos() {
               ) && (
                 <div className="prod-section">
                   <p className="prod-section-label prod-section-label--novo">
-                    {form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? "Preço por kg" : "Preço base"} <span className="prod-field-req">obrigatório</span>
+                    {form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" ? "Preço por kg" : "Preço base"} <ReqTag />
                   </p>
                   {form.grupo_tamanhos?.modo_preco_tamanho === "por_peso" && (
                     <p style={{margin:"0 0 10px", fontSize:12.5, color:"#6B5D64", lineHeight:1.5}}>

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { DayPicker } from 'react-day-picker'
 import { ptBR } from 'react-day-picker/locale'
+import ReqTag from "@/components/ReqTag"
 
 interface DatePickerFieldProps {
   label: string
@@ -52,7 +53,7 @@ export function DatePickerField({
 
   return (
     <div className="dpf-wrap" ref={ref}>
-      <label className="pf-label">{label}{required && <span className="pf-required-badge">Obrigatório</span>}</label>
+      <label className="pf-label">{label}{required && <ReqTag />}</label>
 
       <button
         type="button"
