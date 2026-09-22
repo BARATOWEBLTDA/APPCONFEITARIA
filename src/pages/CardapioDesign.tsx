@@ -175,9 +175,6 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
     <div className="cd-root">
       {/* Header removido — a página pai (CardapioConfigPage) já mostra "Meu Cardápio" acima */}
 
-      {/* Card Identidade (vindo por prop do CardapioConfigPage) — col 1 row 1 */}
-      {identityCard}
-
       {/* Banners — ocupa largura total do grid */}
       <div className="cd-card" style={isMobile ? {} : { gridColumn: '1 / -1' }}>
         <SectionLabel
@@ -232,6 +229,9 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
           ))}
         </div>
       </div>
+
+      {/* Card Identidade (vindo por prop do CardapioConfigPage) */}
+      {identityCard}
 
       {/* ── Seletor de Layout ─────────────────────────────── */}
       <div className="cd-card">
