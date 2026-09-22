@@ -596,17 +596,13 @@ export default function CardapioConfigPage() {
             <div className="ccc-logo-preview" onClick={() => fileRef.current?.click()}>
               {preview || form.foto_url
                 ? <img src={preview || form.foto_url} alt="Logo" style={{width:"100%",height:"100%",objectFit:"cover"}} />
-                : <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                : <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               }
-              <div className="ccc-logo-cam">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              </div>
             </div>
-            <div style={{flex:1,minWidth:0}}>
+            <div style={{flex:1,minWidth:0,display:"flex",alignItems:"center",justifyContent:"space-between",gap:"0.75rem"}}>
               <p className="ccc-logo-label">Logo da loja</p>
-              <p className="ccc-logo-sub">Aparece no topo do cardápio</p>
               <button
-                style={{marginTop:"0.5rem",padding:"0.3rem 0.85rem",background:"var(--primary-light)",border:"1.5px solid var(--primary-light)",borderRadius:"50px",fontFamily:"Geist,sans-serif",fontSize:"0.75rem",fontWeight:700,color:"var(--primary-dark)",cursor:"pointer"}}
+                className="ccc-trocar-foto-btn"
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
               >
@@ -641,11 +637,9 @@ export default function CardapioConfigPage() {
             </div>
           </div>
         </div>
-        } />
+        } avaliacoesCard={
         <div className="ccc-card">
           <SectionLabel
-            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>}
-            variant="amarelo"
             sub="Como sua nota aparece para os clientes"
           >Avaliações</SectionLabel>
           <div className="ccc-toggle-row">
@@ -667,6 +661,7 @@ export default function CardapioConfigPage() {
             </>
           )}
         </div>
+        } />
 
       </>
       }
@@ -1167,6 +1162,25 @@ export default function CardapioConfigPage() {
         }
         /* Card full width — mesmo estilo dos Banners e outras seções largas */
         .ccc-card--full { grid-column: 1 / -1; }
+
+        /* Botão Trocar foto — grafite Doonly, quadradinho */
+        .ccc-trocar-foto-btn {
+          all: unset;
+          box-sizing: border-box;
+          padding: 8px 14px;
+          background: #2C2C2A;
+          color: #fff;
+          border-radius: 8px;
+          font-family: 'Geist', sans-serif;
+          font-size: 12.5px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: background 0.15s;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .ccc-trocar-foto-btn:hover { background: #1A1A1A; }
+        .ccc-trocar-foto-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .ccc-logo-preview:hover {
           box-shadow:0 0 0 2px var(--primary), 0 6px 18px rgba(255,111,169,0.25);
           transform:scale(1.03);
