@@ -4443,7 +4443,7 @@ export default function Produtos() {
                     const imgUrl = imgs[slot];
                     const isLocked = slot > 0 && !isPro;
                     const ref = slot === 0 ? imgRef : slot === 1 ? img2Ref : img3Ref;
-                    // Foto principal: rosa. Extras (2 e 3): cinza
+                    // Foto principal: rosa. Extras (2 e 3) free: cinza claro. Locked (PRO): grafite Doonly.
                     const bgExtra = "#F1EEF0";
                     const borderExtra = "2px dashed #D8D1D5";
                     return (
@@ -4451,7 +4451,7 @@ export default function Produtos() {
                         {slot > 0 && <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, display: "block", marginBottom: "6px", textAlign: "center" }}>Foto {slot + 1}</span>}
                         {slot === 0 && <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, display: "block", marginBottom: "6px", textAlign: "center" }}>Principal</span>}
                         <div
-                          className="prod-img-upload"
+                          className={`prod-img-upload ${isLocked ? "prod-img-upload--locked" : ""}`}
                           onClick={() => {
                             if (isLocked) { setShowProFotosModal(true); return; }
                             if (!uploading) ref.current?.click();
@@ -4460,11 +4460,12 @@ export default function Produtos() {
                             width: "100%",
                             height: "130px",
                             borderRadius: "14px",
-                            cursor: isLocked ? "pointer" : "pointer",
+                            cursor: "pointer",
                             position: "relative",
                             overflow: "hidden",
-                            background: isLocked ? bgExtra : (slot > 0 ? bgExtra : undefined),
-                            border: isLocked ? borderExtra : (slot > 0 ? borderExtra : undefined),
+                            background: isLocked ? "linear-gradient(135deg, #2C1219 0%, #4A1F2D 100%)" : (slot > 0 ? bgExtra : undefined),
+                            border: isLocked ? "none" : (slot > 0 ? borderExtra : undefined),
+                            boxShadow: isLocked ? "0 4px 16px rgba(44,18,25,0.25)" : undefined,
                           }}
                         >
                           {imgUrl ? (
@@ -4474,19 +4475,20 @@ export default function Produtos() {
                             </>
                           ) : isLocked ? (
                             <>
-                              {/* Selinho PRO no canto superior direito */}
-                              <span className="prod-slot-pro-corner">
-                                <img src="/coroa.png" alt="" />
+                              {/* Tag PRO padrão Doonly no canto */}
+                              <span className="prod-slot-pro-tag">
+                                <img src="/coroa.png" alt="" className="coroa-badge" />
                                 PRO
                               </span>
-                              {/* Conteúdo central: só cadeado pequeno */}
+                              {/* Conteúdo central: cadeado rosa + texto */}
                               <div className="prod-slot-locked-body">
-                                <div className="prod-slot-lock-icon">
-                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B5D64" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <div className="prod-slot-lock-circle">
+                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E85A8C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <rect x="3" y="11" width="18" height="11" rx="2"/>
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                                   </svg>
                                 </div>
+                                <span className="prod-slot-lock-txt">Assine PRO</span>
                               </div>
                             </>
                           ) : (
@@ -9627,15 +9629,64 @@ export default function Produtos() {
           height: 9px;
           object-fit: contain;
         }
+        /* Novo: slot PRO grafite Doonly */
+        .prod-slot-pro-tag {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 3px 8px;
+          background: #2D1F26;
+          color: #fff;
+          font-family: var(--font-base);
+          font-size: 10px;
+          font-weight: 800;
+          border-radius: 6px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          z-index: 2;
+          letter-spacing: 0.1em;
+          line-height: 1;
+          text-transform: uppercase;
+        }
+        .prod-slot-pro-tag .coroa-badge {
+          width: 10px;
+          height: 10px;
+          object-fit: contain;
+        }
         .prod-slot-locked-body {
           display: flex;
-          flex-direction: row;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
           width: 100%;
           height: 100%;
-          gap: 6px;
+          gap: 8px;
         }
+        .prod-slot-lock-circle {
+          width: 40px;
+          height: 40px;
+          border-radius: 999px;
+          background: rgba(232,90,140,0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .prod-slot-lock-txt {
+          font-size: 10.5px;
+          color: #F5B8CD;
+          font-weight: 600;
+          font-family: var(--font-base);
+          letter-spacing: 0.02em;
+        }
+        .prod-img-upload--locked {
+          transition: transform 0.15s ease;
+        }
+        .prod-img-upload--locked:hover {
+          transform: translateY(-2px);
+        }
+        /* Antigos — mantidos por compatibilidade */
         .prod-slot-lock-icon {
           width: 22px;
           height: 22px;
