@@ -573,6 +573,14 @@ export default function Categorias() {
         /* ── Modal de Categoria (100% via design tokens) ── */
         .cat-modal-overlay { position: fixed; inset: 0; z-index: 500; background: var(--bg-overlay); display: flex; align-items: flex-end; justify-content: center; }
         .cat-modal { background: var(--bg-card); border-radius: var(--radius-xl) 24px 0 0; width: 100%; max-width: 520px; max-height: 92vh; display: flex; flex-direction: column; animation: slideUp var(--dur-slow) var(--ease-out); }
+        @media (min-width: 768px) {
+          .cat-modal-overlay { align-items: center; padding: 24px; }
+          .cat-modal { border-radius: 16px; max-height: 90vh; animation: fadeInScale var(--dur-slow) var(--ease-out); }
+        }
+        @keyframes fadeInScale {
+          from { opacity: 0; transform: scale(0.96); }
+          to   { opacity: 1; transform: scale(1); }
+        }
         .cat-modal-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5) var(--space-3); border-bottom: 1px solid var(--border); flex-shrink: 0; }
         .cat-modal-title { font-size: var(--font-modal-title); font-weight: var(--fw-bold); line-height: var(--lh-tight); color: var(--text-title); margin: 0; }
         .cat-modal-close { background: var(--bg-body); border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); font-size: var(--font-caption); transition: background var(--dur-fast) var(--ease-out); }
