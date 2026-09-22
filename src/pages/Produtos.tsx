@@ -2956,7 +2956,7 @@ const EMPTY: Produto = {
   disponivel: true, promocao: false,
   permite_personalizacao: false,
   massas_disponiveis: [], recheios_disponiveis: [], coberturas_disponiveis: [],
-  tamanhos_disponiveis: [], precos_variacoes: {}, fotos_variacoes: {}, usar_foto_variacao: false, oferece_pacote: false, pronta_entrega: true,
+  tamanhos_disponiveis: [], precos_variacoes: {}, fotos_variacoes: {}, usar_foto_variacao: false, oferece_pacote: false, pronta_entrega: undefined,
   kit_itens: [], kit_serve_pessoas: "", kit_prazo_encomenda: "",
   zero_acucar: false,
   tem_vela: false, valor_vela: 0,
@@ -5294,46 +5294,47 @@ export default function Produtos() {
               <div className="prod-section">
                 <p className="prod-section-label">Modo de entrega</p>
                 <div className="prod-toggles prod-toggles--clean" style={{ flexDirection: "column", gap: "0.25rem" }}>
-                  <Toggle label="Pronta entrega" value={form.pronta_entrega !== false} onChange={(v: boolean) => setForm(f => ({ ...f, pronta_entrega: v }))} colorClass="active-green" />
+                  <Toggle
+                    label="Pronta entrega"
+                    value={form.pronta_entrega === true}
+                    onChange={(v: boolean) => setForm(f => ({ ...(f as any), pronta_entrega: v ? true : undefined, antecedencia: v ? undefined : (f as any).antecedencia }))}
+                    colorClass="active-green"
+                  />
+                  <Toggle
+                    label="Necessário agendar com antecedência"
+                    value={!!(form as any).antecedencia}
+                    onChange={(v: boolean) => setForm(f => ({ ...(f as any), antecedencia: v ? "48h" : undefined, pronta_entrega: v ? false : (f as any).pronta_entrega }))}
+                    colorClass="active-pink"
+                  />
                 </div>
 
-                {/* Antecedência necessária — só se NÃO for pronta entrega */}
-                {form.pronta_entrega === false && (
-                  <div style={{marginTop: 12}}>
-                    <Toggle
-                      label="Necessário agendar com antecedência"
-                      value={!!(form as any).antecedencia}
-                      onChange={(v: boolean) => setForm(f => ({ ...(f as any), antecedencia: v ? "48h" : undefined }))}
-                      colorClass="active-pink"
-                    />
-                    {!!(form as any).antecedencia && (
-                      <div className="prod-field" style={{marginTop: 12}}>
-                        <label>Quantos dias antes?</label>
-                        <div className="prod-antecedencia-grid">
-                          {[
-                            { valor: "24h", label: "24 horas" },
-                            { valor: "48h", label: "48 horas" },
-                            { valor: "3d", label: "3 dias" },
-                            { valor: "5d", label: "5 dias" },
-                            { valor: "7d", label: "1 semana" },
-                            { valor: "15d", label: "15 dias" },
-                          ].map(opt => {
-                            const ativo = (form as any).antecedencia === opt.valor;
-                            return (
-                              <button
-                                key={opt.valor}
-                                type="button"
-                                className={`prod-antecedencia-chip ${ativo ? "prod-antecedencia-chip--on" : ""}`}
-                                onClick={() => setForm(f => ({ ...(f as any), antecedencia: opt.valor }))}
-                              >
-                                {opt.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <p style={{margin:"8px 0 0", fontSize:11.5, color:"#6B5D64"}}>Cliente verá no cardápio quantos dias antes precisa fazer o pedido.</p>
-                      </div>
-                    )}
+                {/* Chips de dias — só se ativou "Necessário agendar" */}
+                {!!(form as any).antecedencia && (
+                  <div className="prod-field" style={{marginTop: 12}}>
+                    <label>Quantos dias antes?</label>
+                    <div className="prod-antecedencia-grid">
+                      {[
+                        { valor: "24h", label: "24 horas" },
+                        { valor: "48h", label: "48 horas" },
+                        { valor: "3d", label: "3 dias" },
+                        { valor: "5d", label: "5 dias" },
+                        { valor: "7d", label: "1 semana" },
+                        { valor: "15d", label: "15 dias" },
+                      ].map(opt => {
+                        const ativo = (form as any).antecedencia === opt.valor;
+                        return (
+                          <button
+                            key={opt.valor}
+                            type="button"
+                            className={`prod-antecedencia-chip ${ativo ? "prod-antecedencia-chip--on" : ""}`}
+                            onClick={() => setForm(f => ({ ...(f as any), antecedencia: opt.valor }))}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p style={{margin:"8px 0 0", fontSize:11.5, color:"#6B5D64"}}>Cliente verá no cardápio quantos dias antes precisa fazer o pedido.</p>
                   </div>
                 )}
               </div>
