@@ -67,13 +67,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
-  useEffect(() => {
-    if (!isOpen || !product) return
-    const imgs = product.imagem_url?.split(',').map((s: string) => s.trim()).filter(Boolean) || []
-    if (imgs.length <= 1) return
-    const timer = setInterval(() => setImgIndex(i => (i + 1) % imgs.length), 3000)
-    return () => clearInterval(timer)
-  }, [isOpen, product])
+  // Autoplay removido — cliente controla clicando nas miniaturas
 
   const isKg = product?.forma_venda === 'kg'
   const step = isKg ? 0.5 : 1
@@ -467,7 +461,50 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           }}>
             <X size={20} />
           </button>
+          {/* Contador discreto quando tem múltiplas fotos */}
+          {images.length > 1 && (
+            <div style={{
+              position: 'absolute', bottom: 12, right: 12,
+              background: 'rgba(0,0,0,0.65)', color: '#fff',
+              padding: '4px 10px', borderRadius: 20,
+              fontSize: 11, fontWeight: 700,
+              backdropFilter: 'blur(8px)',
+            }}>
+              {imgIndex + 1} / {images.length}
+            </div>
+          )}
         </div>
+
+        {/* Miniaturas — só aparece se tem mais de 1 foto (PRO) */}
+        {images.length > 1 && (
+          <div style={{
+            display: 'flex', gap: 6, padding: '10px 16px 0',
+            overflowX: 'auto', scrollbarWidth: 'none',
+          }}>
+            {images.map((img, i) => (
+              <button
+                key={i}
+                onClick={() => setImgIndex(i)}
+                style={{
+                  width: 56, height: 56, borderRadius: 8,
+                  flexShrink: 0, overflow: 'hidden',
+                  border: `2px solid ${i === imgIndex ? corBotao : 'transparent'}`,
+                  background: '#F5F3EF', padding: 0, cursor: 'pointer',
+                  opacity: i === imgIndex ? 1 : 0.65,
+                  transition: 'opacity 0.15s, border-color 0.15s',
+                }}
+                onMouseEnter={e => { if (i !== imgIndex) e.currentTarget.style.opacity = '1' }}
+                onMouseLeave={e => { if (i !== imgIndex) e.currentTarget.style.opacity = '0.65' }}
+              >
+                <img
+                  src={img}
+                  alt={`${product.nome} — foto ${i + 1}`}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Nome + descrição */}
         <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
