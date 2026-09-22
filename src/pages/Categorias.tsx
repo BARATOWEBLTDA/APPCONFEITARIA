@@ -4,6 +4,7 @@ import { supabase } from "@/lib/supabase";
 import EmptyDoo from "@/components/EmptyDoo";
 import BtnNovo from "@/components/BtnNovo";
 import AppPageHeader from "@/components/AppPageHeader";
+import ReqTag from "@/components/ReqTag";
 
 type Categoria = {
   id?: string;
@@ -301,7 +302,7 @@ export default function Categorias() {
             <div className="cat-modal-body">
 
               <div className="cat-section">
-                <p className="cat-section-label">🖼️ Ícone da Categoria <span style={{ color: "var(--error)" }}>*</span></p>
+                <p className="cat-section-label">🖼️ Ícone da Categoria <ReqTag /></p>
 
                 <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
                   <div className="cat-icon-preview">
@@ -359,7 +360,7 @@ export default function Categorias() {
               </div>
 
               <div className="cat-section">
-                <p className="cat-section-label">✏️ Nome <span style={{ color: "var(--error)" }}>*</span></p>
+                <p className="cat-section-label">✏️ Nome <ReqTag /></p>
                 <input type="text" placeholder="Ex: Bolos, Doces, Salgados..." value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} className="cat-input" />
               </div>
 

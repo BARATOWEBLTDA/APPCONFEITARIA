@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import ReqTag from "@/components/ReqTag";
 import { useIsMobile } from '@/hooks/use-mobile'
 import { type Pedido, type PedidoItem, EMPTY_ITEM, formatMoney, getQuantityStep, getUnitLabel, getPricePerLabel, formatQuantidade } from '@/pages/pedidoFormTypes'
 
@@ -528,7 +529,7 @@ export default function StepProdutos({ pedido, set, itens, setItens, produtos, o
             {!novoItem.nome_produto ? (
               /* Trigger que abre o bottom sheet */
               <div className="pf2-field">
-                <label className="pf2-label">Produto *</label>
+                <label className="pf2-label">Produto <ReqTag /></label>
                 <button
                   type="button"
                   className="pf2-input pf2-produto-trigger"

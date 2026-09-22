@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import ReqTag from "@/components/ReqTag";
 
 export default function AdminUsuarios() {
   const [users, setUsers] = useState<any[]>([]);
@@ -250,9 +251,9 @@ export default function AdminUsuarios() {
           <div className="adm-modal" style={{ maxWidth:"420px", textAlign:"left" }} onClick={e => e.stopPropagation()}>
             <h3 style={{ marginBottom:"1rem" }}>Novo usuário</h3>
             <div style={{ display:"flex", flexDirection:"column", gap:"0.75rem", marginBottom:"1rem" }}>
-              <div className="adm-form-field"><label>Nome *</label><input type="text" placeholder="Nome completo" value={createForm.nome} onChange={e => setCreateForm({...createForm, nome: e.target.value})} /></div>
-              <div className="adm-form-field"><label>E-mail *</label><input type="email" placeholder="email@exemplo.com" value={createForm.email} onChange={e => setCreateForm({...createForm, email: e.target.value})} /></div>
-              <div className="adm-form-field"><label>Senha * (mín. 6 caracteres)</label><input type="password" placeholder="••••••••" value={createForm.senha} onChange={e => setCreateForm({...createForm, senha: e.target.value})} /></div>
+              <div className="adm-form-field"><label>Nome <ReqTag /></label><input type="text" placeholder="Nome completo" value={createForm.nome} onChange={e => setCreateForm({...createForm, nome: e.target.value})} /></div>
+              <div className="adm-form-field"><label>E-mail <ReqTag /></label><input type="email" placeholder="email@exemplo.com" value={createForm.email} onChange={e => setCreateForm({...createForm, email: e.target.value})} /></div>
+              <div className="adm-form-field"><label>Senha <ReqTag /> (mín. 6 caracteres)</label><input type="password" placeholder="••••••••" value={createForm.senha} onChange={e => setCreateForm({...createForm, senha: e.target.value})} /></div>
               <div className="adm-form-field"><label>Telefone</label><input type="tel" placeholder="(00) 9 0000-0000" value={createForm.telefone} onChange={e => setCreateForm({...createForm, telefone: e.target.value})} /></div>
             </div>
             {createError && <p style={{ background:"#fff1f2", border:"1px solid #fecdd3", color:"#be123c", borderRadius:"8px", padding:"0.6rem 0.9rem", fontSize:"0.82rem", marginBottom:"0.75rem" }}>{createError}</p>}

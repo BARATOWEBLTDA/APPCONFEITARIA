@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
 import { useProfile, isPro } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
+import ReqTag from "@/components/ReqTag";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -612,11 +613,11 @@ export default function Clientes() {
             {/* ═══ ESSENCIAL ═══ */}
             <div className="cli-section-lbl">Essencial</div>
             <div className="cli-field">
-              <label>Nome <span className="cli-req">*</span></label>
+              <label>Nome <ReqTag /></label>
               <input type="text" placeholder="Ex: Ana Beatriz" value={completo.nome} onChange={e => setCompleto(f => ({...f, nome: e.target.value}))} autoComplete="off" />
             </div>
             <div className="cli-field">
-              <label>WhatsApp <span className="cli-req">*</span></label>
+              <label>WhatsApp <ReqTag /></label>
               <input type="tel" placeholder="(00) 9 0000-0000" value={completo.whatsapp} onChange={e => setCompleto(f => ({...f, whatsapp: maskPhone(e.target.value)}))} autoComplete="off" maxLength={16} />
             </div>
 

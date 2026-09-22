@@ -1,4 +1,5 @@
 // Checkout config — UI reestilizada no padrão Doonly (v2)
+import ReqTag from "@/components/ReqTag";
 import { useState, useEffect, useRef } from "react"
 import { supabase } from "@/lib/supabase"
 
@@ -415,7 +416,7 @@ export default function CheckoutConfigPage() {
                 <div className="chk-cupom-form">
 
                   <div className="chk-form-field">
-                    <label className="chk-form-label">Código do cupom *</label>
+                    <label className="chk-form-label">Código do cupom <ReqTag /></label>
                     <input
                       className="chk-cupom-codigo"
                       value={cupomForm.codigo}
@@ -427,7 +428,7 @@ export default function CheckoutConfigPage() {
 
                   <div className="chk-form-row">
                     <div className="chk-form-field" style={{flex:1}}>
-                      <label className="chk-form-label">Tipo de desconto *</label>
+                      <label className="chk-form-label">Tipo de desconto <ReqTag /></label>
                       <select
                         className="chk-input"
                         value={cupomForm.tipo}
@@ -438,7 +439,7 @@ export default function CheckoutConfigPage() {
                       </select>
                     </div>
                     <div className="chk-form-field" style={{flex:1}}>
-                      <label className="chk-form-label">Valor *</label>
+                      <label className="chk-form-label">Valor <ReqTag /></label>
                       <div className="chk-money-row">
                         <span className="chk-prefix">{cupomForm.tipo === 'percentual' ? '%' : 'R$'}</span>
                         <input

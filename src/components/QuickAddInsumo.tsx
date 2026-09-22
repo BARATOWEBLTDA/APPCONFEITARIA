@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import ReqTag from "@/components/ReqTag";
 
 export type InsumoQuick = {
   id: string;
@@ -294,7 +295,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       </div>
 
       <div className="qai-field">
-        <label>Nome do insumo *</label>
+        <label>Nome do insumo <ReqTag /></label>
         <input
           type="text"
           className="qai-input"
@@ -316,7 +317,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           />
         </div>
         <div className="qai-field">
-          <label>Categoria *</label>
+          <label>Categoria <ReqTag /></label>
           <select
             className="qai-input"
             value={form.categoria}
@@ -397,7 +398,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
       <div className="qai-section-label">Como você compra esse produto</div>
 
       <div className="qai-field">
-        <label>Tipo de embalagem *</label>
+        <label>Tipo de embalagem <ReqTag /></label>
         <select
           className="qai-input"
           value={form.embalagem_tipo}
@@ -474,7 +475,7 @@ export default function QuickAddInsumo({ userId, initialName, editing, onSaved, 
           </div>
         </div>
         <div className="qai-field">
-          <label>Quanto pagou *</label>
+          <label>Quanto pagou <ReqTag /></label>
           <div className="qai-input-prefix">
             <span>R$</span>
             <input

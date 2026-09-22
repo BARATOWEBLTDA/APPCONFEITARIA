@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
+import ReqTag from "@/components/ReqTag";
 
 interface Notificacao {
   id: string;
@@ -148,7 +149,7 @@ export default function AdminNotificacoes() {
 
             <div className="adm-form-fields">
               <div className="adm-form-field">
-                <label>Título *</label>
+                <label>Título <ReqTag /></label>
                 <input placeholder="Ex: Nova funcionalidade disponível!" value={form.titulo} onChange={e => setForm({ ...form, titulo: e.target.value })} />
               </div>
               <div className="adm-form-field">

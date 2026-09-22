@@ -1,4 +1,5 @@
 // ── EditarPedido.tsx ─────────────────────────────────────────────────────────
+import ReqTag from "@/components/ReqTag";
 // Tela de edição de pedido — design novo estilo Dora
 // FASE 1: casca (header + tabs + footer)
 // FASE 2: tab Cliente completa
@@ -859,7 +860,7 @@ export default function EditarPedido() {
                 Informações do Cliente
               </div>
 
-              <label className="ep-label">Cliente <span className="ep-label-req">*</span></label>
+              <label className="ep-label">Cliente <ReqTag /></label>
               {clienteNome || clienteTelefone ? (
                 <div className="ep-cliente-card">
                   <div className="ep-cliente-avatar">{initialsOf(clienteNome || '?')}</div>
@@ -932,7 +933,7 @@ export default function EditarPedido() {
                 <span className="ep-cancelar-txt">Cancelar pedido</span>
               </button>
 
-              <label className="ep-label ep-label--mt">Tipo de Entrega <span className="ep-label-req">*</span></label>
+              <label className="ep-label ep-label--mt">Tipo de Entrega <ReqTag /></label>
               <div className="ep-toggle-2">
                 <button
                   type="button"
@@ -1006,7 +1007,7 @@ export default function EditarPedido() {
 
               <div className="ep-row-2">
                 <div>
-                  <label className="ep-label">Data <span className="ep-label-req">*</span></label>
+                  <label className="ep-label">Data <ReqTag /></label>
                   <input
                     type="date"
                     className="ep-input"

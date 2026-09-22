@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase";
+import ReqTag from "@/components/ReqTag";
 
 interface Receita {
   id: string;
@@ -472,7 +473,7 @@ export default function Receitas() {
               </div>
               <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: "none" }} />
               <div className="rec-fields">
-                <div className="rec-field"><label>Nome da receita *</label><input placeholder="Ex: Brigadeiro Gourmet" value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })} /></div>
+                <div className="rec-field"><label>Nome da receita <ReqTag /></label><input placeholder="Ex: Brigadeiro Gourmet" value={form.nome} onChange={e => setForm({ ...form, nome: e.target.value })} /></div>
                 <div className="rec-field">
                   <label>Categoria</label>
                   <select value={form.categoria} onChange={e => setForm({ ...form, categoria: e.target.value })}>

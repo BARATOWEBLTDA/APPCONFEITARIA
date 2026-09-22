@@ -535,3 +535,30 @@ input[type="checkbox"]:not(.no-square-check):focus-visible {
 h1, h2, h3, h4, h5, h6, .balance-text {
   text-wrap: balance;
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Tag "obrigatório" — padrão global do Doonly
+   Modelo 8: estrelinha rosa + texto rosa
+   ══════════════════════════════════════════════════════════════════════
+   Uso:
+     <label>Nome <ReqTag /></label>
+   Ou HTML puro:
+     <span class="req-tag"><svg>...</svg> obrigatório</span>
+*/
+.req-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #E85A8C;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Geist', sans-serif;
+  vertical-align: middle;
+  margin-left: 4px;
+  letter-spacing: 0.02em;
+}
+.req-tag svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}

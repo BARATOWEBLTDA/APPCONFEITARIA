@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import ReqTag from "@/components/ReqTag";
 import { useIsMobile } from '@/hooks/use-mobile'
 import { type Pedido, ORIGENS, formatTelefone } from '@/pages/pedidoFormTypes'
 
@@ -176,7 +177,7 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
         <div className="pf2-field">
           <label className="pf2-label">
             Nome do cliente
-            <span className="pf2-required">*</span>
+            <ReqTag />
 
           </label>
           <input
@@ -257,7 +258,7 @@ export default function StepCliente({ pedido, set, clientes, salvarComoNovo, set
         <div className="pf2-row">
           {/* Data */}
           <div className="pf2-field" style={{ flex: 2 }}>
-            <label className="pf2-label">Data de entrega <span className="pf2-required">*</span></label>
+            <label className="pf2-label">Data de entrega <ReqTag /></label>
             {isMobile ? (
               <label className={`pf2-input pf2-native-display${pedido.data_entrega ? ' pf2-native-display--filled' : ''}`}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>

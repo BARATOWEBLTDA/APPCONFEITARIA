@@ -1,4 +1,5 @@
 // Financeiro V1 — resumo + entradas (pedidos pagos + avulsas) + saídas + gráfico
+import ReqTag from "@/components/ReqTag";
 import { useState, useEffect, useMemo } from "react"
 import { supabase } from "@/lib/supabase"
 import {
@@ -649,7 +650,7 @@ export default function FinanceiroTransacoes() {
 
             <div className="fin-modal-body">
               <div className="fin-form-field">
-                <label>Descrição *</label>
+                <label>Descrição <ReqTag /></label>
                 <input
                   className="fin-input"
                   value={form.descricao}
@@ -673,7 +674,7 @@ export default function FinanceiroTransacoes() {
                   </select>
                 </div>
                 <div className="fin-form-field" style={{ flex: 1 }}>
-                  <label>Valor *</label>
+                  <label>Valor <ReqTag /></label>
                   <div className="fin-money-row">
                     <span className="fin-prefix">R$</span>
                     <input

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import AppPageHeader from "@/components/AppPageHeader";
 import { Package, Plus, PencilSimple, Trash, MagnifyingGlass, X } from "@phosphor-icons/react";
+import ReqTag from "@/components/ReqTag";
 
 type Complemento = {
   id: string;
@@ -222,7 +223,7 @@ export default function Complementos() {
                   <div className="cpl-field">
                     <label>
                       Nome da personalização
-                      <span className="cpl-req-tag">obrigatório</span>
+                      <ReqTag />
                     </label>
                     <input
                       type="text"
@@ -235,7 +236,7 @@ export default function Complementos() {
                   <div className="cpl-field">
                     <label>
                       Quanto custa essa personalização
-                      <span className="cpl-req-tag">obrigatório</span>
+                      <ReqTag />
                     </label>
                     <div className="cpl-field-input-wrap">
                       <span className="cpl-field-prefix">R$</span>
