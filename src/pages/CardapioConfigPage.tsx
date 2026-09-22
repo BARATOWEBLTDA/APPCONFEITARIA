@@ -640,16 +640,16 @@ export default function CardapioConfigPage() {
         } avaliacoesCard={
         <div className="ccc-card">
           <SectionLabel
-            sub="Como sua nota aparece para os clientes"
+            sub="Mostre sua nota no cardápio pra dar credibilidade"
           >Avaliações</SectionLabel>
           <div className="ccc-toggle-row">
-            <div><p className="ccc-toggle-label">Exibir estrelas de avaliação</p><p className="ccc-toggle-sub">Mostra a avaliação média no cardápio</p></div>
+            <div><p className="ccc-toggle-label">Exibir estrelas</p></div>
             <label className="ccc-toggle"><input type="checkbox" checked={!form.hide_stars} onChange={e => setForm({...form, hide_stars: !e.target.checked})} /><span className="ccc-toggle-slider" /></label>
           </div>
           {!form.hide_stars && (
             <>
               <div className="ccc-divider" />
-              <p className="ccc-hint">Selecione a nota que aparecerá no cardápio</p>
+              <p className="ccc-hint">Sua nota</p>
               <div className="ccc-notas-grid">
                 {[5.0, 4.9, 4.8].map(nota => (
                   <button key={nota} className={`ccc-nota-btn${form.avaliacao_media === nota ? " active" : ""}`} onClick={() => setForm({...form, avaliacao_media: nota})}>
