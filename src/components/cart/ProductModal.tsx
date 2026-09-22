@@ -429,7 +429,11 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
+      position: 'fixed',
+      top: 0, left: 0, right: 0,
+      // Mobile: deixa a bottom nav (~52px) visível embaixo. Desktop: cobre tudo.
+      bottom: isDesktop ? 0 : 'calc(52px + env(safe-area-inset-bottom, 0px))',
+      zIndex: 9999,
       background: 'rgba(0,0,0,0.55)',
       display: 'flex', alignItems: isDesktop ? 'center' : 'flex-end', justifyContent: 'center',
     }}
@@ -437,14 +441,16 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     >
       <div style={{
         background: 'var(--bg-card)', width: '100%', maxWidth: '500px',
-        maxHeight: '95vh', overflowY: 'auto',
+        maxHeight: '100%',
+        height: isDesktop ? 'auto' : '92%',
         borderRadius: isDesktop ? '20px' : '20px 20px 0 0',
         display: 'flex', flexDirection: 'column',
+        overflow: 'hidden', // não deixa scroll no wrapper
       }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Header com foto */}
-        <div style={{ position: 'relative', height: '260px', background: '#F5F3EF', overflow: 'hidden' }}>
+        {/* Header com foto — FIXO no topo */}
+        <div style={{ position: 'relative', height: '240px', minHeight: '240px', background: '#F5F3EF', overflow: 'hidden', flexShrink: 0 }}>
           {images[imgIndex] ? (
             <img src={images[imgIndex]} alt={product.nome} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
@@ -506,8 +512,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           </div>
         )}
 
-        {/* Nome + descrição */}
-        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {/* Nome + descrição — corpo scrollável */}
+        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14, flex: 1, overflowY: 'auto', minHeight: 0 }}>
           <div>
             <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-title)', margin: 0 }}>{product.nome}</h2>
             {product.descricao && (
@@ -574,12 +580,15 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
               </button>
             </div>
           </div>
+        </div>{/* fim body scrollável */}
 
-          {/* Botão adicionar */}
+        {/* Footer fixo — Botão adicionar sempre visível */}
+        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', background: 'var(--bg-card)', flexShrink: 0 }}>
           <button
             onClick={handleAdd}
             disabled={!podeAdicionar}
             style={{
+              width: '100%',
               padding: '14px', borderRadius: 12, border: 'none', cursor: podeAdicionar ? 'pointer' : 'not-allowed',
               background: podeAdicionar ? corBotao : '#E5D8DE', color: '#fff',
               fontSize: 15, fontWeight: 700, fontFamily: 'inherit',
