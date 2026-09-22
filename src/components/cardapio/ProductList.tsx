@@ -16,7 +16,7 @@ interface Props {
   onSearchChange: (t: string) => void
 }
 
-export function ProductList({ produtos, favorites, onToggleFavorite, backgroundColor, borderColor, corBotao = '#ec4899', selectedCategory, searchTerm, onSearchChange }: Props) {
+export function ProductList({ produtos, favorites, onToggleFavorite, backgroundColor, borderColor, corBotao = '#E85A8C', selectedCategory, searchTerm, onSearchChange }: Props) {
   const [viewMode, setViewMode] = useState<'grid' | 'lista'>(() =>
     (localStorage.getItem('cardapio_viewMode') as 'grid' | 'lista') || 'grid'
   )
@@ -45,7 +45,7 @@ export function ProductList({ produtos, favorites, onToggleFavorite, backgroundC
     const firstImage = p.imagem_url?.split(',')[0]?.trim() || null
 
     return (
-      <div onClick={() => setModalProduct(p)} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', borderRadius: '14px', padding: '10px', boxShadow: 'var(--shadow-sm)', cursor: 'pointer', border: isPromo ? '1.5px dashed #ec4899' : '1px solid #f3f4f6' }}>
+      <div onClick={() => setModalProduct(p)} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', borderRadius: '14px', padding: '10px', boxShadow: 'var(--shadow-sm)', cursor: 'pointer', border: isPromo ? '1.5px dashed #E85A8C' : '1px solid #f3f4f6' }}>
         {/* Imagem */}
         <div style={{ width: '72px', height: '72px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, background: '#fdf2f8' }}>
           {firstImage
@@ -61,7 +61,7 @@ export function ProductList({ produtos, favorites, onToggleFavorite, backgroundC
             {isPromo && precoPromo > 0
               ? <>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textDecoration: 'line-through' }}>R$ {p.preco_normal.toFixed(2)}</span>
-                  <span style={{ fontSize: '0.92rem', fontWeight: 800, color: '#ec4899' }}>R$ {precoPromo.toFixed(2)}</span>
+                  <span style={{ fontSize: '0.92rem', fontWeight: 800, color: '#E85A8C' }}>R$ {precoPromo.toFixed(2)}</span>
                 </>
               : <span style={{ fontSize: '0.92rem', fontWeight: 700, color: '#22c55e' }}>R$ {p.preco_normal.toFixed(2)}</span>
             }
@@ -76,7 +76,7 @@ export function ProductList({ produtos, favorites, onToggleFavorite, backgroundC
   }
 
   return (
-    <div style={{ backgroundColor }}>
+    <div>
       {/* Barra de busca + toggle */}
       <div className="mb-4 px-4">
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -87,10 +87,10 @@ export function ProductList({ produtos, favorites, onToggleFavorite, backgroundC
           {/* Toggle grid/lista */}
           <div style={{ display: 'flex', background: 'var(--bg-card)', borderRadius: '10px', padding: '3px', gap: '2px', border: '1px solid var(--border)', flexShrink: 0 }}>
             <button onClick={() => toggleView('grid')} style={{ width: '34px', height: '34px', borderRadius: '8px', border: 'none', cursor: 'pointer', background: viewMode === 'grid' ? '#fdf2f8' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === 'grid' ? '#ec4899' : '#9ca3af'} strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === 'grid' ? '#E85A8C' : '#9ca3af'} strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
             </button>
             <button onClick={() => toggleView('lista')} style={{ width: '34px', height: '34px', borderRadius: '8px', border: 'none', cursor: 'pointer', background: viewMode === 'lista' ? '#fdf2f8' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === 'lista' ? '#ec4899' : '#9ca3af'} strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={viewMode === 'lista' ? '#E85A8C' : '#9ca3af'} strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
           </div>
         </div>

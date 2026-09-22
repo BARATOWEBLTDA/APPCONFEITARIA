@@ -14,7 +14,7 @@ interface Props {
 
 const catIcons: { [k: string]: string } = { 'Bolos': '🎂', 'Cupcakes': '🧁', 'Doces': '🍮', 'Salgados': '🥐' }
 
-export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundColor, borderColor = '#ec4899', corBotao = '#ec4899' }: Props) {
+export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundColor, borderColor = '#E85A8C', corBotao = '#E85A8C' }: Props) {
   const [showModal, setShowModal] = useState(false)
   const firstImage = product.imagem_url?.split(',')[0]?.trim() || null
 
@@ -42,7 +42,7 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
     <>
       <div className={`bg-white rounded-lg overflow-hidden shadow-sm h-full flex flex-col ${product.promocao ? 'border-2 border-dashed border-pink-500' : 'border border-gray-100'}`}>
         <div className="p-3 flex-1 flex flex-col">
-          <div className="w-full aspect-square rounded-lg flex items-center justify-center mb-3 bg-gray-50 overflow-hidden relative" style={{ backgroundColor }}>
+          <div className="w-full aspect-square rounded-lg flex items-center justify-center mb-3 bg-gray-50 overflow-hidden relative">
             {firstImage ? (
               <img src={firstImage} alt={product.nome} className="w-full h-full object-cover rounded-lg" />
             ) : (
