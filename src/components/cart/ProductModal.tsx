@@ -74,24 +74,24 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     return () => clearInterval(timer)
   }, [isOpen, product])
 
-  if (!isOpen || !product) return null
-
-  const isKg = product.forma_venda === 'kg'
+  const isKg = product?.forma_venda === 'kg'
   const step = isKg ? 0.5 : 1
   const minQtd = isKg ? 0.5 : 1
   const inc = () => setQuantity(q => Math.min(q + step, 50))
   const dec = () => setQuantity(q => Math.max(q - step, minQtd))
 
   // Preço base do produto (com promoção aplicada, se houver)
-  const basePrice = product.promocao && product.preco_promocional
-    ? product.preco_promocional
-    : product.preco_normal
+  const basePrice = product
+    ? (product.promocao && product.preco_promocional ? product.preco_promocional : product.preco_normal)
+    : 0
 
-  const descPct = (product as any).tipo_promocao === 'percentual' && product.promocao
-    ? ((product as any).desconto_percentual || 0) / 100
-    : product.promocao && product.preco_promocional && product.preco_normal > 0
-      ? 1 - (product.preco_promocional / product.preco_normal)
-      : 0
+  const descPct = product
+    ? ((product as any).tipo_promocao === 'percentual' && product.promocao
+      ? ((product as any).desconto_percentual || 0) / 100
+      : product.promocao && product.preco_promocional && product.preco_normal > 0
+        ? 1 - (product.preco_promocional / product.preco_normal)
+        : 0)
+    : 0
 
   // ═══ Helpers de opção ═════════════════════════════════════════════
   const acharOpcao = (g: GrupoOpcoes | null, id: string | null): any => {
@@ -107,6 +107,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
   // ═══ Cálculo do preço em tempo real ═══════════════════════════════
   const calculo = useMemo<PrecoBreakdownCarrinho>(() => {
+    if (!product) {
+      return { base: 0, adicionais: 0, subtotal: 0, desconto: 0, final: 0 } as any
+    }
     let baseEfetivo = basePrice
 
     // Se tamanho ativo e escolhido, considera preço/peso do tamanho
@@ -192,6 +195,9 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
     if (gRecheio && gRecheio.min_selecionavel > 0 && escolhasRecheio.length < gRecheio.min_selecionavel) return false
     return true
   }, [gMassa, gCobertura, gSabor, gTamanho, gRecheio, escolhaMassa, escolhaCobertura, escolhaSabor, escolhaTamanho, escolhasRecheio.length])
+
+  // ═══ Early return DEPOIS de todos os hooks (regra do React) ══════
+  if (!isOpen || !product) return null
 
   const totalDisplay = calculo.final * quantity
 
