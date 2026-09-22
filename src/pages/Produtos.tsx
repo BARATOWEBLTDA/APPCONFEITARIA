@@ -5319,7 +5319,11 @@ export default function Produtos() {
                     const gt = form.grupo_tamanhos;
                     const temTamanhoAtivo = gt?.ativo && gt.opcoes.length > 0;
                     if (temTamanhoAtivo) {
-                      // Precisa que TODOS os tamanhos tenham preço > 0
+                      // Modo "por peso": preços dos tamanhos são calculados via preco_normal (R$/kg)
+                      if (gt!.modo_preco_tamanho === "por_peso") {
+                        return (form.preco_normal || 0) > 0;
+                      }
+                      // Modo "preço fixo": todos os tamanhos precisam ter preço próprio
                       return gt!.opcoes.every(o => o.preco > 0);
                     }
                     return (form.preco_normal || 0) > 0;
