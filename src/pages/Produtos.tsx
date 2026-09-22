@@ -5283,7 +5283,7 @@ export default function Produtos() {
               {((wizardStep === 5 && !form.id) || (form.id && editTab === "fotos")) && (
               <div className="prod-section">
                 <p className="prod-section-label">Status</p>
-                <div className="prod-toggles" style={{ flexDirection: "column", gap: "0.5rem" }}>
+                <div className="prod-toggles prod-toggles--clean" style={{ flexDirection: "column", gap: "0.25rem" }}>
                   <Toggle label="Disponível" value={form.disponivel} onChange={(v: boolean) => setForm(f => ({ ...f, disponivel: v }))} colorClass="active-green" />
                   <Toggle label="Pronta entrega" value={form.pronta_entrega !== false} onChange={(v: boolean) => setForm(f => ({ ...f, pronta_entrega: v }))} colorClass="active-green" />
                 </div>
@@ -7457,6 +7457,13 @@ export default function Produtos() {
         .prod-toggles { display: flex; gap: var(--gap-stack); flex-wrap: wrap; }
         .prod-toggle-item { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); background: var(--bg-subtle); cursor: pointer; font-size: var(--font-button); font-weight: var(--fw-semibold); line-height: var(--lh-normal); color: var(--text-primary); transition: all var(--dur-normal) var(--ease-out); flex: 1; min-width: 100px; }
         .prod-toggle-item.active-green { background: #dcfce7; color: #15803d; }
+        /* Modifier: sem background nos toggles (usado em "Disponível" e "Pronta entrega") */
+        .prod-toggles--clean .prod-toggle-item,
+        .prod-toggles--clean .prod-toggle-item.active-green {
+          background: transparent !important;
+          padding: 8px 0 !important;
+          color: #2D1F26;
+        }
         .prod-toggle-item.active-pink { background: var(--primary-light); color: var(--primary-dark); }
         .prod-toggle-slider { width: 40px; height: 22px; border-radius: var(--radius-md); background: var(--border); position: relative; flex-shrink: 0; transition: background var(--dur-normal) var(--ease-out); }
         .prod-toggle-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--bg-card); position: absolute; top: 2px; left: 2px; transition: transform var(--dur-normal) var(--ease-out); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
