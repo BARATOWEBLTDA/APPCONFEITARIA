@@ -575,28 +575,6 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           {gCobertura && (
             <RenderGrupo g={gCobertura} tipoEscolha="single" valorAtual={escolhaCobertura} onChange={setEscolhaCobertura} />
           )}
-
-          {/* Quantidade */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0' }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-title)' }}>Quantidade</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <button onClick={dec} style={{
-                width: 36, height: 36, borderRadius: '50%', border: '1.5px solid #E5D8DE',
-                background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Minus size={16} />
-              </button>
-              <span style={{ fontSize: 16, fontWeight: 700, minWidth: 40, textAlign: 'center' }}>
-                {isKg ? `${quantity.toFixed(1).replace('.', ',')} kg` : quantity}
-              </span>
-              <button onClick={inc} style={{
-                width: 36, height: 36, borderRadius: '50%', border: `1.5px solid ${corBotao}`,
-                background: corBotao, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Plus size={16} />
-              </button>
-            </div>
-          </div>
         </div>{/* fim body scrollável */}
 
         {/* Footer fixo — Botão adicionar sempre visível */}
