@@ -899,34 +899,34 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
       {/* ═══ MOBILE: tab bar + cart vindo de baixo ═══ */}
       {isMobile && (
         <>
-          {count > 0 && (
-            <div
-              onClick={() => setIsOpen(true)}
-              style={{
-                position:'fixed', bottom:'62px', left:0, right:0, zIndex:40,
-                background:'#3d3d3d', padding:'10px 18px',
-                display:'flex', alignItems:'center', justifyContent:'space-between',
-                boxShadow:'0 -2px 12px rgba(0,0,0,0.15)', cursor:'pointer',
-              }}
-            >
-              <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
-                <div style={{background:'rgba(255,255,255,0.2)',borderRadius:'10px',width:'36px',height:'36px',display:'flex',alignItems:'center',justifyContent:'center'}}>
-                  <ShoppingBag size={18} color="white" />
+          <div className="fixed bottom-0 left-0 right-0 z-30" style={{paddingBottom:'env(safe-area-inset-bottom)', boxShadow:'0 -2px 12px rgba(0,0,0,0.15)'}}>
+            {count > 0 && (
+              <div
+                onClick={() => setIsOpen(true)}
+                style={{
+                  background:'#16a34a', padding:'10px 18px',
+                  display:'flex', alignItems:'center', justifyContent:'space-between',
+                  cursor:'pointer',
+                }}
+              >
+                <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
+                  <div style={{background:'rgba(255,255,255,0.2)',borderRadius:'10px',width:'36px',height:'36px',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                    <ShoppingBag size={18} color="white" />
+                  </div>
+                  <div>
+                    <span style={{color:'white',fontWeight:700,fontSize:'15px',display:'block',lineHeight:1.2}}>Meu pedido</span>
+                    <span style={{color:'rgba(255,255,255,0.85)',fontSize:'12px'}}>{count} {count === 1 ? 'item' : 'itens'}</span>
+                  </div>
                 </div>
-                <div>
-                  <span style={{color:'white',fontWeight:700,fontSize:'15px',display:'block'}}>Ver sacola</span>
-                  <span style={{color:'rgba(255,255,255,0.75)',fontSize:'12px'}}>{count} {count === 1 ? 'item' : 'itens'}</span>
+                <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
+                  <span style={{color:'white',fontWeight: 700,fontSize:'16px'}}>{formatCurrency(totalPrice)}</span>
+                  <ChevronRight size={18} color="rgba(255,255,255,0.7)" />
                 </div>
               </div>
-              <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
-                <span style={{color:'white',fontWeight: 700,fontSize:'16px'}}>{formatCurrency(totalPrice)}</span>
-                <ChevronRight size={18} color="rgba(255,255,255,0.7)" />
-              </div>
-            </div>
-          )}
+            )}
 
-          <div className="fixed bottom-0 left-0 right-0 z-30" style={{background: '#3E2A32', paddingBottom:'env(safe-area-inset-bottom)', boxShadow:'0 -2px 12px rgba(0,0,0,0.15)'}}>
-            <div style={{display:'flex', alignItems:'center', justifyContent:'space-around', padding:'6px 8px 7px'}}>
+            <div style={{background: '#3E2A32'}}>
+              <div style={{display:'flex', alignItems:'center', justifyContent:'space-around', padding:'6px 8px 7px'}}>
               {[
                 { id: 'inicio',   label: 'Início',  icon: <Home size={19} /> },
                 { id: 'pedidos',  label: 'Pedidos', icon: <ClipboardList size={19} /> },
@@ -951,6 +951,7 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                   </button>
                 )
               })}
+              </div>
             </div>
           </div>
 
