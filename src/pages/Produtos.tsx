@@ -4488,7 +4488,9 @@ export default function Produtos() {
                                     <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                                   </svg>
                                 </div>
-                                <span className="prod-slot-lock-txt">Assine PRO</span>
+                                <span className="prod-slot-lock-txt">
+                                  <span className="prod-slot-lock-txt-rgb">Exclusivo</span> PRO
+                                </span>
                               </div>
                             </>
                           ) : (
@@ -9679,6 +9681,20 @@ export default function Produtos() {
           font-weight: 600;
           font-family: var(--font-base);
           letter-spacing: 0.02em;
+        }
+        .prod-slot-lock-txt-rgb {
+          background: linear-gradient(90deg, #F5B8CD, #C4B5FD, #93C5FD, #86EFAC, #FCD34D, #F5B8CD);
+          background-size: 300% 100%;
+          -webkit-background-clip: text;
+          background-clip: text;
+          -webkit-text-fill-color: transparent;
+          color: transparent;
+          font-weight: 800;
+          animation: prodRgbFlow 6s linear infinite;
+        }
+        @keyframes prodRgbFlow {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 300% 50%; }
         }
         .prod-img-upload--locked {
           transition: transform 0.15s ease;
