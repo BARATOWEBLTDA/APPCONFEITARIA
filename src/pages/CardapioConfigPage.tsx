@@ -586,11 +586,9 @@ export default function CardapioConfigPage() {
       {/* ══════ Tab DESIGN: Identidade → Layout/Banners/Cores → Avaliações ══════ */}
       {activeTab === "design" && <>
         <CardapioDesign identityCard={
-        <div className="ccc-card">
+        <div className="ccc-card ccc-card--full">
           <SectionLabel
-            icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7h-7L9 3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/></svg>}
-            variant="rosa"
-            sub="Logo, nome e descrição da sua confeitaria"
+            sub="Sua marca no cardápio: foto, nome e descrição. É o que o cliente vê logo de cara."
           >Identidade da loja</SectionLabel>
           <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleFileChange} />
 
@@ -1157,9 +1155,9 @@ export default function CardapioConfigPage() {
         .ccc-hint { font-size: var(--font-helper); color:var(--text-muted); margin:0; }
 
         /* ── Logo ── */
-        .ccc-logo-row { display:flex; align-items:center; gap:1rem; width:100%; position:relative; z-index:1; }
+        .ccc-logo-row { display:flex; align-items:center; gap:1.25rem; width:100%; position:relative; z-index:1; }
         .ccc-logo-preview {
-          width:78px; height:78px; min-width:78px; border-radius:50%;
+          width:110px; height:110px; min-width:110px; border-radius:50%;
           background:var(--primary-light);
           border:3px solid var(--bg-card);
           box-shadow:0 0 0 2px var(--primary-light);
@@ -1167,18 +1165,21 @@ export default function CardapioConfigPage() {
           cursor:pointer; position:relative; overflow:hidden; flex-shrink:0;
           transition:box-shadow 0.2s, transform 0.2s;
         }
+        /* Card full width — mesmo estilo dos Banners e outras seções largas */
+        .ccc-card--full { grid-column: 1 / -1; }
         .ccc-logo-preview:hover {
           box-shadow:0 0 0 2px var(--primary), 0 6px 18px rgba(255,111,169,0.25);
           transform:scale(1.03);
         }
         .ccc-logo-cam {
-          position:absolute; bottom:2px; right:2px;
+          position:absolute; bottom:4px; right:4px;
           background:var(--primary-gradient);
-          width:24px; height:24px;
+          width:32px; height:32px;
           display:flex; align-items:center; justify-content:center;
           border-radius:50%; border:2px solid var(--bg-card);
           box-shadow:0 2px 6px rgba(255,111,169,0.4);
         }
+        .ccc-logo-cam svg { width:16px; height:16px; }
         .ccc-logo-label { font-size: var(--font-input); font-weight: var(--fw-bold); color:var(--text-title); margin:0; }
         .ccc-logo-sub { font-size: var(--font-helper); color:var(--text-muted); margin:0.2rem 0 0; }
 

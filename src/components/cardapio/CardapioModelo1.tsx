@@ -84,7 +84,7 @@ function getEnderecoData(config: Configuracoes | null): { curto: string; complet
 
 export function CardapioModelo1({ design, config }: CardapioModeloProps) {
   const [modalEndereco, setModalEndereco] = useState(false)
-  const accent = design.cor_borda || design.cor_botao || '#ec4899'
+  const accent = design.cor_borda || design.cor_botao || '#E85A8C'
   const status = getStatusLoja(config?.horario || null)
   const enderecoData = getEnderecoData(config)
   const avaliacao = config?.avaliacao_media ?? 0

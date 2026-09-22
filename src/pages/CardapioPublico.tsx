@@ -32,7 +32,7 @@ function NavLink({ label, icon, defaultActive, navBg, onClick }: any) {
 
   const isActive = defaultActive || active
   const bg = isActive ? '#ffffff' : hovered ? 'rgba(255,255,255,0.15)' : 'transparent'
-  const color = isActive ? (navBg || '#ec4899') : '#ffffff'
+  const color = isActive ? (navBg || '#E85A8C') : '#ffffff'
 
   return (
     <button
@@ -59,12 +59,12 @@ function NavLink({ label, icon, defaultActive, navBg, onClick }: any) {
 function DeskNav({ design, searchTerm, onSearchChange }: any) {
   const { items } = useCart()
   const count = items.reduce((a: number, i: any) => a + (i.saleType === 'kg' ? 1 : Math.floor(i.quantity)), 0)
-  const navBg = design.cor_navbar || design.cor_borda || '#ec4899'
-  const corBorda = design.cor_borda || '#ec4899'
+  const navBg = design.cor_navbar || design.cor_borda || '#E85A8C'
+  const corBorda = design.cor_borda || '#E85A8C'
   const [showConta, setShowConta] = useState(false)
   const [contaAba, setContaAba] = useState<'pedidos'|'perfil'>('pedidos')
   const confeteiraUserId = localStorage.getItem('cardapio_user_id') || ''
-  const accent = design.cor_botao || design.cor_borda || '#ec4899'
+  const accent = design.cor_botao || design.cor_borda || '#E85A8C'
 
   return (
     <>
@@ -220,11 +220,11 @@ function DeskInfoRow({ design, config }: any) {
               </>
             ) : (
               <>
-                <ShoppingBag size={24} color={design.cor_borda||'#ec4899'} style={{ marginBottom:'4px' }}/>
+                <ShoppingBag size={24} color={design.cor_borda||'#E85A8C'} style={{ marginBottom:'4px' }}/>
                 <p style={{ margin:0, fontWeight:700, fontSize:'14px', color:'var(--text-title)' }}>{count} {count===1?'item':'itens'}</p>
                 <p style={{ margin:'2px 0 6px', fontWeight:800, fontSize:'16px', color:'var(--success)' }}>{formatCurrency(totalPrice)}</p>
                 <button onClick={() => window.dispatchEvent(new Event('open-cart'))} style={{
-                  padding:'8px 20px', borderRadius:'8px', border:'none', background:design.cor_botao||'#ec4899',
+                  padding:'8px 20px', borderRadius:'8px', border:'none', background:design.cor_botao||'#E85A8C',
                   color:'#fff', fontSize:'12px', fontWeight:700, cursor:'pointer', fontFamily:'Geist, system-ui, sans-serif',
                 }}>Ver sacola</button>
               </>
@@ -240,7 +240,7 @@ function DeskInfoRow({ design, config }: any) {
 /* ── Category Dropdown ── */
 function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, corBotao, navBg }: any) {
   const cats = categories.filter((c: any) => c.name !== 'Todos')
-  const activeBg = navBg || corBotao || '#ec4899'
+  const activeBg = navBg || corBotao || '#E85A8C'
 
   return (
     <div style={{ background:'var(--bg-card)', borderRadius:'12px', border:'1px solid var(--border)', overflow:'hidden' }}>
@@ -293,7 +293,7 @@ function DeskCategoryDropdown({ categories, selectedCategory, onSelectCategory, 
 
 /* ── Products Section ── */
 function DeskProducts({ produtos, favorites, onToggleFavorite, design }: any) {
-  const cor = design.cor_borda || '#ec4899'
+  const cor = design.cor_borda || '#E85A8C'
 
   return (
     <div style={{ width:'100%', boxSizing:'border-box' }}>
@@ -320,7 +320,7 @@ function DeskProducts({ produtos, favorites, onToggleFavorite, design }: any) {
 function DeskSacola({ cartCount, cartTotal, design, items }: any) {
   const [cupomAberto, setCupomAberto] = useState(false)
   const [cupomDigitado, setCupomDigitado] = useState('')
-  const cor = design.cor_botao || design.cor_borda || '#ec4899'
+  const cor = design.cor_botao || design.cor_borda || '#E85A8C'
 
   return (
     <div style={{ background:'var(--bg-card)', borderRadius:'12px', border:'1px solid var(--border)', overflow:'hidden' }}>
@@ -462,7 +462,7 @@ function DeskFooterBar({ design, config }: any) {
   } catch {}
   if (config?.telefone) telefone = config.telefone
 
-  const cor = design?.cor_rodape || design?.cor_navbar || design?.cor_borda || '#ec4899'
+  const cor = design?.cor_rodape || design?.cor_navbar || design?.cor_borda || '#E85A8C'
 
   const linha2Parts = []
   if (cnpj) linha2Parts.push(`CNPJ: ${cnpj}`)
@@ -621,9 +621,9 @@ function CardapioContent() {
           @keyframes fadeScaleIn{from{opacity:0;transform:translate(-50%,-50%) scale(0.95)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
           ::-webkit-scrollbar { width: 5px; height: 5px; }
           ::-webkit-scrollbar-track { background: transparent; }
-          ::-webkit-scrollbar-thumb { background: #ec4899; border-radius: 99px; opacity: 0.6; }
+          ::-webkit-scrollbar-thumb { background: #E85A8C; border-radius: 99px; opacity: 0.6; }
           ::-webkit-scrollbar-thumb:hover { opacity: 1; }
-          * { scrollbar-width: thin; scrollbar-color: #ec4899 transparent; }
+          * { scrollbar-width: thin; scrollbar-color: #E85A8C transparent; }
         `}</style>
       </div>
     </div>
@@ -644,7 +644,7 @@ function CardapioContent() {
   if (!isDesktop) {
     return (
       <div className="min-h-screen relative" style={{ backgroundColor: '#f8f8f8' }}>
-        <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
+        <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} />
 
         {cardapioModelo === 'modelo1' ? (
           /* ── Layout PRO: CardapioModelo1 (hero editorial) ── */
@@ -657,7 +657,7 @@ function CardapioContent() {
         ) : (
           /* ── Layout Padrão (Free ou PRO que não trocou) ── */
           <>
-            <div style={{ height: '160px', backgroundColor: design.cor_borda || '#ec4899' }} />
+            <div style={{ height: '160px', backgroundColor: design.cor_borda || '#E85A8C' }} />
             <Logo logoUrl={design.logo_url} borderColor={design.cor_borda} storeName={design.nome_loja} storeDescription={design.descricao_loja} corNome={design.cor_nome} avaliacaoMedia={config?.avaliacao_media} configuracoes={config} hideStars={design.hide_stars} />
             <div style={{ marginTop:'16px' }}>
               <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
@@ -669,7 +669,7 @@ function CardapioContent() {
             <CategoryFilter categories={getCategories()} selectedCategory={selectedCategory} onCategorySelect={setSelectedCategory} categoryIcons={design.category_icons || {}} categoryImages={categoryImages} />
           )}
           {filteredProdutos.length > 0 ? (
-            <ProductList produtos={filteredProdutos} favorites={favorites} onToggleFavorite={toggleFavorite} backgroundColor={design.cor_background||'#fff'} borderColor={design.cor_borda||'#ec4899'} corBotao={design.cor_botao||'#ec4899'} selectedCategory={selectedCategory} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+            <ProductList produtos={filteredProdutos} favorites={favorites} onToggleFavorite={toggleFavorite} backgroundColor={design.cor_background||'#fff'} borderColor={design.cor_borda||'#E85A8C'} corBotao={design.cor_botao||'#E85A8C'} selectedCategory={selectedCategory} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
           ) : <EmptyState />}
         </div>
         <Footer textoRodape={design.texto_rodape} />
@@ -680,7 +680,7 @@ function CardapioContent() {
   /* ═══ DESKTOP ═══ */
   return (
     <div style={{ minHeight:'100vh', background:'var(--bg-body)', fontFamily:'Geist, system-ui, sans-serif', display:'flex', flexDirection:'column' }}>
-      <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#ec4899'} />
+      <NavigationMenu corBotao={design.cor_botao || design.cor_borda || '#E85A8C'} />
       <DeskNav design={{...design, cidade_estado: (() => { try { const e = config?.endereco ? JSON.parse(config.endereco) : null; return e?.cidade ? `${e.cidade} - ${e.estado}` : '' } catch { return '' } })() }} searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
       <div style={{ display:'flex', flexDirection:'column', gap:'16px', paddingBottom:'0', paddingTop:'24px', width:'100%', flex: 1 }}>
@@ -694,8 +694,8 @@ function CardapioContent() {
               categories={getCategories()}
               selectedCategory={selectedCategory}
               onSelectCategory={setSelectedCategory}
-              corBotao={design.cor_botao || '#ec4899'}
-              navBg={design.cor_navbar || design.cor_borda || '#ec4899'}
+              corBotao={design.cor_botao || '#E85A8C'}
+              navBg={design.cor_navbar || design.cor_borda || '#E85A8C'}
             />
           </div>
 
@@ -703,11 +703,11 @@ function CardapioContent() {
           <div>
             {/* Busca */}
             <div style={{ position:'relative', marginBottom:'16px', display:'flex', alignItems:'stretch', borderRadius:'10px', overflow:'hidden', border:'1.5px solid var(--border)', background:'var(--bg-card)', transition:'border-color 0.2s' }}
-              onFocusCapture={e => (e.currentTarget.style.borderColor = design.cor_navbar || design.cor_borda || '#ec4899')}
+              onFocusCapture={e => (e.currentTarget.style.borderColor = design.cor_navbar || design.cor_borda || '#E85A8C')}
               onBlurCapture={e => (e.currentTarget.style.borderColor = 'var(--border)')}
             >
               {/* Fundo colorido com ícone na esquerda */}
-              <div style={{ width:'46px', background: design.cor_navbar || design.cor_borda || '#ec4899', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <div style={{ width:'46px', background: design.cor_navbar || design.cor_borda || '#E85A8C', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                 <MagnifyingGlass size={20} weight="bold" color="#ffffff" />
               </div>
               <input
