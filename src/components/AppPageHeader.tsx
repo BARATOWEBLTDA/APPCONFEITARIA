@@ -13,6 +13,7 @@ interface AppPageHeaderProps {
   infoIcon?: string
   infoContent: ReactNode
   infoTip?: ReactNode
+  rightActions?: ReactNode
 }
 
 export default function AppPageHeader({
@@ -22,6 +23,7 @@ export default function AppPageHeader({
   infoIcon = '📦',
   infoContent,
   infoTip,
+  rightActions,
 }: AppPageHeaderProps) {
   const navigate = useNavigate()
   const [showInfo, setShowInfo] = useState(false)
@@ -46,6 +48,9 @@ export default function AppPageHeader({
           </div>
           <p className="app-header-sub">{subtitle}</p>
         </div>
+        {rightActions && (
+          <div className="app-header-right-actions">{rightActions}</div>
+        )}
         <div className="app-header-foto-wrap" data-has-photo={profile?.foto_url ? "true" : "false"}>
           <button
             className="app-header-foto-btn"
@@ -185,6 +190,16 @@ export default function AppPageHeader({
           margin-right: calc(50% - 50vw);
           width: 100vw;
           box-sizing: border-box;
+        }
+        .app-header-right-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-shrink: 0;
+          margin-left: auto;
+        }
+        @media (max-width: 767px) {
+          .app-header-right-actions { display: none; }
         }
         @media (min-width: 768px) {
           .app-header-novo {

@@ -549,6 +549,40 @@ export default function CardapioConfigPage() {
         </>
       }
       infoTip={<>Copie o link do seu cardápio e coloque na <strong>bio do Instagram</strong> ou envie no WhatsApp.</>}
+      rightActions={codigoPublico ? (
+        <>
+          <a
+            href={`/${codigoPublico}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ccc-header-btn ccc-header-btn--primary"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Ver cardápio
+          </a>
+          <button
+            className="ccc-header-btn ccc-header-btn--secondary"
+            onClick={async () => {
+              const url = `${window.location.origin}/${codigoPublico}`;
+              try { await navigator.clipboard.writeText(url); } catch {}
+              setLinkCopiado(true);
+              setTimeout(() => setLinkCopiado(false), 2000);
+            }}
+          >
+            {linkCopiado ? (
+              <>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Copiado
+              </>
+            ) : (
+              <>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                Copiar link
+              </>
+            )}
+          </button>
+        </>
+      ) : null}
     />
     {cropSrc && (
       <ImageCropper
@@ -934,12 +968,15 @@ export default function CardapioConfigPage() {
         /* ── ISOLAMENTO DE TEMA: força light mode nesta página ── */
         .ccc-outer, .ccc-outer * { color-scheme: light; }
 
-        /* Barra de ações Compartilhar */
+        /* Barra de ações Compartilhar — MOBILE ONLY (no desktop vai no header) */
         .ccc-share-bar {
           display: flex;
           gap: 10px;
           margin-bottom: 8px;
           flex-wrap: wrap;
+        }
+        @media (min-width: 768px) {
+          .ccc-share-bar { display: none; }
         }
         .ccc-share-btn {
           display: inline-flex;
@@ -971,6 +1008,34 @@ export default function CardapioConfigPage() {
           .ccc-share-bar { flex-direction: column; }
           .ccc-share-btn { justify-content: center; }
         }
+
+        /* Botões dentro do header rosa (desktop) */
+        .ccc-header-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 14px;
+          border-radius: 8px;
+          font-family: 'Geist', sans-serif;
+          font-size: 12.5px;
+          font-weight: 700;
+          cursor: pointer;
+          border: none;
+          text-decoration: none;
+          transition: all 0.15s;
+          white-space: nowrap;
+        }
+        .ccc-header-btn--primary {
+          background: #fff;
+          color: #E85A8C;
+        }
+        .ccc-header-btn--primary:hover { background: #FFF5F9; }
+        .ccc-header-btn--secondary {
+          background: rgba(255,255,255,0.18);
+          color: #fff;
+          backdrop-filter: blur(4px);
+        }
+        .ccc-header-btn--secondary:hover { background: rgba(255,255,255,0.28); }
 
         /* ── Layout geral ── */
         .ccc-outer {
