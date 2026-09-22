@@ -4093,7 +4093,7 @@ export default function Produtos() {
                     if (wizardStep === 2) return "Informações do produto";
                     if (wizardStep === 3) return "";
                     if (wizardStep === 4) return "";
-                    if (wizardStep === 5) return "Fotos e finalização";
+                    if (wizardStep === 5) return "";
                     return "";
                   })()}
                 </div>
@@ -4431,6 +4431,16 @@ export default function Produtos() {
             {/* Ou STEP 4 quando variações (visual + preço só de fotos) */}
             {(((wizardStep === 4 || wizardStep === 5) && !form.id) || (form.id && (editTab === "fotos" || editTab === "preco"))) && (
             <div className="prod-modal-body">
+
+              {/* Título e subtítulo (mesmo padrão dos steps 3 e 4) */}
+              {wizardStep === 5 && !form.id && (
+                <div className="prod-step-header">
+                  <div className="prod-step-title">Fotos e finalização</div>
+                  <div className="prod-step-sub">
+                    Adicione fotos que valorizam seu produto. Define modo de entrega e pronto. Já vai pro cardápio.
+                  </div>
+                </div>
+              )}
 
               {/* Fotos — só em step 5 (Fotos e finalização) ou tab Fotos na edição */}
               {((wizardStep === 5 && !form.id) || (form.id && editTab === "fotos")) && (
@@ -5289,31 +5299,41 @@ export default function Produtos() {
 
                 {/* Antecedência necessária — só se NÃO for pronta entrega */}
                 {form.pronta_entrega === false && (
-                  <div className="prod-field" style={{marginTop: 12}}>
-                    <label>Antecedência necessária pro pedido</label>
-                    <div className="prod-antecedencia-grid">
-                      {[
-                        { valor: "24h", label: "24 horas" },
-                        { valor: "48h", label: "48 horas" },
-                        { valor: "3d", label: "3 dias" },
-                        { valor: "5d", label: "5 dias" },
-                        { valor: "7d", label: "1 semana" },
-                        { valor: "15d", label: "15 dias" },
-                      ].map(opt => {
-                        const ativo = (form as any).antecedencia === opt.valor;
-                        return (
-                          <button
-                            key={opt.valor}
-                            type="button"
-                            className={`prod-antecedencia-chip ${ativo ? "prod-antecedencia-chip--on" : ""}`}
-                            onClick={() => setForm(f => ({ ...(f as any), antecedencia: opt.valor }))}
-                          >
-                            {opt.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <p style={{margin:"8px 0 0", fontSize:11.5, color:"#6B5D64"}}>Cliente verá no cardápio quantos dias antes precisa fazer o pedido.</p>
+                  <div style={{marginTop: 12}}>
+                    <Toggle
+                      label="Necessário agendar com antecedência"
+                      value={!!(form as any).antecedencia}
+                      onChange={(v: boolean) => setForm(f => ({ ...(f as any), antecedencia: v ? "48h" : undefined }))}
+                      colorClass="active-pink"
+                    />
+                    {!!(form as any).antecedencia && (
+                      <div className="prod-field" style={{marginTop: 12}}>
+                        <label>Quantos dias antes?</label>
+                        <div className="prod-antecedencia-grid">
+                          {[
+                            { valor: "24h", label: "24 horas" },
+                            { valor: "48h", label: "48 horas" },
+                            { valor: "3d", label: "3 dias" },
+                            { valor: "5d", label: "5 dias" },
+                            { valor: "7d", label: "1 semana" },
+                            { valor: "15d", label: "15 dias" },
+                          ].map(opt => {
+                            const ativo = (form as any).antecedencia === opt.valor;
+                            return (
+                              <button
+                                key={opt.valor}
+                                type="button"
+                                className={`prod-antecedencia-chip ${ativo ? "prod-antecedencia-chip--on" : ""}`}
+                                onClick={() => setForm(f => ({ ...(f as any), antecedencia: opt.valor }))}
+                              >
+                                {opt.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <p style={{margin:"8px 0 0", fontSize:11.5, color:"#6B5D64"}}>Cliente verá no cardápio quantos dias antes precisa fazer o pedido.</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
