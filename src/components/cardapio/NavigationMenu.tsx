@@ -926,11 +926,11 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
           )}
 
           <div className="fixed bottom-0 left-0 right-0 z-30" style={{background: accent, paddingBottom:'env(safe-area-inset-bottom)', boxShadow:'0 -2px 12px rgba(0,0,0,0.15)'}}>
-            <div style={{display:'flex', alignItems:'center', justifyContent:'space-around', padding:'4px 8px 5px'}}>
+            <div style={{display:'flex', alignItems:'center', justifyContent:'space-around', padding:'6px 8px 7px'}}>
               {[
-                { id: 'inicio',   label: 'Início',  icon: <Home size={18} /> },
-                { id: 'pedidos',  label: 'Pedidos', icon: <ClipboardList size={18} /> },
-                { id: 'perfil',   label: 'Perfil',  icon: <User size={18} /> },
+                { id: 'inicio',   label: 'Início',  icon: <Home size={19} /> },
+                { id: 'pedidos',  label: 'Pedidos', icon: <ClipboardList size={19} /> },
+                { id: 'perfil',   label: 'Perfil',  icon: <User size={19} /> },
               ].map(({ id, label, icon }) => {
                 const active = activeTab === id
                 return (
@@ -938,16 +938,16 @@ export function NavigationMenu({ corBotao }: { corBotao?: string }) {
                     key={id}
                     onClick={() => setActiveTab(id)}
                     style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
                       border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                      padding: '4px 22px', borderRadius: '7px',
+                      padding: '5px 24px', borderRadius: '8px',
                       background: active ? '#ffffff' : 'transparent',
                       color: active ? accent : 'rgba(255,255,255,0.75)',
                       transition: 'background 0.15s, color 0.15s',
                     }}
                   >
                     {icon}
-                    <span style={{ fontSize: '10px', fontWeight: active ? 700 : 500, lineHeight: 1 }}>{label}</span>
+                    <span style={{ fontSize: '10.5px', fontWeight: active ? 700 : 500, lineHeight: 1 }}>{label}</span>
                   </button>
                 )
               })}
