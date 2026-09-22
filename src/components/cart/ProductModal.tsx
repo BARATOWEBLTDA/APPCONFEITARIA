@@ -34,6 +34,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   const [escolhaCobertura, setEscolhaCobertura] = useState<string | null>(null)
   const [escolhaSabor, setEscolhaSabor] = useState<string | null>(null)
   const [escolhaTamanho, setEscolhaTamanho] = useState<string | null>(null)
+  const [showTamanhoDropdown, setShowTamanhoDropdown] = useState(false)
 
   // ═══ Carrega grupos usando o helper (V3 ou fallback antigo) ═══════
   const grupos = useMemo<GrupoOpcoes[]>(() => {
@@ -250,11 +251,12 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   }
 
   // ═══ Render de grupo (radio / checkbox) ═══════════════════════════
-  const RenderGrupo = ({ g, tipoEscolha, valorAtual, onChange }: {
+  const RenderGrupo = ({ g, tipoEscolha, valorAtual, onChange, useDropdown }: {
     g: GrupoOpcoes
     tipoEscolha: 'single' | 'multi'
     valorAtual: string | string[] | null
     onChange: (v: any) => void
+    useDropdown?: boolean
   }) => {
     const eh = (id: string) => tipoEscolha === 'multi'
       ? Array.isArray(valorAtual) && valorAtual.includes(id)
@@ -283,6 +285,79 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           ? `Escolha ${g.min_selecionavel}`
           : `Escolha ${g.min_selecionavel} a ${g.max_selecionavel}`)
       : 'Opcional'
+
+    // ═══ Modo dropdown (usado pra tamanhos com muitas opções) ═══
+    if (useDropdown && tipoEscolha === 'single') {
+      const idSel = typeof valorAtual === 'string' ? valorAtual : null
+      const opSel = g.opcoes.find((o: any) => o.id === idSel)
+      let precoLabelSel = ''
+      if (opSel) {
+        if (g.tipo === 'sabor' && saborTemPrecoProprio && opSel.preco > 0) precoLabelSel = formatCurrency(opSel.preco)
+        else if (g.tipo === 'tamanho' && opSel.preco > 0) precoLabelSel = formatCurrency(opSel.preco)
+        else if ((opSel.adicional || 0) > 0) precoLabelSel = `+${formatCurrency(opSel.adicional)}`
+      }
+      return (
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-title)' }}>{g.nome_exibicao}</span>
+            <span style={{ fontSize: '11px', color: g.min_selecionavel > 0 ? '#831843' : 'var(--text-muted)', background: g.min_selecionavel > 0 ? '#FCE0E9' : 'var(--border)', padding: '2px 8px', borderRadius: '50px', fontWeight: 700 }}>
+              {hintObrigatoriedade}
+            </span>
+          </div>
+          {/* Botão principal do dropdown */}
+          <button
+            onClick={() => setShowTamanhoDropdown(v => !v)}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 14px', borderRadius: '10px',
+              border: `2px solid ${opSel ? corBotao : 'var(--border)'}`,
+              background: opSel ? `${corBotao}12` : 'var(--bg-card)',
+              cursor: 'pointer', transition: 'all 0.15s',
+            }}
+          >
+            <span style={{ fontSize: '14px', fontWeight: 600, color: opSel ? corBotao : 'var(--text-muted)', textAlign: 'left' }}>
+              {opSel ? opSel.nome : 'Selecione uma opção'}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {precoLabelSel && (
+                <span style={{ fontSize: 13, fontWeight: 700, color: corBotao }}>{precoLabelSel}</span>
+              )}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-muted)', transform: showTamanhoDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.15s' }}>
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </button>
+          {/* Lista expandida em grid */}
+          {showTamanhoDropdown && (
+            <div style={{ marginTop: 8, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, padding: 10, background: 'var(--bg-subtle)', borderRadius: 10, maxHeight: 260, overflowY: 'auto' }}>
+              {g.opcoes.map((op: any) => {
+                const ativo = op.id === idSel
+                let precoLabel = ''
+                if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) precoLabel = formatCurrency(op.preco)
+                else if (g.tipo === 'tamanho' && op.preco > 0) precoLabel = formatCurrency(op.preco)
+                else if ((op.adicional || 0) > 0) precoLabel = `+${formatCurrency(op.adicional)}`
+                return (
+                  <button
+                    key={op.id}
+                    onClick={() => { toggle(op.id); setShowTamanhoDropdown(false) }}
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                      padding: '8px 4px', borderRadius: 8,
+                      border: `1.5px solid ${ativo ? corBotao : 'transparent'}`,
+                      background: ativo ? `${corBotao}15` : '#fff',
+                      cursor: 'pointer', transition: 'all 0.12s',
+                    }}
+                  >
+                    <span style={{ fontSize: 13, fontWeight: 700, color: ativo ? corBotao : 'var(--text-primary)' }}>{op.nome}</span>
+                    {precoLabel && <span style={{ fontSize: 11, fontWeight: 600, color: ativo ? corBotao : 'var(--text-muted)' }}>{precoLabel}</span>}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )
+    }
 
     return (
       <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
@@ -418,7 +493,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
 
           {/* Grupos V3 (renderiza os ativos) */}
           {gTamanho && (
-            <RenderGrupo g={gTamanho} tipoEscolha="single" valorAtual={escolhaTamanho} onChange={setEscolhaTamanho} />
+            <RenderGrupo g={gTamanho} tipoEscolha="single" valorAtual={escolhaTamanho} onChange={setEscolhaTamanho} useDropdown />
           )}
           {gSabor && (
             <RenderGrupo g={gSabor} tipoEscolha="single" valorAtual={escolhaSabor} onChange={setEscolhaSabor} />
