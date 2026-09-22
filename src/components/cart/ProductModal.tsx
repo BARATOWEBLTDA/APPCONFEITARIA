@@ -63,7 +63,22 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
   }, [product])
 
   useEffect(() => {
-    document.body.style.overflow = isOpen ? 'hidden' : ''
+    if (isOpen) {
+      const scrollY = window.scrollY
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.left = '0'
+      document.body.style.right = '0'
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.left = ''
+        document.body.style.right = ''
+        document.body.style.overflow = ''
+        window.scrollTo(0, scrollY)
+      }
+    }
     return () => { document.body.style.overflow = '' }
   }, [isOpen])
 
@@ -436,6 +451,8 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       zIndex: 9999,
       background: 'rgba(0,0,0,0.55)',
       display: 'flex', alignItems: isDesktop ? 'center' : 'flex-end', justifyContent: 'center',
+      touchAction: 'none', // impede scroll do fundo no mobile
+      overscrollBehavior: 'contain',
     }}
       onClick={onClose}
     >
@@ -513,7 +530,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
         )}
 
         {/* Nome + descrição — corpo scrollável */}
-        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14, flex: 1, overflowY: 'auto', minHeight: 0 }}>
+        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: 14, flex: 1, overflowY: 'auto', minHeight: 0, overscrollBehavior: 'contain', touchAction: 'pan-y' }}>
           <div>
             <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-title)', margin: 0 }}>{product.nome}</h2>
             {product.descricao && (
