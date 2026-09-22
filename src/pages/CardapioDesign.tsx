@@ -20,6 +20,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [logoUrl, setLogoUrl] = useState("");
+  const [nomeLoja, setNomeLoja] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
   const [banner1Url, setBanner1Url] = useState("");
   const [banner2Url, setBanner2Url] = useState("");
@@ -54,9 +55,10 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       setUserId(user.id);
-      const { data } = await supabase.from("profiles").select("logo_url, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo").eq("id", user.id).single();
+      const { data } = await supabase.from("profiles").select("logo_url, nome_loja, banner_url, banner1_url, banner2_url, banner3_url, cor_borda, cor_background, cor_nome, cor_botao, cor_navbar, cor_sacola, cor_rodape, cardapio_modelo").eq("id", user.id).single();
       if (data) {
         setLogoUrl(data.logo_url || "");
+        setNomeLoja(data.nome_loja || "");
         setBannerUrl(data.banner_url || "");
         setBanner1Url(data.banner1_url || "");
         setBanner2Url(data.banner2_url || "");
@@ -336,7 +338,13 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               <div className="cd-picker-wrap">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px', padding: '10px', background: corBackground, borderRadius: '10px' }}>
                   <div style={{ width: '56px', height: '56px', borderRadius: '50%', border: `4px solid ${corBorda}`, overflow: 'hidden', flexShrink: 0, background: 'var(--bg-card)' }}>
-                    {logoUrl ? <img src={logoUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', background: corBorda, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🧁</div>}
+                    {logoUrl ? (
+                      <img src={logoUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', background: corBorda, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 800, color: '#fff', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                        {(nomeLoja || 'ML').trim().split(/\s+/).slice(0,2).map(p => p[0]).join('') || 'ML'}
+                      </div>
+                    )}
                   </div>
                   <div style={{ height: '20px', width: '80px', borderRadius: '4px', background: corBorda, opacity: 0.8 }} />
                 </div>
@@ -363,7 +371,7 @@ export default function CardapioDesign({ identityCard, avaliacoesCard }: { ident
               <div className="cd-picker-wrap">
                 <div style={{ padding: '12px', borderRadius: '10px', background: corBackground, marginBottom: '12px', textAlign: 'center' }}>
                   <span style={{ fontSize: '1.1rem', fontWeight: 800, color: corNome, fontFamily: 'inherit' }}>
-                    Nome da sua loja
+                    {nomeLoja || 'Nome da sua loja'}
                   </span>
                 </div>
                 <HexColorPicker color={corNome} onChange={v => handleColorChange('cor_nome', v, setCorNome)} style={{ width: '100%', height: '160px' }} />
