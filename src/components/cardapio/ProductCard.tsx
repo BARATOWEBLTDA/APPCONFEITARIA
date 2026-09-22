@@ -40,7 +40,10 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
 
   return (
     <>
-      <div className="bg-white rounded-lg overflow-hidden shadow-sm h-full flex flex-col border border-gray-100">
+      <div
+        onClick={() => setShowModal(true)}
+        className="bg-white rounded-lg overflow-hidden shadow-sm h-full flex flex-col border border-gray-100 cursor-pointer transition-shadow hover:shadow-md"
+      >
         <div className="p-3 flex-1 flex flex-col">
           <div className="w-full aspect-square rounded-lg flex items-center justify-center mb-3 bg-gray-50 overflow-hidden relative">
             {firstImage ? (
@@ -59,7 +62,7 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
             <p className="text-gray-500 text-xs mb-2 line-clamp-4 leading-tight flex-1">{product.descricao}</p>
             <div className="mt-auto">
               {isPromo && precoPromocional > 0 ? (
-                <div className="mb-2">
+                <div>
                   <span className="text-sm text-red-500 line-through block">R$ {product.preco_normal.toFixed(2)}</span>
                   <div className="flex items-center gap-1">
                     <span className="text-lg font-bold text-green-600">R$ {precoPromocional.toFixed(2)}</span>
@@ -67,14 +70,11 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-1 mb-2">
+                <div className="flex items-center gap-1">
                   <span className="text-lg font-bold text-green-600">R$ {product.preco_normal.toFixed(2)}</span>
                   <span className="text-xs px-1 py-0 rounded-sm" style={{ backgroundColor: '#6A0122', color: 'white' }}>{formatSale(product.forma_venda)}</span>
                 </div>
               )}
-              <button onClick={() => setShowModal(true)} className="w-full py-2 px-3 rounded-lg text-white text-xs font-medium text-center" style={{ backgroundColor: corBotao }}>
-                Adicionar ao carrinho
-              </button>
             </div>
           </div>
         </div>
