@@ -442,7 +442,7 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
       <div style={{
         background: 'var(--bg-card)', width: '100%', maxWidth: '500px',
         maxHeight: '100%',
-        height: isDesktop ? 'auto' : '92%',
+        height: isDesktop ? 'auto' : '100%',
         borderRadius: isDesktop ? '20px' : '20px 20px 0 0',
         display: 'flex', flexDirection: 'column',
         overflow: 'hidden', // não deixa scroll no wrapper
