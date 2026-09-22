@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 interface Category { name: string; icon: string; imagem_url?: string }
 interface Props {
   categories: Category[]
@@ -7,7 +9,7 @@ interface Props {
   categoryImages?: { [key: string]: string }
 }
 
-// SVG inline pra "Todos" (grid de 4 quadradinhos)
+// SVG inline pra "Todos" (grid de 4 quadradinhos) — fallback se todos.png falhar
 const IconTodos = ({ color = '#fff' }: { color?: string }) => (
   <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <rect x="3" y="3" width="7" height="7" rx="1.2"/>
@@ -25,7 +27,11 @@ const IconTag = ({ color = '#fff' }: { color?: string }) => (
   </svg>
 )
 
+const TODOS_PNG = '/categoriaicones/categorias/todos.png'
+
 export function CategoryFilter({ categories, selectedCategory, onCategorySelect, categoryIcons = {}, categoryImages = {} }: Props) {
+  const [todosPngErro, setTodosPngErro] = useState(false)
+
   return (
     <div style={{ marginBottom: '24px' }}>
       <div style={{ display: 'flex', gap: '12px', padding: '4px 24px', marginLeft: '-24px', marginRight: '-24px', overflowX: 'auto', scrollbarWidth: 'none' }}>
@@ -33,7 +39,6 @@ export function CategoryFilter({ categories, selectedCategory, onCategorySelect,
           const isSelected = cat.name === 'Todos' ? selectedCategory === null : selectedCategory === cat.name
           const imgUrl = cat.name === 'Todos' ? null : (categoryImages[cat.name] || null)
           const iconUrl = cat.name === 'Todos' ? null : (categoryIcons[cat.name] || null)
-          const iconColor = isSelected ? '#fff' : '#fff'
 
           return (
             <button
@@ -58,16 +63,25 @@ export function CategoryFilter({ categories, selectedCategory, onCategorySelect,
                     alt={cat.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
+                ) : cat.name === 'Todos' ? (
+                  todosPngErro ? (
+                    <IconTodos color="#fff" />
+                  ) : (
+                    <img
+                      src={TODOS_PNG}
+                      alt="Todos"
+                      style={{ width: '36px', height: '36px', objectFit: 'contain' }}
+                      onError={() => setTodosPngErro(true)}
+                    />
+                  )
                 ) : iconUrl ? (
                   <img
                     src={iconUrl}
                     alt={cat.name}
                     style={{ width: '36px', height: '36px', objectFit: 'contain' }}
                   />
-                ) : cat.name === 'Todos' ? (
-                  <IconTodos color={iconColor} />
                 ) : (
-                  <IconTag color={iconColor} />
+                  <IconTag color="#fff" />
                 )}
               </div>
               <span style={{
