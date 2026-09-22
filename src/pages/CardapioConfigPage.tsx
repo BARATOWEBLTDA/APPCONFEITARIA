@@ -1392,24 +1392,31 @@ export default function CardapioConfigPage() {
         .ccc-toggle input:focus-visible + .ccc-toggle-slider { box-shadow:0 0 0 3px rgba(255,111,169,0.25); }
 
         /* ── Dias da semana ── */
-        .ccc-dias-grid { display:flex; flex-wrap:wrap; gap:0.5rem; }
+        .ccc-dias-grid { display:flex; flex-wrap:wrap; gap:6px; }
         .ccc-dia-btn {
-          padding:0.5rem 0.95rem; border-radius: var(--radius-full);
-          border:1.5px solid var(--border); background:var(--bg-card);
-          font-family:'Geist', sans-serif; font-size: var(--font-helper);
-          font-weight: var(--fw-semibold); color:var(--text-secondary); cursor:pointer;
-          transition:all 0.18s; min-width:54px;
+          padding: 10px 14px;
+          border-radius: 8px;
+          border: 1.5px solid #E5D8DE;
+          background: #fff;
+          font-family: 'Geist', sans-serif;
+          font-size: 12px;
+          font-weight: 800;
+          color: #6B5D64;
+          cursor: pointer;
+          transition: all 0.15s;
+          min-width: 52px;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
         }
         .ccc-dia-btn:hover {
-          border-color:var(--primary);
-          color:var(--primary-dark);
-          background:var(--primary-light);
-          transform:translateY(-1px);
+          border-color: #E85A8C;
+          color: #E85A8C;
         }
         .ccc-dia-btn.active {
-          background:var(--primary-gradient);
-          border-color:transparent; color:#ffffff; font-weight: var(--fw-bold);
-          box-shadow:0 3px 10px rgba(255,111,169,0.32);
+          background: #E85A8C;
+          border-color: #E85A8C;
+          color: #fff;
+          box-shadow: 0 3px 10px rgba(232,90,140,0.32);
         }
 
         /* ── Time fields ── */
