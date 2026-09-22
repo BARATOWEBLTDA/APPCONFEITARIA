@@ -40,7 +40,7 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
 
   return (
     <>
-      <div className={`bg-white rounded-lg overflow-hidden shadow-sm h-full flex flex-col ${product.promocao ? 'border-2 border-dashed border-pink-500' : 'border border-gray-100'}`}>
+      <div className="bg-white rounded-lg overflow-hidden shadow-sm h-full flex flex-col border border-gray-100">
         <div className="p-3 flex-1 flex flex-col">
           <div className="w-full aspect-square rounded-lg flex items-center justify-center mb-3 bg-gray-50 overflow-hidden relative">
             {firstImage ? (

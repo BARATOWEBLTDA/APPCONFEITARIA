@@ -45,7 +45,7 @@ export function ProductList({ produtos, favorites, onToggleFavorite, backgroundC
     const firstImage = p.imagem_url?.split(',')[0]?.trim() || null
 
     return (
-      <div onClick={() => setModalProduct(p)} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', borderRadius: '14px', padding: '10px', boxShadow: 'var(--shadow-sm)', cursor: 'pointer', border: isPromo ? '1.5px dashed #E85A8C' : '1px solid #f3f4f6' }}>
+      <div onClick={() => setModalProduct(p)} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', borderRadius: '14px', padding: '10px', boxShadow: 'var(--shadow-sm)', cursor: 'pointer', border: '1px solid #f3f4f6' }}>
         {/* Imagem */}
         <div style={{ width: '72px', height: '72px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, background: '#fdf2f8' }}>
           {firstImage
