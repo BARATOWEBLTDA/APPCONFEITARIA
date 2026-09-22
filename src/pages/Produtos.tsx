@@ -3060,6 +3060,15 @@ export default function Produtos() {
   } | null>(null);
   const [wizardOpts, setWizardOpts] = useState({ complementos: false, personalizacao: false, promocao: false });
   const [form, setForm] = useState<Produto>(EMPTY);
+
+  // Auto-sync: se modo do tamanho é por_peso, forma_venda vira kg automaticamente
+  useEffect(() => {
+    const modo = form.grupo_tamanhos?.modo_preco_tamanho;
+    if (modo === "por_peso" && form.forma_venda !== "kg") {
+      setForm(f => ({ ...f, forma_venda: "kg" }));
+    }
+  }, [form.grupo_tamanhos?.modo_preco_tamanho]);
+
   const [showDraftBanner, setShowDraftBanner] = useState(false);
   const draftSaveTimer = useRef<any>(null);
   const DRAFT_KEY = "doonly_produto_draft_v1";
