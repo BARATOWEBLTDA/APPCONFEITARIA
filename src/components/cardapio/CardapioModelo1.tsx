@@ -85,8 +85,6 @@ function getEnderecoData(config: Configuracoes | null): { curto: string; complet
 export function CardapioModelo1({ design, config }: CardapioModeloProps) {
   const [modalEndereco, setModalEndereco] = useState(false)
   const accent = design.cor_borda || design.cor_botao || '#ec4899'
-  const banners = [design.banner_url, design.banner1_url, design.banner2_url, design.banner3_url].filter(Boolean)
-  const heroImage = banners[0] || ''
   const status = getStatusLoja(config?.horario || null)
   const enderecoData = getEnderecoData(config)
   const avaliacao = config?.avaliacao_media ?? 0
@@ -106,15 +104,11 @@ export function CardapioModelo1({ design, config }: CardapioModeloProps) {
     <div className="cm1-root">
       {/* ── Hero ───────────────────────────────────────── */}
       <div className="cm1-hero">
-        {heroImage ? (
-          <img src={heroImage} alt={design.nome_loja || 'Banner'} className="cm1-hero-img" />
-        ) : (
-          <div className="cm1-hero-fallback" style={{ background: design.cor_background
+        <div className="cm1-hero-fallback" style={{ background: design.cor_background
             ? `linear-gradient(135deg, ${design.cor_background} 0%, ${design.cor_background}dd 100%)`
             : `linear-gradient(135deg, #FCE0E9 0%, #F5B8CD 60%, #E85A8C 100%)` }}>
-            <div className="cm1-hero-pattern" />
-          </div>
-        )}
+          <div className="cm1-hero-pattern" />
+        </div>
         <div className="cm1-hero-overlay" />
 
         {/* Status badge no hero (bottom-left, onde ficava a estrela) */}

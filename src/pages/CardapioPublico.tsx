@@ -648,7 +648,12 @@ function CardapioContent() {
 
         {cardapioModelo === 'modelo1' ? (
           /* ── Layout PRO: CardapioModelo1 (hero editorial) ── */
-          <CardapioModelo1 design={design} config={config} />
+          <>
+            <CardapioModelo1 design={design} config={config} />
+            <div style={{ marginTop:'16px' }}>
+              <BannerAd bannerUrl={design.banner_url} banner1Url={design.banner1_url} banner2Url={design.banner2_url} banner3Url={design.banner3_url} isPro={isPro} />
+            </div>
+          </>
         ) : (
           /* ── Layout Padrão (Free ou PRO que não trocou) ── */
           <>
