@@ -7,9 +7,8 @@ import CheckoutConfigPage from "@/pages/CheckoutConfigPage";
 import { useProfile, getCardapioUrl } from "@/hooks/useProfile";
 import AppPageHeader from "@/components/AppPageHeader";
 
-const SectionLabel = ({ children, icon, sub, variant }: any) => (
+const SectionLabel = ({ children, sub }: any) => (
   <div className="ccc-section-header">
-    {icon && <div className={`ccc-section-icon${variant ? ` ccc-section-icon--${variant}` : ""}`}>{icon}</div>}
     <div style={{ flex: 1, minWidth: 0 }}>
       <p className="ccc-section-label">{children}</p>
       {sub && <p className="ccc-section-sub">{sub}</p>}

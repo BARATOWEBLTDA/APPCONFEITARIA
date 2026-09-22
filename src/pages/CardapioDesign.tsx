@@ -6,9 +6,8 @@ import { HexColorPicker } from "react-colorful";
 import { ImageCropper } from "@/components/ui/ImageCropper";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const SectionLabel = ({ children, icon, sub, variant }: any) => (
+const SectionLabel = ({ children, sub }: any) => (
   <div className="cd-section-header">
-    {icon && <div className={`cd-section-icon${variant ? ` cd-section-icon--${variant}` : ""}`}>{icon}</div>}
     <div style={{ flex: 1, minWidth: 0 }}>
       <p className="cd-section-label">{children}</p>
       {sub && <p className="cd-section-sub">{sub}</p>}
@@ -191,6 +190,10 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
                 <div className="cd-banner-thumb" style={{ position: 'relative', overflow: 'hidden' }}>
                   {i > 0 && <div className="cd-pro-corner"><img src="/coroa.png" alt="" className="cd-pro-badge-coroa" />PRO</div>}
                   <img src={bannerValues[i]} alt={bannerLabels[i]} />
+                  <button className="cd-banner-swap-overlay" onClick={() => bannerRefs[i].current?.click()}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                    Trocar
+                  </button>
                   <button className="cd-remove-btn" onClick={() => handleRemoveBanner(i)}>✕</button>
                 </div>
               ) : (
@@ -205,9 +208,6 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
                 </div>
               )}
               <input ref={bannerRefs[i]} type="file" accept="image/*" style={{ display: "none" }} onChange={e => handleBannerUpload(e, i)} />
-              {bannerValues[i] && (
-                <button className="cd-change-btn-sm" onClick={() => bannerRefs[i].current?.click()}>Trocar</button>
-              )}
             </div>
           ))}
 
@@ -658,6 +658,26 @@ export default function CardapioDesign({ identityCard }: { identityCard?: React.
           border-radius: var(--radius-lg); aspect-ratio:16/9; padding:0.5rem;
         }
         .cd-remove-btn { position:absolute; top:0.4rem; right:0.4rem; background:rgba(0,0,0,0.55); border:none; border-radius:50%; width:24px; height:24px; color:white; font-size: var(--font-caption); cursor:pointer; display:flex; align-items:center; justify-content:center; transition: background var(--dur-fast); }
+        .cd-banner-swap-overlay {
+          position: absolute;
+          bottom: 0.4rem;
+          left: 0.4rem;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 5px 10px;
+          background: rgba(0,0,0,0.65);
+          color: #fff;
+          border: none;
+          border-radius: 6px;
+          font-size: 11px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: 'Geist', sans-serif;
+          transition: background 0.15s;
+          backdrop-filter: blur(4px);
+        }
+        .cd-banner-swap-overlay:hover { background: rgba(0,0,0,0.85); }
         .cd-remove-btn:hover { background:rgba(0,0,0,0.75); }
 
         /* ── Botões ── */
