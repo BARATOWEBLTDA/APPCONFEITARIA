@@ -7,6 +7,24 @@ interface Props {
   categoryImages?: { [key: string]: string }
 }
 
+// SVG inline pra "Todos" (grid de 4 quadradinhos)
+const IconTodos = ({ color = '#fff' }: { color?: string }) => (
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3" y="3" width="7" height="7" rx="1.2"/>
+    <rect x="14" y="3" width="7" height="7" rx="1.2"/>
+    <rect x="3" y="14" width="7" height="7" rx="1.2"/>
+    <rect x="14" y="14" width="7" height="7" rx="1.2"/>
+  </svg>
+)
+
+// SVG inline fallback pra categorias sem ícone (tag/etiqueta)
+const IconTag = ({ color = '#fff' }: { color?: string }) => (
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+    <line x1="7" y1="7" x2="7.01" y2="7"/>
+  </svg>
+)
+
 export function CategoryFilter({ categories, selectedCategory, onCategorySelect, categoryIcons = {}, categoryImages = {} }: Props) {
   return (
     <div style={{ marginBottom: '24px' }}>
@@ -14,7 +32,8 @@ export function CategoryFilter({ categories, selectedCategory, onCategorySelect,
         {categories.map(cat => {
           const isSelected = cat.name === 'Todos' ? selectedCategory === null : selectedCategory === cat.name
           const imgUrl = cat.name === 'Todos' ? null : (categoryImages[cat.name] || null)
-          const iconUrl = cat.name === 'Todos' ? '/icons/TODOS.png' : (categoryIcons[cat.name] || '/icons/1.png')
+          const iconUrl = cat.name === 'Todos' ? null : (categoryIcons[cat.name] || null)
+          const iconColor = isSelected ? '#fff' : '#fff'
 
           return (
             <button
@@ -33,12 +52,23 @@ export function CategoryFilter({ categories, selectedCategory, onCategorySelect,
                 overflow: 'hidden', transition: 'all 0.2s',
                 boxShadow: isSelected ? '0 4px 12px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.1)',
               }}>
-                <img
-                  src={imgUrl || iconUrl}
-                  alt={cat.name}
-                  style={{ width: imgUrl ? '100%' : '36px', height: imgUrl ? '100%' : '36px', objectFit: imgUrl ? 'cover' : 'contain' }}
-                  onError={e => { e.currentTarget.src = '/icons/1.png' }}
-                />
+                {imgUrl ? (
+                  <img
+                    src={imgUrl}
+                    alt={cat.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : iconUrl ? (
+                  <img
+                    src={iconUrl}
+                    alt={cat.name}
+                    style={{ width: '36px', height: '36px', objectFit: 'contain' }}
+                  />
+                ) : cat.name === 'Todos' ? (
+                  <IconTodos color={iconColor} />
+                ) : (
+                  <IconTag color={iconColor} />
+                )}
               </div>
               <span style={{
                 fontSize: '0.65rem', fontWeight: isSelected ? 700 : 500,
