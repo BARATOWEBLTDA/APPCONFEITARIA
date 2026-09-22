@@ -552,7 +552,7 @@ export default function CardapioConfigPage() {
       rightActions={codigoPublico ? (
         <>
           <a
-            href={`/${codigoPublico}`}
+            href={`/c/${codigoPublico}`}
             target="_blank"
             rel="noopener noreferrer"
             className="ccc-header-btn ccc-header-btn--primary"
@@ -563,7 +563,7 @@ export default function CardapioConfigPage() {
           <button
             className="ccc-header-btn ccc-header-btn--secondary"
             onClick={async () => {
-              const url = `${window.location.origin}/${codigoPublico}`;
+              const url = `${window.location.origin}/c/${codigoPublico}`;
               try { await navigator.clipboard.writeText(url); } catch {}
               setLinkCopiado(true);
               setTimeout(() => setLinkCopiado(false), 2000);
@@ -600,7 +600,7 @@ export default function CardapioConfigPage() {
       {codigoPublico && (
         <div className="ccc-share-bar">
           <a
-            href={`/${codigoPublico}`}
+            href={`/c/${codigoPublico}`}
             target="_blank"
             rel="noopener noreferrer"
             className="ccc-share-btn ccc-share-btn--primary"
@@ -611,7 +611,7 @@ export default function CardapioConfigPage() {
           <button
             className="ccc-share-btn ccc-share-btn--secondary"
             onClick={async () => {
-              const url = `${window.location.origin}/${codigoPublico}`;
+              const url = `${window.location.origin}/c/${codigoPublico}`;
               try { await navigator.clipboard.writeText(url); } catch {}
               setLinkCopiado(true);
               setTimeout(() => setLinkCopiado(false), 2000);
