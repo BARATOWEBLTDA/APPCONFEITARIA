@@ -4343,43 +4343,52 @@ export default function Produtos() {
                   )}
                 </div>
 
-                {/* 3. Descrição — com CTA IA (V3) */}
+                {/* 3. Descrição — com CTA IA (V3) — gera ou melhora */}
                 <div className="prod-field">
                   <div className="prod-desc-header">
                     <label className="prod-field-label-novo">Descrição</label>
                     <button
                       type="button"
                       className={`prod-btn-ia-novo ${!form.nome.trim() || !isPro ? "prod-btn-ia-novo--locked" : ""}`}
-                      disabled={!form.nome.trim() || !isPro || form.descricao === "Gerando..."}
+                      disabled={!form.nome.trim() || !isPro || form.descricao === "Gerando..." || form.descricao === "Melhorando..."}
                       onClick={async () => {
                         if (!form.nome.trim() || !isPro) return;
-                        setForm(f => ({ ...f, descricao: "Gerando..." }));
+                        const textoAtual = (form.descricao || "").trim();
+                        const ehMelhorar = textoAtual.length > 0 && textoAtual !== "Gerando..." && textoAtual !== "Melhorando...";
+                        setForm(f => ({ ...f, descricao: ehMelhorar ? "Melhorando..." : "Gerando..." }));
                         try {
+                          const prompt = ehMelhorar
+                            ? `Melhore esta descrição de produto de confeitaria, mantendo a intenção e informações originais. Torne mais atraente, clara e profissional. Máximo 2 frases curtas (até 150 caracteres). Português brasileiro. Retorne APENAS a descrição melhorada, sem aspas, sem emojis, sem introdução.\n\nProduto: "${form.nome}"\nDescrição atual: "${textoAtual}"`
+                            : `Crie uma descrição MUITO curta e atraente para um produto de confeitaria chamado "${form.nome}". MÁXIMO 2 frases curtas (até 100 caracteres no total). Português brasileiro, transmita qualidade e sabor. Retorne APENAS a descrição, sem aspas, sem emojis.`;
                           const res = await fetch("/api/gerar-descricao", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ prompt: `Crie uma descrição MUITO curta e atraente para um produto de confeitaria chamado "${form.nome}". MÁXIMO 2 frases curtas (até 100 caracteres no total). Português brasileiro, transmita qualidade e sabor. Retorne APENAS a descrição, sem aspas, sem emojis.` })
+                            body: JSON.stringify({ prompt })
                           });
                           const data = await res.json();
                           const desc = data.content?.[0]?.text?.trim() || "";
-                          setForm(f => ({ ...f, descricao: desc }));
+                          setForm(f => ({ ...f, descricao: desc || textoAtual }));
                         } catch {
-                          setForm(f => ({ ...f, descricao: "" }));
+                          setForm(f => ({ ...f, descricao: textoAtual }));
                         }
                       }}
-                      title={!form.nome.trim() ? "Preencha o nome primeiro" : !isPro ? "Disponível no plano PRO" : "Gerar descrição automaticamente"}
+                      title={!form.nome.trim() ? "Preencha o nome primeiro" : !isPro ? "Disponível no plano PRO" : (form.descricao?.trim() ? "Melhorar descrição atual" : "Gerar descrição automaticamente")}
                     >
                       <img src="/coroa.png" alt="" className="prod-btn-ia-novo-crown" />
-                      {form.descricao === "Gerando..." ? "Gerando..." : "Gerar com IA"}
+                      {form.descricao === "Gerando..."
+                        ? "Gerando..."
+                        : form.descricao === "Melhorando..."
+                        ? "Melhorando..."
+                        : (form.descricao?.trim() ? "Melhorar com IA" : "Gerar com IA")}
                     </button>
                   </div>
                   <textarea
                     id="prod-desc-input"
                     placeholder={"Descreva como é seu produto\n\nExemplo:\n2 camadas de Mousse de chocolate (massa pão de ló de chocolate)\nCobertura Mousse Branco (tipo chantilly)"}
-                    value={form.descricao === "Gerando..." ? "" : form.descricao}
+                    value={form.descricao === "Gerando..." || form.descricao === "Melhorando..." ? "" : form.descricao}
                     onChange={e => setForm(f => ({ ...f, descricao: e.target.value }))}
                     rows={5}
-                    disabled={form.descricao === "Gerando..."}
+                    disabled={form.descricao === "Gerando..." || form.descricao === "Melhorando..."}
                     style={{fontFamily: 'inherit', resize: 'vertical'}}
                   />
                   {!isPro && (
