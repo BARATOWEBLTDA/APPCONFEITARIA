@@ -380,56 +380,6 @@ export default function Cardapio() {
           </div>
         )}
 
-        <div className="ch-actions">
-          <button
-            className="ch-btn-primary"
-            onClick={() => {
-              if (!validacao.completo) {
-                alert(tooltipBloqueio);
-                navigate("/configuracoes/cardapio");
-                return;
-              }
-              handleShare();
-            }}
-            disabled={!podeCompartilhar}
-            title={podeCompartilhar ? "" : tooltipBloqueio}
-          >
-            <Share size={16} weight="bold" />
-            Compartilhar
-          </button>
-          <button
-            className="ch-btn-ghost"
-            onClick={() => {
-              if (!validacao.completo) {
-                alert(tooltipBloqueio);
-                navigate("/configuracoes/cardapio");
-                return;
-              }
-              handleVerComoCliente();
-            }}
-            disabled={!podeCompartilhar}
-            aria-label="Visualizar"
-            title={podeCompartilhar ? "" : tooltipBloqueio}
-          >
-            <Eye size={16} weight="bold" />
-          </button>
-          <button
-            className="ch-btn-ghost"
-            onClick={() => {
-              if (!validacao.completo) {
-                alert(tooltipBloqueio);
-                navigate("/configuracoes/cardapio");
-                return;
-              }
-              handleCopiar();
-            }}
-            disabled={!podeCompartilhar}
-            aria-label="Copiar link"
-            title={podeCompartilhar ? "" : tooltipBloqueio}
-          >
-            {copiado ? <CheckCircle size={16} weight="bold" /> : <Copy size={16} weight="bold" />}
-          </button>
-        </div>
       </div>
 
       {/* Meu Catálogo — ações do dia-a-dia */}

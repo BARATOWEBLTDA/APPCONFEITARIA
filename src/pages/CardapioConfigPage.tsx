@@ -39,6 +39,8 @@ export default function CardapioConfigPage() {
   const [cepPreenchido, setCepPreenchido] = useState(false);
   const [gerandoDescricao, setGerandoDescricao] = useState(false);
   const [produtosCount, setProdutosCount] = useState<number | null>(null);
+  const [codigoPublico, setCodigoPublico] = useState<string>("");
+  const [linkCopiado, setLinkCopiado] = useState(false);
   const [heroDismissed, setHeroDismissed] = useState(false);
 
   const [horario, setHorario] = useState({
@@ -128,9 +130,10 @@ export default function CardapioConfigPage() {
       setProdutosCount(count || 0);
 
       const { data } = await supabase.from("profiles")
-        .select("nome_loja, telefone, foto_url, descricao_loja, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega, horario")
+        .select("nome_loja, telefone, foto_url, descricao_loja, hide_stars, avaliacao_media, endereco, mostrar_localizacao, mostrar_apenas_cidade, faz_entrega, taxa_entrega, pedido_minimo, entrega_gratis_acima, horario_entrega, area_entrega, observacoes_entrega, horario, codigo_publico")
         .eq("id", user.id).single();
       if (data) {
+        setCodigoPublico((data as any).codigo_publico || "");
         let addr: any = {};
         try { addr = data.endereco ? JSON.parse(data.endereco) : {}; } catch {}
         setForm({
@@ -559,6 +562,42 @@ export default function CardapioConfigPage() {
     <div className="ccc-outer">
     <div className="ccc-root">
 
+      {/* Barra de ações — Ver cardápio + Copiar link */}
+      {codigoPublico && (
+        <div className="ccc-share-bar">
+          <a
+            href={`/${codigoPublico}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ccc-share-btn ccc-share-btn--primary"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Ver meu cardápio
+          </a>
+          <button
+            className="ccc-share-btn ccc-share-btn--secondary"
+            onClick={async () => {
+              const url = `${window.location.origin}/${codigoPublico}`;
+              try { await navigator.clipboard.writeText(url); } catch {}
+              setLinkCopiado(true);
+              setTimeout(() => setLinkCopiado(false), 2000);
+            }}
+          >
+            {linkCopiado ? (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Copiado!
+              </>
+            ) : (
+              <>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                Copiar link
+              </>
+            )}
+          </button>
+        </div>
+      )}
+
       {/* Autosave silencioso — sem indicador visual */}
 
       {/* ── Wrapper com preview lateral (aplica em TODAS as tabs) ── */}
@@ -895,6 +934,44 @@ export default function CardapioConfigPage() {
         /* ── ISOLAMENTO DE TEMA: força light mode nesta página ── */
         .ccc-outer, .ccc-outer * { color-scheme: light; }
 
+        /* Barra de ações Compartilhar */
+        .ccc-share-bar {
+          display: flex;
+          gap: 10px;
+          margin-bottom: 8px;
+          flex-wrap: wrap;
+        }
+        .ccc-share-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 11px 18px;
+          border-radius: 10px;
+          font-family: 'Geist', sans-serif;
+          font-size: 13.5px;
+          font-weight: 700;
+          cursor: pointer;
+          border: none;
+          text-decoration: none;
+          transition: all 0.15s;
+        }
+        .ccc-share-btn--primary {
+          background: #E85A8C;
+          color: #fff;
+          box-shadow: 0 4px 12px rgba(232,90,140,0.35);
+        }
+        .ccc-share-btn--primary:hover { background: #d54a7a; }
+        .ccc-share-btn--secondary {
+          background: #fff;
+          color: #2D1F26;
+          border: 1.5px solid #E5D8DE;
+        }
+        .ccc-share-btn--secondary:hover { border-color: #E85A8C; color: #E85A8C; }
+        @media (max-width: 720px) {
+          .ccc-share-bar { flex-direction: column; }
+          .ccc-share-btn { justify-content: center; }
+        }
+
         /* ── Layout geral ── */
         .ccc-outer {
           width:calc(100% + 4rem); display:flex; justify-content:center;
@@ -904,8 +981,7 @@ export default function CardapioConfigPage() {
         }
         .ccc-root {
           font-family:'Geist', sans-serif; width:100%; max-width:1500px;
-          display:flex; flex-direction:column; gap:1.5rem;
-          box-sizing:border-box; padding: 56px 2rem 0;
+          display:flex; flex-direction:column; gap:1.5rem;          box-sizing:border-box; padding: 56px 2rem 0;
           overflow-x:hidden;
         }
         /* Desktop: overflow visible nos ancestrais pra position:sticky funcionar */

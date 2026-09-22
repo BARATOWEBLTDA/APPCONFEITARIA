@@ -2030,12 +2030,12 @@ export default function Pedidos() {
                 <div className="ped-card-cta">Começar agora →</div>
               </button>
 
-              {/* Card 2: compartilhar cardápio */}
+              {/* Card 2: ir pra Meu Cardápio (onde é feito o compartilhamento) */}
               <button className="ped-card" onClick={() => navigate('/cardapio-config')}>
-                <div className="ped-card-icon">🔗</div>
-                <div className="ped-card-t">Compartilhar cardápio</div>
-                <div className="ped-card-d">Envie o link do seu cardápio digital e receba pedidos automaticamente pelo WhatsApp.</div>
-                <div className="ped-card-cta ped-card-cta--pink">Ver meu link →</div>
+                <div className="ped-card-icon">🛍️</div>
+                <div className="ped-card-t">Personalizar meu cardápio</div>
+                <div className="ped-card-d">Configure aparência, adicione produtos e compartilhe seu link digital pra receber pedidos.</div>
+                <div className="ped-card-cta ped-card-cta--pink">Abrir cardápio →</div>
               </button>
 
               {/* Card 3: tutorial */}
