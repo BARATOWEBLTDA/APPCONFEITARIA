@@ -7,10 +7,14 @@ type Complemento = {
   id: string;
   nome: string;
   valor: number;
-  categorias: string[];
+  categorias: string[]; // reaproveitado: agora guarda IDs de produtos
 };
 
-const CATEGORIAS_PRODUTO = ["Bolos", "Doces", "Salgados", "Bebidas", "Sobremesas", "Outros"];
+type ProdutoLite = {
+  id: string;
+  nome: string;
+  categoria?: string;
+};
 
 function formatBRL(v: number) {
   return v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -26,6 +30,7 @@ export default function Complementos() {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string>("");
   const [items, setItems] = useState<Complemento[]>([]);
+  const [produtos, setProdutos] = useState<ProdutoLite[]>([]);
   const [busca, setBusca] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Complemento | null>(null);
@@ -41,6 +46,8 @@ export default function Complementos() {
       setUserId(uid);
       const { data } = await supabase.from("biblioteca_extras").select("*").eq("user_id", uid).order("nome");
       if (data) setItems(data as Complemento[]);
+      const { data: prods } = await supabase.from("produtos").select("id, nome, categoria").eq("user_id", uid).order("nome");
+      if (prods) setProdutos(prods as ProdutoLite[]);
       setLoading(false);
     })();
   }, []);
@@ -59,7 +66,7 @@ export default function Complementos() {
 
   const salvar = async () => {
     const nomeLimpo = form.nome.trim();
-    if (!nomeLimpo) return alert("Digite o nome do complemento");
+    if (!nomeLimpo) return alert("Digite o nome da personalização");
     if (form.valor <= 0) return alert("Digite um valor válido");
     setSaving(true);
     try {
@@ -92,8 +99,8 @@ export default function Complementos() {
     await supabase.from("biblioteca_extras").delete().eq("id", id).eq("user_id", userId);
   };
 
-  const toggleCategoria = (cat: string) => {
-    setForm(f => ({ ...f, categorias: f.categorias.includes(cat) ? f.categorias.filter(c => c !== cat) : [...f.categorias, cat] }));
+  const toggleProduto = (idProduto: string) => {
+    setForm(f => ({ ...f, categorias: f.categorias.includes(idProduto) ? f.categorias.filter(c => c !== idProduto) : [...f.categorias, idProduto] }));
   };
 
   const itemsFiltrados = items.filter(i => !busca.trim() || i.nome.toLowerCase().includes(busca.toLowerCase()));
@@ -101,7 +108,7 @@ export default function Complementos() {
   if (loading) {
     return (
       <div className="cpl-root">
-        <AppPageHeader title="Complementos" subtitle="Extras que você pode adicionar aos produtos" infoContent={null} />
+        <AppPageHeader title="Personalização" subtitle="Crie personalizações e escolha quais produtos as terão" infoContent={null} />
         <div className="cpl-loading"><div className="cpl-spinner" /></div>
         <style>{stylesLoading}</style>
       </div>
@@ -111,12 +118,12 @@ export default function Complementos() {
   return (
     <div className="cpl-root">
       <AppPageHeader
-        title="Complementos"
-        subtitle="Extras que você pode adicionar aos produtos"
+        title="Personalização"
+        subtitle="Crie personalizações e escolha quais produtos as terão"
         infoContent={
           <div style={{ fontSize: 13, lineHeight: 1.5, color: "#4B5563" }}>
-            <p style={{ margin: "0 0 8px" }}>Complementos são <b>extras opcionais</b> que o cliente pode escolher ao pedir seu produto — como tag com nome, brigadeiro extra, enfeite personalizado.</p>
-            <p style={{ margin: 0 }}>Cadastre <b>uma vez</b> aqui e depois adicione em vários produtos. Se o preço mudar, você atualiza aqui e reflete em todos.</p>
+            <p style={{ margin: "0 0 8px" }}>Personalizações são <b>opções que o cliente escolhe</b> ao pedir um produto — como topo de bolo, escrita personalizada, papel de arroz.</p>
+            <p style={{ margin: 0 }}>Cadastre <b>uma vez</b> aqui e depois selecione em quais produtos vai aparecer. Muda o preço aqui e reflete em todos.</p>
           </div>
         }
       />
@@ -127,24 +134,24 @@ export default function Complementos() {
             <MagnifyingGlass size={16} weight="bold" />
             <input
               type="text"
-              placeholder="Buscar complemento..."
+              placeholder="Buscar personalização..."
               value={busca}
               onChange={e => setBusca(e.target.value)}
             />
             {busca && <button className="cpl-search-clear" onClick={() => setBusca("")}><X size={12} weight="bold" /></button>}
           </div>
           <button className="cpl-btn-novo" onClick={abrirNovo}>
-            <Plus size={16} weight="bold" /> Novo complemento
+            <Plus size={16} weight="bold" /> Nova personalização
           </button>
         </div>
 
         {items.length === 0 ? (
           <div className="cpl-empty">
             <div className="cpl-empty-ico"><Package size={40} weight="duotone" /></div>
-            <p className="cpl-empty-title">Nenhum complemento cadastrado</p>
+            <p className="cpl-empty-title">Nenhuma personalização cadastrada</p>
             <p className="cpl-empty-sub">Cadastre uma vez e reutilize em vários produtos.<br/>Ex: brigadeiro extra, tag de nome, enfeite...</p>
             <button className="cpl-btn-novo cpl-btn-novo--empty" onClick={abrirNovo}>
-              <Plus size={16} weight="bold" /> Criar primeiro complemento
+              <Plus size={16} weight="bold" /> Criar primeira personalização
             </button>
           </div>
         ) : itemsFiltrados.length === 0 ? (
@@ -156,13 +163,11 @@ export default function Complementos() {
                 <div className="cpl-card-main" onClick={() => abrirEditar(item)}>
                   <div className="cpl-card-info">
                     <p className="cpl-card-nome">{item.nome}</p>
-                    {(item.categorias || []).length > 0 && (
-                      <div className="cpl-card-cats">
-                        {item.categorias.map(cat => (
-                          <span key={cat} className="cpl-card-cat">{cat}</span>
-                        ))}
-                      </div>
-                    )}
+                    <p className="cpl-card-produtos">
+                      {(item.categorias || []).length === 0
+                        ? "Aparece em todos os produtos"
+                        : `${item.categorias.length} ${item.categorias.length === 1 ? "produto" : "produtos"} selecionado${item.categorias.length === 1 ? "" : "s"}`}
+                    </p>
                   </div>
                   <div className="cpl-card-valor">R$ {formatBRL(item.valor)}</div>
                 </div>
@@ -186,15 +191,15 @@ export default function Complementos() {
           <div className="cpl-modal" onClick={e => e.stopPropagation()}>
             <div className="cpl-modal-handle" />
             <div className="cpl-modal-head">
-              <h3 className="cpl-modal-title">{editing ? "Editar complemento" : "Novo complemento"}</h3>
+              <h3 className="cpl-modal-title">{editing ? "Editar personalização" : "Nova personalização"}</h3>
               <button className="cpl-modal-close" onClick={fechar}><X size={16} weight="bold" /></button>
             </div>
             <div className="cpl-modal-body">
               <div className="cpl-field">
-                <label>Nome do complemento *</label>
+                <label>Nome da personalização *</label>
                 <input
                   type="text"
-                  placeholder="Ex: Brigadeiro extra, Tag de nome..."
+                  placeholder="Ex: Topo de bolo, Escrita, Papel de arroz..."
                   value={form.nome}
                   onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
                   autoFocus={!editing}
@@ -214,21 +219,31 @@ export default function Complementos() {
                 </div>
               </div>
               <div className="cpl-field">
-                <label>Aparece em quais categorias? <span className="cpl-field-hint">(opcional — deixe vazio pra aparecer em todas)</span></label>
-                <div className="cpl-cats-grid">
-                  {CATEGORIAS_PRODUTO.map(cat => (
-                    <label key={cat} className={`cpl-cat-chip ${form.categorias.includes(cat) ? "cpl-cat-chip--on" : ""}`}>
-                      <input type="checkbox" checked={form.categorias.includes(cat)} onChange={() => toggleCategoria(cat)} />
-                      {cat}
-                    </label>
-                  ))}
-                </div>
+                <label>Aparece em quais produtos? <span className="cpl-field-hint">(opcional — deixe vazio pra aparecer em todos)</span></label>
+                {produtos.length === 0 ? (
+                  <p style={{ margin: 0, fontSize: 12.5, color: "#9CA3AF" }}>Você ainda não tem produtos cadastrados.</p>
+                ) : (
+                  <div className="cpl-prods-list">
+                    {produtos.map(p => (
+                      <label key={p.id} className={`cpl-prod-item ${form.categorias.includes(p.id) ? "cpl-prod-item--on" : ""}`}>
+                        <input type="checkbox" checked={form.categorias.includes(p.id)} onChange={() => toggleProduto(p.id)} />
+                        <div className="cpl-prod-check">
+                          {form.categorias.includes(p.id) && (
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          )}
+                        </div>
+                        <span className="cpl-prod-nome">{p.nome}</span>
+                        {p.categoria && <span className="cpl-prod-cat">{p.categoria}</span>}
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
             <div className="cpl-modal-foot">
               <button className="cpl-modal-btn cpl-modal-btn--sec" onClick={fechar}>Cancelar</button>
               <button className="cpl-modal-btn cpl-modal-btn--pri" onClick={salvar} disabled={saving}>
-                {saving ? "Salvando..." : (editing ? "Salvar" : "Criar complemento")}
+                {saving ? "Salvando..." : (editing ? "Salvar" : "Criar personalização")}
               </button>
             </div>
           </div>
@@ -241,9 +256,9 @@ export default function Complementos() {
           <div className="cpl-modal cpl-modal--sm" onClick={e => e.stopPropagation()}>
             <div className="cpl-modal-handle" />
             <div style={{ padding: "18px 20px 22px" }}>
-              <h3 style={{ margin: "0 0 6px", fontSize: 16, fontWeight: 800, color: "#DC2626" }}>Excluir complemento?</h3>
+              <h3 style={{ margin: "0 0 6px", fontSize: 16, fontWeight: 800, color: "#DC2626" }}>Excluir personalização?</h3>
               <p style={{ margin: "0 0 16px", fontSize: 13, color: "#6B7280", lineHeight: 1.4 }}>
-                "<b>{confirmDel.nome}</b>" será removido. Produtos que já usam esse complemento não serão alterados.
+                "<b>{confirmDel.nome}</b>" será removido. Produtos que já usam essa personalização não serão alterados.
               </p>
               <div style={{ display: "flex", gap: 8 }}>
                 <button className="cpl-modal-btn cpl-modal-btn--sec" style={{ flex: 1 }} onClick={() => setConfirmDel(null)}>Cancelar</button>
@@ -290,8 +305,7 @@ const styles = `
   .cpl-card-main { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 16px; cursor: pointer; min-width: 0; }
   .cpl-card-info { flex: 1; min-width: 0; }
   .cpl-card-nome { margin: 0 0 4px; font-size: 14px; font-weight: 700; color: #1F1F23; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cpl-card-cats { display: flex; flex-wrap: wrap; gap: 4px; }
-  .cpl-card-cat { font-size: 10.5px; padding: 2px 8px; background: #F5F3EF; border-radius: 6px; color: #6B7280; font-weight: 600; }
+  .cpl-card-produtos { margin: 0; font-size: 11.5px; color: #6B7280; font-weight: 500; }
   .cpl-card-valor { font-size: 14px; font-weight: 800; color: #E85A8C; flex-shrink: 0; }
   .cpl-card-actions { display: flex; gap: 2px; padding: 0 10px; flex-shrink: 0; border-left: 1px solid #F0EBED; }
   .cpl-card-btn { background: transparent; border: none; width: 32px; height: 32px; border-radius: 6px; color: #6B7280; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
@@ -326,8 +340,34 @@ const styles = `
   .cpl-field-prefix { position: absolute; left: 14px; font-size: 13px; font-weight: 700; color: #6B7280; pointer-events: none; }
   .cpl-field-input-wrap input { padding-left: 40px; width: 100%; box-sizing: border-box; }
 
-  .cpl-cats-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-  .cpl-cat-chip { display: inline-flex; align-items: center; padding: 7px 12px; background: #F5F3EF; border: 1.5px solid transparent; border-radius: 999px; font-size: 12px; font-weight: 700; color: #6B7280; cursor: pointer; transition: all 0.15s; user-select: none; }
-  .cpl-cat-chip input { display: none; }
-  .cpl-cat-chip--on { background: #FCE0E9; border-color: #E85A8C; color: #E85A8C; }
+  .cpl-prods-list {
+    display: flex; flex-direction: column; gap: 4px;
+    max-height: 280px; overflow-y: auto;
+    padding: 4px;
+    border: 1.5px solid #F0EBED;
+    border-radius: 10px;
+    background: #FAF8F5;
+  }
+  .cpl-prod-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: #fff;
+    border: 1.5px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .cpl-prod-item:hover { border-color: #F5B8CD; }
+  .cpl-prod-item--on { background: #FFF5F9; border-color: #E85A8C; }
+  .cpl-prod-item input { display: none; }
+  .cpl-prod-check {
+    width: 20px; height: 20px; border-radius: 6px;
+    border: 2px solid #D1D5DB; background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.15s;
+  }
+  .cpl-prod-item--on .cpl-prod-check { background: #E85A8C; border-color: #E85A8C; }
+  .cpl-prod-nome { flex: 1; font-size: 13.5px; font-weight: 700; color: #1F1F23; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cpl-prod-cat { font-size: 10.5px; padding: 2px 8px; background: #F5F3EF; border-radius: 6px; color: #6B7280; font-weight: 600; flex-shrink: 0; }
 `;
