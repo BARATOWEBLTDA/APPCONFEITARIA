@@ -5094,10 +5094,10 @@ export default function Produtos() {
                   Restrições alimentares (sem açúcar/glúten/lactose/vegano)
                   virão na Fase 2 futura como chips. */}
 
-              {/* ══════ Extras pagos (V3) — dentro do MESMO prod-modal-body
-                  pra não quebrar layout flex (bug: 2 bodies empilhados
-                  faziam o footer sumir sem scroll) ══════ */}
-              {((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
+              {/* ══════ Extras pagos (V3) — DESATIVADO temporariamente
+                  Vai virar seção exclusiva de "Complementos" (já existe página /complementos)
+                  Integração no cadastro de produto será feita em fase futura. ══════ */}
+              {false && ((wizardStep === 4 && !form.id) || (form.id && editTab === "preco")) && (
               <>
 
               {/* Adicionais */}
@@ -5282,11 +5282,40 @@ export default function Produtos() {
               {/* Status — só em step 5 (Fotos) ou tab Fotos na edição */}
               {((wizardStep === 5 && !form.id) || (form.id && editTab === "fotos")) && (
               <div className="prod-section">
-                <p className="prod-section-label">Status</p>
+                <p className="prod-section-label">Modo de entrega</p>
                 <div className="prod-toggles prod-toggles--clean" style={{ flexDirection: "column", gap: "0.25rem" }}>
-                  <Toggle label="Disponível" value={form.disponivel} onChange={(v: boolean) => setForm(f => ({ ...f, disponivel: v }))} colorClass="active-green" />
                   <Toggle label="Pronta entrega" value={form.pronta_entrega !== false} onChange={(v: boolean) => setForm(f => ({ ...f, pronta_entrega: v }))} colorClass="active-green" />
                 </div>
+
+                {/* Antecedência necessária — só se NÃO for pronta entrega */}
+                {form.pronta_entrega === false && (
+                  <div className="prod-field" style={{marginTop: 12}}>
+                    <label>Antecedência necessária pro pedido</label>
+                    <div className="prod-antecedencia-grid">
+                      {[
+                        { valor: "24h", label: "24 horas" },
+                        { valor: "48h", label: "48 horas" },
+                        { valor: "3d", label: "3 dias" },
+                        { valor: "5d", label: "5 dias" },
+                        { valor: "7d", label: "1 semana" },
+                        { valor: "15d", label: "15 dias" },
+                      ].map(opt => {
+                        const ativo = (form as any).antecedencia === opt.valor;
+                        return (
+                          <button
+                            key={opt.valor}
+                            type="button"
+                            className={`prod-antecedencia-chip ${ativo ? "prod-antecedencia-chip--on" : ""}`}
+                            onClick={() => setForm(f => ({ ...(f as any), antecedencia: opt.valor }))}
+                          >
+                            {opt.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p style={{margin:"8px 0 0", fontSize:11.5, color:"#6B5D64"}}>Cliente verá no cardápio quantos dias antes precisa fazer o pedido.</p>
+                  </div>
+                )}
               </div>
               )}
 
@@ -7463,6 +7492,35 @@ export default function Produtos() {
           background: transparent !important;
           padding: 8px 0 !important;
           color: #2D1F26;
+        }
+
+        /* Chips de antecedência (quando "Pronta entrega" está OFF) */
+        .prod-antecedencia-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 6px;
+          margin-top: 4px;
+        }
+        .prod-antecedencia-chip {
+          all: unset;
+          box-sizing: border-box;
+          text-align: center;
+          padding: 10px 6px;
+          background: #fff;
+          border: 1.5px solid #E5D8DE;
+          border-radius: 10px;
+          font-size: 12.5px;
+          font-weight: 700;
+          color: #6B5D64;
+          cursor: pointer;
+          font-family: inherit;
+          transition: all 0.15s;
+        }
+        .prod-antecedencia-chip:hover { border-color: #F5B8CD; }
+        .prod-antecedencia-chip--on {
+          background: #FDF3F7;
+          border-color: #E85A8C;
+          color: #C33A6E;
         }
         .prod-toggle-item.active-pink { background: var(--primary-light); color: var(--primary-dark); }
         .prod-toggle-slider { width: 40px; height: 22px; border-radius: var(--radius-md); background: var(--border); position: relative; flex-shrink: 0; transition: background var(--dur-normal) var(--ease-out); }
