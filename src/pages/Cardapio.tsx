@@ -4,7 +4,7 @@ import {
   ChartBar, Eye, Storefront, Sliders, PaintBrush, Tag,
   Share, Percent, ForkKnife, Copy, CheckCircle, Warning, Lightbulb,
   TrendUp, TrendDown, ShoppingBag, Users as UsersIcon, CurrencyDollar,
-  CaretRight, SquaresFour,
+  CaretRight, SquaresFour, Stack,
 } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
 import { validarCardapio } from "@/lib/cardapio-validacao";
@@ -360,6 +360,16 @@ export default function Cardapio() {
             </div>
             <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
           </button>
+          <button className="cd-quick-item" onClick={() => navigate("/complementos")}>
+            <span className="cd-quick-ico cd-quick-ico--red">
+              <Stack size={20} weight="regular" />
+            </span>
+            <div className="cd-quick-info">
+              <div className="cd-quick-name">Personalização</div>
+              <div className="cd-quick-desc">Sabores, recheios e escolhas por produto</div>
+            </div>
+            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+          </button>
         </div>
       </div>
 
@@ -370,16 +380,6 @@ export default function Cardapio() {
           <div className="cd-quick-sub">Aparência, dados e regras de pedido</div>
         </div>
         <div className="cd-quick-list">
-          <button className="cd-quick-item" onClick={() => navigate("/cardapio-design")}>
-            <span className="cd-quick-ico cd-quick-ico--pink">
-              <PaintBrush size={20} weight="regular" />
-            </span>
-            <div className="cd-quick-info">
-              <div className="cd-quick-name">Aparência</div>
-              <div className="cd-quick-desc">Cores, banners e modelo do cardápio</div>
-            </div>
-            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
-          </button>
           <button className="cd-quick-item" onClick={() => navigate("/cardapio-config")}>
             <span className="cd-quick-ico cd-quick-ico--blue">
               <Sliders size={20} weight="regular" />
@@ -387,6 +387,16 @@ export default function Cardapio() {
             <div className="cd-quick-info">
               <div className="cd-quick-name">Dados da loja</div>
               <div className="cd-quick-desc">Nome, foto, descrição, endereço e horários</div>
+            </div>
+            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+          </button>
+          <button className="cd-quick-item" onClick={() => navigate("/cardapio-design")}>
+            <span className="cd-quick-ico cd-quick-ico--pink">
+              <PaintBrush size={20} weight="regular" />
+            </span>
+            <div className="cd-quick-info">
+              <div className="cd-quick-name">Aparência</div>
+              <div className="cd-quick-desc">Cores, banners e modelo do cardápio</div>
             </div>
             <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
           </button>

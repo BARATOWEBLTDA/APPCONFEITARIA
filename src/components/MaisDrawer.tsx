@@ -32,7 +32,6 @@ const GROUPS: DrawerGroup[] = [
       { label: "Categorias",       path: "/categorias",     icon: <SquaresFour   size={20} weight="duotone" /> },
       { label: "Ingredientes",     path: "/insumos",        icon: <Package       size={20} weight="duotone" /> },
       { label: "Receitas",         path: "/receitas",       icon: <BookOpen      size={20} weight="duotone" /> },
-      { label: "Personalização",   path: "/complementos",   icon: <PaintBrush    size={20} weight="duotone" /> },
       { label: "Ficha técnica",    path: "/ficha-tecnica",  icon: <ClipboardText size={20} weight="duotone" /> },
     ],
   },
