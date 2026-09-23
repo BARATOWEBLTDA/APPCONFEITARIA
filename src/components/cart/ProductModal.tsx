@@ -575,17 +575,17 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
         </div>{/* fim body scrollável */}
 
         {/* Footer fixo — Botão adicionar sempre visível */}
-        <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', background: 'var(--bg-card)', flexShrink: 0 }}>
+        <div style={{ padding: '12px 16px 16px', background: 'var(--bg-card)', flexShrink: 0 }}>
           <button
             onClick={handleAdd}
             disabled={!podeAdicionar}
             style={{
               width: '100%',
-              padding: '14px', borderRadius: 12, border: 'none', cursor: podeAdicionar ? 'pointer' : 'not-allowed',
-              background: podeAdicionar ? corBotao : '#E5D8DE', color: '#fff',
-              fontSize: 15, fontWeight: 700, fontFamily: 'inherit',
+              padding: '14px', borderRadius: 10, border: 'none', cursor: podeAdicionar ? 'pointer' : 'not-allowed',
+              background: podeAdicionar ? '#2C1219' : '#E5D8DE', color: '#fff',
+              fontSize: 14, fontWeight: 700, fontFamily: 'inherit',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              transition: 'all 0.15s',
+              transition: 'background 0.15s',
             }}
           >
             <span>
