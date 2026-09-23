@@ -138,26 +138,28 @@ export default function Complementos() {
       />
 
       <div className="cpl-content">
-        <div className="cpl-topbar">
-          <div className="cpl-search">
-            <MagnifyingGlass size={16} weight="bold" />
-            <input
-              type="text"
-              placeholder="Buscar personalização..."
-              value={busca}
-              onChange={e => setBusca(e.target.value)}
-            />
-            {busca && <button className="cpl-search-clear" onClick={() => setBusca("")}><X size={12} weight="bold" /></button>}
+        {items.length > 0 && (
+          <div className="cpl-topbar">
+            <div className="cpl-search">
+              <MagnifyingGlass size={16} weight="bold" />
+              <input
+                type="text"
+                placeholder="Buscar personalização..."
+                value={busca}
+                onChange={e => setBusca(e.target.value)}
+              />
+              {busca && <button className="cpl-search-clear" onClick={() => setBusca("")}><X size={12} weight="bold" /></button>}
+            </div>
+            <button className="cpl-btn-novo" onClick={abrirNovo}>
+              <Plus size={16} weight="bold" /> Nova personalização
+            </button>
           </div>
-          <button className="cpl-btn-novo" onClick={abrirNovo}>
-            <Plus size={16} weight="bold" /> Nova personalização
-          </button>
-        </div>
+        )}
 
         {items.length === 0 ? (
           <div className="cpl-empty">
             <div className="cpl-empty-avatar">
-              <img src="/Sistema/doo.png" alt="Doo" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.innerHTML = '✨'; }} />
+              <img src="/Sistema/logo.png" alt="Doonly" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; (e.target as HTMLImageElement).parentElement!.innerHTML = '✨'; }} />
             </div>
             <p className="cpl-empty-title">Personalize seus produtos</p>
             <p className="cpl-empty-sub">É assim que vai aparecer no seu cardápio pro cliente escolher:</p>
