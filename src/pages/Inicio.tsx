@@ -2178,7 +2178,7 @@ export default function Inicio() {
         /* ── Navegação rápida ── */
         .ini-nav-grid {
           display: grid;
-          grid-template-columns: 1fr;
+          grid-template-columns: 1fr 1fr;
           gap: var(--gap-tight);
         }
         .ini-nav-card {
@@ -2186,8 +2186,8 @@ export default function Inicio() {
           align-items: center;
           gap: var(--space-3);
           padding: var(--space-3) var(--space-4);
-          background: var(--bg-subtle);
-          border: none;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
           border-radius: 10px;
           cursor: pointer;
           font-family: inherit;
@@ -2196,35 +2196,45 @@ export default function Inicio() {
         }
         .ini-nav-card:active { background: var(--primary-light); transform: scale(0.99); }
         .ini-nav-icon {
-          width: 38px; height: 38px;
+          width: 34px; height: 34px;
           border-radius: 8px;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
-          background: var(--bg-card) !important;
+          background: transparent !important;
           color: var(--primary-dark) !important;
         }
         .ini-nav-meta { flex: 1; min-width: 0; }
         .ini-nav-label {
           display: block;
           font-size: var(--font-button);
-          font-weight: var(--fw-semibold);
+          font-weight: var(--fw-bold);
           color: var(--text-title);
-          line-height: 1.3;
+          line-height: 1.2;
         }
+        /* Subtítulo escondido no mobile (fica só a label pra caber em 2 col) */
         .ini-nav-sub {
-          display: block;
-          font-size: var(--font-caption);
-          color: var(--text-muted);
-          margin-top: 1px;
+          display: none;
         }
-        .ini-nav-arrow { color: var(--text-muted); flex-shrink: 0; }
-        /* "Novo pedido" destacado vinho no mobile também */
-        .ini-nav-card[data-nav="nova-venda"] { background: var(--primary-dark); }
+        .ini-nav-arrow { display: none; }
+        /* Nova Venda ocupa largura total no topo, vinho destacado */
+        .ini-nav-card[data-nav="nova-venda"] {
+          grid-column: 1 / -1;
+          background: var(--primary-dark);
+          border-color: var(--primary-dark);
+          padding: 14px 16px;
+        }
         .ini-nav-card[data-nav="nova-venda"]:active { background: var(--text-title); }
-        .ini-nav-card[data-nav="nova-venda"] .ini-nav-icon { background: rgba(255,255,255,0.16) !important; color: #FFFFFF !important; }
-        .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #FFFFFF; }
-        .ini-nav-card[data-nav="nova-venda"] .ini-nav-sub { color: rgba(255,255,255,0.7); }
-        .ini-nav-card[data-nav="nova-venda"] .ini-nav-arrow { color: rgba(255,255,255,0.7); }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-icon {
+          background: rgba(255,255,255,0.16) !important;
+          color: #FFFFFF !important;
+          width: 40px; height: 40px;
+        }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #FFFFFF; font-size: 15px; }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-sub {
+          display: block;
+          color: rgba(255,255,255,0.75);
+          font-size: 11px;
+        }
 
         /* ── Agenda de Entregas ── */
         .ini-agenda-header {
@@ -2805,10 +2815,21 @@ export default function Inicio() {
             background: #FFF5F9 !important;
             color: #2C1219 !important;
           }
+          .ini-main .ini-section--nav .ini-nav-sub {
+            display: block;
+            font-size: var(--font-caption);
+            color: var(--text-muted);
+            margin-top: 1px;
+          }
           .ini-main .ini-section--nav .ini-nav-arrow {
+            display: block;
             color: var(--text-muted);
             flex-shrink: 0;
             transition: transform var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+          }
+          /* Nova Venda no desktop volta a ocupar 1 coluna (grid define) */
+          .ini-main .ini-section--nav .ini-nav-card[data-nav="nova-venda"] {
+            grid-column: auto;
           }
           .ini-main .ini-section--nav .ini-nav-card:hover .ini-nav-arrow {
             color: var(--primary);
