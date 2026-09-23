@@ -55,21 +55,21 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
           )}
         </div>
         <div className="p-3 flex-1 flex flex-col items-center text-center">
-          <h4 className="font-bold text-sm leading-tight line-clamp-2 mb-1" style={{ color: '#2C1219' }}>{product.nome}</h4>
-          <p className="text-gray-500 text-xs line-clamp-2 mb-2" style={{ lineHeight: 1.35 }}>{product.descricao}</p>
+          <h4 className="font-bold leading-tight line-clamp-2 mb-1" style={{ color: '#2C1219', fontSize: '13px' }}>{product.nome}</h4>
+          <p className="text-gray-500 line-clamp-4 mb-2" style={{ fontSize: '11.5px', lineHeight: 1.4 }}>{product.descricao}</p>
           <div className="mt-auto">
             {isPromo && precoPromocional > 0 ? (
               <div>
                 <span className="text-xs text-red-500 line-through block">R$ {product.preco_normal.toFixed(2)}</span>
-                <div className="flex items-center justify-center gap-1">
+                <div className="flex items-baseline justify-center gap-1.5">
                   <span className="text-lg font-bold text-green-600">R$ {precoPromocional.toFixed(2)}</span>
-                  <span className="text-xs px-1 py-0 rounded-sm" style={{ backgroundColor: '#6A0122', color: 'white' }}>{formatSale(product.forma_venda)}</span>
+                  <span style={{ fontSize: '9.5px', color: '#9CA3AF', fontWeight: 600, letterSpacing: '0.03em' }}>/ {formatSale(product.forma_venda).toLowerCase()}</span>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center gap-1">
+              <div className="flex items-baseline justify-center gap-1.5">
                 <span className="text-lg font-bold text-green-600">R$ {product.preco_normal.toFixed(2)}</span>
-                <span className="text-xs px-1 py-0 rounded-sm" style={{ backgroundColor: '#6A0122', color: 'white' }}>{formatSale(product.forma_venda)}</span>
+                <span style={{ fontSize: '9.5px', color: '#9CA3AF', fontWeight: 600, letterSpacing: '0.03em' }}>/ {formatSale(product.forma_venda).toLowerCase()}</span>
               </div>
             )}
           </div>
