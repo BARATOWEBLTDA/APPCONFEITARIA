@@ -1,12 +1,10 @@
 import { useEffect, type ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  CurrencyDollar, ChartLineUp, Percent,
-  Users,
+  CurrencyDollar, ChartLineUp,
   Package, BookOpen, Files, Bell, ClipboardText,
   Gear, PaintBrush, Crown,
-  CalendarDots,
-  Cake, SquaresFour,
+  SquaresFour, UserPlus,
   X,
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
@@ -31,37 +29,35 @@ const GROUPS: DrawerGroup[] = [
   {
     label: "Cadastros",
     items: [
-      { label: "Produtos",              path: "/produtos",   icon: <Cake         size={20} weight="duotone" /> },
-      { label: "Categorias",            path: "/categorias", icon: <SquaresFour  size={20} weight="duotone" /> },
-      { label: "Ingredientes",          path: "/insumos",    icon: <Package      size={20} weight="duotone" /> },
-      { label: "Personalização",        path: "/complementos", icon: <Package      size={20} weight="duotone" /> },
-      { label: "Clientes",              path: "/clientes",   icon: <Users        size={20} weight="duotone" /> },
+      { label: "Categorias",       path: "/categorias",     icon: <SquaresFour   size={20} weight="duotone" /> },
+      { label: "Ingredientes",     path: "/insumos",        icon: <Package       size={20} weight="duotone" /> },
+      { label: "Receitas",         path: "/receitas",       icon: <BookOpen      size={20} weight="duotone" /> },
+      { label: "Personalização",   path: "/complementos",   icon: <PaintBrush    size={20} weight="duotone" /> },
+      { label: "Ficha técnica",    path: "/ficha-tecnica",  icon: <ClipboardText size={20} weight="duotone" /> },
     ],
   },
   {
-    label: "Negócio",
+    label: "Análises",
     items: [
-      { label: "Financeiro",     path: "/financeiro",     icon: <CurrencyDollar size={20} weight="duotone" /> },
-      { label: "Lucratividade",  path: "/lucratividade",  icon: <ChartLineUp   size={20} weight="duotone" /> },
-      { label: "Promoções",      path: "/promocoes",      icon: <Percent       size={20} weight="duotone" /> },
+      { label: "Lucratividade",           path: "/lucratividade",         icon: <ChartLineUp    size={20} weight="duotone" /> },
+      { label: "Transações detalhadas",   path: "/financeiro/transacoes", icon: <CurrencyDollar size={20} weight="duotone" /> },
     ],
   },
   {
-    label: "Operação",
+    label: "Configuração",
     items: [
-      { label: "Agenda",       path: "/agenda",         icon: <CalendarDots   size={20} weight="duotone" /> },
-      { label: "Precificação", path: "/ficha-tecnica",  icon: <ClipboardText  size={20} weight="duotone" /> },
-      { label: "Receitas",     path: "/receitas",      icon: <BookOpen size={20} weight="duotone" /> },
-      { label: "Arquivos",     path: "/arquivos",      icon: <Files    size={20} weight="duotone" /> },
-      { label: "Notificações", path: "/notificacoes",  icon: <Bell     size={20} weight="duotone" /> },
+      { label: "Cardápio Design",  path: "/cardapio-design",  icon: <PaintBrush size={20} weight="duotone" /> },
+      { label: "Checkout",         path: "/checkout-config",  icon: <Gear       size={20} weight="duotone" /> },
+      { label: "Configurações",    path: "/configuracoes",    icon: <Gear       size={20} weight="duotone" /> },
+      { label: "Notificações",     path: "/notificacoes",     icon: <Bell       size={20} weight="duotone" /> },
     ],
   },
   {
     label: "Conta",
     items: [
-      { label: "Personalização", path: "/personalizacao", icon: <PaintBrush size={20} weight="duotone" /> },
-      { label: "Configurações",  path: "/configuracoes",  icon: <Gear       size={20} weight="duotone" /> },
-      { label: "Assinatura",     path: "/assinar",        icon: <Crown      size={20} weight="duotone" /> },
+      { label: "Assinatura",     path: "/assinar",  icon: <Crown    size={20} weight="duotone" /> },
+      { label: "Indicar amigo",  path: "/indicar",  icon: <UserPlus size={20} weight="duotone" /> },
+      { label: "Arquivos",       path: "/arquivos", icon: <Files    size={20} weight="duotone" /> },
     ],
   },
 ];

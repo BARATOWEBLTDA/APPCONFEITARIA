@@ -11,6 +11,7 @@ import {
   Bell, Storefront, SignOut, Camera,
   Package, CookingPot, Users, ChartLineUp, ForkKnife, CaretRight,
   InstagramLogo, DotsThreeOutline, Clock, Heart,
+  Cake, Percent,
 } from "@phosphor-icons/react";
 import { supabase } from "@/lib/supabase";
 import { enableNotifications, disableNotifications, getStoredNotifState } from "@/lib/notifications";
@@ -986,12 +987,14 @@ export default function Inicio() {
         </h2>
         <div className="ini-nav-grid">
           {[
-            { icon: <Plus         size={20} weight="bold" />,     label: "Nova Venda",   sub: "Registrar venda ou encomenda", path: "/vendas/novo", color: "var(--text-title)", bg: "#FFF1F7", key: "nova-venda" },
-            { icon: <ClipboardText size={20} weight="duotone" />, label: "Meus Pedidos", sub: "Acompanhar em andamento",      path: "/pedidos",      color: "#BE185D",           bg: "#FCE7F3", key: "pedidos" },
-            { icon: <Users        size={20} weight="duotone" />,  label: "Clientes",     sub: "Base de clientes",             path: "/clientes",     color: "#7C3AED",           bg: "#F5F3FF", key: "clientes" },
-            { icon: <Storefront   size={20} weight="duotone" />,  label: "Produtos",     sub: "Itens do cardápio",            path: "/produtos",     color: "#0891B2",           bg: "#ECFEFF", key: "produtos" },
-            { icon: <ChartLineUp  size={20} weight="duotone" />,  label: "Financeiro",   sub: "Contas e controle",            path: "/financeiro",   color: "#15803D",           bg: "#DCFCE7", key: "financeiro" },
-            { icon: <CalendarDots size={20} weight="duotone" />,  label: "Agenda",       sub: "Datas de entrega",             path: "/agenda",       color: "#D97706",           bg: "#FEF3C7", key: "agenda" },
+            { icon: <Plus         size={20} weight="bold" />,     label: "Nova Venda",   sub: "Registrar venda ou encomenda", path: "/vendas/novo",  color: "var(--text-title)", bg: "#FFF1F7", key: "nova-venda" },
+            { icon: <ClipboardText size={20} weight="duotone" />, label: "Pedidos",      sub: "Acompanhar em andamento",      path: "/pedidos",      color: "#2C1219",           bg: "#FFF5F9", key: "pedidos" },
+            { icon: <CalendarDots size={20} weight="duotone" />,  label: "Agenda",       sub: "Datas de entrega",             path: "/agenda",       color: "#2C1219",           bg: "#FFF5F9", key: "agenda" },
+            { icon: <ForkKnife    size={20} weight="duotone" />,  label: "Cardápio",     sub: "Editar e personalizar",        path: "/cardapio-config", color: "#2C1219",        bg: "#FFF5F9", key: "cardapio" },
+            { icon: <Users        size={20} weight="duotone" />,  label: "Clientes",     sub: "Base de clientes",             path: "/clientes",     color: "#2C1219",           bg: "#FFF5F9", key: "clientes" },
+            { icon: <CurrencyDollar size={20} weight="duotone" />, label: "Financeiro",  sub: "Contas e controle",            path: "/financeiro",   color: "#2C1219",           bg: "#FFF5F9", key: "financeiro" },
+            { icon: <Cake         size={20} weight="duotone" />,  label: "Produtos",     sub: "Itens do cardápio",            path: "/produtos",     color: "#2C1219",           bg: "#FFF5F9", key: "produtos" },
+            { icon: <Percent      size={20} weight="duotone" />,  label: "Promoções",    sub: "Campanhas ativas",             path: "/promocoes",    color: "#2C1219",           bg: "#FFF5F9", key: "promocoes" },
           ].map((item) => (
             <button key={item.path} className="ini-nav-card" data-nav={item.key} onClick={() => navigate(item.path)}>
               <div className="ini-nav-icon" style={{ background: item.bg, color: item.color }}>{item.icon}</div>
