@@ -61,14 +61,10 @@ export function ProductCard({ product, isFavorite, onToggleFavorite, backgroundC
             {isPromo && precoPromocional > 0 ? (
               <>
                 <span className="text-red-500 line-through" style={{ fontSize: '11px' }}>R$ {product.preco_normal.toFixed(2)}</span>
-                <span className="text-lg font-bold text-green-600">R$ {precoPromocional.toFixed(2)}</span>
-                <span style={{ fontSize: '9.5px', color: '#9CA3AF', fontWeight: 600, letterSpacing: '0.03em' }}>/ {formatSale(product.forma_venda).toLowerCase()}</span>
+                <span className="font-bold text-green-600" style={{ fontSize: '14.5px' }}>R$ {precoPromocional.toFixed(2)}</span>
               </>
             ) : (
-              <>
-                <span className="text-lg font-bold text-green-600">R$ {product.preco_normal.toFixed(2)}</span>
-                <span style={{ fontSize: '9.5px', color: '#9CA3AF', fontWeight: 600, letterSpacing: '0.03em' }}>/ {formatSale(product.forma_venda).toLowerCase()}</span>
-              </>
+              <span className="font-bold text-green-600" style={{ fontSize: '14.5px' }}>R$ {product.preco_normal.toFixed(2)}</span>
             )}
           </div>
         </div>
