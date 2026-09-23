@@ -57,6 +57,24 @@ export default function Cardapio() {
   const [copiado, setCopiado] = useState(false);
   const [contadores, setContadores] = useState({ produtos: 0, produtosAtivos: 0, categorias: 0, promocoes: 0 });
   const [visitasPop, setVisitasPop] = useState<number | null>(null); // +N flutuante quando chega visita nova
+  // Plano PRO — checado DIRETO no banco (não do cache do useProfile, que pode estar
+  // com dados antigos de quando o user era PRO ativo).
+  const [isProAtivo, setIsProAtivo] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+    supabase
+      .from("profiles")
+      .select("plano, pro_expira_em")
+      .eq("id", profile.id)
+      .single()
+      .then(({ data }) => {
+        if (!data) { setIsProAtivo(false); return; }
+        const ativo = data.plano === "pro" &&
+          (!data.pro_expira_em || new Date(data.pro_expira_em) > new Date());
+        setIsProAtivo(ativo);
+      });
+  }, [profile?.id]);
 
   // Nova arquitetura: cardápio publicado quando profile.codigo_publico existe.
   // URL final: /c/[codigo]/[slug] — slug é "cardapio" (free) ou personalizado (PRO).
@@ -413,6 +431,9 @@ export default function Cardapio() {
         </div>
       </div>
 
+      {/* ── Métricas de performance (função PRO) ── */}
+      {isProAtivo === null ? null : isProAtivo ? (
+      <>
       {/* Seletor de período */}
       <div className="ch-periodo-tabs" role="tablist">
         {([
@@ -528,6 +549,33 @@ export default function Cardapio() {
             ))}
           </div>
         </div>
+      )}
+      </>
+      ) : (
+      <div className="cd-metricas-locked" onClick={() => navigate("/assinar")}>
+        <div className="cd-metricas-locked-glow" />
+        <div className="cd-metricas-locked-top">
+          <div className="cd-metricas-locked-icon"><ChartBar size={20} weight="bold" /></div>
+          <span className="cd-metricas-locked-tag">PRO</span>
+        </div>
+        <p className="cd-metricas-locked-t">Métricas do cardápio</p>
+        <p className="cd-metricas-locked-s">Visitas, pedidos, receita e produtos mais vendidos.</p>
+        <div className="cd-metricas-locked-preview">
+          <div className="cd-metricas-locked-item">
+            <div className="cd-metricas-locked-lbl">Visitas</div>
+            <div className="cd-metricas-locked-val">—</div>
+          </div>
+          <div className="cd-metricas-locked-item">
+            <div className="cd-metricas-locked-lbl">Pedidos</div>
+            <div className="cd-metricas-locked-val">—</div>
+          </div>
+          <div className="cd-metricas-locked-item">
+            <div className="cd-metricas-locked-lbl">Receita</div>
+            <div className="cd-metricas-locked-val">—</div>
+          </div>
+        </div>
+        <button className="cd-metricas-locked-cta">Assinar PRO</button>
+      </div>
       )}
 
       {/* Alertas */}
@@ -864,6 +912,109 @@ export default function Cardapio() {
         .cd-quick-name { font-size: 14px; font-weight: 700; color: #2C1219; letter-spacing: -0.01em; line-height: 1.2; }
         .cd-quick-desc { font-size: 12px; color: #888780; margin-top: 3px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
         .cd-quick-arrow { color: #B4B2A9; flex-shrink: 0; }
+
+        /* ─── Métricas locked (PRO upsell) ─── */
+        .cd-metricas-locked {
+          position: relative;
+          background: linear-gradient(135deg, #2D1F26, #4B3D46);
+          color: #fff;
+          border-radius: 8px;
+          padding: 18px 18px 16px;
+          margin-bottom: var(--space-4);
+          overflow: hidden;
+          cursor: pointer;
+          transition: transform 0.15s;
+        }
+        .cd-metricas-locked:active { transform: scale(0.995); }
+        .cd-metricas-locked-glow {
+          position: absolute;
+          top: -30px; right: -30px;
+          width: 140px; height: 140px;
+          background: radial-gradient(circle, rgba(255,201,71,0.28), transparent 70%);
+          pointer-events: none;
+        }
+        .cd-metricas-locked-top {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 6px;
+          position: relative;
+        }
+        .cd-metricas-locked-icon {
+          width: 32px; height: 32px;
+          border-radius: 8px;
+          background: linear-gradient(135deg, #FFC947, #DDAA00);
+          color: #2C1219;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 2px 0 rgba(0,0,0,0.25);
+          flex-shrink: 0;
+        }
+        .cd-metricas-locked-tag {
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          color: #FFC947;
+          text-transform: uppercase;
+        }
+        .cd-metricas-locked-t {
+          font-size: 15px;
+          font-weight: 800;
+          margin: 0 0 3px;
+          position: relative;
+        }
+        .cd-metricas-locked-s {
+          font-size: 11.5px;
+          opacity: 0.75;
+          margin: 0 0 14px;
+          position: relative;
+          line-height: 1.4;
+        }
+        .cd-metricas-locked-preview {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+          margin-bottom: 14px;
+          position: relative;
+          filter: blur(1.5px);
+          opacity: 0.6;
+          pointer-events: none;
+        }
+        .cd-metricas-locked-item {
+          background: rgba(255,255,255,0.08);
+          border-radius: 6px;
+          padding: 10px 8px;
+          text-align: center;
+        }
+        .cd-metricas-locked-lbl {
+          font-size: 9.5px;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          opacity: 0.7;
+          font-weight: 700;
+        }
+        .cd-metricas-locked-val {
+          font-size: 18px;
+          font-weight: 800;
+          margin-top: 3px;
+        }
+        .cd-metricas-locked-cta {
+          width: 100%;
+          padding: 11px;
+          background: linear-gradient(135deg, #FFC947, #DDAA00);
+          color: #2C1219;
+          font-size: 12.5px;
+          font-weight: 900;
+          border-radius: 6px;
+          border: none;
+          cursor: pointer;
+          font-family: inherit;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          box-shadow: 0 2px 0 rgba(0,0,0,0.22);
+          position: relative;
+          transition: transform 0.15s;
+        }
+        .cd-metricas-locked-cta:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0,0,0,0.22); }
 
         /* ── Top produtos ── */
         .ch-top-list {
