@@ -22,6 +22,7 @@ import AppPageHeader from "@/components/AppPageHeader";
 import TourInicio from "@/components/TourInicio";
 import WelcomeChecklist from "@/components/WelcomeChecklist";
 import UpdatesFeed from "@/components/UpdatesFeed";
+import AdminBannerMobile from "@/components/AdminBannerMobile";
 import DooIAPanel from "@/components/DooIAPanel";
 import { FinModal } from "@/components/financeiro";
 import { ImageCropper } from "@/components/ui/ImageCropper";
@@ -1222,6 +1223,9 @@ export default function Inicio() {
         <aside className="ini-aside">
           <div className="ini-aside-desktop"><DooIAPanel /></div>
         </aside>
+
+        {/* ── Banner promocional (admin configura) ── */}
+        <div className="ini-mobile-banner"><AdminBannerMobile /></div>
 
         {/* ── Últimas atualizações (mobile) — sempre visível ── */}
         <div className="ini-mobile-updates"><UpdatesFeed /></div>
@@ -2512,8 +2516,9 @@ export default function Inicio() {
         /* Nível 1: filhos diretos de .ini-content */
         .ini-aside          { order: 99; }
         .ini-main           { order: 2; display: flex; flex-direction: column; }
-        .ini-mobile-updates { order: 3; }
-        .ini-engaja         { order: 4; }
+        .ini-mobile-banner  { order: 3; }
+        .ini-mobile-updates { order: 4; }
+        .ini-engaja         { order: 5; }
         /* Nível 2: seções dentro de .ini-main */
         .ini-section--checklist-top { order: 0; margin-top: var(--space-3); }
         .ini-section--alertas { order: 1; }
@@ -2670,6 +2675,7 @@ export default function Inicio() {
           }
           /* Updates e engajamento são exclusivos do mobile */
           .ini-mobile-updates { display: none; }
+          .ini-mobile-banner { display: none; }
           .ini-engaja { display: none; }
 
           /* Seções: o que mostra/esconde no desktop */
