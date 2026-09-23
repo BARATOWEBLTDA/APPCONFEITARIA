@@ -7,6 +7,7 @@ import {
   House, CalendarDots, ShoppingBag, ClipboardText, Users, BookOpen,
   Package, CurrencyDollar, Gear, CaretDown, ForkKnife, List,
   User, SquaresFour, Camera, Cake, Clipboard, Plus,
+  Receipt, Sparkle,
 } from "@phosphor-icons/react";
 import { useProfile } from "@/hooks/useProfile";
 import { usePlano } from "@/hooks/usePlano";
@@ -186,6 +187,12 @@ export default function Layout() {
                 <span className="nav-subicon" aria-hidden="true"><Package size={14} weight="duotone" /></span>
                 Ingredientes
               </NavLink>
+              <NavLink to="/complementos" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
+                <span className="nav-subicon" aria-hidden="true">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L20 7v10l-8 5-8-5V7z"/><path d="M12 22V12"/><path d="M20 7l-8 5-8-5"/></svg>
+                </span>
+                Personalização
+              </NavLink>
               <NavLink to="/clientes" className={({ isActive }) => `nav-subitem ${isActive ? "active" : ""}`}>
                 <span className="nav-subicon" aria-hidden="true"><Users size={14} weight="duotone" /></span>
                 Clientes
@@ -289,9 +296,9 @@ export default function Layout() {
         <nav className="bottom-nav">
           <div className="bottom-nav-pill">
             {[
-              { to: "/inicio",   icon: <House          size={20} weight="fill" />, label: "Início"   },
-              { to: "/cardapio", icon: <Cake           size={20} weight="fill" />, label: "Cardápio" },
-              { to: "/pedidos",  icon: <ClipboardText  size={20} weight="fill" />, label: "Pedidos"  },
+              { to: "/inicio",   icon: <House          size={20} weight="regular" />, label: "Início"   },
+              { to: "/cardapio", icon: <BookOpen       size={20} weight="regular" />, label: "Cardápio" },
+              { to: "/pedidos",  icon: <Receipt        size={20} weight="regular" />, label: "Pedidos"  },
             ].map((item) => {
               const isActive =
                 location.pathname === item.to ||
@@ -312,15 +319,16 @@ export default function Layout() {
               onClick={() => setMaisOpen(!maisOpen)}
               aria-label="Gestão"
             >
-              <span className="bn-icon"><SquaresFour size={20} weight="fill" /></span>
+              <span className="bn-icon"><SquaresFour size={20} weight="regular" /></span>
               <span className="bn-label">Gestão</span>
             </button>
             <button
-              className={`bn-item bn-doo${dooOpen ? " bn-doo--active" : ""}`}
+              className={`bn-item${dooOpen ? " bn-item--active" : ""}`}
               onClick={() => setDooOpen(true)}
               aria-label="Abrir Doo IA"
             >
-              <img src="/Sistema/doo.png" alt="Doo" className="bn-doo-img" width={52} height={56} />
+              <span className="bn-icon"><Sparkle size={20} weight="regular" /></span>
+              <span className="bn-label">Doo IA</span>
             </button>
           </div>
         </nav>
@@ -386,20 +394,20 @@ export default function Layout() {
         }
 
         .sidebar-badge {
-          position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
-          font-size: 9px;
+          position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%);
+          font-size: 10px;
           font-weight: var(--fw-bold);
-          padding: 3px 7px;
+          padding: 4px 8px;
           white-space: nowrap;
           letter-spacing: 0.04em;
           text-transform: uppercase;
           color: #fff;
           background: #2D1F26;
-          border-radius: 5px;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+          border-radius: 6px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
           display: inline-flex;
           align-items: center;
-          gap: 3px;
+          gap: 4px;
           line-height: 1;
           border: none;
           font-family: inherit;
@@ -421,8 +429,8 @@ export default function Layout() {
           transform: translateX(-50%) translateY(0);
         }
         .sidebar-badge-coroa {
-          width: 9px;
-          height: 9px;
+          width: 10px;
+          height: 10px;
           object-fit: contain;
           display: block;
           flex-shrink: 0;
@@ -686,32 +694,42 @@ export default function Layout() {
             overflow: hidden;
           }
           .bn-item {
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 3px;
-            padding: 7px 10px;
+            padding: 7px 8px;
             border: none;
             background: none;
             cursor: pointer;
-            border-radius: 10px;
+            border-radius: 0;
             font-family: var(--font-base);
             text-decoration: none;
-            transition: background var(--dur-fast), transform 0.1s;
+            transition: color var(--dur-fast), transform 0.1s;
             min-width: 56px;
-            color: #ffffff;
+            color: rgba(255,255,255,0.65);
+            position: relative;
           }
           .bn-item:hover {
-            background: rgba(255, 255, 255, 0.12);
-            border-radius: 10px;
+            color: #ffffff;
           }
           .bn-item--active {
-            background: #ffffff;
-            color: var(--text-title);
+            color: #E85A8C;
           }
           .bn-item--active:hover {
-            background: #ffffff;
+            color: #E85A8C;
+          }
+          .bn-item--active::before {
+            content: "";
+            position: absolute;
+            top: -8px;
+            left: 25%;
+            right: 25%;
+            height: 3px;
+            background: #E85A8C;
+            border-radius: 0 0 3px 3px;
           }
           .bn-icon {
             display: flex;
@@ -734,37 +752,6 @@ export default function Layout() {
             transform: scale(0.94);
           }
 
-          /* ── Doo highlight button ── */
-          .bn-doo {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            border-radius: 0;
-            align-self: stretch;
-            flex: 0 0 52px;
-            width: 52px;
-            min-width: 52px;
-            max-width: 52px;
-            height: 100%;
-            margin: -6px -6px -6px 0;
-            overflow: hidden;
-            transition: transform 0.15s;
-          }
-          .bn-doo:hover { opacity: 0.9; }
-          .bn-doo:active { transform: scale(0.95); }
-          .bn-doo-img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: cover;
-            object-position: top center;
-          }
           .bottom-nav { animation: fadeInUp 0.2s ease; }
           @keyframes fadeInUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
