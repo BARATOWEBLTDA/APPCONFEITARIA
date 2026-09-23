@@ -1231,19 +1231,16 @@ export default function Inicio() {
       </section>
         </div>
 
-        {/* ── Sidebar (desktop): DooIA depois do onboarding ── */}
+        {/* ── Sidebar (desktop): DooIA sempre ── */}
         <aside className="ini-aside">
-          {checklistDone && (
-            <div className="ini-aside-desktop"><DooIAPanel /></div>
-          )}
+          <div className="ini-aside-desktop"><DooIAPanel /></div>
         </aside>
 
         {/* ── Últimas atualizações (mobile) — sempre visível ── */}
         <div className="ini-mobile-updates"><UpdatesFeed /></div>
 
-        {/* ── Engajamento (mobile, rodapé) — só após onboarding ── */}
-        {checklistDone && (
-          <section className="ini-engaja">
+        {/* ── Engajamento (mobile, rodapé) — sempre visível ── */}
+        <section className="ini-engaja">
             <a href="https://www.google.com" target="_blank" rel="noopener noreferrer" className="ini-engaja-card ini-engaja-card--play">
               <div className="ini-engaja-icon ini-engaja-icon--play">
                 {/* Google Play Store official logo */}
@@ -1271,7 +1268,6 @@ export default function Inicio() {
               <CaretRight size={16} weight="bold" className="ini-engaja-arrow" />
             </a>
           </section>
-        )}
       </div>
 
       <style>{`
