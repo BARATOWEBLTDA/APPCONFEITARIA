@@ -736,12 +736,11 @@ export default function Cardapio() {
 
         /* ── Lista tipo iOS Settings — 2 grupos temáticos ── */
         .ch-list-section-title {
-          margin: var(--space-4) var(--space-2) var(--space-2);
-          font-size: 10px;
+          margin: var(--space-5) var(--space-1) var(--space-2);
+          font-size: 14px;
           font-weight: 800;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: var(--text-muted);
+          letter-spacing: -0.01em;
+          color: var(--text-title);
         }
         .ch-list-section-title:first-of-type { margin-top: var(--space-2); }
         .ch-list-group {
