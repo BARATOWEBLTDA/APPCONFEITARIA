@@ -34,7 +34,7 @@ export default function PassoAPassoCardapio({ userId, publicado, onShareClick }:
       // Lê perfil direto (evita cache do useProfile)
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("logo_url, descricao_loja")
+        .select("logo_url, foto_url, descricao_loja")
         .eq("id", userId)
         .single();
 
@@ -51,12 +51,15 @@ export default function PassoAPassoCardapio({ userId, publicado, onShareClick }:
       const linkKey = `doonly_cardapio_compartilhado_${userId}`;
       const jaCompartilhou = localStorage.getItem(linkKey) === "1";
 
+      // Logo: pode estar em logo_url (desktop) OU foto_url (mobile) — vale qualquer um
+      const temLogo = !!(profileData?.logo_url || profileData?.foto_url);
+
       const list: Step[] = [
         {
           key: "logo",
           label: "Adicionar logo da loja",
-          done: !!profileData?.logo_url,
-          path: "/cardapio-design",
+          done: temLogo,
+          path: "/cardapio-config",
         },
         {
           key: "descricao",
