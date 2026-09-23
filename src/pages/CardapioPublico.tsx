@@ -450,7 +450,7 @@ function DeskSacola({ cartCount, cartTotal, design, items }: any) {
 }
 
 /* ── Desktop Footer ── */
-function DeskFooterBar({ design, config }: any) {
+function DeskFooterBar({ design, config, isPro }: any) {
   const nome = design?.nome_loja || 'Confeitaria'
   const ano = new Date().getFullYear()
 
@@ -462,20 +462,41 @@ function DeskFooterBar({ design, config }: any) {
   } catch {}
   if (config?.telefone) telefone = config.telefone
 
-  const cor = design?.cor_rodape || design?.cor_navbar || design?.cor_borda || '#E85A8C'
-
-  const linha2Parts = []
-  if (cnpj) linha2Parts.push(`CNPJ: ${cnpj}`)
+  const extras: string[] = []
+  if (cnpj) extras.push(`CNPJ: ${cnpj}`)
+  if (isPro && telefone) extras.push(telefone)
 
   return (
-    <div style={{ background: cor, padding: '18px 24px', textAlign: 'center' }}>
-      <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: '#ffffff' }}>
-        {nome} — {ano}. Todos os direitos reservados
-      </p>
-      {linha2Parts.length > 0 && (
-        <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.8)' }}>
-          {linha2Parts.join(' | ')}
-        </p>
+    <div style={{
+      background: '#FAFAFA',
+      padding: '18px 32px',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      flexWrap: 'wrap', gap: '12px',
+      fontSize: '12px',
+    }}>
+      <div style={{ color: '#6B7280' }}>
+        © {ano} <span style={{ color: '#2C1219', fontWeight: 700 }}>{nome}</span>
+        <span style={{ margin: '0 6px', color: '#D1D5DB' }}>·</span>
+        Todos os direitos reservados
+        {extras.length > 0 && (
+          <>
+            <span style={{ margin: '0 6px', color: '#D1D5DB' }}>·</span>
+            {extras.join(' · ')}
+          </>
+        )}
+      </div>
+      {!isPro && (
+        <div style={{ color: '#9CA3AF' }}>
+          Criado com{' '}
+          <a
+            href="https://doonly.com.br"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#6B7280', textDecoration: 'none', fontWeight: 700 }}
+          >
+            Doonly
+          </a>
+        </div>
       )}
     </div>
   )
@@ -758,7 +779,7 @@ function CardapioContent() {
       </div>
 
       <div style={{ flex: 1 }} />
-      <DeskFooterBar design={design} config={config} />
+      <DeskFooterBar design={design} config={config} isPro={isPro} />
     </div>
   )
 }
