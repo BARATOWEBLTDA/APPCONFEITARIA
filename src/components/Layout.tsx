@@ -716,10 +716,10 @@ export default function Layout() {
             color: #ffffff;
           }
           .bn-item--active {
-            color: #E85A8C;
+            color: #FF9BC0;
           }
           .bn-item--active:hover {
-            color: #E85A8C;
+            color: #FF9BC0;
           }
           .bn-item--active::before {
             content: "";
@@ -728,7 +728,7 @@ export default function Layout() {
             left: 25%;
             right: 25%;
             height: 3px;
-            background: #E85A8C;
+            background: #FF9BC0;
             border-radius: 0 0 3px 3px;
           }
           .bn-icon {
@@ -739,14 +739,14 @@ export default function Layout() {
           }
           .bn-label {
             font-size: var(--font-caption);
-            font-weight: var(--fw-regular);
+            font-weight: var(--fw-medium);
             color: inherit;
             white-space: nowrap;
             letter-spacing: 0.01em;
             line-height: 1;
           }
           .bn-item--active .bn-label {
-            font-weight: var(--fw-semibold);
+            font-weight: var(--fw-bold);
           }
           .bn-item:active {
             transform: scale(0.94);
