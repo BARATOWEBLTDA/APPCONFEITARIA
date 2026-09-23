@@ -900,8 +900,8 @@ export default function Inicio() {
         {/* ── Coluna principal ── */}
         <div className="ini-main">
 
-      {/* ── WelcomeChecklist no topo (guia para novos usuários) ── */}
-      {profile?.id && !checklistDone && (
+      {/* ── WelcomeChecklist (temporariamente oculto — reservado pra futuro prêmio) ── */}
+      {false && profile?.id && !checklistDone && (
         <section className="ini-section ini-section--checklist-top">
           <WelcomeChecklist userId={profile.id} onAllDone={setChecklistDone} />
         </section>
