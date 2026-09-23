@@ -295,57 +295,65 @@ export function ProductModal({ isOpen, onClose, product, corBotao = '#ec4899' }:
           : `Escolha ${g.min_selecionavel} a ${g.max_selecionavel}`)
       : 'Opcional'
 
-    // ═══ Modo lista vertical limpa (Modelo 2 — pra tamanhos) ═══
+    // ═══ Modo lista vertical compacta (pra tamanhos) ═══
     if (useDropdown && tipoEscolha === 'single') {
       const idSel = typeof valorAtual === 'string' ? valorAtual : null
       return (
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-title)' }}>{g.nome_exibicao}</span>
             <span style={{ fontSize: '11px', color: g.min_selecionavel > 0 ? '#831843' : 'var(--text-muted)', background: g.min_selecionavel > 0 ? '#FCE0E9' : 'var(--border)', padding: '2px 8px', borderRadius: '50px', fontWeight: 700 }}>
               {hintObrigatoriedade}
             </span>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {g.opcoes.map((op: any) => {
+          <div style={{
+            display: 'flex', flexDirection: 'column', gap: 0,
+            background: '#fff',
+            border: '1px solid #F0EBED',
+            borderRadius: 12,
+            overflow: 'hidden',
+          }}>
+            {g.opcoes.map((op: any, idx: number) => {
               const ativo = op.id === idSel
               let precoLabel = ''
               if (g.tipo === 'sabor' && saborTemPrecoProprio && op.preco > 0) precoLabel = formatCurrency(op.preco)
               else if (g.tipo === 'tamanho' && op.preco > 0) precoLabel = formatCurrency(op.preco)
               else if ((op.adicional || 0) > 0) precoLabel = `+${formatCurrency(op.adicional)}`
-              const serveTxt = op.serve ? `Serve ${op.serve} ${/^\d+$/.test(String(op.serve).trim()) ? 'pessoas' : ''}`.trim() : ''
+              const serveTxt = op.serve ? `${op.serve}${/^\d+$/.test(String(op.serve).trim()) ? ' pessoas' : ''}`.trim() : ''
               return (
                 <button
                   key={op.id}
                   onClick={() => toggle(op.id)}
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '13px 14px', borderRadius: 10,
-                    border: `1.5px solid ${ativo ? corBotao : '#F0EBED'}`,
-                    background: ativo ? `${corBotao}0D` : 'var(--bg-card)',
-                    cursor: 'pointer', transition: 'all 0.12s',
+                    padding: '10px 12px',
+                    border: 'none',
+                    borderTop: idx > 0 ? '1px solid #F5F0F2' : 'none',
+                    background: ativo ? `${corBotao}0A` : '#fff',
+                    cursor: 'pointer', transition: 'background 0.12s',
                     width: '100%', textAlign: 'left',
+                    minHeight: 44,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
                     <span style={{
-                      width: 20, height: 20, borderRadius: '50%',
+                      width: 16, height: 16, borderRadius: '50%',
                       border: `2px solid ${ativo ? corBotao : '#D1D5DB'}`,
                       background: '#fff',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       flexShrink: 0,
                     }}>
-                      {ativo && <span style={{ width: 10, height: 10, borderRadius: '50%', background: corBotao }} />}
+                      {ativo && <span style={{ width: 8, height: 8, borderRadius: '50%', background: corBotao }} />}
                     </span>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: ativo ? corBotao : 'var(--text-primary)' }}>{op.nome}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 0, minWidth: 0 }}>
+                      <span style={{ fontSize: 13.5, fontWeight: 700, color: ativo ? corBotao : '#2C1219', lineHeight: 1.2 }}>{op.nome}</span>
                       {serveTxt && (
-                        <span style={{ fontSize: 11.5, color: 'var(--text-muted)', fontWeight: 500 }}>{serveTxt}</span>
+                        <span style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 500, marginTop: 1 }}>Serve {serveTxt}</span>
                       )}
                     </div>
                   </div>
                   {precoLabel && (
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#16a34a', flexShrink: 0, marginLeft: 8 }}>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: '#16a34a', flexShrink: 0, marginLeft: 8 }}>
                       {precoLabel}
                     </span>
                   )}
