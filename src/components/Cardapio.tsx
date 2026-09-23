@@ -4,7 +4,7 @@ import {
   ChartBar, Eye, Storefront, Sliders, PaintBrush, Tag,
   Share, Percent, ForkKnife, Copy, CheckCircle, Warning, Lightbulb,
   TrendUp, TrendDown, ShoppingBag, Users as UsersIcon, CurrencyDollar,
-  CaretRight,
+  CaretRight, SquaresFour, Stack,
 } from "@phosphor-icons/react";
 import { useProfile, getCardapioUrl, isPro } from "@/hooks/useProfile";
 import { validarCardapio } from "@/lib/cardapio-validacao";
@@ -327,65 +327,95 @@ export default function Cardapio() {
         onShareClick={handleShare}
       />
       {/* Meu Catálogo — ações do dia-a-dia */}
-      <p className="ch-list-section-title">Meu Catálogo</p>
-      <div className="ch-list-group">
-        <button className="ch-list-row" onClick={() => navigate("/produtos")}>
-          <span className="ch-list-icon ch-list-icon--primary">
-            <Storefront size={18} weight="duotone" />
-          </span>
-          <span className="ch-list-lbl">Produtos</span>
-          <span className="ch-list-badge">
-            {contadores.produtosAtivos}
-            {contadores.produtos !== contadores.produtosAtivos && (
-              <span className="ch-list-badge-sub"> / {contadores.produtos}</span>
-            )}
-          </span>
-          <CaretRight size={14} weight="bold" className="ch-list-chev" />
-        </button>
-        <button className="ch-list-row" onClick={() => navigate("/categorias")}>
-          <span className="ch-list-icon ch-list-icon--accent">
-            <ForkKnife size={18} weight="duotone" />
-          </span>
-          <span className="ch-list-lbl">Categorias</span>
-          <span className="ch-list-badge">{contadores.categorias}</span>
-          <CaretRight size={14} weight="bold" className="ch-list-chev" />
-        </button>
-        <button className="ch-list-row" onClick={() => navigate("/promocoes")}>
-          <span className="ch-list-icon ch-list-icon--warning">
-            <Percent size={18} weight="duotone" />
-          </span>
-          <span className="ch-list-lbl">Promoções</span>
-          <span className="ch-list-badge">{contadores.promocoes}</span>
-          <CaretRight size={14} weight="bold" className="ch-list-chev" />
-        </button>
+      <div className="cd-card cd-quick">
+        <div className="cd-quick-hdr">
+          <div className="cd-quick-title">Meu Catálogo</div>
+          <div className="cd-quick-sub">O que aparece pros seus clientes</div>
+        </div>
+        <div className="cd-quick-list">
+          <button className="cd-quick-item" onClick={() => navigate("/produtos")}>
+            <span className="cd-quick-ico cd-quick-ico--pink">
+              <Storefront size={20} weight="regular" />
+            </span>
+            <div className="cd-quick-info">
+              <div className="cd-quick-name">Produtos</div>
+              <div className="cd-quick-desc">
+                {contadores.produtosAtivos} ativo{contadores.produtosAtivos === 1 ? "" : "s"}
+                {contadores.produtos !== contadores.produtosAtivos && ` · ${contadores.produtos} no total`}
+              </div>
+            </div>
+            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+          </button>
+          <button className="cd-quick-item" onClick={() => navigate("/categorias")}>
+            <span className="cd-quick-ico cd-quick-ico--amber">
+              <SquaresFour size={20} weight="regular" />
+            </span>
+            <div className="cd-quick-info">
+              <div className="cd-quick-name">Categorias</div>
+              <div className="cd-quick-desc">
+                {contadores.categorias === 0
+                  ? "Organize seus produtos em grupos"
+                  : `${contadores.categorias} categoria${contadores.categorias === 1 ? "" : "s"} cadastrada${contadores.categorias === 1 ? "" : "s"}`}
+              </div>
+            </div>
+            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+          </button>
+          <button className="cd-quick-item" onClick={() => navigate("/complementos")}>
+            <span className="cd-quick-ico cd-quick-ico--red">
+              <Stack size={20} weight="regular" />
+            </span>
+            <div className="cd-quick-info">
+              <div className="cd-quick-name">Personalização</div>
+              <div className="cd-quick-desc">Sabores, recheios e escolhas por produto</div>
+            </div>
+            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+          </button>
+        </div>
       </div>
 
       {/* Configuração da Loja — setup inicial, raramente muda */}
-      <p className="ch-list-section-title">Configuração da Loja</p>
-      <div className="ch-list-group">
-        <button className="ch-list-row" onClick={() => navigate("/cardapio-design")}>
-          <span className="ch-list-icon ch-list-icon--muted">
-            <PaintBrush size={18} weight="duotone" />
-          </span>
-          <span className="ch-list-lbl">Aparência</span>
-          <CaretRight size={14} weight="bold" className="ch-list-chev" />
-        </button>
-        <button className="ch-list-row" onClick={() => navigate("/cardapio-config")}>
-          <span className="ch-list-icon ch-list-icon--muted">
-            <Sliders size={18} weight="duotone" />
-          </span>
-          <span className="ch-list-lbl">Configurações da loja</span>
-          <CaretRight size={14} weight="bold" className="ch-list-chev" />
-        </button>
-        <button className="ch-list-row" onClick={() => navigate("/checkout-config")}>
-          <span className="ch-list-icon ch-list-icon--muted">
-            <Tag size={18} weight="duotone" />
-          </span>
-          <span className="ch-list-lbl">Entrega e Pagamento</span>
-          <CaretRight size={14} weight="bold" className="ch-list-chev" />
-        </button>
+      <div className="cd-card cd-quick">
+        <div className="cd-quick-hdr">
+          <div className="cd-quick-title">Configuração da loja</div>
+          <div className="cd-quick-sub">Aparência, dados e regras de pedido</div>
+        </div>
+        <div className="cd-quick-list">
+          <button className="cd-quick-item" onClick={() => navigate("/cardapio-config")}>
+            <span className="cd-quick-ico cd-quick-ico--blue">
+              <Sliders size={20} weight="regular" />
+            </span>
+            <div className="cd-quick-info">
+              <div className="cd-quick-name">Dados da loja</div>
+              <div className="cd-quick-desc">Nome, foto, descrição, endereço e horários</div>
+            </div>
+            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+          </button>
+          <button className="cd-quick-item" onClick={() => navigate("/cardapio-design")}>
+            <span className="cd-quick-ico cd-quick-ico--pink">
+              <PaintBrush size={20} weight="regular" />
+            </span>
+            <div className="cd-quick-info">
+              <div className="cd-quick-name">Aparência</div>
+              <div className="cd-quick-desc">Cores, banners e modelo do cardápio</div>
+            </div>
+            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+          </button>
+          <button className="cd-quick-item" onClick={() => navigate("/checkout-config")}>
+            <span className="cd-quick-ico cd-quick-ico--gray">
+              <Tag size={20} weight="regular" />
+            </span>
+            <div className="cd-quick-info">
+              <div className="cd-quick-name">Entrega e pagamento</div>
+              <div className="cd-quick-desc">Formas de pagar, taxa, área e pedido mínimo</div>
+            </div>
+            <CaretRight size={14} weight="bold" className="cd-quick-arrow" />
+          </button>
+        </div>
       </div>
 
+      {/* ── Métricas de performance (função PRO) ── */}
+      {isPro(profile) ? (
+      <>
       {/* Seletor de período */}
       <div className="ch-periodo-tabs" role="tablist">
         {([
@@ -501,6 +531,33 @@ export default function Cardapio() {
             ))}
           </div>
         </div>
+      )}
+      </>
+      ) : (
+      <div className="cd-metricas-locked" onClick={() => navigate("/assinar")}>
+        <div className="cd-metricas-locked-glow" />
+        <div className="cd-metricas-locked-top">
+          <div className="cd-metricas-locked-icon"><ChartBar size={20} weight="bold" /></div>
+          <span className="cd-metricas-locked-tag">PRO</span>
+        </div>
+        <p className="cd-metricas-locked-t">Métricas do cardápio</p>
+        <p className="cd-metricas-locked-s">Visitas, pedidos, receita e produtos mais vendidos.</p>
+        <div className="cd-metricas-locked-preview">
+          <div className="cd-metricas-locked-item">
+            <div className="cd-metricas-locked-lbl">Visitas</div>
+            <div className="cd-metricas-locked-val">—</div>
+          </div>
+          <div className="cd-metricas-locked-item">
+            <div className="cd-metricas-locked-lbl">Pedidos</div>
+            <div className="cd-metricas-locked-val">—</div>
+          </div>
+          <div className="cd-metricas-locked-item">
+            <div className="cd-metricas-locked-lbl">Receita</div>
+            <div className="cd-metricas-locked-val">—</div>
+          </div>
+        </div>
+        <button className="cd-metricas-locked-cta">Assinar PRO</button>
+      </div>
       )}
 
       {/* Alertas */}
@@ -736,12 +793,11 @@ export default function Cardapio() {
 
         /* ── Lista tipo iOS Settings — 2 grupos temáticos ── */
         .ch-list-section-title {
-          margin: var(--space-4) var(--space-2) var(--space-2);
-          font-size: 10px;
+          margin: var(--space-5) var(--space-1) var(--space-2);
+          font-size: 14px;
           font-weight: 800;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: var(--text-muted);
+          letter-spacing: -0.01em;
+          color: var(--text-title);
         }
         .ch-list-section-title:first-of-type { margin-top: var(--space-2); }
         .ch-list-group {
@@ -796,6 +852,151 @@ export default function Cardapio() {
           color: var(--border);
           flex-shrink: 0;
         }
+
+        /* ─── Cards de configuração/catálogo (padrão "Ações rápidas") ─── */
+        .cd-card {
+          background: #fff;
+          border: 1px solid #F0EBED;
+          border-radius: 8px;
+          margin-bottom: var(--space-4);
+          overflow: hidden;
+        }
+        .cd-quick { padding: 4px 0 4px; }
+        .cd-quick-hdr { padding: 14px 18px 10px; }
+        .cd-quick-title { font-size: 16px; font-weight: 800; color: #2C1219; letter-spacing: -0.01em; }
+        .cd-quick-sub { font-size: 12px; color: #888780; margin-top: 3px; }
+        .cd-quick-list { display: flex; flex-direction: column; }
+        .cd-quick-item {
+          all: unset;
+          box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          width: 100%;
+          padding: 12px 18px;
+          cursor: pointer;
+          font-family: var(--font-base) !important;
+          transition: background 0.15s ease;
+        }
+        .cd-quick-item:hover, .cd-quick-item:active { background: #FAF8F5; }
+        .cd-quick-ico {
+          width: 40px; height: 40px;
+          border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .cd-quick-ico--pink  { background: #FCE0E9; color: #993556; }
+        .cd-quick-ico--amber { background: #FEF0DF; color: #854F0B; }
+        .cd-quick-ico--red   { background: #FEE2E2; color: #B91C1C; }
+        .cd-quick-ico--blue  { background: #E6F1FB; color: #185FA5; }
+        .cd-quick-ico--gray  { background: #F0EBED; color: #5F5E5A; }
+        .cd-quick-info { flex: 1; min-width: 0; text-align: left; }
+        .cd-quick-name { font-size: 14px; font-weight: 700; color: #2C1219; letter-spacing: -0.01em; line-height: 1.2; }
+        .cd-quick-desc { font-size: 12px; color: #888780; margin-top: 3px; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+        .cd-quick-arrow { color: #B4B2A9; flex-shrink: 0; }
+
+        /* ─── Métricas locked (PRO upsell) ─── */
+        .cd-metricas-locked {
+          position: relative;
+          background: linear-gradient(135deg, #2D1F26, #4B3D46);
+          color: #fff;
+          border-radius: 8px;
+          padding: 18px 18px 16px;
+          margin-bottom: var(--space-4);
+          overflow: hidden;
+          cursor: pointer;
+          transition: transform 0.15s;
+        }
+        .cd-metricas-locked:active { transform: scale(0.995); }
+        .cd-metricas-locked-glow {
+          position: absolute;
+          top: -30px; right: -30px;
+          width: 140px; height: 140px;
+          background: radial-gradient(circle, rgba(255,201,71,0.28), transparent 70%);
+          pointer-events: none;
+        }
+        .cd-metricas-locked-top {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 6px;
+          position: relative;
+        }
+        .cd-metricas-locked-icon {
+          width: 32px; height: 32px;
+          border-radius: 8px;
+          background: linear-gradient(135deg, #FFC947, #DDAA00);
+          color: #2C1219;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 2px 0 rgba(0,0,0,0.25);
+          flex-shrink: 0;
+        }
+        .cd-metricas-locked-tag {
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 0.08em;
+          color: #FFC947;
+          text-transform: uppercase;
+        }
+        .cd-metricas-locked-t {
+          font-size: 15px;
+          font-weight: 800;
+          margin: 0 0 3px;
+          position: relative;
+        }
+        .cd-metricas-locked-s {
+          font-size: 11.5px;
+          opacity: 0.75;
+          margin: 0 0 14px;
+          position: relative;
+          line-height: 1.4;
+        }
+        .cd-metricas-locked-preview {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 8px;
+          margin-bottom: 14px;
+          position: relative;
+          filter: blur(1.5px);
+          opacity: 0.6;
+          pointer-events: none;
+        }
+        .cd-metricas-locked-item {
+          background: rgba(255,255,255,0.08);
+          border-radius: 6px;
+          padding: 10px 8px;
+          text-align: center;
+        }
+        .cd-metricas-locked-lbl {
+          font-size: 9.5px;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          opacity: 0.7;
+          font-weight: 700;
+        }
+        .cd-metricas-locked-val {
+          font-size: 18px;
+          font-weight: 800;
+          margin-top: 3px;
+        }
+        .cd-metricas-locked-cta {
+          width: 100%;
+          padding: 11px;
+          background: linear-gradient(135deg, #FFC947, #DDAA00);
+          color: #2C1219;
+          font-size: 12.5px;
+          font-weight: 900;
+          border-radius: 6px;
+          border: none;
+          cursor: pointer;
+          font-family: inherit;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          box-shadow: 0 2px 0 rgba(0,0,0,0.22);
+          position: relative;
+          transition: transform 0.15s;
+        }
+        .cd-metricas-locked-cta:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0,0,0,0.22); }
 
         /* ── Top produtos ── */
         .ch-top-list {
