@@ -57,24 +57,6 @@ export default function Cardapio() {
   const [copiado, setCopiado] = useState(false);
   const [contadores, setContadores] = useState({ produtos: 0, produtosAtivos: 0, categorias: 0, promocoes: 0 });
   const [visitasPop, setVisitasPop] = useState<number | null>(null); // +N flutuante quando chega visita nova
-  // Plano PRO — checado DIRETO no banco (não do cache do useProfile, que pode estar
-  // com dados antigos de quando o user era PRO ativo).
-  const [isProAtivo, setIsProAtivo] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    if (!profile?.id) return;
-    supabase
-      .from("profiles")
-      .select("plano, pro_expira_em")
-      .eq("id", profile.id)
-      .single()
-      .then(({ data }) => {
-        if (!data) { setIsProAtivo(false); return; }
-        const ativo = data.plano === "pro" &&
-          (!data.pro_expira_em || new Date(data.pro_expira_em) > new Date());
-        setIsProAtivo(ativo);
-      });
-  }, [profile?.id]);
 
   // Nova arquitetura: cardápio publicado quando profile.codigo_publico existe.
   // URL final: /c/[codigo]/[slug] — slug é "cardapio" (free) ou personalizado (PRO).
@@ -432,7 +414,7 @@ export default function Cardapio() {
       </div>
 
       {/* ── Métricas de performance (função PRO) ── */}
-      {isProAtivo === null ? null : isProAtivo ? (
+      {isPro(profile) ? (
       <>
       {/* Seletor de período */}
       <div className="ch-periodo-tabs" role="tablist">

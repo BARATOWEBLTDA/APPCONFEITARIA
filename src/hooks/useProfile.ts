@@ -36,7 +36,21 @@ function loadCachedProfile(): Profile | null {
     const raw = localStorage.getItem(PROFILE_CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    return parsed && parsed.id ? parsed : null;
+    if (!parsed || !parsed.id) return null;
+
+    // Invalida cache se detectar PRO com data expirada.
+    // Motivo: user pode ter perdido o PRO (expiração) enquanto o app estava fechado.
+    // Sem essa checagem, o cache seguiria dizendo "PRO ativo" até a próxima
+    // revalidação do Supabase, causando flash de conteúdo PRO indevido.
+    if (parsed.plano === "pro" && parsed.pro_expira_em) {
+      const expira = new Date(parsed.pro_expira_em);
+      if (!isNaN(expira.getTime()) && expira <= new Date()) {
+        // Cache expirado — força refetch do banco (retorna null aqui)
+        localStorage.removeItem(PROFILE_CACHE_KEY);
+        return null;
+      }
+    }
+    return parsed;
   } catch {
     return null;
   }
@@ -100,6 +114,17 @@ function ensureRealtimeChannel() {
       notifyListeners(null);
     }
   });
+
+  // Ao voltar pra aba (troca de aba, volta do background),
+  // revalida o profile. Isso pega mudanças de plano que
+  // ocorreram enquanto o usuário estava fora e o realtime não pegou.
+  if (typeof window !== "undefined") {
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        refreshProfile();
+      }
+    });
+  }
 }
 
 export function useProfile() {
