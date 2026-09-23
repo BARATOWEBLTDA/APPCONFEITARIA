@@ -377,7 +377,8 @@ export default function AppPageHeader({
         .app-menu-novo-icon--sair { background: #FEE2E2 !important; color: #DC2626 !important; }
         .app-menu-overlay {
           position: fixed; inset: 0;
-          background: rgba(45, 31, 38, 0.15);
+          background: rgba(45, 31, 38, 0.45);
+          backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
           z-index: 9999;
           animation: appInfoIn 0.16s ease-out;
         }
