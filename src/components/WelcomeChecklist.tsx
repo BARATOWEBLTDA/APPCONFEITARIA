@@ -297,7 +297,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           position: absolute;
           top: -30px; right: -30px;
           width: 120px; height: 120px;
-          background: radial-gradient(circle, rgba(232, 90, 140, 0.28), transparent 70%);
+          background: radial-gradient(circle, rgba(255, 201, 71, 0.22), transparent 70%);
           pointer-events: none;
         }
         .wc-prize-badge {
@@ -305,7 +305,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           display: inline-flex;
           align-items: center;
           gap: 5px;
-          background: var(--primary);
+          background: linear-gradient(135deg, #FFC947 0%, #DDAA00 100%);
           padding: 3px 10px;
           border-radius: var(--radius-full);
           font-size: 10px;
@@ -313,8 +313,8 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           letter-spacing: 0.06em;
           text-transform: uppercase;
           margin-bottom: 8px;
-          box-shadow: 0 2px 0 var(--primary-dark);
-          color: #fff;
+          box-shadow: 0 2px 0 rgba(0,0,0,0.25);
+          color: #2C1219;
         }
         .wc-prize-l1 {
           position: relative;
@@ -332,7 +332,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           letter-spacing: -0.02em;
           line-height: 1.15;
         }
-        .wc-prize-l2 span { color: #F27DA8; }
+        .wc-prize-l2 span { color: #FFC947; }
         .wc-prize-bar {
           position: relative;
           height: 10px;
@@ -342,7 +342,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         }
         .wc-prize-bar-fill {
           height: 100%;
-          background: linear-gradient(90deg, var(--primary), #F27DA8);
+          background: linear-gradient(90deg, #DDAA00, #FFC947);
           border-radius: var(--radius-full);
           box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2);
           transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
@@ -367,8 +367,8 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           gap: 6px;
           width: 100%;
           padding: 13px 22px;
-          background: var(--primary);
-          color: #fff;
+          background: linear-gradient(135deg, #FFC947 0%, #DDAA00 100%);
+          color: #2C1219;
           border: none;
           border-radius: 14px;
           font-family: inherit;
@@ -377,7 +377,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           letter-spacing: 0.04em;
           text-transform: uppercase;
           cursor: pointer;
-          box-shadow: 0 4px 0 var(--primary-dark);
+          box-shadow: 0 4px 0 rgba(0,0,0,0.25);
           transition: transform var(--dur-fast), background var(--dur-fast);
           margin-top: 4px;
         }
@@ -457,21 +457,21 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           align-items: center;
           gap: 4px;
           padding: 6px 12px;
-          background: var(--primary);
-          color: #fff;
+          background: linear-gradient(135deg, #FFC947 0%, #DDAA00 100%);
+          color: #2C1219;
           border: none;
           border-radius: var(--radius-sm);
           font-weight: var(--fw-black);
           font-size: 11px;
           letter-spacing: 0.03em;
-          box-shadow: 0 2px 0 var(--primary-dark);
+          box-shadow: 0 2px 0 rgba(0,0,0,0.25);
           cursor: pointer;
           text-transform: uppercase;
           transition: transform var(--dur-fast), box-shadow var(--dur-fast);
           flex-shrink: 0;
         }
-        .wc-step-cta:hover { background: var(--btn-primary-hover); }
-        .wc-step-cta:active { transform: translateY(2px); box-shadow: 0 0 0 var(--primary-dark); }
+        .wc-step-cta:hover { background: linear-gradient(135deg, #FFD261 0%, #E8B517 100%); }
+        .wc-step-cta:active { transform: translateY(2px); box-shadow: none; }
 
         /* ── Rodapé com botão recolher ── */
         .wc-footer {
@@ -525,7 +525,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           position: absolute;
           top: -40px; right: -40px;
           width: 140px; height: 140px;
-          background: radial-gradient(circle, rgba(232, 90, 140, 0.4), transparent 70%);
+          background: radial-gradient(circle, rgba(255, 201, 71, 0.35), transparent 70%);
           pointer-events: none;
         }
 
@@ -534,10 +534,10 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           position: relative;
           width: 44px; height: 44px;
           border-radius: var(--radius-md);
-          background: var(--primary);
-          color: #fff;
+          background: linear-gradient(135deg, #FFC947 0%, #DDAA00 100%);
+          color: #2C1219;
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 3px 0 var(--primary-dark);
+          box-shadow: 0 3px 0 rgba(0,0,0,0.25);
           flex-shrink: 0;
         }
 
@@ -554,7 +554,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           font-weight: var(--fw-black);
           letter-spacing: 0.06em;
           text-transform: uppercase;
-          color: #F27DA8;
+          color: #FFC947;
           margin-bottom: 2px;
         }
         .wc-collapsed-title {
@@ -567,7 +567,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           overflow: hidden;
           text-overflow: ellipsis;
         }
-        .wc-collapsed-hl { color: #F27DA8; }
+        .wc-collapsed-hl { color: #FFC947; }
         .wc-collapsed-bar {
           display: flex;
           align-items: center;
@@ -583,7 +583,7 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
         .wc-collapsed-bar-fill {
           display: block;
           height: 100%;
-          background: linear-gradient(90deg, var(--primary), #F27DA8);
+          background: linear-gradient(90deg, #DDAA00, #FFC947);
           border-radius: var(--radius-full);
           transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
         }
@@ -601,8 +601,8 @@ export default function WelcomeChecklist({ userId, onAllDone }: { userId: string
           gap: 4px;
           padding: 9px 13px;
           border-radius: var(--radius-full);
-          background: var(--primary);
-          color: #fff;
+          background: linear-gradient(135deg, #FFC947 0%, #DDAA00 100%);
+          color: #2C1219;
           font-family: inherit;
           font-size: 11px;
           font-weight: var(--fw-black);
