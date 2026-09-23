@@ -2177,7 +2177,7 @@ export default function Inicio() {
           padding: var(--space-3) var(--space-4);
           background: #F5F0F2;
           border: none;
-          border-radius: 10px;
+          border-radius: 4px;
           cursor: pointer;
           font-family: inherit;
           text-align: left;
@@ -2186,7 +2186,7 @@ export default function Inicio() {
         .ini-nav-card:active { background: #EDE6E8; transform: scale(0.99); }
         .ini-nav-icon {
           width: 34px; height: 34px;
-          border-radius: 8px;
+          border-radius: 4px;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
           background: transparent !important;
@@ -2200,30 +2200,19 @@ export default function Inicio() {
           color: var(--text-title);
           line-height: 1.2;
         }
-        /* Subtítulo escondido no mobile (fica só a label pra caber em 2 col) */
-        .ini-nav-sub {
-          display: none;
-        }
+        /* Subtítulo escondido no mobile (fica só a label) */
+        .ini-nav-sub { display: none; }
         .ini-nav-arrow { display: none; }
-        /* Nova Venda ocupa largura total no topo, vinho destacado */
+        /* Nova Venda vira card verde do grid (mesmo tamanho dos outros) */
         .ini-nav-card[data-nav="nova-venda"] {
-          grid-column: 1 / -1;
-          background: var(--primary-dark);
-          border-color: var(--primary-dark);
-          padding: 14px 16px;
+          background: #16a34a;
         }
-        .ini-nav-card[data-nav="nova-venda"]:active { background: var(--text-title); }
+        .ini-nav-card[data-nav="nova-venda"]:active { background: #15803d; }
         .ini-nav-card[data-nav="nova-venda"] .ini-nav-icon {
-          background: rgba(255,255,255,0.16) !important;
+          background: transparent !important;
           color: #FFFFFF !important;
-          width: 40px; height: 40px;
         }
-        .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #FFFFFF; font-size: 15px; }
-        .ini-nav-card[data-nav="nova-venda"] .ini-nav-sub {
-          display: block;
-          color: rgba(255,255,255,0.75);
-          font-size: 11px;
-        }
+        .ini-nav-card[data-nav="nova-venda"] .ini-nav-label { color: #FFFFFF; }
 
         /* ── Agenda de Entregas ── */
         .ini-agenda-header {
