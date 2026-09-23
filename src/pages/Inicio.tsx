@@ -2556,26 +2556,8 @@ export default function Inicio() {
             padding-top: var(--space-6);
           }
 
-          /* Hero desktop: faixa rosa edge-to-edge (100% largura) */
-          .ini-hero {
-            display: block;
-            width: auto;
-            margin-left: -36px;
-            margin-right: -80px;
-            margin-top: calc(var(--space-6) * -1);
-            padding: 60px 0;
-            min-height: 0;
-            border-radius: 0;
-          }
-          .ini-hero > *:not(.ini-hero-sparkles) { display: none; }
-          .ini-hero-sparkles { display: none; }
-
-          /* Métricas encavalam parcialmente na faixa rosa */
-          .ini-main .ini-section--metrics {
-            margin-top: -60px;
-            position: relative;
-            z-index: 2;
-          }
+          /* Hero rosa escondido no desktop — layout limpo sem faixa colorida */
+          .ini-hero { display: none; }
 
           /* ── Card de métrica em destaque: escondido no desktop
              (os 4 cards de métrica abaixo já mostram Faturamento — evita redundância) ── */
